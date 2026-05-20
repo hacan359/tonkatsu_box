@@ -1,14 +1,9 @@
-// Плавающая перетаскиваемая кнопка с popup-меню действий.
-// Раскрывается веером в 2 стороны: primary — влево, secondary — вверх.
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Элемент меню [DraggableFab].
 class DraggableFabItem {
-  /// Создаёт [DraggableFabItem].
   const DraggableFabItem({
     required this.icon,
     required this.label,
@@ -16,22 +11,14 @@ class DraggableFabItem {
     this.iconColor,
   });
 
-  /// Иконка пункта.
   final IconData icon;
-
-  /// Текст пункта (показывается в tooltip).
   final String label;
-
-  /// Callback при нажатии.
   final VoidCallback onTap;
-
-  /// Цвет иконки (по умолчанию — [AppColors.textPrimary]).
   final Color? iconColor;
 }
 
-/// Разделитель — пропуск в списке кнопок (увеличенный gap).
+/// Inserts an extra vertical gap between menu sections.
 class DraggableFabDivider extends DraggableFabItem {
-  /// Создаёт [DraggableFabDivider].
   const DraggableFabDivider()
       : super(
           icon: Icons.remove,
@@ -42,14 +29,9 @@ class DraggableFabDivider extends DraggableFabItem {
   static void _noop() {}
 }
 
-/// Плавающая кнопка действий, которую можно перетаскивать по экрану.
-///
-/// Может содержать всегда-видимое [mainAction] и/или скрытое меню,
-/// раскрывающееся веером:
-/// - [primaryItems] — круглые иконки влево от ⋮.
-/// - [items] — круглые иконки вверх от ⋮.
+/// Draggable FAB block with an optional always-visible [mainAction] and a
+/// popup pill menu fed by [primaryItems] + [items] (concatenated, in order).
 class DraggableFab extends StatefulWidget {
-  /// Создаёт [DraggableFab].
   const DraggableFab({
     this.mainAction,
     this.primaryItems = const <DraggableFabItem>[],
@@ -60,17 +42,9 @@ class DraggableFab extends StatefulWidget {
     super.key,
   });
 
-  /// Всегда-видимая основная кнопка (например, «+»). Рендерится слева
-  /// от ⋮ FAB; перетаскивается вместе с ним как единый блок.
   final DraggableFabItem? mainAction;
-
-  /// Основные действия — веер влево от ⋮.
   final List<DraggableFabItem> primaryItems;
-
-  /// Остальные действия — веер вверх от ⋮.
   final List<DraggableFabItem> items;
-
-  /// Иконка кнопки меню.
   final IconData icon;
 
   /// Initial right offset (defaults to [AppSpacing.md]). Set on the canvas
@@ -225,9 +199,8 @@ class _DraggableFabState extends State<DraggableFab> {
   }
 
   void _showMenu(BuildContext context) {
-    // ⋮ sits at the top of the block, horizontally centered above the
-    // main action. Pass its actual screen position so the fan radiates
-    // around the small (40px) menu button, not the larger main one.
+    // Anchor the popup to the ⋮ button (top of the block), not the larger
+    // main FAB below it, so pills line up with the menu trigger.
     final RenderBox box = context.findRenderObject()! as RenderBox;
     final Offset blockPos = box.localToGlobal(Offset.zero);
     final double menuLeft = blockPos.dx + (_blockWidth - _menuFabSize) / 2;
@@ -242,10 +215,6 @@ class _DraggableFabState extends State<DraggableFab> {
     );
   }
 }
-
-// =========================================================================
-// Fan menu route
-// =========================================================================
 
 class _FanMenuRoute extends PopupRoute<void> {
   _FanMenuRoute({
@@ -288,10 +257,9 @@ class _FanMenuRoute extends PopupRoute<void> {
   }
 }
 
-// =========================================================================
-// Fan layout — кнопки веером в 2 стороны
-// =========================================================================
-
+/// Vertical stack of labeled pills anchored to the FAB's right edge.
+/// When the stack is taller than the available vertical room it scrolls
+/// in place so the menu always fits on screen regardless of item count.
 class _FanMenuPage extends StatelessWidget {
   const _FanMenuPage({
     required this.primaryItems,
@@ -307,204 +275,216 @@ class _FanMenuPage extends StatelessWidget {
   final double fabSize;
   final Animation<double> animation;
 
-  /// Размер кнопки-иконки.
-  static const double _btnSize = 42;
-
-  /// Расстояние между кнопками.
-  static const double _gap = 10;
-
-  /// Расстояние разделителя (DraggableFabDivider).
-  static const double _dividerGap = 18;
-
-  /// Суммарная длина ряда кнопок (без учёта первого gap от FAB).
-  double _totalSpan(List<DraggableFabItem> list) {
-    double span = 0;
-    bool first = true;
-    for (final DraggableFabItem item in list) {
-      if (item is DraggableFabDivider) {
-        span += _dividerGap;
-        continue;
-      }
-      span += first ? fabSize / 2 + _gap + _btnSize / 2 : _btnSize + _gap;
-      first = false;
-    }
-    return span;
-  }
+  static const double _pillHeight = 40;
+  static const double _pillGap = 8;
+  static const double _dividerGap = 14;
+  static const double _fabGap = 12;
+  static const double _edgeMargin = 8;
+  static const double _pillMaxWidth = 220;
 
   @override
   Widget build(BuildContext context) {
-    const double margin = 8;
+    final List<DraggableFabItem> all = <DraggableFabItem>[
+      ...primaryItems,
+      if (primaryItems.isNotEmpty && items.isNotEmpty)
+        const DraggableFabDivider(),
+      ...items,
+    ];
 
-    final double fabCx = fabPosition.dx + fabSize / 2;
-    final double fabCy = fabPosition.dy + fabSize / 2;
+    final Size screen = MediaQuery.sizeOf(context);
+    // Status bar / nav bar insets — without subtracting these the pill
+    // stack can extend under the system chrome and look unreachable.
+    final EdgeInsets safe = MediaQuery.viewPaddingOf(context);
+    final double fabRight = screen.width - fabPosition.dx - fabSize;
+    final double spaceAbove = fabPosition.dy - safe.top;
+    final double spaceBelow =
+        screen.height - (fabPosition.dy + fabSize) - safe.bottom;
+    final bool goUp = spaceAbove >= spaceBelow;
+    final double maxHeight =
+        (goUp ? spaceAbove : spaceBelow) - _fabGap - _edgeMargin;
 
-    // Определяем направления: хватает ли места влево/вверх.
-    final double needH = _totalSpan(primaryItems);
-    final double needV = _totalSpan(items);
+    final int actionCount = all
+        .where((DraggableFabItem i) => i is! DraggableFabDivider)
+        .length;
 
-    final bool goRight = fabCx - needH < margin;
-    final bool goDown = fabCy - needV < margin;
-
-    final int hDir = goRight ? 1 : -1; // 1 = вправо, -1 = влево
-    final int vDir = goDown ? 1 : -1;  // 1 = вниз, -1 = вверх
-
-    final List<Widget> buttons = <Widget>[];
-
-    // Primary — горизонтально.
-    double offsetX = fabSize / 2 + _gap + _btnSize / 2;
-    int totalIndex = 0;
-    for (final DraggableFabItem item in primaryItems) {
+    final List<Widget> columnChildren = <Widget>[];
+    int actionIndex = 0;
+    bool lastWasItem = false;
+    for (final DraggableFabItem item in all) {
       if (item is DraggableFabDivider) {
-        offsetX += _dividerGap;
+        if (lastWasItem) {
+          columnChildren.add(const SizedBox(height: _dividerGap));
+        }
+        lastWasItem = false;
         continue;
       }
-      final double cx = fabCx + offsetX * hDir;
-      final double cy = fabCy;
-      buttons.add(
-        _buildButton(context, item, cx, cy, totalIndex),
-      );
-      offsetX += _btnSize + _gap;
-      totalIndex++;
+      if (lastWasItem) {
+        columnChildren.add(const SizedBox(height: _pillGap));
+      }
+      columnChildren.add(_buildAnimatedPill(
+        context: context,
+        item: item,
+        index: actionIndex,
+        total: actionCount,
+        goUp: goUp,
+      ));
+      actionIndex++;
+      lastWasItem = true;
     }
 
-    // Secondary — вертикально.
-    double offsetY = fabSize / 2 + _gap + _btnSize / 2;
-    for (final DraggableFabItem item in items) {
-      if (item is DraggableFabDivider) {
-        offsetY += _dividerGap;
-        continue;
-      }
-      final double cx = fabCx;
-      final double cy = fabCy + offsetY * vDir;
-      buttons.add(
-        _buildButton(context, item, cx, cy, totalIndex),
-      );
-      offsetY += _btnSize + _gap;
-      totalIndex++;
-    }
+    // When opening upward the closest-to-FAB pill is the LAST in original
+    // order, so flip the column so item N-1 sits at the bottom (next to
+    // the FAB) and item 0 at the top (scrolled-away if overflowing).
+    final List<Widget> ordered = goUp
+        ? columnChildren.reversed.toList(growable: false)
+        : columnChildren;
+
+    final Widget pillsColumn = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: ordered,
+    );
+
+    final Widget scrollable = ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: maxHeight,
+        maxWidth: _pillMaxWidth,
+      ),
+      child: SingleChildScrollView(
+        reverse: goUp,
+        physics: const ClampingScrollPhysics(),
+        child: pillsColumn,
+      ),
+    );
 
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
       behavior: HitTestBehavior.opaque,
-      child: Stack(children: buttons),
+      child: Stack(
+        children: <Widget>[
+          Positioned(
+            right: fabRight,
+            top: goUp ? null : fabPosition.dy + fabSize + _fabGap,
+            bottom: goUp
+                ? screen.height - fabPosition.dy + _fabGap
+                : null,
+            child: scrollable,
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildButton(
-    BuildContext context,
-    DraggableFabItem item,
-    double cx,
-    double cy,
-    int index,
-  ) {
-    // Staggered: каждая кнопка появляется чуть позже.
-    final int total = primaryItems.length + items.length;
-    final double start = (index / (total + 1)) * 0.4;
-    final double end = start + 0.6;
-
+  Widget _buildAnimatedPill({
+    required BuildContext context,
+    required DraggableFabItem item,
+    required int index,
+    required int total,
+    required bool goUp,
+  }) {
+    // Staggered: pills appear sequentially as the menu opens.
+    final double start = total > 0 ? (index / (total + 1)) * 0.4 : 0;
+    final double end = (start + 0.6).clamp(0.0, 1.0);
     final Animation<double> itemAnim = CurvedAnimation(
       parent: animation,
-      curve: Interval(start, end.clamp(0.0, 1.0), curve: Curves.easeOut),
+      curve: Interval(start, end, curve: Curves.easeOut),
+    );
+
+    final _PillButton pill = _PillButton(
+      item: item,
+      height: _pillHeight,
+      onTap: () {
+        Navigator.of(context).pop();
+        item.onTap();
+      },
     );
 
     return AnimatedBuilder(
       animation: itemAnim,
       builder: (BuildContext context, Widget? child) {
-        final double scale = itemAnim.value;
-        // Кнопки «вылетают» из позиции FAB.
-        final double x =
-            fabPosition.dx + fabSize / 2 +
-            (cx - fabPosition.dx - fabSize / 2) * scale -
-            _btnSize / 2;
-        final double y =
-            fabPosition.dy + fabSize / 2 +
-            (cy - fabPosition.dy - fabSize / 2) * scale -
-            _btnSize / 2;
-
-        return Positioned(
-          left: x,
-          top: y,
-          child: Opacity(
-            opacity: scale,
-            child: Transform.scale(
-              scale: scale,
-              child: child,
-            ),
+        final double v = itemAnim.value;
+        final double dy = (goUp ? 16.0 : -16.0) * (1 - v);
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(
+            offset: Offset(0, dy),
+            child: child,
           ),
         );
       },
-      child: _FanButton(
-        item: item,
-        size: _btnSize,
-        onTap: () {
-          Navigator.of(context).pop();
-          item.onTap();
-        },
-      ),
+      child: pill,
     );
   }
 }
-
-// =========================================================================
-// Circular icon button
-// =========================================================================
-
-class _FanButton extends StatefulWidget {
-  const _FanButton({
+class _PillButton extends StatefulWidget {
+  const _PillButton({
     required this.item,
-    required this.size,
+    required this.height,
     required this.onTap,
   });
 
   final DraggableFabItem item;
-  final double size;
+  final double height;
   final VoidCallback onTap;
 
   @override
-  State<_FanButton> createState() => _FanButtonState();
+  State<_PillButton> createState() => _PillButtonState();
 }
 
-class _FanButtonState extends State<_FanButton> {
+class _PillButtonState extends State<_PillButton> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: widget.item.label,
-      waitDuration: const Duration(milliseconds: 300),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          height: widget.height,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: _hovered ? AppColors.surfaceLight : AppColors.surface,
+            borderRadius: BorderRadius.circular(widget.height / 2),
+            border: Border.all(
               color: _hovered
-                  ? AppColors.surfaceLight
-                  : AppColors.surface,
-              border: Border.all(
-                color: _hovered
-                    ? AppColors.brand.withAlpha(120)
-                    : AppColors.surfaceBorder,
-                width: 0.5,
+                  ? AppColors.brand.withAlpha(160)
+                  : AppColors.surfaceBorder,
+              width: 0.5,
+            ),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: Colors.black.withAlpha(70),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black.withAlpha(60),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(
+                child: Text(
+                  widget.item.label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                    decoration: TextDecoration.none,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-            child: Icon(
-              widget.item.icon,
-              size: 20,
-              color: widget.item.iconColor ?? AppColors.textPrimary,
-            ),
+              ),
+              const SizedBox(width: 10),
+              Icon(
+                widget.item.icon,
+                size: 20,
+                color: widget.item.iconColor ?? AppColors.textPrimary,
+              ),
+            ],
           ),
         ),
       ),

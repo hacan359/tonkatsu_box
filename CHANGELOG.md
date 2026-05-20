@@ -40,6 +40,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Replace draggable FAB fan menu with a labeled pill stack**
+
+  The popup menu attached to every draggable FAB no longer fans small
+  unlabeled circles around the ⋮ button; it opens as a vertical column
+  of [text + icon] pills anchored to the FAB's right edge. Each action's
+  full localised label is visible inline, removing the touch-device
+  reliance on tooltips. The stack scrolls within the available vertical
+  room (minus the system status bar / nav bar) when there are more
+  items than fit, and flips to opening downward if there's more room
+  below the FAB. The tier-lists screen's create FAB also changes
+  `Icons.leaderboard` → `Icons.add` so the trigger reads as "add" rather
+  than "stats".
+
+  * lib/shared/widgets/draggable_fab.dart (_FanMenuPage, _PillButton,
+    _PillButtonState): Replace the radial `_FanMenuPage` (circular
+    `_FanButton` icons distributed around the FAB) with a pill-stack
+    layout. `_buildAnimatedPill` staggers each entry; the column is
+    wrapped in `SingleChildScrollView` constrained by
+    `MediaQuery.viewPaddingOf(context)` so it stays clear of system
+    chrome. Drops `_FanButton` / `_FanButtonState` and the `dart:math`
+    import that was only needed for the fan's angle math.
+  * lib/features/tier_lists/screens/tier_lists_screen.dart
+    (_TierListsScreenState.build): FAB main action icon
+    `Icons.leaderboard` → `Icons.add`.
+
 - **Lazy-render the collection table and react chevron counts to the active status**
 
   Opening a 500+ item collection in table mode no longer freezes ~500ms:
