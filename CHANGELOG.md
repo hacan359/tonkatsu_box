@@ -38,7 +38,77 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     refreshItemFailed): New strings; regenerated
     `app_localizations*.dart`.
 
+### Added
+
+- **Select all visible items from the bulk action bar**
+
+  After picking at least one item, a "Select all" text button appears
+  in the bulk action bar next to the "N selected" counter. Tapping it
+  extends the selection to every item currently visible after search
+  and filters, so a "find then select everything matching" flow
+  becomes one tap instead of clicking each card. The button hides
+  when the visible set is already fully selected or when the host
+  screen doesn't expose a visible-item count.
+
+  * lib/features/collections/widgets/bulk_action_bar.dart
+    (BulkActionBar): Add `visibleCount` and `onSelectAllVisible`
+    parameters; render a `TextButton` between the counter and the
+    existing actions when the callback is set and
+    `visibleCount > items.length`.
+  * lib/features/collections/widgets/collection_screen/collection_bulk_action_bar.dart
+    (CollectionBulkActionBar): Accept `CollectionFilters? filters`
+    and `List<CollectionTag> tags`, apply them to the full item list
+    to derive the visible set, and wire the new callback to
+    `CollectionSelectionNotifier.selectAll`.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState.build): Lift `CollectionFilters` and
+    tags resolution above the bulk action bar so the bar gets the
+    same filtered set as `CollectionItemsView`.
+  * lib/features/home/screens/all_items_screen.dart
+    (AllItemsScreen.build): Compute `visibleItems` via
+    `_applyFilter` once, pass to the bulk action bar with
+    `AllItemsSelectionNotifier.selectAll`, and reuse the same list
+    inside `itemsAsync.when` instead of filtering twice.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (bulkSelectAllVisible):
+    New label string; regenerated `app_localizations*.dart`.
+  * test/features/collections/widgets/bulk_action_bar_test.dart: New.
+    Cover the show/hide branches for the Select all button and
+    confirm the callback fires on tap.
+
+- **Reflect active filters in All Items media-type chevron counts**
+
+  Counts shown next to each chevron on the home screen now drop and
+  rise with the search query, status, platform and tag filters, so
+  it's obvious how many of each type are currently visible. The
+  "Hide empty media types" setting still keys off raw totals — a
+  search that wipes out a category no longer makes the chevron itself
+  disappear, matching how the collection filter bar already worked.
+
+  * lib/features/home/screens/all_items_screen.dart
+    (AllItemsScreen._applyFilter, AllItemsScreen._matchesNonTypeFilters,
+    AllItemsScreen._countByMediaType, AllItemsScreen._rawTotalsByMediaType,
+    AllItemsScreen._buildMediaTypeBar): Split filtering into a shared
+    non-type predicate; chevron labels use a filter-aware count while
+    chevron visibility under `hideEmptyMediaTypeChevrons` uses raw
+    per-type totals.
+  * test/features/home/screens/all_items_screen_test.dart
+    (_FakeSettingsNotifier, "should keep chevrons with non-zero totals
+    visible even when search filters them out"): Add a regression test
+    that drives the search provider to a non-matching query and
+    asserts the Games / Movies chevrons stay mounted.
+
 ### Changed
+
+- **Label bulk-move/copy leftovers as "Duplicates" instead of "Skipped"**
+
+  A move or copy can only "skip" an item when the target already
+  holds the same `(media_type, external_id)` pair (the UNIQUE index
+  rejects the write). The previous wording made the count look like
+  an opaque failure; renaming surfaces the real reason.
+
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (bulkResult): Replace
+    "Skipped" / "Пропущено" with "Duplicates" / "Дубликаты"; sync
+    `app_localizations_en.dart` and `app_localizations_ru.dart`.
 
 - **Split the AniList API god class into layered files**
 

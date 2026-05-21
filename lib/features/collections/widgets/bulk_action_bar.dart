@@ -33,6 +33,8 @@ class BulkActionBar extends ConsumerWidget {
     required this.items,
     required this.onClearSelection,
     this.collectionId,
+    this.visibleCount,
+    this.onSelectAllVisible,
     super.key,
   });
 
@@ -44,6 +46,13 @@ class BulkActionBar extends ConsumerWidget {
 
   /// ID контекстной коллекции. `null` если бар стоит на All Items.
   final int? collectionId;
+
+  /// Сколько элементов всего видно на экране после фильтров и поиска.
+  /// Используется чтобы скрыть «выделить все видимые», когда уже выделено всё.
+  final int? visibleCount;
+
+  /// Колбэк «выделить все видимые элементы». `null` скрывает кнопку.
+  final VoidCallback? onSelectAllVisible;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,6 +89,22 @@ class BulkActionBar extends ConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
+            if (onSelectAllVisible != null &&
+                (visibleCount ?? 0) > count) ...<Widget>[
+              const SizedBox(width: AppSpacing.sm),
+              TextButton(
+                onPressed: onSelectAllVisible,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.brand,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(l.bulkSelectAllVisible),
+              ),
+            ],
             const Spacer(),
             _BarAction(
               icon: Icons.drive_file_move_outlined,

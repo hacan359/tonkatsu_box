@@ -226,6 +226,9 @@ class SRu extends S {
   String get bulkClearSelection => 'Снять выделение';
 
   @override
+  String get bulkSelectAllVisible => 'Выделить всё';
+
+  @override
   String get bulkMove => 'Переместить выделенные в коллекцию';
 
   @override
@@ -249,7 +252,7 @@ class SRu extends S {
 
   @override
   String bulkResult(int done, int skipped) {
-    return 'Выполнено: $done • Пропущено: $skipped';
+    return 'Выполнено: $done • Дубликаты: $skipped';
   }
 
   @override

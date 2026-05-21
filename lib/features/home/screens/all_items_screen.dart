@@ -66,6 +66,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Set<int> selection = ref.watch(allItemsSelectionProvider);
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
+    final List<CollectionItem> visibleItems =
+        _applyFilter(allItems, filterStatus, tagsMap, searchQuery);
     final List<CollectionItem> selectedItems = selection.isEmpty
         ? const <CollectionItem>[]
         : <CollectionItem>[
@@ -75,11 +77,15 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     return Column(
       children: <Widget>[
-        _buildMediaTypeBar(itemsAsync, filterStatus),
+        _buildMediaTypeBar(itemsAsync, filterStatus, tagsMap, searchQuery),
         _buildPlatformsRow(),
         if (selectedItems.isNotEmpty)
           BulkActionBar(
             items: selectedItems,
+            visibleCount: visibleItems.length,
+            onSelectAllVisible: () => ref
+                .read(allItemsSelectionProvider.notifier)
+                .selectAll(visibleItems.map((CollectionItem i) => i.id)),
             onClearSelection: () => ref
                 .read(allItemsSelectionProvider.notifier)
                 .clear(),
@@ -87,12 +93,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         Expanded(
           child: itemsAsync.when(
             data: (List<CollectionItem> items) {
-              final List<CollectionItem> filtered =
-                  _applyFilter(items, filterStatus, tagsMap, searchQuery);
-              if (filtered.isEmpty) {
+              if (visibleItems.isEmpty) {
                 return _buildEmptyState(items.isEmpty);
               }
-              return _buildGridView(filtered, collectionNames, tagsMap);
+              return _buildGridView(visibleItems, collectionNames, tagsMap);
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (Object error, StackTrace stack) =>
@@ -109,41 +113,37 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     Map<int, CollectionTag> tagsMap,
     String searchQuery,
   ) {
-    List<CollectionItem> result = items;
-    if (_selectedTypes.isNotEmpty) {
-      result = result
-          .where((CollectionItem item) => _selectedTypes.contains(item.mediaType))
-          .toList();
+    final String query = searchQuery.toLowerCase();
+    return items
+        .where((CollectionItem item) =>
+            (_selectedTypes.isEmpty ||
+                _selectedTypes.contains(item.mediaType)) &&
+            _matchesNonTypeFilters(item, filterStatus, tagsMap, query))
+        .toList();
+  }
+
+  bool _matchesNonTypeFilters(
+    CollectionItem item,
+    ItemStatus? filterStatus,
+    Map<int, CollectionTag> tagsMap,
+    String lowerQuery,
+  ) {
+    if (filterStatus != null && item.status != filterStatus) return false;
+    if (_selectedPlatformIds.isNotEmpty &&
+        (item.platformId == null ||
+            !_selectedPlatformIds.contains(item.platformId))) {
+      return false;
     }
-    if (filterStatus != null) {
-      result = result
-          .where((CollectionItem item) => item.status == filterStatus)
-          .toList();
+    if (lowerQuery.isNotEmpty) {
+      final bool match = item.itemName.toLowerCase().contains(lowerQuery) ||
+          (item.tagId != null &&
+              (tagsMap[item.tagId]?.name.toLowerCase().contains(lowerQuery) ??
+                  false)) ||
+          (item.userComment?.toLowerCase().contains(lowerQuery) ?? false) ||
+          (item.authorComment?.toLowerCase().contains(lowerQuery) ?? false);
+      if (!match) return false;
     }
-    if (_selectedPlatformIds.isNotEmpty) {
-      result = result
-          .where(
-            (CollectionItem item) =>
-                item.platformId != null &&
-                _selectedPlatformIds.contains(item.platformId),
-          )
-          .toList();
-    }
-    if (searchQuery.isNotEmpty) {
-      final String query = searchQuery.toLowerCase();
-      result = result
-          .where(
-            (CollectionItem item) =>
-                item.itemName.toLowerCase().contains(query) ||
-                (item.tagId != null &&
-                    (tagsMap[item.tagId]?.name.toLowerCase().contains(query) ??
-                        false)) ||
-                (item.userComment?.toLowerCase().contains(query) ?? false) ||
-                (item.authorComment?.toLowerCase().contains(query) ?? false),
-          )
-          .toList();
-    }
-    return result;
+    return true;
   }
 
   // ==================== Filter UI ====================
@@ -155,9 +155,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Widget _buildMediaTypeBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
     ItemStatus? filterStatus,
+    Map<int, CollectionTag> tagsMap,
+    String searchQuery,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
-    final Map<MediaType, int> counts = _countByMediaType(items);
+    final Map<MediaType, int> counts =
+        _countByMediaType(items, filterStatus, tagsMap, searchQuery);
+    final Map<MediaType, int> totals = _rawTotalsByMediaType(items);
     final S l = S.of(context);
 
     final List<_MediaTypeEntry> entries = <_MediaTypeEntry>[
@@ -214,7 +218,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         (hideEmpty && items != null)
             ? entries
                 .where((_MediaTypeEntry e) =>
-                    e.count > 0 || _selectedTypes.contains(e.type))
+                    (totals[e.type] ?? 0) > 0 ||
+                    _selectedTypes.contains(e.type))
                 .toList()
             : entries;
 
@@ -339,11 +344,36 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   // ==================== Helpers ====================
 
-  /// Считает количество элементов по типу медиа.
-  static Map<MediaType, int> _countByMediaType(List<CollectionItem>? items) {
+  /// Raw item count per media type, ignoring every filter. Drives chevron
+  /// visibility — search hits should change the chevron label, not make
+  /// non-matching media types disappear when "Hide empty" is on.
+  static Map<MediaType, int> _rawTotalsByMediaType(
+    List<CollectionItem>? items,
+  ) {
+    if (items == null) return const <MediaType, int>{};
+    final Map<MediaType, int> totals = <MediaType, int>{};
+    for (final CollectionItem item in items) {
+      totals[item.mediaType] = (totals[item.mediaType] ?? 0) + 1;
+    }
+    return totals;
+  }
+
+  /// Counts items per media type after applying every active filter except
+  /// the media-type one — so each chevron shows how many would be visible if
+  /// the user picked it.
+  Map<MediaType, int> _countByMediaType(
+    List<CollectionItem>? items,
+    ItemStatus? filterStatus,
+    Map<int, CollectionTag> tagsMap,
+    String searchQuery,
+  ) {
     if (items == null) return <MediaType, int>{};
+    final String lower = searchQuery.toLowerCase();
     final Map<MediaType, int> counts = <MediaType, int>{};
     for (final CollectionItem item in items) {
+      if (!_matchesNonTypeFilters(item, filterStatus, tagsMap, lower)) {
+        continue;
+      }
       counts[item.mediaType] = (counts[item.mediaType] ?? 0) + 1;
     }
     return counts;

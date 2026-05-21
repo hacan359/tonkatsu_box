@@ -224,6 +224,9 @@ class SEn extends S {
   String get bulkClearSelection => 'Clear selection';
 
   @override
+  String get bulkSelectAllVisible => 'Select all';
+
+  @override
   String get bulkMove => 'Move selected to collection';
 
   @override
@@ -245,7 +248,7 @@ class SEn extends S {
 
   @override
   String bulkResult(int done, int skipped) {
-    return 'Done: $done • Skipped: $skipped';
+    return 'Done: $done • Duplicates: $skipped';
   }
 
   @override
