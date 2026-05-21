@@ -81,6 +81,7 @@
     }
   },
   "bulkClearSelection": "Снять выделение",
+  "bulkSelectAllVisible": "Выделить всё",
   "bulkMove": "Переместить выделенные в коллекцию",
   "bulkCopy": "Скопировать выделенные в коллекцию",
   "bulkChangeStatus": "Изменить статус",
@@ -90,7 +91,7 @@
       "count": {"type": "int"}
     }
   },
-  "bulkResult": "Выполнено: {done} • Пропущено: {skipped}",
+  "bulkResult": "Выполнено: {done} • Дубликаты: {skipped}",
   "@bulkResult": {
     "placeholders": {
       "done": {"type": "int"},

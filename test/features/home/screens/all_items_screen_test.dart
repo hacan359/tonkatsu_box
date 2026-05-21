@@ -19,6 +19,7 @@ import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/platform.dart' as model;
 import 'package:xerabora/shared/models/visual_novel.dart';
+import 'package:xerabora/shared/navigation/search_providers.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -420,10 +421,62 @@ void main() {
       expect(find.widgetWithText(ChoiceChip, 'SNES'), findsNothing);
       expect(find.widgetWithText(ChoiceChip, 'GBA'), findsNothing);
     });
+
+    group('chevron counts and visibility under search', () {
+      Widget buildWithHideEmpty() => ProviderScope(
+            overrides: <Override>[
+              collectionRepositoryProvider.overrideWithValue(mockRepo),
+              databaseServiceProvider.overrideWithValue(mockDb),
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              settingsNotifierProvider.overrideWith(
+                () => _FakeSettingsNotifier(hideEmptyMediaTypeChevrons: true),
+              ),
+              currentProfileProvider.overrideWithValue(Profile(
+                id: 'test',
+                name: 'Test',
+                color: '#FF0000',
+                createdAt: DateTime(2025),
+              )),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              home: Scaffold(body: AllItemsScreen()),
+            ),
+          );
+
+      testWidgets(
+          'should keep chevrons with non-zero totals visible even when search '
+          'filters them out', (WidgetTester tester) async {
+        await tester.pumpWidget(buildWithHideEmpty());
+        await tester.pumpAndSettle();
+
+        // Sanity: with the flag on, only types present in data are listed.
+        expect(find.text('Games (2)'), findsOneWidget);
+        expect(find.text('Movies (1)'), findsOneWidget);
+
+        final ProviderContainer container = ProviderScope.containerOf(
+          tester.element(find.byType(AllItemsScreen)),
+        );
+        container.read(homeSearchQueryProvider.notifier).state = 'zzz_no_match';
+        await tester.pumpAndSettle();
+
+        // Counts collapse to 0 across the board, but the chevrons must stay
+        // mounted because the underlying totals are still non-zero.
+        expect(find.textContaining('Games'), findsOneWidget);
+        expect(find.textContaining('Movies'), findsOneWidget);
+      });
+    });
   });
 }
 
 class _FakeSettingsNotifier extends SettingsNotifier {
+  _FakeSettingsNotifier({this.hideEmptyMediaTypeChevrons = false});
+
+  final bool hideEmptyMediaTypeChevrons;
+
   @override
-  SettingsState build() => const SettingsState();
+  SettingsState build() => SettingsState(
+        hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
+      );
 }

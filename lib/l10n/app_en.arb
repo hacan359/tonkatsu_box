@@ -81,6 +81,7 @@
     }
   },
   "bulkClearSelection": "Clear selection",
+  "bulkSelectAllVisible": "Select all",
   "bulkMove": "Move selected to collection",
   "bulkCopy": "Copy selected to collection",
   "bulkChangeStatus": "Change status",
@@ -90,7 +91,7 @@
       "count": {"type": "int"}
     }
   },
-  "bulkResult": "Done: {done} • Skipped: {skipped}",
+  "bulkResult": "Done: {done} • Duplicates: {skipped}",
   "@bulkResult": {
     "placeholders": {
       "done": {"type": "int"},

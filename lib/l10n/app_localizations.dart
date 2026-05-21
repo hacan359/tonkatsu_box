@@ -511,6 +511,12 @@ abstract class S {
   /// **'Clear selection'**
   String get bulkClearSelection;
 
+  /// No description provided for @bulkSelectAllVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get bulkSelectAllVisible;
+
   /// No description provided for @bulkMove.
   ///
   /// In en, this message translates to:

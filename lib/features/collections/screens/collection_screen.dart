@@ -175,6 +175,18 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ref.watch(collectionStatsProvider(widget.collectionId));
 
     final String searchQuery = ref.watch(collectionsSearchQueryProvider);
+    final List<CollectionTag> tags = widget.collectionId != null
+        ? (ref.watch(collectionTagsProvider(widget.collectionId!))
+                .valueOrNull ??
+            <CollectionTag>[])
+        : <CollectionTag>[];
+    final CollectionFilters activeFilters = CollectionFilters(
+      mediaTypes: _filterTypes,
+      platformIds: _filterPlatformIds,
+      tagIds: _filterTagIds,
+      status: _filterStatus,
+      searchQuery: searchQuery,
+    );
     final S l = S.of(context);
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(l),
@@ -190,7 +202,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     : _collection!.name,
               ),
               if (_canEdit && !_isCanvasMode)
-                CollectionBulkActionBar(collectionId: widget.collectionId),
+                CollectionBulkActionBar(
+                  collectionId: widget.collectionId,
+                  filters: activeFilters,
+                  tags: tags,
+                ),
               Expanded(
                 child: _isCanvasMode
                     ? CollectionCanvasLayout(
