@@ -67,8 +67,6 @@ void main() {
         expect(manga.coverUrl, 'https://example.com/large.jpg');
         expect(manga.coverUrlMedium, 'https://example.com/medium.jpg');
         expect(manga.averageScore, 84);
-        expect(manga.meanScore, 85);
-        expect(manga.popularity, 120000);
         expect(manga.status, 'RELEASING');
         expect(manga.startYear, 2012);
         expect(manga.startMonth, 6);
@@ -76,7 +74,6 @@ void main() {
         expect(manga.chapters, isNull);
         expect(manga.volumes, isNull);
         expect(manga.format, 'MANGA');
-        expect(manga.countryOfOrigin, 'JP');
         expect(manga.genres, <String>['Action', 'Comedy', 'Sci-Fi']);
         expect(manga.authors, <String>['ONE', 'Yusuke Murata']);
         expect(manga.externalUrl, 'https://anilist.co/manga/30013');

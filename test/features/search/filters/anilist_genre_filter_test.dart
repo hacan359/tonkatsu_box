@@ -16,8 +16,14 @@ void main() {
       expect(filter.key, 'genre');
     });
 
-    test('cacheKey is "genre_anilist"', () {
+    test('cacheKey is "genre_anilist" for manga (default)', () {
       expect(filter.cacheKey, 'genre_anilist');
+    });
+
+    test('cacheKey is "genre_anilist_anime" when forAnime is true', () {
+      final AniListGenreFilter animeFilter =
+          AniListGenreFilter(forAnime: true);
+      expect(animeFilter.cacheKey, 'genre_anilist_anime');
     });
 
     test('allOption has id "any" and null value', () {

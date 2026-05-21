@@ -1,4 +1,4 @@
-// Фильтр жанров AniList для манги.
+// Фильтр жанров AniList (общий для аниме и манги).
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
@@ -31,12 +31,19 @@ const List<String> _aniListGenres = <String>[
 ///
 /// Использует статический список жанров AniList
 /// (API не предоставляет отдельного endpoint для жанров).
+/// Параметр [forAnime] разделяет кеш между аниме и мангой
+/// (значения одинаковые, но кешируются раздельно).
 class AniListGenreFilter extends SearchFilter {
+  AniListGenreFilter({this.forAnime = false});
+
+  final bool forAnime;
+
   @override
   String get key => 'genre';
 
   @override
-  String get cacheKey => '${key}_anilist';
+  String get cacheKey =>
+      forAnime ? '${key}_anilist_anime' : '${key}_anilist';
 
   @override
   bool get multiSelect => true;

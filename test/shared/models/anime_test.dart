@@ -51,11 +51,7 @@ void main() {
         expect(anime.description, 'A space bounty hunter crew.');
         expect(anime.genres, <String>['Action', 'Adventure', 'Sci-Fi']);
         expect(anime.averageScore, 86);
-        expect(anime.meanScore, 85);
-        expect(anime.popularity, 190000);
         expect(anime.status, 'FINISHED');
-        expect(anime.season, 'SPRING');
-        expect(anime.seasonYear, 1998);
         expect(anime.startYear, 1998);
         expect(anime.startMonth, 4);
         expect(anime.startDay, 3);

@@ -90,11 +90,7 @@ class Anime {
       coverUrl: (coverMap?['extraLarge'] ?? coverMap?['large']) as String?,
       coverUrlMedium: coverMap?['medium'] as String?,
       averageScore: json['averageScore'] as int?,
-      meanScore: json['meanScore'] as int?,
-      popularity: json['popularity'] as int?,
       status: json['status'] as String?,
-      season: json['season'] as String?,
-      seasonYear: json['seasonYear'] as int?,
       startYear: dateMap?['year'] as int?,
       startMonth: dateMap?['month'] as int?,
       startDay: dateMap?['day'] as int?,
@@ -107,9 +103,6 @@ class Anime {
       bannerUrl: json['bannerImage'] as String?,
       nextAiringEpisode:
           (json['nextAiringEpisode'] as Map<String, dynamic>?)?['episode']
-              as int?,
-      nextAiringAt:
-          (json['nextAiringEpisode'] as Map<String, dynamic>?)?['airingAt']
               as int?,
       externalUrl: 'https://anilist.co/anime/$id',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,

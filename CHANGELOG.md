@@ -40,6 +40,92 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Split the AniList API god class into layered files**
+
+  `anilist_api.dart` (1409 LOC) is now a thin facade that owns a
+  `Dio` and delegates to four single-responsibility services under
+  `lib/core/api/anilist/`. GraphQL strings, exception types, the
+  Dio transport, media parsing, MAL→AniList lookup and user-list
+  fetching each get their own file (≤220 LOC), and the duplicated
+  `AniListAnimeGenreFilter` collapses into `AniListGenreFilter` via
+  a `forAnime` flag. Field selection in every query drops the
+  unused `meanScore`, `popularity`, `season`, `seasonYear`,
+  `countryOfOrigin` and `nextAiringEpisode.airingAt` to save
+  bandwidth. The public API (`AniListApi`, `aniListApiProvider`,
+  exceptions, `AniListListEntry`, `AniListMalLookupResult`,
+  `fetchUserMediaList`, MAL lookup variants) stays unchanged — no
+  caller had to be touched.
+
+  * lib/core/api/anilist_api.dart (AniListApi): 1409 LOC → 132.
+    Now constructs `AniListGraphQLClient` once and forwards every
+    method to `AniListMediaApi`, `AniListMalLookupApi` or
+    `AniListUserListApi`. Re-exports types via
+    `export 'anilist/anilist_types.dart'` so existing imports keep
+    working.
+  * lib/core/api/anilist/anilist_graphql_client.dart
+    (AniListGraphQLClient.post, AniListGraphQLClient.unwrapData,
+    AniListGraphQLClient.logErrors,
+    AniListGraphQLClient._mapDioException,
+    AniListGraphQLClient._parseRetryAfter): New. The single place
+    that talks to `https://graphql.anilist.co` and converts
+    `DioException` into typed AniList exceptions.
+  * lib/core/api/anilist/anilist_queries.dart (AniListQueries,
+    aniListMaxPerPage, aniListBatches): New. Holds the eight
+    GraphQL strings as `static const`, the shared
+    `perPage` cap, and the shared batching iterator reused by both
+    media and MAL lookups.
+  * lib/core/api/anilist/anilist_media_parser.dart
+    (AniListMediaParser.animePage, AniListMediaParser.mangaPage,
+    AniListMediaParser.fuzzyDate): New. Pure
+    `Page { media }` decoders plus fuzzy-date parsing.
+  * lib/core/api/anilist/anilist_media_api.dart (AniListMediaApi.searchManga,
+    AniListMediaApi.browseManga, AniListMediaApi.browseAnime,
+    AniListMediaApi.getMangaById, AniListMediaApi.getAnimeById,
+    AniListMediaApi.getMangaByIds, AniListMediaApi.getAnimeByIds):
+    New. Search, browse and id-lookup endpoints for both media
+    types.
+  * lib/core/api/anilist/anilist_mal_lookup_api.dart
+    (AniListMalLookupApi.getAnimeByMalIds,
+    AniListMalLookupApi.getMangaByMalIds,
+    AniListMalLookupApi.getAnimeByMalIdsTolerant,
+    AniListMalLookupApi.getMangaByMalIdsTolerant,
+    AniListMalLookupApi._runBatchWithRetry): New. Holds the
+    rate-limit retry loop and the failed-id bookkeeping that the
+    MAL importer relies on.
+  * lib/core/api/anilist/anilist_user_list_api.dart
+    (AniListUserListApi.fetchUserMediaList,
+    AniListUserListApi._translateUserErrors,
+    AniListUserListApi._parseListEntry): New. `MediaListCollection`
+    fetcher, custom-list dedup and `isAdult` filter.
+  * lib/core/api/anilist/anilist_types.dart (AniListApiException,
+    AniListRateLimitException, AniListUserNotFoundException,
+    AniListPrivateProfileException, AniListMalLookupResult,
+    AniListListEntry): New. Exceptions and data classes shared by
+    every layer.
+  * lib/core/api/anilist/README.md: New. Layer map, AniList docs
+    link, batching/rate-limit/error-mapping notes.
+  * lib/features/search/filters/anilist_genre_filter.dart
+    (AniListGenreFilter): Accepts `forAnime` and switches
+    `cacheKey` between `genre_anilist_anime` and `genre_anilist`.
+  * lib/features/search/filters/anilist_anime_genre_filter.dart
+    (AniListAnimeGenreFilter): Removed; the manga and anime
+    variants shared 69 identical lines apart from `cacheKey`.
+  * lib/features/search/sources/anilist_anime_source.dart
+    (AniListAnimeSource.filters): Use
+    `AniListGenreFilter(forAnime: true)` instead of the deleted
+    sibling class.
+  * lib/shared/models/anime.dart (Anime.fromJson),
+    lib/shared/models/manga.dart (Manga.fromJson): Stop reading
+    `meanScore`, `popularity`, `season`, `seasonYear`,
+    `nextAiringEpisode.airingAt` (anime) and `countryOfOrigin`
+    (manga). The fields and their DB columns stay nullable for
+    backward compatibility with existing rows.
+  * test/shared/models/anime_test.dart,
+    test/shared/models/manga_test.dart: Drop the assertions for
+    fields that no longer round-trip through `fromJson`.
+  * test/features/search/filters/anilist_genre_filter_test.dart:
+    Add a case for `forAnime: true` producing the anime cacheKey.
+
 - **Split the wishlist screen god class**
 
   `_WishlistScreenState` shed its tag-header chrome, item tile, and

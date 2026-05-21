@@ -9,8 +9,8 @@ import '../../../shared/models/anime.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../filters/anilist_anime_format_filter.dart';
-import '../filters/anilist_anime_genre_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
+import '../filters/anilist_genre_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 
@@ -48,7 +48,7 @@ class AniListAnimeSource extends SearchSource {
 
   @override
   List<SearchFilter> get filters => <SearchFilter>[
-        AniListAnimeGenreFilter(),
+        AniListGenreFilter(forAnime: true),
         AniListAnimeStatusFilter(),
         AniListAnimeFormatFilter(),
         YearFilter(),
