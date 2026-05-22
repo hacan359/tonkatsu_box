@@ -26,6 +26,7 @@
 > [!WARNING]
 > **This app is in active development.** Updates may include database migrations that change data format. Please **create a backup** before updating (Settings → Backup → Create Backup). Alternatively, you can manually copy the app data folder:
 > - **Windows:** `%APPDATA%\Roaming\Tonkatsu Box\Tonkatsu Box`
+> - **Linux:** `~/.local/share/tonkatsu_box` (or `$XDG_DATA_HOME/tonkatsu_box`)
 > - **Android:** use the built-in backup feature (Settings → Backup)
 
 ---
@@ -63,14 +64,16 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | | |
 |---|---|
 | **Collections** | Organize by platform, genre, or any way you like. Grid, list, and table views |
+| **Wishlist** | Dedicated top-level list for what you want to play, watch, or read next |
 | **Search** | IGDB (games), TMDB (movies/TV), AniList (anime & manga), VNDB (visual novels) |
 | **Progress Tracking** | Status, ratings 1-10, episode tracking for TV shows and anime |
 | **Discord Rich Presence** | Show what you're playing/watching/reading in Discord (desktop) |
 | **Visual Boards** | Drag-and-drop canvas with posters, notes, and connections |
 | **Tier Lists & Mood Grids** | Rank items into S/A/B/C tiers, or arrange them on a visual N×M board with labels — export either as PNG |
 | **Import** | Steam library, Trakt.tv history, RetroAchievements progress, MyAnimeList XML, AniList by username |
+| **Kodi Sync** | Push movies, TV shows, and anime to a Kodi media server over JSON-RPC |
 | **Export & Share** | .xcoll / .xcollx files with full offline support |
-| **Gamepad** | Navigate with Xbox controller |
+| **Gamepad** | Navigate with Xbox controller (desktop and Android handhelds) |
 | **Languages** | English & Russian |
 
 ## Download
@@ -135,8 +138,9 @@ Already tracking elsewhere? Bring your data:
 | Visual boards | ✅ | ✅ | ✅ |
 | Tier lists | ✅ | ✅ | ✅ |
 | Import (Steam/Trakt/RA) | ✅ | ✅ | ✅ |
+| Kodi sync | ✅ | ✅ | ✅ |
 | VGMaps browser | ✅ | — | — |
-| Gamepad | ✅ | ✅ | — |
+| Gamepad | ✅ | ✅ | ✅ |
 | Discord Rich Presence | ✅ | ✅ | — |
 
 ## Documentation
