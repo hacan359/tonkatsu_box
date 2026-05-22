@@ -2,8 +2,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Cache tables (games/movies/...) stay canonical with API titles; the
-/// per-item rename is stored here so a re-fetch of the API row can't wipe it.
+// override_name lives on collection_items (not cache tables) so an API refetch
+// of the canonical title can't wipe the user's rename.
 class MigrationV39 extends Migration {
   @override
   int get version => 39;

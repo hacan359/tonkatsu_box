@@ -7,6 +7,25 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Fixed
+
+- **Stop the database from opening twice during startup**
+
+  On cold start several providers may touch the `database` getter
+  before the first `_initDatabase` future has settled. The previous
+  cache-on-completion logic let each caller kick off its own open,
+  and the second one would race `onUpgrade` and crash a non-idempotent
+  migration (e.g. `ALTER TABLE … ADD COLUMN` saw the column already
+  added by the first runner). The getter now single-flights: the
+  first call assigns the in-flight future to `_opening`, every
+  concurrent caller awaits the same future, and `_opening` is cleared
+  on success (after `_database` is set) or on error (so a failed open
+  can be retried).
+
+  * lib/core/database/database_service.dart (DatabaseService.database,
+    DatabaseService._opening): Replace the cache-on-completion getter
+    with a single-flight pattern guarded by `_opening`.
+
 ### Added
 
 - **Refresh a collection item from its source API on demand**

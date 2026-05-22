@@ -2,21 +2,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Migration v38: backfill `platform_id` on legacy tracker_game_data rows.
-///
-/// v37 added the `platform_id` column but left every existing row with
-/// NULL — the value isn't recoverable from RA without an API round-trip.
-/// We can do better locally: the user's own `collection_items` already
-/// carry the IGDB platform id for the same game. For each NULL tracker
-/// row we look at the matching `collection_items` rows and:
-///
-///   * exactly one distinct platform → set `platform_id` to that;
-///   * zero or >1 distinct platforms → delete the NULL tracker row, since
-///     it can't be unambiguously attributed and would otherwise bleed
-///     across platform installs via the legacy fallback lookup.
-///
-/// Trivial cost (single in-process SQL run) and idempotent — only NULL
-/// rows are touched, so re-running the migration is a no-op.
 class MigrationV38 extends Migration {
   @override
   int get version => 38;
@@ -27,9 +12,8 @@ class MigrationV38 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    // Resolve unambiguous platforms in a single statement: an UPDATE that
-    // joins via subquery and only fires when COUNT(DISTINCT platform_id)
-    // is exactly 1.
+    // Only backfill when collection_items has exactly one platform for the game;
+    // multiple platforms would bleed RA progress across installs.
     await db.execute('''
       UPDATE tracker_game_data
       SET platform_id = (
@@ -49,9 +33,8 @@ class MigrationV38 extends Migration {
         ) = 1
     ''');
 
-    // Anything still NULL is ambiguous (no matching items, or multiple
-    // platforms). Drop the row so the legacy fallback lookup can't leak
-    // it across platform installs of the same IGDB game.
+    // Ambiguous rows get dropped — keeping them would let the legacy fallback
+    // leak progress across platform installs of the same IGDB game.
     final List<Map<String, Object?>> orphans = await db.query(
       'tracker_game_data',
       columns: <String>['tracker_type', 'tracker_game_id'],
@@ -67,8 +50,7 @@ class MigrationV38 extends Migration {
       where: 'platform_id IS NULL',
     );
 
-    // Drop the orphan achievements rows too — they're keyed by
-    // `(tracker_type, tracker_game_id)` and have no parent left.
+    // tracker_achievements has no FK to tracker_game_data, so cascade by hand.
     for (final String key in orphanKeys) {
       final List<String> parts = key.split('|');
       final String type = parts[0];

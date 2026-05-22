@@ -117,11 +117,22 @@ class DatabaseService {
   static final Logger _log = Logger('DatabaseService');
 
   Database? _database;
+  Future<Database>? _opening;
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+  /// Single-flight: concurrent first-touch callers share one [_initDatabase]
+  /// future so non-idempotent migrations (e.g. `ALTER TABLE ADD COLUMN`) can't race.
+  Future<Database> get database {
+    final Database? cached = _database;
+    if (cached != null) return Future<Database>.value(cached);
+    return _opening ??= () async {
+      try {
+        final Database db = await _initDatabase();
+        _database = db;
+        return db;
+      } finally {
+        _opening = null;
+      }
+    }();
   }
 
   late final GameDao gameDao = GameDao(() => database);
