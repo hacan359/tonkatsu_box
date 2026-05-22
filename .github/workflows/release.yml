@@ -28,7 +28,10 @@ jobs:
 
   build-windows:
     name: Build Windows
-    runs-on: windows-latest
+    # Pin to VS 2022. GitHub migrated windows-latest to VS 2026 in June 2026,
+    # whose MSVC 14.51 toolchain removed <experimental/coroutine>; gal 2.3.2
+    # and webview_windows 0.4.0 still depend on it and have no upstream fix.
+    runs-on: windows-2022
     needs: quality-gate
     steps:
       - uses: actions/checkout@v4
