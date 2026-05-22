@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-05-22
+
 ### Fixed
 
 - **Stop the database from opening twice during startup**
