@@ -118,6 +118,35 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Split IgdbApi god class into layered files under `core/api/igdb/`**
+
+  The 770-line `IgdbApi` is now a thin facade that delegates to four focused
+  sub-APIs (transport+auth, games, platforms, genres) plus a shared types
+  file. Public method signatures, constructor, provider and exception types
+  are preserved 1:1, so all 18 call sites and 9 test files keep working
+  without changes. Same pattern as the earlier AniList split.
+
+  * lib/core/api/igdb_api.dart (IgdbApi): Rewritten as a facade that
+    forwards `setCredentials`, `clearCredentials`, `getAccessToken`,
+    `validateCredentials`, `fetchPlatforms`, `fetchPlatformsByIds`,
+    `searchGames`, `multiSearchGamesByName`, `lookupSteamGames`,
+    `getGameById`, `getGamesByIds`, `getTopGamesByPlatform`, `browseGames`,
+    `fetchGenres`, `dispose`, `onTokenRefreshed` and `maxMultiQueryBatch`
+    to the sub-APIs.
+  * lib/core/api/igdb/igdb_http_client.dart (IgdbHttpClient): New.
+    Owns Dio, credential state, Twitch OAuth (`getAccessToken`,
+    `validateCredentials`), `post` with retry-on-401, `_tryRefreshToken`
+    guarded by `_isRefreshing`, `handleDioException`, `ensureCredentials`.
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi): New. Holds
+    `_gameFields`, `maxMultiQueryBatch`, `_multiSearchLimit`,
+    `_steamSource` and all game-domain methods.
+  * lib/core/api/igdb/igdb_platforms_api.dart (IgdbPlatformsApi),
+    igdb_genres_api.dart (IgdbGenresApi),
+    igdb_types.dart (TwitchAuthResult, IgdbApiException,
+    IgdbTokenRefreshedCallback): New, extracted as-is.
+  * lib/core/api/igdb/README.md: New. Documents the layer breakdown and
+    callouts on OAuth refresh, multiquery cap, Steam two-step lookup.
+
 - **Replace raw collection dropdowns with the shared picker field**
 
   All places where the user picked one collection from a form

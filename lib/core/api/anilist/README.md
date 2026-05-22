@@ -1,27 +1,27 @@
 # AniList API
 
-GraphQL-клиент AniList. Публичный endpoint, без авторизации, лимит ~90 req/min.
+GraphQL client for AniList. Public endpoint, no auth, rate-limited at ~90 req/min.
 
 - Docs: https://anilist.gitbook.io/anilist-apiv2-docs
 - Endpoint: `https://graphql.anilist.co`
 
-## Слои
+## Layers
 
-| Файл | Назначение |
+| File | Purpose |
 |---|---|
-| `../anilist_api.dart` | Фасад. Точка входа для остального кода (`aniListApiProvider`). |
-| `anilist_types.dart` | Исключения и data-классы (`AniListListEntry`, `AniListMalLookupResult`). |
-| `anilist_queries.dart` | GraphQL-запросы как `static const`. Поля подобраны под реальное использование. |
-| `anilist_graphql_client.dart` | Dio + маппинг ошибок Dio → `AniListApiException` / `AniListRateLimitException`. |
-| `anilist_media_parser.dart` | Чистые парсеры `Page { media }` и fuzzy-дат. |
-| `anilist_media_api.dart` | Поиск, бровзинг и получение по id для аниме и манги. |
-| `anilist_mal_lookup_api.dart` | MAL id → AniList media. `*Tolerant` варианты переживают rate-limit и сообщают список несрезолвленных id. |
-| `anilist_user_list_api.dart` | `MediaListCollection` — публичные списки пользователя (anime/manga). |
+| `../anilist_api.dart` | Facade. Entry point for the rest of the code (`aniListApiProvider`). |
+| `anilist_types.dart` | Exceptions and data classes (`AniListListEntry`, `AniListMalLookupResult`). |
+| `anilist_queries.dart` | GraphQL queries as `static const`. Fields are pinned to actual usage. |
+| `anilist_graphql_client.dart` | Dio + Dio → `AniListApiException` / `AniListRateLimitException` mapping. |
+| `anilist_media_parser.dart` | Pure parsers for `Page { media }` and fuzzy dates. |
+| `anilist_media_api.dart` | Search, browse and get-by-id for anime and manga. |
+| `anilist_mal_lookup_api.dart` | MAL id → AniList media. `*Tolerant` variants survive rate-limits and report the unresolved ids. |
+| `anilist_user_list_api.dart` | `MediaListCollection` — public user lists (anime/manga). |
 
-## Ключевые моменты
+## Key points
 
-- **Батчинг.** AniList ограничивает `perPage` 50 элементов — см. `aniListMaxPerPage` в `anilist_queries.dart`. Запросы списком id режутся на батчи автоматически.
-- **Rate limit.** HTTP 429 превращается в `AniListRateLimitException` с распарсенным `retryAfter` (`Retry-After` → `X-RateLimit-Reset` → 60s по умолчанию). `*Tolerant`-методы в MAL lookup ждут и повторяют батч до `maxRateLimitRetries` раз, остальные пробрасывают наверх.
-- **GraphQL-ошибки приходят с HTTP 200.** Их разбирает caller через `unwrapData` / `logErrors`. В user-list дополнительно разбираются сообщения `"not found"` / `"private"` → типизированные исключения.
-- **User lists.** Custom lists скипаются (дублируют записи из канонических). `isAdult: true` фильтруется.
-- **Поля в запросах.** В запросах оставлены только поля, которые реально читаются в UI/моделях. Старые колонки БД (`mean_score`, `popularity`, `season`, `season_year`, `country_of_origin`, `next_airing_at`) сохранены для совместимости со старыми записями, но из API больше не приходят.
+- **Batching.** AniList caps `perPage` at 50 — see `aniListMaxPerPage` in `anilist_queries.dart`. Id-list queries are batched automatically.
+- **Rate limit.** HTTP 429 becomes `AniListRateLimitException` with a parsed `retryAfter` (`Retry-After` → `X-RateLimit-Reset` → 60s default). The `*Tolerant` methods in MAL lookup wait and retry the batch up to `maxRateLimitRetries` times; the rest propagate the exception upward.
+- **GraphQL errors come back with HTTP 200.** They're unwrapped by the caller via `unwrapData` / `logErrors`. User-list lookups also classify `"not found"` / `"private"` messages into typed exceptions.
+- **User lists.** Custom lists are skipped (they duplicate entries from the canonical lists). `isAdult: true` entries are filtered out.
+- **Query fields.** Queries only request fields the UI / models actually read. Legacy DB columns (`mean_score`, `popularity`, `season`, `season_year`, `country_of_origin`, `next_airing_at`) are kept for compatibility with old rows but are no longer fetched from the API.
