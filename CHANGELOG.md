@@ -75,6 +75,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     `dualDatePickerInputLabel`, `dualDatePickerOk`, `dualDatePickerCancel`,
     `dualDatePickerErrorEmpty`, `dualDatePickerErrorFormat`,
     `dualDatePickerErrorRange`.
+
 ### Fixed
 
 - **Fix external links not opening on Android 11+**
