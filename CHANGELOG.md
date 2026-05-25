@@ -7,6 +7,22 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Fixed
+
+- **Fix external links not opening on Android 11+**
+
+  Buttons and links that should open a browser, mail client or dialer
+  did nothing on Android. Starting with Android 11, apps must declare
+  the intents they want to resolve via `<queries>` in the manifest;
+  the previous manifest only declared `PROCESS_TEXT`, so
+  `url_launcher`'s `canLaunchUrl` / `launchUrl` calls saw zero matching
+  activities for `http` / `https` / `mailto` / `tel` and silently
+  failed. The manifest now declares the standard `VIEW` intents for
+  http and https, `SENDTO` for mailto, and `DIAL` for tel.
+
+  * android/app/src/main/AndroidManifest.xml: Add `VIEW` (http, https),
+    `SENDTO` (mailto), `DIAL` (tel) intents to the `<queries>` block.
+
 ## [0.30.0] - 2026-05-22
 
 ### Fixed
