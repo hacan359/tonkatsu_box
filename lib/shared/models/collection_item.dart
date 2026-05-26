@@ -441,6 +441,21 @@ class CollectionItem with Exportable {
     return overrideName ?? _resolvedMedia.name ?? fallback;
   }
 
+  /// AniList-aware display name. `overrideName` wins; for anime/manga the
+  /// preferred language from settings drives the title, with a fallback to
+  /// romaji.
+  String displayName(String animeMangaTitleLanguage) {
+    if (overrideName != null) return overrideName!;
+    switch (mediaType) {
+      case MediaType.anime:
+        return anime?.titleByLanguage(animeMangaTitleLanguage) ?? itemName;
+      case MediaType.manga:
+        return manga?.titleByLanguage(animeMangaTitleLanguage) ?? itemName;
+      default:
+        return itemName;
+    }
+  }
+
   /// Cached API title (joined media name), without applying [overrideName].
   /// Used by the rename UI to show the original next to the editable field.
   String? get cachedName => _resolvedMedia.name;

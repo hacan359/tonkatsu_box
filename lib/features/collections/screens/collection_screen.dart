@@ -425,10 +425,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       searchQuery: searchQuery,
     );
 
+    final String anilistLang =
+        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     final Widget itemsView = itemsAsync.when(
       data: (List<CollectionItem> items) => CollectionItemsView(
         collectionId: widget.collectionId,
-        items: filters.apply(items, tags),
+        items: filters.apply(
+          items,
+          tags,
+          animeMangaTitleLanguage: anilistLang,
+        ),
         tags: tags,
         filterTagIds: _filterTagIds,
         groupByTags: _groupByTags,

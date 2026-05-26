@@ -20,8 +20,9 @@ class CollectionFilters {
 
   List<CollectionItem> apply(
     List<CollectionItem> items,
-    List<CollectionTag> tags,
-  ) {
+    List<CollectionTag> tags, {
+    String animeMangaTitleLanguage = 'romaji',
+  }) {
     List<CollectionItem> result = items;
 
     if (mediaTypes.isNotEmpty) {
@@ -60,7 +61,10 @@ class CollectionFilters {
     return result
         .where(
           (CollectionItem item) =>
-              item.itemName.toLowerCase().contains(query) ||
+              item
+                      .displayName(animeMangaTitleLanguage)
+                      .toLowerCase()
+                      .contains(query) ||
               (item.tagId != null &&
                   (tagNames[item.tagId]?.contains(query) ?? false)) ||
               (item.userComment?.toLowerCase().contains(query) ?? false) ||

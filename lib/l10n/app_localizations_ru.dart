@@ -2497,6 +2497,22 @@ class SRu extends S {
   String get settingsDateFormatSubtitle => 'Как отображаются даты в приложении';
 
   @override
+  String get settingsAnimeMangaTitleLanguage => 'Язык названий аниме и манги';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageSubtitle =>
+      'Какое название показывать для аниме и манги';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageRomaji => 'Romaji';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageEnglish => 'English';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageNative => 'Native';
+
+  @override
   String get dualDatePickerInputLabel => 'Дата';
 
   @override

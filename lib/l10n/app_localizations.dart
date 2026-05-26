@@ -4435,6 +4435,36 @@ abstract class S {
   /// **'How dates are shown across the app'**
   String get settingsDateFormatSubtitle;
 
+  /// No description provided for @settingsAnimeMangaTitleLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime & manga title language'**
+  String get settingsAnimeMangaTitleLanguage;
+
+  /// No description provided for @settingsAnimeMangaTitleLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title shown for anime and manga'**
+  String get settingsAnimeMangaTitleLanguageSubtitle;
+
+  /// No description provided for @settingsAnimeMangaTitleLanguageRomaji.
+  ///
+  /// In en, this message translates to:
+  /// **'Romaji'**
+  String get settingsAnimeMangaTitleLanguageRomaji;
+
+  /// No description provided for @settingsAnimeMangaTitleLanguageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsAnimeMangaTitleLanguageEnglish;
+
+  /// No description provided for @settingsAnimeMangaTitleLanguageNative.
+  ///
+  /// In en, this message translates to:
+  /// **'Native'**
+  String get settingsAnimeMangaTitleLanguageNative;
+
   /// No description provided for @dualDatePickerInputLabel.
   ///
   /// In en, this message translates to:

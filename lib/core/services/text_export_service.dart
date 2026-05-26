@@ -28,23 +28,37 @@ class TextExportService {
   ];
 
   /// Применяет шаблон ко всем элементам и возвращает текст.
-  String applyTemplate(String template, List<CollectionItem> items) {
+  String applyTemplate(
+    String template,
+    List<CollectionItem> items, {
+    String animeMangaTitleLanguage = 'romaji',
+  }) {
     final StringBuffer buffer = StringBuffer();
     for (int i = 0; i < items.length; i++) {
       if (i > 0) buffer.writeln();
-      buffer.write(formatItem(template, items[i], i + 1));
+      buffer.write(formatItem(
+        template,
+        items[i],
+        i + 1,
+        animeMangaTitleLanguage: animeMangaTitleLanguage,
+      ));
     }
     return buffer.toString();
   }
 
   /// Форматирует один элемент по шаблону.
-  String formatItem(String template, CollectionItem item, int index) {
+  String formatItem(
+    String template,
+    CollectionItem item,
+    int index, {
+    String animeMangaTitleLanguage = 'romaji',
+  }) {
     // Подставляем значения токенов
     String line = template;
 
     // Собираем значения для каждого токена
     final Map<String, String?> values = <String, String?>{
-      'name': item.itemName,
+      'name': item.displayName(animeMangaTitleLanguage),
       'year': item.releaseYear?.toString(),
       'rating': _formatApiRating(item.apiRating),
       'myRating': item.userRating?.toString(),

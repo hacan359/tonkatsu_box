@@ -22,6 +22,7 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart' show ShimmerPosterCard;
 import '../../../shared/models/collected_item_info.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../providers/browse_provider.dart';
 
 /// Множества ID элементов, которые уже есть в коллекциях.
@@ -133,6 +134,10 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   @override
   Widget build(BuildContext context) {
     final BrowseState state = ref.watch(browseProvider);
+    final String animeMangaTitleLanguage = ref.watch(
+      settingsNotifierProvider
+          .select((SettingsState s) => s.animeMangaTitleLanguage),
+    );
     final S l = S.of(context);
 
     // Auto-load more if content doesn't fill the viewport.
@@ -239,7 +244,9 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       final String query = clientFilter.toLowerCase();
       displayItems = state.items
           .where((Object item) =>
-              _extractTitle(item).toLowerCase().contains(query))
+              _extractTitle(item, animeMangaTitleLanguage)
+                  .toLowerCase()
+                  .contains(query))
           .toList();
     } else {
       displayItems = state.items;
@@ -266,9 +273,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         }
 
         final Object item = displayItems[index];
-        return _buildCard(
-            item, state.source.outputMediaType, tmdbIds, gameIds, vnIds,
-            mangaIds, animeIds, variant);
+        return _buildCard(item, state.source.outputMediaType, tmdbIds, gameIds,
+            vnIds, mangaIds, animeIds, variant, animeMangaTitleLanguage);
       },
     );
   }
@@ -282,6 +288,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Set<int> mangaIds,
     Set<int> animeIds,
     CardVariant variant,
+    String animeMangaTitleLanguage,
   ) {
     VoidCallback? openCallback(int externalId, bool inCollection) {
       if (!inCollection || widget.onOpenInCollection == null) return null;
@@ -361,7 +368,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       final bool inColl = mangaIds.contains(item.id);
       return MediaPosterCard(
         variant: variant,
-        title: item.title,
+        title: item.titleByLanguage(animeMangaTitleLanguage),
         imageUrl: item.coverUrl ?? '',
         cacheImageType: ImageType.mangaCover,
         cacheImageId: item.id.toString(),
@@ -378,7 +385,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       final bool inColl = animeIds.contains(item.id);
       return MediaPosterCard(
         variant: variant,
-        title: item.title,
+        title: item.titleByLanguage(animeMangaTitleLanguage),
         imageUrl: item.coverUrl ?? '',
         cacheImageType: ImageType.animeCover,
         cacheImageId: item.id.toString(),
@@ -409,13 +416,13 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   }
 
   /// Извлекает название из элемента для клиентской фильтрации.
-  static String _extractTitle(Object item) {
+  static String _extractTitle(Object item, String animeMangaTitleLanguage) {
     if (item is Game) return item.name;
     if (item is Movie) return item.title;
     if (item is TvShow) return item.title;
     if (item is VisualNovel) return item.title;
-    if (item is Manga) return item.title;
-    if (item is Anime) return item.title;
+    if (item is Manga) return item.titleByLanguage(animeMangaTitleLanguage);
+    if (item is Anime) return item.titleByLanguage(animeMangaTitleLanguage);
     return '';
   }
 

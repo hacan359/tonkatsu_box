@@ -12,6 +12,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../collections/extensions/item_display_name.dart';
 
 /// Debug-экран для проверки URL изображений.
 ///
@@ -133,13 +134,13 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
 }
 
 /// Плитка отладки изображения элемента.
-class _ImageDebugTile extends StatelessWidget {
+class _ImageDebugTile extends ConsumerWidget {
   const _ImageDebugTile({required this.item});
 
   final CollectionItem item;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
@@ -166,7 +167,7 @@ class _ImageDebugTile extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    item.itemName,
+                    ref.displayNameOf(item),
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

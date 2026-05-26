@@ -12,6 +12,7 @@ enum ItemDetailMenuAction { refresh, rename, move, clone, remove }
 class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ItemDetailAppBar({
     required this.item,
+    required this.displayName,
     required this.isEditable,
     required this.hasCanvas,
     required this.showCanvas,
@@ -24,6 +25,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   final CollectionItem item;
+  final String displayName;
   final bool isEditable;
   final bool hasCanvas;
   final bool showCanvas;
@@ -44,7 +46,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     final S l = S.of(context);
     final ThemeData theme = Theme.of(context);
     return ScreenAppBar(
-      title: item.itemName,
+      title: displayName,
       actions: <Widget>[
         if (isEditable && hasCanvas && showCanvas)
           IconButton(

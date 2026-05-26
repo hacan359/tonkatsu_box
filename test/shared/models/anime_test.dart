@@ -354,5 +354,45 @@ void main() {
         expect(exported['id'], 1);
       });
     });
+
+    group('titleByLanguage', () {
+      const Anime full = Anime(
+        id: 1,
+        title: 'Romaji Title',
+        titleEnglish: 'English Title',
+        titleNative: 'ネイティブ',
+      );
+
+      test('returns romaji when lang=romaji', () {
+        expect(full.titleByLanguage('romaji'), 'Romaji Title');
+      });
+
+      test('returns english when lang=english', () {
+        expect(full.titleByLanguage('english'), 'English Title');
+      });
+
+      test('returns native when lang=native', () {
+        expect(full.titleByLanguage('native'), 'ネイティブ');
+      });
+
+      test('falls back to romaji when english is missing', () {
+        const Anime a = Anime(id: 1, title: 'R', titleNative: 'N');
+        expect(a.titleByLanguage('english'), 'R');
+      });
+
+      test('falls back to romaji when native is missing', () {
+        const Anime a = Anime(id: 1, title: 'R', titleEnglish: 'E');
+        expect(a.titleByLanguage('native'), 'R');
+      });
+
+      test('unknown lang code falls back to romaji', () {
+        expect(full.titleByLanguage('klingon'), 'Romaji Title');
+      });
+
+      test('treats empty english as missing', () {
+        const Anime a = Anime(id: 1, title: 'R', titleEnglish: '');
+        expect(a.titleByLanguage('english'), 'R');
+      });
+    });
   });
 }

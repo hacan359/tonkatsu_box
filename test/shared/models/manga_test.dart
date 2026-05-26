@@ -647,5 +647,36 @@ void main() {
         expect(manga.toString(), 'Manga(id: 30013, title: One Punch-Man)');
       });
     });
+
+    group('titleByLanguage', () {
+      const Manga full = Manga(
+        id: 1,
+        title: 'Romaji Title',
+        titleEnglish: 'English Title',
+        titleNative: 'ネイティブ',
+      );
+
+      test('returns romaji when lang=romaji', () {
+        expect(full.titleByLanguage('romaji'), 'Romaji Title');
+      });
+
+      test('returns english when lang=english', () {
+        expect(full.titleByLanguage('english'), 'English Title');
+      });
+
+      test('returns native when lang=native', () {
+        expect(full.titleByLanguage('native'), 'ネイティブ');
+      });
+
+      test('falls back to romaji when requested variant missing', () {
+        const Manga a = Manga(id: 1, title: 'R');
+        expect(a.titleByLanguage('english'), 'R');
+        expect(a.titleByLanguage('native'), 'R');
+      });
+
+      test('unknown lang code falls back to romaji', () {
+        expect(full.titleByLanguage('klingon'), 'Romaji Title');
+      });
+    });
   });
 }

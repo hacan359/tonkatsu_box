@@ -421,7 +421,13 @@ class CollectionItemsNotifier
     CollectionSortMode sortMode, {
     bool isDescending = false,
   }) {
-    return applySortMode(items, sortMode, isDescending: isDescending);
+    final String lang = ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
+    return applySortMode(
+      items,
+      sortMode,
+      isDescending: isDescending,
+      animeMangaTitleLanguage: lang,
+    );
   }
 
   /// Optimistic in-state update; avoids full reload.

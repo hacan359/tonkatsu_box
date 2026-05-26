@@ -1,6 +1,7 @@
 // Плитка элемента коллекции для list-режима CollectionScreen.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -11,6 +12,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/dual_rating_badge.dart';
+import '../extensions/item_display_name.dart';
 import 'status_ribbon.dart';
 
 /// Плитка элемента в коллекции (list mode).
@@ -18,7 +20,7 @@ import 'status_ribbon.dart';
 /// Показывает обложку, название, подзаголовок, рейтинги, описание,
 /// авторский комментарий и личные заметки. Поддерживает drag handle
 /// для ручной сортировки и контекстное меню (move/remove).
-class CollectionItemTile extends StatelessWidget {
+class CollectionItemTile extends ConsumerWidget {
   /// Создаёт [CollectionItemTile].
   const CollectionItemTile({
     required this.item,
@@ -65,7 +67,8 @@ class CollectionItemTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String displayName = ref.displayNameOf(item);
     return GestureDetector(
       onSecondaryTapUp: onSecondaryTap != null
           ? (TapUpDetails details) =>
@@ -132,7 +135,7 @@ class CollectionItemTile extends StatelessWidget {
                       children: <Widget>[
                         // Название
                         Text(
-                          item.itemName,
+                          displayName,
                           style: AppTypography.h3,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

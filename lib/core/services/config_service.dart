@@ -88,6 +88,7 @@ class ConfigService {
     SettingsKeys.defaultAuthor,
     SettingsKeys.tmdbLanguage,
     SettingsKeys.dateFormat,
+    SettingsKeys.animeMangaTitleLanguage,
   ];
 
   /// Ключи с int-значениями.

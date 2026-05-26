@@ -12,6 +12,7 @@ List<CollectionItem> applySortMode(
   List<CollectionItem> items,
   CollectionSortMode sortMode, {
   bool isDescending = false,
+  String animeMangaTitleLanguage = 'romaji',
 }) {
   final List<CollectionItem> sorted = List<CollectionItem>.of(items);
   switch (sortMode) {
@@ -32,12 +33,17 @@ List<CollectionItem> applySortMode(
         final int cmp =
             a.status.statusSortPriority.compareTo(b.status.statusSortPriority);
         if (cmp != 0) return cmp;
-        return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
+        return a
+            .displayName(animeMangaTitleLanguage)
+            .toLowerCase()
+            .compareTo(b.displayName(animeMangaTitleLanguage).toLowerCase());
       });
     case CollectionSortMode.name:
       sorted.sort(
-        (CollectionItem a, CollectionItem b) =>
-            a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase()),
+        (CollectionItem a, CollectionItem b) => a
+            .displayName(animeMangaTitleLanguage)
+            .toLowerCase()
+            .compareTo(b.displayName(animeMangaTitleLanguage).toLowerCase()),
       );
     case CollectionSortMode.rating:
       sorted.sort((CollectionItem a, CollectionItem b) {

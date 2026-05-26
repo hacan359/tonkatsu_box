@@ -98,7 +98,8 @@ class TierListView extends ConsumerWidget {
           items: filterQuery.isEmpty
               ? state.unrankedItems
               : state.unrankedItems
-                    .where((CollectionItem item) => item.itemName
+                    .where((CollectionItem item) => item
+                        .displayName(settings.animeMangaTitleLanguage)
                         .toLowerCase()
                         .contains(filterQuery.toLowerCase()))
                     .toList(),

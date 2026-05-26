@@ -132,7 +132,14 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
           sortMode == CollectionSortMode.manual
               ? CollectionSortMode.addedDate
               : sortMode;
-      return applySortMode(items, effectiveMode, isDescending: isDescending);
+      final String lang =
+          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
+      return applySortMode(
+        items,
+        effectiveMode,
+        isDescending: isDescending,
+        animeMangaTitleLanguage: lang,
+      );
     });
   }
 

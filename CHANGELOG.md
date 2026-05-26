@@ -9,6 +9,104 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Add anime & manga title-language setting with override-aware rename**
+
+  Settings → Appearance gains a new "Anime & manga title language"
+  option with three variants — Romaji / English / Native. The choice
+  drives the title shown for anime and manga across the whole app:
+  collection lists, table, item detail, All items home tab, tier
+  lists, mood-grid picker, snackbars, exports, Discord RPC, and the
+  search results grid / details sheet. Per-item rename override (set
+  via the rename dialog) always wins regardless of the setting. The
+  rename dialog for anime/manga also surfaces Romaji / English /
+  Native chips so users can pick a variant without typing. Storage is
+  unchanged — both manual override (`override_name` column) and the
+  three AniList title columns (`title`, `title_english`,
+  `title_native`) already exist; the setting is a pure display layer
+  and is included in the config export / import.
+
+  * lib/shared/utils/anime_manga_title_language.dart
+    (AnimeMangaTitleLanguage, AnimeMangaTitleLanguage.fromId,
+    pickAnimeMangaTitle): New enum + pure picker with fallback chain
+    (romaji is the universal fallback because AniList always returns
+    it).
+  * lib/shared/models/anime.dart (Anime.titleByLanguage),
+    lib/shared/models/manga.dart (Manga.titleByLanguage): Return the
+    requested variant with a fallback to romaji.
+  * lib/shared/models/collection_item.dart (CollectionItem.displayName):
+    Override wins; for anime / manga delegates to `titleByLanguage`;
+    for other media types returns `itemName`.
+  * lib/features/collections/extensions/item_display_name.dart
+    (CollectionItemDisplay on WidgetRef, displayNameOf,
+    currentDisplayNameOf): New extension — `watch`-based getter for
+    `build` and `read`-based snapshot for async handlers. Replaces an
+    earlier provider-family approach that cached stale values after
+    rename because `CollectionItem.==` is id-only.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.animeMangaTitleLanguage,
+    SettingsKeys.animeMangaTitleLanguageDefault,
+    SettingsState.animeMangaTitleLanguage,
+    SettingsNotifier.setAnimeMangaTitleLanguage,
+    SettingsNotifier._loadFromPrefs, SettingsNotifier.clearSettings,
+    AnimeMangaTitleLanguagePrefs on SharedPreferences): Persist and
+    expose the chosen language id. The `SharedPreferences` extension
+    is for non-UI code (services, sort, filter) that mustn't depend
+    on Riverpod notifiers.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._showAnimeMangaTitleLanguagePicker): New
+    tile under Appearance with three radio options.
+  * lib/features/collections/widgets/rename_item_dialog.dart
+    (RenameSuggestion, RenameItemDialog): Accept an optional list of
+    suggestions rendered as `ActionChip`s that prefill the text field.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._renameItem,
+    _ItemDetailScreenState._addAnimeMangaSuggestions): Build Romaji /
+    English / Native suggestions for anime/manga before showing the
+    rename dialog.
+  * lib/features/search/widgets/item_details_sheet.dart
+    (ItemDetailsSheet.anime, ItemDetailsSheet.manga): New
+    `anilistTitleLanguage` parameter; main title uses the setting,
+    subtitle shows romaji when the displayed title is not romaji
+    (canonical reference).
+  * lib/features/search/handlers/media_handlers.dart
+    (MediaHandlerRegistry): Read the current language from
+    `settingsNotifierProvider` for `titleOf` and `sheetBuilder`
+    closures.
+  * lib/features/search/widgets/browse_grid.dart
+    (_BrowseGridState.build, _BrowseGridState._buildCard,
+    _BrowseGridState._extractTitle): Watch the language at build
+    scope; thread it into anime/manga cards and the client-side title
+    filter.
+  * lib/core/services/config_service.dart (ConfigService._settingsKeys):
+    Include `animeMangaTitleLanguage` in the exported settings keys.
+  * lib/features/collections/helpers/collection_actions.dart,
+    collection_filters.dart, providers/sort_utils.dart,
+    providers/collections_provider.dart,
+    screens/collection_screen.dart,
+    widgets/collection_item_tile.dart, collection_items_view.dart,
+    collection_screen/collection_bulk_action_bar.dart,
+    collection_table/collection_table_view.dart,
+    collection_table/table_row.dart, copy_as_text_dialog.dart,
+    item_detail/item_detail_app_bar.dart,
+    lib/features/home/providers/all_items_provider.dart,
+    home/screens/all_items_screen.dart,
+    lib/features/settings/screens/image_debug_screen.dart,
+    lib/features/tier_lists/widgets/mood_grid_item_picker.dart,
+    tier_item_card.dart, tier_list_view.dart,
+    lib/core/services/discord_rpc_service.dart,
+    text_export_service.dart: Switch from `item.itemName` /
+    `ref.watch(itemDisplayNameProvider(item))` to either
+    `ref.displayNameOf(item)` (UI) or `item.displayName(lang)`
+    (services, sort, filter, exports), threading the language value
+    from `settingsNotifierProvider` / `sharedPreferencesProvider`.
+  * lib/l10n/app_en.arb, app_ru.arb (settingsAnimeMangaTitleLanguage,
+    settingsAnimeMangaTitleLanguageSubtitle,
+    settingsAnimeMangaTitleLanguageRomaji,
+    settingsAnimeMangaTitleLanguageEnglish,
+    settingsAnimeMangaTitleLanguageNative): New strings for the
+    setting tile and language picker. Romaji / English / Native are
+    kept latin in both locales — they're system names.
+
 - **Add a date format setting for the whole app**
 
   Settings → Appearance now has a Date format option with four presets:

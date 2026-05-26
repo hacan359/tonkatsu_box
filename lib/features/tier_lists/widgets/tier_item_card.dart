@@ -1,12 +1,14 @@
 // Карточка элемента в тир-листе (обложка с drag-and-drop).
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../collections/extensions/item_display_name.dart';
 
 /// Размеры обложки тир-листа.
 const double kTierItemWidth = 90;
@@ -21,7 +23,7 @@ const double kTierItemMinTotalHeight = kTierItemImageHeight + kTierItemMinLabelH
 /// Карточка элемента в тир-листе.
 ///
 /// Обложка с текстовой подписью снизу. Поддерживает drag-and-drop.
-class TierItemCard extends StatelessWidget {
+class TierItemCard extends ConsumerWidget {
   /// Создаёт [TierItemCard].
   const TierItemCard({
     required this.item,
@@ -52,8 +54,9 @@ class TierItemCard extends StatelessWidget {
   final String? platformOverlayAsset;
 
   @override
-  Widget build(BuildContext context) {
-    final Widget card = _buildCard();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String displayName = ref.displayNameOf(item);
+    final Widget card = _buildCard(displayName);
     if (!isDraggable) return card;
 
     return Draggable<int>(
@@ -62,7 +65,7 @@ class TierItemCard extends StatelessWidget {
         color: Colors.transparent,
         child: Opacity(
           opacity: 0.7,
-          child: _buildCard(),
+          child: _buildCard(displayName),
         ),
       ),
       childWhenDragging: Opacity(
@@ -73,9 +76,9 @@ class TierItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCard() {
+  Widget _buildCard(String displayName) {
     return Tooltip(
-      message: item.itemName,
+      message: displayName,
       child: SizedBox(
         width: width,
         child: Column(
@@ -162,7 +165,7 @@ class TierItemCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      item.itemName,
+                      displayName,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 10,
