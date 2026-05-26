@@ -4,7 +4,7 @@ import 'package:xerabora/shared/models/tv_season.dart';
 void main() {
   group('TvSeason', () {
     group('fromJson', () {
-      test('должен создать из полного JSON', () {
+      test('should create из полного JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 1,
           'name': 'Season 1',
@@ -24,7 +24,7 @@ void main() {
         expect(season.airDate, '2008-01-20');
       });
 
-      test('должен создать из минимального JSON', () {
+      test('should create из минимального JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 0,
         };
@@ -39,7 +39,7 @@ void main() {
         expect(season.airDate, isNull);
       });
 
-      test('должен обработать null poster_path', () {
+      test('should handle null poster_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 2,
           'name': 'Season 2',
@@ -51,7 +51,7 @@ void main() {
         expect(season.posterUrl, isNull);
       });
 
-      test('должен обработать отсутствующий poster_path', () {
+      test('should handle отсутствующий poster_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 3,
           'name': 'Season 3',
@@ -62,7 +62,7 @@ void main() {
         expect(season.posterUrl, isNull);
       });
 
-      test('должен обработать null name', () {
+      test('should handle null name', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 1,
           'name': null,
@@ -73,7 +73,7 @@ void main() {
         expect(season.name, isNull);
       });
 
-      test('должен обработать null episode_count', () {
+      test('should handle null episode_count', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 1,
           'episode_count': null,
@@ -84,7 +84,7 @@ void main() {
         expect(season.episodeCount, isNull);
       });
 
-      test('должен обработать null air_date', () {
+      test('should handle null air_date', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 1,
           'air_date': null,
@@ -95,7 +95,7 @@ void main() {
         expect(season.airDate, isNull);
       });
 
-      test('должен обработать сезон 0 (спецвыпуски)', () {
+      test('should handle сезон 0 (спецвыпуски)', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 0,
           'name': 'Specials',
@@ -114,7 +114,7 @@ void main() {
         expect(season.airDate, '2009-02-17');
       });
 
-      test('должен использовать переданный showId', () {
+      test('should use переданный showId', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'season_number': 1,
         };
@@ -128,7 +128,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создать из полной записи БД', () {
+      test('should create из полной записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_show_id': 1396,
           'season_number': 1,
@@ -148,7 +148,7 @@ void main() {
         expect(season.airDate, '2008-01-20');
       });
 
-      test('должен обработать null значения', () {
+      test('should handle null значения', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_show_id': 1396,
           'season_number': 1,
@@ -190,7 +190,7 @@ void main() {
         expect(db['air_date'], '2008-01-20');
       });
 
-      test('должен обработать null значения', () {
+      test('should handle null значения', () {
         const TvSeason season = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -208,7 +208,7 @@ void main() {
     });
 
     group('toDb/fromDb round-trip', () {
-      test('должен сохранить и восстановить все данные', () {
+      test('should preserve и восстановить все данные', () {
         const TvSeason original = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 3,
@@ -229,7 +229,7 @@ void main() {
         expect(restored.airDate, original.airDate);
       });
 
-      test('должен сохранить и восстановить минимальные данные', () {
+      test('should preserve и восстановить минимальные данные', () {
         const TvSeason original = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 0,
@@ -248,7 +248,7 @@ void main() {
     });
 
     group('copyWith', () {
-      test('должен создать копию с изменёнными полями', () {
+      test('should create копию с изменёнными полями', () {
         const TvSeason original = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -267,7 +267,7 @@ void main() {
         expect(copy.episodeCount, 8);
       });
 
-      test('должен сохранить неизменённые поля', () {
+      test('should preserve неизменённые поля', () {
         const TvSeason original = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -312,7 +312,7 @@ void main() {
 
     group('equality', () {
       test(
-          'сезоны с одинаковым showId и seasonNumber должны быть равны', () {
+          'сезоны с одинаковым showId и seasonNumber should be equal', () {
         const TvSeason season1 = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -328,7 +328,7 @@ void main() {
         expect(season1.hashCode, equals(season2.hashCode));
       });
 
-      test('сезоны с разными showId не должны быть равны', () {
+      test('сезоны с разными showId не should be equal', () {
         const TvSeason season1 = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -341,7 +341,7 @@ void main() {
         expect(season1, isNot(equals(season2)));
       });
 
-      test('сезоны с разными seasonNumber не должны быть равны', () {
+      test('сезоны с разными seasonNumber не should be equal', () {
         const TvSeason season1 = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -354,7 +354,7 @@ void main() {
         expect(season1, isNot(equals(season2)));
       });
 
-      test('идентичные объекты должны быть равны', () {
+      test('идентичные объекты should be equal', () {
         const TvSeason season = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -363,7 +363,7 @@ void main() {
         expect(season, equals(season));
       });
 
-      test('сравнение с другим типом не должно быть равно', () {
+      test('сравнение с другим типом should not быть равно', () {
         const TvSeason season = TvSeason(
           tmdbShowId: 1396,
           seasonNumber: 1,
@@ -374,7 +374,7 @@ void main() {
       });
     });
 
-    test('toString должен вернуть читаемое представление', () {
+    test('toString should return читаемое представление', () {
       const TvSeason season = TvSeason(
         tmdbShowId: 1396,
         seasonNumber: 3,

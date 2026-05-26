@@ -4,11 +4,11 @@ import 'package:xerabora/shared/models/collection_list_sort_mode.dart';
 void main() {
   group('CollectionListSortMode', () {
     group('значения enum', () {
-      test('должен содержать 2 значения', () {
+      test('should contain 2 значения', () {
         expect(CollectionListSortMode.values.length, 2);
       });
 
-      test('должен содержать все режимы сортировки', () {
+      test('should contain все режимы сортировки', () {
         expect(
           CollectionListSortMode.values,
           contains(CollectionListSortMode.createdDate),
@@ -31,28 +31,28 @@ void main() {
     });
 
     group('fromString', () {
-      test('должен вернуть createdDate для "created_date"', () {
+      test('should return createdDate для "created_date"', () {
         final CollectionListSortMode result =
             CollectionListSortMode.fromString('created_date');
 
         expect(result, CollectionListSortMode.createdDate);
       });
 
-      test('должен вернуть alphabetical для "alphabetical"', () {
+      test('should return alphabetical для "alphabetical"', () {
         final CollectionListSortMode result =
             CollectionListSortMode.fromString('alphabetical');
 
         expect(result, CollectionListSortMode.alphabetical);
       });
 
-      test('должен вернуть createdDate для неизвестного значения', () {
+      test('should return createdDate для неизвестного значения', () {
         final CollectionListSortMode result =
             CollectionListSortMode.fromString('unknown');
 
         expect(result, CollectionListSortMode.createdDate);
       });
 
-      test('должен вернуть createdDate для пустой строки', () {
+      test('should return createdDate для пустой строки', () {
         final CollectionListSortMode result =
             CollectionListSortMode.fromString('');
 

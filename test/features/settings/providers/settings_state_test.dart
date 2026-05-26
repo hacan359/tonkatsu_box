@@ -40,7 +40,7 @@ void main() {
     const String testAccessToken = 'test_access_token';
 
     group('constructor', () {
-      test('должен создать с дефолтными значениями', () {
+      test('should create с дефолтными значениями', () {
         const SettingsState state = SettingsState();
 
         expect(state.clientId, isNull);
@@ -56,7 +56,7 @@ void main() {
         expect(state.defaultAuthor, isNull);
       });
 
-      test('должен создать со всеми полями', () {
+      test('should create со всеми полями', () {
         const SettingsState state = SettingsState(
           clientId: testClientId,
           clientSecret: testClientSecret,
@@ -84,7 +84,7 @@ void main() {
     });
 
     group('hasCredentials', () {
-      test('должен вернуть true когда есть clientId и clientSecret', () {
+      test('should return true когда есть clientId и clientSecret', () {
         const SettingsState state = SettingsState(
           clientId: testClientId,
           clientSecret: testClientSecret,
@@ -93,7 +93,7 @@ void main() {
         expect(state.hasCredentials, isTrue);
       });
 
-      test('должен вернуть false когда clientId null', () {
+      test('should return false когда clientId null', () {
         const SettingsState state = SettingsState(
           clientSecret: testClientSecret,
         );
@@ -101,7 +101,7 @@ void main() {
         expect(state.hasCredentials, isFalse);
       });
 
-      test('должен вернуть false когда clientSecret null', () {
+      test('should return false когда clientSecret null', () {
         const SettingsState state = SettingsState(
           clientId: testClientId,
         );
@@ -109,7 +109,7 @@ void main() {
         expect(state.hasCredentials, isFalse);
       });
 
-      test('должен вернуть false когда clientId пустой', () {
+      test('should return false когда clientId пустой', () {
         const SettingsState state = SettingsState(
           clientId: '',
           clientSecret: testClientSecret,
@@ -118,7 +118,7 @@ void main() {
         expect(state.hasCredentials, isFalse);
       });
 
-      test('должен вернуть false когда clientSecret пустой', () {
+      test('should return false когда clientSecret пустой', () {
         const SettingsState state = SettingsState(
           clientId: testClientId,
           clientSecret: '',
@@ -129,7 +129,7 @@ void main() {
     });
 
     group('hasValidToken', () {
-      test('должен вернуть true когда токен не истёк', () {
+      test('should return true когда токен не истёк', () {
         final int futureExpiry =
             DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
 
@@ -141,7 +141,7 @@ void main() {
         expect(state.hasValidToken, isTrue);
       });
 
-      test('должен вернуть false когда токен истёк', () {
+      test('should return false когда токен истёк', () {
         final int pastExpiry =
             DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600;
 
@@ -153,7 +153,7 @@ void main() {
         expect(state.hasValidToken, isFalse);
       });
 
-      test('должен вернуть false когда accessToken null', () {
+      test('should return false когда accessToken null', () {
         final int futureExpiry =
             DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
 
@@ -164,7 +164,7 @@ void main() {
         expect(state.hasValidToken, isFalse);
       });
 
-      test('должен вернуть false когда tokenExpires null', () {
+      test('should return false когда tokenExpires null', () {
         const SettingsState state = SettingsState(
           accessToken: testAccessToken,
         );
@@ -174,7 +174,7 @@ void main() {
     });
 
     group('hasSteamGridDbKey', () {
-      test('должен вернуть true когда ключ не пустой', () {
+      test('should return true когда ключ не пустой', () {
         const SettingsState state = SettingsState(
           steamGridDbApiKey: 'sgdb_key_123',
         );
@@ -182,13 +182,13 @@ void main() {
         expect(state.hasSteamGridDbKey, isTrue);
       });
 
-      test('должен вернуть false когда ключ null', () {
+      test('should return false когда ключ null', () {
         const SettingsState state = SettingsState();
 
         expect(state.hasSteamGridDbKey, isFalse);
       });
 
-      test('должен вернуть false когда ключ пустой', () {
+      test('should return false когда ключ пустой', () {
         const SettingsState state = SettingsState(
           steamGridDbApiKey: '',
         );
@@ -198,7 +198,7 @@ void main() {
     });
 
     group('hasTmdbKey', () {
-      test('должен вернуть true когда ключ не пустой', () {
+      test('should return true когда ключ не пустой', () {
         const SettingsState state = SettingsState(
           tmdbApiKey: 'tmdb_key_123',
         );
@@ -206,13 +206,13 @@ void main() {
         expect(state.hasTmdbKey, isTrue);
       });
 
-      test('должен вернуть false когда ключ null', () {
+      test('should return false когда ключ null', () {
         const SettingsState state = SettingsState();
 
         expect(state.hasTmdbKey, isFalse);
       });
 
-      test('должен вернуть false когда ключ пустой', () {
+      test('should return false когда ключ пустой', () {
         const SettingsState state = SettingsState(
           tmdbApiKey: '',
         );
@@ -222,24 +222,24 @@ void main() {
     });
 
     group('authorName', () {
-      test('должен вернуть "User" когда defaultAuthor null', () {
+      test('should return "User" когда defaultAuthor null', () {
         const SettingsState state = SettingsState();
         expect(state.authorName, equals('User'));
       });
 
-      test('должен вернуть "User" когда defaultAuthor пустой', () {
+      test('should return "User" когда defaultAuthor пустой', () {
         const SettingsState state = SettingsState(defaultAuthor: '');
         expect(state.authorName, equals('User'));
       });
 
-      test('должен вернуть имя когда defaultAuthor задан', () {
+      test('should return имя когда defaultAuthor задан', () {
         const SettingsState state = SettingsState(defaultAuthor: 'Hacan');
         expect(state.authorName, equals('Hacan'));
       });
     });
 
     group('isApiReady', () {
-      test('должен вернуть true когда есть credentials и валидный токен', () {
+      test('should return true когда есть credentials и валидный токен', () {
         final int futureExpiry =
             DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
 
@@ -253,7 +253,7 @@ void main() {
         expect(state.isApiReady, isTrue);
       });
 
-      test('должен вернуть false когда нет credentials', () {
+      test('should return false когда нет credentials', () {
         final int futureExpiry =
             DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
 
@@ -265,7 +265,7 @@ void main() {
         expect(state.isApiReady, isFalse);
       });
 
-      test('должен вернуть false когда нет валидного токена', () {
+      test('should return false когда нет валидного токена', () {
         const SettingsState state = SettingsState(
           clientId: testClientId,
           clientSecret: testClientSecret,
@@ -367,14 +367,14 @@ void main() {
         expect(copy.errorMessage, isNull);
       });
 
-      test('должен сохранить errorMessage при clearError: false', () {
+      test('should preserve errorMessage при clearError: false', () {
         const SettingsState original = SettingsState(errorMessage: 'Error');
         final SettingsState copy = original.copyWith();
 
         expect(copy.errorMessage, equals('Error'));
       });
 
-      test('должен сохранить все поля при пустом copyWith', () {
+      test('should preserve все поля when empty copyWith', () {
         const SettingsState original = SettingsState(
           clientId: testClientId,
           clientSecret: testClientSecret,

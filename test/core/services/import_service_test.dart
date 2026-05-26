@@ -27,7 +27,7 @@ void main() {
   });
 
   group('ImportResult', () {
-    test('ImportResult.success должен создать успешный результат', () {
+    test('ImportResult.success should create успешный результат', () {
       final Collection collection = Collection(
         id: 1,
         name: 'Test',
@@ -56,7 +56,7 @@ void main() {
       expect(result.itemsUpdated, equals(3));
     });
 
-    test('ImportResult.failure должен создать неуспешный результат', () {
+    test('ImportResult.failure should create неуспешный результат', () {
       const ImportResult result = ImportResult.failure('Error occurred');
 
       expect(result.success, isFalse);
@@ -66,7 +66,7 @@ void main() {
       expect(result.isCancelled, isFalse);
     });
 
-    test('ImportResult.cancelled должен создать отменённый результат', () {
+    test('ImportResult.cancelled should create отменённый результат', () {
       const ImportResult result = ImportResult.cancelled();
 
       expect(result.success, isFalse);
@@ -176,7 +176,7 @@ void main() {
         }
       });
 
-      test('должен парсить валидный .xcoll файл (v2)', () async {
+      test('should parse валидный .xcoll файл (v2)', () async {
         final Directory tempDir =
             Directory.systemTemp.createTempSync('xcoll_test');
         final File testFile = File('${tempDir.path}/test.xcoll');
@@ -489,7 +489,7 @@ void main() {
         verify(() => mockTmdb.getTvShow(1399)).called(1);
       });
 
-      test('должен пропускать недоступные фильмы из TMDB', () async {
+      test('should skip недоступные фильмы из TMDB', () async {
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.light,
@@ -540,7 +540,7 @@ void main() {
         expect(result.itemsImported, equals(2));
       });
 
-      test('должен пропускать недоступные сериалы из TMDB', () async {
+      test('should skip недоступные сериалы из TMDB', () async {
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.light,
@@ -584,7 +584,7 @@ void main() {
         expect(result.itemsImported, equals(1));
       });
 
-      test('должен вернуть ошибку при сбое IGDB API в v2', () async {
+      test('should return ошибку при сбое IGDB API в v2', () async {
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.light,
@@ -1004,7 +1004,7 @@ void main() {
         expect(captured.id, equals(0));
       });
 
-      test('должен пропускать connections с неремаппленными ID', () async {
+      test('should skip connections с неремаппленными ID', () async {
         final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
 
         final XcollFile xcoll = XcollFile(
@@ -1469,7 +1469,7 @@ void main() {
         expect(captured.id, equals(0));
       });
 
-      test('должен пропускать per-item canvas при null _canvasRepository',
+      test('should skip per-item canvas when null _canvasRepository',
           () async {
         final ImportService sutNoCanvas = ImportService(
           repository: mockRepo,
@@ -1764,7 +1764,7 @@ void main() {
         expect(capturedArgs[2], equals(testBytes));
       });
 
-      test('должен пропустить невалидный ключ', () async {
+      test('should skip невалидный ключ', () async {
         setupDefaultMocks();
         final String base64Data = base64Encode(<int>[1, 2, 3]);
 
@@ -1783,7 +1783,7 @@ void main() {
         );
       });
 
-      test('должен пропустить невалидный base64', () async {
+      test('should skip невалидный base64', () async {
         setupDefaultMocks();
 
         when(() => mockImageCache.saveImageBytes(any(), any(), any()))
@@ -1801,7 +1801,7 @@ void main() {
         );
       });
 
-      test('без imageCacheService не должен вызывать saveImageBytes',
+      test('без imageCacheService не should call saveImageBytes',
           () async {
         setupDefaultMocks();
         final String base64Data = base64Encode(<int>[1, 2, 3]);
@@ -1826,7 +1826,7 @@ void main() {
         );
       });
 
-      test('должен пропустить images при format light', () async {
+      test('should skip images при format light', () async {
         setupDefaultMocks();
         final String base64Data = base64Encode(<int>[1, 2, 3]);
 
@@ -2068,7 +2068,7 @@ void main() {
         verifyNever(() => mockTmdb.getTvShow(any()));
       });
 
-      test('должен использовать API при пустом media', () async {
+      test('should use API when empty media', () async {
         setupDefaultMocksForMedia();
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => const <Game>[Game(id: 42, name: 'G')]);
@@ -2127,7 +2127,7 @@ void main() {
         expect(stages, isNot(contains(ImportStage.fetchingTvShows)));
       });
 
-      test('должен пропустить пустые категории в embedded media', () async {
+      test('should skip пустые категории в embedded media', () async {
         setupDefaultMocksForMedia();
 
         final XcollFile xcoll = XcollFile(
@@ -2361,7 +2361,7 @@ void main() {
         verify(() => mockDb.upsertGames(any())).called(1);
       });
 
-      test('должен пропустить восстановление platforms без данных', () async {
+      test('should skip восстановление platforms без данных', () async {
         setupDefaultMocksForMedia();
 
         final XcollFile xcoll = XcollFile(

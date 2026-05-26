@@ -73,7 +73,7 @@ void main() {
   group('CollectionItemsView', () {
     group('пустое состояние', () {
       testWidgets(
-        'должен показать пустое состояние при пустом списке элементов',
+        'should show пустое состояние when empty списке элементов',
         (WidgetTester tester) async {
           await tester.pumpWidget(_buildTestApp(
             child: CollectionItemsView(
@@ -92,7 +92,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать текст "Add items..." когда canEdit=true и список пуст',
+        'should show текст "Add items..." когда canEdit=true и список пуст',
         (WidgetTester tester) async {
           await tester.pumpWidget(_buildTestApp(
             child: CollectionItemsView(
@@ -113,7 +113,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать "This collection is empty." когда canEdit=false и список пуст',
+        'should show "This collection is empty." когда canEdit=false и список пуст',
         (WidgetTester tester) async {
           await tester.pumpWidget(_buildTestApp(
             child: CollectionItemsView(
@@ -134,7 +134,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать пустое состояние в grid-режиме при пустом списке',
+        'should show пустое состояние в grid-режиме when empty списке',
         (WidgetTester tester) async {
           await tester.pumpWidget(_buildTestApp(
             child: CollectionItemsView(
@@ -155,7 +155,7 @@ void main() {
 
     group('grid-режим', () {
       testWidgets(
-        'должен показать GridView когда isGridMode=true',
+        'should show GridView когда isGridMode=true',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Game One'),
@@ -180,7 +180,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать MediaPosterCard для каждого элемента в grid-режиме',
+        'should show MediaPosterCard для каждого элемента в grid-режиме',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Game A'),
@@ -205,7 +205,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onItemTap при нажатии на карточку в grid-режиме',
+        'should call onItemTap when pressed на карточку в grid-режиме',
         (WidgetTester tester) async {
           CollectionItem? tappedItem;
           final List<CollectionItem> items = <CollectionItem>[
@@ -233,7 +233,7 @@ void main() {
 
     group('list-режим', () {
       testWidgets(
-        'должен показать ListView когда isGridMode=false',
+        'should show ListView когда isGridMode=false',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Game One'),
@@ -258,7 +258,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать CollectionItemTile для каждого элемента в list-режиме',
+        'should show CollectionItemTile для каждого элемента в list-режиме',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Game A'),
@@ -282,7 +282,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onItemTap при нажатии на tile в list-режиме',
+        'should call onItemTap when pressed на tile в list-режиме',
         (WidgetTester tester) async {
           CollectionItem? tappedItem;
           final List<CollectionItem> items = <CollectionItem>[
@@ -334,7 +334,7 @@ void main() {
 
     group('reorderable list', () {
       testWidgets(
-        'должен показать ReorderableListView при manual sort и canEdit=true',
+        'should show ReorderableListView при manual sort и canEdit=true',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, sortOrder: 0, gameName: 'First'),
@@ -358,7 +358,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать drag handle в reorderable list',
+        'should show drag handle в reorderable list',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, sortOrder: 0, gameName: 'Draggable'),
@@ -381,7 +381,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать обычный ListView при manual sort и canEdit=false',
+        'should show обычный ListView при manual sort и canEdit=false',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, sortOrder: 0, gameName: 'Item'),
@@ -458,7 +458,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать пустое состояние при collectionId=null и пустом списке',
+        'should show пустое состояние при collectionId=null и пустом списке',
         (WidgetTester tester) async {
           await tester.pumpWidget(_buildTestApp(
             child: CollectionItemsView(
@@ -507,7 +507,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать несколько элементов в list-режиме',
+        'should show несколько элементов в list-режиме',
         (WidgetTester tester) async {
           final List<CollectionItem> items = List<CollectionItem>.generate(
             5,
@@ -537,7 +537,7 @@ void main() {
 
     group('режимы сортировки не-manual', () {
       testWidgets(
-        'должен показать обычный ListView при сортировке по имени',
+        'should show обычный ListView при сортировке по имени',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Alpha'),
@@ -562,7 +562,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать обычный ListView при сортировке по рейтингу',
+        'should show обычный ListView при сортировке по рейтингу',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Rated Game', userRating: 8),
@@ -586,7 +586,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать обычный ListView при сортировке по статусу',
+        'should show обычный ListView при сортировке по статусу',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(
@@ -616,7 +616,7 @@ void main() {
 
     group('RefreshIndicator', () {
       testWidgets(
-        'должен содержать RefreshIndicator в list-режиме',
+        'should contain RefreshIndicator в list-режиме',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Refreshable'),
@@ -639,7 +639,7 @@ void main() {
       );
 
       testWidgets(
-        'должен содержать RefreshIndicator в grid-режиме',
+        'should contain RefreshIndicator в grid-режиме',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Grid Refreshable'),
@@ -688,7 +688,7 @@ void main() {
 
     group('контекстное меню ПКМ', () {
       testWidgets(
-        'должен показать контекстное меню при правом клике в list-режиме',
+        'should show контекстное меню при правом клике в list-режиме',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Right Click Game'),
@@ -733,7 +733,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onItemMove при выборе "move" из контекстного меню',
+        'should call onItemMove при выборе "move" из контекстного меню',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Move Game'),
@@ -775,7 +775,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать контекстное меню при canEdit=false',
+        'не should show контекстное меню при canEdit=false',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Read Only Game'),
@@ -812,7 +812,7 @@ void main() {
 
     group('приоритет isGridMode', () {
       testWidgets(
-        'должен использовать grid-режим вне зависимости от sort mode',
+        'should use grid-режим вне зависимости от sort mode',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Priority Test'),

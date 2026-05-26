@@ -157,7 +157,7 @@ void main() {
         expect(
           discoverSectionsPerSource[sourceId],
           contains(DiscoverSectionId.trending),
-          reason: '$sourceId должен содержать trending',
+          reason: '$sourceId should contain trending',
         );
       }
     });

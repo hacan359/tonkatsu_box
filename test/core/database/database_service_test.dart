@@ -216,7 +216,7 @@ void main() {
         expect(item!['collection_id'], coll);
       });
 
-      test('должен обновлять sort_order для целевой коллекции', () async {
+      test('should update sort_order для целевой коллекции', () async {
         final int coll = await _insertCollection(db, 'Collection');
         await _insertItem(
           db,
@@ -244,7 +244,7 @@ void main() {
       });
 
       test(
-          'должен возвращать false при UNIQUE constraint violation '
+          'should return false при UNIQUE constraint violation '
           '(элемент уже есть в целевой коллекции)', () async {
         final int coll = await _insertCollection(db, 'Collection');
 
@@ -269,7 +269,7 @@ void main() {
       });
 
       test(
-          'должен возвращать false при UNIQUE constraint violation '
+          'should return false при UNIQUE constraint violation '
           'при перемещении в uncategorized', () async {
         final int coll = await _insertCollection(db, 'Collection');
 
@@ -478,7 +478,7 @@ void main() {
     });
 
     group('getUniquePlatformIds', () {
-      test('должен возвращать уникальные platform_id из игр', () async {
+      test('should return уникальные platform_id из игр', () async {
         final int coll = await _insertCollection(db, 'Games');
         await _insertItem(
           db,
@@ -542,7 +542,7 @@ void main() {
         expect(ids, <int>[33]);
       });
 
-      test('должен возвращать пустой список для пустой коллекции', () async {
+      test('should return пустой список для пустой коллекции', () async {
         final int coll = await _insertCollection(db, 'Empty');
 
         final List<Map<String, dynamic>> rows = await db.rawQuery('''
@@ -557,7 +557,7 @@ void main() {
         expect(rows, isEmpty);
       });
 
-      test('должен возвращать платформы из всех коллекций без фильтра',
+      test('should return платформы из всех коллекций без фильтра',
           () async {
         final int collA = await _insertCollection(db, 'Collection A');
         final int collB = await _insertCollection(db, 'Collection B');

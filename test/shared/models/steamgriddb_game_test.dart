@@ -114,7 +114,7 @@ void main() {
         expect(game1.hashCode, equals(game2.hashCode));
       });
 
-      test('игры с разными id не равны', () {
+      test('игры с different ids не равны', () {
         const SteamGridDbGame game1 = SteamGridDbGame(id: 1, name: 'Game');
         const SteamGridDbGame game2 = SteamGridDbGame(id: 2, name: 'Game');
 

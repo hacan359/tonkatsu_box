@@ -392,6 +392,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       }
     }
 
+    final bool clearDisplayType = data.mediaType == MediaType.custom;
     final CustomMedia updated = item.customMedia!.copyWith(
       title: data.title,
       altTitle: data.altTitle,
@@ -401,6 +402,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       genres: data.genres,
       platformName: data.platform,
       externalUrl: data.externalUrl,
+      displayType: clearDisplayType ? null : data.mediaType,
+      clearDisplayType: clearDisplayType,
     );
 
     final DatabaseService db = ref.read(databaseServiceProvider);

@@ -51,14 +51,14 @@ void main() {
 
   group('PlatformFilterSheet', () {
     group('рендеринг', () {
-      testWidgets('должен показывать поле поиска', (WidgetTester tester) async {
+      testWidgets('should show поле поиска', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
 
         expect(find.byType(TextField), findsOneWidget);
       });
 
-      testWidgets('должен показывать список платформ как ListTile',
+      testWidgets('should show список платформ как ListTile',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
@@ -66,7 +66,7 @@ void main() {
         expect(find.byType(ListTile), findsNWidgets(5));
       });
 
-      testWidgets('должен показывать количество выбранных на кнопке Apply',
+      testWidgets('should show количество выбранных на кнопке Apply',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(selectedIds: <int>[1, 2]));
         await openSheet(tester);
@@ -76,7 +76,7 @@ void main() {
     });
 
     group('фильтрация по поиску', () {
-      testWidgets('должен фильтровать по имени платформы',
+      testWidgets('should filter по имени платформы',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
@@ -87,7 +87,7 @@ void main() {
         expect(find.byType(ListTile), findsNWidgets(2));
       });
 
-      testWidgets('должен фильтровать по abbreviation',
+      testWidgets('should filter по abbreviation',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
@@ -109,7 +109,7 @@ void main() {
         expect(find.byType(ListTile), findsNWidgets(1));
       });
 
-      testWidgets('должен показывать кнопку очистки когда есть текст',
+      testWidgets('should show кнопку очистки когда есть текст',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
@@ -122,7 +122,7 @@ void main() {
         expect(find.byIcon(Icons.clear), findsOneWidget);
       });
 
-      testWidgets('должен очищать поиск при нажатии кнопки очистки',
+      testWidgets('должен очищать поиск when pressed кнопки очистки',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
@@ -140,7 +140,7 @@ void main() {
     });
 
     group('пустое состояние', () {
-      testWidgets('должен показывать empty state когда нет результатов',
+      testWidgets('should show empty state когда нет результатов',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
@@ -152,7 +152,7 @@ void main() {
         expect(find.byType(ListTile), findsNothing);
       });
 
-      testWidgets('должен показывать empty state когда список пуст',
+      testWidgets('should show empty state когда список пуст',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(platforms: <Platform>[]));
         await openSheet(tester);
@@ -162,7 +162,7 @@ void main() {
     });
 
     group('выбор платформ', () {
-      testWidgets('должен выбирать платформу при нажатии на ListTile',
+      testWidgets('должен выбирать платформу when pressed на ListTile',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
@@ -239,7 +239,7 @@ void main() {
     });
 
     group('Apply', () {
-      testWidgets('должен вызывать onApply с выбранными ID',
+      testWidgets('should call onApply с выбранными ID',
           (WidgetTester tester) async {
         List<int>? appliedIds;
 
@@ -262,7 +262,7 @@ void main() {
         expect(appliedIds!.length, 2);
       });
 
-      testWidgets('должен вызывать onApply с пустым списком при Show All',
+      testWidgets('should call onApply с пустым списком при Show All',
           (WidgetTester tester) async {
         List<int>? appliedIds;
 
@@ -300,7 +300,7 @@ void main() {
     });
 
     group('edge cases', () {
-      testWidgets('должен сохранять выбор при фильтрации',
+      testWidgets('should preserve выбор при фильтрации',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);

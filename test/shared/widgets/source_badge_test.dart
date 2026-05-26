@@ -93,7 +93,7 @@ void main() {
         expect(find.byType(InkWell), findsOneWidget);
       });
 
-      testWidgets('должен вызывать onTap при нажатии',
+      testWidgets('should call onTap when pressed',
           (WidgetTester tester) async {
         bool tapped = false;
         await tester.pumpWidget(buildTestWidget(

@@ -388,7 +388,7 @@ void main() {
       );
 
       test(
-        'должен использовать viewport по умолчанию когда viewport null в БД',
+        'should use viewport по умолчанию когда viewport null в БД',
         () async {
           setupExistingCanvas(viewport: null);
 
@@ -408,7 +408,7 @@ void main() {
       );
 
       test(
-        'должен установить ошибку когда загрузка канваса бросает исключение',
+        'should set ошибку когда загрузка канваса бросает исключение',
         () async {
           when(() => mockRepository.hasCanvasItems(collectionId))
               .thenThrow(Exception('Database error'));
@@ -427,7 +427,7 @@ void main() {
       );
 
       test(
-        'должен установить ошибку когда инициализация из игр бросает исключение',
+        'should set ошибку когда инициализация из игр бросает исключение',
         () async {
           when(() => mockRepository.hasCanvasItems(collectionId))
               .thenAnswer((_) async => false);
@@ -482,7 +482,7 @@ void main() {
 
     group('_syncCanvasWithGames() через build/_loadCanvas', () {
       test(
-        'должен удалить сиротские элементы канваса когда игры удалены из коллекции',
+        'should delete сиротские элементы канваса когда игры удалены из коллекции',
         () async {
           final List<CollectionItem> twoItems = <CollectionItem>[
             testCollectionItems[0],
@@ -572,7 +572,7 @@ void main() {
       );
 
       test(
-        'должен удалить сиротский элемент без collectionItemId по (type, refId)',
+        'should delete сиротский элемент без collectionItemId по (type, refId)',
         () async {
           final List<CanvasItem> canvasItemsNoCollId = <CanvasItem>[
             CanvasItem(
@@ -722,7 +722,7 @@ void main() {
 
     group('removeGameItem()', () {
       test(
-        'должен удалить элемент игры из state и БД когда вызван с externalId',
+        'should delete элемент игры из state и БД когда вызван с externalId',
         () async {
           setupExistingCanvas();
           when(
@@ -819,7 +819,7 @@ void main() {
       );
 
       test(
-        'должен установить isLoading в true перед загрузкой когда refresh вызван',
+        'should set isLoading в true перед загрузкой когда refresh вызван',
         () async {
           setupExistingCanvas();
 
@@ -890,7 +890,7 @@ void main() {
 
     group('moveItem()', () {
       test(
-        'должен обновить позицию элемента в state мгновенно когда вызван',
+        'should update позицию элемента в state мгновенно когда вызван',
         () async {
           setupExistingCanvas();
 
@@ -915,7 +915,7 @@ void main() {
       );
 
       test(
-        'должен сохранить в БД с debounce когда moveItem вызван',
+        'should preserve в БД с debounce когда moveItem вызван',
         () async {
           setupExistingCanvas();
           when(
@@ -1037,7 +1037,7 @@ void main() {
 
     group('updateViewport()', () {
       test(
-        'должен обновить viewport в state мгновенно когда вызван',
+        'should update viewport в state мгновенно когда вызван',
         () async {
           setupExistingCanvas();
 
@@ -1061,7 +1061,7 @@ void main() {
       );
 
       test(
-        'должен сохранить viewport в БД с debounce когда вызван',
+        'should preserve viewport в БД с debounce когда вызван',
         () async {
           setupExistingCanvas();
           when(
@@ -1298,7 +1298,7 @@ void main() {
 
     group('deleteItem()', () {
       test(
-        'должен удалить элемент из state и БД когда вызван с id',
+        'should delete элемент из state и БД когда вызван с id',
         () async {
           setupExistingCanvas();
           when(() => mockRepository.deleteItem(any()))
@@ -1360,7 +1360,7 @@ void main() {
 
     group('bringToFront()', () {
       test(
-        'должен установить максимальный z-index + 1 когда вызван',
+        'should set максимальный z-index + 1 когда вызван',
         () async {
           setupExistingCanvas();
           when(
@@ -1442,7 +1442,7 @@ void main() {
 
     group('sendToBack()', () {
       test(
-        'должен установить минимальный z-index - 1 когда вызван',
+        'should set минимальный z-index - 1 когда вызван',
         () async {
           setupExistingCanvas();
           when(
@@ -1565,7 +1565,7 @@ void main() {
 
     group('addTextItem()', () {
       test(
-        'должен создать текстовый элемент с правильным типом, данными и размерами',
+        'should create текстовый элемент с правильным типом, данными и размерами',
         () async {
           setupExistingCanvas();
           when(() => mockRepository.createItem(any()))
@@ -1608,7 +1608,7 @@ void main() {
       );
 
       test(
-        'должен установить zIndex в maxZ+1 когда есть существующие элементы',
+        'should set zIndex в maxZ+1 когда есть существующие элементы',
         () async {
           setupExistingCanvas();
           late CanvasItem capturedItem;
@@ -1634,7 +1634,7 @@ void main() {
       );
 
       test(
-        'должен установить zIndex в 0 когда список элементов пуст',
+        'should set zIndex в 0 когда список элементов пуст',
         () async {
           setupExistingCanvas(items: <CanvasItem>[]);
           late CanvasItem capturedItem;
@@ -1662,7 +1662,7 @@ void main() {
 
     group('addImageItem()', () {
       test(
-        'должен создать элемент изображения с правильным типом и размерами 200x200',
+        'should create элемент изображения с правильным типом и размерами 200x200',
         () async {
           setupExistingCanvas();
           when(() => mockRepository.createItem(any()))
@@ -1738,7 +1738,7 @@ void main() {
 
     group('addLinkItem()', () {
       test(
-        'должен создать элемент ссылки с правильным типом и размерами 200x48',
+        'should create элемент ссылки с правильным типом и размерами 200x48',
         () async {
           setupExistingCanvas();
           when(() => mockRepository.createItem(any()))
@@ -1778,7 +1778,7 @@ void main() {
       );
 
       test(
-        'должен установить url и label в поле data элемента',
+        'should set url и label в поле data элемента',
         () async {
           setupExistingCanvas();
           late CanvasItem capturedItem;
@@ -1813,7 +1813,7 @@ void main() {
 
     group('updateItemData()', () {
       test(
-        'должен обновить data в state для указанного itemId',
+        'should update data в state для указанного itemId',
         () async {
           setupExistingCanvas();
           when(() => mockRepository.updateItemData(any(), any()))
@@ -1845,7 +1845,7 @@ void main() {
       );
 
       test(
-        'должен вызвать repository.updateItemData с правильными параметрами',
+        'should call repository.updateItemData с правильными параметрами',
         () async {
           setupExistingCanvas();
           when(() => mockRepository.updateItemData(any(), any()))
@@ -1920,7 +1920,7 @@ void main() {
 
     group('updateItemSize()', () {
       test(
-        'должен обновить width и height в state для указанного элемента',
+        'should update width и height в state для указанного элемента',
         () async {
           setupExistingCanvas();
           when(
@@ -1952,7 +1952,7 @@ void main() {
       );
 
       test(
-        'должен вызвать repository.updateItemSize с правильными параметрами',
+        'should call repository.updateItemSize с правильными параметрами',
         () async {
           setupExistingCanvas();
           when(
@@ -2194,7 +2194,7 @@ void main() {
 
     group('_persistViewport()', () {
       test(
-        'должен вызвать saveGameCanvasViewport а не saveViewport',
+        'should call saveGameCanvasViewport а не saveViewport',
         () async {
           setupExistingGameCanvas();
           when(
@@ -2222,7 +2222,7 @@ void main() {
       );
 
       test(
-        'должен использовать collectionItemId при updateViewport',
+        'should use collectionItemId при updateViewport',
         () async {
           setupExistingGameCanvas();
           when(
@@ -2258,7 +2258,7 @@ void main() {
 
     group('moveItem()', () {
       test(
-        'должен обновить позицию элемента в state мгновенно',
+        'should update позицию элемента в state мгновенно',
         () async {
           setupExistingGameCanvas();
 
@@ -2283,7 +2283,7 @@ void main() {
       );
 
       test(
-        'должен сохранить позицию в БД с debounce 300ms',
+        'should preserve позицию в БД с debounce 300ms',
         () async {
           setupExistingGameCanvas();
           when(

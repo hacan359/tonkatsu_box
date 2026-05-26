@@ -30,7 +30,7 @@ void main() {
   });
 
   group('ExportResult', () {
-    test('ExportResult.success должен создать успешный результат', () {
+    test('ExportResult.success should create успешный результат', () {
       const ExportResult result = ExportResult.success('/path/to/file.xcoll');
 
       expect(result.success, isTrue);
@@ -39,7 +39,7 @@ void main() {
       expect(result.isCancelled, isFalse);
     });
 
-    test('ExportResult.failure должен создать неуспешный результат', () {
+    test('ExportResult.failure should create неуспешный результат', () {
       const ExportResult result = ExportResult.failure('Error message');
 
       expect(result.success, isFalse);
@@ -48,7 +48,7 @@ void main() {
       expect(result.isCancelled, isFalse);
     });
 
-    test('ExportResult.cancelled должен создать отменённый результат', () {
+    test('ExportResult.cancelled should create отменённый результат', () {
       const ExportResult result = ExportResult.cancelled();
 
       expect(result.success, isFalse);
@@ -57,7 +57,7 @@ void main() {
       expect(result.isCancelled, isTrue);
     });
 
-    test('isCancelled должен быть false при ошибке', () {
+    test('isCancelled должен быть false on error', () {
       const ExportResult result = ExportResult(
         success: false,
         error: 'Some error',
@@ -75,7 +75,7 @@ void main() {
     });
 
     group('createLightExport (v2 light)', () {
-      test('должен создать XcollFile v2 из пустой коллекции', () {
+      test('should create XcollFile v2 из пустой коллекции', () {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[];
 
@@ -135,7 +135,7 @@ void main() {
         expect(xcoll.items[2]['external_id'], equals(1399));
       });
 
-      test('должен использовать toExport() для каждого элемента', () {
+      test('should use toExport() для каждого элемента', () {
         final Collection collection = createTestCollection();
         final CollectionItem item = createTestCollectionItem(
           mediaType: MediaType.game,
@@ -178,7 +178,7 @@ void main() {
         expect(xcoll.items[0].containsKey('sort_order'), isTrue);
       });
 
-      test('user_data должен сериализоваться в JSON', () {
+      test('user_data should serializeся в JSON', () {
         final Collection collection = createTestCollection();
         final XcollFile xcoll = sut.createLightExport(
           collection,
@@ -214,7 +214,7 @@ void main() {
         sutFull = ExportService(canvasRepository: mockCanvasRepo);
       });
 
-      test('должен создать full export без canvas данных', () async {
+      test('should create full export без canvas данных', () async {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[];
 
@@ -354,7 +354,7 @@ void main() {
         expect(xcoll.items[0].containsKey('_canvas'), isFalse);
       });
 
-      test('без canvasRepository должен пропустить canvas', () async {
+      test('без canvasRepository should skip canvas', () async {
         final ExportService sutNoCanvas = ExportService();
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[];
@@ -368,7 +368,7 @@ void main() {
     });
 
     group('exportToJson', () {
-      test('должен вернуть валидный v2 JSON', () {
+      test('should return валидный v2 JSON', () {
         final Collection collection =
             createTestCollection(name: 'JSON Export');
         final List<CollectionItem> items = <CollectionItem>[
@@ -386,7 +386,7 @@ void main() {
         expect((parsed['items'] as List<dynamic>).length, equals(1));
       });
 
-      test('должен создать форматированный JSON с отступами', () {
+      test('should create форматированный JSON с отступами', () {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[];
 
@@ -408,7 +408,7 @@ void main() {
         expect(restored.items, isEmpty);
       });
 
-      test('должен сохранять все данные при round-trip', () {
+      test('should preserve все данные при round-trip', () {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
           createTestCollectionItem(
@@ -437,7 +437,7 @@ void main() {
         sutFull = ExportService(canvasRepository: mockCanvasRepo);
       });
 
-      test('должен вернуть v2 full JSON', () async {
+      test('should return v2 full JSON', () async {
         final Collection collection = createTestCollection(name: 'Full');
         final List<CollectionItem> items = <CollectionItem>[];
 
@@ -504,7 +504,7 @@ void main() {
         expect(xcoll.images['game_covers/100'], equals(base64Encode(testBytes)));
       });
 
-      test('должен пропустить элементы без кэшированных изображений',
+      test('should skip элементы без кэшированных изображений',
           () async {
         when(() => mockImageCache.readImageBytes(any(), any()))
             .thenAnswer((_) async => null);
@@ -528,7 +528,7 @@ void main() {
         expect(xcoll.images, isEmpty);
       });
 
-      test('должен пропустить дубли externalId', () async {
+      test('should skip дубли externalId', () async {
         final Uint8List testBytes = Uint8List.fromList(<int>[1, 2, 3]);
         when(() => mockImageCache.readImageBytes(
               ImageType.gameCover,
@@ -615,7 +615,7 @@ void main() {
         expect(xcoll.images.containsKey('tv_show_posters/300'), isTrue);
       });
 
-      test('без imageCacheService должен вернуть пустой images', () async {
+      test('без imageCacheService should return пустой images', () async {
         when(() => mockCanvasRepo.getGameCanvasItems(any()))
             .thenAnswer((_) async => <CanvasItem>[]);
 
@@ -634,7 +634,7 @@ void main() {
         expect(xcoll.images, isEmpty);
       });
 
-      test('должен использовать tvShowPoster для animation с tvShow platformId',
+      test('should use tvShowPoster для animation с tvShow platformId',
           () async {
         final Uint8List tvBytes = Uint8List.fromList(<int>[7, 8, 9]);
         when(() => mockImageCache.readImageBytes(
@@ -670,7 +670,7 @@ void main() {
         );
       });
 
-      test('должен использовать moviePoster для animation с movie platformId',
+      test('should use moviePoster для animation с movie platformId',
           () async {
         final Uint8List movieBytes = Uint8List.fromList(<int>[1, 2, 3]);
         when(() => mockImageCache.readImageBytes(
@@ -833,7 +833,7 @@ void main() {
         expect(xcoll.images.containsKey(expectedKey), isTrue);
       });
 
-      test('должен пропустить не-image canvas items', () async {
+      test('should skip не-image canvas items', () async {
         final CanvasItem textCanvasItem = CanvasItem(
           id: 1,
           collectionId: 1,
@@ -865,7 +865,7 @@ void main() {
         expect(hasCanvasImages, isFalse);
       });
 
-      test('должен пропустить image canvas item без URL', () async {
+      test('should skip image canvas item без URL', () async {
         final CanvasItem imageNoUrl = CanvasItem(
           id: 1,
           collectionId: 1,
@@ -958,7 +958,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен объединить cover images и canvas images', () async {
+      test('should join cover images и canvas images', () async {
         final Uint8List coverBytes = Uint8List.fromList(<int>[1, 2, 3]);
         final Uint8List canvasBytes = Uint8List.fromList(<int>[4, 5, 6]);
         const String canvasUrl = 'https://example.com/canvas.png';
@@ -1302,7 +1302,7 @@ void main() {
         expect(data['tmdb_id'], equals(888));
       });
 
-      test('должен пропустить элементы без joined данных', () async {
+      test('should skip элементы без joined данных', () async {
         final ExportService sutMedia = ExportService(
           canvasRepository: mockCanvasRepo,
           imageCacheService: mockImageCache,
@@ -1324,7 +1324,7 @@ void main() {
         expect(xcoll.media, isEmpty);
       });
 
-      test('должен вернуть пустой media при пустых items', () async {
+      test('should return пустой media when empty items', () async {
         final ExportService sutMedia = ExportService(
           canvasRepository: mockCanvasRepo,
           imageCacheService: mockImageCache,
@@ -1572,7 +1572,7 @@ void main() {
         verifyNever(() => mockDatabase.getTvSeasonsByShowId(any()));
       });
 
-      test('без database должен пропустить tv_seasons', () async {
+      test('без database should skip tv_seasons', () async {
         final ExportService sutMedia = ExportService(
           canvasRepository: mockCanvasRepo,
           imageCacheService: mockImageCache,

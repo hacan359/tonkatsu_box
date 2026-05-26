@@ -6,7 +6,7 @@ import '../../helpers/test_helpers.dart';
 void main() {
   group('TierListEntry', () {
     group('fromDb', () {
-      test('должен создавать из записи БД', () {
+      test('should create из записи БД', () {
         final TierListEntry entry = TierListEntry.fromDb(<String, dynamic>{
           'collection_item_id': 42,
           'tier_key': 'S',
@@ -20,7 +20,7 @@ void main() {
     });
 
     group('toDb', () {
-      test('должен сериализовать с tierListId', () {
+      test('should serialize с tierListId', () {
         final TierListEntry entry = createTestTierListEntry(
           collectionItemId: 10,
           tierKey: 'A',

@@ -5,7 +5,7 @@ import 'package:xerabora/shared/models/media_type.dart';
 void main() {
   group('CoverInfo', () {
     group('конструктор', () {
-      test('должен создать экземпляр со всеми полями', () {
+      test('should create экземпляр со всеми полями', () {
         const CoverInfo info = CoverInfo(
           externalId: 123,
           mediaType: MediaType.game,
@@ -19,7 +19,7 @@ void main() {
         expect(info.thumbnailUrl, 'https://example.com/cover.jpg');
       });
 
-      test('должен создать экземпляр с nullable полями как null', () {
+      test('should create экземпляр с nullable полями как null', () {
         const CoverInfo info = CoverInfo(
           externalId: 456,
           mediaType: MediaType.movie,
@@ -31,7 +31,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создать CoverInfo для игры без конвертации URL', () {
+      test('should create CoverInfo для игры без конвертации URL', () {
         final CoverInfo info = CoverInfo.fromDb(<String, Object?>{
           'external_id': 100,
           'media_type': 'game',
@@ -109,7 +109,7 @@ void main() {
         );
       });
 
-      test('должен обработать null thumbnail_url', () {
+      test('should handle null thumbnail_url', () {
         final CoverInfo info = CoverInfo.fromDb(<String, Object?>{
           'external_id': 600,
           'media_type': 'game',
@@ -120,7 +120,7 @@ void main() {
         expect(info.thumbnailUrl, isNull);
       });
 
-      test('должен обработать анимацию с источником movie (platformId=0)', () {
+      test('should handle анимацию с источником movie (platformId=0)', () {
         final CoverInfo info = CoverInfo.fromDb(<String, Object?>{
           'external_id': 700,
           'media_type': 'animation',
@@ -137,7 +137,7 @@ void main() {
     });
 
     group('equality', () {
-      test('должен быть равен при одинаковых полях', () {
+      test('should be equal при одинаковых полях', () {
         const CoverInfo a = CoverInfo(
           externalId: 1,
           mediaType: MediaType.game,
@@ -155,7 +155,7 @@ void main() {
         expect(a.hashCode, equals(b.hashCode));
       });
 
-      test('не должен быть равен при разных externalId', () {
+      test('не should be equal при разных externalId', () {
         const CoverInfo a = CoverInfo(
           externalId: 1,
           mediaType: MediaType.game,
@@ -168,7 +168,7 @@ void main() {
         expect(a, isNot(equals(b)));
       });
 
-      test('не должен быть равен при разных mediaType', () {
+      test('не should be equal при разных mediaType', () {
         const CoverInfo a = CoverInfo(
           externalId: 1,
           mediaType: MediaType.game,
@@ -181,7 +181,7 @@ void main() {
         expect(a, isNot(equals(b)));
       });
 
-      test('не должен быть равен при разных platformId', () {
+      test('не should be equal при разных platformId', () {
         const CoverInfo a = CoverInfo(
           externalId: 1,
           mediaType: MediaType.game,
@@ -196,7 +196,7 @@ void main() {
         expect(a, isNot(equals(b)));
       });
 
-      test('не должен быть равен при разных thumbnailUrl', () {
+      test('не should be equal при разных thumbnailUrl', () {
         const CoverInfo a = CoverInfo(
           externalId: 1,
           mediaType: MediaType.game,
@@ -213,7 +213,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен содержать все поля', () {
+      test('should contain все поля', () {
         const CoverInfo info = CoverInfo(
           externalId: 42,
           mediaType: MediaType.movie,

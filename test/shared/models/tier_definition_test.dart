@@ -8,7 +8,7 @@ import '../../helpers/test_helpers.dart';
 void main() {
   group('TierDefinition', () {
     group('fromDb', () {
-      test('должен создавать из записи БД', () {
+      test('should create из записи БД', () {
         final TierDefinition def = TierDefinition.fromDb(<String, dynamic>{
           'tier_key': 'S',
           'label': 'S',
@@ -24,7 +24,7 @@ void main() {
     });
 
     group('toDb', () {
-      test('должен сериализовать с tierListId', () {
+      test('should serialize с tierListId', () {
         final TierDefinition def = createTestTierDefinition(
           tierKey: 'A',
           label: 'A',
@@ -61,7 +61,7 @@ void main() {
     });
 
     group('defaults', () {
-      test('должен содержать 4 тира', () {
+      test('should contain 4 тира', () {
         expect(TierDefinition.defaults, hasLength(4));
       });
 

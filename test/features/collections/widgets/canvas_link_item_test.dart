@@ -41,7 +41,7 @@ void main() {
     }
 
     testWidgets(
-      'должен показать Card',
+      'should show Card',
       (WidgetTester tester) async {
         final CanvasItem item = createLinkItem(
           data: <String, dynamic>{
@@ -73,7 +73,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показывать url если label отсутствует',
+      'should show url если label отсутствует',
       (WidgetTester tester) async {
         final CanvasItem item = createLinkItem(
           data: <String, dynamic>{'url': 'https://example.com'},
@@ -86,7 +86,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показывать "Link" если data null',
+      'should show "Link" если data null',
       (WidgetTester tester) async {
         final CanvasItem item = createLinkItem(data: null);
 
@@ -135,7 +135,7 @@ void main() {
     );
 
     testWidgets(
-      'должен содержать GestureDetector для doubleTap',
+      'should contain GestureDetector для doubleTap',
       (WidgetTester tester) async {
         final CanvasItem item = createLinkItem(
           data: <String, dynamic>{

@@ -6,7 +6,7 @@ import '../../helpers/test_helpers.dart';
 void main() {
   group('CollectionTag', () {
     group('fromDb', () {
-      test('должен создавать из записи БД', () {
+      test('should create из записи БД', () {
         final CollectionTag tag = CollectionTag.fromDb(<String, dynamic>{
           'id': 1,
           'collection_id': 5,
@@ -24,7 +24,7 @@ void main() {
         expect(tag.createdAt, 1700000000);
       });
 
-      test('должен обрабатывать null color и sort_order', () {
+      test('should handle null color и sort_order', () {
         final CollectionTag tag = CollectionTag.fromDb(<String, dynamic>{
           'id': 2,
           'collection_id': 1,
@@ -40,7 +40,7 @@ void main() {
     });
 
     group('fromExport', () {
-      test('должен создавать из экспортных данных', () {
+      test('should create из экспортных данных', () {
         final CollectionTag tag = CollectionTag.fromExport(<String, dynamic>{
           'name': 'Favorites',
           'color': 4278190080,
@@ -54,7 +54,7 @@ void main() {
         expect(tag.collectionId, 0);
       });
 
-      test('должен обрабатывать минимальные данные', () {
+      test('should handle минимальные данные', () {
         final CollectionTag tag = CollectionTag.fromExport(<String, dynamic>{
           'name': 'Test',
         });
@@ -66,7 +66,7 @@ void main() {
     });
 
     group('toDb', () {
-      test('должен сериализовать все поля', () {
+      test('should serialize все поля', () {
         final CollectionTag tag = createTestCollectionTag(
           id: 3,
           collectionId: 7,
@@ -149,7 +149,7 @@ void main() {
         expect(copy.color, isNull);
       });
 
-      test('должен сохранять все поля без изменений', () {
+      test('should preserve все поля без изменений', () {
         final CollectionTag original = createTestCollectionTag(
           id: 5,
           collectionId: 3,

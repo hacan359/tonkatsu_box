@@ -61,7 +61,7 @@ void main() {
       expect(find.text('Esc'), findsNothing);
     });
 
-    testWidgets('показывает overlay при нажатии печатного символа', (
+    testWidgets('показывает overlay when pressed печатного символа', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildWidget(
@@ -144,7 +144,7 @@ void main() {
       expect(find.text('Esc'), findsOneWidget);
     });
 
-    testWidgets('очищает при тапе на кнопку закрыть', (
+    testWidgets('очищает when tapped on кнопку закрыть', (
       WidgetTester tester,
     ) async {
       final List<String> calls = <String>[];

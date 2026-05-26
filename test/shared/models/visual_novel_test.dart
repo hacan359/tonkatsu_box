@@ -6,7 +6,7 @@ import 'package:xerabora/shared/models/visual_novel.dart';
 void main() {
   group('VisualNovel', () {
     group('fromJson', () {
-      test('должен создать VisualNovel из полного JSON', () {
+      test('should create VisualNovel из полного JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 'v17',
           'title': 'Ever17',
@@ -55,7 +55,7 @@ void main() {
         expect(vn.externalUrl, 'https://vndb.org/v17');
       });
 
-      test('должен создать VisualNovel из минимального JSON', () {
+      test('should create VisualNovel из минимального JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 'v2',
           'title': 'Kanon',
@@ -95,7 +95,7 @@ void main() {
         expect(vn.tags, <String>['High', 'Mid', 'Low']);
       });
 
-      test('должен пропускать теги и девелоперов с null name', () {
+      test('should skip теги и девелоперов с null name', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 'v1',
           'title': 'Test',
@@ -129,7 +129,7 @@ void main() {
         expect(vn.description, 'Bold and italic with link and hidden.');
       });
 
-      test('должен вернуть null description для пустого текста после очистки',
+      test('should return null description для пустого текста после очистки',
           () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 'v1',
@@ -144,7 +144,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создать VisualNovel из записи БД', () {
+      test('should create VisualNovel из записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 'v17',
           'title': 'Ever17',
@@ -174,7 +174,7 @@ void main() {
         expect(vn.updatedAt, 1700000000);
       });
 
-      test('должен обработать null JSON строки', () {
+      test('should handle null JSON строки', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 'v1',
           'title': 'Test',
@@ -200,7 +200,7 @@ void main() {
         expect(vn.platforms, isNull);
       });
 
-      test('должен обработать пустые JSON строки', () {
+      test('should handle пустые JSON строки', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 'v1',
           'title': 'Test',
@@ -226,7 +226,7 @@ void main() {
         expect(vn.platforms, isNull);
       });
 
-      test('должен обработать повреждённые JSON строки', () {
+      test('should handle повреждённые JSON строки', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 'v1',
           'title': 'Test',
@@ -254,7 +254,7 @@ void main() {
     });
 
     group('toDb', () {
-      test('должен сериализовать в Map', () {
+      test('should serialize в Map', () {
         const VisualNovel vn = VisualNovel(
           id: 'v17',
           title: 'Ever17',
@@ -285,7 +285,7 @@ void main() {
         expect(db['updated_at'], 1700000000);
       });
 
-      test('должен сериализовать null поля', () {
+      test('should serialize null поля', () {
         const VisualNovel vn = VisualNovel(
           id: 'v1',
           title: 'Test',
@@ -301,7 +301,7 @@ void main() {
     });
 
     group('toExport', () {
-      test('должен исключить updated_at', () {
+      test('should exclude updated_at', () {
         const VisualNovel vn = VisualNovel(
           id: 'v17',
           title: 'Ever17',
@@ -316,7 +316,7 @@ void main() {
     });
 
     group('copyWith', () {
-      test('должен создать копию с изменёнными полями', () {
+      test('should create копию с изменёнными полями', () {
         const VisualNovel original = VisualNovel(
           id: 'v17',
           title: 'Ever17',
@@ -330,7 +330,7 @@ void main() {
         expect(copy.rating, 85.5);
       });
 
-      test('должен сохранить все поля при пустом copyWith', () {
+      test('should preserve все поля when empty copyWith', () {
         const VisualNovel original = VisualNovel(
           id: 'v17',
           title: 'Ever17',
@@ -359,24 +359,24 @@ void main() {
         expect(() => vn.numericId, throwsA(isA<FormatException>()));
       });
 
-      test('rating10 должен нормализовать к 0-10', () {
+      test('rating10 should normalize к 0-10', () {
         const VisualNovel vn =
             VisualNovel(id: 'v1', title: 'Test', rating: 85.0);
         expect(vn.rating10, 8.5);
       });
 
-      test('rating10 должен вернуть null при null rating', () {
+      test('rating10 should return null when null rating', () {
         const VisualNovel vn = VisualNovel(id: 'v1', title: 'Test');
         expect(vn.rating10, isNull);
       });
 
-      test('formattedRating должен форматировать до 1 знака', () {
+      test('formattedRating should format до 1 знака', () {
         const VisualNovel vn =
             VisualNovel(id: 'v1', title: 'Test', rating: 85.53);
         expect(vn.formattedRating, '8.6');
       });
 
-      test('formattedRating должен вернуть null при null rating', () {
+      test('formattedRating should return null when null rating', () {
         const VisualNovel vn = VisualNovel(id: 'v1', title: 'Test');
         expect(vn.formattedRating, isNull);
       });
@@ -387,18 +387,18 @@ void main() {
         expect(vn.releaseYear, 2002);
       });
 
-      test('releaseYear должен вернуть null для короткой строки', () {
+      test('releaseYear should return null для короткой строки', () {
         const VisualNovel vn =
             VisualNovel(id: 'v1', title: 'Test', released: '20');
         expect(vn.releaseYear, isNull);
       });
 
-      test('releaseYear должен вернуть null при null released', () {
+      test('releaseYear should return null when null released', () {
         const VisualNovel vn = VisualNovel(id: 'v1', title: 'Test');
         expect(vn.releaseYear, isNull);
       });
 
-      test('genresString должен объединить теги через запятую', () {
+      test('genresString should join теги через запятую', () {
         const VisualNovel vn = VisualNovel(
           id: 'v1',
           title: 'Test',
@@ -407,12 +407,12 @@ void main() {
         expect(vn.genresString, 'Sci-fi, Mystery');
       });
 
-      test('genresString должен вернуть null при null tags', () {
+      test('genresString should return null when null tags', () {
         const VisualNovel vn = VisualNovel(id: 'v1', title: 'Test');
         expect(vn.genresString, isNull);
       });
 
-      test('lengthLabel должен вернуть метку для каждой категории', () {
+      test('lengthLabel should return метку для каждой категории', () {
         for (final MapEntry<int, String> entry
             in <int, String>{
               1: '< 2h',
@@ -427,18 +427,18 @@ void main() {
         }
       });
 
-      test('lengthLabel должен вернуть null для неизвестной категории', () {
+      test('lengthLabel should return null для неизвестной категории', () {
         const VisualNovel vn =
             VisualNovel(id: 'v1', title: 'Test', length: 99);
         expect(vn.lengthLabel, isNull);
       });
 
-      test('lengthLabel должен вернуть null при null length', () {
+      test('lengthLabel should return null when null length', () {
         const VisualNovel vn = VisualNovel(id: 'v1', title: 'Test');
         expect(vn.lengthLabel, isNull);
       });
 
-      test('developersString должен объединить разработчиков', () {
+      test('developersString should join разработчиков', () {
         const VisualNovel vn = VisualNovel(
           id: 'v1',
           title: 'Test',
@@ -456,7 +456,7 @@ void main() {
         expect(vn.platformsString, 'Windows, PS2, PSP');
       });
 
-      test('platformsString должен использовать uppercase для неизвестных', () {
+      test('platformsString should use uppercase для неизвестных', () {
         const VisualNovel vn = VisualNovel(
           id: 'v1',
           title: 'Test',
@@ -467,19 +467,19 @@ void main() {
     });
 
     group('equality', () {
-      test('должен быть равен при одинаковом id', () {
+      test('should be equal при same id', () {
         const VisualNovel a = VisualNovel(id: 'v17', title: 'A');
         const VisualNovel b = VisualNovel(id: 'v17', title: 'B');
         expect(a, equals(b));
       });
 
-      test('не должен быть равен при разных id', () {
+      test('не should be equal при different ids', () {
         const VisualNovel a = VisualNovel(id: 'v17', title: 'A');
         const VisualNovel b = VisualNovel(id: 'v2', title: 'A');
         expect(a, isNot(equals(b)));
       });
 
-      test('hashCode должен зависеть от id', () {
+      test('hashCode should depend by id', () {
         const VisualNovel a = VisualNovel(id: 'v17', title: 'A');
         const VisualNovel b = VisualNovel(id: 'v17', title: 'B');
         expect(a.hashCode, equals(b.hashCode));
@@ -487,7 +487,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен содержать id и title', () {
+      test('should contain id и title', () {
         const VisualNovel vn = VisualNovel(id: 'v17', title: 'Ever17');
         expect(vn.toString(), 'VisualNovel(id: v17, title: Ever17)');
       });
@@ -496,7 +496,7 @@ void main() {
 
   group('VndbTag', () {
     group('fromJson', () {
-      test('должен создать VndbTag из JSON', () {
+      test('should create VndbTag из JSON', () {
         final VndbTag tag = VndbTag.fromJson(<String, dynamic>{
           'id': 'g7',
           'name': 'Sci-fi',
@@ -507,7 +507,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создать VndbTag из записи БД', () {
+      test('should create VndbTag из записи БД', () {
         final VndbTag tag = VndbTag.fromDb(<String, dynamic>{
           'id': 'g7',
           'name': 'Sci-fi',
@@ -518,7 +518,7 @@ void main() {
     });
 
     group('toDb', () {
-      test('должен сериализовать в Map', () {
+      test('should serialize в Map', () {
         const VndbTag tag = VndbTag(id: 'g7', name: 'Sci-fi');
         final Map<String, dynamic> db = tag.toDb();
         expect(db['id'], 'g7');
@@ -527,13 +527,13 @@ void main() {
     });
 
     group('equality', () {
-      test('должен быть равен при одинаковом id', () {
+      test('should be equal при same id', () {
         const VndbTag a = VndbTag(id: 'g7', name: 'A');
         const VndbTag b = VndbTag(id: 'g7', name: 'B');
         expect(a, equals(b));
       });
 
-      test('не должен быть равен при разных id', () {
+      test('не should be equal при different ids', () {
         const VndbTag a = VndbTag(id: 'g7', name: 'A');
         const VndbTag b = VndbTag(id: 'g8', name: 'A');
         expect(a, isNot(equals(b)));
@@ -541,7 +541,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен содержать id и name', () {
+      test('should contain id и name', () {
         const VndbTag tag = VndbTag(id: 'g7', name: 'Sci-fi');
         expect(tag.toString(), 'VndbTag(id: g7, name: Sci-fi)');
       });

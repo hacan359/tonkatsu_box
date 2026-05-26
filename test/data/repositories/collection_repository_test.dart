@@ -12,7 +12,7 @@ void main() {
 
   group('CollectionStats', () {
     group('constructor', () {
-      test('должен создавать экземпляр с обязательными полями 2', () {
+      test('should create экземпляр с обязательными полями 2', () {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 3,
@@ -32,7 +32,7 @@ void main() {
     });
 
     group('completionPercent', () {
-      test('должен возвращать правильный процент', () {
+      test('should return правильный процент', () {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 5,
@@ -45,7 +45,7 @@ void main() {
         expect(stats.completionPercent, 50.0);
       });
 
-      test('должен возвращать 0 при пустой коллекции', () {
+      test('should return 0 при пустой коллекции', () {
         const CollectionStats stats = CollectionStats(
           total: 0,
           completed: 0,
@@ -58,7 +58,7 @@ void main() {
         expect(stats.completionPercent, 0.0);
       });
 
-      test('должен возвращать 100 при полном прохождении', () {
+      test('should return 100 при полном прохождении', () {
         const CollectionStats stats = CollectionStats(
           total: 5,
           completed: 5,
@@ -71,7 +71,7 @@ void main() {
         expect(stats.completionPercent, 100.0);
       });
 
-      test('должен обрабатывать дробные проценты', () {
+      test('should handle дробные проценты', () {
         const CollectionStats stats = CollectionStats(
           total: 3,
           completed: 1,
@@ -86,7 +86,7 @@ void main() {
     });
 
     group('completionPercentFormatted', () {
-      test('должен возвращать форматированный процент', () {
+      test('should return форматированный процент', () {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 5,
@@ -112,7 +112,7 @@ void main() {
         expect(stats.completionPercentFormatted, '33%');
       });
 
-      test('должен возвращать 0% для пустой коллекции', () {
+      test('should return 0% для пустой коллекции', () {
         expect(CollectionStats.empty.completionPercentFormatted, '0%');
       });
     });
@@ -154,7 +154,7 @@ void main() {
         verify(() => mockDb.getAllCollections()).called(1);
       });
 
-      test('должен возвращать пустой список когда нет коллекций', () async {
+      test('should return пустой список когда нет коллекций', () async {
         when(() => mockDb.getAllCollections())
             .thenAnswer((_) async => <Collection>[]);
 
@@ -165,7 +165,7 @@ void main() {
     });
 
     group('getByType', () {
-      test('должен возвращать коллекции указанного типа', () async {
+      test('should return коллекции указанного типа', () async {
         final List<Collection> ownCollections = <Collection>[
           createTestCollection(id: 1, type: CollectionType.own),
         ];
@@ -180,7 +180,7 @@ void main() {
         verify(() => mockDb.getCollectionsByType(CollectionType.own)).called(1);
       });
 
-      test('должен возвращать пустой список для типа без коллекций', () async {
+      test('should return пустой список для типа без коллекций', () async {
         when(() => mockDb.getCollectionsByType(CollectionType.imported))
             .thenAnswer((_) async => <Collection>[]);
 
@@ -192,7 +192,7 @@ void main() {
     });
 
     group('getById', () {
-      test('должен возвращать коллекцию по ID', () async {
+      test('should return коллекцию по ID', () async {
         final Collection collection = createTestCollection(id: 42);
 
         when(() => mockDb.getCollectionById(42))
@@ -204,7 +204,7 @@ void main() {
         verify(() => mockDb.getCollectionById(42)).called(1);
       });
 
-      test('должен возвращать null для несуществующего ID', () async {
+      test('should return null для несуществующего ID', () async {
         when(() => mockDb.getCollectionById(999))
             .thenAnswer((_) async => null);
 
@@ -215,7 +215,7 @@ void main() {
     });
 
     group('create', () {
-      test('должен создавать коллекцию с переданными параметрами', () async {
+      test('should create коллекцию с переданными параметрами', () async {
         final Collection newCollection = createTestCollection(
           id: 1,
           name: 'New Collection',
@@ -267,7 +267,7 @@ void main() {
     });
 
     group('updateName', () {
-      test('должен обновлять название коллекции', () async {
+      test('should update название коллекции', () async {
         when(() => mockDb.updateCollection(1, name: 'New Name'))
             .thenAnswer((_) async {});
 
@@ -278,7 +278,7 @@ void main() {
     });
 
     group('delete', () {
-      test('должен удалять коллекцию', () async {
+      test('should delete коллекцию', () async {
         when(() => mockDb.deleteCollection(1)).thenAnswer((_) async {});
 
         await repository.delete(1);
@@ -288,7 +288,7 @@ void main() {
     });
 
     group('getCount', () {
-      test('должен возвращать количество коллекций', () async {
+      test('should return количество коллекций', () async {
         when(() => mockDb.getCollectionCount()).thenAnswer((_) async => 5);
 
         final int count = await repository.getCount();
@@ -299,7 +299,7 @@ void main() {
     });
 
     group('getStats', () {
-      test('должен возвращать статистику коллекции', () async {
+      test('should return статистику коллекции', () async {
         when(() => mockDb.getCollectionItemStats(1)).thenAnswer(
           (_) async => <String, int>{
             'total': 10,
@@ -324,7 +324,7 @@ void main() {
         expect(stats.planned, 0);
       });
 
-      test('должен обрабатывать пустую статистику', () async {
+      test('should handle пустую статистику', () async {
         when(() => mockDb.getCollectionItemStats(1)).thenAnswer(
           (_) async => <String, int>{},
         );
@@ -337,7 +337,7 @@ void main() {
     });
 
     group('moveItemToCollection', () {
-      test('должен возвращать true при успешном перемещении', () async {
+      test('should return true при успешном перемещении', () async {
         when(() => mockDb.updateItemCollectionId(10, 5))
             .thenAnswer((_) async => true);
 
@@ -347,7 +347,7 @@ void main() {
         verify(() => mockDb.updateItemCollectionId(10, 5)).called(1);
       });
 
-      test('должен возвращать true при перемещении в uncategorized (null)',
+      test('should return true при перемещении в uncategorized (null)',
           () async {
         when(() => mockDb.updateItemCollectionId(10, null))
             .thenAnswer((_) async => true);
@@ -358,7 +358,7 @@ void main() {
         verify(() => mockDb.updateItemCollectionId(10, null)).called(1);
       });
 
-      test('должен возвращать false при дубликате (UNIQUE constraint)',
+      test('should return false при дубликате (UNIQUE constraint)',
           () async {
         when(() => mockDb.updateItemCollectionId(10, 5))
             .thenAnswer((_) async => false);
@@ -380,7 +380,7 @@ void main() {
     });
 
     group('cloneItemToCollection', () {
-      test('должен возвращать ID нового элемента при успехе', () async {
+      test('should return ID нового элемента on success', () async {
         when(() => mockDb.cloneItemToCollection(10, 5))
             .thenAnswer((_) async => 99);
 
@@ -390,7 +390,7 @@ void main() {
         verify(() => mockDb.cloneItemToCollection(10, 5)).called(1);
       });
 
-      test('должен возвращать null при дубликате', () async {
+      test('should return null при дубликате', () async {
         when(() => mockDb.cloneItemToCollection(10, 5))
             .thenAnswer((_) async => null);
 

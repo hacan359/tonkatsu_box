@@ -53,7 +53,7 @@ void main() {
       expect(find.byType(MaterialApp), findsOneWidget);
     });
 
-    testWidgets('должен показывать SplashScreen при запуске',
+    testWidgets('should show SplashScreen при запуске',
         (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -73,7 +73,7 @@ void main() {
       expect(find.byType(SplashScreen), findsOneWidget);
     });
 
-    testWidgets('должен показывать AppShell после splash анимации',
+    testWidgets('should show AppShell после splash анимации',
         (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{
         kWelcomeCompletedKey: true,
@@ -98,7 +98,7 @@ void main() {
       expect(find.byType(AppShell), findsOneWidget);
     });
 
-    testWidgets('должен показывать WelcomeScreen при первом запуске',
+    testWidgets('should show WelcomeScreen при первом запуске',
         (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -121,7 +121,7 @@ void main() {
       expect(find.byType(WelcomeScreen), findsOneWidget);
     });
 
-    testWidgets('должен использовать Material 3', (WidgetTester tester) async {
+    testWidgets('should use Material 3', (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -209,7 +209,7 @@ void main() {
       expect(find.byType(AppBottomBar), findsNothing);
     });
 
-    testWidgets('должен скрывать debug banner', (WidgetTester tester) async {
+    testWidgets('should hide debug banner', (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final SharedPreferences prefs = await SharedPreferences.getInstance();
 

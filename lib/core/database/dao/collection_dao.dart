@@ -817,6 +817,7 @@ class CollectionDao {
             WHEN 'visual_novel' THEN vn.image_url
             WHEN 'manga' THEN mc.cover_url
             WHEN 'anime' THEN ac.cover_url
+            WHEN 'custom' THEN cm.cover_url
           END AS thumbnail_url
         FROM collection_items ci
         LEFT JOIN games g
@@ -837,6 +838,8 @@ class CollectionDao {
           ON ci.media_type = 'manga' AND ci.external_id = mc.id
         LEFT JOIN anime_cache ac
           ON ci.media_type = 'anime' AND ci.external_id = ac.id
+        LEFT JOIN custom_items cm
+          ON ci.media_type = 'custom' AND ci.external_id = cm.id
         WHERE $whereClause
       )
       WHERE thumbnail_url IS NOT NULL

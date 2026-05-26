@@ -16,7 +16,7 @@ void main() {
 
     group('showCanvasMenu', () {
       testWidgets(
-        'должен показать меню с пунктами Add Text, Add Image, Add Link',
+        'should show меню с пунктами Add Text, Add Image, Add Link',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -47,7 +47,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onAddText при выборе Add Text',
+        'should call onAddText при выборе Add Text',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -80,7 +80,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onAddImage при выборе Add Image',
+        'should call onAddImage при выборе Add Image',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -113,7 +113,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onAddLink при выборе Add Link',
+        'should call onAddLink при выборе Add Link',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -146,7 +146,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать пункт Find images когда onFindImages передан',
+        'should show пункт Find images когда onFindImages передан',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -176,7 +176,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать Find images когда onFindImages не передан',
+        'не should show Find images когда onFindImages не передан',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -205,7 +205,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onFindImages при выборе Find images',
+        'should call onFindImages при выборе Find images',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -239,7 +239,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать пункт Browse maps когда onBrowseMaps передан',
+        'should show пункт Browse maps когда onBrowseMaps передан',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -269,7 +269,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать Browse maps когда onBrowseMaps не передан',
+        'не should show Browse maps когда onBrowseMaps не передан',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -298,7 +298,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onBrowseMaps при выборе Browse maps',
+        'should call onBrowseMaps при выборе Browse maps',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -372,7 +372,7 @@ void main() {
 
     group('showItemMenu', () {
       testWidgets(
-        'должен показать Edit для типа text',
+        'should show Edit для типа text',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -406,7 +406,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать Edit для типа game',
+        'не should show Edit для типа game',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -437,7 +437,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать Edit для типов image и link',
+        'should show Edit для типов image и link',
         (WidgetTester tester) async {
           for (final CanvasItemType type in <CanvasItemType>[
             CanvasItemType.image,
@@ -477,7 +477,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onEdit при выборе Edit',
+        'should call onEdit при выборе Edit',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -512,7 +512,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать диалог подтверждения при выборе Delete',
+        'should show диалог подтверждения при выборе Delete',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestApp(
             child: Builder(
@@ -549,7 +549,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onDelete при подтверждении удаления',
+        'should call onDelete при подтверждении удаления',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -586,7 +586,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен вызывать onDelete при отмене удаления',
+        'не should call onDelete при отмене удаления',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -623,7 +623,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onBringToFront при выборе Bring to Front',
+        'should call onBringToFront при выборе Bring to Front',
         (WidgetTester tester) async {
           bool called = false;
 
@@ -657,7 +657,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onSendToBack при выборе Send to Back',
+        'should call onSendToBack при выборе Send to Back',
         (WidgetTester tester) async {
           bool called = false;
 

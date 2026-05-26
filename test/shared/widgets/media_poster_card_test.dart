@@ -67,7 +67,7 @@ void main() {
     });
 
     group('grid variant', () {
-      testWidgets('должен показать название',
+      testWidgets('should show название',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(title: 'The Witcher 3'));
         await tester.pumpAndSettle();
@@ -75,7 +75,7 @@ void main() {
         expect(find.text('The Witcher 3'), findsOneWidget);
       });
 
-      testWidgets('должен показать год и подзаголовок',
+      testWidgets('should show год и подзаголовок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(year: 2015, subtitle: 'RPG'));
         await tester.pumpAndSettle();
@@ -83,7 +83,7 @@ void main() {
         expect(find.text('2015 · RPG'), findsOneWidget);
       });
 
-      testWidgets('должен показать только год без подзаголовка',
+      testWidgets('should show только год без подзаголовка',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(year: 2015));
         await tester.pumpAndSettle();
@@ -91,7 +91,7 @@ void main() {
         expect(find.text('2015'), findsOneWidget);
       });
 
-      testWidgets('должен показать только подзаголовок без года',
+      testWidgets('should show только подзаголовок без года',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(subtitle: 'Action'));
         await tester.pumpAndSettle();
@@ -99,7 +99,7 @@ void main() {
         expect(find.text('Action'), findsOneWidget);
       });
 
-      testWidgets('должен показать DualRatingBadge с рейтингами',
+      testWidgets('should show DualRatingBadge с рейтингами',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(userRating: 8, apiRating: 7.5));
         await tester.pumpAndSettle();
@@ -108,7 +108,7 @@ void main() {
         expect(find.text('8 / 7.5'), findsOneWidget);
       });
 
-      testWidgets('не должен показывать DualRatingBadge без рейтингов',
+      testWidgets('не should show DualRatingBadge без рейтингов',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard());
         await tester.pumpAndSettle();
@@ -116,7 +116,7 @@ void main() {
         expect(find.byType(DualRatingBadge), findsNothing);
       });
 
-      testWidgets('должен обработать onTap', (WidgetTester tester) async {
+      testWidgets('should handle onTap', (WidgetTester tester) async {
         bool tapped = false;
         await tester.pumpWidget(buildCard(onTap: () => tapped = true));
         await tester.pumpAndSettle();
@@ -125,7 +125,7 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('должен обработать onLongPress',
+      testWidgets('should handle onLongPress',
           (WidgetTester tester) async {
         bool longPressed = false;
         await tester.pumpWidget(
@@ -137,7 +137,7 @@ void main() {
         expect(longPressed, isTrue);
       });
 
-      testWidgets('должен использовать click курсор при наличии onTap',
+      testWidgets('should use click курсор при наличии onTap',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(onTap: () {}));
         await tester.pumpAndSettle();
@@ -152,7 +152,7 @@ void main() {
         expect(region.cursor, SystemMouseCursors.click);
       });
 
-      testWidgets('должен использовать basic курсор без onTap',
+      testWidgets('should use basic курсор без onTap',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard());
         await tester.pumpAndSettle();
@@ -181,7 +181,7 @@ void main() {
     });
 
     group('compact variant', () {
-      testWidgets('должен показать название',
+      testWidgets('should show название',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           variant: CardVariant.compact,
@@ -207,7 +207,7 @@ void main() {
     });
 
     group('canvas variant', () {
-      testWidgets('должен показать название в Card',
+      testWidgets('should show название в Card',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           variant: CardVariant.canvas,
@@ -220,7 +220,7 @@ void main() {
         expect(find.byType(Card), findsOneWidget);
       });
 
-      testWidgets('не должен показывать DualRatingBadge на canvas',
+      testWidgets('не should show DualRatingBadge на canvas',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           variant: CardVariant.canvas,
@@ -233,7 +233,7 @@ void main() {
         expect(find.byType(DualRatingBadge), findsNothing);
       });
 
-      testWidgets('не должен показывать год/подзаголовок на canvas',
+      testWidgets('не should show год/подзаголовок на canvas',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           variant: CardVariant.canvas,
@@ -246,7 +246,7 @@ void main() {
         expect(find.text('2015 · RPG'), findsNothing);
       });
 
-      testWidgets('должен обработать onTap на canvas',
+      testWidgets('should handle onTap на canvas',
           (WidgetTester tester) async {
         bool tapped = false;
         await tester.pumpWidget(buildCard(
@@ -302,7 +302,7 @@ void main() {
         expect(text.overflow, TextOverflow.ellipsis);
       });
 
-      testWidgets('должен показывать Tooltip с полным названием',
+      testWidgets('should show Tooltip с полным названием',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           title: 'Wolfenstein II: The New Colossus',
@@ -317,7 +317,7 @@ void main() {
     });
 
     group('onOpenInCollection', () {
-      testWidgets('должен вызвать onOpenInCollection при тапе',
+      testWidgets('should call onOpenInCollection when tapped',
           (WidgetTester tester) async {
         bool opened = false;
         await tester.pumpWidget(buildCard(

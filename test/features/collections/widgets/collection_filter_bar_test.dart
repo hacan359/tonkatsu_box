@@ -238,7 +238,7 @@ void main() {
     });
 
     group('type chevron-сегменты', () {
-      testWidgets('должен вызвать onTypeToggled с типом при тапе', (
+      testWidgets('should call onTypeToggled с типом when tapped', (
         WidgetTester tester,
       ) async {
         MediaType? tappedType;
@@ -266,7 +266,7 @@ void main() {
 
     group('платформы (ChoiceChip)', () {
       testWidgets(
-        'должен показать платформы из игровых элементов когда активен фильтр Games',
+        'should show платформы из игровых элементов когда активен фильтр Games',
         (WidgetTester tester) async {
           await tester.pumpWidget(
             _buildTestApp(
@@ -385,7 +385,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вызвать onPlatformToggled при тапе на платформу',
+        'should call onPlatformToggled when tapped on платформу',
         (WidgetTester tester) async {
           int? tappedPlatformId;
 

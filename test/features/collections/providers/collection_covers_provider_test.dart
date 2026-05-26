@@ -24,7 +24,7 @@ void main() {
   }
 
   group('collectionCoversProvider', () {
-    test('должен вернуть обложки для коллекции', () async {
+    test('should return обложки для коллекции', () async {
       const List<CoverInfo> covers = <CoverInfo>[
         CoverInfo(
           externalId: 1,
@@ -53,7 +53,7 @@ void main() {
       verify(() => mockDb.getCollectionCovers(42, limit: 6)).called(1);
     });
 
-    test('должен вернуть пустой список для пустой коллекции', () async {
+    test('should return пустой список для пустой коллекции', () async {
       when(() => mockDb.getCollectionCovers(99, limit: 6))
           .thenAnswer((_) async => <CoverInfo>[]);
 
@@ -66,7 +66,7 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('должен поддерживать null collectionId (uncategorized)', () async {
+    test('should support null collectionId (uncategorized)', () async {
       const List<CoverInfo> covers = <CoverInfo>[
         CoverInfo(
           externalId: 10,
@@ -88,7 +88,7 @@ void main() {
       verify(() => mockDb.getCollectionCovers(null, limit: 6)).called(1);
     });
 
-    test('должен вернуть ошибку при сбое БД', () async {
+    test('should return ошибку при сбое БД', () async {
       when(() => mockDb.getCollectionCovers(1, limit: 6))
           .thenThrow(Exception('DB error'));
 

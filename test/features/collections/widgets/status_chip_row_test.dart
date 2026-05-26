@@ -27,7 +27,7 @@ void main() {
 
   group('StatusChipRow', () {
     group('тап на сегмент', () {
-      testWidgets('должен вызывать onChanged с inProgress',
+      testWidgets('should call onChanged с inProgress',
           (WidgetTester tester) async {
         ItemStatus? changedTo;
 
@@ -41,7 +41,7 @@ void main() {
         expect(changedTo, ItemStatus.inProgress);
       });
 
-      testWidgets('должен вызывать onChanged с completed',
+      testWidgets('should call onChanged с completed',
           (WidgetTester tester) async {
         ItemStatus? changedTo;
 
@@ -55,7 +55,7 @@ void main() {
         expect(changedTo, ItemStatus.completed);
       });
 
-      testWidgets('должен вызывать onChanged при тапе на уже выбранный',
+      testWidgets('should call onChanged when tapped on уже выбранный',
           (WidgetTester tester) async {
         ItemStatus? changedTo;
 

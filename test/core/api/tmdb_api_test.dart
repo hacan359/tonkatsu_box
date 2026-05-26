@@ -139,14 +139,14 @@ void main() {
   }
 
   group('TmdbApiException', () {
-    test('должен создать с сообщением', () {
+    test('should create с сообщением', () {
       const TmdbApiException exception = TmdbApiException('Test error');
 
       expect(exception.message, equals('Test error'));
       expect(exception.statusCode, isNull);
     });
 
-    test('должен создать с сообщением и кодом', () {
+    test('should create с сообщением и кодом', () {
       const TmdbApiException exception = TmdbApiException(
         'Test error',
         statusCode: 401,
@@ -156,7 +156,7 @@ void main() {
       expect(exception.statusCode, equals(401));
     });
 
-    test('toString должен вернуть строковое представление', () {
+    test('toString should return строковое представление', () {
       const TmdbApiException exception = TmdbApiException(
         'Test error',
         statusCode: 401,
@@ -168,7 +168,7 @@ void main() {
       );
     });
 
-    test('toString должен вернуть null для statusCode если не задан', () {
+    test('toString should return null для statusCode если не задан', () {
       const TmdbApiException exception = TmdbApiException('Test error');
 
       expect(
@@ -179,7 +179,7 @@ void main() {
   });
 
   group('TmdbGenre', () {
-    test('fromJson должен создать жанр из JSON', () {
+    test('fromJson should create жанр из JSON', () {
       final Map<String, dynamic> json = <String, dynamic>{
         'id': 28,
         'name': 'Action',
@@ -191,7 +191,7 @@ void main() {
       expect(genre.name, equals('Action'));
     });
 
-    test('fromJson должен создать жанр с русским названием', () {
+    test('fromJson should create жанр с русским названием', () {
       final Map<String, dynamic> json = <String, dynamic>{
         'id': 18,
         'name': 'Драма',
@@ -206,7 +206,7 @@ void main() {
 
   group('TmdbApi', () {
     group('setApiKey', () {
-      test('должен установить API ключ', () {
+      test('should set API ключ', () {
         sut.setApiKey(testApiKey);
 
         when(() => mockDio.get<dynamic>(
@@ -356,7 +356,7 @@ void main() {
     });
 
     group('validateApiKey', () {
-      test('должен вернуть true при валидном ключе', () async {
+      test('should return true при валидном ключе', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -371,7 +371,7 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('должен вернуть false при невалидном ключе (DioException)', () async {
+      test('should return false при невалидном ключе (DioException)', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -388,7 +388,7 @@ void main() {
         expect(result, isFalse);
       });
 
-      test('должен вернуть false при ошибке соединения', () async {
+      test('should return false on error соединения', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -408,19 +408,19 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть пустой список при пустом запросе', () async {
+      test('should return пустой список when empty запросе', () async {
         final List<Movie> result = await sut.searchMovies('');
 
         expect(result, isEmpty);
       });
 
-      test('должен вернуть пустой список при запросе из пробелов', () async {
+      test('should return пустой список при запросе из пробелов', () async {
         final List<Movie> result = await sut.searchMovies('   ');
 
         expect(result, isEmpty);
       });
 
-      test('должен вернуть список фильмов при успешном ответе', () async {
+      test('should return список фильмов при успешном ответе', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
         final Map<String, dynamic> movie2 = createMovieJson(
           id: 680,
@@ -515,7 +515,7 @@ void main() {
         );
       });
 
-      test('должен выбросить TmdbApiException при ошибке соединения', () async {
+      test('должен выбросить TmdbApiException on error соединения', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -625,7 +625,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть фильм при успешном ответе', () async {
+      test('should return фильм при успешном ответе', () async {
         final Map<String, dynamic> movieJson = createMovieJson();
 
         when(() => mockDio.get<dynamic>(
@@ -650,7 +650,7 @@ void main() {
         expect(result.backdropUrl, contains('/hZkgoQYus5dXo3H8T7Uef6DNknx.jpg'));
       });
 
-      test('должен вернуть null при 404', () async {
+      test('should return null при 404', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -729,7 +729,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список популярных фильмов', () async {
+      test('should return список популярных фильмов', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
         final Map<String, dynamic> movie2 = createMovieJson(
           id: 680,
@@ -756,7 +756,7 @@ void main() {
         expect(result[1].tmdbId, equals(680));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -819,19 +819,19 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть пустой список при пустом запросе', () async {
+      test('should return пустой список when empty запросе', () async {
         final List<TvShow> result = await sut.searchTvShows('');
 
         expect(result, isEmpty);
       });
 
-      test('должен вернуть пустой список при запросе из пробелов', () async {
+      test('should return пустой список при запросе из пробелов', () async {
         final List<TvShow> result = await sut.searchTvShows('   ');
 
         expect(result, isEmpty);
       });
 
-      test('должен вернуть список сериалов при успешном ответе', () async {
+      test('should return список сериалов при успешном ответе', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
         final Map<String, dynamic> tvShow2 = createTvShowJson(
           id: 1399,
@@ -957,7 +957,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть сериал при успешном ответе', () async {
+      test('should return сериал при успешном ответе', () async {
         final Map<String, dynamic> tvShowJson = createTvShowJson();
 
         when(() => mockDio.get<dynamic>(
@@ -982,7 +982,7 @@ void main() {
         expect(result.status, equals('Ended'));
       });
 
-      test('должен вернуть null при 404', () async {
+      test('should return null при 404', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1039,7 +1039,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список сезонов при успешном ответе', () async {
+      test('should return список сезонов при успешном ответе', () async {
         final Map<String, dynamic> season1 = createSeasonJson();
         final Map<String, dynamic> season2 = createSeasonJson(
           seasonNumber: 2,
@@ -1071,7 +1071,7 @@ void main() {
         expect(result[1].episodeCount, equals(13));
       });
 
-      test('должен вернуть пустой список если нет сезонов', () async {
+      test('should return пустой список если нет сезонов', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1089,7 +1089,7 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('должен вернуть пустой список при пустом массиве сезонов', () async {
+      test('should return пустой список when empty массиве сезонов', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1150,7 +1150,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список эпизодов при успешном ответе', () async {
+      test('should return список эпизодов при успешном ответе', () async {
         final Map<String, dynamic> episode1 = createEpisodeJson();
         final Map<String, dynamic> episode2 = createEpisodeJson(
           episodeNumber: 2,
@@ -1187,7 +1187,7 @@ void main() {
         expect(result[1].runtime, equals(48));
       });
 
-      test('должен вернуть пустой список если нет эпизодов', () async {
+      test('should return пустой список если нет эпизодов', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1205,7 +1205,7 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('должен вернуть пустой список при пустом массиве', () async {
+      test('should return пустой список when empty массиве', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1282,7 +1282,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список популярных сериалов', () async {
+      test('should return список популярных сериалов', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
         final Map<String, dynamic> tvShow2 = createTvShowJson(
           id: 1399,
@@ -1309,7 +1309,7 @@ void main() {
         expect(result[1].tmdbId, equals(1399));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1370,19 +1370,19 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть пустой список при пустом запросе', () async {
+      test('should return пустой список when empty запросе', () async {
         final List<MultiSearchResult> result = await sut.multiSearch('');
 
         expect(result, isEmpty);
       });
 
-      test('должен вернуть пустой список при запросе из пробелов', () async {
+      test('should return пустой список при запросе из пробелов', () async {
         final List<MultiSearchResult> result = await sut.multiSearch('   ');
 
         expect(result, isEmpty);
       });
 
-      test('должен вернуть фильмы и сериалы, отфильтровав person', () async {
+      test('should return фильмы и сериалы, отфильтровав person', () async {
         final Map<String, dynamic> movieResult = <String, dynamic>{
           ...createMovieJson(),
           'media_type': 'movie',
@@ -1429,7 +1429,7 @@ void main() {
         expect(result[1].movie, isNull);
       });
 
-      test('должен вернуть только фильмы если нет сериалов', () async {
+      test('should return только фильмы если нет сериалов', () async {
         final Map<String, dynamic> movieResult = <String, dynamic>{
           ...createMovieJson(),
           'media_type': 'movie',
@@ -1455,7 +1455,7 @@ void main() {
         expect(result[0].movie, isNotNull);
       });
 
-      test('должен пропустить результаты с неизвестным media_type', () async {
+      test('should skip результаты с неизвестным media_type', () async {
         final Map<String, dynamic> unknownResult = <String, dynamic>{
           'id': 100,
           'name': 'Unknown',
@@ -1524,7 +1524,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список жанров фильмов', () async {
+      test('should return список жанров фильмов', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1551,7 +1551,7 @@ void main() {
         expect(result[2].name, equals('Драма'));
       });
 
-      test('должен вернуть пустой список при пустых жанрах', () async {
+      test('should return пустой список when empty жанрах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1612,7 +1612,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список жанров сериалов', () async {
+      test('should return список жанров сериалов', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1639,7 +1639,7 @@ void main() {
         expect(result[2].name, equals('Комедия'));
       });
 
-      test('должен вернуть пустой список при пустых жанрах', () async {
+      test('should return пустой список when empty жанрах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1700,7 +1700,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен обработать 404 как Resource not found', () async {
+      test('should handle 404 как Resource not found', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1745,7 +1745,7 @@ void main() {
         );
       });
 
-      test('должен обработать connectionTimeout', () async {
+      test('should handle connectionTimeout', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1764,7 +1764,7 @@ void main() {
         );
       });
 
-      test('должен обработать receiveTimeout', () async {
+      test('should handle receiveTimeout', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1783,7 +1783,7 @@ void main() {
         );
       });
 
-      test('должен обработать connectionError', () async {
+      test('should handle connectionError', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1802,7 +1802,7 @@ void main() {
         );
       });
 
-      test('должен использовать defaultMessage для неизвестных ошибок', () async {
+      test('should use defaultMessage для неизвестных ошибок', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1837,7 +1837,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список рекомендованных фильмов', () async {
+      test('should return список рекомендованных фильмов', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
         final Map<String, dynamic> movie2 = createMovieJson(
           id: 680,
@@ -1862,7 +1862,7 @@ void main() {
         expect(result[1].tmdbId, equals(680));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1911,7 +1911,7 @@ void main() {
         expect(params['page'], equals(3));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -1985,7 +1985,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список похожих фильмов', () async {
+      test('should return список похожих фильмов', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
         final Map<String, dynamic> movie2 = createMovieJson(
           id: 680,
@@ -2010,7 +2010,7 @@ void main() {
         expect(result[1].tmdbId, equals(680));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2034,7 +2034,7 @@ void main() {
         expect(url, contains('/movie/550/similar'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2108,7 +2108,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список рекомендованных сериалов', () async {
+      test('should return список рекомендованных сериалов', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
         final Map<String, dynamic> tvShow2 = createTvShowJson(
           id: 1399,
@@ -2133,7 +2133,7 @@ void main() {
         expect(result[1].tmdbId, equals(1399));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2182,7 +2182,7 @@ void main() {
         expect(params['page'], equals(2));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2256,7 +2256,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список похожих сериалов', () async {
+      test('should return список похожих сериалов', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
         final Map<String, dynamic> tvShow2 = createTvShowJson(
           id: 1399,
@@ -2281,7 +2281,7 @@ void main() {
         expect(result[1].tmdbId, equals(1399));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2305,7 +2305,7 @@ void main() {
         expect(url, contains('/tv/1396/similar'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2379,7 +2379,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список трендовых фильмов', () async {
+      test('should return список трендовых фильмов', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
         final Map<String, dynamic> movie2 = createMovieJson(
           id: 680,
@@ -2404,7 +2404,7 @@ void main() {
         expect(result[1].tmdbId, equals(680));
       });
 
-      test('должен использовать week по умолчанию в URL', () async {
+      test('should use week по умолчанию в URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2428,7 +2428,7 @@ void main() {
         expect(url, contains('/trending/movie/week'));
       });
 
-      test('должен использовать day в URL когда указано', () async {
+      test('should use day в URL когда указано', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2477,7 +2477,7 @@ void main() {
         expect(params['page'], equals(5));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2551,7 +2551,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список трендовых сериалов', () async {
+      test('should return список трендовых сериалов', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
         final Map<String, dynamic> tvShow2 = createTvShowJson(
           id: 1399,
@@ -2576,7 +2576,7 @@ void main() {
         expect(result[1].tmdbId, equals(1399));
       });
 
-      test('должен использовать week по умолчанию в URL', () async {
+      test('should use week по умолчанию в URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2600,7 +2600,7 @@ void main() {
         expect(url, contains('/trending/tv/week'));
       });
 
-      test('должен использовать day в URL когда указано', () async {
+      test('should use day в URL когда указано', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2624,7 +2624,7 @@ void main() {
         expect(url, contains('/trending/tv/day'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2698,7 +2698,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список лучших фильмов', () async {
+      test('should return список лучших фильмов', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
         final Map<String, dynamic> movie2 = createMovieJson(
           id: 680,
@@ -2723,7 +2723,7 @@ void main() {
         expect(result[1].tmdbId, equals(680));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2747,7 +2747,7 @@ void main() {
         expect(url, contains('/movie/top_rated'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2821,7 +2821,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список предстоящих фильмов', () async {
+      test('should return список предстоящих фильмов', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
 
         when(() => mockDio.get<dynamic>(
@@ -2841,7 +2841,7 @@ void main() {
         expect(result[0].tmdbId, equals(550));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2865,7 +2865,7 @@ void main() {
         expect(url, contains('/movie/upcoming'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2939,7 +2939,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список фильмов в прокате', () async {
+      test('should return список фильмов в прокате', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
 
         when(() => mockDio.get<dynamic>(
@@ -2959,7 +2959,7 @@ void main() {
         expect(result[0].tmdbId, equals(550));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -2983,7 +2983,7 @@ void main() {
         expect(url, contains('/movie/now_playing'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3057,7 +3057,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список лучших сериалов', () async {
+      test('should return список лучших сериалов', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
         final Map<String, dynamic> tvShow2 = createTvShowJson(
           id: 1399,
@@ -3082,7 +3082,7 @@ void main() {
         expect(result[1].tmdbId, equals(1399));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3106,7 +3106,7 @@ void main() {
         expect(url, contains('/tv/top_rated'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3180,7 +3180,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список сериалов на воздухе', () async {
+      test('should return список сериалов на воздухе', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
 
         when(() => mockDio.get<dynamic>(
@@ -3200,7 +3200,7 @@ void main() {
         expect(result[0].tmdbId, equals(1396));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3224,7 +3224,7 @@ void main() {
         expect(url, contains('/tv/on_the_air'));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3298,7 +3298,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список фильмов при успешном ответе', () async {
+      test('should return список фильмов при успешном ответе', () async {
         final Map<String, dynamic> movie1 = createMovieJson();
         final Map<String, dynamic> movie2 = createMovieJson(
           id: 680,
@@ -3323,7 +3323,7 @@ void main() {
         expect(result[1].tmdbId, equals(680));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3422,7 +3422,7 @@ void main() {
         expect(params['sort_by'], equals('vote_average.desc'));
       });
 
-      test('должен использовать popularity.desc по умолчанию для sortBy', () async {
+      test('should use popularity.desc по умолчанию для sortBy', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3497,7 +3497,7 @@ void main() {
         expect(params.containsKey('primary_release_year'), isFalse);
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3621,7 +3621,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список сериалов при успешном ответе', () async {
+      test('should return список сериалов при успешном ответе', () async {
         final Map<String, dynamic> tvShow1 = createTvShowJson();
         final Map<String, dynamic> tvShow2 = createTvShowJson(
           id: 1399,
@@ -3646,7 +3646,7 @@ void main() {
         expect(result[1].tmdbId, equals(1399));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3745,7 +3745,7 @@ void main() {
         expect(params['sort_by'], equals('vote_average.desc'));
       });
 
-      test('должен использовать popularity.desc по умолчанию для sortBy', () async {
+      test('should use popularity.desc по умолчанию для sortBy', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3820,7 +3820,7 @@ void main() {
         expect(params.containsKey('first_air_date_year'), isFalse);
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3944,7 +3944,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список отзывов к фильму', () async {
+      test('should return список отзывов к фильму', () async {
         final Map<String, dynamic> review1 = createReviewJson();
         final Map<String, dynamic> review2 = createReviewJson(
           author: 'CinemaLover',
@@ -3974,7 +3974,7 @@ void main() {
         expect(result[1].authorRating, equals(9.0));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -3998,7 +3998,7 @@ void main() {
         expect(url, contains('/movie/550/reviews'));
       });
 
-      test('должен использовать en-US как язык для отзывов', () async {
+      test('should use en-US как язык для отзывов', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -4048,7 +4048,7 @@ void main() {
         expect(params['page'], equals(2));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -4122,7 +4122,7 @@ void main() {
         sut.setApiKey(testApiKey);
       });
 
-      test('должен вернуть список отзывов к сериалу', () async {
+      test('should return список отзывов к сериалу', () async {
         final Map<String, dynamic> review1 = createReviewJson(
           author: 'SeriesAddict',
           content: 'Best show ever!',
@@ -4148,7 +4148,7 @@ void main() {
         expect(result[0].authorRating, equals(10.0));
       });
 
-      test('должен вызвать правильный URL', () async {
+      test('should call правильный URL', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -4172,7 +4172,7 @@ void main() {
         expect(url, contains('/tv/1396/reviews'));
       });
 
-      test('должен использовать en-US как язык для отзывов', () async {
+      test('should use en-US как язык для отзывов', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -4222,7 +4222,7 @@ void main() {
         expect(params['page'], equals(3));
       });
 
-      test('должен вернуть пустой список при пустых результатах', () async {
+      test('should return пустой список when empty результатах', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -4300,7 +4300,7 @@ void main() {
         expect(sut.language, equals('en-US'));
       });
 
-      test('должен использовать новый язык в запросах', () {
+      test('should use новый язык в запросах', () {
         sut.setApiKey(testApiKey);
         sut.setLanguage('en-US');
 
@@ -4340,7 +4340,7 @@ void main() {
         apiWithLang.dispose();
       });
 
-      test('должен использовать ru-RU по умолчанию', () {
+      test('should use ru-RU по умолчанию', () {
         expect(sut.language, equals('ru-RU'));
       });
     });

@@ -41,7 +41,7 @@ void main() {
 
   group('MiniMarkdownText', () {
     group('plain text', () {
-      testWidgets('должен рендерить обычный текст как есть',
+      testWidgets('renders plain text as-is',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(text: 'Hello world'));
         await tester.pumpAndSettle();
@@ -53,7 +53,7 @@ void main() {
         expect(span, isNotNull);
       });
 
-      testWidgets('должен использовать кастомный стиль',
+      testWidgets('applies a custom style',
           (WidgetTester tester) async {
         const TextStyle customStyle = TextStyle(
           fontSize: 20,
@@ -72,7 +72,7 @@ void main() {
         expect(span.style?.color, Colors.red);
       });
 
-      testWidgets('должен использовать AppTypography.body по умолчанию',
+      testWidgets('falls back to AppTypography.body when no style is given',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(text: 'Default'));
         await tester.pumpAndSettle();
@@ -85,7 +85,7 @@ void main() {
     });
 
     group('**bold**', () {
-      testWidgets('должен рендерить жирный текст',
+      testWidgets('parses **bold** into a bold span',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(text: '**bold**'));
         await tester.pumpAndSettle();
@@ -96,7 +96,7 @@ void main() {
         expect(span!.style?.fontWeight, FontWeight.w700);
       });
 
-      testWidgets('не должен показывать маркеры **',
+      testWidgets('strips the ** markers',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(text: '**bold**'));
         await tester.pumpAndSettle();
@@ -108,7 +108,7 @@ void main() {
     });
 
     group('*italic*', () {
-      testWidgets('должен рендерить курсивный текст',
+      testWidgets('parses *italic* into an italic span',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(text: '*italic*'));
         await tester.pumpAndSettle();
@@ -121,7 +121,7 @@ void main() {
     });
 
     group('[text](url)', () {
-      testWidgets('должен рендерить ссылку с brand цветом',
+      testWidgets('parses [text](url) as a link span',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           buildWidget(text: '[Guide](https://example.com)'),
@@ -135,7 +135,7 @@ void main() {
         expect(span.style?.decoration, TextDecoration.underline);
       });
 
-      testWidgets('должен иметь TapGestureRecognizer',
+      testWidgets('attaches a tap recognizer to link spans',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           buildWidget(text: '[Link](https://example.com)'),
@@ -148,7 +148,7 @@ void main() {
         expect(span!.recognizer, isA<TapGestureRecognizer>());
       });
 
-      testWidgets('должен рендерить ссылку с произвольным URL',
+      testWidgets('parses links with arbitrary url targets',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           buildWidget(text: '[guide](topper)'),
@@ -163,7 +163,7 @@ void main() {
         expect(span.recognizer, isA<TapGestureRecognizer>());
       });
 
-      testWidgets('не должен показывать синтаксис ссылки',
+      testWidgets('strips the link syntax',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           buildWidget(text: '[text](https://url.com)'),
@@ -177,7 +177,7 @@ void main() {
     });
 
     group('bare URL', () {
-      testWidgets('должен рендерить голый URL как ссылку',
+      testWidgets('auto-linkifies bare URLs',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           buildWidget(text: 'Visit https://example.com today'),
@@ -194,7 +194,7 @@ void main() {
     });
 
     group('mixed content', () {
-      testWidgets('должен рендерить смешанный текст',
+      testWidgets('parses mixed markdown content',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(
           text: 'This is **bold** and *italic* and '
@@ -222,7 +222,7 @@ void main() {
     });
 
     group('empty / no markdown', () {
-      testWidgets('должен рендерить пустую строку',
+      testWidgets('handles an empty string',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(text: ''));
         await tester.pumpAndSettle();
@@ -230,7 +230,7 @@ void main() {
         expect(find.byType(MiniMarkdownText), findsOneWidget);
       });
 
-      testWidgets('должен рендерить текст без разметки',
+      testWidgets('leaves plain text unstyled',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           buildWidget(text: 'No markdown here'),
@@ -246,7 +246,7 @@ void main() {
     });
 
     group('widget update', () {
-      testWidgets('должен обновить span-ы при изменении text',
+      testWidgets('rebuilds spans when text changes',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildWidget(text: '**old**'));
         await tester.pumpAndSettle();

@@ -16,14 +16,14 @@ void main() {
   });
 
   group('VndbApiException', () {
-    test('должен содержать message и statusCode', () {
+    test('should contain message и statusCode', () {
       const VndbApiException exception =
           VndbApiException('test', statusCode: 429);
       expect(exception.message, 'test');
       expect(exception.statusCode, 429);
     });
 
-    test('toString должен форматировать сообщение', () {
+    test('toString should format сообщение', () {
       const VndbApiException exception =
           VndbApiException('error', statusCode: 500);
       expect(exception.toString(),
@@ -56,14 +56,14 @@ void main() {
     }
 
     group('searchVn', () {
-      test('должен вернуть пустой список для пустого запроса', () async {
+      test('should return пустой список для пустого запроса', () async {
         final (List<VisualNovel> results, bool hasMore) =
             await api.searchVn(query: '');
         expect(results, isEmpty);
         expect(hasMore, isFalse);
       });
 
-      test('должен вернуть пустой список для запроса из пробелов', () async {
+      test('should return пустой список для запроса из пробелов', () async {
         final (List<VisualNovel> results, bool hasMore) =
             await api.searchVn(query: '   ');
         expect(results, isEmpty);
@@ -109,7 +109,7 @@ void main() {
         );
       });
 
-      test('должен обработать rate limit (429)', () async {
+      test('should handle rate limit (429)', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -133,7 +133,7 @@ void main() {
     });
 
     group('browseVn', () {
-      test('должен вернуть результаты с totalPages', () async {
+      test('should return результаты с totalPages', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -156,7 +156,7 @@ void main() {
         expect(totalPages, 1);
       });
 
-      test('должен использовать tagId в фильтрах', () async {
+      test('should use tagId в фильтрах', () async {
         Map<String, dynamic>? capturedData;
         when(() => mockDio.post<dynamic>(
               any(),
@@ -180,7 +180,7 @@ void main() {
         expect(filterList.first, 'and');
       });
 
-      test('должен обработать ошибку ответа', () async {
+      test('should handle ошибку ответа', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -199,7 +199,7 @@ void main() {
     });
 
     group('getVnById', () {
-      test('должен вернуть VN по ID', () async {
+      test('should return VN по ID', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -215,7 +215,7 @@ void main() {
         expect(vn!.id, 'v2');
       });
 
-      test('должен вернуть null для пустых результатов', () async {
+      test('should return null для пустых результатов', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -230,7 +230,7 @@ void main() {
         expect(vn, isNull);
       });
 
-      test('должен обработать ошибку ответа', () async {
+      test('should handle ошибку ответа', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -249,7 +249,7 @@ void main() {
     });
 
     group('getVnByIds', () {
-      test('должен вернуть пустой список для пустого массива', () async {
+      test('should return пустой список для пустого массива', () async {
         final List<VisualNovel> results =
             await api.getVnByIds(<String>[]);
         expect(results, isEmpty);
@@ -274,7 +274,7 @@ void main() {
         expect(results, hasLength(2));
       });
 
-      test('должен обработать DioException', () async {
+      test('should handle DioException', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -331,7 +331,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен обработать ошибку ответа', () async {
+      test('should handle ошибку ответа', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),

@@ -38,7 +38,7 @@ void main() {
   });
 
   group('UpdateInfo', () {
-    test('должен создать объект с обязательными полями', () {
+    test('should create объект с обязательными полями', () {
       const UpdateInfo info = UpdateInfo(
         currentVersion: '0.9.0',
         latestVersion: '0.10.0',
@@ -53,7 +53,7 @@ void main() {
       expect(info.releaseNotes, isNull);
     });
 
-    test('должен создать объект с releaseNotes', () {
+    test('should create объект с releaseNotes', () {
       const UpdateInfo info = UpdateInfo(
         currentVersion: '0.9.0',
         latestVersion: '0.10.0',
@@ -106,7 +106,7 @@ void main() {
     });
 
     group('checkForUpdate', () {
-      test('должен вернуть UpdateInfo при наличии обновления', () async {
+      test('should return UpdateInfo при наличии обновления', () async {
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -125,7 +125,7 @@ void main() {
         expect(result.releaseNotes, equals(releaseNotes));
       });
 
-      test('должен вернуть hasUpdate=false если версия актуальна', () async {
+      test('should return hasUpdate=false если версия актуальна', () async {
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -146,7 +146,7 @@ void main() {
         expect(result.releaseNotes, isNull);
       });
 
-      test('должен вернуть null при DioException', () async {
+      test('should return null при DioException', () async {
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -160,7 +160,7 @@ void main() {
         expect(result, isNull);
       });
 
-      test('должен вернуть null при общей ошибке', () async {
+      test('should return null при общей ошибке', () async {
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -171,7 +171,7 @@ void main() {
         expect(result, isNull);
       });
 
-      test('должен использовать правильный URL', () async {
+      test('should use правильный URL', () async {
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -191,7 +191,7 @@ void main() {
     });
 
     group('throttle', () {
-      test('должен вернуть кеш при повторном вызове в течение 24ч', () async {
+      test('should return кеш при повторном вызове в течение 24ч', () async {
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -213,7 +213,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен вернуть null если кеш пуст и throttle активен', () async {
+      test('should return null если кеш пуст и throttle активен', () async {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setInt(
           'update_last_check',

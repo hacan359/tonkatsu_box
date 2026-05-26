@@ -52,7 +52,7 @@ void main() {
   }
 
   group('flushDatabase', () {
-    test('должен вызвать clearAllData на DatabaseService', () async {
+    test('should call clearAllData на DatabaseService', () async {
       when(() => mockDbService.clearAllData()).thenAnswer((_) async {});
 
       final ProviderContainer container = await createContainer();
@@ -83,7 +83,7 @@ void main() {
       expect(state.platformCount, equals(0));
     });
 
-    test('должен сохранить настройки после flush', () async {
+    test('should preserve настройки после flush', () async {
       when(() => mockDbService.clearAllData()).thenAnswer((_) async {});
 
       final ProviderContainer container = await createContainer(
@@ -122,7 +122,7 @@ void main() {
       verify(() => mockConfigService.exportToFile()).called(1);
     });
 
-    test('должен вернуть cancelled при отмене', () async {
+    test('should return cancelled при отмене', () async {
       when(() => mockConfigService.exportToFile()).thenAnswer(
         (_) async => const ConfigResult.cancelled(),
       );
@@ -137,7 +137,7 @@ void main() {
       expect(result.isCancelled, isTrue);
     });
 
-    test('должен вернуть failure при ошибке', () async {
+    test('should return failure on error', () async {
       when(() => mockConfigService.exportToFile()).thenAnswer(
         (_) async => const ConfigResult.failure('Write error'),
       );
@@ -190,7 +190,7 @@ void main() {
       expect(state.tmdbApiKey, equals('imported_tmdb'));
     });
 
-    test('должен обновить API клиенты после импорта', () async {
+    test('should update API клиенты после импорта', () async {
       when(() => mockConfigService.importFromFile()).thenAnswer(
         (_) async {
           await prefs.setString(SettingsKeys.steamGridDbApiKey, 'new_sgdb');
@@ -230,7 +230,7 @@ void main() {
       expect(state.tmdbApiKey, equals('original'));
     });
 
-    test('не должен перезагружать state при ошибке', () async {
+    test('не должен перезагружать state on error', () async {
       when(() => mockConfigService.importFromFile()).thenAnswer(
         (_) async => const ConfigResult.failure('Read error'),
       );

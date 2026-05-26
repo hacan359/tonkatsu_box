@@ -61,7 +61,7 @@ class _CreateCustomItemDialogState
   late final TextEditingController _platformController;
   late final TextEditingController _externalUrlController;
 
-  MediaType _selectedType = MediaType.custom;
+  late MediaType _selectedType;
   String? _titleError;
   int? _selectedYear;
   String? _localCoverPath;
@@ -77,6 +77,7 @@ class _CreateCustomItemDialogState
   void initState() {
     super.initState();
     final CustomMedia? e = widget.existing;
+    _selectedType = e?.displayType ?? MediaType.custom;
     _titleController = TextEditingController(text: e?.title ?? '');
     _altTitleController = TextEditingController(text: e?.altTitle ?? '');
     _descriptionController =
@@ -209,8 +210,8 @@ class _CreateCustomItemDialogState
         children: <Widget>[
           _buildHeader(l),
           const SizedBox(height: AppSpacing.md),
-          if (!_isEditing) _buildMediaTypeChips(l),
-          if (!_isEditing) const SizedBox(height: AppSpacing.md),
+          _buildMediaTypeChips(l),
+          const SizedBox(height: AppSpacing.md),
           _buildGenresSection(l),
           const SizedBox(height: AppSpacing.md),
           _buildDescriptionSection(l),

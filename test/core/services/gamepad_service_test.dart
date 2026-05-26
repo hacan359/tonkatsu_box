@@ -240,7 +240,7 @@ void main() {
   });
 
   group('GamepadService — Триггеры (dwZpos)', () {
-    test('генерирует событие при нажатии LT (значение ниже центра)', () async {
+    test('генерирует событие when pressed LT (значение ниже центра)', () async {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
@@ -253,7 +253,7 @@ void main() {
       expect(events.first.type, equals(GamepadServiceEventType.trigger));
     });
 
-    test('генерирует событие при нажатии RT (значение выше центра)', () async {
+    test('генерирует событие when pressed RT (значение выше центра)', () async {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
@@ -326,7 +326,7 @@ void main() {
   });
 
   group('GamepadService — Цифровые кнопки', () {
-    test('генерирует событие при нажатии кнопки (value == 1.0)', () async {
+    test('генерирует событие when pressed кнопки (value == 1.0)', () async {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 

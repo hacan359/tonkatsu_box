@@ -51,7 +51,7 @@ void main() {
   }
 
   group('UpdateBanner', () {
-    testWidgets('должен показать баннер при наличии обновления', (
+    testWidgets('should show баннер при наличии обновления', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -64,7 +64,7 @@ void main() {
       expect(find.text('Update'), findsOneWidget);
     });
 
-    testWidgets('должен скрыть баннер если обновления нет', (
+    testWidgets('should hide баннер если обновления нет', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -75,7 +75,7 @@ void main() {
       expect(find.text('Update available: v0.10.0'), findsNothing);
     });
 
-    testWidgets('должен скрыть баннер если данных нет (null)', (
+    testWidgets('should hide баннер если данных нет (null)', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -87,7 +87,7 @@ void main() {
       expect(find.text('Update available'), findsNothing);
     });
 
-    testWidgets('должен скрыть баннер при ошибке', (
+    testWidgets('should hide баннер on error', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -103,7 +103,7 @@ void main() {
       expect(find.text('Update available'), findsNothing);
     });
 
-    testWidgets('должен скрыть баннер при загрузке', (
+    testWidgets('should hide баннер while loading', (
       WidgetTester tester,
     ) async {
       // Completer that never completes keeps provider in loading state
@@ -136,7 +136,7 @@ void main() {
       expect(find.text('Update available'), findsNothing);
     });
 
-    testWidgets('должен скрыть баннер при нажатии крестика', (
+    testWidgets('should hide баннер when pressed крестика', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -152,7 +152,7 @@ void main() {
       expect(find.text('Update available: v0.10.0'), findsNothing);
     });
 
-    testWidgets('должен содержать кнопку Update', (
+    testWidgets('should contain кнопку Update', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -163,7 +163,7 @@ void main() {
       expect(find.widgetWithText(TextButton, 'Update'), findsOneWidget);
     });
 
-    testWidgets('должен показывать иконку system_update', (
+    testWidgets('should show иконку system_update', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

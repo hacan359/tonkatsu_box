@@ -157,7 +157,7 @@ void main() {
     });
 
     group('External URL', () {
-      testWidgets('не должен показывать иконку open_in_new без externalUrl',
+      testWidgets('не should show иконку open_in_new без externalUrl',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(source: DataSource.igdb));
         await tester.pumpAndSettle();
@@ -165,7 +165,7 @@ void main() {
         expect(find.byIcon(Icons.open_in_new), findsNothing);
       });
 
-      testWidgets('должен показывать иконку open_in_new с externalUrl',
+      testWidgets('should show иконку open_in_new с externalUrl',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           source: DataSource.igdb,
@@ -297,7 +297,7 @@ void main() {
         expect(find.text('Best RPG ever!'), findsOneWidget);
       });
 
-      testWidgets('должен показывать placeholder для editable без комментария',
+      testWidgets('should show placeholder для editable без комментария',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           isEditable: true,
@@ -311,7 +311,7 @@ void main() {
         );
       });
 
-      testWidgets('должен показывать placeholder для readonly без комментария',
+      testWidgets('should show placeholder для readonly без комментария',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           isEditable: false,
@@ -325,7 +325,7 @@ void main() {
         );
       });
 
-      testWidgets('должен показывать кнопку Edit когда isEditable',
+      testWidgets('should show кнопку Edit когда isEditable',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
@@ -333,7 +333,7 @@ void main() {
         expect(find.byIcon(Icons.edit), findsNWidgets(2));
       });
 
-      testWidgets('не должен показывать кнопку Edit автора когда !isEditable',
+      testWidgets('не should show кнопку Edit автора когда !isEditable',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: false));
         await tester.pumpAndSettle();
@@ -363,7 +363,7 @@ void main() {
         expect(find.text('Finished on Jan 15'), findsOneWidget);
       });
 
-      testWidgets('должен показывать placeholder когда нет заметок',
+      testWidgets('should show placeholder когда нет заметок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(hasUserComment: false));
         await tester.pumpAndSettle();
@@ -386,7 +386,7 @@ void main() {
     group('Inline Editing', () {
       // Order: My Notes (first edit icon) -> Author's Review (last).
 
-      testWidgets('должен показать TextField при нажатии Edit заметок',
+      testWidgets('should show TextField when pressed Edit заметок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
@@ -400,7 +400,7 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
-      testWidgets('должен показать TextField при нажатии Edit автора',
+      testWidgets('should show TextField when pressed Edit автора',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
@@ -412,7 +412,7 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
-      testWidgets('должен сохранять и закрывать при нажатии галочки',
+      testWidgets('should preserve и закрывать when pressed галочки',
           (WidgetTester tester) async {
         String? savedValue;
         await tester.pumpWidget(buildTestWidget(
@@ -432,7 +432,7 @@ void main() {
         expect(find.byType(TextField), findsNothing);
       });
 
-      testWidgets('должен вызывать onSave с null при пустом тексте',
+      testWidgets('should call onSave с null when empty тексте',
           (WidgetTester tester) async {
         String? savedValue = 'initial';
         await tester.pumpWidget(buildTestWidget(
@@ -450,7 +450,7 @@ void main() {
         expect(savedValue, isNull);
       });
 
-      testWidgets('должен показывать тулбар markdown при inline-редактировании',
+      testWidgets('should show тулбар markdown при inline-редактировании',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
@@ -463,7 +463,7 @@ void main() {
         expect(find.byIcon(Icons.link), findsOneWidget);
       });
 
-      testWidgets('должен показывать initialValue в поле',
+      testWidgets('should show initialValue в поле',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           isEditable: true,
@@ -480,7 +480,7 @@ void main() {
         expect(textField.controller?.text, 'Existing comment');
       });
 
-      testWidgets('должен вызывать onUserCommentSave для заметок',
+      testWidgets('should call onUserCommentSave для заметок',
           (WidgetTester tester) async {
         String? savedValue;
         await tester.pumpWidget(buildTestWidget(
@@ -636,7 +636,7 @@ void main() {
         expect(find.text('Started: '), findsNothing);
       });
 
-      testWidgets('должен показывать тире для null Started/Completed',
+      testWidgets('should show тире для null Started/Completed',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
@@ -649,7 +649,7 @@ void main() {
         expect(find.text('\u2014'), findsNWidgets(2));
       });
 
-      testWidgets('не должен показывать Last Activity когда null',
+      testWidgets('не should show Last Activity когда null',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
@@ -659,7 +659,7 @@ void main() {
         expect(find.text('Last Activity: '), findsNothing);
       });
 
-      testWidgets('должен показывать иконки редактирования для editable дат',
+      testWidgets('should show иконки редактирования для editable дат',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
@@ -670,7 +670,7 @@ void main() {
         expect(find.byIcon(Icons.edit_outlined), findsNWidgets(2));
       });
 
-      testWidgets('не должен показывать иконки редактирования без колбэка',
+      testWidgets('не should show иконки редактирования без колбэка',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),

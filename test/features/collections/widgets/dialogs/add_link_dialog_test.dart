@@ -35,7 +35,7 @@ void main() {
     }
 
     testWidgets(
-      'должен показать заголовок "Add Link" для нового элемента',
+      'should show заголовок "Add Link" для нового элемента',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));
@@ -47,7 +47,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать заголовок "Edit Link" при редактировании',
+      'should show заголовок "Edit Link" при редактировании',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(
           onResult: (_) {},
@@ -81,7 +81,7 @@ void main() {
     );
 
     testWidgets(
-      'должен вернуть url и label при нажатии Add',
+      'should return url и label when pressed Add',
       (WidgetTester tester) async {
         Map<String, dynamic>? result;
 
@@ -113,7 +113,7 @@ void main() {
     );
 
     testWidgets(
-      'должен использовать URL как label если label пустой',
+      'should use URL как label если label пустой',
       (WidgetTester tester) async {
         Map<String, dynamic>? result;
 
@@ -137,7 +137,7 @@ void main() {
     );
 
     testWidgets(
-      'должен вернуть null при нажатии Cancel',
+      'should return null when pressed Cancel',
       (WidgetTester tester) async {
         Map<String, dynamic>? result = <String, dynamic>{'marker': true};
 
@@ -246,7 +246,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать 2 TextField — URL и Label',
+      'should show 2 TextField — URL и Label',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));

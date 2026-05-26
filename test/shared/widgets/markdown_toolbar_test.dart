@@ -31,7 +31,7 @@ void main() {
 
   group('MarkdownToolbar', () {
     group('кнопки', () {
-      testWidgets('должен показывать 3 кнопки: Bold, Italic, Link',
+      testWidgets('should show 3 кнопки: Bold, Italic, Link',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();
@@ -145,7 +145,7 @@ void main() {
         expect(controller.text, isEmpty);
       });
 
-      testWidgets('не должен вставлять при пустом URL',
+      testWidgets('не должен вставлять when empty URL',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();

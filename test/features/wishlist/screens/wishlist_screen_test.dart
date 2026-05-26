@@ -62,7 +62,7 @@ void main() {
 
   group('WishlistScreen', () {
     group('empty state', () {
-      testWidgets('должен показывать empty state при пустом списке',
+      testWidgets('should show empty state when empty списке',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[]);
@@ -79,7 +79,7 @@ void main() {
     });
 
     group('список элементов', () {
-      testWidgets('должен показывать список элементов',
+      testWidgets('should show список элементов',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1, item2]);
@@ -91,7 +91,7 @@ void main() {
         expect(find.text('The Matrix'), findsOneWidget);
       });
 
-      testWidgets('должен показывать заметку через MiniMarkdownText',
+      testWidgets('should show заметку через MiniMarkdownText',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1]);
@@ -103,7 +103,7 @@ void main() {
         expect(find.text('SNES RPG'), findsOneWidget);
       });
 
-      testWidgets('должен показывать тип медиа как subtitle если нет заметки',
+      testWidgets('should show тип медиа как subtitle если нет заметки',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item2]);
@@ -116,7 +116,7 @@ void main() {
     });
 
     group('resolved стиль', () {
-      testWidgets('должен показывать resolved элементы с opacity',
+      testWidgets('should show resolved элементы с opacity',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1, resolvedItem]);
@@ -137,7 +137,7 @@ void main() {
     });
 
     group('context menu', () {
-      testWidgets('должен показывать context menu при long press',
+      testWidgets('should show context menu при long press',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1]);
@@ -154,7 +154,7 @@ void main() {
         expect(find.text('Delete'), findsOneWidget);
       });
 
-      testWidgets('должен показывать Unresolve для resolved элемента',
+      testWidgets('should show Unresolve для resolved элемента',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[resolvedItem]);

@@ -175,7 +175,7 @@ void main() {
 
   group('TraktZipInfo', () {
     group('constructor', () {
-      test('должен создать валидный экземпляр с параметрами', () {
+      test('should create валидный экземпляр с параметрами', () {
         const TraktZipInfo info = TraktZipInfo(
           isValid: true,
           username: 'alice',
@@ -196,7 +196,7 @@ void main() {
         expect(info.error, isNull);
       });
 
-      test('должен использовать значения по умолчанию', () {
+      test('should use значения по умолчанию', () {
         const TraktZipInfo info = TraktZipInfo(isValid: false);
 
         expect(info.username, equals(''));
@@ -210,7 +210,7 @@ void main() {
     });
 
     group('invalid()', () {
-      test('должен создать невалидный результат с ошибкой', () {
+      test('should create невалидный результат с ошибкой', () {
         const TraktZipInfo info = TraktZipInfo.invalid('Bad archive');
 
         expect(info.isValid, isFalse);
@@ -238,7 +238,7 @@ void main() {
         expect(info.totalItems, equals(27));
       });
 
-      test('должен вернуть 0 для пустого архива', () {
+      test('should return 0 для пустого архива', () {
         const TraktZipInfo info = TraktZipInfo(isValid: false);
         expect(info.totalItems, equals(0));
       });
@@ -247,7 +247,7 @@ void main() {
 
   group('TraktImportOptions', () {
     group('constructor', () {
-      test('должен создать экземпляр с обязательными параметрами', () {
+      test('should create экземпляр с обязательными параметрами', () {
         const TraktImportOptions options = TraktImportOptions(
           zipPath: '/path/to/file.zip',
         );
@@ -279,7 +279,7 @@ void main() {
 
   group('TraktImportResult', () {
     group('constructor', () {
-      test('должен создать экземпляр с параметрами', () {
+      test('should create экземпляр с параметрами', () {
         final Collection collection = createTestCollection();
         final TraktImportResult result = TraktImportResult(
           success: true,
@@ -302,7 +302,7 @@ void main() {
         expect(result.error, isNull);
       });
 
-      test('должен использовать значения по умолчанию', () {
+      test('should use значения по умолчанию', () {
         const TraktImportResult result = TraktImportResult(success: false);
 
         expect(result.collection, isNull);
@@ -316,7 +316,7 @@ void main() {
     });
 
     group('success()', () {
-      test('должен создать успешный результат', () {
+      test('should create успешный результат', () {
         final Collection collection = createTestCollection();
         final TraktImportResult result = TraktImportResult.success(
           collection: collection,
@@ -337,7 +337,7 @@ void main() {
         expect(result.error, isNull);
       });
 
-      test('должен использовать значения по умолчанию для success()', () {
+      test('should use значения по умолчанию для success()', () {
         final Collection collection = createTestCollection();
         final TraktImportResult result = TraktImportResult.success(
           collection: collection,
@@ -352,7 +352,7 @@ void main() {
     });
 
     group('failure()', () {
-      test('должен создать неудачный результат', () {
+      test('should create неудачный результат', () {
         const TraktImportResult result =
             TraktImportResult.failure('Something broke');
 
@@ -370,7 +370,7 @@ void main() {
 
   group('TraktZipImportService', () {
     group('validateZip', () {
-      test('должен вернуть valid для правильного ZIP со всеми файлами',
+      test('should return valid для правильного ZIP со всеми файлами',
           () async {
         writeZip(createTestZip(
           username: 'alice',
@@ -394,7 +394,7 @@ void main() {
         expect(info.error, isNull);
       });
 
-      test('должен вернуть корректное количество для каждой категории',
+      test('should return корректное количество для каждой категории',
           () async {
         final String twoMovies = jsonEncode(<Map<String, dynamic>>[
           <String, dynamic>{
@@ -463,7 +463,7 @@ void main() {
         expect(info.username, equals('my_trakt_user'));
       });
 
-      test('должен вернуть invalid для пустого ZIP (без JSON файлов)',
+      test('should return invalid для пустого ZIP (без JSON файлов)',
           () async {
         final Archive archive = Archive();
         archive.addFile(ArchiveFile.string('testuser/readme.txt', 'hello'));
@@ -476,7 +476,7 @@ void main() {
         expect(info.error, equals('No JSON files found in archive'));
       });
 
-      test('должен вернуть invalid для не-ZIP файла', () async {
+      test('should return invalid для не-ZIP файла', () async {
         File(zipPath).writeAsBytesSync(<int>[0, 1, 2, 3, 4, 5]);
 
         final TraktZipInfo info = await sut.validateZip(zipPath);
@@ -484,7 +484,7 @@ void main() {
         expect(info.isValid, isFalse);
       });
 
-      test('должен вернуть invalid для ZIP без JSON файлов', () async {
+      test('should return invalid для ZIP без JSON файлов', () async {
         final Archive archive = Archive();
         archive.addFile(ArchiveFile.string('user/data.csv', 'a,b,c'));
         final List<int> bytes = ZipEncoder().encode(archive);
@@ -495,7 +495,7 @@ void main() {
         expect(info.isValid, isFalse);
       });
 
-      test('должен вернуть invalid для ZIP с пустыми JSON массивами',
+      test('should return invalid для ZIP с пустыми JSON массивами',
           () async {
         writeZip(createTestZip(
           watchedMoviesJson: '[]',
@@ -511,7 +511,7 @@ void main() {
         expect(info.totalItems, equals(0));
       });
 
-      test('должен вернуть invalid для несуществующего файла', () async {
+      test('should return invalid для несуществующего файла', () async {
         final TraktZipInfo info =
             await sut.validateZip('/nonexistent/path.zip');
 
@@ -599,7 +599,7 @@ void main() {
             .thenAnswer((_) async => null);
       }
 
-      test('должен создать новую коллекцию когда collectionId == null',
+      test('should create новую коллекцию когда collectionId == null',
           () async {
         setupDefaultMocks();
         when(() => mockTmdb.getMovie(any()))
@@ -620,7 +620,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен использовать существующую коллекцию', () async {
+      test('should use существующую коллекцию', () async {
         setupDefaultMocks(collectionId: 42);
         when(() => mockTmdb.getMovie(any()))
             .thenAnswer((_) async => const Movie(tmdbId: 100, title: 'M'));
@@ -644,7 +644,7 @@ void main() {
             ));
       });
 
-      test('должен вернуть failure для несуществующей коллекции', () async {
+      test('should return failure для несуществующей коллекции', () async {
         when(() => mockRepo.getById(999)).thenAnswer((_) async => null);
 
         when(() => mockTmdb.getMovie(any()))
@@ -692,7 +692,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен установить completedAt из last_watched_at', () async {
+      test('should set completedAt из last_watched_at', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => const Movie(tmdbId: 100, title: 'M'));
@@ -820,7 +820,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен пропустить элементы без TMDB ID и добавить ошибку',
+      test('should skip элементы без TMDB ID и добавить ошибку',
           () async {
         setupDefaultMocks();
 
@@ -842,7 +842,7 @@ void main() {
         expect(result.errors.first, contains('no TMDB ID'));
       });
 
-      test('должен пропустить элементы когда TMDB API вернул null', () async {
+      test('should skip элементы когда TMDB API вернул null', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => null);
 
@@ -938,7 +938,7 @@ void main() {
         verifyNever(() => mockDb.updateItemUserRating(50, any()));
       });
 
-      test('должен создать элемент из ratings если нет в коллекции', () async {
+      test('should create элемент из ratings если нет в коллекции', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 300, title: 'New Rated');
         when(() => mockTmdb.getMovie(300))
@@ -1091,7 +1091,7 @@ void main() {
             ));
       });
 
-      test('должен установить completedAt из Trakt если локальный null',
+      test('should set completedAt из Trakt если локальный null',
           () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'Dates');
@@ -1256,7 +1256,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен пропустить watchlist элементы уже в коллекции', () async {
+      test('should skip watchlist элементы уже в коллекции', () async {
         setupDefaultMocks();
         const Movie existingMovie = Movie(tmdbId: 400, title: 'Existing');
         when(() => mockTmdb.getMovie(400))
@@ -1300,7 +1300,7 @@ void main() {
             ));
       });
 
-      test('должен вызывать progress callback', () async {
+      test('should call progress callback', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => const Movie(tmdbId: 100, title: 'M'));
@@ -1404,7 +1404,7 @@ void main() {
             ));
       });
 
-      test('должен вернуть failure для ошибки чтения файла', () async {
+      test('should return failure для ошибки чтения файла', () async {
         final TraktImportResult result = await sut.importFromZip(
           options: TraktImportOptions(
             zipPath: '${tempDir.path}/nonexistent.zip',
@@ -1415,7 +1415,7 @@ void main() {
         expect(result.error, contains('Import failed'));
       });
 
-      test('должен вернуть failure для пустого архива', () async {
+      test('should return failure для пустого архива', () async {
         final Archive archive = Archive();
         archive.addFile(ArchiveFile.string('user/readme.txt', 'hello'));
         writeZip(ZipEncoder().encode(archive));
@@ -1454,7 +1454,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен обработать show с пустыми сезонами как completed',
+      test('should handle show с пустыми сезонами как completed',
           () async {
         setupDefaultMocks();
         when(() => mockTmdb.getTvShow(200))
@@ -1504,7 +1504,7 @@ void main() {
         expect(result.errors.first, contains('TMDB data not available'));
       });
 
-      test('должен обработать rating для animation show', () async {
+      test('should handle rating для animation show', () async {
         setupDefaultMocks();
         const TvShow animShow = TvShow(
           tmdbId: 500,
@@ -1547,7 +1547,7 @@ void main() {
         verify(() => mockDb.updateItemUserRating(75, 10)).called(1);
       });
 
-      test('должен обработать watchlist для animation movie', () async {
+      test('should handle watchlist для animation movie', () async {
         setupDefaultMocks();
         const Movie animMovie = Movie(
           tmdbId: 600,
@@ -1682,7 +1682,7 @@ void main() {
         expect(result.errors.first, contains('no TMDB ID'));
       });
 
-      test('должен обработать show с null TMDB data', () async {
+      test('should handle show с null TMDB data', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getTvShow(200)).thenAnswer((_) async => null);
 
@@ -1699,7 +1699,7 @@ void main() {
         expect(result.errors.first, contains('TMDB data not available'));
       });
 
-      test('должен пропустить эпизоды для show без TMDB ID', () async {
+      test('should skip эпизоды для show без TMDB ID', () async {
         setupDefaultMocks();
 
         writeZip(createTestZip(
@@ -1724,7 +1724,7 @@ void main() {
             () => mockDb.markEpisodeWatched(any(), any(), any(), any()));
       });
 
-      test('должен пропустить rating без TMDB ID', () async {
+      test('should skip rating без TMDB ID', () async {
         setupDefaultMocks();
 
         writeZip(createTestZip(
@@ -1833,7 +1833,7 @@ void main() {
             ));
       });
 
-      test('должен обработать watchlist show элементы', () async {
+      test('should handle watchlist show элементы', () async {
         setupDefaultMocks();
         const TvShow watchlistShow =
             TvShow(tmdbId: 700, title: 'WL Show');
@@ -1900,7 +1900,7 @@ void main() {
         expect(result.itemsSkipped, equals(1));
       });
 
-      test('должен обработать watched movie без last_watched_at', () async {
+      test('should handle watched movie без last_watched_at', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => const Movie(tmdbId: 100, title: 'M'));
@@ -2045,7 +2045,7 @@ void main() {
             )).called(1);
       });
 
-      test('должен обработать show episodes с last_watched_at', () async {
+      test('should handle show episodes с last_watched_at', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getTvShow(200))
             .thenAnswer((_) async => const TvShow(tmdbId: 200, title: 'S'));

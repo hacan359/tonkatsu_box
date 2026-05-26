@@ -307,6 +307,64 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Fix custom items: cannot change media-type while editing, covers missing from collection preview**
+
+  Two long-standing bugs in the custom-items feature. The edit dialog
+  hid the media-type chip row when opened on an existing item, so
+  there was no way to change the displayed type once an item had been
+  created. The collection-preview mosaic on Home (the 5-cover grid)
+  always skipped custom items because the underlying SQL had no
+  branch joining `custom_items` — every custom item rendered as
+  "no cover available" even when a cover URL or local file was set.
+
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._selectedType,
+    _CreateCustomItemDialogState.initState,
+    _CreateCustomItemDialogState.build): Drop the `!_isEditing` guard
+    around the chip row; initialise `_selectedType` from
+    `existing.displayType` (falls back to `MediaType.custom`).
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._editCustomItem): Thread the picked
+    `mediaType` into `CustomMedia.copyWith` via
+    `displayType` + `clearDisplayType` so switching back to plain
+    "Custom" actually clears the persisted display type.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionCovers): Add a `WHEN 'custom' THEN
+    cm.cover_url` branch and a `LEFT JOIN custom_items cm` so custom
+    rows show up in the preview alongside other media types. Handles
+    both real URLs and the `local://cover` marker for file-uploaded
+    art (the renderer already resolves the marker through the local
+    image cache).
+  * test/features/collections/widgets/create_custom_item_dialog_test.dart:
+    New — chip row renders in edit mode, preselects the matching
+    chip, defaults to Custom when displayType is null, and Save
+    returns the picked `mediaType`.
+  * test/core/database/dao/collection_dao_covers_test.dart: New —
+    custom items with cover_url are returned, the `local://cover`
+    marker passes through as-is, null cover_url is skipped, custom
+    and other media types coexist within the limit.
+
+- **Drop styling-only widget tests**
+
+  Tests that asserted on colours, exact widget types used purely for
+  styling, badge dimensions, fixed `SizedBox` widths, font weights of
+  decorative text, and similar visual concerns were removed across
+  the test suite — design changes shouldn't break the test gate.
+  Behaviour assertions (callback fires, conditional widget appears,
+  parser outputs the right span type) are kept.
+
+  * test/features/settings/widgets/status_dot_test.dart: Remove the
+    "badge decoration", "compact mode", "text color matches status"
+    and "Row layout" groups; keep symbol-mapping tests (which verify
+    StatusType → symbol logic).
+  * test/features/welcome/widgets/welcome_step_ready_test.dart:
+    Collapse to three tests — renders without exception, fires
+    onGoToSettings, fires onSkip. Drop icon-color / icon-size /
+    button-type / fixed-SizedBox-width assertions.
+  * test/shared/widgets/mini_markdown_text_test.dart: Keep parser
+    behaviour tests (bold/italic/link spans, tap recognizer,
+    autolink).
+
 - **Fix external links not opening on Android 11+**
 
   Buttons and links that should open a browser, mail client or dialer

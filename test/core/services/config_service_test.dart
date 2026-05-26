@@ -7,7 +7,7 @@ import 'package:xerabora/features/settings/providers/settings_provider.dart';
 
 void main() {
   group('ConfigResult', () {
-    test('success должен создать успешный результат', () {
+    test('success should create успешный результат', () {
       const ConfigResult result = ConfigResult.success('/path/to/config.json');
 
       expect(result.success, isTrue);
@@ -16,7 +16,7 @@ void main() {
       expect(result.isCancelled, isFalse);
     });
 
-    test('failure должен создать неуспешный результат', () {
+    test('failure should create неуспешный результат', () {
       const ConfigResult result = ConfigResult.failure('Error message');
 
       expect(result.success, isFalse);
@@ -25,7 +25,7 @@ void main() {
       expect(result.isCancelled, isFalse);
     });
 
-    test('cancelled должен создать отменённый результат', () {
+    test('cancelled should create отменённый результат', () {
       const ConfigResult result = ConfigResult.cancelled();
 
       expect(result.success, isFalse);
@@ -34,7 +34,7 @@ void main() {
       expect(result.isCancelled, isTrue);
     });
 
-    test('isCancelled должен быть false при ошибке', () {
+    test('isCancelled должен быть false on error', () {
       const ConfigResult result = ConfigResult(
         success: false,
         error: 'Some error',
@@ -66,7 +66,7 @@ void main() {
     });
 
     group('collectSettings', () {
-      test('должен вернуть пустой конфиг при пустых prefs', () {
+      test('should return пустой конфиг when empty prefs', () {
         final Map<String, Object> config = sut.collectSettings();
 
         expect(config['tonkatsu_box_config_version'], equals(configFormatVersion));
@@ -186,7 +186,7 @@ void main() {
         expect(applied, equals(0));
       });
 
-      test('должен обрабатывать num как int для int ключей', () async {
+      test('should handle num как int для int ключей', () async {
         // JSON decode may return num rather than int.
         final int applied = await sut.applySettings(<String, Object?>{
           SettingsKeys.tokenExpires: 1234567890.0,

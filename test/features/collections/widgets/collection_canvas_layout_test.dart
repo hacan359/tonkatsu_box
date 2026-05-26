@@ -164,7 +164,7 @@ void main() {
 
     group('панели закрыты', () {
       testWidgets(
-        'должен скрывать SteamGridDB панель когда isOpen=false',
+        'should hide SteamGridDB панель когда isOpen=false',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget(
             steamGridDbState: const SteamGridDbPanelState(isOpen: false),
@@ -175,7 +175,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать ширину 0 для AnimatedContainer SteamGridDB когда закрыта',
+        'should use ширину 0 для AnimatedContainer SteamGridDB когда закрыта',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget(
             steamGridDbState: const SteamGridDbPanelState(isOpen: false),
@@ -201,7 +201,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать SizedBox.shrink вместо SteamGridDbPanel когда закрыта',
+        'should show SizedBox.shrink вместо SteamGridDbPanel когда закрыта',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget(
             steamGridDbState: const SteamGridDbPanelState(isOpen: false),
@@ -214,7 +214,7 @@ void main() {
 
     group('SteamGridDB панель открыта', () {
       testWidgets(
-        'должен показывать SteamGridDbPanel когда isOpen=true',
+        'should show SteamGridDbPanel когда isOpen=true',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget(
             steamGridDbState: const SteamGridDbPanelState(isOpen: true),
@@ -256,7 +256,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать AnimatedContainer с шириной 320 для SteamGridDB',
+        'should use AnimatedContainer с шириной 320 для SteamGridDB',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget(
             steamGridDbState: const SteamGridDbPanelState(isOpen: true),
@@ -283,7 +283,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать OverflowBox с maxWidth=320 для SteamGridDB',
+        'should use OverflowBox с maxWidth=320 для SteamGridDB',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget(
             steamGridDbState: const SteamGridDbPanelState(isOpen: true),
@@ -301,7 +301,7 @@ void main() {
 
     group('callbacks', () {
       testWidgets(
-        'должен вызывать onAddSteamGridDbImage при добавлении',
+        'should call onAddSteamGridDbImage при добавлении',
         (WidgetTester tester) async {
           SteamGridDbImage? capturedImage;
 
@@ -431,7 +431,7 @@ void main() {
 
     group('анимация контейнера', () {
       testWidgets(
-        'должен использовать Clip.hardEdge на AnimatedContainer',
+        'should use Clip.hardEdge на AnimatedContainer',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget());
 
@@ -448,7 +448,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать длительность анимации 200мс',
+        'should use длительность анимации 200мс',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget());
 
@@ -468,7 +468,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать Curves.easeInOut для анимации',
+        'should use Curves.easeInOut для анимации',
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget());
 

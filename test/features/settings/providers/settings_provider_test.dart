@@ -203,7 +203,7 @@ void main() {
     });
 
     group('setTmdbApiKey', () {
-      test('должен сохранить ключ в prefs и обновить состояние', () async {
+      test('should preserve ключ в prefs и обновить состояние', () async {
         final ProviderContainer container = await createContainer();
 
         final SettingsNotifier notifier =
@@ -219,7 +219,7 @@ void main() {
         verify(() => mockTmdbApi.setApiKey('new_tmdb_key')).called(1);
       });
 
-      test('должен удалить ключ из prefs при пустой строке', () async {
+      test('should delete ключ из prefs при пустой строке', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'tmdb_api_key': 'existing_key',
@@ -239,7 +239,7 @@ void main() {
         verify(() => mockTmdbApi.clearApiKey()).called(1);
       });
 
-      test('должен вызывать setApiKey а не clearApiKey при непустом ключе',
+      test('should call setApiKey а не clearApiKey при непустом ключе',
           () async {
         final ProviderContainer container = await createContainer();
 
@@ -254,7 +254,7 @@ void main() {
     });
 
     group('setTmdbLanguage', () {
-      test('должен сохранить язык в prefs и обновить состояние', () async {
+      test('should preserve язык в prefs и обновить состояние', () async {
         final ProviderContainer container = await createContainer();
 
         final SettingsNotifier notifier =
@@ -270,7 +270,7 @@ void main() {
         verify(() => mockTmdbApi.setLanguage('en-US')).called(1);
       });
 
-      test('должен использовать ru-RU по умолчанию', () async {
+      test('should use ru-RU по умолчанию', () async {
         final ProviderContainer container = await createContainer();
 
         final SettingsState state =
@@ -295,7 +295,7 @@ void main() {
     });
 
     group('setSteamGridDbApiKey', () {
-      test('должен сохранить ключ в prefs и обновить состояние', () async {
+      test('should preserve ключ в prefs и обновить состояние', () async {
         final ProviderContainer container = await createContainer();
 
         final SettingsNotifier notifier =
@@ -314,7 +314,7 @@ void main() {
         verify(() => mockSteamGridDbApi.setApiKey('new_sgdb_key')).called(1);
       });
 
-      test('должен удалить ключ из prefs при пустой строке', () async {
+      test('should delete ключ из prefs при пустой строке', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'steamgriddb_api_key': 'existing_key',
@@ -526,7 +526,7 @@ void main() {
     });
 
     group('setCredentials', () {
-      test('должен сохранить credentials в prefs и обновить состояние',
+      test('should preserve credentials в prefs и обновить состояние',
           () async {
         final ProviderContainer container = await createContainer();
 
@@ -607,7 +607,7 @@ void main() {
         expect(state.isSteamGridDbKeyBuiltIn, isFalse);
       });
 
-      test('при пустом SteamGridDB key в prefs — fallback на null', () async {
+      test('when empty SteamGridDB key в prefs — fallback на null', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'steamgriddb_api_key': '',
@@ -651,7 +651,7 @@ void main() {
         expect(state.isIgdbKeyBuiltIn, isFalse);
       });
 
-      test('при пустом IGDB key в prefs — fallback на null', () async {
+      test('when empty IGDB key в prefs — fallback на null', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'igdb_client_id': '',
@@ -669,7 +669,7 @@ void main() {
     });
 
     group('resetIgdbCredentialsToDefault', () {
-      test('должен удалить user credentials из prefs', () async {
+      test('should delete user credentials из prefs', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'igdb_client_id': 'user_cid',
@@ -715,7 +715,7 @@ void main() {
     });
 
     group('resetTmdbApiKeyToDefault', () {
-      test('должен удалить user key из prefs', () async {
+      test('should delete user key из prefs', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'tmdb_api_key': 'user_key',
@@ -752,7 +752,7 @@ void main() {
     });
 
     group('resetSteamGridDbApiKeyToDefault', () {
-      test('должен удалить user key из prefs', () async {
+      test('should delete user key из prefs', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'steamgriddb_api_key': 'user_key',
