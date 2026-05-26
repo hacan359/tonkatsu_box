@@ -23,6 +23,7 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/helpers/collection_actions.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../collections/extensions/item_display_name.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../../collections/widgets/bulk_action_bar.dart';
 import '../../collections/widgets/selectable_poster_card.dart';
@@ -114,11 +115,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     String searchQuery,
   ) {
     final String query = searchQuery.toLowerCase();
+    final String lang =
+        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     return items
         .where((CollectionItem item) =>
             (_selectedTypes.isEmpty ||
                 _selectedTypes.contains(item.mediaType)) &&
-            _matchesNonTypeFilters(item, filterStatus, tagsMap, query))
+            _matchesNonTypeFilters(item, filterStatus, tagsMap, query, lang))
         .toList();
   }
 
@@ -127,6 +130,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     ItemStatus? filterStatus,
     Map<int, CollectionTag> tagsMap,
     String lowerQuery,
+    String animeMangaTitleLanguage,
   ) {
     if (filterStatus != null && item.status != filterStatus) return false;
     if (_selectedPlatformIds.isNotEmpty &&
@@ -135,7 +139,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       return false;
     }
     if (lowerQuery.isNotEmpty) {
-      final bool match = item.itemName.toLowerCase().contains(lowerQuery) ||
+      final bool match = item
+              .displayName(animeMangaTitleLanguage)
+              .toLowerCase()
+              .contains(lowerQuery) ||
           (item.tagId != null &&
               (tagsMap[item.tagId]?.name.toLowerCase().contains(lowerQuery) ??
                   false)) ||
@@ -369,9 +376,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) {
     if (items == null) return <MediaType, int>{};
     final String lower = searchQuery.toLowerCase();
+    final String lang =
+        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     final Map<MediaType, int> counts = <MediaType, int>{};
     for (final CollectionItem item in items) {
-      if (!_matchesNonTypeFilters(item, filterStatus, tagsMap, lower)) {
+      if (!_matchesNonTypeFilters(item, filterStatus, tagsMap, lower, lang)) {
         continue;
       }
       counts[item.mediaType] = (counts[item.mediaType] ?? 0) + 1;
@@ -456,7 +465,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                               isCompactScreen(context)
                           ? CardVariant.compact
                           : CardVariant.grid,
-                      title: item.itemName,
+                      title: ref.displayNameOf(item),
                       imageUrl: item.thumbnailUrl ?? '',
                       cacheImageType:
                           _imageTypeFor(item.mediaType, item.platformId),

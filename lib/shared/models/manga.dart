@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 
+import '../utils/anime_manga_title_language.dart';
+
 /// Модель манги из AniList GraphQL API.
 ///
 /// Представляет мангу с метаданными из AniList.
@@ -165,17 +167,25 @@ class Manga {
     );
   }
 
-  /// AniList ID (integer — maps directly to external_id).
+  /// Maps directly to external_id.
   final int id;
 
-  /// Romaji название (основное).
+  /// Romaji title (always present per AniList contract).
   final String title;
 
-  /// Английское название.
   final String? titleEnglish;
-
-  /// Нативное (японское/корейское/китайское) название.
   final String? titleNative;
+
+  /// Returns the title in the requested AniList language with a fallback chain.
+  String titleByLanguage(String lang) {
+    return pickAnimeMangaTitle(
+          lang: lang,
+          romaji: title,
+          english: titleEnglish,
+          native: titleNative,
+        ) ??
+        title;
+  }
 
   /// Описание (HTML очищен).
   final String? description;

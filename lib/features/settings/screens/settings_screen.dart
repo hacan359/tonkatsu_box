@@ -19,6 +19,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/utils/anime_manga_title_language.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../core/services/update_service.dart';
 import '../providers/kodi_settings_provider.dart';
@@ -344,6 +345,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsDateFormatSubtitle,
             value: _dateFormatLabel(settings.dateFormat),
             onTap: () => _showDateFormatPicker(settings),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.title,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsAnimeMangaTitleLanguage,
+            subtitle: l.settingsAnimeMangaTitleLanguageSubtitle,
+            value: _animeMangaTitleLanguageLabel(l, settings.animeMangaTitleLanguage),
+            onTap: () => _showAnimeMangaTitleLanguagePicker(settings),
           ),
           SettingsTile(
             leadingIcon: Icons.thumb_up_outlined,
@@ -712,6 +721,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(width: 18),
                     const SizedBox(width: AppSpacing.sm),
                     Text(preset.format(sample, locale: localeName)),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _animeMangaTitleLanguageLabel(S l, String id) {
+    switch (AnimeMangaTitleLanguage.fromId(id)) {
+      case AnimeMangaTitleLanguage.english:
+        return l.settingsAnimeMangaTitleLanguageEnglish;
+      case AnimeMangaTitleLanguage.native:
+        return l.settingsAnimeMangaTitleLanguageNative;
+      case AnimeMangaTitleLanguage.romaji:
+        return l.settingsAnimeMangaTitleLanguageRomaji;
+    }
+  }
+
+  void _showAnimeMangaTitleLanguagePicker(SettingsState settings) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final S l = S.of(context);
+        return SimpleDialog(
+          title: Text(l.settingsAnimeMangaTitleLanguage),
+          children: <Widget>[
+            for (final AnimeMangaTitleLanguage v in AnimeMangaTitleLanguage.values)
+              SimpleDialogOption(
+                onPressed: () {
+                  ref
+                      .read(settingsNotifierProvider.notifier)
+                      .setAnimeMangaTitleLanguage(v.id);
+                  Navigator.pop(dialogContext);
+                },
+                child: Row(
+                  children: <Widget>[
+                    if (settings.animeMangaTitleLanguage == v.id)
+                      const Icon(Icons.check, size: 18, color: AppColors.brand)
+                    else
+                      const SizedBox(width: 18),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(_animeMangaTitleLanguageLabel(l, v.id)),
                   ],
                 ),
               ),

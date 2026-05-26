@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:xerabora/shared/models/anime.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/manga.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/platform.dart';
@@ -2552,6 +2554,91 @@ void main() {
           },
         );
         expect(item.overrideName, isNull);
+      });
+    });
+
+    group('displayName', () {
+      const Anime anime = Anime(
+        id: 10,
+        title: 'Romaji',
+        titleEnglish: 'English',
+        titleNative: 'ネイティブ',
+      );
+      const Manga manga = Manga(
+        id: 20,
+        title: 'M Romaji',
+        titleEnglish: 'M English',
+        titleNative: 'M ネイティブ',
+      );
+      final DateTime now = DateTime(2025);
+
+      CollectionItem makeAnime({String? override}) => CollectionItem(
+            id: 1,
+            collectionId: null,
+            mediaType: MediaType.anime,
+            externalId: 10,
+            anime: anime,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+            overrideName: override,
+          );
+
+      CollectionItem makeManga({String? override}) => CollectionItem(
+            id: 2,
+            collectionId: null,
+            mediaType: MediaType.manga,
+            externalId: 20,
+            manga: manga,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+            overrideName: override,
+          );
+
+      test('override wins regardless of language setting', () {
+        final CollectionItem item = makeAnime(override: 'Custom');
+        expect(item.displayName('romaji'), 'Custom');
+        expect(item.displayName('english'), 'Custom');
+        expect(item.displayName('native'), 'Custom');
+      });
+
+      test('anime without override uses titleByLanguage', () {
+        final CollectionItem item = makeAnime();
+        expect(item.displayName('romaji'), 'Romaji');
+        expect(item.displayName('english'), 'English');
+        expect(item.displayName('native'), 'ネイティブ');
+      });
+
+      test('manga without override uses titleByLanguage', () {
+        final CollectionItem item = makeManga();
+        expect(item.displayName('english'), 'M English');
+        expect(item.displayName('native'), 'M ネイティブ');
+      });
+
+      test('non anime/manga media types ignore lang and use itemName', () {
+        const Game game = Game(id: 5, name: 'Some Game');
+        final CollectionItem item = CollectionItem(
+          id: 3,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 5,
+          game: game,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.displayName('english'), 'Some Game');
+        expect(item.displayName('native'), 'Some Game');
+      });
+
+      test('falls back to itemName when anime media is null', () {
+        final CollectionItem item = CollectionItem(
+          id: 4,
+          collectionId: null,
+          mediaType: MediaType.anime,
+          externalId: 99,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.displayName('english'), 'Unknown Anime');
       });
     });
   });

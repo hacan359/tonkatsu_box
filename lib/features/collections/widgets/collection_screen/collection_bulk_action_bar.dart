@@ -6,6 +6,7 @@ import '../../../../shared/models/collection_tag.dart';
 import '../../helpers/collection_filters.dart';
 import '../../providers/collection_selection_provider.dart';
 import '../../providers/collections_provider.dart';
+import '../../../settings/providers/settings_provider.dart';
 import '../bulk_action_bar.dart';
 
 class CollectionBulkActionBar extends ConsumerWidget {
@@ -40,8 +41,14 @@ class CollectionBulkActionBar extends ConsumerWidget {
     ];
     if (selectedItems.isEmpty) return const SizedBox.shrink();
 
-    final List<CollectionItem> visible =
-        filters?.apply(all, tags) ?? all;
+    final String anilistLang =
+        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
+    final List<CollectionItem> visible = filters?.apply(
+          all,
+          tags,
+          animeMangaTitleLanguage: anilistLang,
+        ) ??
+        all;
 
     return BulkActionBar(
       items: selectedItems,

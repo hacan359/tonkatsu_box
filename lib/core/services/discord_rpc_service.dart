@@ -127,6 +127,7 @@ class DiscordRpcService {
   Future<void> updatePresence(
     CollectionItem item, {
     TrackerGameData? raData,
+    String animeMangaTitleLanguage = 'romaji',
   }) async {
     if (!_enabled || !kDiscordRpcAvailable || _raSyncActive) return;
 
@@ -141,7 +142,8 @@ class DiscordRpcService {
 
     try {
       await _rpc!.setPresence(DiscordPresence(
-        details: '${_activityVerb(item.mediaType)} ${item.itemName}',
+        details: '${_activityVerb(item.mediaType)} '
+            '${item.displayName(animeMangaTitleLanguage)}',
         state: _buildState(item, raData),
         timestamps: DiscordTimestamps(
           start: DateTime.now().millisecondsSinceEpoch ~/ 1000,

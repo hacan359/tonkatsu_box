@@ -81,6 +81,11 @@ abstract class SettingsKeys {
   static const String dateFormat = 'date_format';
 
   static const String dateFormatDefault = 'month_day_year';
+
+  /// AniList title language (romaji / english / native).
+  static const String animeMangaTitleLanguage = 'anime_manga_title_language';
+
+  static const String animeMangaTitleLanguageDefault = 'romaji';
 }
 
 class SettingsState {
@@ -108,6 +113,7 @@ class SettingsState {
     this.richCollectionsEnabled = false,
     this.hideEmptyMediaTypeChevrons = false,
     this.dateFormat = SettingsKeys.dateFormatDefault,
+    this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
   });
 
   final String? clientId;
@@ -166,6 +172,9 @@ class SettingsState {
 
   /// Date display format preset id.
   final String dateFormat;
+
+  /// AniList title language preference.
+  final String animeMangaTitleLanguage;
 
   String? resolveOverlay({
     String? platformOverlay,
@@ -247,6 +256,7 @@ class SettingsState {
     bool? richCollectionsEnabled,
     bool? hideEmptyMediaTypeChevrons,
     String? dateFormat,
+    String? animeMangaTitleLanguage,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -275,6 +285,8 @@ class SettingsState {
       hideEmptyMediaTypeChevrons:
           hideEmptyMediaTypeChevrons ?? this.hideEmptyMediaTypeChevrons,
       dateFormat: dateFormat ?? this.dateFormat,
+      animeMangaTitleLanguage:
+          animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
     );
   }
 }
@@ -298,6 +310,15 @@ final Provider<bool> hasValidApiKeyProvider = Provider<bool>((Ref ref) {
 
 final NotifierProvider<SettingsNotifier, SettingsState> settingsNotifierProvider =
     NotifierProvider<SettingsNotifier, SettingsState>(SettingsNotifier.new);
+
+extension AnimeMangaTitleLanguagePrefs on SharedPreferences {
+  /// Current AniList title language with default fallback. Use this from
+  /// non-UI callers that already hold a [SharedPreferences] instance to
+  /// avoid taking a dependency on the heavy [SettingsNotifier].
+  String get animeMangaTitleLanguage =>
+      getString(SettingsKeys.animeMangaTitleLanguage) ??
+      SettingsKeys.animeMangaTitleLanguageDefault;
+}
 
 class SettingsNotifier extends Notifier<SettingsState> {
   late SharedPreferences _prefs;
@@ -390,6 +411,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String dateFormat =
         _prefs.getString(SettingsKeys.dateFormat) ??
             SettingsKeys.dateFormatDefault;
+    final String animeMangaTitleLanguage =
+        _prefs.getString(SettingsKeys.animeMangaTitleLanguage) ??
+            SettingsKeys.animeMangaTitleLanguageDefault;
 
     // Valid token → connected immediately (skip verify);
     // expired with credentials → trigger auto-verify below.
@@ -421,6 +445,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       richCollectionsEnabled: richCollectionsEnabled,
       hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
       dateFormat: dateFormat,
+      animeMangaTitleLanguage: animeMangaTitleLanguage,
     );
 
     // API keys already wired by apiKeysProvider; only the request-time language param is set here.
@@ -664,6 +689,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(dateFormat: presetId);
   }
 
+  Future<void> setAnimeMangaTitleLanguage(String lang) async {
+    await _prefs.setString(SettingsKeys.animeMangaTitleLanguage, lang);
+    state = state.copyWith(animeMangaTitleLanguage: lang);
+  }
+
   /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetTmdbApiKeyToDefault() async {
     await _prefs.remove(SettingsKeys.tmdbApiKey);
@@ -775,6 +805,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.richCollectionsEnabled);
     await _prefs.remove(SettingsKeys.hideEmptyMediaTypeChevrons);
     await _prefs.remove(SettingsKeys.dateFormat);
+    await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
     await _prefs.remove(SettingsKeys.raUsername);
     await _prefs.remove(SettingsKeys.raApiKey);
 

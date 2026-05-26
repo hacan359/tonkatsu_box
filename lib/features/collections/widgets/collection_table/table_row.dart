@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/constants/media_type_theme.dart';
 import '../../../../shared/models/collection_item.dart';
@@ -8,6 +9,7 @@ import '../../../../shared/models/media_type.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../extensions/item_display_name.dart';
 import 'cells/rating_cell.dart';
 import 'cells/status_cell.dart';
 import 'cells/tag_cell.dart';
@@ -110,7 +112,7 @@ class _TableRowState extends State<TableRow> {
   }
 }
 
-class _RowContent extends StatelessWidget {
+class _RowContent extends ConsumerWidget {
   const _RowContent({
     required this.item,
     required this.tag,
@@ -135,7 +137,8 @@ class _RowContent extends StatelessWidget {
   final void Function(int itemId, int? tagId)? onTagChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String displayName = ref.displayNameOf(item);
     return Row(
       children: <Widget>[
         if (onToggleSelect != null)
@@ -178,7 +181,7 @@ class _RowContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                item.itemName,
+                displayName,
                 style: AppTypography.body.copyWith(
                   fontWeight: FontWeight.w600,
                 ),

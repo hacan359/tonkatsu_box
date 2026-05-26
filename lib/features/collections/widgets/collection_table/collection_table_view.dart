@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/collection_item.dart';
@@ -8,6 +9,7 @@ import '../../../../shared/models/collection_tag.dart';
 import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/theme/app_spacing.dart';
+import '../../../settings/providers/settings_provider.dart';
 import 'table_column.dart';
 import 'table_header.dart';
 import 'table_row.dart' as table_row;
@@ -17,7 +19,7 @@ export 'table_column.dart' show TableColumn;
 /// Manifest-style table view of a collection. When [onReorder] is supplied
 /// the view flips into a reorderable sliver: column sort/filter is disabled
 /// and a drag handle appears on every row.
-class CollectionTableView extends StatefulWidget {
+class CollectionTableView extends ConsumerStatefulWidget {
   const CollectionTableView({
     required this.items,
     required this.onItemTap,
@@ -55,10 +57,10 @@ class CollectionTableView extends StatefulWidget {
   final ValueChanged<ItemStatus?>? onFilterStatusChanged;
 
   @override
-  State<CollectionTableView> createState() => _CollectionTableViewState();
+  ConsumerState<CollectionTableView> createState() => _CollectionTableViewState();
 }
 
-class _CollectionTableViewState extends State<CollectionTableView> {
+class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
   static const double _minTableWidth = 864;
 
   TableColumn _sortColumn = TableColumn.name;
@@ -273,6 +275,9 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   }
 
   List<CollectionItem> _sortedItems() {
+    final String anilistLang = ref
+        .read(settingsNotifierProvider)
+        .animeMangaTitleLanguage;
     final bool hasFilter = _filterStatus != null ||
         _filterType != null ||
         _filterRating != null ||
@@ -297,7 +302,7 @@ class _CollectionTableViewState extends State<CollectionTableView> {
     list.sort((CollectionItem a, CollectionItem b) {
       switch (_sortColumn) {
         case TableColumn.name:
-          return a.itemName.compareTo(b.itemName) * dir;
+          return a.displayName(anilistLang).compareTo(b.displayName(anilistLang)) * dir;
         case TableColumn.type:
           return a.mediaType.index.compareTo(b.mediaType.index) * dir;
         case TableColumn.platform:

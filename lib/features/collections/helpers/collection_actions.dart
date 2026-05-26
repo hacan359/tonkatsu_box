@@ -33,6 +33,7 @@ import '../widgets/copy_as_text_dialog.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/edit_collection_dialog.dart';
 import '../../search/screens/search_screen.dart';
+import '../../settings/providers/settings_provider.dart';
 
 /// Статические методы для действий на экране коллекции.
 ///
@@ -107,15 +108,18 @@ class CollectionActions {
 
     if (!context.mounted) return false;
 
+    final String displayName = item.displayName(
+      ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+    );
     if (result.success) {
       context.showSnack(
-        S.of(context).collectionItemMovedTo(item.itemName, targetName),
+        S.of(context).collectionItemMovedTo(displayName, targetName),
         type: SnackType.success,
       );
       return result.sourceEmpty;
     } else {
       context.showSnack(
-        S.of(context).collectionItemAlreadyExists(item.itemName, targetName),
+        S.of(context).collectionItemAlreadyExists(displayName, targetName),
       );
       return false;
     }
@@ -162,15 +166,18 @@ class CollectionActions {
 
     if (!context.mounted) return;
 
+    final String displayName = item.displayName(
+      ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+    );
     if (success) {
       context.showSnack(
-        S.of(context).collectionItemCopiedTo(item.itemName, targetName),
+        S.of(context).collectionItemCopiedTo(displayName, targetName),
         type: SnackType.success,
       );
     } else {
       context.showSnack(
         S.of(context).collectionItemAlreadyInTarget(
-              item.itemName,
+              displayName,
               targetName,
             ),
       );
@@ -225,6 +232,9 @@ class CollectionActions {
     required int? collectionId,
     required CollectionItem item,
   }) async {
+    final String displayName = item.displayName(
+      ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+    );
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -232,7 +242,7 @@ class CollectionActions {
         return AlertDialog(
           scrollable: true,
           title: Text(dl.collectionRemoveItemTitle),
-          content: Text(dl.collectionRemoveItemMessage(item.itemName)),
+          content: Text(dl.collectionRemoveItemMessage(displayName)),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -263,7 +273,7 @@ class CollectionActions {
 
     if (context.mounted) {
       context.showSnack(
-        S.of(context).collectionItemRemoved(item.itemName),
+        S.of(context).collectionItemRemoved(displayName),
         type: SnackType.success,
       );
     }
@@ -340,6 +350,8 @@ class CollectionActions {
     final String text = service.applyTemplate(
       TextExportService.defaultTemplate,
       items,
+      animeMangaTitleLanguage:
+          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
     );
 
     await Clipboard.setData(ClipboardData(text: text));

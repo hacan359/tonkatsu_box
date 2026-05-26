@@ -1,8 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/collections/widgets/collection_item_tile.dart';
 import 'package:xerabora/features/collections/widgets/status_ribbon.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -120,15 +124,30 @@ Platform _makePlatform({
   );
 }
 
+class _DefaultSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsState build() => const SettingsState();
+}
+
 Widget _buildTestApp(Widget child) {
-  return MaterialApp(
-    localizationsDelegates: S.localizationsDelegates,
-    supportedLocales: S.supportedLocales,
-    home: Scaffold(body: child),
+  return ProviderScope(
+    overrides: <Override>[
+      apiKeysProvider.overrideWithValue(const ApiKeys()),
+      settingsNotifierProvider.overrideWith(_DefaultSettingsNotifier.new),
+    ],
+    child: MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
+      home: Scaffold(body: child),
+    ),
   );
 }
 
 void main() {
+  setUpAll(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+  });
+
   group('CollectionItemTile', () {
     group('название', () {
       testWidgets('показывает имя игры из данных',

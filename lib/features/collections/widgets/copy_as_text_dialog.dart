@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/text_export_service.dart';
@@ -10,6 +11,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../settings/providers/settings_provider.dart';
 
 /// Показывает диалог копирования коллекции как текста.
 ///
@@ -25,16 +27,16 @@ Future<bool?> showCopyAsTextDialog({
   );
 }
 
-class _CopyAsTextDialog extends StatefulWidget {
+class _CopyAsTextDialog extends ConsumerStatefulWidget {
   const _CopyAsTextDialog({required this.items});
 
   final List<CollectionItem> items;
 
   @override
-  State<_CopyAsTextDialog> createState() => _CopyAsTextDialogState();
+  ConsumerState<_CopyAsTextDialog> createState() => _CopyAsTextDialogState();
 }
 
-class _CopyAsTextDialogState extends State<_CopyAsTextDialog> {
+class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
   final TextExportService _service = TextExportService();
   late final TextEditingController _templateController;
   TextExportSortMode _sortMode = TextExportSortMode.current;
@@ -81,9 +83,13 @@ class _CopyAsTextDialogState extends State<_CopyAsTextDialog> {
       case TextExportSortMode.current:
         break;
       case TextExportSortMode.name:
+        final String lang =
+            ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
         sorted.sort(
-          (CollectionItem a, CollectionItem b) =>
-              a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase()),
+          (CollectionItem a, CollectionItem b) => a
+              .displayName(lang)
+              .toLowerCase()
+              .compareTo(b.displayName(lang).toLowerCase()),
         );
       case TextExportSortMode.rating:
         sorted.sort((CollectionItem a, CollectionItem b) {
@@ -113,7 +119,12 @@ class _CopyAsTextDialogState extends State<_CopyAsTextDialog> {
     final List<CollectionItem> previewItems = items.length > _previewMaxLines
         ? items.sublist(0, _previewMaxLines)
         : items;
-    final String result = _service.applyTemplate(template, previewItems);
+    final String result = _service.applyTemplate(
+      template,
+      previewItems,
+      animeMangaTitleLanguage:
+          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+    );
     if (items.length > _previewMaxLines) {
       return '$result\n…';
     }
@@ -149,7 +160,12 @@ class _CopyAsTextDialogState extends State<_CopyAsTextDialog> {
     final String template = _templateController.text;
     if (template.isEmpty) return;
     final List<CollectionItem> items = _sortedItems;
-    final String text = _service.applyTemplate(template, items);
+    final String text = _service.applyTemplate(
+      template,
+      items,
+      animeMangaTitleLanguage:
+          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+    );
     await Clipboard.setData(ClipboardData(text: text));
     await _saveTemplate(template);
     if (mounted) {

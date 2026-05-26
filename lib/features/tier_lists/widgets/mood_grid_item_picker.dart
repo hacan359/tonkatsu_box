@@ -11,6 +11,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../collections/extensions/item_display_name.dart';
+import '../../settings/providers/settings_provider.dart';
 
 /// Result of [showMoodGridItemPicker].
 class MoodGridItemPickerResult {
@@ -169,21 +171,23 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
   List<CollectionItem> _filterItems(List<CollectionItem> all, String query) {
     if (query.isEmpty) return all;
     final String lowered = query.toLowerCase();
+    final String lang =
+        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     return all
         .where((CollectionItem it) =>
-            it.itemName.toLowerCase().contains(lowered))
+            it.displayName(lang).toLowerCase().contains(lowered))
         .toList();
   }
 }
 
-class _PickerItemCard extends StatelessWidget {
+class _PickerItemCard extends ConsumerWidget {
   const _PickerItemCard({required this.item, required this.onTap});
 
   final CollectionItem item;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final String? url = item.thumbnailUrl;
     return InkWell(
       onTap: onTap,
@@ -208,7 +212,7 @@ class _PickerItemCard extends StatelessWidget {
           const SizedBox(height: 4),
           Expanded(
             child: Text(
-              item.itemName,
+              ref.displayNameOf(item),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

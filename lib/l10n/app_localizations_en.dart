@@ -2457,6 +2457,22 @@ class SEn extends S {
   String get settingsDateFormatSubtitle => 'How dates are shown across the app';
 
   @override
+  String get settingsAnimeMangaTitleLanguage => 'Anime & manga title language';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageSubtitle =>
+      'Title shown for anime and manga';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageRomaji => 'Romaji';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageEnglish => 'English';
+
+  @override
+  String get settingsAnimeMangaTitleLanguageNative => 'Native';
+
+  @override
   String get dualDatePickerInputLabel => 'Date';
 
   @override

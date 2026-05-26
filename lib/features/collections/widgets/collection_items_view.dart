@@ -20,6 +20,7 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
+import '../extensions/item_display_name.dart';
 import 'collection_item_tile.dart';
 import 'collection_table/collection_table_view.dart';
 import 'selectable_poster_card.dart';
@@ -505,7 +506,7 @@ class CollectionItemsView extends ConsumerWidget {
       variant: isLandscape || isCompactScreen(context)
           ? CardVariant.compact
           : CardVariant.grid,
-      title: item.itemName,
+      title: ref.displayNameOf(item),
       imageUrl: item.thumbnailUrl ?? '',
       cacheImageType: item.imageType,
       cacheImageId: item.externalId.toString(),

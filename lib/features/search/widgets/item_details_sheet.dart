@@ -134,18 +134,22 @@ class ItemDetailsSheet extends StatelessWidget {
   factory ItemDetailsSheet.manga(
     Manga manga, {
     required VoidCallback onAddToCollection,
+    required String animeMangaTitleLanguage,
   }) {
+    final String displayTitle = manga.titleByLanguage(animeMangaTitleLanguage);
     return ItemDetailsSheet(
-      title: manga.title,
+      title: displayTitle,
       icon: Icons.auto_stories,
       overview: manga.description,
       year: manga.releaseYear,
       rating: manga.formattedRating,
       genres: manga.genres,
       maxGenres: _defaultMaxChips,
-      subtitle: manga.titleEnglish != manga.title
-          ? manga.titleEnglish
-          : null,
+      subtitle: displayTitle != manga.title
+          ? manga.title
+          : (manga.titleEnglish != null && manga.titleEnglish != manga.title
+              ? manga.titleEnglish
+              : null),
       infoChips: <(IconData, String)>[
         if (manga.authorsString != null)
           (Icons.person_outline, manga.authorsString!),
@@ -166,16 +170,22 @@ class ItemDetailsSheet extends StatelessWidget {
   factory ItemDetailsSheet.anime(
     Anime anime, {
     required VoidCallback onAddToCollection,
+    required String animeMangaTitleLanguage,
   }) {
+    final String displayTitle = anime.titleByLanguage(animeMangaTitleLanguage);
     return ItemDetailsSheet(
-      title: anime.title,
+      title: displayTitle,
       icon: Icons.play_circle_outline,
       overview: anime.description,
       year: anime.releaseYear,
       rating: anime.formattedRating,
       genres: anime.genres,
       maxGenres: _defaultMaxChips,
-      subtitle: anime.titleEnglish != anime.title ? anime.titleEnglish : null,
+      subtitle: displayTitle != anime.title
+          ? anime.title
+          : (anime.titleEnglish != null && anime.titleEnglish != anime.title
+              ? anime.titleEnglish
+              : null),
       infoChips: <(IconData, String)>[
         if (anime.studiosString != null)
           (Icons.business, anime.studiosString!),

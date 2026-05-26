@@ -12,6 +12,7 @@ import '../../../shared/models/platform.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/models/visual_novel.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
 import 'game_handler.dart';
@@ -78,11 +79,17 @@ class MediaHandlers {
       collectedProvider: collectedMangaIdsProvider,
       externalIdOf: (Manga m) => m.id,
       imageIdOf: (Manga m) => m.id.toString(),
-      titleOf: (Manga m) => m.title,
+      titleOf: (Manga m) => m.titleByLanguage(
+        ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+      ),
       imageUrlOf: (Manga m) => m.coverUrl,
       upsert: (Manga m) => ref.read(databaseServiceProvider).upsertManga(m),
-      sheetBuilder: (Manga m, VoidCallback onAdd) =>
-          ItemDetailsSheet.manga(m, onAddToCollection: onAdd),
+      sheetBuilder: (Manga m, VoidCallback onAdd) => ItemDetailsSheet.manga(
+        m,
+        onAddToCollection: onAdd,
+        animeMangaTitleLanguage:
+            ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+      ),
     );
     _byType[Anime] = SimpleMediaHandler<Anime>(
       ref: ref,
@@ -93,11 +100,17 @@ class MediaHandlers {
       collectedProvider: collectedAnimeIdsProvider,
       externalIdOf: (Anime a) => a.id,
       imageIdOf: (Anime a) => a.id.toString(),
-      titleOf: (Anime a) => a.title,
+      titleOf: (Anime a) => a.titleByLanguage(
+        ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+      ),
       imageUrlOf: (Anime a) => a.coverUrl,
       upsert: (Anime a) => ref.read(databaseServiceProvider).upsertAnime(a),
-      sheetBuilder: (Anime a, VoidCallback onAdd) =>
-          ItemDetailsSheet.anime(a, onAddToCollection: onAdd),
+      sheetBuilder: (Anime a, VoidCallback onAdd) => ItemDetailsSheet.anime(
+        a,
+        onAddToCollection: onAdd,
+        animeMangaTitleLanguage:
+            ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+      ),
     );
   }
 

@@ -24,6 +24,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
 import '../widgets/create_custom_item_dialog.dart';
 import '../providers/collections_provider.dart';
+import '../extensions/item_display_name.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/episode_tracker_section.dart';
@@ -89,13 +90,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   void _updateDiscordPresence(CollectionItem item) {
     if (!kDiscordRpcAvailable) return;
-    final bool enabled = ref.read(settingsNotifierProvider).discordRpcEnabled;
-    if (!enabled) return;
+    final SettingsState settings = ref.read(settingsNotifierProvider);
+    if (!settings.discordRpcEnabled) return;
     _discordRpc ??= ref.read(discordRpcServiceProvider);
     final TrackerGameData? raData = item.mediaType == MediaType.game
         ? ref.read(trackerDetailProvider((gameId: item.externalId, platformId: item.platformId))).valueOrNull?.gameData
         : null;
-    _discordRpc!.updatePresence(item, raData: raData);
+    _discordRpc!.updatePresence(
+      item,
+      raData: raData,
+      animeMangaTitleLanguage: settings.animeMangaTitleLanguage,
+    );
   }
 
   @override
@@ -173,12 +178,55 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     ref.invalidate(collectionItemsNotifierProvider(widget.collectionId));
   }
 
+  void _addAnimeMangaSuggestions(
+    List<RenameSuggestion> out,
+    S l, {
+    required String romaji,
+    required String? english,
+    required String? native,
+  }) {
+    out.add(RenameSuggestion(
+      label: l.settingsAnimeMangaTitleLanguageRomaji,
+      value: romaji,
+    ));
+    if (english != null && english.isNotEmpty) {
+      out.add(RenameSuggestion(
+        label: l.settingsAnimeMangaTitleLanguageEnglish,
+        value: english,
+      ));
+    }
+    if (native != null && native.isNotEmpty) {
+      out.add(RenameSuggestion(
+        label: l.settingsAnimeMangaTitleLanguageNative,
+        value: native,
+      ));
+    }
+  }
+
   Future<void> _renameItem(CollectionItem item) async {
     final String original = item.cachedName ?? item.itemName;
+    final S l = S.of(context);
+    final List<RenameSuggestion> suggestions = <RenameSuggestion>[];
+    if (item.mediaType == MediaType.anime && item.anime != null) {
+      _addAnimeMangaSuggestions(
+        suggestions, l,
+        romaji: item.anime!.title,
+        english: item.anime!.titleEnglish,
+        native: item.anime!.titleNative,
+      );
+    } else if (item.mediaType == MediaType.manga && item.manga != null) {
+      _addAnimeMangaSuggestions(
+        suggestions, l,
+        romaji: item.manga!.title,
+        english: item.manga!.titleEnglish,
+        native: item.manga!.titleNative,
+      );
+    }
     final String? result = await RenameItemDialog.show(
       context,
       currentOverride: item.overrideName,
       originalName: original,
+      suggestions: suggestions,
     );
     if (result == null || !mounted) return;
     // Empty string from the dialog = "reset to original".
@@ -230,8 +278,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (!mounted) return;
 
     if (result.success) {
+      final String displayName = ref.currentDisplayNameOf(item);
       context.showSnack(
-        S.of(context).collectionItemMovedTo(item.itemName, targetName),
+        S.of(context).collectionItemMovedTo(displayName, targetName),
         type: SnackType.success,
       );
       if (result.sourceEmpty && widget.collectionId != null) {
@@ -260,8 +309,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       }
       if (mounted) navigator.pop();
     } else {
+      final String displayName = ref.currentDisplayNameOf(item);
       context.showSnack(
-        S.of(context).collectionItemAlreadyExists(item.itemName, targetName),
+        S.of(context).collectionItemAlreadyExists(displayName, targetName),
       );
     }
   }
@@ -276,11 +326,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Future<void> _removeFromCollection(CollectionItem item) async {
+    final String displayName = ref.currentDisplayNameOf(item);
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: Text(S.of(context).collectionRemoveItemTitle),
-        content: Text(S.of(context).collectionRemoveItemMessage(item.itemName)),
+        content: Text(S.of(context).collectionRemoveItemMessage(displayName)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -307,7 +358,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
     if (mounted) {
       context.showSnack(
-        S.of(context).collectionItemRemoved(item.itemName),
+        S.of(context).collectionItemRemoved(displayName),
         type: SnackType.success,
       );
       Navigator.of(context).pop();
@@ -409,7 +460,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Widget _buildContent(CollectionItem item) {
-    _currentItemName = item.itemName;
+    final String displayName = ref.displayNameOf(item);
+    _currentItemName = displayName;
     _updateDiscordPresence(item);
     final ItemDetailMediaConfig config =
         ItemDetailMediaConfig.from(item, context);
@@ -419,6 +471,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       child: Scaffold(
         appBar: ItemDetailAppBar(
           item: item,
+          displayName: displayName,
           isEditable: widget.isEditable,
           hasCanvas: _hasCanvas,
           showCanvas: _showCanvas,
@@ -436,12 +489,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 isEditable: widget.isEditable && !_isViewModeLocked,
                 currentItemName: _currentItemName ?? '',
               )
-            : _buildDetailView(item, config),
+            : _buildDetailView(item, config, displayName),
       ),
     );
   }
 
-  Widget _buildDetailView(CollectionItem item, ItemDetailMediaConfig config) {
+  Widget _buildDetailView(
+    CollectionItem item,
+    ItemDetailMediaConfig config,
+    String displayName,
+  ) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     // Recommendations / reviews are TMDB-only.
     final bool showRecs = settings.showRecommendations &&
@@ -450,7 +507,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             item.mediaType == MediaType.animation);
 
     return MediaDetailView(
-      title: item.itemName,
+      title: displayName,
       coverUrl: config.coverUrl,
       externalUrl: config.externalUrl,
       backdropUrl: config.backdropUrl,
