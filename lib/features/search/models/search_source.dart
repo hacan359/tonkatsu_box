@@ -1,17 +1,14 @@
-// Абстракции для поисковых источников данных.
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/media_type.dart';
 
-/// ID жанра Animation в TMDB. Используется для фильтрации анимации.
+/// TMDB's Animation genre id, used to keep animation out of generic
+/// TV / movie searches.
 const int tmdbAnimationGenreId = 16;
 
-/// Вариант фильтра.
 class FilterOption {
-  /// Создаёт [FilterOption].
   const FilterOption({
     required this.id,
     required this.label,
@@ -19,16 +16,11 @@ class FilterOption {
     this.value,
   });
 
-  /// Уникальный идентификатор варианта.
   final String id;
-
-  /// Отображаемое название.
   final String label;
-
-  /// Иконка (опционально).
   final IconData? icon;
 
-  /// Значение для передачи в API.
+  /// Raw value passed to the API for this option.
   final Object? value;
 
   @override
@@ -45,21 +37,16 @@ class FilterOption {
   String toString() => 'FilterOption($id, $label)';
 }
 
-/// Вариант сортировки для Browse mode.
+/// Sort option for Browse mode — `id` doubles as the l10n key.
 class BrowseSortOption {
-  /// Создаёт [BrowseSortOption].
   const BrowseSortOption({
     required this.id,
     required this.apiValue,
   });
 
-  /// Уникальный идентификатор (используется как ключ локализации).
   final String id;
-
-  /// Значение для API запроса.
   final String apiValue;
 
-  /// Локализованное название сортировки.
   String label(S l) => switch (id) {
         'popular' || 'popularity' => l.browseSortPopular,
         'top_rated' || 'rating' || 'score' => l.browseSortTopRated,
@@ -80,45 +67,39 @@ class BrowseSortOption {
   int get hashCode => id.hashCode;
 }
 
-/// Описание одного фильтра.
-///
-/// Каждый фильтр объявляет свой ключ, placeholder и список вариантов.
+/// One filter exposed by a [SearchSource].
 abstract class SearchFilter {
-  /// Уникальный ключ фильтра ("genre", "year", "platform").
+  /// Identifier of the filter ("genre", "year", "platform").
   String get key;
 
-  /// Отображаемое имя когда ничего не выбрано.
+  /// Label shown when no value is selected.
   String placeholder(S l);
 
-  /// Список вариантов (загружается асинхронно).
-  ///
-  /// [l] — объект локализации для переведённых названий опций.
   Future<List<FilterOption>> options(WidgetRef ref, S l);
 
-  /// Ключ для кэширования/сравнения (по умолчанию = [key]).
-  ///
-  /// Переопределяйте, если несколько фильтров имеют одинаковый [key],
-  /// но разные наборы опций (например, жанры Movie vs TV vs IGDB).
+  /// Separate from [key] when several filters share the same key but expose
+  /// different option sets (e.g. genres for Movie vs TV vs IGDB).
   String get cacheKey => key;
 
-  /// Показывать ли поле поиска внутри выпадающего списка.
-  ///
-  /// Включать для фильтров с большим количеством вариантов
-  /// (жанры IGDB, платформы и т.д.).
+  /// True for filters with many options — turns on the in-dropdown search.
   bool get searchable => false;
 
-  /// Поддерживает ли фильтр множественный выбор.
-  ///
-  /// При `true` значение фильтра — `List<Object>` вместо одиночного значения.
+  /// When `true`, the stored value is a `List<Object>`.
   bool get multiSelect => false;
 
-  /// Значение "все" (сброс фильтра).
+  /// "All" (reset) option.
   FilterOption get allOption;
+
+  /// Optional bespoke picker that replaces the default dropdown / searchable
+  /// dialog. Return the new value (or `null` to clear), or leave [Future]
+  /// resolved to a sentinel that the caller ignores. Override only when the
+  /// default UI is insufficient (e.g. needs grouped categories).
+  Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?
+      get openCustomPicker => null;
 }
 
-/// Результат Browse-запроса (Discover с фильтрами).
+/// Result of a Browse / Discover request (a filtered page of media).
 class BrowseResult {
-  /// Создаёт [BrowseResult].
   const BrowseResult({
     required this.items,
     required this.mediaType,
@@ -127,64 +108,41 @@ class BrowseResult {
     this.currentPage = 1,
   });
 
-  /// Список элементов (Game, Movie, TvShow).
   final List<Object> items;
-
-  /// Тип медиа для отображения.
   final MediaType mediaType;
-
-  /// Есть ли ещё страницы.
   final bool hasMore;
-
-  /// Общее количество страниц.
   final int totalPages;
-
-  /// Текущая страница.
   final int currentPage;
 }
 
-/// Описание источника данных для поиска.
-///
-/// Каждый источник объявляет свои фильтры, API-методы
-/// и UI-конфигурацию. Добавление нового источника —
-/// создать реализацию и зарегистрировать в списке.
+/// One data source for the search screen. Each source declares its filter
+/// set, fetch implementation, and UI metadata.
 abstract class SearchSource {
-  /// Уникальный идентификатор.
   String get id;
 
-  /// ID группы источников ('tmdb', 'igdb', 'anilist', 'vndb').
-  ///
-  /// Используется для визуальной группировки в popup выбора источника.
-  /// Источники с одинаковым [groupId] отображаются в одной секции.
+  /// Logical group ('tmdb', 'igdb', 'anilist', 'vndb') used to cluster
+  /// sources in the picker popup.
   String get groupId;
 
-  /// Название группы для отображения ('TMDB', 'IGDB', 'AniList', 'VNDB').
   String get groupName;
-
-  /// Иконка группы для заголовка секции в popup.
   IconData get groupIcon;
 
-  /// Отображаемое имя (локализованное).
+  /// Localised label.
   String label(S l);
 
-  /// Иконка для дропдауна.
   IconData get icon;
 
-  /// Путь к брендовому PNG-ассету (альтернатива [icon] и [groupIcon]).
-  /// Если задан — рендерится вместо Material-иконки.
+  /// Brand PNG asset; rendered instead of [icon] when present.
   String? get iconAsset => null;
 
-  /// Список фильтров, которые поддерживает этот источник.
-  /// Порядок = порядок отображения в фильтр-баре.
+  /// Filters in display order along the filter bar.
   List<SearchFilter> get filters;
 
-  /// Есть ли Browse mode (Discover без поискового запроса).
+  /// Whether the source supports filter-only browse without a text query.
   bool get supportsBrowse;
 
-  /// Загрузить контент: поиск (если [query] задан) или Browse с фильтрами.
-  ///
-  /// Объединяет browse и search в единый метод.
-  /// Каждый source решает как комбинировать [query] с [filterValues].
+  /// Single entry point for both search (when [query] is non-empty) and
+  /// browse (when it isn't). Each source decides how it combines them.
   Future<BrowseResult> fetch(
     Ref ref, {
     String? query,
@@ -193,27 +151,21 @@ abstract class SearchSource {
     required int page,
   });
 
-  /// Виджет Discover feed для режима без фильтров (null = нет Discover).
+  /// Discover feed widget for the no-filters mode. Return null to opt out.
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref);
 
-  /// Доступные варианты сортировки.
   List<BrowseSortOption> get sortOptions;
 
-  /// Сортировка по умолчанию.
   BrowseSortOption get defaultSort => sortOptions.first;
 
-  /// Поддерживается ли пользовательская сортировка при текстовом поиске.
-  ///
-  /// Некоторые API (TMDB) не позволяют сортировать результаты поиска.
-  /// По умолчанию `false` — дропдаун сортировки блокируется при поиске.
+  /// Some APIs (TMDB) don't accept sort on search responses — defaulting
+  /// to `false` disables the sort dropdown while a query is active.
   bool get supportsSortDuringSearch => false;
 
-  /// Подсказка для поля поиска (локализованная).
   String searchHint(S l);
 
-  /// MediaType присваиваемый карточкам этого источника при добавлении
-  /// в коллекцию. Совпадает с [BrowseResult.mediaType] и не зависит от
-  /// runtime-типа возвращаемых моделей: TMDB anime tab выдаёт `Movie` и
-  /// `TvShow`, но они классифицируются как [MediaType.animation].
+  /// MediaType stamped onto items added from this source. May differ from
+  /// the runtime type of the fetched model — TMDB's anime tab fetches
+  /// `Movie` / `TvShow` but classifies them as [MediaType.animation].
   MediaType get outputMediaType;
 }

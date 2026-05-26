@@ -11,6 +11,7 @@ import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/core/services/kodi_sync_service.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/api/anilist_api.dart';
+import 'package:xerabora/core/database/dao/anilist_tag_dao.dart';
 import 'package:xerabora/core/api/vndb_api.dart';
 import 'package:xerabora/core/database/dao/canvas_dao.dart';
 import 'package:xerabora/core/database/dao/collection_dao.dart';
@@ -117,6 +118,8 @@ class MockSteamGridDbApi extends Mock implements SteamGridDbApi {}
 class MockVndbApi extends Mock implements VndbApi {}
 
 class MockAniListApi extends Mock implements AniListApi {}
+
+class MockAniListTagDao extends Mock implements AniListTagDao {}
 
 class MockSteamApi extends Mock implements SteamApi {}
 

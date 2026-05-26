@@ -1262,7 +1262,21 @@
   "uncategorizedBannerAction": "Add to Collection",
 
   "browseFilterGenre": "Genre",
+  "browseFilterTag": "Tag",
   "browseFilterYear": "Year",
+  "tagPickerTitle": "Select tags",
+  "tagPickerSearchHint": "Search tags",
+  "tagPickerShowSpoilers": "Show spoiler tags",
+  "tagPickerShowAdult": "Show 18+ tags",
+  "tagPickerRefresh": "Refresh catalog",
+  "tagPickerEmpty": "No tags found",
+  "tagPickerSelectedCount": "{count} selected",
+  "@tagPickerSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "clearAll": "Clear all",
   "browseFilterPlatform": "Platform",
   "browseFilterFormat": "Format",
   "browseFilterSeason": "Season",

@@ -5011,11 +5011,65 @@ abstract class S {
   /// **'Genre'**
   String get browseFilterGenre;
 
+  /// No description provided for @browseFilterTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag'**
+  String get browseFilterTag;
+
   /// No description provided for @browseFilterYear.
   ///
   /// In en, this message translates to:
   /// **'Year'**
   String get browseFilterYear;
+
+  /// No description provided for @tagPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select tags'**
+  String get tagPickerTitle;
+
+  /// No description provided for @tagPickerSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search tags'**
+  String get tagPickerSearchHint;
+
+  /// No description provided for @tagPickerShowSpoilers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show spoiler tags'**
+  String get tagPickerShowSpoilers;
+
+  /// No description provided for @tagPickerShowAdult.
+  ///
+  /// In en, this message translates to:
+  /// **'Show 18+ tags'**
+  String get tagPickerShowAdult;
+
+  /// No description provided for @tagPickerRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh catalog'**
+  String get tagPickerRefresh;
+
+  /// No description provided for @tagPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags found'**
+  String get tagPickerEmpty;
+
+  /// No description provided for @tagPickerSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String tagPickerSelectedCount(int count);
+
+  /// No description provided for @clearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAll;
 
   /// No description provided for @browseFilterPlatform.
   ///

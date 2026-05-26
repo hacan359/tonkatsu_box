@@ -1,5 +1,3 @@
-// Источник данных: аниме из AniList.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,13 +9,13 @@ import '../../../shared/theme/app_assets.dart';
 import '../filters/anilist_anime_format_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
 import '../filters/anilist_genre_filter.dart';
+import '../filters/anilist_tag_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 
-/// Размер страницы для запросов к AniList API.
 const int _aniListPageSize = 20;
 
-/// Источник данных — аниме из AniList.
+/// SearchSource backed by AniList, anime tab.
 class AniListAnimeSource extends SearchSource {
   @override
   String get id => 'anilist_anime';
@@ -49,6 +47,7 @@ class AniListAnimeSource extends SearchSource {
   @override
   List<SearchFilter> get filters => <SearchFilter>[
         AniListGenreFilter(forAnime: true),
+        AniListTagFilter(forAnime: true),
         AniListAnimeStatusFilter(),
         AniListAnimeFormatFilter(),
         YearFilter(),
@@ -79,10 +78,11 @@ class AniListAnimeSource extends SearchSource {
     final AniListApi api = ref.read(aniListApiProvider);
 
     final List<String>? genres = _readStringList(filterValues['genre']);
+    final List<String>? tags = _readStringList(filterValues['tag']);
     final String? status = filterValues['status'] as String?;
     final String? format = filterValues['format'] as String?;
-    // YearFilter → startDate-диапазон. Надёжно для всех аниме, в т.ч.
-    // старых/отменённых, у которых seasonYear не проставлен.
+    // Year is mapped onto startDate bounds, not seasonYear — the latter
+    // is null for many older or cancelled titles.
     final Object? yearValue = filterValues['year'];
     int? startYear;
     int? endYear;
@@ -102,6 +102,7 @@ class AniListAnimeSource extends SearchSource {
           await api.browseAnime(
         query: query,
         genres: genres,
+        tags: tags,
         status: status,
         format: format,
         startYear: startYear,
@@ -127,7 +128,8 @@ class AniListAnimeSource extends SearchSource {
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
-/// Нормализует multi-select значение фильтра в список строк.
+/// Coerce a multi-select filter value (List, single, or null) to
+/// `List&lt;String&gt;`.
 List<String>? _readStringList(Object? value) {
   return switch (value) {
     final List<Object?> list => list.whereType<String>().toList(),

@@ -2813,7 +2813,36 @@ class SRu extends S {
   String get browseFilterGenre => 'Жанр';
 
   @override
+  String get browseFilterTag => 'Тэг';
+
+  @override
   String get browseFilterYear => 'Год';
+
+  @override
+  String get tagPickerTitle => 'Выбор тэгов';
+
+  @override
+  String get tagPickerSearchHint => 'Поиск по тэгам';
+
+  @override
+  String get tagPickerShowSpoilers => 'Показать спойлерные';
+
+  @override
+  String get tagPickerShowAdult => 'Показать 18+';
+
+  @override
+  String get tagPickerRefresh => 'Обновить каталог';
+
+  @override
+  String get tagPickerEmpty => 'Тэги не найдены';
+
+  @override
+  String tagPickerSelectedCount(int count) {
+    return 'Выбрано: $count';
+  }
+
+  @override
+  String get clearAll => 'Очистить';
 
   @override
   String get browseFilterPlatform => 'Платформа';

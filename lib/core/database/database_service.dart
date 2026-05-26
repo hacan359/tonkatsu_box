@@ -26,6 +26,7 @@ import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
 import '../../shared/models/wishlist_tag.dart';
+import 'dao/anilist_tag_dao.dart';
 import 'dao/canvas_dao.dart';
 import 'dao/collection_dao.dart';
 import 'dao/custom_media_dao.dart';
@@ -113,6 +114,11 @@ final Provider<TagDao> tagDaoProvider = Provider<TagDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).tagDao;
 });
 
+final Provider<AniListTagDao> aniListTagDaoProvider =
+    Provider<AniListTagDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).aniListTagDao;
+});
+
 class DatabaseService {
   static final Logger _log = Logger('DatabaseService');
 
@@ -170,6 +176,8 @@ class DatabaseService {
 
   late final TagDao tagDao = TagDao(() => database);
 
+  late final AniListTagDao aniListTagDao = AniListTagDao(() => database);
+
   late final WishlistDao wishlistDao = WishlistDao(() => database);
 
   Future<Database> _initDatabase() async {
@@ -211,7 +219,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 40,
+        version: 42,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {

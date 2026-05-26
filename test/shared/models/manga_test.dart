@@ -6,7 +6,7 @@ import 'package:xerabora/shared/models/manga.dart';
 void main() {
   group('Manga', () {
     group('fromJson', () {
-      test('должен создать Manga из полного JSON', () {
+      test('should create Manga from full JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 30013,
           'title': <String, dynamic>{
@@ -80,7 +80,7 @@ void main() {
         expect(manga.updatedAt, isNotNull);
       });
 
-      test('должен создать Manga из минимального JSON', () {
+      test('should create Manga from minimal JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
           'title': <String, dynamic>{
@@ -113,7 +113,7 @@ void main() {
         expect(manga.externalUrl, 'https://anilist.co/manga/1');
       });
 
-      test('должен использовать english title как fallback', () {
+      test('should use english title as fallback', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
           'title': <String, dynamic>{
@@ -126,7 +126,7 @@ void main() {
         expect(manga.title, 'Naruto');
       });
 
-      test('должен использовать Unknown если нет title', () {
+      test('should use Unknown when title is missing', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
         };
@@ -136,7 +136,7 @@ void main() {
         expect(manga.title, 'Unknown');
       });
 
-      test('должен фильтровать авторов по роли', () {
+      test('should filter authors by role', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
           'title': <String, dynamic>{'romaji': 'Test'},
@@ -163,7 +163,7 @@ void main() {
         expect(manga.authors, <String>['Author']);
       });
 
-      test('должен вернуть null authors при пустом списке после фильтрации',
+      test('should return null authors when list is empty after filtering',
           () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
@@ -185,7 +185,7 @@ void main() {
         expect(manga.authors, isNull);
       });
 
-      test('должен пропускать авторов с пустым именем', () {
+      test('should skip authors with empty names', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
           'title': <String, dynamic>{'romaji': 'Test'},
@@ -212,7 +212,7 @@ void main() {
         expect(manga.authors, isNull);
       });
 
-      test('должен убирать HTML из описания', () {
+      test('should strip HTML from description', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
           'title': <String, dynamic>{'romaji': 'Test'},
@@ -225,7 +225,7 @@ void main() {
         expect(manga.description, 'A bold & italic description.');
       });
 
-      test('должен вернуть null description для пустого HTML', () {
+      test('should return null description from empty HTML', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
           'title': <String, dynamic>{'romaji': 'Test'},
@@ -237,7 +237,7 @@ void main() {
         expect(manga.description, isNull);
       });
 
-      test('должен декодировать HTML entities', () {
+      test('should decode HTML entities', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
           'title': <String, dynamic>{'romaji': 'Test'},
@@ -251,7 +251,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создать Manga из записи БД', () {
+      test('should create Manga from DB row', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 30013,
           'title': 'One Punch-Man',
@@ -290,7 +290,7 @@ void main() {
         expect(manga.updatedAt, 1700000000);
       });
 
-      test('должен обработать null JSON строки', () {
+      test('should handle null JSON strings', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'title': 'Test',
@@ -322,7 +322,7 @@ void main() {
         expect(manga.authors, isNull);
       });
 
-      test('должен обработать пустые JSON строки', () {
+      test('should handle empty JSON strings', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'title': 'Test',
@@ -354,7 +354,7 @@ void main() {
         expect(manga.authors, isNull);
       });
 
-      test('должен обработать повреждённые JSON строки', () {
+      test('should handle malformed JSON strings', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'title': 'Test',
@@ -388,7 +388,7 @@ void main() {
     });
 
     group('toDb', () {
-      test('должен сериализовать в Map', () {
+      test('should serialize to Map', () {
         const Manga manga = Manga(
           id: 30013,
           title: 'One Punch-Man',
@@ -426,7 +426,7 @@ void main() {
         expect(db['updated_at'], 1700000000);
       });
 
-      test('должен сериализовать null поля', () {
+      test('should serialize null fields', () {
         const Manga manga = Manga(
           id: 1,
           title: 'Test',
@@ -441,7 +441,7 @@ void main() {
     });
 
     group('toExport', () {
-      test('должен исключить updated_at', () {
+      test('should exclude updated_at', () {
         const Manga manga = Manga(
           id: 30013,
           title: 'One Punch-Man',
@@ -456,7 +456,7 @@ void main() {
     });
 
     group('copyWith', () {
-      test('должен создать копию с изменёнными полями', () {
+      test('should create copy with updated fields', () {
         const Manga original = Manga(
           id: 30013,
           title: 'One Punch-Man',
@@ -470,7 +470,7 @@ void main() {
         expect(copy.averageScore, 84);
       });
 
-      test('должен сохранить все поля при пустом copyWith', () {
+      test('should preserve all fields with empty copyWith', () {
         const Manga original = Manga(
           id: 30013,
           title: 'One Punch-Man',
@@ -490,37 +490,37 @@ void main() {
     });
 
     group('computed getters', () {
-      test('rating10 должен нормализовать к 0-10', () {
+      test('rating10 should normalize to 0-10', () {
         const Manga manga = Manga(id: 1, title: 'T', averageScore: 84);
         expect(manga.rating10, 8.4);
       });
 
-      test('rating10 должен вернуть null при null averageScore', () {
+      test('rating10 should return null when null averageScore', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.rating10, isNull);
       });
 
-      test('formattedRating должен форматировать до 1 знака', () {
+      test('formattedRating should format with 1 decimal', () {
         const Manga manga = Manga(id: 1, title: 'T', averageScore: 85);
         expect(manga.formattedRating, '8.5');
       });
 
-      test('formattedRating должен вернуть null при null averageScore', () {
+      test('formattedRating should return null when null averageScore', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.formattedRating, isNull);
       });
 
-      test('releaseYear должен вернуть startYear', () {
+      test('releaseYear should return startYear', () {
         const Manga manga = Manga(id: 1, title: 'T', startYear: 2012);
         expect(manga.releaseYear, 2012);
       });
 
-      test('releaseYear должен вернуть null при null startYear', () {
+      test('releaseYear should return null when null startYear', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.releaseYear, isNull);
       });
 
-      test('genresString должен объединить жанры через запятую', () {
+      test('genresString should join genres with comma', () {
         const Manga manga = Manga(
           id: 1,
           title: 'T',
@@ -529,12 +529,12 @@ void main() {
         expect(manga.genresString, 'Action, Comedy');
       });
 
-      test('genresString должен вернуть null при null genres', () {
+      test('genresString should return null when null genres', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.genresString, isNull);
       });
 
-      test('authorsString должен объединить авторов через запятую', () {
+      test('authorsString should join authors with comma', () {
         const Manga manga = Manga(
           id: 1,
           title: 'T',
@@ -543,12 +543,12 @@ void main() {
         expect(manga.authorsString, 'ONE, Murata');
       });
 
-      test('authorsString должен вернуть null при null authors', () {
+      test('authorsString should return null when null authors', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.authorsString, isNull);
       });
 
-      test('formatLabel должен вернуть метку для каждого формата', () {
+      test('formatLabel should return the label for each format', () {
         for (final MapEntry<String, String> entry
             in <String, String>{
               'MANGA': 'Manga',
@@ -563,18 +563,18 @@ void main() {
         }
       });
 
-      test('formatLabel должен вернуть raw значение для неизвестного формата',
+      test('formatLabel should return the raw value for an unknown format',
           () {
         const Manga manga = Manga(id: 1, title: 'T', format: 'WEBTOON');
         expect(manga.formatLabel, 'WEBTOON');
       });
 
-      test('formatLabel должен вернуть null при null format', () {
+      test('formatLabel should return null when null format', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.formatLabel, isNull);
       });
 
-      test('statusLabel должен вернуть метку для каждого статуса', () {
+      test('statusLabel should return the label for each status', () {
         for (final MapEntry<String, String> entry
             in <String, String>{
               'FINISHED': 'Finished',
@@ -588,53 +588,53 @@ void main() {
         }
       });
 
-      test('statusLabel должен вернуть raw значение для неизвестного статуса',
+      test('statusLabel should return the raw value for an unknown status',
           () {
         const Manga manga = Manga(id: 1, title: 'T', status: 'UNKNOWN');
         expect(manga.statusLabel, 'UNKNOWN');
       });
 
-      test('statusLabel должен вернуть null при null status', () {
+      test('statusLabel should return null when null status', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.statusLabel, isNull);
       });
 
-      test('progressString должен показать главы и тома', () {
+      test('progressString should show chapters and volumes', () {
         const Manga manga =
             Manga(id: 1, title: 'T', chapters: 200, volumes: 25);
         expect(manga.progressString, '200 ch · 25 vol');
       });
 
-      test('progressString должен показать ? при null chapters', () {
+      test('progressString should show ? when chapters is null', () {
         const Manga manga = Manga(id: 1, title: 'T', volumes: 10);
         expect(manga.progressString, '? ch · 10 vol');
       });
 
-      test('progressString должен не показывать volumes при null', () {
+      test('progressString should skip volumes when null', () {
         const Manga manga = Manga(id: 1, title: 'T', chapters: 50);
         expect(manga.progressString, '50 ch');
       });
 
-      test('progressString должен показать ? ch при null обоих', () {
+      test('progressString should show "? ch" when both are null', () {
         const Manga manga = Manga(id: 1, title: 'T');
         expect(manga.progressString, '? ch');
       });
     });
 
     group('equality', () {
-      test('должен быть равен при одинаковом id', () {
+      test('should be equal for same id', () {
         const Manga a = Manga(id: 30013, title: 'A');
         const Manga b = Manga(id: 30013, title: 'B');
         expect(a, equals(b));
       });
 
-      test('не должен быть равен при разных id', () {
+      test('should not be equal for different ids', () {
         const Manga a = Manga(id: 30013, title: 'A');
         const Manga b = Manga(id: 1, title: 'A');
         expect(a, isNot(equals(b)));
       });
 
-      test('hashCode должен зависеть от id', () {
+      test('hashCode should depend by id', () {
         const Manga a = Manga(id: 30013, title: 'A');
         const Manga b = Manga(id: 30013, title: 'B');
         expect(a.hashCode, equals(b.hashCode));
@@ -642,7 +642,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен содержать id и title', () {
+      test('should contain id and title', () {
         const Manga manga = Manga(id: 30013, title: 'One Punch-Man');
         expect(manga.toString(), 'Manga(id: 30013, title: One Punch-Man)');
       });
@@ -676,6 +676,48 @@ void main() {
 
       test('unknown lang code falls back to romaji', () {
         expect(full.titleByLanguage('klingon'), 'Romaji Title');
+      });
+    });
+
+    group('tags', () {
+      test('fromJson parses tags array of {name} objects', () {
+        final Manga manga = Manga.fromJson(<String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+          'tags': <Map<String, dynamic>>[
+            <String, dynamic>{'name': 'Slice of Life'},
+            <String, dynamic>{'name': 'School'},
+          ],
+        });
+        expect(manga.tags, <String>['Slice of Life', 'School']);
+      });
+
+      test('fromJson returns null when tags missing or empty', () {
+        final Manga missing = Manga.fromJson(<String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+        });
+        expect(missing.tags, isNull);
+      });
+
+      test('toDb / fromDb round-trip preserves tags', () {
+        const Manga original =
+            Manga(id: 1, title: 'X', tags: <String>['A', 'B', 'C']);
+        final Map<String, dynamic> row = original.toDb();
+        final Manga back = Manga.fromDb(row);
+        expect(back.tags, original.tags);
+      });
+
+      test('copyWith replaces tags', () {
+        const Manga original = Manga(id: 1, title: 'X', tags: <String>['A']);
+        final Manga updated = original.copyWith(tags: <String>['B', 'C']);
+        expect(updated.tags, <String>['B', 'C']);
+      });
+
+      test('tagsString joins with comma', () {
+        const Manga manga =
+            Manga(id: 1, title: 'X', tags: <String>['A', 'B']);
+        expect(manga.tagsString, 'A, B');
       });
     });
   });

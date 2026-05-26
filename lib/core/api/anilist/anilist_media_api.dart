@@ -1,3 +1,4 @@
+import '../../../shared/models/anilist_tag.dart';
 import '../../../shared/models/anime.dart';
 import '../../../shared/models/manga.dart';
 import 'anilist_graphql_client.dart';
@@ -24,6 +25,7 @@ class AniListMediaApi {
   Future<(List<Manga>, bool hasMore, int totalPages)> browseManga({
     String? query,
     List<String>? genres,
+    List<String>? tags,
     String? format,
     String? status,
     int? startYear,
@@ -40,6 +42,9 @@ class AniListMediaApi {
     if (genres != null && genres.isNotEmpty) {
       variables['genres'] = genres;
     }
+    if (tags != null && tags.isNotEmpty) {
+      variables['tags'] = tags;
+    }
     if (format != null) variables['format'] = format;
     if (status != null) variables['status'] = status;
     _addFuzzyDateRange(variables, startYear, endYear);
@@ -55,6 +60,7 @@ class AniListMediaApi {
   Future<(List<Anime>, bool hasMore, int totalPages)> browseAnime({
     String? query,
     List<String>? genres,
+    List<String>? tags,
     String? status,
     String? format,
     int? startYear,
@@ -70,6 +76,9 @@ class AniListMediaApi {
     }
     if (genres != null && genres.isNotEmpty) {
       variables['genres'] = genres;
+    }
+    if (tags != null && tags.isNotEmpty) {
+      variables['tags'] = tags;
     }
     if (status != null) variables['status'] = status;
     if (format != null) variables['format'] = format;
@@ -155,6 +164,22 @@ class AniListMediaApi {
     final (List<Anime> items, _, _) =
         AniListMediaParser.animePage(_client.unwrapData(body));
     return items;
+  }
+
+  /// Fetches the full tag catalog (~600 entries). Used to build the tag
+  /// filter picker; cache the result in [AniListTagDao].
+  Future<List<AniListTag>> fetchTagCollection() async {
+    final Map<String, dynamic> body = await _client.post(
+      query: AniListQueries.tagCollection,
+      variables: const <String, dynamic>{},
+      errorContext: 'Failed to fetch AniList tag collection',
+    );
+    final Map<String, dynamic>? data = _client.unwrapData(body);
+    final List<dynamic>? list = data?['MediaTagCollection'] as List<dynamic>?;
+    if (list == null) return const <AniListTag>[];
+    return list
+        .map((dynamic e) => AniListTag.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   static Map<String, dynamic> _browseVariables({

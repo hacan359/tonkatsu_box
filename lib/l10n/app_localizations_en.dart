@@ -2774,7 +2774,36 @@ class SEn extends S {
   String get browseFilterGenre => 'Genre';
 
   @override
+  String get browseFilterTag => 'Tag';
+
+  @override
   String get browseFilterYear => 'Year';
+
+  @override
+  String get tagPickerTitle => 'Select tags';
+
+  @override
+  String get tagPickerSearchHint => 'Search tags';
+
+  @override
+  String get tagPickerShowSpoilers => 'Show spoiler tags';
+
+  @override
+  String get tagPickerShowAdult => 'Show 18+ tags';
+
+  @override
+  String get tagPickerRefresh => 'Refresh catalog';
+
+  @override
+  String get tagPickerEmpty => 'No tags found';
+
+  @override
+  String tagPickerSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get clearAll => 'Clear all';
 
   @override
   String get browseFilterPlatform => 'Platform';

@@ -215,6 +215,18 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
       text: item.genresString!,
     ));
   }
+  const int maxDisplayedTags = 8;
+  final String? animeMangaTagsString = switch (item.mediaType) {
+    MediaType.anime => item.anime?.tags?.take(maxDisplayedTags).join(', '),
+    MediaType.manga => item.manga?.tags?.take(maxDisplayedTags).join(', '),
+    _ => null,
+  };
+  if (animeMangaTagsString != null && animeMangaTagsString.isNotEmpty) {
+    chips.add(MediaDetailChip(
+      icon: Icons.local_offer_outlined,
+      text: animeMangaTagsString,
+    ));
+  }
   return chips;
 }
 

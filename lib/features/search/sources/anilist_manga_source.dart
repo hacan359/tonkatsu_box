@@ -1,5 +1,3 @@
-// Источник данных: манга из AniList.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,14 +8,14 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../filters/anilist_genre_filter.dart';
 import '../filters/anilist_manga_status_filter.dart';
+import '../filters/anilist_tag_filter.dart';
 import '../filters/manga_format_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 
-/// Размер страницы для запросов к AniList API.
 const int _aniListPageSize = 20;
 
-/// Источник данных — манга из AniList.
+/// SearchSource backed by AniList, manga tab.
 class AniListMangaSource extends SearchSource {
   @override
   String get id => 'manga';
@@ -49,6 +47,7 @@ class AniListMangaSource extends SearchSource {
   @override
   List<SearchFilter> get filters => <SearchFilter>[
         AniListGenreFilter(),
+        AniListTagFilter(),
         MangaFormatFilter(),
         AniListMangaStatusFilter(),
         YearFilter(),
@@ -79,6 +78,7 @@ class AniListMangaSource extends SearchSource {
     final AniListApi api = ref.read(aniListApiProvider);
 
     final List<String>? genres = _readStringList(filterValues['genre']);
+    final List<String>? tags = _readStringList(filterValues['tag']);
     final String? format = filterValues['format'] as String?;
     final String? status = filterValues['status'] as String?;
     final Object? yearValue = filterValues['year'];
@@ -100,6 +100,7 @@ class AniListMangaSource extends SearchSource {
           await api.browseManga(
         query: query,
         genres: genres,
+        tags: tags,
         format: format,
         status: status,
         startYear: startYear,
@@ -125,7 +126,8 @@ class AniListMangaSource extends SearchSource {
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
-/// Нормализует multi-select значение фильтра в список строк.
+/// Coerce a multi-select filter value (List, single, or null) to
+/// `List&lt;String&gt;`.
 List<String>? _readStringList(Object? value) {
   return switch (value) {
     final List<Object?> list => list.whereType<String>().toList(),

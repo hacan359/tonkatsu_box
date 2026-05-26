@@ -34,6 +34,8 @@ class ItemDetailsSheet extends StatelessWidget {
     this.rating,
     this.genres,
     this.maxGenres,
+    this.tags,
+    this.maxTags,
     this.extraInfo,
     this.extraInfoIcon,
     this.subtitle,
@@ -145,6 +147,8 @@ class ItemDetailsSheet extends StatelessWidget {
       rating: manga.formattedRating,
       genres: manga.genres,
       maxGenres: _defaultMaxChips,
+      tags: manga.tags,
+      maxTags: _defaultMaxChips,
       subtitle: displayTitle != manga.title
           ? manga.title
           : (manga.titleEnglish != null && manga.titleEnglish != manga.title
@@ -181,6 +185,8 @@ class ItemDetailsSheet extends StatelessWidget {
       rating: anime.formattedRating,
       genres: anime.genres,
       maxGenres: _defaultMaxChips,
+      tags: anime.tags,
+      maxTags: _defaultMaxChips,
       subtitle: displayTitle != anime.title
           ? anime.title
           : (anime.titleEnglish != null && anime.titleEnglish != anime.title
@@ -246,6 +252,10 @@ class ItemDetailsSheet extends StatelessWidget {
   final String? rating;
   final List<String>? genres;
   final int? maxGenres;
+
+  /// AniList tags for anime/manga (separate from [genres]).
+  final List<String>? tags;
+  final int? maxTags;
   final String? extraInfo;
   final IconData? extraInfoIcon;
   final String? subtitle;
@@ -610,6 +620,16 @@ class ItemDetailsSheet extends StatelessWidget {
                 .toList(),
           ),
         ],
+        if (tags != null && tags!.isNotEmpty) ...<Widget>[
+          const SizedBox(height: AppSpacing.xs),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: (maxTags != null ? tags!.take(maxTags!) : tags!)
+                .map(_buildTagChip)
+                .toList(),
+          ),
+        ],
       ],
     );
   }
@@ -646,6 +666,23 @@ class ItemDetailsSheet extends StatelessWidget {
         genre,
         style: AppTypography.caption.copyWith(
           color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagChip(String tag) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: AppColors.surfaceLight),
+      ),
+      child: Text(
+        tag,
+        style: AppTypography.caption.copyWith(
+          color: AppColors.textTertiary,
+          fontSize: 11,
         ),
       ),
     );

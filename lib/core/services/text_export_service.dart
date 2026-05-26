@@ -1,19 +1,16 @@
-// Сервис шаблонного экспорта коллекции в текст.
-
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
 
-/// Сервис для экспорта коллекции в текстовый формат по шаблону.
+/// Template-based text exporter for a collection.
 ///
-/// Поддерживает токены `{name}`, `{year}`, `{rating}`, `{myRating}`,
-/// `{platform}`, `{status}`, `{genres}`, `{notes}`, `{type}`, `{#}`.
-/// Пустые токены и окружающие их разделители автоматически удаляются.
+/// Supports `{name}`, `{year}`, `{rating}`, `{myRating}`, `{platform}`,
+/// `{status}`, `{genres}`, `{tags}`, `{notes}`, `{type}`, `{#}`. Empty tokens
+/// and the surrounding separators are stripped automatically — see
+/// [_removeTokenWithContext].
 class TextExportService {
-  /// Дефолтный шаблон (Quick Copy).
   static const String defaultTemplate = '{name} ({year})';
 
-  /// Доступные токены для UI.
   static const List<String> availableTokens = <String>[
     'name',
     'year',
@@ -22,12 +19,12 @@ class TextExportService {
     'platform',
     'status',
     'genres',
+    'tags',
     'notes',
     'type',
     '#',
   ];
 
-  /// Применяет шаблон ко всем элементам и возвращает текст.
   String applyTemplate(
     String template,
     List<CollectionItem> items, {
@@ -46,17 +43,13 @@ class TextExportService {
     return buffer.toString();
   }
 
-  /// Форматирует один элемент по шаблону.
   String formatItem(
     String template,
     CollectionItem item,
     int index, {
     String animeMangaTitleLanguage = 'romaji',
   }) {
-    // Подставляем значения токенов
     String line = template;
-
-    // Собираем значения для каждого токена
     final Map<String, String?> values = <String, String?>{
       'name': item.displayName(animeMangaTitleLanguage),
       'year': item.releaseYear?.toString(),
@@ -65,12 +58,12 @@ class TextExportService {
       'platform': _platformOrNull(item),
       'status': _statusLabel(item.status),
       'genres': item.genresString,
+      'tags': _animeMangaTags(item),
       'notes': item.userComment,
       'type': _mediaTypeLabel(item.mediaType),
       '#': index.toString(),
     };
 
-    // Заменяем токены с значениями
     for (final MapEntry<String, String?> entry in values.entries) {
       final String token = '{${entry.key}}';
       if (!line.contains(token)) continue;
@@ -78,7 +71,6 @@ class TextExportService {
       if (entry.value != null && entry.value!.isNotEmpty) {
         line = line.replaceAll(token, entry.value!);
       } else {
-        // Токен пустой — удаляем токен + окружающие разделители
         line = _removeTokenWithContext(line, token);
       }
     }
@@ -86,15 +78,10 @@ class TextExportService {
     return line.trim();
   }
 
-  /// Удаляет токен и лишние разделители/скобки вокруг.
-  ///
-  /// Примеры:
-  /// - `"{name} ({year})"` при пустом year → `"{name}"`
-  /// - `"{name} — {rating}"` при пустом rating → `"{name}"`
-  /// - `"{name}, {genres}"` при пустом genres → `"{name}"`
+  /// Strip an empty token together with the surrounding separator / bracket
+  /// so a template like `"{name} ({year})"` collapses to `"{name}"` when
+  /// year is missing instead of leaving an orphaned `"()"`.
   String _removeTokenWithContext(String line, String token) {
-    // Паттерн: разделитель + токен (или токен + разделитель)
-    // Разделители: " — ", " - ", " · ", ", ", " | ", пробел
     final List<String> delimiters = <String>[
       ' — ',
       ' - ',
@@ -104,7 +91,7 @@ class TextExportService {
       ' | ',
     ];
 
-    // Попробуем удалить "разделитель + токен"
+    // Try removing "<separator><token>" or "<token><separator>" first.
     for (final String delim in delimiters) {
       if (line.contains('$delim$token')) {
         return line.replaceAll('$delim$token', '');
@@ -114,26 +101,22 @@ class TextExportService {
       }
     }
 
-    // Скобки: "(...token...)" → ""
     final String escaped = RegExp.escape(token);
     final RegExp parenPattern = RegExp(r'\s*\(' + escaped + r'\)');
     if (parenPattern.hasMatch(line)) {
       return line.replaceAll(parenPattern, '');
     }
 
-    // Квадратные скобки: "[...token...]" → ""
     final RegExp bracketPattern = RegExp(r'\s*\[' + escaped + r'\]');
     if (bracketPattern.hasMatch(line)) {
       return line.replaceAll(bracketPattern, '');
     }
 
-    // Просто удаляем токен
     return line.replaceAll(token, '');
   }
 
   String? _formatApiRating(double? rating) {
     if (rating == null) return null;
-    // Если дробная часть = 0, показываем целое число
     if (rating == rating.roundToDouble()) {
       return rating.toInt().toString();
     }
@@ -180,22 +163,22 @@ class TextExportService {
         return 'Custom';
     }
   }
+
+  String? _animeMangaTags(CollectionItem item) {
+    return switch (item.mediaType) {
+      MediaType.anime => item.anime?.tagsString,
+      MediaType.manga => item.manga?.tagsString,
+      _ => null,
+    };
+  }
 }
 
-/// Режим сортировки для текстового экспорта.
+/// Sort mode for the text exporter.
 enum TextExportSortMode {
-  /// Текущий порядок из коллекции.
+  /// Source order from the collection.
   current,
-
-  /// По названию A→Z.
   name,
-
-  /// По рейтингу (высокий → низкий).
   rating,
-
-  /// По году (новые → старые).
   year,
-
-  /// По дате добавления (новые → старые).
   addedDate,
 }

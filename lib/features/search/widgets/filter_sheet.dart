@@ -1,8 +1,6 @@
-// Bottom sheet с фильтрами/sort/customize для search-экрана на узких экранах.
-//
-// Открывается из FilterBar по тапу на иконку «🎚 Фильтры (N)».
-// Все изменения применяются мгновенно (без кнопки «Применить»), как в
-// chevron-варианте на широких экранах.
+// Narrow-screen filter sheet: same instant-apply semantics as the chevron
+// variant — opening it does not commit a "draft", changes hit the provider
+// straight away.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,10 +15,6 @@ import '../providers/browse_provider.dart';
 import '../utils/filter_ui.dart';
 import 'filter_dropdown.dart';
 
-/// Открыть [FilterSheet] как modal bottom sheet.
-///
-/// Возвращает Future, завершающийся при закрытии sheet. Применение фильтров
-/// идёт мгновенно через [browseProvider], поэтому возвращаемого значения нет.
 Future<void> showFilterSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -37,18 +31,14 @@ Future<void> showFilterSheet(BuildContext context) {
   );
 }
 
-/// Содержимое bottom sheet с фильтрами и сортировкой.
-///
-/// Discover Customize здесь нет — это часть интерфейса, а не фильтр,
-/// и живёт отдельной кнопкой в [FilterBar].
+/// Bottom-sheet body holding the filter + sort rows. Discover Customize
+/// lives separately in [FilterBar] — it's chrome, not a filter.
 class FilterSheet extends ConsumerWidget {
-  /// Создаёт [FilterSheet].
   const FilterSheet({
     required this.scrollController,
     super.key,
   });
 
-  /// Контроллер скролла из [DraggableScrollableSheet].
   final ScrollController scrollController;
 
   @override
@@ -80,7 +70,6 @@ class FilterSheet extends ConsumerWidget {
         ),
         child: Stack(
           children: <Widget>[
-            // Цветной glow группы — как «backdrop» для FilterSheet.
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -99,7 +88,6 @@ class FilterSheet extends ConsumerWidget {
                 ),
               ),
             ),
-            // Затемнение к низу для читаемости.
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -119,8 +107,6 @@ class FilterSheet extends ConsumerWidget {
               ),
             ),
 
-            // Стеклянная карточка с drag handle внутри (как
-            // item_details_sheet) — единая подложка, всё на стекле.
             SingleChildScrollView(
               controller: scrollController,
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -135,7 +121,6 @@ class FilterSheet extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // Header: drag handle + Сбросить (как у item_details).
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -248,12 +233,8 @@ class FilterSheet extends ConsumerWidget {
   }
 }
 
-// =========================================================================
-// Sort tile (один вариант сортировки)
-// =========================================================================
-
-/// Строка-радиокнопка для выбора сортировки. Кастомная (без [RadioListTile]
-/// чтобы не задействовать deprecated `groupValue`/`onChanged`).
+/// Custom radio row — `RadioListTile` is avoided because `groupValue`
+/// / `onChanged` are deprecated.
 class _SortTile extends StatelessWidget {
   const _SortTile({
     required this.label,
@@ -269,36 +250,34 @@ class _SortTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-        size: 18,
-        color: selected ? accent : AppColors.textTertiary,
-      ),
-      title: Text(
-        label,
-        style: AppTypography.body.copyWith(
-          color: selected ? accent : AppColors.textPrimary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(
+          selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+          size: 18,
+          color: selected ? accent : AppColors.textTertiary,
         ),
+        title: Text(
+          label,
+          style: AppTypography.body.copyWith(
+            color: selected ? accent : AppColors.textPrimary,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+        ),
+        onTap: onTap,
       ),
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-      ),
-      onTap: onTap,
     );
   }
 }
 
-// =========================================================================
-// Filter row (одна строка фильтра)
-// =========================================================================
-
-/// Строка фильтра в sheet: `Label : current value ›`. Тап → диалог выбора.
-///
-/// Загружает options фильтра асинхронно (через [SearchFilter.options]) для
-/// получения человеко-читаемого label текущего значения.
+/// One filter row in the sheet: `Label : current value ›`. Tap opens the
+/// picker. Options are loaded eagerly so the row can render the human label
+/// for the currently-selected value.
 class _FilterRow extends ConsumerStatefulWidget {
   const _FilterRow({
     required this.filter,
@@ -375,62 +354,69 @@ class _FilterRowState extends ConsumerState<_FilterRow> {
 
   Future<void> _openDialog() async {
     final S l = S.of(context);
-    final Object? result = await showDialog<Object>(
-      context: context,
-      builder: (BuildContext ctx) => SearchableFilterDialog(
-        title: widget.filter.placeholder(l),
-        options: _options,
-        isLoading: _isLoading,
-        currentValue: widget.value,
-        allLabel: l.browseFilterAll,
-        multiSelect: widget.filter.multiSelect,
-      ),
-    );
+    final Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?
+        customPicker = widget.filter.openCustomPicker;
+    final Object? result = customPicker != null
+        ? await customPicker(context, ref, l, widget.value)
+        : await showDialog<Object>(
+            context: context,
+            builder: (BuildContext ctx) => SearchableFilterDialog(
+              title: widget.filter.placeholder(l),
+              options: _options,
+              isLoading: _isLoading,
+              currentValue: widget.value,
+              allLabel: l.browseFilterAll,
+              multiSelect: widget.filter.multiSelect,
+            ),
+          );
     if (result == null) return;
-    // SearchableFilterDialog возвращает sentinel kFilterResetSentinel для All.
+    // SearchableFilterDialog returns the sentinel for the "All" reset.
     widget.onChanged(result == kFilterResetSentinel ? null : result);
   }
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return ListTile(
-      title: Text(
-        widget.filter.placeholder(l),
-        style: AppTypography.body,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 160),
-            child: Text(
-              _valueLabel(l),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.end,
-              style: AppTypography.body.copyWith(
-                color: _isActive
-                    ? widget.accent
-                    : AppColors.textSecondary,
-                fontWeight:
-                    _isActive ? FontWeight.w600 : FontWeight.normal,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        title: Text(
+          widget.filter.placeholder(l),
+          style: AppTypography.body,
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 160),
+              child: Text(
+                _valueLabel(l),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
+                style: AppTypography.body.copyWith(
+                  color: _isActive
+                      ? widget.accent
+                      : AppColors.textSecondary,
+                  fontWeight:
+                      _isActive ? FontWeight.w600 : FontWeight.normal,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          const Icon(
-            Icons.chevron_right,
-            size: 18,
-            color: AppColors.textTertiary,
-          ),
-        ],
+            const SizedBox(width: AppSpacing.xs),
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: AppColors.textTertiary,
+            ),
+          ],
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+        ),
+        dense: true,
+        onTap: _openDialog,
       ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-      ),
-      dense: true,
-      onTap: _openDialog,
     );
   }
 }

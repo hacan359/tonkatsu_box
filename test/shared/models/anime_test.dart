@@ -394,5 +394,77 @@ void main() {
         expect(a.titleByLanguage('english'), 'R');
       });
     });
+
+    group('tags', () {
+      test('fromJson parses tags array of {name} objects', () {
+        final Anime anime = Anime.fromJson(<String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+          'tags': <Map<String, dynamic>>[
+            <String, dynamic>{'name': 'Time Loop'},
+            <String, dynamic>{'name': 'School'},
+          ],
+        });
+        expect(anime.tags, <String>['Time Loop', 'School']);
+      });
+
+      test('fromJson skips empty / missing names', () {
+        final Anime anime = Anime.fromJson(<String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+          'tags': <Map<String, dynamic>>[
+            <String, dynamic>{'name': 'Magic'},
+            <String, dynamic>{'name': ''},
+            <String, dynamic>{},
+          ],
+        });
+        expect(anime.tags, <String>['Magic']);
+      });
+
+      test('fromJson returns null when tags array is missing or empty', () {
+        final Anime missing = Anime.fromJson(<String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+        });
+        expect(missing.tags, isNull);
+
+        final Anime empty = Anime.fromJson(<String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+          'tags': <dynamic>[],
+        });
+        expect(empty.tags, isNull);
+      });
+
+      test('toDb / fromDb round-trip preserves tags', () {
+        const Anime original =
+            Anime(id: 1, title: 'X', tags: <String>['A', 'B', 'C']);
+        final Map<String, dynamic> row = original.toDb();
+        final Anime back = Anime.fromDb(row);
+        expect(back.tags, original.tags);
+      });
+
+      test('toDb encodes null tags as null', () {
+        const Anime anime = Anime(id: 1, title: 'X');
+        expect(anime.toDb()['tags'], isNull);
+      });
+
+      test('copyWith replaces tags', () {
+        const Anime original = Anime(id: 1, title: 'X', tags: <String>['A']);
+        final Anime updated = original.copyWith(tags: <String>['B', 'C']);
+        expect(updated.tags, <String>['B', 'C']);
+      });
+
+      test('tagsString joins with comma', () {
+        const Anime anime =
+            Anime(id: 1, title: 'X', tags: <String>['A', 'B']);
+        expect(anime.tagsString, 'A, B');
+      });
+
+      test('tagsString returns null when tags is null', () {
+        const Anime anime = Anime(id: 1, title: 'X');
+        expect(anime.tagsString, isNull);
+      });
+    });
   });
 }

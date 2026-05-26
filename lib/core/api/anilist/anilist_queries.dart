@@ -13,8 +13,22 @@ Iterable<List<int>> aniListBatches(List<int> ids) sync* {
 class AniListQueries {
   const AniListQueries._();
 
+  static const String tagCollection = '''
+query {
+  MediaTagCollection {
+    id
+    name
+    category
+    description
+    isAdult
+    isGeneralSpoiler
+  }
+}
+''';
+
   static const String mangaSearch = r'''
 query ($page: Int, $perPage: Int, $search: String, $genres: [String],
+       $tags: [String],
        $format: MediaFormat, $status: MediaStatus,
        $startDateGreater: FuzzyDateInt, $startDateLesser: FuzzyDateInt,
        $sort: [MediaSort]) {
@@ -26,6 +40,7 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
       hasNextPage
     }
     media(type: MANGA, search: $search, genre_in: $genres,
+          tag_in: $tags,
           format: $format, status: $status,
           startDate_greater: $startDateGreater,
           startDate_lesser: $startDateLesser,
@@ -36,6 +51,7 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
       bannerImage
       description(asHtml: false)
       genres
+      tags { name }
       averageScore
       status
       startDate { year month day }
@@ -61,6 +77,7 @@ query ($id: Int) {
     coverImage { extraLarge large medium }
     description(asHtml: false)
     genres
+    tags { name }
     averageScore
     status
     startDate { year month day }
@@ -87,6 +104,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       bannerImage
       description(asHtml: false)
       genres
+      tags { name }
       averageScore
       status
       startDate { year month day }
@@ -106,6 +124,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 
   static const String animeSearch = r'''
 query ($page: Int, $perPage: Int, $search: String, $genres: [String],
+       $tags: [String],
        $status: MediaStatus, $format: MediaFormat,
        $startDateGreater: FuzzyDateInt, $startDateLesser: FuzzyDateInt,
        $sort: [MediaSort]) {
@@ -117,6 +136,7 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
       hasNextPage
     }
     media(type: ANIME, search: $search, genre_in: $genres,
+          tag_in: $tags,
           status: $status, format: $format,
           startDate_greater: $startDateGreater,
           startDate_lesser: $startDateLesser,
@@ -127,6 +147,7 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
       bannerImage
       description(asHtml: false)
       genres
+      tags { name }
       averageScore
       status
       startDate { year month day }
@@ -150,6 +171,7 @@ query ($id: Int) {
     bannerImage
     description(asHtml: false)
     genres
+    tags { name }
     averageScore
     status
     startDate { year month day }
@@ -174,6 +196,7 @@ query ($page: Int, $perPage: Int, $malIds: [Int]) {
       bannerImage
       description(asHtml: false)
       genres
+      tags { name }
       averageScore
       status
       startDate { year month day }
@@ -199,6 +222,7 @@ query ($page: Int, $perPage: Int, $malIds: [Int]) {
       bannerImage
       description(asHtml: false)
       genres
+      tags { name }
       averageScore
       status
       startDate { year month day }
@@ -226,6 +250,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       bannerImage
       description(asHtml: false)
       genres
+      tags { name }
       averageScore
       status
       startDate { year month day }
@@ -265,6 +290,7 @@ query ($userName: String) {
           bannerImage
           description(asHtml: false)
           genres
+      tags { name }
           averageScore
           status
           startDate { year month day }
@@ -304,6 +330,7 @@ query ($userName: String) {
           bannerImage
           description(asHtml: false)
           genres
+      tags { name }
           averageScore
           status
           startDate { year month day }

@@ -1033,7 +1033,21 @@
   "uncategorizedBannerAction": "Добавить в коллекцию",
 
   "browseFilterGenre": "Жанр",
+  "browseFilterTag": "Тэг",
   "browseFilterYear": "Год",
+  "tagPickerTitle": "Выбор тэгов",
+  "tagPickerSearchHint": "Поиск по тэгам",
+  "tagPickerShowSpoilers": "Показать спойлерные",
+  "tagPickerShowAdult": "Показать 18+",
+  "tagPickerRefresh": "Обновить каталог",
+  "tagPickerEmpty": "Тэги не найдены",
+  "tagPickerSelectedCount": "Выбрано: {count}",
+  "@tagPickerSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "clearAll": "Очистить",
   "browseFilterPlatform": "Платформа",
   "browseFilterFormat": "Формат",
   "browseFilterSeason": "Сезон",

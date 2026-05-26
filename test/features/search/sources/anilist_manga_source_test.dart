@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/filters/anilist_genre_filter.dart';
 import 'package:xerabora/features/search/filters/anilist_manga_status_filter.dart';
+import 'package:xerabora/features/search/filters/anilist_tag_filter.dart';
 import 'package:xerabora/features/search/filters/manga_format_filter.dart';
 import 'package:xerabora/features/search/filters/year_filter.dart';
 import 'package:xerabora/features/search/models/search_source.dart';
@@ -34,8 +35,8 @@ void main() {
     });
 
     group('filters', () {
-      test('exposes genre (multi), format, status, year', () {
-        expect(source.filters, hasLength(4));
+      test('exposes genre (multi), tag (multi), format, status, year', () {
+        expect(source.filters, hasLength(5));
       });
 
       test('first filter is AniListGenreFilter (multi-select)', () {
@@ -43,16 +44,21 @@ void main() {
         expect(source.filters[0].multiSelect, isTrue);
       });
 
-      test('second filter is MangaFormatFilter', () {
-        expect(source.filters[1], isA<MangaFormatFilter>());
+      test('second filter is AniListTagFilter (multi-select)', () {
+        expect(source.filters[1], isA<AniListTagFilter>());
+        expect(source.filters[1].multiSelect, isTrue);
       });
 
-      test('third filter is AniListMangaStatusFilter', () {
-        expect(source.filters[2], isA<AniListMangaStatusFilter>());
+      test('third filter is MangaFormatFilter', () {
+        expect(source.filters[2], isA<MangaFormatFilter>());
       });
 
-      test('fourth filter is YearFilter', () {
-        expect(source.filters[3], isA<YearFilter>());
+      test('fourth filter is AniListMangaStatusFilter', () {
+        expect(source.filters[3], isA<AniListMangaStatusFilter>());
+      });
+
+      test('fifth filter is YearFilter', () {
+        expect(source.filters[4], isA<YearFilter>());
       });
     });
 

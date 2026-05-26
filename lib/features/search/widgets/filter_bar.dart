@@ -1,9 +1,3 @@
-// Chevron filter bar для экрана поиска.
-//
-// Первый шеврон — выпадающий список источников (цвет по группе).
-// Остальные шевроны — dropdown фильтры + sort текущего источника.
-// Clear кнопка в конце при активных фильтрах.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,31 +13,23 @@ import '../utils/filter_ui.dart';
 import 'filter_dropdown.dart';
 import 'filter_sheet.dart';
 
-/// Фикс ширина первого (Source) шеврона — чтобы не «прыгал» остальной ряд
-/// при переключении источника с разной длиной label.
+/// Pinned so the row doesn't jiggle when the source label width changes.
 const double _kSourceWidth = 160;
 
-/// Фикс ширина компактного Customize-шеврона (иконка с Tooltip).
 const double _kCustomizeWidth = 44;
 
-/// Chevron filter bar для Browse mode.
-///
-/// `[Source ▾][Filter1 ▾][Filter2 ▾][Sort ▾][Customize?][×?]`
-/// Всё в одну строку на всю ширину. Customize показывается для TMDB
-/// источников без активного запроса; Clear — при активных фильтрах.
+/// Single-row chevron bar for Browse mode:
+/// `[Source ▾][Filter1 ▾][Filter2 ▾][Sort ▾][Customize?][×?]`.
 class FilterBar extends ConsumerWidget {
-  /// Создаёт [FilterBar].
   const FilterBar({
     this.onBeforeFilterChange,
     this.onDiscoverCustomize,
     super.key,
   });
 
-  /// Вызывается перед применением фильтра.
   final VoidCallback? onBeforeFilterChange;
 
-  /// Открыть «Discover Customize» (TMDB-источники без активного запроса).
-  /// Если `null` — сегмент не показывается.
+  /// Opens Discover Customize (TMDB sources, no active query). Hidden when null.
   final VoidCallback? onDiscoverCustomize;
 
   @override
@@ -54,16 +40,13 @@ class FilterBar extends ConsumerWidget {
     final bool hasSort = source.sortOptions.isNotEmpty;
     final bool hasActiveFilters = browseState.filterValues.values
         .any((Object? v) => v != null);
-    // Discover Customize — это настройка самого фида (фильтры/сортировка),
-    // поэтому активные фильтры его НЕ скрывают. Скрываем только при
-    // текстовом запросе, когда фид превращается в результаты поиска.
+    // Customize controls the feed itself, so active filters do NOT hide it
+    // — only a text query does, since that turns the feed into search results.
     final bool showCustomize = onDiscoverCustomize != null &&
         !browseState.hasSearchQuery &&
         source.groupId == 'tmdb';
     final Color accent = filterAccentForGroup(source.groupId);
 
-    // На узких экранах: Source + кнопка «Фильтры (N)» + (опционально)
-    // Customize-иконка вместо chevron-ряда.
     if (isCompactScreen(context)) {
       return _CompactBar(
         source: source,
@@ -82,8 +65,6 @@ class FilterBar extends ConsumerWidget {
         height: 40,
         child: Row(
           children: <Widget>[
-            // Source dropdown (первый, всегда selected, фикс ширина чтобы
-            // не прыгало при смене источника).
             SizedBox(
               width: _kSourceWidth,
               child: _SourceDropdownChevron(
@@ -95,7 +76,6 @@ class FilterBar extends ConsumerWidget {
                 },
               ),
             ),
-            // Фильтры.
             for (int i = 0; i < filters.length; i++)
               Expanded(
                 child: _FilterDropdownChevron(
@@ -116,7 +96,6 @@ class FilterBar extends ConsumerWidget {
                   },
                 ),
               ),
-            // Sort.
             if (hasSort)
               Expanded(
                 child: _SortDropdownChevron(
@@ -131,8 +110,6 @@ class FilterBar extends ConsumerWidget {
                   },
                 ),
               ),
-            // Discover Customize (TMDB, без активного запроса) —
-            // компактная иконка с Tooltip, не растягивается.
             if (showCustomize)
               SizedBox(
                 width: _kCustomizeWidth,
@@ -148,7 +125,6 @@ class FilterBar extends ConsumerWidget {
                   compact: true,
                 ),
               ),
-            // Clear.
             if (hasActiveFilters)
               _ClearButton(
                 onTap: () =>
@@ -160,7 +136,6 @@ class FilterBar extends ConsumerWidget {
     );
   }
 
-  /// Считает количество активных фильтров (не null, не пустой List).
   static int _countActive(Map<String, Object?> values) {
     int n = 0;
     for (final Object? v in values.values) {
@@ -172,16 +147,7 @@ class FilterBar extends ConsumerWidget {
   }
 }
 
-// =========================================================================
-// Compact bar (узкие экраны)
-// =========================================================================
-
-/// Узкий вариант FilterBar:
-/// `[Source ▾][🎚 Фильтры (N)][⚙ Customize?]`.
-///
-/// Source — chevron того же шейпа что на широких. «Фильтры» открывают
-/// [FilterSheet]. Customize — отдельная иконка для TMDB источников
-/// (Discover Customize не фильтр, поэтому в шит не пускаем).
+/// Narrow-screen variant of [FilterBar]: `[Source ▾][Filters (N)][Customize?]`.
 class _CompactBar extends StatelessWidget {
   const _CompactBar({
     required this.source,
@@ -249,7 +215,7 @@ class _CompactBar extends StatelessWidget {
   }
 }
 
-/// Шеврон-кнопка «🎚 Фильтры (N)» — средний сегмент compact bar.
+/// "Filters (N)" chevron — the middle segment of the compact bar.
 class _FiltersChevronButton extends StatelessWidget {
   const _FiltersChevronButton({
     required this.accent,
@@ -503,6 +469,26 @@ class _FilterDropdownChevronState
     final S l = S.of(context);
 
     final String? sub = _isActive ? widget.filter.placeholder(l) : null;
+
+    final Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?
+        customPicker = widget.filter.openCustomPicker;
+    if (customPicker != null) {
+      return ChevronSegment(
+        label: _getLabel(l),
+        subtitle: sub,
+        icon: Icons.filter_list,
+        selected: _isActive,
+        accentColor: widget.accentColor,
+        isFirst: false,
+        isLast: widget.isLast,
+        onTap: () async {
+          final Object? result =
+              await customPicker(context, ref, l, widget.value);
+          if (!mounted) return;
+          widget.onChanged(result == kFilterResetSentinel ? null : result);
+        },
+      );
+    }
 
     if (widget.filter.searchable) {
       return ChevronSegment(

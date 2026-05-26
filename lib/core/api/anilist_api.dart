@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/models/anilist_tag.dart';
 import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/media_type.dart';
@@ -44,6 +45,7 @@ class AniListApi {
   Future<(List<Manga>, bool hasMore, int totalPages)> browseManga({
     String? query,
     List<String>? genres,
+    List<String>? tags,
     String? format,
     String? status,
     int? startYear,
@@ -55,6 +57,7 @@ class AniListApi {
       _media.browseManga(
         query: query,
         genres: genres,
+        tags: tags,
         format: format,
         status: status,
         startYear: startYear,
@@ -67,6 +70,7 @@ class AniListApi {
   Future<(List<Anime>, bool hasMore, int totalPages)> browseAnime({
     String? query,
     List<String>? genres,
+    List<String>? tags,
     String? status,
     String? format,
     int? startYear,
@@ -78,6 +82,7 @@ class AniListApi {
       _media.browseAnime(
         query: query,
         genres: genres,
+        tags: tags,
         status: status,
         format: format,
         startYear: startYear,
@@ -86,6 +91,8 @@ class AniListApi {
         page: page,
         perPage: perPage,
       );
+
+  Future<List<AniListTag>> fetchTagCollection() => _media.fetchTagCollection();
 
   Future<Manga?> getMangaById(int id) => _media.getMangaById(id);
 

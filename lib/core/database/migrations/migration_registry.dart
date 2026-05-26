@@ -38,6 +38,8 @@ import 'migration_v37.dart';
 import 'migration_v38.dart';
 import 'migration_v39.dart';
 import 'migration_v40.dart';
+import 'migration_v41.dart';
+import 'migration_v42.dart';
 
 abstract final class MigrationRegistry {
   static final List<Migration> all = <Migration>[
@@ -80,6 +82,8 @@ abstract final class MigrationRegistry {
     MigrationV38(),
     MigrationV39(),
     MigrationV40(),
+    MigrationV41(),
+    MigrationV42(),
   ];
 
   static List<Migration> pending(int oldVersion) {

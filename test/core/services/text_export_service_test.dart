@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/core/services/text_export_service.dart';
+import 'package:xerabora/shared/models/anime.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/manga.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/platform.dart';
@@ -147,6 +149,77 @@ void main() {
         expect(result, equals('Elden Ring — RPG, Action'));
       });
 
+      test('should replace {tags} token for anime', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.anime,
+          externalId: 1,
+          status: ItemStatus.completed,
+          addedAt: DateTime(2024),
+          anime: const Anime(
+            id: 1,
+            title: 'Steins;Gate',
+            tags: <String>['Time Loop', 'Conspiracy'],
+          ),
+        );
+        final String result = _service().formatItem(
+          '{name} — {tags}',
+          item,
+          1,
+        );
+        expect(result, equals('Steins;Gate — Time Loop, Conspiracy'));
+      });
+
+      test('should replace {tags} token for manga', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.manga,
+          externalId: 1,
+          status: ItemStatus.completed,
+          addedAt: DateTime(2024),
+          manga: const Manga(
+            id: 1,
+            title: 'Berserk',
+            tags: <String>['Dark Fantasy', 'Medieval'],
+          ),
+        );
+        final String result = _service().formatItem(
+          '{name} — {tags}',
+          item,
+          1,
+        );
+        expect(result, equals('Berserk — Dark Fantasy, Medieval'));
+      });
+
+      test('should remove {tags} token for non anime/manga', () {
+        final String result = _service().formatItem(
+          '{name}{tags}',
+          _gameItem(),
+          1,
+        );
+        expect(result, equals('Elden Ring'));
+      });
+
+      test('should remove {tags} token when tags are null', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.anime,
+          externalId: 1,
+          status: ItemStatus.completed,
+          addedAt: DateTime(2024),
+          anime: const Anime(id: 1, title: 'Untagged'),
+        );
+        final String result = _service().formatItem(
+          '{name} — {tags}',
+          item,
+          1,
+        );
+        expect(result, equals('Untagged'));
+      });
+
       test('should replace {notes} token', () {
         final String result = _service().formatItem(
           '{name}: {notes}',
@@ -184,7 +257,7 @@ void main() {
       });
     });
 
-    group('cleanup пустых токенов', () {
+    group('empty token cleanup', () {
       test('should remove empty {year} with parentheses', () {
         final String result = _service().formatItem(
           '{name} ({year})',
@@ -305,7 +378,7 @@ void main() {
           TextExportService.availableTokens,
           containsAll(<String>[
             'name', 'year', 'rating', 'myRating', 'platform',
-            'status', 'genres', 'notes', 'type', '#',
+            'status', 'genres', 'tags', 'notes', 'type', '#',
           ]),
         );
       });

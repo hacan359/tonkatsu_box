@@ -9,6 +9,137 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Add AniList tag support across storage, display, search filter and exports**
+
+  Anime and manga now carry their AniList tag list (in addition to genres).
+  Tags are pulled from the API into a new `tags` cache column, shown as a
+  secondary chip row in the search-result details sheet and as a
+  comma-separated chip on the collection item detail screen, and exported
+  via a new `{tags}` token in the text-export template plus the `.xcoll` /
+  `.xcollx` payload. Refresh-from-source backfills tags for items that were
+  added before this change. Search gains an "AniList tag" multi-select
+  filter on the Anime and Manga tabs, served by a SQLite-cached catalog
+  (~600 tags) refreshed weekly. The filter opens a dedicated bottom-sheet
+  picker with live name search, category-grouped collapsible sections,
+  toggles for spoiler and 18+ tags, a manual refresh button, and a
+  selected-count footer with Clear all / Cancel / Apply.
+
+  * lib/shared/models/anilist_tag.dart (AniListTag, AniListTag.fromJson,
+    AniListTag.fromDb, AniListTag.toDb): New model with id, name,
+    category, description, isAdult, isGeneralSpoiler.
+  * lib/shared/models/anime.dart (Anime.tags, Anime.tagsString,
+    Anime.fromJson, Anime.fromDb, Anime.toDb, Anime.copyWith),
+    lib/shared/models/manga.dart (Manga.tags, Manga.tagsString,
+    Manga.fromJson, Manga.fromDb, Manga.toDb, Manga.copyWith): Add a
+    nullable `List<String>` tags field; parse `tags { name }` from
+    GraphQL; JSON-encode in the new SQLite column.
+  * lib/core/database/schema.dart (DatabaseSchema.createAniListTagsTable,
+    DatabaseSchema.createMangaCacheTable,
+    DatabaseSchema.createAnimeCacheTable, DatabaseSchema.createAll):
+    Declare the catalog table and the new `tags` column for fresh
+    installs; register the catalog table in `createAll`.
+  * lib/core/database/migrations/migration_v41.dart (MigrationV41): New —
+    `ALTER TABLE anime_cache / manga_cache ADD COLUMN tags TEXT`.
+  * lib/core/database/migrations/migration_v42.dart (MigrationV42): New —
+    creates the `anilist_tags` catalog table via
+    `DatabaseSchema.createAniListTagsTable`.
+  * lib/core/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Register MigrationV41 and MigrationV42.
+  * lib/core/database/database_service.dart (DatabaseService.aniListTagDao,
+    aniListTagDaoProvider, OpenDatabaseOptions.version): Expose the new
+    DAO and bump the schema version to 42.
+  * lib/core/database/dao/anilist_tag_dao.dart (AniListTagDao,
+    AniListTagDao.getAll, AniListTagDao.lastUpdatedAt,
+    AniListTagDao.replaceAll): New DAO; `replaceAll` is transactional
+    truncate + batch insert so a partial refresh can't leave a
+    half-updated catalog.
+  * lib/data/repositories/anilist_tags_repository.dart
+    (AniListTagsRepository, AniListTagsRepository.getTags,
+    aniListTagsRepositoryProvider, aniListTagsProvider): New cache
+    layer. A non-empty cache is sticky — refresh only happens via the
+    picker's Refresh button (forceRefresh) or when the cache is empty.
+    On API failure, falls back to the cached set; on empty cache,
+    rethrows.
+  * lib/core/api/anilist/anilist_queries.dart
+    (AniListQueries.tagCollection, AniListQueries.mangaSearch,
+    AniListQueries.animeSearch, AniListQueries.mangaGetById,
+    AniListQueries.mangaGetByIds, AniListQueries.animeGetById,
+    AniListQueries.animeGetByIds, AniListQueries.animeGetByMalIds,
+    AniListQueries.mangaGetByMalIds, AniListQueries.userAnimeList,
+    AniListQueries.userMangaList): Add `tags { name }` to every media
+    query; add `$tags: [String]` + `tag_in: $tags` on search queries;
+    add the standalone `MediaTagCollection` query.
+  * lib/core/api/anilist/anilist_media_api.dart
+    (AniListMediaApi.browseAnime, AniListMediaApi.browseManga,
+    AniListMediaApi.fetchTagCollection),
+    lib/core/api/anilist_api.dart (AniListApi.browseAnime,
+    AniListApi.browseManga, AniListApi.fetchTagCollection): Accept
+    `List<String>? tags`; new top-level `fetchTagCollection` method.
+  * lib/features/search/models/search_source.dart
+    (SearchFilter.openCustomPicker): New optional hook — when present,
+    the filter chevron opens this picker instead of the default
+    dropdown / SearchableFilterDialog.
+  * lib/features/search/widgets/filter_bar.dart
+    (_FilterDropdownChevronState.build),
+    lib/features/search/widgets/filter_sheet.dart
+    (_FilterRowState._openDialog, _FilterRowState.build, _SortTile.build):
+    Honour the custom picker hook (both the chevron bar and the
+    narrow-screen sheet). Filter / sort rows now wrap their ListTile in
+    a transparent Material so ink ripples render over the sheet's
+    DecoratedBox surface.
+  * lib/features/search/filters/anilist_tag_filter.dart
+    (AniListTagFilter, AniListTagFilter.options,
+    AniListTagFilter.openCustomPicker): New SearchFilter; loads options
+    lazily via aniListTagsProvider and points the filter bar at the
+    custom picker.
+  * lib/features/search/widgets/anilist_tag_picker.dart
+    (showAniListTagPicker, _AniListTagPicker,
+    _AniListTagPickerState._refresh, _AniListTagPickerState._buildList,
+    _AniListTagPickerState._groupAndFilter): New bottom-sheet picker
+    with grouped collapsible categories, live search, spoiler / adult
+    toggles, manual refresh, and Apply / Cancel.
+  * lib/features/search/sources/anilist_anime_source.dart
+    (AniListAnimeSource.filters, AniListAnimeSource.fetch),
+    lib/features/search/sources/anilist_manga_source.dart
+    (AniListMangaSource.filters, AniListMangaSource.fetch): Add
+    AniListTagFilter; thread `filterValues['tag']` into the API call.
+  * lib/features/search/widgets/item_details_sheet.dart
+    (ItemDetailsSheet, ItemDetailsSheet.anime, ItemDetailsSheet.manga,
+    ItemDetailsSheet._buildTagChip): Render an outlined-chip row of
+    tags under the genre row for anime / manga results.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (buildMediaTypeChips): Add a `local_offer_outlined` chip with the
+    first eight tags on anime / manga detail screens.
+  * lib/core/services/text_export_service.dart
+    (TextExportService.availableTokens, TextExportService.formatItem,
+    TextExportService._animeMangaTags): New `{tags}` template token
+    backed by `Anime.tagsString` / `Manga.tagsString`.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (browseFilterTag,
+    tagPickerTitle, tagPickerSearchHint, tagPickerShowSpoilers,
+    tagPickerShowAdult, tagPickerRefresh, tagPickerEmpty,
+    tagPickerSelectedCount, clearAll): New strings for the filter
+    label, picker chrome, and selected-count footer.
+  * test/shared/models/anilist_tag_test.dart,
+    test/core/database/dao/anilist_tag_dao_test.dart,
+    test/data/repositories/anilist_tags_repository_test.dart: New unit
+    suites for the model, DAO truncate-and-insert semantics, and the
+    repository sticky-cache / forceRefresh / fallback / rethrow paths.
+  * test/shared/models/anime_test.dart, test/shared/models/manga_test.dart
+    (group 'tags'): New round-trip suites — fromJson parses `tags { name }`,
+    null / empty handling, toDb / fromDb round-trip, copyWith semantics,
+    tagsString getter.
+  * test/core/services/text_export_service_test.dart: New cases for the
+    `{tags}` token (anime, manga, non anime/manga short-circuit, null
+    tags removed); `availableTokens` assertion extended.
+  * test/features/search/widgets/anilist_tag_picker_test.dart: New
+    widget test — renders without exceptions, spoiler / 18+ toggles
+    reveal hidden tags, search narrows the list, Apply returns the
+    selection, Cancel returns null, initial selection is preserved,
+    Clear all wipes the selection.
+  * test/helpers/mocks.dart (MockAniListTagDao): New mock.
+  * test/features/search/sources/anilist_manga_source_test.dart: Reflect
+    the new filter slot and order.
+
 - **Add anime & manga title-language setting with override-aware rename**
 
   Settings → Appearance gains a new "Anime & manga title language"

@@ -1,14 +1,9 @@
-// Модель манги из AniList.
-
 import 'dart:convert';
 
 import '../utils/anime_manga_title_language.dart';
 
-/// Модель манги из AniList GraphQL API.
-///
-/// Представляет мангу с метаданными из AniList.
+/// Manga metadata from the AniList GraphQL API.
 class Manga {
-  /// Создаёт экземпляр [Manga].
   const Manga({
     required this.id,
     required this.title,
@@ -29,33 +24,43 @@ class Manga {
     this.format,
     this.countryOfOrigin,
     this.genres,
+    this.tags,
     this.authors,
     this.externalUrl,
     this.updatedAt,
     this.bannerUrl,
   });
 
-  /// Создаёт [Manga] из JSON ответа AniList GraphQL API.
   factory Manga.fromJson(Map<String, dynamic> json) {
-    // Title
     final Map<String, dynamic>? titleMap =
         json['title'] as Map<String, dynamic>?;
     final String title = titleMap?['romaji'] as String? ??
         titleMap?['english'] as String? ??
         'Unknown';
 
-    // Cover
     final Map<String, dynamic>? coverMap =
         json['coverImage'] as Map<String, dynamic>?;
 
-    // Start date
     final Map<String, dynamic>? dateMap =
         json['startDate'] as Map<String, dynamic>?;
 
-    // Genres
     final List<dynamic>? genresList = json['genres'] as List<dynamic>?;
 
-    // Authors from staff edges
+    // AniList tag objects carry category, rank, isMediaSpoiler — we drop
+    // everything except the name since per-media spoiler / category are
+    // looked up from the catalog table when needed.
+    List<String>? tags;
+    final List<dynamic>? tagsList = json['tags'] as List<dynamic>?;
+    if (tagsList != null && tagsList.isNotEmpty) {
+      tags = tagsList
+          .map((dynamic t) =>
+              (t as Map<String, dynamic>)['name'] as String? ?? '')
+          .where((String s) => s.isNotEmpty)
+          .toList();
+      if (tags.isEmpty) tags = null;
+    }
+
+    // Filter staff edges to author-credit roles only (Story, Art, Story & Art).
     List<String>? authors;
     final Map<String, dynamic>? staffMap =
         json['staff'] as Map<String, dynamic>?;
@@ -84,7 +89,6 @@ class Manga {
       }
     }
 
-    // Strip HTML from description
     String? description = json['description'] as String?;
     if (description != null) {
       description = _stripHtml(description);
@@ -109,6 +113,7 @@ class Manga {
       volumes: json['volumes'] as int?,
       format: json['format'] as String?,
       genres: genresList?.map((dynamic g) => g as String).toList(),
+      tags: tags,
       authors: authors,
       externalUrl: 'https://anilist.co/manga/$id',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -116,7 +121,6 @@ class Manga {
     );
   }
 
-  /// Создаёт [Manga] из записи базы данных.
   factory Manga.fromDb(Map<String, dynamic> row) {
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
@@ -140,6 +144,17 @@ class Manga {
       }
     }
 
+    List<String>? tags;
+    if (row['tags'] != null && (row['tags'] as String).isNotEmpty) {
+      try {
+        tags = (jsonDecode(row['tags'] as String) as List<dynamic>)
+            .map((dynamic e) => e as String)
+            .toList();
+      } on FormatException {
+        tags = null;
+      }
+    }
+
     return Manga(
       id: row['id'] as int,
       title: row['title'] as String,
@@ -160,6 +175,7 @@ class Manga {
       format: row['format'] as String?,
       countryOfOrigin: row['country_of_origin'] as String?,
       genres: genres,
+      tags: tags,
       authors: authors,
       externalUrl: row['external_url'] as String?,
       bannerUrl: row['banner_url'] as String?,
@@ -187,84 +203,61 @@ class Manga {
         title;
   }
 
-  /// Описание (HTML очищен).
   final String? description;
 
-  /// URL обложки (large).
   final String? coverUrl;
-
-  /// URL обложки (medium, для превью).
   final String? coverUrlMedium;
-
-  /// Средний рейтинг 0-100.
   final int? averageScore;
-
-  /// Средний балл 0-100.
   final int? meanScore;
-
-  /// Ранг популярности.
   final int? popularity;
 
-  /// Статус публикации: FINISHED, RELEASING, NOT_YET_RELEASED, CANCELLED,
-  /// HIATUS.
+  /// One of FINISHED, RELEASING, NOT_YET_RELEASED, CANCELLED, HIATUS.
   final String? status;
 
-  /// Год начала публикации.
   final int? startYear;
-
-  /// Месяц начала публикации.
   final int? startMonth;
-
-  /// День начала публикации.
   final int? startDay;
 
-  /// Всего глав (null если ongoing/неизвестно).
+  /// Null when ongoing or unknown.
   final int? chapters;
 
-  /// Всего томов (null если ongoing/неизвестно).
+  /// Null when ongoing or unknown.
   final int? volumes;
 
-  /// Формат: MANGA, NOVEL, ONE_SHOT, MANHWA, MANHUA, LIGHT_NOVEL.
+  /// One of MANGA, NOVEL, ONE_SHOT, MANHWA, MANHUA, LIGHT_NOVEL.
   final String? format;
 
-  /// Страна происхождения: JP, KR, CN, TW.
+  /// JP, KR, CN, TW.
   final String? countryOfOrigin;
 
-  /// Список жанров (["Action", "Adventure", "Fantasy"]).
   final List<String>? genres;
 
-  /// Имена авторов.
-  final List<String>? authors;
+  /// AniList tag names; per-media category / rank / spoiler flags are not
+  /// stored — only the catalog table keeps that metadata.
+  final List<String>? tags;
 
-  /// URL страницы на AniList.
+  final List<String>? authors;
   final String? externalUrl;
 
-  /// Время кеширования (Unix timestamp).
+  /// Unix timestamp of when this row was cached.
   final int? updatedAt;
 
-  /// URL баннера (transient, не сохраняется в БД).
+  /// Transient — not persisted (only present on fresh API responses).
   final String? bannerUrl;
 
-  // ===== Computed =====
-
-  /// Рейтинг в шкале 0-10.
   double? get rating10 =>
       averageScore != null ? averageScore! / 10.0 : null;
 
-  /// Форматированный рейтинг (0-10).
-  String? get formattedRating =>
-      rating10?.toStringAsFixed(1);
+  String? get formattedRating => rating10?.toStringAsFixed(1);
 
-  /// Год релиза.
   int? get releaseYear => startYear;
 
-  /// Жанры в виде строки через запятую.
   String? get genresString => genres?.join(', ');
 
-  /// Авторы в виде строки через запятую.
+  String? get tagsString => tags?.join(', ');
+
   String? get authorsString => authors?.join(', ');
 
-  /// Человекочитаемая метка формата.
   String? get formatLabel => switch (format) {
         'MANGA' => 'Manga',
         'NOVEL' => 'Novel',
@@ -275,7 +268,6 @@ class Manga {
         _ => format,
       };
 
-  /// Человекочитаемый статус.
   String? get statusLabel => switch (status) {
         'FINISHED' => 'Finished',
         'RELEASING' => 'Releasing',
@@ -285,7 +277,6 @@ class Manga {
         _ => status,
       };
 
-  /// Строка прогресса: "23 ch · 5 vol" или "? ch" и т.д.
   String get progressString {
     final String ch = chapters != null ? '$chapters ch' : '? ch';
     final String vol = volumes != null ? ' · $volumes vol' : '';
@@ -304,7 +295,6 @@ class Manga {
   @override
   String toString() => 'Manga(id: $id, title: $title)';
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -326,6 +316,7 @@ class Manga {
       'format': format,
       'country_of_origin': countryOfOrigin,
       'genres': genres != null ? jsonEncode(genres) : null,
+      'tags': tags != null ? jsonEncode(tags) : null,
       'authors': authors != null ? jsonEncode(authors) : null,
       'external_url': externalUrl,
       'banner_url': bannerUrl,
@@ -334,14 +325,13 @@ class Manga {
     };
   }
 
-  /// Преобразует в Map для экспорта коллекции.
+  /// `toDb` minus the cache timestamp, for `.xcoll` / `.xcollx` payloads.
   Map<String, dynamic> toExport() {
     final Map<String, dynamic> data = toDb();
     data.remove('updated_at');
     return data;
   }
 
-  /// Создаёт копию с изменёнными полями.
   Manga copyWith({
     int? id,
     String? title,
@@ -362,6 +352,7 @@ class Manga {
     String? format,
     String? countryOfOrigin,
     List<String>? genres,
+    List<String>? tags,
     List<String>? authors,
     String? externalUrl,
     int? updatedAt,
@@ -387,6 +378,7 @@ class Manga {
       format: format ?? this.format,
       countryOfOrigin: countryOfOrigin ?? this.countryOfOrigin,
       genres: genres ?? this.genres,
+      tags: tags ?? this.tags,
       authors: authors ?? this.authors,
       externalUrl: externalUrl ?? this.externalUrl,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -396,7 +388,6 @@ class Manga {
 
   static final RegExp _htmlTagPattern = RegExp('<[^>]*>');
 
-  /// Убирает HTML-теги из описания.
   static String? _stripHtml(String? text) {
     if (text == null) return null;
     String clean = text.replaceAll(_htmlTagPattern, '');

@@ -32,6 +32,7 @@ abstract final class DatabaseSchema {
     await createAnimeCacheTable(db);
     await createMoodGridsTable(db);
     await createMoodGridCellsTable(db);
+    await createAniListTagsTable(db);
   }
 
   static Future<void> createPlatformsTable(Database db) async {
@@ -409,6 +410,7 @@ abstract final class DatabaseSchema {
         format TEXT,
         country_of_origin TEXT,
         genres TEXT,
+        tags TEXT,
         authors TEXT,
         external_url TEXT,
         banner_url TEXT,
@@ -442,12 +444,31 @@ abstract final class DatabaseSchema {
         format TEXT,
         source TEXT,
         genres TEXT,
+        tags TEXT,
         studios TEXT,
         next_airing_episode INTEGER,
         next_airing_at INTEGER,
         external_url TEXT,
         updated_at INTEGER NOT NULL
       )
+    ''');
+  }
+
+  static Future<void> createAniListTagsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS anilist_tags (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        category TEXT,
+        description TEXT,
+        is_adult INTEGER NOT NULL DEFAULT 0,
+        is_general_spoiler INTEGER NOT NULL DEFAULT 0,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_anilist_tags_category
+      ON anilist_tags(category)
     ''');
   }
 

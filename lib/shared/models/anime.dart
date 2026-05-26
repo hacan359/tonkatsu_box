@@ -2,11 +2,8 @@ import 'dart:convert';
 
 import '../utils/anime_manga_title_language.dart';
 
-/// Модель аниме из AniList GraphQL API.
-///
-/// Представляет аниме с метаданными из AniList.
+/// Anime metadata from the AniList GraphQL API.
 class Anime {
-  /// Создаёт экземпляр [Anime].
   const Anime({
     required this.id,
     required this.title,
@@ -29,6 +26,7 @@ class Anime {
     this.format,
     this.source,
     this.genres,
+    this.tags,
     this.studios,
     this.bannerUrl,
     this.nextAiringEpisode,
@@ -37,27 +35,35 @@ class Anime {
     this.updatedAt,
   });
 
-  /// Создаёт [Anime] из JSON ответа AniList GraphQL API.
   factory Anime.fromJson(Map<String, dynamic> json) {
-    // Title
     final Map<String, dynamic>? titleMap =
         json['title'] as Map<String, dynamic>?;
     final String title = titleMap?['romaji'] as String? ??
         titleMap?['english'] as String? ??
         'Unknown';
 
-    // Cover
     final Map<String, dynamic>? coverMap =
         json['coverImage'] as Map<String, dynamic>?;
 
-    // Start date
     final Map<String, dynamic>? dateMap =
         json['startDate'] as Map<String, dynamic>?;
 
-    // Genres
     final List<dynamic>? genresList = json['genres'] as List<dynamic>?;
 
-    // Studios
+    // AniList tag objects carry category, rank, isMediaSpoiler — we drop
+    // everything except the name since per-media spoiler / category are
+    // looked up from the catalog table when needed.
+    List<String>? tags;
+    final List<dynamic>? tagsList = json['tags'] as List<dynamic>?;
+    if (tagsList != null && tagsList.isNotEmpty) {
+      tags = tagsList
+          .map((dynamic t) =>
+              (t as Map<String, dynamic>)['name'] as String? ?? '')
+          .where((String s) => s.isNotEmpty)
+          .toList();
+      if (tags.isEmpty) tags = null;
+    }
+
     List<String>? studios;
     final Map<String, dynamic>? studiosMap =
         json['studios'] as Map<String, dynamic>?;
@@ -73,7 +79,6 @@ class Anime {
       }
     }
 
-    // Strip HTML from description
     String? description = json['description'] as String?;
     if (description != null) {
       description = _stripHtml(description);
@@ -99,6 +104,7 @@ class Anime {
       format: json['format'] as String?,
       source: json['source'] as String?,
       genres: genresList?.map((dynamic g) => g as String).toList(),
+      tags: tags,
       studios: studios,
       bannerUrl: json['bannerImage'] as String?,
       nextAiringEpisode:
@@ -109,7 +115,6 @@ class Anime {
     );
   }
 
-  /// Создаёт [Anime] из записи базы данных.
   factory Anime.fromDb(Map<String, dynamic> row) {
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
@@ -130,6 +135,17 @@ class Anime {
             .toList();
       } on FormatException {
         studios = null;
+      }
+    }
+
+    List<String>? tags;
+    if (row['tags'] != null && (row['tags'] as String).isNotEmpty) {
+      try {
+        tags = (jsonDecode(row['tags'] as String) as List<dynamic>)
+            .map((dynamic e) => e as String)
+            .toList();
+      } on FormatException {
+        tags = null;
       }
     }
 
@@ -155,6 +171,7 @@ class Anime {
       format: row['format'] as String?,
       source: row['source'] as String?,
       genres: genres,
+      tags: tags,
       studios: studios,
       bannerUrl: row['banner_url'] as String?,
       nextAiringEpisode: row['next_airing_episode'] as int?,
@@ -183,95 +200,64 @@ class Anime {
         title;
   }
 
-  /// Описание (HTML очищен).
   final String? description;
-
-  /// URL обложки (large).
   final String? coverUrl;
-
-  /// URL обложки (medium, для превью).
   final String? coverUrlMedium;
-
-  /// Средний рейтинг 0-100.
   final int? averageScore;
-
-  /// Средний балл 0-100.
   final int? meanScore;
-
-  /// Ранг популярности.
   final int? popularity;
 
-  /// Статус: FINISHED, RELEASING, NOT_YET_RELEASED, CANCELLED, HIATUS.
+  /// One of FINISHED, RELEASING, NOT_YET_RELEASED, CANCELLED, HIATUS.
   final String? status;
 
-  /// Сезон: WINTER, SPRING, SUMMER, FALL.
+  /// One of WINTER, SPRING, SUMMER, FALL.
   final String? season;
 
-  /// Год сезона.
   final int? seasonYear;
-
-  /// Год начала.
   final int? startYear;
-
-  /// Месяц начала.
   final int? startMonth;
-
-  /// День начала.
   final int? startDay;
 
-  /// Количество эпизодов (null если ongoing/неизвестно).
+  /// Null when ongoing or unknown.
   final int? episodes;
 
-  /// Длительность эпизода в минутах.
+  /// Per-episode runtime in minutes.
   final int? duration;
 
-  /// Формат: TV, TV_SHORT, MOVIE, SPECIAL, OVA, ONA, MUSIC.
+  /// One of TV, TV_SHORT, MOVIE, SPECIAL, OVA, ONA, MUSIC.
   final String? format;
 
-  /// Исходный материал: ORIGINAL, MANGA, LIGHT_NOVEL, VISUAL_NOVEL, VIDEO_GAME.
+  /// Source material: ORIGINAL, MANGA, LIGHT_NOVEL, VISUAL_NOVEL, VIDEO_GAME.
   final String? source;
 
-  /// Список жанров.
   final List<String>? genres;
 
-  /// Список студий.
+  /// AniList tag names; per-media category / rank / spoiler flags are not
+  /// stored — only the catalog table keeps that metadata.
+  final List<String>? tags;
+
   final List<String>? studios;
-
-  /// URL баннера (для backdrop).
   final String? bannerUrl;
-
-  /// Номер следующего выходящего эпизода (для ongoing).
   final int? nextAiringEpisode;
-
-  /// Unix timestamp выхода следующего эпизода.
   final int? nextAiringAt;
-
-  /// URL страницы на AniList.
   final String? externalUrl;
 
-  /// Время кеширования (Unix timestamp).
+  /// Unix timestamp of when this row was cached.
   final int? updatedAt;
 
-  // ===== Computed =====
-
-  /// Рейтинг в шкале 0-10.
   double? get rating10 =>
       averageScore != null ? averageScore! / 10.0 : null;
 
-  /// Форматированный рейтинг (0-10).
-  String? get formattedRating =>
-      rating10?.toStringAsFixed(1);
+  String? get formattedRating => rating10?.toStringAsFixed(1);
 
-  /// Год релиза.
   int? get releaseYear => seasonYear ?? startYear;
 
-  /// Жанры в виде строки через запятую.
   String? get genresString => genres?.join(', ');
 
-  /// Студии в виде строки через запятую.
+  String? get tagsString => tags?.join(', ');
+
   String? get studiosString => studios?.join(', ');
 
-  /// Человекочитаемая метка формата.
   String? get formatLabel => switch (format) {
         'TV' => 'TV',
         'TV_SHORT' => 'TV Short',
@@ -283,7 +269,6 @@ class Anime {
         _ => format,
       };
 
-  /// Человекочитаемый статус.
   String? get statusLabel => switch (status) {
         'FINISHED' => 'Finished',
         'RELEASING' => 'Airing',
@@ -293,7 +278,6 @@ class Anime {
         _ => status,
       };
 
-  /// Человекочитаемый сезон.
   String? get seasonLabel {
     if (season == null) return null;
     final String seasonName = switch (season) {
@@ -306,15 +290,12 @@ class Anime {
     return seasonYear != null ? '$seasonName $seasonYear' : seasonName;
   }
 
-  /// Строка эпизодов: "24 ep" или "? ep".
   String get episodesString =>
       episodes != null ? '$episodes ep' : '? ep';
 
-  /// Длительность эпизода: "24 min/ep".
   String? get durationString =>
       duration != null ? '$duration min/ep' : null;
 
-  /// Человекочитаемый исходный материал.
   String? get sourceLabel => switch (source) {
         'ORIGINAL' => 'Original',
         'MANGA' => 'Based on Manga',
@@ -325,7 +306,6 @@ class Anime {
         _ => source,
       };
 
-  /// Есть ли информация о следующем эпизоде.
   bool get hasNextAiring =>
       nextAiringEpisode != null && nextAiringAt != null;
 
@@ -341,7 +321,6 @@ class Anime {
   @override
   String toString() => 'Anime(id: $id, title: $title)';
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -365,6 +344,7 @@ class Anime {
       'format': format,
       'source': source,
       'genres': genres != null ? jsonEncode(genres) : null,
+      'tags': tags != null ? jsonEncode(tags) : null,
       'studios': studios != null ? jsonEncode(studios) : null,
       'banner_url': bannerUrl,
       'next_airing_episode': nextAiringEpisode,
@@ -375,14 +355,13 @@ class Anime {
     };
   }
 
-  /// Преобразует в Map для экспорта коллекции.
+  /// `toDb` minus the cache timestamp, for `.xcoll` / `.xcollx` payloads.
   Map<String, dynamic> toExport() {
     final Map<String, dynamic> data = toDb();
     data.remove('updated_at');
     return data;
   }
 
-  /// Создаёт копию с изменёнными полями.
   Anime copyWith({
     int? id,
     String? title,
@@ -405,6 +384,7 @@ class Anime {
     String? format,
     String? source,
     List<String>? genres,
+    List<String>? tags,
     List<String>? studios,
     String? bannerUrl,
     int? nextAiringEpisode,
@@ -434,6 +414,7 @@ class Anime {
       format: format ?? this.format,
       source: source ?? this.source,
       genres: genres ?? this.genres,
+      tags: tags ?? this.tags,
       studios: studios ?? this.studios,
       bannerUrl: bannerUrl ?? this.bannerUrl,
       nextAiringEpisode: nextAiringEpisode ?? this.nextAiringEpisode,
@@ -445,7 +426,6 @@ class Anime {
 
   static final RegExp _htmlTagPattern = RegExp('<[^>]*>');
 
-  /// Убирает HTML-теги из описания.
   static String? _stripHtml(String? text) {
     if (text == null) return null;
     String clean = text.replaceAll(_htmlTagPattern, '');
