@@ -51,7 +51,7 @@ void main() {
 
   group('CachedImage', () {
     group('cache disabled (remote URL)', () {
-      testWidgets('должен показывать Image.network при выключенном кэше',
+      testWidgets('should show Image.network при выключенном кэше',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -80,7 +80,7 @@ void main() {
 
     group('cache enabled + file missing (fallback to network)', () {
       testWidgets(
-          'должен показывать Image.network и запускать auto-download',
+          'should show Image.network и запускать auto-download',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -149,7 +149,7 @@ void main() {
             ));
       });
 
-      testWidgets('не должен вызывать overflow при размере 32x32',
+      testWidgets('не should call overflow при размере 32x32',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -185,7 +185,7 @@ void main() {
     });
 
     group('ImageType enum', () {
-      testWidgets('должен поддерживать moviePoster',
+      testWidgets('should support moviePoster',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -215,7 +215,7 @@ void main() {
             )).called(1);
       });
 
-      testWidgets('должен поддерживать tvShowPoster',
+      testWidgets('should support tvShowPoster',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -247,7 +247,7 @@ void main() {
     });
 
     group('placeholder', () {
-      testWidgets('должен показывать CircularProgressIndicator при загрузке',
+      testWidgets('should show CircularProgressIndicator while loading',
           (WidgetTester tester) async {
         // Future never completes — keeps widget in loading state.
         final Completer<ImageResult> completer = Completer<ImageResult>();
@@ -270,7 +270,7 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('должен показывать кастомный placeholder',
+      testWidgets('should show кастомный placeholder',
           (WidgetTester tester) async {
         final Completer<ImageResult> completer = Completer<ImageResult>();
         when(() => mockCacheService.getImageUri(
@@ -294,7 +294,7 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
-      testWidgets('не должен вызывать overflow при размере 32x32',
+      testWidgets('не should call overflow при размере 32x32',
           (WidgetTester tester) async {
         final Completer<ImageResult> completer = Completer<ImageResult>();
         when(() => mockCacheService.getImageUri(
@@ -320,7 +320,7 @@ void main() {
     });
 
     group('error state', () {
-      testWidgets('должен показывать broken_image при ошибке Future',
+      testWidgets('should show broken_image on error Future',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -342,7 +342,7 @@ void main() {
         expect(find.byIcon(Icons.broken_image), findsOneWidget);
       });
 
-      testWidgets('должен показывать кастомный errorWidget',
+      testWidgets('should show кастомный errorWidget',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -366,7 +366,7 @@ void main() {
         expect(find.byIcon(Icons.broken_image), findsNothing);
       });
 
-      testWidgets('не должен вызывать overflow при размере 32x32',
+      testWidgets('не should call overflow при размере 32x32',
           (WidgetTester tester) async {
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -431,7 +431,7 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('должен fallback на network при пустом файле (0 bytes)',
+      testWidgets('должен fallback на network when empty файле (0 bytes)',
           (WidgetTester tester) async {
         final Directory tempDir =
             Directory.systemTemp.createTempSync('cached_image_empty_');
@@ -477,7 +477,7 @@ void main() {
         }
       });
 
-      testWidgets('должен использовать Image (file) при isLocal=true',
+      testWidgets('should use Image (file) при isLocal=true',
           (WidgetTester tester) async {
         final Directory tempDir =
             Directory.systemTemp.createTempSync('cached_image_test_');
@@ -527,7 +527,7 @@ void main() {
     });
 
     group('deleteImage', () {
-      test('должен вызывать deleteImage на сервисе', () async {
+      test('should call deleteImage на сервисе', () async {
         when(() => mockCacheService.deleteImage(any(), any()))
             .thenAnswer((_) async {});
 

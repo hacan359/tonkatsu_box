@@ -33,7 +33,7 @@ void main() {
     }
 
     testWidgets(
-      'должен показать заголовок "Add Image" для нового элемента',
+      'should show заголовок "Add Image" для нового элемента',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));
@@ -45,7 +45,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать заголовок "Edit Image" когда initialUrl указан',
+      'should show заголовок "Edit Image" когда initialUrl указан',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(
           onResult: (_) {},
@@ -63,7 +63,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать SegmentedButton с "From URL" и "From File" для нового элемента',
+      'should show SegmentedButton с "From URL" и "From File" для нового элемента',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));
@@ -81,7 +81,7 @@ void main() {
     );
 
     testWidgets(
-      'не должен показывать SegmentedButton когда initialUrl указан',
+      'не should show SegmentedButton когда initialUrl указан',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(
           onResult: (_) {},
@@ -101,7 +101,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать TextField с лейблом "Image URL" в режиме URL',
+      'should show TextField с лейблом "Image URL" в режиме URL',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));
@@ -189,7 +189,7 @@ void main() {
     );
 
     testWidgets(
-      'должен вернуть map с url при нажатии Add с валидным URL',
+      'should return map с url when pressed Add с валидным URL',
       (WidgetTester tester) async {
         Map<String, dynamic>? result;
 
@@ -215,7 +215,7 @@ void main() {
     );
 
     testWidgets(
-      'должен вернуть null при нажатии Cancel',
+      'should return null when pressed Cancel',
       (WidgetTester tester) async {
         Map<String, dynamic>? result = <String, dynamic>{'marker': true};
 
@@ -251,7 +251,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать кнопку "Choose File" в режиме файла',
+      'should show кнопку "Choose File" в режиме файла',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));

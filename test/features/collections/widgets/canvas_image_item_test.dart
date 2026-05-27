@@ -72,7 +72,7 @@ void main() {
   }
 
   group('urlToImageId', () {
-    test('должен возвращать 8-символьный hex для URL', () {
+    test('should return 8-символьный hex для URL', () {
       final String id = urlToImageId('https://example.com/image.png');
       expect(id.length, 8);
       expect(RegExp(r'^[0-9a-f]{8}$').hasMatch(id), isTrue);
@@ -106,7 +106,7 @@ void main() {
 
   group('CanvasImageItem', () {
     testWidgets(
-      'должен показать Card',
+      'should show Card',
       (WidgetTester tester) async {
         final CanvasItem item = createImageItem(
           data: <String, dynamic>{'url': 'https://example.com/image.png'},
@@ -119,7 +119,7 @@ void main() {
     );
 
     testWidgets(
-      'должен использовать CachedImage для URL-изображений',
+      'should use CachedImage для URL-изображений',
       (WidgetTester tester) async {
         final CanvasItem item = createImageItem(
           data: <String, dynamic>{'url': 'https://example.com/image.png'},
@@ -167,7 +167,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать placeholder иконку когда data null',
+      'should show placeholder иконку когда data null',
       (WidgetTester tester) async {
         final CanvasItem item = createImageItem(data: null);
 
@@ -179,7 +179,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать placeholder иконку когда data пустой',
+      'should show placeholder иконку когда data пустой',
       (WidgetTester tester) async {
         final CanvasItem item = createImageItem(
           data: <String, dynamic>{},
@@ -193,7 +193,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать placeholder иконку когда url пустой',
+      'should show placeholder иконку когда url пустой',
       (WidgetTester tester) async {
         final CanvasItem item = createImageItem(
           data: <String, dynamic>{'url': ''},
@@ -207,7 +207,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать Image.memory для base64 данных',
+      'should show Image.memory для base64 данных',
       (WidgetTester tester) async {
         // Minimal 1x1 PNG.
         final String base64Png = base64Encode(<int>[
@@ -236,7 +236,7 @@ void main() {
     );
 
     testWidgets(
-      'не должен использовать CachedImage для base64 данных',
+      'не should use CachedImage для base64 данных',
       (WidgetTester tester) async {
         final String base64Png = base64Encode(<int>[
           0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
@@ -279,7 +279,7 @@ void main() {
     );
 
     testWidgets(
-      'должен вызвать getImageUri с canvasImage типом',
+      'should call getImageUri с canvasImage типом',
       (WidgetTester tester) async {
         const String testUrl = 'https://example.com/canvas_img.jpg';
         final CanvasItem item = createImageItem(

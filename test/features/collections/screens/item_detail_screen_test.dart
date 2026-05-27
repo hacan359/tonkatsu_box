@@ -248,7 +248,7 @@ void main() {
       expect(find.text('8.5/10'), findsOneWidget);
     });
 
-    testWidgets('должен показывать Game not found для несуществующей игры',
+    testWidgets('should show Game not found для несуществующей игры',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
@@ -305,7 +305,7 @@ void main() {
     });
 
     group('Board toggle', () {
-      testWidgets('должен показывать Board toggle кнопку если collectionId != null',
+      testWidgets('should show Board toggle кнопку если collectionId != null',
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
@@ -326,7 +326,7 @@ void main() {
         expect(find.byIcon(Icons.dashboard_outlined), findsOneWidget);
       });
 
-      testWidgets('не должен показывать Board toggle для uncategorized',
+      testWidgets('не should show Board toggle для uncategorized',
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
@@ -378,7 +378,7 @@ void main() {
         await tester.pump();
       }
 
-      testWidgets('не должен показывать замок на detail view',
+      testWidgets('не should show замок на detail view',
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
@@ -399,7 +399,7 @@ void main() {
         expect(find.byTooltip('Unlock board (Ctrl+L)'), findsNothing);
       });
 
-      testWidgets('должен показывать замок на canvas view (editable)',
+      testWidgets('should show замок на canvas view (editable)',
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
@@ -423,7 +423,7 @@ void main() {
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
       });
 
-      testWidgets('не должен показывать замок когда isEditable = false',
+      testWidgets('не should show замок когда isEditable = false',
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
@@ -480,7 +480,7 @@ void main() {
         expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
       });
 
-      testWidgets('не должен показывать замок для uncategorized',
+      testWidgets('не should show замок для uncategorized',
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
@@ -549,7 +549,7 @@ void main() {
       );
     }
 
-    testWidgets('должен показывать Movie not found для несуществующего ID',
+    testWidgets('should show Movie not found для несуществующего ID',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
@@ -715,7 +715,7 @@ void main() {
         expect(dropdown.mediaType, MediaType.movie);
       });
 
-      testWidgets('должен показывать иконку play для inProgress',
+      testWidgets('should show иконку play для inProgress',
           (WidgetTester tester) async {
         final Movie movie = createTestMovie();
         final CollectionItem item = createMovieItem(
@@ -756,7 +756,7 @@ void main() {
       );
     });
 
-    testWidgets('не должен показывать Board toggle для uncategorized',
+    testWidgets('не should show Board toggle для uncategorized',
         (WidgetTester tester) async {
       final Movie movie = createTestMovie();
       final CollectionItem item = createMovieItem(
@@ -859,7 +859,7 @@ void main() {
       expect(find.text('TMDB'), findsOneWidget);
     });
 
-    testWidgets('должен показывать TV Show not found',
+    testWidgets('should show TV Show not found',
         (WidgetTester tester) async {
       final CollectionItem item = createTvShowItem(id: 2);
 
@@ -971,7 +971,7 @@ void main() {
       expect(find.byIcon(Icons.tv_outlined), findsWidgets);
     });
 
-    testWidgets('должен показывать MediaDetailView',
+    testWidgets('should show MediaDetailView',
         (WidgetTester tester) async {
       final TvShow tvShow = createTestTvShow();
       final CollectionItem item = createTvShowItem(tvShow: tvShow);
@@ -1064,7 +1064,7 @@ void main() {
     }
 
     group('заголовок', () {
-      testWidgets('должен показывать Animation not found',
+      testWidgets('should show Animation not found',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
@@ -1257,7 +1257,7 @@ void main() {
       expect(find.byType(StatusChipRow), findsOneWidget);
     });
 
-    testWidgets('не должен показывать Board toggle для uncategorized',
+    testWidgets('не should show Board toggle для uncategorized',
         (WidgetTester tester) async {
       final Movie movie = createTestMovie();
       final CollectionItem item = createAnimeItem(
@@ -1364,7 +1364,7 @@ void main() {
       expect(find.text('VNDB'), findsOneWidget);
     });
 
-    testWidgets('должен показывать Visual Novel not found',
+    testWidgets('should show Visual Novel not found',
         (WidgetTester tester) async {
       final CollectionItem item = createVnItem(id: 2);
 
@@ -1379,7 +1379,7 @@ void main() {
       expect(find.textContaining('not found'), findsOneWidget);
     });
 
-    testWidgets('не должен показывать Recommendations для VN',
+    testWidgets('не should show Recommendations для VN',
         (WidgetTester tester) async {
       final VisualNovel vn = createTestVn();
       final CollectionItem item = createVnItem(visualNovel: vn);
@@ -1415,7 +1415,7 @@ void main() {
       expect(find.byType(StatusChipRow), findsOneWidget);
     });
 
-    testWidgets('должен показывать MediaDetailView',
+    testWidgets('should show MediaDetailView',
         (WidgetTester tester) async {
       final VisualNovel vn = createTestVn();
       final CollectionItem item = createVnItem(visualNovel: vn);
@@ -1544,7 +1544,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('должен показывать баннер для uncategorized игры',
+    testWidgets('should show баннер для uncategorized игры',
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
@@ -1573,7 +1573,7 @@ void main() {
       expect(find.text('Add to Collection'), findsOneWidget);
     });
 
-    testWidgets('не должен показывать баннер для элемента в коллекции',
+    testWidgets('не should show баннер для элемента в коллекции',
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
@@ -1605,7 +1605,7 @@ void main() {
       );
     });
 
-    testWidgets('должен показывать текст сезонов для uncategorized сериала',
+    testWidgets('should show текст сезонов для uncategorized сериала',
         (WidgetTester tester) async {
       const TvShow tvShow = TvShow(
         tmdbId: 200,
@@ -1631,7 +1631,7 @@ void main() {
       expect(find.text('5 seasons \u2022 62 ep'), findsOneWidget);
     });
 
-    testWidgets('не должен показывать текст сезонов для uncategorized игры',
+    testWidgets('не should show текст сезонов для uncategorized игры',
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
@@ -1653,7 +1653,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать только сезоны если эпизодов нет',
+        'should show только сезоны если эпизодов нет',
         (WidgetTester tester) async {
       const TvShow tvShow = TvShow(
         tmdbId: 200,
@@ -1679,7 +1679,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать только эпизоды если сезонов нет',
+        'should show только эпизоды если сезонов нет',
         (WidgetTester tester) async {
       const TvShow tvShow = TvShow(
         tmdbId: 200,
@@ -1705,7 +1705,7 @@ void main() {
     });
 
     testWidgets(
-        'не должен показывать текст сезонов если seasons и episodes оба null',
+        'не should show текст сезонов если seasons и episodes оба null',
         (WidgetTester tester) async {
       const TvShow tvShow = TvShow(
         tmdbId: 200,
@@ -1731,7 +1731,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать баннер и текст сезонов для uncategorized анимации (tvShow source)',
+        'should show баннер и текст сезонов для uncategorized анимации (tvShow source)',
         (WidgetTester tester) async {
       const TvShow tvShow = TvShow(
         tmdbId: 300,
@@ -1770,7 +1770,7 @@ void main() {
     });
 
     testWidgets(
-        'не должен показывать текст сезонов для uncategorized анимации (movie source)',
+        'не should show текст сезонов для uncategorized анимации (movie source)',
         (WidgetTester tester) async {
       final CollectionItem item = CollectionItem(
         id: 1,
@@ -1802,7 +1802,7 @@ void main() {
     });
 
     testWidgets(
-        'не должен показывать текст сезонов для сериала в коллекции',
+        'не should show текст сезонов для сериала в коллекции',
         (WidgetTester tester) async {
       const TvShow tvShow = TvShow(
         tmdbId: 200,

@@ -52,7 +52,7 @@ void main() {
     );
 
     testWidgets(
-      'должен использовать fontSize из data',
+      'should use fontSize из data',
       (WidgetTester tester) async {
         final CanvasItem item = createTextItem(
           data: <String, dynamic>{'content': 'Big Text', 'fontSize': 32.0},
@@ -66,7 +66,7 @@ void main() {
     );
 
     testWidgets(
-      'должен использовать fontSize 16 по умолчанию когда fontSize отсутствует',
+      'should use fontSize 16 по умолчанию когда fontSize отсутствует',
       (WidgetTester tester) async {
         final CanvasItem item = createTextItem(
           data: <String, dynamic>{'content': 'Default Size'},

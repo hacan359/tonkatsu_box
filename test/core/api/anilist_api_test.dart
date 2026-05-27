@@ -17,14 +17,14 @@ void main() {
   });
 
   group('AniListApiException', () {
-    test('должен содержать message и statusCode', () {
+    test('should contain message и statusCode', () {
       const AniListApiException exception =
           AniListApiException('test', statusCode: 429);
       expect(exception.message, 'test');
       expect(exception.statusCode, 429);
     });
 
-    test('toString должен форматировать сообщение', () {
+    test('toString should format сообщение', () {
       const AniListApiException exception =
           AniListApiException('error', statusCode: 500);
       expect(exception.toString(),
@@ -84,7 +84,7 @@ void main() {
     }
 
     group('searchManga', () {
-      test('должен вернуть пустой список для пустого запроса', () async {
+      test('should return пустой список для пустого запроса', () async {
         final (List<Manga> results, bool hasMore, int totalPages) =
             await api.searchManga(query: '');
         expect(results, isEmpty);
@@ -92,7 +92,7 @@ void main() {
         expect(totalPages, 0);
       });
 
-      test('должен вернуть пустой список для запроса из пробелов', () async {
+      test('should return пустой список для запроса из пробелов', () async {
         final (List<Manga> results, bool hasMore, int totalPages) =
             await api.searchManga(query: '   ');
         expect(results, isEmpty);
@@ -136,7 +136,7 @@ void main() {
         );
       });
 
-      test('должен обработать rate limit (429)', () async {
+      test('should handle rate limit (429)', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -160,7 +160,7 @@ void main() {
     });
 
     group('browseManga', () {
-      test('должен вернуть результаты с totalPages', () async {
+      test('should return результаты с totalPages', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -223,7 +223,7 @@ void main() {
         expect(variables['format'], 'MANHWA');
       });
 
-      test('должен обработать ошибку ответа', () async {
+      test('should handle ошибку ответа', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -240,7 +240,7 @@ void main() {
         );
       });
 
-      test('должен обработать GraphQL errors в ответе', () async {
+      test('should handle GraphQL errors в ответе', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -260,7 +260,7 @@ void main() {
         expect(totalPages, 0);
       });
 
-      test('должен обработать null Page в ответе', () async {
+      test('should handle null Page в ответе', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -280,7 +280,7 @@ void main() {
     });
 
     group('getMangaById', () {
-      test('должен вернуть мангу по ID', () async {
+      test('should return мангу по ID', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -298,7 +298,7 @@ void main() {
         expect(manga!.id, 30013);
       });
 
-      test('должен вернуть null для null Media', () async {
+      test('should return null для null Media', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -315,7 +315,7 @@ void main() {
         expect(manga, isNull);
       });
 
-      test('должен обработать ошибку ответа', () async {
+      test('should handle ошибку ответа', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -332,7 +332,7 @@ void main() {
         );
       });
 
-      test('должен обработать GraphQL errors', () async {
+      test('should handle GraphQL errors', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -349,7 +349,7 @@ void main() {
         expect(manga, isNull);
       });
 
-      test('должен обработать DioException connection error', () async {
+      test('should handle DioException connection error', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -368,7 +368,7 @@ void main() {
     });
 
     group('getMangaByIds', () {
-      test('должен вернуть пустой список для пустого массива', () async {
+      test('should return пустой список для пустого массива', () async {
         final List<Manga> results = await api.getMangaByIds(<int>[]);
         expect(results, isEmpty);
       });
@@ -396,7 +396,7 @@ void main() {
         expect(results, hasLength(2));
       });
 
-      test('должен обработать DioException', () async {
+      test('should handle DioException', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -413,7 +413,7 @@ void main() {
         }
       });
 
-      test('должен обработать ошибку ответа', () async {
+      test('should handle ошибку ответа', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -430,7 +430,7 @@ void main() {
         );
       });
 
-      test('должен обработать null Page в ответе', () async {
+      test('should handle null Page в ответе', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -446,7 +446,7 @@ void main() {
         expect(results, isEmpty);
       });
 
-      test('должен обработать GraphQL errors', () async {
+      test('should handle GraphQL errors', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -505,7 +505,7 @@ void main() {
     }
 
     group('browseAnime', () {
-      test('должен вернуть результаты', () async {
+      test('should return результаты', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -584,7 +584,7 @@ void main() {
         );
       });
 
-      test('должен обработать null data в ответе', () async {
+      test('should handle null data в ответе', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -604,7 +604,7 @@ void main() {
     });
 
     group('getAnimeById', () {
-      test('должен вернуть аниме по ID', () async {
+      test('should return аниме по ID', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -622,7 +622,7 @@ void main() {
         expect(anime!.id, 1);
       });
 
-      test('должен вернуть null для null Media', () async {
+      test('should return null для null Media', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -638,7 +638,7 @@ void main() {
         expect(anime, isNull);
       });
 
-      test('должен обработать ошибку ответа', () async {
+      test('should handle ошибку ответа', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -657,7 +657,7 @@ void main() {
     });
 
     group('getAnimeByIds', () {
-      test('должен вернуть пустой список для пустого массива', () async {
+      test('should return пустой список для пустого массива', () async {
         final List<Anime> results = await api.getAnimeByIds(<int>[]);
         expect(results, isEmpty);
       });
@@ -684,7 +684,7 @@ void main() {
         expect(results, hasLength(2));
       });
 
-      test('должен обработать DioException', () async {
+      test('should handle DioException', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),
@@ -701,7 +701,7 @@ void main() {
         }
       });
 
-      test('должен обработать null Page в ответе', () async {
+      test('should handle null Page в ответе', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               data: any(named: 'data'),

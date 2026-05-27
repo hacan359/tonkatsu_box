@@ -139,7 +139,7 @@ void main() {
       expect(find.textContaining('10'), findsOneWidget);
     });
 
-    testWidgets('должен вызвать onTap при нажатии', (WidgetTester tester) async {
+    testWidgets('should call onTap when pressed', (WidgetTester tester) async {
       bool tapped = false;
       final Collection collection = _makeCollection();
 
@@ -161,7 +161,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('должен вызвать onLongPress при долгом нажатии',
+    testWidgets('should call onLongPress при долгом нажатии',
         (WidgetTester tester) async {
       bool longPressed = false;
       final Collection collection = _makeCollection();
@@ -184,7 +184,7 @@ void main() {
       expect(longPressed, isTrue);
     });
 
-    testWidgets('должен показать fallback при пустых обложках',
+    testWidgets('should show fallback when empty обложках',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -202,7 +202,7 @@ void main() {
       expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
     });
 
-    testWidgets('должен показать +N при total > 6',
+    testWidgets('should show +N при total > 6',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -221,7 +221,7 @@ void main() {
       expect(find.text('+4'), findsOneWidget);
     });
 
-    testWidgets('не должен показывать +N при total <= 6',
+    testWidgets('не should show +N при total <= 6',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
       const CollectionStats sixItemStats = CollectionStats(
@@ -266,7 +266,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
-    testWidgets('должен использовать акцент по доминирующему медиа-типу (movie)',
+    testWidgets('should use акцент по доминирующему медиа-типу (movie)',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -284,7 +284,7 @@ void main() {
       expect(find.byType(CollectionCard), findsOneWidget);
     });
 
-    testWidgets('должен показать loading при загрузке обложек',
+    testWidgets('should show loading while loading обложек',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
       final Completer<List<CoverInfo>> completer =
@@ -308,7 +308,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('должен показать fallback при ошибке загрузки обложек',
+    testWidgets('should show fallback on error загрузки обложек',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -326,7 +326,7 @@ void main() {
       expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
     });
 
-    testWidgets('должен показать SizedBox при loading статистики',
+    testWidgets('should show SizedBox при loading статистики',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
       final Completer<CollectionStats> statsCompleter =
@@ -349,7 +349,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('должен показать ошибку при сбое загрузки статистики',
+    testWidgets('should show ошибку при сбое загрузки статистики',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -386,7 +386,7 @@ void main() {
       expect(find.text('+4'), findsOneWidget);
     });
 
-    testWidgets('должен показать пустые ячейки при неполных обложках',
+    testWidgets('should show пустые ячейки при неполных обложках',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
       const List<CoverInfo> twoCovers = <CoverInfo>[
@@ -553,7 +553,7 @@ void main() {
       expect(find.byIcon(Icons.inbox_rounded), findsOneWidget);
     });
 
-    testWidgets('должен вызвать onTap при нажатии',
+    testWidgets('should call onTap when pressed',
         (WidgetTester tester) async {
       bool tapped = false;
 

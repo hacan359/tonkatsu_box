@@ -136,7 +136,7 @@ void main() {
   group('CollectionActions', () {
     group('addSteamGridDbImage', () {
       testWidgets(
-        'должен вызвать addImageItem на canvasNotifier с правильными параметрами',
+        'should call addImageItem на canvasNotifier с правильными параметрами',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -207,7 +207,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать оригинальную ширину если она <= 300',
+        'should use оригинальную ширину если она <= 300',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -242,7 +242,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать defaultSize=200 если width или height равны 0',
+        'should use defaultSize=200 если width или height равны 0',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -351,7 +351,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать SnackBar с сообщением об успехе',
+        'should show SnackBar с сообщением об успехе',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -387,7 +387,7 @@ void main() {
 
     group('addVgMapsImage', () {
       testWidgets(
-        'должен вызвать addImageItem на canvasNotifier',
+        'should call addImageItem на canvasNotifier',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -445,7 +445,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать оригинальную ширину если она <= 400',
+        'should use оригинальную ширину если она <= 400',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -472,7 +472,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать defaultSize=400 если width или height равны null',
+        'should use defaultSize=400 если width или height равны null',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -499,7 +499,7 @@ void main() {
       );
 
       testWidgets(
-        'должен использовать defaultSize=400 если width=0 и height=0',
+        'should use defaultSize=400 если width=0 и height=0',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -559,7 +559,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать SnackBar с сообщением об успехе',
+        'should show SnackBar с сообщением об успехе',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -587,7 +587,7 @@ void main() {
 
     group('renameCollection', skip: 'Переписано на EditCollectionDialog — тесты будут обновлены отдельно', () {
       testWidgets(
-        'должен вернуть null если диалог отменён',
+        'should return null если диалог отменён',
         (WidgetTester tester) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
@@ -640,7 +640,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вернуть null если новое имя совпадает с текущим',
+        'should return null если новое имя совпадает с текущим',
         (WidgetTester tester) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
@@ -693,7 +693,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вернуть новое имя если переименование успешно',
+        'should return новое имя если переименование успешно',
         (WidgetTester tester) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
@@ -749,7 +749,7 @@ void main() {
 
     group('deleteCollection', () {
       testWidgets(
-        'должен вернуть false если диалог отменён',
+        'should return false если диалог отменён',
         (WidgetTester tester) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
@@ -802,7 +802,7 @@ void main() {
       );
 
       testWidgets(
-        'должен вернуть true если удаление подтверждено',
+        'should return true если удаление подтверждено',
         (WidgetTester tester) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
@@ -855,7 +855,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показать SnackBar при успешном удалении',
+        'should show SnackBar при успешном удалении',
         (WidgetTester tester) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
@@ -903,7 +903,7 @@ void main() {
 
     group('addSteamGridDbImage — граничные случаи масштабирования', () {
       testWidgets(
-        'должен обработать изображение с width>0 и height=0 как defaultSize',
+        'should handle изображение с width>0 и height=0 как defaultSize',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -939,7 +939,7 @@ void main() {
       );
 
       testWidgets(
-        'должен обработать изображение ровно 300px по ширине',
+        'should handle изображение ровно 300px по ширине',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -976,7 +976,7 @@ void main() {
 
     group('addVgMapsImage — граничные случаи масштабирования', () {
       testWidgets(
-        'должен обработать карту ровно 400px по ширине',
+        'should handle карту ровно 400px по ширине',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
@@ -1003,7 +1003,7 @@ void main() {
       );
 
       testWidgets(
-        'должен обработать null width с non-null height как default',
+        'should handle null width с non-null height как default',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 

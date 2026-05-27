@@ -159,7 +159,7 @@ void main() {
   }
 
   group('EpisodeTrackerState', () {
-    test('должен создаваться с пустыми значениями по умолчанию', () {
+    test('should createся с пустыми значениями по умолчанию', () {
       const EpisodeTrackerState state = EpisodeTrackerState();
 
       expect(state.episodesBySeason, isEmpty);
@@ -168,7 +168,7 @@ void main() {
       expect(state.error, isNull);
     });
 
-    test('должен создаваться с кастомными значениями', () {
+    test('should createся с кастомными значениями', () {
       final Map<int, List<TvEpisode>> episodes = <int, List<TvEpisode>>{
         1: <TvEpisode>[testEpisode1, testEpisode2],
       };
@@ -238,7 +238,7 @@ void main() {
     });
 
     group('isEpisodeWatched', () {
-      test('должен возвращать true для просмотренного эпизода', () {
+      test('should return true для просмотренного эпизода', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
           watchedEpisodes: <(int, int), DateTime?>{(1, 1): null, (1, 2): null},
         );
@@ -247,7 +247,7 @@ void main() {
         expect(state.isEpisodeWatched(1, 2), true);
       });
 
-      test('должен возвращать false для непросмотренного эпизода', () {
+      test('should return false для непросмотренного эпизода', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
           watchedEpisodes: <(int, int), DateTime?>{(1, 1): null},
         );
@@ -258,7 +258,7 @@ void main() {
     });
 
     group('watchedCountForSeason', () {
-      test('должен возвращать количество просмотренных эпизодов в сезоне', () {
+      test('should return количество просмотренных эпизодов в сезоне', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
           watchedEpisodes: <(int, int), DateTime?>{(1, 1): null, (1, 2): null, (2, 1): null},
         );
@@ -270,7 +270,7 @@ void main() {
     });
 
     group('totalWatchedCount', () {
-      test('должен возвращать общее количество просмотренных эпизодов', () {
+      test('should return общее количество просмотренных эпизодов', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
           watchedEpisodes: <(int, int), DateTime?>{(1, 1): null, (1, 2): null, (2, 1): null},
         );
@@ -278,7 +278,7 @@ void main() {
         expect(state.totalWatchedCount, 3);
       });
 
-      test('должен возвращать 0 для пустого множества', () {
+      test('should return 0 для пустого множества', () {
         const EpisodeTrackerState state = EpisodeTrackerState();
 
         expect(state.totalWatchedCount, 0);
@@ -286,7 +286,7 @@ void main() {
     });
 
     group('totalEpisodeCount', () {
-      test('должен возвращать общее количество загруженных эпизодов', () {
+      test('should return общее количество загруженных эпизодов', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
           episodesBySeason: <int, List<TvEpisode>>{
             1: <TvEpisode>[testEpisode1, testEpisode2, testEpisode3],
@@ -297,7 +297,7 @@ void main() {
         expect(state.totalEpisodeCount, 5);
       });
 
-      test('должен возвращать 0 для пустой карты', () {
+      test('should return 0 для пустой карты', () {
         const EpisodeTrackerState state = EpisodeTrackerState();
 
         expect(state.totalEpisodeCount, 0);
@@ -343,7 +343,7 @@ void main() {
             .called(1);
       });
 
-      test('должен обрабатывать ошибку загрузки просмотренных эпизодов',
+      test('should handle ошибку загрузки просмотренных эпизодов',
           () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenThrow(Exception('Database error'));
@@ -475,7 +475,7 @@ void main() {
         verifyNever(() => mockDb.upsertEpisodes(any()));
       });
 
-      test('должен обрабатывать ошибку загрузки из API', () async {
+      test('should handle ошибку загрузки из API', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
@@ -545,7 +545,7 @@ void main() {
             .called(1);
       });
 
-      test('должен устанавливать loading flag во время загрузки', () async {
+      test('should set loading flag во время загрузки', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
@@ -624,7 +624,7 @@ void main() {
         ).called(1);
       });
 
-      test('должен обновлять состояние после отметки просмотра', () async {
+      test('should update состояние после отметки просмотра', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
@@ -687,7 +687,7 @@ void main() {
         verify(() => mockDb.upsertEpisodes(apiEpisodes)).called(1);
       });
 
-      test('должен обновлять эпизоды даже если сезон ещё не загружен',
+      test('should update эпизоды даже если сезон ещё не загружен',
           () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
@@ -711,7 +711,7 @@ void main() {
         expect(state.loadingSeasons[1], false);
       });
 
-      test('должен обрабатывать ошибку API при обновлении', () async {
+      test('should handle ошибку API при обновлении', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))

@@ -36,14 +36,14 @@ void main() {
     }
 
     group('режим создания', () {
-      testWidgets('должен показывать кнопку Add в AppBar',
+      testWidgets('should show кнопку Add в AppBar',
           (WidgetTester tester) async {
         await pumpForm(tester);
 
         expect(find.widgetWithText(TextButton, 'Add'), findsOneWidget);
       });
 
-      testWidgets('должен показывать пустые поля',
+      testWidgets('should show пустые поля',
           (WidgetTester tester) async {
         await pumpForm(tester);
 
@@ -53,7 +53,7 @@ void main() {
         expect(titleField.controller?.text, '');
       });
 
-      testWidgets('должен показывать чипы типов медиа',
+      testWidgets('should show чипы типов медиа',
           (WidgetTester tester) async {
         await pumpForm(tester);
 
@@ -211,7 +211,7 @@ void main() {
         expect(find.text('At least 2 characters'), findsNothing);
       });
 
-      testWidgets('должен показывать MarkdownToolbar для note поля',
+      testWidgets('should show MarkdownToolbar для note поля',
           (WidgetTester tester) async {
         await pumpForm(tester);
 
@@ -232,7 +232,7 @@ void main() {
         createdAt: DateTime(2024, 6, 15),
       );
 
-      testWidgets('должен показывать кнопку Save',
+      testWidgets('should show кнопку Save',
           (WidgetTester tester) async {
         await pumpForm(tester, existing: existing);
 

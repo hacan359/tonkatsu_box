@@ -6,7 +6,7 @@ import 'package:xerabora/shared/models/tv_show.dart';
 void main() {
   group('TvShow', () {
     group('fromJson', () {
-      test('должен создать из полного JSON', () {
+      test('should create из полного JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -46,7 +46,7 @@ void main() {
         expect(show.cachedAt, isNotNull);
       });
 
-      test('должен создать из минимального JSON (только id и name)', () {
+      test('should create из минимального JSON (только id и name)', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -70,7 +70,7 @@ void main() {
         expect(show.cachedAt, isNotNull);
       });
 
-      test('должен использовать title если name отсутствует', () {
+      test('should use title если name отсутствует', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'title': 'Breaking Bad via title',
@@ -93,7 +93,7 @@ void main() {
         expect(show.title, 'Name Value');
       });
 
-      test('должен использовать original_title если original_name отсутствует',
+      test('should use original_title если original_name отсутствует',
           () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
@@ -119,7 +119,7 @@ void main() {
         expect(show.originalTitle, 'Original Name');
       });
 
-      test('должен обработать genre_ids вместо genres', () {
+      test('should handle genre_ids вместо genres', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -146,7 +146,7 @@ void main() {
         expect(show.genres, <String>['Drama']);
       });
 
-      test('должен обработать null poster_path и backdrop_path', () {
+      test('should handle null poster_path и backdrop_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -160,7 +160,7 @@ void main() {
         expect(show.backdropUrl, isNull);
       });
 
-      test('должен обработать отсутствующие poster_path и backdrop_path', () {
+      test('should handle отсутствующие poster_path и backdrop_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -172,7 +172,7 @@ void main() {
         expect(show.backdropUrl, isNull);
       });
 
-      test('должен обработать пустую строку first_air_date', () {
+      test('should handle пустую строку first_air_date', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -184,7 +184,7 @@ void main() {
         expect(show.firstAirYear, isNull);
       });
 
-      test('должен обработать null first_air_date', () {
+      test('should handle null first_air_date', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -197,7 +197,7 @@ void main() {
       });
 
       test(
-          'должен обработать короткую строку first_air_date (менее 4 символов)',
+          'should handle короткую строку first_air_date (менее 4 символов)',
           () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
@@ -210,7 +210,7 @@ void main() {
         expect(show.firstAirYear, isNull);
       });
 
-      test('должен обработать vote_average как int', () {
+      test('should handle vote_average как int', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -222,7 +222,7 @@ void main() {
         expect(show.rating, 9.0);
       });
 
-      test('должен обработать null vote_average', () {
+      test('should handle null vote_average', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -234,7 +234,7 @@ void main() {
         expect(show.rating, isNull);
       });
 
-      test('должен обработать null number_of_seasons и number_of_episodes',
+      test('should handle null number_of_seasons и number_of_episodes',
           () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
@@ -249,7 +249,7 @@ void main() {
         expect(show.totalEpisodes, isNull);
       });
 
-      test('должен обработать null status', () {
+      test('should handle null status', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -261,7 +261,7 @@ void main() {
         expect(show.status, isNull);
       });
 
-      test('должен обработать пустой массив genres', () {
+      test('should handle пустой массив genres', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1396,
           'name': 'Breaking Bad',
@@ -275,7 +275,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создать из полной записи БД', () {
+      test('should create из полной записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_id': 1396,
           'title': 'Breaking Bad',
@@ -312,7 +312,7 @@ void main() {
         expect(show.cachedAt, 1700000000);
       });
 
-      test('должен обработать null genres', () {
+      test('should handle null genres', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_id': 1396,
           'title': 'Breaking Bad',
@@ -348,7 +348,7 @@ void main() {
         expect(show.cachedAt, isNull);
       });
 
-      test('должен обработать пустую строку genres', () {
+      test('should handle пустую строку genres', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_id': 1396,
           'title': 'Breaking Bad',
@@ -409,7 +409,7 @@ void main() {
         expect(db['cached_at'], 1700000000);
       });
 
-      test('должен обработать null значения', () {
+      test('should handle null значения', () {
         const TvShow show = TvShow(
           tmdbId: 1396,
           title: 'Breaking Bad',
@@ -435,7 +435,7 @@ void main() {
     });
 
     group('toDb/fromDb round-trip', () {
-      test('должен сохранить и восстановить все данные', () {
+      test('should preserve и восстановить все данные', () {
         const TvShow original = TvShow(
           tmdbId: 1396,
           title: 'Breaking Bad',
@@ -472,7 +472,7 @@ void main() {
         expect(restored.cachedAt, original.cachedAt);
       });
 
-      test('должен сохранить и восстановить минимальные данные', () {
+      test('should preserve и восстановить минимальные данные', () {
         const TvShow original = TvShow(
           tmdbId: 1396,
           title: 'Breaking Bad',
@@ -490,7 +490,7 @@ void main() {
     });
 
     group('copyWith', () {
-      test('должен создать копию с изменёнными полями', () {
+      test('should create копию с изменёнными полями', () {
         const TvShow original = TvShow(
           tmdbId: 1396,
           title: 'Breaking Bad',
@@ -509,7 +509,7 @@ void main() {
         expect(copy.totalSeasons, 5);
       });
 
-      test('должен сохранить неизменённые поля', () {
+      test('should preserve неизменённые поля', () {
         const TvShow original = TvShow(
           tmdbId: 1396,
           title: 'Breaking Bad',
@@ -585,7 +585,7 @@ void main() {
     });
 
     group('equality', () {
-      test('сериалы с одинаковым tmdbId должны быть равны', () {
+      test('сериалы с одинаковым tmdbId should be equal', () {
         const TvShow show1 = TvShow(tmdbId: 1396, title: 'Breaking Bad');
         const TvShow show2 = TvShow(tmdbId: 1396, title: 'Another Title');
 
@@ -593,20 +593,20 @@ void main() {
         expect(show1.hashCode, equals(show2.hashCode));
       });
 
-      test('сериалы с разными tmdbId не должны быть равны', () {
+      test('сериалы с разными tmdbId не should be equal', () {
         const TvShow show1 = TvShow(tmdbId: 1396, title: 'Breaking Bad');
         const TvShow show2 = TvShow(tmdbId: 1399, title: 'Breaking Bad');
 
         expect(show1, isNot(equals(show2)));
       });
 
-      test('идентичные объекты должны быть равны', () {
+      test('идентичные объекты should be equal', () {
         const TvShow show = TvShow(tmdbId: 1396, title: 'Breaking Bad');
 
         expect(show, equals(show));
       });
 
-      test('сравнение с другим типом не должно быть равно', () {
+      test('сравнение с другим типом should not быть равно', () {
         const TvShow show = TvShow(tmdbId: 1396, title: 'Breaking Bad');
 
         // ignore: unrelated_type_equality_checks
@@ -615,7 +615,7 @@ void main() {
     });
 
     group('computed properties', () {
-      test('formattedRating должен вернуть рейтинг с одним десятичным знаком',
+      test('formattedRating should return рейтинг с одним десятичным знаком',
           () {
         const TvShow show =
             TvShow(tmdbId: 1, title: 'Test', rating: 8.912);
@@ -623,27 +623,27 @@ void main() {
         expect(show.formattedRating, '8.9');
       });
 
-      test('formattedRating должен вернуть null при отсутствии рейтинга', () {
+      test('formattedRating should return null при отсутствии рейтинга', () {
         const TvShow show = TvShow(tmdbId: 1, title: 'Test');
 
         expect(show.formattedRating, isNull);
       });
 
-      test('formattedRating должен отформатировать целый рейтинг', () {
+      test('formattedRating should format целый рейтинг', () {
         const TvShow show =
             TvShow(tmdbId: 1, title: 'Test', rating: 9.0);
 
         expect(show.formattedRating, '9.0');
       });
 
-      test('formattedRating должен отформатировать нулевой рейтинг', () {
+      test('formattedRating should format нулевой рейтинг', () {
         const TvShow show =
             TvShow(tmdbId: 1, title: 'Test', rating: 0.0);
 
         expect(show.formattedRating, '0.0');
       });
 
-      test('genresString должен объединить жанры через запятую', () {
+      test('genresString should join жанры через запятую', () {
         const TvShow show = TvShow(
           tmdbId: 1,
           title: 'Test',
@@ -653,13 +653,13 @@ void main() {
         expect(show.genresString, 'Drama, Crime, Thriller');
       });
 
-      test('genresString должен вернуть null при отсутствии жанров', () {
+      test('genresString should return null при отсутствии жанров', () {
         const TvShow show = TvShow(tmdbId: 1, title: 'Test');
 
         expect(show.genresString, isNull);
       });
 
-      test('genresString должен обработать один жанр', () {
+      test('genresString should handle один жанр', () {
         const TvShow show = TvShow(
           tmdbId: 1,
           title: 'Test',
@@ -669,7 +669,7 @@ void main() {
         expect(show.genresString, 'Drama');
       });
 
-      test('genresString должен обработать пустой список жанров', () {
+      test('genresString should handle пустой список жанров', () {
         const TvShow show = TvShow(
           tmdbId: 1,
           title: 'Test',
@@ -680,7 +680,7 @@ void main() {
       });
     });
 
-    test('toString должен вернуть читаемое представление', () {
+    test('toString should return читаемое представление', () {
       const TvShow show = TvShow(tmdbId: 1396, title: 'Breaking Bad');
 
       expect(show.toString(), 'TvShow(tmdbId: 1396, title: Breaking Bad)');

@@ -4,7 +4,7 @@ import 'package:xerabora/shared/models/tmdb_review.dart';
 void main() {
   group('TmdbReview', () {
     group('constructor', () {
-      test('должен создать экземпляр со всеми полями', () {
+      test('should create экземпляр со всеми полями', () {
         final DateTime date = DateTime(2024, 3, 15, 10, 30);
         final TmdbReview review = TmdbReview(
           author: 'JohnDoe',
@@ -24,7 +24,7 @@ void main() {
         expect(review.url, 'https://www.themoviedb.org/review/abc123');
       });
 
-      test('должен создать экземпляр только с обязательными полями', () {
+      test('should create экземпляр только с обязательными полями', () {
         final DateTime date = DateTime(2024, 1, 1);
         final TmdbReview review = TmdbReview(
           author: 'Anonymous',
@@ -42,7 +42,7 @@ void main() {
     });
 
     group('fromJson', () {
-      test('должен создать из полного JSON с author_details', () {
+      test('should create из полного JSON с author_details', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'MovieCritic42',
           'content': 'An absolute masterpiece of cinema.',
@@ -65,7 +65,7 @@ void main() {
         expect(review.authorRating, 9.0);
       });
 
-      test('должен обработать отсутствие author_details', () {
+      test('should handle отсутствие author_details', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'SimpleUser',
           'content': 'Nice film.',
@@ -81,7 +81,7 @@ void main() {
         expect(review.url, isNull);
       });
 
-      test('должен обработать avatar_path начинающийся с /http (полный URL)',
+      test('should handle avatar_path начинающийся с /http (полный URL)',
           () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'UserWithGravatar',
@@ -100,7 +100,7 @@ void main() {
             'https://secure.gravatar.com/avatar/abc123.jpg');
       });
 
-      test('должен обработать обычный avatar_path (путь TMDB)', () {
+      test('should handle обычный avatar_path (путь TMDB)', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'TmdbUser',
           'content': 'Decent.',
@@ -117,7 +117,7 @@ void main() {
             'https://image.tmdb.org/t/p/w45/my_avatar.jpg');
       });
 
-      test('должен обработать пустой avatar_path', () {
+      test('should handle пустой avatar_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'NoAvatarUser',
           'content': 'Boring.',
@@ -134,7 +134,7 @@ void main() {
         expect(review.authorRating, 3.0);
       });
 
-      test('должен обработать null avatar_path', () {
+      test('should handle null avatar_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'NullAvatarUser',
           'content': 'Average.',
@@ -151,7 +151,7 @@ void main() {
         expect(review.authorRating, 5.0);
       });
 
-      test('должен обработать null rating в author_details', () {
+      test('should handle null rating в author_details', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'NoRatingUser',
           'content': 'No score given.',
@@ -169,7 +169,7 @@ void main() {
             'https://image.tmdb.org/t/p/w45/some_avatar.jpg');
       });
 
-      test('должен обработать rating как int в author_details', () {
+      test('should handle rating как int в author_details', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'IntRatingUser',
           'content': 'Gave an integer rating.',
@@ -269,7 +269,7 @@ void main() {
             review.createdAt.isAtSameMomentAs(afterTest), isTrue);
       });
 
-      test('должен обработать отсутствие author в JSON', () {
+      test('should handle отсутствие author в JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'content': 'No author key at all.',
           'created_at': '2024-06-01T12:00:00.000Z',
@@ -280,7 +280,7 @@ void main() {
         expect(review.author, 'Anonymous');
       });
 
-      test('должен обработать отсутствие content в JSON', () {
+      test('should handle отсутствие content в JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'AuthorOnly',
           'created_at': '2024-06-01T12:00:00.000Z',
@@ -291,7 +291,7 @@ void main() {
         expect(review.content, '');
       });
 
-      test('должен обработать отсутствие created_at в JSON', () {
+      test('should handle отсутствие created_at в JSON', () {
         final DateTime beforeTest = DateTime.now();
 
         final Map<String, dynamic> json = <String, dynamic>{
@@ -309,7 +309,7 @@ void main() {
             review.createdAt.isAtSameMomentAs(afterTest), isTrue);
       });
 
-      test('должен обработать минимальный JSON (все поля отсутствуют)', () {
+      test('should handle минимальный JSON (все поля отсутствуют)', () {
         final DateTime beforeTest = DateTime.now();
 
         final Map<String, dynamic> json = <String, dynamic>{};
@@ -329,7 +329,7 @@ void main() {
         expect(review.url, isNull);
       });
 
-      test('должен обработать author_details с null значениями', () {
+      test('should handle author_details с null значениями', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'author': 'DetailedNulls',
           'content': 'All details null.',
@@ -348,7 +348,7 @@ void main() {
     });
 
     group('formattedRating', () {
-      test('должен вернуть отформатированный рейтинг для целого числа', () {
+      test('should return отформатированный рейтинг для целого числа', () {
         final TmdbReview review = TmdbReview(
           author: 'User',
           content: 'Text',
@@ -359,7 +359,7 @@ void main() {
         expect(review.formattedRating, '8');
       });
 
-      test('должен вернуть отформатированный рейтинг с округлением', () {
+      test('should return отформатированный рейтинг с округлением', () {
         final TmdbReview review = TmdbReview(
           author: 'User',
           content: 'Text',
@@ -370,7 +370,7 @@ void main() {
         expect(review.formattedRating, '8');
       });
 
-      test('должен вернуть отформатированный рейтинг для 10.0', () {
+      test('should return отформатированный рейтинг для 10.0', () {
         final TmdbReview review = TmdbReview(
           author: 'User',
           content: 'Text',
@@ -381,7 +381,7 @@ void main() {
         expect(review.formattedRating, '10');
       });
 
-      test('должен вернуть отформатированный рейтинг для 0.0', () {
+      test('should return отформатированный рейтинг для 0.0', () {
         final TmdbReview review = TmdbReview(
           author: 'User',
           content: 'Text',
@@ -392,7 +392,7 @@ void main() {
         expect(review.formattedRating, '0');
       });
 
-      test('должен вернуть null если authorRating == null', () {
+      test('should return null если authorRating == null', () {
         final TmdbReview review = TmdbReview(
           author: 'User',
           content: 'Text',
@@ -404,7 +404,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен вернуть строковое представление с именем автора', () {
+      test('should return строковое представление с именем автора', () {
         final TmdbReview review = TmdbReview(
           author: 'CinemaFan99',
           content: 'Some review text.',
@@ -414,7 +414,7 @@ void main() {
         expect(review.toString(), 'TmdbReview(author: CinemaFan99)');
       });
 
-      test('должен вернуть строковое представление для Anonymous', () {
+      test('should return строковое представление для Anonymous', () {
         final TmdbReview review = TmdbReview.fromJson(
           <String, dynamic>{
             'content': 'Anonymous review.',

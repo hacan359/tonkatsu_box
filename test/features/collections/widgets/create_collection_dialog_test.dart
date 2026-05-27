@@ -48,7 +48,7 @@ void main() {
       expect(find.text('Create'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для пустого названия',
+    testWidgets('should show ошибку для пустого названия',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const CreateCollectionDialog(),
@@ -60,7 +60,7 @@ void main() {
       expect(find.text('Please enter a name'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для короткого названия',
+    testWidgets('should show ошибку для короткого названия',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const CreateCollectionDialog(),
@@ -74,7 +74,7 @@ void main() {
           find.text('Name must be at least 2 characters'), findsOneWidget);
     });
 
-    testWidgets('должен закрываться при нажатии Cancel',
+    testWidgets('должен закрываться when pressed Cancel',
         (WidgetTester tester) async {
       String? result;
 
@@ -102,7 +102,7 @@ void main() {
       expect(result, isNull);
     });
 
-    testWidgets('должен возвращать название при успешном создании',
+    testWidgets('should return название при успешном создании',
         (WidgetTester tester) async {
       String? result;
 
@@ -189,7 +189,7 @@ void main() {
       expect(find.text('Rename'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для пустого названия',
+    testWidgets('should show ошибку для пустого названия',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const RenameCollectionDialog(currentName: 'Old'),
@@ -202,7 +202,7 @@ void main() {
       expect(find.text('Please enter a name'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для короткого названия',
+    testWidgets('should show ошибку для короткого названия',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const RenameCollectionDialog(currentName: 'Old Name'),
@@ -216,7 +216,7 @@ void main() {
           find.text('Name must be at least 2 characters'), findsOneWidget);
     });
 
-    testWidgets('должен закрываться при нажатии Cancel',
+    testWidgets('должен закрываться when pressed Cancel',
         (WidgetTester tester) async {
       String? result;
 
@@ -246,7 +246,7 @@ void main() {
     });
 
     testWidgets(
-        'должен возвращать новое название при успешном переименовании',
+        'should return новое название при успешном переименовании',
         (WidgetTester tester) async {
       String? result;
 
@@ -345,7 +345,7 @@ void main() {
       expect(find.text('Delete'), findsOneWidget);
     });
 
-    testWidgets('должен возвращать false при нажатии Cancel',
+    testWidgets('should return false when pressed Cancel',
         (WidgetTester tester) async {
       bool? result;
 
@@ -374,7 +374,7 @@ void main() {
       expect(result, false);
     });
 
-    testWidgets('должен возвращать true при нажатии Delete',
+    testWidgets('should return true when pressed Delete',
         (WidgetTester tester) async {
       bool? result;
 
@@ -403,7 +403,7 @@ void main() {
       expect(result, true);
     });
 
-    testWidgets('должен возвращать false при закрытии без выбора',
+    testWidgets('should return false при закрытии без выбора',
         (WidgetTester tester) async {
       bool? result;
 

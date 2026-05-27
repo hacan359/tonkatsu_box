@@ -75,7 +75,7 @@ void main() {
         expect(state.valueOrNull, <WishlistItem>[item1, item2]);
       });
 
-      test('должен возвращать пустой список если БД пуста', () async {
+      test('should return пустой список если БД пуста', () async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[]);
 
@@ -160,7 +160,7 @@ void main() {
     });
 
     group('update', () {
-      test('должен обновлять текст элемента', () async {
+      test('should update текст элемента', () async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1]);
         when(
@@ -189,7 +189,7 @@ void main() {
     });
 
     group('delete', () {
-      test('должен удалять элемент из state', () async {
+      test('should delete элемент из state', () async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1, item2]);
         when(() => mockRepo.delete(any())).thenAnswer((_) async {});
@@ -208,7 +208,7 @@ void main() {
     });
 
     group('clearResolved', () {
-      test('должен удалить все resolved и вернуть count', () async {
+      test('should delete все resolved и вернуть count', () async {
         when(() => mockRepo.getAll()).thenAnswer(
           (_) async => <WishlistItem>[item1, item2, resolvedItem],
         );
@@ -247,7 +247,7 @@ void main() {
       expect(count, 2);
     });
 
-    test('должен возвращать 0 при пустом списке', () async {
+    test('should return 0 when empty списке', () async {
       when(() => mockRepo.getAll())
           .thenAnswer((_) async => <WishlistItem>[]);
 
@@ -259,7 +259,7 @@ void main() {
       expect(count, 0);
     });
 
-    test('должен возвращать 0 пока данные загружаются', () {
+    test('should return 0 пока данные загружаются', () {
       when(() => mockRepo.getAll()).thenAnswer(
         (_) async => <WishlistItem>[item1],
       );

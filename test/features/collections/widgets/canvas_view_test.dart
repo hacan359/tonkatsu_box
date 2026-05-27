@@ -92,7 +92,7 @@ void main() {
   group('CanvasView', () {
     group('состояние загрузки', () {
       testWidgets(
-        'должен показывать CircularProgressIndicator когда isLoading=true',
+        'should show CircularProgressIndicator когда isLoading=true',
         (WidgetTester tester) async {
           const CanvasState loadingState = CanvasState(
             isLoading: true,
@@ -108,7 +108,7 @@ void main() {
 
     group('состояние ошибки', () {
       testWidgets(
-        'должен показывать иконку ошибки когда error!=null',
+        'should show иконку ошибки когда error!=null',
         (WidgetTester tester) async {
           const CanvasState errorState = CanvasState(
             isLoading: false,
@@ -122,7 +122,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать текст "Failed to load board" когда error!=null',
+        'should show текст "Failed to load board" когда error!=null',
         (WidgetTester tester) async {
           const CanvasState errorState = CanvasState(
             isLoading: false,
@@ -136,7 +136,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать кнопку Retry когда error!=null',
+        'should show кнопку Retry когда error!=null',
         (WidgetTester tester) async {
           const CanvasState errorState = CanvasState(
             isLoading: false,
@@ -151,7 +151,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать InteractiveViewer когда error!=null',
+        'не should show InteractiveViewer когда error!=null',
         (WidgetTester tester) async {
           const CanvasState errorState = CanvasState(
             isLoading: false,
@@ -167,7 +167,7 @@ void main() {
 
     group('пустое состояние', () {
       testWidgets(
-        'должен показывать "Board is empty" когда список items пуст',
+        'should show "Board is empty" когда список items пуст',
         (WidgetTester tester) async {
           const CanvasState emptyState = CanvasState(
             isLoading: false,
@@ -182,7 +182,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать иконку dashboard_outlined когда список items пуст',
+        'should show иконку dashboard_outlined когда список items пуст',
         (WidgetTester tester) async {
           const CanvasState emptyState = CanvasState(
             isLoading: false,
@@ -197,7 +197,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать подсказку "Add items to the collection first" когда пусто',
+        'should show подсказку "Add items to the collection first" когда пусто',
         (WidgetTester tester) async {
           const CanvasState emptyState = CanvasState(
             isLoading: false,
@@ -215,7 +215,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать InteractiveViewer когда список items пуст',
+        'не should show InteractiveViewer когда список items пуст',
         (WidgetTester tester) async {
           const CanvasState emptyState = CanvasState(
             isLoading: false,
@@ -232,7 +232,7 @@ void main() {
 
     group('нормальное состояние с элементами', () {
       testWidgets(
-        'должен показывать InteractiveViewer когда есть элементы',
+        'should show InteractiveViewer когда есть элементы',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -253,7 +253,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать CustomPaint для фоновой сетки когда есть элементы',
+        'should show CustomPaint для фоновой сетки когда есть элементы',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -274,7 +274,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать несколько карточек игр когда есть несколько элементов',
+        'should show несколько карточек игр когда есть несколько элементов',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -306,7 +306,7 @@ void main() {
 
     group('кнопки управления', () {
       testWidgets(
-        'должен показывать FAB "Center view" когда есть элементы',
+        'should show FAB "Center view" когда есть элементы',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -327,7 +327,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать FAB "Reset positions" когда есть элементы',
+        'should show FAB "Reset positions" когда есть элементы',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -348,7 +348,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать три FloatingActionButton когда isEditable=true',
+        'should show три FloatingActionButton когда isEditable=true',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -373,7 +373,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать два FloatingActionButton когда isEditable=false',
+        'should show два FloatingActionButton когда isEditable=false',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -396,7 +396,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать FAB SteamGridDB Images когда isEditable=true',
+        'should show FAB SteamGridDB Images когда isEditable=true',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -419,7 +419,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать FAB VGMaps Browser когда isEditable=true и kVgMapsEnabled',
+        'should show FAB VGMaps Browser когда isEditable=true и kVgMapsEnabled',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -446,7 +446,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать FAB VGMaps когда isEditable=false',
+        'не should show FAB VGMaps когда isEditable=false',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -469,7 +469,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать FAB SteamGridDB когда isEditable=false',
+        'не should show FAB SteamGridDB когда isEditable=false',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -492,7 +492,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать FAB кнопки в состоянии загрузки',
+        'не should show FAB кнопки в состоянии загрузки',
         (WidgetTester tester) async {
           const CanvasState loadingState = CanvasState(
             isLoading: true,
@@ -505,7 +505,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать FAB кнопки в состоянии ошибки',
+        'не should show FAB кнопки в состоянии ошибки',
         (WidgetTester tester) async {
           const CanvasState errorState = CanvasState(
             isLoading: false,
@@ -521,7 +521,7 @@ void main() {
 
     group('_buildCanvasItem — типы элементов', () {
       testWidgets(
-        'должен создавать CanvasGameCard для элемента типа game',
+        'should create CanvasGameCard для элемента типа game',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -543,7 +543,7 @@ void main() {
       );
 
       testWidgets(
-        'должен создавать SizedBox.shrink для элемента типа text',
+        'should create SizedBox.shrink для элемента типа text',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -612,7 +612,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать смешанные типы — все типы отображаются',
+        'should show смешанные типы — все типы отображаются',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -743,7 +743,7 @@ void main() {
 
     group('приоритет состояний', () {
       testWidgets(
-        'должен показывать загрузку а не ошибку когда isLoading=true и error!=null',
+        'should show загрузку а не ошибку когда isLoading=true и error!=null',
         (WidgetTester tester) async {
           // isLoading is checked before error in build().
           const CanvasState state = CanvasState(
@@ -759,7 +759,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать ошибку а не пустой канвас когда error!=null и items пуст',
+        'should show ошибку а не пустой канвас когда error!=null и items пуст',
         (WidgetTester tester) async {
           // error is checked before items.isEmpty.
           const CanvasState state = CanvasState(
@@ -778,7 +778,7 @@ void main() {
 
     group('LayoutBuilder и размеры', () {
       testWidgets(
-        'должен использовать LayoutBuilder для определения размеров viewport',
+        'should use LayoutBuilder для определения размеров viewport',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -801,7 +801,7 @@ void main() {
 
     group('resize handle', () {
       testWidgets(
-        'должен показывать resize handle когда isEditable=true',
+        'should show resize handle когда isEditable=true',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -824,7 +824,7 @@ void main() {
       );
 
       testWidgets(
-        'не должен показывать resize handle когда isEditable=false',
+        'не should show resize handle когда isEditable=false',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -876,7 +876,7 @@ void main() {
 
     group('GestureDetector на элементах', () {
       testWidgets(
-        'должен содержать GestureDetector для перетаскивания элементов',
+        'should contain GestureDetector для перетаскивания элементов',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -897,7 +897,7 @@ void main() {
       );
 
       testWidgets(
-        'должен содержать MouseRegion для курсора grab',
+        'should contain MouseRegion для курсора grab',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,

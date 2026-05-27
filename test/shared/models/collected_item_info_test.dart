@@ -4,7 +4,7 @@ import 'package:xerabora/shared/models/collected_item_info.dart';
 void main() {
   group('CollectedItemInfo', () {
     group('constructor', () {
-      test('должен создать с обязательными полями', () {
+      test('should create с обязательными полями', () {
         const CollectedItemInfo info = CollectedItemInfo(
           recordId: 1,
           collectionId: 10,
@@ -16,7 +16,7 @@ void main() {
         expect(info.collectionName, 'RPG Games');
       });
 
-      test('должен создать с null collectionId и collectionName', () {
+      test('should create с null collectionId и collectionName', () {
         const CollectedItemInfo info = CollectedItemInfo(
           recordId: 42,
           collectionId: null,
@@ -30,7 +30,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен вернуть читаемое представление со всеми полями', () {
+      test('should return читаемое представление со всеми полями', () {
         const CollectedItemInfo info = CollectedItemInfo(
           recordId: 1,
           collectionId: 10,

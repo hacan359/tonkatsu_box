@@ -4,11 +4,11 @@ import 'package:xerabora/shared/models/collection_sort_mode.dart';
 void main() {
   group('CollectionSortMode', () {
     group('значения enum', () {
-      test('должен содержать 7 значений', () {
+      test('should contain 7 значений', () {
         expect(CollectionSortMode.values.length, 7);
       });
 
-      test('должен содержать все режимы сортировки', () {
+      test('should contain все режимы сортировки', () {
         expect(CollectionSortMode.values, contains(CollectionSortMode.manual));
         expect(
           CollectionSortMode.values,
@@ -132,55 +132,55 @@ void main() {
     });
 
     group('fromString', () {
-      test('должен вернуть manual для "manual"', () {
+      test('should return manual для "manual"', () {
         final CollectionSortMode result =
             CollectionSortMode.fromString('manual');
 
         expect(result, CollectionSortMode.manual);
       });
 
-      test('должен вернуть addedDate для "added_date"', () {
+      test('should return addedDate для "added_date"', () {
         final CollectionSortMode result =
             CollectionSortMode.fromString('added_date');
 
         expect(result, CollectionSortMode.addedDate);
       });
 
-      test('должен вернуть status для "status"', () {
+      test('should return status для "status"', () {
         final CollectionSortMode result =
             CollectionSortMode.fromString('status');
 
         expect(result, CollectionSortMode.status);
       });
 
-      test('должен вернуть name для "name"', () {
+      test('should return name для "name"', () {
         final CollectionSortMode result = CollectionSortMode.fromString('name');
 
         expect(result, CollectionSortMode.name);
       });
 
-      test('должен вернуть rating для "rating"', () {
+      test('should return rating для "rating"', () {
         final CollectionSortMode result =
             CollectionSortMode.fromString('rating');
 
         expect(result, CollectionSortMode.rating);
       });
 
-      test('должен вернуть externalRating для "external_rating"', () {
+      test('should return externalRating для "external_rating"', () {
         final CollectionSortMode result =
             CollectionSortMode.fromString('external_rating');
 
         expect(result, CollectionSortMode.externalRating);
       });
 
-      test('должен вернуть addedDate для неизвестного значения', () {
+      test('should return addedDate для неизвестного значения', () {
         final CollectionSortMode result =
             CollectionSortMode.fromString('unknown_mode');
 
         expect(result, CollectionSortMode.addedDate);
       });
 
-      test('должен вернуть addedDate для пустой строки', () {
+      test('should return addedDate для пустой строки', () {
         final CollectionSortMode result = CollectionSortMode.fromString('');
 
         expect(result, CollectionSortMode.addedDate);
@@ -193,7 +193,7 @@ void main() {
         expect(result, CollectionSortMode.addedDate);
       });
 
-      test('должен вернуть addedDate для строки с пробелами', () {
+      test('should return addedDate для строки с пробелами', () {
         final CollectionSortMode result =
             CollectionSortMode.fromString(' manual ');
 

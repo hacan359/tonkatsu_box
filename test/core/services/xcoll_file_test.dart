@@ -5,7 +5,7 @@ import 'package:xerabora/core/services/xcoll_file.dart';
 
 void main() {
   group('ExportFormat', () {
-    test('fromString должен вернуть light по умолчанию', () {
+    test('fromString should return light по умолчанию', () {
       final ExportFormat format = ExportFormat.fromString('unknown');
 
       expect(format, equals(ExportFormat.light));
@@ -25,7 +25,7 @@ void main() {
   });
 
   group('ExportCanvas', () {
-    test('должен создать ExportCanvas из валидного JSON', () {
+    test('should create ExportCanvas из валидного JSON', () {
       final Map<String, dynamic> json = <String, dynamic>{
         'viewport': <String, dynamic>{'x': 0, 'y': 0, 'zoom': 1.0},
         'items': <Map<String, dynamic>>[
@@ -43,7 +43,7 @@ void main() {
       expect(canvas.connections.length, equals(1));
     });
 
-    test('должен создать ExportCanvas с пустыми значениями по умолчанию', () {
+    test('should create ExportCanvas с пустыми значениями по умолчанию', () {
       final Map<String, dynamic> json = <String, dynamic>{};
 
       final ExportCanvas canvas = ExportCanvas.fromJson(json);
@@ -53,7 +53,7 @@ void main() {
       expect(canvas.connections, isEmpty);
     });
 
-    test('toJson должен сериализовать ExportCanvas', () {
+    test('toJson should serialize ExportCanvas', () {
       const ExportCanvas canvas = ExportCanvas(
         viewport: <String, dynamic>{'x': 10, 'y': 20},
         items: <Map<String, dynamic>>[
@@ -69,7 +69,7 @@ void main() {
       expect(json['connections'] as List<dynamic>, isEmpty);
     });
 
-    test('toJson должен исключить viewport если он null', () {
+    test('toJson should exclude viewport если он null', () {
       const ExportCanvas canvas = ExportCanvas();
 
       final Map<String, dynamic> json = canvas.toJson();
@@ -84,7 +84,7 @@ void main() {
     final DateTime testDate = DateTime.utc(2024, 1, 15, 12, 0, 0);
 
     group('fromJson', () {
-      test('должен создать XcollFile из полного v2 JSON', () {
+      test('should create XcollFile из полного v2 JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
           'format': 'light',
@@ -109,7 +109,7 @@ void main() {
         expect(xcoll.items.length, equals(2));
       });
 
-      test('должен создать XcollFile из full формата с canvas и images', () {
+      test('should create XcollFile из full формата с canvas и images', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
           'format': 'full',
@@ -136,7 +136,7 @@ void main() {
         expect(xcoll.images['game_covers/123'], equals('base64data'));
       });
 
-      test('должен использовать значения по умолчанию для v2', () {
+      test('should use значения по умолчанию для v2', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
         };
@@ -204,7 +204,7 @@ void main() {
         );
       });
 
-      test('должен использовать DateTime.now при невалидной дате', () {
+      test('should use DateTime.now при невалидной дате', () {
         final DateTime before = DateTime.now();
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
@@ -225,7 +225,7 @@ void main() {
         );
       });
 
-      test('должен использовать DateTime.now при отсутствии даты', () {
+      test('should use DateTime.now при отсутствии даты', () {
         final DateTime before = DateTime.now();
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
@@ -247,7 +247,7 @@ void main() {
     });
 
     group('fromJsonString', () {
-      test('должен парсить валидную JSON строку v2', () {
+      test('should parse валидную JSON строку v2', () {
         const String jsonString = '''
 {
   "version": 2,
@@ -291,7 +291,7 @@ void main() {
     });
 
     group('toJson', () {
-      test('должен сериализовать XcollFile полностью (light)', () {
+      test('should serialize XcollFile полностью (light)', () {
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.light,
@@ -317,7 +317,7 @@ void main() {
         expect(json.containsKey('images'), isFalse);
       });
 
-      test('должен сериализовать XcollFile полностью (full)', () {
+      test('should serialize XcollFile полностью (full)', () {
         const ExportCanvas canvas = ExportCanvas(
           viewport: <String, dynamic>{'x': 0, 'y': 0},
           items: <Map<String, dynamic>>[],
@@ -344,7 +344,7 @@ void main() {
         expect(json.containsKey('images'), isTrue);
       });
 
-      test('должен исключить description если он null', () {
+      test('should exclude description если он null', () {
         final XcollFile xcoll = XcollFile(
           version: 2,
           name: 'No Desc',
@@ -357,7 +357,7 @@ void main() {
         expect(json.containsKey('description'), isFalse);
       });
 
-      test('должен исключить images если пустой', () {
+      test('should exclude images если пустой', () {
         final XcollFile xcoll = XcollFile(
           version: 2,
           name: 'No Images',
@@ -372,7 +372,7 @@ void main() {
     });
 
     group('toJsonString', () {
-      test('должен возвращать отформатированный JSON', () {
+      test('should return отформатированный JSON', () {
         final XcollFile xcoll = XcollFile(
           version: 2,
           name: 'Formatted',
@@ -390,7 +390,7 @@ void main() {
     });
 
     group('isFull', () {
-      test('должен возвращать true для full формата', () {
+      test('should return true для full формата', () {
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.full,
@@ -402,7 +402,7 @@ void main() {
         expect(xcoll.isFull, isTrue);
       });
 
-      test('должен возвращать false для light формата', () {
+      test('should return false для light формата', () {
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.light,
@@ -416,7 +416,7 @@ void main() {
     });
 
     group('includesUserData', () {
-      test('должен парсить user_data = true из JSON', () {
+      test('should parse user_data = true из JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
           'format': 'light',
@@ -447,7 +447,7 @@ void main() {
         expect(xcoll.includesUserData, isFalse);
       });
 
-      test('должен сериализовать user_data в JSON только когда true', () {
+      test('should serialize user_data в JSON только когда true', () {
         final XcollFile withUserData = XcollFile(
           version: 2,
           name: 'Test',
@@ -526,7 +526,7 @@ void main() {
     });
 
     group('media', () {
-      test('должен парсить media из full формата JSON', () {
+      test('should parse media из full формата JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
           'format': 'full',
@@ -555,7 +555,7 @@ void main() {
         expect((xcoll.media['tv_shows'] as List<dynamic>).length, equals(1));
       });
 
-      test('должен использовать пустой media по умолчанию', () {
+      test('should use пустой media по умолчанию', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 2,
           'name': 'No Media',
@@ -589,7 +589,7 @@ void main() {
         expect((media['games'] as List<dynamic>).length, equals(1));
       });
 
-      test('toJson должен исключить media если пуст', () {
+      test('toJson should exclude media если пуст', () {
         final XcollFile xcoll = XcollFile(
           version: 2,
           name: 'No Media',
@@ -651,7 +651,7 @@ void main() {
   });
 
   group('xcollFormatVersion', () {
-    test('должен быть равен 2', () {
+    test('should be equal 2', () {
       expect(xcollFormatVersion, equals(2));
     });
   });

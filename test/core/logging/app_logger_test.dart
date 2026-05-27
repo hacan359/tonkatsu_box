@@ -6,7 +6,7 @@ import 'package:xerabora/core/logging/app_logger.dart';
 void main() {
   group('AppLogger', () {
     group('init', () {
-      test('должен установить уровень логирования ALL', () {
+      test('should set уровень логирования ALL', () {
         AppLogger.init();
 
         expect(Logger.root.level, Level.ALL);
@@ -33,7 +33,7 @@ void main() {
         FlutterError.presentError = originalPresentError!;
       });
 
-      test('должен установить FlutterError.onError', () {
+      test('should set FlutterError.onError', () {
         AppLogger.setupErrorHandlers();
 
         expect(FlutterError.onError, isNotNull);

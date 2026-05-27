@@ -25,7 +25,7 @@ void main() {
   });
 
   group('TwitchAuthResult', () {
-    test('должен создать из JSON', () {
+    test('should create из JSON', () {
       final Map<String, dynamic> json = <String, dynamic>{
         'access_token': testAccessToken,
         'expires_in': 5000000,
@@ -54,14 +54,14 @@ void main() {
   });
 
   group('IgdbApiException', () {
-    test('должен создать с сообщением', () {
+    test('should create с сообщением', () {
       const IgdbApiException exception = IgdbApiException('Test error');
 
       expect(exception.message, equals('Test error'));
       expect(exception.statusCode, isNull);
     });
 
-    test('должен создать с сообщением и кодом', () {
+    test('should create с сообщением и кодом', () {
       const IgdbApiException exception = IgdbApiException(
         'Test error',
         statusCode: 401,
@@ -71,7 +71,7 @@ void main() {
       expect(exception.statusCode, equals(401));
     });
 
-    test('toString должен вернуть строковое представление', () {
+    test('toString should return строковое представление', () {
       const IgdbApiException exception = IgdbApiException(
         'Test error',
         statusCode: 401,
@@ -86,7 +86,7 @@ void main() {
 
   group('IgdbApi', () {
     group('setCredentials', () {
-      test('должен установить credentials', () {
+      test('should set credentials', () {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -114,7 +114,7 @@ void main() {
     });
 
     group('getAccessToken', () {
-      test('должен вернуть токен при успешном ответе', () async {
+      test('should return токен при успешном ответе', () async {
         final Map<String, dynamic> responseData = <String, dynamic>{
           'access_token': testAccessToken,
           'expires_in': 5000000,
@@ -185,7 +185,7 @@ void main() {
         );
       });
 
-      test('должен выбросить исключение при ошибке соединения', () async {
+      test('должен выбросить исключение on error соединения', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -228,7 +228,7 @@ void main() {
     });
 
     group('validateCredentials', () {
-      test('должен вернуть true при валидных credentials', () async {
+      test('should return true при валидных credentials', () async {
         final Map<String, dynamic> responseData = <String, dynamic>{
           'access_token': testAccessToken,
           'expires_in': 5000000,
@@ -252,7 +252,7 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('должен вернуть false при невалидных credentials', () async {
+      test('should return false при невалидных credentials', () async {
         when(() => mockDio.post<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -285,7 +285,7 @@ void main() {
         );
       });
 
-      test('должен вернуть список платформ', () async {
+      test('should return список платформ', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -314,7 +314,7 @@ void main() {
         expect(result[1].id, equals(2));
       });
 
-      test('должен обработать пустой ответ', () async {
+      test('should handle пустой ответ', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -415,7 +415,7 @@ void main() {
     });
 
     group('fetchPlatformsByIds', () {
-      test('должен вернуть пустой список для пустых ids', () async {
+      test('should return пустой список для пустых ids', () async {
         final List<Platform> result = await sut.fetchPlatformsByIds(<int>[]);
 
         expect(result, isEmpty);
@@ -437,7 +437,7 @@ void main() {
         );
       });
 
-      test('должен вернуть платформы по ID', () async {
+      test('should return платформы по ID', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -477,7 +477,7 @@ void main() {
         expect(result[1].abbreviation, equals('PS4'));
       });
 
-      test('должен выбросить исключение при ошибке сервера', () async {
+      test('должен выбросить исключение on error сервера', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -568,7 +568,7 @@ void main() {
         );
       });
 
-      test('должен вернуть список топ игр по платформе', () async {
+      test('should return список топ игр по платформе', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -644,7 +644,7 @@ void main() {
         expect(capturedBody, contains('limit 25'));
       });
 
-      test('должен обработать пустой ответ', () async {
+      test('should handle пустой ответ', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -667,7 +667,7 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('должен выбросить исключение при ошибке API', () async {
+      test('должен выбросить исключение on error API', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -689,7 +689,7 @@ void main() {
         );
       });
 
-      test('должен обработать DioException 401', () async {
+      test('should handle DioException 401', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -718,7 +718,7 @@ void main() {
         );
       });
 
-      test('должен обработать DioException 429', () async {
+      test('should handle DioException 429', () async {
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,

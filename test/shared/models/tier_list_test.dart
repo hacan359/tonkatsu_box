@@ -6,7 +6,7 @@ import '../../helpers/test_helpers.dart';
 void main() {
   group('TierList', () {
     group('fromDb', () {
-      test('должен создавать из записи БД', () {
+      test('should create из записи БД', () {
         final TierList tierList = TierList.fromDb(<String, dynamic>{
           'id': 1,
           'name': 'My Tier List',
@@ -20,7 +20,7 @@ void main() {
         expect(tierList.createdAt.year, 2024);
       });
 
-      test('должен обрабатывать null collection_id', () {
+      test('should handle null collection_id', () {
         final TierList tierList = TierList.fromDb(<String, dynamic>{
           'id': 2,
           'name': 'Global List',
@@ -34,7 +34,7 @@ void main() {
     });
 
     group('toDb', () {
-      test('должен сериализовать в Map', () {
+      test('should serialize в Map', () {
         final TierList tierList = createTestTierList(
           id: 5,
           name: 'RPG Tier',
@@ -48,7 +48,7 @@ void main() {
         expect(db['created_at'], isA<int>());
       });
 
-      test('должен сериализовать null collection_id', () {
+      test('should serialize null collection_id', () {
         final TierList tierList = createTestTierList(collectionId: null);
         final Map<String, dynamic> db = tierList.toDb();
         expect(db['collection_id'], isNull);
@@ -56,12 +56,12 @@ void main() {
     });
 
     group('isGlobal', () {
-      test('должен возвращать true для null collectionId', () {
+      test('should return true для null collectionId', () {
         final TierList tierList = createTestTierList(collectionId: null);
         expect(tierList.isGlobal, isTrue);
       });
 
-      test('должен возвращать false для non-null collectionId', () {
+      test('should return false для non-null collectionId', () {
         final TierList tierList = createTestTierList(collectionId: 1);
         expect(tierList.isGlobal, isFalse);
       });
@@ -89,7 +89,7 @@ void main() {
         expect(a, equals(b));
       });
 
-      test('неравенство при разных id', () {
+      test('неравенство при different ids', () {
         final TierList a = createTestTierList(id: 1);
         final TierList b = createTestTierList(id: 2);
         expect(a, isNot(equals(b)));

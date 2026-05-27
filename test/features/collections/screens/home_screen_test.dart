@@ -117,7 +117,7 @@ void main() {
       );
     }
 
-    testWidgets('должен показывать shimmer при загрузке',
+    testWidgets('should show shimmer while loading',
         (WidgetTester tester) async {
       // Completer never completes: simulate indefinite loading.
       final Completer<List<Collection>> completer =
@@ -150,7 +150,7 @@ void main() {
       expect(find.byType(ShimmerListTile), findsWidgets);
     });
 
-    testWidgets('должен показывать пустое состояние когда нет коллекций',
+    testWidgets('should show пустое состояние когда нет коллекций',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
@@ -159,7 +159,7 @@ void main() {
       expect(find.text('No Collections Yet'), findsOneWidget);
     });
 
-    testWidgets('должен показывать коллекцию как CollectionCard',
+    testWidgets('should show коллекцию как CollectionCard',
         (WidgetTester tester) async {
       final List<Collection> collections = <Collection>[
         Collection(
@@ -180,7 +180,7 @@ void main() {
       expect(find.byType(CollectionCard), findsOneWidget);
     });
 
-    testWidgets('должен показывать все коллекции в едином гриде',
+    testWidgets('should show все коллекции в едином гриде',
         (WidgetTester tester) async {
       final List<Collection> collections = <Collection>[
         Collection(
@@ -207,7 +207,7 @@ void main() {
       expect(find.text('Imported Collection'), findsOneWidget);
     });
 
-    testWidgets('должен показывать все 5 коллекций как CollectionCard',
+    testWidgets('should show все 5 коллекций как CollectionCard',
         (WidgetTester tester) async {
       final List<Collection> collections = List<Collection>.generate(
         5,
@@ -227,7 +227,7 @@ void main() {
       expect(find.byType(CollectionCard), findsNWidgets(5));
     });
 
-    testWidgets('должен показывать GridView по умолчанию',
+    testWidgets('should show GridView по умолчанию',
         (WidgetTester tester) async {
       final List<Collection> collections = <Collection>[
         Collection(
@@ -247,7 +247,7 @@ void main() {
     });
 
     group('режим отображения grid/list', () {
-      testWidgets('должен показывать GridView в grid режиме',
+      testWidgets('should show GridView в grid режиме',
           (WidgetTester tester) async {
         final List<Collection> collections = <Collection>[
           Collection(
@@ -269,7 +269,7 @@ void main() {
         expect(find.byType(CollectionCard), findsOneWidget);
       });
 
-      testWidgets('должен показывать ListView в list режиме',
+      testWidgets('should show ListView в list режиме',
           (WidgetTester tester) async {
         final List<Collection> collections = <Collection>[
           Collection(

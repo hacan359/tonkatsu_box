@@ -7,28 +7,28 @@ import 'package:xerabora/shared/theme/app_colors.dart';
 void main() {
   group('MediaTypeTheme', () {
     group('colorFor', () {
-      test('должен возвращать синий для игр', () {
+      test('should return синий для игр', () {
         expect(
           MediaTypeTheme.colorFor(MediaType.game),
           MediaTypeTheme.gameColor,
         );
       });
 
-      test('должен возвращать красный для фильмов', () {
+      test('should return красный для фильмов', () {
         expect(
           MediaTypeTheme.colorFor(MediaType.movie),
           MediaTypeTheme.movieColor,
         );
       });
 
-      test('должен возвращать зелёный для сериалов', () {
+      test('should return зелёный для сериалов', () {
         expect(
           MediaTypeTheme.colorFor(MediaType.tvShow),
           MediaTypeTheme.tvShowColor,
         );
       });
 
-      test('должен возвращать фиолетовый для анимации', () {
+      test('should return фиолетовый для анимации', () {
         expect(
           MediaTypeTheme.colorFor(MediaType.animation),
           MediaTypeTheme.animationColor,
@@ -47,28 +47,28 @@ void main() {
     });
 
     group('iconFor', () {
-      test('должен возвращать videogame_asset для игр', () {
+      test('should return videogame_asset для игр', () {
         expect(
           MediaTypeTheme.iconFor(MediaType.game),
           Icons.videogame_asset,
         );
       });
 
-      test('должен возвращать movie для фильмов', () {
+      test('should return movie для фильмов', () {
         expect(
           MediaTypeTheme.iconFor(MediaType.movie),
           Icons.movie,
         );
       });
 
-      test('должен возвращать tv для сериалов', () {
+      test('should return tv для сериалов', () {
         expect(
           MediaTypeTheme.iconFor(MediaType.tvShow),
           Icons.tv,
         );
       });
 
-      test('должен возвращать animation для анимации', () {
+      test('should return animation для анимации', () {
         expect(
           MediaTypeTheme.iconFor(MediaType.animation),
           Icons.animation,

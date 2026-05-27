@@ -191,7 +191,7 @@ void main() {
   }
 
   group('CollectionScreen', () {
-    testWidgets('не должен показывать header со статистикой',
+    testWidgets('не should show header со статистикой',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await pumpScreen(tester);
@@ -200,7 +200,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
-    testWidgets('должен показывать элементы коллекции',
+    testWidgets('should show элементы коллекции',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await pumpScreen(tester);
@@ -211,7 +211,7 @@ void main() {
     });
 
     group('grid mode (по умолчанию)', () {
-      testWidgets('grid mode должен показывать MediaPosterCard',
+      testWidgets('grid mode should show MediaPosterCard',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -220,7 +220,7 @@ void main() {
         expect(find.byType(GridView), findsOneWidget);
       });
 
-      testWidgets('table mode не должен содержать MediaPosterCard',
+      testWidgets('table mode не should contain MediaPosterCard',
           (WidgetTester tester) async {
         final SharedPreferences tablePrefs =
             await SharedPreferences.getInstance();
@@ -249,7 +249,7 @@ void main() {
         await pumpScreen(tester);
       }
 
-      testWidgets('Games фильтр должен показывать только игры',
+      testWidgets('Games фильтр should show только игры',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -261,7 +261,7 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('Movies фильтр должен показывать только фильмы',
+      testWidgets('Movies фильтр should show только фильмы',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -273,7 +273,7 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('TV Shows фильтр должен показывать только сериалы',
+      testWidgets('TV Shows фильтр should show только сериалы',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -300,7 +300,7 @@ void main() {
         expect(find.text('Breaking Bad'), findsOneWidget);
       });
 
-      testWidgets('Animation фильтр должен показывать только анимацию',
+      testWidgets('Animation фильтр should show только анимацию',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -316,7 +316,7 @@ void main() {
     });
 
     group('animation items в grid mode', () {
-      testWidgets('animation movie должен использовать moviePoster ImageType',
+      testWidgets('animation movie should use moviePoster ImageType',
           (WidgetTester tester) async {
         final List<CollectionItem> animMovieItems = <CollectionItem>[
           CollectionItem(
@@ -354,7 +354,7 @@ void main() {
             )).called(greaterThan(0));
       });
 
-      testWidgets('animation tvShow должен использовать tvShowPoster ImageType',
+      testWidgets('animation tvShow should use tvShowPoster ImageType',
           (WidgetTester tester) async {
         final List<CollectionItem> animTvItems = <CollectionItem>[
           CollectionItem(
@@ -395,7 +395,7 @@ void main() {
 
     group('animation items в list mode', () {
       testWidgets(
-          'animation movie в list mode должен использовать moviePoster ImageType',
+          'animation movie в list mode should use moviePoster ImageType',
           (WidgetTester tester) async {
         final List<CollectionItem> animMovieItems = <CollectionItem>[
           CollectionItem(
@@ -432,7 +432,7 @@ void main() {
       });
 
       testWidgets(
-          'animation tvShow в list mode должен использовать tvShowPoster ImageType',
+          'animation tvShow в list mode should use tvShowPoster ImageType',
           (WidgetTester tester) async {
         final List<CollectionItem> animTvItems = <CollectionItem>[
           CollectionItem(
@@ -470,7 +470,7 @@ void main() {
     });
 
     group('поиск по имени (через collectionsSearchQueryProvider)', () {
-      testWidgets('должен фильтровать по имени',
+      testWidgets('should filter по имени',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(searchQuery: 'Zelda'));
         await pumpScreen(tester);
@@ -488,7 +488,7 @@ void main() {
         expect(find.text('Zelda'), findsOneWidget);
       });
 
-      testWidgets('пустой поиск должен показывать все элементы',
+      testWidgets('пустой поиск should show все элементы',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(searchQuery: ''));
         await pumpScreen(tester);
@@ -588,7 +588,7 @@ void main() {
     });
 
     group('пустая коллекция', () {
-      testWidgets('должен показывать empty state',
+      testWidgets('should show empty state',
           (WidgetTester tester) async {
         when(() => mockRepo.getItemsWithData(
               1,
@@ -603,7 +603,7 @@ void main() {
     });
 
     group('collection not found', () {
-      testWidgets('должен показывать сообщение об ошибке',
+      testWidgets('should show сообщение об ошибке',
           (WidgetTester tester) async {
         when(() => mockRepo.getById(99)).thenAnswer((_) async => null);
         when(() => mockRepo.getItemsWithData(
@@ -682,7 +682,7 @@ void main() {
         animationCount: 0,
       );
 
-      testWidgets('должен скрывать FilterBar при 0 элементах',
+      testWidgets('should hide FilterBar при 0 элементах',
           (WidgetTester tester) async {
         when(() => mockRepo.getItemsWithData(
               1,

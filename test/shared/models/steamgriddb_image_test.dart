@@ -192,7 +192,7 @@ void main() {
         expect(img1.hashCode, equals(img2.hashCode));
       });
 
-      test('изображения с разными id не равны', () {
+      test('изображения с different ids не равны', () {
         const SteamGridDbImage img1 = SteamGridDbImage(
           id: 1,
           score: 5,

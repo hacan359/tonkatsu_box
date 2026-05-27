@@ -6,7 +6,7 @@ import 'package:xerabora/shared/models/movie.dart';
 void main() {
   group('Movie', () {
     group('fromJson', () {
-      test('должен создать из полного JSON', () {
+      test('should create из полного JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 27205,
           'title': 'Inception',
@@ -43,7 +43,7 @@ void main() {
         expect(movie.externalUrl, 'https://www.themoviedb.org/movie/27205');
       });
 
-      test('должен создать из минимального JSON (только id и title)', () {
+      test('should create из минимального JSON (только id и title)', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 550,
           'title': 'Fight Club',
@@ -65,7 +65,7 @@ void main() {
         expect(movie.externalUrl, 'https://www.themoviedb.org/movie/550');
       });
 
-      test('должен обработать genre_ids вместо genres', () {
+      test('should handle genre_ids вместо genres', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 550,
           'title': 'Fight Club',
@@ -92,7 +92,7 @@ void main() {
         expect(movie.genres, <String>['Drama']);
       });
 
-      test('должен обработать null poster_path и backdrop_path', () {
+      test('should handle null poster_path и backdrop_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 999,
           'title': 'No Poster Movie',
@@ -106,7 +106,7 @@ void main() {
         expect(movie.backdropUrl, isNull);
       });
 
-      test('должен обработать отсутствующие poster_path и backdrop_path', () {
+      test('should handle отсутствующие poster_path и backdrop_path', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 999,
           'title': 'No Poster Movie',
@@ -118,7 +118,7 @@ void main() {
         expect(movie.backdropUrl, isNull);
       });
 
-      test('должен обработать пустую строку release_date', () {
+      test('should handle пустую строку release_date', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 999,
           'title': 'Unknown Date Movie',
@@ -130,7 +130,7 @@ void main() {
         expect(movie.releaseYear, isNull);
       });
 
-      test('должен обработать null release_date', () {
+      test('should handle null release_date', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 999,
           'title': 'Null Date Movie',
@@ -142,7 +142,7 @@ void main() {
         expect(movie.releaseYear, isNull);
       });
 
-      test('должен обработать короткую строку release_date (менее 4 символов)',
+      test('should handle короткую строку release_date (менее 4 символов)',
           () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 999,
@@ -155,7 +155,7 @@ void main() {
         expect(movie.releaseYear, isNull);
       });
 
-      test('должен обработать vote_average как int', () {
+      test('should handle vote_average как int', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 550,
           'title': 'Fight Club',
@@ -167,7 +167,7 @@ void main() {
         expect(movie.rating, 8.0);
       });
 
-      test('должен обработать null vote_average', () {
+      test('should handle null vote_average', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 550,
           'title': 'Fight Club',
@@ -179,7 +179,7 @@ void main() {
         expect(movie.rating, isNull);
       });
 
-      test('должен обработать null overview и original_title', () {
+      test('should handle null overview и original_title', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 550,
           'title': 'Fight Club',
@@ -193,7 +193,7 @@ void main() {
         expect(movie.originalTitle, isNull);
       });
 
-      test('должен обработать null runtime', () {
+      test('should handle null runtime', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 550,
           'title': 'Fight Club',
@@ -205,7 +205,7 @@ void main() {
         expect(movie.runtime, isNull);
       });
 
-      test('должен обработать пустой массив genres', () {
+      test('should handle пустой массив genres', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 550,
           'title': 'Fight Club',
@@ -219,7 +219,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создать из полной записи БД', () {
+      test('should create из полной записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_id': 27205,
           'title': 'Inception',
@@ -252,7 +252,7 @@ void main() {
         expect(movie.externalUrl, 'https://www.themoviedb.org/movie/27205');
       });
 
-      test('должен обработать null genres', () {
+      test('should handle null genres', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_id': 550,
           'title': 'Fight Club',
@@ -284,7 +284,7 @@ void main() {
         expect(movie.externalUrl, isNull);
       });
 
-      test('должен обработать пустую строку genres', () {
+      test('should handle пустую строку genres', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'tmdb_id': 550,
           'title': 'Fight Club',
@@ -339,7 +339,7 @@ void main() {
         expect(db['external_url'], 'https://www.themoviedb.org/movie/27205');
       });
 
-      test('должен обработать null значения', () {
+      test('should handle null значения', () {
         const Movie movie = Movie(
           tmdbId: 550,
           title: 'Fight Club',
@@ -363,7 +363,7 @@ void main() {
     });
 
     group('toDb/fromDb round-trip', () {
-      test('должен сохранить и восстановить все данные', () {
+      test('should preserve и восстановить все данные', () {
         const Movie original = Movie(
           tmdbId: 27205,
           title: 'Inception',
@@ -396,7 +396,7 @@ void main() {
         expect(restored.externalUrl, original.externalUrl);
       });
 
-      test('должен сохранить и восстановить минимальные данные', () {
+      test('should preserve и восстановить минимальные данные', () {
         const Movie original = Movie(
           tmdbId: 550,
           title: 'Fight Club',
@@ -414,7 +414,7 @@ void main() {
     });
 
     group('copyWith', () {
-      test('должен создать копию с изменёнными полями', () {
+      test('should create копию с изменёнными полями', () {
         const Movie original = Movie(
           tmdbId: 27205,
           title: 'Inception',
@@ -433,7 +433,7 @@ void main() {
         expect(copy.runtime, 148);
       });
 
-      test('должен сохранить неизменённые поля', () {
+      test('should preserve неизменённые поля', () {
         const Movie original = Movie(
           tmdbId: 27205,
           title: 'Inception',
@@ -501,7 +501,7 @@ void main() {
     });
 
     group('equality', () {
-      test('фильмы с одинаковым tmdbId должны быть равны', () {
+      test('фильмы с одинаковым tmdbId should be equal', () {
         const Movie movie1 = Movie(tmdbId: 27205, title: 'Inception');
         const Movie movie2 = Movie(tmdbId: 27205, title: 'Another Title');
 
@@ -509,20 +509,20 @@ void main() {
         expect(movie1.hashCode, equals(movie2.hashCode));
       });
 
-      test('фильмы с разными tmdbId не должны быть равны', () {
+      test('фильмы с разными tmdbId не should be equal', () {
         const Movie movie1 = Movie(tmdbId: 27205, title: 'Inception');
         const Movie movie2 = Movie(tmdbId: 550, title: 'Inception');
 
         expect(movie1, isNot(equals(movie2)));
       });
 
-      test('идентичные объекты должны быть равны', () {
+      test('идентичные объекты should be equal', () {
         const Movie movie = Movie(tmdbId: 27205, title: 'Inception');
 
         expect(movie, equals(movie));
       });
 
-      test('сравнение с другим типом не должно быть равно', () {
+      test('сравнение с другим типом should not быть равно', () {
         const Movie movie = Movie(tmdbId: 27205, title: 'Inception');
 
         // ignore: unrelated_type_equality_checks
@@ -531,32 +531,32 @@ void main() {
     });
 
     group('computed properties', () {
-      test('formattedRating должен вернуть рейтинг с одним десятичным знаком',
+      test('formattedRating should return рейтинг с одним десятичным знаком',
           () {
         const Movie movie = Movie(tmdbId: 1, title: 'Test', rating: 8.364);
 
         expect(movie.formattedRating, '8.4');
       });
 
-      test('formattedRating должен вернуть null при отсутствии рейтинга', () {
+      test('formattedRating should return null при отсутствии рейтинга', () {
         const Movie movie = Movie(tmdbId: 1, title: 'Test');
 
         expect(movie.formattedRating, isNull);
       });
 
-      test('formattedRating должен отформатировать целый рейтинг', () {
+      test('formattedRating should format целый рейтинг', () {
         const Movie movie = Movie(tmdbId: 1, title: 'Test', rating: 8.0);
 
         expect(movie.formattedRating, '8.0');
       });
 
-      test('formattedRating должен отформатировать нулевой рейтинг', () {
+      test('formattedRating should format нулевой рейтинг', () {
         const Movie movie = Movie(tmdbId: 1, title: 'Test', rating: 0.0);
 
         expect(movie.formattedRating, '0.0');
       });
 
-      test('genresString должен объединить жанры через запятую', () {
+      test('genresString should join жанры через запятую', () {
         const Movie movie = Movie(
           tmdbId: 1,
           title: 'Test',
@@ -566,13 +566,13 @@ void main() {
         expect(movie.genresString, 'Action, Science Fiction, Adventure');
       });
 
-      test('genresString должен вернуть null при отсутствии жанров', () {
+      test('genresString should return null при отсутствии жанров', () {
         const Movie movie = Movie(tmdbId: 1, title: 'Test');
 
         expect(movie.genresString, isNull);
       });
 
-      test('genresString должен обработать один жанр', () {
+      test('genresString should handle один жанр', () {
         const Movie movie = Movie(
           tmdbId: 1,
           title: 'Test',
@@ -582,7 +582,7 @@ void main() {
         expect(movie.genresString, 'Drama');
       });
 
-      test('genresString должен обработать пустой список жанров', () {
+      test('genresString should handle пустой список жанров', () {
         const Movie movie = Movie(
           tmdbId: 1,
           title: 'Test',
@@ -593,7 +593,7 @@ void main() {
       });
     });
 
-    test('toString должен вернуть читаемое представление', () {
+    test('toString should return читаемое представление', () {
       const Movie movie = Movie(tmdbId: 27205, title: 'Inception');
 
       expect(movie.toString(), 'Movie(tmdbId: 27205, title: Inception)');

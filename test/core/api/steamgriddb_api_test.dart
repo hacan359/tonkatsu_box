@@ -239,7 +239,7 @@ void main() {
         );
       });
 
-      test('выбрасывает исключение при ошибке соединения', () async {
+      test('выбрасывает исключение on error соединения', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               options: any(named: 'options'),
@@ -312,7 +312,7 @@ void main() {
         expect(result[0].author, 'Artist');
       });
 
-      test('возвращает пустой список при пустом data', () async {
+      test('возвращает пустой список when empty data', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               options: any(named: 'options'),

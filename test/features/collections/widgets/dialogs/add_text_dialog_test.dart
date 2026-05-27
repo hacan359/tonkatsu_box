@@ -35,7 +35,7 @@ void main() {
     }
 
     testWidgets(
-      'должен показать заголовок "Add Text" для нового элемента',
+      'should show заголовок "Add Text" для нового элемента',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));
@@ -47,7 +47,7 @@ void main() {
     );
 
     testWidgets(
-      'должен показать заголовок "Edit Text" при редактировании',
+      'should show заголовок "Edit Text" при редактировании',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(
           onResult: (_) {},
@@ -76,7 +76,7 @@ void main() {
     );
 
     testWidgets(
-      'должен вернуть данные при нажатии Add',
+      'should return данные when pressed Add',
       (WidgetTester tester) async {
         Map<String, dynamic>? result;
 
@@ -100,7 +100,7 @@ void main() {
     );
 
     testWidgets(
-      'должен вернуть null при нажатии Cancel',
+      'should return null when pressed Cancel',
       (WidgetTester tester) async {
         Map<String, dynamic>? result = <String, dynamic>{'marker': true};
 
@@ -190,7 +190,7 @@ void main() {
     );
 
     testWidgets(
-      'должен использовать initialFontSize если он валидный',
+      'should use initialFontSize если он валидный',
       (WidgetTester tester) async {
         Map<String, dynamic>? result;
 

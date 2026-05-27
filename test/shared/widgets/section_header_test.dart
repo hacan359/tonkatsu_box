@@ -57,7 +57,7 @@ void main() {
       expect(find.byType(TextButton), findsOneWidget);
     });
 
-    testWidgets('вызывает onAction при нажатии', (
+    testWidgets('вызывает onAction when pressed', (
       WidgetTester tester,
     ) async {
       bool tapped = false;

@@ -39,7 +39,7 @@ void main() {
     );
 
     group('fromDb', () {
-      test('должен создать CollectionItem из полной записи БД', () {
+      test('should create CollectionItem из полной записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'collection_id': 10,
@@ -71,7 +71,7 @@ void main() {
         expect(item.addedAt.day, testAddedAt.day);
       });
 
-      test('должен создать CollectionItem из минимальной записи БД', () {
+      test('should create CollectionItem из минимальной записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 2,
           'collection_id': 10,
@@ -145,7 +145,7 @@ void main() {
         expect(fromDb.platform, isNull);
       });
 
-      test('должен обработать null в необязательных полях', () {
+      test('should handle null в необязательных полях', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 3,
           'collection_id': 10,
@@ -176,7 +176,7 @@ void main() {
     });
 
     group('fromDbWithJoins', () {
-      test('должен создать CollectionItem с объектом Game', () {
+      test('should create CollectionItem с объектом Game', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'collection_id': 10,
@@ -203,7 +203,7 @@ void main() {
         expect(item.tvShow, isNull);
       });
 
-      test('должен создать CollectionItem с объектом Movie', () {
+      test('should create CollectionItem с объектом Movie', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 2,
           'collection_id': 10,
@@ -229,7 +229,7 @@ void main() {
         expect(item.platform, isNull);
       });
 
-      test('должен создать CollectionItem с объектом TvShow', () {
+      test('should create CollectionItem с объектом TvShow', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 3,
           'collection_id': 10,
@@ -256,7 +256,7 @@ void main() {
         expect(item.movie, isNull);
       });
 
-      test('должен создать CollectionItem с объектом Platform', () {
+      test('should create CollectionItem с объектом Platform', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'collection_id': 10,
@@ -336,7 +336,7 @@ void main() {
         expect(db['user_comment'], isNull);
       });
 
-      test('должен использовать status.value для game inProgress', () {
+      test('should use status.value для game inProgress', () {
         final CollectionItem item = CollectionItem(
           id: 3,
           collectionId: 10,
@@ -351,7 +351,7 @@ void main() {
         expect(db['status'], 'in_progress');
       });
 
-      test('должен использовать status.value для movie inProgress', () {
+      test('should use status.value для movie inProgress', () {
         final CollectionItem item = CollectionItem(
           id: 4,
           collectionId: 10,
@@ -540,7 +540,7 @@ void main() {
         expect(json.containsKey('sort_order'), isFalse);
       });
 
-      test('должен обрабатывать null даты при includeUserData = true', () {
+      test('should handle null даты при includeUserData = true', () {
         final CollectionItem item = CollectionItem(
           id: 8,
           collectionId: 10,
@@ -609,7 +609,7 @@ void main() {
     });
 
     group('fromExport', () {
-      test('должен создать CollectionItem из полных экспортных данных', () {
+      test('should create CollectionItem из полных экспортных данных', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'media_type': 'game',
           'external_id': 1942,
@@ -634,7 +634,7 @@ void main() {
         expect(item.currentEpisode, 0);
       });
 
-      test('должен создать CollectionItem из минимальных экспортных данных', () {
+      test('should create CollectionItem из минимальных экспортных данных', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'media_type': 'movie',
           'external_id': 550,
@@ -651,7 +651,7 @@ void main() {
         expect(item.status, ItemStatus.notStarted);
       });
 
-      test('должен использовать дефолтный статус notStarted когда status отсутствует', () {
+      test('should use дефолтный статус notStarted когда status отсутствует', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'media_type': 'game',
           'external_id': 100,
@@ -682,7 +682,7 @@ void main() {
         expect(item.currentEpisode, 0);
       });
 
-      test('должен парсить все значения status для обратной совместимости', () {
+      test('should parse все значения status для обратной совместимости', () {
         for (final ItemStatus status in ItemStatus.values) {
           final Map<String, dynamic> json = <String, dynamic>{
             'media_type': 'game',
@@ -700,7 +700,7 @@ void main() {
         }
       });
 
-      test('должен парсить tvShow с season/episode для обратной совместимости', () {
+      test('should parse tvShow с season/episode для обратной совместимости', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'media_type': 'tv_show',
           'external_id': 1399,
@@ -717,7 +717,7 @@ void main() {
         expect(item.currentEpisode, 5);
       });
 
-      test('должен использовать переданный addedAt', () {
+      test('should use переданный addedAt', () {
         final DateTime customDate = DateTime(2023, 6, 15);
         final Map<String, dynamic> json = <String, dynamic>{
           'media_type': 'movie',
@@ -732,7 +732,7 @@ void main() {
         expect(item.addedAt, customDate);
       });
 
-      test('должен парсить user data поля из экспорта', () {
+      test('should parse user data поля из экспорта', () {
         final int startedAtUnix = DateTime(2024, 2, 1).millisecondsSinceEpoch ~/ 1000;
         final int completedAtUnix = DateTime(2024, 3, 15).millisecondsSinceEpoch ~/ 1000;
         final int lastActivityUnix = DateTime(2024, 3, 15).millisecondsSinceEpoch ~/ 1000;
@@ -779,7 +779,7 @@ void main() {
         );
       });
 
-      test('должен использовать дефолты для отсутствующих user data полей', () {
+      test('should use дефолты для отсутствующих user data полей', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'media_type': 'game',
           'external_id': 100,
@@ -816,7 +816,7 @@ void main() {
     });
 
     group('copyWith', () {
-      test('должен создать копию с изменёнными полями', () {
+      test('should create копию с изменёнными полями', () {
         final CollectionItem original = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -842,7 +842,7 @@ void main() {
         expect(copy.addedAt, testAddedAt);
       });
 
-      test('должен сохранить неизменённые поля', () {
+      test('should preserve неизменённые поля', () {
         final CollectionItem original = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -1039,7 +1039,7 @@ void main() {
     });
 
     group('equality', () {
-      test('должен быть равен другому CollectionItem с тем же id', () {
+      test('should be equal другому CollectionItem с тем же id', () {
         final CollectionItem item1 = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -1061,7 +1061,7 @@ void main() {
         expect(item1.hashCode, equals(item2.hashCode));
       });
 
-      test('не должен быть равен CollectionItem с другим id', () {
+      test('не should be equal CollectionItem с другим id', () {
         final CollectionItem item1 = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -1082,7 +1082,7 @@ void main() {
         expect(item1, isNot(equals(item2)));
       });
 
-      test('должен быть равен самому себе (identical)', () {
+      test('should be equal самому себе (identical)', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -1095,7 +1095,7 @@ void main() {
         expect(item == item, isTrue);
       });
 
-      test('не должен быть равен объекту другого типа', () {
+      test('не should be equal объекту другого типа', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -1110,7 +1110,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен вернуть читаемое строковое представление', () {
+      test('should return читаемое строковое представление', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -1132,7 +1132,7 @@ void main() {
 
     group('геттеры', () {
       group('igdbId', () {
-        test('должен вернуть externalId', () {
+        test('should return externalId', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1148,7 +1148,7 @@ void main() {
       });
 
       group('itemName', () {
-        test('должен вернуть имя игры когда game присутствует', () {
+        test('should return имя игры когда game присутствует', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1162,7 +1162,7 @@ void main() {
           expect(item.itemName, 'The Witcher 3: Wild Hunt');
         });
 
-        test('должен вернуть "Unknown Game" когда game null', () {
+        test('should return "Unknown Game" когда game null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1175,7 +1175,7 @@ void main() {
           expect(item.itemName, 'Unknown Game');
         });
 
-        test('должен вернуть название фильма когда movie присутствует', () {
+        test('should return название фильма когда movie присутствует', () {
           final CollectionItem item = CollectionItem(
             id: 2,
             collectionId: 10,
@@ -1189,7 +1189,7 @@ void main() {
           expect(item.itemName, 'Fight Club');
         });
 
-        test('должен вернуть "Unknown Movie" когда movie null', () {
+        test('should return "Unknown Movie" когда movie null', () {
           final CollectionItem item = CollectionItem(
             id: 2,
             collectionId: 10,
@@ -1202,7 +1202,7 @@ void main() {
           expect(item.itemName, 'Unknown Movie');
         });
 
-        test('должен вернуть название сериала когда tvShow присутствует', () {
+        test('should return название сериала когда tvShow присутствует', () {
           final CollectionItem item = CollectionItem(
             id: 3,
             collectionId: 10,
@@ -1216,7 +1216,7 @@ void main() {
           expect(item.itemName, 'Breaking Bad');
         });
 
-        test('должен вернуть "Unknown TV Show" когда tvShow null', () {
+        test('should return "Unknown TV Show" когда tvShow null', () {
           final CollectionItem item = CollectionItem(
             id: 3,
             collectionId: 10,
@@ -1229,7 +1229,7 @@ void main() {
           expect(item.itemName, 'Unknown TV Show');
         });
 
-        test('должен вернуть название фильма для анимации с источником movie', () {
+        test('should return название фильма для анимации с источником movie', () {
           final CollectionItem item = CollectionItem(
             id: 4,
             collectionId: 10,
@@ -1244,7 +1244,7 @@ void main() {
           expect(item.itemName, 'Fight Club');
         });
 
-        test('должен вернуть название сериала для анимации с источником tvShow', () {
+        test('should return название сериала для анимации с источником tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 5,
             collectionId: 10,
@@ -1259,7 +1259,7 @@ void main() {
           expect(item.itemName, 'Breaking Bad');
         });
 
-        test('должен вернуть "Unknown Animation" когда movie null для анимации movie', () {
+        test('should return "Unknown Animation" когда movie null для анимации movie', () {
           final CollectionItem item = CollectionItem(
             id: 6,
             collectionId: 10,
@@ -1273,7 +1273,7 @@ void main() {
           expect(item.itemName, 'Unknown Animation');
         });
 
-        test('должен вернуть "Unknown Animation" когда tvShow null для анимации tvShow', () {
+        test('should return "Unknown Animation" когда tvShow null для анимации tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 7,
             collectionId: 10,
@@ -1289,7 +1289,7 @@ void main() {
       });
 
       group('platformName', () {
-        test('должен вернуть displayName платформы когда platform присутствует', () {
+        test('should return displayName платформы когда platform присутствует', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1304,7 +1304,7 @@ void main() {
           expect(item.platformName, 'PS4');
         });
 
-        test('должен вернуть "Unknown Platform" когда platform null', () {
+        test('should return "Unknown Platform" когда platform null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1319,7 +1319,7 @@ void main() {
       });
 
       group('coverUrl', () {
-        test('должен вернуть coverUrl игры', () {
+        test('should return coverUrl игры', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1333,7 +1333,7 @@ void main() {
           expect(item.coverUrl, 'https://example.com/witcher3.jpg');
         });
 
-        test('должен вернуть posterUrl фильма', () {
+        test('should return posterUrl фильма', () {
           final CollectionItem item = CollectionItem(
             id: 2,
             collectionId: 10,
@@ -1347,7 +1347,7 @@ void main() {
           expect(item.coverUrl, 'https://example.com/fightclub.jpg');
         });
 
-        test('должен вернуть posterUrl сериала', () {
+        test('should return posterUrl сериала', () {
           final CollectionItem item = CollectionItem(
             id: 3,
             collectionId: 10,
@@ -1361,7 +1361,7 @@ void main() {
           expect(item.coverUrl, 'https://example.com/breakingbad.jpg');
         });
 
-        test('должен вернуть null когда joined объект отсутствует', () {
+        test('should return null когда joined объект отсутствует', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1374,7 +1374,7 @@ void main() {
           expect(item.coverUrl, isNull);
         });
 
-        test('должен вернуть posterUrl фильма для анимации с источником movie', () {
+        test('should return posterUrl фильма для анимации с источником movie', () {
           final CollectionItem item = CollectionItem(
             id: 4,
             collectionId: 10,
@@ -1389,7 +1389,7 @@ void main() {
           expect(item.coverUrl, 'https://example.com/fightclub.jpg');
         });
 
-        test('должен вернуть posterUrl сериала для анимации с источником tvShow', () {
+        test('should return posterUrl сериала для анимации с источником tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 5,
             collectionId: 10,
@@ -1406,7 +1406,7 @@ void main() {
       });
 
       group('thumbnailUrl', () {
-        test('должен вернуть posterThumbUrl фильма для анимации с источником movie', () {
+        test('should return posterThumbUrl фильма для анимации с источником movie', () {
           final CollectionItem item = CollectionItem(
             id: 4,
             collectionId: 10,
@@ -1421,7 +1421,7 @@ void main() {
           expect(item.thumbnailUrl, testMovie.posterThumbUrl);
         });
 
-        test('должен вернуть posterThumbUrl сериала для анимации с источником tvShow', () {
+        test('should return posterThumbUrl сериала для анимации с источником tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 5,
             collectionId: 10,
@@ -1436,7 +1436,7 @@ void main() {
           expect(item.thumbnailUrl, testTvShow.posterThumbUrl);
         });
 
-        test('должен вернуть null когда movie null для анимации movie', () {
+        test('should return null когда movie null для анимации movie', () {
           final CollectionItem item = CollectionItem(
             id: 6,
             collectionId: 10,
@@ -1450,7 +1450,7 @@ void main() {
           expect(item.thumbnailUrl, isNull);
         });
 
-        test('должен вернуть null когда tvShow null для анимации tvShow', () {
+        test('should return null когда tvShow null для анимации tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 7,
             collectionId: 10,
@@ -1466,7 +1466,7 @@ void main() {
       });
 
       group('apiRating', () {
-        test('должен вернуть rating/10 для game', () {
+        test('should return rating/10 для game', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1485,7 +1485,7 @@ void main() {
           expect(item.apiRating, closeTo(8.5, 0.001));
         });
 
-        test('должен вернуть null когда game null', () {
+        test('should return null когда game null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1498,7 +1498,7 @@ void main() {
           expect(item.apiRating, isNull);
         });
 
-        test('должен вернуть null когда game.rating null', () {
+        test('should return null когда game.rating null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1512,7 +1512,7 @@ void main() {
           expect(item.apiRating, isNull);
         });
 
-        test('должен вернуть rating фильма as-is', () {
+        test('should return rating фильма as-is', () {
           final CollectionItem item = CollectionItem(
             id: 2,
             collectionId: 10,
@@ -1531,7 +1531,7 @@ void main() {
           expect(item.apiRating, closeTo(8.4, 0.001));
         });
 
-        test('должен вернуть null когда movie null', () {
+        test('should return null когда movie null', () {
           final CollectionItem item = CollectionItem(
             id: 2,
             collectionId: 10,
@@ -1544,7 +1544,7 @@ void main() {
           expect(item.apiRating, isNull);
         });
 
-        test('должен вернуть rating сериала as-is', () {
+        test('should return rating сериала as-is', () {
           final CollectionItem item = CollectionItem(
             id: 3,
             collectionId: 10,
@@ -1563,7 +1563,7 @@ void main() {
           expect(item.apiRating, closeTo(9.5, 0.001));
         });
 
-        test('должен вернуть null когда tvShow null', () {
+        test('should return null когда tvShow null', () {
           final CollectionItem item = CollectionItem(
             id: 3,
             collectionId: 10,
@@ -1576,7 +1576,7 @@ void main() {
           expect(item.apiRating, isNull);
         });
 
-        test('должен вернуть rating tvShow для анимации с источником tvShow', () {
+        test('should return rating tvShow для анимации с источником tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 4,
             collectionId: 10,
@@ -1596,7 +1596,7 @@ void main() {
           expect(item.apiRating, closeTo(8.0, 0.001));
         });
 
-        test('должен вернуть rating movie для анимации с источником movie', () {
+        test('should return rating movie для анимации с источником movie', () {
           final CollectionItem item = CollectionItem(
             id: 5,
             collectionId: 10,
@@ -1616,7 +1616,7 @@ void main() {
           expect(item.apiRating, closeTo(7.2, 0.001));
         });
 
-        test('должен вернуть 0.0 для game с rating 0', () {
+        test('should return 0.0 для game с rating 0', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1637,7 +1637,7 @@ void main() {
       });
 
       group('itemDescription', () {
-        test('должен вернуть summary для game', () {
+        test('should return summary для game', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1656,7 +1656,7 @@ void main() {
           expect(item.itemDescription, 'An open-world RPG.');
         });
 
-        test('должен вернуть null когда game null', () {
+        test('should return null когда game null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1669,7 +1669,7 @@ void main() {
           expect(item.itemDescription, isNull);
         });
 
-        test('должен вернуть null когда game.summary null', () {
+        test('should return null когда game.summary null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1683,7 +1683,7 @@ void main() {
           expect(item.itemDescription, isNull);
         });
 
-        test('должен вернуть overview для movie', () {
+        test('should return overview для movie', () {
           final CollectionItem item = CollectionItem(
             id: 2,
             collectionId: 10,
@@ -1702,7 +1702,7 @@ void main() {
           expect(item.itemDescription, 'A depressed man meets Tyler Durden.');
         });
 
-        test('должен вернуть null когда movie null', () {
+        test('should return null когда movie null', () {
           final CollectionItem item = CollectionItem(
             id: 2,
             collectionId: 10,
@@ -1715,7 +1715,7 @@ void main() {
           expect(item.itemDescription, isNull);
         });
 
-        test('должен вернуть overview для tvShow', () {
+        test('should return overview для tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 3,
             collectionId: 10,
@@ -1734,7 +1734,7 @@ void main() {
           expect(item.itemDescription, 'A chemistry teacher turns to crime.');
         });
 
-        test('должен вернуть null когда tvShow null', () {
+        test('should return null когда tvShow null', () {
           final CollectionItem item = CollectionItem(
             id: 3,
             collectionId: 10,
@@ -1747,7 +1747,7 @@ void main() {
           expect(item.itemDescription, isNull);
         });
 
-        test('должен вернуть overview tvShow для анимации с источником tvShow', () {
+        test('should return overview tvShow для анимации с источником tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 4,
             collectionId: 10,
@@ -1767,7 +1767,7 @@ void main() {
           expect(item.itemDescription, 'An anime series overview.');
         });
 
-        test('должен вернуть overview movie для анимации с источником movie', () {
+        test('should return overview movie для анимации с источником movie', () {
           final CollectionItem item = CollectionItem(
             id: 5,
             collectionId: 10,
@@ -1787,7 +1787,7 @@ void main() {
           expect(item.itemDescription, 'An anime movie overview.');
         });
 
-        test('должен вернуть null когда movie null для анимации movie', () {
+        test('should return null когда movie null для анимации movie', () {
           final CollectionItem item = CollectionItem(
             id: 6,
             collectionId: 10,
@@ -1801,7 +1801,7 @@ void main() {
           expect(item.itemDescription, isNull);
         });
 
-        test('должен вернуть null когда tvShow null для анимации tvShow', () {
+        test('should return null когда tvShow null для анимации tvShow', () {
           final CollectionItem item = CollectionItem(
             id: 7,
             collectionId: 10,
@@ -1817,7 +1817,7 @@ void main() {
       });
 
       group('hasAuthorComment', () {
-        test('должен вернуть true когда authorComment не пустой', () {
+        test('should return true когда authorComment не пустой', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1831,7 +1831,7 @@ void main() {
           expect(item.hasAuthorComment, isTrue);
         });
 
-        test('должен вернуть false когда authorComment null', () {
+        test('should return false когда authorComment null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1844,7 +1844,7 @@ void main() {
           expect(item.hasAuthorComment, isFalse);
         });
 
-        test('должен вернуть false когда authorComment пустая строка', () {
+        test('should return false когда authorComment пустая строка', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1860,7 +1860,7 @@ void main() {
       });
 
       group('hasUserComment', () {
-        test('должен вернуть true когда userComment не пустой', () {
+        test('should return true когда userComment не пустой', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1874,7 +1874,7 @@ void main() {
           expect(item.hasUserComment, isTrue);
         });
 
-        test('должен вернуть false когда userComment null', () {
+        test('should return false когда userComment null', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1887,7 +1887,7 @@ void main() {
           expect(item.hasUserComment, isFalse);
         });
 
-        test('должен вернуть false когда userComment пустая строка', () {
+        test('should return false когда userComment пустая строка', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1903,7 +1903,7 @@ void main() {
       });
 
       group('isCompleted', () {
-        test('должен вернуть true когда статус completed', () {
+        test('should return true когда статус completed', () {
           final CollectionItem item = CollectionItem(
             id: 1,
             collectionId: 10,
@@ -1916,7 +1916,7 @@ void main() {
           expect(item.isCompleted, isTrue);
         });
 
-        test('должен вернуть false когда статус не completed', () {
+        test('should return false когда статус не completed', () {
           for (final ItemStatus status in ItemStatus.values) {
             if (status == ItemStatus.completed) continue;
 
@@ -1940,7 +1940,7 @@ void main() {
     });
 
     group('isUncategorized', () {
-      test('должен вернуть true когда collectionId null', () {
+      test('should return true когда collectionId null', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: null,
@@ -1954,7 +1954,7 @@ void main() {
         expect(item.collectionId, isNull);
       });
 
-      test('должен вернуть false когда collectionId задан', () {
+      test('should return false когда collectionId задан', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -1968,7 +1968,7 @@ void main() {
         expect(item.collectionId, 10);
       });
 
-      test('fromDb должен создать uncategorized при collection_id null', () {
+      test('fromDb should create uncategorized при collection_id null', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'collection_id': null,
@@ -1989,7 +1989,7 @@ void main() {
         expect(item.collectionId, isNull);
       });
 
-      test('toDb должен сохранить null collection_id', () {
+      test('toDb should preserve null collection_id', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: null,
@@ -2004,7 +2004,7 @@ void main() {
         expect(db['collection_id'], isNull);
       });
 
-      test('copyWith clearCollectionId должен установить null', () {
+      test('copyWith clearCollectionId should set null', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -2076,7 +2076,7 @@ void main() {
         expect(restored.status, original.status);
       });
 
-      test('fromExport без collectionId должен создать uncategorized', () {
+      test('fromExport без collectionId should create uncategorized', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'media_type': 'movie',
           'external_id': 550,
@@ -2090,7 +2090,7 @@ void main() {
     });
 
     group('toDb/fromDb round-trip', () {
-      test('должен сохранить данные game элемента при round-trip', () {
+      test('should preserve данные game элемента при round-trip', () {
         final CollectionItem original = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -2120,7 +2120,7 @@ void main() {
         expect(restored.userComment, original.userComment);
       });
 
-      test('должен сохранить данные movie элемента при round-trip', () {
+      test('should preserve данные movie элемента при round-trip', () {
         final CollectionItem original = CollectionItem(
           id: 2,
           collectionId: 10,
@@ -2139,7 +2139,7 @@ void main() {
         expect(restored.status, original.status);
       });
 
-      test('должен сохранить данные tvShow элемента при round-trip', () {
+      test('should preserve данные tvShow элемента при round-trip', () {
         final CollectionItem original = CollectionItem(
           id: 3,
           collectionId: 10,
@@ -2194,7 +2194,7 @@ void main() {
         expect(item.sortOrder, 0);
       });
 
-      test('должен создаваться с кастомным sortOrder', () {
+      test('should createся с кастомным sortOrder', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,
@@ -2228,7 +2228,7 @@ void main() {
         expect(item.sortOrder, 3);
       });
 
-      test('fromDb должен использовать 0 при отсутствии sort_order', () {
+      test('fromDb should use 0 при отсутствии sort_order', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'collection_id': 10,
@@ -2306,7 +2306,7 @@ void main() {
         expect(item.internalDbFields, contains('current_episode'));
       });
 
-      test('toExport не должен содержать sort_order, status, current_season, current_episode', () {
+      test('toExport не should contain sort_order, status, current_season, current_episode', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,

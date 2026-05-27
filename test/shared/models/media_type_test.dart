@@ -4,35 +4,35 @@ import 'package:xerabora/shared/models/media_type.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('должен содержать 8 значений', () {
+      test('should contain 8 значений', () {
         expect(MediaType.values.length, 8);
       });
 
-      test('должен содержать game', () {
+      test('should contain game', () {
         expect(MediaType.values.contains(MediaType.game), isTrue);
       });
 
-      test('должен содержать movie', () {
+      test('should contain movie', () {
         expect(MediaType.values.contains(MediaType.movie), isTrue);
       });
 
-      test('должен содержать tvShow', () {
+      test('should contain tvShow', () {
         expect(MediaType.values.contains(MediaType.tvShow), isTrue);
       });
 
-      test('должен содержать animation', () {
+      test('should contain animation', () {
         expect(MediaType.values.contains(MediaType.animation), isTrue);
       });
 
-      test('должен содержать visualNovel', () {
+      test('should contain visualNovel', () {
         expect(MediaType.values.contains(MediaType.visualNovel), isTrue);
       });
 
-      test('должен содержать manga', () {
+      test('should contain manga', () {
         expect(MediaType.values.contains(MediaType.manga), isTrue);
       });
 
-      test('должен содержать anime', () {
+      test('should contain anime', () {
         expect(MediaType.values.contains(MediaType.anime), isTrue);
       });
     });
@@ -68,61 +68,61 @@ void main() {
     });
 
     group('fromString', () {
-      test('должен вернуть game для "game"', () {
+      test('should return game для "game"', () {
         final MediaType result = MediaType.fromString('game');
 
         expect(result, MediaType.game);
       });
 
-      test('должен вернуть movie для "movie"', () {
+      test('should return movie для "movie"', () {
         final MediaType result = MediaType.fromString('movie');
 
         expect(result, MediaType.movie);
       });
 
-      test('должен вернуть tvShow для "tv_show"', () {
+      test('should return tvShow для "tv_show"', () {
         final MediaType result = MediaType.fromString('tv_show');
 
         expect(result, MediaType.tvShow);
       });
 
-      test('должен вернуть game для неизвестного значения', () {
+      test('should return game для неизвестного значения', () {
         final MediaType result = MediaType.fromString('unknown');
 
         expect(result, MediaType.game);
       });
 
-      test('должен вернуть game для пустой строки', () {
+      test('should return game для пустой строки', () {
         final MediaType result = MediaType.fromString('');
 
         expect(result, MediaType.game);
       });
 
-      test('должен вернуть game для некорректного регистра', () {
+      test('should return game для некорректного регистра', () {
         final MediaType result = MediaType.fromString('Game');
 
         expect(result, MediaType.game);
       });
 
-      test('должен вернуть animation для "animation"', () {
+      test('should return animation для "animation"', () {
         final MediaType result = MediaType.fromString('animation');
 
         expect(result, MediaType.animation);
       });
 
-      test('должен вернуть visualNovel для "visual_novel"', () {
+      test('should return visualNovel для "visual_novel"', () {
         final MediaType result = MediaType.fromString('visual_novel');
 
         expect(result, MediaType.visualNovel);
       });
 
-      test('должен вернуть manga для "manga"', () {
+      test('should return manga для "manga"', () {
         final MediaType result = MediaType.fromString('manga');
 
         expect(result, MediaType.manga);
       });
 
-      test('должен вернуть anime для "anime"', () {
+      test('should return anime для "anime"', () {
         final MediaType result = MediaType.fromString('anime');
 
         expect(result, MediaType.anime);

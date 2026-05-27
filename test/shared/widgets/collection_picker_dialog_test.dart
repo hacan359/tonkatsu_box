@@ -164,7 +164,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать "Without Collection" '
+        'should show "Without Collection" '
         'когда showUncategorized == true', (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -179,7 +179,7 @@ void main() {
     });
 
     testWidgets(
-        'должен скрывать "Without Collection" '
+        'should hide "Without Collection" '
         'когда showUncategorized == false', (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -194,7 +194,7 @@ void main() {
     });
 
     testWidgets(
-        'должен исключать коллекцию с excludeCollectionId',
+        'should exclude коллекцию с excludeCollectionId',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -210,7 +210,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать imported коллекции (теперь editable)',
+        'should show imported коллекции (теперь editable)',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -228,7 +228,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать fork коллекции (editable)',
+        'should show fork коллекции (editable)',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -242,7 +242,7 @@ void main() {
     });
 
     testWidgets(
-        'должен возвращать ChosenCollection при нажатии на коллекцию',
+        'should return ChosenCollection when pressed на коллекцию',
         (WidgetTester tester) async {
       CollectionChoice? result;
 
@@ -265,7 +265,7 @@ void main() {
     });
 
     testWidgets(
-        'должен возвращать WithoutCollection при нажатии "Without Collection"',
+        'should return WithoutCollection when pressed "Without Collection"',
         (WidgetTester tester) async {
       CollectionChoice? result;
 
@@ -284,7 +284,7 @@ void main() {
       expect(result, isA<WithoutCollection>());
     });
 
-    testWidgets('должен возвращать null при нажатии Cancel',
+    testWidgets('should return null when pressed Cancel',
         (WidgetTester tester) async {
       CollectionChoice? result;
       bool called = false;
@@ -308,7 +308,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать иконку folder_rounded для own-коллекций',
+        'should show иконку folder_rounded для own-коллекций',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -322,7 +322,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать иконку fork_right для fork-коллекций',
+        'should show иконку fork_right для fork-коллекций',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -336,7 +336,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать автора коллекции как subtitle',
+        'should show автора коллекции как subtitle',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -732,7 +732,7 @@ void main() {
       });
 
       testWidgets(
-          'должен переключать сортировку при нажатии на кнопку',
+          'должен переключать сортировку when pressed на кнопку',
           (WidgetTester tester) async {
         final Collection cBanana = Collection(
           id: 1,

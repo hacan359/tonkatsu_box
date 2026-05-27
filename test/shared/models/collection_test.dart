@@ -11,13 +11,13 @@ void main() {
       expect(CollectionType.fork.value, 'fork');
     });
 
-    test('fromString должен возвращать правильный тип', () {
+    test('fromString should return правильный тип', () {
       expect(CollectionType.fromString('own'), CollectionType.own);
       expect(CollectionType.fromString('imported'), CollectionType.imported);
       expect(CollectionType.fromString('fork'), CollectionType.fork);
     });
 
-    test('fromString должен возвращать own для неизвестного значения', () {
+    test('fromString should return own для неизвестного значения', () {
       expect(CollectionType.fromString('unknown'), CollectionType.own);
       expect(CollectionType.fromString(''), CollectionType.own);
     });
@@ -27,7 +27,7 @@ void main() {
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
 
     group('constructor', () {
-      test('должен создавать экземпляр с обязательными полями', () {
+      test('should create экземпляр с обязательными полями', () {
         final Collection collection = createTestCollection();
 
         expect(collection.id, 1);
@@ -37,7 +37,7 @@ void main() {
         expect(collection.createdAt, testDate);
       });
 
-      test('должен создавать экземпляр с опциональными полями', () {
+      test('should create экземпляр с опциональными полями', () {
         final Collection collection = createTestCollection(
           originalSnapshot: '{"games": []}',
           forkedFromAuthor: 'Original Author',
@@ -51,7 +51,7 @@ void main() {
     });
 
     group('fromDb', () {
-      test('должен создавать Collection из записи БД', () {
+      test('should create Collection из записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 1,
           'name': 'My Collection',
@@ -72,7 +72,7 @@ void main() {
         expect(collection.createdAt.millisecondsSinceEpoch ~/ 1000, testTimestamp);
       });
 
-      test('должен создавать fork Collection из записи БД', () {
+      test('should create fork Collection из записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 2,
           'name': 'Forked Collection',
@@ -93,7 +93,7 @@ void main() {
         expect(collection.forkedFromName, 'Original Name');
       });
 
-      test('должен обрабатывать imported тип', () {
+      test('should handle imported тип', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 3,
           'name': 'Imported',
@@ -111,24 +111,24 @@ void main() {
     });
 
     group('isEditable', () {
-      test('должен возвращать true для own коллекции', () {
+      test('should return true для own коллекции', () {
         final Collection collection = createTestCollection(type: CollectionType.own);
         expect(collection.isEditable, true);
       });
 
-      test('должен возвращать true для fork коллекции', () {
+      test('should return true для fork коллекции', () {
         final Collection collection = createTestCollection(type: CollectionType.fork);
         expect(collection.isEditable, true);
       });
 
-      test('должен возвращать true для imported коллекции', () {
+      test('should return true для imported коллекции', () {
         final Collection collection = createTestCollection(type: CollectionType.imported);
         expect(collection.isEditable, true);
       });
     });
 
     group('toDb', () {
-      test('должен возвращать корректную Map для БД', () {
+      test('should return корректную Map для БД', () {
         final Collection collection = createTestCollection();
         final Map<String, dynamic> db = collection.toDb();
 
@@ -159,7 +159,7 @@ void main() {
     });
 
     group('toExport', () {
-      test('должен возвращать корректный JSON для экспорта', () {
+      test('should return корректный JSON для экспорта', () {
         final Collection collection = createTestCollection();
         final Map<String, dynamic> json = collection.toExport();
 
@@ -172,7 +172,7 @@ void main() {
     });
 
     group('copyWith', () {
-      test('должен создавать копию с изменённым именем', () {
+      test('should create копию с изменённым именем', () {
         final Collection original = createTestCollection();
         final Collection copy = original.copyWith(name: 'New Name');
 
@@ -182,7 +182,7 @@ void main() {
         expect(copy.type, original.type);
       });
 
-      test('должен создавать копию с изменённым типом', () {
+      test('should create копию с изменённым типом', () {
         final Collection original = createTestCollection();
         final Collection copy = original.copyWith(type: CollectionType.fork);
 
@@ -190,7 +190,7 @@ void main() {
         expect(copy.name, original.name);
       });
 
-      test('должен создавать копию со всеми изменёнными полями', () {
+      test('should create копию со всеми изменёнными полями', () {
         final Collection original = createTestCollection();
         final DateTime newDate = DateTime(2025, 1, 1);
         final Collection copy = original.copyWith(
@@ -216,7 +216,7 @@ void main() {
     });
 
     group('equality', () {
-      test('должен быть равен при одинаковом id', () {
+      test('should be equal при same id', () {
         final Collection a = createTestCollection(id: 1, name: 'A');
         final Collection b = createTestCollection(id: 1, name: 'B');
 
@@ -224,14 +224,14 @@ void main() {
         expect(a.hashCode, b.hashCode);
       });
 
-      test('должен быть не равен при разных id', () {
+      test('должен быть не равен при different ids', () {
         final Collection a = createTestCollection(id: 1);
         final Collection b = createTestCollection(id: 2);
 
         expect(a == b, false);
       });
 
-      test('должен быть равен самому себе', () {
+      test('should be equal самому себе', () {
         final Collection collection = createTestCollection();
         expect(collection == collection, true);
       });
@@ -244,7 +244,7 @@ void main() {
     });
 
     group('toString', () {
-      test('должен возвращать корректную строку', () {
+      test('should return корректную строку', () {
         final Collection collection = createTestCollection(
           id: 5,
           name: 'Test',
