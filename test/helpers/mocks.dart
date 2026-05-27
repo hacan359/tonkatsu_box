@@ -10,6 +10,7 @@ import 'package:xerabora/core/api/kodi_api.dart';
 import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/core/services/kodi_sync_service.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
+import 'package:xerabora/core/api/anilist/anilist_graphql_client.dart';
 import 'package:xerabora/core/api/anilist_api.dart';
 import 'package:xerabora/core/database/dao/anilist_tag_dao.dart';
 import 'package:xerabora/core/api/vndb_api.dart';
@@ -29,7 +30,9 @@ import 'package:xerabora/core/database/dao/tracker_dao.dart';
 import 'package:xerabora/core/database/dao/wishlist_dao.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/config_service.dart';
+import 'package:xerabora/core/services/export_service.dart';
 import 'package:xerabora/core/services/gamepad_service.dart';
+import 'package:xerabora/core/services/import_service.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/core/services/profile_service.dart';
 import 'package:xerabora/core/api/steam_api.dart';
@@ -81,6 +84,10 @@ class MockDatabaseService extends Mock implements DatabaseService {}
 
 class MockConfigService extends Mock implements ConfigService {}
 
+class MockExportService extends Mock implements ExportService {}
+
+class MockImportService extends Mock implements ImportService {}
+
 class MockGameDao extends Mock implements GameDao {}
 
 class MockMovieDao extends Mock implements MovieDao {}
@@ -118,6 +125,9 @@ class MockSteamGridDbApi extends Mock implements SteamGridDbApi {}
 class MockVndbApi extends Mock implements VndbApi {}
 
 class MockAniListApi extends Mock implements AniListApi {}
+
+class MockAniListGraphQLClient extends Mock
+    implements AniListGraphQLClient {}
 
 class MockAniListTagDao extends Mock implements AniListTagDao {}
 
