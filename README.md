@@ -16,6 +16,7 @@
 
 <p align="center">
   <a href="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml"><img src="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml"><img src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/hacan359/7ed48e87a6bd59afeb08eaf656fd2adb/raw/tonkatsu-box-coverage.json" alt="Coverage"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter 3.38+"></a>
   <a href="https://discord.gg/JZVNPF7cS2"><img src="https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
@@ -80,8 +81,8 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 
 | Platform | Link |
 |----------|------|
-| Windows | [**Download .exe**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
-| Linux | [**Download .AppImage**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
+| Windows | [**Download .zip**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
+| Linux | [**Download .tar.gz**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | Android | [**Download .apk**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 
 > Linux support is experimental.

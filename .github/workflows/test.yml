@@ -27,6 +27,9 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -41,8 +44,54 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      # Drop generated / non-product code so the percentage reflects real,
+      # testable code (l10n is pure generated strings; debug screens are tools).
+      - name: Strip generated code from coverage
+        run: |
+          sudo apt-get update && sudo apt-get install -y lcov
+          lcov --remove coverage/lcov.info \
+            'lib/l10n/*' '*.g.dart' '*.freezed.dart' '*_debug_screen.dart' \
+            -o coverage/lcov.info --ignore-errors unused
+
+      - name: Compute coverage summary
+        id: cov
+        run: |
+          LF=$(awk -F: '/^LF:/ {s+=$2} END {print s+0}' coverage/lcov.info)
+          LH=$(awk -F: '/^LH:/ {s+=$2} END {print s+0}' coverage/lcov.info)
+          PCT=$(awk "BEGIN { if ($LF>0) printf \"%.1f\", ($LH/$LF)*100; else print \"0.0\" }")
+          echo "Coverage: ${PCT}% of lines (${LH}/${LF})"
+          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Coverage"
+            echo ""
+            echo "**${PCT}%** of lines covered (${LH}/${LF})."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.4.0
         with:
-          files: coverage/lcov.info
-          fail_ci_if_error: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: coverage/lcov.info
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+
+      # Writes the coverage % to a public Gist; shields.io renders the README
+      # badge from it. Requires repo secret GIST_TOKEN (PAT with `gist` scope)
+      # and the real Gist id below.
+      - name: Update coverage badge
+        if: github.event_name == 'push'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 7ed48e87a6bd59afeb08eaf656fd2adb
+          filename: tonkatsu-box-coverage.json
+          label: coverage
+          message: ${{ steps.cov.outputs.pct }}%
+          valColorRange: ${{ steps.cov.outputs.pct }}
+          minColorRange: 50
+          maxColorRange: 90
