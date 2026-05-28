@@ -1,5 +1,3 @@
-// Провайдер деталей одного тир-листа.
-
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -13,71 +11,87 @@ import '../../../shared/models/tier_definition.dart';
 import '../../../shared/models/tier_list.dart';
 import '../../../shared/models/tier_list_entry.dart';
 
-/// Состояние деталей тир-листа.
+/// Derived collections (entriesByTier, itemsById, unrankedItems,
+/// placedItemIds) are precomputed once to avoid O(N) recomputation per
+/// widget build on large tier lists.
 class TierListDetailState {
-  /// Создаёт [TierListDetailState].
-  const TierListDetailState({
+  factory TierListDetailState({
+    required TierList tierList,
+    required List<TierDefinition> definitions,
+    required List<TierListEntry> entries,
+    required List<CollectionItem> items,
+    bool isLoading = false,
+  }) {
+    final Map<int, CollectionItem> itemsById = <int, CollectionItem>{
+      for (final CollectionItem item in items) item.id: item,
+    };
+    final Set<int> placedItemIds = <int>{
+      for (final TierListEntry e in entries) e.collectionItemId,
+    };
+    final Map<String, List<TierListEntry>> byTier =
+        <String, List<TierListEntry>>{
+      for (final TierDefinition def in definitions)
+        def.tierKey: <TierListEntry>[],
+    };
+    for (final TierListEntry entry in entries) {
+      byTier.putIfAbsent(entry.tierKey, () => <TierListEntry>[]).add(entry);
+    }
+    final Map<String, List<TierListEntry>> entriesByTier =
+        <String, List<TierListEntry>>{
+      for (final MapEntry<String, List<TierListEntry>> e in byTier.entries)
+        e.key: List<TierListEntry>.unmodifiable(e.value),
+    };
+    final List<CollectionItem> unrankedItems = <CollectionItem>[
+      for (final CollectionItem item in items)
+        if (!placedItemIds.contains(item.id)) item,
+    ];
+    return TierListDetailState._(
+      tierList: tierList,
+      definitions: definitions,
+      entries: entries,
+      items: items,
+      isLoading: isLoading,
+      itemsById: itemsById,
+      placedItemIds: placedItemIds,
+      entriesByTier: entriesByTier,
+      unrankedItems: unrankedItems,
+    );
+  }
+
+  const TierListDetailState._({
     required this.tierList,
     required this.definitions,
     required this.entries,
     required this.items,
-    this.isLoading = false,
+    required this.isLoading,
+    required this.itemsById,
+    required this.placedItemIds,
+    required this.entriesByTier,
+    required this.unrankedItems,
   });
 
-  /// Создаёт состояние загрузки.
-  TierListDetailState.loading()
-      : tierList = TierList(
+  factory TierListDetailState.loading() => TierListDetailState(
+        tierList: TierList(
           id: 0,
           name: '',
           createdAt: DateTime.now(),
         ),
-        definitions = const <TierDefinition>[],
-        entries = const <TierListEntry>[],
-        items = const <CollectionItem>[],
-        isLoading = true;
+        definitions: const <TierDefinition>[],
+        entries: const <TierListEntry>[],
+        items: const <CollectionItem>[],
+        isLoading: true,
+      );
 
-  /// Тир-лист.
   final TierList tierList;
-
-  /// Определения тиров.
   final List<TierDefinition> definitions;
-
-  /// Все записи (элементы, распределённые по тирам).
   final List<TierListEntry> entries;
-
-  /// Все доступные элементы (по scope тир-листа).
   final List<CollectionItem> items;
-
-  /// Флаг загрузки.
   final bool isLoading;
+  final Map<int, CollectionItem> itemsById;
+  final Set<int> placedItemIds;
+  final Map<String, List<TierListEntry>> entriesByTier;
+  final List<CollectionItem> unrankedItems;
 
-  /// ID элементов, распределённых по тирам.
-  Set<int> get placedItemIds =>
-      entries.map((TierListEntry e) => e.collectionItemId).toSet();
-
-  /// Элементы без тира (Unranked).
-  List<CollectionItem> get unrankedItems {
-    final Set<int> placed = placedItemIds;
-    return items
-        .where((CollectionItem item) => !placed.contains(item.id))
-        .toList();
-  }
-
-  /// Записи, сгруппированные по тирам.
-  Map<String, List<TierListEntry>> get entriesByTier {
-    final Map<String, List<TierListEntry>> result =
-        <String, List<TierListEntry>>{};
-    for (final TierDefinition def in definitions) {
-      result[def.tierKey] = <TierListEntry>[];
-    }
-    for (final TierListEntry entry in entries) {
-      result.putIfAbsent(entry.tierKey, () => <TierListEntry>[]);
-      result[entry.tierKey]!.add(entry);
-    }
-    return result;
-  }
-
-  /// Создаёт копию с изменёнными полями.
   TierListDetailState copyWith({
     TierList? tierList,
     List<TierDefinition>? definitions,
@@ -95,14 +109,12 @@ class TierListDetailState {
   }
 }
 
-/// Провайдер деталей тир-листа по ID.
 final NotifierProviderFamily<TierListDetailNotifier, TierListDetailState, int>
     tierListDetailProvider = NotifierProvider.family<TierListDetailNotifier,
         TierListDetailState, int>(
   TierListDetailNotifier.new,
 );
 
-/// Notifier для управления одним тир-листом.
 class TierListDetailNotifier
     extends FamilyNotifier<TierListDetailState, int> {
   late TierListDao _tierListDao;
@@ -121,24 +133,19 @@ class TierListDetailNotifier
       final TierList? tierList = await _tierListDao.getTierListById(arg);
       if (tierList == null) return;
 
-      // Загружаем элементы по scope
       final List<CollectionItem> items = tierList.isGlobal
           ? await _collectionDao.getAllCollectionItemsWithData()
           : await _collectionDao.getCollectionItemsWithData(
               tierList.collectionId,
             );
 
-      // Загружаем определения тиров
       List<TierDefinition> definitions =
           await _tierListDao.getTierDefinitions(arg);
-
-      // Если определения пустые — создать дефолтные
       if (definitions.isEmpty) {
         await _tierListDao.saveTierDefinitions(arg, TierDefinition.defaults);
         definitions = TierDefinition.defaults;
       }
 
-      // Загружаем записи
       final List<TierListEntry> entries =
           await _tierListDao.getTierListEntries(arg);
 
@@ -153,19 +160,16 @@ class TierListDetailNotifier
     }
   }
 
-  /// Перезагружает данные.
   Future<void> refresh() async {
     state = state.copyWith(isLoading: true);
     await _load();
   }
 
-  /// Перемещает элемент в тир.
   Future<void> moveToTier(
     int collectionItemId,
     String tierKey, {
     int? index,
   }) async {
-    // Вычисляем sort_order
     final Map<String, List<TierListEntry>> byTier = state.entriesByTier;
     final List<TierListEntry> tierEntries =
         byTier[tierKey] ?? <TierListEntry>[];
@@ -173,7 +177,6 @@ class TierListDetailNotifier
 
     await _tierListDao.setItemTier(arg, collectionItemId, tierKey, sortOrder);
 
-    // Оптимистичное обновление
     final List<TierListEntry> newEntries = state.entries
         .where((TierListEntry e) => e.collectionItemId != collectionItemId)
         .toList()
@@ -186,7 +189,6 @@ class TierListDetailNotifier
     state = state.copyWith(entries: newEntries);
   }
 
-  /// Удаляет элемент из тира (возвращает в Unranked).
   Future<void> removeFromTier(int collectionItemId) async {
     await _tierListDao.removeItemFromTier(arg, collectionItemId);
 
@@ -197,7 +199,6 @@ class TierListDetailNotifier
     );
   }
 
-  /// Переупорядочивает элементы внутри тира.
   Future<void> reorder(String tierKey, int oldIndex, int newIndex) async {
     final Map<String, List<TierListEntry>> byTier = state.entriesByTier;
     final List<TierListEntry> tierEntries =
@@ -217,7 +218,6 @@ class TierListDetailNotifier
         tierEntries.map((TierListEntry e) => e.collectionItemId).toList();
     await _tierListDao.reorderTierItems(arg, tierKey, itemIds);
 
-    // Обновляем sort_order в state
     final List<TierListEntry> updatedEntries = state.entries
         .where((TierListEntry e) => e.tierKey != tierKey)
         .toList();
@@ -228,18 +228,17 @@ class TierListDetailNotifier
     state = state.copyWith(entries: updatedEntries);
   }
 
-  /// Перемещает элемент между тирами.
+  /// Single setItemTier handles DELETE+INSERT — one DB write, one state update,
+  /// avoids the double rebuild a remove+add pair would cause.
   Future<void> moveBetweenTiers(
     int collectionItemId,
     String fromTierKey,
     String toTierKey, {
     int? index,
   }) async {
-    await removeFromTier(collectionItemId);
     await moveToTier(collectionItemId, toTierKey, index: index);
   }
 
-  /// Обновляет определение тира (label или color).
   Future<void> updateTierDefinition(
     String tierKey, {
     String? label,
@@ -258,7 +257,6 @@ class TierListDetailNotifier
     state = state.copyWith(definitions: updated);
   }
 
-  /// Добавляет новый тир.
   Future<void> addTier(String tierKey, String label, Color color) async {
     final List<TierDefinition> updated = List<TierDefinition>.of(
       state.definitions,
@@ -273,20 +271,17 @@ class TierListDetailNotifier
     state = state.copyWith(definitions: updated);
   }
 
-  /// Удаляет тир (элементы возвращаются в Unranked).
   Future<void> removeTier(String tierKey) async {
     final List<TierDefinition> updated = state.definitions
         .where((TierDefinition d) => d.tierKey != tierKey)
         .toList();
 
-    // Обновляем sort_order
     for (int i = 0; i < updated.length; i++) {
       updated[i] = updated[i].copyWith(sortOrder: i);
     }
 
     await _tierListDao.saveTierDefinitions(arg, updated);
 
-    // Удаляем записи из этого тира
     final List<TierListEntry> entriesInTier = state.entries
         .where((TierListEntry e) => e.tierKey == tierKey)
         .toList();
@@ -302,7 +297,6 @@ class TierListDetailNotifier
     );
   }
 
-  /// Очищает все тиры (элементы возвращаются в Unranked).
   Future<void> clearAll() async {
     await _tierListDao.clearTierListEntries(arg);
     state = state.copyWith(entries: const <TierListEntry>[]);

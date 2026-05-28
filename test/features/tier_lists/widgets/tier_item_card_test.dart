@@ -38,7 +38,7 @@ void main() {
 
     testWidgets('should render without errors', (WidgetTester tester) async {
       await tester.pumpApp(
-        TierItemCard(item: itemWithThumb),
+        TierItemCard(item: itemWithThumb, displayName: 'Chrono Trigger'),
         settle: false,
       );
       await tester.pump();
@@ -48,7 +48,7 @@ void main() {
 
     testWidgets('should render Tooltip', (WidgetTester tester) async {
       await tester.pumpApp(
-        TierItemCard(item: itemWithThumb),
+        TierItemCard(item: itemWithThumb, displayName: 'Chrono Trigger'),
         settle: false,
       );
       await tester.pump();
@@ -63,7 +63,11 @@ void main() {
     testWidgets('should not wrap in Draggable when isDraggable is false',
         (WidgetTester tester) async {
       await tester.pumpApp(
-        TierItemCard(item: itemWithThumb, isDraggable: false),
+        TierItemCard(
+          item: itemWithThumb,
+          displayName: 'Chrono Trigger',
+          isDraggable: false,
+        ),
         settle: false,
       );
       await tester.pump();
@@ -74,7 +78,11 @@ void main() {
     testWidgets('should wrap in Draggable when isDraggable is true',
         (WidgetTester tester) async {
       await tester.pumpApp(
-        TierItemCard(item: itemWithThumb, isDraggable: true),
+        TierItemCard(
+          item: itemWithThumb,
+          displayName: 'Chrono Trigger',
+          isDraggable: true,
+        ),
         settle: false,
       );
       await tester.pump();
@@ -90,7 +98,7 @@ void main() {
     testWidgets('should show placeholder when thumbnailUrl is null',
         (WidgetTester tester) async {
       await tester.pumpApp(
-        TierItemCard(item: itemNoThumb),
+        TierItemCard(item: itemNoThumb, displayName: 'No Cover Game'),
         settle: false,
       );
       await tester.pump();
@@ -106,6 +114,7 @@ void main() {
       await tester.pumpApp(
         TierItemCard(
           item: itemNoThumb,
+          displayName: 'No Cover Game',
           width: customWidth,
           height: customHeight,
         ),
@@ -139,6 +148,7 @@ void main() {
       await tester.pumpApp(
         TierItemCard(
           item: gameWithOverlay,
+          displayName: 'Super Mario World',
           platformOverlayAsset: gameWithOverlay.platform?.overlayAsset,
         ),
         settle: false,
@@ -165,7 +175,7 @@ void main() {
       );
 
       await tester.pumpApp(
-        TierItemCard(item: gameWithTextBadge),
+        TierItemCard(item: gameWithTextBadge, displayName: 'Super Mario World'),
         settle: false,
       );
       await tester.pump();
@@ -184,7 +194,7 @@ void main() {
       );
 
       await tester.pumpApp(
-        TierItemCard(item: movieItem),
+        TierItemCard(item: movieItem, displayName: 'Test Movie'),
         settle: false,
       );
       await tester.pump();
@@ -203,7 +213,7 @@ void main() {
       );
 
       await tester.pumpApp(
-        TierItemCard(item: gameNoPlatform),
+        TierItemCard(item: gameNoPlatform, displayName: 'No Platform Game'),
         settle: false,
       );
       await tester.pump();

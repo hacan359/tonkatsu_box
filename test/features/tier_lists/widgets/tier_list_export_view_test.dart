@@ -68,6 +68,7 @@ void main() {
           child: TierListExportView(
             repaintKey: repaintKey,
             state: state,
+            titleLanguage: '',
           ),
         ),
         settle: false,
@@ -83,6 +84,7 @@ void main() {
           child: TierListExportView(
             repaintKey: repaintKey,
             state: state,
+            titleLanguage: '',
           ),
         ),
         settle: false,
@@ -99,6 +101,7 @@ void main() {
           child: TierListExportView(
             repaintKey: repaintKey,
             state: state,
+            titleLanguage: '',
           ),
         ),
         settle: false,

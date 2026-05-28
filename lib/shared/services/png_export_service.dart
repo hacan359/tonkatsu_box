@@ -6,22 +6,28 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gal/gal.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Result of an export attempt.
 enum BulkExportStatus { saved, cancelled, failed }
 
-/// Strips characters the system save dialog or `Gal` would reject from a
-/// file name candidate. Public for testing.
+/// Keeps Unicode letters and digits, `_`, `-`, and spaces; collapses
+/// everything else to `_`.
 String sanitizeFileName(String name) {
-  return name.replaceAll(RegExp(r'[^\w\- ]'), '_').trim();
+  return name
+      .replaceAll(RegExp(r'[^\p{L}\p{N}\-_ ]', unicode: true), '_')
+      .trim();
 }
 
-/// Appends `.png` to [path] unless it already ends with one (case-insensitive).
-/// Public for testing — covers the case where the user wipes the extension
-/// in the system save dialog.
+/// Appends `.png` unless [path] already ends with one (case-insensitive).
 String ensurePngExtension(String path) {
   return path.toLowerCase().endsWith('.png') ? path : '$path.png';
+}
+
+/// Strips a trailing `.png` (case-insensitive).
+String stripPngExtension(String name) {
+  return name.toLowerCase().endsWith('.png')
+      ? name.substring(0, name.length - 4)
+      : name;
 }
 
 class BulkExportResult {
@@ -32,11 +38,9 @@ class BulkExportResult {
   final Object? error;
 }
 
-/// Renders the widget behind [repaintKey] into a PNG and saves it.
-///
-/// Desktop opens [FilePicker.saveFile]; Android writes to the system gallery
-/// via [Gal] (album: "Tonkatsu Box"). Returns a [BulkExportResult] so the
-/// caller can show a snackbar with the right tone.
+/// Renders the widget behind [repaintKey] into a PNG. Desktop opens
+/// [FilePicker.saveFile]; Android writes to the system gallery via
+/// [Gal.putImageBytes] (album "Tonkatsu Box").
 Future<BulkExportResult> saveBoundaryAsPng({
   required GlobalKey repaintKey,
   required String suggestedFileName,
@@ -56,20 +60,20 @@ Future<BulkExportResult> saveBoundaryAsPng({
     if (byteData == null) {
       return const BulkExportResult(BulkExportStatus.failed);
     }
-    final List<int> pngBytes = byteData.buffer.asUint8List();
+    final Uint8List pngBytes = byteData.buffer.asUint8List();
 
     if (Platform.isAndroid) {
       final bool hasAccess = await Gal.requestAccess();
       if (!hasAccess) {
         return const BulkExportResult(BulkExportStatus.cancelled);
       }
-      final Directory tempDir = await getTemporaryDirectory();
-      final String tempPath = '${tempDir.path}/$suggestedFileName';
-      final File temp = File(tempPath);
-      await temp.writeAsBytes(pngBytes);
-      await Gal.putImage(tempPath, album: 'Tonkatsu Box');
-      await temp.delete();
-      return BulkExportResult(BulkExportStatus.saved, path: tempPath);
+      final String galName = stripPngExtension(suggestedFileName);
+      await Gal.putImageBytes(
+        pngBytes,
+        album: 'Tonkatsu Box',
+        name: galName,
+      );
+      return BulkExportResult(BulkExportStatus.saved, path: '$galName.png');
     }
 
     final String? outputPath = await FilePicker.platform.saveFile(

@@ -24,9 +24,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     BulkPosterMosaicView.precachedFiles, _PosterTile): New off-screen
     `RepaintBoundary` widget; `autoColumns` returns
     `sqrt(n * 1.5).round().clamp(4, 20)`.
-  * lib/features/collections/widgets/bulk_export/bulk_export_service.dart
-    (saveBoundaryAsPng, BulkExportResult, BulkExportStatus): New —
-    boundary to PNG bytes plus Android Gal / desktop FilePicker save.
+  * lib/shared/services/png_export_service.dart (saveBoundaryAsPng,
+    BulkExportResult, BulkExportStatus, sanitizeFileName,
+    ensurePngExtension, stripPngExtension): New shared service —
+    boundary to PNG bytes plus desktop FilePicker save and Android
+    `Gal.putImageBytes` (avoids a `name.png.jpg` quirk seen with
+    `Gal.putImage` on some devices). `sanitizeFileName` keeps Unicode
+    letters and digits so Cyrillic / CJK names survive.
   * lib/features/collections/widgets/bulk_export/bulk_poster_export_dialog.dart
     (showBulkPosterExportDialog, _BulkPosterExportDialog,
     _BulkPosterExportDialogState._handleSave,
@@ -53,6 +57,10 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * test/features/collections/widgets/bulk_export/bulk_poster_mosaic_view_test.dart:
     New — `autoColumns` formula at the empty / tiny / typical / huge
     boundaries, plus renders-without-exception on 8 and 50 items.
+  * test/shared/services/png_export_service_test.dart (sanitizeFileName,
+    ensurePngExtension, stripPngExtension): New — sanitiser keeps
+    Cyrillic / CJK letters; round-trip cases for the two PNG extension
+    helpers.
 
 - **Add AniList tag support across storage, display, search filter and exports**
 
@@ -351,6 +359,65 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     `dualDatePickerErrorRange`.
 
 ### Changed
+
+- **Tier-list detail page is faster on large collections and easier to use on mobile**
+
+  Several wins land together. Derived collections on `TierListDetailState`
+  (`entriesByTier`, `itemsById`, `unrankedItems`, `placedItemIds`) are
+  precomputed in a factory instead of recomputed as getters on every
+  build. `TierItemCard` is a plain `StatelessWidget` taking a resolved
+  `displayName`, so each card no longer subscribes to the settings
+  provider. The Unranked pool switched from a non-lazy `Wrap` to a
+  `GridView.builder`, virtualising hundreds of cards. The divider
+  between tiers and the Unranked pool became a vertical drag handle so
+  the user can redistribute space between the two regions. On mobile,
+  cards use `LongPressDraggable` instead of `Draggable` so finger
+  swipes scroll instead of accidentally picking up a card; `Tooltip`
+  switches to `manual` trigger when draggable on mobile to avoid
+  stealing the long-press gesture. Tier-list PNG export now reuses the
+  shared `saveBoundaryAsPng` service (same code path as bulk poster
+  export), with `ensurePngExtension` handling the case where the user
+  wipes the `.png` in the save dialog.
+
+  * lib/features/tier_lists/providers/tier_list_detail_provider.dart
+    (TierListDetailState, TierListDetailState._, TierListDetailState.loading,
+    TierListDetailState.itemsById, TierListDetailState.placedItemIds,
+    TierListDetailState.entriesByTier, TierListDetailState.unrankedItems,
+    TierListDetailNotifier.moveBetweenTiers): Factory precomputes derived
+    collections once; `moveBetweenTiers` collapses to a single
+    `setItemTier` call (one DB write, one state update).
+  * lib/features/tier_lists/widgets/tier_item_card.dart (TierItemCard,
+    TierItemCard.displayName, TierItemCard.labelHeight,
+    TierItemCard._buildCard): `StatelessWidget`; `displayName` is a
+    required parameter; `labelHeight` parameter lets parents reserve
+    exactly the height they pass to GridView `mainAxisExtent`; label
+    text capped at 2 lines with ellipsis; `LongPressDraggable` on
+    mobile, plain `Draggable` on desktop; Tooltip uses
+    `TooltipTriggerMode.manual` when draggable on mobile.
+  * lib/features/tier_lists/widgets/tier_list_view.dart (TierListView,
+    _TierListViewState, _TierListViewState._topHeight,
+    _TierListViewState._handleDragUpdate, _UnrankedPool, _SplitterHandle):
+    `ConsumerStatefulWidget` hosting the splitter height; LayoutBuilder
+    splits the screen into tier list (top) and Unranked grid (bottom);
+    `_UnrankedPool` renders cards with `GridView.builder` and
+    `SliverGridDelegateWithMaxCrossAxisExtent`; `_SplitterHandle` is a
+    new private widget driving the drag gesture.
+  * lib/features/tier_lists/widgets/tier_row.dart (TierRowMetrics.compact,
+    TierRow.titleLanguage): compact `cardLabelMinHeight` bumped from 24
+    to 28 to fit two lines of 10pt text; `titleLanguage` is passed in
+    and forwarded to each card so cards remain stateless.
+  * lib/features/tier_lists/widgets/tier_list_export_view.dart
+    (TierListExportView.titleLanguage): same `titleLanguage` plumbing
+    for the offscreen export render.
+  * lib/features/tier_lists/screens/tier_list_detail_screen.dart
+    (_TierListDetailScreenState._exportAsImage): reuses
+    `saveBoundaryAsPng` with `BulkExportResult` → snackbar mapping.
+  * test/features/tier_lists/providers/tier_list_detail_provider_test.dart,
+    test/features/tier_lists/widgets/tier_item_card_test.dart,
+    test/features/tier_lists/widgets/tier_list_export_view_test.dart,
+    test/features/tier_lists/widgets/tier_row_test.dart: Updated for
+    the new `displayName` / `titleLanguage` / `labelHeight` parameters
+    and the collapsed `moveBetweenTiers` call sequence.
 
 - **Make the personal rating fractional (1.0–10.0, step 0.1)**
 

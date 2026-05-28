@@ -1,5 +1,3 @@
-// Offscreen виджет для рендеринга тир-листа в картинку.
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/models/collection_item.dart';
@@ -12,38 +10,29 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/tier_list_detail_provider.dart';
 import 'tier_item_card.dart';
 
-/// Размеры обложки в экспорте.
 const double _kExportItemWidth = 80;
 const double _kExportItemHeight = 110;
 
-/// Offscreen виджет для экспорта тир-листа как PNG.
-///
-/// Рендерит только тиры (без Unranked, без UI-кнопок).
+/// Offscreen widget that paints the tier list into a PNG. Renders tiers only —
+/// no Unranked pool, no UI controls.
 class TierListExportView extends StatelessWidget {
-  /// Создаёт [TierListExportView].
   const TierListExportView({
     required this.repaintKey,
     required this.state,
+    required this.titleLanguage,
     this.overlayResolver,
     super.key,
   });
 
-  /// Ключ для RepaintBoundary.
   final GlobalKey repaintKey;
-
-  /// Состояние тир-листа.
   final TierListDetailState state;
-
-  /// Функция для резолва overlay asset.
+  final String titleLanguage;
   final String? Function(CollectionItem item)? overlayResolver;
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, List<TierListEntry>> entriesByTier =
-        state.entriesByTier;
-    final Map<int, CollectionItem> itemsMap = <int, CollectionItem>{
-      for (final CollectionItem item in state.items) item.id: item,
-    };
+    final Map<String, List<TierListEntry>> entriesByTier = state.entriesByTier;
+    final Map<int, CollectionItem> itemsMap = state.itemsById;
 
     return RepaintBoundary(
       key: repaintKey,
@@ -55,7 +44,6 @@ class TierListExportView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              // Заголовок
               Text(
                 state.tierList.name,
                 style: AppTypography.h2.copyWith(
@@ -63,20 +51,19 @@ class TierListExportView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-
-              // Тиры
               for (final TierDefinition def in state.definitions)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2),
                   child: _ExportTierRow(
                     definition: def,
-                    entries: entriesByTier[def.tierKey] ?? <TierListEntry>[],
+                    entries:
+                        entriesByTier[def.tierKey] ?? const <TierListEntry>[],
                     itemsMap: itemsMap,
+                    titleLanguage: titleLanguage,
                     overlayResolver: overlayResolver,
                   ),
                 ),
 
-              // Подпись
               const SizedBox(height: AppSpacing.md),
               const Divider(height: 1, color: AppColors.surfaceBorder),
               const SizedBox(height: AppSpacing.sm),
@@ -109,12 +96,14 @@ class _ExportTierRow extends StatelessWidget {
     required this.definition,
     required this.entries,
     required this.itemsMap,
+    required this.titleLanguage,
     this.overlayResolver,
   });
 
   final TierDefinition definition;
   final List<TierListEntry> entries;
   final Map<int, CollectionItem> itemsMap;
+  final String titleLanguage;
   final String? Function(CollectionItem item)? overlayResolver;
 
   @override
@@ -123,7 +112,6 @@ class _ExportTierRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          // Метка тира
           Container(
             width: 70,
             constraints: const BoxConstraints(
@@ -147,7 +135,6 @@ class _ExportTierRow extends StatelessWidget {
               ),
             ),
           ),
-          // Элементы
           Expanded(
             child: Container(
               constraints: const BoxConstraints(
@@ -171,18 +158,19 @@ class _ExportTierRow extends StatelessWidget {
               child: Wrap(
                 spacing: 4,
                 runSpacing: 4,
-                children: entries.map((TierListEntry entry) {
-                  final CollectionItem? item =
-                      itemsMap[entry.collectionItemId];
-                  if (item == null) return const SizedBox.shrink();
-                  return TierItemCard(
-                    item: item,
-                    width: _kExportItemWidth,
-                    height: _kExportItemHeight,
-                    platformOverlayAsset:
-                        overlayResolver?.call(item),
-                  );
-                }).toList(),
+                children: <Widget>[
+                  for (final TierListEntry entry in entries)
+                    if (itemsMap[entry.collectionItemId] != null)
+                      TierItemCard(
+                        item: itemsMap[entry.collectionItemId]!,
+                        displayName: itemsMap[entry.collectionItemId]!
+                            .displayName(titleLanguage),
+                        width: _kExportItemWidth,
+                        height: _kExportItemHeight,
+                        platformOverlayAsset: overlayResolver
+                            ?.call(itemsMap[entry.collectionItemId]!),
+                      ),
+                ],
               ),
             ),
           ),

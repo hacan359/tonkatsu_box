@@ -820,8 +820,6 @@ void main() {
           items: items,
         );
 
-        when(() => mockTierListDao.removeItemFromTier(1, 1))
-            .thenAnswer((_) async {});
         when(() => mockTierListDao.setItemTier(1, 1, 'A', 0))
             .thenAnswer((_) async {});
 
@@ -831,7 +829,9 @@ void main() {
             container.read(tierListDetailProvider(1).notifier);
         await notifier.moveBetweenTiers(1, 'S', 'A', index: 0);
 
-        verify(() => mockTierListDao.removeItemFromTier(1, 1)).called(1);
+        // moveBetweenTiers сводится к одному setItemTier — DELETE+INSERT
+        // живёт в самом setItemTier, чтобы не плодить двойной rebuild state.
+        verifyNever(() => mockTierListDao.removeItemFromTier(1, 1));
         verify(() => mockTierListDao.setItemTier(1, 1, 'A', 0)).called(1);
       });
     });

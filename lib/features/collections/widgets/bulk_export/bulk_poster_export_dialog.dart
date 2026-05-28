@@ -11,7 +11,7 @@ import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
-import 'bulk_export_service.dart';
+import '../../../../shared/services/png_export_service.dart';
 import 'bulk_poster_mosaic_view.dart';
 
 Future<void> showBulkPosterExportDialog({

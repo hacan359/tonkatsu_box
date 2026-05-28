@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/collections/widgets/bulk_export/bulk_export_service.dart';
+import 'package:xerabora/shared/services/png_export_service.dart';
 
 void main() {
   group('sanitizeFileName', () {
@@ -22,11 +22,28 @@ void main() {
       expect(sanitizeFileName('  padded  '), 'padded');
     });
 
-    test('should handle Cyrillic by keeping word chars', () {
-      // \w in Dart RegExp matches ASCII word chars only — Cyrillic is replaced.
-      // This documents the current behaviour (callers fall back to "collection"
-      // when sanitization wipes the name to an underscore string).
-      expect(sanitizeFileName('Желаемое'), '________');
+    test('should keep Cyrillic letters', () {
+      // With \p{L}/\p{N} the regex preserves non-ASCII letters.
+      expect(sanitizeFileName('Желаемое'), 'Желаемое');
+      expect(sanitizeFileName('Топ 100'), 'Топ 100');
+    });
+
+    test('should keep Japanese / CJK letters', () {
+      expect(sanitizeFileName('好きなゲーム'), '好きなゲーム');
+    });
+  });
+
+  group('stripPngExtension', () {
+    test('should remove .png suffix case-insensitively', () {
+      expect(stripPngExtension('foo.png'), 'foo');
+      expect(stripPngExtension('foo.PNG'), 'foo');
+      expect(stripPngExtension('image.Png'), 'image');
+    });
+
+    test('should leave names without .png suffix untouched', () {
+      expect(stripPngExtension('foo'), 'foo');
+      expect(stripPngExtension('foo.jpg'), 'foo.jpg');
+      expect(stripPngExtension(''), '');
     });
   });
 

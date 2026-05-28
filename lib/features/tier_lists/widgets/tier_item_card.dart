@@ -1,90 +1,94 @@
-// Карточка элемента в тир-листе (обложка с drag-and-drop).
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/cached_image.dart';
-import '../../collections/extensions/item_display_name.dart';
 
-/// Размеры обложки тир-листа.
 const double kTierItemWidth = 90;
 const double kTierItemImageHeight = 120;
-
-/// Минимальная высота строки подписи.
 const double kTierItemMinLabelHeight = 32;
+const double kTierItemMinTotalHeight =
+    kTierItemImageHeight + kTierItemMinLabelHeight;
 
-/// Минимальная полная высота карточки (картинка + подпись).
-const double kTierItemMinTotalHeight = kTierItemImageHeight + kTierItemMinLabelHeight;
-
-/// Карточка элемента в тир-листе.
-///
-/// Обложка с текстовой подписью снизу. Поддерживает drag-and-drop.
-class TierItemCard extends ConsumerWidget {
-  /// Создаёт [TierItemCard].
+/// displayName is resolved in the parent so each card doesn't subscribe
+/// to the settings provider on its own.
+class TierItemCard extends StatelessWidget {
   const TierItemCard({
     required this.item,
+    required this.displayName,
     this.isDraggable = false,
     this.showLabel = true,
     this.width = kTierItemWidth,
     this.height = kTierItemImageHeight,
+    this.labelHeight = kTierItemMinLabelHeight,
     this.platformOverlayAsset,
     super.key,
   });
 
-  /// Элемент коллекции.
   final CollectionItem item;
-
-  /// Включить drag-and-drop.
+  final String displayName;
   final bool isDraggable;
-
-  /// Показывать текстовую подпись под картинкой.
   final bool showLabel;
-
-  /// Ширина обложки.
   final double width;
-
-  /// Высота обложки.
   final double height;
 
-  /// Путь к overlay PNG (null = без overlay).
+  /// Must match the height the parent reserves for the card (e.g. GridView
+  /// `mainAxisExtent`) — otherwise the column overflows.
+  final double labelHeight;
+
   final String? platformOverlayAsset;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final String displayName = ref.displayNameOf(item);
+  Widget build(BuildContext context) {
     final Widget card = _buildCard(displayName);
     if (!isDraggable) return card;
 
+    final Widget feedback = Material(
+      color: Colors.transparent,
+      child: Opacity(
+        opacity: 0.7,
+        child: _buildCard(displayName),
+      ),
+    );
+    final Widget childWhenDragging = Opacity(
+      opacity: 0.3,
+      child: card,
+    );
+
+    // Tap-drag conflicts with scrolling on mobile — require long-press there.
+    if (kIsMobile) {
+      return LongPressDraggable<int>(
+        data: item.id,
+        feedback: feedback,
+        childWhenDragging: childWhenDragging,
+        child: card,
+      );
+    }
     return Draggable<int>(
       data: item.id,
-      feedback: Material(
-        color: Colors.transparent,
-        child: Opacity(
-          opacity: 0.7,
-          child: _buildCard(displayName),
-        ),
-      ),
-      childWhenDragging: Opacity(
-        opacity: 0.3,
-        child: card,
-      ),
+      feedback: feedback,
+      childWhenDragging: childWhenDragging,
       child: card,
     );
   }
 
   Widget _buildCard(String displayName) {
+    // Disable Tooltip's long-press trigger when the card is draggable on
+    // mobile — otherwise it eats the gesture before LongPressDraggable.
+    final TooltipTriggerMode? triggerMode = kIsMobile && isDraggable
+        ? TooltipTriggerMode.manual
+        : null;
     return Tooltip(
       message: displayName,
+      triggerMode: triggerMode,
       child: SizedBox(
         width: width,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            // Обложка с платформенным бейджем
             ClipRRect(
               borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
               child: SizedBox(
@@ -104,7 +108,6 @@ class TierItemCard extends ConsumerWidget {
                             errorWidget: _buildPlaceholder(),
                           )
                         : _buildPlaceholder(),
-                    // Оверлей (платформа для игр, mediaType для фильмов/сериалов)
                     if (platformOverlayAsset != null)
                       Positioned.fill(
                         child: Image.asset(
@@ -112,7 +115,6 @@ class TierItemCard extends ConsumerWidget {
                           fit: BoxFit.fill,
                         ),
                       ),
-                    // Текстовый бейдж (fallback без оверлея)
                     if (item.mediaType == MediaType.game &&
                         item.platform != null &&
                         platformOverlayAsset == null)
@@ -142,13 +144,10 @@ class TierItemCard extends ConsumerWidget {
                 ),
               ),
             ),
-            // Подпись
             if (showLabel)
               Container(
                 width: width,
-                constraints: const BoxConstraints(
-                  minHeight: kTierItemMinLabelHeight,
-                ),
+                height: labelHeight,
                 decoration: const BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.only(
@@ -167,6 +166,8 @@ class TierItemCard extends ConsumerWidget {
                     Text(
                       displayName,
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 10,
                         height: 1.2,

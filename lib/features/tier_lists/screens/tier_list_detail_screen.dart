@@ -1,19 +1,12 @@
-// Экран деталей одного тир-листа.
-
-import 'dart:io';
-import 'dart:ui' as ui;
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gal/gal.dart';
 import 'package:logging/logging.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/services/png_export_service.dart';
 import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -25,15 +18,11 @@ import '../providers/tier_list_detail_provider.dart';
 import '../widgets/tier_list_view.dart';
 import '../widgets/tier_list_export_view.dart';
 
-/// Экран одного тир-листа с drag-and-drop.
 class TierListDetailScreen extends ConsumerStatefulWidget {
-  /// Создаёт [TierListDetailScreen].
   const TierListDetailScreen({required this.tierListId, super.key});
 
-  /// ID тир-листа.
   final int tierListId;
 
-  /// Группа хоткеев этого экрана для легенды F1.
   static const ShortcutGroup shortcutGroup = ShortcutGroup(
     title: 'Тир-лист',
     entries: <ShortcutEntry>[
@@ -59,6 +48,8 @@ class _TierListDetailScreenState
     final S l = S.of(context);
     final TierListDetailState state =
         ref.watch(tierListDetailProvider(widget.tierListId));
+    final String titleLanguage = ref.watch(settingsNotifierProvider
+        .select((SettingsState s) => s.animeMangaTitleLanguage));
 
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(state),
@@ -89,6 +80,7 @@ class _TierListDetailScreenState
                               child: TierListExportView(
                                 repaintKey: _exportKey,
                                 state: state,
+                                titleLanguage: titleLanguage,
                                 overlayResolver: ref
                                     .watch(settingsNotifierProvider)
                                     .resolveOverlayFor,
@@ -220,59 +212,31 @@ class _TierListDetailScreenState
     TierListDetailState state,
   ) async {
     final S l = S.of(context);
-    try {
-      // Ждём завершения текущего кадра, чтобы export view был отрисован
-      await WidgetsBinding.instance.endOfFrame;
+    // Wait for the current frame so the offscreen export view is rendered.
+    await WidgetsBinding.instance.endOfFrame;
 
-      final RenderRepaintBoundary? boundary = _exportKey.currentContext
-          ?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return;
+    final String baseName = state.tierList.name.trim().isEmpty
+        ? 'tier_list_${state.tierList.id}'
+        : state.tierList.name.trim();
+    final String safeBase = sanitizeFileName(baseName);
+    final String fileName =
+        '${safeBase.isEmpty ? 'tier_list_${state.tierList.id}' : safeBase}.png';
 
-      final ui.Image image = await boundary.toImage(pixelRatio: 2.0);
-      final ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) return;
+    final BulkExportResult result = await saveBoundaryAsPng(
+      repaintKey: _exportKey,
+      suggestedFileName: fileName,
+      saveDialogTitle: l.tierListExportImage,
+    );
+    if (!context.mounted) return;
 
-      final List<int> pngBytes = byteData.buffer.asUint8List();
-
-      if (Platform.isAndroid) {
-        // Android: сохраняем в галерею через Gal
-        final bool hasAccess = await Gal.requestAccess();
-        if (!hasAccess) return;
-        final Directory tempDir = await getTemporaryDirectory();
-        final String tempPath =
-            '${tempDir.path}/tier_list_${state.tierList.id}.png';
-        await File(tempPath).writeAsBytes(pngBytes);
-        await Gal.putImage(tempPath, album: 'Tonkatsu Box');
-        await File(tempPath).delete();
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.tierListImageSaved)),
-          );
-        }
-      } else {
-        // Desktop: FilePicker
-        final String? outputPath = await FilePicker.platform.saveFile(
-          dialogTitle: l.tierListExportImage,
-          fileName: '${state.tierList.name}.png',
-          type: FileType.custom,
-          allowedExtensions: <String>['png'],
-        );
-        if (outputPath == null) return;
-        await File(outputPath).writeAsBytes(pngBytes);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.tierListImageSaved)),
-          );
-        }
-      }
-    } on Exception catch (e, stack) {
-      _log.warning('Failed to export tier list image', e, stack);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.tierListExportFailed)),
-        );
-      }
+    switch (result.status) {
+      case BulkExportStatus.saved:
+        context.showSnack(l.tierListImageSaved, type: SnackType.success);
+      case BulkExportStatus.cancelled:
+        break;
+      case BulkExportStatus.failed:
+        _log.warning('Failed to export tier list image', result.error);
+        context.showSnack(l.tierListExportFailed, type: SnackType.error);
     }
   }
 }
