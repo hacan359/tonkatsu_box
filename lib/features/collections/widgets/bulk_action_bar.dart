@@ -17,6 +17,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../helpers/bulk_operations.dart';
 import '../providers/collections_provider.dart';
+import 'bulk_export/bulk_poster_export_dialog.dart';
 
 /// Bulk action bar над списком элементов.
 ///
@@ -33,6 +34,7 @@ class BulkActionBar extends ConsumerWidget {
     required this.items,
     required this.onClearSelection,
     this.collectionId,
+    this.collectionName,
     this.visibleCount,
     this.onSelectAllVisible,
     super.key,
@@ -46,6 +48,9 @@ class BulkActionBar extends ConsumerWidget {
 
   /// ID контекстной коллекции. `null` если бар стоит на All Items.
   final int? collectionId;
+
+  /// Имя коллекции — используется как имя файла при экспорте в PNG.
+  final String? collectionName;
 
   /// Сколько элементов всего видно на экране после фильтров и поиска.
   /// Используется чтобы скрыть «выделить все видимые», когда уже выделено всё.
@@ -105,39 +110,55 @@ class BulkActionBar extends ConsumerWidget {
                 child: Text(l.bulkSelectAllVisible),
               ),
             ],
-            const Spacer(),
-            _BarAction(
-              icon: Icons.drive_file_move_outlined,
-              tooltip: l.collectionMoveToCollection,
-              onTap: () => _handleMove(context, ref),
-            ),
-            _BarAction(
-              icon: Icons.copy_outlined,
-              tooltip: l.collectionCopyToCollection,
-              onTap: () => _handleClone(context, ref),
-            ),
-            _StatusMenuAction(
-              onSelected: (ItemStatus s) => _handleStatus(context, ref, s),
-            ),
-            if (isManualSort) ...<Widget>[
-              const _BarDivider(),
-              _BarAction(
-                icon: Icons.vertical_align_top,
-                tooltip: l.moveToTop,
-                onTap: () => _handleMoveToTop(ref),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                reverse: true,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    _BarAction(
+                      icon: Icons.drive_file_move_outlined,
+                      tooltip: l.collectionMoveToCollection,
+                      onTap: () => _handleMove(context, ref),
+                    ),
+                    _BarAction(
+                      icon: Icons.copy_outlined,
+                      tooltip: l.collectionCopyToCollection,
+                      onTap: () => _handleClone(context, ref),
+                    ),
+                    _StatusMenuAction(
+                      onSelected: (ItemStatus s) =>
+                          _handleStatus(context, ref, s),
+                    ),
+                    _BarAction(
+                      icon: Icons.image_outlined,
+                      tooltip: l.bulkExportPngTitle,
+                      onTap: () => _handleExportPng(context),
+                    ),
+                    if (isManualSort) ...<Widget>[
+                      const _BarDivider(),
+                      _BarAction(
+                        icon: Icons.vertical_align_top,
+                        tooltip: l.moveToTop,
+                        onTap: () => _handleMoveToTop(ref),
+                      ),
+                      _BarAction(
+                        icon: Icons.vertical_align_bottom,
+                        tooltip: l.moveToBottom,
+                        onTap: () => _handleMoveToBottom(ref),
+                      ),
+                    ],
+                    const _BarDivider(),
+                    _BarAction(
+                      icon: Icons.delete_outline,
+                      tooltip: l.remove,
+                      danger: true,
+                      onTap: () => _handleRemove(context, ref, theme),
+                    ),
+                  ],
+                ),
               ),
-              _BarAction(
-                icon: Icons.vertical_align_bottom,
-                tooltip: l.moveToBottom,
-                onTap: () => _handleMoveToBottom(ref),
-              ),
-            ],
-            const _BarDivider(),
-            _BarAction(
-              icon: Icons.delete_outline,
-              tooltip: l.remove,
-              danger: true,
-              onTap: () => _handleRemove(context, ref, theme),
             ),
           ],
         ),
@@ -259,6 +280,14 @@ class BulkActionBar extends ConsumerWidget {
     context.showSnack(
       l.bulkRemoved(removed),
       type: SnackType.success,
+    );
+  }
+
+  Future<void> _handleExportPng(BuildContext context) {
+    return showBulkPosterExportDialog(
+      context: context,
+      items: items,
+      collectionName: collectionName,
     );
   }
 

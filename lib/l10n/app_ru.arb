@@ -110,6 +110,31 @@
       "count": {"type": "int"}
     }
   },
+  "bulkExportPngTitle": "Экспорт в PNG",
+  "bulkExportPngColumns": "Колонок",
+  "bulkExportPngItemsCount": "{count, plural, =1{1 элемент} few{{count} элемента} many{{count} элементов} other{{count} элементов}}",
+  "@bulkExportPngItemsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkExportPngItemsCountPreview": "{total, plural, =1{1 элемент} few{{total} элемента} many{{total} элементов} other{{total} элементов}} (в превью {preview})",
+  "@bulkExportPngItemsCountPreview": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "preview": {"type": "int"}
+    }
+  },
+  "bulkExportPngPreparing": "Подготовка обложек: {done} / {total}",
+  "@bulkExportPngPreparing": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "bulkExportPngSave": "Сохранить PNG",
+  "bulkExportPngSaved": "Изображение сохранено",
+  "bulkExportPngFailed": "Не удалось сохранить изображение",
   "back": "Назад",
   "next": "Далее",
   "skip": "Пропустить",

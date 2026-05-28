@@ -110,6 +110,31 @@
       "count": {"type": "int"}
     }
   },
+  "bulkExportPngTitle": "Export as PNG",
+  "bulkExportPngColumns": "Columns",
+  "bulkExportPngItemsCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@bulkExportPngItemsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkExportPngItemsCountPreview": "{total, plural, =1{1 item} other{{total} items}} ({preview} shown in preview)",
+  "@bulkExportPngItemsCountPreview": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "preview": {"type": "int"}
+    }
+  },
+  "bulkExportPngPreparing": "Preparing covers: {done} / {total}",
+  "@bulkExportPngPreparing": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "bulkExportPngSave": "Save PNG",
+  "bulkExportPngSaved": "Image saved",
+  "bulkExportPngFailed": "Failed to save image",
   "back": "Back",
   "next": "Next",
   "skip": "Skip",

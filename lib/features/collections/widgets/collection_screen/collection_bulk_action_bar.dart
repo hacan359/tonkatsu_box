@@ -12,12 +12,14 @@ import '../bulk_action_bar.dart';
 class CollectionBulkActionBar extends ConsumerWidget {
   const CollectionBulkActionBar({
     required this.collectionId,
+    this.collectionName,
     this.filters,
     this.tags = const <CollectionTag>[],
     super.key,
   });
 
   final int? collectionId;
+  final String? collectionName;
 
   /// Active screen filters. When provided, the "select all visible" action
   /// targets `filters.apply(allItems, tags)` instead of the full list.
@@ -53,6 +55,7 @@ class CollectionBulkActionBar extends ConsumerWidget {
     return BulkActionBar(
       items: selectedItems,
       collectionId: collectionId,
+      collectionName: collectionName,
       visibleCount: visible.length,
       onSelectAllVisible: () => ref
           .read(collectionSelectionProvider(collectionId).notifier)

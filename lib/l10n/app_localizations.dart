@@ -559,6 +559,54 @@ abstract class S {
   /// **'Status updated for {count, plural, =1{1 item} other{{count} items}}'**
   String bulkStatusUpdated(int count);
 
+  /// No description provided for @bulkExportPngTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as PNG'**
+  String get bulkExportPngTitle;
+
+  /// No description provided for @bulkExportPngColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns'**
+  String get bulkExportPngColumns;
+
+  /// No description provided for @bulkExportPngItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String bulkExportPngItemsCount(int count);
+
+  /// No description provided for @bulkExportPngItemsCountPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'{total, plural, =1{1 item} other{{total} items}} ({preview} shown in preview)'**
+  String bulkExportPngItemsCountPreview(int total, int preview);
+
+  /// No description provided for @bulkExportPngPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing covers: {done} / {total}'**
+  String bulkExportPngPreparing(int done, int total);
+
+  /// No description provided for @bulkExportPngSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save PNG'**
+  String get bulkExportPngSave;
+
+  /// No description provided for @bulkExportPngSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Image saved'**
+  String get bulkExportPngSaved;
+
+  /// No description provided for @bulkExportPngFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save image'**
+  String get bulkExportPngFailed;
+
   /// No description provided for @back.
   ///
   /// In en, this message translates to:
