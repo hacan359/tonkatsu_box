@@ -1247,6 +1247,7 @@
   "collectionTablePlatform": "Платформа",
   "collectionTableStatus": "Статус",
   "collectionTableRating": "Оценка",
+  "collectionTableExternalRating": "Внешний",
   "collectionTableYear": "Год",
 
   "collectionCopyToCollection": "Копировать в коллекцию",

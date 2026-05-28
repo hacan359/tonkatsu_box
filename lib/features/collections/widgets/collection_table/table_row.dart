@@ -253,6 +253,10 @@ class _RowContent extends ConsumerWidget {
           ),
         ),
         SizedBox(
+          width: 60,
+          child: RatingCell(rating: item.apiRating),
+        ),
+        SizedBox(
           width: 56,
           child: Center(
             child: Text(

@@ -362,6 +362,61 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, app_localizations*.dart
     (detailRatingValue): Placeholder type `int → String`.
 
+- **Unify card ratings across collection and home screens; drop list view**
+
+  Collection and All Items grids now split the two ratings: the personal
+  rating stays in the top-left badge (just the value, no slash) and the
+  external rating moves down to the subtitle row next to the year, so the
+  poster is no longer dominated by a stacked "user / api" pair. The
+  collection table gains a dedicated "External" column (sortable, 60px,
+  centered) so the API rating is visible in table view too. Search keeps
+  the combined badge — it has no personal rating to split out. The list view
+  (and its drag-to-reorder variant) is removed: drag-to-reorder now lives
+  in the table, the grid covers the visual browse use case, and the tile
+  duplicated the poster card without adding anything the user couldn't get
+  from a row of cards.
+
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.splitRatings,
+    MediaPosterCard._buildSubtitle): New `splitRatings` flag; when true the
+    badge holds only the personal rating and the API rating leads the
+    subtitle row.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView, CollectionItemsView._buildGridCard,
+    CollectionItemsView._withHeader): Drop `isGridMode`, remove the list and
+    reorderable-list paths and their helpers; pass `splitRatings: true` to
+    the grid card.
+  * lib/features/collections/widgets/collection_item_tile.dart
+    (CollectionItemTile): Removed.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState.build): Stop forwarding `isGridMode` to
+    `CollectionItemsView` (the view derives grid mode from `!isTableMode`).
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildGrid): Pass `splitRatings: true`.
+  * lib/features/collections/widgets/recommendations_section.dart
+    (_RecommendationRowState.build): Pass `splitRatings: true`.
+  * lib/features/collections/widgets/collection_table/table_column.dart
+    (TableColumn.externalRating): New enum value.
+  * lib/features/collections/widgets/collection_table/table_header.dart
+    (TableHeader._col): Render the "External" column header.
+  * lib/features/collections/widgets/collection_table/table_row.dart
+    (_RowContent.build): Render the API rating cell.
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (_CollectionTableViewState._sort): Sort case for `externalRating` by
+    `CollectionItem.apiRating`.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_localizations.dart,
+    lib/l10n/app_localizations_en.dart, lib/l10n/app_localizations_ru.dart
+    (collectionTableExternalRating): New string ("External" / "Внешний").
+  * test/features/collections/widgets/collection_item_tile_test.dart:
+    Removed.
+  * test/features/collections/widgets/collection_items_view_test.dart:
+    Drop list / reorderable groups; tighten remaining grid + context-menu
+    cases.
+  * test/features/collections/widgets/collection_table_view_test.dart
+    (group 'TableColumn'): Expect 9 columns including `externalRating`.
+  * test/features/collections/widgets/recommendations_section_test.dart:
+    Year assertion uses `textContaining` because the rating now shares the
+    subtitle line.
+
 ### Fixed
 
 - **Fix custom items: cannot change media-type while editing, covers missing from collection preview**

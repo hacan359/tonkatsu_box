@@ -315,6 +315,10 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
           final double ra = a.userRating ?? 0;
           final double rb = b.userRating ?? 0;
           return ra.compareTo(rb) * dir;
+        case TableColumn.externalRating:
+          final double ea = a.apiRating ?? 0;
+          final double eb = b.apiRating ?? 0;
+          return ea.compareTo(eb) * dir;
         case TableColumn.year:
           final int ya = a.releaseYear ?? 0;
           final int yb = b.releaseYear ?? 0;

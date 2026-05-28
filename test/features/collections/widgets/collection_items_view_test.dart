@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/collections/widgets/collection_item_tile.dart';
 import 'package:xerabora/features/collections/widgets/collection_items_view.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
@@ -79,7 +78,6 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: const <CollectionItem>[],
-              isGridMode: false,
               canEdit: true,
               onItemTap: (_) {},
             ),
@@ -98,7 +96,6 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: const <CollectionItem>[],
-              isGridMode: false,
               canEdit: true,
               onItemTap: (_) {},
             ),
@@ -119,7 +116,6 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: const <CollectionItem>[],
-              isGridMode: false,
               canEdit: false,
               onItemTap: (_) {},
             ),
@@ -134,337 +130,12 @@ void main() {
       );
 
       testWidgets(
-        'should show пустое состояние в grid-режиме when empty списке',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(_buildTestApp(
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: const <CollectionItem>[],
-              isGridMode: true,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byIcon(Icons.shelves), findsOneWidget);
-          expect(find.text('No Items Yet'), findsOneWidget);
-        },
-      );
-    });
-
-    group('grid-режим', () {
-      testWidgets(
-        'should show GridView когда isGridMode=true',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Game One'),
-            _makeItem(id: 2, externalId: 101, gameName: 'Game Two'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: true,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(GridView), findsOneWidget);
-          expect(find.byType(ListView), findsNothing);
-        },
-      );
-
-      testWidgets(
-        'should show MediaPosterCard для каждого элемента в grid-режиме',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Game A'),
-            _makeItem(id: 2, externalId: 102, gameName: 'Game B'),
-            _makeItem(id: 3, externalId: 103, gameName: 'Game C'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: true,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(MediaPosterCard), findsNWidgets(3));
-        },
-      );
-
-      testWidgets(
-        'should call onItemTap when pressed на карточку в grid-режиме',
-        (WidgetTester tester) async {
-          CollectionItem? tappedItem;
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Tapped Game'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: true,
-              canEdit: true,
-              onItemTap: (CollectionItem item) => tappedItem = item,
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          await tester.tap(find.byType(MediaPosterCard));
-          expect(tappedItem, isNotNull);
-          expect(tappedItem!.id, equals(1));
-        },
-      );
-    });
-
-    group('list-режим', () {
-      testWidgets(
-        'should show ListView когда isGridMode=false',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Game One'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(RefreshIndicator), findsOneWidget);
-          expect(find.byType(ListView), findsOneWidget);
-          expect(find.byType(GridView), findsNothing);
-        },
-      );
-
-      testWidgets(
-        'should show CollectionItemTile для каждого элемента в list-режиме',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Game A'),
-            _makeItem(id: 2, externalId: 102, gameName: 'Game B'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(CollectionItemTile), findsNWidgets(2));
-        },
-      );
-
-      testWidgets(
-        'should call onItemTap when pressed на tile в list-режиме',
-        (WidgetTester tester) async {
-          CollectionItem? tappedItem;
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 42, gameName: 'Clickable Game'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (CollectionItem item) => tappedItem = item,
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          await tester.tap(find.byType(CollectionItemTile));
-          expect(tappedItem, isNotNull);
-          expect(tappedItem!.id, equals(42));
-        },
-      );
-
-      testWidgets(
-        'должен не показывать CollectionItemTile в grid-режиме',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Game A'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: true,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(CollectionItemTile), findsNothing);
-          expect(find.byType(MediaPosterCard), findsOneWidget);
-        },
-      );
-    });
-
-    group('reorderable list', () {
-      testWidgets(
-        'should show ReorderableListView при manual sort и canEdit=true',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, sortOrder: 0, gameName: 'First'),
-            _makeItem(id: 2, externalId: 102, sortOrder: 1, gameName: 'Second'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(ReorderableListView), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'should show drag handle в reorderable list',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, sortOrder: 0, gameName: 'Draggable'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byIcon(Icons.drag_handle), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'should show обычный ListView при manual sort и canEdit=false',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, sortOrder: 0, gameName: 'Item'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: false,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(ReorderableListView), findsNothing);
-          expect(find.byType(ListView), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'должен не показывать ReorderableListView в grid-режиме даже при manual sort',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, sortOrder: 0, gameName: 'Grid Item'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: true,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(ReorderableListView), findsNothing);
-          expect(find.byType(GridView), findsOneWidget);
-        },
-      );
-    });
-
-    group('uncategorized (collectionId=null)', () {
-      testWidgets(
-        'должен корректно отображать list-режим при collectionId=null',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(
-              id: 1,
-              collectionId: null,
-              gameName: 'Uncategorized Game',
-            ),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: null,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(CollectionItemTile), findsOneWidget);
-        },
-      );
-
-      testWidgets(
         'should show пустое состояние при collectionId=null и пустом списке',
         (WidgetTester tester) async {
           await tester.pumpWidget(_buildTestApp(
             child: CollectionItemsView(
               collectionId: null,
               items: const <CollectionItem>[],
-              isGridMode: false,
               canEdit: false,
               onItemTap: (_) {},
             ),
@@ -477,14 +148,13 @@ void main() {
       );
     });
 
-    group('callbacks', () {
+    group('grid-режим', () {
       testWidgets(
-        'должен передать правильный элемент в onItemTap в list-режиме',
+        'should show GridView с непустым списком',
         (WidgetTester tester) async {
-          final List<CollectionItem> tappedItems = <CollectionItem>[];
           final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 10, gameName: 'First Game'),
-            _makeItem(id: 20, externalId: 200, gameName: 'Second Game'),
+            _makeItem(id: 1, gameName: 'Game One'),
+            _makeItem(id: 2, externalId: 101, gameName: 'Game Two'),
           ];
 
           await tester.pumpWidget(_buildTestApp(
@@ -492,152 +162,90 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: false,
-              canEdit: false,
-              onItemTap: (CollectionItem item) => tappedItems.add(item),
+              canEdit: true,
+              onItemTap: (_) {},
             ),
           ));
           await tester.pumpAndSettle();
 
-          await tester.tap(find.byType(CollectionItemTile).first);
-
-          expect(tappedItems.length, equals(1));
-          expect(tappedItems.first.id, equals(10));
+          expect(find.byType(GridView), findsOneWidget);
         },
       );
 
       testWidgets(
-        'should show несколько элементов в list-режиме',
+        'should show MediaPosterCard для каждого элемента',
         (WidgetTester tester) async {
-          final List<CollectionItem> items = List<CollectionItem>.generate(
-            5,
-            (int i) => _makeItem(
-              id: i + 1,
-              externalId: 100 + i,
-              gameName: 'Game $i',
-            ),
-          );
+          final List<CollectionItem> items = <CollectionItem>[
+            _makeItem(id: 1, gameName: 'Game A'),
+            _makeItem(id: 2, externalId: 102, gameName: 'Game B'),
+            _makeItem(id: 3, externalId: 103, gameName: 'Game C'),
+          ];
 
           await tester.pumpWidget(_buildTestApp(
             overrides: _defaultOverrides(),
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: false,
               canEdit: true,
               onItemTap: (_) {},
             ),
           ));
           await tester.pumpAndSettle();
 
-          expect(find.byType(CollectionItemTile), findsNWidgets(5));
-        },
-      );
-    });
-
-    group('режимы сортировки не-manual', () {
-      testWidgets(
-        'should show обычный ListView при сортировке по имени',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Alpha'),
-            _makeItem(id: 2, externalId: 102, gameName: 'Beta'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.name),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(ReorderableListView), findsNothing);
-          expect(find.byType(ListView), findsOneWidget);
+          expect(find.byType(MediaPosterCard), findsNWidgets(3));
         },
       );
 
       testWidgets(
-        'should show обычный ListView при сортировке по рейтингу',
+        'should call onItemTap when pressed на карточку',
         (WidgetTester tester) async {
+          CollectionItem? tappedItem;
           final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Rated Game', userRating: 8),
+            _makeItem(id: 42, gameName: 'Tapped Game'),
           ];
 
           await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.rating),
+            overrides: _defaultOverrides(),
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: false,
               canEdit: true,
-              onItemTap: (_) {},
+              onItemTap: (CollectionItem item) => tappedItem = item,
             ),
           ));
           await tester.pumpAndSettle();
 
-          expect(find.byType(ReorderableListView), findsNothing);
-          expect(find.byType(ListView), findsOneWidget);
+          await tester.tap(find.byType(MediaPosterCard));
+          expect(tappedItem, isNotNull);
+          expect(tappedItem!.id, equals(42));
         },
       );
 
       testWidgets(
-        'should show обычный ListView при сортировке по статусу',
+        'should show grid вне зависимости от sort mode',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(
-              id: 1,
-              gameName: 'Status Game',
-              status: ItemStatus.inProgress,
-            ),
+            _makeItem(id: 1, gameName: 'Manual Sort'),
           ];
 
           await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.status),
+            overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: false,
               canEdit: true,
               onItemTap: (_) {},
             ),
           ));
           await tester.pumpAndSettle();
 
-          expect(find.byType(ReorderableListView), findsNothing);
-          expect(find.byType(ListView), findsOneWidget);
+          expect(find.byType(GridView), findsOneWidget);
+          expect(find.byType(MediaPosterCard), findsOneWidget);
         },
       );
     });
 
     group('RefreshIndicator', () {
-      testWidgets(
-        'should contain RefreshIndicator в list-режиме',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Refreshable'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(RefreshIndicator), findsOneWidget);
-        },
-      );
-
       testWidgets(
         'should contain RefreshIndicator в grid-режиме',
         (WidgetTester tester) async {
@@ -650,7 +258,6 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: true,
               canEdit: true,
               onItemTap: (_) {},
             ),
@@ -660,35 +267,11 @@ void main() {
           expect(find.byType(RefreshIndicator), findsOneWidget);
         },
       );
-
-      testWidgets(
-        'должен не содержать RefreshIndicator в reorderable-режиме',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Non-refreshable'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: false,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(RefreshIndicator), findsNothing);
-          expect(find.byType(ReorderableListView), findsOneWidget);
-        },
-      );
     });
 
     group('контекстное меню ПКМ', () {
       testWidgets(
-        'should show контекстное меню при правом клике в list-режиме',
+        'should show контекстное меню при правом клике на карточку',
         (WidgetTester tester) async {
           final List<CollectionItem> items = <CollectionItem>[
             _makeItem(id: 1, gameName: 'Right Click Game'),
@@ -702,7 +285,6 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: false,
               canEdit: true,
               onItemTap: (_) {},
               onItemMove: (_) => moveCalled = true,
@@ -713,7 +295,7 @@ void main() {
           await tester.pumpAndSettle();
 
           final Offset center =
-              tester.getCenter(find.byType(CollectionItemTile));
+              tester.getCenter(find.byType(MediaPosterCard));
           final TestGesture gesture = await tester.createGesture(
             kind: PointerDeviceKind.mouse,
             buttons: kSecondaryMouseButton,
@@ -745,7 +327,6 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: false,
               canEdit: true,
               onItemTap: (_) {},
               onItemMove: (CollectionItem item) => movedItem = item,
@@ -756,7 +337,7 @@ void main() {
           await tester.pumpAndSettle();
 
           final Offset center =
-              tester.getCenter(find.byType(CollectionItemTile));
+              tester.getCenter(find.byType(MediaPosterCard));
           final TestGesture gesture = await tester.createGesture(
             kind: PointerDeviceKind.mouse,
             buttons: kSecondaryMouseButton,
@@ -786,7 +367,6 @@ void main() {
             child: CollectionItemsView(
               collectionId: 1,
               items: items,
-              isGridMode: false,
               canEdit: false,
               onItemTap: (_) {},
               onItemMove: (_) {},
@@ -795,7 +375,7 @@ void main() {
           await tester.pumpAndSettle();
 
           final Offset center =
-              tester.getCenter(find.byType(CollectionItemTile));
+              tester.getCenter(find.byType(MediaPosterCard));
           final TestGesture gesture = await tester.createGesture(
             kind: PointerDeviceKind.mouse,
             buttons: kSecondaryMouseButton,
@@ -806,33 +386,6 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(find.byType(PopupMenuItem<String>), findsNothing);
-        },
-      );
-    });
-
-    group('приоритет isGridMode', () {
-      testWidgets(
-        'should use grid-режим вне зависимости от sort mode',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            _makeItem(id: 1, gameName: 'Priority Test'),
-          ];
-
-          await tester.pumpWidget(_buildTestApp(
-            overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
-            child: CollectionItemsView(
-              collectionId: 1,
-              items: items,
-              isGridMode: true,
-              canEdit: true,
-              onItemTap: (_) {},
-            ),
-          ));
-          await tester.pumpAndSettle();
-
-          expect(find.byType(GridView), findsOneWidget);
-          expect(find.byType(ReorderableListView), findsNothing);
-          expect(find.byType(MediaPosterCard), findsOneWidget);
         },
       );
     });

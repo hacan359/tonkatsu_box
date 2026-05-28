@@ -6,6 +6,7 @@ enum TableColumn {
   status,
   tag,
   rating,
+  externalRating,
   year,
   added,
 }

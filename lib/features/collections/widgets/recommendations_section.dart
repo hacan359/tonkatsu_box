@@ -287,6 +287,7 @@ class _RecommendationRowState extends State<_RecommendationRow> {
                     cacheImageId: item.cacheImageId,
                     year: item.year,
                     apiRating: item.apiRating,
+                    splitRatings: true,
                     isInCollection: item.isOwned,
                     placeholderIcon: item.icon,
                     onTap: item.onAddToCollection,

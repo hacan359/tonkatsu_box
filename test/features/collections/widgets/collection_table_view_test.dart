@@ -98,8 +98,8 @@ void main() {
   }
 
   group('TableColumn', () {
-    test('should have 8 values', () {
-      expect(TableColumn.values.length, 8);
+    test('should have 9 values', () {
+      expect(TableColumn.values.length, 9);
     });
 
     test('should contain all expected columns', () {
@@ -112,6 +112,7 @@ void main() {
           TableColumn.status,
           TableColumn.tag,
           TableColumn.rating,
+          TableColumn.externalRating,
           TableColumn.year,
           TableColumn.added,
         ]),

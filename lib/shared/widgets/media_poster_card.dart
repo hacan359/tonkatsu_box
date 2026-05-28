@@ -37,6 +37,7 @@ class MediaPosterCard extends StatefulWidget {
     required this.cacheImageId,
     this.userRating,
     this.apiRating,
+    this.splitRatings = false,
     this.isInCollection = false,
     this.status,
     this.year,
@@ -69,6 +70,12 @@ class MediaPosterCard extends StatefulWidget {
 
   /// API rating (0.0–10.0). Grid/compact only.
   final double? apiRating;
+
+  /// When true, splits the two ratings: the personal rating stays in the
+  /// top-left badge (number only, no slash) and the API rating moves down to
+  /// the subtitle row next to the year. When false (search), both ratings
+  /// share one badge. Grid/compact only.
+  final bool splitRatings;
 
   /// Grid/compact only.
   final bool isInCollection;
@@ -325,8 +332,19 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               },
             ),
 
-            // Rating badge (top-left); hidden under an overlay — moved to the subtitle.
-            if (_hasAnyRating && !hasOverlay)
+            // Rating badge (top-left). In split mode it holds only the personal
+            // rating (the API rating lives in the subtitle); otherwise it shows
+            // both. Hidden under an overlay — moved to the subtitle.
+            if (widget.splitRatings && widget.userRating != null)
+              Positioned(
+                top: _isCompact ? 2 : AppSpacing.xs,
+                left: _isCompact ? 2 : AppSpacing.xs,
+                child: DualRatingBadge(
+                  userRating: widget.userRating,
+                  compact: _isCompact,
+                ),
+              )
+            else if (!widget.splitRatings && _hasAnyRating && !hasOverlay)
               Positioned(
                 top: _isCompact ? 2 : AppSpacing.xs,
                 left: _isCompact ? 2 : AppSpacing.xs,
@@ -448,20 +466,24 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
         : AppTypography.posterSubtitle;
 
-    // Parts before the type: rating (if overlay), platform, year.
+    // Parts before the type: rating, platform, year.
     final List<String> before = <String>[];
-    String? overlayRating;
-    if (hasOverlay && _hasAnyRating) {
+    final bool hasApi = widget.apiRating != null && widget.apiRating! > 0;
+    String? leadingRating;
+    if (widget.splitRatings) {
+      // Only the API rating goes here; the personal one stays in the badge.
+      if (hasApi) {
+        leadingRating = '★${widget.apiRating!.toStringAsFixed(1)}';
+      }
+    } else if (hasOverlay && _hasAnyRating) {
       final bool hasUser = widget.userRating != null;
-      final bool hasApi =
-          widget.apiRating != null && widget.apiRating! > 0;
       if (hasUser && hasApi) {
-        overlayRating =
+        leadingRating =
             '★${widget.userRating!.toStringAsFixed(1)} / ${widget.apiRating!.toStringAsFixed(1)}';
       } else if (hasUser) {
-        overlayRating = '★${widget.userRating!.toStringAsFixed(1)}';
+        leadingRating = '★${widget.userRating!.toStringAsFixed(1)}';
       } else if (hasApi) {
-        overlayRating = '★${widget.apiRating!.toStringAsFixed(1)}';
+        leadingRating = '★${widget.apiRating!.toStringAsFixed(1)}';
       }
     }
     if (widget.platformLabel != null && widget.platformColor == null) {
@@ -478,7 +500,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     if (widget.mediaType == null) {
       final List<String> all = <String>[...before];
       if (afterText != null) all.add(afterText);
-      if (overlayRating == null) {
+      if (leadingRating == null) {
         return Text(
           all.join(' \u00b7 '),
           style: baseStyle,
@@ -490,7 +512,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         TextSpan(
           children: <InlineSpan>[
             TextSpan(
-              text: overlayRating,
+              text: leadingRating,
               style: baseStyle.copyWith(color: ratingColor),
             ),
             if (all.isNotEmpty)
@@ -508,9 +530,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     return Text.rich(
       TextSpan(
         children: <InlineSpan>[
-          if (overlayRating != null)
+          if (leadingRating != null)
             TextSpan(
-              text: '$overlayRating \u00b7 ',
+              text: '$leadingRating \u00b7 ',
               style: baseStyle.copyWith(color: ratingColor),
             ),
           if (beforeText.isNotEmpty)

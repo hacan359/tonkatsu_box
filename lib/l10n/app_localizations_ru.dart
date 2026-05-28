@@ -3322,6 +3322,9 @@ class SRu extends S {
   String get collectionTableRating => 'Оценка';
 
   @override
+  String get collectionTableExternalRating => 'Внешний';
+
+  @override
   String get collectionTableYear => 'Год';
 
   @override

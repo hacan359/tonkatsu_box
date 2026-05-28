@@ -438,7 +438,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         tags: tags,
         filterTagIds: _filterTagIds,
         groupByTags: _groupByTags,
-        isGridMode: _isGridMode,
         isTableMode: _isTableMode,
         canEdit: _canEdit,
         header: heroHeader,

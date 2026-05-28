@@ -380,7 +380,7 @@ void main() {
 
         await pumpUntilResolved(tester);
 
-        expect(find.text('2024'), findsOneWidget);
+        expect(find.textContaining('2024'), findsOneWidget);
       });
     });
   });

@@ -5959,6 +5959,12 @@ abstract class S {
   /// **'Rating'**
   String get collectionTableRating;
 
+  /// No description provided for @collectionTableExternalRating.
+  ///
+  /// In en, this message translates to:
+  /// **'External'**
+  String get collectionTableExternalRating;
+
   /// No description provided for @collectionTableYear.
   ///
   /// In en, this message translates to:

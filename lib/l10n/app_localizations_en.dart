@@ -3281,6 +3281,9 @@ class SEn extends S {
   String get collectionTableRating => 'Rating';
 
   @override
+  String get collectionTableExternalRating => 'External';
+
+  @override
   String get collectionTableYear => 'Year';
 
   @override

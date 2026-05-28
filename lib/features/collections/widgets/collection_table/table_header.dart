@@ -124,6 +124,12 @@ class TableHeader extends StatelessWidget {
             isFiltered: filterRating != null,
           ),
           _col(
+            l.collectionTableExternalRating,
+            TableColumn.externalRating,
+            width: 60,
+            alignCenter: true,
+          ),
+          _col(
             l.collectionTableYear,
             TableColumn.year,
             width: 56,

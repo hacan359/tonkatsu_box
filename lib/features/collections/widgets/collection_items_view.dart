@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -21,19 +19,17 @@ import '../../settings/providers/settings_provider.dart';
 import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
 import '../extensions/item_display_name.dart';
-import 'collection_item_tile.dart';
 import 'collection_table/collection_table_view.dart';
 import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 
-/// Grid / list / table / reorder view for collection items. The actual mode
-/// is picked from [isGridMode], [isTableMode] and the current sort: a manual
-/// sort flips the grid into a [ReorderableListView] so users can drag.
+/// Grid or table view for collection items, picked from [isTableMode];
+/// otherwise the grid is shown. In table mode a manual sort enables
+/// drag-to-reorder rows.
 class CollectionItemsView extends ConsumerWidget {
   const CollectionItemsView({
     required this.collectionId,
     required this.items,
-    required this.isGridMode,
     this.isTableMode = false,
     required this.canEdit,
     required this.onItemTap,
@@ -53,7 +49,6 @@ class CollectionItemsView extends ConsumerWidget {
 
   final int? collectionId;
   final List<CollectionItem> items;
-  final bool isGridMode;
   final bool isTableMode;
   final bool canEdit;
   final ValueChanged<CollectionItem> onItemTap;
@@ -65,8 +60,8 @@ class CollectionItemsView extends ConsumerWidget {
   final Set<int> filterTagIds;
   final bool groupByTags;
 
-  /// Optional header that scrolls with the grid as a sliver. Table and
-  /// reorder modes pin it above instead — those widgets don't accept slivers.
+  /// Optional header that scrolls with the grid as a sliver. Table mode pins
+  /// it above instead — that widget doesn't accept slivers.
   final Widget? header;
 
   /// Mirrors the table's status column filter outward so chevron counts in
@@ -159,15 +154,7 @@ class CollectionItemsView extends ConsumerWidget {
       );
     }
 
-    if (isGridMode) {
-      return _buildGridView(context, ref);
-    }
-
-    if (isManualSort) {
-      return _buildReorderableList(context, ref);
-    }
-
-    return _buildListView(context, ref);
+    return _buildGridView(context, ref);
   }
 
   /// Buckets items by their `tagId`. Items pointing at an unknown tag (e.g.
@@ -217,126 +204,14 @@ class CollectionItemsView extends ConsumerWidget {
   bool get _hasTagGroups =>
       tags.isNotEmpty && (groupByTags || filterTagIds.isNotEmpty);
 
-  /// Pins [header] above [body]. When [wrapInScroll] is true the header and
-  /// body share one [CustomScrollView] so they scroll together — same
-  /// behaviour as the grid path, mirrored for table/reorder bodies that
-  /// don't expose their own slivers.
-  Widget _withHeader(Widget body, {bool wrapInScroll = false}) {
-    if (header == null) {
-      return wrapInScroll
-          ? SingleChildScrollView(child: body)
-          : body;
-    }
-    if (wrapInScroll) {
-      return CustomScrollView(
-        slivers: <Widget>[
-          SliverToBoxAdapter(child: header),
-          SliverToBoxAdapter(child: body),
-        ],
-      );
-    }
+  /// Pins [header] above [body].
+  Widget _withHeader(Widget body) {
+    if (header == null) return body;
     return Column(
       children: <Widget>[
         header!,
         Expanded(child: body),
       ],
-    );
-  }
-
-  Widget _buildListView(BuildContext context, WidgetRef ref) {
-    if (!_hasTagGroups) {
-      return _buildFlatListView(context, ref, items);
-    }
-
-    final S l = S.of(context);
-    final List<_TagGroup> groups = _groupByTag(l.tagNone);
-
-    // Flatten the per-tag buckets back into a single list, preserving the
-    // grouped ordering so the table view renders rows tag by tag.
-    final List<CollectionItem> sorted = <CollectionItem>[
-      for (final _TagGroup g in groups) ...g.items,
-    ];
-
-    return _buildFlatListView(context, ref, sorted);
-  }
-
-  Widget _buildFlatListView(
-    BuildContext context,
-    WidgetRef ref,
-    List<CollectionItem> listItems,
-  ) {
-    final Widget refresh = RefreshIndicator(
-      onRefresh: () => ref
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh(),
-      child: header == null
-          ? ListView.builder(
-              padding:
-                  const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              itemCount: listItems.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildListTile(context, ref, listItems[index]);
-              },
-            )
-          : CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: header),
-                SliverPadding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                  sliver: SliverList.builder(
-                    itemCount: listItems.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _buildListTile(context, ref, listItems[index]);
-                    },
-                  ),
-                ),
-              ],
-            ),
-    );
-    return refresh;
-  }
-
-  Widget _buildListTile(
-    BuildContext context,
-    WidgetRef ref,
-    CollectionItem item,
-  ) {
-    final Set<int> selection = canEdit
-        ? ref.watch(collectionSelectionProvider(collectionId))
-        : const <int>{};
-    final bool selectionActive = selection.isNotEmpty;
-    final bool isSelected = selection.contains(item.id);
-
-    final Widget tile = CollectionItemTile(
-      key: ValueKey<int>(item.id),
-      item: item,
-      isEditable: canEdit,
-      onMove: canEdit ? () => onItemMove?.call(item) : null,
-      onClone: canEdit ? () => onItemClone?.call(item) : null,
-      onRemove: canEdit ? () => onItemRemove?.call(item) : null,
-      onSecondaryTap: canEdit
-          ? (Offset pos) => _showItemContextMenu(context, ref, pos, item)
-          : null,
-      onLongPress: canEdit
-          ? () => ref
-              .read(collectionSelectionProvider(collectionId).notifier)
-              .toggle(item.id)
-          : null,
-      onTap: selectionActive
-          ? () => ref
-              .read(collectionSelectionProvider(collectionId).notifier)
-              .toggle(item.id)
-          : () => onItemTap(item),
-    );
-    if (!canEdit) return tile;
-    return SelectablePosterCard(
-      isSelected: isSelected,
-      selectionActive: selectionActive,
-      onToggleSelect: () => ref
-          .read(collectionSelectionProvider(collectionId).notifier)
-          .toggle(item.id),
-      child: tile,
     );
   }
 
@@ -512,6 +387,7 @@ class CollectionItemsView extends ConsumerWidget {
       cacheImageId: item.externalId.toString(),
       userRating: item.userRating,
       apiRating: item.apiRating,
+      splitRatings: true,
       year: item.releaseYear,
       platformLabel: item.platform?.displayName,
       platformColor: item.platform?.familyColor,
@@ -551,86 +427,6 @@ class CollectionItemsView extends ConsumerWidget {
       child: card,
     );
   }
-
-  Widget _buildReorderableList(BuildContext context, WidgetRef ref) {
-    return _withHeader(ReorderableListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      buildDefaultDragHandles: false,
-      itemCount: items.length,
-      proxyDecorator:
-          (Widget child, int index, Animation<double> animation) {
-        return AnimatedBuilder(
-          animation: animation,
-          builder: (BuildContext context, Widget? child) {
-            final double elevation = lerpDouble(0, 6, animation.value) ?? 0;
-            return Material(
-              elevation: elevation,
-              color: Colors.transparent,
-              shadowColor: Colors.black26,
-              child: child,
-            );
-          },
-          child: child,
-        );
-      },
-      onReorderItem: (int oldIndex, int newIndex) {
-        ref
-            .read(collectionItemsNotifierProvider(collectionId).notifier)
-            .reorderItem(oldIndex, newIndex);
-      },
-      itemBuilder: (BuildContext context, int index) {
-        final CollectionItem item = items[index];
-        final Set<int> selection = canEdit
-            ? ref.watch(collectionSelectionProvider(collectionId))
-            : const <int>{};
-        final bool selectionActive = selection.isNotEmpty;
-        final bool isSelected = selection.contains(item.id);
-
-        final Widget tile = CollectionItemTile(
-          key: ValueKey<int>(item.id),
-          item: item,
-          isEditable: canEdit,
-          showDragHandle: true,
-          dragIndex: index,
-          onMove: canEdit ? () => onItemMove?.call(item) : null,
-          onRemove: canEdit ? () => onItemRemove?.call(item) : null,
-          onSecondaryTap: canEdit
-              ? (Offset pos) => _showItemContextMenu(
-                    context,
-                    ref,
-                    pos,
-                    item,
-                  )
-              : null,
-          onLongPress: canEdit
-              ? () => ref
-                  .read(collectionSelectionProvider(collectionId).notifier)
-                  .toggle(item.id)
-              : null,
-          onTap: selectionActive
-              ? () => ref
-                  .read(collectionSelectionProvider(collectionId).notifier)
-                  .toggle(item.id)
-              : () => onItemTap(item),
-        );
-        if (!canEdit) {
-          return KeyedSubtree(key: ValueKey<int>(item.id), child: tile);
-        }
-        return KeyedSubtree(
-          key: ValueKey<int>(item.id),
-          child: SelectablePosterCard(
-            isSelected: isSelected,
-            selectionActive: selectionActive,
-            onToggleSelect: () => ref
-                .read(collectionSelectionProvider(collectionId).notifier)
-                .toggle(item.id),
-            child: tile,
-          ),
-        );
-      },
-    ));
-  }
-
 
   /// Distinct from `null` (popup dismissed) — picked when the user explicitly
   /// chose "no tag".

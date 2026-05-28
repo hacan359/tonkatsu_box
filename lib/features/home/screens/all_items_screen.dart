@@ -472,6 +472,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       cacheImageId: item.externalId.toString(),
                       userRating: item.userRating,
                       apiRating: item.apiRating,
+                      splitRatings: true,
                       year: _yearFor(item),
                       platformLabel: item.platform?.displayName,
                       platformColor: item.platform?.familyColor,
