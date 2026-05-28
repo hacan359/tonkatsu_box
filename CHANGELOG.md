@@ -9,6 +9,51 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Export selected items as a poster mosaic PNG from the bulk action bar**
+
+  Selecting items in a collection or on All Items reveals a new image
+  button in the bulk action bar. It opens a dialog with a preview, an
+  auto-picked column count and a slider to override, then saves the
+  full selection as a dense poster grid PNG via FilePicker on desktop
+  or the system gallery on Android (album "Tonkatsu Box"). The
+  watermark row at the bottom matches the tier-list export so every
+  PNG out of the app carries the same signature.
+
+  * lib/features/collections/widgets/bulk_export/bulk_poster_mosaic_view.dart
+    (BulkPosterMosaicView, BulkPosterMosaicView.autoColumns,
+    BulkPosterMosaicView.precachedFiles, _PosterTile): New off-screen
+    `RepaintBoundary` widget; `autoColumns` returns
+    `sqrt(n * 1.5).round().clamp(4, 20)`.
+  * lib/features/collections/widgets/bulk_export/bulk_export_service.dart
+    (saveBoundaryAsPng, BulkExportResult, BulkExportStatus): New —
+    boundary to PNG bytes plus Android Gal / desktop FilePicker save.
+  * lib/features/collections/widgets/bulk_export/bulk_poster_export_dialog.dart
+    (showBulkPosterExportDialog, _BulkPosterExportDialog,
+    _BulkPosterExportDialogState._handleSave,
+    _BulkPosterExportDialogState._precacheCovers,
+    _BulkPosterExportDialogState._precacheOne): New — preview capped
+    at 120 covers, column slider, batched cover precache with
+    progress before the off-screen mosaic is snapshot.
+  * lib/features/collections/widgets/bulk_action_bar.dart (BulkActionBar,
+    BulkActionBar.collectionName, BulkActionBar._handleExportPng):
+    New image button next to the status menu; forwards
+    `collectionName` so the saved file is named after the collection.
+  * lib/features/collections/widgets/collection_screen/collection_bulk_action_bar.dart
+    (CollectionBulkActionBar, CollectionBulkActionBar.collectionName):
+    Threads the collection name through.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState.build): Passes `_collection?.name` (or the
+    uncategorised label) to the bulk bar.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_localizations.dart,
+    lib/l10n/app_localizations_en.dart, lib/l10n/app_localizations_ru.dart
+    (bulkExportPngTitle, bulkExportPngColumns, bulkExportPngItemsCount,
+    bulkExportPngItemsCountPreview, bulkExportPngPreparing,
+    bulkExportPngSave, bulkExportPngSaved, bulkExportPngFailed): New
+    strings for the dialog, the truncated-preview hint, and snackbars.
+  * test/features/collections/widgets/bulk_export/bulk_poster_mosaic_view_test.dart:
+    New — `autoColumns` formula at the empty / tiny / typical / huge
+    boundaries, plus renders-without-exception on 8 and 50 items.
+
 - **Add AniList tag support across storage, display, search filter and exports**
 
   Anime and manga now carry their AniList tag list (in addition to genres).

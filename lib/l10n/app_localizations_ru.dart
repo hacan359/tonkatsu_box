@@ -274,6 +274,52 @@ class SRu extends S {
   }
 
   @override
+  String get bulkExportPngTitle => 'Экспорт в PNG';
+
+  @override
+  String get bulkExportPngColumns => 'Колонок';
+
+  @override
+  String bulkExportPngItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count элементов',
+      many: '$count элементов',
+      few: '$count элемента',
+      one: '1 элемент',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkExportPngItemsCountPreview(int total, int preview) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total элементов',
+      many: '$total элементов',
+      few: '$total элемента',
+      one: '1 элемент',
+    );
+    return '$_temp0 (в превью $preview)';
+  }
+
+  @override
+  String bulkExportPngPreparing(int done, int total) {
+    return 'Подготовка обложек: $done / $total';
+  }
+
+  @override
+  String get bulkExportPngSave => 'Сохранить PNG';
+
+  @override
+  String get bulkExportPngSaved => 'Изображение сохранено';
+
+  @override
+  String get bulkExportPngFailed => 'Не удалось сохранить изображение';
+
+  @override
   String get back => 'Назад';
 
   @override

@@ -268,6 +268,48 @@ class SEn extends S {
   }
 
   @override
+  String get bulkExportPngTitle => 'Export as PNG';
+
+  @override
+  String get bulkExportPngColumns => 'Columns';
+
+  @override
+  String bulkExportPngItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkExportPngItemsCountPreview(int total, int preview) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total items',
+      one: '1 item',
+    );
+    return '$_temp0 ($preview shown in preview)';
+  }
+
+  @override
+  String bulkExportPngPreparing(int done, int total) {
+    return 'Preparing covers: $done / $total';
+  }
+
+  @override
+  String get bulkExportPngSave => 'Save PNG';
+
+  @override
+  String get bulkExportPngSaved => 'Image saved';
+
+  @override
+  String get bulkExportPngFailed => 'Failed to save image';
+
+  @override
   String get back => 'Back';
 
   @override

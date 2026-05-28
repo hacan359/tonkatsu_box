@@ -204,6 +204,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               if (_canEdit && !_isCanvasMode)
                 CollectionBulkActionBar(
                   collectionId: widget.collectionId,
+                  collectionName: _isUncategorized
+                      ? l.collectionsUncategorized
+                      : _collection?.name,
                   filters: activeFilters,
                   tags: tags,
                 ),
