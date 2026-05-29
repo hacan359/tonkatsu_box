@@ -62,9 +62,6 @@ dependencies:
   # XML (MyAnimeList import)
   xml: ^6.5.0
 
-  # Gallery
-  gal: ^2.3.0
-
   # URL
   url_launcher: ^6.2.0
 

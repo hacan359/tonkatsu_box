@@ -1,16 +1,11 @@
-import 'dart:io';
-import 'dart:ui' as ui;
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/mood_grid_cell.dart';
+import '../../../shared/services/png_export_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -375,50 +370,30 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
   }
 
   Future<void> _exportAsImage(String gridName, S l) async {
-    try {
-      await WidgetsBinding.instance.endOfFrame;
-      final RenderRepaintBoundary? boundary = _exportKey.currentContext
-          ?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return;
-      final ui.Image image = await boundary.toImage(pixelRatio: 2.0);
-      final ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) return;
-      final Uint8List pngBytes = byteData.buffer.asUint8List();
+    // Wait for the current frame so the offscreen export view is rendered.
+    await WidgetsBinding.instance.endOfFrame;
 
-      // Windows forbids <>:"/\|?* in file names; sanitize before the picker.
-      final String safeName =
-          gridName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').trim();
-      final String fileName = safeName.isEmpty
-          ? 'mood_grid_${widget.gridId}.png'
-          : '$safeName.png';
+    final String safeName = sanitizeFileName(gridName);
+    final String fileName =
+        '${safeName.isEmpty ? 'mood_grid_${widget.gridId}' : safeName}.png';
 
-      final bool mobile = Platform.isAndroid || Platform.isIOS;
-      final String? outputPath = await FilePicker.platform.saveFile(
-        dialogTitle: l.moodGridExportImage,
-        fileName: fileName,
-        // On Android FileType.custom blocks the picker; FileType.any opens SAF.
-        type: mobile ? FileType.any : FileType.custom,
-        allowedExtensions: mobile ? null : <String>['png'],
-        // bytes are required on Android — file_picker writes via SAF itself.
-        bytes: mobile ? pngBytes : null,
-      );
-      if (outputPath == null) return;
+    final BulkExportResult result = await saveBoundaryAsPng(
+      repaintKey: _exportKey,
+      suggestedFileName: fileName,
+      saveDialogTitle: l.moodGridExportImage,
+    );
+    if (!mounted) return;
 
-      // Desktop: file_picker only returns the chosen path; we write the bytes
-      // ourselves. Force a .png extension if the user removed it.
-      if (!mobile) {
-        final String finalPath = outputPath.toLowerCase().endsWith('.png')
-            ? outputPath
-            : '$outputPath.png';
-        await File(finalPath).writeAsBytes(pngBytes);
-      }
-
-      if (!mounted) return;
-      context.showSnack(l.moodGridImageSaved, type: SnackType.success);
-    } on Exception catch (e) {
-      if (!mounted) return;
-      context.showSnack(l.errorPrefix(e.toString()), type: SnackType.error);
+    switch (result.status) {
+      case BulkExportStatus.saved:
+        context.showSnack(l.moodGridImageSaved, type: SnackType.success);
+      case BulkExportStatus.cancelled:
+        break;
+      case BulkExportStatus.failed:
+        context.showSnack(
+          l.errorPrefix(result.error?.toString() ?? ''),
+          type: SnackType.error,
+        );
     }
   }
 }

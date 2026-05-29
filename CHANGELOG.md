@@ -435,6 +435,29 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Unify mobile image save to a folder picker across all PNG exports**
+
+  Bulk poster export and tier-list export on Android used to drop the PNG
+  straight into a fixed "Tonkatsu Box" gallery album with no say over the
+  destination. They now open the system folder picker (Storage Access
+  Framework), matching how mood-grid export already behaved. The shared
+  `saveBoundaryAsPng` service is the single save path for all three, and
+  mood-grid export was refactored onto it instead of carrying its own copy.
+  The `gal` dependency and the gallery permissions it required are gone.
+
+  * lib/shared/services/png_export_service.dart (saveBoundaryAsPng): Replace
+    the Android `Gal.putImageBytes` branch with `FilePicker.saveFile` using
+    `FileType.any` plus `bytes` so file_picker writes via SAF; desktop path
+    unchanged.
+  * lib/features/tier_lists/screens/mood_grid_detail_screen.dart
+    (_MoodGridDetailScreenState._exportAsImage): Refactor onto the shared
+    `saveBoundaryAsPng`; drop the inline FilePicker / RenderRepaintBoundary
+    duplication and the now-unused dart:io, dart:ui, file_picker and
+    flutter/services imports.
+  * pubspec.yaml: Remove the `gal` dependency, used only by the old save path.
+  * android/app/src/main/AndroidManifest.xml: Remove `WRITE_EXTERNAL_STORAGE`
+    and `READ_MEDIA_IMAGES`, declared only for `gal` — SAF requires neither.
+
 - **Tier-list detail page is faster on large collections and easier to use on mobile**
 
   Several wins land together. Derived collections on `TierListDetailState`
