@@ -7,6 +7,21 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Rate by tapping a whole star, fine-tune with −/+ buttons**
+
+  The personal-rating control no longer reads a fractional value from where you
+  tap or drag. Tapping a star now sets a whole number 1–10, and two −/+ buttons
+  next to the stars nudge the value by 0.1 to reach fractional ratings. The
+  buttons are disabled until a rating is set. This applies everywhere the
+  control appears — the item detail screen and the collection table popup.
+
+  * lib/shared/widgets/fractional_star_rating.dart (FractionalStarRating): Tap
+    snaps to a whole integer; drag removed; add −/+ nudge buttons (`step` 0.1,
+    clamped 1.0–10.0, no-op at the bounds) and a private `_NudgeButton`;
+    `naturalWidth` now accounts for the two buttons.
+
 ### Fixed
 
 - **Stop the gamepad plugin from crashing the app on Windows**

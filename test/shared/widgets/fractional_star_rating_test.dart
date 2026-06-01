@@ -4,7 +4,7 @@ import 'package:tonkatsu_box/shared/widgets/fractional_star_rating.dart';
 
 void main() {
   // starSize 24 + gap 3 => cellWidth 27. Leading cell occupies [0, 27),
-  // then 10 stars map [27, 297) onto rating 1.0..10.0.
+  // then 10 stars map [27, 297) onto integers 1..10.
   const double starSize = 24;
   const double cellWidth = starSize + 3;
 
@@ -38,8 +38,7 @@ void main() {
       expect(captured, isNull);
     });
 
-    testWidgets('tap near right edge yields 10.0 (clamped)',
-        (WidgetTester t) async {
+    testWidgets('tap on the last star yields 10.0', (WidgetTester t) async {
       double? captured;
       await t.pumpWidget(build(
         value: null,
@@ -50,8 +49,7 @@ void main() {
       expect(captured, 10.0);
     });
 
-    testWidgets('tap just past leading cell clamps up to 1.0',
-        (WidgetTester t) async {
+    testWidgets('tap on the first star yields 1.0', (WidgetTester t) async {
       double? captured;
       await t.pumpWidget(build(
         value: null,
@@ -62,41 +60,79 @@ void main() {
       expect(captured, 1.0);
     });
 
-    testWidgets('tap mid-bar yields a fractional value on 0.1 grid',
-        (WidgetTester t) async {
+    testWidgets('tap on a star yields a whole integer', (WidgetTester t) async {
       double? captured;
       await t.pumpWidget(build(
         value: null,
         onChanged: (double? v) => captured = v,
       ));
 
-      // x in the 5th star region -> roughly 4.5.
+      // x in the 4th star region -> integer 4.0, never a fraction.
       await t.tapAt(const Offset(cellWidth + cellWidth * 3.5, 10));
-      expect(captured, isNotNull);
-      // Value is rounded to a 0.1 grid.
-      expect((captured! * 10).roundToDouble(), captured! * 10);
-      expect(captured, greaterThanOrEqualTo(1.0));
-      expect(captured, lessThanOrEqualTo(10.0));
+      expect(captured, 4.0);
+    });
+
+    testWidgets('plus button nudges up by 0.1', (WidgetTester t) async {
+      double? captured;
+      await t.pumpWidget(build(
+        value: 7.0,
+        onChanged: (double? v) => captured = v,
+      ));
+
+      await t.tap(find.byIcon(Icons.add));
+      expect(captured, 7.1);
+    });
+
+    testWidgets('minus button nudges down by 0.1', (WidgetTester t) async {
+      double? captured;
+      await t.pumpWidget(build(
+        value: 7.0,
+        onChanged: (double? v) => captured = v,
+      ));
+
+      await t.tap(find.byIcon(Icons.remove));
+      expect(captured, 6.9);
+    });
+
+    testWidgets('nudge buttons do nothing while the rating is unset',
+        (WidgetTester t) async {
+      bool called = false;
+      await t.pumpWidget(build(
+        value: null,
+        onChanged: (double? _) => called = true,
+      ));
+
+      await t.tap(find.byIcon(Icons.add));
+      await t.tap(find.byIcon(Icons.remove));
+      expect(called, isFalse);
+    });
+
+    testWidgets('plus does not re-emit at the maximum', (WidgetTester t) async {
+      bool called = false;
+      await t.pumpWidget(build(
+        value: 10.0,
+        onChanged: (double? _) => called = true,
+      ));
+
+      await t.tap(find.byIcon(Icons.add));
+      expect(called, isFalse);
+    });
+
+    testWidgets('minus does not re-emit at the minimum',
+        (WidgetTester t) async {
+      bool called = false;
+      await t.pumpWidget(build(
+        value: 1.0,
+        onChanged: (double? _) => called = true,
+      ));
+
+      await t.tap(find.byIcon(Icons.remove));
+      expect(called, isFalse);
     });
 
     testWidgets('renders the leading clear cell', (WidgetTester t) async {
       await t.pumpWidget(build(value: 7.5, onChanged: (_) {}));
       expect(find.byIcon(Icons.do_not_disturb_alt), findsOneWidget);
-    });
-
-    testWidgets('a drag emits onChanged once on release, not per move',
-        (WidgetTester t) async {
-      final List<double?> emitted = <double?>[];
-      await t.pumpWidget(build(
-        value: null,
-        onChanged: emitted.add,
-      ));
-
-      await t.drag(find.byType(FractionalStarRating), const Offset(120, 0));
-      await t.pumpAndSettle();
-
-      expect(emitted.length, 1);
-      expect(emitted.single, isNotNull);
     });
 
     testWidgets('does not overflow when the parent is narrower than natural',
@@ -106,7 +142,7 @@ void main() {
           home: Scaffold(
             body: Align(
               alignment: Alignment.topLeft,
-              // Narrower than 11 * (starSize + gap) — the phone case.
+              // Narrower than the natural width — the phone case.
               child: SizedBox(
                 width: 200,
                 child: FractionalStarRating(

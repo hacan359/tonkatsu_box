@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Tap/drag bar for a fractional personal rating (1.0–10.0, step 0.1).
+/// Star control for a personal rating (1.0–10.0, step 0.1). Inline, no popup.
 ///
-/// Row of 11 cells: a leading dash cell clears the rating to `null`, followed
-/// by 10 stars. Tapping/dragging the stars sets the value by horizontal
-/// position; stars fill partially for fractional values. Inline — no popup.
-///
-/// The fill follows the pointer instantly via internal state; [onChanged] is
-/// emitted on tap and at the end of a drag (not on every drag event), so a
-/// slow persistence layer can't lag the visual.
+/// Row of a leading clear cell (sets the rating to `null`) plus 10 stars;
+/// tapping a star sets a whole integer 1–10. The −/+ buttons nudge the current
+/// value by 0.1 and are disabled while the rating is unset (nothing to nudge —
+/// tap a star first).
 class FractionalStarRating extends StatefulWidget {
   const FractionalStarRating({
     required this.onChanged,
@@ -28,13 +25,17 @@ class FractionalStarRating extends StatefulWidget {
   static const int starCount = 10;
   static const double minRating = 1.0;
   static const double maxRating = 10.0;
+  static const double step = 0.1;
   static const double _gap = 3.0;
 
-  /// Natural (unconstrained) width for a given [starSize]. Useful when the
-  /// widget sits inside an `IntrinsicWidth` (e.g. a popup menu), which cannot
-  /// measure the internal `LayoutBuilder`.
+  static double _buttonWidth(double starSize) => starSize + _gap;
+
+  /// Natural (unconstrained) width for a given [starSize]: clear cell, ten
+  /// stars, and the two nudge buttons. Useful when the widget sits inside an
+  /// `IntrinsicWidth` (e.g. a popup menu), which cannot measure the internal
+  /// `LayoutBuilder`.
   static double naturalWidth(double starSize) =>
-      (starSize + _gap) * (starCount + 1);
+      (starSize + _gap) * (starCount + 1) + 2 * _buttonWidth(starSize);
 
   @override
   State<FractionalStarRating> createState() => _FractionalStarRatingState();
@@ -51,77 +52,133 @@ class _FractionalStarRatingState extends State<FractionalStarRating> {
     }
   }
 
-  double get _cellWidth => widget.starSize + FractionalStarRating._gap;
-
   static double _roundToTenth(double v) => (v * 10).roundToDouble() / 10;
 
-  double? _valueFor(double localX, double cellWidth) {
-    if (localX < cellWidth) return null;
-    final double raw = (localX - cellWidth) / cellWidth;
-    return _roundToTenth(
-      raw.clamp(FractionalStarRating.minRating, FractionalStarRating.maxRating),
-    );
-  }
-
-  void _preview(double localX, double cellWidth) {
-    if (cellWidth <= 0) return;
-    setState(() => _value = _valueFor(localX, cellWidth));
-  }
-
-  void _commit(double localX, double cellWidth) {
-    if (cellWidth <= 0) return;
-    final double? v = _valueFor(localX, cellWidth);
+  void _emit(double? v) {
     setState(() => _value = v);
     widget.onChanged(v);
+  }
+
+  void _handleTap(double localX, double cellWidth) {
+    if (cellWidth <= 0) return;
+    final int index = (localX / cellWidth).floor();
+    if (index <= 0) {
+      _emit(null);
+      return;
+    }
+    _emit(index.clamp(1, FractionalStarRating.starCount).toDouble());
+  }
+
+  void _nudge(double delta) {
+    final double? current = _value;
+    if (current == null) return;
+    final double next = _roundToTenth(
+      (current + delta).clamp(
+        FractionalStarRating.minRating,
+        FractionalStarRating.maxRating,
+      ),
+    );
+    if (next == current) return;
+    _emit(next);
   }
 
   @override
   Widget build(BuildContext context) {
     const int starCount = FractionalStarRating.starCount;
+    final double buttonWidth =
+        FractionalStarRating._buttonWidth(widget.starSize);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final double intrinsic = _cellWidth * (starCount + 1);
-        // Shrink to the parent when it is narrower than the natural width,
-        // so the row never overflows; otherwise keep the natural size.
-        final double totalWidth =
-            constraints.maxWidth.isFinite && constraints.maxWidth < intrinsic
-                ? constraints.maxWidth
-                : intrinsic;
-        final double cellWidth = totalWidth / (starCount + 1);
+        final double barNatural =
+            (widget.starSize + FractionalStarRating._gap) * (starCount + 1);
+        final double reserved = 2 * buttonWidth;
+        // Shrink the star bar to the parent when it is too narrow, so the row
+        // never overflows; the nudge buttons keep their natural size.
+        final double barWidth = constraints.maxWidth.isFinite &&
+                constraints.maxWidth - reserved < barNatural
+            ? (constraints.maxWidth - reserved).clamp(0.0, barNatural)
+            : barNatural;
+        final double cellWidth = barWidth / (starCount + 1);
+        final bool hasValue = _value != null;
 
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (TapDownDetails d) =>
-              _preview(d.localPosition.dx, cellWidth),
-          onTapUp: (TapUpDetails d) => _commit(d.localPosition.dx, cellWidth),
-          onHorizontalDragUpdate: (DragUpdateDetails d) =>
-              _preview(d.localPosition.dx, cellWidth),
-          onHorizontalDragEnd: (_) => widget.onChanged(_value),
-          child: SizedBox(
-            width: totalWidth,
-            height: widget.starSize,
-            child: Row(
-              children: <Widget>[
-                _Cell(
-                  width: cellWidth,
-                  child: _ClearCell(
-                    size: widget.starSize,
-                    active: _value == null,
-                  ),
-                ),
-                for (int i = 1; i <= starCount; i++)
-                  _Cell(
-                    width: cellWidth,
-                    child: _PartialStar(
-                      fill: ((_value ?? 0) - (i - 1)).clamp(0.0, 1.0),
-                      size: widget.starSize,
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapUp: (TapUpDetails d) =>
+                  _handleTap(d.localPosition.dx, cellWidth),
+              child: SizedBox(
+                width: barWidth,
+                height: widget.starSize,
+                child: Row(
+                  children: <Widget>[
+                    _Cell(
+                      width: cellWidth,
+                      child: _ClearCell(
+                        size: widget.starSize,
+                        active: _value == null,
+                      ),
                     ),
-                  ),
-              ],
+                    for (int i = 1; i <= starCount; i++)
+                      _Cell(
+                        width: cellWidth,
+                        child: _PartialStar(
+                          fill: ((_value ?? 0) - (i - 1)).clamp(0.0, 1.0),
+                          size: widget.starSize,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
-          ),
+            _NudgeButton(
+              icon: Icons.remove,
+              size: widget.starSize,
+              onTap: hasValue ? () => _nudge(-FractionalStarRating.step) : null,
+            ),
+            _NudgeButton(
+              icon: Icons.add,
+              size: widget.starSize,
+              onTap: hasValue ? () => _nudge(FractionalStarRating.step) : null,
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+/// Square tappable +/- button. Greyed out (and inert) when [onTap] is null.
+class _NudgeButton extends StatelessWidget {
+  const _NudgeButton({
+    required this.icon,
+    required this.size,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final double size;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: FractionalStarRating._buttonWidth(size),
+      height: size,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Icon(
+            icon,
+            size: size * 0.8,
+            color:
+                onTap == null ? AppColors.textTertiary : AppColors.ratingStar,
+          ),
+        ),
+      ),
     );
   }
 }
