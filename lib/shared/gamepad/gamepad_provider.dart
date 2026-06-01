@@ -1,4 +1,4 @@
-// Riverpod провайдеры для геймпада.
+// Riverpod providers for the gamepad.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,10 +6,11 @@ import '../../core/services/gamepad_service.dart';
 import '../constants/platform_features.dart';
 import 'gamepad_action.dart';
 
-/// Провайдер сервиса геймпада (singleton).
+/// Gamepad service provider (singleton).
 ///
-/// На мобильных платформах (Android/iOS) сервис создаётся, но не запускается —
-/// подписка на Gamepads.events не нужна и создаёт лишнюю нагрузку при старте.
+/// On unsupported platforms (iOS, Windows) the service is created but not
+/// started. On Windows the polling subscription also crashes the native
+/// gamepads_windows plugin (see [kGamepadSupported]).
 final Provider<GamepadService> gamepadServiceProvider =
     Provider<GamepadService>((Ref ref) {
   final GamepadService service = GamepadService();
@@ -20,23 +21,23 @@ final Provider<GamepadService> gamepadServiceProvider =
   return service;
 });
 
-/// Провайдер режима ввода (mouse / gamepad).
+/// Input mode provider (mouse / gamepad).
 final NotifierProvider<InputModeNotifier, InputMode> inputModeProvider =
     NotifierProvider<InputModeNotifier, InputMode>(InputModeNotifier.new);
 
-/// Нотифаер режима ввода.
+/// Input mode notifier.
 class InputModeNotifier extends Notifier<InputMode> {
   @override
   InputMode build() => InputMode.mouse;
 
-  /// Переключить на gamepad-режим.
+  /// Switch to gamepad mode.
   void setGamepadMode() {
     if (state != InputMode.gamepad) {
       state = InputMode.gamepad;
     }
   }
 
-  /// Переключить на mouse-режим.
+  /// Switch to mouse mode.
   void setMouseMode() {
     if (state != InputMode.mouse) {
       state = InputMode.mouse;
@@ -44,7 +45,7 @@ class InputModeNotifier extends Notifier<InputMode> {
   }
 }
 
-/// Провайдер стрима обработанных событий геймпада.
+/// Stream provider of processed gamepad events.
 final StreamProvider<GamepadServiceEvent> gamepadEventProvider =
     StreamProvider<GamepadServiceEvent>((Ref ref) {
   final GamepadService service = ref.watch(gamepadServiceProvider);

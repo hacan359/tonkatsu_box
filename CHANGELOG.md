@@ -7,6 +7,27 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Fixed
+
+- **Stop the gamepad plugin from crashing the app on Windows**
+
+  Some Windows users hit a hard crash (access violation `0xc0000005` in
+  `gamepads_windows_plugin.dll`) because the app started polling input devices
+  at launch for everyone, and the native plugin faults during device polling
+  on certain machines. Gamepad support is now disabled on Windows; Linux,
+  macOS, and Android are unaffected. The `gamepads` plugins were also bumped to
+  their latest patches.
+
+  * lib/shared/constants/platform_features.dart (kGamepadSupported): Exclude
+    Windows in addition to iOS.
+  * lib/shared/gamepad/widgets/gamepad_listener.dart (GamepadListener): Drop the
+    duplicate platform gate — the event stream is silent when the service is not
+    started, so the subscription is safe on every platform.
+  * lib/shared/gamepad/gamepad_provider.dart (gamepadServiceProvider): Update the
+    doc comment for the Windows case.
+  * pubspec.lock: Bump `gamepads` 0.1.10+1 → 0.1.10+2, `gamepads_windows`
+    0.3.0 → 0.3.0+1, `gamepads_web` 0.1.1 → 0.1.1+1.
+
 ## [0.31.0] - 2026-05-29
 
 ### Added

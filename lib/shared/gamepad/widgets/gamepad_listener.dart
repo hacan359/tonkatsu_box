@@ -1,4 +1,4 @@
-// Виджет-обёртка для прослушивания событий геймпада.
+// Wrapper widget that listens to gamepad events.
 
 import 'dart:async';
 
@@ -6,33 +6,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/gamepad_service.dart';
-import '../../../shared/constants/platform_features.dart';
 import '../gamepad_action.dart';
 import '../gamepad_provider.dart';
 
-/// Виджет-обёртка, прослушивающая события геймпада и вызывающая callbacks.
+/// Wrapper widget that listens to gamepad events and fires callbacks.
 ///
-/// Оборачивает дочерний виджет и подписывается на [gamepadServiceProvider].
-/// При получении события определяет тип и вызывает соответствующий callback.
+/// Wraps a child and subscribes to [gamepadServiceProvider]. On each event it
+/// resolves the action type and invokes the matching callback.
 ///
-/// При фокусе на TextField:
-/// - D-pad Up/Down — выход из TextField и навигация к соседнему виджету
-/// - D-pad Left/Right — заблокированы (курсор в тексте)
-/// - A — заблокирован (ввод текста)
-/// - B — снятие фокуса с TextField
+/// While a TextField is focused:
+/// - D-pad Up/Down — leave the TextField and navigate to the neighbour widget
+/// - D-pad Left/Right — blocked (text cursor)
+/// - A — blocked (text input)
+/// - B — unfocus the TextField
 ///
-/// Маппинг кнопок (кроссплатформенный, нормализованные ключи):
+/// Button mapping (cross-platform, normalized keys):
 /// - `button-0` (A) → confirm
-/// - `button-1` (B) → back (аналог Esc)
-/// - `button-4` (LB) → previousTab (главные вкладки)
-/// - `button-5` (RB) → nextTab (главные вкладки)
+/// - `button-1` (B) → back (like Esc)
+/// - `button-4` (LB) → previousTab (main tabs)
+/// - `button-5` (RB) → nextTab (main tabs)
 /// - `button-7` (Start) → openMenu
-/// - `dpad-*` → navigate (контент)
+/// - `dpad-*` → navigate (content)
 /// - `stick-left-x`/`stick-left-y` (Left Stick) → scroll
 /// - `stick-right-x`/`stick-right-y` (Right Stick) → pan
-/// - `trigger` LT/RT → переключение фильтров/суб-табов верхней панели
+/// - `trigger` LT/RT → switch the top panel's filters/sub-tabs
 class GamepadListener extends ConsumerStatefulWidget {
-  /// Создаёт [GamepadListener].
+  /// Creates a [GamepadListener].
   const GamepadListener({
     required this.child,
     this.onConfirm,
@@ -48,37 +47,37 @@ class GamepadListener extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Дочерний виджет.
+  /// Child widget.
   final Widget child;
 
-  /// A кнопка — подтвердить.
+  /// A button — confirm.
   final VoidCallback? onConfirm;
 
-  /// B кнопка — назад.
+  /// B button — back.
   final VoidCallback? onBack;
 
-  /// D-pad навигация (up/down/left/right).
+  /// D-pad navigation (up/down/left/right).
   final void Function(GamepadAction action)? onNavigate;
 
-  /// LB/RB — переключение основных табов.
+  /// LB/RB — switch main tabs.
   final void Function(GamepadAction action)? onTabSwitch;
 
-  /// LT/RT — переключение суб-табов/фильтров.
+  /// LT/RT — switch sub-tabs/filters.
   final void Function(GamepadAction action)? onSubTabSwitch;
 
-  /// Left Stick — скролл.
+  /// Left Stick — scroll.
   final void Function(GamepadAction action)? onScroll;
 
-  /// Right Stick — панорама.
+  /// Right Stick — pan.
   final void Function(GamepadAction action)? onPan;
 
-  /// Triggers analog — зум.
+  /// Analog triggers — zoom.
   final void Function(GamepadAction action)? onZoom;
 
-  /// Y — контекстное меню элемента (аналог ПКМ).
+  /// Y — item context menu (like right-click).
   final VoidCallback? onContextMenu;
 
-  /// Start — системное меню.
+  /// Start — system menu.
   final VoidCallback? onMenu;
 
   @override
@@ -91,11 +90,10 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
   @override
   void initState() {
     super.initState();
-    // На мобильных платформах геймпад не используется — пропускаем подписку.
-    if (kGamepadSupported) {
-      final GamepadService service = ref.read(gamepadServiceProvider);
-      _subscription = service.events.listen(_handleEvent);
-    }
+    // Safe on every platform: on unsupported ones the service never starts
+    // (see gamepadServiceProvider) so the stream stays silent.
+    final GamepadService service = ref.read(gamepadServiceProvider);
+    _subscription = service.events.listen(_handleEvent);
   }
 
   @override
@@ -105,27 +103,23 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
   }
 
   void _handleEvent(GamepadServiceEvent event) {
-    // Переключаем на gamepad-режим
     ref.read(inputModeProvider.notifier).setGamepadMode();
 
     final GamepadAction? action = _mapServiceEvent(event);
     if (action == null) return;
 
-    // Проверяем конфликт с TextField
     if (_isTextFieldFocused() && _isNavigationAction(action)) {
       if (action == GamepadAction.back) {
-        // B на TextField → снять фокус
         FocusManager.instance.primaryFocus?.unfocus();
         return;
       }
       if (action == GamepadAction.navigateUp ||
           action == GamepadAction.navigateDown) {
-        // D-pad Up/Down → выйти из TextField и перейти к соседнему виджету
+        // Leave the TextField and move focus to the neighbour widget.
         final FocusNode? focus = FocusManager.instance.primaryFocus;
         final BuildContext? focusContext = focus?.context;
         if (focusContext != null) {
           focus!.unfocus();
-          // Перемещаем фокус в направлении D-pad
           final TraversalDirection direction =
               action == GamepadAction.navigateUp
                   ? TraversalDirection.up
@@ -137,7 +131,7 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
         }
         return;
       }
-      // D-pad Left/Right, A — заблокированы в TextField (курсор / ввод)
+      // D-pad Left/Right and A stay blocked in a TextField (cursor / input).
       return;
     }
 
@@ -155,29 +149,29 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
     }
   }
 
-  /// Маппинг цифровых кнопок и D-pad.
+  /// Maps digital buttons and the D-pad.
   ///
-  /// Ключи соответствуют Windows JOYINFOEX / gamepads_windows:
-  /// - `button-0` .. `button-7` — кнопки контроллера
-  /// - `dpad-*` — синтетические ключи от [GamepadService] для POV hat
+  /// Keys match Windows JOYINFOEX / gamepads_windows:
+  /// - `button-0` .. `button-7` — controller buttons
+  /// - `dpad-*` — synthetic keys from [GamepadService] for the POV hat
   GamepadAction? _mapButton(String key) {
     switch (key) {
-      // Xbox кнопки
+      // Xbox buttons
       case 'button-0': // A
         return GamepadAction.confirm;
       case 'button-1': // B
         return GamepadAction.back;
-      // button-2 = X — не назначена
-      case 'button-3': // Y — контекстное меню (аналог ПКМ)
+      // button-2 = X — unassigned
+      case 'button-3': // Y — context menu (like right-click)
         return GamepadAction.contextMenu;
       case 'button-4': // LB (Left Bumper)
         return GamepadAction.previousTab;
       case 'button-5': // RB (Right Bumper)
         return GamepadAction.nextTab;
-      // button-6 = Back/Select — не назначена
+      // button-6 = Back/Select — unassigned
       case 'button-7': // Start/Menu
         return GamepadAction.openMenu;
-      // D-pad (синтетические ключи от GamepadService)
+      // D-pad (synthetic keys from GamepadService)
       case 'dpad-up':
         return GamepadAction.navigateUp;
       case 'dpad-down':
@@ -191,9 +185,9 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
     }
   }
 
-  /// Маппинг аналоговых стиков (нормализованные ключи).
+  /// Maps analog sticks (normalized keys).
   ///
-  /// Значения нормализованы [GamepadService]: -1.0 (лево/верх) .. 1.0 (право/низ).
+  /// Values normalized by [GamepadService]: -1.0 (left/up) .. 1.0 (right/down).
   GamepadAction? _mapAnalog(String key, double value) {
     switch (key) {
       case 'stick-left-x':
@@ -211,10 +205,10 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
     }
   }
 
-  /// Маппинг триггеров в переключение фильтров/суб-табов верхней панели.
+  /// Maps triggers to the top panel's filter/sub-tab switching.
   ///
-  /// Значение: отрицательное = LT, положительное = RT.
-  /// Edge detection уже применён в сервисе — приходит одно событие за нажатие.
+  /// Value: negative = LT, positive = RT. Edge detection already happened in
+  /// the service, so exactly one event arrives per press.
   GamepadAction? _mapTrigger(double value) {
     if (value < 0) {
       return GamepadAction.previousSubTab; // LT
@@ -262,7 +256,7 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
   bool _isTextFieldFocused() {
     final FocusNode? focus = FocusManager.instance.primaryFocus;
     if (focus == null) return false;
-    // EditableText является родителем для TextField/TextFormField
+    // EditableText is the ancestor of TextField/TextFormField.
     final BuildContext? context = focus.context;
     if (context == null) return false;
     bool isEditable = false;
