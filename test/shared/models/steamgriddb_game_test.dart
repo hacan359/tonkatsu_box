@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/steamgriddb_game.dart';
+import 'package:tonkatsu_box/shared/models/steamgriddb_game.dart';
 
 void main() {
   group('SteamGridDbGame', () {

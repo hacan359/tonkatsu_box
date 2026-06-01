@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/tmdb_review.dart';
+import 'package:tonkatsu_box/shared/models/tmdb_review.dart';
 
 void main() {
   group('TmdbReview', () {

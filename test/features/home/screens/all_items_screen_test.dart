@@ -6,20 +6,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/features/home/screens/all_items_screen.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/features/settings/providers/profile_provider.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/shared/models/profile.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/platform.dart' as model;
-import 'package:xerabora/shared/models/visual_novel.dart';
-import 'package:xerabora/shared/navigation/search_providers.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/features/home/screens/all_items_screen.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/shared/models/profile.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/platform.dart' as model;
+import 'package:tonkatsu_box/shared/models/visual_novel.dart';
+import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 
 import '../../../helpers/test_helpers.dart';
 

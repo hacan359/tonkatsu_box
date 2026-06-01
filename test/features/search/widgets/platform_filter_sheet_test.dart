@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/search/widgets/platform_filter_sheet.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/platform.dart';
+import 'package:tonkatsu_box/features/search/widgets/platform_filter_sheet.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/platform.dart';
 
 void main() {
   const List<Platform> testPlatforms = <Platform>[

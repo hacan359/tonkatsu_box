@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/data/repositories/canvas_repository.dart';
-import 'package:xerabora/shared/models/canvas_connection.dart';
+import 'package:tonkatsu_box/data/repositories/canvas_repository.dart';
+import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
 
 import '../../helpers/test_helpers.dart';
 

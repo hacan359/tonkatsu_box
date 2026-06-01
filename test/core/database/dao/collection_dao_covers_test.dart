@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:xerabora/core/database/dao/anime_dao.dart';
-import 'package:xerabora/core/database/dao/collection_dao.dart';
-import 'package:xerabora/core/database/dao/custom_media_dao.dart';
-import 'package:xerabora/core/database/dao/game_dao.dart';
-import 'package:xerabora/core/database/dao/manga_dao.dart';
-import 'package:xerabora/core/database/dao/movie_dao.dart';
-import 'package:xerabora/core/database/dao/tv_show_dao.dart';
-import 'package:xerabora/core/database/dao/visual_novel_dao.dart';
-import 'package:xerabora/core/database/schema.dart';
-import 'package:xerabora/shared/models/cover_info.dart';
-import 'package:xerabora/shared/models/media_type.dart';
+import 'package:tonkatsu_box/core/database/dao/anime_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/collection_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/custom_media_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/game_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/movie_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
+import 'package:tonkatsu_box/core/database/schema.dart';
+import 'package:tonkatsu_box/shared/models/cover_info.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   setUpAll(() {

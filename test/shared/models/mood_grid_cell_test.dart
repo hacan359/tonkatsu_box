@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/mood_grid_cell.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/mood_grid_cell.dart';
 
 void main() {
   group('MoodGridCell', () {

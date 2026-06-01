@@ -1,9 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/theme/app_colors.dart';
-import 'package:xerabora/shared/theme/app_typography.dart';
-import 'package:xerabora/shared/widgets/mini_markdown_text.dart';
+import 'package:tonkatsu_box/shared/theme/app_colors.dart';
+import 'package:tonkatsu_box/shared/theme/app_typography.dart';
+import 'package:tonkatsu_box/shared/widgets/mini_markdown_text.dart';
 
 void main() {
   Widget buildWidget({

@@ -4,12 +4,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/core/services/discord_rpc_service.dart';
-import 'package:xerabora/core/services/kodi_sync_service.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/shared/navigation/service_badges.dart';
-import 'package:xerabora/shared/navigation/service_status_provider.dart';
-import 'package:xerabora/shared/theme/app_assets.dart';
+import 'package:tonkatsu_box/core/services/discord_rpc_service.dart';
+import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/shared/navigation/service_badges.dart';
+import 'package:tonkatsu_box/shared/navigation/service_status_provider.dart';
+import 'package:tonkatsu_box/shared/theme/app_assets.dart';
 
 import '../../helpers/test_helpers.dart';
 

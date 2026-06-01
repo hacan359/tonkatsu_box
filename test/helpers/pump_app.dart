@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/core/services/api_key_initializer.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 
 class _DefaultSettingsNotifier extends SettingsNotifier {
   @override

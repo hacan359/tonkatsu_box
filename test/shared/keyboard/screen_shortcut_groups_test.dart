@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/collections/screens/collection_screen.dart';
-import 'package:xerabora/features/collections/screens/home_screen.dart';
-import 'package:xerabora/features/collections/screens/item_detail_screen.dart';
-import 'package:xerabora/features/search/screens/search_screen.dart';
-import 'package:xerabora/features/tier_lists/screens/tier_list_detail_screen.dart';
-import 'package:xerabora/features/tier_lists/screens/tier_lists_screen.dart';
-import 'package:xerabora/features/wishlist/screens/wishlist_screen.dart';
-import 'package:xerabora/shared/keyboard/keyboard_shortcuts.dart';
+import 'package:tonkatsu_box/features/collections/screens/collection_screen.dart';
+import 'package:tonkatsu_box/features/collections/screens/home_screen.dart';
+import 'package:tonkatsu_box/features/collections/screens/item_detail_screen.dart';
+import 'package:tonkatsu_box/features/search/screens/search_screen.dart';
+import 'package:tonkatsu_box/features/tier_lists/screens/tier_list_detail_screen.dart';
+import 'package:tonkatsu_box/features/tier_lists/screens/tier_lists_screen.dart';
+import 'package:tonkatsu_box/features/wishlist/screens/wishlist_screen.dart';
+import 'package:tonkatsu_box/shared/keyboard/keyboard_shortcuts.dart';
 
 void main() {
   group('Screen shortcutGroups', () {

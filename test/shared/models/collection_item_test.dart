@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/anime.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/manga.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/platform.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/manga.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/platform.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 void main() {
   group('CollectionItem', () {
@@ -2323,7 +2323,7 @@ void main() {
 
         final CollectionItem copy = item.copyWith(sortOrder: 8);
         expect(copy.sortOrder, 8);
-        expect(item.sortOrder, 2); // Оригинал не изменился
+        expect(item.sortOrder, 2);
       });
 
       test('sort_order должен быть в internalDbFields', () {

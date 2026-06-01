@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/tmdb_api.dart';
-import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/tmdb_review.dart';
-import 'package:xerabora/shared/models/tv_episode.dart';
-import 'package:xerabora/shared/models/tv_season.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/tmdb_review.dart';
+import 'package:tonkatsu_box/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/models/tv_season.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
 

@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/tmdb_api.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/collections/providers/episode_tracker_provider.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/tv_episode.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../../helpers/test_helpers.dart';
 

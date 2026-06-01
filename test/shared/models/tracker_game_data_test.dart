@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/tracker_game_data.dart';
-import 'package:xerabora/shared/models/tracker_profile.dart';
+import 'package:tonkatsu_box/shared/models/tracker_game_data.dart';
+import 'package:tonkatsu_box/shared/models/tracker_profile.dart';
 
 void main() {
   group('TrackerGameData', () {

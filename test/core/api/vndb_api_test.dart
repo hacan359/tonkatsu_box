@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/vndb_api.dart';
-import 'package:xerabora/shared/models/visual_novel.dart';
+import 'package:tonkatsu_box/core/api/vndb_api.dart';
+import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
 import '../../helpers/test_helpers.dart';
 

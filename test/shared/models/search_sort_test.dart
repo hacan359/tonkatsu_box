@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/search_sort.dart';
+import 'package:tonkatsu_box/shared/models/search_sort.dart';
 
 void main() {
   group('SearchSortField', () {

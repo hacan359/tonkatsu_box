@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 void main() {
   group('TvShow', () {

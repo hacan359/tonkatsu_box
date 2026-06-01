@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
 
 void main() {
   group('Anime', () {

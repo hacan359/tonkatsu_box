@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/collections/widgets/collection_filter_bar.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/collection_sort_mode.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/collection_tag.dart';
-import 'package:xerabora/shared/models/platform.dart' as p;
-import 'package:xerabora/shared/widgets/chevron_filter_bar.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/widgets/collection_filter_bar.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/platform.dart' as p;
+import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
 
 class TestSettingsNotifier extends SettingsNotifier {
   TestSettingsNotifier({this.hideEmptyChevrons = false});

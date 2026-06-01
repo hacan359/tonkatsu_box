@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/search/filters/igdb_game_mode_filter.dart';
-import 'package:xerabora/features/search/filters/igdb_genre_filter.dart';
-import 'package:xerabora/features/search/filters/igdb_min_rating_filter.dart';
-import 'package:xerabora/features/search/filters/igdb_platform_filter.dart';
-import 'package:xerabora/features/search/filters/year_filter.dart';
-import 'package:xerabora/features/search/models/search_source.dart';
-import 'package:xerabora/features/search/sources/igdb_games_source.dart';
+import 'package:tonkatsu_box/features/search/filters/igdb_game_mode_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/igdb_genre_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/igdb_min_rating_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/igdb_platform_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/year_filter.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
+import 'package:tonkatsu_box/features/search/sources/igdb_games_source.dart';
 
 void main() {
   group('IgdbGamesSource', () {

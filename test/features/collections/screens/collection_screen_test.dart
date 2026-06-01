@@ -4,22 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:xerabora/core/services/image_cache_service.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/collections/screens/collection_screen.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
-import 'package:xerabora/shared/navigation/search_providers.dart';
-import 'package:xerabora/shared/widgets/chevron_filter_bar.dart';
-import 'package:xerabora/shared/widgets/media_poster_card.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/screens/collection_screen.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
+import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
 import '../../../helpers/test_helpers.dart';
 

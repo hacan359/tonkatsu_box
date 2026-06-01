@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/services/collection_browser_service.dart';
-import 'package:xerabora/features/collections/models/collections_index.dart';
+import 'package:tonkatsu_box/core/services/collection_browser_service.dart';
+import 'package:tonkatsu_box/features/collections/models/collections_index.dart';
 
 import '../../helpers/test_helpers.dart';
 

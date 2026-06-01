@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/collections/providers/canvas_provider.dart';
-import 'package:xerabora/features/collections/providers/steamgriddb_panel_provider.dart';
-import 'package:xerabora/features/collections/providers/vgmaps_panel_provider.dart';
-import 'package:xerabora/features/collections/widgets/canvas_view.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/constants/platform_features.dart';
-import 'package:xerabora/shared/models/canvas_item.dart';
-import 'package:xerabora/shared/models/game.dart';
+import 'package:tonkatsu_box/features/collections/providers/canvas_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/steamgriddb_panel_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/vgmaps_panel_provider.dart';
+import 'package:tonkatsu_box/features/collections/widgets/canvas_view.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/platform_features.dart';
+import 'package:tonkatsu_box/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
 
 // Test notifier with controllable state; no real DB/repo async work.
 class TestCanvasNotifier extends CanvasNotifier {

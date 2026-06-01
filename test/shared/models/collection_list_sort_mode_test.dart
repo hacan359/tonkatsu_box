@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/collection_list_sort_mode.dart';
+import 'package:tonkatsu_box/shared/models/collection_list_sort_mode.dart';
 
 void main() {
   group('CollectionListSortMode', () {

@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/ra_api.dart';
-import 'package:xerabora/core/services/ra_import_service.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/ra_game_progress.dart';
-import 'package:xerabora/shared/models/tracker_game_data.dart';
-import 'package:xerabora/shared/models/tracker_profile.dart';
-import 'package:xerabora/shared/models/universal_import_result.dart';
+import 'package:tonkatsu_box/core/api/ra_api.dart';
+import 'package:tonkatsu_box/core/services/ra_import_service.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/ra_game_progress.dart';
+import 'package:tonkatsu_box/shared/models/tracker_game_data.dart';
+import 'package:tonkatsu_box/shared/models/tracker_profile.dart';
+import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {

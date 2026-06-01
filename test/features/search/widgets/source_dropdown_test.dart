@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/search/models/search_source.dart';
-import 'package:xerabora/features/search/sources/search_sources.dart';
-import 'package:xerabora/features/search/sources/tmdb_movies_source.dart';
-import 'package:xerabora/features/search/sources/tmdb_tv_source.dart';
-import 'package:xerabora/features/search/widgets/source_dropdown.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
+import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
+import 'package:tonkatsu_box/features/search/sources/tmdb_movies_source.dart';
+import 'package:tonkatsu_box/features/search/sources/tmdb_tv_source.dart';
+import 'package:tonkatsu_box/features/search/widgets/source_dropdown.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 
 void main() {
   Widget buildWidget({

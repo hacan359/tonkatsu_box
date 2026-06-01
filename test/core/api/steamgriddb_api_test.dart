@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/steamgriddb_api.dart';
-import 'package:xerabora/shared/models/steamgriddb_game.dart';
-import 'package:xerabora/shared/models/steamgriddb_image.dart';
+import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
+import 'package:tonkatsu_box/shared/models/steamgriddb_game.dart';
+import 'package:tonkatsu_box/shared/models/steamgriddb_image.dart';
 
 import '../../helpers/test_helpers.dart';
 

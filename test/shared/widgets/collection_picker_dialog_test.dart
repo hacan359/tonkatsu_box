@@ -1,12 +1,12 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_list_sort_mode.dart';
-import 'package:xerabora/shared/widgets/collection_picker_dialog.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/collection_list_sort_mode.dart';
+import 'package:tonkatsu_box/shared/widgets/collection_picker_dialog.dart';
 
 final DateTime _testDate = DateTime(2026, 1, 1);
 

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/features/search/filters/manga_format_filter.dart';
-import 'package:xerabora/features/search/models/search_source.dart';
+import 'package:tonkatsu_box/features/search/filters/manga_format_filter.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
 
 import '../../../helpers/test_helpers.dart';
 

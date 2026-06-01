@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/copyable_text.dart';
+import 'package:tonkatsu_box/shared/widgets/copyable_text.dart';
 
 import '../../helpers/test_helpers.dart';
 

@@ -3,7 +3,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/horizontal_mouse_scroll.dart';
+import 'package:tonkatsu_box/shared/widgets/horizontal_mouse_scroll.dart';
 
 void main() {
   group('HorizontalMouseScroll', () {

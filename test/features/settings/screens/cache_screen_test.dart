@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/features/settings/screens/cache_screen.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/features/settings/screens/cache_screen.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 
 void main() {
   group('CacheScreen', () {

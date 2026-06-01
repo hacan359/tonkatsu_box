@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/gamepad/gamepad_action.dart';
-import 'package:xerabora/shared/gamepad/gamepad_provider.dart';
+import 'package:tonkatsu_box/shared/gamepad/gamepad_action.dart';
+import 'package:tonkatsu_box/shared/gamepad/gamepad_provider.dart';
 
 void main() {
   group('InputModeNotifier', () {

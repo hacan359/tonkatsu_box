@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/services/image_cache_service.dart';
-import 'package:xerabora/features/search/handlers/movie_handler.dart';
-import 'package:xerabora/features/search/handlers/tv_show_handler.dart';
-import 'package:xerabora/features/search/services/search_collection_adder.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/features/search/handlers/movie_handler.dart';
+import 'package:tonkatsu_box/features/search/handlers/tv_show_handler.dart';
+import 'package:tonkatsu_box/features/search/services/search_collection_adder.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../../helpers/test_helpers.dart';
 

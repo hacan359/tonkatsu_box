@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/services/text_export_service.dart';
-import 'package:xerabora/shared/models/anime.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/manga.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/platform.dart';
+import 'package:tonkatsu_box/core/services/text_export_service.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/manga.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/platform.dart';
 
 TextExportService _service() => TextExportService();
 

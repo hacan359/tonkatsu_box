@@ -461,7 +461,7 @@ class AniListImportService {
     );
   }
 
-  /// Normalizes AniList POINT_100 score to xerabora 1.0..10.0 (step 0.1).
+  /// Normalizes AniList POINT_100 score to a 1.0..10.0 rating (step 0.1).
   static double? _resolveRating(int? scoreRaw100) {
     if (scoreRaw100 == null || scoreRaw100 <= 0) return null;
     final double normalized = scoreRaw100 / 10.0;

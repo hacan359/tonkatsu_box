@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:xerabora/core/database/migrations/migration_v38.dart';
+import 'package:tonkatsu_box/core/database/migrations/migration_v38.dart';
 
 Future<Database> _openSeededDb() async {
   sqfliteFfiInit();

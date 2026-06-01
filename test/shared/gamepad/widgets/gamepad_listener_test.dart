@@ -1,4 +1,4 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 // GamepadListener subscribes only when kIsMobile is false; tests run as desktop.
 
 import 'package:flutter/material.dart';
@@ -6,11 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamepads/gamepads.dart';
 
-import 'package:xerabora/core/services/gamepad_mappings.dart';
-import 'package:xerabora/core/services/gamepad_service.dart';
-import 'package:xerabora/shared/gamepad/gamepad_action.dart';
-import 'package:xerabora/shared/gamepad/gamepad_provider.dart';
-import 'package:xerabora/shared/gamepad/widgets/gamepad_listener.dart';
+import 'package:tonkatsu_box/core/services/gamepad_mappings.dart';
+import 'package:tonkatsu_box/core/services/gamepad_service.dart';
+import 'package:tonkatsu_box/shared/gamepad/gamepad_action.dart';
+import 'package:tonkatsu_box/shared/gamepad/gamepad_provider.dart';
+import 'package:tonkatsu_box/shared/gamepad/widgets/gamepad_listener.dart';
 
 import '../../../helpers/test_helpers.dart';
 

@@ -1,7 +1,7 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/rating_badge.dart';
+import 'package:tonkatsu_box/shared/widgets/rating_badge.dart';
 
 void main() {
   group('RatingBadge', () {

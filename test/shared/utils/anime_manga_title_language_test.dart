@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/utils/anime_manga_title_language.dart';
+import 'package:tonkatsu_box/shared/utils/anime_manga_title_language.dart';
 
 void main() {
   group('AnimeMangaTitleLanguage', () {

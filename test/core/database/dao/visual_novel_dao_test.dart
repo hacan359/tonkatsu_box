@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:xerabora/core/database/dao/visual_novel_dao.dart';
-import 'package:xerabora/shared/models/visual_novel.dart';
+import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
+import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
 import '../../../helpers/mocks.dart';
 

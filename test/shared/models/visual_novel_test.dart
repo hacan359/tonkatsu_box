@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/visual_novel.dart';
+import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
 void main() {
   group('VisualNovel', () {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/collections/widgets/create_custom_item_dialog.dart';
-import 'package:xerabora/shared/models/custom_media.dart';
-import 'package:xerabora/shared/models/media_type.dart';
+import 'package:tonkatsu_box/features/collections/widgets/create_custom_item_dialog.dart';
+import 'package:tonkatsu_box/shared/models/custom_media.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/search/filters/tmdb_genre_filter.dart';
-import 'package:xerabora/features/search/models/search_source.dart';
+import 'package:tonkatsu_box/features/search/filters/tmdb_genre_filter.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
 
 void main() {
   group('TmdbGenreFilter', () {

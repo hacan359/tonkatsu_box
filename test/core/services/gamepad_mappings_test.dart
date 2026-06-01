@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/services/gamepad_mappings.dart';
+import 'package:tonkatsu_box/core/services/gamepad_mappings.dart';
 
 void main() {
   group('WindowsGamepadMapping', () {

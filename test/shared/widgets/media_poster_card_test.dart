@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/services/image_cache_service.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/widgets/dual_rating_badge.dart';
-import 'package:xerabora/shared/widgets/media_poster_card.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/widgets/dual_rating_badge.dart';
+import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
 void main() {
   Widget buildCard({

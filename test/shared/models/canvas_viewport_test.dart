@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/canvas_viewport.dart';
+import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
 
 void main() {
   group('CanvasViewport', () {

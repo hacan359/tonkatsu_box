@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:xerabora/core/database/dao/game_dao.dart';
-import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/platform.dart';
+import 'package:tonkatsu_box/core/database/dao/game_dao.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/platform.dart';
 
 import '../../../helpers/mocks.dart';
 

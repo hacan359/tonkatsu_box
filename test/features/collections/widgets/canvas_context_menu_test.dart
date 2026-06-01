@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/collections/widgets/canvas_context_menu.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/features/collections/widgets/canvas_context_menu.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/canvas_item.dart';
 
 void main() {
   group('CanvasContextMenu', () {

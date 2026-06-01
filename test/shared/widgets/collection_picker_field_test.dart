@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/widgets/collection_picker_field.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/widgets/collection_picker_field.dart';
 
 import '../../helpers/test_helpers.dart';
 

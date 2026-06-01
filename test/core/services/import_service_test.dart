@@ -4,20 +4,20 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/services/image_cache_service.dart';
-import 'package:xerabora/core/api/igdb_api.dart';
-import 'package:xerabora/core/api/tmdb_api.dart';
-import 'package:xerabora/core/services/import_service.dart';
-import 'package:xerabora/core/services/xcoll_file.dart';
-import 'package:xerabora/shared/models/canvas_connection.dart';
-import 'package:xerabora/shared/models/canvas_item.dart';
-import 'package:xerabora/shared/models/canvas_viewport.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/core/api/igdb_api.dart';
+import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/services/import_service.dart';
+import 'package:tonkatsu_box/core/services/xcoll_file.dart';
+import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
+import 'package:tonkatsu_box/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
 

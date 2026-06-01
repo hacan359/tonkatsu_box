@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/media_progress_row.dart';
+import 'package:tonkatsu_box/shared/widgets/media_progress_row.dart';
 
 import '../../helpers/test_helpers.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
-import 'package:xerabora/core/logging/app_logger.dart';
+import 'package:tonkatsu_box/core/logging/app_logger.dart';
 
 void main() {
   group('AppLogger', () {

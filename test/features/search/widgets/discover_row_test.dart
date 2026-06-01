@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/features/search/widgets/discover_row.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/shared/widgets/cached_image.dart';
+import 'package:tonkatsu_box/features/search/widgets/discover_row.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
 
 void main() {
   late SharedPreferences prefs;

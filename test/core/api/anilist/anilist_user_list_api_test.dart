@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/anilist/anilist_types.dart';
-import 'package:xerabora/core/api/anilist/anilist_user_list_api.dart';
-import 'package:xerabora/shared/models/media_type.dart';
+import 'package:tonkatsu_box/core/api/anilist/anilist_types.dart';
+import 'package:tonkatsu_box/core/api/anilist/anilist_user_list_api.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamepads/gamepads.dart';
-import 'package:xerabora/core/services/gamepad_mappings.dart';
-import 'package:xerabora/core/services/gamepad_service.dart';
+import 'package:tonkatsu_box/core/services/gamepad_mappings.dart';
+import 'package:tonkatsu_box/core/services/gamepad_service.dart';
 
 import '../../helpers/test_helpers.dart';
 

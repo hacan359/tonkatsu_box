@@ -1,13 +1,13 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/data/repositories/wishlist_repository.dart';
-import 'package:xerabora/features/wishlist/screens/wishlist_screen.dart';
-import 'package:xerabora/shared/widgets/mini_markdown_text.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/wishlist_item.dart';
+import 'package:tonkatsu_box/data/repositories/wishlist_repository.dart';
+import 'package:tonkatsu_box/features/wishlist/screens/wishlist_screen.dart';
+import 'package:tonkatsu_box/shared/widgets/mini_markdown_text.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/wishlist_item.dart';
 
 import '../../../helpers/test_helpers.dart';
 

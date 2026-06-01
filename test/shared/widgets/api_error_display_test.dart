@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/api_error_display.dart';
+import 'package:tonkatsu_box/shared/widgets/api_error_display.dart';
 
 import '../../helpers/test_helpers.dart';
 

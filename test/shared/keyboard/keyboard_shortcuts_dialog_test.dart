@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/keyboard/keyboard_shortcuts.dart';
-import 'package:xerabora/shared/keyboard/keyboard_shortcuts_dialog.dart';
+import 'package:tonkatsu_box/shared/keyboard/keyboard_shortcuts.dart';
+import 'package:tonkatsu_box/shared/keyboard/keyboard_shortcuts_dialog.dart';
 
 void main() {
   group('KeyboardShortcutsDialog', () {

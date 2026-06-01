@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/tier_definition.dart';
+import 'package:tonkatsu_box/shared/models/tier_definition.dart';
 
 import '../../helpers/test_helpers.dart';
 

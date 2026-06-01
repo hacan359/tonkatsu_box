@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/api/api_error_detail.dart';
+import 'package:tonkatsu_box/core/api/api_error_detail.dart';
 
 DioException _exception({
   required Uri uri,

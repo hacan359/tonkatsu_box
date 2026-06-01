@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/tier_lists/widgets/tier_item_card.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/platform.dart';
-import 'package:xerabora/shared/widgets/cached_image.dart';
+import 'package:tonkatsu_box/features/tier_lists/widgets/tier_item_card.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/platform.dart';
+import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
 
 import '../../../helpers/test_helpers.dart';
 

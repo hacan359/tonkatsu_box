@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/data/repositories/canvas_repository.dart';
-import 'package:xerabora/features/collections/providers/canvas_provider.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/shared/models/canvas_connection.dart';
-import 'package:xerabora/shared/models/canvas_item.dart';
-import 'package:xerabora/shared/models/canvas_viewport.dart';
+import 'package:tonkatsu_box/data/repositories/canvas_repository.dart';
+import 'package:tonkatsu_box/features/collections/providers/canvas_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
+import 'package:tonkatsu_box/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
 
 import '../../../helpers/test_helpers.dart';
 

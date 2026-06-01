@@ -1,10 +1,10 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/wishlist/widgets/add_wishlist_dialog.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/wishlist_item.dart';
-import 'package:xerabora/shared/widgets/markdown_toolbar.dart';
+import 'package:tonkatsu_box/features/wishlist/widgets/add_wishlist_dialog.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/wishlist_item.dart';
+import 'package:tonkatsu_box/shared/widgets/markdown_toolbar.dart';
 
 void main() {
   group('AddWishlistForm', () {

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:xerabora/core/database/dao/tv_show_dao.dart';
-import 'package:xerabora/shared/models/tv_episode.dart';
-import 'package:xerabora/shared/models/tv_season.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
+import 'package:tonkatsu_box/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/models/tv_season.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../../helpers/mocks.dart';
 

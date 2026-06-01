@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/services/image_cache_service.dart';
-import 'package:xerabora/features/collections/widgets/canvas_image_item.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/canvas_item.dart';
-import 'package:xerabora/shared/widgets/cached_image.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/features/collections/widgets/canvas_image_item.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
 
 import '../../../helpers/test_helpers.dart';
 

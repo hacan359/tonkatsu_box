@@ -2,13 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/data/repositories/game_repository.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/collection_sort_mode.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/data/repositories/game_repository.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
 
 import '../../../helpers/test_helpers.dart';
 

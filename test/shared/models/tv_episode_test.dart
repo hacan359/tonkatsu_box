@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/models/tv_episode.dart';
 
 void main() {
   group('TvEpisode', () {

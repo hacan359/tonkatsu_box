@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/search/filters/min_rating_filter.dart';
-import 'package:xerabora/features/search/filters/min_votes_filter.dart';
-import 'package:xerabora/features/search/filters/tmdb_genre_filter.dart';
-import 'package:xerabora/features/search/filters/tmdb_language_filter.dart';
-import 'package:xerabora/features/search/filters/year_filter.dart';
-import 'package:xerabora/features/search/models/search_source.dart';
-import 'package:xerabora/features/search/sources/tmdb_tv_source.dart';
+import 'package:tonkatsu_box/features/search/filters/min_rating_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/min_votes_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/tmdb_genre_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/tmdb_language_filter.dart';
+import 'package:tonkatsu_box/features/search/filters/year_filter.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
+import 'package:tonkatsu_box/features/search/sources/tmdb_tv_source.dart';
 
 void main() {
   group('TmdbTvSource', () {

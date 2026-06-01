@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 
 void main() {
   group('SettingsKeys', () {

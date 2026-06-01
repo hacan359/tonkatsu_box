@@ -1,21 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/data/repositories/canvas_repository.dart';
-import 'package:xerabora/features/collections/providers/canvas_state.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/collections/providers/game_canvas_provider.dart';
-import 'package:xerabora/shared/models/anime.dart';
-import 'package:xerabora/shared/models/canvas_item.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/custom_media.dart';
-import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/manga.dart';
-import 'package:xerabora/shared/models/media_type.dart';
-import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
-import 'package:xerabora/shared/models/visual_novel.dart';
+import 'package:tonkatsu_box/data/repositories/canvas_repository.dart';
+import 'package:tonkatsu_box/features/collections/providers/canvas_state.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/game_canvas_provider.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/custom_media.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/manga.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
 import '../../../helpers/test_helpers.dart';
 

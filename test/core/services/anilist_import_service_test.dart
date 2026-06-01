@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/anilist_api.dart';
-import 'package:xerabora/core/services/anilist_import_service.dart';
-import 'package:xerabora/shared/models/anime.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/manga.dart';
-import 'package:xerabora/shared/models/media_type.dart';
+import 'package:tonkatsu_box/core/api/anilist_api.dart';
+import 'package:tonkatsu_box/core/services/anilist_import_service.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/models/manga.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../helpers/test_helpers.dart';
 

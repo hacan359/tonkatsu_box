@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/fractional_star_rating.dart';
+import 'package:tonkatsu_box/shared/widgets/fractional_star_rating.dart';
 
 void main() {
   // starSize 24 + gap 3 => cellWidth 27. Leading cell occupies [0, 27),

@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/anilist_api.dart';
-import 'package:xerabora/shared/models/anime.dart';
-import 'package:xerabora/shared/models/manga.dart';
+import 'package:tonkatsu_box/core/api/anilist_api.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/manga.dart';
 
 import '../../helpers/test_helpers.dart';
 

@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/features/search/providers/vndb_tag_provider.dart';
-import 'package:xerabora/shared/models/visual_novel.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/features/search/providers/vndb_tag_provider.dart';
+import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
 import '../../../helpers/test_helpers.dart';
 

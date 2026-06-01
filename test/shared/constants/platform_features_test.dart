@@ -2,7 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/constants/platform_features.dart';
+import 'package:tonkatsu_box/shared/constants/platform_features.dart';
 
 void main() {
   group('platform_features', () {

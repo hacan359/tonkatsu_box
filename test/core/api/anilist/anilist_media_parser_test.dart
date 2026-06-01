@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/api/anilist/anilist_media_parser.dart';
-import 'package:xerabora/shared/models/anime.dart';
-import 'package:xerabora/shared/models/manga.dart';
+import 'package:tonkatsu_box/core/api/anilist/anilist_media_parser.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/manga.dart';
 
 Map<String, dynamic> _page({
   List<Map<String, dynamic>> media = const <Map<String, dynamic>>[],

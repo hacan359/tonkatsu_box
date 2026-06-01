@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/kodi_tv_show.dart';
+import 'package:tonkatsu_box/shared/models/kodi_tv_show.dart';
 
 void main() {
   group('KodiTvShow.fromJson', () {

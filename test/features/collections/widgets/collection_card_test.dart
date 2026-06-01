@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/features/collections/providers/collection_covers_provider.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/collections/widgets/collection_card.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/cover_info.dart';
-import 'package:xerabora/shared/models/media_type.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/features/collections/providers/collection_covers_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/widgets/collection_card.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/cover_info.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 Collection _makeCollection({
   int id = 1,

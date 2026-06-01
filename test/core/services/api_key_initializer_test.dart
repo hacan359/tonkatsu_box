@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/core/services/api_key_initializer.dart';
+import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
 
 void main() {
   group('ApiKeys', () {

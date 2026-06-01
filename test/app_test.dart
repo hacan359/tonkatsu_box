@@ -3,17 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/app.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/core/services/update_service.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/features/splash/screens/splash_screen.dart';
-import 'package:xerabora/features/welcome/screens/welcome_screen.dart';
-import 'package:xerabora/shared/navigation/app_bottom_bar.dart';
-import 'package:xerabora/shared/navigation/app_shell.dart';
-import 'package:xerabora/shared/navigation/app_sidebar.dart';
+import 'package:tonkatsu_box/app.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/core/services/update_service.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/features/splash/screens/splash_screen.dart';
+import 'package:tonkatsu_box/features/welcome/screens/welcome_screen.dart';
+import 'package:tonkatsu_box/shared/navigation/app_bottom_bar.dart';
+import 'package:tonkatsu_box/shared/navigation/app_shell.dart';
+import 'package:tonkatsu_box/shared/navigation/app_sidebar.dart';
 
 import 'helpers/test_helpers.dart';
 

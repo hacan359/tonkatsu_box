@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/collection_tag.dart';
 
 import '../../helpers/test_helpers.dart';
 

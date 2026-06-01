@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/services/ra_to_igdb_mapper.dart';
-import 'package:xerabora/shared/models/game.dart';
+import 'package:tonkatsu_box/core/services/ra_to_igdb_mapper.dart';
+import 'package:tonkatsu_box/shared/models/game.dart';
 
 import '../../helpers/test_helpers.dart';
 

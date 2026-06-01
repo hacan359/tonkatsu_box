@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/dao/tag_dao.dart';
-import 'package:xerabora/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/core/database/dao/tag_dao.dart';
+import 'package:tonkatsu_box/shared/models/collection_tag.dart';
 
 import '../../../helpers/mocks.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/shared/utils/duration_formatter.dart';
+import 'package:tonkatsu_box/shared/utils/duration_formatter.dart';
 
 import '../../helpers/test_helpers.dart';
 

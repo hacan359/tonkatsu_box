@@ -3,12 +3,12 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/features/tier_lists/providers/tier_list_detail_provider.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
-import 'package:xerabora/shared/models/tier_definition.dart';
-import 'package:xerabora/shared/models/tier_list.dart';
-import 'package:xerabora/shared/models/tier_list_entry.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/features/tier_lists/providers/tier_list_detail_provider.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/tier_definition.dart';
+import 'package:tonkatsu_box/shared/models/tier_list.dart';
+import 'package:tonkatsu_box/shared/models/tier_list_entry.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -829,8 +829,8 @@ void main() {
             container.read(tierListDetailProvider(1).notifier);
         await notifier.moveBetweenTiers(1, 'S', 'A', index: 0);
 
-        // moveBetweenTiers сводится к одному setItemTier — DELETE+INSERT
-        // живёт в самом setItemTier, чтобы не плодить двойной rebuild state.
+        // moveBetweenTiers collapses to a single setItemTier — the DELETE+INSERT
+        // lives inside setItemTier itself, to avoid a double state rebuild.
         verifyNever(() => mockTierListDao.removeItemFromTier(1, 1));
         verify(() => mockTierListDao.setItemTier(1, 1, 'A', 0)).called(1);
       });

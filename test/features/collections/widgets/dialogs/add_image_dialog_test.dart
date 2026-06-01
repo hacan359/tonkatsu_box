@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/collections/widgets/dialogs/add_image_dialog.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/features/collections/widgets/dialogs/add_image_dialog.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 
 void main() {
   group('AddImageDialog', () {

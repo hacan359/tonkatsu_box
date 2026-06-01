@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/core/services/update_service.dart';
+import 'package:tonkatsu_box/core/services/update_service.dart';
 
 import '../../helpers/test_helpers.dart';
 

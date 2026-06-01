@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/api/anilist_api.dart';
-import 'package:xerabora/core/api/api_error_extract.dart';
-import 'package:xerabora/core/api/igdb_api.dart';
-import 'package:xerabora/core/api/ra_api.dart';
-import 'package:xerabora/core/api/steam_api.dart';
-import 'package:xerabora/core/api/steamgriddb_api.dart';
-import 'package:xerabora/core/api/tmdb_api.dart';
-import 'package:xerabora/core/api/vndb_api.dart';
+import 'package:tonkatsu_box/core/api/anilist_api.dart';
+import 'package:tonkatsu_box/core/api/api_error_extract.dart';
+import 'package:tonkatsu_box/core/api/igdb_api.dart';
+import 'package:tonkatsu_box/core/api/ra_api.dart';
+import 'package:tonkatsu_box/core/api/steam_api.dart';
+import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
+import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/api/vndb_api.dart';
 
 void main() {
   group('extractApiError', () {

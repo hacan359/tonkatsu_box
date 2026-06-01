@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/features/tier_lists/widgets/create_tier_list_dialog.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/tier_list.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/features/tier_lists/widgets/create_tier_list_dialog.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/tier_list.dart';
 
 import '../../../helpers/test_helpers.dart';
 

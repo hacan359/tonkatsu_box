@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/features/tier_lists/providers/tier_lists_provider.dart';
-import 'package:xerabora/shared/models/tier_list.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/features/tier_lists/providers/tier_lists_provider.dart';
+import 'package:tonkatsu_box/shared/models/tier_list.dart';
 
 import '../../../helpers/test_helpers.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/theme/app_spacing.dart';
+import 'package:tonkatsu_box/shared/theme/app_spacing.dart';
 
 void main() {
   group('AppSpacing', () {

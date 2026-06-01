@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/settings/providers/profile_provider.dart';
-import 'package:xerabora/shared/models/profile.dart';
+import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
+import 'package:tonkatsu_box/shared/models/profile.dart';
 
 import '../../../helpers/test_helpers.dart';
 

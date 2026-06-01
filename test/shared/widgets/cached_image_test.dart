@@ -1,4 +1,4 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -8,8 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:xerabora/core/services/image_cache_service.dart';
-import 'package:xerabora/shared/widgets/cached_image.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
 
 import '../../helpers/test_helpers.dart';
 

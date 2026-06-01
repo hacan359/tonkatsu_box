@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/scrollable_row_with_arrows.dart';
+import 'package:tonkatsu_box/shared/widgets/scrollable_row_with_arrows.dart';
 
 void main() {
   group('ScrollableRowWithArrows', () {

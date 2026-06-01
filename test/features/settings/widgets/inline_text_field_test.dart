@@ -1,7 +1,7 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
+import 'package:tonkatsu_box/features/settings/widgets/inline_text_field.dart';
 
 void main() {
   Widget createWidget({

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:xerabora/core/database/dao/tracker_dao.dart';
-import 'package:xerabora/shared/models/tracker_game_data.dart';
-import 'package:xerabora/shared/models/tracker_profile.dart';
+import 'package:tonkatsu_box/core/database/dao/tracker_dao.dart';
+import 'package:tonkatsu_box/shared/models/tracker_game_data.dart';
+import 'package:tonkatsu_box/shared/models/tracker_profile.dart';
 
 Future<Database> _openTrackerDb() async {
   sqfliteFfiInit();

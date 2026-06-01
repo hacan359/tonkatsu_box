@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/services/image_cache_service.dart';
-import 'package:xerabora/features/tier_lists/services/mood_grid_caption.dart';
-import 'package:xerabora/features/tier_lists/widgets/mood_grid_cell_media.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/features/tier_lists/services/mood_grid_caption.dart';
+import 'package:tonkatsu_box/features/tier_lists/widgets/mood_grid_cell_media.dart';
 
 MoodGridCellMedia _media({
   String? title,

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/data/repositories/anilist_tags_repository.dart';
-import 'package:xerabora/shared/models/anilist_tag.dart';
+import 'package:tonkatsu_box/data/repositories/anilist_tags_repository.dart';
+import 'package:tonkatsu_box/shared/models/anilist_tag.dart';
 
 import '../../helpers/mocks.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/settings/widgets/settings_group.dart';
+import 'package:tonkatsu_box/features/settings/widgets/settings_group.dart';
 
 void main() {
   Widget createWidget({

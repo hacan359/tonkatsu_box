@@ -1,12 +1,12 @@
-import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/services/update_service.dart';
-import 'package:xerabora/shared/widgets/update_banner.dart';
+import 'package:tonkatsu_box/core/services/update_service.dart';
+import 'package:tonkatsu_box/shared/widgets/update_banner.dart';
 
 void main() {
   const UpdateInfo updateAvailable = UpdateInfo(

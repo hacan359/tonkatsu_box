@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/search/providers/browse_provider.dart';
-import 'package:xerabora/features/search/sources/tmdb_movies_source.dart';
+import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
+import 'package:tonkatsu_box/features/search/sources/tmdb_movies_source.dart';
 
 void main() {
   group('BrowseSettingsKeys', () {

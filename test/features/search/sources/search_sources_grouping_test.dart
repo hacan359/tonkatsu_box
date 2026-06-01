@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/features/search/models/search_source.dart';
-import 'package:xerabora/features/search/sources/search_sources.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
+import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
 
 void main() {
   group('groupedSearchSources', () {

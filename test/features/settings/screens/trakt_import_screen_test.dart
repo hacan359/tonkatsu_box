@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/core/services/trakt_zip_import_service.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
-import 'package:xerabora/features/settings/providers/settings_provider.dart';
-import 'package:xerabora/features/settings/screens/trakt_import_screen.dart';
-import 'package:xerabora/features/settings/widgets/settings_group.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/models/collection.dart';
+import 'package:tonkatsu_box/core/services/trakt_zip_import_service.dart';
+import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
+import 'package:tonkatsu_box/features/settings/widgets/settings_group.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
 
 import '../../../helpers/test_helpers.dart';
 

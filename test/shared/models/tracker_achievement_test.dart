@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/models/tracker_achievement.dart';
-import 'package:xerabora/shared/models/tracker_profile.dart';
+import 'package:tonkatsu_box/shared/models/tracker_achievement.dart';
+import 'package:tonkatsu_box/shared/models/tracker_profile.dart';
 
 void main() {
   group('TrackerAchievement.fromRaJson', () {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/widgets/dual_date_picker_dialog.dart';
+import 'package:tonkatsu_box/shared/widgets/dual_date_picker_dialog.dart';
 
 import '../../helpers/test_helpers.dart';
 
