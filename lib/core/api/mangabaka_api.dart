@@ -1,4 +1,4 @@
-// MangaBaka API client (https://api.mangabaka.dev/v1/).
+// MangaBaka API client (https://api.mangabaka.org/v1/).
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +27,9 @@ class MangaBakaApi {
       : _client = dio ??
             Dio(
               BaseOptions(
-                baseUrl: 'https://api.mangabaka.dev/v1/',
+                // .dev is deprecated (works until 2026-08-01); .org is the
+                // current host. Same schema / behaviour, shared rate limit.
+                baseUrl: 'https://api.mangabaka.org/v1/',
                 connectTimeout: const Duration(seconds: 15),
                 receiveTimeout: const Duration(seconds: 20),
               ),
