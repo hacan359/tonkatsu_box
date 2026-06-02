@@ -20,6 +20,7 @@ import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
 import '../extensions/item_display_name.dart';
 import 'collection_table/collection_table_view.dart';
+import 'context_menu_item.dart';
 import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 
@@ -540,59 +541,39 @@ class CollectionItemsView extends ConsumerWidget {
       ),
       items: <PopupMenuEntry<String>>[
         if (isManualSort) ...<PopupMenuEntry<String>>[
-          PopupMenuItem<String>(
+          contextMenuItem<String>(
             value: 'moveToTop',
-            child: ListTile(
-              leading: const Icon(Icons.vertical_align_top),
-              title: Text(l.moveToTop),
-              contentPadding: EdgeInsets.zero,
-            ),
+            icon: Icons.vertical_align_top,
+            label: l.moveToTop,
           ),
-          PopupMenuItem<String>(
+          contextMenuItem<String>(
             value: 'moveToBottom',
-            child: ListTile(
-              leading: const Icon(Icons.vertical_align_bottom),
-              title: Text(l.moveToBottom),
-              contentPadding: EdgeInsets.zero,
-            ),
+            icon: Icons.vertical_align_bottom,
+            label: l.moveToBottom,
           ),
           const PopupMenuDivider(),
         ],
         if (onItemMove != null)
-          PopupMenuItem<String>(
+          contextMenuItem<String>(
             value: 'move',
-            child: ListTile(
-              leading: const Icon(Icons.drive_file_move_outlined),
-              title: Text(l.collectionMoveToCollection),
-              contentPadding: EdgeInsets.zero,
-            ),
+            icon: Icons.drive_file_move_outlined,
+            label: l.collectionMoveToCollection,
           ),
         if (onItemClone != null)
-          PopupMenuItem<String>(
+          contextMenuItem<String>(
             value: 'clone',
-            child: ListTile(
-              leading: const Icon(Icons.copy_outlined),
-              title: Text(l.collectionCopyToCollection),
-              contentPadding: EdgeInsets.zero,
-            ),
+            icon: Icons.copy_outlined,
+            label: l.collectionCopyToCollection,
           ),
         if ((onItemMove != null || onItemClone != null) &&
             onItemRemove != null)
           const PopupMenuDivider(),
         if (onItemRemove != null)
-          PopupMenuItem<String>(
+          contextMenuItem<String>(
             value: 'remove',
-            child: ListTile(
-              leading: const Icon(
-                Icons.remove_circle_outline,
-                color: AppColors.error,
-              ),
-              title: Text(
-                l.remove,
-                style: const TextStyle(color: AppColors.error),
-              ),
-              contentPadding: EdgeInsets.zero,
-            ),
+            icon: Icons.remove_circle_outline,
+            label: l.remove,
+            color: AppColors.error,
           ),
         if (canEdit)
           ...statusChipPopupMenuEntries(context: context, item: item),

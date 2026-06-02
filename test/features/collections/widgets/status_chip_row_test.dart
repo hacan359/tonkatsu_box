@@ -55,7 +55,7 @@ void main() {
         expect(changedTo, ItemStatus.completed);
       });
 
-      testWidgets('should call onChanged when tapped on уже выбранный',
+      testWidgets('should call onChanged when tapped on the selected segment',
           (WidgetTester tester) async {
         ItemStatus? changedTo;
 
@@ -68,6 +68,23 @@ void main() {
         await tester.tap(find.byIcon(Icons.check_circle));
         expect(changedTo, ItemStatus.completed);
       });
+    });
+  });
+
+  group('tryDecodeStatusMenuValue', () {
+    test('should decode the status when value carries the status prefix', () {
+      expect(
+        tryDecodeStatusMenuValue('status:completed'),
+        ItemStatus.completed,
+      );
+    });
+
+    test('should return null when value is an ordinary menu action', () {
+      expect(tryDecodeStatusMenuValue('remove'), isNull);
+    });
+
+    test('should fall back to notStarted for an unknown status payload', () {
+      expect(tryDecodeStatusMenuValue('status:bogus'), ItemStatus.notStarted);
     });
   });
 }

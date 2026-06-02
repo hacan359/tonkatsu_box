@@ -27,6 +27,7 @@ import '../../collections/extensions/item_display_name.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../../collections/widgets/bulk_action_bar.dart';
 import '../../collections/widgets/selectable_poster_card.dart';
+import '../../collections/widgets/context_menu_item.dart';
 import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
 
@@ -672,36 +673,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<String>>[
-        PopupMenuItem<String>(
+        contextMenuItem<String>(
           value: 'move',
-          child: ListTile(
-            leading: const Icon(Icons.drive_file_move_outlined),
-            title: Text(l.collectionMoveToCollection),
-            contentPadding: EdgeInsets.zero,
-          ),
+          icon: Icons.drive_file_move_outlined,
+          label: l.collectionMoveToCollection,
         ),
-        PopupMenuItem<String>(
+        contextMenuItem<String>(
           value: 'clone',
-          child: ListTile(
-            leading: const Icon(Icons.copy_outlined),
-            title: Text(l.collectionCopyToCollection),
-            contentPadding: EdgeInsets.zero,
-          ),
+          icon: Icons.copy_outlined,
+          label: l.collectionCopyToCollection,
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<String>(
+        contextMenuItem<String>(
           value: 'remove',
-          child: ListTile(
-            leading: const Icon(
-              Icons.remove_circle_outline,
-              color: AppColors.error,
-            ),
-            title: Text(
-              l.remove,
-              style: const TextStyle(color: AppColors.error),
-            ),
-            contentPadding: EdgeInsets.zero,
-          ),
+          icon: Icons.remove_circle_outline,
+          label: l.remove,
+          color: AppColors.error,
         ),
         ...statusChipPopupMenuEntries(context: context, item: item),
       ],

@@ -31,6 +31,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Refine the item right-click / long-press context menu**
+
+  Action entries (move, copy, remove, reorder) are now compact single-line rows
+  instead of bulky list tiles. The status switcher became a full-width segmented
+  pill under a "Status" header: the active status is tinted with its color while
+  the rest stay muted, replacing the bordered icon grid.
+
+  * lib/features/collections/widgets/context_menu_item.dart (contextMenuItem): New shared builder for dense icon-and-label menu entries.
+  * lib/features/collections/widgets/status_chip_row.dart (StatusChipRow, statusChipPopupMenuEntries): Redesign the status selector as a segmented pill and add a "Status" header.
+  * lib/features/collections/widgets/collection_items_view.dart (CollectionItemsView), lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState): Build action entries with contextMenuItem.
+
 - **Disambiguate manga by provider across cache, collection, covers and mood grids**
 
   Manga from AniList and MangaBaka can share a numeric id, so manga identity is
