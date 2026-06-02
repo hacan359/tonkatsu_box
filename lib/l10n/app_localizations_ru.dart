@@ -55,6 +55,9 @@ class SRu extends S {
   String get releasesToday => 'Сегодня';
 
   @override
+  String get releasesRefresh => 'Обновить';
+
+  @override
   String get releasesNoEpisodes => 'Серий нет';
 
   @override

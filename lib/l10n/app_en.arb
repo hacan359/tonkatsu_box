@@ -18,6 +18,7 @@
   "releasesViewWeek": "Week",
   "releasesViewMonth": "Month",
   "releasesToday": "Today",
+  "releasesRefresh": "Refresh",
   "releasesNoEpisodes": "No episodes",
   "releasesEpisode": "Season {season} · Episode {episode}",
   "@releasesEpisode": {

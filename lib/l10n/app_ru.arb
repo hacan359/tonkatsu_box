@@ -18,6 +18,7 @@
   "releasesViewWeek": "Неделя",
   "releasesViewMonth": "Месяц",
   "releasesToday": "Сегодня",
+  "releasesRefresh": "Обновить",
   "releasesNoEpisodes": "Серий нет",
   "releasesEpisode": "Сезон {season} · серия {episode}",
   "@releasesEpisode": {

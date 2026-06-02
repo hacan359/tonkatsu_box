@@ -36,6 +36,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
   DateTime _focusedDay = _dateOnly(DateTime.now());
   DateTime _monthAnchor = _dateOnly(DateTime.now());
   int? _syncedSignature;
+  bool _refreshing = false;
 
   late DateFormatPreset _datePreset;
   late String _localeName;
@@ -91,10 +92,11 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
               child: MonthView<Object?>(
                 key: _monthKey,
                 controller: _controller,
-                monthViewStyle: const MonthViewStyle(
+                monthViewStyle: MonthViewStyle(
                   startDay: WeekDays.monday,
                   useAvailableVerticalSpace: true,
                   borderColor: AppColors.surfaceBorder,
+                  initialMonth: _monthAnchor,
                 ),
                 monthViewBuilders: MonthViewBuilders<Object?>(
                   cellBuilder: _monthCell,
@@ -154,9 +156,35 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
             onSelectionChanged: (Set<_CalendarView> s) =>
                 setState(() => _view = s.first),
           ),
+          const SizedBox(width: AppSpacing.xs),
+          IconButton(
+            tooltip: l.releasesRefresh,
+            onPressed: _refreshing ? null : _onRefreshPressed,
+            icon: _refreshing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh, color: AppColors.textSecondary),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _onRefreshPressed() async {
+    setState(() => _refreshing = true);
+    try {
+      await _refresh();
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
+    }
+  }
+
+  Future<void> _refresh() async {
+    await ref.read(releasesProvider.notifier).refreshFromApi();
+    await ref.read(releasesProvider.future);
   }
 
 
@@ -358,26 +386,37 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         _navBar(l),
         const Divider(height: 1, color: AppColors.surfaceBorder),
         Expanded(
-          child: total == 0
-              ? _emptyDay(l)
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPadding,
-                    AppSpacing.sm,
-                    AppSpacing.screenPadding,
-                    AppSpacing.lg,
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: total == 0
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: <Widget>[
+                      SizedBox(
+                        height: MediaQuery.sizeOf(context).height * 0.5,
+                        child: _emptyDay(l),
+                      ),
+                    ],
+                  )
+                : ListView(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screenPadding,
+                      AppSpacing.sm,
+                      AppSpacing.screenPadding,
+                      AppSpacing.lg,
+                    ),
+                    children: <Widget>[
+                      for (final DateTime day in days)
+                        ...<Widget>[
+                          if (week && (byDay[day]?.isNotEmpty ?? false))
+                            _dayHeader(day),
+                          for (final ReleaseEvent e
+                              in byDay[day] ?? const <ReleaseEvent>[])
+                            _eventTile(l, e),
+                        ],
+                    ],
                   ),
-                  children: <Widget>[
-                    for (final DateTime day in days)
-                      ...<Widget>[
-                        if (week && (byDay[day]?.isNotEmpty ?? false))
-                          _dayHeader(day),
-                        for (final ReleaseEvent e
-                            in byDay[day] ?? const <ReleaseEvent>[])
-                          _eventTile(l, e),
-                      ],
-                  ],
-                ),
+          ),
         ),
       ],
     );

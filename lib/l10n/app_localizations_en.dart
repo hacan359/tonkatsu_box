@@ -55,6 +55,9 @@ class SEn extends S {
   String get releasesToday => 'Today';
 
   @override
+  String get releasesRefresh => 'Refresh';
+
+  @override
   String get releasesNoEpisodes => 'No episodes';
 
   @override

@@ -187,6 +187,12 @@ abstract class S {
   /// **'Today'**
   String get releasesToday;
 
+  /// No description provided for @releasesRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get releasesRefresh;
+
   /// No description provided for @releasesNoEpisodes.
   ///
   /// In en, this message translates to:

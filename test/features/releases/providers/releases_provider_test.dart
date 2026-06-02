@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/releases/models/release_event.dart';
 import 'package:tonkatsu_box/features/releases/providers/releases_provider.dart';
@@ -8,11 +9,36 @@ import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/tracked_release.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/models/tv_season.dart';
 
 import '../../../helpers/test_helpers.dart';
 
+class _FakeReleasesNotifier extends ReleasesNotifier {
+  _FakeReleasesNotifier(this._data);
+
+  final ReleasesCalendarData _data;
+
+  @override
+  Future<ReleasesCalendarData> build() async => _data;
+}
+
+ReleaseEvent _eventOn(DateTime date) => ReleaseEvent(
+      externalId: 1,
+      mediaType: MediaType.tvShow,
+      showTitle: 'S',
+      season: 1,
+      episode: 1,
+      airDate: date,
+      watched: false,
+      isUpcoming: true,
+    );
+
 void main() {
-  setUpAll(registerAllFallbacks);
+  setUpAll(() {
+    registerAllFallbacks();
+    registerFallbackValue(<TvSeason>[]);
+    registerFallbackValue(<TvEpisode>[]);
+  });
 
   late MockDatabaseService mockDb;
   late MockTrackedReleaseDao trackedDao;
@@ -132,6 +158,55 @@ void main() {
 
       expect(data.trackedCount, 1);
       expect(data.events, isEmpty);
+    });
+
+    test('refreshFromApi caches TMDB shows and skips other providers',
+        () async {
+      final MockTmdbApi api = MockTmdbApi();
+      when(() => trackedDao.getAll()).thenAnswer((_) async => <TrackedRelease>[
+            tracked(1, DataSource.tmdb, MediaType.tvShow),
+            tracked(2, DataSource.anilist, MediaType.manga),
+          ]);
+      when(() => api.getTvSeasons(1)).thenAnswer(
+          (_) async => <TvSeason>[const TvSeason(tmdbShowId: 1, seasonNumber: 1)]);
+      when(() => api.getSeasonEpisodes(1, 1))
+          .thenAnswer((_) async => <TvEpisode>[episode(1, 1, 1, future)]);
+      when(() => mockDb.upsertTvSeasons(any())).thenAnswer((_) async {});
+      when(() => mockDb.upsertEpisodes(any())).thenAnswer((_) async {});
+
+      final ProviderContainer container = ProviderContainer(
+        overrides: <Override>[
+          databaseServiceProvider.overrideWithValue(mockDb),
+          tmdbApiProvider.overrideWithValue(api),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(releasesProvider.notifier).refreshFromApi();
+
+      verify(() => api.getTvSeasons(1)).called(greaterThanOrEqualTo(1));
+      verifyNever(() => api.getTvSeasons(2));
+      verify(() => mockDb.upsertEpisodes(any())).called(greaterThanOrEqualTo(1));
+    });
+
+    test('releasesTodayCountProvider counts only today episodes', () async {
+      final DateTime now = DateTime.now();
+      final ReleasesCalendarData data = ReleasesCalendarData(
+        trackedCount: 1,
+        events: <ReleaseEvent>[
+          _eventOn(now),
+          _eventOn(now.add(const Duration(days: 5))),
+        ],
+      );
+      final ProviderContainer container = ProviderContainer(
+        overrides: <Override>[
+          releasesProvider.overrideWith(() => _FakeReleasesNotifier(data)),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(releasesProvider.future);
+
+      expect(container.read(releasesTodayCountProvider), 1);
     });
 
     test('should skip episodes without a parseable air date', () async {

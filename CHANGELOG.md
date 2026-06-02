@@ -12,24 +12,27 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 - **Add a Releases calendar for tracked TV shows and anime**
 
   A new "Releases" tab (between tier lists and wishlist) shows a
-  Google-Calendar-style view of episodes for shows tracked with the bell in the
-  detail screen. Month grid plus week and day agendas (no hour grid — episodes
-  have no air time); episodes are colored by state (upcoming, aired-unwatched,
-  watched), with a long-press / right-click preview and tap-through to the item.
-  Dates use the Settings date format. Tracking is keyed by
-  `(external_id, source, media_type)` so one show counts once across
-  collections; release dates come from the existing episode cache, refreshed via
-  the detail card's refresh button.
+  Google-Calendar-style view of upcoming episodes for shows tracked with the
+  bell in the detail screen. Month grid plus week and day agendas (no hour grid
+  — episodes have no air time); today and future episodes are shown, with a
+  long-press / right-click preview and tap-through to the item. Dates use the
+  Settings date format. Tracking is keyed by `(external_id, source, media_type)`
+  so one show counts once across collections, and a show stays on the calendar
+  only while it remains in at least one collection. A refresh button (and
+  pull-to-refresh on the day / week lists) re-fetches seasons from TMDB to pick
+  up newly announced episodes. The navigation bell shows a badge with how many
+  episodes air today.
 
   * lib/core/database/migrations/migration_v45.dart (MigrationV45), lib/core/database/migrations/migration_registry.dart, lib/core/database/database_service.dart (trackedReleaseDao, trackedReleaseDaoProvider): New `tracked_releases` table; DB version 44 → 45.
   * lib/core/database/schema.dart (DatabaseSchema.createTrackedReleasesTable): New table DDL.
   * lib/core/database/dao/tracked_release_dao.dart (TrackedReleaseDao): subscribe, unsubscribe, isTracked, getAll, getTrackedKeys.
   * lib/core/database/dao/tv_show_dao.dart (TvShowDao.getWatchedEpisodesForShow): Watched episodes aggregated across all collections.
   * lib/shared/models/tracked_release.dart (TrackedRelease): New model.
-  * lib/features/releases/models/release_event.dart (ReleaseEvent, ReleasesCalendarData), lib/features/releases/providers/releases_provider.dart (ReleasesNotifier, releasesProvider, isReleaseTrackedProvider), lib/features/releases/screens/releases_screen.dart (ReleasesScreen), lib/features/releases/widgets/releases_empty_state.dart (ReleasesEmptyState): New calendar feature.
+  * lib/features/releases/models/release_event.dart (ReleaseEvent, ReleasesCalendarData), lib/features/releases/providers/releases_provider.dart (ReleasesNotifier, ReleasesNotifier.refreshFromApi, releasesProvider, isReleaseTrackedProvider, releasesTodayCountProvider), lib/features/releases/screens/releases_screen.dart (ReleasesScreen), lib/features/releases/widgets/releases_empty_state.dart (ReleasesEmptyState): New calendar feature.
+  * lib/features/collections/providers/collections_provider.dart (CollectionItemsNotifier.removeItem): Invalidate the releases calendar when an item is removed.
   * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart (ItemDetailAppBar), lib/features/collections/screens/item_detail_screen.dart (_ItemDetailScreenState): Bell to track / untrack releases for TMDB TV and anime.
-  * lib/shared/navigation/nav_tab.dart (NavTab.releases), lib/shared/navigation/nav_destinations.dart, lib/shared/navigation/app_shell.dart, lib/shared/navigation/search_providers.dart: New tab wired into navigation, before wishlist.
-  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (navReleases, releasesEmpty, releasesEmptyHint, releasesTrackShow, releasesUntrackShow, releasesViewDay, releasesViewWeek, releasesViewMonth, releasesToday, releasesNoEpisodes, releasesEpisode): New strings.
+  * lib/shared/navigation/nav_tab.dart (NavTab.releases), lib/shared/navigation/nav_destinations.dart (buildNavDestinations), lib/shared/navigation/app_shell.dart, lib/shared/navigation/search_providers.dart, lib/shared/navigation/app_bottom_bar.dart, lib/shared/navigation/app_sidebar.dart: New tab wired into navigation before wishlist, with a today-count badge on the bell.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (navReleases, releasesEmpty, releasesEmptyHint, releasesTrackShow, releasesUntrackShow, releasesViewDay, releasesViewWeek, releasesViewMonth, releasesToday, releasesRefresh, releasesNoEpisodes, releasesEpisode): New strings.
   * pubspec.yaml (calendar_view): New MIT dependency for the month / week / day calendar.
 
 - **Add MangaBaka as a second manga search source**

@@ -15,6 +15,7 @@ import 'nav_tab.dart';
 List<NavDestination> buildNavDestinations({
   required BuildContext context,
   required int wishlistCount,
+  required int releasesTodayCount,
 }) {
   final S loc = S.of(context);
   return <NavDestination>[
@@ -41,6 +42,7 @@ List<NavDestination> buildNavDestinations({
       icon: Icons.notifications_none,
       selectedIcon: Icons.notifications,
       label: loc.navReleases,
+      badgeCount: releasesTodayCount,
     ),
     NavDestination(
       tab: NavTab.wishlist,
