@@ -133,6 +133,78 @@ abstract class S {
   /// **'Settings'**
   String get navSettings;
 
+  /// No description provided for @navReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'Releases'**
+  String get navReleases;
+
+  /// No description provided for @releasesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracked shows yet'**
+  String get releasesEmpty;
+
+  /// No description provided for @releasesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the bell on a TV show or anime to track new episodes.'**
+  String get releasesEmptyHint;
+
+  /// No description provided for @releasesTrackShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Track releases'**
+  String get releasesTrackShow;
+
+  /// No description provided for @releasesUntrackShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop tracking'**
+  String get releasesUntrackShow;
+
+  /// No description provided for @releasesViewDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get releasesViewDay;
+
+  /// No description provided for @releasesViewWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get releasesViewWeek;
+
+  /// No description provided for @releasesViewMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get releasesViewMonth;
+
+  /// No description provided for @releasesToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get releasesToday;
+
+  /// No description provided for @releasesRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get releasesRefresh;
+
+  /// No description provided for @releasesNoEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'No episodes'**
+  String get releasesNoEpisodes;
+
+  /// No description provided for @releasesEpisode.
+  ///
+  /// In en, this message translates to:
+  /// **'Season {season} · Episode {episode}'**
+  String releasesEpisode(int season, int episode);
+
   /// No description provided for @statusNotStarted.
   ///
   /// In en, this message translates to:

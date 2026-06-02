@@ -8,6 +8,25 @@
   "navWishlist": "Желаемое",
   "navSearch": "Поиск",
   "navSettings": "Настройки",
+  "navReleases": "Релизы",
+
+  "releasesEmpty": "Нет отслеживаемых сериалов",
+  "releasesEmptyHint": "Нажмите колокольчик на сериале или аниме, чтобы отслеживать новые серии.",
+  "releasesTrackShow": "Отслеживать релизы",
+  "releasesUntrackShow": "Не отслеживать",
+  "releasesViewDay": "День",
+  "releasesViewWeek": "Неделя",
+  "releasesViewMonth": "Месяц",
+  "releasesToday": "Сегодня",
+  "releasesRefresh": "Обновить",
+  "releasesNoEpisodes": "Серий нет",
+  "releasesEpisode": "Сезон {season} · серия {episode}",
+  "@releasesEpisode": {
+    "placeholders": {
+      "season": {"type": "int"},
+      "episode": {"type": "int"}
+    }
+  },
 
   "statusNotStarted": "Не начато",
   "statusPlaying": "Играю",

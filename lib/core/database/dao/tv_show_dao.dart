@@ -203,6 +203,25 @@ class TvShowDao {
     return result;
   }
 
+  /// Watched episodes for a show aggregated across all collections: an episode
+  /// counts as watched if it is marked in any collection. Release tracking
+  /// treats a show as a single subscription regardless of how many collections
+  /// hold it, so the per-collection split in `watched_episodes` is collapsed.
+  Future<Set<(int, int)>> getWatchedEpisodesForShow(int showId) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'watched_episodes',
+      columns: <String>['season_number', 'episode_number'],
+      where: 'show_id = ?',
+      whereArgs: <Object?>[showId],
+      distinct: true,
+    );
+    return <(int, int)>{
+      for (final Map<String, dynamic> row in rows)
+        (row['season_number'] as int, row['episode_number'] as int),
+    };
+  }
+
   /// Отмечает эпизод как просмотренный.
   Future<void> markEpisodeWatched(
     int collectionId,

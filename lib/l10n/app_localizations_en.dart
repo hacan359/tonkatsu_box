@@ -27,6 +27,45 @@ class SEn extends S {
   String get navSettings => 'Settings';
 
   @override
+  String get navReleases => 'Releases';
+
+  @override
+  String get releasesEmpty => 'No tracked shows yet';
+
+  @override
+  String get releasesEmptyHint =>
+      'Tap the bell on a TV show or anime to track new episodes.';
+
+  @override
+  String get releasesTrackShow => 'Track releases';
+
+  @override
+  String get releasesUntrackShow => 'Stop tracking';
+
+  @override
+  String get releasesViewDay => 'Day';
+
+  @override
+  String get releasesViewWeek => 'Week';
+
+  @override
+  String get releasesViewMonth => 'Month';
+
+  @override
+  String get releasesToday => 'Today';
+
+  @override
+  String get releasesRefresh => 'Refresh';
+
+  @override
+  String get releasesNoEpisodes => 'No episodes';
+
+  @override
+  String releasesEpisode(int season, int episode) {
+    return 'Season $season · Episode $episode';
+  }
+
+  @override
   String get statusNotStarted => 'Not Started';
 
   @override

@@ -19,6 +19,7 @@ import 'package:tonkatsu_box/core/database/dao/collection_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/game_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/movie_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/tracked_release_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/custom_media_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/anime_dao.dart';
 import 'package:tonkatsu_box/core/services/discord_rpc_service.dart';
@@ -93,6 +94,8 @@ class MockGameDao extends Mock implements GameDao {}
 class MockMovieDao extends Mock implements MovieDao {}
 
 class MockTvShowDao extends Mock implements TvShowDao {}
+
+class MockTrackedReleaseDao extends Mock implements TrackedReleaseDao {}
 
 class MockVisualNovelDao extends Mock implements VisualNovelDao {}
 

@@ -35,6 +35,7 @@ abstract final class DatabaseSchema {
     await createAniListTagsTable(db);
     await createMangaBakaGenresTable(db);
     await createMangaBakaTagsTable(db);
+    await createTrackedReleasesTable(db);
   }
 
   static Future<void> createPlatformsTable(Database db) async {
@@ -205,6 +206,24 @@ abstract final class DatabaseSchema {
         status TEXT,
         external_url TEXT,
         cached_at INTEGER
+      )
+    ''');
+  }
+
+  /// Release-tracking subscriptions, keyed by the title identity
+  /// `(external_id, source, media_type)` so the same numeric id from different
+  /// providers (e.g. AniList vs MangaBaka) never collides. Independent of
+  /// `collection_items`: one subscription per title regardless of how many
+  /// collections it sits in. The Releases calendar reads dates straight from
+  /// `tv_episodes_cache`; this table only records what the user opted into.
+  static Future<void> createTrackedReleasesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE tracked_releases (
+        external_id INTEGER NOT NULL,
+        source TEXT NOT NULL,
+        media_type TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        PRIMARY KEY (external_id, source, media_type)
       )
     ''');
   }

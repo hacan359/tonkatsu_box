@@ -27,6 +27,45 @@ class SRu extends S {
   String get navSettings => 'Настройки';
 
   @override
+  String get navReleases => 'Релизы';
+
+  @override
+  String get releasesEmpty => 'Нет отслеживаемых сериалов';
+
+  @override
+  String get releasesEmptyHint =>
+      'Нажмите колокольчик на сериале или аниме, чтобы отслеживать новые серии.';
+
+  @override
+  String get releasesTrackShow => 'Отслеживать релизы';
+
+  @override
+  String get releasesUntrackShow => 'Не отслеживать';
+
+  @override
+  String get releasesViewDay => 'День';
+
+  @override
+  String get releasesViewWeek => 'Неделя';
+
+  @override
+  String get releasesViewMonth => 'Месяц';
+
+  @override
+  String get releasesToday => 'Сегодня';
+
+  @override
+  String get releasesRefresh => 'Обновить';
+
+  @override
+  String get releasesNoEpisodes => 'Серий нет';
+
+  @override
+  String releasesEpisode(int season, int episode) {
+    return 'Сезон $season · серия $episode';
+  }
+
+  @override
   String get statusNotStarted => 'Не начато';
 
   @override

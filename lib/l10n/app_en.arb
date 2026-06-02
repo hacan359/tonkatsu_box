@@ -8,6 +8,25 @@
   "navWishlist": "Wishlist",
   "navSearch": "Search",
   "navSettings": "Settings",
+  "navReleases": "Releases",
+
+  "releasesEmpty": "No tracked shows yet",
+  "releasesEmptyHint": "Tap the bell on a TV show or anime to track new episodes.",
+  "releasesTrackShow": "Track releases",
+  "releasesUntrackShow": "Stop tracking",
+  "releasesViewDay": "Day",
+  "releasesViewWeek": "Week",
+  "releasesViewMonth": "Month",
+  "releasesToday": "Today",
+  "releasesRefresh": "Refresh",
+  "releasesNoEpisodes": "No episodes",
+  "releasesEpisode": "Season {season} · Episode {episode}",
+  "@releasesEpisode": {
+    "placeholders": {
+      "season": {"type": "int"},
+      "episode": {"type": "int"}
+    }
+  },
 
   "statusNotStarted": "Not Started",
   "statusPlaying": "Playing",

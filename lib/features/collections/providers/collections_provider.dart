@@ -22,6 +22,7 @@ import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
+import '../../releases/providers/releases_provider.dart';
 import '../../../core/database/dao/tag_dao.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
@@ -720,6 +721,8 @@ class CollectionItemsNotifier
     }
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
+    // The releases calendar drops shows no longer in any collection.
+    ref.invalidate(releasesProvider);
 
     for (final int tierListId in affectedTierListIds) {
       ref.invalidate(tierListDetailProvider(tierListId));

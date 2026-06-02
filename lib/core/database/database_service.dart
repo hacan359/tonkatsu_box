@@ -42,6 +42,7 @@ import 'dao/mangabaka_tag_dao.dart';
 import 'dao/visual_novel_dao.dart';
 import 'dao/mood_grid_dao.dart';
 import 'dao/tier_list_dao.dart';
+import 'dao/tracked_release_dao.dart';
 import 'dao/tracker_dao.dart';
 import 'dao/wishlist_dao.dart';
 import 'migrations/migration.dart';
@@ -133,6 +134,11 @@ final Provider<MangaBakaTagDao> mangaBakaTagDaoProvider =
   return ref.watch(databaseServiceProvider).mangaBakaTagDao;
 });
 
+final Provider<TrackedReleaseDao> trackedReleaseDaoProvider =
+    Provider<TrackedReleaseDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).trackedReleaseDao;
+});
+
 class DatabaseService {
   static final Logger _log = Logger('DatabaseService');
 
@@ -199,6 +205,9 @@ class DatabaseService {
 
   late final WishlistDao wishlistDao = WishlistDao(() => database);
 
+  late final TrackedReleaseDao trackedReleaseDao =
+      TrackedReleaseDao(() => database);
+
   Future<Database> _initDatabase() async {
     // AppSupport rather than Documents: Documents may sit under OneDrive,
     // which blocks file creation (PathAccessException).
@@ -238,7 +247,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 44,
+        version: 45,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {

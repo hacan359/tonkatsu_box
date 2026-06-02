@@ -370,6 +370,30 @@ void main() {
       });
     });
 
+    group('getWatchedEpisodesForShow', () {
+      test('aggregates watched episodes across collections', () async {
+        when(
+          () => mockDb.query(
+            'watched_episodes',
+            columns: <String>['season_number', 'episode_number'],
+            where: 'show_id = ?',
+            whereArgs: <Object?>[200],
+            distinct: true,
+          ),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{'season_number': 1, 'episode_number': 1},
+            <String, dynamic>{'season_number': 2, 'episode_number': 3},
+          ],
+        );
+
+        final Set<(int, int)> result =
+            await dao.getWatchedEpisodesForShow(200);
+
+        expect(result, <(int, int)>{(1, 1), (2, 3)});
+      });
+    });
+
     group('markEpisodeWatched', () {
       test('inserts with ignore conflict', () async {
         when(

@@ -99,5 +99,7 @@ SearchContext? searchContextFor(NavTab tab, BuildContext context) {
         queryProvider: searchTabQueryProvider,
         hint: loc.appBarSearchHint,
       );
+    case NavTab.releases:
+      return null;
   }
 }

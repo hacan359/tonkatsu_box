@@ -9,6 +9,7 @@ import '../../features/collections/screens/collection_screen.dart';
 import '../../features/collections/screens/home_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
 import '../../features/collections/screens/item_detail_screen.dart';
+import '../../features/releases/screens/releases_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/tier_lists/screens/tier_list_detail_screen.dart';
@@ -26,7 +27,7 @@ import 'nav_tab.dart';
 import 'search_providers.dart';
 
 /// Количество основных табов.
-const int _tabCount = 6;
+const int _tabCount = 7;
 
 /// Главная оболочка приложения.
 ///
@@ -244,6 +245,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       onGenerateRoute: (RouteSettings settings) {
         final Widget screen = switch (NavTab.values[tabIndex]) {
           NavTab.home => const AllItemsScreen(),
+          NavTab.releases => const ReleasesScreen(),
           NavTab.collections => const HomeScreen(),
           NavTab.tierLists => const TierListsScreen(),
           NavTab.wishlist => const WishlistScreen(),
@@ -302,6 +304,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   List<ShortcutGroup> _currentScreenShortcutGroups() {
     return switch (NavTab.values[_selectedIndex]) {
       NavTab.home => const <ShortcutGroup>[],
+      NavTab.releases => const <ShortcutGroup>[],
       NavTab.collections => const <ShortcutGroup>[
           HomeScreen.shortcutGroup,
           CollectionScreen.shortcutGroup,

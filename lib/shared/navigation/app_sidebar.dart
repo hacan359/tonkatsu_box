@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/releases/providers/releases_provider.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../theme/app_colors.dart';
 import 'liquid_indicator.dart';
@@ -46,6 +47,7 @@ class AppSidebar extends ConsumerWidget {
     final List<NavDestination> destinations = buildNavDestinations(
       context: context,
       wishlistCount: wishlistCount,
+      releasesTodayCount: ref.watch(releasesTodayCountProvider),
     );
     final int selectedIndex =
         destinations.indexWhere((NavDestination d) => d.tab == selectedTab);

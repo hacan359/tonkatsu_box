@@ -10,7 +10,10 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../core/database/dao/tracked_release_dao.dart';
 import '../../../core/database/database_service.dart';
+import '../../../shared/models/data_source.dart';
+import '../../releases/providers/releases_provider.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -164,6 +167,26 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       case ItemDetailMenuAction.remove:
         _removeFromCollection(item);
     }
+  }
+
+  /// Release tracking covers only TMDB-backed TV shows and anime for now.
+  bool _canTrackReleases(CollectionItem item) =>
+      item.mediaType == MediaType.tvShow ||
+      item.mediaType == MediaType.animation;
+
+  Future<void> _toggleTracked(CollectionItem item) async {
+    final TrackedReleaseDao dao = ref.read(trackedReleaseDaoProvider);
+    final bool tracked =
+        await dao.isTracked(item.externalId, DataSource.tmdb, item.mediaType);
+    if (tracked) {
+      await dao.unsubscribe(item.externalId, DataSource.tmdb, item.mediaType);
+    } else {
+      await dao.subscribe(item.externalId, DataSource.tmdb, item.mediaType);
+    }
+    ref.invalidate(isReleaseTrackedProvider(
+      (externalId: item.externalId, mediaType: item.mediaType),
+    ));
+    ref.invalidate(releasesProvider);
   }
 
   Future<void> _refreshFromApi(CollectionItem item) async {
@@ -484,6 +507,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           onEditCustom: () => _editCustomItem(item),
           onMenuSelected: (ItemDetailMenuAction action) =>
               _handleMenuAction(action, item),
+          canTrackReleases: _canTrackReleases(item),
+          isTracked: _canTrackReleases(item) &&
+              (ref
+                      .watch(isReleaseTrackedProvider((
+                        externalId: item.externalId,
+                        mediaType: item.mediaType,
+                      )))
+                      .valueOrNull ??
+                  false),
+          onToggleTracked: () => _toggleTracked(item),
         ),
         body: _showCanvas && _hasCanvas
             ? ItemDetailCanvasView(
