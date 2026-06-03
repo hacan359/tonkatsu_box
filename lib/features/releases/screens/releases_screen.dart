@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/utils/date_format_preset.dart';
+import '../../../shared/widgets/cached_image.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/release_event.dart';
@@ -206,7 +208,9 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     return CalendarEventData<Object?>(
       date: e.airDate,
       title: e.showTitle,
-      description: l.releasesEpisode(e.season, e.episode),
+      description: e.season != null
+          ? l.releasesEpisode(e.season!, e.episode!)
+          : null,
       color: _colorFor(e),
       event: e,
     );
@@ -348,7 +352,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
           child: Row(
             children: <Widget>[
               const SizedBox(width: 4),
-              _thumb(e?.posterUrl, width: 16, height: 22),
+              _thumb(e, width: 16, height: 22),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -529,7 +533,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 _thumb(
-                  e.posterUrl,
+                  e,
                   width: inSheet ? 60 : 46,
                   height: inSheet ? 90 : 69,
                 ),
@@ -552,14 +556,16 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
                           decoration: dim ? TextDecoration.lineThrough : null,
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        l.releasesEpisode(e.season, e.episode),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                      if (e.season != null) ...<Widget>[
+                        const SizedBox(height: 3),
+                        Text(
+                          l.releasesEpisode(e.season!, e.episode!),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
+                      ],
                       const SizedBox(height: 6),
                       Row(
                         children: <Widget>[
@@ -644,28 +650,50 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
   }
 
 
-  Widget _thumb(String? url, {required double width, required double height}) {
+  Widget _thumb(ReleaseEvent? e, {required double width, required double height}) {
+    final Widget placeholder = ColoredBox(
+      color: AppColors.surface,
+      child: Icon(
+        _placeholderIcon(e?.mediaType),
+        size: 14,
+        color: AppColors.textTertiary,
+      ),
+    );
+    final bool cacheable = e?.posterUrl != null &&
+        e?.imageType != null &&
+        e?.cacheImageId != null;
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
       child: SizedBox(
         width: width,
         height: height,
-        child: url != null
-            ? Image.network(
-                url,
+        child: cacheable
+            ? CachedImage(
+                imageType: e!.imageType!,
+                imageId: e.cacheImageId!,
+                remoteUrl: e.posterUrl!,
+                width: width,
+                height: height,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const ColoredBox(
-                  color: AppColors.surface,
-                  child: Icon(Icons.tv, size: 14, color: AppColors.textTertiary),
-                ),
+                placeholder: placeholder,
+                errorWidget: placeholder,
               )
-            : const ColoredBox(
-                color: AppColors.surface,
-                child: Icon(Icons.tv, size: 14, color: AppColors.textTertiary),
-              ),
+            : placeholder,
       ),
     );
   }
+
+  IconData _placeholderIcon(MediaType? type) => switch (type) {
+        MediaType.game => Icons.videogame_asset,
+        MediaType.movie => Icons.movie_outlined,
+        MediaType.tvShow => Icons.tv_outlined,
+        MediaType.animation => Icons.animation,
+        MediaType.visualNovel => Icons.menu_book,
+        MediaType.manga => Icons.auto_stories,
+        MediaType.anime => Icons.play_circle_outline,
+        MediaType.custom => Icons.dashboard_customize,
+        null => Icons.event,
+      };
 
   Color _colorFor(ReleaseEvent e) {
     if (e.isUpcoming) return AppColors.statusPlanned;

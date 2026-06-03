@@ -205,6 +205,60 @@ abstract class S {
   /// **'Season {season} · Episode {episode}'**
   String releasesEpisode(int season, int episode);
 
+  /// No description provided for @calendarAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to calendar'**
+  String get calendarAdd;
+
+  /// No description provided for @calendarRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from calendar'**
+  String get calendarRemove;
+
+  /// No description provided for @calendarAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to calendar'**
+  String get calendarAddTitle;
+
+  /// No description provided for @calendarDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get calendarDate;
+
+  /// No description provided for @calendarRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get calendarRepeat;
+
+  /// No description provided for @calendarAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get calendarAddAction;
+
+  /// No description provided for @recurrenceOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Once'**
+  String get recurrenceOnce;
+
+  /// No description provided for @recurrenceWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get recurrenceWeekly;
+
+  /// No description provided for @recurrenceMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get recurrenceMonthly;
+
   /// No description provided for @statusNotStarted.
   ///
   /// In en, this message translates to:

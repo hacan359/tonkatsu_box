@@ -1,3 +1,4 @@
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/media_type.dart';
 
 /// One aired-or-upcoming episode of a tracked show, placed on the calendar by
@@ -7,12 +8,14 @@ class ReleaseEvent {
     required this.externalId,
     required this.mediaType,
     required this.showTitle,
-    required this.season,
-    required this.episode,
     required this.airDate,
     required this.watched,
     required this.isUpcoming,
+    this.season,
+    this.episode,
     this.posterUrl,
+    this.imageType,
+    this.cacheImageId,
     this.collectionId,
     this.itemId,
   });
@@ -20,12 +23,19 @@ class ReleaseEvent {
   final int externalId;
   final MediaType mediaType;
   final String showTitle;
-  final int season;
-  final int episode;
+
+  /// Season / episode for TV-episode events; null for manual calendar entries.
+  final int? season;
+  final int? episode;
   final DateTime airDate;
   final bool watched;
   final bool isUpcoming;
   final String? posterUrl;
+
+  /// Cache routing for [posterUrl] — the item's own image type and cache key,
+  /// so the poster reuses the on-disk cache instead of refetching.
+  final ImageType? imageType;
+  final String? cacheImageId;
 
   /// A representative collection item for navigation; null if the show is
   /// tracked but no longer in any collection.

@@ -1,4 +1,4 @@
-// Основная оболочка приложения: боковое меню + вложенная навигация.
+// Main app shell: side rail + nested per-tab navigation.
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -26,28 +26,28 @@ import 'app_top_bar.dart';
 import 'nav_tab.dart';
 import 'search_providers.dart';
 
-/// Количество основных табов.
+/// Number of primary tabs.
 const int _tabCount = 7;
 
-/// Главная оболочка приложения.
+/// Main app shell.
 ///
-/// Единая для всех платформ (Windows, Android): слева — [AppSidebar] шириной
-/// [kAppSidebarWidth], справа — вложенная навигация каждого таба через
-/// [IndexedStack] + кэшированные [Navigator].
+/// Shared across platforms (Windows, Android): [AppSidebar] of width
+/// [kAppSidebarWidth] on the left, each tab's nested navigation on the right
+/// via [IndexedStack] + cached [Navigator]s.
 ///
-/// Поддержка геймпада:
-/// - D-pad — перемещение фокуса (DirectionalFocusIntent)
-/// - A — активация фокусированного виджета (ActivateIntent)
-/// - LB/RB — переключение между табами
-/// - B — назад (pop внутри таба или переключение на Home)
+/// Gamepad support:
+/// - D-pad — move focus (DirectionalFocusIntent)
+/// - A — activate the focused widget (ActivateIntent)
+/// - LB/RB — switch between tabs
+/// - B — back (pop within the tab, or switch to Home)
 class AppShell extends ConsumerStatefulWidget {
-  /// Создаёт [AppShell].
+  /// Creates an [AppShell].
   ///
-  /// [initialTab] позволяет открыть приложение на конкретном табе
-  /// (например, Settings после Welcome Wizard).
+  /// [initialTab] opens the app on a specific tab (e.g. Settings after the
+  /// Welcome Wizard).
   const AppShell({this.initialTab, super.key});
 
-  /// Начальный таб. Если null — [NavTab.home].
+  /// Starting tab; [NavTab.home] when null.
   final NavTab? initialTab;
 
   @override
@@ -57,29 +57,29 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   late int _selectedIndex = widget.initialTab?.index ?? NavTab.home.index;
 
-  /// FocusScopeNode для каждого таба.
+  /// FocusScopeNode per tab.
   final List<FocusScopeNode> _tabFocusScopeNodes = List<FocusScopeNode>.generate(
     _tabCount,
     (int i) => FocusScopeNode(debugLabel: 'tab-$i-scope'),
   );
 
-  /// Табы, которые уже были инициализированы (ленивая инициализация).
+  /// Tabs that have been initialized already (lazy init).
   late final Set<int> _initializedTabs = <int>{
     NavTab.home.index,
     if (widget.initialTab != null) widget.initialTab!.index,
   };
 
-  /// Ключи Navigator для каждого таба.
+  /// Navigator keys per tab.
   final List<GlobalKey<NavigatorState>> _navigatorKeys =
       List<GlobalKey<NavigatorState>>.generate(
     _tabCount,
     (_) => GlobalKey<NavigatorState>(),
   );
 
-  /// Кэшированные Navigator-виджеты.
+  /// Cached Navigator widgets.
   ///
-  /// При смене локали [MaterialApp] перестраивает всё дерево. Без кэша
-  /// каждый ребилд создавал бы новый Navigator и терял историю маршрутов.
+  /// [MaterialApp] rebuilds the whole tree on locale change. Without the cache
+  /// each rebuild would create a new Navigator and lose its route history.
   final List<Widget?> _navigatorWidgets =
       List<Widget?>.filled(_tabCount, null);
 
@@ -179,11 +179,11 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  /// Перехватывает печатные символы с глобального Focus и перенаправляет
-  /// их в поле поиска [AppTopBar] (type-to-search).
+  /// Captures printable characters from the global Focus and redirects them to
+  /// the [AppTopBar] search field (type-to-search).
   ///
-  /// Срабатывает только на десктопе, только если текущий таб поддерживает
-  /// поиск и фокус не находится внутри другого [EditableText].
+  /// Desktop only, and only when the current tab supports search and focus is
+  /// not already inside another [EditableText].
   KeyEventResult _handleTypeToSearch(FocusNode node, KeyEvent event) {
     if (kIsMobile) return KeyEventResult.ignored;
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
@@ -211,7 +211,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     return KeyEventResult.handled;
   }
 
-  /// Проверяет, находится ли фокус во внешнем [EditableText].
+  /// Whether focus is inside some other [EditableText].
   bool _isAnyEditableTextFocused() {
     final FocusNode? focus = FocusManager.instance.primaryFocus;
     final BuildContext? ctx = focus?.context;
@@ -266,7 +266,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _onDestinationSelected(int index) {
     if (index == _selectedIndex) {
-      // Повторное нажатие — вернуться к корню таба.
+      // Pressing again returns to the tab root.
       _navigatorKeys[index]
           .currentState
           ?.popUntil((Route<dynamic> route) => route.isFirst);
@@ -274,7 +274,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
     _initializedTabs.add(index);
     setState(() => _selectedIndex = index);
-    // Явно фокусируем контент нового таба для геймпада.
+    // Explicitly focus the new tab's content for the gamepad.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final FocusScopeNode scope = _tabFocusScopeNodes[index];
@@ -283,9 +283,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     });
   }
 
-  /// Обработка кнопки «назад» (Android back, Gamepad B).
+  /// Handles the back button (Android back, Gamepad B).
   ///
-  /// Возвращает `true`, если навигация обработана; `false`, если нужно выйти.
+  /// Returns `true` if navigation was handled; `false` if the app should exit.
   bool _handleBack() {
     final NavigatorState? tabNav =
         _navigatorKeys[_selectedIndex].currentState;
@@ -300,7 +300,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     return false;
   }
 
-  /// Возвращает группы хоткеев для текущего таба (для F1 диалога).
+  /// Shortcut groups for the current tab (for the F1 dialog).
   List<ShortcutGroup> _currentScreenShortcutGroups() {
     return switch (NavTab.values[_selectedIndex]) {
       NavTab.home => const <ShortcutGroup>[],
@@ -320,7 +320,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     };
   }
 
-  /// F5 — обновить текущий таб (pop до корня).
+  /// F5 — refresh the current tab (pop to its root).
   void _onRefresh() {
     final NavigatorState? tabNav =
         _navigatorKeys[_selectedIndex].currentState;
@@ -335,7 +335,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     _onDestinationSelected(newIndex);
   }
 
-  /// D-pad → перемещение фокуса через DirectionalFocusIntent.
+  /// D-pad → move focus via DirectionalFocusIntent.
   void _onGamepadNavigate(GamepadAction action) {
     final FocusNode? primaryFocus = FocusManager.instance.primaryFocus;
     final BuildContext? focusContext = primaryFocus?.context;
@@ -356,7 +356,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     Actions.maybeInvoke(focusContext, DirectionalFocusIntent(direction));
   }
 
-  /// A кнопка → активация фокусированного виджета.
+  /// A button → activate the focused widget.
   void _onGamepadConfirm() {
     final BuildContext? focusContext =
         FocusManager.instance.primaryFocus?.context;
@@ -365,7 +365,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     Actions.maybeInvoke(focusContext, const ActivateIntent());
   }
 
-  /// Y кнопка → контекстное меню (аналог ПКМ / long press).
+  /// Y button → context menu (like right-click / long press).
   void _onGamepadContextMenu() {
     final FocusNode? primaryFocus = FocusManager.instance.primaryFocus;
     final BuildContext? focusContext = primaryFocus?.context;
@@ -403,7 +403,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     inkWell?.onLongPress?.call();
   }
 
-  /// Left Stick → скролл через синтетический PointerScrollEvent.
+  /// Left stick → scroll via a synthetic PointerScrollEvent.
   void _onGamepadScroll(GamepadAction action) {
     const double scrollAmount = 80.0;
 

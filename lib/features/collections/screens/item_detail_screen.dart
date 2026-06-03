@@ -10,10 +10,13 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../core/database/dao/calendar_entry_dao.dart';
 import '../../../core/database/dao/tracked_release_dao.dart';
 import '../../../core/database/database_service.dart';
+import '../../../shared/models/calendar_entry.dart';
 import '../../../shared/models/data_source.dart';
 import '../../releases/providers/releases_provider.dart';
+import '../../releases/widgets/add_to_calendar_dialog.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -169,8 +172,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     }
   }
 
-  /// Release tracking covers only TMDB-backed TV shows and anime for now.
-  bool _canTrackReleases(CollectionItem item) =>
+  /// TV shows and anime track episodes (TMDB); everything else uses a manual
+  /// calendar entry.
+  bool _isEpisodeType(CollectionItem item) =>
       item.mediaType == MediaType.tvShow ||
       item.mediaType == MediaType.animation;
 
@@ -187,6 +191,68 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       (externalId: item.externalId, mediaType: item.mediaType),
     ));
     ref.invalidate(releasesProvider);
+  }
+
+  Future<void> _toggleCalendarEntry(CollectionItem item) async {
+    final CalendarEntryDao dao = ref.read(calendarEntryDaoProvider);
+    final DataSource source = item.dataSource;
+    final bool added =
+        await dao.isAdded(item.externalId, source, item.mediaType);
+    if (added) {
+      await dao.remove(item.externalId, source, item.mediaType);
+    } else {
+      if (!mounted) return;
+      final AddToCalendarResult? result = await showAddToCalendarDialog(
+        context,
+        initialDate: _initialCalendarDate(item),
+      );
+      if (result == null || !mounted) return;
+      await dao.upsert(CalendarEntry(
+        externalId: item.externalId,
+        source: source,
+        mediaType: item.mediaType,
+        startDate: result.date,
+        recurrence: result.recurrence,
+        createdAt: DateTime.now(),
+      ));
+    }
+    ref.invalidate(isCalendarEntryProvider(
+      (externalId: item.externalId, source: source, mediaType: item.mediaType),
+    ));
+    ref.invalidate(releasesProvider);
+  }
+
+  /// Pre-selected date for the add dialog: the item's release date if it is in
+  /// the future, otherwise today.
+  DateTime _initialCalendarDate(CollectionItem item) {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime? release = _releaseDateOf(item);
+    return (release != null && release.isAfter(today)) ? release : today;
+  }
+
+  DateTime? _releaseDateOf(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return item.game?.releaseDate;
+      case MediaType.visualNovel:
+        return DateTime.tryParse(item.visualNovel?.released ?? '');
+      case MediaType.manga:
+        final int? y = item.manga?.startYear;
+        return y != null
+            ? DateTime(y, item.manga?.startMonth ?? 1, item.manga?.startDay ?? 1)
+            : null;
+      case MediaType.anime:
+        final int? y = item.anime?.startYear;
+        return y != null
+            ? DateTime(y, item.anime?.startMonth ?? 1, item.anime?.startDay ?? 1)
+            : null;
+      case MediaType.movie:
+      case MediaType.tvShow:
+      case MediaType.animation:
+      case MediaType.custom:
+        return item.releaseYear != null ? DateTime(item.releaseYear!) : null;
+    }
   }
 
   Future<void> _refreshFromApi(CollectionItem item) async {
@@ -507,16 +573,29 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           onEditCustom: () => _editCustomItem(item),
           onMenuSelected: (ItemDetailMenuAction action) =>
               _handleMenuAction(action, item),
-          canTrackReleases: _canTrackReleases(item),
-          isTracked: _canTrackReleases(item) &&
-              (ref
+          canTrackReleases: true,
+          isTracked: _isEpisodeType(item)
+              ? ref
                       .watch(isReleaseTrackedProvider((
                         externalId: item.externalId,
                         mediaType: item.mediaType,
                       )))
                       .valueOrNull ??
-                  false),
-          onToggleTracked: () => _toggleTracked(item),
+                  false
+              : ref
+                      .watch(isCalendarEntryProvider((
+                        externalId: item.externalId,
+                        source: item.dataSource,
+                        mediaType: item.mediaType,
+                      )))
+                      .valueOrNull ??
+                  false,
+          onToggleTracked: () => _isEpisodeType(item)
+              ? _toggleTracked(item)
+              : _toggleCalendarEntry(item),
+          trackTooltip: _isEpisodeType(item) ? null : S.of(context).calendarAdd,
+          untrackTooltip:
+              _isEpisodeType(item) ? null : S.of(context).calendarRemove,
         ),
         body: _showCanvas && _hasCanvas
             ? ItemDetailCanvasView(

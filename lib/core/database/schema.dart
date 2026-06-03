@@ -36,6 +36,7 @@ abstract final class DatabaseSchema {
     await createMangaBakaGenresTable(db);
     await createMangaBakaTagsTable(db);
     await createTrackedReleasesTable(db);
+    await createCalendarEntriesTable(db);
   }
 
   static Future<void> createPlatformsTable(Database db) async {
@@ -222,6 +223,22 @@ abstract final class DatabaseSchema {
         external_id INTEGER NOT NULL,
         source TEXT NOT NULL,
         media_type TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        PRIMARY KEY (external_id, source, media_type)
+      )
+    ''');
+  }
+
+  /// Manual calendar entries (any item) with a start date and recurrence.
+  /// Keyed by `(external_id, source, media_type)`, independent of collections.
+  static Future<void> createCalendarEntriesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE calendar_entries (
+        external_id INTEGER NOT NULL,
+        source TEXT NOT NULL,
+        media_type TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        recurrence TEXT NOT NULL,
         created_at INTEGER NOT NULL,
         PRIMARY KEY (external_id, source, media_type)
       )

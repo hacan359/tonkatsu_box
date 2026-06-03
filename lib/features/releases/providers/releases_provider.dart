@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
+import '../../../shared/models/calendar_entry.dart';
+import '../../../shared/models/calendar_recurrence.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
@@ -19,6 +21,18 @@ final AutoDisposeFutureProviderFamily<bool, ({int externalId, MediaType mediaTyp
     return ref
         .watch(trackedReleaseDaoProvider)
         .isTracked(key.externalId, DataSource.tmdb, key.mediaType);
+  },
+);
+
+/// Whether an item has a manual calendar entry, for the detail-screen bell.
+final AutoDisposeFutureProviderFamily<bool,
+        ({int externalId, DataSource source, MediaType mediaType})>
+    isCalendarEntryProvider = FutureProvider.autoDispose.family<bool,
+        ({int externalId, DataSource source, MediaType mediaType})>(
+  (Ref ref, ({int externalId, DataSource source, MediaType mediaType}) key) {
+    return ref
+        .watch(calendarEntryDaoProvider)
+        .isAdded(key.externalId, key.source, key.mediaType);
   },
 );
 
@@ -83,20 +97,89 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day);
 
+    // Tidy past one-time manual entries before reading anything.
+    await db.calendarEntryDao.deletePastOnce(today);
+
     final List<TrackedRelease> tracked = await db.trackedReleaseDao.getAll();
     final List<TrackedRelease> tmdb = tracked
         .where((TrackedRelease t) =>
             t.source == DataSource.tmdb && _supported.contains(t.mediaType))
         .toList();
+    final List<CalendarEntry> manual = await db.calendarEntryDao.getAll();
 
-    final List<List<ReleaseEvent>> perShow = await Future.wait(
-      tmdb.map((TrackedRelease t) => _eventsForShow(db, t, today)),
-    );
+    final List<List<ReleaseEvent>> perShow = await Future.wait(<Future<List<ReleaseEvent>>>[
+      ...tmdb.map((TrackedRelease t) => _eventsForShow(db, t, today)),
+      ...manual.map((CalendarEntry e) => _eventsForEntry(db, e, today)),
+    ]);
 
     return ReleasesCalendarData(
-      trackedCount: tmdb.length,
+      trackedCount: tmdb.length + manual.length,
       events: perShow.expand((List<ReleaseEvent> e) => e).toList(),
     );
+  }
+
+  /// Expands a manual entry into events for its occurrences within a year.
+  Future<List<ReleaseEvent>> _eventsForEntry(
+    DatabaseService db,
+    CalendarEntry entry,
+    DateTime today,
+  ) async {
+    final CollectionItem? item =
+        await db.collectionDao.findCollectionItemWithData(
+      collectionId: null,
+      mediaType: entry.mediaType,
+      externalId: entry.externalId,
+    );
+    if (item == null) return <ReleaseEvent>[];
+
+    return <ReleaseEvent>[
+      for (final DateTime date in _occurrences(entry, today))
+        ReleaseEvent(
+          externalId: entry.externalId,
+          mediaType: entry.mediaType,
+          showTitle: item.itemName,
+          airDate: date,
+          watched: false,
+          isUpcoming: true,
+          posterUrl: item.thumbnailUrl,
+          imageType: item.imageType,
+          cacheImageId: item.coverImageId,
+          collectionId: item.collectionId,
+          itemId: item.id,
+        ),
+    ];
+  }
+
+  /// Occurrence dates for an entry from today up to one year ahead.
+  List<DateTime> _occurrences(CalendarEntry entry, DateTime today) {
+    final DateTime start = DateTime(
+      entry.startDate.year,
+      entry.startDate.month,
+      entry.startDate.day,
+    );
+    final DateTime horizon = today.add(const Duration(days: 365));
+
+    switch (entry.recurrence) {
+      case CalendarRecurrence.once:
+        return start.isBefore(today) ? <DateTime>[] : <DateTime>[start];
+      case CalendarRecurrence.weekly:
+        final List<DateTime> out = <DateTime>[];
+        for (int i = 0; i < 1000; i++) {
+          final DateTime occ = start.add(Duration(days: 7 * i));
+          if (occ.isAfter(horizon)) break;
+          if (!occ.isBefore(today)) out.add(occ);
+        }
+        return out;
+      case CalendarRecurrence.monthly:
+        final List<DateTime> out = <DateTime>[];
+        for (int i = 0; i < 400; i++) {
+          final DateTime occ =
+              DateTime(start.year, start.month + i, start.day);
+          if (occ.isAfter(horizon)) break;
+          if (!occ.isBefore(today)) out.add(occ);
+        }
+        return out;
+    }
   }
 
   Future<List<ReleaseEvent>> _eventsForShow(
@@ -139,6 +222,8 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
         watched: false,
         isUpcoming: true,
         posterUrl: show?.posterThumbUrl,
+        imageType: item.imageType,
+        cacheImageId: item.coverImageId,
         collectionId: item.collectionId,
         itemId: item.id,
       ));

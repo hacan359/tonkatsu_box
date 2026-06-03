@@ -1,4 +1,4 @@
-// DAO для работы с сериалами, сезонами, эпизодами и просмотренными эпизодами.
+// DAO for TV shows, seasons, episodes and watched episodes.
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -7,17 +7,17 @@ import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../query_chunk.dart';
 
-/// DAO для таблиц `tv_shows_cache`, `tv_seasons_cache`,
-/// `tv_episodes_cache` и `watched_episodes`.
+/// DAO for the `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache` and
+/// `watched_episodes` tables.
 class TvShowDao {
-  /// Создаёт DAO с функцией получения базы данных.
+  /// Creates the DAO with a database accessor.
   const TvShowDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
   // ==================== TV Shows ====================
 
-  /// Возвращает сериал по TMDB ID или null, если не найден.
+  /// Returns the show by TMDB id, or null if not cached.
   Future<TvShow?> getTvShowByTmdbId(int tmdbId) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -30,7 +30,7 @@ class TvShowDao {
     return TvShow.fromDb(rows.first);
   }
 
-  /// Сохраняет или обновляет сериал в кеше.
+  /// Inserts or updates a show in the cache.
   Future<void> upsertTvShow(TvShow tvShow) async {
     final Database db = await _getDatabase();
     await db.insert(
@@ -40,7 +40,7 @@ class TvShowDao {
     );
   }
 
-  /// Сохраняет список сериалов пакетно.
+  /// Saves a list of shows in a batch.
   Future<void> upsertTvShows(List<TvShow> tvShows) async {
     if (tvShows.isEmpty) return;
 
@@ -58,7 +58,7 @@ class TvShowDao {
     });
   }
 
-  /// Возвращает несколько сериалов по списку TMDB ID.
+  /// Returns several shows by a list of TMDB ids.
   Future<List<TvShow>> getTvShowsByTmdbIds(List<int> tmdbIds) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(tmdbIds, (List<int> chunk) async {
@@ -73,7 +73,7 @@ class TvShowDao {
     });
   }
 
-  /// Удаляет все сериалы из кеша.
+  /// Clears all shows from the cache.
   Future<void> clearTvShows() async {
     final Database db = await _getDatabase();
     await db.delete('tv_shows_cache');
@@ -81,7 +81,7 @@ class TvShowDao {
 
   // ==================== TV Seasons ====================
 
-  /// Возвращает сезоны сериала.
+  /// Returns the show's seasons.
   Future<List<TvSeason>> getTvSeasonsByShowId(int tmdbShowId) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -93,7 +93,7 @@ class TvShowDao {
     return rows.map(TvSeason.fromDb).toList();
   }
 
-  /// Сохраняет сезоны сериала пакетно.
+  /// Saves the show's seasons in a batch.
   Future<void> upsertTvSeasons(List<TvSeason> seasons) async {
     if (seasons.isEmpty) return;
 
@@ -111,7 +111,7 @@ class TvShowDao {
     });
   }
 
-  /// Удаляет все сезоны из кеша.
+  /// Clears all seasons from the cache.
   Future<void> clearTvSeasons() async {
     final Database db = await _getDatabase();
     await db.delete('tv_seasons_cache');
@@ -119,7 +119,7 @@ class TvShowDao {
 
   // ==================== TV Episodes ====================
 
-  /// Возвращает все эпизоды сериала из кеша.
+  /// Returns all cached episodes of a show.
   Future<List<TvEpisode>> getEpisodesByShowId(int showId) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -131,7 +131,7 @@ class TvShowDao {
     return rows.map(TvEpisode.fromDb).toList();
   }
 
-  /// Возвращает эпизоды сезона сериала из кеша.
+  /// Returns cached episodes of a show's season.
   Future<List<TvEpisode>> getEpisodesByShowAndSeason(
     int showId,
     int seasonNumber,
@@ -146,7 +146,7 @@ class TvShowDao {
     return rows.map(TvEpisode.fromDb).toList();
   }
 
-  /// Сохраняет список эпизодов пакетно (INSERT OR REPLACE).
+  /// Saves a list of episodes in a batch (INSERT OR REPLACE).
   Future<void> upsertEpisodes(List<TvEpisode> episodes) async {
     if (episodes.isEmpty) return;
 
@@ -164,7 +164,7 @@ class TvShowDao {
     });
   }
 
-  /// Удаляет кешированные эпизоды сериала.
+  /// Clears a show's cached episodes.
   Future<void> clearEpisodesByShow(int showId) async {
     final Database db = await _getDatabase();
     await db.delete(
@@ -176,9 +176,9 @@ class TvShowDao {
 
   // ==================== Watched Episodes ====================
 
-  /// Возвращает множество просмотренных эпизодов для сериала в коллекции.
+  /// Watched episodes of a show within a collection.
   ///
-  /// Возвращает Set записей (seasonNumber, episodeNumber).
+  /// Returns a set of (seasonNumber, episodeNumber) records.
   Future<Map<(int, int), DateTime?>> getWatchedEpisodes(
     int collectionId,
     int showId,
@@ -222,7 +222,40 @@ class TvShowDao {
     };
   }
 
-  /// Отмечает эпизод как просмотренный.
+  /// All watched episodes deduped by show/season/episode (collection-agnostic),
+  /// for backup. Keeps the latest `watched_at`.
+  Future<List<Map<String, Object?>>> getAllWatchedEpisodes() async {
+    final Database db = await _getDatabase();
+    return db.rawQuery(
+      'SELECT show_id, season_number, episode_number, '
+      'MAX(watched_at) AS watched_at FROM watched_episodes '
+      'GROUP BY show_id, season_number, episode_number',
+    );
+  }
+
+  /// Marks an episode watched with an explicit timestamp (restore path).
+  Future<void> markEpisodeWatchedAt(
+    int collectionId,
+    int showId,
+    int seasonNumber,
+    int episodeNumber,
+    int? watchedAtMs,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.insert(
+      'watched_episodes',
+      <String, dynamic>{
+        'collection_id': collectionId,
+        'show_id': showId,
+        'season_number': seasonNumber,
+        'episode_number': episodeNumber,
+        'watched_at': watchedAtMs,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  /// Marks an episode as watched.
   Future<void> markEpisodeWatched(
     int collectionId,
     int showId,
@@ -243,7 +276,7 @@ class TvShowDao {
     );
   }
 
-  /// Снимает отметку просмотра с эпизода.
+  /// Clears the watched mark from an episode.
   Future<void> markEpisodeUnwatched(
     int collectionId,
     int showId,
@@ -259,7 +292,7 @@ class TvShowDao {
     );
   }
 
-  /// Возвращает количество просмотренных эпизодов для сериала в коллекции.
+  /// Returns the watched-episode count for a show within a collection.
   Future<int> getWatchedEpisodeCount(
     int collectionId,
     int showId,
@@ -273,7 +306,7 @@ class TvShowDao {
     return result.first['cnt'] as int;
   }
 
-  /// Отмечает все эпизоды сезона как просмотренные.
+  /// Marks every episode of a season as watched.
   Future<void> markSeasonWatched(
     int collectionId,
     int showId,
@@ -303,7 +336,7 @@ class TvShowDao {
     });
   }
 
-  /// Снимает отметку просмотра со всех эпизодов сезона.
+  /// Clears the watched mark from every episode of a season.
   Future<void> unmarkSeasonWatched(
     int collectionId,
     int showId,

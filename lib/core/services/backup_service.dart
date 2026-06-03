@@ -16,8 +16,10 @@ import '../../data/repositories/wishlist_repository.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/calendar_entry.dart';
 import '../../shared/models/mood_grid.dart';
 import '../../shared/models/mood_grid_cell.dart';
+import '../../shared/models/tracked_release.dart';
 import '../../shared/models/wishlist_item.dart';
 import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/tracker_profile.dart';
@@ -30,7 +32,7 @@ import 'import_service.dart';
 import 'xcoll_file.dart';
 
 /// Версия формата бэкапа.
-const int backupFormatVersion = 2;
+const int backupFormatVersion = 3;
 
 /// Провайдер для сервиса бэкапа.
 final Provider<BackupService> backupServiceProvider =
@@ -410,7 +412,46 @@ class BackupService {
         }
       }
 
-      // 6. Настройки
+      // 6. Calendar — release subscriptions and manual calendar entries.
+      // Both are keyed by item identity, independent of collections.
+      final List<TrackedRelease> trackedReleases =
+          await _database.trackedReleaseDao.getAll();
+      final List<CalendarEntry> calendarEntries =
+          await _database.calendarEntryDao.getAll();
+      if (trackedReleases.isNotEmpty || calendarEntries.isNotEmpty) {
+        final Map<String, dynamic> calendarJson = <String, dynamic>{
+          'tracked_releases': trackedReleases
+              .map((TrackedRelease t) => t.toDb())
+              .toList(),
+          'calendar_entries':
+              calendarEntries.map((CalendarEntry e) => e.toDb()).toList(),
+        };
+        final List<int> calendarBytes = utf8.encode(
+          const JsonEncoder.withIndent('  ').convert(calendarJson),
+        );
+        archive.addFile(ArchiveFile(
+          'calendar.json',
+          calendarBytes.length,
+          calendarBytes,
+        ));
+      }
+
+      // 6b. Watch progress — aggregated by show (collection-agnostic), so it
+      // restores onto whichever collections later hold the show.
+      final List<Map<String, Object?>> watched =
+          await _database.tvShowDao.getAllWatchedEpisodes();
+      if (watched.isNotEmpty) {
+        final List<int> watchedBytes = utf8.encode(
+          const JsonEncoder.withIndent('  ').convert(watched),
+        );
+        archive.addFile(ArchiveFile(
+          'watched_episodes.json',
+          watchedBytes.length,
+          watchedBytes,
+        ));
+      }
+
+      // 7. Настройки
       final Map<String, Object> config = _configService.collectSettings();
       final String configStr =
           const JsonEncoder.withIndent('  ').convert(config);
@@ -533,6 +574,8 @@ class BackupService {
       String? configContent;
       String? trackerContent;
       String? moodGridsContent;
+      String? calendarContent;
+      String? watchedContent;
 
       for (final ArchiveFile file in archive) {
         if (!file.isFile) continue;
@@ -549,6 +592,10 @@ class BackupService {
           trackerContent = content;
         } else if (file.name == 'mood_grids.json') {
           moodGridsContent = content;
+        } else if (file.name == 'calendar.json') {
+          calendarContent = content;
+        } else if (file.name == 'watched_episodes.json') {
+          watchedContent = content;
         }
       }
 
@@ -634,6 +681,24 @@ class BackupService {
           await _restoreMoodGrids(moodGridsContent);
         } catch (e) {
           _log.warning('Failed to restore mood grids', e);
+        }
+      }
+
+      // Calendar — release subscriptions and manual entries, keyed by identity.
+      if (calendarContent != null) {
+        try {
+          await _restoreCalendar(calendarContent);
+        } catch (e) {
+          _log.warning('Failed to restore calendar', e);
+        }
+      }
+
+      // Watch progress — re-applied to the restored collections by show id.
+      if (watchedContent != null) {
+        try {
+          await _restoreWatchedEpisodes(watchedContent);
+        } catch (e) {
+          _log.warning('Failed to restore watched episodes', e);
         }
       }
 
@@ -788,6 +853,69 @@ class BackupService {
             source: cellData.source,
           );
         }
+      }
+    }
+  }
+
+  /// Restores release subscriptions and manual calendar entries. Both are
+  /// keyed by item identity, so re-inserting by identity is enough.
+  Future<void> _restoreCalendar(String jsonContent) async {
+    final Map<String, dynamic> map =
+        jsonDecode(jsonContent) as Map<String, dynamic>;
+
+    final List<dynamic> tracked =
+        (map['tracked_releases'] as List<dynamic>?) ?? <dynamic>[];
+    for (final dynamic raw in tracked) {
+      final TrackedRelease tr =
+          TrackedRelease.fromDb(raw as Map<String, dynamic>);
+      await _database.trackedReleaseDao
+          .subscribe(tr.externalId, tr.source, tr.mediaType);
+    }
+
+    final List<dynamic> entries =
+        (map['calendar_entries'] as List<dynamic>?) ?? <dynamic>[];
+    for (final dynamic raw in entries) {
+      await _database.calendarEntryDao
+          .upsert(CalendarEntry.fromDb(raw as Map<String, dynamic>));
+    }
+  }
+
+  /// Restores watch progress. Backed up by show id (collection-agnostic), so
+  /// each watched episode is re-applied to every restored collection holding
+  /// that TV show or anime.
+  Future<void> _restoreWatchedEpisodes(String jsonContent) async {
+    final List<dynamic> list = jsonDecode(jsonContent) as List<dynamic>;
+    // Episodes of the same show repeat; memoize the lookup per show id.
+    final Map<int, List<CollectionItem>> itemsByShow =
+        <int, List<CollectionItem>>{};
+    for (final dynamic raw in list) {
+      final Map<String, dynamic> m = raw as Map<String, dynamic>;
+      final int showId = m['show_id'] as int;
+      final int season = m['season_number'] as int;
+      final int episode = m['episode_number'] as int;
+      final int? watchedAt = m['watched_at'] as int?;
+
+      final List<CollectionItem> items = itemsByShow[showId] ??=
+          <CollectionItem>[
+        ...await _database.collectionDao.findAllCollectionItems(
+          mediaType: MediaType.tvShow,
+          externalId: showId,
+        ),
+        ...await _database.collectionDao.findAllCollectionItems(
+          mediaType: MediaType.animation,
+          externalId: showId,
+        ),
+      ];
+      for (final CollectionItem item in items) {
+        final int? collectionId = item.collectionId;
+        if (collectionId == null) continue;
+        await _database.tvShowDao.markEpisodeWatchedAt(
+          collectionId,
+          showId,
+          season,
+          episode,
+          watchedAt,
+        );
       }
     }
   }
