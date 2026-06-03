@@ -52,6 +52,12 @@ class SEn extends S {
   String get releasesViewMonth => 'Month';
 
   @override
+  String get releasesTabCalendar => 'Calendar';
+
+  @override
+  String get releasesTabAll => 'All releases';
+
+  @override
   String get releasesToday => 'Today';
 
   @override

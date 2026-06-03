@@ -9,6 +9,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/dual_date_picker_dialog.dart';
+import '../../../shared/widgets/segmented_pill.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/release_event.dart';
@@ -16,6 +18,8 @@ import '../providers/releases_provider.dart';
 import '../widgets/releases_empty_state.dart';
 
 enum _CalendarView { month, week, day }
+
+enum _ReleasesTab { calendar, all }
 
 /// Google-Calendar-style view of tracked shows' episodes.
 ///
@@ -34,7 +38,8 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
   final EventController<Object?> _controller = EventController<Object?>();
   final GlobalKey<MonthViewState<Object?>> _monthKey =
       GlobalKey<MonthViewState<Object?>>();
-  _CalendarView _view = _CalendarView.month;
+  _ReleasesTab _tab = _ReleasesTab.all;
+  _CalendarView _view = _CalendarView.week;
   DateTime _focusedDay = _dateOnly(DateTime.now());
   DateTime _monthAnchor = _dateOnly(DateTime.now());
   int? _syncedSignature;
@@ -76,10 +81,91 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         return Column(
           children: <Widget>[
             _toolbar(l),
-            Expanded(child: _viewBody(l, data)),
+            Expanded(
+              child: _tab == _ReleasesTab.calendar
+                  ? _calendarBody(l, data)
+                  : _allReleasesBody(l, data),
+            ),
           ],
         );
       },
+    );
+  }
+
+  Widget _calendarBody(S l, ReleasesCalendarData data) {
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            0,
+            AppSpacing.md,
+            AppSpacing.sm,
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SegmentedPill<_CalendarView>(
+              selected: _view,
+              onChanged: (_CalendarView v) => setState(() => _view = v),
+              options: <SegmentedPillOption<_CalendarView>>[
+                SegmentedPillOption<_CalendarView>(
+                  value: _CalendarView.month,
+                  label: l.releasesViewMonth,
+                ),
+                SegmentedPillOption<_CalendarView>(
+                  value: _CalendarView.week,
+                  label: l.releasesViewWeek,
+                ),
+                SegmentedPillOption<_CalendarView>(
+                  value: _CalendarView.day,
+                  label: l.releasesViewDay,
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(child: _viewBody(l, data)),
+      ],
+    );
+  }
+
+  /// Every dated event, grouped under a header per day, oldest first.
+  Widget _allReleasesBody(S l, ReleasesCalendarData data) {
+    final Map<DateTime, List<ReleaseEvent>> byDay = _groupByDay(data.events);
+    final List<DateTime> days = byDay.keys.toList()..sort();
+
+    if (days.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: <Widget>[
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.5,
+              child: _emptyDay(l),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          AppSpacing.sm,
+          AppSpacing.screenPadding,
+          AppSpacing.lg,
+        ),
+        children: <Widget>[
+          for (final DateTime day in days) ...<Widget>[
+            _dayHeader(day),
+            for (final ReleaseEvent e in byDay[day] ?? const <ReleaseEvent>[])
+              _eventTile(l, e),
+          ],
+        ],
+      ),
     );
   }
 
@@ -138,25 +224,19 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
             ),
           ),
           const SizedBox(width: AppSpacing.md),
-          SegmentedButton<_CalendarView>(
-            showSelectedIcon: false,
-            segments: <ButtonSegment<_CalendarView>>[
-              ButtonSegment<_CalendarView>(
-                value: _CalendarView.month,
-                label: Text(l.releasesViewMonth),
+          SegmentedPill<_ReleasesTab>(
+            selected: _tab,
+            onChanged: (_ReleasesTab t) => setState(() => _tab = t),
+            options: <SegmentedPillOption<_ReleasesTab>>[
+              SegmentedPillOption<_ReleasesTab>(
+                value: _ReleasesTab.all,
+                label: l.releasesTabAll,
               ),
-              ButtonSegment<_CalendarView>(
-                value: _CalendarView.week,
-                label: Text(l.releasesViewWeek),
-              ),
-              ButtonSegment<_CalendarView>(
-                value: _CalendarView.day,
-                label: Text(l.releasesViewDay),
+              SegmentedPillOption<_ReleasesTab>(
+                value: _ReleasesTab.calendar,
+                label: l.releasesTabCalendar,
               ),
             ],
-            selected: <_CalendarView>{_view},
-            onSelectionChanged: (Set<_CalendarView> s) =>
-                setState(() => _view = s.first),
           ),
           const SizedBox(width: AppSpacing.xs),
           IconButton(
@@ -441,10 +521,20 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
             onPressed: _goPrev,
           ),
           Expanded(
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: _pickJumpDate,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ),
             ),
           ),
           IconButton(
@@ -482,6 +572,27 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       case _CalendarView.day:
         setState(() => _focusedDay = _focusedDay.add(const Duration(days: 1)));
     }
+  }
+
+  /// Opens the full calendar picker to jump the current view to any date.
+  Future<void> _pickJumpDate() async {
+    final DateTime initial =
+        _view == _CalendarView.month ? _monthAnchor : _focusedDay;
+    final DateTime? picked = await showDualDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(DateTime.now().year + 10),
+    );
+    if (picked == null || !mounted) return;
+    final DateTime day = _dateOnly(picked);
+    if (_view == _CalendarView.month) {
+      _monthKey.currentState?.animateToMonth(DateTime(day.year, day.month));
+    }
+    setState(() {
+      _focusedDay = day;
+      _monthAnchor = DateTime(day.year, day.month);
+    });
   }
 
   void _goToday() {

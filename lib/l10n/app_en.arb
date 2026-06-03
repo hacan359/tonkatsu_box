@@ -17,6 +17,8 @@
   "releasesViewDay": "Day",
   "releasesViewWeek": "Week",
   "releasesViewMonth": "Month",
+  "releasesTabCalendar": "Calendar",
+  "releasesTabAll": "All releases",
   "releasesToday": "Today",
   "releasesRefresh": "Refresh",
   "releasesNoEpisodes": "No episodes",

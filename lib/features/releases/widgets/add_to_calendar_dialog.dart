@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/calendar_recurrence.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/dual_date_picker_dialog.dart';
 
 /// Result of [showAddToCalendarDialog].
 class AddToCalendarResult {
@@ -39,7 +40,7 @@ class _AddToCalendarDialogState extends State<_AddToCalendarDialog> {
   CalendarRecurrence _recurrence = CalendarRecurrence.once;
 
   Future<void> _pickDate() async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? picked = await showDualDatePicker(
       context: context,
       initialDate: _date,
       firstDate: DateTime(2000),
