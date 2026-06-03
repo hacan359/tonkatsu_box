@@ -66,6 +66,33 @@ class SRu extends S {
   }
 
   @override
+  String get calendarAdd => 'Добавить в календарь';
+
+  @override
+  String get calendarRemove => 'Убрать из календаря';
+
+  @override
+  String get calendarAddTitle => 'Добавить в календарь';
+
+  @override
+  String get calendarDate => 'Дата';
+
+  @override
+  String get calendarRepeat => 'Повтор';
+
+  @override
+  String get calendarAddAction => 'Добавить';
+
+  @override
+  String get recurrenceOnce => 'Один раз';
+
+  @override
+  String get recurrenceWeekly => 'Еженедельно';
+
+  @override
+  String get recurrenceMonthly => 'Ежемесячно';
+
+  @override
   String get statusNotStarted => 'Не начато';
 
   @override

@@ -1,10 +1,9 @@
-// Провайдеры контекстного поиска для глобального [AppTopBar].
+// Contextual search providers for the global [AppTopBar].
 //
-// На каждый таб, поддерживающий поиск, заводится отдельный
-// [StateProvider] с query — это даёт per-tab сохранение ввода.
-// [searchContextFor] возвращает описание контекста текущего таба
-// (какой провайдер слушать, какой hint показывать), либо null —
-// когда таб поиск не поддерживает.
+// Each search-capable tab has its own query [StateProvider], which keeps the
+// input per tab. [searchContextFor] returns the current tab's search context
+// (which provider to listen to, which hint to show), or null when the tab does
+// not support search.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,35 +11,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import 'nav_tab.dart';
 
-/// Query поиска для Home (All Items) таба.
+/// Search query for the Home (All Items) tab.
 final StateProvider<String> homeSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Query поиска для Wishlist таба.
+/// Search query for the Wishlist tab.
 final StateProvider<String> wishlistSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Query поиска для Tier Lists таба.
+/// Search query for the Tier Lists tab.
 final StateProvider<String> tierListsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Query поиска для Collections таба.
+/// Search query for the Collections tab.
 final StateProvider<String> collectionsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Query поиска для Search таба (API поиск IGDB/TMDB).
+/// Search query for the Search tab (IGDB/TMDB API search).
 final StateProvider<String> searchTabQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Query поиска для Settings таба.
+/// Search query for the Settings tab.
 final StateProvider<String> settingsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Общий [FocusNode] для TextField в [AppTopBar].
+/// Shared [FocusNode] for the [AppTopBar] text field.
 ///
-/// Живёт на уровне приложения: используется [AppTopBar] для поля ввода
-/// и [AppShell] для программной фокусировки при type-to-search
-/// (начал печатать — фокус в шапку).
+/// Lives at app level: used by [AppTopBar] for the input and by [AppShell]
+/// to focus programmatically on type-to-search (start typing — focus the bar).
 final Provider<FocusNode> appTopBarFocusProvider = Provider<FocusNode>((
   Ref ref,
 ) {
@@ -49,23 +47,23 @@ final Provider<FocusNode> appTopBarFocusProvider = Provider<FocusNode>((
   return node;
 });
 
-/// Описание контекста поиска для одного таба.
+/// Describes the search context for one tab.
 class SearchContext {
-  /// Создаёт [SearchContext].
+  /// Creates a [SearchContext].
   const SearchContext({
     required this.queryProvider,
     required this.hint,
   });
 
-  /// Куда пишется и откуда читается текущий query.
+  /// Where the current query is read from and written to.
   final StateProvider<String> queryProvider;
 
-  /// Placeholder в поле поиска для этого таба.
+  /// Placeholder shown in the search field for this tab.
   final String hint;
 }
 
-/// Возвращает контекст поиска для [tab] или `null`, если таб поиск
-/// пока не поддерживает (подключим в следующих этапах).
+/// Returns the search context for [tab], or `null` if the tab does not
+/// support search yet.
 SearchContext? searchContextFor(NavTab tab, BuildContext context) {
   final S loc = S.of(context);
   switch (tab) {

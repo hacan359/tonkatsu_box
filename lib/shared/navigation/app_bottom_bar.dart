@@ -1,4 +1,4 @@
-// Нижнее меню приложения — горизонтальное, для узких экранов.
+// Bottom navigation bar — horizontal, for narrow screens.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,25 +11,25 @@ import 'nav_destinations.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 
-/// Высота нижнего меню.
+/// Height of the bottom bar.
 const double kAppBottomBarHeight = 64;
 
-/// Нижнее меню приложения (горизонтальное).
+/// Bottom navigation bar (horizontal).
 ///
-/// Используется на узких экранах вместо [AppSidebar]. Settings здесь
-/// нет — она в [AppTopBar].
+/// Used on narrow screens instead of [AppSidebar]. Settings is not here — it
+/// lives in [AppTopBar].
 class AppBottomBar extends ConsumerWidget {
-  /// Создаёт [AppBottomBar].
+  /// Creates an [AppBottomBar].
   const AppBottomBar({
     required this.selectedTab,
     required this.onDestinationSelected,
     super.key,
   });
 
-  /// Активный таб.
+  /// The active tab.
   final NavTab selectedTab;
 
-  /// Колбэк при выборе таба.
+  /// Called when a tab is selected.
   final void Function(NavTab tab) onDestinationSelected;
 
   @override

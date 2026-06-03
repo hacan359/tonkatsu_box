@@ -24,6 +24,8 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.canTrackReleases = false,
     this.isTracked = false,
     this.onToggleTracked,
+    this.trackTooltip,
+    this.untrackTooltip,
     super.key,
   });
 
@@ -38,14 +40,18 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onEditCustom;
   final ValueChanged<ItemDetailMenuAction> onMenuSelected;
 
-  /// Whether the release-tracking bell applies to this item (TMDB TV / anime).
+  /// Whether the calendar bell applies to this item.
   final bool canTrackReleases;
 
-  /// Whether the item is currently tracked for releases.
+  /// Whether the item is currently on the calendar (tracked / added).
   final bool isTracked;
 
-  /// Toggles release tracking; required when [canTrackReleases] is true.
+  /// Toggles calendar membership; required when [canTrackReleases] is true.
   final VoidCallback? onToggleTracked;
+
+  /// Bell tooltips; default to the release-tracking wording.
+  final String? trackTooltip;
+  final String? untrackTooltip;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -66,7 +72,9 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               isTracked ? Icons.notifications_active : Icons.notifications_none,
             ),
             color: isTracked ? AppColors.brand : AppColors.textSecondary,
-            tooltip: isTracked ? l.releasesUntrackShow : l.releasesTrackShow,
+            tooltip: isTracked
+                ? (untrackTooltip ?? l.releasesUntrackShow)
+                : (trackTooltip ?? l.releasesTrackShow),
             onPressed: onToggleTracked,
           ),
         if (isEditable && hasCanvas && showCanvas)

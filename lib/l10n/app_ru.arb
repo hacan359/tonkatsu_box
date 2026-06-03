@@ -27,6 +27,15 @@
       "episode": {"type": "int"}
     }
   },
+  "calendarAdd": "Добавить в календарь",
+  "calendarRemove": "Убрать из календаря",
+  "calendarAddTitle": "Добавить в календарь",
+  "calendarDate": "Дата",
+  "calendarRepeat": "Повтор",
+  "calendarAddAction": "Добавить",
+  "recurrenceOnce": "Один раз",
+  "recurrenceWeekly": "Еженедельно",
+  "recurrenceMonthly": "Ежемесячно",
 
   "statusNotStarted": "Не начато",
   "statusPlaying": "Играю",

@@ -18,8 +18,10 @@ void main() {
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
         version: 1,
-        onCreate: (Database db, int _) =>
-            DatabaseSchema.createTrackedReleasesTable(db),
+        onCreate: (Database db, int _) async {
+          await DatabaseSchema.createTrackedReleasesTable(db);
+          await DatabaseSchema.createCollectionItemsTable(db);
+        },
       ),
     );
     dao = TrackedReleaseDao(() async => db);
@@ -82,6 +84,24 @@ void main() {
         await dao.getTrackedKeys(),
         contains((7, 'tmdb', 'tv_show')),
       );
+    });
+
+    test('deleteOrphaned drops subscriptions whose item left all collections',
+        () async {
+      await dao.subscribe(1, DataSource.tmdb, MediaType.tvShow);
+      await dao.subscribe(2, DataSource.tmdb, MediaType.tvShow);
+      await db.insert('collection_items', <String, Object?>{
+        'external_id': 1,
+        'media_type': MediaType.tvShow.value,
+        'added_at': 0,
+        'sort_order': 0,
+      });
+
+      await dao.deleteOrphaned();
+
+      final Set<int> ids =
+          (await dao.getAll()).map((TrackedRelease r) => r.externalId).toSet();
+      expect(ids, <int>{1});
     });
   });
 }

@@ -35,6 +35,7 @@ import 'database_screen.dart';
 import '../../../core/services/backup_service.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
+import '../../releases/providers/releases_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'browse_collections_screen.dart';
 import 'anilist_import_screen.dart';
@@ -993,10 +994,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!context.mounted) return;
 
     if (result.success) {
-      // Инвалидируем провайдеры чтобы UI отобразил восстановленные данные
+      // Refresh derived state so the UI reflects the restored data.
       ref.invalidate(collectionsProvider);
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
+      ref.invalidate(releasesProvider);
 
       context.showSnack(
         l.restoreSuccess(result.collectionsRestored, result.itemsRestored),

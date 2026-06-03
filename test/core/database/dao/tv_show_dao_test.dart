@@ -394,6 +394,52 @@ void main() {
       });
     });
 
+    group('getAllWatchedEpisodes', () {
+      test('returns deduped rows for backup', () async {
+        when(() => mockDb.rawQuery(any())).thenAnswer(
+          (_) async => <Map<String, Object?>>[
+            <String, Object?>{
+              'show_id': 200,
+              'season_number': 1,
+              'episode_number': 1,
+              'watched_at': 1705320000000,
+            },
+          ],
+        );
+
+        final List<Map<String, Object?>> rows =
+            await dao.getAllWatchedEpisodes();
+
+        expect(rows.single['show_id'], 200);
+      });
+    });
+
+    group('markEpisodeWatchedAt', () {
+      test('inserts with the explicit watched_at timestamp', () async {
+        when(() => mockDb.insert(
+              'watched_episodes',
+              any(),
+              conflictAlgorithm: ConflictAlgorithm.ignore,
+            )).thenAnswer((_) async => 1);
+
+        await dao.markEpisodeWatchedAt(1, 200, 2, 3, 1705320000000);
+
+        final VerificationResult captured = verify(
+          () => mockDb.insert(
+            'watched_episodes',
+            captureAny(),
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          ),
+        );
+        captured.called(1);
+        final Map<String, dynamic> data =
+            captured.captured.first as Map<String, dynamic>;
+        expect(data['watched_at'], 1705320000000);
+        expect(data['collection_id'], 1);
+        expect(data['show_id'], 200);
+      });
+    });
+
     group('markEpisodeWatched', () {
       test('inserts with ignore conflict', () async {
         when(

@@ -38,6 +38,15 @@ final AsyncNotifierProvider<CollectionsNotifier, List<Collection>>
   CollectionsNotifier.new,
 );
 
+/// Drops calendar entries and release subscriptions whose item left every
+/// collection, then refreshes the calendar. Runs after item / collection
+/// deletion — the entries are keyed by identity, not linked by FK.
+Future<void> _pruneCalendarOrphans(Ref ref) async {
+  await ref.read(calendarEntryDaoProvider).deleteOrphaned();
+  await ref.read(trackedReleaseDaoProvider).deleteOrphaned();
+  ref.invalidate(releasesProvider);
+}
+
 class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
   late CollectionRepository _repository;
 
@@ -124,6 +133,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     ref.invalidate(collectionStatsProvider(id));
     ref.invalidate(collectionCoversProvider(id));
     ref.invalidate(allItemsNotifierProvider);
+    await _pruneCalendarOrphans(ref);
   }
 
 }
@@ -721,8 +731,7 @@ class CollectionItemsNotifier
     }
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
-    // The releases calendar drops shows no longer in any collection.
-    ref.invalidate(releasesProvider);
+    await _pruneCalendarOrphans(ref);
 
     for (final int tierListId in affectedTierListIds) {
       ref.invalidate(tierListDetailProvider(tierListId));

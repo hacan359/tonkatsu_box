@@ -5,6 +5,8 @@ import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/releases/models/release_event.dart';
 import 'package:tonkatsu_box/features/releases/providers/releases_provider.dart';
+import 'package:tonkatsu_box/shared/models/calendar_entry.dart';
+import 'package:tonkatsu_box/shared/models/calendar_recurrence.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/tracked_release.dart';
@@ -38,12 +40,28 @@ void main() {
     registerAllFallbacks();
     registerFallbackValue(<TvSeason>[]);
     registerFallbackValue(<TvEpisode>[]);
+    registerFallbackValue(DateTime(2024));
   });
 
   late MockDatabaseService mockDb;
   late MockTrackedReleaseDao trackedDao;
   late MockTvShowDao tvDao;
   late MockCollectionDao collDao;
+  late MockCalendarEntryDao calendarDao;
+
+  CalendarEntry calEntry(
+    int id,
+    DateTime start,
+    CalendarRecurrence recurrence,
+  ) =>
+      CalendarEntry(
+        externalId: id,
+        source: DataSource.tmdb,
+        mediaType: MediaType.movie,
+        startDate: start,
+        recurrence: recurrence,
+        createdAt: DateTime(2024),
+      );
 
   TrackedRelease tracked(int id, DataSource source, MediaType type) =>
       TrackedRelease(
@@ -70,12 +88,24 @@ void main() {
     trackedDao = MockTrackedReleaseDao();
     tvDao = MockTvShowDao();
     collDao = MockCollectionDao();
+    calendarDao = MockCalendarEntryDao();
     when(() => mockDb.trackedReleaseDao).thenReturn(trackedDao);
     when(() => mockDb.tvShowDao).thenReturn(tvDao);
     when(() => mockDb.collectionDao).thenReturn(collDao);
+    when(() => mockDb.calendarEntryDao).thenReturn(calendarDao);
+    when(() => calendarDao.deletePastOnce(any())).thenAnswer((_) async {});
+    when(() => calendarDao.getAll())
+        .thenAnswer((_) async => <CalendarEntry>[]);
+    when(() => trackedDao.getAll())
+        .thenAnswer((_) async => <TrackedRelease>[]);
 
     // By default every tracked show still lives in a collection.
     when(() => collDao.findCollectionItem(
+          collectionId: any(named: 'collectionId'),
+          mediaType: any(named: 'mediaType'),
+          externalId: any(named: 'externalId'),
+        )).thenAnswer((_) async => createTestCollectionItem());
+    when(() => collDao.findCollectionItemWithData(
           collectionId: any(named: 'collectionId'),
           mediaType: any(named: 'mediaType'),
           externalId: any(named: 'externalId'),
@@ -207,6 +237,58 @@ void main() {
       await container.read(releasesProvider.future);
 
       expect(container.read(releasesTodayCountProvider), 1);
+    });
+
+    test('manual once entry in the future produces one event', () async {
+      when(() => calendarDao.getAll()).thenAnswer((_) async => <CalendarEntry>[
+            calEntry(1, DateTime(2999, 1, 1), CalendarRecurrence.once),
+          ]);
+
+      final ReleasesCalendarData data =
+          await makeContainer().read(releasesProvider.future);
+
+      expect(data.trackedCount, 1);
+      expect(data.events.length, 1);
+      expect(data.events.single.season, isNull);
+      // Cache routing is carried from the hydrated item for poster caching.
+      expect(data.events.single.cacheImageId, isNotNull);
+      expect(data.events.single.imageType, isNotNull);
+    });
+
+    test('weekly entry expands to multiple upcoming occurrences', () async {
+      final DateTime start =
+          DateTime.now().subtract(const Duration(days: 30));
+      when(() => calendarDao.getAll()).thenAnswer((_) async => <CalendarEntry>[
+            calEntry(1, start, CalendarRecurrence.weekly),
+          ]);
+
+      final ReleasesCalendarData data =
+          await makeContainer().read(releasesProvider.future);
+      final DateTime now = DateTime.now();
+      final DateTime today = DateTime(now.year, now.month, now.day);
+
+      expect(data.events.length, greaterThan(1));
+      expect(
+        data.events.every((ReleaseEvent e) => !e.airDate.isBefore(today)),
+        isTrue,
+      );
+    });
+
+    test('manual entry is skipped when item is in no collection', () async {
+      when(() => calendarDao.getAll()).thenAnswer((_) async => <CalendarEntry>[
+            calEntry(1, DateTime(2999, 1, 1), CalendarRecurrence.once),
+          ]);
+      when(() => collDao.findCollectionItemWithData(
+            collectionId: any(named: 'collectionId'),
+            mediaType: any(named: 'mediaType'),
+            externalId: any(named: 'externalId'),
+          )).thenAnswer((_) async => null);
+
+      final ReleasesCalendarData data =
+          await makeContainer().read(releasesProvider.future);
+
+      expect(data.trackedCount, 1);
+      expect(data.events, isEmpty);
     });
 
     test('should skip episodes without a parseable air date', () async {

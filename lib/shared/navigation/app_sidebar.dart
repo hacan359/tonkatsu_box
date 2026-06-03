@@ -1,4 +1,4 @@
-// Боковое меню приложения — вертикальное, для широких экранов.
+// Side navigation rail — vertical, for wide screens.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,33 +11,33 @@ import 'nav_destinations.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 
-/// Ширина бокового меню.
+/// Width of the side rail.
 const double kAppSidebarWidth = 64;
 
-/// Максимальная высота одной кнопки таба. На узких/низких экранах кнопки
-/// сжимаются пропорционально, не выходя за пределы доступной высоты.
+/// Maximum height of one tab button. On short screens the buttons shrink
+/// proportionally to stay within the available height.
 const double _kItemHeight = 56;
 
-/// Минимальная высота кнопки таба — ниже этого иконка становится трудночитаемой.
+/// Minimum tab-button height — below this the icon becomes hard to read.
 const double _kItemHeightMin = 36;
 
-/// Боковое меню приложения (вертикальное).
+/// Side navigation rail (vertical).
 ///
-/// Содержит только иконки (без подписей и логотипа), располагает кнопки
-/// вертикально по центру и подсвечивает активный пункт анимированным
-/// [LiquidIndicator]. Settings здесь нет — она в [AppTopBar].
+/// Icons only (no labels or logo); centers the buttons vertically and
+/// highlights the active item with an animated [LiquidIndicator]. Settings is
+/// not here — it lives in [AppTopBar].
 class AppSidebar extends ConsumerWidget {
-  /// Создаёт [AppSidebar].
+  /// Creates an [AppSidebar].
   const AppSidebar({
     required this.selectedTab,
     required this.onDestinationSelected,
     super.key,
   });
 
-  /// Активный таб.
+  /// The active tab.
   final NavTab selectedTab;
 
-  /// Колбэк при выборе таба.
+  /// Called when a tab is selected.
   final void Function(NavTab tab) onDestinationSelected;
 
   @override
@@ -70,8 +70,8 @@ class AppSidebar extends ConsumerWidget {
             ),
             LayoutBuilder(
               builder: (BuildContext ctx, BoxConstraints c) {
-                // Сжимаем высоту кнопок если экран ниже идеала, но не меньше
-                // минимума — иначе иконки сольются.
+                // Shrink button height when the screen is shorter than ideal,
+                // but never below the minimum or the icons blur together.
                 final double itemHeight = (c.maxHeight / destinations.length)
                     .clamp(_kItemHeightMin, _kItemHeight);
                 final double totalHeight = itemHeight * destinations.length;

@@ -90,4 +90,16 @@ class TrackedReleaseDao {
         ),
     };
   }
+
+  /// Drops subscriptions whose item no longer exists in any collection.
+  /// Matched by `(external_id, media_type)` — a still-collected copy keeps it.
+  Future<void> deleteOrphaned() async {
+    final Database db = await _getDatabase();
+    await db.delete(
+      'tracked_releases',
+      where: 'NOT EXISTS (SELECT 1 FROM collection_items ci '
+          'WHERE ci.external_id = tracked_releases.external_id '
+          'AND ci.media_type = tracked_releases.media_type)',
+    );
+  }
 }

@@ -7,6 +7,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/services/backup_service.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
 import 'package:tonkatsu_box/core/services/xcoll_file.dart';
+import 'package:tonkatsu_box/shared/models/calendar_entry.dart';
+import 'package:tonkatsu_box/shared/models/calendar_recurrence.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -63,6 +68,15 @@ void main() {
       registerFallbackValue(
         XcollFile(version: 3, name: 'x', author: 'x', created: DateTime(2025)),
       );
+      registerFallbackValue(DataSource.tmdb);
+      registerFallbackValue(CalendarEntry(
+        externalId: 0,
+        source: DataSource.tmdb,
+        mediaType: MediaType.movie,
+        startDate: DateTime(2025),
+        recurrence: CalendarRecurrence.once,
+        createdAt: DateTime(2025),
+      ));
     });
 
     setUp(() {
@@ -250,6 +264,121 @@ void main() {
       expect(r.success, isTrue);
       expect(r.collectionsRestored, 0); // import failed → not counted
       expect(r.itemsRestored, 0);
+    });
+
+    test('restores tracked releases and calendar entries from calendar.json',
+        () async {
+      final MockTrackedReleaseDao trackedDao = MockTrackedReleaseDao();
+      final MockCalendarEntryDao calendarDao = MockCalendarEntryDao();
+      when(() => database.trackedReleaseDao).thenReturn(trackedDao);
+      when(() => database.calendarEntryDao).thenReturn(calendarDao);
+      when(() => trackedDao.subscribe(any(), any(), any()))
+          .thenAnswer((_) async {});
+      when(() => calendarDao.upsert(any())).thenAnswer((_) async {});
+
+      const String calendarJson =
+          '{"tracked_releases":[{"external_id":1,"source":"tmdb",'
+          '"media_type":"tv_show","created_at":1}],'
+          '"calendar_entries":[{"external_id":2,"source":"igdb",'
+          '"media_type":"game","start_date":"2026-07-01",'
+          '"recurrence":"weekly","created_at":1}]}';
+      final String path =
+          writeZip(<String, String>{'calendar.json': calendarJson});
+
+      await makeService().restoreFromBackup(zipPath: path);
+
+      verify(() => trackedDao.subscribe(1, DataSource.tmdb, MediaType.tvShow))
+          .called(1);
+      verify(() => calendarDao.upsert(any())).called(1);
+    });
+
+    test('restores watch progress onto matching collection items', () async {
+      final MockTvShowDao tvDao = MockTvShowDao();
+      final MockCollectionDao collDao = MockCollectionDao();
+      when(() => database.tvShowDao).thenReturn(tvDao);
+      when(() => database.collectionDao).thenReturn(collDao);
+      when(() => collDao.findAllCollectionItems(
+            mediaType: MediaType.tvShow,
+            externalId: 200,
+          )).thenAnswer((_) async => <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              collectionId: 7,
+              mediaType: MediaType.tvShow,
+              externalId: 200,
+            ),
+          ]);
+      when(() => collDao.findAllCollectionItems(
+            mediaType: MediaType.animation,
+            externalId: 200,
+          )).thenAnswer((_) async => <CollectionItem>[]);
+      when(() => tvDao.markEpisodeWatchedAt(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+          )).thenAnswer((_) async {});
+
+      const String watchedJson =
+          '[{"show_id":200,"season_number":1,"episode_number":4,'
+          '"watched_at":1705320000000}]';
+      final String path = writeZip(
+        <String, String>{'watched_episodes.json': watchedJson},
+      );
+
+      await makeService().restoreFromBackup(zipPath: path);
+
+      verify(() => tvDao.markEpisodeWatchedAt(7, 200, 1, 4, 1705320000000))
+          .called(1);
+    });
+
+    test('looks up a show once when restoring several of its episodes',
+        () async {
+      final MockTvShowDao tvDao = MockTvShowDao();
+      final MockCollectionDao collDao = MockCollectionDao();
+      when(() => database.tvShowDao).thenReturn(tvDao);
+      when(() => database.collectionDao).thenReturn(collDao);
+      when(() => collDao.findAllCollectionItems(
+            mediaType: MediaType.tvShow,
+            externalId: 200,
+          )).thenAnswer((_) async => <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              collectionId: 7,
+              mediaType: MediaType.tvShow,
+              externalId: 200,
+            ),
+          ]);
+      when(() => collDao.findAllCollectionItems(
+            mediaType: MediaType.animation,
+            externalId: 200,
+          )).thenAnswer((_) async => <CollectionItem>[]);
+      when(() => tvDao.markEpisodeWatchedAt(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+          )).thenAnswer((_) async {});
+
+      const String watchedJson =
+          '[{"show_id":200,"season_number":1,"episode_number":1,'
+          '"watched_at":1},'
+          '{"show_id":200,"season_number":1,"episode_number":2,'
+          '"watched_at":2}]';
+      final String path = writeZip(
+        <String, String>{'watched_episodes.json': watchedJson},
+      );
+
+      await makeService().restoreFromBackup(zipPath: path);
+
+      verify(() => collDao.findAllCollectionItems(
+            mediaType: MediaType.tvShow,
+            externalId: 200,
+          )).called(1);
+      verify(() => tvDao.markEpisodeWatchedAt(any(), any(), any(), any(), any()))
+          .called(2);
     });
   });
 }

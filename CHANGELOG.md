@@ -9,6 +9,40 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Add any item to the calendar with a date and recurrence**
+
+  A bell on every item's detail screen opens an add dialog (pick a date,
+  pre-filled with the item's future release date, plus a repeat option: once,
+  weekly or monthly). The entry then shows on the Releases calendar. TV shows
+  and anime keep episode tracking; everything else (movies, games, manga, visual
+  novels, custom) uses these manual entries. Past one-time entries are pruned
+  when the calendar opens; recurring entries roll forward up to a year.
+
+  * lib/shared/models/calendar_entry.dart (CalendarEntry), lib/shared/models/calendar_recurrence.dart (CalendarRecurrence): New models.
+  * lib/core/database/migrations/migration_v46.dart (MigrationV46), lib/core/database/migrations/migration_registry.dart, lib/core/database/schema.dart (DatabaseSchema.createCalendarEntriesTable), lib/core/database/database_service.dart (calendarEntryDao, calendarEntryDaoProvider): New `calendar_entries` table; DB version 45 → 46.
+  * lib/core/database/dao/calendar_entry_dao.dart (CalendarEntryDao): isAdded, upsert, remove, getAll, deletePastOnce, deleteOrphaned.
+  * lib/core/database/dao/tracked_release_dao.dart (TrackedReleaseDao.deleteOrphaned): Drop calendar entries / release subscriptions once their item leaves every collection (kept by identity, so not FK-cascaded).
+  * lib/features/collections/providers/collections_provider.dart (CollectionsNotifier.delete, CollectionsNotifier.removeItem, CollectionsNotifier._pruneCalendarOrphans): Prune orphaned calendar entries and refresh the calendar after a collection or item is deleted.
+  * lib/features/releases/widgets/add_to_calendar_dialog.dart (showAddToCalendarDialog, AddToCalendarResult): New date + recurrence dialog.
+  * lib/features/releases/providers/releases_provider.dart (ReleasesNotifier, isCalendarEntryProvider): Merge manual entries into the calendar, expanding recurrence; prune past one-time entries on build. Resolve each entry's title / poster from the hydrated collection item.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.findCollectionItemWithData): Find an item by identity with its media model joined, so the calendar shows real titles / posters instead of an "Unknown" fallback.
+  * lib/features/releases/models/release_event.dart (ReleaseEvent): season / episode now nullable for manual entries; carries imageType / cacheImageId for poster caching.
+  * lib/features/releases/screens/releases_screen.dart (_ReleasesScreenState._thumb, _ReleasesScreenState._placeholderIcon): Posters use the on-disk image cache instead of a raw network fetch; placeholder icon now matches the media type.
+  * lib/features/collections/screens/item_detail_screen.dart (_ItemDetailScreenState), lib/features/collections/widgets/item_detail/item_detail_app_bar.dart (ItemDetailAppBar): Bell on all media types — episodes for TV / anime, manual calendar entry otherwise.
+  * lib/features/settings/content/database_content.dart (_resetDatabase): Invalidate releasesProvider on database reset so the calendar clears.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (calendarAdd, calendarRemove, calendarAddTitle, calendarDate, calendarRepeat, calendarAddAction, recurrenceOnce, recurrenceWeekly, recurrenceMonthly): New strings.
+
+- **Back up the calendar and episode watch progress**
+
+  Backups now include `tracked_releases` and `calendar_entries` (calendar.json),
+  both keyed by item identity, and `watched_episodes` (watched_episodes.json).
+  Watch progress is stored per show and re-applied on restore to whichever
+  restored collections hold that show.
+
+  * lib/core/services/backup_service.dart (BackupService.createBackup, BackupService.restoreFromBackup): Write / read `calendar.json` and `watched_episodes.json`; backup format version 2 → 3.
+  * lib/core/database/dao/tv_show_dao.dart (TvShowDao.getAllWatchedEpisodes, TvShowDao.markEpisodeWatchedAt): Read all watch progress for backup; restore with an explicit timestamp.
+  * lib/features/settings/screens/settings_screen.dart: Invalidate releasesProvider after restore so the calendar and nav badge refresh without reopening the tab.
+
 - **Add a Releases calendar for tracked TV shows and anime**
 
   A new "Releases" tab (between tier lists and wishlist) shows a

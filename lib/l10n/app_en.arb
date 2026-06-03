@@ -27,6 +27,15 @@
       "episode": {"type": "int"}
     }
   },
+  "calendarAdd": "Add to calendar",
+  "calendarRemove": "Remove from calendar",
+  "calendarAddTitle": "Add to calendar",
+  "calendarDate": "Date",
+  "calendarRepeat": "Repeat",
+  "calendarAddAction": "Add",
+  "recurrenceOnce": "Once",
+  "recurrenceWeekly": "Weekly",
+  "recurrenceMonthly": "Monthly",
 
   "statusNotStarted": "Not Started",
   "statusPlaying": "Playing",

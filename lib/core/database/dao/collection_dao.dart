@@ -293,6 +293,24 @@ class CollectionDao {
     return CollectionItem.fromDb(rows.first);
   }
 
+  /// Like [findCollectionItem] but with the joined media model hydrated, so
+  /// callers get a resolved title / poster instead of an "Unknown" fallback.
+  Future<CollectionItem?> findCollectionItemWithData({
+    required int? collectionId,
+    required MediaType mediaType,
+    required int externalId,
+    int? platformId,
+  }) async {
+    final CollectionItem? item = await findCollectionItem(
+      collectionId: collectionId,
+      mediaType: mediaType,
+      externalId: externalId,
+      platformId: platformId,
+    );
+    if (item == null) return null;
+    return (await _loadJoinedData(<CollectionItem>[item])).first;
+  }
+
   Future<List<CollectionItem>> findAllCollectionItems({
     required MediaType mediaType,
     required int externalId,

@@ -435,11 +435,17 @@ void main() {
 
   group('CollectionItemsNotifier.removeItem', () {
     late MockTierListDao mockTierListDao;
+    late MockCalendarEntryDao mockCalendarDao;
+    late MockTrackedReleaseDao mockTrackedDao;
 
     setUp(() {
       mockTierListDao = MockTierListDao();
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
+      mockCalendarDao = MockCalendarEntryDao();
+      mockTrackedDao = MockTrackedReleaseDao();
+      when(() => mockCalendarDao.deleteOrphaned()).thenAnswer((_) async {});
+      when(() => mockTrackedDao.deleteOrphaned()).thenAnswer((_) async {});
     });
 
     ProviderContainer createTierContainer({
@@ -456,6 +462,8 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(sharedPrefs),
           tierListDaoProvider.overrideWithValue(mockTierListDao),
+          calendarEntryDaoProvider.overrideWithValue(mockCalendarDao),
+          trackedReleaseDaoProvider.overrideWithValue(mockTrackedDao),
         ],
       );
       addTearDown(container.dispose);

@@ -1,28 +1,28 @@
-// Перечисление главных табов навигации приложения.
+// Main navigation tabs of the app.
 
-/// Индексы вкладок основной навигации.
+/// Tab indices for the primary navigation.
 ///
-/// Используется [AppShell] для переключения табов и внешними экранами
-/// (например, [WelcomeScreen]) — для указания стартового таба.
+/// Used by [AppShell] to switch tabs and by external screens (e.g.
+/// [WelcomeScreen]) to set the starting tab.
 enum NavTab {
-  /// Домашний экран (все элементы).
+  /// Home screen (all items).
   home,
 
-  /// Коллекции.
+  /// Collections.
   collections,
 
-  /// Тир-листы.
+  /// Tier lists.
   tierLists,
 
-  /// Релизы (новые серии отслеживаемых сериалов).
+  /// Releases (new episodes of tracked shows).
   releases,
 
-  /// Вишлист (заметки для поиска).
+  /// Wishlist (search notes).
   wishlist,
 
-  /// Поиск.
+  /// Search.
   search,
 
-  /// Настройки.
+  /// Settings.
   settings,
 }

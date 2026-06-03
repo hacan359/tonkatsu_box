@@ -1,6 +1,6 @@
-// Построение списка пунктов навигации для бокового и нижнего меню.
+// Builds the navigation destinations for the side and bottom menus.
 //
-// Settings сюда не входит — она вынесена в шестерёнку в [AppTopBar].
+// Settings is not included here — it lives behind the gear in [AppTopBar].
 
 import 'package:flutter/material.dart';
 
@@ -8,10 +8,10 @@ import '../../l10n/app_localizations.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 
-/// Формирует упорядоченный список [NavDestination] для меню.
+/// Builds the ordered list of [NavDestination]s for the menu.
 ///
-/// Порядок идентичен для [AppSidebar] и [AppBottomBar]. Settings
-/// отсутствует — она открывается через шестерёнку в [AppTopBar].
+/// The order is identical for [AppSidebar] and [AppBottomBar]. Settings is
+/// absent — it opens via the gear in [AppTopBar].
 List<NavDestination> buildNavDestinations({
   required BuildContext context,
   required int wishlistCount,

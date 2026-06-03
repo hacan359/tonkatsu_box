@@ -66,6 +66,33 @@ class SEn extends S {
   }
 
   @override
+  String get calendarAdd => 'Add to calendar';
+
+  @override
+  String get calendarRemove => 'Remove from calendar';
+
+  @override
+  String get calendarAddTitle => 'Add to calendar';
+
+  @override
+  String get calendarDate => 'Date';
+
+  @override
+  String get calendarRepeat => 'Repeat';
+
+  @override
+  String get calendarAddAction => 'Add';
+
+  @override
+  String get recurrenceOnce => 'Once';
+
+  @override
+  String get recurrenceWeekly => 'Weekly';
+
+  @override
+  String get recurrenceMonthly => 'Monthly';
+
+  @override
   String get statusNotStarted => 'Not Started';
 
   @override

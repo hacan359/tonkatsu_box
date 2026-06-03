@@ -42,6 +42,7 @@ import 'dao/mangabaka_tag_dao.dart';
 import 'dao/visual_novel_dao.dart';
 import 'dao/mood_grid_dao.dart';
 import 'dao/tier_list_dao.dart';
+import 'dao/calendar_entry_dao.dart';
 import 'dao/tracked_release_dao.dart';
 import 'dao/tracker_dao.dart';
 import 'dao/wishlist_dao.dart';
@@ -139,6 +140,11 @@ final Provider<TrackedReleaseDao> trackedReleaseDaoProvider =
   return ref.watch(databaseServiceProvider).trackedReleaseDao;
 });
 
+final Provider<CalendarEntryDao> calendarEntryDaoProvider =
+    Provider<CalendarEntryDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).calendarEntryDao;
+});
+
 class DatabaseService {
   static final Logger _log = Logger('DatabaseService');
 
@@ -208,6 +214,9 @@ class DatabaseService {
   late final TrackedReleaseDao trackedReleaseDao =
       TrackedReleaseDao(() => database);
 
+  late final CalendarEntryDao calendarEntryDao =
+      CalendarEntryDao(() => database);
+
   Future<Database> _initDatabase() async {
     // AppSupport rather than Documents: Documents may sit under OneDrive,
     // which blocks file creation (PathAccessException).
@@ -247,7 +256,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 45,
+        version: 46,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
