@@ -181,6 +181,18 @@ abstract class S {
   /// **'Month'**
   String get releasesViewMonth;
 
+  /// No description provided for @releasesTabCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get releasesTabCalendar;
+
+  /// No description provided for @releasesTabAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All releases'**
+  String get releasesTabAll;
+
   /// No description provided for @releasesToday.
   ///
   /// In en, this message translates to:

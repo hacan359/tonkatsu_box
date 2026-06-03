@@ -52,6 +52,12 @@ class SRu extends S {
   String get releasesViewMonth => 'Месяц';
 
   @override
+  String get releasesTabCalendar => 'Календарь';
+
+  @override
+  String get releasesTabAll => 'Все релизы';
+
+  @override
   String get releasesToday => 'Сегодня';
 
   @override

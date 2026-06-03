@@ -51,7 +51,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('should render the calendar without error when shows tracked',
+    testWidgets('should list tracked releases by day on the default tab',
         (WidgetTester tester) async {
       await tester.pumpApp(
         const ReleasesScreen(),
@@ -64,10 +64,11 @@ void main() {
       );
 
       expect(find.byType(ReleasesEmptyState), findsNothing);
+      expect(find.text('Show'), findsWidgets);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('should switch between month, week and day without error',
+    testWidgets('should switch to the calendar tab and between month, week, day',
         (WidgetTester tester) async {
       await tester.pumpApp(
         const ReleasesScreen(),
@@ -79,7 +80,7 @@ void main() {
         ],
       );
 
-      await tester.tap(find.text('Week'));
+      await tester.tap(find.text('Calendar'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
@@ -88,6 +89,10 @@ void main() {
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.text('Month'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Week'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });

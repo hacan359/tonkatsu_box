@@ -23,7 +23,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/database/dao/calendar_entry_dao.dart (CalendarEntryDao): isAdded, upsert, remove, getAll, deletePastOnce, deleteOrphaned.
   * lib/core/database/dao/tracked_release_dao.dart (TrackedReleaseDao.deleteOrphaned): Drop calendar entries / release subscriptions once their item leaves every collection (kept by identity, so not FK-cascaded).
   * lib/features/collections/providers/collections_provider.dart (CollectionsNotifier.delete, CollectionsNotifier.removeItem, CollectionsNotifier._pruneCalendarOrphans): Prune orphaned calendar entries and refresh the calendar after a collection or item is deleted.
-  * lib/features/releases/widgets/add_to_calendar_dialog.dart (showAddToCalendarDialog, AddToCalendarResult): New date + recurrence dialog.
+  * lib/features/releases/widgets/add_to_calendar_dialog.dart (showAddToCalendarDialog, AddToCalendarResult, _AddToCalendarDialogState._pickDate): New date + recurrence dialog; date picked via the shared dual date picker (calendar + manual input).
   * lib/features/releases/providers/releases_provider.dart (ReleasesNotifier, isCalendarEntryProvider): Merge manual entries into the calendar, expanding recurrence; prune past one-time entries on build. Resolve each entry's title / poster from the hydrated collection item.
   * lib/core/database/dao/collection_dao.dart (CollectionDao.findCollectionItemWithData): Find an item by identity with its media model joined, so the calendar shows real titles / posters instead of an "Unknown" fallback.
   * lib/features/releases/models/release_event.dart (ReleaseEvent): season / episode now nullable for manual entries; carries imageType / cacheImageId for poster caching.
@@ -42,6 +42,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/services/backup_service.dart (BackupService.createBackup, BackupService.restoreFromBackup): Write / read `calendar.json` and `watched_episodes.json`; backup format version 2 → 3.
   * lib/core/database/dao/tv_show_dao.dart (TvShowDao.getAllWatchedEpisodes, TvShowDao.markEpisodeWatchedAt): Read all watch progress for backup; restore with an explicit timestamp.
   * lib/features/settings/screens/settings_screen.dart: Invalidate releasesProvider after restore so the calendar and nav badge refresh without reopening the tab.
+
+- **Split Releases into "All releases" and "Calendar" tabs**
+
+  Releases opens on an "All releases" list that groups every tracked title by
+  day, oldest first. The "Calendar" tab keeps the month / week / day views
+  (now defaulting to week); its title bar is tappable to jump to any date via
+  the full date picker instead of only stepping with the arrows.
+
+  * lib/features/releases/screens/releases_screen.dart (_ReleasesScreenState, _ReleasesTab, _ReleasesScreenState._calendarBody, _ReleasesScreenState._allReleasesBody, _ReleasesScreenState._pickJumpDate): Top-level All / Calendar tabs; default week view; tap the nav title to open the calendar picker and jump.
+  * lib/shared/widgets/segmented_pill.dart (SegmentedPill, SegmentedPillOption): New shared pill switcher matching the item-detail status row; used for both Releases switchers.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (releasesTabCalendar, releasesTabAll): New strings.
 
 - **Add a Releases calendar for tracked TV shows and anime**
 
