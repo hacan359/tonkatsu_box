@@ -84,9 +84,26 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 |----------|------|
 | Windows | [**Download .zip**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | Linux | [**Download .tar.gz**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
-| Android | [**Download .apk**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
+| Android | [**Download .apk**](https://github.com/hacan359/tonkatsu_box/releases/latest) or [**RuStore**](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox) |
 
 > Linux support is experimental.
+
+> On Android you have three options: grab the APK from Releases, install from [RuStore](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox), or set up Obtainium for auto-updates (below). RuStore handles updates for you through its own store.
+
+### Auto-updates on Android (Obtainium)
+
+[Obtainium](https://github.com/ImranR98/Obtainium) checks GitHub Releases and installs new APKs for you, so you don't have to download updates by hand.
+
+1. Install Obtainium.
+2. Tap **Add App** and paste this into **App source URL**:
+   ```
+   https://github.com/hacan359/tonkatsu_box
+   ```
+3. Tap **Add**.
+4. The first time it updates, Android asks you to allow installs from Obtainium. Allow it once.
+5. In the app settings, pick how often Obtainium checks for releases and turn on auto-update, or just refresh manually whenever you want.
+
+When a new release ships, Obtainium downloads the APK and shows the system install dialog to confirm. Silent background installs are not possible on Android without root.
 
 ## Quick Start
 
