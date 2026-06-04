@@ -73,7 +73,7 @@ class MovieHandler implements MediaActionHandler {
           ? AnimationSource.movie
           : null,
       title: movie.title,
-      upsert: () => _ref.read(databaseServiceProvider).upsertMovie(movie),
+      upsert: () => _ref.read(movieDaoProvider).upsertMovie(movie),
       imageType: ImageType.moviePoster,
       imageId: movie.tmdbId.toString(),
       imageUrl: movie.posterUrl,
@@ -110,7 +110,7 @@ class MovieHandler implements MediaActionHandler {
           ? AnimationSource.movie
           : null,
       title: movie.title,
-      upsert: () => _ref.read(databaseServiceProvider).upsertMovie(movie),
+      upsert: () => _ref.read(movieDaoProvider).upsertMovie(movie),
       imageType: ImageType.moviePoster,
       imageId: movie.tmdbId.toString(),
       imageUrl: movie.posterUrl,

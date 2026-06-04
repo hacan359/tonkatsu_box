@@ -262,7 +262,7 @@ class KodiSyncService {
             // ---- Новый фильм — один раз тянем данные из TMDB ----
             final Movie? tmdbMovie = await _tmdbApi.getMovie(tmdbId);
             if (tmdbMovie != null) {
-              await _db.upsertMovie(tmdbMovie);
+              await _db.movieDao.upsertMovie(tmdbMovie);
             }
 
             final int? itemId = await _db.addItemToCollection(

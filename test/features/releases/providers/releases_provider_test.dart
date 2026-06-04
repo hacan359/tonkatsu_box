@@ -201,8 +201,8 @@ void main() {
           (_) async => <TvSeason>[const TvSeason(tmdbShowId: 1, seasonNumber: 1)]);
       when(() => api.getSeasonEpisodes(1, 1))
           .thenAnswer((_) async => <TvEpisode>[episode(1, 1, 1, future)]);
-      when(() => mockDb.upsertTvSeasons(any())).thenAnswer((_) async {});
-      when(() => mockDb.upsertEpisodes(any())).thenAnswer((_) async {});
+      when(() => tvDao.upsertTvSeasons(any())).thenAnswer((_) async {});
+      when(() => tvDao.upsertEpisodes(any())).thenAnswer((_) async {});
 
       final ProviderContainer container = ProviderContainer(
         overrides: <Override>[
@@ -216,7 +216,7 @@ void main() {
 
       verify(() => api.getTvSeasons(1)).called(greaterThanOrEqualTo(1));
       verifyNever(() => api.getTvSeasons(2));
-      verify(() => mockDb.upsertEpisodes(any())).called(greaterThanOrEqualTo(1));
+      verify(() => tvDao.upsertEpisodes(any())).called(greaterThanOrEqualTo(1));
     });
 
     test('releasesTodayCountProvider counts only today episodes', () async {

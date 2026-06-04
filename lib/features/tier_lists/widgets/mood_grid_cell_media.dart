@@ -65,7 +65,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
 }) async {
   switch (mediaType) {
     case MediaType.game:
-      final Game? game = await db.getGameById(externalId);
+      final Game? game = await db.gameDao.getGameById(externalId);
       return MoodGridCellMedia(
         title: game?.name,
         coverUrl: game?.coverUrl,
@@ -77,7 +77,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
         rating: game?.rating != null ? game!.rating! / 10.0 : null,
       );
     case MediaType.movie:
-      final Movie? movie = await db.getMovieByTmdbId(externalId);
+      final Movie? movie = await db.movieDao.getMovieByTmdbId(externalId);
       return MoodGridCellMedia(
         title: movie?.title,
         coverUrl: movie?.posterUrl,
@@ -88,7 +88,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
         rating: movie?.rating,
       );
     case MediaType.tvShow:
-      final TvShow? tvShow = await db.getTvShowByTmdbId(externalId);
+      final TvShow? tvShow = await db.tvShowDao.getTvShowByTmdbId(externalId);
       return MoodGridCellMedia(
         title: tvShow?.title,
         coverUrl: tvShow?.posterUrl,
@@ -101,7 +101,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
     case MediaType.animation:
       final bool isTvBased = platformId == AnimationSource.tvShow;
       if (isTvBased) {
-        final TvShow? tvShow = await db.getTvShowByTmdbId(externalId);
+        final TvShow? tvShow = await db.tvShowDao.getTvShowByTmdbId(externalId);
         return MoodGridCellMedia(
           title: tvShow?.title,
           coverUrl: tvShow?.posterUrl,
@@ -112,7 +112,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
           rating: tvShow?.rating,
         );
       }
-      final Movie? movie = await db.getMovieByTmdbId(externalId);
+      final Movie? movie = await db.movieDao.getMovieByTmdbId(externalId);
       return MoodGridCellMedia(
         title: movie?.title,
         coverUrl: movie?.posterUrl,
@@ -123,7 +123,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
         rating: movie?.rating,
       );
     case MediaType.visualNovel:
-      final VisualNovel? vn = await db.getVisualNovel(externalId);
+      final VisualNovel? vn = await db.visualNovelDao.getVisualNovel(externalId);
       return MoodGridCellMedia(
         title: vn?.title,
         coverUrl: vn?.imageUrl,
@@ -134,7 +134,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
         rating: vn?.rating,
       );
     case MediaType.anime:
-      final Anime? anime = await db.getAnime(externalId);
+      final Anime? anime = await db.animeDao.getAnime(externalId);
       return MoodGridCellMedia(
         title: anime?.title,
         coverUrl: anime?.coverUrl,
@@ -147,7 +147,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
             anime?.averageScore != null ? anime!.averageScore! / 10.0 : null,
       );
     case MediaType.manga:
-      final Manga? manga = await db.getManga(
+      final Manga? manga = await db.mangaDao.getManga(
         externalId,
         source: source ?? DataSource.anilist,
       );

@@ -7,12 +7,12 @@ import 'package:tonkatsu_box/shared/models/wishlist_item.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  late MockDatabaseService mockDb;
+  late MockWishlistDao mockWishlistDao;
   late WishlistRepository repository;
 
   setUp(() {
-    mockDb = MockDatabaseService();
-    repository = WishlistRepository(db: mockDb);
+    mockWishlistDao = MockWishlistDao();
+    repository = WishlistRepository(wishlistDao: mockWishlistDao);
   });
 
   setUpAll(() {
@@ -31,7 +31,7 @@ void main() {
     group('add', () {
       test('должен делегировать в DatabaseService.addWishlistItem', () async {
         when(
-          () => mockDb.addWishlistItem(
+          () => mockWishlistDao.addWishlistItem(
             text: any(named: 'text'),
             mediaTypeHint: any(named: 'mediaTypeHint'),
             note: any(named: 'note'),
@@ -46,7 +46,7 @@ void main() {
 
         expect(result, testItem);
         verify(
-          () => mockDb.addWishlistItem(
+          () => mockWishlistDao.addWishlistItem(
             text: 'Chrono Trigger',
             mediaTypeHint: MediaType.game,
             note: 'SNES',
@@ -56,7 +56,7 @@ void main() {
 
       test('должен передавать null для опциональных полей', () async {
         when(
-          () => mockDb.addWishlistItem(
+          () => mockWishlistDao.addWishlistItem(
             text: any(named: 'text'),
             mediaTypeHint: any(named: 'mediaTypeHint'),
             note: any(named: 'note'),
@@ -66,7 +66,7 @@ void main() {
         await repository.add(text: 'Test');
 
         verify(
-          () => mockDb.addWishlistItem(
+          () => mockWishlistDao.addWishlistItem(
             text: 'Test',
             mediaTypeHint: null,
             note: null,
@@ -79,41 +79,41 @@ void main() {
       test('должен делегировать с includeResolved=true по умолчанию',
           () async {
         when(
-          () => mockDb.getWishlistItems(includeResolved: true),
+          () => mockWishlistDao.getWishlistItemsFiltered(includeResolved: true),
         ).thenAnswer((_) async => <WishlistItem>[testItem]);
 
         final List<WishlistItem> result = await repository.getAll();
 
         expect(result, <WishlistItem>[testItem]);
-        verify(() => mockDb.getWishlistItems(includeResolved: true)).called(1);
+        verify(() => mockWishlistDao.getWishlistItemsFiltered(includeResolved: true)).called(1);
       });
 
       test('должен передавать includeResolved=false', () async {
         when(
-          () => mockDb.getWishlistItems(includeResolved: false),
+          () => mockWishlistDao.getWishlistItemsFiltered(includeResolved: false),
         ).thenAnswer((_) async => <WishlistItem>[]);
 
         await repository.getAll(includeResolved: false);
 
-        verify(() => mockDb.getWishlistItems(includeResolved: false)).called(1);
+        verify(() => mockWishlistDao.getWishlistItemsFiltered(includeResolved: false)).called(1);
       });
     });
 
     group('getCount', () {
       test('должен делегировать с onlyActive=true по умолчанию', () async {
         when(
-          () => mockDb.getWishlistItemCount(onlyActive: true),
+          () => mockWishlistDao.getWishlistItemCount(onlyActive: true),
         ).thenAnswer((_) async => 5);
 
         final int count = await repository.getCount();
 
         expect(count, 5);
-        verify(() => mockDb.getWishlistItemCount(onlyActive: true)).called(1);
+        verify(() => mockWishlistDao.getWishlistItemCount(onlyActive: true)).called(1);
       });
 
       test('должен передавать onlyActive=false', () async {
         when(
-          () => mockDb.getWishlistItemCount(onlyActive: false),
+          () => mockWishlistDao.getWishlistItemCount(onlyActive: false),
         ).thenAnswer((_) async => 10);
 
         final int count = await repository.getCount(onlyActive: false);
@@ -125,7 +125,7 @@ void main() {
     group('update', () {
       test('должен делегировать обновление текста', () async {
         when(
-          () => mockDb.updateWishlistItem(
+          () => mockWishlistDao.updateWishlistItem(
             any(),
             text: any(named: 'text'),
             mediaTypeHint: any(named: 'mediaTypeHint'),
@@ -138,7 +138,7 @@ void main() {
         await repository.update(1, text: 'New Title');
 
         verify(
-          () => mockDb.updateWishlistItem(
+          () => mockWishlistDao.updateWishlistItem(
             1,
             text: 'New Title',
             mediaTypeHint: null,
@@ -151,7 +151,7 @@ void main() {
 
       test('должен передавать clearMediaTypeHint', () async {
         when(
-          () => mockDb.updateWishlistItem(
+          () => mockWishlistDao.updateWishlistItem(
             any(),
             text: any(named: 'text'),
             mediaTypeHint: any(named: 'mediaTypeHint'),
@@ -164,7 +164,7 @@ void main() {
         await repository.update(1, clearMediaTypeHint: true);
 
         verify(
-          () => mockDb.updateWishlistItem(
+          () => mockWishlistDao.updateWishlistItem(
             1,
             text: null,
             mediaTypeHint: null,
@@ -178,46 +178,46 @@ void main() {
 
     group('resolve', () {
       test('должен делегировать в resolveWishlistItem', () async {
-        when(() => mockDb.resolveWishlistItem(any()))
+        when(() => mockWishlistDao.resolveWishlistItem(any()))
             .thenAnswer((_) async {});
 
         await repository.resolve(1);
 
-        verify(() => mockDb.resolveWishlistItem(1)).called(1);
+        verify(() => mockWishlistDao.resolveWishlistItem(1)).called(1);
       });
     });
 
     group('unresolve', () {
       test('должен делегировать в unresolveWishlistItem', () async {
-        when(() => mockDb.unresolveWishlistItem(any()))
+        when(() => mockWishlistDao.unresolveWishlistItem(any()))
             .thenAnswer((_) async {});
 
         await repository.unresolve(1);
 
-        verify(() => mockDb.unresolveWishlistItem(1)).called(1);
+        verify(() => mockWishlistDao.unresolveWishlistItem(1)).called(1);
       });
     });
 
     group('delete', () {
       test('должен делегировать в deleteWishlistItem', () async {
-        when(() => mockDb.deleteWishlistItem(any()))
+        when(() => mockWishlistDao.deleteWishlistItem(any()))
             .thenAnswer((_) async {});
 
         await repository.delete(1);
 
-        verify(() => mockDb.deleteWishlistItem(1)).called(1);
+        verify(() => mockWishlistDao.deleteWishlistItem(1)).called(1);
       });
     });
 
     group('clearResolved', () {
       test('должен делегировать и вернуть количество удалённых', () async {
-        when(() => mockDb.clearResolvedWishlistItems())
+        when(() => mockWishlistDao.clearResolvedWishlistItems())
             .thenAnswer((_) async => 3);
 
         final int count = await repository.clearResolved();
 
         expect(count, 3);
-        verify(() => mockDb.clearResolvedWishlistItems()).called(1);
+        verify(() => mockWishlistDao.clearResolvedWishlistItems()).called(1);
       });
     });
   });

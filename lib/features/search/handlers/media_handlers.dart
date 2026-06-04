@@ -67,7 +67,7 @@ class MediaHandlers {
       titleOf: (VisualNovel vn) => vn.title,
       imageUrlOf: (VisualNovel vn) => vn.imageUrl,
       upsert: (VisualNovel vn) =>
-          ref.read(databaseServiceProvider).upsertVisualNovel(vn),
+          ref.read(visualNovelDaoProvider).upsertVisualNovel(vn),
       sheetBuilder: (VisualNovel vn, VoidCallback onAdd) =>
           ItemDetailsSheet.visualNovel(vn, onAddToCollection: onAdd),
     );
@@ -88,7 +88,7 @@ class MediaHandlers {
         ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
       imageUrlOf: (Manga m) => m.coverUrl,
-      upsert: (Manga m) => ref.read(databaseServiceProvider).upsertManga(m),
+      upsert: (Manga m) => ref.read(mangaDaoProvider).upsertManga(m),
       sourceOf: (Manga m) => m.source,
       sheetBuilder: (Manga m, VoidCallback onAdd) => ItemDetailsSheet.manga(
         m,
@@ -110,7 +110,7 @@ class MediaHandlers {
         ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
       imageUrlOf: (Anime a) => a.coverUrl,
-      upsert: (Anime a) => ref.read(databaseServiceProvider).upsertAnime(a),
+      upsert: (Anime a) => ref.read(animeDaoProvider).upsertAnime(a),
       sheetBuilder: (Anime a, VoidCallback onAdd) => ItemDetailsSheet.anime(
         a,
         onAddToCollection: onAdd,

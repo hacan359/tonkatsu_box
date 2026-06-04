@@ -16,6 +16,7 @@ void main() {
   late MockSteamGridDbApi mockSteamGridDbApi;
   late MockTmdbApi mockTmdbApi;
   late MockDatabaseService mockDbService;
+  late MockGameDao mockGameDao;
   late SharedPreferences prefs;
 
   setUp(() async {
@@ -23,8 +24,10 @@ void main() {
     mockSteamGridDbApi = MockSteamGridDbApi();
     mockTmdbApi = MockTmdbApi();
     mockDbService = MockDatabaseService();
+    mockGameDao = MockGameDao();
+    when(() => mockDbService.gameDao).thenReturn(mockGameDao);
 
-    when(() => mockDbService.getPlatformCount()).thenAnswer((_) async => 0);
+    when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
   });
 
   Future<ProviderContainer> createContainer({

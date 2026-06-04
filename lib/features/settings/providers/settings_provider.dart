@@ -524,7 +524,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<void> _loadPlatformCount() async {
-    final int count = await _dbService.getPlatformCount();
+    final int count = await _dbService.gameDao.getPlatformCount();
     if (count != state.platformCount) {
       state = state.copyWith(platformCount: count);
     }

@@ -133,6 +133,9 @@ void main() {
     late MockIgdbApi mockApi;
     late MockTmdbApi mockTmdb;
     late MockDatabaseService mockDb;
+    late MockGameDao mockGameDao;
+    late MockMovieDao mockMovieDao;
+    late MockTvShowDao mockTvShowDao;
     late MockCanvasRepository mockCanvas;
 
     setUp(() {
@@ -140,6 +143,12 @@ void main() {
       mockApi = MockIgdbApi();
       mockTmdb = MockTmdbApi();
       mockDb = MockDatabaseService();
+      mockGameDao = MockGameDao();
+      when(() => mockDb.gameDao).thenReturn(mockGameDao);
+      mockMovieDao = MockMovieDao();
+      when(() => mockDb.movieDao).thenReturn(mockMovieDao);
+      mockTvShowDao = MockTvShowDao();
+      when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
       mockCanvas = MockCanvasRepository();
       sut = ImportService(
         repository: mockRepo,
@@ -285,7 +294,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -306,7 +315,7 @@ void main() {
         expect(result.collection?.name, equals('V2 Games'));
 
         verify(() => mockApi.getGamesByIds(<int>[100, 200])).called(1);
-        verify(() => mockDb.upsertGame(any())).called(2);
+        verify(() => mockGameDao.upsertGame(any())).called(2);
         verify(() => mockRepo.addItem(
               collectionId: 10,
               mediaType: MediaType.game,
@@ -350,7 +359,7 @@ void main() {
 
         when(() => mockTmdb.getMovie(550))
             .thenAnswer((_) async => fetchedMovie);
-        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockMovieDao.upsertMovies(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -370,7 +379,7 @@ void main() {
         expect(result.itemsImported, equals(1));
 
         verify(() => mockTmdb.getMovie(550)).called(1);
-        verify(() => mockDb.upsertMovies(any())).called(1);
+        verify(() => mockMovieDao.upsertMovies(any())).called(1);
       });
 
       test('должен успешно импортировать v2 с сериалами', () async {
@@ -403,7 +412,7 @@ void main() {
 
         when(() => mockTmdb.getTvShow(1399))
             .thenAnswer((_) async => fetchedTvShow);
-        when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertTvShows(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -423,7 +432,7 @@ void main() {
         expect(result.itemsImported, equals(1));
 
         verify(() => mockTmdb.getTvShow(1399)).called(1);
-        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
       });
 
       test('должен импортировать смешанные типы медиа', () async {
@@ -463,9 +472,9 @@ void main() {
             .thenAnswer((_) async => const Movie(tmdbId: 550, title: 'M1'));
         when(() => mockTmdb.getTvShow(1399))
             .thenAnswer((_) async => const TvShow(tmdbId: 1399, title: 'T1'));
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockMovieDao.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertTvShows(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -520,7 +529,7 @@ void main() {
             .thenAnswer((_) async => const Movie(tmdbId: 550, title: 'M1'));
         when(() => mockTmdb.getMovie(999))
             .thenThrow(const TmdbApiException('Not found', statusCode: 404));
-        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockMovieDao.upsertMovies(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -718,8 +727,8 @@ void main() {
             .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G1')]);
         when(() => mockTmdb.getMovie(550))
             .thenAnswer((_) async => const Movie(tmdbId: 550, title: 'M1'));
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockMovieDao.upsertMovies(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -1232,7 +1241,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -1320,7 +1329,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -1424,7 +1433,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -1515,7 +1524,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -1588,7 +1597,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -1676,7 +1685,7 @@ void main() {
             .thenAnswer((_) async => <Game>[
                   const Game(id: 100, name: 'Test Game'),
                 ]);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -1920,12 +1929,12 @@ void main() {
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async => 1);
-        when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertTvSeasons(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertEpisodes(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertPlatforms(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockMovieDao.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertTvShows(any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertTvSeasons(any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertEpisodes(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertPlatforms(any())).thenAnswer((_) async {});
         when(() => mockImageCache.saveImageBytes(any(), any(), any()))
             .thenAnswer((_) async => true);
       }
@@ -1960,7 +1969,7 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertGames(any())).called(1);
+        verify(() => mockGameDao.upsertGames(any())).called(1);
         verifyNever(() => mockApi.getGamesByIds(any()));
       });
 
@@ -1992,7 +2001,7 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertMovies(any())).called(1);
+        verify(() => mockMovieDao.upsertMovies(any())).called(1);
         verifyNever(() => mockTmdb.getMovie(any()));
       });
 
@@ -2025,7 +2034,7 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
         verifyNever(() => mockTmdb.getTvShow(any()));
       });
 
@@ -2060,9 +2069,9 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.itemsImported, equals(3));
-        verify(() => mockDb.upsertGames(any())).called(1);
-        verify(() => mockDb.upsertMovies(any())).called(1);
-        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verify(() => mockGameDao.upsertGames(any())).called(1);
+        verify(() => mockMovieDao.upsertMovies(any())).called(1);
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
         verifyNever(() => mockApi.getGamesByIds(any()));
         verifyNever(() => mockTmdb.getMovie(any()));
         verifyNever(() => mockTmdb.getTvShow(any()));
@@ -2072,7 +2081,7 @@ void main() {
         setupDefaultMocksForMedia();
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => const <Game>[Game(id: 42, name: 'G')]);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
 
         final XcollFile xcoll = XcollFile(
           version: 2,
@@ -2089,7 +2098,7 @@ void main() {
 
         expect(result.success, isTrue);
         verify(() => mockApi.getGamesByIds(<int>[42])).called(1);
-        verifyNever(() => mockDb.upsertGames(any()));
+        verifyNever(() => mockGameDao.upsertGames(any()));
       });
 
       test('должен отслеживать прогресс restoringMedia', () async {
@@ -2149,9 +2158,9 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertGames(any())).called(1);
-        verifyNever(() => mockDb.upsertMovies(any()));
-        verifyNever(() => mockDb.upsertTvShows(any()));
+        verify(() => mockGameDao.upsertGames(any())).called(1);
+        verifyNever(() => mockMovieDao.upsertMovies(any()));
+        verifyNever(() => mockTvShowDao.upsertTvShows(any()));
       });
 
       test('должен восстановить tv_seasons из embedded media', () async {
@@ -2198,8 +2207,8 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertTvShows(any())).called(1);
-        verify(() => mockDb.upsertTvSeasons(any())).called(1);
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
+        verify(() => mockTvShowDao.upsertTvSeasons(any())).called(1);
       });
 
       test('не должен падать когда tv_seasons отсутствует в media', () async {
@@ -2230,8 +2239,8 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertTvShows(any())).called(1);
-        verifyNever(() => mockDb.upsertTvSeasons(any()));
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
+        verifyNever(() => mockTvShowDao.upsertTvSeasons(any()));
       });
 
       test('должен восстановить tv_episodes из embedded media', () async {
@@ -2280,8 +2289,8 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertTvShows(any())).called(1);
-        verify(() => mockDb.upsertEpisodes(any())).called(1);
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
+        verify(() => mockTvShowDao.upsertEpisodes(any())).called(1);
       });
 
       test('не должен падать когда tv_episodes отсутствует в media', () async {
@@ -2312,8 +2321,8 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertTvShows(any())).called(1);
-        verifyNever(() => mockDb.upsertEpisodes(any()));
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
+        verifyNever(() => mockTvShowDao.upsertEpisodes(any()));
       });
 
       test('должен восстановить platforms из embedded media', () async {
@@ -2357,8 +2366,8 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertPlatforms(any())).called(1);
-        verify(() => mockDb.upsertGames(any())).called(1);
+        verify(() => mockGameDao.upsertPlatforms(any())).called(1);
+        verify(() => mockGameDao.upsertGames(any())).called(1);
       });
 
       test('should skip восстановление platforms без данных', () async {
@@ -2389,8 +2398,8 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        verify(() => mockDb.upsertGames(any())).called(1);
-        verifyNever(() => mockDb.upsertPlatforms(any()));
+        verify(() => mockGameDao.upsertGames(any())).called(1);
+        verifyNever(() => mockGameDao.upsertPlatforms(any()));
       });
     });
 
@@ -2427,7 +2436,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.getById(5))
             .thenAnswer((_) async => existing);
         when(() => mockRepo.addItem(
@@ -2499,7 +2508,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.getById(5))
             .thenAnswer((_) async => existing);
         // addItem returns null = duplicate
@@ -2555,7 +2564,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.getById(5))
             .thenAnswer((_) async => existing);
         when(() => mockRepo.addItem(
@@ -2599,7 +2608,7 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
         when(() => mockRepo.getById(5))
             .thenAnswer((_) async => existing);
         when(() => mockRepo.addItem(

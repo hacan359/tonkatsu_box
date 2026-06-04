@@ -137,6 +137,8 @@ void main() {
   late MockTmdbApi mockTmdb;
   late MockCollectionRepository mockRepo;
   late MockDatabaseService mockDb;
+  late MockMovieDao mockMovieDao;
+  late MockTvShowDao mockTvShowDao;
   late MockWishlistRepository mockWishlist;
   late TraktZipImportService sut;
 
@@ -151,6 +153,10 @@ void main() {
     mockTmdb = MockTmdbApi();
     mockRepo = MockCollectionRepository();
     mockDb = MockDatabaseService();
+    mockMovieDao = MockMovieDao();
+    when(() => mockDb.movieDao).thenReturn(mockMovieDao);
+    mockTvShowDao = MockTvShowDao();
+    when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
     mockWishlist = MockWishlistRepository();
     sut = TraktZipImportService(
       tmdbApi: mockTmdb,
@@ -560,8 +566,8 @@ void main() {
               mediaType: any(named: 'mediaType'),
             )).thenAnswer((_) async {});
 
-        when(() => mockDb.upsertMovie(any())).thenAnswer((_) async {});
-        when(() => mockDb.upsertTvShow(any())).thenAnswer((_) async {});
+        when(() => mockMovieDao.upsertMovie(any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertTvShow(any())).thenAnswer((_) async {});
         when(() => mockDb.updateItemActivityDates(
               any(),
               startedAt: any(named: 'startedAt'),
@@ -570,7 +576,7 @@ void main() {
             )).thenAnswer((_) async {});
         when(() => mockDb.updateItemUserRating(any(), any()))
             .thenAnswer((_) async {});
-        when(() => mockDb.markEpisodeWatched(any(), any(), any(), any()))
+        when(() => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any()))
             .thenAnswer((_) async {});
 
         when(() => mockWishlist.add(
@@ -649,7 +655,7 @@ void main() {
 
         when(() => mockTmdb.getMovie(any()))
             .thenAnswer((_) async => const Movie(tmdbId: 100, title: 'M'));
-        when(() => mockDb.upsertMovie(any())).thenAnswer((_) async {});
+        when(() => mockMovieDao.upsertMovie(any())).thenAnswer((_) async {});
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(),
         ));
@@ -1162,7 +1168,7 @@ void main() {
         );
 
         verify(() =>
-                mockDb.markEpisodeWatched(any(), 200, any(), any()))
+                mockTvShowDao.markEpisodeWatched(any(), 200, any(), any()))
             .called(4);
       });
 
@@ -1721,7 +1727,7 @@ void main() {
         );
 
         verifyNever(
-            () => mockDb.markEpisodeWatched(any(), any(), any(), any()));
+            () => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any()));
       });
 
       test('should skip rating без TMDB ID', () async {
@@ -2072,7 +2078,7 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        verify(() => mockDb.markEpisodeWatched(1, 200, 1, 1)).called(1);
+        verify(() => mockTvShowDao.markEpisodeWatched(1, 200, 1, 1)).called(1);
       });
 
       test('должен считать completedAt для show status == completed',

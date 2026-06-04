@@ -21,9 +21,12 @@ class _FakeSettingsNotifier extends SettingsNotifier {
 
 void main() {
   late MockDatabaseService mockDb;
+  late MockMovieDao mockMovieDao;
 
   setUp(() {
     mockDb = MockDatabaseService();
+    mockMovieDao = MockMovieDao();
+    when(() => mockDb.movieDao).thenReturn(mockMovieDao);
   });
 
   ProviderContainer createContainer({
@@ -51,7 +54,7 @@ void main() {
         '35': 'Комедия',
       };
 
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'ru'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'ru'))
           .thenAnswer((_) async => expectedMap);
 
       final ProviderContainer container = createContainer(
@@ -62,7 +65,7 @@ void main() {
           await container.read(movieGenreMapProvider.future);
 
       expect(result, equals(expectedMap));
-      verify(() => mockDb.getTmdbGenreMap('movie', lang: 'ru')).called(1);
+      verify(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'ru')).called(1);
     });
 
     test('возвращает маппинг жанров фильмов с языком en для en-US', () async {
@@ -71,7 +74,7 @@ void main() {
         '12': 'Adventure',
       };
 
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en'))
           .thenAnswer((_) async => expectedMap);
 
       final ProviderContainer container = createContainer(
@@ -82,11 +85,11 @@ void main() {
           await container.read(movieGenreMapProvider.future);
 
       expect(result, equals(expectedMap));
-      verify(() => mockDb.getTmdbGenreMap('movie', lang: 'en')).called(1);
+      verify(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en')).called(1);
     });
 
     test('возвращает пустой маппинг когда БД пуста', () async {
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'ru'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'ru'))
           .thenAnswer((_) async => <String, String>{});
 
       final ProviderContainer container = createContainer();
@@ -98,7 +101,7 @@ void main() {
     });
 
     test('маппинг языка: ru-RU преобразуется в ru', () async {
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'ru'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'ru'))
           .thenAnswer((_) async => <String, String>{'1': 'Тест'});
 
       final ProviderContainer container = createContainer(
@@ -107,12 +110,12 @@ void main() {
 
       await container.read(movieGenreMapProvider.future);
 
-      verify(() => mockDb.getTmdbGenreMap('movie', lang: 'ru')).called(1);
-      verifyNever(() => mockDb.getTmdbGenreMap('movie', lang: 'en'));
+      verify(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'ru')).called(1);
+      verifyNever(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en'));
     });
 
     test('маппинг языка: en-US преобразуется в en', () async {
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en'))
           .thenAnswer((_) async => <String, String>{'1': 'Test'});
 
       final ProviderContainer container = createContainer(
@@ -121,12 +124,12 @@ void main() {
 
       await container.read(movieGenreMapProvider.future);
 
-      verify(() => mockDb.getTmdbGenreMap('movie', lang: 'en')).called(1);
-      verifyNever(() => mockDb.getTmdbGenreMap('movie', lang: 'ru'));
+      verify(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en')).called(1);
+      verifyNever(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'ru'));
     });
 
     test('маппинг языка: произвольный язык преобразуется в en', () async {
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en'))
           .thenAnswer((_) async => <String, String>{'1': 'Test'});
 
       final ProviderContainer container = createContainer(
@@ -135,7 +138,7 @@ void main() {
 
       await container.read(movieGenreMapProvider.future);
 
-      verify(() => mockDb.getTmdbGenreMap('movie', lang: 'en')).called(1);
+      verify(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en')).called(1);
     });
   });
 
@@ -146,7 +149,7 @@ void main() {
         '16': 'Мультфильм',
       };
 
-      when(() => mockDb.getTmdbGenreMap('tv', lang: 'ru'))
+      when(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'ru'))
           .thenAnswer((_) async => expectedMap);
 
       final ProviderContainer container = createContainer(
@@ -157,7 +160,7 @@ void main() {
           await container.read(tvGenreMapProvider.future);
 
       expect(result, equals(expectedMap));
-      verify(() => mockDb.getTmdbGenreMap('tv', lang: 'ru')).called(1);
+      verify(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'ru')).called(1);
     });
 
     test('возвращает маппинг жанров сериалов с языком en для en-US', () async {
@@ -166,7 +169,7 @@ void main() {
         '16': 'Animation',
       };
 
-      when(() => mockDb.getTmdbGenreMap('tv', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'en'))
           .thenAnswer((_) async => expectedMap);
 
       final ProviderContainer container = createContainer(
@@ -177,11 +180,11 @@ void main() {
           await container.read(tvGenreMapProvider.future);
 
       expect(result, equals(expectedMap));
-      verify(() => mockDb.getTmdbGenreMap('tv', lang: 'en')).called(1);
+      verify(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'en')).called(1);
     });
 
     test('возвращает пустой маппинг когда БД пуста', () async {
-      when(() => mockDb.getTmdbGenreMap('tv', lang: 'ru'))
+      when(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'ru'))
           .thenAnswer((_) async => <String, String>{});
 
       final ProviderContainer container = createContainer();
@@ -201,7 +204,7 @@ void main() {
         '35': 'Comedy',
       };
 
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en'))
           .thenAnswer((_) async => genreMap);
 
       final ProviderContainer container = createContainer(
@@ -227,7 +230,7 @@ void main() {
     });
 
     test('возвращает пустой список когда маппинг пуст', () async {
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en'))
           .thenAnswer((_) async => <String, String>{});
 
       final ProviderContainer container = createContainer(
@@ -245,7 +248,7 @@ void main() {
         '99': 'Documentary',
       };
 
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'en'))
           .thenAnswer((_) async => genreMap);
 
       final ProviderContainer container = createContainer(
@@ -266,7 +269,7 @@ void main() {
         '35': 'Комедия',
       };
 
-      when(() => mockDb.getTmdbGenreMap('movie', lang: 'ru'))
+      when(() => mockMovieDao.getTmdbGenreMap('movie', lang: 'ru'))
           .thenAnswer((_) async => genreMap);
 
       final ProviderContainer container = createContainer(
@@ -291,7 +294,7 @@ void main() {
         '16': 'Animation',
       };
 
-      when(() => mockDb.getTmdbGenreMap('tv', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'en'))
           .thenAnswer((_) async => genreMap);
 
       final ProviderContainer container = createContainer(
@@ -313,7 +316,7 @@ void main() {
     });
 
     test('возвращает пустой список когда маппинг пуст', () async {
-      when(() => mockDb.getTmdbGenreMap('tv', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'en'))
           .thenAnswer((_) async => <String, String>{});
 
       final ProviderContainer container = createContainer(
@@ -332,7 +335,7 @@ void main() {
         '16': 'Мультфильм',
       };
 
-      when(() => mockDb.getTmdbGenreMap('tv', lang: 'ru'))
+      when(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'ru'))
           .thenAnswer((_) async => genreMap);
 
       final ProviderContainer container = createContainer(
@@ -354,7 +357,7 @@ void main() {
         '18': 'Drama',
       };
 
-      when(() => mockDb.getTmdbGenreMap('tv', lang: 'en'))
+      when(() => mockMovieDao.getTmdbGenreMap('tv', lang: 'en'))
           .thenAnswer((_) async => genreMap);
 
       final ProviderContainer container = createContainer(

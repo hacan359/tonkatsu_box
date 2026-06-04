@@ -41,11 +41,15 @@ void main() {
     mockDb = MockDatabaseService();
     mockTmdbApi = MockTmdbApi();
 
-    when(() => mockDb.getTvSeasonsByShowId(any()))
+    final MockTvShowDao mockTvShowDao = MockTvShowDao();
+    when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
+    when(() => mockTvShowDao.getTvSeasonsByShowId(any()))
         .thenAnswer((_) async => <TvSeason>[]);
-    when(() => mockDb.getWatchedEpisodes(any(), any()))
+    when(() => mockTvShowDao.getWatchedEpisodes(any(), any()))
         .thenAnswer((_) async => <(int, int), DateTime?>{});
-    when(() => mockDb.getPlatformCount())
+    final MockGameDao mockGameDao = MockGameDao();
+    when(() => mockDb.gameDao).thenReturn(mockGameDao);
+    when(() => mockGameDao.getPlatformCount())
         .thenAnswer((_) async => 0);
     final MockTrackerDao mockTrackerDao = MockTrackerDao();
     when(() => mockDb.trackerDao).thenReturn(mockTrackerDao);

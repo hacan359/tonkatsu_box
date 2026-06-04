@@ -12,6 +12,7 @@ void main() {
 
   group('CanvasRepository — Connections', () {
     late MockDatabaseService mockDb;
+    late MockCanvasDao mockCanvasDao;
     late CanvasRepository repository;
 
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
@@ -19,6 +20,8 @@ void main() {
 
     setUp(() {
       mockDb = MockDatabaseService();
+      mockCanvasDao = MockCanvasDao();
+      when(() => mockDb.canvasDao).thenReturn(mockCanvasDao);
       repository = CanvasRepository(db: mockDb);
     });
 
@@ -47,7 +50,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getCanvasConnections(10))
+        when(() => mockCanvasDao.getCanvasConnections(10))
             .thenAnswer((_) async => rows);
 
         final List<CanvasConnection> result =
@@ -61,11 +64,11 @@ void main() {
         expect(result[0].style, ConnectionStyle.arrow);
         expect(result[1].id, 2);
         expect(result[1].label, isNull);
-        verify(() => mockDb.getCanvasConnections(10)).called(1);
+        verify(() => mockCanvasDao.getCanvasConnections(10)).called(1);
       });
 
       test('should return empty list when no connections', () async {
-        when(() => mockDb.getCanvasConnections(10))
+        when(() => mockCanvasDao.getCanvasConnections(10))
             .thenAnswer((_) async => <Map<String, dynamic>>[]);
 
         final List<CanvasConnection> result =
@@ -88,7 +91,7 @@ void main() {
           createdAt: testDate,
         );
 
-        when(() => mockDb.insertCanvasConnection(any()))
+        when(() => mockCanvasDao.insertCanvasConnection(any()))
             .thenAnswer((_) async => 42);
 
         final CanvasConnection result =
@@ -100,7 +103,7 @@ void main() {
         expect(result.label, 'test');
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.insertCanvasConnection(captureAny()))
+            verify(() => mockCanvasDao.insertCanvasConnection(captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured['collection_id'], 10);
@@ -125,13 +128,13 @@ void main() {
           createdAt: testDate,
         );
 
-        when(() => mockDb.updateCanvasConnection(any(), any()))
+        when(() => mockCanvasDao.updateCanvasConnection(any(), any()))
             .thenAnswer((_) async {});
 
         await repository.updateConnection(conn);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasConnection(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasConnection(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured['label'], 'updated');
@@ -151,13 +154,13 @@ void main() {
           createdAt: testDate,
         );
 
-        when(() => mockDb.updateCanvasConnection(any(), any()))
+        when(() => mockCanvasDao.updateCanvasConnection(any(), any()))
             .thenAnswer((_) async {});
 
         await repository.updateConnection(conn);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasConnection(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasConnection(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured['label'], isNull);
@@ -166,12 +169,12 @@ void main() {
 
     group('deleteConnection', () {
       test('should delete connection by id', () async {
-        when(() => mockDb.deleteCanvasConnection(5))
+        when(() => mockCanvasDao.deleteCanvasConnection(5))
             .thenAnswer((_) async {});
 
         await repository.deleteConnection(5);
 
-        verify(() => mockDb.deleteCanvasConnection(5)).called(1);
+        verify(() => mockCanvasDao.deleteCanvasConnection(5)).called(1);
       });
     });
   });

@@ -9,9 +9,12 @@ import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockDatabaseService mockDb;
+  late MockVisualNovelDao mockVisualNovelDao;
 
   setUp(() {
     mockDb = MockDatabaseService();
+    mockVisualNovelDao = MockVisualNovelDao();
+    when(() => mockDb.visualNovelDao).thenReturn(mockVisualNovelDao);
   });
 
   ProviderContainer createContainer() {
@@ -32,7 +35,7 @@ void main() {
         const VndbTag(id: 'g24', name: 'Romance'),
       ];
 
-      when(() => mockDb.getVndbTags()).thenAnswer((_) async => expectedTags);
+      when(() => mockVisualNovelDao.getVndbTags()).thenAnswer((_) async => expectedTags);
 
       final ProviderContainer container = createContainer();
 
@@ -49,7 +52,7 @@ void main() {
     });
 
     test('возвращает пустой список когда БД пуста', () async {
-      when(() => mockDb.getVndbTags())
+      when(() => mockVisualNovelDao.getVndbTags())
           .thenAnswer((_) async => <VndbTag>[]);
 
       final ProviderContainer container = createContainer();
@@ -65,7 +68,7 @@ void main() {
         const VndbTag(id: 'g6', name: 'Mystery'),
       ];
 
-      when(() => mockDb.getVndbTags()).thenAnswer((_) async => expectedTags);
+      when(() => mockVisualNovelDao.getVndbTags()).thenAnswer((_) async => expectedTags);
 
       final ProviderContainer container = createContainer();
 
@@ -86,7 +89,7 @@ void main() {
         const VndbTag(id: 'g5', name: 'Sci-Fi'),
       ];
 
-      when(() => mockDb.getVndbTags()).thenAnswer((_) async => expectedTags);
+      when(() => mockVisualNovelDao.getVndbTags()).thenAnswer((_) async => expectedTags);
 
       final ProviderContainer container = createContainer();
 
@@ -101,14 +104,14 @@ void main() {
     });
 
     test('вызывает getVndbTags на DatabaseService', () async {
-      when(() => mockDb.getVndbTags())
+      when(() => mockVisualNovelDao.getVndbTags())
           .thenAnswer((_) async => <VndbTag>[]);
 
       final ProviderContainer container = createContainer();
 
       await container.read(vndbTagsProvider.future);
 
-      verify(() => mockDb.getVndbTags()).called(1);
+      verify(() => mockVisualNovelDao.getVndbTags()).called(1);
     });
   });
 }

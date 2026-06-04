@@ -1,4 +1,4 @@
-// Вспомогательные методы действий для CollectionScreen.
+// Helper action methods for CollectionScreen.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,14 +37,14 @@ import '../widgets/edit_collection_dialog.dart';
 import '../../search/screens/search_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 
-/// Статические методы для действий на экране коллекции.
+/// Static action methods for the collection screen.
 ///
-/// Извлечены из [CollectionScreen] для уменьшения размера файла.
-/// Каждый метод принимает необходимые зависимости явно.
+/// Extracted from [CollectionScreen] to keep that file smaller.
+/// Each method takes its dependencies explicitly.
 class CollectionActions {
   CollectionActions._();
 
-  /// Навигация к поиску для добавления элементов.
+  /// Navigates to search to add items.
   static Future<void> addItems({
     required BuildContext context,
     required WidgetRef ref,
@@ -65,9 +65,9 @@ class CollectionActions {
     }
   }
 
-  /// Перемещение элемента в другую коллекцию.
+  /// Moves an item to another collection.
   ///
-  /// Возвращает `true`, если исходная коллекция опустела после перемещения.
+  /// Returns `true` if the source collection became empty after the move.
   static Future<bool> moveItem({
     required BuildContext context,
     required WidgetRef ref,
@@ -127,7 +127,7 @@ class CollectionActions {
     }
   }
 
-  /// Копирование элемента в другую коллекцию (полная копия).
+  /// Copies an item to another collection (full copy).
   static Future<void> cloneItem({
     required BuildContext context,
     required WidgetRef ref,
@@ -186,9 +186,9 @@ class CollectionActions {
     }
   }
 
-  /// Предложение удалить опустевшую коллекцию.
+  /// Offers to delete a collection that became empty.
   ///
-  /// Возвращает `true`, если коллекция была удалена.
+  /// Returns `true` if the collection was deleted.
   static Future<bool> promptDeleteEmptyCollection({
     required BuildContext context,
     required WidgetRef ref,
@@ -227,7 +227,7 @@ class CollectionActions {
     return false;
   }
 
-  /// Удаление элемента из коллекции (с подтверждением).
+  /// Removes an item from a collection (with confirmation).
   static Future<void> removeItem({
     required BuildContext context,
     required WidgetRef ref,
@@ -268,7 +268,7 @@ class CollectionActions {
         .read(collectionItemsNotifierProvider(collectionId).notifier)
         .removeItem(item.id);
 
-    // Синхронизация канваса — удалить элемент
+    // Keep the canvas in sync: drop the removed item
     ref
         .read(canvasNotifierProvider(collectionId).notifier)
         .removeByCollectionItemId(item.id);
@@ -281,9 +281,9 @@ class CollectionActions {
     }
   }
 
-  /// Редактирование коллекции (имя, описание, обложка).
+  /// Edits a collection (name, description, cover).
   ///
-  /// Возвращает `true`, если пользователь сохранил изменения.
+  /// Returns `true` if the user saved the changes.
   static Future<bool> renameCollection({
     required BuildContext context,
     required WidgetRef ref,
@@ -298,9 +298,9 @@ class CollectionActions {
     return true;
   }
 
-  /// Удаление коллекции.
+  /// Deletes a collection.
   ///
-  /// Возвращает `true`, если коллекция была удалена.
+  /// Returns `true` if the collection was deleted.
   static Future<bool> deleteCollection({
     required BuildContext context,
     required WidgetRef ref,
@@ -332,7 +332,7 @@ class CollectionActions {
     }
   }
 
-  /// Быстрое копирование списка в буфер обмена (дефолтный шаблон).
+  /// Quick-copies the list to the clipboard (default template).
   static Future<void> copyAsList({
     required BuildContext context,
     required WidgetRef ref,
@@ -366,7 +366,7 @@ class CollectionActions {
     }
   }
 
-  /// Открывает диалог копирования коллекции как текста с шаблоном.
+  /// Opens the "copy collection as text" dialog with a template.
   static Future<void> copyAsText({
     required BuildContext context,
     required WidgetRef ref,
@@ -403,7 +403,6 @@ class CollectionActions {
     required int? collectionId,
     required Collection collection,
   }) async {
-    // Получаем список элементов
     final AsyncValue<List<CollectionItem>> itemsAsync =
         ref.read(collectionItemsNotifierProvider(collectionId));
 
@@ -415,7 +414,6 @@ class CollectionActions {
       return;
     }
 
-    // Выбор формата экспорта
     if (!context.mounted) return;
     final ({ExportFormat format, bool includeUserData})? chosen =
         await _showExportFormatDialog(context);
@@ -423,7 +421,6 @@ class CollectionActions {
     final ExportFormat format = chosen.format;
     final bool includeUserData = chosen.includeUserData;
 
-    // Показываем индикатор
     if (context.mounted) {
       context.showSnack(
         format == ExportFormat.full
@@ -463,7 +460,7 @@ class CollectionActions {
     }
   }
 
-  /// Диалог выбора формата экспорта.
+  /// Export format picker dialog.
   static Future<({ExportFormat format, bool includeUserData})?> _showExportFormatDialog(
     BuildContext context,
   ) {
@@ -526,14 +523,14 @@ class CollectionActions {
     );
   }
 
-  /// Добавление изображения SteamGridDB на канвас.
+  /// Adds a SteamGridDB image to the canvas.
   static void addSteamGridDbImage({
     required BuildContext context,
     required WidgetRef ref,
     required int? collectionId,
     required SteamGridDbImage image,
   }) {
-    // Масштабируем до max 300px по ширине, сохраняя пропорции
+    // Scale to a max width of 300px, keeping the aspect ratio
     const double maxWidth = 300;
     const double defaultSize = 200;
     double targetWidth = defaultSize;
@@ -546,7 +543,6 @@ class CollectionActions {
       targetHeight = targetWidth / aspectRatio;
     }
 
-    // Добавляем в центр канваса
     final double centerX =
         CanvasRepository.initialCenterX - targetWidth / 2;
     final double centerY =
@@ -570,7 +566,7 @@ class CollectionActions {
     }
   }
 
-  /// Добавление изображения VGMaps на канвас.
+  /// Adds a VGMaps image to the canvas.
   static void addVgMapsImage({
     required BuildContext context,
     required WidgetRef ref,
@@ -579,7 +575,7 @@ class CollectionActions {
     required int? width,
     required int? height,
   }) {
-    // Масштабируем до max 400px по ширине (карты больше обычных изображений)
+    // Scale to a max width of 400px (maps are larger than regular images)
     const double maxWidth = 400;
     double targetWidth = maxWidth;
     double targetHeight = maxWidth;
@@ -591,7 +587,6 @@ class CollectionActions {
       targetHeight = targetWidth / aspectRatio;
     }
 
-    // Добавляем в центр канваса
     final double centerX =
         CanvasRepository.initialCenterX - targetWidth / 2;
     final double centerY =
@@ -665,24 +660,24 @@ class CollectionActions {
           final Game? game =
               await ref.read(igdbApiProvider).getGameById(item.externalId);
           if (game == null) return _RefreshOutcome.notFound();
-          await db.upsertGame(game);
+          await db.gameDao.upsertGame(game);
         case MediaType.movie:
           final Movie? movie =
               await ref.read(tmdbApiProvider).getMovie(item.externalId);
           if (movie == null) return _RefreshOutcome.notFound();
-          await db.upsertMovie(movie);
+          await db.movieDao.upsertMovie(movie);
         case MediaType.tvShow:
         case MediaType.animation:
           final TvShow? show =
               await ref.read(tmdbApiProvider).getTvShow(item.externalId);
           if (show == null) return _RefreshOutcome.notFound();
-          await db.upsertTvShow(show);
+          await db.tvShowDao.upsertTvShow(show);
         case MediaType.anime:
           final Anime? anime = await ref
               .read(aniListApiProvider)
               .getAnimeById(item.externalId);
           if (anime == null) return _RefreshOutcome.notFound();
-          await db.upsertAnime(anime);
+          await db.animeDao.upsertAnime(anime);
         case MediaType.manga:
           final Manga? manga =
               item.source == DataSource.mangabaka
@@ -693,13 +688,13 @@ class CollectionActions {
                       .read(aniListApiProvider)
                       .getMangaById(item.externalId);
           if (manga == null) return _RefreshOutcome.notFound();
-          await db.upsertManga(manga);
+          await db.mangaDao.upsertManga(manga);
         case MediaType.visualNovel:
           final VisualNovel? vn = await ref
               .read(vndbApiProvider)
               .getVnById(item.externalId.toString());
           if (vn == null) return _RefreshOutcome.notFound();
-          await db.upsertVisualNovel(vn);
+          await db.visualNovelDao.upsertVisualNovel(vn);
         case MediaType.custom:
           return _RefreshOutcome.unsupported();
       }

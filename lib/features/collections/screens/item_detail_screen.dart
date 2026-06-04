@@ -791,7 +791,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         title: movie.title,
         mediaType: MediaType.movie,
         ownMapProvider: collectedMovieIdsProvider,
-        upsert: (DatabaseService db) => db.upsertMovie(movie),
+        upsert: (DatabaseService db) => db.movieDao.upsertMovie(movie),
       );
 
   Future<void> _addTvShowFromRecommendations(TvShow tvShow) =>
@@ -800,7 +800,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         title: tvShow.title,
         mediaType: MediaType.tvShow,
         ownMapProvider: collectedTvShowIdsProvider,
-        upsert: (DatabaseService db) => db.upsertTvShow(tvShow),
+        upsert: (DatabaseService db) => db.tvShowDao.upsertTvShow(tvShow),
       );
 
   Future<void> _addRecommendation({

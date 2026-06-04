@@ -1,4 +1,4 @@
-// Провайдеры для экрана All Items (Home tab).
+// Providers for the All Items screen (Home tab).
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,20 +19,20 @@ import '../../settings/providers/settings_provider.dart';
 
 // ==================== Sort Providers ====================
 
-/// Ключ SharedPreferences для режима сортировки All Items.
+/// SharedPreferences key for the All Items sort mode.
 const String _allItemsSortModeKey = 'all_items_sort_mode';
 
-/// Ключ SharedPreferences для направления сортировки All Items.
+/// SharedPreferences key for the All Items sort direction.
 const String _allItemsSortDescKey = 'all_items_sort_desc';
 
-/// Провайдер режима сортировки для All Items.
+/// All Items sort mode provider.
 final NotifierProvider<AllItemsSortNotifier, CollectionSortMode>
     allItemsSortProvider =
     NotifierProvider<AllItemsSortNotifier, CollectionSortMode>(
   AllItemsSortNotifier.new,
 );
 
-/// Notifier для режима сортировки All Items.
+/// Notifier for the All Items sort mode.
 class AllItemsSortNotifier extends Notifier<CollectionSortMode> {
   @override
   CollectionSortMode build() {
@@ -41,7 +41,7 @@ class AllItemsSortNotifier extends Notifier<CollectionSortMode> {
   }
 
   Future<void> _loadFromPrefs() async {
-    // Defer чтобы state = не перезаписывался return в build().
+    // Deferred so build()'s return value isn't overwritten by state =.
     await Future<void>.value();
     final SharedPreferences prefs =
         ref.read(sharedPreferencesProvider);
@@ -51,7 +51,7 @@ class AllItemsSortNotifier extends Notifier<CollectionSortMode> {
     }
   }
 
-  /// Устанавливает режим сортировки и сохраняет в SharedPreferences.
+  /// Sets the sort mode and persists it to SharedPreferences.
   Future<void> setSortMode(CollectionSortMode mode) async {
     state = mode;
     final SharedPreferences prefs =
@@ -60,14 +60,14 @@ class AllItemsSortNotifier extends Notifier<CollectionSortMode> {
   }
 }
 
-/// Провайдер направления сортировки для All Items.
+/// All Items sort direction provider.
 final NotifierProvider<AllItemsSortDescNotifier, bool>
     allItemsSortDescProvider =
     NotifierProvider<AllItemsSortDescNotifier, bool>(
   AllItemsSortDescNotifier.new,
 );
 
-/// Notifier для направления сортировки (ascending/descending).
+/// Notifier for the sort direction (ascending/descending).
 class AllItemsSortDescNotifier extends Notifier<bool> {
   @override
   bool build() {
@@ -76,7 +76,7 @@ class AllItemsSortDescNotifier extends Notifier<bool> {
   }
 
   Future<void> _loadFromPrefs() async {
-    // Defer чтобы state = не перезаписывался return в build().
+    // Deferred so build()'s return value isn't overwritten by state =.
     await Future<void>.value();
     final SharedPreferences prefs =
         ref.read(sharedPreferencesProvider);
@@ -86,7 +86,7 @@ class AllItemsSortDescNotifier extends Notifier<bool> {
     }
   }
 
-  /// Переключает направление сортировки.
+  /// Toggles the sort direction.
   Future<void> toggle() async {
     state = !state;
     final SharedPreferences prefs =
@@ -97,14 +97,14 @@ class AllItemsSortDescNotifier extends Notifier<bool> {
 
 // ==================== All Items ====================
 
-/// Провайдер для всех элементов из всех коллекций.
+/// Provider for all items across every collection.
 final NotifierProvider<AllItemsNotifier, AsyncValue<List<CollectionItem>>>
     allItemsNotifierProvider =
     NotifierProvider<AllItemsNotifier, AsyncValue<List<CollectionItem>>>(
   AllItemsNotifier.new,
 );
 
-/// Notifier для загрузки и сортировки всех элементов.
+/// Notifier that loads and sorts all items.
 class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
   late CollectionRepository _repository;
 
@@ -127,7 +127,7 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     state = await AsyncValue.guard(() async {
       final List<CollectionItem> items =
           await _repository.getAllItemsWithData();
-      // manual не имеет смысла для all items — используем addedDate
+      // manual sort is meaningless for all items, fall back to addedDate
       final CollectionSortMode effectiveMode =
           sortMode == CollectionSortMode.manual
               ? CollectionSortMode.addedDate
@@ -143,17 +143,17 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     });
   }
 
-  /// Перезагружает все элементы.
+  /// Reloads all items.
   Future<void> refresh() async {
     final CollectionSortMode sortMode = ref.read(allItemsSortProvider);
     final bool isDescending = ref.read(allItemsSortDescProvider);
     await _loadItems(sortMode, isDescending: isDescending);
   }
 
-  /// Локально патчит статус элемента без перезапроса БД.
+  /// Patches an item's status locally without re-querying the DB.
   ///
-  /// Вызывается из `CollectionItemsNotifier.updateStatus`, чтобы не
-  /// инвалидировать весь провайдер (иначе список мерцает через AsyncLoading).
+  /// Called from `CollectionItemsNotifier.updateStatus` to avoid invalidating
+  /// the whole provider (which would flash the list through AsyncLoading).
   void updateStatusLocally(int id, ItemStatus status) {
     final List<CollectionItem>? items = state.valueOrNull;
     if (items == null) return;
@@ -169,10 +169,10 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
 
 // ==================== Platform Filter ====================
 
-/// Уникальные платформы из игр в коллекциях для фильтрации.
+/// Unique platforms from games in collections, for filtering.
 ///
-/// Извлекает platformId из всех игровых элементов и загружает
-/// модели [Platform] из БД. Отсортировано по имени.
+/// Pulls platformId from every game item and loads the [Platform] models
+/// from the DB. Sorted by name.
 final FutureProvider<List<Platform>> allItemsPlatformsProvider =
     FutureProvider<List<Platform>>((Ref ref) async {
   final AsyncValue<List<CollectionItem>> itemsAsync =
@@ -193,7 +193,7 @@ final FutureProvider<List<Platform>> allItemsPlatformsProvider =
   final DatabaseService db = ref.read(databaseServiceProvider);
   final List<Platform> platforms = <Platform>[];
   for (final int id in uniqueIds) {
-    final Platform? p = await db.getPlatformById(id);
+    final Platform? p = await db.gameDao.getPlatformById(id);
     if (p != null) platforms.add(p);
   }
   platforms.sort(
@@ -204,7 +204,7 @@ final FutureProvider<List<Platform>> allItemsPlatformsProvider =
 
 // ==================== Collection Names ====================
 
-/// Карта collectionId → collectionName для отображения в UI.
+/// Map of collectionId -> collectionName for display in the UI.
 final Provider<Map<int, String>> collectionNamesProvider =
     Provider<Map<int, String>>((Ref ref) {
   final List<Collection>? collections =
@@ -217,7 +217,7 @@ final Provider<Map<int, String>> collectionNamesProvider =
 
 // ==================== Tags ====================
 
-/// Карта tagId → CollectionTag для отображения и поиска по тегам на All Items.
+/// Map of tagId -> CollectionTag for display and tag search on All Items.
 final FutureProvider<Map<int, CollectionTag>> allTagsMapProvider =
     FutureProvider<Map<int, CollectionTag>>((Ref ref) async {
   final TagDao tagDao = ref.watch(tagDaoProvider);

@@ -17,6 +17,7 @@ void main() {
   late MockSteamGridDbApi mockSteamGridDbApi;
   late MockTmdbApi mockTmdbApi;
   late MockDatabaseService mockDbService;
+  late MockGameDao mockGameDao;
   late MockConfigService mockConfigService;
   late SharedPreferences prefs;
 
@@ -26,8 +27,10 @@ void main() {
     mockTmdbApi = MockTmdbApi();
     mockDbService = MockDatabaseService();
     mockConfigService = MockConfigService();
+    mockGameDao = MockGameDao();
+    when(() => mockDbService.gameDao).thenReturn(mockGameDao);
 
-    when(() => mockDbService.getPlatformCount()).thenAnswer((_) async => 0);
+    when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
   });
 
   Future<ProviderContainer> createContainer({
@@ -66,7 +69,7 @@ void main() {
     });
 
     test('должен сбросить platformCount в 0', () async {
-      when(() => mockDbService.getPlatformCount()).thenAnswer((_) async => 50);
+      when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 50);
       when(() => mockDbService.clearAllData()).thenAnswer((_) async {});
 
       final ProviderContainer container = await createContainer();

@@ -213,8 +213,8 @@ class AniListImportService {
         .map((AniListListEntry e) => e.manga!)
         .toList();
     await Future.wait<void>(<Future<void>>[
-      if (animeMedia.isNotEmpty) _db.upsertAnimes(animeMedia),
-      if (mangaMedia.isNotEmpty) _db.upsertMangas(mangaMedia),
+      if (animeMedia.isNotEmpty) _db.animeDao.upsertAnimes(animeMedia),
+      if (mangaMedia.isNotEmpty) _db.mangaDao.upsertMangas(mangaMedia),
     ]);
 
     final List<AniListListEntry> allEntries = <AniListListEntry>[

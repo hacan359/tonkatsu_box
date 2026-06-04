@@ -21,6 +21,7 @@ void main() {
   group('TonkatsuBoxApp', () {
     late MockCollectionRepository mockRepo;
     late MockDatabaseService mockDb;
+    late MockGameDao mockGameDao;
 
     setUp(() {
       mockRepo = MockCollectionRepository();
@@ -30,8 +31,10 @@ void main() {
       );
 
       mockDb = MockDatabaseService();
+      mockGameDao = MockGameDao();
+      when(() => mockDb.gameDao).thenReturn(mockGameDao);
       when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
-      when(() => mockDb.getPlatformCount()).thenAnswer((_) async => 0);
+      when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
     });
 
     testWidgets('должен рендерить MaterialApp', (WidgetTester tester) async {

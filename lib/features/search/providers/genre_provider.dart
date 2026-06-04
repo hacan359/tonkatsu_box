@@ -1,4 +1,4 @@
-// Провайдеры для жанров TMDB (статические данные из БД).
+// TMDB genre providers, backed by static data in the DB.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,27 +6,27 @@ import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../settings/providers/settings_provider.dart';
 
-/// Провайдер маппинга ID → имя жанров фильмов.
+/// Movie genre id -> name map provider.
 ///
-/// Читает напрямую из БД (предзаполнены миграцией v24).
-/// Инвалидируется при смене языка TMDB.
+/// Reads straight from the DB (seeded by migration v24).
+/// Invalidated when the TMDB language changes.
 final FutureProvider<Map<String, String>> movieGenreMapProvider =
     FutureProvider<Map<String, String>>((Ref ref) async {
   return _loadTmdbGenreMap(ref, 'movie');
 });
 
-/// Провайдер маппинга ID → имя жанров сериалов.
+/// TV show genre id -> name map provider.
 ///
-/// Читает напрямую из БД (предзаполнены миграцией v24).
-/// Инвалидируется при смене языка TMDB.
+/// Reads straight from the DB (seeded by migration v24).
+/// Invalidated when the TMDB language changes.
 final FutureProvider<Map<String, String>> tvGenreMapProvider =
     FutureProvider<Map<String, String>>((Ref ref) async {
   return _loadTmdbGenreMap(ref, 'tv');
 });
 
-/// Провайдер жанров фильмов как список [TmdbGenre].
+/// Movie genres as a list of [TmdbGenre].
 ///
-/// Использует [movieGenreMapProvider] — без дублирующего запроса к БД.
+/// Built from [movieGenreMapProvider], so it makes no extra DB query.
 final FutureProvider<List<TmdbGenre>> movieGenresProvider =
     FutureProvider<List<TmdbGenre>>((Ref ref) async {
   final Map<String, String> genreMap =
@@ -34,9 +34,9 @@ final FutureProvider<List<TmdbGenre>> movieGenresProvider =
   return _mapToGenreList(genreMap);
 });
 
-/// Провайдер жанров сериалов как список [TmdbGenre].
+/// TV show genres as a list of [TmdbGenre].
 ///
-/// Использует [tvGenreMapProvider] — без дублирующего запроса к БД.
+/// Built from [tvGenreMapProvider], so it makes no extra DB query.
 final FutureProvider<List<TmdbGenre>> tvGenresProvider =
     FutureProvider<List<TmdbGenre>>((Ref ref) async {
   final Map<String, String> genreMap =
@@ -44,16 +44,16 @@ final FutureProvider<List<TmdbGenre>> tvGenresProvider =
   return _mapToGenreList(genreMap);
 });
 
-/// Загружает маппинг жанров TMDB указанного типа из БД.
+/// Loads the TMDB genre map of the given type from the DB.
 Future<Map<String, String>> _loadTmdbGenreMap(Ref ref, String type) async {
   final String tmdbLanguage = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.tmdbLanguage));
   final String lang = tmdbLanguage.startsWith('ru') ? 'ru' : 'en';
   final DatabaseService db = ref.watch(databaseServiceProvider);
-  return db.getTmdbGenreMap(type, lang: lang);
+  return db.movieDao.getTmdbGenreMap(type, lang: lang);
 }
 
-/// Конвертирует маппинг ID→name в список [TmdbGenre].
+/// Converts an id -> name map into a list of [TmdbGenre].
 List<TmdbGenre> _mapToGenreList(Map<String, String> genreMap) {
   return genreMap.entries
       .map((MapEntry<String, String> e) =>

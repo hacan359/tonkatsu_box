@@ -9,9 +9,12 @@ import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockDatabaseService mockDb;
+  late MockGameDao mockGameDao;
 
   setUp(() {
     mockDb = MockDatabaseService();
+    mockGameDao = MockGameDao();
+    when(() => mockDb.gameDao).thenReturn(mockGameDao);
   });
 
   ProviderContainer createContainer() {
@@ -32,7 +35,7 @@ void main() {
         <String, dynamic>{'id': 7, 'name': 'Music'},
       ];
 
-      when(() => mockDb.getIgdbGenres()).thenAnswer((_) async => dbRows);
+      when(() => mockGameDao.getIgdbGenres()).thenAnswer((_) async => dbRows);
 
       final ProviderContainer container = createContainer();
 
@@ -49,7 +52,7 @@ void main() {
     });
 
     test('возвращает пустой список когда БД пуста', () async {
-      when(() => mockDb.getIgdbGenres())
+      when(() => mockGameDao.getIgdbGenres())
           .thenAnswer((_) async => <Map<String, dynamic>>[]);
 
       final ProviderContainer container = createContainer();
@@ -65,7 +68,7 @@ void main() {
         <String, dynamic>{'id': 31, 'name': 'Adventure'},
       ];
 
-      when(() => mockDb.getIgdbGenres()).thenAnswer((_) async => dbRows);
+      when(() => mockGameDao.getIgdbGenres()).thenAnswer((_) async => dbRows);
 
       final ProviderContainer container = createContainer();
 
@@ -86,7 +89,7 @@ void main() {
         <String, dynamic>{'id': 11, 'name': 'Real Time Strategy (RTS)'},
       ];
 
-      when(() => mockDb.getIgdbGenres()).thenAnswer((_) async => dbRows);
+      when(() => mockGameDao.getIgdbGenres()).thenAnswer((_) async => dbRows);
 
       final ProviderContainer container = createContainer();
 
@@ -101,14 +104,14 @@ void main() {
     });
 
     test('вызывает getIgdbGenres на DatabaseService', () async {
-      when(() => mockDb.getIgdbGenres())
+      when(() => mockGameDao.getIgdbGenres())
           .thenAnswer((_) async => <Map<String, dynamic>>[]);
 
       final ProviderContainer container = createContainer();
 
       await container.read(igdbGenresProvider.future);
 
-      verify(() => mockDb.getIgdbGenres()).called(1);
+      verify(() => mockGameDao.getIgdbGenres()).called(1);
     });
   });
 }

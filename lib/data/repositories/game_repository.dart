@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/igdb_api.dart';
+import '../../core/database/dao/game_dao.dart';
 import '../../core/database/database_service.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/platform.dart';
@@ -9,7 +10,7 @@ final Provider<GameRepository> gameRepositoryProvider =
     Provider<GameRepository>((Ref ref) {
   return GameRepository(
     api: ref.watch(igdbApiProvider),
-    db: ref.watch(databaseServiceProvider),
+    gameDao: ref.watch(gameDaoProvider),
   );
 });
 
@@ -19,12 +20,12 @@ final Provider<GameRepository> gameRepositoryProvider =
 class GameRepository {
   GameRepository({
     required IgdbApi api,
-    required DatabaseService db,
+    required GameDao gameDao,
   })  : _api = api,
-        _db = db;
+        _gameDao = gameDao;
 
   final IgdbApi _api;
-  final DatabaseService _db;
+  final GameDao _gameDao;
 
   static const int cacheMaxAge = 86400 * 7;
 
@@ -42,7 +43,7 @@ class GameRepository {
     );
 
     if (games.isNotEmpty) {
-      await _db.upsertGames(games);
+      await _gameDao.upsertGames(games);
       await ensurePlatformsCached(games);
     }
 
@@ -51,7 +52,7 @@ class GameRepository {
 
   Future<Game?> getGameById(int gameId, {bool forceRefresh = false}) async {
     if (!forceRefresh) {
-      final Game? cached = await _db.getGameById(gameId);
+      final Game? cached = await _gameDao.getGameById(gameId);
       if (cached != null && _isCacheValid(cached.cachedAt)) {
         return cached;
       }
@@ -60,7 +61,7 @@ class GameRepository {
     final Game? game = await _api.getGameById(gameId);
 
     if (game != null) {
-      await _db.upsertGame(game);
+      await _gameDao.upsertGame(game);
     }
 
     return game;
@@ -76,7 +77,7 @@ class GameRepository {
     final List<int> idsToFetch = <int>[];
 
     if (!forceRefresh) {
-      final List<Game> cached = await _db.getGamesByIds(gameIds);
+      final List<Game> cached = await _gameDao.getGamesByIds(gameIds);
       final Map<int, Game> cachedMap = <int, Game>{
         for (final Game g in cached) g.id: g,
       };
@@ -97,7 +98,7 @@ class GameRepository {
       final List<Game> fetched = await _api.getGamesByIds(idsToFetch);
 
       if (fetched.isNotEmpty) {
-        await _db.upsertGames(fetched);
+        await _gameDao.upsertGames(fetched);
       }
 
       result.addAll(fetched);
@@ -107,11 +108,11 @@ class GameRepository {
   }
 
   Future<List<Game>> searchInCache(String query, {int limit = 20}) async {
-    return _db.searchGamesInCache(query, limit: limit);
+    return _gameDao.searchGamesInCache(query, limit: limit);
   }
 
   Future<int> getCacheSize() async {
-    return _db.getGameCount();
+    return _gameDao.getGameCount();
   }
 
   /// Backfills the `platforms` table for every platform id mentioned by
@@ -127,7 +128,7 @@ class GameRepository {
     if (allPlatformIds.isEmpty) return;
 
     final List<Platform> cached =
-        await _db.getPlatformsByIds(allPlatformIds.toList());
+        await _gameDao.getPlatformsByIds(allPlatformIds.toList());
     final Set<int> cachedIds = <int>{
       for (final Platform p in cached) p.id,
     };
@@ -140,7 +141,7 @@ class GameRepository {
       final List<Platform> fetched =
           await _api.fetchPlatformsByIds(missingIds);
       if (fetched.isNotEmpty) {
-        await _db.upsertPlatforms(fetched);
+        await _gameDao.upsertPlatforms(fetched);
       }
     } on Exception {
       // Best-effort: next call will retry.

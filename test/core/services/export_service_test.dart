@@ -1388,6 +1388,7 @@ void main() {
       late MockCanvasRepository mockCanvasRepo;
       late MockImageCacheService mockImageCache;
       late MockDatabaseService mockDatabase;
+      late MockTvShowDao mockTvShowDao;
       late MockTierListDao mockTierListDao;
       late MockTagDao mockTagDao;
 
@@ -1395,6 +1396,8 @@ void main() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
         mockDatabase = MockDatabaseService();
+        mockTvShowDao = MockTvShowDao();
+        when(() => mockDatabase.tvShowDao).thenReturn(mockTvShowDao);
         mockTierListDao = MockTierListDao();
         mockTagDao = MockTagDao();
 
@@ -1408,7 +1411,7 @@ void main() {
             .thenAnswer((_) async => <CanvasItem>[]);
         when(() => mockImageCache.readImageBytes(any(), any()))
             .thenAnswer((_) async => null);
-        when(() => mockDatabase.getEpisodesByShowId(any()))
+        when(() => mockTvShowDao.getEpisodesByShowId(any()))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
@@ -1435,7 +1438,7 @@ void main() {
           ),
         ];
 
-        when(() => mockDatabase.getTvSeasonsByShowId(1399))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(1399))
             .thenAnswer((_) async => testSeasons);
 
         final ExportService sutMedia = ExportService(
@@ -1473,7 +1476,7 @@ void main() {
       });
 
       test('не должен включить tv_seasons когда сезонов нет', () async {
-        when(() => mockDatabase.getTvSeasonsByShowId(any()))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(any()))
             .thenAnswer((_) async => <TvSeason>[]);
 
         final ExportService sutMedia = ExportService(
@@ -1511,7 +1514,7 @@ void main() {
           ),
         ];
 
-        when(() => mockDatabase.getTvSeasonsByShowId(999))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(999))
             .thenAnswer((_) async => testSeasons);
 
         final ExportService sutMedia = ExportService(
@@ -1569,7 +1572,7 @@ void main() {
             await sutMedia.createFullExport(collection, items, 1);
 
         expect(xcoll.media.containsKey('tv_seasons'), isFalse);
-        verifyNever(() => mockDatabase.getTvSeasonsByShowId(any()));
+        verifyNever(() => mockTvShowDao.getTvSeasonsByShowId(any()));
       });
 
       test('без database should skip tv_seasons', () async {
@@ -1602,7 +1605,7 @@ void main() {
           TvSeason(tmdbShowId: 1399, seasonNumber: 1, name: 'S1'),
         ];
 
-        when(() => mockDatabase.getTvSeasonsByShowId(1399))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(1399))
             .thenAnswer((_) async => testSeasons);
 
         final ExportService sutMedia = ExportService(
@@ -1634,7 +1637,7 @@ void main() {
         final XcollFile xcoll =
             await sutMedia.createFullExport(collection, items, 1);
 
-        verify(() => mockDatabase.getTvSeasonsByShowId(1399)).called(1);
+        verify(() => mockTvShowDao.getTvSeasonsByShowId(1399)).called(1);
         final List<dynamic> seasons =
             xcoll.media['tv_seasons'] as List<dynamic>;
         expect(seasons.length, equals(1));
@@ -1645,6 +1648,7 @@ void main() {
       late MockCanvasRepository mockCanvasRepo;
       late MockImageCacheService mockImageCache;
       late MockDatabaseService mockDatabase;
+      late MockTvShowDao mockTvShowDao;
       late MockTierListDao mockTierListDao;
       late MockTagDao mockTagDao;
 
@@ -1652,6 +1656,8 @@ void main() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
         mockDatabase = MockDatabaseService();
+        mockTvShowDao = MockTvShowDao();
+        when(() => mockDatabase.tvShowDao).thenReturn(mockTvShowDao);
         mockTierListDao = MockTierListDao();
         mockTagDao = MockTagDao();
 
@@ -1665,9 +1671,9 @@ void main() {
             .thenAnswer((_) async => <CanvasItem>[]);
         when(() => mockImageCache.readImageBytes(any(), any()))
             .thenAnswer((_) async => null);
-        when(() => mockDatabase.getTvSeasonsByShowId(any()))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(any()))
             .thenAnswer((_) async => <TvSeason>[]);
-        when(() => mockDatabase.getEpisodesByShowId(any()))
+        when(() => mockTvShowDao.getEpisodesByShowId(any()))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
@@ -1697,7 +1703,7 @@ void main() {
           ),
         ];
 
-        when(() => mockDatabase.getEpisodesByShowId(1399))
+        when(() => mockTvShowDao.getEpisodesByShowId(1399))
             .thenAnswer((_) async => testEpisodes);
 
         final ExportService sut = ExportService(
@@ -1770,7 +1776,7 @@ void main() {
           ),
         ];
 
-        when(() => mockDatabase.getEpisodesByShowId(1399))
+        when(() => mockTvShowDao.getEpisodesByShowId(1399))
             .thenAnswer((_) async => testEpisodes);
 
         final ExportService sut = ExportService(
@@ -1802,7 +1808,7 @@ void main() {
         final XcollFile xcoll =
             await sut.createFullExport(collection, items, 1);
 
-        verify(() => mockDatabase.getEpisodesByShowId(1399)).called(1);
+        verify(() => mockTvShowDao.getEpisodesByShowId(1399)).called(1);
         expect(xcoll.media.containsKey('tv_episodes'), isTrue);
       });
     });
@@ -1811,6 +1817,7 @@ void main() {
       late MockCanvasRepository mockCanvasRepo;
       late MockImageCacheService mockImageCache;
       late MockDatabaseService mockDatabase;
+      late MockGameDao mockGameDao;
       late MockTierListDao mockTierListDao;
       late MockTagDao mockTagDao;
 
@@ -1818,6 +1825,8 @@ void main() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
         mockDatabase = MockDatabaseService();
+        mockGameDao = MockGameDao();
+        when(() => mockDatabase.gameDao).thenReturn(mockGameDao);
         mockTierListDao = MockTierListDao();
         mockTagDao = MockTagDao();
 
@@ -1845,7 +1854,7 @@ void main() {
           Platform(id: 48, name: 'PlayStation 4', abbreviation: 'PS4'),
         ];
 
-        when(() => mockDatabase.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => testPlatforms);
 
         final ExportService sutMedia = ExportService(
@@ -1907,7 +1916,7 @@ void main() {
             await sutMedia.createFullExport(collection, items, 1);
 
         expect(xcoll.media.containsKey('platforms'), isFalse);
-        verifyNever(() => mockDatabase.getPlatformsByIds(any()));
+        verifyNever(() => mockGameDao.getPlatformsByIds(any()));
       });
 
       test('не должен включить platforms без database', () async {
@@ -1944,7 +1953,7 @@ void main() {
           Platform(id: 48, name: 'PS4', abbreviation: 'PS4'),
         ];
 
-        when(() => mockDatabase.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => testPlatforms);
 
         final ExportService sutMedia = ExportService(
@@ -1985,7 +1994,7 @@ void main() {
             await sutMedia.createFullExport(collection, items, 1);
 
         expect(xcoll.media.containsKey('platforms'), isTrue);
-        verify(() => mockDatabase.getPlatformsByIds(any())).called(1);
+        verify(() => mockGameDao.getPlatformsByIds(any())).called(1);
       });
     });
   });

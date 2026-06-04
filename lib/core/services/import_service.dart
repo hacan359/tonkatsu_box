@@ -630,7 +630,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertGames(games);
+      await _database.gameDao.upsertGames(games);
     }
 
     if (rawMovies.isNotEmpty) {
@@ -647,7 +647,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertMovies(movies);
+      await _database.movieDao.upsertMovies(movies);
     }
 
     if (rawTvShows.isNotEmpty) {
@@ -664,7 +664,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertTvShows(tvShows);
+      await _database.tvShowDao.upsertTvShows(tvShows);
     }
 
     if (rawSeasons.isNotEmpty) {
@@ -680,7 +680,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertTvSeasons(seasons);
+      await _database.tvShowDao.upsertTvSeasons(seasons);
     }
 
     if (rawEpisodes.isNotEmpty) {
@@ -697,7 +697,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertEpisodes(episodes);
+      await _database.tvShowDao.upsertEpisodes(episodes);
     }
 
     if (rawPlatforms.isNotEmpty) {
@@ -713,7 +713,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertPlatforms(platforms);
+      await _database.gameDao.upsertPlatforms(platforms);
     }
 
     if (rawVisualNovels.isNotEmpty) {
@@ -732,7 +732,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertVisualNovels(visualNovels);
+      await _database.visualNovelDao.upsertVisualNovels(visualNovels);
     }
 
     if (rawMangas.isNotEmpty) {
@@ -749,7 +749,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertMangas(mangas);
+      await _database.mangaDao.upsertMangas(mangas);
     }
 
     if (rawAnimes.isNotEmpty) {
@@ -766,7 +766,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertAnimes(animes);
+      await _database.animeDao.upsertAnimes(animes);
     }
 
     if (rawCustom.isNotEmpty) {
@@ -1020,7 +1020,7 @@ class ImportService {
 
     int cachedCount = 0;
     for (final Game game in games) {
-      await _database.upsertGame(game);
+      await _database.gameDao.upsertGame(game);
       cachedCount++;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
@@ -1030,7 +1030,7 @@ class ImportService {
     }
 
     if (movies.isNotEmpty) {
-      await _database.upsertMovies(movies);
+      await _database.movieDao.upsertMovies(movies);
       cachedCount += movies.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
@@ -1040,7 +1040,7 @@ class ImportService {
     }
 
     if (tvShows.isNotEmpty) {
-      await _database.upsertTvShows(tvShows);
+      await _database.tvShowDao.upsertTvShows(tvShows);
       cachedCount += tvShows.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
@@ -1050,7 +1050,7 @@ class ImportService {
     }
 
     if (visualNovels.isNotEmpty) {
-      await _database.upsertVisualNovels(visualNovels);
+      await _database.visualNovelDao.upsertVisualNovels(visualNovels);
       cachedCount += visualNovels.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
@@ -1060,7 +1060,7 @@ class ImportService {
     }
 
     if (mangas.isNotEmpty) {
-      await _database.upsertMangas(mangas);
+      await _database.mangaDao.upsertMangas(mangas);
       cachedCount += mangas.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
@@ -1070,7 +1070,7 @@ class ImportService {
     }
 
     if (animes.isNotEmpty) {
-      await _database.upsertAnimes(animes);
+      await _database.animeDao.upsertAnimes(animes);
       cachedCount += animes.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,

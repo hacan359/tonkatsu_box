@@ -76,7 +76,7 @@ class TvShowHandler implements MediaActionHandler {
           ? AnimationSource.tvShow
           : null,
       title: tvShow.title,
-      upsert: () => _ref.read(databaseServiceProvider).upsertTvShow(tvShow),
+      upsert: () => _ref.read(tvShowDaoProvider).upsertTvShow(tvShow),
       imageType: ImageType.tvShowPoster,
       imageId: tvShow.tmdbId.toString(),
       imageUrl: tvShow.posterUrl,
@@ -114,7 +114,7 @@ class TvShowHandler implements MediaActionHandler {
           ? AnimationSource.tvShow
           : null,
       title: tvShow.title,
-      upsert: () => _ref.read(databaseServiceProvider).upsertTvShow(tvShow),
+      upsert: () => _ref.read(tvShowDaoProvider).upsertTvShow(tvShow),
       imageType: ImageType.tvShowPoster,
       imageId: tvShow.tmdbId.toString(),
       imageUrl: tvShow.posterUrl,
@@ -127,18 +127,18 @@ class TvShowHandler implements MediaActionHandler {
       final DatabaseService db = _ref.read(databaseServiceProvider);
       final TmdbApi tmdb = _ref.read(tmdbApiProvider);
 
-      List<TvSeason> seasons = await db.getTvSeasonsByShowId(tmdbId);
+      List<TvSeason> seasons = await db.tvShowDao.getTvSeasonsByShowId(tmdbId);
       if (seasons.isEmpty) {
         seasons = await tmdb.getTvSeasons(tmdbId);
-        if (seasons.isNotEmpty) await db.upsertTvSeasons(seasons);
+        if (seasons.isNotEmpty) await db.tvShowDao.upsertTvSeasons(seasons);
       }
       for (final TvSeason season in seasons) {
         final List<TvEpisode> cached =
-            await db.getEpisodesByShowAndSeason(tmdbId, season.seasonNumber);
+            await db.tvShowDao.getEpisodesByShowAndSeason(tmdbId, season.seasonNumber);
         if (cached.isEmpty) {
           final List<TvEpisode> episodes =
               await tmdb.getSeasonEpisodes(tmdbId, season.seasonNumber);
-          if (episodes.isNotEmpty) await db.upsertEpisodes(episodes);
+          if (episodes.isNotEmpty) await db.tvShowDao.upsertEpisodes(episodes);
         }
       }
     } catch (_) {

@@ -427,7 +427,7 @@ class TraktZipImportService {
           final Movie? movie = await _tmdbApi.getMovie(tmdbId);
           if (movie != null) {
             fetchedMovies[tmdbId] = movie;
-            await _database.upsertMovie(movie);
+            await _database.movieDao.upsertMovie(movie);
             movieIsAnimation[tmdbId] = _isAnimationByGenres(movie.genres);
           }
         } on Exception {
@@ -448,7 +448,7 @@ class TraktZipImportService {
           final TvShow? tvShow = await _tmdbApi.getTvShow(tmdbId);
           if (tvShow != null) {
             fetchedShows[tmdbId] = tvShow;
-            await _database.upsertTvShow(tvShow);
+            await _database.tvShowDao.upsertTvShow(tvShow);
             showIsAnimation[tmdbId] = _isAnimationByGenres(tvShow.genres);
           }
         } on Exception {
@@ -657,7 +657,7 @@ class TraktZipImportService {
                 message: 'Importing episodes for "${traktShow.title}"...',
               ));
 
-              await _database.markEpisodeWatched(
+              await _database.tvShowDao.markEpisodeWatched(
                 collectionId,
                 traktShow.tmdbId!,
                 season.number,

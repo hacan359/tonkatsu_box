@@ -322,7 +322,7 @@ class RaImportService {
         if (wasUpdated) updated++;
       } else {
         // Кэшировать игру и добавить в коллекцию.
-        await _db.upsertGame(igdbGame);
+        await _db.gameDao.upsertGame(igdbGame);
         await _addToCollection(
           collectionId: targetCollectionId,
           game: igdbGame,
@@ -374,7 +374,7 @@ class RaImportService {
     required Game? searchResult,
   }) async {
     if (linkedIgdbId != null) {
-      final Game? cached = await _db.getGameById(linkedIgdbId);
+      final Game? cached = await _db.gameDao.getGameById(linkedIgdbId);
       if (cached != null) return cached;
       _log.warning(
         'Manual link for RA gameId=${raGame.gameId} → IGDB id=$linkedIgdbId, '
@@ -493,17 +493,17 @@ class RaImportService {
     String importTag,
   ) async {
     final String title = '${raGame.title} (${raGame.consoleName})';
-    final WishlistItem? existing = await _db.findUnresolvedWishlistItem(title);
+    final WishlistItem? existing = await _db.wishlistDao.findUnresolvedByText(title);
     if (existing != null) {
       // Retro-stamp the current import tag only on previously-untagged rows
       // so legacy entries get grouped without overwriting manual tags.
       if (existing.tag == null) {
-        await _db.updateWishlistItem(existing.id, tag: importTag);
+        await _db.wishlistDao.updateWishlistItem(existing.id, tag: importTag);
       }
       return false;
     }
 
-    await _db.addWishlistItem(
+    await _db.wishlistDao.addWishlistItem(
       text: title,
       mediaTypeHint: MediaType.game,
       note: 'From RetroAchievements • '
