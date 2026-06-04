@@ -848,6 +848,7 @@ void main() {
     late MockDatabaseService mockDb;
     late MockGameDao mockGameDao;
     late MockMovieDao mockMovieDao;
+    late MockTvShowDao mockTvShowDao;
     late CanvasRepository repository;
 
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
@@ -859,6 +860,8 @@ void main() {
       when(() => mockDb.gameDao).thenReturn(mockGameDao);
       mockMovieDao = MockMovieDao();
       when(() => mockDb.movieDao).thenReturn(mockMovieDao);
+      mockTvShowDao = MockTvShowDao();
+      when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
       repository = CanvasRepository(db: mockDb);
     });
 
@@ -1057,7 +1060,7 @@ void main() {
 
         when(() => mockDb.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
-        when(() => mockDb.getTvShowsByTmdbIds(<int>[777]))
+        when(() => mockTvShowDao.getTvShowsByTmdbIds(<int>[777]))
             .thenAnswer((_) async => <TvShow>[testTvShow]);
 
         final List<CanvasItem> result =
@@ -1066,7 +1069,7 @@ void main() {
         expect(result.length, 1);
         expect(result[0].tvShow, isNotNull);
         expect(result[0].tvShow!.title, 'Test Show');
-        verify(() => mockDb.getTvShowsByTmdbIds(<int>[777])).called(1);
+        verify(() => mockTvShowDao.getTvShowsByTmdbIds(<int>[777])).called(1);
       });
 
       test('should enrich game canvas items with visualNovel data', () async {

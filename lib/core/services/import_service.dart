@@ -664,7 +664,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertTvShows(tvShows);
+      await _database.tvShowDao.upsertTvShows(tvShows);
     }
 
     if (rawSeasons.isNotEmpty) {
@@ -680,7 +680,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertTvSeasons(seasons);
+      await _database.tvShowDao.upsertTvSeasons(seasons);
     }
 
     if (rawEpisodes.isNotEmpty) {
@@ -697,7 +697,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertEpisodes(episodes);
+      await _database.tvShowDao.upsertEpisodes(episodes);
     }
 
     if (rawPlatforms.isNotEmpty) {
@@ -1040,7 +1040,7 @@ class ImportService {
     }
 
     if (tvShows.isNotEmpty) {
-      await _database.upsertTvShows(tvShows);
+      await _database.tvShowDao.upsertTvShows(tvShows);
       cachedCount += tvShows.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,

@@ -77,11 +77,11 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
       }
       try {
         final List<TvSeason> seasons = await api.getTvSeasons(t.externalId);
-        if (seasons.isNotEmpty) await db.upsertTvSeasons(seasons);
+        if (seasons.isNotEmpty) await db.tvShowDao.upsertTvSeasons(seasons);
         for (final TvSeason s in seasons) {
           final List<TvEpisode> episodes =
               await api.getSeasonEpisodes(t.externalId, s.seasonNumber);
-          if (episodes.isNotEmpty) await db.upsertEpisodes(episodes);
+          if (episodes.isNotEmpty) await db.tvShowDao.upsertEpisodes(episodes);
         }
       } on Object {
         // Network/API failure for one show shouldn't abort the whole refresh.

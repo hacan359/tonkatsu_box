@@ -138,7 +138,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   Future<void> _loadSeasons() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
     List<TvSeason> seasons =
-        await db.getTvSeasonsByShowId(widget.tmdbShowId);
+        await db.tvShowDao.getTvSeasonsByShowId(widget.tmdbShowId);
 
     // Если в кэше пусто — загружаем из TMDB API и кэшируем
     if (seasons.isEmpty) {
@@ -146,7 +146,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
         final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
         seasons = await tmdbApi.getTvSeasons(widget.tmdbShowId);
         if (seasons.isNotEmpty) {
-          await db.upsertTvSeasons(seasons);
+          await db.tvShowDao.upsertTvSeasons(seasons);
         }
       } on Exception catch (_) {
         // TMDB API unavailable — show empty season list, not critical.
@@ -177,7 +177,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
       final List<TvSeason> seasons =
           await tmdbApi.getTvSeasons(widget.tmdbShowId);
       if (seasons.isNotEmpty) {
-        await db.upsertTvSeasons(seasons);
+        await db.tvShowDao.upsertTvSeasons(seasons);
       }
 
       // Обновляем эпизоды для каждого уже раскрытого сезона

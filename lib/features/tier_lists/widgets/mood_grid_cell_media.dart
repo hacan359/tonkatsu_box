@@ -88,7 +88,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
         rating: movie?.rating,
       );
     case MediaType.tvShow:
-      final TvShow? tvShow = await db.getTvShowByTmdbId(externalId);
+      final TvShow? tvShow = await db.tvShowDao.getTvShowByTmdbId(externalId);
       return MoodGridCellMedia(
         title: tvShow?.title,
         coverUrl: tvShow?.posterUrl,
@@ -101,7 +101,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
     case MediaType.animation:
       final bool isTvBased = platformId == AnimationSource.tvShow;
       if (isTvBased) {
-        final TvShow? tvShow = await db.getTvShowByTmdbId(externalId);
+        final TvShow? tvShow = await db.tvShowDao.getTvShowByTmdbId(externalId);
         return MoodGridCellMedia(
           title: tvShow?.title,
           coverUrl: tvShow?.posterUrl,

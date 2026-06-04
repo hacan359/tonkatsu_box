@@ -16,9 +16,6 @@ import '../../shared/models/cover_info.dart';
 import '../../shared/models/data_source.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
-import '../../shared/models/tv_episode.dart';
-import '../../shared/models/tv_season.dart';
-import '../../shared/models/tv_show.dart';
 import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
@@ -287,102 +284,6 @@ class DatabaseService {
     }
     _log.info('Database upgrade complete');
   }
-
-  Future<TvShow?> getTvShowByTmdbId(int tmdbId) =>
-      tvShowDao.getTvShowByTmdbId(tmdbId);
-
-  Future<void> upsertTvShow(TvShow tvShow) => tvShowDao.upsertTvShow(tvShow);
-
-  Future<void> upsertTvShows(List<TvShow> tvShows) =>
-      tvShowDao.upsertTvShows(tvShows);
-
-  Future<List<TvShow>> getTvShowsByTmdbIds(List<int> tmdbIds) =>
-      tvShowDao.getTvShowsByTmdbIds(tmdbIds);
-
-  Future<void> clearTvShows() => tvShowDao.clearTvShows();
-
-
-  Future<List<TvSeason>> getTvSeasonsByShowId(int tmdbShowId) =>
-      tvShowDao.getTvSeasonsByShowId(tmdbShowId);
-
-  Future<void> upsertTvSeasons(List<TvSeason> seasons) =>
-      tvShowDao.upsertTvSeasons(seasons);
-
-  Future<void> clearTvSeasons() => tvShowDao.clearTvSeasons();
-
-  Future<List<TvEpisode>> getEpisodesByShowId(int showId) =>
-      tvShowDao.getEpisodesByShowId(showId);
-
-  Future<List<TvEpisode>> getEpisodesByShowAndSeason(
-    int showId,
-    int seasonNumber,
-  ) =>
-      tvShowDao.getEpisodesByShowAndSeason(showId, seasonNumber);
-
-  Future<void> upsertEpisodes(List<TvEpisode> episodes) =>
-      tvShowDao.upsertEpisodes(episodes);
-
-  Future<void> clearEpisodesByShow(int showId) =>
-      tvShowDao.clearEpisodesByShow(showId);
-
-
-  Future<Map<(int, int), DateTime?>> getWatchedEpisodes(
-    int collectionId,
-    int showId,
-  ) =>
-      tvShowDao.getWatchedEpisodes(collectionId, showId);
-
-  Future<void> markEpisodeWatched(
-    int collectionId,
-    int showId,
-    int seasonNumber,
-    int episodeNumber,
-  ) =>
-      tvShowDao.markEpisodeWatched(
-        collectionId,
-        showId,
-        seasonNumber,
-        episodeNumber,
-      );
-
-  Future<void> markEpisodeUnwatched(
-    int collectionId,
-    int showId,
-    int seasonNumber,
-    int episodeNumber,
-  ) =>
-      tvShowDao.markEpisodeUnwatched(
-        collectionId,
-        showId,
-        seasonNumber,
-        episodeNumber,
-      );
-
-  Future<int> getWatchedEpisodeCount(
-    int collectionId,
-    int showId,
-  ) =>
-      tvShowDao.getWatchedEpisodeCount(collectionId, showId);
-
-  Future<void> markSeasonWatched(
-    int collectionId,
-    int showId,
-    int seasonNumber,
-    List<int> episodeNumbers,
-  ) =>
-      tvShowDao.markSeasonWatched(
-        collectionId,
-        showId,
-        seasonNumber,
-        episodeNumbers,
-      );
-
-  Future<void> unmarkSeasonWatched(
-    int collectionId,
-    int showId,
-    int seasonNumber,
-  ) =>
-      tvShowDao.unmarkSeasonWatched(collectionId, showId, seasonNumber);
 
   Future<List<Collection>> getAllCollections() =>
       collectionDao.getAllCollections();

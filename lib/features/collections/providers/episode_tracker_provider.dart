@@ -132,7 +132,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     if (collId == null) return;
     try {
       final Map<(int, int), DateTime?> watched =
-          await _db.getWatchedEpisodes(collId, _showId);
+          await _db.tvShowDao.getWatchedEpisodes(collId, _showId);
       state = state.copyWith(watchedEpisodes: watched);
     } on Exception catch (e) {
       state = state.copyWith(error: 'Failed to load watched episodes: $e');
@@ -156,7 +156,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     try {
       // Пробуем из кеша
       List<TvEpisode> episodes =
-          await _db.getEpisodesByShowAndSeason(_showId, seasonNumber);
+          await _db.tvShowDao.getEpisodesByShowAndSeason(_showId, seasonNumber);
 
       if (episodes.isEmpty) {
         // Загружаем из API
@@ -164,7 +164,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
             await _tmdbApi.getSeasonEpisodes(_showId, seasonNumber);
         // Кешируем
         if (episodes.isNotEmpty) {
-          await _db.upsertEpisodes(episodes);
+          await _db.tvShowDao.upsertEpisodes(episodes);
         }
       }
 
@@ -206,7 +206,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       final List<TvEpisode> episodes =
           await _tmdbApi.getSeasonEpisodes(_showId, seasonNumber);
       if (episodes.isNotEmpty) {
-        await _db.upsertEpisodes(episodes);
+        await _db.tvShowDao.upsertEpisodes(episodes);
       }
 
       state = state.copyWith(
@@ -238,14 +238,14 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     final bool isWatched = state.isEpisodeWatched(season, episode);
 
     if (isWatched) {
-      await _db.markEpisodeUnwatched(
+      await _db.tvShowDao.markEpisodeUnwatched(
           collId, _showId, season, episode);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes)
             ..remove((season, episode));
       state = state.copyWith(watchedEpisodes: updated);
     } else {
-      await _db.markEpisodeWatched(
+      await _db.tvShowDao.markEpisodeWatched(
           collId, _showId, season, episode);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes)
@@ -268,7 +268,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
     if (allWatched) {
       // Снимаем все отметки сезона
-      await _db.unmarkSeasonWatched(collId, _showId, season);
+      await _db.tvShowDao.unmarkSeasonWatched(collId, _showId, season);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes);
       for (final TvEpisode ep in episodes) {
@@ -279,7 +279,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       // Отмечаем все эпизоды сезона
       final List<int> episodeNumbers =
           episodes.map((TvEpisode ep) => ep.episodeNumber).toList();
-      await _db.markSeasonWatched(
+      await _db.tvShowDao.markSeasonWatched(
           collId, _showId, season, episodeNumbers);
       final DateTime now = DateTime.now();
       final Map<(int, int), DateTime?> updated =
@@ -328,7 +328,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       try {
         final TvShow? freshShow = await _tmdbApi.getTvShow(_showId);
         if (freshShow != null) {
-          await _db.upsertTvShow(freshShow);
+          await _db.tvShowDao.upsertTvShow(freshShow);
           totalInShow = freshShow.totalEpisodes ?? 0;
           totalSeasons = freshShow.totalSeasons ?? 0;
           _cachedTotalEpisodes = totalInShow;

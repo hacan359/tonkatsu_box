@@ -676,7 +676,7 @@ class CollectionActions {
           final TvShow? show =
               await ref.read(tmdbApiProvider).getTvShow(item.externalId);
           if (show == null) return _RefreshOutcome.notFound();
-          await db.upsertTvShow(show);
+          await db.tvShowDao.upsertTvShow(show);
         case MediaType.anime:
           final Anime? anime = await ref
               .read(aniListApiProvider)

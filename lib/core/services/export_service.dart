@@ -497,8 +497,8 @@ class ExportService {
     if (_database != null && tvShowIds.isNotEmpty) {
       for (final int showId in tvShowIds) {
         final List<Object> results = await Future.wait(<Future<Object>>[
-          _database.getTvSeasonsByShowId(showId),
-          _database.getEpisodesByShowId(showId),
+          _database.tvShowDao.getTvSeasonsByShowId(showId),
+          _database.tvShowDao.getEpisodesByShowId(showId),
         ]);
         final List<TvSeason> seasons = results[0] as List<TvSeason>;
         final List<TvEpisode> episodes = results[1] as List<TvEpisode>;

@@ -800,7 +800,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         title: tvShow.title,
         mediaType: MediaType.tvShow,
         ownMapProvider: collectedTvShowIdsProvider,
-        upsert: (DatabaseService db) => db.upsertTvShow(tvShow),
+        upsert: (DatabaseService db) => db.tvShowDao.upsertTvShow(tvShow),
       );
 
   Future<void> _addRecommendation({
