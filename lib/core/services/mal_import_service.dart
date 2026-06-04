@@ -856,7 +856,7 @@ class MalImportService {
         : MediaType.manga;
 
     final WishlistItem? existing =
-        await _db.findUnresolvedWishlistItem(entry.title);
+        await _db.wishlistDao.findUnresolvedByText(entry.title);
 
     if (existing != null) {
       // Stamp the current import tag onto previously-untagged items so the
@@ -865,7 +865,7 @@ class MalImportService {
       final bool needsTag = existing.tag == null;
       final bool noteChanged = note != existing.note;
       if (needsTag || noteChanged) {
-        await _db.updateWishlistItem(
+        await _db.wishlistDao.updateWishlistItem(
           existing.id,
           note: noteChanged ? note : null,
           tag: needsTag ? importTag : null,
@@ -874,7 +874,7 @@ class MalImportService {
       return;
     }
 
-    await _db.addWishlistItem(
+    await _db.wishlistDao.addWishlistItem(
       text: entry.title,
       mediaTypeHint: mediaType,
       note: note,

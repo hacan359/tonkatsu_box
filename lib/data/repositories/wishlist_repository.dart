@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/database/dao/wishlist_dao.dart';
 import '../../core/database/database_service.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/wishlist_item.dart';
@@ -8,14 +9,15 @@ import '../../shared/models/wishlist_tag.dart';
 final Provider<WishlistRepository> wishlistRepositoryProvider =
     Provider<WishlistRepository>((Ref ref) {
   return WishlistRepository(
-    db: ref.watch(databaseServiceProvider),
+    wishlistDao: ref.watch(wishlistDaoProvider),
   );
 });
 
 class WishlistRepository {
-  WishlistRepository({required DatabaseService db}) : _db = db;
+  WishlistRepository({required WishlistDao wishlistDao})
+      : _wishlistDao = wishlistDao;
 
-  final DatabaseService _db;
+  final WishlistDao _wishlistDao;
 
   Future<WishlistItem> add({
     required String text,
@@ -23,7 +25,7 @@ class WishlistRepository {
     String? note,
     String? tag,
   }) async {
-    return _db.addWishlistItem(
+    return _wishlistDao.addWishlistItem(
       text: text,
       mediaTypeHint: mediaTypeHint,
       note: note,
@@ -35,14 +37,14 @@ class WishlistRepository {
     bool includeResolved = true,
     WishlistTagFilter tagFilter = const WishlistTagFilter.all(),
   }) async {
-    return _db.getWishlistItems(
+    return _wishlistDao.getWishlistItemsFiltered(
       includeResolved: includeResolved,
       tagFilter: tagFilter,
     );
   }
 
   Future<int> getCount({bool onlyActive = true}) async {
-    return _db.getWishlistItemCount(onlyActive: onlyActive);
+    return _wishlistDao.getWishlistItemCount(onlyActive: onlyActive);
   }
 
   Future<void> update(
@@ -55,7 +57,7 @@ class WishlistRepository {
     String? tag,
     bool clearTag = false,
   }) async {
-    return _db.updateWishlistItem(
+    return _wishlistDao.updateWishlistItem(
       id,
       text: text,
       mediaTypeHint: mediaTypeHint,
@@ -68,30 +70,30 @@ class WishlistRepository {
   }
 
   Future<void> resolve(int id) async {
-    return _db.resolveWishlistItem(id);
+    return _wishlistDao.resolveWishlistItem(id);
   }
 
   Future<void> unresolve(int id) async {
-    return _db.unresolveWishlistItem(id);
+    return _wishlistDao.unresolveWishlistItem(id);
   }
 
   Future<void> delete(int id) async {
-    return _db.deleteWishlistItem(id);
+    return _wishlistDao.deleteWishlistItem(id);
   }
 
   Future<WishlistItem?> findUnresolved(String text) async {
-    return _db.findUnresolvedWishlistItem(text);
+    return _wishlistDao.findUnresolvedByText(text);
   }
 
   Future<int> clearResolved() async {
-    return _db.clearResolvedWishlistItems();
+    return _wishlistDao.clearResolvedWishlistItems();
   }
 
   Future<int> deleteByTag(String? tag) async {
-    return _db.deleteWishlistItemsByTag(tag);
+    return _wishlistDao.deleteWishlistItemsByTag(tag);
   }
 
   Future<int> renameTag(String? from, String to) async {
-    return _db.renameWishlistTag(from, to);
+    return _wishlistDao.renameWishlistTag(from, to);
   }
 }

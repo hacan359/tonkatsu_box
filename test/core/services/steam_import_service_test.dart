@@ -18,6 +18,7 @@ void main() {
   late MockIgdbApi mockIgdbApi;
   late MockDatabaseService mockDb;
   late MockGameDao mockGameDao;
+  late MockWishlistDao mockWishlistDao;
 
   setUp(() {
     mockSteamApi = MockSteamApi();
@@ -25,6 +26,8 @@ void main() {
     mockDb = MockDatabaseService();
     mockGameDao = MockGameDao();
     when(() => mockDb.gameDao).thenReturn(mockGameDao);
+    mockWishlistDao = MockWishlistDao();
+    when(() => mockDb.wishlistDao).thenReturn(mockWishlistDao);
 
     sut = SteamImportService(
       steamApi: mockSteamApi,
@@ -92,17 +95,17 @@ void main() {
           lastActivityAt: any(named: 'lastActivityAt'),
         )).thenAnswer((_) async {});
 
-    when(() => mockDb.addWishlistItem(
+    when(() => mockWishlistDao.addWishlistItem(
           text: any(named: 'text'),
           mediaTypeHint: any(named: 'mediaTypeHint'),
           note: any(named: 'note'),
           tag: any(named: 'tag'),
         )).thenAnswer((_) async => createTestWishlistItem());
 
-    when(() => mockDb.findUnresolvedWishlistItem(any()))
+    when(() => mockWishlistDao.findUnresolvedByText(any()))
         .thenAnswer((_) async => null);
 
-    when(() => mockDb.updateWishlistItem(
+    when(() => mockWishlistDao.updateWishlistItem(
           any(),
           text: any(named: 'text'),
           mediaTypeHint: any(named: 'mediaTypeHint'),
@@ -411,7 +414,7 @@ void main() {
 
         expect(result.wishlisted, 1);
         expect(result.imported, 0);
-        verify(() => mockDb.addWishlistItem(
+        verify(() => mockWishlistDao.addWishlistItem(
               text: 'Unknown Game',
               mediaTypeHint: MediaType.game,
               note: any(named: 'note'),
@@ -504,7 +507,7 @@ void main() {
         when(() => mockIgdbApi.lookupSteamGames(any()))
             .thenAnswer((_) async => <String, Game>{});
 
-        when(() => mockDb.findUnresolvedWishlistItem('Unknown Game'))
+        when(() => mockWishlistDao.findUnresolvedByText('Unknown Game'))
             .thenAnswer((_) async => createTestWishlistItem(
                   text: 'Unknown Game',
                 ));
@@ -516,7 +519,7 @@ void main() {
           onProgress: (_) {},
         );
 
-        verifyNever(() => mockDb.addWishlistItem(
+        verifyNever(() => mockWishlistDao.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
@@ -542,7 +545,7 @@ void main() {
           text: 'Unknown Game',
           note: 'Steam: 0.5h',
         );
-        when(() => mockDb.findUnresolvedWishlistItem('Unknown Game'))
+        when(() => mockWishlistDao.findUnresolvedByText('Unknown Game'))
             .thenAnswer((_) async => existingItem);
 
         await sut.importLibrary(
@@ -552,12 +555,12 @@ void main() {
           onProgress: (_) {},
         );
 
-        verify(() => mockDb.updateWishlistItem(
+        verify(() => mockWishlistDao.updateWishlistItem(
               42,
               note: 'Steam: 1.5h',
               tag: any(named: 'tag'),
             )).called(1);
-        verifyNever(() => mockDb.addWishlistItem(
+        verifyNever(() => mockWishlistDao.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
@@ -575,7 +578,7 @@ void main() {
         when(() => mockIgdbApi.lookupSteamGames(any()))
             .thenAnswer((_) async => <String, Game>{});
 
-        when(() => mockDb.findUnresolvedWishlistItem('New Game'))
+        when(() => mockWishlistDao.findUnresolvedByText('New Game'))
             .thenAnswer((_) async => null);
 
         await sut.importLibrary(
@@ -585,7 +588,7 @@ void main() {
           onProgress: (_) {},
         );
 
-        verify(() => mockDb.addWishlistItem(
+        verify(() => mockWishlistDao.addWishlistItem(
               text: 'New Game',
               mediaTypeHint: MediaType.game,
               note: any(named: 'note'),

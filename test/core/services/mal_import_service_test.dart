@@ -19,14 +19,17 @@ void main() {
   late MockDatabaseService mockDb;
   late MockAnimeDao mockAnimeDao;
   late MockMangaDao mockMangaDao;
+  late MockWishlistDao mockWishlistDao;
 
   setUp(() {
     mockAniList = MockAniListApi();
     mockDb = MockDatabaseService();
     mockAnimeDao = MockAnimeDao();
     mockMangaDao = MockMangaDao();
+    mockWishlistDao = MockWishlistDao();
     when(() => mockDb.animeDao).thenReturn(mockAnimeDao);
     when(() => mockDb.mangaDao).thenReturn(mockMangaDao);
+    when(() => mockDb.wishlistDao).thenReturn(mockWishlistDao);
     sut = MalImportService(aniListApi: mockAniList, database: mockDb);
   });
 
@@ -342,9 +345,9 @@ void main() {
               resolved: <int, Anime>{},
               failedIds: <int>[],
             ));
-        when(() => mockDb.findUnresolvedWishlistItem(any()))
+        when(() => mockWishlistDao.findUnresolvedByText(any()))
             .thenAnswer((_) async => null);
-        when(() => mockDb.addWishlistItem(
+        when(() => mockWishlistDao.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
@@ -362,7 +365,7 @@ void main() {
               onProgress: (_) {},
             );
 
-            final List<dynamic> calls = verify(() => mockDb.addWishlistItem(
+            final List<dynamic> calls = verify(() => mockWishlistDao.addWishlistItem(
                   text: any(named: 'text'),
                   mediaTypeHint: captureAny(named: 'mediaTypeHint'),
                   note: captureAny(named: 'note'),
@@ -554,7 +557,7 @@ void main() {
           },
         );
 
-        verifyNever(() => mockDb.addWishlistItem(
+        verifyNever(() => mockWishlistDao.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),

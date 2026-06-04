@@ -22,6 +22,7 @@ void main() {
   late MockDatabaseService mockDb;
   late MockTrackerDao mockTrackerDao;
   late MockGameDao mockGameDao;
+  late MockWishlistDao mockWishlistDao;
 
   late List<RaImportProgress> progressCalls;
 
@@ -53,6 +54,8 @@ void main() {
     mockTrackerDao = MockTrackerDao();
     mockGameDao = MockGameDao();
     when(() => mockDb.gameDao).thenReturn(mockGameDao);
+    mockWishlistDao = MockWishlistDao();
+    when(() => mockDb.wishlistDao).thenReturn(mockWishlistDao);
     progressCalls = <RaImportProgress>[];
     igdbGamesByTitle.clear();
 
@@ -121,17 +124,17 @@ void main() {
     when(() => mockDb.updateItemAuthorComment(any(), any()))
         .thenAnswer((_) async {});
 
-    when(() => mockDb.findUnresolvedWishlistItem(any()))
+    when(() => mockWishlistDao.findUnresolvedByText(any()))
         .thenAnswer((_) async => null);
 
-    when(() => mockDb.addWishlistItem(
+    when(() => mockWishlistDao.addWishlistItem(
           text: any(named: 'text'),
           mediaTypeHint: any(named: 'mediaTypeHint'),
           note: any(named: 'note'),
           tag: any(named: 'tag'),
         )).thenAnswer((_) async => createTestWishlistItem());
 
-    when(() => mockDb.updateWishlistItem(
+    when(() => mockWishlistDao.updateWishlistItem(
           any(),
           text: any(named: 'text'),
           mediaTypeHint: any(named: 'mediaTypeHint'),
@@ -446,7 +449,7 @@ void main() {
           onProgress: onProgress,
         );
 
-        verify(() => mockDb.addWishlistItem(
+        verify(() => mockWishlistDao.addWishlistItem(
               text: 'Unknown Game (NES)',
               mediaTypeHint: MediaType.game,
               note: any(named: 'note'),
@@ -476,7 +479,7 @@ void main() {
           onProgress: onProgress,
         );
 
-        verifyNever(() => mockDb.addWishlistItem(
+        verifyNever(() => mockWishlistDao.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
@@ -500,7 +503,7 @@ void main() {
         setupDbMocks();
 
         // Wishlist item already exists.
-        when(() => mockDb.findUnresolvedWishlistItem('Unknown Game (NES)'))
+        when(() => mockWishlistDao.findUnresolvedByText('Unknown Game (NES)'))
             .thenAnswer((_) async => createTestWishlistItem());
 
         final RaImportResult result = await sut.importFromProfile(
@@ -510,7 +513,7 @@ void main() {
           onProgress: onProgress,
         );
 
-        verifyNever(() => mockDb.addWishlistItem(
+        verifyNever(() => mockWishlistDao.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
@@ -595,7 +598,7 @@ void main() {
 
         verifyNever(() => mockIgdbApi.multiSearchGamesByName(any()));
         verify(() => mockGameDao.getGameById(500)).called(1);
-        verifyNever(() => mockDb.addWishlistItem(
+        verifyNever(() => mockWishlistDao.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),

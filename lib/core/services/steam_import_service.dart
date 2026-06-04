@@ -347,7 +347,7 @@ class SteamImportService {
         : null;
 
     final WishlistItem? existing =
-        await _db.findUnresolvedWishlistItem(steamGame.name);
+        await _db.wishlistDao.findUnresolvedByText(steamGame.name);
 
     if (existing != null) {
       // Stamp the current import tag only when the row was previously
@@ -355,7 +355,7 @@ class SteamImportService {
       final bool needsTag = existing.tag == null;
       final bool noteChanged = note != null && note != existing.note;
       if (needsTag || noteChanged) {
-        await _db.updateWishlistItem(
+        await _db.wishlistDao.updateWishlistItem(
           existing.id,
           note: noteChanged ? note : null,
           tag: needsTag ? importTag : null,
@@ -364,7 +364,7 @@ class SteamImportService {
       return;
     }
 
-    await _db.addWishlistItem(
+    await _db.wishlistDao.addWishlistItem(
       text: steamGame.name,
       mediaTypeHint: MediaType.game,
       note: note,

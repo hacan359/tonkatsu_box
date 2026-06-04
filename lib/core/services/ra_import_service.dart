@@ -493,17 +493,17 @@ class RaImportService {
     String importTag,
   ) async {
     final String title = '${raGame.title} (${raGame.consoleName})';
-    final WishlistItem? existing = await _db.findUnresolvedWishlistItem(title);
+    final WishlistItem? existing = await _db.wishlistDao.findUnresolvedByText(title);
     if (existing != null) {
       // Retro-stamp the current import tag only on previously-untagged rows
       // so legacy entries get grouped without overwriting manual tags.
       if (existing.tag == null) {
-        await _db.updateWishlistItem(existing.id, tag: importTag);
+        await _db.wishlistDao.updateWishlistItem(existing.id, tag: importTag);
       }
       return false;
     }
 
-    await _db.addWishlistItem(
+    await _db.wishlistDao.addWishlistItem(
       text: title,
       mediaTypeHint: MediaType.game,
       note: 'From RetroAchievements • '
