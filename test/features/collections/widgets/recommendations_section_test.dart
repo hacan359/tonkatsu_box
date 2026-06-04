@@ -77,7 +77,9 @@ void main() {
     mockDb = MockDatabaseService();
 
     // SettingsNotifier calls getPlatformCount on init.
-    when(() => mockDb.getPlatformCount()).thenAnswer((_) async => 0);
+    final MockGameDao mockGameDao = MockGameDao();
+    when(() => mockDb.gameDao).thenReturn(mockGameDao);
+    when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
 
     SharedPreferences.setMockInitialValues(<String, Object>{
       'tmdb_api_key': 'test_key',

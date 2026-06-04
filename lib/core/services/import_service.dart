@@ -630,7 +630,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertGames(games);
+      await _database.gameDao.upsertGames(games);
     }
 
     if (rawMovies.isNotEmpty) {
@@ -713,7 +713,7 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.upsertPlatforms(platforms);
+      await _database.gameDao.upsertPlatforms(platforms);
     }
 
     if (rawVisualNovels.isNotEmpty) {
@@ -1020,7 +1020,7 @@ class ImportService {
 
     int cachedCount = 0;
     for (final Game game in games) {
-      await _database.upsertGame(game);
+      await _database.gameDao.upsertGame(game);
       cachedCount++;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,

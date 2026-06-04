@@ -8,7 +8,7 @@ import '../../helpers/test_helpers.dart';
 
 void main() {
   late MockIgdbApi mockApi;
-  late MockDatabaseService mockDb;
+  late MockGameDao mockGameDao;
   late GameRepository repository;
 
   setUpAll(() {
@@ -17,8 +17,8 @@ void main() {
 
   setUp(() {
     mockApi = MockIgdbApi();
-    mockDb = MockDatabaseService();
-    repository = GameRepository(api: mockApi, db: mockDb);
+    mockGameDao = MockGameDao();
+    repository = GameRepository(api: mockApi, gameDao: mockGameDao);
   });
 
   group('GameRepository', () {
@@ -35,14 +35,14 @@ void main() {
               limit: any(named: 'limit'),
             )).thenAnswer((_) async => apiResults);
 
-        when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
-        when(() => mockDb.getPlatformsByIds(any()))
+        when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => <Platform>[]);
 
         final List<Game> result = await repository.searchGames(query: 'test');
 
         expect(result, equals(apiResults));
-        verify(() => mockDb.upsertGames(apiResults)).called(1);
+        verify(() => mockGameDao.upsertGames(apiResults)).called(1);
       });
 
       test('does not cache empty results', () async {
@@ -55,7 +55,7 @@ void main() {
         final List<Game> result = await repository.searchGames(query: 'xyz');
 
         expect(result, isEmpty);
-        verifyNever(() => mockDb.upsertGames(any()));
+        verifyNever(() => mockGameDao.upsertGames(any()));
       });
 
       test('passes platformIds to API', () async {
@@ -104,7 +104,7 @@ void main() {
           cachedAt: validCachedAt,
         );
 
-        when(() => mockDb.getGameById(1942))
+        when(() => mockGameDao.getGameById(1942))
             .thenAnswer((_) async => cachedGame);
 
         final Game? result = await repository.getGameById(1942);
@@ -124,30 +124,30 @@ void main() {
         );
         const Game freshGame = Game(id: 1942, name: 'Fresh Game');
 
-        when(() => mockDb.getGameById(1942)).thenAnswer((_) async => staleGame);
+        when(() => mockGameDao.getGameById(1942)).thenAnswer((_) async => staleGame);
         when(() => mockApi.getGameById(1942))
             .thenAnswer((_) async => freshGame);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
 
         final Game? result = await repository.getGameById(1942);
 
         expect(result?.name, 'Fresh Game');
         verify(() => mockApi.getGameById(1942)).called(1);
-        verify(() => mockDb.upsertGame(freshGame)).called(1);
+        verify(() => mockGameDao.upsertGame(freshGame)).called(1);
       });
 
       test('fetches from API if not in cache', () async {
         const Game apiGame = Game(id: 1942, name: 'API Game');
 
-        when(() => mockDb.getGameById(1942)).thenAnswer((_) async => null);
+        when(() => mockGameDao.getGameById(1942)).thenAnswer((_) async => null);
         when(() => mockApi.getGameById(1942)).thenAnswer((_) async => apiGame);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
 
         final Game? result = await repository.getGameById(1942);
 
         expect(result, equals(apiGame));
         verify(() => mockApi.getGameById(1942)).called(1);
-        verify(() => mockDb.upsertGame(apiGame)).called(1);
+        verify(() => mockGameDao.upsertGame(apiGame)).called(1);
       });
 
       test('forces refresh when forceRefresh is true', () async {
@@ -160,11 +160,11 @@ void main() {
         );
         const Game freshGame = Game(id: 1942, name: 'Fresh Game');
 
-        when(() => mockDb.getGameById(1942))
+        when(() => mockGameDao.getGameById(1942))
             .thenAnswer((_) async => cachedGame);
         when(() => mockApi.getGameById(1942))
             .thenAnswer((_) async => freshGame);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
 
         final Game? result =
             await repository.getGameById(1942, forceRefresh: true);
@@ -174,13 +174,13 @@ void main() {
       });
 
       test('returns null when game not found in API', () async {
-        when(() => mockDb.getGameById(99999)).thenAnswer((_) async => null);
+        when(() => mockGameDao.getGameById(99999)).thenAnswer((_) async => null);
         when(() => mockApi.getGameById(99999)).thenAnswer((_) async => null);
 
         final Game? result = await repository.getGameById(99999);
 
         expect(result, isNull);
-        verifyNever(() => mockDb.upsertGame(any()));
+        verifyNever(() => mockGameDao.upsertGame(any()));
       });
     });
 
@@ -197,11 +197,11 @@ void main() {
           const Game(id: 3, name: 'API 3'),
         ];
 
-        when(() => mockDb.getGamesByIds(any()))
+        when(() => mockGameDao.getGamesByIds(any()))
             .thenAnswer((_) async => cachedGames);
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => apiGames);
-        when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
 
         final List<Game> result =
             await repository.getGamesByIds(<int>[1, 2, 3]);
@@ -215,7 +215,7 @@ void main() {
         final List<Game> result = await repository.getGamesByIds(<int>[]);
 
         expect(result, isEmpty);
-        verifyNever(() => mockDb.getGamesByIds(any()));
+        verifyNever(() => mockGameDao.getGamesByIds(any()));
         verifyNever(() => mockApi.getGamesByIds(any()));
       });
 
@@ -227,14 +227,14 @@ void main() {
 
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => apiGames);
-        when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
 
         final List<Game> result =
             await repository.getGamesByIds(<int>[1, 2], forceRefresh: true);
 
         expect(result, hasLength(2));
         verify(() => mockApi.getGamesByIds(<int>[1, 2])).called(1);
-        verifyNever(() => mockDb.getGamesByIds(any()));
+        verifyNever(() => mockGameDao.getGamesByIds(any()));
       });
     });
 
@@ -244,24 +244,24 @@ void main() {
           const Game(id: 1, name: 'Game 1'),
         ];
 
-        when(() => mockDb.searchGamesInCache(any(), limit: any(named: 'limit')))
+        when(() => mockGameDao.searchGamesInCache(any(), limit: any(named: 'limit')))
             .thenAnswer((_) async => cachedGames);
 
         final List<Game> result = await repository.searchInCache('game');
 
         expect(result, equals(cachedGames));
-        verify(() => mockDb.searchGamesInCache('game', limit: 20)).called(1);
+        verify(() => mockGameDao.searchGamesInCache('game', limit: 20)).called(1);
       });
     });
 
     group('getCacheSize', () {
       test('returns game count from database', () async {
-        when(() => mockDb.getGameCount()).thenAnswer((_) async => 150);
+        when(() => mockGameDao.getGameCount()).thenAnswer((_) async => 150);
 
         final int size = await repository.getCacheSize();
 
         expect(size, 150);
-        verify(() => mockDb.getGameCount()).called(1);
+        verify(() => mockGameDao.getGameCount()).called(1);
       });
     });
 
@@ -273,14 +273,14 @@ void main() {
 
         await repository.ensurePlatformsCached(games);
 
-        verifyNever(() => mockDb.getPlatformsByIds(any()));
+        verifyNever(() => mockGameDao.getPlatformsByIds(any()));
         verifyNever(() => mockApi.fetchPlatformsByIds(any()));
       });
 
       test('does nothing for empty games list', () async {
         await repository.ensurePlatformsCached(<Game>[]);
 
-        verifyNever(() => mockDb.getPlatformsByIds(any()));
+        verifyNever(() => mockGameDao.getPlatformsByIds(any()));
       });
 
       test('skips fetch when all platforms already cached', () async {
@@ -288,7 +288,7 @@ void main() {
           Game(id: 1, name: 'Game 1', platformIds: <int>[6, 48]),
         ];
 
-        when(() => mockDb.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => const <Platform>[
                   Platform(id: 6, name: 'PC'),
                   Platform(id: 48, name: 'PS4'),
@@ -296,7 +296,7 @@ void main() {
 
         await repository.ensurePlatformsCached(games);
 
-        verify(() => mockDb.getPlatformsByIds(any())).called(1);
+        verify(() => mockGameDao.getPlatformsByIds(any())).called(1);
         verifyNever(() => mockApi.fetchPlatformsByIds(any()));
       });
 
@@ -305,7 +305,7 @@ void main() {
           Game(id: 1, name: 'Game 1', platformIds: <int>[6, 48, 130]),
         ];
 
-        when(() => mockDb.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => const <Platform>[
                   Platform(id: 6, name: 'PC'),
                 ]);
@@ -314,13 +314,13 @@ void main() {
                   Platform(id: 48, name: 'PS4'),
                   Platform(id: 130, name: 'Switch'),
                 ]);
-        when(() => mockDb.upsertPlatforms(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertPlatforms(any())).thenAnswer((_) async {});
 
         await repository.ensurePlatformsCached(games);
 
-        verify(() => mockDb.getPlatformsByIds(any())).called(1);
+        verify(() => mockGameDao.getPlatformsByIds(any())).called(1);
         verify(() => mockApi.fetchPlatformsByIds(any())).called(1);
-        verify(() => mockDb.upsertPlatforms(any())).called(1);
+        verify(() => mockGameDao.upsertPlatforms(any())).called(1);
       });
 
       test('collects unique platformIds across multiple games', () async {
@@ -329,7 +329,7 @@ void main() {
           Game(id: 2, name: 'Game 2', platformIds: <int>[48, 130]),
         ];
 
-        when(() => mockDb.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => <Platform>[]);
         when(() => mockApi.fetchPlatformsByIds(any()))
             .thenAnswer((_) async => const <Platform>[
@@ -337,11 +337,11 @@ void main() {
                   Platform(id: 48, name: 'PS4'),
                   Platform(id: 130, name: 'Switch'),
                 ]);
-        when(() => mockDb.upsertPlatforms(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.upsertPlatforms(any())).thenAnswer((_) async {});
 
         await repository.ensurePlatformsCached(games);
 
-        verify(() => mockDb.getPlatformsByIds(any())).called(1);
+        verify(() => mockGameDao.getPlatformsByIds(any())).called(1);
         verify(() => mockApi.fetchPlatformsByIds(any())).called(1);
       });
 
@@ -350,7 +350,7 @@ void main() {
           Game(id: 1, name: 'Game 1', platformIds: <int>[6]),
         ];
 
-        when(() => mockDb.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => <Platform>[]);
         when(() => mockApi.fetchPlatformsByIds(any()))
             .thenThrow(Exception('Network error'));
@@ -358,7 +358,7 @@ void main() {
         await repository.ensurePlatformsCached(games);
 
         verify(() => mockApi.fetchPlatformsByIds(any())).called(1);
-        verifyNever(() => mockDb.upsertPlatforms(any()));
+        verifyNever(() => mockGameDao.upsertPlatforms(any()));
       });
     });
 
@@ -373,8 +373,8 @@ void main() {
               platformIds: any(named: 'platformIds'),
               limit: any(named: 'limit'),
             )).thenAnswer((_) async => apiResults);
-        when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
-        when(() => mockDb.getPlatformsByIds(any()))
+        when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => const <Platform>[
                   Platform(id: 6, name: 'PC'),
                   Platform(id: 48, name: 'PS4'),
@@ -382,7 +382,7 @@ void main() {
 
         await repository.searchGames(query: 'test');
 
-        verify(() => mockDb.getPlatformsByIds(any())).called(1);
+        verify(() => mockGameDao.getPlatformsByIds(any())).called(1);
       });
     });
   });

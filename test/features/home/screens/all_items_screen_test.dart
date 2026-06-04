@@ -122,14 +122,16 @@ void main() {
 
     mockDb = MockDatabaseService();
     when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
-    when(() => mockDb.getPlatformById(19)).thenAnswer(
+    final MockGameDao mockGameDao = MockGameDao();
+    when(() => mockDb.gameDao).thenReturn(mockGameDao);
+    when(() => mockGameDao.getPlatformById(19)).thenAnswer(
       (_) async => const model.Platform(
         id: 19,
         name: 'Super Nintendo',
         abbreviation: 'SNES',
       ),
     );
-    when(() => mockDb.getPlatformById(24)).thenAnswer(
+    when(() => mockGameDao.getPlatformById(24)).thenAnswer(
       (_) async => const model.Platform(
         id: 24,
         name: 'Game Boy Advance',

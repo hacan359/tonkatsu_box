@@ -193,7 +193,7 @@ final FutureProvider<List<Platform>> allItemsPlatformsProvider =
   final DatabaseService db = ref.read(databaseServiceProvider);
   final List<Platform> platforms = <Platform>[];
   for (final int id in uniqueIds) {
-    final Platform? p = await db.getPlatformById(id);
+    final Platform? p = await db.gameDao.getPlatformById(id);
     if (p != null) platforms.add(p);
   }
   platforms.sort(

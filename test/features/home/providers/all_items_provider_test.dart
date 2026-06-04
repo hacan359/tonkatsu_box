@@ -51,6 +51,7 @@ CollectionItem _makeItem({
 void main() {
   late MockCollectionRepository mockRepo;
   late MockDatabaseService mockDb;
+  late MockGameDao mockGameDao;
   late SharedPreferences prefs;
 
   setUp(() async {
@@ -66,6 +67,8 @@ void main() {
         .thenAnswer((_) async => CollectionStats.empty);
 
     mockDb = MockDatabaseService();
+    mockGameDao = MockGameDao();
+    when(() => mockDb.gameDao).thenReturn(mockGameDao);
     when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
   });
 
@@ -497,10 +500,10 @@ void main() {
       ];
       when(() => mockRepo.getAllItemsWithData())
           .thenAnswer((_) async => items);
-      when(() => mockDb.getPlatformById(19)).thenAnswer(
+      when(() => mockGameDao.getPlatformById(19)).thenAnswer(
         (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
       );
-      when(() => mockDb.getPlatformById(24)).thenAnswer(
+      when(() => mockGameDao.getPlatformById(24)).thenAnswer(
         (_) async => const model.Platform(id: 24, name: 'Game Boy Advance'),
       );
 
@@ -533,7 +536,7 @@ void main() {
       ];
       when(() => mockRepo.getAllItemsWithData())
           .thenAnswer((_) async => items);
-      when(() => mockDb.getPlatformById(19)).thenAnswer(
+      when(() => mockGameDao.getPlatformById(19)).thenAnswer(
         (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
       );
 
@@ -556,7 +559,7 @@ void main() {
       ];
       when(() => mockRepo.getAllItemsWithData())
           .thenAnswer((_) async => items);
-      when(() => mockDb.getPlatformById(19)).thenAnswer(
+      when(() => mockGameDao.getPlatformById(19)).thenAnswer(
         (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
       );
 

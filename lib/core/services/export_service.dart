@@ -517,7 +517,7 @@ class ExportService {
     final List<Map<String, dynamic>> allPlatforms = <Map<String, dynamic>>[];
     if (_database != null && platformIds.isNotEmpty) {
       final List<model.Platform> platforms =
-          await _database.getPlatformsByIds(platformIds.toList());
+          await _database.gameDao.getPlatformsByIds(platformIds.toList());
       for (final model.Platform platform in platforms) {
         allPlatforms.add(platform.toDb());
       }

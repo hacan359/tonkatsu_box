@@ -17,11 +17,14 @@ void main() {
   late MockSteamApi mockSteamApi;
   late MockIgdbApi mockIgdbApi;
   late MockDatabaseService mockDb;
+  late MockGameDao mockGameDao;
 
   setUp(() {
     mockSteamApi = MockSteamApi();
     mockIgdbApi = MockIgdbApi();
     mockDb = MockDatabaseService();
+    mockGameDao = MockGameDao();
+    when(() => mockDb.gameDao).thenReturn(mockGameDao);
 
     sut = SteamImportService(
       steamApi: mockSteamApi,
@@ -71,7 +74,7 @@ void main() {
           externalId: any(named: 'externalId'),
         )).thenAnswer((_) async => null);
 
-    when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+    when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
 
     when(() => mockDb.addItemToCollection(
           collectionId: any(named: 'collectionId'),
@@ -484,7 +487,7 @@ void main() {
           onProgress: (_) {},
         );
 
-        verify(() => mockDb.upsertGame(
+        verify(() => mockGameDao.upsertGame(
               any(that: predicate<Game>((Game g) => g.id == 2)),
             )).called(1);
       });

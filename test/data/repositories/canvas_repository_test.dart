@@ -24,6 +24,7 @@ void main() {
 
   group('CanvasRepository', () {
     late MockDatabaseService mockDb;
+    late MockGameDao mockGameDao;
     late CanvasRepository repository;
 
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
@@ -31,6 +32,8 @@ void main() {
 
     setUp(() {
       mockDb = MockDatabaseService();
+      mockGameDao = MockGameDao();
+      when(() => mockDb.gameDao).thenReturn(mockGameDao);
       repository = CanvasRepository(db: mockDb);
     });
 
@@ -117,7 +120,7 @@ void main() {
         const Game testGame = Game(id: 100, name: 'Test Game');
 
         when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
-        when(() => mockDb.getGamesByIds(<int>[100]))
+        when(() => mockGameDao.getGamesByIds(<int>[100]))
             .thenAnswer((_) async => <Game>[testGame]);
 
         final List<CanvasItem> result = await repository.getItemsWithData(10);
@@ -125,7 +128,7 @@ void main() {
         expect(result.length, 1);
         expect(result[0].game, isNotNull);
         expect(result[0].game!.name, 'Test Game');
-        verify(() => mockDb.getGamesByIds(<int>[100])).called(1);
+        verify(() => mockGameDao.getGamesByIds(<int>[100])).called(1);
       });
 
       test('should return empty list when no items', () async {
@@ -159,7 +162,7 @@ void main() {
         final List<CanvasItem> result = await repository.getItemsWithData(10);
 
         expect(result.length, 1);
-        verifyNever(() => mockDb.getGamesByIds(any()));
+        verifyNever(() => mockGameDao.getGamesByIds(any()));
       });
 
       test('should handle game items with null itemRefId', () async {
@@ -185,7 +188,7 @@ void main() {
 
         expect(result.length, 1);
         expect(result[0].game, isNull);
-        verifyNever(() => mockDb.getGamesByIds(any()));
+        verifyNever(() => mockGameDao.getGamesByIds(any()));
       });
 
       test('should handle mixed game and non-game items', () async {
@@ -221,7 +224,7 @@ void main() {
         const Game testGame = Game(id: 100, name: 'Test Game');
 
         when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
-        when(() => mockDb.getGamesByIds(<int>[100]))
+        when(() => mockGameDao.getGamesByIds(<int>[100]))
             .thenAnswer((_) async => <Game>[testGame]);
 
         final List<CanvasItem> result = await repository.getItemsWithData(10);
@@ -251,7 +254,7 @@ void main() {
         ];
 
         when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
-        when(() => mockDb.getGamesByIds(<int>[999]))
+        when(() => mockGameDao.getGamesByIds(<int>[999]))
             .thenAnswer((_) async => <Game>[]);
 
         final List<CanvasItem> result = await repository.getItemsWithData(10);
@@ -843,6 +846,7 @@ void main() {
 
   group('CanvasRepository Game Canvas', () {
     late MockDatabaseService mockDb;
+    late MockGameDao mockGameDao;
     late CanvasRepository repository;
 
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
@@ -850,6 +854,8 @@ void main() {
 
     setUp(() {
       mockDb = MockDatabaseService();
+      mockGameDao = MockGameDao();
+      when(() => mockDb.gameDao).thenReturn(mockGameDao);
       repository = CanvasRepository(db: mockDb);
     });
 
@@ -946,7 +952,7 @@ void main() {
         expect(result[0].id, 1);
         expect(result[0].itemType, CanvasItemType.text);
         verify(() => mockDb.getGameCanvasItems(42)).called(1);
-        verifyNever(() => mockDb.getGamesByIds(any()));
+        verifyNever(() => mockGameDao.getGamesByIds(any()));
       });
 
       test('should enrich game canvas items with game data', () async {
@@ -974,7 +980,7 @@ void main() {
 
         when(() => mockDb.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
-        when(() => mockDb.getGamesByIds(<int>[999]))
+        when(() => mockGameDao.getGamesByIds(<int>[999]))
             .thenAnswer((_) async => <Game>[testGame]);
 
         final List<CanvasItem> result =
@@ -983,7 +989,7 @@ void main() {
         expect(result.length, 1);
         expect(result[0].game, isNotNull);
         expect(result[0].game!.name, 'Test Game');
-        verify(() => mockDb.getGamesByIds(<int>[999])).called(1);
+        verify(() => mockGameDao.getGamesByIds(<int>[999])).called(1);
       });
 
       test('should enrich game canvas items with movie data', () async {

@@ -665,7 +665,7 @@ class CollectionActions {
           final Game? game =
               await ref.read(igdbApiProvider).getGameById(item.externalId);
           if (game == null) return _RefreshOutcome.notFound();
-          await db.upsertGame(game);
+          await db.gameDao.upsertGame(game);
         case MediaType.movie:
           final Movie? movie =
               await ref.read(tmdbApiProvider).getMovie(item.externalId);

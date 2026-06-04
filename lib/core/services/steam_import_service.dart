@@ -244,7 +244,7 @@ class SteamImportService {
       }
 
       // Кэшировать IGDB игру
-      await _db.upsertGame(match);
+      await _db.gameDao.upsertGame(match);
 
       // Добавить в коллекцию
       final ItemStatus status = steamGame.playtimeMinutes > 0

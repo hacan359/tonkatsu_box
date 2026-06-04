@@ -65,13 +65,16 @@ void main() {
     late SharedPreferences prefs;
     late MockCollectionRepository mockRepo;
     late MockDatabaseService mockDb;
+    late MockGameDao mockGameDao;
 
     setUp(() async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       prefs = await SharedPreferences.getInstance();
       mockRepo = MockCollectionRepository();
       mockDb = MockDatabaseService();
-      when(() => mockDb.getPlatformCount()).thenAnswer((_) async => 0);
+      mockGameDao = MockGameDao();
+      when(() => mockDb.gameDao).thenReturn(mockGameDao);
+      when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
     });
 
     Widget createWidget({

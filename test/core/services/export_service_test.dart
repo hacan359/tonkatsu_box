@@ -1811,6 +1811,7 @@ void main() {
       late MockCanvasRepository mockCanvasRepo;
       late MockImageCacheService mockImageCache;
       late MockDatabaseService mockDatabase;
+      late MockGameDao mockGameDao;
       late MockTierListDao mockTierListDao;
       late MockTagDao mockTagDao;
 
@@ -1818,6 +1819,8 @@ void main() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
         mockDatabase = MockDatabaseService();
+        mockGameDao = MockGameDao();
+        when(() => mockDatabase.gameDao).thenReturn(mockGameDao);
         mockTierListDao = MockTierListDao();
         mockTagDao = MockTagDao();
 
@@ -1845,7 +1848,7 @@ void main() {
           Platform(id: 48, name: 'PlayStation 4', abbreviation: 'PS4'),
         ];
 
-        when(() => mockDatabase.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => testPlatforms);
 
         final ExportService sutMedia = ExportService(
@@ -1907,7 +1910,7 @@ void main() {
             await sutMedia.createFullExport(collection, items, 1);
 
         expect(xcoll.media.containsKey('platforms'), isFalse);
-        verifyNever(() => mockDatabase.getPlatformsByIds(any()));
+        verifyNever(() => mockGameDao.getPlatformsByIds(any()));
       });
 
       test('не должен включить platforms без database', () async {
@@ -1944,7 +1947,7 @@ void main() {
           Platform(id: 48, name: 'PS4', abbreviation: 'PS4'),
         ];
 
-        when(() => mockDatabase.getPlatformsByIds(any()))
+        when(() => mockGameDao.getPlatformsByIds(any()))
             .thenAnswer((_) async => testPlatforms);
 
         final ExportService sutMedia = ExportService(
@@ -1985,7 +1988,7 @@ void main() {
             await sutMedia.createFullExport(collection, items, 1);
 
         expect(xcoll.media.containsKey('platforms'), isTrue);
-        verify(() => mockDatabase.getPlatformsByIds(any())).called(1);
+        verify(() => mockGameDao.getPlatformsByIds(any())).called(1);
       });
     });
   });

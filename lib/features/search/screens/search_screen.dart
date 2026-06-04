@@ -109,7 +109,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   Future<void> _loadPlatforms() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
-    final List<Platform> platforms = await db.getAllPlatforms();
+    final List<Platform> platforms = await db.gameDao.getAllPlatforms();
     if (mounted) {
       setState(() {
         _platformMap = <int, Platform>{

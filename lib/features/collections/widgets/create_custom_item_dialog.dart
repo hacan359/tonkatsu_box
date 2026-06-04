@@ -107,8 +107,8 @@ class _CreateCustomItemDialogState
   Future<void> _loadReferences() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
     final List<Object> results = await Future.wait(<Future<Object>>[
-      db.getAllPlatforms(),
-      db.getIgdbGenres(),
+      db.gameDao.getAllPlatforms(),
+      db.gameDao.getIgdbGenres(),
       db.movieDao.getTmdbGenreMap('movie'),
       db.movieDao.getTmdbGenreMap('tv'),
     ]);

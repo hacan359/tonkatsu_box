@@ -65,7 +65,7 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
 }) async {
   switch (mediaType) {
     case MediaType.game:
-      final Game? game = await db.getGameById(externalId);
+      final Game? game = await db.gameDao.getGameById(externalId);
       return MoodGridCellMedia(
         title: game?.name,
         coverUrl: game?.coverUrl,

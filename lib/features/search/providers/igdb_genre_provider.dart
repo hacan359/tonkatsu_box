@@ -11,7 +11,7 @@ import '../filters/igdb_genre_filter.dart';
 final FutureProvider<List<IgdbGenre>> igdbGenresProvider =
     FutureProvider<List<IgdbGenre>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
-  final List<Map<String, dynamic>> rows = await db.getIgdbGenres();
+  final List<Map<String, dynamic>> rows = await db.gameDao.getIgdbGenres();
   return rows
       .map(
         (Map<String, dynamic> row) => IgdbGenre(

@@ -34,7 +34,7 @@ class IgdbPlatformFilter extends SearchFilter {
   Future<List<FilterOption>> options(WidgetRef ref, S l) async {
     final DatabaseService db = ref.read(databaseServiceProvider);
     final List<app_platform.Platform> platforms =
-        await db.getAllPlatforms();
+        await db.gameDao.getAllPlatforms();
     // Сортируем по имени для удобства
     platforms.sort(
       (app_platform.Platform a, app_platform.Platform b) =>

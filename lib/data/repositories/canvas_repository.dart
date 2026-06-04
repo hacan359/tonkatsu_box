@@ -231,7 +231,7 @@ class CanvasRepository {
 
     final List<Object> results = await Future.wait(<Future<Object>>[
       gameIds.isNotEmpty
-          ? _db.getGamesByIds(gameIds)
+          ? _db.gameDao.getGamesByIds(gameIds)
           : Future<List<Game>>.value(<Game>[]),
       movieTmdbIds.isNotEmpty
           ? _db.getMoviesByTmdbIds(movieTmdbIds)

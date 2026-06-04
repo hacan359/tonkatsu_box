@@ -14,11 +14,9 @@ import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/cover_info.dart';
 import '../../shared/models/data_source.dart';
-import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
-import '../../shared/models/platform.dart';
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
@@ -290,41 +288,6 @@ class DatabaseService {
     }
     _log.info('Database upgrade complete');
   }
-
-  Future<List<Map<String, dynamic>>> getIgdbGenres() => gameDao.getIgdbGenres();
-
-  Future<List<Platform>> getAllPlatforms() => gameDao.getAllPlatforms();
-
-  Future<Platform?> getPlatformById(int id) => gameDao.getPlatformById(id);
-
-  Future<int> getPlatformCount() => gameDao.getPlatformCount();
-
-  Future<void> upsertPlatform(Platform platform) =>
-      gameDao.upsertPlatform(platform);
-
-  Future<void> upsertPlatforms(List<Platform> platforms) =>
-      gameDao.upsertPlatforms(platforms);
-
-  Future<List<Platform>> getPlatformsByIds(List<int> ids) =>
-      gameDao.getPlatformsByIds(ids);
-
-  Future<Game?> getGameById(int id) => gameDao.getGameById(id);
-
-  Future<List<Game>> getGamesByIds(List<int> ids) => gameDao.getGamesByIds(ids);
-
-  Future<List<Game>> searchGamesInCache(String query, {int limit = 20}) =>
-      gameDao.searchGamesInCache(query, limit: limit);
-
-  Future<int> getGameCount() => gameDao.getGameCount();
-
-  Future<void> upsertGame(Game game) => gameDao.upsertGame(game);
-
-  Future<void> upsertGames(List<Game> games) => gameDao.upsertGames(games);
-
-  Future<void> deleteGame(int id) => gameDao.deleteGame(id);
-
-  Future<void> clearGames() => gameDao.clearGames();
-
 
   Future<Movie?> getMovieByTmdbId(int tmdbId) =>
       movieDao.getMovieByTmdbId(tmdbId);
