@@ -1,4 +1,4 @@
-// Фильтр по платформе IGDB.
+// IGDB platform filter.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
@@ -7,9 +7,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/platform.dart' as app_platform;
 import '../models/search_source.dart';
 
-/// Фильтр по игровой платформе IGDB.
+/// Filter by IGDB game platform.
 ///
-/// Загружает список платформ из БД-кэша.
+/// Loads the platform list from the DB cache.
 class IgdbPlatformFilter extends SearchFilter {
   @override
   String get key => 'platform';
@@ -35,7 +35,6 @@ class IgdbPlatformFilter extends SearchFilter {
     final DatabaseService db = ref.read(databaseServiceProvider);
     final List<app_platform.Platform> platforms =
         await db.gameDao.getAllPlatforms();
-    // Сортируем по имени для удобства
     platforms.sort(
       (app_platform.Platform a, app_platform.Platform b) =>
           a.name.compareTo(b.name),

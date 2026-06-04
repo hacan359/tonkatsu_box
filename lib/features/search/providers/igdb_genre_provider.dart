@@ -1,13 +1,13 @@
-// Провайдер жанров IGDB (статические данные из БД).
+// IGDB genres provider, backed by static data in the DB.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 import '../filters/igdb_genre_filter.dart';
 
-/// Провайдер жанров IGDB.
+/// IGDB genres provider.
 ///
-/// Загружает жанры из БД (предзаполнены миграцией v24).
+/// Loads genres from the DB (seeded by migration v24).
 final FutureProvider<List<IgdbGenre>> igdbGenresProvider =
     FutureProvider<List<IgdbGenre>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
