@@ -1,4 +1,4 @@
-// Провайдер для трекинга просмотренных эпизодов сериала.
+// Provider for tracking watched episodes of a show.
 
 import 'dart:async';
 
@@ -15,9 +15,9 @@ import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_show.dart';
 import 'collections_provider.dart';
 
-/// Состояние трекера эпизодов.
+/// Episode tracker state.
 class EpisodeTrackerState {
-  /// Создаёт [EpisodeTrackerState].
+  /// Creates an [EpisodeTrackerState].
   const EpisodeTrackerState({
     this.episodesBySeason = const <int, List<TvEpisode>>{},
     this.watchedEpisodes = const <(int, int), DateTime?>{},
@@ -25,19 +25,19 @@ class EpisodeTrackerState {
     this.error,
   });
 
-  /// Эпизоды по сезонам (ключ — номер сезона).
+  /// Episodes by season (key is the season number).
   final Map<int, List<TvEpisode>> episodesBySeason;
 
-  /// Просмотренные эпизоды: (seasonNumber, episodeNumber) → дата просмотра.
+  /// Watched episodes: (seasonNumber, episodeNumber) -> watch date.
   final Map<(int, int), DateTime?> watchedEpisodes;
 
-  /// Флаги загрузки по сезонам.
+  /// Per-season loading flags.
   final Map<int, bool> loadingSeasons;
 
-  /// Ошибка загрузки (если есть).
+  /// Load error, if any.
   final String? error;
 
-  /// Создаёт копию с изменёнными полями.
+  /// Returns a copy with the given fields replaced.
   EpisodeTrackerState copyWith({
     Map<int, List<TvEpisode>>? episodesBySeason,
     Map<(int, int), DateTime?>? watchedEpisodes,
@@ -52,17 +52,17 @@ class EpisodeTrackerState {
     );
   }
 
-  /// Проверяет, просмотрен ли эпизод.
+  /// Whether the episode has been watched.
   bool isEpisodeWatched(int season, int episode) {
     return watchedEpisodes.containsKey((season, episode));
   }
 
-  /// Возвращает дату просмотра эпизода (или null).
+  /// Returns the episode's watch date (or null).
   DateTime? getWatchedAt(int season, int episode) {
     return watchedEpisodes[(season, episode)];
   }
 
-  /// Возвращает количество просмотренных эпизодов в сезоне.
+  /// Returns the number of watched episodes in a season.
   int watchedCountForSeason(int season) {
     int count = 0;
     for (final (int s, int _) in watchedEpisodes.keys) {
@@ -71,10 +71,10 @@ class EpisodeTrackerState {
     return count;
   }
 
-  /// Возвращает общее количество просмотренных эпизодов.
+  /// Returns the total number of watched episodes.
   int get totalWatchedCount => watchedEpisodes.length;
 
-  /// Возвращает общее количество загруженных эпизодов.
+  /// Returns the total number of loaded episodes.
   int get totalEpisodeCount {
     int count = 0;
     for (final List<TvEpisode> episodes in episodesBySeason.values) {
@@ -84,9 +84,9 @@ class EpisodeTrackerState {
   }
 }
 
-/// Провайдер для трекинга эпизодов.
+/// Episode tracking provider.
 ///
-/// Если collectionId == null (uncategorized), трекинг отключён.
+/// When collectionId == null (uncategorized), tracking is disabled.
 final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
         ({int? collectionId, int showId})>
     episodeTrackerNotifierProvider = NotifierProvider.family<
@@ -96,7 +96,7 @@ final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
   EpisodeTrackerNotifier.new,
 );
 
-/// Нотификатор для управления просмотренными эпизодами.
+/// Notifier that manages watched episodes.
 class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     ({int? collectionId, int showId})> {
   static final Logger _log = Logger('EpisodeTrackerNotifier');
@@ -106,8 +106,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
   late int? _collectionId;
   late int _showId;
 
-  // Кэш данных о сериале, полученных из TMDB API (чтобы не делать запрос
-  // при каждом toggleEpisode/toggleSeason).
+  // Show totals fetched from the TMDB API, cached so we don't re-query on
+  // every toggleEpisode/toggleSeason.
   int? _cachedTotalEpisodes;
   int? _cachedTotalSeasons;
   bool _hasFetchedTotals = false;
@@ -119,7 +119,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     _db = ref.watch(databaseServiceProvider);
     _tmdbApi = ref.watch(tmdbApiProvider);
 
-    // Трекинг эпизодов не поддерживается для uncategorized элементов
+    // Episode tracking is not supported for uncategorized items
     if (_collectionId == null) return const EpisodeTrackerState();
 
     Future<void>.microtask(_loadWatchedEpisodes);
@@ -139,11 +139,11 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     }
   }
 
-  /// Загружает эпизоды сезона (из кеша или API).
+  /// Loads a season's episodes (from cache or API).
   Future<void> loadSeason(int seasonNumber) async {
-    // Уже загружен
+    // Already loaded
     if (state.episodesBySeason.containsKey(seasonNumber)) return;
-    // Уже загружается
+    // Already loading
     if (state.loadingSeasons[seasonNumber] == true) return;
 
     state = state.copyWith(
@@ -154,15 +154,12 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     );
 
     try {
-      // Пробуем из кеша
       List<TvEpisode> episodes =
           await _db.tvShowDao.getEpisodesByShowAndSeason(_showId, seasonNumber);
 
       if (episodes.isEmpty) {
-        // Загружаем из API
         episodes =
             await _tmdbApi.getSeasonEpisodes(_showId, seasonNumber);
-        // Кешируем
         if (episodes.isNotEmpty) {
           await _db.tvShowDao.upsertEpisodes(episodes);
         }
@@ -190,8 +187,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     }
   }
 
-  /// Принудительно обновляет эпизоды сезона из API (добавляет новые,
-  /// обновляет метаданные существующих, не трогает watched-статусы).
+  /// Force-refreshes a season's episodes from the API (adds new ones,
+  /// refreshes existing metadata, leaves watched statuses untouched).
   Future<void> refreshSeason(int seasonNumber) async {
     if (state.loadingSeasons[seasonNumber] == true) return;
 
@@ -231,7 +228,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     }
   }
 
-  /// Переключает отметку просмотра эпизода.
+  /// Toggles an episode's watched mark.
   Future<void> toggleEpisode(int season, int episode) async {
     final int? collId = _collectionId;
     if (collId == null) return;
@@ -256,7 +253,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     unawaited(_updateAutoStatus());
   }
 
-  /// Переключает отметку просмотра всех эпизодов сезона.
+  /// Toggles the watched mark for every episode in a season.
   Future<void> toggleSeason(int season) async {
     final int? collId = _collectionId;
     if (collId == null) return;
@@ -267,7 +264,6 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     final bool allWatched = watchedCount == episodes.length;
 
     if (allWatched) {
-      // Снимаем все отметки сезона
       await _db.tvShowDao.unmarkSeasonWatched(collId, _showId, season);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes);
@@ -276,7 +272,6 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       }
       state = state.copyWith(watchedEpisodes: updated);
     } else {
-      // Отмечаем все эпизоды сезона
       final List<int> episodeNumbers =
           episodes.map((TvEpisode ep) => ep.episodeNumber).toList();
       await _db.tvShowDao.markSeasonWatched(
@@ -304,7 +299,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
         .valueOrNull;
     if (items == null) return;
 
-    // Находим элемент сериала (tvShow или animation)
+    // Find the show item (either tvShow or animation)
     CollectionItem? targetItem;
     for (final CollectionItem ci in items) {
       if (ci.externalId == _showId &&
@@ -321,8 +316,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     int totalSeasons = _cachedTotalSeasons ??
         targetItem.tvShow?.totalSeasons ?? 0;
 
-    // Если в кэше нет totalEpisodes/totalSeasons — подгружаем из TMDB API
-    // (только один раз за сессию, чтобы не делать запрос при каждом toggle)
+    // If totals are missing from the cache, fetch them from the TMDB API
+    // (once per session, so we don't query on every toggle)
     if ((totalInShow == 0 || totalSeasons == 0) && !_hasFetchedTotals) {
       _hasFetchedTotals = true;
       try {
@@ -339,8 +334,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       }
     }
 
-    // Fallback: если TMDB API тоже не вернул totalEpisodes,
-    // но все сезоны загружены — используем сумму загруженных эпизодов
+    // Fallback: if the TMDB API also returned no totalEpisodes but every
+    // season is loaded, use the sum of loaded episodes
     if (totalInShow == 0 &&
         totalSeasons > 0 &&
         state.episodesBySeason.length >= totalSeasons) {

@@ -1,4 +1,4 @@
-// Секция Episode Tracker — прогресс просмотра сезонов/эпизодов.
+// Episode Tracker section: season/episode watch progress.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,9 +16,9 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../providers/episode_tracker_provider.dart';
 
-/// Секция Episode Tracker с прогресс-баром и списком сезонов.
+/// Episode Tracker section with a progress bar and a season list.
 class EpisodeTrackerSection extends ConsumerWidget {
-  /// Создаёт [EpisodeTrackerSection].
+  /// Creates an [EpisodeTrackerSection].
   const EpisodeTrackerSection({
     required this.collectionId,
     required this.externalId,
@@ -27,17 +27,17 @@ class EpisodeTrackerSection extends ConsumerWidget {
     super.key,
   });
 
-  /// ID коллекции (null для uncategorized).
+  /// Collection id (null for uncategorized).
   final int? collectionId;
 
-  /// TMDB ID шоу.
+  /// TMDB show id.
   final int externalId;
 
-  /// Данные сериала.
+  /// Show data.
   final TvShow? tvShow;
 
-  /// Акцентный цвет (AppColors.brand для tvShow, AppColors.animationAccent
-  /// для анимации).
+  /// Accent color (AppColors.brand for tvShow, AppColors.animationAccent
+  /// for animation).
   final Color accentColor;
 
   @override
@@ -56,7 +56,6 @@ class EpisodeTrackerSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Заголовок и общий прогресс
         Row(
           children: <Widget>[
             Icon(Icons.playlist_add_check, size: 20, color: accentColor),
@@ -90,7 +89,6 @@ class EpisodeTrackerSection extends ConsumerWidget {
           ),
         ],
         const SizedBox(height: 12),
-        // Список сезонов
         SeasonsListWidget(
           tmdbShowId: tmdbShowId,
           collectionId: collectionId,
@@ -101,9 +99,9 @@ class EpisodeTrackerSection extends ConsumerWidget {
   }
 }
 
-/// Виджет списка сезонов с ExpansionTile.
+/// Season list widget built from ExpansionTiles.
 class SeasonsListWidget extends ConsumerStatefulWidget {
-  /// Создаёт [SeasonsListWidget].
+  /// Creates a [SeasonsListWidget].
   const SeasonsListWidget({
     required this.tmdbShowId,
     required this.collectionId,
@@ -111,13 +109,13 @@ class SeasonsListWidget extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// TMDB ID шоу.
+  /// TMDB show id.
   final int tmdbShowId;
 
-  /// ID коллекции (null для uncategorized).
+  /// Collection id (null for uncategorized).
   final int? collectionId;
 
-  /// Акцентный цвет для индикатора «все просмотрены».
+  /// Accent color for the "all watched" indicator.
   final Color accentColor;
 
   @override
@@ -140,7 +138,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     List<TvSeason> seasons =
         await db.tvShowDao.getTvSeasonsByShowId(widget.tmdbShowId);
 
-    // Если в кэше пусто — загружаем из TMDB API и кэшируем
+    // Cache miss: fetch from the TMDB API and cache the result
     if (seasons.isEmpty) {
       try {
         final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
@@ -162,9 +160,9 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     }
   }
 
-  /// Принудительно обновляет список сезонов и загруженные эпизоды из API.
-  /// Добавляет новые сезоны/эпизоды, обновляет метаданные,
-  /// не трогает watched-статусы.
+  /// Force-refreshes the season list and loaded episodes from the API.
+  /// Adds new seasons/episodes and refreshes metadata, but leaves
+  /// watched statuses untouched.
   Future<void> _refreshSeasons() async {
     if (_refreshing) return;
     setState(() => _refreshing = true);
@@ -173,14 +171,13 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
       final DatabaseService db = ref.read(databaseServiceProvider);
       final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
 
-      // Обновляем список сезонов
       final List<TvSeason> seasons =
           await tmdbApi.getTvSeasons(widget.tmdbShowId);
       if (seasons.isNotEmpty) {
         await db.tvShowDao.upsertTvSeasons(seasons);
       }
 
-      // Обновляем эпизоды для каждого уже раскрытого сезона
+      // Refresh episodes only for seasons that are already expanded
       final EpisodeTrackerNotifier tracker = ref.read(
         episodeTrackerNotifierProvider(_trackerArg).notifier,
       );
@@ -249,7 +246,6 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
 
     return Column(
       children: <Widget>[
-        // Кнопка обновления данных из TMDB
         Align(
           alignment: Alignment.centerRight,
           child: _refreshing
@@ -271,7 +267,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
                 ),
         ),
         for (final TvSeason season in _seasons)
-          if (season.seasonNumber > 0) // Пропускаем Specials (сезон 0)
+          if (season.seasonNumber > 0) // skip Specials (season 0)
             SeasonExpansionTile(
               key: ValueKey<int>(season.seasonNumber),
               season: season,
@@ -284,9 +280,9 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   }
 }
 
-/// ExpansionTile для одного сезона с эпизодами.
+/// ExpansionTile for a single season and its episodes.
 class SeasonExpansionTile extends ConsumerWidget {
-  /// Создаёт [SeasonExpansionTile].
+  /// Creates a [SeasonExpansionTile].
   const SeasonExpansionTile({
     required this.season,
     required this.trackerState,
@@ -295,16 +291,16 @@ class SeasonExpansionTile extends ConsumerWidget {
     super.key,
   });
 
-  /// Данные сезона.
+  /// Season data.
   final TvSeason season;
 
-  /// Текущее состояние трекера.
+  /// Current tracker state.
   final EpisodeTrackerState trackerState;
 
-  /// Аргумент для провайдера трекера.
+  /// Argument for the tracker provider.
   final ({int? collectionId, int showId}) trackerArg;
 
-  /// Акцентный цвет для индикатора «все просмотрены».
+  /// Accent color for the "all watched" indicator.
   final Color accentColor;
 
   @override
@@ -347,7 +343,6 @@ class SeasonExpansionTile extends ConsumerWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          // Кнопка Mark all / Unmark all
           IconButton(
             icon: Icon(
               allWatched
@@ -357,7 +352,7 @@ class SeasonExpansionTile extends ConsumerWidget {
             ),
             tooltip: allWatched ? l.unmarkAll : l.markAllWatched,
             onPressed: () {
-              // Если эпизоды ещё не загружены, сначала загрузим
+              // Load the season first if its episodes aren't loaded yet
               if (episodes == null || episodes.isEmpty) {
                 ref
                     .read(episodeTrackerNotifierProvider(trackerArg).notifier)
@@ -421,9 +416,9 @@ class SeasonExpansionTile extends ConsumerWidget {
   }
 }
 
-/// Тайл одного эпизода с чекбоксом.
+/// Tile for a single episode with a checkbox.
 class EpisodeTile extends ConsumerWidget {
-  /// Создаёт [EpisodeTile].
+  /// Creates an [EpisodeTile].
   const EpisodeTile({
     required this.episode,
     required this.isWatched,
@@ -432,16 +427,16 @@ class EpisodeTile extends ConsumerWidget {
     super.key,
   });
 
-  /// Данные эпизода.
+  /// Episode data.
   final TvEpisode episode;
 
-  /// Просмотрен ли эпизод.
+  /// Whether the episode has been watched.
   final bool isWatched;
 
-  /// Дата просмотра (null, если не просмотрен).
+  /// Watch date (null if not watched).
   final DateTime? watchedAt;
 
-  /// Аргумент для провайдера трекера.
+  /// Argument for the tracker provider.
   final ({int? collectionId, int showId}) trackerArg;
 
   @override
