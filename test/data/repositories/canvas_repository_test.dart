@@ -24,6 +24,7 @@ void main() {
 
   group('CanvasRepository', () {
     late MockDatabaseService mockDb;
+    late MockCanvasDao mockCanvasDao;
     late MockGameDao mockGameDao;
     late MockVisualNovelDao mockVisualNovelDao;
     late CanvasRepository repository;
@@ -33,6 +34,8 @@ void main() {
 
     setUp(() {
       mockDb = MockDatabaseService();
+      mockCanvasDao = MockCanvasDao();
+      when(() => mockDb.canvasDao).thenReturn(mockCanvasDao);
       mockGameDao = MockGameDao();
       when(() => mockDb.gameDao).thenReturn(mockGameDao);
       mockVisualNovelDao = MockVisualNovelDao();
@@ -80,7 +83,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockCanvasDao.getCanvasItems(10)).thenAnswer((_) async => rows);
 
         final List<CanvasItem> result = await repository.getItems(10);
 
@@ -89,11 +92,11 @@ void main() {
         expect(result[0].itemType, CanvasItemType.game);
         expect(result[1].id, 2);
         expect(result[1].itemType, CanvasItemType.text);
-        verify(() => mockDb.getCanvasItems(10)).called(1);
+        verify(() => mockCanvasDao.getCanvasItems(10)).called(1);
       });
 
       test('should return empty list when no items', () async {
-        when(() => mockDb.getCanvasItems(10))
+        when(() => mockCanvasDao.getCanvasItems(10))
             .thenAnswer((_) async => <Map<String, dynamic>>[]);
 
         final List<CanvasItem> result = await repository.getItems(10);
@@ -122,7 +125,7 @@ void main() {
 
         const Game testGame = Game(id: 100, name: 'Test Game');
 
-        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockCanvasDao.getCanvasItems(10)).thenAnswer((_) async => rows);
         when(() => mockGameDao.getGamesByIds(<int>[100]))
             .thenAnswer((_) async => <Game>[testGame]);
 
@@ -135,7 +138,7 @@ void main() {
       });
 
       test('should return empty list when no items', () async {
-        when(() => mockDb.getCanvasItems(10))
+        when(() => mockCanvasDao.getCanvasItems(10))
             .thenAnswer((_) async => <Map<String, dynamic>>[]);
 
         final List<CanvasItem> result = await repository.getItemsWithData(10);
@@ -160,7 +163,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockCanvasDao.getCanvasItems(10)).thenAnswer((_) async => rows);
 
         final List<CanvasItem> result = await repository.getItemsWithData(10);
 
@@ -185,7 +188,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockCanvasDao.getCanvasItems(10)).thenAnswer((_) async => rows);
 
         final List<CanvasItem> result = await repository.getItemsWithData(10);
 
@@ -226,7 +229,7 @@ void main() {
 
         const Game testGame = Game(id: 100, name: 'Test Game');
 
-        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockCanvasDao.getCanvasItems(10)).thenAnswer((_) async => rows);
         when(() => mockGameDao.getGamesByIds(<int>[100]))
             .thenAnswer((_) async => <Game>[testGame]);
 
@@ -256,7 +259,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockCanvasDao.getCanvasItems(10)).thenAnswer((_) async => rows);
         when(() => mockGameDao.getGamesByIds(<int>[999]))
             .thenAnswer((_) async => <Game>[]);
 
@@ -290,7 +293,7 @@ void main() {
           imageUrl: 'https://example.com/ever17.jpg',
         );
 
-        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockCanvasDao.getCanvasItems(10)).thenAnswer((_) async => rows);
         when(() => mockVisualNovelDao.getVisualNovelsByNumericIds(<int>[17]))
             .thenAnswer((_) async => <VisualNovel>[testVn]);
 
@@ -317,13 +320,13 @@ void main() {
           createdAt: testDate,
         );
 
-        when(() => mockDb.insertCanvasItem(any())).thenAnswer((_) async => 42);
+        when(() => mockCanvasDao.insertCanvasItem(any())).thenAnswer((_) async => 42);
 
         final CanvasItem result = await repository.createItem(item);
 
         expect(result.id, 42);
         expect(result.collectionId, 10);
-        verify(() => mockDb.insertCanvasItem(any())).called(1);
+        verify(() => mockCanvasDao.insertCanvasItem(any())).called(1);
       });
     });
 
@@ -342,13 +345,13 @@ void main() {
           createdAt: testDate,
         );
 
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItem(item);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured.containsKey('id'), false);
@@ -359,13 +362,13 @@ void main() {
 
     group('updateItemPosition', () {
       test('should update only x and y in database', () async {
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItemPosition(5, x: 300.0, y: 400.0);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured, <String, dynamic>{'x': 300.0, 'y': 400.0});
@@ -374,13 +377,13 @@ void main() {
 
     group('updateItemSize', () {
       test('should update width and height', () async {
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItemSize(5, width: 200.0, height: 300.0);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured['width'], 200.0);
@@ -388,26 +391,26 @@ void main() {
       });
 
       test('should update only width when height is null', () async {
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItemSize(5, width: 200.0);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured, <String, dynamic>{'width': 200.0});
       });
 
       test('should update only height when width is null', () async {
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItemSize(5, height: 300.0);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured, <String, dynamic>{'height': 300.0});
@@ -416,13 +419,13 @@ void main() {
       test('should not call database when both are null', () async {
         await repository.updateItemSize(5);
 
-        verifyNever(() => mockDb.updateCanvasItem(any(), any()));
+        verifyNever(() => mockCanvasDao.updateCanvasItem(any(), any()));
       });
     });
 
     group('updateItemData', () {
       test('should encode data as JSON and update database', () async {
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItemData(
@@ -431,20 +434,20 @@ void main() {
         );
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured['data'], '{"content":"Hello","fontSize":16.0}');
       });
 
       test('should set data to null when data is null', () async {
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItemData(5, null);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured['data'], isNull);
@@ -453,13 +456,13 @@ void main() {
 
     group('updateItemZIndex', () {
       test('should update z_index in database', () async {
-        when(() => mockDb.updateCanvasItem(5, any()))
+        when(() => mockCanvasDao.updateCanvasItem(5, any()))
             .thenAnswer((_) async {});
 
         await repository.updateItemZIndex(5, 10);
 
         final Map<String, dynamic> captured =
-            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+            verify(() => mockCanvasDao.updateCanvasItem(5, captureAny()))
                 .captured
                 .first as Map<String, dynamic>;
         expect(captured, <String, dynamic>{'z_index': 10});
@@ -468,28 +471,28 @@ void main() {
 
     group('deleteItem', () {
       test('should delete item from database', () async {
-        when(() => mockDb.deleteCanvasItem(5)).thenAnswer((_) async {});
+        when(() => mockCanvasDao.deleteCanvasItem(5)).thenAnswer((_) async {});
 
         await repository.deleteItem(5);
 
-        verify(() => mockDb.deleteCanvasItem(5)).called(1);
+        verify(() => mockCanvasDao.deleteCanvasItem(5)).called(1);
       });
     });
 
     group('deleteGameItem', () {
       test('should delete game item by collection and igdb id', () async {
-        when(() => mockDb.deleteCanvasItemByRef(10, 'game', 100))
+        when(() => mockCanvasDao.deleteCanvasItemByRef(10, 'game', 100))
             .thenAnswer((_) async {});
 
         await repository.deleteGameItem(10, 100);
 
-        verify(() => mockDb.deleteCanvasItemByRef(10, 'game', 100)).called(1);
+        verify(() => mockCanvasDao.deleteCanvasItemByRef(10, 'game', 100)).called(1);
       });
     });
 
     group('deleteMediaItem', () {
       test('should delete movie item by type and ref id', () async {
-        when(() => mockDb.deleteCanvasItemByRef(10, 'movie', 200))
+        when(() => mockCanvasDao.deleteCanvasItemByRef(10, 'movie', 200))
             .thenAnswer((_) async {});
 
         await repository.deleteMediaItem(
@@ -498,11 +501,11 @@ void main() {
           200,
         );
 
-        verify(() => mockDb.deleteCanvasItemByRef(10, 'movie', 200)).called(1);
+        verify(() => mockCanvasDao.deleteCanvasItemByRef(10, 'movie', 200)).called(1);
       });
 
       test('should delete tv_show item by type and ref id', () async {
-        when(() => mockDb.deleteCanvasItemByRef(10, 'tv_show', 300))
+        when(() => mockCanvasDao.deleteCanvasItemByRef(10, 'tv_show', 300))
             .thenAnswer((_) async {});
 
         await repository.deleteMediaItem(
@@ -511,14 +514,14 @@ void main() {
           300,
         );
 
-        verify(() => mockDb.deleteCanvasItemByRef(10, 'tv_show', 300))
+        verify(() => mockCanvasDao.deleteCanvasItemByRef(10, 'tv_show', 300))
             .called(1);
       });
     });
 
     group('hasCanvasItems', () {
       test('should return true when items exist', () async {
-        when(() => mockDb.getCanvasItemCount(10)).thenAnswer((_) async => 3);
+        when(() => mockCanvasDao.getCanvasItemCount(10)).thenAnswer((_) async => 3);
 
         final bool result = await repository.hasCanvasItems(10);
 
@@ -526,7 +529,7 @@ void main() {
       });
 
       test('should return false when no items', () async {
-        when(() => mockDb.getCanvasItemCount(10)).thenAnswer((_) async => 0);
+        when(() => mockCanvasDao.getCanvasItemCount(10)).thenAnswer((_) async => 0);
 
         final bool result = await repository.hasCanvasItems(10);
 
@@ -543,7 +546,7 @@ void main() {
           'offset_y': -200.0,
         };
 
-        when(() => mockDb.getCanvasViewport(10)).thenAnswer((_) async => row);
+        when(() => mockCanvasDao.getCanvasViewport(10)).thenAnswer((_) async => row);
 
         final CanvasViewport? result = await repository.getViewport(10);
 
@@ -555,7 +558,7 @@ void main() {
       });
 
       test('should return null when viewport not found', () async {
-        when(() => mockDb.getCanvasViewport(10)).thenAnswer((_) async => null);
+        when(() => mockCanvasDao.getCanvasViewport(10)).thenAnswer((_) async => null);
 
         final CanvasViewport? result = await repository.getViewport(10);
 
@@ -572,7 +575,7 @@ void main() {
           offsetY: -75.0,
         );
 
-        when(() => mockDb.upsertCanvasViewport(
+        when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: 10,
               scale: 2.0,
               offsetX: -50.0,
@@ -581,7 +584,7 @@ void main() {
 
         await repository.saveViewport(viewport);
 
-        verify(() => mockDb.upsertCanvasViewport(
+        verify(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: 10,
               scale: 2.0,
               offsetX: -50.0,
@@ -613,9 +616,9 @@ void main() {
           ),
         ];
 
-        when(() => mockDb.insertCanvasItemsBatch(any()))
+        when(() => mockCanvasDao.insertCanvasItemsBatch(any()))
             .thenAnswer((_) async => <int>[1, 2]);
-        when(() => mockDb.upsertCanvasViewport(
+        when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
               offsetX: any(named: 'offsetX'),
@@ -636,8 +639,8 @@ void main() {
         expect(result[1].itemRefId, 200);
         expect(result[1].x, 2512.0); // 2328 + 1 * (160 + 24)
         expect(result[1].y, 2390.0);
-        verify(() => mockDb.insertCanvasItemsBatch(any())).called(1);
-        verify(() => mockDb.upsertCanvasViewport(
+        verify(() => mockCanvasDao.insertCanvasItemsBatch(any())).called(1);
+        verify(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: 10,
               scale: 1.0,
               offsetX: 0.0,
@@ -660,9 +663,9 @@ void main() {
           ),
         );
 
-        when(() => mockDb.insertCanvasItemsBatch(any()))
+        when(() => mockCanvasDao.insertCanvasItemsBatch(any()))
             .thenAnswer((_) async => <int>[1, 2, 3, 4, 5, 6]);
-        when(() => mockDb.upsertCanvasViewport(
+        when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
               offsetX: any(named: 'offsetX'),
@@ -697,9 +700,9 @@ void main() {
           ),
         ];
 
-        when(() => mockDb.insertCanvasItemsBatch(any()))
+        when(() => mockCanvasDao.insertCanvasItemsBatch(any()))
             .thenAnswer((_) async => <int>[1]);
-        when(() => mockDb.upsertCanvasViewport(
+        when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
               offsetX: any(named: 'offsetX'),
@@ -801,9 +804,9 @@ void main() {
           ),
         ];
 
-        when(() => mockDb.insertCanvasItemsBatch(any()))
+        when(() => mockCanvasDao.insertCanvasItemsBatch(any()))
             .thenAnswer((_) async => <int>[1, 2, 3, 4, 5, 6, 7]);
-        when(() => mockDb.upsertCanvasViewport(
+        when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
               offsetX: any(named: 'offsetX'),
@@ -824,7 +827,7 @@ void main() {
       });
 
       test('should handle empty games list', () async {
-        when(() => mockDb.upsertCanvasViewport(
+        when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
               offsetX: any(named: 'offsetX'),
@@ -835,9 +838,9 @@ void main() {
             await repository.initializeCanvas(10, <CollectionItem>[]);
 
         expect(result, isEmpty);
-        verifyNever(() => mockDb.insertCanvasItemsBatch(any()));
+        verifyNever(() => mockCanvasDao.insertCanvasItemsBatch(any()));
         // Should still create default viewport
-        verify(() => mockDb.upsertCanvasViewport(
+        verify(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: 10,
               scale: 1.0,
               offsetX: 0.0,
@@ -849,6 +852,7 @@ void main() {
 
   group('CanvasRepository Game Canvas', () {
     late MockDatabaseService mockDb;
+    late MockCanvasDao mockCanvasDao;
     late MockGameDao mockGameDao;
     late MockMovieDao mockMovieDao;
     late MockTvShowDao mockTvShowDao;
@@ -860,6 +864,8 @@ void main() {
 
     setUp(() {
       mockDb = MockDatabaseService();
+      mockCanvasDao = MockCanvasDao();
+      when(() => mockDb.canvasDao).thenReturn(mockCanvasDao);
       mockGameDao = MockGameDao();
       when(() => mockDb.gameDao).thenReturn(mockGameDao);
       mockMovieDao = MockMovieDao();
@@ -905,7 +911,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
 
         final List<CanvasItem> result =
@@ -920,18 +926,18 @@ void main() {
         expect(result[1].id, 2);
         expect(result[1].itemType, CanvasItemType.image);
         expect(result[1].collectionItemId, 42);
-        verify(() => mockDb.getGameCanvasItems(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasItems(42)).called(1);
       });
 
       test('should return empty list when no items', () async {
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => <Map<String, dynamic>>[]);
 
         final List<CanvasItem> result =
             await repository.getGameCanvasItems(42);
 
         expect(result, isEmpty);
-        verify(() => mockDb.getGameCanvasItems(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasItems(42)).called(1);
       });
     });
 
@@ -954,7 +960,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
 
         final List<CanvasItem> result =
@@ -963,7 +969,7 @@ void main() {
         expect(result.length, 1);
         expect(result[0].id, 1);
         expect(result[0].itemType, CanvasItemType.text);
-        verify(() => mockDb.getGameCanvasItems(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasItems(42)).called(1);
         verifyNever(() => mockGameDao.getGamesByIds(any()));
       });
 
@@ -990,7 +996,7 @@ void main() {
           name: 'Test Game',
         );
 
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
         when(() => mockGameDao.getGamesByIds(<int>[999]))
             .thenAnswer((_) async => <Game>[testGame]);
@@ -1027,7 +1033,7 @@ void main() {
           title: 'Test Movie',
         );
 
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
         when(() => mockMovieDao.getMoviesByTmdbIds(<int>[555]))
             .thenAnswer((_) async => <Movie>[testMovie]);
@@ -1064,7 +1070,7 @@ void main() {
           title: 'Test Show',
         );
 
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
         when(() => mockTvShowDao.getTvShowsByTmdbIds(<int>[777]))
             .thenAnswer((_) async => <TvShow>[testTvShow]);
@@ -1102,7 +1108,7 @@ void main() {
           imageUrl: 'https://example.com/vn.jpg',
         );
 
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
         when(() => mockVisualNovelDao.getVisualNovelsByNumericIds(<int>[888]))
             .thenAnswer((_) async => <VisualNovel>[testVn]);
@@ -1134,7 +1140,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getGameCanvasItems(42))
+        when(() => mockCanvasDao.getGameCanvasItems(42))
             .thenAnswer((_) async => rows);
         when(() => mockVisualNovelDao.getVisualNovelsByNumericIds(<int>[999]))
             .thenAnswer((_) async => <VisualNovel>[]);
@@ -1149,36 +1155,36 @@ void main() {
 
     group('hasGameCanvasItems', () {
       test('should return true when items exist', () async {
-        when(() => mockDb.getGameCanvasItemCount(42))
+        when(() => mockCanvasDao.getGameCanvasItemCount(42))
             .thenAnswer((_) async => 3);
 
         final bool result = await repository.hasGameCanvasItems(42);
 
         expect(result, true);
-        verify(() => mockDb.getGameCanvasItemCount(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasItemCount(42)).called(1);
       });
 
       test('should return false when no items', () async {
-        when(() => mockDb.getGameCanvasItemCount(42))
+        when(() => mockCanvasDao.getGameCanvasItemCount(42))
             .thenAnswer((_) async => 0);
 
         final bool result = await repository.hasGameCanvasItems(42);
 
         expect(result, false);
-        verify(() => mockDb.getGameCanvasItemCount(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasItemCount(42)).called(1);
       });
     });
 
     group('getGameCanvasViewport', () {
       test('should return null when no viewport saved', () async {
-        when(() => mockDb.getGameCanvasViewport(42))
+        when(() => mockCanvasDao.getGameCanvasViewport(42))
             .thenAnswer((_) async => null);
 
         final CanvasViewport? result =
             await repository.getGameCanvasViewport(42);
 
         expect(result, isNull);
-        verify(() => mockDb.getGameCanvasViewport(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasViewport(42)).called(1);
       });
 
       test('should return CanvasViewport from db row', () async {
@@ -1189,7 +1195,7 @@ void main() {
           'offset_y': -200.0,
         };
 
-        when(() => mockDb.getGameCanvasViewport(42))
+        when(() => mockCanvasDao.getGameCanvasViewport(42))
             .thenAnswer((_) async => row);
 
         final CanvasViewport? result =
@@ -1200,7 +1206,7 @@ void main() {
         expect(result.scale, 1.5);
         expect(result.offsetX, -100.0);
         expect(result.offsetY, -200.0);
-        verify(() => mockDb.getGameCanvasViewport(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasViewport(42)).called(1);
       });
 
       test('should use default values for missing scale/offset fields',
@@ -1212,7 +1218,7 @@ void main() {
           'offset_y': null,
         };
 
-        when(() => mockDb.getGameCanvasViewport(42))
+        when(() => mockCanvasDao.getGameCanvasViewport(42))
             .thenAnswer((_) async => row);
 
         final CanvasViewport? result =
@@ -1236,7 +1242,7 @@ void main() {
           offsetY: -75.0,
         );
 
-        when(() => mockDb.upsertGameCanvasViewport(
+        when(() => mockCanvasDao.upsertGameCanvasViewport(
               collectionItemId: 42,
               scale: 2.0,
               offsetX: -50.0,
@@ -1245,7 +1251,7 @@ void main() {
 
         await repository.saveGameCanvasViewport(42, viewport);
 
-        verify(() => mockDb.upsertGameCanvasViewport(
+        verify(() => mockCanvasDao.upsertGameCanvasViewport(
               collectionItemId: 42,
               scale: 2.0,
               offsetX: -50.0,
@@ -1282,7 +1288,7 @@ void main() {
           },
         ];
 
-        when(() => mockDb.getGameCanvasConnections(42))
+        when(() => mockCanvasDao.getGameCanvasConnections(42))
             .thenAnswer((_) async => rows);
 
         final List<CanvasConnection> result =
@@ -1301,41 +1307,41 @@ void main() {
         expect(result[1].toItemId, 300);
         expect(result[1].label, isNull);
         expect(result[1].style, ConnectionStyle.solid);
-        verify(() => mockDb.getGameCanvasConnections(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasConnections(42)).called(1);
       });
 
       test('should return empty list when no connections', () async {
-        when(() => mockDb.getGameCanvasConnections(42))
+        when(() => mockCanvasDao.getGameCanvasConnections(42))
             .thenAnswer((_) async => <Map<String, dynamic>>[]);
 
         final List<CanvasConnection> result =
             await repository.getGameCanvasConnections(42);
 
         expect(result, isEmpty);
-        verify(() => mockDb.getGameCanvasConnections(42)).called(1);
+        verify(() => mockCanvasDao.getGameCanvasConnections(42)).called(1);
       });
     });
 
     group('deleteByCollectionItemId', () {
       test('should call deleteCanvasItemByCollectionItemId on database',
           () async {
-        when(() => mockDb.deleteCanvasItemByCollectionItemId(10, 42))
+        when(() => mockCanvasDao.deleteCanvasItemByCollectionItemId(10, 42))
             .thenAnswer((_) async {});
 
         await repository.deleteByCollectionItemId(10, 42);
 
-        verify(() => mockDb.deleteCanvasItemByCollectionItemId(10, 42))
+        verify(() => mockCanvasDao.deleteCanvasItemByCollectionItemId(10, 42))
             .called(1);
       });
 
       test('should pass correct collectionId and collectionItemId', () async {
-        when(() => mockDb.deleteCanvasItemByCollectionItemId(
+        when(() => mockCanvasDao.deleteCanvasItemByCollectionItemId(
               any(), any(),
             )).thenAnswer((_) async {});
 
         await repository.deleteByCollectionItemId(99, 123);
 
-        verify(() => mockDb.deleteCanvasItemByCollectionItemId(99, 123))
+        verify(() => mockCanvasDao.deleteCanvasItemByCollectionItemId(99, 123))
             .called(1);
       });
     });

@@ -37,7 +37,7 @@ class CanvasRepository {
 
   Future<List<CanvasItem>> getItems(int collectionId) async {
     final List<Map<String, dynamic>> rows =
-        await _db.getCanvasItems(collectionId);
+        await _db.canvasDao.getCanvasItems(collectionId);
     return rows.map(CanvasItem.fromDb).toList();
   }
 
@@ -54,7 +54,7 @@ class CanvasRepository {
       _enrichItemsWithMediaData(items);
 
   Future<CanvasItem> createItem(CanvasItem item) async {
-    final int id = await _db.insertCanvasItem(item.toDb());
+    final int id = await _db.canvasDao.insertCanvasItem(item.toDb());
     return item.copyWith(id: id);
   }
 
@@ -63,7 +63,7 @@ class CanvasRepository {
 
     final List<Map<String, dynamic>> dbMaps =
         items.map((CanvasItem item) => item.toDb()).toList();
-    final List<int> ids = await _db.insertCanvasItemsBatch(dbMaps);
+    final List<int> ids = await _db.canvasDao.insertCanvasItemsBatch(dbMaps);
 
     return <CanvasItem>[
       for (int i = 0; i < items.length; i++) items[i].copyWith(id: ids[i]),
@@ -71,13 +71,13 @@ class CanvasRepository {
   }
 
   Future<void> deleteItemsBatch(List<int> ids) async {
-    await _db.deleteCanvasItemsBatch(ids);
+    await _db.canvasDao.deleteCanvasItemsBatch(ids);
   }
 
   Future<void> updateItem(CanvasItem item) async {
     final Map<String, dynamic> dbData = item.toDb();
     dbData.remove('id');
-    await _db.updateCanvasItem(item.id, dbData);
+    await _db.canvasDao.updateCanvasItem(item.id, dbData);
   }
 
   Future<void> updateItemPosition(
@@ -85,7 +85,7 @@ class CanvasRepository {
     required double x,
     required double y,
   }) async {
-    await _db.updateCanvasItem(id, <String, dynamic>{'x': x, 'y': y});
+    await _db.canvasDao.updateCanvasItem(id, <String, dynamic>{'x': x, 'y': y});
   }
 
   Future<void> updateItemSize(
@@ -97,26 +97,26 @@ class CanvasRepository {
     if (width != null) data['width'] = width;
     if (height != null) data['height'] = height;
     if (data.isNotEmpty) {
-      await _db.updateCanvasItem(id, data);
+      await _db.canvasDao.updateCanvasItem(id, data);
     }
   }
 
   Future<void> updateItemData(int id, Map<String, dynamic>? data) async {
-    await _db.updateCanvasItem(id, <String, dynamic>{
+    await _db.canvasDao.updateCanvasItem(id, <String, dynamic>{
       'data': data != null ? json.encode(data) : null,
     });
   }
 
   Future<void> updateItemZIndex(int id, int zIndex) async {
-    await _db.updateCanvasItem(id, <String, dynamic>{'z_index': zIndex});
+    await _db.canvasDao.updateCanvasItem(id, <String, dynamic>{'z_index': zIndex});
   }
 
   Future<void> deleteItem(int id) async {
-    await _db.deleteCanvasItem(id);
+    await _db.canvasDao.deleteCanvasItem(id);
   }
 
   Future<void> deleteGameItem(int collectionId, int igdbId) async {
-    await _db.deleteCanvasItemByRef(collectionId, 'game', igdbId);
+    await _db.canvasDao.deleteCanvasItemByRef(collectionId, 'game', igdbId);
   }
 
   Future<void> deleteMediaItem(
@@ -124,33 +124,33 @@ class CanvasRepository {
     CanvasItemType itemType,
     int refId,
   ) async {
-    await _db.deleteCanvasItemByRef(collectionId, itemType.value, refId);
+    await _db.canvasDao.deleteCanvasItemByRef(collectionId, itemType.value, refId);
   }
 
   Future<void> deleteByCollectionItemId(
     int collectionId,
     int collectionItemId,
   ) async {
-    await _db.deleteCanvasItemByCollectionItemId(
+    await _db.canvasDao.deleteCanvasItemByCollectionItemId(
       collectionId,
       collectionItemId,
     );
   }
 
   Future<bool> hasCanvasItems(int collectionId) async {
-    final int count = await _db.getCanvasItemCount(collectionId);
+    final int count = await _db.canvasDao.getCanvasItemCount(collectionId);
     return count > 0;
   }
 
   Future<CanvasViewport?> getViewport(int collectionId) async {
     final Map<String, dynamic>? row =
-        await _db.getCanvasViewport(collectionId);
+        await _db.canvasDao.getCanvasViewport(collectionId);
     if (row == null) return null;
     return CanvasViewport.fromDb(row);
   }
 
   Future<void> saveViewport(CanvasViewport viewport) async {
-    await _db.upsertCanvasViewport(
+    await _db.canvasDao.upsertCanvasViewport(
       collectionId: viewport.collectionId,
       scale: viewport.scale,
       offsetX: viewport.offsetX,
@@ -318,12 +318,12 @@ class CanvasRepository {
 
   Future<List<CanvasConnection>> getConnections(int collectionId) async {
     final List<Map<String, dynamic>> rows =
-        await _db.getCanvasConnections(collectionId);
+        await _db.canvasDao.getCanvasConnections(collectionId);
     return rows.map(CanvasConnection.fromDb).toList();
   }
 
   Future<CanvasConnection> createConnection(CanvasConnection conn) async {
-    final int id = await _db.insertCanvasConnection(conn.toDb());
+    final int id = await _db.canvasDao.insertCanvasConnection(conn.toDb());
     return conn.copyWith(id: id);
   }
 
@@ -333,16 +333,16 @@ class CanvasRepository {
       'color': conn.color,
       'style': conn.style.value,
     };
-    await _db.updateCanvasConnection(conn.id, data);
+    await _db.canvasDao.updateCanvasConnection(conn.id, data);
   }
 
   Future<void> deleteConnection(int id) async {
-    await _db.deleteCanvasConnection(id);
+    await _db.canvasDao.deleteCanvasConnection(id);
   }
 
   Future<List<CanvasItem>> getGameCanvasItems(int collectionItemId) async {
     final List<Map<String, dynamic>> rows =
-        await _db.getGameCanvasItems(collectionItemId);
+        await _db.canvasDao.getGameCanvasItems(collectionItemId);
     return rows.map(CanvasItem.fromDb).toList();
   }
 
@@ -355,7 +355,7 @@ class CanvasRepository {
   }
 
   Future<bool> hasGameCanvasItems(int collectionItemId) async {
-    final int count = await _db.getGameCanvasItemCount(collectionItemId);
+    final int count = await _db.canvasDao.getGameCanvasItemCount(collectionItemId);
     return count > 0;
   }
 
@@ -367,7 +367,7 @@ class CanvasRepository {
     int collectionItemId,
   ) async {
     final Map<String, dynamic>? row =
-        await _db.getGameCanvasViewport(collectionItemId);
+        await _db.canvasDao.getGameCanvasViewport(collectionItemId);
     if (row == null) return null;
     return CanvasViewport(
       collectionId: collectionItemId,
@@ -381,7 +381,7 @@ class CanvasRepository {
     int collectionItemId,
     CanvasViewport viewport,
   ) async {
-    await _db.upsertGameCanvasViewport(
+    await _db.canvasDao.upsertGameCanvasViewport(
       collectionItemId: collectionItemId,
       scale: viewport.scale,
       offsetX: viewport.offsetX,
@@ -393,7 +393,7 @@ class CanvasRepository {
     int collectionItemId,
   ) async {
     final List<Map<String, dynamic>> rows =
-        await _db.getGameCanvasConnections(collectionItemId);
+        await _db.canvasDao.getGameCanvasConnections(collectionItemId);
     return rows.map(CanvasConnection.fromDb).toList();
   }
 
