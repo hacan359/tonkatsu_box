@@ -1,37 +1,24 @@
-// Extension для показа compact SnackBar уведомлений.
-
 import 'package:flutter/material.dart';
 
 import '../constants/platform_features.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Тип уведомления SnackBar.
 enum SnackType {
-  /// Успешная операция (зелёный акцент).
   success,
-
-  /// Ошибка или сбой (красный акцент).
   error,
-
-  /// Информационное уведомление (brand акцент).
   info,
 }
 
-/// Extension на [BuildContext] для единого показа compact SnackBar.
-///
-/// Все уведомления в приложении должны использовать [showSnack].
-/// Для изменения стиля достаточно изменить этот файл.
+/// Single entry point for app snackbars; change styling here to change it
+/// everywhere.
 extension SnackBarExtension on BuildContext {
-  /// Показывает compact floating SnackBar.
-  ///
-  /// Автоматически скрывает предыдущий SnackBar.
-  /// По умолчанию [type] = [SnackType.info], [duration] = 2 секунды.
-  /// [loading] заменяет иконку на [CircularProgressIndicator].
+  /// Hides any current snackbar first. [loading] swaps the type icon for a
+  /// spinner.
   void showSnack(
     String message, {
     SnackType type = SnackType.info,
-    Duration duration = const Duration(seconds: 2),
+    Duration duration = const Duration(milliseconds: 750),
     SnackBarAction? action,
     bool loading = false,
   }) {
@@ -105,7 +92,6 @@ extension SnackBarExtension on BuildContext {
     );
   }
 
-  /// Скрывает текущий SnackBar (если есть).
   void hideSnack() {
     ScaffoldMessenger.of(this).hideCurrentSnackBar();
   }

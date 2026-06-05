@@ -1,7 +1,6 @@
 // Helper action methods for CollectionScreen.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/anilist_api.dart';
@@ -12,7 +11,6 @@ import '../../../core/api/vndb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../../core/services/text_export_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../l10n/app_localizations.dart';
@@ -305,40 +303,6 @@ class CollectionActions {
         );
       }
       return false;
-    }
-  }
-
-  /// Quick-copies the list to the clipboard (default template).
-  static Future<void> copyAsList({
-    required BuildContext context,
-    required WidgetRef ref,
-    required int? collectionId,
-  }) async {
-    final List<CollectionItem>? items =
-        ref.read(collectionItemsNotifierProvider(collectionId)).valueOrNull;
-
-    if (items == null || items.isEmpty) {
-      if (context.mounted) {
-        context.showSnack('Items not loaded yet', type: SnackType.error);
-      }
-      return;
-    }
-
-    final TextExportService service = TextExportService();
-    final String text = service.applyTemplate(
-      TextExportService.defaultTemplate,
-      items,
-      animeMangaTitleLanguage:
-          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
-    );
-
-    await Clipboard.setData(ClipboardData(text: text));
-
-    if (context.mounted) {
-      context.showSnack(
-        S.of(context).copiedToClipboard(items.length),
-        type: SnackType.success,
-      );
     }
   }
 

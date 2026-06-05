@@ -26,7 +26,7 @@ enum SnackType { success, error, info }
 context.showSnack(
   'Message text',
   type: SnackType.info,                        // default: info
-  duration: const Duration(seconds: 2),         // default: 2s
+  duration: const Duration(milliseconds: 750),  // default: 750ms
   action: SnackBarAction(label: 'UNDO', ...),   // optional
   loading: false,                                // default: false
 );
@@ -36,7 +36,7 @@ context.showSnack(
 |-----------|------|---------|-------------|
 | `message` | `String` | required | Text displayed in the notification |
 | `type` | `SnackType` | `info` | Controls icon and border color |
-| `duration` | `Duration` | 2 seconds | How long the notification stays visible |
+| `duration` | `Duration` | 750 ms | How long the notification stays visible |
 | `action` | `SnackBarAction?` | `null` | Optional button (e.g. "UNDO", "OK") |
 | `loading` | `bool` | `false` | Replaces the icon with a `CircularProgressIndicator` |
 

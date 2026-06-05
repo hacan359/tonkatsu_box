@@ -6751,12 +6751,6 @@ abstract class S {
   /// **'Unlocked'**
   String get raStatsUnlocked;
 
-  /// No description provided for @copyAsList.
-  ///
-  /// In en, this message translates to:
-  /// **'Copy as List'**
-  String get copyAsList;
-
   /// No description provided for @copyAsText.
   ///
   /// In en, this message translates to:

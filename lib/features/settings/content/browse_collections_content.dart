@@ -1,5 +1,3 @@
-// UI для каталога онлайн-коллекций: фильтры, список, скачивание.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -8,6 +6,7 @@ import '../../../core/services/collection_browser_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -21,12 +20,9 @@ import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 
-/// Контент экрана каталога онлайн-коллекций.
 class BrowseCollectionsContent extends ConsumerStatefulWidget {
-  /// Создаёт [BrowseCollectionsContent].
   const BrowseCollectionsContent({super.key});
 
-  /// Обновляет индекс коллекций (вызывается из AppBar).
   static void refresh(BuildContext context) {
     final ProviderContainer container = ProviderScope.containerOf(context);
     container.read(collectionsIndexProvider.notifier).refresh();
@@ -258,9 +254,7 @@ class _BrowseCollectionsContentState
     ref.read(browserCategoryFilterProvider.notifier).state = result;
   }
 
-  /// Показывает диалог с поиском для выбора одного значения.
-  ///
-  /// Возвращает выбранный id или null (сброс).
+  /// Returns the chosen id, or null when reset/cancelled.
   Future<String?> _showSearchablePicker({
     required String title,
     required List<_PickerItem> items,
@@ -315,7 +309,6 @@ class _BrowseCollectionsContentState
   Future<void> _download(S l, RemoteCollection collection) async {
     if (_downloadingIds.contains(collection.id)) return;
 
-    // Показываем диалог выбора целевой коллекции.
     final _ImportTarget? target = await showDialog<_ImportTarget>(
       context: context,
       builder: (BuildContext context) => _ImportTargetDialog(
@@ -350,30 +343,25 @@ class _BrowseCollectionsContentState
         ref.invalidate(canvasNotifierProvider(cid));
         ref.invalidate(allItemsNotifierProvider);
         ref.invalidate(wishlistProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l.browseCollectionsImportSuccess(collection.name),
-            ),
-          ),
+        context.showSnack(
+          l.browseCollectionsImportSuccess(collection.name),
+          type: SnackType.success,
         );
       } else if (result.error != null) {
         _log.warning(
           'Collection import returned error: ${result.error}',
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l.browseCollectionsDownloadFailedGeneric),
-          ),
+        context.showSnack(
+          l.browseCollectionsDownloadFailedGeneric,
+          type: SnackType.error,
         );
       }
     } on Exception catch (e, stack) {
       _log.warning('Failed to download collection', e, stack);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l.browseCollectionsDownloadFailedGeneric),
-        ),
+      context.showSnack(
+        l.browseCollectionsDownloadFailedGeneric,
+        type: SnackType.error,
       );
     } finally {
       if (mounted) {
@@ -383,19 +371,13 @@ class _BrowseCollectionsContentState
   }
 }
 
-// ---------------------------------------------------------------------------
-// Вспомогательные виджеты
-// ---------------------------------------------------------------------------
-
-/// Результат выбора целевой коллекции для импорта.
 class _ImportTarget {
   const _ImportTarget({this.collectionId});
 
-  /// null — создать новую коллекцию, иначе ID существующей.
+  /// null means create a new collection; otherwise an existing collection id.
   final int? collectionId;
 }
 
-/// Диалог выбора: создать новую коллекцию или импортировать в существующую.
 class _ImportTargetDialog extends ConsumerStatefulWidget {
   const _ImportTargetDialog({required this.collectionName});
 
@@ -526,10 +508,9 @@ class _ImportTargetDialogState extends ConsumerState<_ImportTargetDialog> {
   }
 }
 
-/// Sentinel для сброса фильтра (отличает "All" от закрытия диалога).
+/// Sentinel that distinguishes "reset to All" from dismissing the dialog.
 const String _resetSentinel = '__browse_reset__';
 
-/// Кнопка-дропдаун для фильтра.
 class _FilterButton extends StatelessWidget {
   const _FilterButton({
     required this.label,
@@ -581,7 +562,6 @@ class _FilterButton extends StatelessWidget {
   }
 }
 
-/// Элемент для searchable picker.
 class _PickerItem {
   const _PickerItem({required this.id, required this.label});
 
@@ -589,7 +569,6 @@ class _PickerItem {
   final String label;
 }
 
-/// Диалог с полем поиска для выбора платформы/категории.
 class _SearchablePickerDialog extends StatefulWidget {
   const _SearchablePickerDialog({
     required this.title,

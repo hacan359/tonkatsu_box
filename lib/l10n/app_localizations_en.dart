@@ -3738,9 +3738,6 @@ class SEn extends S {
   String get raStatsUnlocked => 'Unlocked';
 
   @override
-  String get copyAsList => 'Copy as List';
-
-  @override
   String get copyAsText => 'Copy as Text…';
 
   @override

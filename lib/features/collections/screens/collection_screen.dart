@@ -49,18 +49,14 @@ import '../../tier_lists/screens/tier_list_detail_screen.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
 
-/// Экран детального просмотра коллекции.
 class CollectionScreen extends ConsumerStatefulWidget {
-  /// Создаёт [CollectionScreen].
   const CollectionScreen({
     required this.collectionId,
     super.key,
   });
 
-  /// ID коллекции (null для uncategorized).
   final int? collectionId;
 
-  /// Группа хоткеев этого экрана для легенды F1.
   static const ShortcutGroup shortcutGroup = ShortcutGroup(
     title: 'Коллекция',
     entries: <ShortcutEntry>[
@@ -97,17 +93,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   ItemStatus? get _effectiveStatusForChevrons =>
       _filterStatus ?? (_isTableMode ? _tableFilterStatus : null);
 
-  /// Реальная возможность редактирования с учётом режима просмотра.
+  // Effective editability considering view mode.
   bool get _effectiveIsEditable =>
       (_isUncategorized || (_collection != null && _collection!.isEditable)) &&
       !_isViewModeLocked;
 
-  /// Может ли пользователь редактировать элементы.
   bool get _canEdit =>
       _isUncategorized || (_collection != null && _collection!.isEditable);
 
-  /// Название для хлебных крошек и заголовка.
-  /// Является ли это экраном uncategorized элементов.
   bool get _isUncategorized => widget.collectionId == null;
 
   @override
@@ -391,7 +384,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             <CollectionTag>[])
         : <CollectionTag>[];
 
-    // Убираем удалённые теги из фильтра.
     final Set<int> validTagIds = <int>{
       for (final CollectionTag tag in tags) tag.id,
     };
@@ -409,8 +401,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final String? heroAbsPath = (richEnabled && heroFile != null)
         ? ref.watch(collectionHeroServiceProvider).resolve(heroFile)
         : null;
-    // Rich-баннер применяется для любой коллекции (кроме uncategorized),
-    // если тогл включён — стабильный темплейт независимо от наличия hero.
+    // Rich banner applies to any collection except uncategorized when the
+    // toggle is on, giving a stable template regardless of whether a hero exists.
     final bool isRich = richEnabled && !_isUncategorized;
 
     final Widget? heroHeader = isRich
@@ -498,8 +490,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               )
             : null;
 
-    // Rich vs classic теперь различаются только наличием `heroHeader`
-    // внутри `CollectionItemsView` — layout одинаковый.
+    // Rich vs classic now differ only by the presence of heroHeader inside
+    // CollectionItemsView; the layout is identical.
     return Row(
       children: <Widget>[
         Expanded(child: itemsView),
@@ -521,7 +513,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  /// Переключает режим отображения: grid → table → grid.
   void _handleCycleViewMode() {
     setState(() {
       if (_isGridMode) {
@@ -555,8 +546,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _handleCreateTierList();
       case CollectionMenuAction.manageTags:
         TagManagementDialog.show(context, widget.collectionId!);
-      case CollectionMenuAction.copyAsList:
-        _handleCopyAsList();
       case CollectionMenuAction.copyAsText:
         _handleCopyAsText();
       case CollectionMenuAction.export:
@@ -572,8 +561,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CustomItemData? data = await CreateCustomItemDialog.show(context);
     if (data == null || !mounted) return;
 
-    // Для локальных файлов coverUrl оставляем null —
-    // файл будет скопирован в кэш через addCustomItem.
+    // For local files coverUrl stays null; the file is copied into the cache
+    // via addCustomItem.
     final CustomMedia customMedia = CustomMedia(
       id: 0,
       title: data.title,
@@ -609,7 +598,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       collection: _collection!,
     );
     if (changed && mounted) {
-      // Перечитаем коллекцию — могло измениться имя/обложка/описание.
       final Collection? updated = await ref
           .read(collectionRepositoryProvider)
           .getById(widget.collectionId!);
@@ -652,14 +640,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (deleted && mounted) {
       Navigator.of(context).pop();
     }
-  }
-
-  Future<void> _handleCopyAsList() async {
-    await CollectionActions.copyAsList(
-      context: context,
-      ref: ref,
-      collectionId: widget.collectionId,
-    );
   }
 
   Future<void> _handleCopyAsText() async {
@@ -728,7 +708,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final ImportResult result = importResult!;
 
     if (result.success) {
-      // Обновляем элементы коллекции и статистику
       ref.invalidate(
         collectionItemsNotifierProvider(widget.collectionId),
       );

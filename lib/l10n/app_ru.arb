@@ -1465,7 +1465,6 @@
   "raStatsPoints": "очков",
   "raStatsUnlocked": "Получено",
 
-  "copyAsList": "Копировать списком",
   "copyAsText": "Копировать как текст…",
   "copiedToClipboard": "{count,plural, =1{Скопирован 1 тайтл} few{Скопировано {count} тайтла} other{Скопировано {count} тайтлов}}",
   "textExportTemplate": "Шаблон",

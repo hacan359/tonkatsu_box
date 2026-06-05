@@ -18,7 +18,7 @@ void main() {
       );
 
   group('SnackType', () {
-    test('содержит success, error, info', () {
+    test('should expose success, error and info values', () {
       expect(SnackType.values.length, 3);
       expect(SnackType.values, contains(SnackType.success));
       expect(SnackType.values, contains(SnackType.error));
@@ -27,7 +27,7 @@ void main() {
   });
 
   group('showSnack', () {
-    testWidgets('показывает SnackBar с текстом сообщения',
+    testWidgets('should show a SnackBar with the message text',
         (WidgetTester tester) async {
       late BuildContext savedContext;
       await tester.pumpWidget(
@@ -109,7 +109,7 @@ void main() {
       expect(find.byIcon(Icons.info_outline), findsOneWidget);
     });
 
-    testWidgets('loading заменяет иконку на CircularProgressIndicator',
+    testWidgets('should replace the icon with a spinner when loading',
         (WidgetTester tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
@@ -158,7 +158,7 @@ void main() {
       expect(find.text('First message'), findsNothing);
     });
 
-    testWidgets('action callback вызывается при tap',
+    testWidgets('should invoke the action callback when tapped',
         (WidgetTester tester) async {
       bool actionPressed = false;
       late BuildContext ctx;
@@ -186,7 +186,7 @@ void main() {
       expect(actionPressed, isTrue);
     });
 
-    testWidgets('custom duration пробрасывается в SnackBar',
+    testWidgets('should pass a custom duration to the SnackBar',
         (WidgetTester tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
@@ -212,7 +212,7 @@ void main() {
   });
 
   group('hideSnack', () {
-    testWidgets('скрывает текущий SnackBar', (WidgetTester tester) async {
+    testWidgets('should hide the current SnackBar', (WidgetTester tester) async {
       late BuildContext savedContext;
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -237,7 +237,7 @@ void main() {
       expect(find.text('Visible'), findsNothing);
     });
 
-    testWidgets('не кидает исключение когда SnackBar не виден',
+    testWidgets('should not throw when no SnackBar is visible',
         (WidgetTester tester) async {
       late BuildContext savedContext;
       await tester.pumpWidget(MaterialApp(

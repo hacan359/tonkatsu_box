@@ -3783,9 +3783,6 @@ class SRu extends S {
   String get raStatsUnlocked => 'Получено';
 
   @override
-  String get copyAsList => 'Копировать списком';
-
-  @override
   String get copyAsText => 'Копировать как текст…';
 
   @override

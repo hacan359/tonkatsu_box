@@ -1725,7 +1725,6 @@
   "raStatsPoints": "points",
   "raStatsUnlocked": "Unlocked",
 
-  "copyAsList": "Copy as List",
   "copyAsText": "Copy as Text…",
   "copiedToClipboard": "Copied {count} items to clipboard",
   "@copiedToClipboard": {

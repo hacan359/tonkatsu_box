@@ -102,6 +102,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Route every snackbar through the shared helper and shorten it**
+
+  Eight notifications still used a bare `ScaffoldMessenger.showSnackBar` (plain,
+  no icon, bottom-anchored) instead of `context.showSnack`. They now match every
+  other toast: a floating snackbar with a type icon and colored border. The
+  default visible duration also drops from 2 s to 750 ms so toasts feel snappier.
+
+  * lib/shared/extensions/snackbar_extension.dart (SnackBarExtension.showSnack): Default `duration` 2 s → 750 ms.
+  * lib/features/collections/widgets/collection_items_view.dart: Tag-update failure toast → `showSnack(..., SnackType.error)`.
+  * lib/features/settings/content/browse_collections_content.dart: Online-collection import success / download failures → `showSnack` (success / error).
+  * lib/features/settings/screens/gamepad_debug_screen.dart: Debug-log empty / export success / export failure → `showSnack` (info / success / error).
+
 - **Unify every confirmation prompt on one shared dialog**
 
   Delete / clear / reset confirmations used to be hand-rolled one by one, so
@@ -173,6 +185,21 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     snaps to a whole integer; drag removed; add −/+ nudge buttons (`step` 0.1,
     clamped 1.0–10.0, no-op at the bounds) and a private `_NudgeButton`;
     `naturalWidth` now accounts for the two buttons.
+
+### Removed
+
+- **Drop the "Copy as List" collection action**
+
+  The collection menu had both "Copy as List" (a one-tap copy using the default
+  `{name} ({year})` template) and "Copy as Text…" (the same template engine with
+  a dialog, token picker, sort and preview). "Copy as List" was just the dialog's
+  default with no options, so it is gone; "Copy as Text…" covers the same need
+  and still opens on the default template.
+
+  * lib/features/collections/widgets/collection_screen/collection_screen_fab.dart (CollectionMenuAction): Remove the `copyAsList` value and its menu item.
+  * lib/features/collections/screens/collection_screen.dart (_CollectionScreenState): Remove the `copyAsList` switch case and `_handleCopyAsList`.
+  * lib/features/collections/helpers/collection_actions.dart (CollectionActions.copyAsList): Removed, along with the now-unused `flutter/services.dart` and `text_export_service.dart` imports.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (copyAsList): Removed string.
 
 ### Fixed
 

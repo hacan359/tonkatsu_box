@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/collection_tag.dart';
@@ -511,10 +512,7 @@ class CollectionItemsView extends ConsumerWidget {
     }).catchError((Object error, StackTrace stack) {
       _log.warning('Failed to set tag on item ${item.id}', error, stack);
       if (context.mounted) {
-        final S l = S.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.tagUpdateFailed)),
-        );
+        context.showSnack(S.of(context).tagUpdateFailed, type: SnackType.error);
       }
     });
   }

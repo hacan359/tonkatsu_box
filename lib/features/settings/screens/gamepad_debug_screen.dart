@@ -1,5 +1,3 @@
-// Debug-экран для отображения raw событий геймпада.
-
 import 'dart:async';
 import 'dart:io';
 
@@ -12,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../core/services/gamepad_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/gamepad/gamepad_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -19,17 +18,9 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 
-/// Максимальное количество событий в логе.
 const int _maxEvents = 100;
 
-/// Debug-экран для тестирования подключённого геймпада.
-///
-/// Показывает:
-/// - Сырые события от [Gamepads.events] в реальном времени
-/// - Обработанные события от [GamepadService]
-/// - Ключи кнопок и значения для маппинга
 class GamepadDebugScreen extends ConsumerStatefulWidget {
-  /// Создаёт [GamepadDebugScreen].
   const GamepadDebugScreen({super.key});
 
   @override
@@ -102,9 +93,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
 
     if (_rawEvents.isEmpty && _serviceEvents.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.debugLogEmpty)),
-        );
+        context.showSnack(l.debugLogEmpty);
       }
       return;
     }
@@ -138,8 +127,9 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
         final String filePath = '${dir.path}/gamepad_log_$timestamp.txt';
         await File(filePath).writeAsString(content);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.debugLogExported(filePath))),
+          context.showSnack(
+            l.debugLogExported(filePath),
+            type: SnackType.success,
           );
         }
       } else {
@@ -152,16 +142,15 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
         if (outputPath == null) return;
         await File(outputPath).writeAsString(content);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.debugLogExported(outputPath))),
+          context.showSnack(
+            l.debugLogExported(outputPath),
+            type: SnackType.success,
           );
         }
       }
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        context.showSnack(e.toString(), type: SnackType.error);
       }
     }
   }

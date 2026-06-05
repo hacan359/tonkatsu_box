@@ -10,7 +10,6 @@ enum CollectionMenuAction {
   rename,
   tierList,
   manageTags,
-  copyAsList,
   copyAsText,
   export,
   import,
@@ -109,11 +108,6 @@ class CollectionScreenFab extends StatelessWidget {
         icon: Icons.label_outlined,
         label: l.tagManage,
         onTap: () => onMenuAction(CollectionMenuAction.manageTags),
-      ),
-      DraggableFabItem(
-        icon: Icons.content_copy,
-        label: l.copyAsList,
-        onTap: () => onMenuAction(CollectionMenuAction.copyAsList),
       ),
       DraggableFabItem(
         icon: Icons.text_snippet_outlined,

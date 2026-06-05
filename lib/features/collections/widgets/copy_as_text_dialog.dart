@@ -1,5 +1,3 @@
-// Диалог копирования коллекции как текста с шаблоном и preview.
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,10 +11,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/providers/settings_provider.dart';
 
-/// Показывает диалог копирования коллекции как текста.
-///
-/// [items] — элементы коллекции для экспорта.
-/// Возвращает `true` если данные были скопированы в буфер обмена.
+/// Returns `true` when the collection text was copied to the clipboard.
 Future<bool?> showCopyAsTextDialog({
   required BuildContext context,
   required List<CollectionItem> items,
@@ -41,10 +36,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
   late final TextEditingController _templateController;
   TextExportSortMode _sortMode = TextExportSortMode.current;
 
-  /// Максимальное количество строк в preview.
   static const int _previewMaxLines = 5;
-
-  /// Ключ для сохранения шаблона в SharedPreferences.
   static const String _templatePrefKey = 'text_export_template';
 
   @override
@@ -137,7 +129,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
     final int end = value.selection.extentOffset;
     final String tokenStr = '{$token}';
 
-    // Если курсор валидный — вставляем в позицию, иначе — в конец
+    // Insert at the caret when the selection is valid, otherwise append.
     if (start >= 0 && end >= 0) {
       final String newText =
           value.text.replaceRange(start, end, tokenStr);
@@ -248,7 +240,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
 
             const SizedBox(height: AppSpacing.md),
 
-            // Sort by — PopupMenuButton вместо DropdownButtonFormField
+            // Sort by
             Wrap(
               spacing: AppSpacing.sm,
               crossAxisAlignment: WrapCrossAlignment.center,
