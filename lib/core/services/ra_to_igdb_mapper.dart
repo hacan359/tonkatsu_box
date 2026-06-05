@@ -1,23 +1,20 @@
-// Маппинг RetroAchievements игр на IGDB.
-
 import '../../shared/models/game.dart';
 import '../../shared/models/ra_game_progress.dart';
 import '../api/igdb_api.dart';
 
-/// Маппинг RA ConsoleID → IGDB Platform ID и поиск игр в IGDB.
+/// Maps RA ConsoleID -> IGDB Platform ID and looks games up in IGDB.
 class RaToIgdbMapper {
-  /// Создаёт [RaToIgdbMapper].
   RaToIgdbMapper(this._igdbApi);
 
   final IgdbApi _igdbApi;
 
-  /// RA ConsoleID → список IGDB Platform ID.
+  /// RA ConsoleID -> list of IGDB Platform IDs.
   ///
-  /// Первый элемент — основной IGDB ID (используется при импорте из RA).
-  /// Остальные — алиасы (региональные варианты в IGDB).
+  /// First element is the primary IGDB ID (used when importing from RA);
+  /// the rest are aliases (regional variants in IGDB).
   ///
-  /// Источник RA ConsoleID: rcheevos rc_consoles.h
-  /// Источник IGDB Platform ID: таблица platforms в БД.
+  /// RA ConsoleID source: rcheevos rc_consoles.h.
+  /// IGDB Platform ID source: the platforms table in the DB.
   static const Map<int, List<int>> consolePlatformMap = <int, List<int>>{
     1: <int>[29], // Genesis/Mega Drive
     2: <int>[4], // Nintendo 64
@@ -76,17 +73,15 @@ class RaToIgdbMapper {
     81: <int>[51], // Famicom Disk System
   };
 
-  /// Возвращает основной IGDB Platform ID для RA ConsoleID.
-  ///
-  /// Первый элемент списка — основной ID, используется при импорте из RA.
+  /// Returns the primary IGDB Platform ID for an RA ConsoleID.
   static int? primaryIgdbPlatformId(int raConsoleId) {
     final List<int>? ids = consolePlatformMap[raConsoleId];
     return ids?.first;
   }
 
-  /// Обратный маппинг: IGDB Platform ID → список RA Console IDs.
+  /// Reverse map: IGDB Platform ID -> list of RA Console IDs.
   ///
-  /// Проверяет все IGDB ID (основные + алиасы) каждой RA консоли.
+  /// Checks every IGDB ID (primary + aliases) of each RA console.
   static List<int> igdbToRaConsoleIds(int igdbPlatformId) {
     return consolePlatformMap.entries
         .where(
@@ -95,9 +90,7 @@ class RaToIgdbMapper {
         .toList();
   }
 
-  /// Ищет IGDB игру по данным из RA.
-  ///
-  /// Возвращает `null` если не найдено.
+  /// Finds an IGDB game from RA data. Returns `null` if nothing matched.
   Future<Game?> findIgdbGame(RaGameProgress raGame) async {
     final int? igdbPlatformId = primaryIgdbPlatformId(raGame.consoleId);
 
@@ -107,7 +100,7 @@ class RaToIgdbMapper {
     );
 
     if (results.isEmpty) {
-      // Fallback: поиск без фильтра платформы.
+      // Fallback: search without the platform filter.
       if (igdbPlatformId != null) {
         final List<Game> fallback =
             await _igdbApi.searchGames(query: raGame.title);
@@ -122,16 +115,14 @@ class RaToIgdbMapper {
 
   static final RegExp _nonAlphaNum = RegExp('[^a-z0-9]');
 
-  /// Находит наилучшее совпадение по названию среди кандидатов.
+  /// Finds the best title match among [candidates].
   ///
-  /// Публичный static — используется как в поштучном поиске,
-  /// так и в batch multiquery.
+  /// Public static: used by both single-item search and batch multiquery.
   static Game? bestMatch(String title, List<Game> candidates) {
     if (candidates.isEmpty) return null;
 
     final String normalized = normalize(title);
 
-    // Точное совпадение.
     for (final Game game in candidates) {
       if (normalize(game.name) == normalized) return game;
     }
@@ -145,11 +136,11 @@ class RaToIgdbMapper {
       }
     }
 
-    // Fallback: первый результат.
+    // Fallback: first result.
     return candidates.first;
   }
 
-  /// Нормализует строку для сравнения: lowercase, только буквы и цифры.
+  /// Normalizes a string for comparison: lowercase, letters and digits only.
   static String normalize(String s) =>
       s.toLowerCase().replaceAll(_nonAlphaNum, '');
 }

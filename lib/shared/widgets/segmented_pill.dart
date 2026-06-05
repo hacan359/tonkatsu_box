@@ -26,6 +26,7 @@ class SegmentedPill<T> extends StatelessWidget {
     required this.selected,
     required this.onChanged,
     this.selectedColor = AppColors.brand,
+    this.expand = false,
     super.key,
   });
 
@@ -33,6 +34,10 @@ class SegmentedPill<T> extends StatelessWidget {
   final T selected;
   final ValueChanged<T> onChanged;
   final Color selectedColor;
+
+  /// When true, segments share the available width equally (for narrow,
+  /// full-width containers like side panels). Otherwise they size to content.
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
@@ -44,15 +49,26 @@ class SegmentedPill<T> extends StatelessWidget {
         border: Border.all(color: AppColors.surfaceBorder),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
         children: <Widget>[
           for (final SegmentedPillOption<T> o in options)
-            _Segment<T>(
-              option: o,
-              isSelected: o.value == selected,
-              selectedColor: selectedColor,
-              onTap: () => onChanged(o.value),
-            ),
+            if (expand)
+              Expanded(
+                child: _Segment<T>(
+                  option: o,
+                  isSelected: o.value == selected,
+                  selectedColor: selectedColor,
+                  expand: true,
+                  onTap: () => onChanged(o.value),
+                ),
+              )
+            else
+              _Segment<T>(
+                option: o,
+                isSelected: o.value == selected,
+                selectedColor: selectedColor,
+                onTap: () => onChanged(o.value),
+              ),
         ],
       ),
     );
@@ -65,16 +81,28 @@ class _Segment<T> extends StatelessWidget {
     required this.isSelected,
     required this.selectedColor,
     required this.onTap,
+    this.expand = false,
   });
 
   final SegmentedPillOption<T> option;
   final bool isSelected;
   final Color selectedColor;
   final VoidCallback onTap;
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
     final Color fg = isSelected ? selectedColor : AppColors.textTertiary;
+    final Widget label = Text(
+      option.label,
+      maxLines: 1,
+      overflow: expand ? TextOverflow.ellipsis : TextOverflow.clip,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: fg,
+      ),
+    );
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -82,7 +110,9 @@ class _Segment<T> extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
         height: 34,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        padding: EdgeInsets.symmetric(
+          horizontal: expand ? AppSpacing.sm : AppSpacing.md,
+        ),
         decoration: BoxDecoration(
           color: isSelected ? selectedColor.withAlpha(48) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -95,14 +125,7 @@ class _Segment<T> extends StatelessWidget {
               Icon(option.icon, size: 16, color: fg),
               const SizedBox(width: AppSpacing.xs),
             ],
-            Text(
-              option.label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: fg,
-              ),
-            ),
+            expand ? Flexible(child: label) : label,
           ],
         ),
       ),

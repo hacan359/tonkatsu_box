@@ -1,5 +1,3 @@
-// Сервис для загрузки каталога и файлов коллекций из GitHub.
-
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -9,33 +7,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/collections/models/collections_index.dart';
 import 'xcoll_file.dart';
 
-/// URL-база репозитория коллекций (raw GitHub content).
+/// Raw GitHub content base URL for the collections repo.
 const String _kRepoBaseUrl =
     'https://raw.githubusercontent.com/hacan359/tonkatsu-collections/main';
 
-/// Провайдер сервиса каталога коллекций.
 final Provider<CollectionBrowserService> collectionBrowserServiceProvider =
     Provider<CollectionBrowserService>(
   (Ref ref) => CollectionBrowserService(),
 );
 
-/// Сервис для загрузки каталога и файлов коллекций из GitHub-репозитория.
+/// Downloads the collections catalog and files from the GitHub repo.
 ///
-/// Загружает `index.json` с метаданными, скачивает и парсит файлы коллекций
-/// в формате `.xcoll`, `.xcollx` и `.zip`.
+/// Fetches `index.json` metadata, then downloads and parses collection files
+/// in `.xcoll`, `.xcollx` and `.zip` formats.
 class CollectionBrowserService {
-  /// Создаёт экземпляр [CollectionBrowserService].
   CollectionBrowserService({Dio? dio}) : _dio = dio ?? Dio();
 
   final Dio _dio;
 
-  /// Кэш индекса в памяти (сбрасывается при рестарте приложения).
   CollectionsIndex? _cachedIndex;
 
-  /// Загружает индекс коллекций (`index.json`).
-  ///
-  /// Кэширует результат в памяти. Используйте [forceRefresh] для
-  /// принудительного обновления.
+  /// Fetches the collections index (`index.json`), cached in memory.
+  /// Pass [forceRefresh] to bypass the cache.
   Future<CollectionsIndex> fetchIndex({bool forceRefresh = false}) async {
     if (!forceRefresh && _cachedIndex != null) {
       return _cachedIndex!;
@@ -57,9 +50,9 @@ class CollectionBrowserService {
     }
   }
 
-  /// Скачивает файл коллекции и парсит как [XcollFile].
+  /// Downloads a collection file and parses it as an [XcollFile].
   ///
-  /// Поддерживает `.xcoll`, `.xcollx` (JSON) и `.zip` (архив с коллекцией).
+  /// Supports `.xcoll`, `.xcollx` (JSON) and `.zip` (archived collection).
   Future<XcollFile> downloadCollection(
     RemoteCollection collection, {
     void Function(int received, int total)? onProgress,
@@ -79,12 +72,10 @@ class CollectionBrowserService {
     }
   }
 
-  /// Очищает кэш индекса.
   void clearCache() {
     _cachedIndex = null;
   }
 
-  /// Скачивает JSON-файл коллекции (.xcoll / .xcollx).
   Future<XcollFile> _downloadJson(
     String url, {
     void Function(int received, int total)? onProgress,
@@ -96,7 +87,7 @@ class CollectionBrowserService {
     return XcollFile.fromJsonString(response.data!);
   }
 
-  /// Скачивает ZIP-архив, извлекает .xcoll/.xcollx и парсит.
+  /// Downloads a ZIP archive, extracts the .xcoll/.xcollx inside and parses it.
   Future<XcollFile> _downloadAndExtractZip(
     String url, {
     void Function(int received, int total)? onProgress,
@@ -125,15 +116,10 @@ class CollectionBrowserService {
   }
 }
 
-/// Исключение сервиса каталога коллекций.
 class CollectionBrowserException implements Exception {
-  /// Создаёт экземпляр [CollectionBrowserException].
   const CollectionBrowserException(this.message, [this.cause]);
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// Исходная причина ошибки.
   final Object? cause;
 
   @override

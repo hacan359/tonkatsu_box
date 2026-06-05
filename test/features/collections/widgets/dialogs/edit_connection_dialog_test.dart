@@ -162,11 +162,38 @@ void main() {
       expect(find.byType(InkWell), findsWidgets);
     });
 
-    testWidgets('should select initial style', (WidgetTester tester) async {
-      await pumpDialog(tester, initialStyle: ConnectionStyle.arrow);
-      final SegmentedButton<ConnectionStyle> segmented =
-          tester.widget(find.byType(SegmentedButton<ConnectionStyle>));
-      expect(segmented.selected, contains(ConnectionStyle.arrow));
+    testWidgets('should keep initial style when saved without change',
+        (WidgetTester tester) async {
+      Map<String, dynamic>? result;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (BuildContext context) {
+                return ElevatedButton(
+                  onPressed: () async {
+                    result = await EditConnectionDialog.show(
+                      context,
+                      initialStyle: ConnectionStyle.arrow,
+                    );
+                  },
+                  child: const Text('Open'),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(result!['style'], 'arrow');
     });
 
     testWidgets('should change style when tapping segment',

@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/calendar_recurrence.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/dual_date_picker_dialog.dart';
+import '../../../shared/widgets/segmented_pill.dart';
 
 /// Result of [showAddToCalendarDialog].
 class AddToCalendarResult {
@@ -74,18 +75,17 @@ class _AddToCalendarDialogState extends State<_AddToCalendarDialog> {
           const SizedBox(height: AppSpacing.sm),
           Text(l.calendarRepeat),
           const SizedBox(height: AppSpacing.xs),
-          SegmentedButton<CalendarRecurrence>(
-            showSelectedIcon: false,
-            segments: <ButtonSegment<CalendarRecurrence>>[
+          SegmentedPill<CalendarRecurrence>(
+            options: <SegmentedPillOption<CalendarRecurrence>>[
               for (final CalendarRecurrence r in CalendarRecurrence.values)
-                ButtonSegment<CalendarRecurrence>(
+                SegmentedPillOption<CalendarRecurrence>(
                   value: r,
-                  label: Text(r.localizedLabel(l)),
+                  label: r.localizedLabel(l),
                 ),
             ],
-            selected: <CalendarRecurrence>{_recurrence},
-            onSelectionChanged: (Set<CalendarRecurrence> s) =>
-                setState(() => _recurrence = s.first),
+            selected: _recurrence,
+            onChanged: (CalendarRecurrence r) =>
+                setState(() => _recurrence = r),
           ),
         ],
       ),

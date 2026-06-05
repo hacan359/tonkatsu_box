@@ -1,24 +1,17 @@
-// Модель профиля внешнего трекера (RA, Steam, Trakt).
-
 import 'dart:convert';
 
-/// Тип трекера.
 enum TrackerType {
-  /// RetroAchievements.
   ra('ra'),
 
-  /// Steam.
   steam('steam'),
 
-  /// Trakt.tv.
   trakt('trakt');
 
   const TrackerType(this.value);
 
-  /// Строковое значение для БД.
+  /// DB string value.
   final String value;
 
-  /// Создаёт [TrackerType] из строки.
   static TrackerType fromString(String value) {
     return TrackerType.values.firstWhere(
       (TrackerType t) => t.value == value,
@@ -27,9 +20,7 @@ enum TrackerType {
   }
 }
 
-/// Профиль подключённого аккаунта трекера.
 class TrackerProfile {
-  /// Создаёт [TrackerProfile].
   const TrackerProfile({
     required this.id,
     required this.trackerType,
@@ -47,7 +38,6 @@ class TrackerProfile {
     this.lastSyncedAt,
   });
 
-  /// Создаёт [TrackerProfile] из записи БД.
   factory TrackerProfile.fromDb(Map<String, dynamic> row) {
     final String? dataString = row['profile_data'] as String?;
     Map<String, dynamic>? parsedData;
@@ -73,49 +63,40 @@ class TrackerProfile {
     );
   }
 
-  /// Уникальный ID.
   final int id;
 
-  /// Тип трекера.
   final TrackerType trackerType;
 
-  /// ID пользователя в трекере (RA username, Steam ID).
+  /// User ID within the tracker (RA username, Steam ID).
   final String userId;
 
-  /// Отображаемое имя.
   final String displayName;
 
-  /// URL аватарки.
   final String? avatarUrl;
 
-  /// URL профиля.
   final String? profileUrl;
 
-  /// Общие очки (RA points, Steam XP).
+  /// RA points, Steam XP.
   final int? totalPoints;
 
-  /// Количество игр в библиотеке.
   final int? totalGames;
 
-  /// Общее количество полученных достижений.
   final int? totalAchievements;
 
-  /// Timestamp регистрации.
+  /// Registration timestamp.
   final int? memberSince;
 
-  /// JSON с трекер-специфичными данными.
+  /// Tracker-specific data as JSON.
   final Map<String, dynamic>? profileData;
 
-  /// ID коллекции для sync.
   final int? linkedCollectionId;
 
-  /// Timestamp последнего sync.
+  /// Last sync timestamp.
   final int? lastSyncedAt;
 
-  /// Timestamp создания записи.
+  /// Record creation timestamp.
   final int createdAt;
 
-  /// Преобразует в Map для сохранения в БД.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       if (id != 0) 'id': id,
@@ -135,7 +116,6 @@ class TrackerProfile {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TrackerProfile copyWith({
     int? id,
     TrackerType? trackerType,

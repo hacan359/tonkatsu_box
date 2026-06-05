@@ -1,5 +1,3 @@
-// Тонкая строка настроек — заголовок + значение + chevron.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -8,12 +6,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Тонкая строка настроек в стиле iOS Settings.
-///
-/// Содержит заголовок слева, необязательное значение серым цветом
-/// (прижато вправо к chevron), trailing-виджет и chevron-иконку.
 class SettingsTile extends StatelessWidget {
-  /// Создаёт [SettingsTile].
   const SettingsTile({
     required this.title,
     this.subtitle,
@@ -31,48 +24,36 @@ class SettingsTile extends StatelessWidget {
     super.key,
   }) : assert(
           leadingIcon == null || leadingAssetPath == null,
-          'leadingIcon и leadingAssetPath взаимоисключающие',
+          'leadingIcon and leadingAssetPath are mutually exclusive',
         );
 
-  /// Основной текст строки.
   final String title;
 
-  /// Подзаголовок под основным текстом (приглушённый цвет).
   final String? subtitle;
 
-  /// Значение справа (серым цветом по умолчанию).
   final String? value;
 
-  /// Цвет для [value]. Если null — textTertiary.
   final Color? valueColor;
 
-  /// Цвет заголовка (по умолчанию — textPrimary).
   final Color? titleColor;
 
-  /// Обработчик нажатия.
   final VoidCallback? onTap;
 
-  /// Виджет справа (Switch, SegmentedButton и т.п.).
   final Widget? trailing;
 
-  /// Показывать ли chevron_right.
   final bool showChevron;
 
-  /// Иконка в цветной капсуле слева (iOS-style). Если null — капсула скрыта.
   final IconData? leadingIcon;
 
-  /// SVG-ассет в цветной капсуле (альтернатива [leadingIcon]).
-  /// По умолчанию рендерится белым поверх [leadingColor].
+  /// Rendered white over [leadingColor] by default.
   final String? leadingAssetPath;
 
-  /// Если `true` — SVG рендерится в родных цветах на нейтральной подложке
-  /// (капсула не заливается [leadingColor]). Для брендовых логотипов.
+  /// When true, the SVG keeps its native colors on a neutral background
+  /// (capsule is not filled with [leadingColor]). For brand logos.
   final bool leadingAssetColored;
 
-  /// Цвет фона капсулы с иконкой.
   final Color? leadingColor;
 
-  /// Цветная точка-статус рядом с заголовком (например, зелёная = активно).
   final Color? statusDotColor;
 
   @override
@@ -179,7 +160,6 @@ class SettingsTile extends StatelessWidget {
   }
 }
 
-/// Цветная капсула с белой иконкой (iOS-style leading bubble).
 class _LeadingBubble extends StatelessWidget {
   const _LeadingBubble({
     required this.icon,
@@ -212,8 +192,8 @@ class _LeadingBubble extends StatelessWidget {
           ? (assetPath!.toLowerCase().endsWith('.svg')
                 ? SvgPicture.asset(
                     assetPath!,
-                    // Brand-SVG-иконки из simpleicons имеют внутренние поля —
-                    // рендерим чуть крупнее, чтобы визуально совпадали с Material.
+                    // simpleicons brand SVGs have internal padding, so render
+                    // a bit larger to visually match Material icons.
                     width: iconSize * 1.8,
                     height: iconSize * 1.8,
                     colorFilter: assetColored

@@ -1,8 +1,6 @@
-// Шаренный bulk-helper для массовых операций над CollectionItem.
-//
-// Работает на любом экране, где есть selection: коллекция, All Items.
-// Каждый метод вызывает низкоуровневые операции в цикле и инвалидирует
-// все затронутые провайдеры ровно один раз в конце.
+// Shared bulk-operation helpers for CollectionItem, used anywhere with a
+// selection (a collection, All Items). Each method runs the low-level ops in
+// a loop and invalidates every affected provider exactly once at the end.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,17 +18,15 @@ import '../providers/collection_covers_provider.dart';
 import '../providers/collection_tags_provider.dart';
 import '../providers/collections_provider.dart';
 
-/// Static-namespace для bulk-операций над элементами коллекций.
+/// Bulk operations over collection items.
 ///
-/// Каждый метод принимает [WidgetRef] и [List<CollectionItem>] и сам
-/// определяет затронутые коллекции / медиа-типы / тир-листы по полям
-/// элементов — поэтому работает и внутри одной коллекции, и на All Items,
-/// где элементы из разных коллекций.
+/// Each method derives the affected collections / media types / tier lists
+/// from the item fields, so it works both inside one collection and on All
+/// Items where items come from different collections.
 class BulkOperations {
   BulkOperations._();
 
-  /// Удаляет элементы из БД, инвалидирует затронутые провайдеры.
-  /// Возвращает количество удалённых.
+  /// Removes [items] from the DB. Returns how many were removed.
   static Future<int> removeItems(
     WidgetRef ref,
     List<CollectionItem> items,
@@ -63,8 +59,8 @@ class BulkOperations {
     return removed;
   }
 
-  /// Перемещает элементы в [targetCollectionId] (`null` → uncategorized).
-  /// Возвращает `(moved, skipped)`.
+  /// Moves items to [targetCollectionId] (`null` -> uncategorized).
+  /// Returns `(moved, skipped)`.
   static Future<({int moved, int skipped})> moveItemsToCollection(
     WidgetRef ref,
     List<CollectionItem> items,
@@ -129,8 +125,7 @@ class BulkOperations {
     return (moved: moved, skipped: skipped);
   }
 
-  /// Клонирует элементы в [targetCollectionId].
-  /// Возвращает `(cloned, skipped)`.
+  /// Clones items into [targetCollectionId]. Returns `(cloned, skipped)`.
   static Future<({int cloned, int skipped})> cloneItemsToCollection(
     WidgetRef ref,
     List<CollectionItem> items,
@@ -180,9 +175,8 @@ class BulkOperations {
     return (cloned: cloned, skipped: skipped);
   }
 
-  /// Меняет статус у всех переданных элементов.
-  /// Возвращает количество реально изменённых (skipped — те, что уже
-  /// были в целевом статусе).
+  /// Changes the status of every item. Returns how many actually changed
+  /// (skipped = already in the target status).
   static Future<int> updateItemsStatus(
     WidgetRef ref,
     List<CollectionItem> items,
@@ -207,14 +201,13 @@ class BulkOperations {
     }
     if (changedIds.isEmpty) return 0;
 
-    // Локальный апдейт all-items без перезагрузки списка.
+    // Local all-items update, so the list doesn't reload and flash.
     final AllItemsNotifier allItems =
         ref.read(allItemsNotifierProvider.notifier);
     for (final int id in changedIds) {
       allItems.updateStatusLocally(id, status);
     }
 
-    // Каждая затронутая коллекция: инвалидация состояния списка + статов.
     for (final int? cid in affectedCollections) {
       ref.invalidate(collectionItemsNotifierProvider(cid));
       ref.invalidate(collectionStatsProvider(cid));
@@ -239,8 +232,6 @@ class BulkOperations {
     );
   }
 
-  /// Единая инвалидация после bulk-операции — touch'ает все затронутые
-  /// коллекции + глобальные счётчики.
   static void _invalidateAfterMutation(
     WidgetRef ref, {
     required Set<int?> affectedCollections,

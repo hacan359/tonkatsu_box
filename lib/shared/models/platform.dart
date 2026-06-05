@@ -1,17 +1,12 @@
 import 'dart:ui';
 
-/// Модель платформы из IGDB.
-///
-/// Представляет игровую платформу (например, SNES, PlayStation, PC).
 class Platform {
-  /// Создаёт экземпляр [Platform].
   const Platform({
     required this.id,
     required this.name,
     this.abbreviation,
   });
 
-  /// Создаёт [Platform] из JSON ответа IGDB API.
   factory Platform.fromJson(Map<String, dynamic> json) {
     return Platform(
       id: json['id'] as int,
@@ -20,7 +15,6 @@ class Platform {
     );
   }
 
-  /// Создаёт [Platform] из записи базы данных.
   factory Platform.fromDb(Map<String, dynamic> row) {
     return Platform(
       id: row['id'] as int,
@@ -29,24 +23,16 @@ class Platform {
     );
   }
 
-  /// Уникальный идентификатор платформы в IGDB.
   final int id;
 
-  /// Полное название платформы.
   final String name;
 
-  /// Сокращённое название (например, "SNES", "PS1").
   final String? abbreviation;
 
-  /// Возвращает отображаемое имя (сокращение или полное название).
   String get displayName => abbreviation ?? name;
 
-  /// Цвет семейства платформы.
-  ///
-  /// Определяется по IGDB platform ID:
-  /// Sony (PlayStation) — синий, Nintendo — красный,
-  /// Microsoft (Xbox) — зелёный, Sega — голубой,
-  /// PC/Mac/Linux — серый, остальные — фиолетовый.
+  /// Color keyed off the IGDB platform ID family (Sony, Nintendo, Microsoft,
+  /// Sega, PC, Atari), falling back to purple for everything else.
   Color get familyColor {
     // Sony: PS1(7), PS2(8), PS3(9), PS4(48), PS5(167), PSP(38), Vita(46)
     if (const <int>{7, 8, 9, 48, 167, 38, 46, 165}.contains(id)) {
@@ -89,7 +75,6 @@ class Platform {
   @override
   String toString() => 'Platform(id: $id, name: $name)';
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -98,7 +83,6 @@ class Platform {
     };
   }
 
-  /// Преобразует в JSON.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -107,16 +91,15 @@ class Platform {
     };
   }
 
-  /// Путь к ассету оверлея платформы (PNG 600×900), или `null`.
-  ///
-  /// Оверлей накладывается поверх обложки на карточках коллекции и тир-листа.
+  /// Asset path of the platform overlay (600x900 PNG) drawn on top of covers in
+  /// collection and tier-list cards, or `null` if the platform has none.
   String? get overlayAsset {
     final String? file = _overlayFiles[id];
     if (file == null) return null;
     return 'assets/images/platform_overlays/$file';
   }
 
-  /// Маппинг IGDB platform ID → имя файла оверлея.
+  /// Maps IGDB platform ID to overlay asset filename.
   static const Map<int, String> _overlayFiles = <int, String>{
     // Sony
     7: 'ps1.png', // PlayStation
@@ -200,7 +183,6 @@ class Platform {
     39: 'ios.png', // iOS
   };
 
-  /// Создаёт копию с изменёнными полями.
   Platform copyWith({
     int? id,
     String? name,

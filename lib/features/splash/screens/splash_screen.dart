@@ -1,6 +1,3 @@
-// Анимированный splash screen с логотипом Tonkatsu Box.
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,18 +12,12 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_assets.dart';
 
-/// Анимированный splash screen.
+/// Controller runs 2s total: [0..0.75] animation, [0.75..1.0] hold.
 ///
-/// Показывает логотип с fade-in и scale анимацией (~1.5 сек),
-/// удерживает на экране 0.5 сек, затем плавно переходит к [AppShell].
-/// Общая длительность контроллера 2 сек: [0..0.75] — анимация, [0.75..1.0] — пауза.
-///
-/// Параллельно с анимацией запускает инициализацию базы данных (pre-warming).
-/// Навигация происходит только когда **оба** условия выполнены:
-/// анимация завершена И база данных открыта. Это гарантирует, что тяжёлая
-/// DB-инициализация не пересекается с route transition, предотвращая ANR.
+/// DB init is pre-warmed in parallel. Navigation waits until BOTH the
+/// animation finished AND the DB opened, so the heavy DB init never overlaps
+/// the route transition (avoids ANR on weak devices).
 class SplashScreen extends ConsumerStatefulWidget {
-  /// Создаёт [SplashScreen].
   const SplashScreen({super.key});
 
   @override
@@ -41,19 +32,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
 
-  /// Анимация завершена.
   bool _animationDone = false;
 
-  /// База данных инициализирована.
   bool _dbDone = false;
 
-  /// Навигация уже выполнена.
   bool _navigated = false;
 
-  /// Общая длительность: 1.5с анимация + 0.5с пауза = 2с.
+  /// 1.5s animation + 0.5s hold.
   static const Duration _totalDuration = Duration(milliseconds: 2000);
 
-  /// Доля анимации от общей длительности (1.5 / 2.0 = 0.75).
+  /// Animation fraction of total duration (1.5 / 2.0).
   static const double _animationEnd = 0.75;
 
   @override
@@ -65,7 +53,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       duration: _totalDuration,
     );
 
-    // Fade и scale происходят в первые 75% времени контроллера.
+    // Fade and scale run in the first 75% of the controller's time.
     _fadeCurve = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.0, _animationEnd, curve: Curves.easeIn),
@@ -86,10 +74,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
     _controller.forward();
 
-    // Pre-warm: запускаем инициализацию DB в фоне.
-    // Навигация произойдёт только когда И анимация завершена, И DB открыта.
-    // Это разводит DB-инициализацию и route transition по времени,
-    // предотвращая конкуренцию за main thread и ANR на слабых устройствах.
     final DatabaseService db = ref.read(databaseServiceProvider);
     db.database.then((_) {
       _dbDone = true;
@@ -97,11 +81,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
   }
 
-  /// Навигирует на нужный экран когда оба условия выполнены:
-  /// анимация завершена И база данных открыта.
-  ///
-  /// При первом запуске (welcome_completed == false) → [WelcomeScreen].
-  /// При повторном запуске → [AppShell].
   void _tryNavigate() {
     if (_animationDone && _dbDone && !_navigated && mounted) {
       _navigated = true;
@@ -113,7 +92,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         return;
       }
 
-      // Проверяем нужно ли показать выбор профиля
       final ProfilesData data = ref.read(profilesDataProvider);
       final bool skipPicker =
           prefs.getBool(kSkipProfilePickerKey) ?? false;

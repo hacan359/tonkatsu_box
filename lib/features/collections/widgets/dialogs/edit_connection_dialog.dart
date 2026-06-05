@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/canvas_connection.dart';
 import '../../../../shared/widgets/color_picker_dialog.dart';
+import '../../../../shared/widgets/segmented_pill.dart';
 
-// Диалог редактирования свойств связи на канвасе.
+// Dialog for editing a canvas connection's properties.
 
-/// Диалог для редактирования label, цвета и стиля связи.
+/// Dialog for editing a connection's label, color and style.
 ///
-/// Возвращает `Map<String, dynamic>` с ключами `label`, `color`, `style`,
-/// или `null` если пользователь отменил.
+/// Returns a `Map<String, dynamic>` with keys `label`, `color`, `style`,
+/// or `null` if the user cancelled.
 class EditConnectionDialog extends StatefulWidget {
-  /// Создаёт [EditConnectionDialog].
+  /// Creates an [EditConnectionDialog].
   const EditConnectionDialog({
     this.initialLabel,
     this.initialColor,
@@ -19,16 +20,16 @@ class EditConnectionDialog extends StatefulWidget {
     super.key,
   });
 
-  /// Начальный лейбл.
+  /// Initial label.
   final String? initialLabel;
 
-  /// Начальный цвет (hex).
+  /// Initial color (hex).
   final String? initialColor;
 
-  /// Начальный стиль.
+  /// Initial style.
   final ConnectionStyle? initialStyle;
 
-  /// Показывает диалог и возвращает результат.
+  /// Shows the dialog and returns the result.
   static Future<Map<String, dynamic>?> show(
     BuildContext context, {
     String? initialLabel,
@@ -159,28 +160,27 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
-            SegmentedButton<ConnectionStyle>(
-              segments: <ButtonSegment<ConnectionStyle>>[
-                ButtonSegment<ConnectionStyle>(
+            SegmentedPill<ConnectionStyle>(
+              options: <SegmentedPillOption<ConnectionStyle>>[
+                SegmentedPillOption<ConnectionStyle>(
                   value: ConnectionStyle.solid,
-                  label: Text(l.connectionStyleSolid),
-                  icon: const Icon(Icons.horizontal_rule, size: 18),
+                  label: l.connectionStyleSolid,
+                  icon: Icons.horizontal_rule,
                 ),
-                ButtonSegment<ConnectionStyle>(
+                SegmentedPillOption<ConnectionStyle>(
                   value: ConnectionStyle.dashed,
-                  label: Text(l.connectionStyleDashed),
-                  icon: const Icon(Icons.more_horiz, size: 18),
+                  label: l.connectionStyleDashed,
+                  icon: Icons.more_horiz,
                 ),
-                ButtonSegment<ConnectionStyle>(
+                SegmentedPillOption<ConnectionStyle>(
                   value: ConnectionStyle.arrow,
-                  label: Text(l.connectionStyleArrow),
-                  icon: const Icon(Icons.arrow_forward, size: 18),
+                  label: l.connectionStyleArrow,
+                  icon: Icons.arrow_forward,
                 ),
               ],
-              selected: <ConnectionStyle>{_selectedStyle},
-              onSelectionChanged: (Set<ConnectionStyle> selection) {
-                setState(() => _selectedStyle = selection.first);
-              },
+              selected: _selectedStyle,
+              onChanged: (ConnectionStyle s) =>
+                  setState(() => _selectedStyle = s),
             ),
             ],
           ),

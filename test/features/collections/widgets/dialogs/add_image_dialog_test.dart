@@ -63,25 +63,19 @@ void main() {
     );
 
     testWidgets(
-      'should show SegmentedButton с "From URL" и "From File" для нового элемента',
+      'should show source selector with "From URL" and "From File" for a new item',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(onResult: (_) {}));
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
-        expect(
-          find.byWidgetPredicate(
-            (Widget widget) => widget.runtimeType.toString().startsWith('SegmentedButton'),
-          ),
-          findsOneWidget,
-        );
         expect(find.text('From URL'), findsOneWidget);
         expect(find.text('From File'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'не should show SegmentedButton когда initialUrl указан',
+      'should not show source selector when initialUrl is provided',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestApp(
           onResult: (_) {},
@@ -91,12 +85,8 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(
-          find.byWidgetPredicate(
-            (Widget widget) => widget.runtimeType.toString().startsWith('SegmentedButton'),
-          ),
-          findsNothing,
-        );
+        expect(find.text('From URL'), findsNothing);
+        expect(find.text('From File'), findsNothing);
       },
     );
 

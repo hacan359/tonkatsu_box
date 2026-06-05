@@ -73,7 +73,7 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | **Visual Boards** | Drag-and-drop canvas with posters, notes, and connections |
 | **Tier Lists & Mood Grids** | Rank items into S/A/B/C tiers, or arrange them on a visual N×M board with labels — export either as PNG |
 | **Import** | Steam library, Trakt.tv history, RetroAchievements progress, MyAnimeList XML, AniList by username |
-| **Kodi Sync** | Push movies, TV shows, and anime to a Kodi media server over JSON-RPC |
+| **Kodi Sync** | Pull watched status and ratings for your movies from a Kodi media server over JSON-RPC |
 | **Export & Share** | .xcoll / .xcollx files with full offline support |
 | **Gamepad** | Navigate with Xbox controller (desktop and Android handhelds) |
 | **Languages** | English & Russian |

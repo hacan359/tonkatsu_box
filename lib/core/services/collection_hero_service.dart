@@ -1,8 +1,6 @@
-// Сервис для работы с hero-изображениями коллекций.
-//
-// Картинки хранятся в `<appSupport>/collections/hero_<id>_<ts>.<ext>`.
-// В БД хранится только filename — абсолютный путь резолвится через
-// `resolve(fileName)` из [CollectionHeroService].
+// Images live in `<appSupport>/collections/hero_<id>_<ts>.<ext>`.
+// The DB stores only the filename; the absolute path is resolved via
+// `resolve(fileName)`.
 
 import 'dart:io';
 
@@ -12,19 +10,15 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-/// Имя каталога внутри `<appSupport>`.
 const String _heroDirName = 'collections';
 
-/// Провайдер корневого каталога hero-изображений (абсолютный путь).
-///
-/// Перекрывается в `main.dart` значением, полученным при старте приложения.
+/// Overridden in `main.dart` with the value resolved at app startup.
 final Provider<String> collectionsHeroDirProvider = Provider<String>(
   (Ref ref) => throw UnimplementedError(
     'collectionsHeroDirProvider must be overridden in main()',
   ),
 );
 
-/// Провайдер сервиса hero-изображений.
 final Provider<CollectionHeroService> collectionHeroServiceProvider =
     Provider<CollectionHeroService>(
   (Ref ref) => CollectionHeroService(
@@ -32,18 +26,15 @@ final Provider<CollectionHeroService> collectionHeroServiceProvider =
   ),
 );
 
-/// Сервис для выбора, сохранения и удаления hero-изображений коллекций.
 class CollectionHeroService {
-  /// Создаёт [CollectionHeroService].
   const CollectionHeroService({required String rootDir}) : _rootDir = rootDir;
 
   static final Logger _log = Logger('CollectionHeroService');
 
   final String _rootDir;
 
-  /// Инициализирует каталог `<appSupport>/collections/` и возвращает его путь.
-  ///
-  /// Вызывается один раз при старте приложения.
+  /// Creates `<appSupport>/collections/` if needed and returns its path.
+  /// Called once at app startup.
   static Future<String> resolveRoot() async {
     final Directory appDir = await getApplicationSupportDirectory();
     final Directory dir = Directory(p.join(appDir.path, _heroDirName));
@@ -53,21 +44,15 @@ class CollectionHeroService {
     return dir.path;
   }
 
-  /// Возвращает абсолютный путь к файлу по имени из БД.
-  ///
-  /// Если [fileName] `null` или пуст — возвращает `null`.
   String? resolve(String? fileName) {
     if (fileName == null || fileName.isEmpty) return null;
     return p.join(_rootDir, fileName);
   }
 
-  /// Возвращает абсолютный путь для нового файла с указанным именем.
   String absolutePathFor(String fileName) => p.join(_rootDir, fileName);
 
-  /// Открывает пикер, копирует выбранный файл в каталог коллекций.
-  ///
-  /// Старый файл (если передан [oldFileName]) удаляется после успешного копирования.
-  /// Возвращает имя нового файла (для сохранения в БД) или `null` при отмене.
+  /// Old file ([oldFileName]) is deleted only after the copy succeeds.
+  /// Returns the new filename to store in the DB, or `null` on cancel.
   Future<String?> pickAndSave({
     required int collectionId,
     String? oldFileName,
@@ -104,9 +89,7 @@ class CollectionHeroService {
     return fileName;
   }
 
-  /// Сохраняет [bytes] как hero-файл коллекции.
-  ///
-  /// Используется при импорте `.xcollx` и восстановлении из бэкапа.
+  /// Used when importing `.xcollx` and restoring from a backup.
   Future<String> saveBytes({
     required int collectionId,
     required List<int> bytes,
@@ -119,7 +102,6 @@ class CollectionHeroService {
     return fileName;
   }
 
-  /// Удаляет файл, если он существует.
   Future<void> delete(String? fileName) async {
     if (fileName == null || fileName.isEmpty) return;
     final File f = File(absolutePathFor(fileName));
@@ -132,9 +114,7 @@ class CollectionHeroService {
     }
   }
 
-  /// Возвращает список всех hero-файлов в каталоге.
-  ///
-  /// Используется для бэкапа.
+  /// Used for backups.
   List<File> listAll() {
     final Directory d = Directory(_rootDir);
     if (!d.existsSync()) return <File>[];

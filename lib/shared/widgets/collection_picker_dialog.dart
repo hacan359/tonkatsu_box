@@ -1,5 +1,3 @@
-// Shared диалог выбора коллекции для добавления/перемещения элементов.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,36 +8,26 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../../features/collections/providers/collections_provider.dart';
 
-/// Выбор пользователя в диалоге выбора коллекции.
 sealed class CollectionChoice {
-  /// Создаёт [CollectionChoice].
   const CollectionChoice();
 }
 
-/// Добавить в конкретную коллекцию.
 class ChosenCollection extends CollectionChoice {
-  /// Создаёт [ChosenCollection].
   const ChosenCollection(this.collection);
 
-  /// Выбранная коллекция.
   final Collection collection;
 }
 
-/// Добавить без коллекции (Uncategorized).
+/// Choice to add the item without any collection (Uncategorized).
 class WithoutCollection extends CollectionChoice {
-  /// Создаёт [WithoutCollection].
   const WithoutCollection();
 }
 
-/// Показывает диалог выбора коллекции.
+/// Returns the chosen [CollectionChoice], or null if cancelled.
 ///
-/// [excludeCollectionId] — скрыть коллекцию с данным ID из списка.
-/// [showUncategorized] — показывать ли опцию "Without Collection".
-/// [title] — заголовок диалога.
-/// [alreadyInCollectionIds] — ID коллекций где элемент уже есть.
-/// `null` в наборе означает Uncategorized — он тоже становится disabled.
-///
-/// Возвращает [CollectionChoice] при выборе или null при отмене.
+/// [excludeCollectionId] hides that collection from the list.
+/// [alreadyInCollectionIds] are disabled; a `null` entry disables the
+/// Uncategorized option too.
 Future<CollectionChoice?> showCollectionPickerDialog({
   required BuildContext context,
   required WidgetRef ref,
@@ -86,7 +74,6 @@ Future<CollectionChoice?> showCollectionPickerDialog({
   );
 }
 
-/// Содержимое диалога выбора коллекции.
 class _CollectionPickerContent extends StatefulWidget {
   const _CollectionPickerContent({
     required this.title,
@@ -145,7 +132,6 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
   List<Collection> get _sortedCollections {
     final List<Collection> filtered = List<Collection>.of(_filteredCollections);
 
-    // Сортируем
     filtered.sort((Collection a, Collection b) {
       final int result;
       switch (_sortMode) {
@@ -157,7 +143,7 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
       return _descending ? -result : result;
     });
 
-    // Уже добавленные — в конец
+    // Already-added collections sink to the bottom of the list.
     final List<Collection> available = filtered
         .where(
             (Collection c) => !widget.alreadyInCollectionIds.contains(c.id))
@@ -171,22 +157,19 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
 
   void _toggleSort() {
     setState(() {
+      // Cycle: A-Z -> Z-A -> date desc -> date asc -> A-Z.
       if (_sortMode == CollectionListSortMode.alphabetical) {
         if (_descending) {
-          // Z→A → дата ↓
           _sortMode = CollectionListSortMode.createdDate;
           _descending = false;
         } else {
-          // A→Z → Z→A
           _descending = true;
         }
       } else {
         if (_descending) {
-          // дата ↑ → A→Z
           _sortMode = CollectionListSortMode.alphabetical;
           _descending = false;
         } else {
-          // дата ↓ → дата ↑
           _descending = true;
         }
       }
@@ -254,7 +237,7 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
             ),
           ),
 
-          // Filter field — only if >= 5 collections
+          // Filter field - only if >= 5 collections
           if (widget.collections.length >= 5)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),

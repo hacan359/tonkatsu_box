@@ -1,21 +1,14 @@
-// DAO для работы с играми, платформами и IGDB-жанрами.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/game.dart';
 import '../../../shared/models/platform.dart';
 import '../query_chunk.dart';
 
-/// DAO для таблиц `games`, `platforms` и `igdb_genres`.
 class GameDao {
-  /// Создаёт DAO с функцией получения базы данных.
   const GameDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  // ==================== Platforms ====================
-
-  /// Возвращает все платформы из базы данных.
   Future<List<Platform>> getAllPlatforms() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -25,7 +18,6 @@ class GameDao {
     return rows.map(Platform.fromDb).toList();
   }
 
-  /// Возвращает платформу по ID или null, если не найдена.
   Future<Platform?> getPlatformById(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -38,7 +30,6 @@ class GameDao {
     return Platform.fromDb(rows.first);
   }
 
-  /// Возвращает количество платформ в базе данных.
   Future<int> getPlatformCount() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> result = await db.rawQuery(
@@ -47,7 +38,6 @@ class GameDao {
     return result.first['count'] as int;
   }
 
-  /// Сохраняет или обновляет платформу в базе данных.
   Future<void> upsertPlatform(Platform platform) async {
     final Database db = await _getDatabase();
     await db.insert(
@@ -57,9 +47,7 @@ class GameDao {
     );
   }
 
-  /// Сохраняет список платформ пакетно.
-  ///
-  /// Использует транзакцию для оптимизации производительности.
+  /// Batched in a single transaction for performance.
   Future<void> upsertPlatforms(List<Platform> platforms) async {
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {
@@ -75,9 +63,7 @@ class GameDao {
     });
   }
 
-  /// Возвращает платформы по списку ID.
-  ///
-  /// Возвращает только те платформы, которые есть в базе данных.
+  /// Chunked to stay under SQLite's variable limit for large id lists.
   Future<List<Platform>> getPlatformsByIds(List<int> ids) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(ids, (List<int> chunk) async {
@@ -92,9 +78,6 @@ class GameDao {
     });
   }
 
-  // ==================== Games ====================
-
-  /// Возвращает игру по ID или null, если не найдена.
   Future<Game?> getGameById(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -107,7 +90,7 @@ class GameDao {
     return Game.fromDb(rows.first);
   }
 
-  /// Возвращает несколько игр по списку ID.
+  /// Chunked to stay under SQLite's variable limit for large id lists.
   Future<List<Game>> getGamesByIds(List<int> ids) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(ids, (List<int> chunk) async {
@@ -122,9 +105,7 @@ class GameDao {
     });
   }
 
-  /// Ищет игры по названию в кеше.
-  ///
-  /// Возвращает список игр, название которых содержит [query].
+  /// Substring match on name (case-insensitive LIKE).
   Future<List<Game>> searchGamesInCache(String query, {int limit = 20}) async {
     if (query.trim().isEmpty) return <Game>[];
 
@@ -139,7 +120,6 @@ class GameDao {
     return rows.map(Game.fromDb).toList();
   }
 
-  /// Возвращает количество игр в кеше.
   Future<int> getGameCount() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> result = await db.rawQuery(
@@ -148,7 +128,6 @@ class GameDao {
     return result.first['count'] as int;
   }
 
-  /// Сохраняет или обновляет игру в базе данных.
   Future<void> upsertGame(Game game) async {
     final Database db = await _getDatabase();
     await db.insert(
@@ -158,9 +137,7 @@ class GameDao {
     );
   }
 
-  /// Сохраняет список игр пакетно.
-  ///
-  /// Использует транзакцию для оптимизации производительности.
+  /// Batched in a single transaction for performance.
   Future<void> upsertGames(List<Game> games) async {
     if (games.isEmpty) return;
 
@@ -178,7 +155,6 @@ class GameDao {
     });
   }
 
-  /// Удаляет игру по ID.
   Future<void> deleteGame(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
@@ -188,15 +164,11 @@ class GameDao {
     );
   }
 
-  /// Удаляет все игры из кеша.
   Future<void> clearGames() async {
     final Database db = await _getDatabase();
     await db.delete('games');
   }
 
-  // ==================== IGDB Genres ====================
-
-  /// Возвращает все жанры IGDB из кэша.
   Future<List<Map<String, dynamic>>> getIgdbGenres() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(

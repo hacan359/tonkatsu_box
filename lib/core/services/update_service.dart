@@ -1,4 +1,4 @@
-// Update checker — проверяет GitHub Releases API на наличие новой версии.
+// Update checker: polls the GitHub Releases API for a newer version.
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,9 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
 
-/// Информация о доступном обновлении.
 class UpdateInfo {
-  /// Создаёт информацию об обновлении.
   const UpdateInfo({
     required this.currentVersion,
     required this.latestVersion,
@@ -19,28 +17,18 @@ class UpdateInfo {
     this.releaseNotes,
   });
 
-  /// Текущая версия приложения.
   final String currentVersion;
-
-  /// Последняя версия на GitHub.
   final String latestVersion;
-
-  /// URL страницы релиза.
   final String releaseUrl;
-
-  /// Есть ли более новая версия.
   final bool hasUpdate;
 
-  /// Заметки к релизу (markdown).
+  /// Release notes in markdown.
   final String? releaseNotes;
 }
 
-/// Сервис проверки обновлений через GitHub Releases API.
+/// Checks for updates via the GitHub Releases API.
 class UpdateService {
-  /// Создаёт сервис проверки обновлений.
-  ///
-  /// [currentVersionOverride] используется в тестах вместо
-  /// `PackageInfo.fromPlatform()`.
+  /// [currentVersionOverride] replaces `PackageInfo.fromPlatform()` in tests.
   UpdateService({
     required SharedPreferences prefs,
     required Dio dio,
@@ -65,13 +53,10 @@ class UpdateService {
   static const String _latestVersionKey = 'update_latest_version';
   static const String _releaseUrlKey = 'update_release_url';
 
-  static const int _throttleDurationMs = 86400000; // 24 часа
+  static const int _throttleDurationMs = 86400000; // 24h
 
-  /// Проверяет наличие обновления.
-  ///
-  /// Возвращает `null` при ошибке сети или если не удалось проверить.
-  /// Не чаще раза в 24 часа — при повторном вызове возвращает
-  /// кешированный результат.
+  /// Returns `null` on network error or if the check failed.
+  /// Throttled to once per 24h; repeat calls return the cached result.
   Future<UpdateInfo?> checkForUpdate() async {
     try {
       final String currentVersion;
@@ -82,7 +67,6 @@ class UpdateService {
         currentVersion = packageInfo.version;
       }
 
-      // Проверяем throttle
       final int? lastCheck = _prefs.getInt(_lastCheckKey);
       final int now = DateTime.now().millisecondsSinceEpoch;
 
@@ -107,7 +91,6 @@ class UpdateService {
       final String releaseUrl = data['html_url'] as String;
       final String? body = data['body'] as String?;
 
-      // Сохранить результат и timestamp
       await _prefs.setInt(_lastCheckKey, now);
       await _prefs.setString(_latestVersionKey, latestVersion);
       await _prefs.setString(_releaseUrlKey, releaseUrl);
@@ -128,7 +111,6 @@ class UpdateService {
     }
   }
 
-  /// Возвращает кешированный результат из SharedPreferences.
   UpdateInfo? _getCachedResult(String currentVersion) {
     final String? savedVersion = _prefs.getString(_latestVersionKey);
     final String? savedUrl = _prefs.getString(_releaseUrlKey);
@@ -144,7 +126,7 @@ class UpdateService {
     return null;
   }
 
-  /// Сравнивает semver: возвращает `true` если [latest] > [current].
+  /// Compares semver: `true` if [latest] > [current].
   bool isNewer(String latest, String current) {
     final List<int> latestParts = _parseSemver(latest);
     final List<int> currentParts = _parseSemver(current);
@@ -165,7 +147,6 @@ class UpdateService {
   }
 }
 
-/// Провайдер сервиса проверки обновлений.
 final Provider<UpdateService> updateServiceProvider =
     Provider<UpdateService>((Ref ref) {
   return UpdateService(
@@ -174,9 +155,7 @@ final Provider<UpdateService> updateServiceProvider =
   );
 });
 
-/// Проверяет обновление один раз при первом чтении.
-///
-/// [FutureProvider] автоматически кеширует результат на время жизни scope.
+/// Checks for an update once, on first read.
 final FutureProvider<UpdateInfo?> updateCheckProvider =
     FutureProvider<UpdateInfo?>((Ref ref) {
   return ref.read(updateServiceProvider).checkForUpdate();
