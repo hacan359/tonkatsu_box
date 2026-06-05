@@ -5,12 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
+import '../../../shared/widgets/segmented_pill.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 
-/// Боковая панель для поиска и добавления SteamGridDB-изображений на канвас.
+/// Side panel for searching and adding SteamGridDB images to the canvas.
 class SteamGridDbPanel extends ConsumerStatefulWidget {
-  /// Создаёт [SteamGridDbPanel].
+  /// Creates a [SteamGridDbPanel].
   const SteamGridDbPanel({
     required this.collectionId,
     required this.collectionName,
@@ -18,13 +19,13 @@ class SteamGridDbPanel extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции (null для uncategorized).
+  /// Collection id (null for uncategorized).
   final int? collectionId;
 
-  /// Название коллекции (для автозаполнения поиска).
+  /// Collection name (used to pre-fill the search).
   final String collectionName;
 
-  /// Колбэк при добавлении изображения на канвас.
+  /// Callback fired when an image is added to the canvas.
   final void Function(SteamGridDbImage image) onAddImage;
 
   @override
@@ -104,7 +105,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
             if (panelState.selectedGame != null)
               _buildGameHeader(panelState.selectedGame!, colorScheme, theme),
             if (panelState.selectedGame != null)
-              _buildImageTypeSelector(panelState, colorScheme),
+              _buildImageTypeSelector(panelState),
             Expanded(
               child: _buildContent(panelState, settings, colorScheme, theme),
             ),
@@ -230,38 +231,26 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
     );
   }
 
-  Widget _buildImageTypeSelector(
-    SteamGridDbPanelState panelState,
-    ColorScheme colorScheme,
-  ) {
+  Widget _buildImageTypeSelector(SteamGridDbPanelState panelState) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: SegmentedButton<SteamGridDbImageType>(
-        segments: SteamGridDbImageType.values
+      child: SegmentedPill<SteamGridDbImageType>(
+        expand: true,
+        options: SteamGridDbImageType.values
             .map(
               (SteamGridDbImageType type) =>
-                  ButtonSegment<SteamGridDbImageType>(
+                  SegmentedPillOption<SteamGridDbImageType>(
                     value: type,
-                    label: Text(
-                      _localizedImageTypeLabel(context, type),
-                      style: const TextStyle(fontSize: 12),
-                    ),
+                    label: _localizedImageTypeLabel(context, type),
                   ),
             )
             .toList(),
-        selected: <SteamGridDbImageType>{panelState.selectedImageType},
-        onSelectionChanged: (Set<SteamGridDbImageType> selection) {
+        selected: panelState.selectedImageType,
+        onChanged: (SteamGridDbImageType type) {
           ref
               .read(steamGridDbPanelProvider(widget.collectionId).notifier)
-              .selectImageType(selection.first);
+              .selectImageType(type);
         },
-        style: ButtonStyle(
-          visualDensity: VisualDensity.compact,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          padding: WidgetStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 8),
-          ),
-        ),
       ),
     );
   }
@@ -272,37 +261,30 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
     ColorScheme colorScheme,
     ThemeData theme,
   ) {
-    // Загрузка поиска
     if (panelState.isSearching) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Загрузка изображений
     if (panelState.isLoadingImages) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Ошибка поиска
     if (panelState.searchError != null) {
       return _buildError(panelState.searchError!, colorScheme, theme);
     }
 
-    // Ошибка загрузки изображений
     if (panelState.imageError != null) {
       return _buildError(panelState.imageError!, colorScheme, theme);
     }
 
-    // Если выбрана игра — показать сетку изображений
     if (panelState.selectedGame != null) {
       return _buildImageGrid(panelState, colorScheme, theme);
     }
 
-    // Результаты поиска
     if (panelState.searchResults.isNotEmpty) {
       return _buildSearchResults(panelState, colorScheme, theme);
     }
 
-    // Пустое состояние
     return _buildEmptyState(colorScheme, theme);
   }
 
@@ -421,7 +403,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
   }
 }
 
-/// Карточка-превью изображения SteamGridDB.
+/// Preview card for a SteamGridDB image.
 class _ImageThumbnailCard extends StatelessWidget {
   const _ImageThumbnailCard({
     required this.image,

@@ -6,29 +6,30 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/segmented_pill.dart';
 
-// Диалог добавления изображения на канвас.
+// Add-image-to-canvas dialog.
 //
-// Поддерживает два режима: URL и локальный файл (base64).
+// Supports two modes: a URL and a local file (base64).
 
-/// Способ добавления изображения.
+/// How an image is added.
 enum _ImageSource {
   url,
   file,
 }
 
-/// Диалог для добавления изображения на канвас.
+/// Dialog for adding an image to the canvas.
 ///
-/// Возвращает `Map<String, dynamic>` с ключом `url` (для URL)
-/// или `base64` + `mimeType` (для файла), или `null` при отмене.
+/// Returns a `Map<String, dynamic>` with a `url` key (for URL) or
+/// `base64` + `mimeType` (for a file), or `null` on cancel.
 class AddImageDialog extends StatefulWidget {
-  /// Создаёт [AddImageDialog].
+  /// Creates an [AddImageDialog].
   const AddImageDialog({this.initialUrl, super.key});
 
-  /// Начальный URL (для редактирования).
+  /// Initial URL (for editing).
   final String? initialUrl;
 
-  /// Показывает диалог и возвращает результат.
+  /// Shows the dialog and returns the result.
   static Future<Map<String, dynamic>?> show(
     BuildContext context, {
     String? initialUrl,
@@ -91,7 +92,7 @@ class _AddImageDialogState extends State<AddImageDialog> {
     final List<int> bytes = await ioFile.readAsBytes();
     final String base64String = base64Encode(bytes);
 
-    // Определяем MIME-тип по расширению
+    // Infer the MIME type from the file extension
     final String ext = file.extension?.toLowerCase() ?? '';
     final String mimeType = switch (ext) {
       'png' => 'image/png',
@@ -141,30 +142,26 @@ class _AddImageDialogState extends State<AddImageDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-            // Выбор источника
             if (!_isEditing) ...<Widget>[
-              SegmentedButton<_ImageSource>(
-                segments: <ButtonSegment<_ImageSource>>[
-                  ButtonSegment<_ImageSource>(
+              SegmentedPill<_ImageSource>(
+                options: <SegmentedPillOption<_ImageSource>>[
+                  SegmentedPillOption<_ImageSource>(
                     value: _ImageSource.url,
-                    label: Text(l.imageFromUrl),
-                    icon: const Icon(Icons.link),
+                    label: l.imageFromUrl,
+                    icon: Icons.link,
                   ),
-                  ButtonSegment<_ImageSource>(
+                  SegmentedPillOption<_ImageSource>(
                     value: _ImageSource.file,
-                    label: Text(l.imageFromFile),
-                    icon: const Icon(Icons.folder_open),
+                    label: l.imageFromFile,
+                    icon: Icons.folder_open,
                   ),
                 ],
-                selected: <_ImageSource>{_source},
-                onSelectionChanged: (Set<_ImageSource> selected) {
-                  setState(() => _source = selected.first);
-                },
+                selected: _source,
+                onChanged: (_ImageSource s) => setState(() => _source = s),
               ),
               const SizedBox(height: 16),
             ],
 
-            // URL ввод
             if (_source == _ImageSource.url) ...<Widget>[
               TextField(
                 controller: _urlController,
@@ -178,7 +175,6 @@ class _AddImageDialogState extends State<AddImageDialog> {
                 onSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 12),
-              // Превью
               if (_urlController.text.trim().startsWith('http'))
                 SizedBox(
                   height: 150,
@@ -200,7 +196,6 @@ class _AddImageDialogState extends State<AddImageDialog> {
                 ),
             ],
 
-            // Файл
             if (_source == _ImageSource.file) ...<Widget>[
               if (_fileName != null) ...<Widget>[
                 Text(

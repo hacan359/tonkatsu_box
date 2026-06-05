@@ -102,6 +102,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Unify segmented switchers on the shared pill style**
+
+  The Material `SegmentedButton` controls in the add-image dialog, the
+  edit-connection dialog and the SteamGridDB panel now use the app's rounded
+  pill switcher, so every segmented control matches the item-detail status row.
+  The pill gains an `expand` mode that splits the available width equally for
+  narrow, full-width panels.
+
+  * lib/shared/widgets/segmented_pill.dart (SegmentedPill.expand, SegmentedPillOption): Add an equal-width `expand` mode (Expanded segments, ellipsis labels, tighter padding).
+  * lib/features/collections/widgets/dialogs/add_image_dialog.dart (_AddImageDialogState), lib/features/collections/widgets/dialogs/edit_connection_dialog.dart (_EditConnectionDialogState): Swap `SegmentedButton` for `SegmentedPill`.
+  * lib/features/collections/widgets/steamgriddb_panel.dart (_SteamGridDbPanelState._buildImageTypeSelector): Swap `SegmentedButton` for `SegmentedPill(expand: true)`.
+
 - **Refine the item right-click / long-press context menu**
 
   Action entries (move, copy, remove, reorder) are now compact single-line rows

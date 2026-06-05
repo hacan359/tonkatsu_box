@@ -332,7 +332,7 @@ void main() {
     });
 
     group('image type selector', () {
-      testWidgets('should show segmented button when game selected',
+      testWidgets('should show image type selector when game selected',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           panelState: const SteamGridDbPanelState(
@@ -342,22 +342,22 @@ void main() {
           ),
         ));
 
-        expect(find.byType(SegmentedButton<SteamGridDbImageType>),
-            findsOneWidget);
         expect(find.text('Grids'), findsOneWidget);
         expect(find.text('Heroes'), findsOneWidget);
         expect(find.text('Logos'), findsOneWidget);
         expect(find.text('Icons'), findsOneWidget);
       });
 
-      testWidgets('should not show segmented button without game',
+      testWidgets('should not show image type selector without game',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           panelState: const SteamGridDbPanelState(isOpen: true),
         ));
 
-        expect(find.byType(SegmentedButton<SteamGridDbImageType>),
-            findsNothing);
+        expect(find.text('Grids'), findsNothing);
+        expect(find.text('Heroes'), findsNothing);
+        expect(find.text('Logos'), findsNothing);
+        expect(find.text('Icons'), findsNothing);
       });
     });
 

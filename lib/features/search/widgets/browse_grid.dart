@@ -1,11 +1,9 @@
-import '../../../shared/constants/platform_features.dart';
-// Вертикальный грид результатов Browse/Search.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/anime.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
@@ -26,7 +24,7 @@ import '../../collections/providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/browse_provider.dart';
 
-/// Множества ID элементов, которые уже есть в коллекциях.
+/// Sets of external IDs that already exist in the user's collections.
 final FutureProvider<
         ({
           Set<int> tmdbIds,
@@ -66,12 +64,7 @@ final FutureProvider<
   );
 });
 
-/// Грид результатов Browse/Search mode.
-///
-/// Отображает постерные карточки в виде сетки.
-/// Поддерживает бесконечный скролл (пагинацию).
 class BrowseGrid extends ConsumerStatefulWidget {
-  /// Создаёт [BrowseGrid].
   const BrowseGrid({
     required this.onItemTap,
     this.onOpenInCollection,
@@ -80,16 +73,14 @@ class BrowseGrid extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Callback при тапе на элемент.
   final void Function(Object item, MediaType mediaType) onItemTap;
 
-  /// Callback "Открыть в коллекции" (externalId, mediaType).
   final void Function(int externalId, MediaType mediaType)? onOpenInCollection;
 
-  /// Клиентский фильтр по названию (type-to-filter).
+  /// Client-side type-to-filter query applied to titles.
   final String? clientFilter;
 
-  /// Карта платформ для отображения на карточках игр.
+  /// Platform lookup by IGDB ID, used to render platform labels on game cards.
   final Map<int, Platform> platformMap;
 
   @override
@@ -118,10 +109,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
   }
 
-  /// Проверяет, заполнен ли viewport контентом после загрузки.
-  ///
-  /// Если контент не достигает порога прокрутки (300px от конца),
-  /// автоматически подгружает следующую страницу.
+  /// Loads the next page if the content does not reach the scroll threshold
+  /// (300px from the end), i.e. it does not fill the viewport yet.
   void _scheduleViewportFillCheck() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
@@ -191,7 +180,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       );
     }
 
-    // Empty — no filters, no Discover
+    // Empty - no filters, no Discover
     if (state.isEmpty && !state.hasActiveQuery) {
       return Center(
         child: Padding(
@@ -217,7 +206,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       );
     }
 
-    // Collected IDs для маркировки "уже в коллекции"
+    // Collected IDs used to mark items already in a collection.
     final AsyncValue<
             ({
               Set<int> tmdbIds,
@@ -238,7 +227,6 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     final Set<int> animeIds =
         collectedIds.valueOrNull?.animeIds ?? const <int>{};
 
-    // Применяем клиентский фильтр по названию
     final List<Object> displayItems;
     final String? clientFilter = widget.clientFilter;
     if (clientFilter != null && clientFilter.isNotEmpty) {
@@ -406,7 +394,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     return const SizedBox.shrink();
   }
 
-  /// Строит строку платформ из списка ID.
+  /// Joins up to 3 platform names, appending "+N" for the rest.
   String? _buildPlatformLabel(List<int>? platformIds) {
     if (platformIds == null || platformIds.isEmpty) return null;
     if (widget.platformMap.isEmpty) return null;
@@ -420,7 +408,6 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     return '${shown.join(', ')} +${allNames.length - 3}';
   }
 
-  /// Извлекает название из элемента для клиентской фильтрации.
   static String _extractTitle(Object item, String animeMangaTitleLanguage) {
     if (item is Game) return item.name;
     if (item is Movie) return item.title;
@@ -431,10 +418,10 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     return '';
   }
 
-  /// Максимальная ширина карточки на десктопе (как в collection_screen).
+  /// Max card width on desktop; kept in sync with collection_screen.
   static const double _desktopMaxCardWidth = 170;
 
-  /// Aspect ratio карточки (как в collection_screen).
+  /// Card aspect ratio; kept in sync with collection_screen.
   static const double _cardAspectRatio = 0.55;
 
   SliverGridDelegate _buildGridDelegate(BuildContext context) {
@@ -481,9 +468,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   }
 }
 
-/// Placeholder для шиммера.
 class AspectRatioPlaceholder extends StatelessWidget {
-  /// Создаёт [AspectRatioPlaceholder].
   const AspectRatioPlaceholder({super.key});
 
   @override
