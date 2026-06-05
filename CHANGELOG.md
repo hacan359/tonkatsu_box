@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-06-05
+
 ### Added
 
 - **Add any item to the calendar with a date and recurrence**
