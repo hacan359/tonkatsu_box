@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.32.1] - 2026-06-07
+
 ### Fixed
 
 - **Fix the app freezing on the splash logo when an old database upgrades across many versions at once**
