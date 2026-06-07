@@ -11,6 +11,11 @@ class MigrationV4 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('ALTER TABLE platforms ADD COLUMN logo_image_id TEXT');
+    await Migration.addColumnIfAbsent(
+      db,
+      'platforms',
+      'logo_image_id',
+      'logo_image_id TEXT',
+    );
   }
 }

@@ -12,7 +12,17 @@ class MigrationV32 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('ALTER TABLE games ADD COLUMN artwork_url TEXT');
-    await db.execute('ALTER TABLE manga_cache ADD COLUMN banner_url TEXT');
+    await Migration.addColumnIfAbsent(
+      db,
+      'games',
+      'artwork_url',
+      'artwork_url TEXT',
+    );
+    await Migration.addColumnIfAbsent(
+      db,
+      'manga_cache',
+      'banner_url',
+      'banner_url TEXT',
+    );
   }
 }

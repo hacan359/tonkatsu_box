@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/logging/startup_error.dart';
 import 'core/services/backup_service.dart';
 import 'features/settings/providers/kodi_settings_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
@@ -74,6 +75,18 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
         // Тайловый фон применяется через PageTransitionsTheme
         // (каждый route получает свой непрозрачный DecoratedBox).
         home: const SplashScreen(),
+        // A captured fatal startup error (failed migration, throw before the
+        // first frame) paints over the whole UI so it's visible on-device
+        // instead of a frozen splash logo.
+        builder: (BuildContext context, Widget? child) {
+          return ValueListenableBuilder<StartupErrorInfo?>(
+            valueListenable: startupError,
+            builder: (BuildContext context, StartupErrorInfo? info, _) {
+              if (info == null) return child ?? const SizedBox.shrink();
+              return StartupErrorView(info: info);
+            },
+          );
+        },
       ),
     );
   }

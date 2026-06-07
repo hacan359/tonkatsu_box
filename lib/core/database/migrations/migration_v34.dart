@@ -11,9 +11,11 @@ class MigrationV34 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('''
-      ALTER TABLE collection_items
-      ADD COLUMN time_spent_minutes INTEGER NOT NULL DEFAULT 0
-    ''');
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'time_spent_minutes',
+      'time_spent_minutes INTEGER NOT NULL DEFAULT 0',
+    );
   }
 }

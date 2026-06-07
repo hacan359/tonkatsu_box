@@ -56,7 +56,12 @@ class MigrationV44 extends Migration {
   }
 
   Future<void> _addCollectionItemsSource(Database db) async {
-    await db.execute('ALTER TABLE collection_items ADD COLUMN source TEXT');
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'source',
+      'source TEXT',
+    );
     await db.execute(
       "UPDATE collection_items SET source = 'anilist' WHERE media_type = 'manga'",
     );
@@ -66,29 +71,34 @@ class MigrationV44 extends Migration {
     await db.execute('DROP INDEX IF EXISTS idx_ci_coll_other');
     await db.execute('DROP INDEX IF EXISTS idx_ci_uncat_other');
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_coll_other
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll_other
       ON collection_items(collection_id, media_type, external_id)
       WHERE collection_id IS NOT NULL AND media_type NOT IN ('game', 'manga')
     ''');
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_uncat_other
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_uncat_other
       ON collection_items(media_type, external_id)
       WHERE collection_id IS NULL AND media_type NOT IN ('game', 'manga')
     ''');
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_coll_manga
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll_manga
       ON collection_items(collection_id, media_type, external_id, COALESCE(source, 'anilist'))
       WHERE collection_id IS NOT NULL AND media_type = 'manga'
     ''');
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_uncat_manga
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_uncat_manga
       ON collection_items(media_type, external_id, COALESCE(source, 'anilist'))
       WHERE collection_id IS NULL AND media_type = 'manga'
     ''');
   }
 
   Future<void> _addMoodGridCellsSource(Database db) async {
-    await db.execute('ALTER TABLE mood_grid_cells ADD COLUMN source TEXT');
+    await Migration.addColumnIfAbsent(
+      db,
+      'mood_grid_cells',
+      'source',
+      'source TEXT',
+    );
     await db.execute(
       "UPDATE mood_grid_cells SET source = 'anilist' WHERE media_type = 'manga'",
     );

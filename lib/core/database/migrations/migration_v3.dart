@@ -31,11 +31,11 @@ class MigrationV3 extends Migration {
       )
     ''');
     await db.execute('''
-      CREATE INDEX idx_collection_games_collection
+      CREATE INDEX IF NOT EXISTS idx_collection_games_collection
       ON collection_games(collection_id)
     ''');
     await db.execute('''
-      CREATE INDEX idx_collection_games_igdb
+      CREATE INDEX IF NOT EXISTS idx_collection_games_igdb
       ON collection_games(igdb_id)
     ''');
   }

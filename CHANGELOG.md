@@ -7,6 +7,37 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Fixed
+
+- **Fix the app freezing on the splash logo when an old database upgrades across many versions at once**
+
+  `create*Table` in the schema is shared between fresh installs and the
+  migration that first created the table, so columns and indexes added later
+  were baked into both. A big-version-jump upgrade ran the create (with today's
+  schema) and then the historical `ALTER` / `CREATE INDEX` on top, throwing
+  `duplicate column name` / `index already exists`; the upgrade rolled back and
+  the splash hung forever. Every column-add is now idempotent and every
+  migration index uses `IF NOT EXISTS`, so the final schema is unchanged but
+  redundant re-adds become no-ops.
+
+  * lib/core/database/migrations/migration.dart (Migration.addColumnIfAbsent): New guarded column-add helper.
+  * lib/core/database/migrations/migration_v4.dart, migration_v9.dart, migration_v11.dart, migration_v12.dart, migration_v15.dart, migration_v21.dart, migration_v29.dart, migration_v32.dart, migration_v34.dart, migration_v35.dart, migration_v37.dart, migration_v39.dart, migration_v40.dart, migration_v41.dart, migration_v43.dart, migration_v44.dart (MigrationV44._addCollectionItemsSource, MigrationV44._addMoodGridCellsSource): Route every `ADD COLUMN` through `Migration.addColumnIfAbsent`.
+  * lib/core/database/migrations/migration_v3.dart, migration_v9.dart, migration_v17.dart, migration_v30.dart, migration_v44.dart: `CREATE INDEX` / `CREATE UNIQUE INDEX` → `IF NOT EXISTS`.
+
+### Added
+
+- **Show fatal startup errors on screen instead of a frozen splash**
+
+  When a startup step fails (a failed migration, a throw before the first
+  frame), the details and stack trace now paint over the UI with a Copy button,
+  so a release device can be diagnosed without a logcat connection.
+
+  * lib/core/logging/startup_error.dart (startupError, recordStartupError, StartupErrorInfo, StartupErrorView, StartupErrorApp): New on-screen startup-error reporter.
+  * lib/main.dart (main): Catch a `_loadAppState` crash and show the standalone error screen; record unhandled zone errors.
+  * lib/core/logging/app_logger.dart (AppLogger.setupErrorHandlers): Record unhandled platform errors.
+  * lib/app.dart (TonkatsuBoxApp.build): Overlay the captured error over the running UI.
+  * lib/features/splash/screens/splash_screen.dart (_SplashScreenState.initState): Capture a failed database open instead of hanging on the logo.
+
 ## [0.32.0] - 2026-06-05
 
 ### Added

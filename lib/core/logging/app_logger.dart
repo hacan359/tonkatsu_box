@@ -3,6 +3,8 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
+import 'startup_error.dart';
+
 /// Настройка логирования для приложения.
 ///
 /// Вызывается один раз в `main()` до `runApp()`.
@@ -34,6 +36,7 @@ abstract final class AppLogger {
     // Необработанные ошибки вне Flutter (Dart isolate)
     PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
       _log.severe('Unhandled platform error', error, stack);
+      recordStartupError('platform', error, stack);
       return true;
     };
   }

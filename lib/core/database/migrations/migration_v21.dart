@@ -11,10 +11,23 @@ class MigrationV21 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('ALTER TABLE games ADD COLUMN external_url TEXT');
-    await db.execute('ALTER TABLE movies_cache ADD COLUMN external_url TEXT');
-    await db.execute(
-      'ALTER TABLE tv_shows_cache ADD COLUMN external_url TEXT',
+    await Migration.addColumnIfAbsent(
+      db,
+      'games',
+      'external_url',
+      'external_url TEXT',
+    );
+    await Migration.addColumnIfAbsent(
+      db,
+      'movies_cache',
+      'external_url',
+      'external_url TEXT',
+    );
+    await Migration.addColumnIfAbsent(
+      db,
+      'tv_shows_cache',
+      'external_url',
+      'external_url TEXT',
     );
   }
 }

@@ -11,8 +11,11 @@ class MigrationV40 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('''
-      ALTER TABLE wishlist ADD COLUMN tag TEXT
-    ''');
+    await Migration.addColumnIfAbsent(
+      db,
+      'wishlist',
+      'tag',
+      'tag TEXT',
+    );
   }
 }

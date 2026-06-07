@@ -12,8 +12,11 @@ class MigrationV37 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute(
-      'ALTER TABLE tracker_game_data ADD COLUMN platform_id INTEGER',
+    await Migration.addColumnIfAbsent(
+      db,
+      'tracker_game_data',
+      'platform_id',
+      'platform_id INTEGER',
     );
     await db.execute('DROP INDEX IF EXISTS idx_tracker_game_data_unique');
     // COALESCE pins NULL to -1 so two NULL platform_ids collide on upsert;

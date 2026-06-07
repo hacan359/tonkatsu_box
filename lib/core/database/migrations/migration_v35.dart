@@ -12,13 +12,17 @@ class MigrationV35 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('''
-      ALTER TABLE collections
-      ADD COLUMN hero_image_path TEXT
-    ''');
-    await db.execute('''
-      ALTER TABLE collections
-      ADD COLUMN description TEXT
-    ''');
+    await Migration.addColumnIfAbsent(
+      db,
+      'collections',
+      'hero_image_path',
+      'hero_image_path TEXT',
+    );
+    await Migration.addColumnIfAbsent(
+      db,
+      'collections',
+      'description',
+      'description TEXT',
+    );
   }
 }

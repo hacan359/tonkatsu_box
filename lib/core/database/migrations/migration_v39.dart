@@ -14,8 +14,11 @@ class MigrationV39 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('''
-      ALTER TABLE collection_items ADD COLUMN override_name TEXT
-    ''');
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'override_name',
+      'override_name TEXT',
+    );
   }
 }

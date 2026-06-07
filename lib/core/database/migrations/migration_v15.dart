@@ -11,8 +11,11 @@ class MigrationV15 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute(
-      'ALTER TABLE collection_items ADD COLUMN user_rating INTEGER',
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'user_rating',
+      'user_rating INTEGER',
     );
   }
 }

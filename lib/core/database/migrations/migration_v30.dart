@@ -19,25 +19,25 @@ class MigrationV30 extends Migration {
     await db.execute('DROP INDEX IF EXISTS idx_ci_uncat');
 
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_coll_game
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll_game
       ON collection_items(collection_id, media_type, external_id, platform_id)
       WHERE collection_id IS NOT NULL AND media_type = 'game'
     ''');
 
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_coll_other
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll_other
       ON collection_items(collection_id, media_type, external_id)
       WHERE collection_id IS NOT NULL AND media_type != 'game'
     ''');
 
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_uncat_game
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_uncat_game
       ON collection_items(media_type, external_id, platform_id)
       WHERE collection_id IS NULL AND media_type = 'game'
     ''');
 
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_uncat_other
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_uncat_other
       ON collection_items(media_type, external_id)
       WHERE collection_id IS NULL AND media_type != 'game'
     ''');

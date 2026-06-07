@@ -11,8 +11,11 @@ class MigrationV43 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute(
-      'ALTER TABLE mood_grids ADD COLUMN caption_template TEXT',
+    await Migration.addColumnIfAbsent(
+      db,
+      'mood_grids',
+      'caption_template',
+      'caption_template TEXT',
     );
   }
 }

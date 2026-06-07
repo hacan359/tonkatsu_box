@@ -11,7 +11,17 @@ class MigrationV41 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute('ALTER TABLE anime_cache ADD COLUMN tags TEXT');
-    await db.execute('ALTER TABLE manga_cache ADD COLUMN tags TEXT');
+    await Migration.addColumnIfAbsent(
+      db,
+      'anime_cache',
+      'tags',
+      'tags TEXT',
+    );
+    await Migration.addColumnIfAbsent(
+      db,
+      'manga_cache',
+      'tags',
+      'tags TEXT',
+    );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../core/logging/startup_error.dart';
 import '../../../features/settings/providers/profile_provider.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/welcome/screens/welcome_screen.dart';
@@ -78,6 +79,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     db.database.then((_) {
       _dbDone = true;
       _tryNavigate();
+    }).catchError((Object error, StackTrace stack) {
+      // DB open/migration failed (e.g. v27→v32 upgrade). Without this the
+      // future just rejects, _dbDone stays false and the splash hangs forever.
+      recordStartupError('database', error, stack);
     });
   }
 

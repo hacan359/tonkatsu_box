@@ -13,9 +13,11 @@ class MigrationV29 extends Migration {
   @override
   Future<void> migrate(Database db) async {
     await DatabaseSchema.createCollectionTagsTable(db);
-    await db.execute(
-      'ALTER TABLE collection_items ADD COLUMN tag_id INTEGER '
-      'REFERENCES collection_tags(id) ON DELETE SET NULL',
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'tag_id',
+      'tag_id INTEGER REFERENCES collection_tags(id) ON DELETE SET NULL',
     );
   }
 }

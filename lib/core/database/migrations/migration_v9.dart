@@ -14,20 +14,25 @@ class MigrationV9 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute(
-      'ALTER TABLE canvas_items ADD COLUMN collection_item_id INTEGER',
+    await Migration.addColumnIfAbsent(
+      db,
+      'canvas_items',
+      'collection_item_id',
+      'collection_item_id INTEGER',
     );
     await db.execute('''
-      CREATE INDEX idx_canvas_items_collection_item
+      CREATE INDEX IF NOT EXISTS idx_canvas_items_collection_item
       ON canvas_items(collection_item_id)
     ''');
 
-    await db.execute(
-      'ALTER TABLE canvas_connections '
-      'ADD COLUMN collection_item_id INTEGER',
+    await Migration.addColumnIfAbsent(
+      db,
+      'canvas_connections',
+      'collection_item_id',
+      'collection_item_id INTEGER',
     );
     await db.execute('''
-      CREATE INDEX idx_canvas_connections_collection_item
+      CREATE INDEX IF NOT EXISTS idx_canvas_connections_collection_item
       ON canvas_connections(collection_item_id)
     ''');
 

@@ -11,14 +11,23 @@ class MigrationV12 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute(
-      'ALTER TABLE collection_items ADD COLUMN started_at INTEGER',
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'started_at',
+      'started_at INTEGER',
     );
-    await db.execute(
-      'ALTER TABLE collection_items ADD COLUMN completed_at INTEGER',
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'completed_at',
+      'completed_at INTEGER',
     );
-    await db.execute(
-      'ALTER TABLE collection_items ADD COLUMN last_activity_at INTEGER',
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'last_activity_at',
+      'last_activity_at INTEGER',
     );
     // Seed last_activity_at from added_at so existing rows aren't NULL.
     await db.execute(

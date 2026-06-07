@@ -11,9 +11,11 @@ class MigrationV11 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    await db.execute(
-      'ALTER TABLE collection_items '
-      'ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0',
+    await Migration.addColumnIfAbsent(
+      db,
+      'collection_items',
+      'sort_order',
+      'sort_order INTEGER NOT NULL DEFAULT 0',
     );
     // Seed sort_order to match existing visual order (newest first by added_at).
     await db.execute('''

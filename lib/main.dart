@@ -10,6 +10,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app.dart';
 import 'core/logging/app_logger.dart';
+import 'core/logging/startup_error.dart';
 import 'core/services/api_key_initializer.dart';
 import 'core/services/collection_hero_service.dart';
 import 'core/services/profile_service.dart';
@@ -45,12 +46,23 @@ Future<void> main() async {
         SharedPreferences.setPrefix('flutter_dev.');
       }
 
-      await _loadAppState();
+      try {
+        await _loadAppState();
+      } catch (error, stack) {
+        // Pre-runApp crash: no real app to overlay, so show a standalone
+        // error screen instead of a frozen native splash.
+        Logger('main').severe('Startup _loadAppState failed', error, stack);
+        final StartupErrorInfo info =
+            recordStartupError('_loadAppState', error, stack);
+        runApp(StartupErrorApp(info: info));
+        return;
+      }
 
       runApp(const AppRestartScope(child: TonkatsuBoxApp()));
     },
     (Object error, StackTrace stack) {
       Logger('main').severe('Unhandled exception', error, stack);
+      recordStartupError('zone', error, stack);
     },
   );
 }
