@@ -5,6 +5,7 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/widgets/loading_overlay.dart';
 import '../services/search_collection_adder.dart';
 import 'media_action_handler.dart';
 
@@ -30,6 +31,7 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     required this.upsert,
     required this.sheetBuilder,
     this.sourceOf,
+    this.enrich,
   })  : _ref = ref,
         _adder = adder,
         _targetCollectionId = targetCollectionId;
@@ -53,6 +55,20 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   /// manga needs it (AniList vs MangaBaka share a numeric id space).
   final DataSource? Function(T item)? sourceOf;
 
+  /// Optional one-shot fetch that fills in detail a search result lacks (e.g.
+  /// an OpenLibrary book description). Applied only when writing to the cache
+  /// (add-to-collection), NOT on tap — opening the details sheet stays
+  /// instant. The sheet shows the missing detail via its own lazy loader.
+  /// Failures fall back to the original item.
+  final Future<T> Function(T item)? enrich;
+
+  /// Enriches [item] behind a blocking spinner. No-op (and no spinner) for
+  /// sources without an [enrich] step.
+  Future<T> _enriched(BuildContext context, T item) async {
+    if (enrich == null) return item;
+    return withBlockingSpinner(context, () => enrich!(item));
+  }
+
   @override
   Future<void> onTap(
     BuildContext context,
@@ -73,8 +89,9 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     Object item,
     MediaType mediaType,
   ) async {
-    final T typed = item as T;
-    final Set<int?> alreadyIn = await _collectedCollectionIds(externalIdOf(typed));
+    final T item0 = item as T;
+    final Set<int?> alreadyIn =
+        await _collectedCollectionIds(externalIdOf(item0));
     if (!context.mounted) return;
 
     final PickedCollection? picked = await _adder.pickCollection(
@@ -82,6 +99,10 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
       alreadyIn: alreadyIn,
     );
     if (picked == null || !context.mounted) return;
+
+    // Enrich only after the picker is dismissed, so opening it stays instant.
+    final T typed = await _enriched(context, item0);
+    if (!context.mounted) return;
 
     await _adder.addToCollection(
       context: context,
@@ -114,8 +135,10 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   Future<void> _addToCollection(
     BuildContext context,
     int collectionId,
-    T typed,
+    T item,
   ) async {
+    final T typed = await _enriched(context, item);
+    if (!context.mounted) return;
     await _adder.addToCollection(
       context: context,
       collectionId: collectionId,

@@ -45,6 +45,9 @@ void main() {
       collectedAnimeIdsProvider.overrideWith(
         (Ref ref) async => const <int, List<CollectedItemInfo>>{},
       ),
+      collectedBookIdsProvider.overrideWith(
+        (Ref ref) async => const <int, List<CollectedItemInfo>>{},
+      ),
     ];
   }
 
@@ -63,6 +66,8 @@ void main() {
         const <int, List<CollectedItemInfo>>{},
     Map<int, List<CollectedItemInfo>> animes =
         const <int, List<CollectedItemInfo>>{},
+    Map<int, List<CollectedItemInfo>> books =
+        const <int, List<CollectedItemInfo>>{},
   }) {
     return <Override>[
       collectedMovieIdsProvider.overrideWith((Ref ref) async => movies),
@@ -76,6 +81,7 @@ void main() {
       ),
       collectedMangaIdsProvider.overrideWith((Ref ref) async => mangas),
       collectedAnimeIdsProvider.overrideWith((Ref ref) async => animes),
+      collectedBookIdsProvider.overrideWith((Ref ref) async => books),
     ];
   }
 

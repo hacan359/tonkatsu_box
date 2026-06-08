@@ -12,11 +12,12 @@ void main() {
       expect(groupIds, contains('igdb'));
       expect(groupIds, contains('anilist'));
       expect(groupIds, contains('vndb'));
+      expect(groupIds, contains('books'));
     });
 
-    test('preserves order — tmdb first, vndb last', () {
+    test('preserves order — tmdb first, books last', () {
       expect(groupedSearchSources.first.groupId, 'tmdb');
-      expect(groupedSearchSources.last.groupId, 'vndb');
+      expect(groupedSearchSources.last.groupId, 'books');
     });
 
     test('tmdb group has 3 sources', () {

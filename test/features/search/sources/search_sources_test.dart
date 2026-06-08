@@ -8,12 +8,13 @@ import 'package:tonkatsu_box/features/search/sources/tmdb_tv_source.dart';
 import 'package:tonkatsu_box/features/search/sources/anilist_anime_source.dart';
 import 'package:tonkatsu_box/features/search/sources/anilist_manga_source.dart';
 import 'package:tonkatsu_box/features/search/sources/mangabaka_source.dart';
+import 'package:tonkatsu_box/features/search/sources/openlibrary_source.dart';
 import 'package:tonkatsu_box/features/search/sources/vndb_source.dart';
 
 void main() {
   group('searchSources', () {
-    test('contains 8 sources', () {
-      expect(searchSources, hasLength(8));
+    test('contains 9 sources', () {
+      expect(searchSources, hasLength(9));
     });
 
     test('first source is TmdbMoviesSource', () {
@@ -48,6 +49,10 @@ void main() {
       expect(searchSources[7], isA<VndbSource>());
     });
 
+    test('ninth source is OpenLibrarySource', () {
+      expect(searchSources[8], isA<OpenLibrarySource>());
+    });
+
     test('all sources have unique ids', () {
       final Set<String> ids =
           searchSources.map((SearchSource s) => s.id).toSet();
@@ -66,6 +71,7 @@ void main() {
         'manga',
         'mangabaka',
         'visual_novels',
+        'openlibrary',
       ]);
     });
   });

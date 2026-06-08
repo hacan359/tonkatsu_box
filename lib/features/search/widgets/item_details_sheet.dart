@@ -10,6 +10,7 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/anime.dart';
+import '../../../shared/models/book.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/utils/cover_image_id.dart';
@@ -32,6 +33,7 @@ class ItemDetailsSheet extends StatelessWidget {
     required this.icon,
     this.onAddToCollection,
     this.overview,
+    this.overviewLoader,
     this.year,
     this.rating,
     this.genres,
@@ -248,12 +250,56 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
+  factory ItemDetailsSheet.book(
+    Book book, {
+    required VoidCallback onAddToCollection,
+    Future<String?> Function()? overviewLoader,
+  }) {
+    return ItemDetailsSheet(
+      title: book.title,
+      icon: Icons.menu_book,
+      overview: book.description,
+      overviewLoader: overviewLoader,
+      year: book.publishYear,
+      rating: book.formattedRating,
+      genres: book.subjects,
+      maxGenres: _defaultMaxChips,
+      subtitle: book.originalTitle != null &&
+              book.originalTitle != book.title
+          ? book.originalTitle
+          : null,
+      infoChips: <(IconData, String)>[
+        if (book.authorsString != null)
+          (Icons.person_outline, book.authorsString!),
+        if (book.pageCount != null)
+          (Icons.menu_book, '${book.pageCount} pages'),
+        if (book.series != null) (Icons.collections_bookmark, book.series!),
+      ],
+      posterUrl: book.coverUrl,
+      cacheImageType: ImageType.bookCover,
+      cacheImageId: coverImageId(
+        mediaType: MediaType.book,
+        externalId: book.externalIdInt,
+        source: book.source,
+      ),
+      externalUrl: book.externalUrl,
+      dataSource: book.source,
+      coverHeight: 142,
+      onAddToCollection: onAddToCollection,
+    );
+  }
+
   static const int _defaultMaxChips = 8;
 
   final String title;
   final IconData icon;
   final VoidCallback? onAddToCollection;
   final String? overview;
+
+  /// Lazily loads the description after the sheet is open, when [overview] is
+  /// null (e.g. an OpenLibrary book whose search row carries no description).
+  /// Shown with a spinner; a null/empty result hides the section.
+  final Future<String?> Function()? overviewLoader;
   final int? year;
   final String? rating;
   final List<String>? genres;
@@ -371,27 +417,12 @@ class ItemDetailsSheet extends StatelessWidget {
                     children: <Widget>[
                       _buildHeader(context),
                       if (overview != null)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.lg, 0,
-                            AppSpacing.lg, AppSpacing.lg,
-                          ),
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                S.of(context).searchDescription,
-                                style: AppTypography.h3.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              Text(overview!,
-                                  style: AppTypography.body),
-                            ],
-                          ),
-                        ),
+                        _overviewSection(
+                          context,
+                          Text(overview!, style: AppTypography.body),
+                        )
+                      else if (overviewLoader != null)
+                        _LazyOverview(loader: overviewLoader!),
                       if (screenScraperGameName != null &&
                           screenScraperPlatformId != null)
                         ScreenScraperGallerySection(
@@ -697,6 +728,70 @@ class ItemDetailsSheet extends StatelessWidget {
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  /// Shared "Description" section frame — a title plus an arbitrary [body]
+  /// (the text, or a loading spinner while [overviewLoader] resolves).
+  static Widget _overviewSection(BuildContext context, Widget body) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            S.of(context).searchDescription,
+            style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          body,
+        ],
+      ),
+    );
+  }
+}
+
+/// Loads the description after the sheet opens, showing a spinner meanwhile.
+/// Hides itself entirely when the loader returns null / empty.
+class _LazyOverview extends StatefulWidget {
+  const _LazyOverview({required this.loader});
+
+  final Future<String?> Function() loader;
+
+  @override
+  State<_LazyOverview> createState() => _LazyOverviewState();
+}
+
+class _LazyOverviewState extends State<_LazyOverview> {
+  late final Future<String?> _future = widget.loader();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _future,
+      builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return ItemDetailsSheet._overviewSection(
+            context,
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+        final String? text = snapshot.data;
+        if (text == null || text.isEmpty) return const SizedBox.shrink();
+        return ItemDetailsSheet._overviewSection(
+          context,
+          Text(text, style: AppTypography.body),
+        );
+      },
+    );
   }
 }
 

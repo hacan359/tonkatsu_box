@@ -208,6 +208,7 @@ class GameCanvasNotifier
       visualNovel: collectionItem.visualNovel,
       manga: collectionItem.manga,
       anime: collectionItem.anime,
+      book: collectionItem.book,
       customMedia: collectionItem.customMedia,
     );
 

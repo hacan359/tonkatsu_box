@@ -410,6 +410,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       _TypeEntry(MediaType.visualNovel, l.collectionFilterVisualNovels, counts[MediaType.visualNovel]),
       _TypeEntry(MediaType.manga, l.collectionFilterManga, counts[MediaType.manga]),
       _TypeEntry(MediaType.anime, l.mediaTypeAnime, counts[MediaType.anime]),
+      _TypeEntry(MediaType.book, l.collectionFilterBooks, counts[MediaType.book]),
       _TypeEntry(MediaType.custom, l.collectionFilterCustom, counts[MediaType.custom]),
     ];
   }

@@ -209,6 +209,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         count: counts[MediaType.anime] ?? 0,
       ),
       _MediaTypeEntry(
+        type: MediaType.book,
+        label: l.allItemsBooks,
+        count: counts[MediaType.book] ?? 0,
+      ),
+      _MediaTypeEntry(
         type: MediaType.custom,
         label: l.allItemsCustom,
         count: counts[MediaType.custom] ?? 0,

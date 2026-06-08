@@ -24,6 +24,7 @@ class CreditsContent extends StatelessWidget {
   static const String _vndbUrl = 'https://vndb.org/';
   static const String _aniListUrl = 'https://anilist.co/';
   static const String _mangaBakaUrl = 'https://mangabaka.org/';
+  static const String _openLibraryUrl = 'https://openlibrary.org/';
   static const String _githubUrl =
       'https://github.com/hacan359/tonkatsu_box';
   static const String _discordUrl = 'https://discord.gg/JZVNPF7cS2';
@@ -73,6 +74,12 @@ class CreditsContent extends StatelessWidget {
               description: l10n.creditsMangaBakaAttribution,
               linkLabel: 'mangabaka.org',
               url: _mangaBakaUrl,
+            ),
+            _buildProvider(
+              name: 'OpenLibrary',
+              description: l10n.creditsOpenLibraryAttribution,
+              linkLabel: 'openlibrary.org',
+              url: _openLibraryUrl,
             ),
           ],
         ),

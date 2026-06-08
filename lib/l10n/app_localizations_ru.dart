@@ -1037,6 +1037,10 @@ class SRu extends S {
       'Данные о манге предоставлены MangaBaka.';
 
   @override
+  String get creditsOpenLibraryAttribution =>
+      'Данные о книгах из Open Library (CC0 / ODbL).';
+
+  @override
   String get creditsOpenSource => 'Открытый исходный код';
 
   @override
@@ -1462,6 +1466,9 @@ class SRu extends S {
   String get collectionFilterManga => 'Манга';
 
   @override
+  String get collectionFilterBooks => 'Книги';
+
+  @override
   String get collectionFilterCustom => 'Своё';
 
   @override
@@ -1831,7 +1838,28 @@ class SRu extends S {
   String get searchSourceAnimation => 'Анимация';
 
   @override
+  String get searchSourceOpenLibrary => 'OpenLibrary';
+
+  @override
   String get searchHintManga => 'Поиск манги...';
+
+  @override
+  String get searchHintBooks => 'Поиск книг...';
+
+  @override
+  String get bookFilterLanguage => 'Язык';
+
+  @override
+  String get bookFilterSearchBy => 'Искать по';
+
+  @override
+  String get bookSearchTitle => 'Название';
+
+  @override
+  String get bookSearchAuthor => 'Автор';
+
+  @override
+  String get bookSearchSubject => 'Тема';
 
   @override
   String get searchSelectPlatform => 'Выбрать платформу';
@@ -2453,6 +2481,9 @@ class SRu extends S {
 
   @override
   String get allItemsManga => 'Манга';
+
+  @override
+  String get allItemsBooks => 'Книги';
 
   @override
   String get allItemsCustom => 'Своё';
@@ -3127,6 +3158,9 @@ class SRu extends S {
 
   @override
   String get browseSort => 'Сортировка';
+
+  @override
+  String get browseSortRelevance => 'Релевантность';
 
   @override
   String get browseSortPopular => 'Популярные';

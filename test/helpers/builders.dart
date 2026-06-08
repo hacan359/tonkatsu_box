@@ -1,8 +1,10 @@
 import 'dart:ui';
 
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/shared/models/book.dart';
 import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
 import 'package:tonkatsu_box/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/collection_tag.dart';
@@ -279,6 +281,42 @@ Manga createTestManga({
     volumes: volumes,
     format: format,
     genres: genres,
+  );
+}
+
+Book createTestBook({
+  String id = '27448',
+  DataSource source = DataSource.openLibrary,
+  String? nativeId,
+  String title = 'Test Book',
+  String? originalTitle,
+  List<String> authors = const <String>['Test Author'],
+  String? description,
+  String? coverUrl,
+  int? pageCount,
+  int? publishYear = 2000,
+  List<String> subjects = const <String>[],
+  double? rating,
+  int? ratingCount,
+  String? externalUrl,
+  int? cachedAt,
+}) {
+  return Book(
+    id: id,
+    source: source,
+    nativeId: nativeId ?? 'OL${id}W',
+    title: title,
+    originalTitle: originalTitle,
+    authors: authors,
+    description: description,
+    coverUrl: coverUrl,
+    pageCount: pageCount,
+    publishYear: publishYear,
+    subjects: subjects,
+    rating: rating,
+    ratingCount: ratingCount,
+    externalUrl: externalUrl,
+    cachedAt: cachedAt,
   );
 }
 

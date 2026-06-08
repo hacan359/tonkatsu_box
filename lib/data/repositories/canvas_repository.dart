@@ -479,6 +479,7 @@ class CanvasRepository {
           visualNovel: items[i].visualNovel,
           manga: items[i].manga,
           anime: items[i].anime,
+          book: items[i].book,
           customMedia: items[i].customMedia,
         ),
     ];

@@ -20,6 +20,7 @@ Color filterAccentForGroup(String groupId) {
     'igdb' => AppColors.gameAccent,
     'anilist' => AppColors.animeAccent,
     'vndb' => AppColors.visualNovelAccent,
+    'books' => AppColors.bookAccent,
     _ => AppColors.brand,
   };
 }

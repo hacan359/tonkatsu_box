@@ -24,4 +24,6 @@ abstract final class AppAssets {
       'assets/images/icon_mangabaka_color.png';
   static const String iconVndbColor = 'assets/images/icon_vndb_color.png';
   static const String iconMalColor = 'assets/images/icon_myanimelist_color.png';
+  static const String iconOpenLibraryColor =
+      'assets/images/open_library_color.png';
 }
