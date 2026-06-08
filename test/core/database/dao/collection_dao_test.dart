@@ -52,6 +52,7 @@ void main() {
   late MockTvShowDao mockTvShowDao;
   late MockVisualNovelDao mockVisualNovelDao;
   late MockMangaDao mockMangaDao;
+  late MockBookDao mockBookDao;
   late MockAnimeDao mockAnimeDao;
   late MockCustomMediaDao mockCustomMediaDao;
   late CollectionDao dao;
@@ -64,6 +65,7 @@ void main() {
     mockTvShowDao = MockTvShowDao();
     mockVisualNovelDao = MockVisualNovelDao();
     mockMangaDao = MockMangaDao();
+    mockBookDao = MockBookDao();
     mockAnimeDao = MockAnimeDao();
     mockCustomMediaDao = MockCustomMediaDao();
     dao = CollectionDao(
@@ -74,6 +76,7 @@ void main() {
       visualNovelDao: mockVisualNovelDao,
       animeDao: mockAnimeDao,
       mangaDao: mockMangaDao,
+      bookDao: mockBookDao,
       customMediaDao: mockCustomMediaDao,
     );
   });

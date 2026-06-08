@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
+import 'book.dart';
 import 'custom_media.dart';
 import 'data_source.dart';
 import 'exportable.dart';
@@ -46,6 +47,7 @@ class CollectionItem with Exportable {
     this.visualNovel,
     this.anime,
     this.manga,
+    this.book,
     this.customMedia,
     this.platform,
   });
@@ -64,6 +66,7 @@ class CollectionItem with Exportable {
     VisualNovel? visualNovel,
     Anime? anime,
     Manga? manga,
+    Book? book,
     CustomMedia? customMedia,
     Platform? platform,
   }) {
@@ -110,6 +113,7 @@ class CollectionItem with Exportable {
       visualNovel: visualNovel,
       anime: anime,
       manga: manga,
+      book: book,
       customMedia: customMedia,
       platform: platform,
     );
@@ -221,15 +225,16 @@ class CollectionItem with Exportable {
   final DateTime? completedAt;
   final DateTime? lastActivityAt;
 
-  /// Joined media payloads — exactly one of the seven fields is non-null,
+  /// Joined media payloads — exactly one of the eight fields is non-null,
   /// picked by [mediaType] (game / movie / tvShow / visualNovel / anime /
-  /// manga / customMedia).
+  /// manga / book / customMedia).
   final Game? game;
   final Movie? movie;
   final TvShow? tvShow;
   final VisualNovel? visualNovel;
   final Anime? anime;
   final Manga? manga;
+  final Book? book;
   final CustomMedia? customMedia;
 
   /// Joined platform metadata for games / animation.
@@ -394,6 +399,25 @@ class CollectionItem with Exportable {
           imageType: ImageType.mangaCover,
           placeholderIcon: Icons.auto_stories,
         );
+      case MediaType.book:
+        return (
+          name: book?.title,
+          coverUrl: book?.coverUrl,
+          thumbUrl: book?.coverUrl,
+          description: book?.description,
+          rating: book?.rating,
+          formattedRating: book?.formattedRating,
+          releaseYear: book?.releaseYear,
+          runtime: null,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: book?.subjectsString,
+          genres: book?.subjects,
+          mediaStatus: null,
+          source: book?.source ?? DataSource.openLibrary,
+          imageType: ImageType.bookCover,
+          placeholderIcon: Icons.menu_book,
+        );
       case MediaType.anime:
         return (
           name: anime?.title,
@@ -450,6 +474,7 @@ class CollectionItem with Exportable {
       MediaType.visualNovel => 'Unknown Visual Novel',
       MediaType.manga => 'Unknown Manga',
       MediaType.anime => 'Unknown Anime',
+      MediaType.book => 'Unknown Book',
       MediaType.custom => 'Unknown Custom Item',
     };
     return overrideName ?? _resolvedMedia.name ?? fallback;
@@ -491,6 +516,7 @@ class CollectionItem with Exportable {
         MediaType.visualNovel => Icons.menu_book,
         MediaType.manga => Icons.auto_stories,
         MediaType.anime => Icons.play_circle_outline,
+        MediaType.book => Icons.menu_book,
         MediaType.custom => Icons.dashboard_customize,
       };
 
@@ -654,6 +680,7 @@ class CollectionItem with Exportable {
     VisualNovel? visualNovel,
     Anime? anime,
     Manga? manga,
+    Book? book,
     CustomMedia? customMedia,
     Platform? platform,
   }) {
@@ -688,6 +715,7 @@ class CollectionItem with Exportable {
       visualNovel: visualNovel ?? this.visualNovel,
       anime: anime ?? this.anime,
       manga: manga ?? this.manga,
+      book: book ?? this.book,
       customMedia: customMedia ?? this.customMedia,
       platform: platform ?? this.platform,
     );

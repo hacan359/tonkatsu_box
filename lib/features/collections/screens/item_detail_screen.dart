@@ -251,6 +251,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       case MediaType.movie:
       case MediaType.tvShow:
       case MediaType.animation:
+      case MediaType.book:
       case MediaType.custom:
         return item.releaseYear != null ? DateTime(item.releaseYear!) : null;
     }
@@ -728,6 +729,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.visualNovel => l.visualNovelNotFound,
       MediaType.manga => l.mangaNotFound,
       MediaType.anime => l.mediaTypeAnime,
+      MediaType.book => l.mediaTypeBook,
       MediaType.custom => l.unknownCustom,
       null => l.gameNotFound,
     };

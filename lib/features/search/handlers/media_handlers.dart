@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/openlibrary_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/anime.dart';
+import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
@@ -117,6 +120,56 @@ class MediaHandlers {
         animeMangaTitleLanguage:
             ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
+    );
+    _byType[Book] = SimpleMediaHandler<Book>(
+      ref: ref,
+      adder: adder,
+      targetCollectionId: targetCollectionId,
+      mediaType: MediaType.book,
+      imageType: ImageType.bookCover,
+      collectedProvider: collectedBookIdsProvider,
+      externalIdOf: (Book b) => b.externalIdInt,
+      imageIdOf: (Book b) => coverImageId(
+        mediaType: MediaType.book,
+        externalId: b.externalIdInt,
+        source: b.source,
+      ),
+      titleOf: (Book b) => b.title,
+      imageUrlOf: (Book b) => b.coverUrl,
+      upsert: (Book b) => ref.read(bookDaoProvider).upsertBook(b),
+      sourceOf: (Book b) => b.source,
+      sheetBuilder: (Book b, VoidCallback onAdd) => ItemDetailsSheet.book(
+        b,
+        onAddToCollection: onAdd,
+        // search.json omits the description — load the full work inside the
+        // open sheet (spinner), so the tap itself stays instant. OpenLibrary
+        // only; Fantlab wires its own loader later.
+        overviewLoader: b.description != null
+            ? null
+            : () async {
+                if (b.source != DataSource.openLibrary) return null;
+                try {
+                  final Book? full = await ref
+                      .read(openLibraryApiProvider)
+                      .getWork(b.nativeId);
+                  return full?.description;
+                } on Exception {
+                  return null;
+                }
+              },
+      ),
+      // On add, cache the full work so the collected item's detail page also
+      // carries the description. Runs on the deliberate add, not on open.
+      enrich: (Book b) async {
+        if (b.source != DataSource.openLibrary) return b;
+        try {
+          final Book? full =
+              await ref.read(openLibraryApiProvider).getWork(b.nativeId);
+          return full != null ? b.withWorkDetails(full) : b;
+        } on Exception {
+          return b;
+        }
+      },
     );
   }
 

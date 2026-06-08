@@ -8,7 +8,9 @@ import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/book.dart';
 import 'package:tonkatsu_box/shared/models/custom_media.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
 import 'package:tonkatsu_box/shared/models/movie.dart';
@@ -737,6 +739,12 @@ void main() {
         const Anime testAnime = Anime(id: 600, title: 'Cowboy Bebop');
         const CustomMedia testCustom =
             CustomMedia(id: 700, title: 'My homebrew');
+        const Book testBook = Book(
+          id: '800',
+          source: DataSource.openLibrary,
+          nativeId: 'OL800W',
+          title: 'Dune',
+        );
 
         final List<CollectionItem> items = <CollectionItem>[
           CollectionItem(
@@ -802,10 +810,19 @@ void main() {
             addedAt: testDate,
             customMedia: testCustom,
           ),
+          CollectionItem(
+            id: 8,
+            collectionId: 10,
+            mediaType: MediaType.book,
+            externalId: 800,
+            status: ItemStatus.notStarted,
+            addedAt: testDate,
+            book: testBook,
+          ),
         ];
 
         when(() => mockCanvasDao.insertCanvasItemsBatch(any()))
-            .thenAnswer((_) async => <int>[1, 2, 3, 4, 5, 6, 7]);
+            .thenAnswer((_) async => <int>[1, 2, 3, 4, 5, 6, 7, 8]);
         when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
@@ -816,7 +833,7 @@ void main() {
         final List<CanvasItem> result =
             await repository.initializeCanvas(10, items);
 
-        expect(result.length, 7);
+        expect(result.length, 8);
         expect(result[0].game?.id, testGame.id);
         expect(result[1].movie?.tmdbId, testMovie.tmdbId);
         expect(result[2].tvShow?.tmdbId, testTvShow.tmdbId);
@@ -824,6 +841,7 @@ void main() {
         expect(result[4].manga?.id, testManga.id);
         expect(result[5].anime?.id, testAnime.id);
         expect(result[6].customMedia?.id, testCustom.id);
+        expect(result[7].book?.id, testBook.id);
       });
 
       test('should handle empty games list', () async {

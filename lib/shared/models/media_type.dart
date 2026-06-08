@@ -31,6 +31,9 @@ enum MediaType {
   /// Не путать с [animation] — TMDB анимация (мультфильмы).
   anime('anime'),
 
+  /// Книга (OpenLibrary / Fantlab).
+  book('book'),
+
   /// Кастомный элемент (созданный пользователем).
   custom('custom');
 
@@ -68,6 +71,8 @@ enum MediaType {
         return 'Manga';
       case MediaType.anime:
         return 'Anime';
+      case MediaType.book:
+        return 'Book';
       case MediaType.custom:
         return 'Custom';
     }
@@ -90,6 +95,8 @@ enum MediaType {
         return l.mediaTypeManga;
       case MediaType.anime:
         return l.mediaTypeAnime;
+      case MediaType.book:
+        return l.mediaTypeBook;
       case MediaType.custom:
         return l.mediaTypeCustom;
     }

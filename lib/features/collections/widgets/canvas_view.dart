@@ -660,6 +660,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.visualNovel:
       case CanvasItemType.manga:
       case CanvasItemType.anime:
+      case CanvasItemType.book:
       case CanvasItemType.custom:
         child = _buildMediaCard(item);
       case CanvasItemType.text:
@@ -796,6 +797,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.visualNovel => CanvasRepository.defaultCardWidth,
       CanvasItemType.manga => CanvasRepository.defaultCardWidth,
       CanvasItemType.anime => CanvasRepository.defaultCardWidth,
+      CanvasItemType.book => CanvasRepository.defaultCardWidth,
       CanvasItemType.custom => CanvasRepository.defaultCardWidth,
       CanvasItemType.text => 200,
       CanvasItemType.image => 200,
@@ -813,6 +815,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.visualNovel => CanvasRepository.defaultCardHeight,
       CanvasItemType.manga => CanvasRepository.defaultCardHeight,
       CanvasItemType.anime => CanvasRepository.defaultCardHeight,
+      CanvasItemType.book => CanvasRepository.defaultCardHeight,
       CanvasItemType.custom => CanvasRepository.defaultCardHeight,
       CanvasItemType.text => 100,
       CanvasItemType.image => 200,

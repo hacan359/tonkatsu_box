@@ -144,6 +144,9 @@ class SEn extends S {
   String get mediaTypeAnime => 'Anime';
 
   @override
+  String get mediaTypeBook => 'Book';
+
+  @override
   String get mediaTypeCustom => 'Custom';
 
   @override
@@ -1014,6 +1017,10 @@ class SEn extends S {
   String get creditsMangaBakaAttribution => 'Manga data provided by MangaBaka.';
 
   @override
+  String get creditsOpenLibraryAttribution =>
+      'Book data from Open Library (CC0 / ODbL).';
+
+  @override
   String get creditsOpenSource => 'Open Source';
 
   @override
@@ -1436,6 +1443,9 @@ class SEn extends S {
   String get collectionFilterManga => 'Manga';
 
   @override
+  String get collectionFilterBooks => 'Books';
+
+  @override
   String get collectionFilterCustom => 'Custom';
 
   @override
@@ -1804,7 +1814,28 @@ class SEn extends S {
   String get searchSourceAnimation => 'Animation';
 
   @override
+  String get searchSourceOpenLibrary => 'OpenLibrary';
+
+  @override
   String get searchHintManga => 'Search manga...';
+
+  @override
+  String get searchHintBooks => 'Search books...';
+
+  @override
+  String get bookFilterLanguage => 'Language';
+
+  @override
+  String get bookFilterSearchBy => 'Search by';
+
+  @override
+  String get bookSearchTitle => 'Title';
+
+  @override
+  String get bookSearchAuthor => 'Author';
+
+  @override
+  String get bookSearchSubject => 'Subject';
 
   @override
   String get searchSelectPlatform => 'Select Platform';
@@ -2406,6 +2437,9 @@ class SEn extends S {
 
   @override
   String get allItemsManga => 'Manga';
+
+  @override
+  String get allItemsBooks => 'Books';
 
   @override
   String get allItemsCustom => 'Custom';
@@ -3080,6 +3114,9 @@ class SEn extends S {
 
   @override
   String get browseSort => 'Sort';
+
+  @override
+  String get browseSortRelevance => 'Relevance';
 
   @override
   String get browseSortPopular => 'Popular';

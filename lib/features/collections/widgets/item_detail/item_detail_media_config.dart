@@ -44,6 +44,7 @@ class ItemDetailMediaConfig {
       MediaType.visualNovel => item.visualNovel?.externalUrl,
       MediaType.manga => item.manga?.externalUrl,
       MediaType.anime => item.anime?.externalUrl,
+      MediaType.book => item.book?.externalUrl,
       MediaType.custom => item.customMedia?.externalUrl,
     };
 
@@ -109,6 +110,7 @@ String _typeLabel(CollectionItem item, BuildContext context) {
     MediaType.visualNovel => l.mediaTypeVisualNovel,
     MediaType.manga => l.mediaTypeManga,
     MediaType.anime => l.mediaTypeAnime,
+    MediaType.book => l.mediaTypeBook,
     MediaType.custom => item.customMedia?.platformName ?? l.mediaTypeCustom,
   };
 }

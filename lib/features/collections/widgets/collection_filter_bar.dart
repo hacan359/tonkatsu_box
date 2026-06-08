@@ -410,6 +410,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       _TypeEntry(MediaType.visualNovel, l.collectionFilterVisualNovels, counts[MediaType.visualNovel]),
       _TypeEntry(MediaType.manga, l.collectionFilterManga, counts[MediaType.manga]),
       _TypeEntry(MediaType.anime, l.mediaTypeAnime, counts[MediaType.anime]),
+      _TypeEntry(MediaType.book, l.collectionFilterBooks, counts[MediaType.book]),
       _TypeEntry(MediaType.custom, l.collectionFilterCustom, counts[MediaType.custom]),
     ];
   }
@@ -426,6 +427,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.visualNovel: stats?.visualNovelCount,
         MediaType.manga: stats?.mangaCount,
         MediaType.anime: stats?.animeCount,
+        MediaType.book: stats?.bookCount,
         MediaType.custom: stats?.customCount,
       };
     }
@@ -462,6 +464,7 @@ int? _totalCountFor(MediaType type, CollectionStats? stats) {
     MediaType.visualNovel => stats.visualNovelCount,
     MediaType.manga => stats.mangaCount,
     MediaType.anime => stats.animeCount,
+    MediaType.book => stats.bookCount,
     MediaType.custom => stats.customCount,
   };
 }

@@ -802,6 +802,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         MediaType.visualNovel => Icons.menu_book,
         MediaType.manga => Icons.auto_stories,
         MediaType.anime => Icons.play_circle_outline,
+        MediaType.book => Icons.menu_book,
         MediaType.custom => Icons.dashboard_customize,
         null => Icons.event,
       };

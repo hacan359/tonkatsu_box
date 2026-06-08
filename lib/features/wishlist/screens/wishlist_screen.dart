@@ -270,6 +270,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       MediaType.visualNovel => 'visual_novels',
       MediaType.manga => 'manga',
       MediaType.anime => 'anilist_anime',
+      MediaType.book => 'books',
       MediaType.custom => null,
       null => null,
     };

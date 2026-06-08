@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/anilist_api.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/mangabaka_api.dart';
+import '../../../core/api/openlibrary_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/api/vndb_api.dart';
 import '../../../core/database/database_service.dart';
@@ -19,6 +20,7 @@ import '../../../shared/models/anime.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/data_source.dart';
+import '../../../shared/models/book.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
@@ -635,6 +637,17 @@ class CollectionActions {
               .getVnById(item.externalId.toString());
           if (vn == null) return _RefreshOutcome.notFound();
           await db.visualNovelDao.upsertVisualNovel(vn);
+        case MediaType.book:
+          final Book? cached = item.book;
+          // Fantlab refresh lands with its client; needs the cached row's OLID.
+          if (item.source != DataSource.openLibrary || cached == null) {
+            return _RefreshOutcome.unsupported();
+          }
+          final Book? full = await ref
+              .read(openLibraryApiProvider)
+              .getWork(cached.nativeId);
+          if (full == null) return _RefreshOutcome.notFound();
+          await db.bookDao.upsertBook(cached.withWorkDetails(full));
         case MediaType.custom:
           return _RefreshOutcome.unsupported();
       }

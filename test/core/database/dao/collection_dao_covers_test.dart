@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/anime_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/book_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/collection_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/custom_media_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/game_dao.dart';
@@ -40,6 +41,7 @@ void main() {
       visualNovelDao: VisualNovelDao(getDb),
       animeDao: AnimeDao(getDb),
       mangaDao: MangaDao(getDb),
+      bookDao: BookDao(getDb),
       customMediaDao: CustomMediaDao(getDb),
     );
 

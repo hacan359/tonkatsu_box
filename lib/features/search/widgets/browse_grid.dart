@@ -5,6 +5,7 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/anime.dart';
+import '../../../shared/models/book.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
@@ -32,6 +33,7 @@ final FutureProvider<
           Set<int> vnIds,
           Set<int> mangaIds,
           Set<int> animeIds,
+          Set<int> bookIds,
         })>
     _collectedIdsProvider = FutureProvider<
         ({
@@ -40,6 +42,7 @@ final FutureProvider<
           Set<int> vnIds,
           Set<int> mangaIds,
           Set<int> animeIds,
+          Set<int> bookIds,
         })>((Ref ref) async {
   final Map<int, List<CollectedItemInfo>> movies =
       await ref.watch(collectedMovieIdsProvider.future);
@@ -55,12 +58,15 @@ final FutureProvider<
       await ref.watch(collectedMangaIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> animes =
       await ref.watch(collectedAnimeIdsProvider.future);
+  final Map<int, List<CollectedItemInfo>> books =
+      await ref.watch(collectedBookIdsProvider.future);
   return (
     tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
     gameIds: games.keys.toSet(),
     vnIds: visualNovels.keys.toSet(),
     mangaIds: mangas.keys.toSet(),
     animeIds: animes.keys.toSet(),
+    bookIds: books.keys.toSet(),
   );
 });
 
@@ -214,6 +220,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
               Set<int> vnIds,
               Set<int> mangaIds,
               Set<int> animeIds,
+              Set<int> bookIds,
             })> collectedIds =
         ref.watch(_collectedIdsProvider);
     final Set<int> tmdbIds =
@@ -226,6 +233,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         collectedIds.valueOrNull?.mangaIds ?? const <int>{};
     final Set<int> animeIds =
         collectedIds.valueOrNull?.animeIds ?? const <int>{};
+    final Set<int> bookIds =
+        collectedIds.valueOrNull?.bookIds ?? const <int>{};
 
     final List<Object> displayItems;
     final String? clientFilter = widget.clientFilter;
@@ -263,7 +272,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
         final Object item = displayItems[index];
         return _buildCard(item, state.source.outputMediaType, tmdbIds, gameIds,
-            vnIds, mangaIds, animeIds, variant, animeMangaTitleLanguage);
+            vnIds, mangaIds, animeIds, bookIds, variant,
+            animeMangaTitleLanguage);
       },
     );
   }
@@ -276,6 +286,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Set<int> vnIds,
     Set<int> mangaIds,
     Set<int> animeIds,
+    Set<int> bookIds,
     CardVariant variant,
     String animeMangaTitleLanguage,
   ) {
@@ -391,6 +402,28 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       );
     }
 
+    if (item is Book) {
+      final int externalId = item.externalIdInt;
+      final bool inColl = bookIds.contains(externalId);
+      return MediaPosterCard(
+        variant: variant,
+        title: item.title,
+        imageUrl: item.coverUrl ?? '',
+        cacheImageType: ImageType.bookCover,
+        cacheImageId: coverImageId(
+          mediaType: MediaType.book,
+          externalId: externalId,
+          source: item.source,
+        ),
+        apiRating: item.rating,
+        year: item.releaseYear,
+        mediaType: mediaType,
+        isInCollection: inColl,
+        onTap: () => widget.onItemTap(item, mediaType),
+        onOpenInCollection: openCallback(externalId, inColl),
+      );
+    }
+
     return const SizedBox.shrink();
   }
 
@@ -415,6 +448,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is VisualNovel) return item.title;
     if (item is Manga) return item.titleByLanguage(animeMangaTitleLanguage);
     if (item is Anime) return item.titleByLanguage(animeMangaTitleLanguage);
+    if (item is Book) return item.title;
     return '';
   }
 

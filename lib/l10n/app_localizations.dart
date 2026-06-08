@@ -361,6 +361,12 @@ abstract class S {
   /// **'Anime'**
   String get mediaTypeAnime;
 
+  /// No description provided for @mediaTypeBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get mediaTypeBook;
+
   /// No description provided for @mediaTypeCustom.
   ///
   /// In en, this message translates to:
@@ -1867,6 +1873,12 @@ abstract class S {
   /// **'Manga data provided by MangaBaka.'**
   String get creditsMangaBakaAttribution;
 
+  /// No description provided for @creditsOpenLibraryAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Book data from Open Library (CC0 / ODbL).'**
+  String get creditsOpenLibraryAttribution;
+
   /// No description provided for @creditsOpenSource.
   ///
   /// In en, this message translates to:
@@ -2635,6 +2647,12 @@ abstract class S {
   /// **'Manga'**
   String get collectionFilterManga;
 
+  /// No description provided for @collectionFilterBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get collectionFilterBooks;
+
   /// No description provided for @collectionFilterCustom.
   ///
   /// In en, this message translates to:
@@ -3295,11 +3313,53 @@ abstract class S {
   /// **'Animation'**
   String get searchSourceAnimation;
 
+  /// No description provided for @searchSourceOpenLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenLibrary'**
+  String get searchSourceOpenLibrary;
+
   /// No description provided for @searchHintManga.
   ///
   /// In en, this message translates to:
   /// **'Search manga...'**
   String get searchHintManga;
+
+  /// No description provided for @searchHintBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Search books...'**
+  String get searchHintBooks;
+
+  /// No description provided for @bookFilterLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get bookFilterLanguage;
+
+  /// No description provided for @bookFilterSearchBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by'**
+  String get bookFilterSearchBy;
+
+  /// No description provided for @bookSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get bookSearchTitle;
+
+  /// No description provided for @bookSearchAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get bookSearchAuthor;
+
+  /// No description provided for @bookSearchSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get bookSearchSubject;
 
   /// No description provided for @searchSelectPlatform.
   ///
@@ -4332,6 +4392,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Manga'**
   String get allItemsManga;
+
+  /// No description provided for @allItemsBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get allItemsBooks;
 
   /// No description provided for @allItemsCustom.
   ///
@@ -5580,6 +5646,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Sort'**
   String get browseSort;
+
+  /// No description provided for @browseSortRelevance.
+  ///
+  /// In en, this message translates to:
+  /// **'Relevance'**
+  String get browseSortRelevance;
 
   /// No description provided for @browseSortPopular.
   ///

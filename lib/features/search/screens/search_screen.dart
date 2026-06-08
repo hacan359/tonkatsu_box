@@ -239,6 +239,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         collected = await ref.read(collectedMangaIdsProvider.future);
       case MediaType.anime:
         collected = await ref.read(collectedAnimeIdsProvider.future);
+      case MediaType.book:
+        collected = await ref.read(collectedBookIdsProvider.future);
       case MediaType.custom:
         return <CollectedItemInfo>[];
     }

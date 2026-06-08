@@ -48,6 +48,7 @@ class BrowseSortOption {
   final String apiValue;
 
   String label(S l) => switch (id) {
+        'relevance' => l.browseSortRelevance,
         'popular' || 'popularity' => l.browseSortPopular,
         'top_rated' || 'rating' || 'score' => l.browseSortTopRated,
         'newest' => l.browseSortNewest,

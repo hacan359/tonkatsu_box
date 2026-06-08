@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/anime.dart';
+import '../../../shared/models/book.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
@@ -160,6 +161,20 @@ Future<MoodGridCellMedia> resolveMoodGridCellMedia(
         genre: _joinGenres(manga?.genres),
         rating:
             manga?.averageScore != null ? manga!.averageScore! / 10.0 : null,
+      );
+    case MediaType.book:
+      final Book? book = await db.bookDao.getBook(
+        externalId.toString(),
+        source: source ?? DataSource.openLibrary,
+      );
+      return MoodGridCellMedia(
+        title: book?.title,
+        coverUrl: book?.coverUrl,
+        imageType: ImageType.bookCover,
+        placeholderIcon: Icons.menu_book,
+        year: book?.publishYear,
+        genre: _joinGenres(book?.subjects),
+        rating: book?.rating,
       );
     case MediaType.custom:
       final CustomMedia? custom = await db.customMediaDao.getById(externalId);

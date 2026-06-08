@@ -7,6 +7,53 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Add books as a new media type with OpenLibrary search**
+
+  Books join games / movies / … as `MediaType.book`, backed by a `books_cache`
+  table and the keyless OpenLibrary catalog. Search by everything / title /
+  author / subject, filter by language, sort by relevance / rating / newest;
+  open a result for cover, authors, rating and a lazily-loaded description, then
+  add it to any collection. Identity mirrors manga — the cache key is
+  `(id, source)` — so a future second provider (Fantlab) with a shared numeric
+  id never collides. Detail / import round-trip land in later stages.
+
+  * lib/shared/models/book.dart (Book): New model — `fromOpenLibrarySearchDoc`, `fromOpenLibraryWork`, `fromDb`, `toDb`, `toExport`, `fromExport`, `copyWith`, `withWorkDetails`, `externalIdInt`.
+  * lib/core/api/openlibrary_api.dart (OpenLibraryApi, openLibraryApiProvider): New REST facade — `search`, `getWork`.
+  * lib/core/api/openlibrary/openlibrary_http_client.dart (OpenLibraryHttpClient), openlibrary_types.dart (OpenLibraryApiException), openlibrary_search_api.dart (OpenLibrarySearchApi), openlibrary_works_api.dart (OpenLibraryWorksApi), README.md: New — Dio transport (required User-Agent), `search.json` with scoped fields, `/works` + `/ratings` + `/authors` enrichment.
+  * lib/core/api/api_error_extract.dart (extractApiError): Recognise OpenLibraryApiException so its copyable detail reaches the shared error UI.
+  * lib/features/search/sources/openlibrary_source.dart (OpenLibrarySource), search_sources.dart (searchSources): New "Books" search source; ≥3-char query guard.
+  * lib/features/search/filters/openlibrary_scope_filter.dart (OpenLibraryScopeFilter), openlibrary_language_filter.dart (OpenLibraryLanguageFilter): New — search-field scope and MARC language filters.
+  * lib/features/search/utils/filter_ui.dart (filterAccentForGroup): Use the book accent for the Books group's filter bar.
+  * lib/features/settings/content/credits_content.dart (CreditsContent), lib/l10n/app_en.arb, lib/l10n/app_ru.arb (creditsOpenLibraryAttribution): Add the Open Library attribution (CC0 / ODbL) under Credits → Data Providers.
+  * lib/features/search/models/search_source.dart (BrowseSortOption.label): Add the `relevance` sort label.
+  * lib/features/search/widgets/browse_grid.dart (BrowseGrid): Render `Book` results and track collected book ids.
+  * lib/features/search/widgets/item_details_sheet.dart (ItemDetailsSheet.book, ItemDetailsSheet.overviewLoader): Book quick-look with a spinner-backed lazy description.
+  * lib/features/search/handlers/media_handlers.dart (MediaHandlers), simple_media_handler.dart (SimpleMediaHandler.enrich): Dispatch book taps / adds; enrich the cached row with the full work behind a blocking spinner on add.
+  * lib/features/collections/helpers/collection_actions.dart (CollectionActions): Refresh a collected OpenLibrary book from the API.
+  * lib/shared/widgets/loading_overlay.dart (withBlockingSpinner): New reusable modal-spinner helper for slow awaited steps.
+  * lib/shared/models/data_source.dart (DataSource.openLibrary.iconAsset), lib/shared/theme/app_assets.dart (AppAssets.iconOpenLibraryColor), assets/images/open_library_color.png: OpenLibrary brand icon.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (searchSourceOpenLibrary, searchHintBooks, bookFilterLanguage, bookFilterSearchBy, bookSearchTitle, bookSearchAuthor, bookSearchSubject, browseSortRelevance): New search strings.
+  * lib/core/database/dao/book_dao.dart (BookDao): New DAO — `upsertBook`, `upsertBooks`, `getBook`, `getBooksByIds` (matches `CAST(id AS INTEGER)`), `clearBooks`.
+  * lib/core/database/schema.dart (DatabaseSchema.createBooksCacheTable): New `books_cache` table, primary key `(id, source)`, title index.
+  * lib/core/database/migrations/migration_v47.dart (MigrationV47): New migration creating `books_cache`.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all): Register MigrationV47.
+  * lib/core/database/database_service.dart (DatabaseService.bookDao, bookDaoProvider, DatabaseService.clearAllData): Wire BookDao, bump schema version to 47, flush `books_cache` on reset.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao._loadJoinedData, CollectionDao.getCollectionCovers, CollectionDao.getCollectionItemStats): Join `books_cache`, hydrate `item.book`, count books.
+  * lib/data/repositories/canvas_repository.dart (CanvasRepository._enrichItemsWithMediaData, CanvasRepository.initializeCanvas), lib/features/collections/providers/game_canvas_provider.dart (GameCanvasNotifier._initializeWithCollectionItem): Hydrate book covers on the collection and per-item canvases.
+  * lib/data/repositories/collection_repository.dart (CollectionStats.bookCount): New count.
+  * lib/core/services/export_service.dart (ExportService._collectMediaData): Emit a `books` section in `.xcoll` / `.xcollx`.
+  * lib/shared/models/data_source.dart (DataSource.openLibrary, DataSource.fantlab): New sources.
+  * lib/shared/models/media_type.dart (MediaType.book): New media type.
+  * lib/shared/models/collection_item.dart (CollectionItem.book), lib/shared/models/canvas_item.dart (CanvasItem.book, CanvasItemType.book): Carry the joined book payload.
+  * lib/shared/utils/cover_image_id.dart (coverImageId), lib/core/services/image_cache_service.dart (ImageType.bookCover): Namespace book covers by source (`openLibrary_27448`).
+  * lib/shared/constants/media_type_theme.dart (MediaTypeTheme.bookColor), lib/shared/theme/app_colors.dart (AppColors.bookAccent): Book accent colour and icon.
+  * lib/features/collections/providers/collections_provider.dart (collectedBookIdsProvider): New collected-ids provider.
+  * lib/features/collections/widgets/collection_filter_bar.dart (CollectionFilterBar), lib/features/home/screens/all_items_screen.dart (AllItemsScreen): Add a "Books" entry to the media-type chevron filter.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (mediaTypeBook, collectionFilterBooks, allItemsBooks): New labels.
+  * lib/core/services/discord_rpc_service.dart, lib/core/services/text_export_service.dart, lib/features/collections/helpers/bulk_operations.dart, lib/features/collections/helpers/collection_actions.dart, lib/features/collections/screens/item_detail_screen.dart, lib/features/collections/widgets/canvas_item_actions.dart, lib/features/collections/widgets/canvas_view.dart, lib/features/collections/widgets/collection_filter_bar.dart, lib/features/collections/widgets/item_detail/item_detail_media_config.dart, lib/features/home/screens/all_items_screen.dart, lib/features/releases/screens/releases_screen.dart, lib/features/search/screens/search_screen.dart, lib/features/tier_lists/widgets/mood_grid_cell_media.dart, lib/features/wishlist/screens/wishlist_screen.dart, lib/shared/models/cover_info.dart: Propagate `MediaType.book` / `CanvasItemType.book` through exhaustive switches.
+
 ## [0.32.1] - 2026-06-07
 
 ### Fixed

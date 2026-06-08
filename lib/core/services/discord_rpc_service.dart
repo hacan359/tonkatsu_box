@@ -309,6 +309,9 @@ class DiscordRpcService {
       MediaType.movie =>
         'Movie${item.runtime != null ? " · ${item.runtime} min" : ""}$yearSuffix',
       MediaType.visualNovel => 'Visual Novel$yearSuffix',
+      MediaType.book => item.book?.pageCount != null
+          ? 'Book · ${item.book!.pageCount} pages$yearSuffix'
+          : 'Book$yearSuffix',
       MediaType.custom => 'Custom$yearSuffix',
     };
 
@@ -345,7 +348,7 @@ class DiscordRpcService {
         MediaType.animation ||
         MediaType.anime =>
           'Watching',
-        MediaType.manga || MediaType.visualNovel => 'Reading',
+        MediaType.manga || MediaType.visualNovel || MediaType.book => 'Reading',
         MediaType.custom => 'Browsing',
       };
 }

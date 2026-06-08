@@ -4,8 +4,8 @@ import 'package:tonkatsu_box/shared/models/media_type.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('should contain 8 значений', () {
-        expect(MediaType.values.length, 8);
+      test('should contain 9 значений', () {
+        expect(MediaType.values.length, 9);
       });
 
       test('should contain game', () {

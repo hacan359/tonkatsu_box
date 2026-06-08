@@ -273,6 +273,8 @@ class BulkOperations {
         ref.invalidate(collectedMangaIdsProvider);
       case MediaType.anime:
         ref.invalidate(collectedAnimeIdsProvider);
+      case MediaType.book:
+        ref.invalidate(collectedBookIdsProvider);
       case MediaType.custom:
         break;
     }
