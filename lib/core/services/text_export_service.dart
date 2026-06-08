@@ -159,6 +159,8 @@ class TextExportService {
         return 'Manga';
       case MediaType.anime:
         return 'Anime';
+      case MediaType.book:
+        return 'Book';
       case MediaType.custom:
         return 'Custom';
     }

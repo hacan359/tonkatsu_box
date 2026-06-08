@@ -1,6 +1,7 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/anime.dart';
+import '../../../shared/models/book.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -16,6 +17,7 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/visual_novel.dart';
 import 'anime_dao.dart';
+import 'book_dao.dart';
 import 'custom_media_dao.dart';
 import 'game_dao.dart';
 import 'manga_dao.dart';
@@ -32,6 +34,7 @@ class CollectionDao {
     required VisualNovelDao visualNovelDao,
     required AnimeDao animeDao,
     required MangaDao mangaDao,
+    required BookDao bookDao,
     required CustomMediaDao customMediaDao,
   })  : _gameDao = gameDao,
         _movieDao = movieDao,
@@ -39,6 +42,7 @@ class CollectionDao {
         _visualNovelDao = visualNovelDao,
         _animeDao = animeDao,
         _mangaDao = mangaDao,
+        _bookDao = bookDao,
         _customMediaDao = customMediaDao;
 
   final Future<Database> Function() _getDatabase;
@@ -48,6 +52,7 @@ class CollectionDao {
   final VisualNovelDao _visualNovelDao;
   final AnimeDao _animeDao;
   final MangaDao _mangaDao;
+  final BookDao _bookDao;
   final CustomMediaDao _customMediaDao;
 
   Future<List<Collection>> getAllCollections() async {
@@ -708,6 +713,7 @@ class CollectionDao {
       'visualNovelCount': 0,
       'mangaCount': 0,
       'animeCount': 0,
+      'bookCount': 0,
       'customCount': 0,
     };
 
@@ -733,6 +739,8 @@ class CollectionDao {
           stats['mangaCount'] = (stats['mangaCount'] ?? 0) + count;
         case 'anime':
           stats['animeCount'] = (stats['animeCount'] ?? 0) + count;
+        case 'book':
+          stats['bookCount'] = (stats['bookCount'] ?? 0) + count;
         case 'custom':
           stats['customCount'] = (stats['customCount'] ?? 0) + count;
       }
@@ -838,6 +846,7 @@ class CollectionDao {
             WHEN 'visual_novel' THEN vn.image_url
             WHEN 'manga' THEN mc.cover_url
             WHEN 'anime' THEN ac.cover_url
+            WHEN 'book' THEN bc.cover_url
             WHEN 'custom' THEN cm.cover_url
           END AS thumbnail_url
         FROM collection_items ci
@@ -860,6 +869,10 @@ class CollectionDao {
           AND mc.source = COALESCE(ci.source, 'anilist')
         LEFT JOIN anime_cache ac
           ON ci.media_type = 'anime' AND ci.external_id = ac.id
+        LEFT JOIN books_cache bc
+          ON ci.media_type = 'book'
+          AND ci.external_id = CAST(bc.id AS INTEGER)
+          AND bc.source = ci.source
         LEFT JOIN custom_items cm
           ON ci.media_type = 'custom' AND ci.external_id = cm.id
         WHERE $whereClause
@@ -887,6 +900,7 @@ class CollectionDao {
     final List<int> vnIds = <int>[];
     final List<int> animeIds = <int>[];
     final List<int> mangaIds = <int>[];
+    final List<int> bookIds = <int>[];
     final List<int> customIds = <int>[];
     final Set<int> platformIds = <int>{};
 
@@ -913,6 +927,8 @@ class CollectionDao {
           animeIds.add(item.externalId);
         case MediaType.manga:
           mangaIds.add(item.externalId);
+        case MediaType.book:
+          bookIds.add(item.externalId);
         case MediaType.custom:
           customIds.add(item.externalId);
       }
@@ -944,6 +960,9 @@ class CollectionDao {
       platformIds.isNotEmpty
           ? _gameDao.getPlatformsByIds(platformIds.toList())
           : Future<List<Platform>>.value(<Platform>[]),
+      bookIds.isNotEmpty
+          ? _bookDao.getBooksByIds(bookIds)
+          : Future<List<Book>>.value(<Book>[]),
     ]);
 
     final List<Game> games = results[0] as List<Game>;
@@ -954,6 +973,7 @@ class CollectionDao {
     final List<Anime> animes = results[5] as List<Anime>;
     final List<CustomMedia> customMediaList = results[6] as List<CustomMedia>;
     final List<Platform> platforms = results[7] as List<Platform>;
+    final List<Book> books = results[8] as List<Book>;
 
     final Map<int, Platform> platformsMap = <int, Platform>{
       for (final Platform p in platforms) p.id: p,
@@ -990,6 +1010,12 @@ class CollectionDao {
     final Map<String, Manga> mangaMap = <String, Manga>{
       for (final Manga m in mangas) '${m.source.name}:${m.id}': m,
     };
+    // Books are keyed by `(source, id)` like manga — OpenLibrary and Fantlab
+    // can share a numeric id. `book.id` is the numeric id as a string, so it
+    // matches `item.externalId.toString()`.
+    final Map<String, Book> bookMap = <String, Book>{
+      for (final Book b in books) '${b.source.name}:${b.id}': b,
+    };
     final Map<int, Anime> animeMap = <int, Anime>{
       for (final Anime a in animes) a.id: a,
     };
@@ -1023,6 +1049,11 @@ class CollectionDao {
           return item.copyWith(
             manga: mangaMap[
                 '${(item.source ?? DataSource.anilist).name}:${item.externalId}'],
+          );
+        case MediaType.book:
+          return item.copyWith(
+            book: bookMap[
+                '${(item.source ?? DataSource.openLibrary).name}:${item.externalId}'],
           );
         case MediaType.custom:
           return item.copyWith(customMedia: customMap[item.externalId]);

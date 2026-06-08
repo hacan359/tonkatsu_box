@@ -754,6 +754,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedMangaIdsProvider);
       case MediaType.anime:
         ref.invalidate(collectedAnimeIdsProvider);
+      case MediaType.book:
+        ref.invalidate(collectedBookIdsProvider);
       case MediaType.custom:
         break; // Custom items have no collected-IDs provider.
     }
@@ -1150,6 +1152,14 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
   return db.getCollectedItemInfos(MediaType.manga);
+});
+
+/// numeric_id -> collection entries.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedBookIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.book);
 });
 
 /// anilist_id -> collection entries.

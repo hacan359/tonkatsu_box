@@ -120,8 +120,8 @@ The source of truth is `lib/core/database/schema.dart` (table list) and `databas
 Key entities:
 
 - **`collections`** + **`collection_items`** — user collections and their members. `collection_id` is nullable; `NULL` means uncategorized.
-- **`collection_items.media_type`** — discriminator: `game` / `movie` / `tvShow` / `anime` / `manga` / `visualNovel` / `custom`. `external_id` points at a row in the matching cache table.
-- **Media cache tables**: `games`, `movies_cache`, `tv_shows_cache` (+ `tv_seasons_cache`, `tv_episodes_cache`), `anime_cache`, `manga_cache`, `visual_novels_cache`, `custom_items`. These are local mirrors of API responses keyed by external id (IGDB / TMDB / AniList / VNDB).
+- **`collection_items.media_type`** — discriminator: `game` / `movie` / `tvShow` / `anime` / `manga` / `visualNovel` / `book` / `custom`. `external_id` points at a row in the matching cache table.
+- **Media cache tables**: `games`, `movies_cache`, `tv_shows_cache` (+ `tv_seasons_cache`, `tv_episodes_cache`), `anime_cache`, `manga_cache`, `visual_novels_cache`, `books_cache`, `custom_items`. These are local mirrors of API responses keyed by external id (IGDB / TMDB / AniList / VNDB / OpenLibrary / Fantlab). `manga_cache` and `books_cache` use a composite key `(id, source)` since two providers can share a numeric id.
 - **`canvas_items` / `canvas_connections` / `canvas_viewport`** — the Board. Lives at both the collection level and the per-item level (`game_canvas_viewport`).
 - **`watched_episodes`** — episode-watch marks for TV shows.
 - **`wishlist`** — quick free-text "look it up later" notes.

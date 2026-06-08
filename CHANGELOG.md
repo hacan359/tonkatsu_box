@@ -7,6 +7,35 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Add books as a new media type (data-layer foundation)**
+
+  Introduces `MediaType.book` backed by a `books_cache` table and two providers,
+  OpenLibrary and Fantlab, sharing one `Book` model. Book identity mirrors manga
+  — the cache key is `(id, source)` — so the same numeric id from both sources
+  never collides. This stage wires the data layer, cache joins and cross-cutting
+  media-type handling; search, detail and import round-trip land in later stages.
+
+  * lib/shared/models/book.dart (Book): New model — `fromDb`, `toDb`, `toExport`, `fromExport`, `copyWith`, `externalIdInt`.
+  * lib/core/database/dao/book_dao.dart (BookDao): New DAO — `upsertBook`, `upsertBooks`, `getBook`, `getBooksByIds` (matches `CAST(id AS INTEGER)`), `clearBooks`.
+  * lib/core/database/schema.dart (DatabaseSchema.createBooksCacheTable): New `books_cache` table, primary key `(id, source)`, title index.
+  * lib/core/database/migrations/migration_v47.dart (MigrationV47): New migration creating `books_cache`.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all): Register MigrationV47.
+  * lib/core/database/database_service.dart (DatabaseService.bookDao, bookDaoProvider, DatabaseService.clearAllData): Wire BookDao, bump schema version to 47, flush `books_cache` on reset.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao._loadJoinedData, CollectionDao.getCollectionCovers, CollectionDao.getCollectionItemStats): Join `books_cache`, hydrate `item.book`, count books.
+  * lib/data/repositories/canvas_repository.dart (CanvasRepository._enrichItemsWithMediaData): Hydrate canvas book items.
+  * lib/data/repositories/collection_repository.dart (CollectionStats.bookCount): New count.
+  * lib/core/services/export_service.dart (ExportService._collectMediaData): Emit a `books` section in `.xcoll` / `.xcollx`.
+  * lib/shared/models/data_source.dart (DataSource.openLibrary, DataSource.fantlab): New sources.
+  * lib/shared/models/media_type.dart (MediaType.book): New media type.
+  * lib/shared/models/collection_item.dart (CollectionItem.book), lib/shared/models/canvas_item.dart (CanvasItem.book, CanvasItemType.book): Carry the joined book payload.
+  * lib/shared/utils/cover_image_id.dart (coverImageId), lib/core/services/image_cache_service.dart (ImageType.bookCover): Namespace book covers by source (`openLibrary_27448`).
+  * lib/shared/constants/media_type_theme.dart (MediaTypeTheme.bookColor), lib/shared/theme/app_colors.dart (AppColors.bookAccent): Book accent colour and icon.
+  * lib/features/collections/providers/collections_provider.dart (collectedBookIdsProvider): New collected-ids provider.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (mediaTypeBook): New label.
+  * lib/core/services/discord_rpc_service.dart, lib/core/services/text_export_service.dart, lib/features/collections/helpers/bulk_operations.dart, lib/features/collections/helpers/collection_actions.dart, lib/features/collections/screens/item_detail_screen.dart, lib/features/collections/widgets/canvas_item_actions.dart, lib/features/collections/widgets/canvas_view.dart, lib/features/collections/widgets/collection_filter_bar.dart, lib/features/collections/widgets/item_detail/item_detail_media_config.dart, lib/features/home/screens/all_items_screen.dart, lib/features/releases/screens/releases_screen.dart, lib/features/search/screens/search_screen.dart, lib/features/tier_lists/widgets/mood_grid_cell_media.dart, lib/features/wishlist/screens/wishlist_screen.dart, lib/shared/models/cover_info.dart: Propagate `MediaType.book` / `CanvasItemType.book` through exhaustive switches.
+
 ## [0.32.1] - 2026-06-07
 
 ### Fixed

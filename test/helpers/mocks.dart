@@ -24,6 +24,7 @@ import 'package:tonkatsu_box/core/database/dao/calendar_entry_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/custom_media_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/anime_dao.dart';
 import 'package:tonkatsu_box/core/services/discord_rpc_service.dart';
+import 'package:tonkatsu_box/core/database/dao/book_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tag_dao.dart';
@@ -103,6 +104,8 @@ class MockCalendarEntryDao extends Mock implements CalendarEntryDao {}
 class MockVisualNovelDao extends Mock implements VisualNovelDao {}
 
 class MockMangaDao extends Mock implements MangaDao {}
+
+class MockBookDao extends Mock implements BookDao {}
 
 class MockAnimeDao extends Mock implements AnimeDao {}
 

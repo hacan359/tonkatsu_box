@@ -66,6 +66,9 @@ abstract final class AppColors {
   /// Акцентный цвет для аниме (розовый AniList).
   static const Color animeAccent = Color(0xFFE85D75);
 
+  /// Акцентный цвет для книг (коричневый OpenLibrary).
+  static const Color bookAccent = Color(0xFF9B6A4F);
+
   /// Акцентный цвет для кастомных элементов (бирюзовый).
   static const Color customAccent = Color(0xFF26A69A);
 

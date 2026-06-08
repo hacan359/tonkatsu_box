@@ -361,6 +361,12 @@ abstract class S {
   /// **'Anime'**
   String get mediaTypeAnime;
 
+  /// No description provided for @mediaTypeBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get mediaTypeBook;
+
   /// No description provided for @mediaTypeCustom.
   ///
   /// In en, this message translates to:

@@ -635,6 +635,10 @@ class CollectionActions {
               .getVnById(item.externalId.toString());
           if (vn == null) return _RefreshOutcome.notFound();
           await db.visualNovelDao.upsertVisualNovel(vn);
+        case MediaType.book:
+          // Refresh wires up to the OpenLibrary / Fantlab clients in a later
+          // stage; until then a book can't be re-fetched.
+          return _RefreshOutcome.unsupported();
         case MediaType.custom:
           return _RefreshOutcome.unsupported();
       }

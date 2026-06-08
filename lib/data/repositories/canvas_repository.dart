@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
 import '../../shared/models/anime.dart';
+import '../../shared/models/book.dart';
 import '../../shared/models/canvas_connection.dart';
 import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
@@ -213,6 +214,12 @@ class CanvasRepository {
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
+    final List<int> bookIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.book && item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
+
     final List<int> customIds = items
         .where((CanvasItem item) =>
             item.itemType == CanvasItemType.custom && item.itemRefId != null)
@@ -225,6 +232,7 @@ class CanvasRepository {
         vnIds.isEmpty &&
         mangaIds.isEmpty &&
         animeIds.isEmpty &&
+        bookIds.isEmpty &&
         customIds.isEmpty) {
       return items;
     }
@@ -251,6 +259,9 @@ class CanvasRepository {
       customIds.isNotEmpty
           ? _db.customMediaDao.getByIds(customIds)
           : Future<List<CustomMedia>>.value(<CustomMedia>[]),
+      bookIds.isNotEmpty
+          ? _db.bookDao.getBooksByIds(bookIds)
+          : Future<List<Book>>.value(<Book>[]),
     ]);
 
     final Map<int, Game> gamesMap = <int, Game>{
@@ -283,6 +294,16 @@ class CanvasRepository {
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
       for (final CustomMedia c in results[6] as List<CustomMedia>) c.id: c,
     };
+    // Like manga, canvas books carry no source, so a numeric id can match both
+    // an OpenLibrary and a Fantlab row. OpenLibrary wins to keep behaviour
+    // deterministic.
+    final Map<int, Book> bookMap = <int, Book>{};
+    for (final Book b in results[7] as List<Book>) {
+      final Book? existing = bookMap[b.externalIdInt];
+      if (existing == null || b.source == DataSource.openLibrary) {
+        bookMap[b.externalIdInt] = b;
+      }
+    }
 
     return items.map((CanvasItem item) {
       if (item.itemRefId == null) return item;
@@ -306,6 +327,8 @@ class CanvasRepository {
           return item.copyWith(manga: mangaMap[item.itemRefId]);
         case CanvasItemType.anime:
           return item.copyWith(anime: animeMap[item.itemRefId]);
+        case CanvasItemType.book:
+          return item.copyWith(book: bookMap[item.itemRefId]);
         case CanvasItemType.custom:
           return item.copyWith(customMedia: customMap[item.itemRefId]);
         case CanvasItemType.text:

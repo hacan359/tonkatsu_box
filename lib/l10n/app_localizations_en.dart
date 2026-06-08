@@ -144,6 +144,9 @@ class SEn extends S {
   String get mediaTypeAnime => 'Anime';
 
   @override
+  String get mediaTypeBook => 'Book';
+
+  @override
   String get mediaTypeCustom => 'Custom';
 
   @override

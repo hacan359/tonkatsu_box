@@ -55,6 +55,7 @@
   "mediaTypeVisualNovel": "Визуальная новелла",
   "mediaTypeManga": "Манга",
   "mediaTypeAnime": "Аниме",
+  "mediaTypeBook": "Книга",
   "mediaTypeCustom": "Своё",
 
   "sortManualDisplay": "Вручную",

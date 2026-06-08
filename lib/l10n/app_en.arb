@@ -55,6 +55,7 @@
   "mediaTypeVisualNovel": "Visual Novel",
   "mediaTypeManga": "Manga",
   "mediaTypeAnime": "Anime",
+  "mediaTypeBook": "Book",
   "mediaTypeCustom": "Custom",
 
   "sortManualDisplay": "Manual",

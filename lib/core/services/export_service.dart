@@ -421,6 +421,10 @@ class ExportService {
     // id, so an int key would drop one of them from the export.
     final Map<String, Map<String, dynamic>> mangas =
         <String, Map<String, dynamic>>{};
+    // Keyed by `source:externalId` — OpenLibrary and Fantlab can share a
+    // numeric id, like manga.
+    final Map<String, Map<String, dynamic>> books =
+        <String, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> animes =
         <int, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> customItems =
@@ -479,6 +483,12 @@ class ExportService {
           if (item.manga != null && !mangas.containsKey(mangaKey)) {
             mangas[mangaKey] = item.manga!.toExport();
           }
+        case MediaType.book:
+          final String bookKey =
+              '${item.book?.source.name ?? 'openLibrary'}:${item.externalId}';
+          if (item.book != null && !books.containsKey(bookKey)) {
+            books[bookKey] = item.book!.toExport();
+          }
         case MediaType.anime:
           if (item.anime != null && !animes.containsKey(item.externalId)) {
             animes[item.externalId] = item.anime!.toExport();
@@ -528,6 +538,7 @@ class ExportService {
         tvShows.isEmpty &&
         vns.isEmpty &&
         mangas.isEmpty &&
+        books.isEmpty &&
         animes.isEmpty &&
         allSeasons.isEmpty &&
         allEpisodes.isEmpty &&
@@ -544,6 +555,7 @@ class ExportService {
       if (allPlatforms.isNotEmpty) 'platforms': allPlatforms,
       if (vns.isNotEmpty) 'visual_novels': vns.values.toList(),
       if (mangas.isNotEmpty) 'mangas': mangas.values.toList(),
+      if (books.isNotEmpty) 'books': books.values.toList(),
       if (animes.isNotEmpty) 'animes': animes.values.toList(),
       if (customItems.isNotEmpty)
         'custom_items': customItems.values.toList(),

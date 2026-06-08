@@ -21,6 +21,7 @@ abstract final class DatabaseSchema {
     await createVisualNovelsCacheTable(db);
     await createVndbTagsTable(db);
     await createMangaCacheTable(db);
+    await createBooksCacheTable(db);
     await createTierListsTable(db);
     await createTierDefinitionsTable(db);
     await createTierListEntriesTable(db);
@@ -471,6 +472,39 @@ abstract final class DatabaseSchema {
         PRIMARY KEY (id, source)
       )
     ''');
+  }
+
+  static Future<void> createBooksCacheTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS books_cache (
+        id TEXT NOT NULL,
+        source TEXT NOT NULL,
+        native_id TEXT,
+        title TEXT NOT NULL,
+        original_title TEXT,
+        authors TEXT,
+        description TEXT,
+        cover_url TEXT,
+        page_count INTEGER,
+        publish_year INTEGER,
+        publishers TEXT,
+        isbn_10 TEXT,
+        isbn_13 TEXT,
+        languages TEXT,
+        subjects TEXT,
+        work_type TEXT,
+        series TEXT,
+        awards TEXT,
+        rating REAL,
+        rating_count INTEGER,
+        external_url TEXT,
+        cached_at INTEGER NOT NULL,
+        PRIMARY KEY (id, source)
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_books_cache_title ON books_cache(title)',
+    );
   }
 
   static Future<void> createAnimeCacheTable(Database db) async {

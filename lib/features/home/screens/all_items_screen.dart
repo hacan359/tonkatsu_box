@@ -765,6 +765,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.manga?.releaseYear;
       case MediaType.anime:
         return item.anime?.releaseYear;
+      case MediaType.book:
+        return item.book?.releaseYear;
       case MediaType.custom:
         return item.customMedia?.year;
     }
@@ -789,6 +791,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return ImageType.mangaCover;
       case MediaType.anime:
         return ImageType.animeCover;
+      case MediaType.book:
+        return ImageType.bookCover;
       case MediaType.custom:
         return ImageType.customCover;
     }

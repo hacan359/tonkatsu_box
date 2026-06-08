@@ -426,6 +426,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.visualNovel: stats?.visualNovelCount,
         MediaType.manga: stats?.mangaCount,
         MediaType.anime: stats?.animeCount,
+        MediaType.book: stats?.bookCount,
         MediaType.custom: stats?.customCount,
       };
     }
@@ -462,6 +463,7 @@ int? _totalCountFor(MediaType type, CollectionStats? stats) {
     MediaType.visualNovel => stats.visualNovelCount,
     MediaType.manga => stats.mangaCount,
     MediaType.anime => stats.animeCount,
+    MediaType.book => stats.bookCount,
     MediaType.custom => stats.customCount,
   };
 }

@@ -29,6 +29,7 @@ class CollectionStats {
     this.visualNovelCount = 0,
     this.mangaCount = 0,
     this.animeCount = 0,
+    this.bookCount = 0,
     this.customCount = 0,
   });
 
@@ -45,6 +46,7 @@ class CollectionStats {
   final int visualNovelCount;
   final int mangaCount;
   final int animeCount;
+  final int bookCount;
   final int customCount;
 
   double get completionPercent {
@@ -273,6 +275,7 @@ class CollectionRepository {
       visualNovelCount: raw['visualNovelCount'] ?? 0,
       mangaCount: raw['mangaCount'] ?? 0,
       animeCount: raw['animeCount'] ?? 0,
+      bookCount: raw['bookCount'] ?? 0,
       customCount: raw['customCount'] ?? 0,
     );
   }

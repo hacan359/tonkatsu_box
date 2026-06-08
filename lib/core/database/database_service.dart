@@ -21,6 +21,7 @@ import 'dao/canvas_dao.dart';
 import 'dao/collection_dao.dart';
 import 'dao/custom_media_dao.dart';
 import 'dao/anime_dao.dart';
+import 'dao/book_dao.dart';
 import 'dao/game_dao.dart';
 import 'dao/movie_dao.dart';
 import 'dao/tag_dao.dart';
@@ -65,6 +66,10 @@ final Provider<VisualNovelDao> visualNovelDaoProvider =
 
 final Provider<MangaDao> mangaDaoProvider = Provider<MangaDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).mangaDao;
+});
+
+final Provider<BookDao> bookDaoProvider = Provider<BookDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).bookDao;
 });
 
 final Provider<AnimeDao> animeDaoProvider = Provider<AnimeDao>((Ref ref) {
@@ -166,6 +171,8 @@ class DatabaseService {
 
   late final MangaDao mangaDao = MangaDao(() => database);
 
+  late final BookDao bookDao = BookDao(() => database);
+
   late final AnimeDao animeDao = AnimeDao(() => database);
 
   late final CustomMediaDao customMediaDao = CustomMediaDao(() => database);
@@ -178,6 +185,7 @@ class DatabaseService {
     visualNovelDao: visualNovelDao,
     animeDao: animeDao,
     mangaDao: mangaDao,
+    bookDao: bookDao,
     customMediaDao: customMediaDao,
   );
 
@@ -245,7 +253,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 46,
+        version: 47,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -560,6 +568,7 @@ class DatabaseService {
       await txn.delete('visual_novels_cache');
       await txn.delete('manga_cache');
       await txn.delete('anime_cache');
+      await txn.delete('books_cache');
       await txn.delete('wishlist');
     });
   }

@@ -144,6 +144,9 @@ class SRu extends S {
   String get mediaTypeAnime => 'Аниме';
 
   @override
+  String get mediaTypeBook => 'Книга';
+
+  @override
   String get mediaTypeCustom => 'Своё';
 
   @override

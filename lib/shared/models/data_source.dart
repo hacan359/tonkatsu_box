@@ -27,6 +27,12 @@ enum DataSource {
   /// MangaBaka — open catalog of manga / manhwa / manhua / light novels.
   mangabaka('MangaBaka', Color(0xFFE5484D), AppAssets.iconMangaBakaColor),
 
+  /// OpenLibrary — global open book catalog (~40M works, CC0/ODbL).
+  openLibrary('OpenLibrary', Color(0xFF9B6A4F), null),
+
+  /// Fantlab — Russian book catalog, strong on science fiction & fantasy.
+  fantlab('Fantlab', Color(0xFFC5302E), null),
+
   /// Локальный источник (кастомные элементы).
   local('Custom', Color(0xFF26A69A), null);
 

@@ -40,6 +40,9 @@ enum ImageType {
   /// Обложки аниме.
   animeCover('anime_covers'),
 
+  /// Обложки книг.
+  bookCover('book_covers'),
+
   /// Обложки кастомных элементов.
   customCover('custom_covers');
 
