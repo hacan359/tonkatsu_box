@@ -257,29 +257,31 @@ void main() {
     });
 
     group('setTmdbLanguage', () {
-      test('should preserve язык в prefs и обновить состояние', () async {
+      test('should persist language to prefs and update state', () async {
         final ProviderContainer container = await createContainer();
 
         final SettingsNotifier notifier =
             container.read(settingsNotifierProvider.notifier);
 
-        await notifier.setTmdbLanguage('en-US');
-
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
-
-        expect(state.tmdbLanguage, equals('en-US'));
-        expect(prefs.getString('tmdb_language'), equals('en-US'));
-        verify(() => mockTmdbApi.setLanguage('en-US')).called(1);
-      });
-
-      test('should use ru-RU по умолчанию', () async {
-        final ProviderContainer container = await createContainer();
+        // A non-default value, so the init-time setLanguage(default) call
+        // doesn't get counted against this verify.
+        await notifier.setTmdbLanguage('ru-RU');
 
         final SettingsState state =
             container.read(settingsNotifierProvider);
 
         expect(state.tmdbLanguage, equals('ru-RU'));
+        expect(prefs.getString('tmdb_language'), equals('ru-RU'));
+        verify(() => mockTmdbApi.setLanguage('ru-RU')).called(1);
+      });
+
+      test('should use en-US by default', () async {
+        final ProviderContainer container = await createContainer();
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.tmdbLanguage, equals('en-US'));
       });
 
       test('должен загрузить язык из prefs при инициализации', () async {

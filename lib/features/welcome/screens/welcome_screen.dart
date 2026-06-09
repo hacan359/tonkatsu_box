@@ -1,5 +1,4 @@
-import '../../../shared/constants/platform_features.dart';
-// Welcome Wizard — пошаговый онбординг при первом запуске.
+// Welcome Wizard — first-run onboarding.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,30 +6,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/app_shell.dart';
-import '../../../shared/navigation/nav_tab.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../providers/menu_tour_provider.dart';
 import '../widgets/step_indicator.dart';
-import '../widgets/welcome_step_api_keys.dart';
-import '../widgets/welcome_step_how_it_works.dart';
 import '../widgets/welcome_step_intro.dart';
 import '../widgets/welcome_step_language.dart';
+import '../widgets/welcome_step_menu_tour.dart';
 import '../widgets/welcome_step_name.dart';
-import '../widgets/welcome_step_ready.dart';
+import '../widgets/welcome_step_sources.dart';
 
-/// Ключ SharedPreferences для флага завершения wizard'а.
+/// SharedPreferences flag marking the wizard as completed.
 const String kWelcomeCompletedKey = 'welcome_completed';
 
-/// Welcome Wizard — 6-шаговый онбординг.
+/// Welcome Wizard — a 5-step onboarding flow.
 ///
-/// При первом запуске показывается автоматически вместо [AppShell].
-/// Может быть открыт повторно из Settings (с [fromSettings] = true).
+/// Shown automatically on first launch instead of [AppShell]. Can be reopened
+/// from Settings (with [fromSettings] = true). Steps: Welcome → Language →
+/// Name → Sources (with inline API keys) → interactive menu Tour.
 class WelcomeScreen extends ConsumerStatefulWidget {
-  /// Создаёт [WelcomeScreen].
   const WelcomeScreen({this.fromSettings = false, super.key});
 
-  /// Если true, показывается как push из Settings (не первый запуск).
+  /// When true, the wizard was pushed from Settings (not a first run).
   final bool fromSettings;
 
   @override
@@ -41,16 +40,18 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  static const int _totalSteps = 6;
+  static const int _totalSteps = 5;
+
+  /// Index of the final, interactive menu-tour step.
+  static const int _tourStep = _totalSteps - 1;
 
   List<String> _stepLabels(S l) => <String>[
-    l.welcomeStepWelcome,
-    l.welcomeStepName,
-    l.welcomeStepLanguage,
-    l.welcomeStepApiKeys,
-    l.welcomeStepHowItWorks,
-    l.welcomeStepReady,
-  ];
+        l.welcomeStepWelcome,
+        l.welcomeStepLanguage,
+        l.welcomeStepName,
+        l.welcomeStepSources,
+        l.welcomeStepTour,
+      ];
 
   @override
   void dispose() {
@@ -61,17 +62,15 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
+    final bool onTour = _currentPage == _tourStep;
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            // Step bar + Skip
             _buildStepBar(compact),
-            // Progress bar
             _buildProgressBar(),
-            // PageView
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -80,19 +79,18 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 },
                 children: <Widget>[
                   const WelcomeStepIntro(),
-                  const WelcomeStepName(),
                   const WelcomeStepLanguage(),
-                  const WelcomeStepApiKeys(),
-                  const WelcomeStepHowItWorks(),
-                  WelcomeStepReady(
-                    onGoToSettings: () => _finish(goToSettings: true),
-                    onSkip: () => _finish(),
+                  const WelcomeStepName(),
+                  const WelcomeStepSources(),
+                  WelcomeStepMenuTour(
+                    onStart: () => _finish(startTour: true),
+                    onSkip: _finish,
                   ),
                 ],
               ),
             ),
-            // Bottom nav
-            _buildBottomNav(),
+            // The tour owns its own controls (Next / Skip / Start).
+            if (!onTour) _buildBottomNav(),
           ],
         ),
       ),
@@ -171,7 +169,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       ),
       child: Row(
         children: <Widget>[
-          // Back
           TextButton(
             onPressed: _currentPage > 0
                 ? () => _goToPage(_currentPage - 1)
@@ -191,8 +188,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
             ),
           ),
           const Spacer(),
-
-          // Dots
           Row(
             mainAxisSize: MainAxisSize.min,
             children: List<Widget>.generate(_totalSteps, (int index) {
@@ -218,39 +213,34 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
             }),
           ),
           const Spacer(),
-
-          // Next
-          if (_currentPage < _totalSteps - 1)
-            GestureDetector(
-              onTap: () => _goToPage(_currentPage + 1),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.brand,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      l.next,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.arrow_forward, size: 14, color: Colors.black),
-                  ],
-                ),
+          GestureDetector(
+            onTap: () => _goToPage(_currentPage + 1),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
               ),
-            )
-          else
-            const SizedBox(width: 80),
+              decoration: BoxDecoration(
+                color: AppColors.brand,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    l.next,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_forward, size: 14, color: Colors.black),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -264,9 +254,15 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     );
   }
 
-  Future<void> _finish({bool goToSettings = false}) async {
+  Future<void> _finish({bool startTour = false}) async {
     final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
     await prefs.setBool(kWelcomeCompletedKey, true);
+
+    // The tour overlay plays over the real shell that this finish reveals
+    // (a fresh AppShell on first run, or the one under the Settings push).
+    if (startTour) {
+      ref.read(menuTourControllerProvider.notifier).start();
+    }
 
     if (!mounted) return;
 
@@ -275,20 +271,10 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       return;
     }
 
-    if (goToSettings) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => const AppShell(
-            initialTab: NavTab.settings,
-          ),
-        ),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => const AppShell(),
-        ),
-      );
-    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const AppShell(),
+      ),
+    );
   }
 }

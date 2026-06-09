@@ -1,13 +1,9 @@
-// Фильтр статуса аниме (AniList).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр статуса аниме.
-///
-/// Статусы соответствуют AniList MediaStatus enum.
+/// AniList MediaStatus values.
 class AniListAnimeStatusFilter extends SearchFilter {
   @override
   String get key => 'status';

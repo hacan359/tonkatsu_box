@@ -1,5 +1,3 @@
-// Фильтр тегов (жанров) VNDB.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
@@ -7,10 +5,7 @@ import '../../../shared/models/visual_novel.dart';
 import '../models/search_source.dart';
 import '../providers/vndb_tag_provider.dart';
 
-/// Фильтр тегов VNDB.
-///
-/// Загружает теги категории "content" (жанры) из VNDB API
-/// через [vndbTagsProvider].
+/// VNDB "content" tags (genres), loaded via [vndbTagsProvider].
 class VndbTagFilter extends SearchFilter {
   @override
   String get key => 'genre';

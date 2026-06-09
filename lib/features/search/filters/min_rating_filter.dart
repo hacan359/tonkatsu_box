@@ -1,14 +1,10 @@
-// Фильтр минимального рейтинга — для TMDB discover endpoint (vote_average.gte).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр минимального рейтинга (0–10).
-///
-/// Привязан к TMDB-шкале `vote_average` (значения 0–10). На AniList/VNDB
-/// шкалы иные — там потребуется отдельный фильтр, если понадобится.
+/// Minimum rating (0–10), bound to TMDB's vote_average. AniList/VNDB use other
+/// scales and would need their own filter.
 class MinRatingFilter extends SearchFilter {
   @override
   String get key => 'minRating';

@@ -1,5 +1,3 @@
-// Шаг 3 Welcome Wizard — выбор языка интерфейса и языка контента.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,10 +7,11 @@ import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import 'welcome_hero.dart';
+import 'welcome_reveal.dart';
 
-/// Шаг 3: Language — выбор языка интерфейса и языка контента.
+/// Language — interface language and content language.
 class WelcomeStepLanguage extends ConsumerStatefulWidget {
-  /// Создаёт [WelcomeStepLanguage].
   const WelcomeStepLanguage({super.key});
 
   @override
@@ -21,8 +20,8 @@ class WelcomeStepLanguage extends ConsumerStatefulWidget {
 }
 
 class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
-  /// Пользователь явно выбрал язык контента руками — отключаем автосинк
-  /// с UI-языком, чтобы не перезатереть осознанный выбор.
+  /// True once the user picks a content language by hand — disables the
+  /// auto-sync with the UI language so the deliberate choice isn't overwritten.
   bool _contentLangTouched = false;
 
   void _onUiLanguageSelected(String uiCode) {
@@ -46,77 +45,73 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        // Адаптивные размеры для маленьких экранов
-        final bool isSmallScreen = constraints.maxHeight < 450;
-        final double iconSize = isSmallScreen ? 40 : 56;
-        final double spacing = isSmallScreen ? AppSpacing.sm : 20;
+        final bool compact = constraints.maxHeight < 470;
 
         return Center(
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
-              vertical: isSmallScreen ? AppSpacing.sm : AppSpacing.md,
+              vertical: compact ? AppSpacing.sm : AppSpacing.md,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Icon(
-                  Icons.language,
-                  size: iconSize,
-                  color: AppColors.brand,
-                ),
-                SizedBox(height: spacing),
-                Text(
-                  l.welcomeLanguageTitle,
-                  style: AppTypography.h1.copyWith(
-                    fontSize: isSmallScreen ? 20 : 22,
+                WelcomeReveal(
+                  index: 0,
+                  child: WelcomeHero(
+                    icon: Icons.language,
+                    title: l.welcomeLanguageTitle,
+                    subtitle: l.welcomeLanguageSubtitle,
+                    compact: compact,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: isSmallScreen ? 6 : AppSpacing.sm),
-                Text(
-                  l.welcomeLanguageSubtitle,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: isSmallScreen ? 12 : 13,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
-                SizedBox(
-                  width: 280,
-                  child: _LanguageOption(
-                    label: 'English',
-                    isSelected: settings.appLanguage == 'en',
-                    onTap: () => _onUiLanguageSelected('en'),
+                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                WelcomeReveal(
+                  index: 1,
+                  child: SizedBox(
+                    width: 300,
+                    child: _LanguageOption(
+                      label: 'English',
+                      isSelected: settings.appLanguage == 'en',
+                      onTap: () => _onUiLanguageSelected('en'),
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                SizedBox(
-                  width: 280,
-                  child: _LanguageOption(
-                    label: 'Русский',
-                    isSelected: settings.appLanguage == 'ru',
-                    onTap: () => _onUiLanguageSelected('ru'),
+                WelcomeReveal(
+                  index: 2,
+                  child: SizedBox(
+                    width: 300,
+                    child: _LanguageOption(
+                      label: 'Русский',
+                      isSelected: settings.appLanguage == 'ru',
+                      onTap: () => _onUiLanguageSelected('ru'),
+                    ),
                   ),
                 ),
-                SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
-                SizedBox(
-                  width: 280,
-                  child: _ContentLanguageDropdown(
-                    value: settings.tmdbLanguage,
-                    label: l.settingsContentLanguage,
-                    subtitle: l.settingsContentLanguageSubtitle,
-                    onChanged: _onContentLanguageSelected,
+                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                WelcomeReveal(
+                  index: 3,
+                  child: SizedBox(
+                    width: 300,
+                    child: _ContentLanguageDropdown(
+                      value: settings.tmdbLanguage,
+                      label: l.settingsContentLanguage,
+                      subtitle: l.settingsContentLanguageSubtitle,
+                      onChanged: _onContentLanguageSelected,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text(
-                  l.welcomeLanguageHint,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textTertiary,
+                WelcomeReveal(
+                  index: 4,
+                  child: Text(
+                    l.welcomeLanguageHint,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -221,9 +216,17 @@ class _LanguageOption extends StatelessWidget {
           vertical: 14,
         ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brand.withAlpha(20)
-              : AppColors.surface,
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: <Color>[
+                    AppColors.brand.withAlpha(38),
+                    AppColors.brand.withAlpha(8),
+                  ],
+                )
+              : null,
+          color: isSelected ? null : AppColors.surface,
           border: Border.all(
             color: isSelected ? AppColors.brand : AppColors.surfaceBorder,
             width: isSelected ? 2 : 1,
@@ -243,8 +246,11 @@ class _LanguageOption extends StatelessWidget {
             Text(
               label,
               style: AppTypography.body.copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                fontWeight:
+                    isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected
+                    ? AppColors.textPrimary
+                    : AppColors.textSecondary,
               ),
             ),
           ],

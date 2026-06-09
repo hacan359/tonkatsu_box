@@ -1,15 +1,10 @@
-// Фильтр минимального IGDB-рейтинга (UI 1–10 scale).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр минимального IGDB-рейтинга.
-///
-/// Пользователю показываем шкалу 1–10 (как TMDB и отображение в карточках).
-/// IGDB API оперирует шкалой 0–100, конвертация (×10) выполняется в
-/// `IgdbGamesSource` перед отправкой запроса.
+/// Minimum IGDB rating. Shown on a 1–10 scale (like TMDB and the cards);
+/// IGDB's API uses 0–100, so IgdbGamesSource multiplies by 10 before querying.
 class IgdbMinRatingFilter extends SearchFilter {
   @override
   String get key => 'minRating';

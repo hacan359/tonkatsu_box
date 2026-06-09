@@ -1,11 +1,9 @@
-// Фильтр жанров AniList (общий для аниме и манги).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Жанры AniList (статический список, API не требует отдельного запроса).
+/// AniList genres (static — the API has no genres endpoint).
 const List<String> _aniListGenres = <String>[
   'Action',
   'Adventure',
@@ -27,12 +25,8 @@ const List<String> _aniListGenres = <String>[
   'Thriller',
 ];
 
-/// Фильтр жанров AniList.
-///
-/// Использует статический список жанров AniList
-/// (API не предоставляет отдельного endpoint для жанров).
-/// Параметр [forAnime] разделяет кеш между аниме и мангой
-/// (значения одинаковые, но кешируются раздельно).
+/// AniList genre filter. [forAnime] only splits the cache key — the genre list
+/// is identical for anime and manga.
 class AniListGenreFilter extends SearchFilter {
   AniListGenreFilter({this.forAnime = false});
 

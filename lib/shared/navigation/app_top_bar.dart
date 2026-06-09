@@ -15,6 +15,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
+import 'nav_tour_keys.dart';
 import 'search_providers.dart';
 import 'service_badges.dart';
 
@@ -185,6 +186,7 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
           const ServiceBadges(),
           const SizedBox(width: AppSpacing.sm),
           _SettingsButton(
+            key: ref.watch(navTourKeysProvider).keyFor(NavTab.settings),
             active: settingsActive,
             pulsing: hasUpdate,
             onTap: widget.onSettingsTap,
@@ -201,6 +203,7 @@ class _SettingsButton extends StatelessWidget {
     required this.active,
     required this.pulsing,
     required this.onTap,
+    super.key,
   });
 
   final bool active;

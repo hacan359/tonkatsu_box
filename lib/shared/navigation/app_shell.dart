@@ -12,6 +12,8 @@ import '../../features/collections/screens/item_detail_screen.dart';
 import '../../features/releases/screens/releases_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/welcome/providers/menu_tour_provider.dart';
+import '../../features/welcome/widgets/menu_tour_overlay.dart';
 import '../../features/tier_lists/screens/tier_list_detail_screen.dart';
 import '../../features/tier_lists/screens/tier_lists_screen.dart';
 import '../../features/wishlist/screens/wishlist_screen.dart';
@@ -132,11 +134,25 @@ class _AppShellState extends ConsumerState<AppShell> {
               onBack: () {
                 _handleBack();
               },
-              child: _buildScaffold(context),
+              child: _buildShell(context),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// The shell, with the menu-tour overlay layered on top while it is running.
+  Widget _buildShell(BuildContext context) {
+    final Widget scaffold = _buildScaffold(context);
+    if (!ref.watch(menuTourControllerProvider)) {
+      return scaffold;
+    }
+    return Stack(
+      children: <Widget>[
+        scaffold,
+        const Positioned.fill(child: MenuTourOverlay()),
+      ],
     );
   }
 

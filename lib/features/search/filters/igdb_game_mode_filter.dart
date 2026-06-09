@@ -1,13 +1,9 @@
-// Фильтр режимов игры IGDB (single / multi / co-op / split screen / MMO).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр режимов IGDB game_modes.
-///
-/// ID-шники зафиксированы IGDB и не меняются:
+/// IGDB game_modes. The ids are fixed by IGDB and never change:
 ///   1 Single player, 2 Multiplayer, 3 Co-operative,
 ///   4 Split screen, 5 MMO, 6 Battle Royale.
 class IgdbGameModeFilter extends SearchFilter {

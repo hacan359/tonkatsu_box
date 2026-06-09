@@ -54,6 +54,41 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (mediaTypeBook, collectionFilterBooks, allItemsBooks): New labels.
   * lib/core/services/discord_rpc_service.dart, lib/core/services/text_export_service.dart, lib/features/collections/helpers/bulk_operations.dart, lib/features/collections/helpers/collection_actions.dart, lib/features/collections/screens/item_detail_screen.dart, lib/features/collections/widgets/canvas_item_actions.dart, lib/features/collections/widgets/canvas_view.dart, lib/features/collections/widgets/collection_filter_bar.dart, lib/features/collections/widgets/item_detail/item_detail_media_config.dart, lib/features/home/screens/all_items_screen.dart, lib/features/releases/screens/releases_screen.dart, lib/features/search/screens/search_screen.dart, lib/features/tier_lists/widgets/mood_grid_cell_media.dart, lib/features/wishlist/screens/wishlist_screen.dart, lib/shared/models/cover_info.dart: Propagate `MediaType.book` / `CanvasItemType.book` through exhaustive switches.
 
+### Changed
+
+- **Redesign the first-run Welcome wizard**
+
+  The wizard becomes five cinematic steps — Welcome → Language → Name →
+  Sources → an interactive menu tour. The intro no longer mentions API keys.
+  The old API-keys and "how it works" steps fold into a single Sources step
+  that lists every search provider with its logo, media types and key status,
+  and takes IGDB / TMDB keys inline — framed as optional, since a built-in key
+  works out of the box and a personal key only raises rate limits. The final
+  step launches a coachmark over the real app: it dims the shell and spotlights
+  each live navigation button in turn — the rail or bottom bar, plus the
+  Settings gear — with a description card beside it. Settings → Credits gains
+  the same branded provider cards. The default content language now follows the
+  English UI default (en-US).
+
+  * lib/features/welcome/screens/welcome_screen.dart (WelcomeScreen): Five-step flow [Intro, Language, Name, Sources, MenuTour]; hides the global nav on the tour step; `_finish({startTour})` starts the menu tour as it reveals the shell.
+  * lib/features/welcome/widgets/welcome_step_sources.dart (WelcomeStepSources, _SourceCard, _KeyEditor, _KeyBadge, _GetKeyLink): New — provider cards from `kDataSourceCatalog` with inline IGDB / TMDB key entry and an "optional, raises limits, works without it" hint.
+  * lib/features/welcome/widgets/welcome_step_menu_tour.dart (WelcomeStepMenuTour): New — the final step is a short intro whose Start button finishes the wizard and kicks off the menu tour (Skip finishes without it).
+  * lib/features/welcome/widgets/menu_tour_overlay.dart (MenuTourOverlay): New — the coachmark itself, drawn over AppShell; reads each real button's render box (after layout, not during build) to dim + spotlight it and anchor a description card that flips to the side with room; taps and Next advance, Skip / the last step end it.
+  * lib/features/welcome/widgets/menu_tour_items.dart (MenuTourItem, buildMenuTourItems): New — tour items derived from `NavTab.values` so they always match the real menu (six destinations plus the Settings gear).
+  * lib/shared/navigation/nav_tour_keys.dart (NavTourKeys, navTourKeysProvider): New — one shared GlobalKey per NavTab, attached to the live nav buttons so the tour can locate them on screen.
+  * lib/features/welcome/providers/menu_tour_provider.dart (MenuTourController, menuTourControllerProvider): New — toggles the tour overlay; lives in the root scope so it survives the wizard→shell route swap.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._buildShell): Layer MenuTourOverlay over the shell while the tour controller is on.
+  * lib/shared/navigation/app_sidebar.dart (AppSidebar), lib/shared/navigation/app_bottom_bar.dart (AppBottomBar), lib/shared/navigation/app_top_bar.dart (_SettingsButton): Tag each real nav button with its `navTourKeysProvider` key.
+  * lib/features/welcome/widgets/welcome_step_intro.dart (WelcomeStepIntro), welcome_step_name.dart (WelcomeStepName), welcome_step_language.dart (WelcomeStepLanguage): Cinematic restyle; intro drops the API-keys block and adds the Books media chip.
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.tmdbLanguageDefault): Default content language en-US (was ru-RU) to match the English UI default.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog): IGDB key is recommended, not required — the built-in key works without it.
+  * lib/features/welcome/widgets/welcome_card.dart (WelcomeCard), welcome_chip.dart (WelcomeChip), welcome_hero.dart (WelcomeHero), welcome_reveal.dart (WelcomeReveal): New shared step building blocks (gradient accent card, pill, glowing header, staggered reveal).
+  * lib/shared/constants/source_catalog.dart (SourceInfo, SourceKeyRequirement, kDataSourceCatalog, kSearchGroupToSource): New — single source of truth mirroring the search screen's providers (TMDB, IGDB, AniList, MangaBaka, VNDB, OpenLibrary).
+  * lib/shared/widgets/source_logo.dart (SourceLogo): New — brand logo with a colored-monogram fallback.
+  * lib/features/settings/content/credits_content.dart (CreditsContent, _ProviderCard, _MediaTag): Branded provider cards with logos and media-type chips.
+  * lib/features/welcome/widgets/welcome_step_api_keys.dart, welcome_step_how_it_works.dart, welcome_step_ready.dart: Removed — folded into the Sources step and the menu tour.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (welcomeStepSources, welcomeStepTour, welcomeChipBooks, welcomeSourcesTitle, welcomeSourcesSubtitle, welcomeSourcesNoKeyNeeded, welcomeSourcesKeySaved, welcomeSourcesGetKey, welcomeSourcesKeyOptionalHint, welcomeSourceDescTmdb, welcomeSourceDescIgdb, welcomeSourceDescAniList, welcomeSourceDescMangaBaka, welcomeSourceDescVndb, welcomeSourceDescOpenLibrary, welcomeTourTitle, welcomeTourSubtitle, welcomeTourStart, welcomeHowReleasesDesc): New wizard strings; welcomeSubtitle and welcomeFeatureSearch now mention books.
+
 ## [0.32.1] - 2026-06-07
 
 ### Fixed

@@ -1,14 +1,10 @@
-// Фильтр минимального количества голосов — отсекает новые/малоизвестные тайтлы
-// с недостоверным рейтингом.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр минимального количества голосов (TMDB vote_count.gte).
-///
-/// В паре с [MinRatingFilter] нужен для отсеивания «9/10 с одним голосом».
+/// Minimum vote count (TMDB vote_count.gte). Paired with [MinRatingFilter] to
+/// drop "9/10 from a single vote".
 class MinVotesFilter extends SearchFilter {
   @override
   String get key => 'minVotes';

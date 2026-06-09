@@ -1,14 +1,10 @@
-// Фильтр оригинального языка TMDB (with_original_language).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр оригинального языка TMDB.
-///
-/// Отправляется в `with_original_language` как ISO 639-1 код (en/ja/ko/…).
-/// Полезен для поиска аниме (ja), k-drama (ko), c-drama (zh) и т.п.
+/// TMDB with_original_language as an ISO 639-1 code (en/ja/ko/…). Useful for
+/// anime (ja), k-drama (ko), c-drama (zh).
 class TmdbLanguageFilter extends SearchFilter {
   @override
   String get key => 'originalLanguage';

@@ -1,15 +1,11 @@
-// Фильтр формата манги (AniList).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр формата манги.
-///
-/// AniList `MediaFormat` для TYPE=MANGA содержит только: MANGA, NOVEL,
-/// ONE_SHOT. Manhwa/Manhua в AniList определяются через `countryOfOrigin`,
-/// а не через format — сюда их не включаем.
+/// AniList MediaFormat for TYPE=MANGA: only MANGA, NOVEL, ONE_SHOT.
+/// Manhwa/Manhua are distinguished by countryOfOrigin, not format, so they're
+/// excluded here.
 class MangaFormatFilter extends SearchFilter {
   @override
   String get key => 'format';
