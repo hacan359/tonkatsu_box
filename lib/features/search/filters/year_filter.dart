@@ -1,15 +1,11 @@
-// Фильтр по году выпуска — общий для всех источников.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр по году выпуска.
-///
-/// Индивидуальные годы с текущего до 1980 + декадные срезы 1970s и 1960s
-/// для совсем ретро (Atari-эра). Список получается длинным, поэтому в
-/// popup включён поиск ([searchable] = true).
+/// Release year: individual years from now back to 1980 plus 1970s/1960s
+/// decade buckets for retro (Atari era). The list is long, so [searchable]
+/// is enabled.
 class YearFilter extends SearchFilter {
   @override
   String get key => 'year';

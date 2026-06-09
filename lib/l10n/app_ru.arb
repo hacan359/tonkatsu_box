@@ -809,10 +809,10 @@
   "welcomeLanguageHint": "Можно изменить позже в Настройках",
 
   "welcomeTitle": "Добро пожаловать в Tonkatsu Box",
-  "welcomeSubtitle": "Организуйте коллекции игр, фильмов,\nсериалов, аниме, новелл и манги",
+  "welcomeSubtitle": "Организуйте коллекции игр, фильмов,\nсериалов, аниме, новелл, манги и книг",
   "welcomeWhatYouCanDo": "Что вы можете делать",
   "welcomeFeatureCollections": "Создавайте коллекции по платформе, жанру или любой теме",
-  "welcomeFeatureSearch": "Ищите игры, фильмы, сериалы, аниме, новеллы и мангу через API",
+  "welcomeFeatureSearch": "Ищите игры, фильмы, сериалы, аниме, новеллы, мангу и книги через API",
   "welcomeFeatureTracking": "Отслеживайте прогресс, оценивайте 1-10, добавляйте заметки",
   "welcomeFeatureBoards": "Визуальные доски с иллюстрациями",
   "welcomeFeatureExport": "Экспорт и импорт — делитесь коллекциями с друзьями",
@@ -870,6 +870,29 @@
   "welcomeReadyGoToSettings": "Перейти в настройки",
   "welcomeReadySkip": "Пропустить — разберусь сам",
   "welcomeReadyReturnHint": "Вы всегда можете вернуться сюда из Настроек",
+
+  "welcomeStepSources": "Источники",
+  "welcomeStepTour": "Тур",
+  "welcomeChipBooks": "Книги (OpenLibrary)",
+
+  "welcomeSourcesTitle": "Откуда берутся данные",
+  "welcomeSourcesSubtitle": "Эти источники питают поиск по всему приложению. Большинство работает сразу — лишь пара просит бесплатный ключ.",
+  "welcomeSourcesNoKeyNeeded": "БЕЗ КЛЮЧА",
+  "welcomeSourcesKeySaved": "Ключ сохранён",
+  "welcomeSourcesGetKey": "Получить ключ",
+  "welcomeSourcesKeyOptionalHint": "Необязательно — свой ключ повышает лимиты. Поиск работает и без него.",
+
+  "welcomeSourceDescTmdb": "Фильмы, сериалы и анимация.",
+  "welcomeSourceDescIgdb": "Видеоигры на любой платформе.",
+  "welcomeSourceDescAniList": "Аниме и манга с подробными данными.",
+  "welcomeSourceDescMangaBaka": "Манга, манхва, маньхуа и ранобэ.",
+  "welcomeSourceDescVndb": "База данных визуальных новелл.",
+  "welcomeSourceDescOpenLibrary": "Открытый каталог из миллионов книг.",
+
+  "welcomeTourTitle": "Знакомство с меню",
+  "welcomeTourSubtitle": "Короткий тур по основной навигации — жмите «Далее», чтобы пройти его.",
+  "welcomeTourStart": "Начать",
+  "welcomeHowReleasesDesc": "Новые эпизоды и релизы отслеживаемых сериалов и игр.",
 
   "updateAvailable": "Доступно обновление: v{version}",
   "updateCurrent": "Текущая: v{version}",

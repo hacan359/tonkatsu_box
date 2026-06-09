@@ -1,15 +1,10 @@
-// Фильтр статуса публикации манги (AniList).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр статуса манги.
-///
-/// Статусы соответствуют AniList MediaStatus enum. Отличается от
-/// [AniListAnimeStatusFilter] только лейблами: «Publishing» вместо
-/// «Airing», добавлен HIATUS — частый статус для манги.
+/// AniList MediaStatus for manga — like [AniListAnimeStatusFilter] but with
+/// "Publishing" instead of "Airing" and an extra HIATUS status.
 class AniListMangaStatusFilter extends SearchFilter {
   @override
   String get key => 'status';

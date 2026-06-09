@@ -1,5 +1,3 @@
-// Фильтр жанров TMDB — используется Movies, TV, Anime.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../core/api/tmdb_api.dart';
@@ -7,17 +5,12 @@ import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 import '../providers/genre_provider.dart';
 
-/// Фильтр жанров из TMDB.
-///
-/// Поддерживает жанры фильмов ('movie') и сериалов ('tv').
-/// Данные загружаются из кэша через [movieGenresProvider] / [tvGenresProvider].
+/// TMDB genres for 'movie' or 'tv', loaded via movieGenresProvider /
+/// tvGenresProvider.
 class TmdbGenreFilter extends SearchFilter {
-  /// Создаёт [TmdbGenreFilter].
-  ///
-  /// [type] — 'movie' или 'tv'.
   TmdbGenreFilter({required this.type});
 
-  /// Тип контента: 'movie' или 'tv'.
+  /// 'movie' or 'tv'.
   final String type;
 
   @override

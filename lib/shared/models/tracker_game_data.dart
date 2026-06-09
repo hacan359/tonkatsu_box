@@ -24,7 +24,6 @@ class TrackerGameData {
     this.trackerData,
   });
 
-  /// Создаёт [TrackerGameData] из записи БД.
   factory TrackerGameData.fromDb(Map<String, dynamic> row) {
     final String? dataString = row['tracker_data'] as String?;
     Map<String, dynamic>? parsedData;

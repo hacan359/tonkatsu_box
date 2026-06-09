@@ -1,13 +1,9 @@
-// Фильтр типа анимации — сериалы, фильмы или всё.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр типа анимации.
-///
-/// Позволяет выбрать: анимационные сериалы, анимационные фильмы, или все.
+/// Animated series, animated movies, or both.
 class AnimeTypeFilter extends SearchFilter {
   @override
   String get key => 'animeType';

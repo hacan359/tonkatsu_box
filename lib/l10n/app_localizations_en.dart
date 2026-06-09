@@ -2119,7 +2119,7 @@ class SEn extends S {
 
   @override
   String get welcomeSubtitle =>
-      'Organize your collections of games, movies,\nTV shows, anime, visual novels & manga';
+      'Organize your collections of games, movies,\nTV shows, anime, visual novels, manga & books';
 
   @override
   String get welcomeWhatYouCanDo => 'What you can do';
@@ -2130,7 +2130,7 @@ class SEn extends S {
 
   @override
   String get welcomeFeatureSearch =>
-      'Search games, movies, TV shows, anime, visual novels & manga via APIs';
+      'Search games, movies, TV shows, anime, visual novels, manga & books via APIs';
 
   @override
   String get welcomeFeatureTracking => 'Track progress, rate 1-10, add notes';
@@ -2309,6 +2309,69 @@ class SEn extends S {
   @override
   String get welcomeReadyReturnHint =>
       'You can always return here from Settings';
+
+  @override
+  String get welcomeStepSources => 'Sources';
+
+  @override
+  String get welcomeStepTour => 'Tour';
+
+  @override
+  String get welcomeChipBooks => 'Books (OpenLibrary)';
+
+  @override
+  String get welcomeSourcesTitle => 'Where the data comes from';
+
+  @override
+  String get welcomeSourcesSubtitle =>
+      'These providers power search across the app. Most work right away — only a couple ask for a free key.';
+
+  @override
+  String get welcomeSourcesNoKeyNeeded => 'NO KEY NEEDED';
+
+  @override
+  String get welcomeSourcesKeySaved => 'Key saved';
+
+  @override
+  String get welcomeSourcesGetKey => 'Get a key';
+
+  @override
+  String get welcomeSourcesKeyOptionalHint =>
+      'Optional — your own key raises rate limits. Search works without it.';
+
+  @override
+  String get welcomeSourceDescTmdb => 'Movies, TV shows and animation.';
+
+  @override
+  String get welcomeSourceDescIgdb => 'Video games across every platform.';
+
+  @override
+  String get welcomeSourceDescAniList => 'Anime and manga with rich metadata.';
+
+  @override
+  String get welcomeSourceDescMangaBaka =>
+      'Manga, manhwa, manhua and light novels.';
+
+  @override
+  String get welcomeSourceDescVndb => 'The visual novel database.';
+
+  @override
+  String get welcomeSourceDescOpenLibrary =>
+      'An open catalog of millions of books.';
+
+  @override
+  String get welcomeTourTitle => 'Get to know the menu';
+
+  @override
+  String get welcomeTourSubtitle =>
+      'A quick tour of the main navigation — tap Next to step through it.';
+
+  @override
+  String get welcomeTourStart => 'Start exploring';
+
+  @override
+  String get welcomeHowReleasesDesc =>
+      'New episodes and releases for the shows and games you track.';
 
   @override
   String updateAvailable(String version) {

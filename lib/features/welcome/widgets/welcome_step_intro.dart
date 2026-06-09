@@ -1,5 +1,3 @@
-// Шаг 1 Welcome Wizard — описание приложения.
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -7,10 +5,13 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import 'welcome_card.dart';
+import 'welcome_chip.dart';
+import 'welcome_hero.dart';
+import 'welcome_reveal.dart';
 
-/// Шаг 1: Welcome — описание приложения и возможностей.
+/// Welcome — app intro, feature highlights and media types.
 class WelcomeStepIntro extends StatelessWidget {
-  /// Создаёт [WelcomeStepIntro].
   const WelcomeStepIntro({super.key});
 
   @override
@@ -24,186 +25,119 @@ class WelcomeStepIntro extends StatelessWidget {
       ),
       child: Column(
         children: <Widget>[
-          // Hero
-          Padding(
-            padding: const EdgeInsets.only(top: 20, bottom: 8),
-            child: Column(
-              children: <Widget>[
-                Image.asset(AppAssets.logo, width: 80, height: 80),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  l.welcomeTitle,
-                  style: AppTypography.h1.copyWith(fontSize: 22),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  l.welcomeSubtitle,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          WelcomeReveal(
+            index: 0,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 4),
+              child: WelcomeHero(
+                asset: AppAssets.logo,
+                title: l.welcomeTitle,
+                subtitle: l.welcomeSubtitle,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
 
-          // What you can do
-          _buildCard(
-            title: l.welcomeWhatYouCanDo,
-            child: Column(
+          WelcomeReveal(
+            index: 1,
+            child: WelcomeCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    l.welcomeWhatYouCanDo,
+                    style: AppTypography.h3.copyWith(fontSize: 14),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _FeatureRow(
+                    icon: Icons.inventory_2_outlined,
+                    text: l.welcomeFeatureCollections,
+                    color: AppColors.gameAccent,
+                  ),
+                  _FeatureRow(
+                    icon: Icons.search,
+                    text: l.welcomeFeatureSearch,
+                    color: AppColors.brand,
+                  ),
+                  _FeatureRow(
+                    icon: Icons.bar_chart,
+                    text: l.welcomeFeatureTracking,
+                    color: AppColors.tvShowAccent,
+                  ),
+                  _FeatureRow(
+                    icon: Icons.palette_outlined,
+                    text: l.welcomeFeatureBoards,
+                    color: AppColors.animationAccent,
+                  ),
+                  _FeatureRow(
+                    icon: Icons.upload_outlined,
+                    text: l.welcomeFeatureExport,
+                    color: AppColors.success,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          WelcomeReveal(
+            index: 2,
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              alignment: WrapAlignment.center,
               children: <Widget>[
-                _featureRow(
-                  icon: Icons.inventory_2_outlined,
-                  text: l.welcomeFeatureCollections,
+                WelcomeChip(
+                  label: l.welcomeChipGames,
                   color: AppColors.gameAccent,
                 ),
-                _featureRow(
-                  icon: Icons.search,
-                  text: l.welcomeFeatureSearch,
-                  color: AppColors.brand,
+                WelcomeChip(
+                  label: l.welcomeChipMovies,
+                  color: AppColors.movieAccent,
                 ),
-                _featureRow(
-                  icon: Icons.bar_chart,
-                  text: l.welcomeFeatureTracking,
+                WelcomeChip(
+                  label: l.welcomeChipTvShows,
                   color: AppColors.tvShowAccent,
                 ),
-                _featureRow(
-                  icon: Icons.palette_outlined,
-                  text: l.welcomeFeatureBoards,
-                  color: AppColors.animationAccent,
+                WelcomeChip(
+                  label: l.welcomeChipAnime,
+                  color: AppColors.animeAccent,
                 ),
-                _featureRow(
-                  icon: Icons.upload_outlined,
-                  text: l.welcomeFeatureExport,
-                  color: AppColors.success,
+                WelcomeChip(
+                  label: l.welcomeChipVisualNovels,
+                  color: AppColors.visualNovelAccent,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-
-          // Works without keys
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.success.withAlpha(12),
-              border: Border.all(color: AppColors.success.withAlpha(40)),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    const Icon(
-                      Icons.check_circle,
-                      size: 16,
-                      color: AppColors.success,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      l.welcomeWorksWithoutKeys,
-                      style: AppTypography.body.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.success,
-                      ),
-                    ),
-                  ],
+                WelcomeChip(
+                  label: l.welcomeChipManga,
+                  color: AppColors.mangaAccent,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: <Widget>[
-                    _FeatureChip(label: l.welcomeChipCollections),
-                    _FeatureChip(label: l.welcomeChipWishlist),
-                    _FeatureChip(label: l.welcomeChipImport),
-                    _FeatureChip(label: l.welcomeChipCanvas),
-                    _FeatureChip(label: l.welcomeChipRatings),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  l.welcomeApiKeysHint,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
+                WelcomeChip(
+                  label: l.welcomeChipBooks,
+                  color: AppColors.bookAccent,
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-
-          // Media types
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            alignment: WrapAlignment.center,
-            children: <Widget>[
-              _MediaChip(
-                label: l.welcomeChipGames,
-                color: AppColors.gameAccent,
-              ),
-              _MediaChip(
-                label: l.welcomeChipMovies,
-                color: AppColors.movieAccent,
-              ),
-              _MediaChip(
-                label: l.welcomeChipTvShows,
-                color: AppColors.tvShowAccent,
-              ),
-              _MediaChip(
-                label: l.welcomeChipAnime,
-                color: AppColors.animationAccent,
-              ),
-              _MediaChip(
-                label: l.welcomeChipVisualNovels,
-                color: AppColors.visualNovelAccent,
-              ),
-              _MediaChip(
-                label: l.welcomeChipManga,
-                color: AppColors.mangaAccent,
-              ),
-            ],
           ),
           const SizedBox(height: AppSpacing.md),
         ],
       ),
     );
   }
+}
 
-  Widget _buildCard({required String title, required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.surfaceBorder),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            title,
-            style: AppTypography.h3.copyWith(fontSize: 14),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          child,
-        ],
-      ),
-    );
-  }
+class _FeatureRow extends StatelessWidget {
+  const _FeatureRow({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
 
-  Widget _featureRow({
-    required IconData icon,
-    required String text,
-    required Color color,
-  }) {
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
@@ -221,59 +155,6 @@ class WelcomeStepIntro extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FeatureChip extends StatelessWidget {
-  const _FeatureChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppColors.success.withAlpha(20),
-        border: Border.all(color: AppColors.success.withAlpha(30)),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: AppColors.success,
-        ),
-      ),
-    );
-  }
-}
-
-class _MediaChip extends StatelessWidget {
-  const _MediaChip({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withAlpha(20),
-        border: Border.all(color: color.withAlpha(30)),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: color,
-        ),
       ),
     );
   }

@@ -3814,7 +3814,7 @@ abstract class S {
   /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Organize your collections of games, movies,\nTV shows, anime, visual novels & manga'**
+  /// **'Organize your collections of games, movies,\nTV shows, anime, visual novels, manga & books'**
   String get welcomeSubtitle;
 
   /// No description provided for @welcomeWhatYouCanDo.
@@ -3832,7 +3832,7 @@ abstract class S {
   /// No description provided for @welcomeFeatureSearch.
   ///
   /// In en, this message translates to:
-  /// **'Search games, movies, TV shows, anime, visual novels & manga via APIs'**
+  /// **'Search games, movies, TV shows, anime, visual novels, manga & books via APIs'**
   String get welcomeFeatureSearch;
 
   /// No description provided for @welcomeFeatureTracking.
@@ -4158,6 +4158,120 @@ abstract class S {
   /// In en, this message translates to:
   /// **'You can always return here from Settings'**
   String get welcomeReadyReturnHint;
+
+  /// No description provided for @welcomeStepSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources'**
+  String get welcomeStepSources;
+
+  /// No description provided for @welcomeStepTour.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour'**
+  String get welcomeStepTour;
+
+  /// No description provided for @welcomeChipBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Books (OpenLibrary)'**
+  String get welcomeChipBooks;
+
+  /// No description provided for @welcomeSourcesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where the data comes from'**
+  String get welcomeSourcesTitle;
+
+  /// No description provided for @welcomeSourcesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'These providers power search across the app. Most work right away — only a couple ask for a free key.'**
+  String get welcomeSourcesSubtitle;
+
+  /// No description provided for @welcomeSourcesNoKeyNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'NO KEY NEEDED'**
+  String get welcomeSourcesNoKeyNeeded;
+
+  /// No description provided for @welcomeSourcesKeySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Key saved'**
+  String get welcomeSourcesKeySaved;
+
+  /// No description provided for @welcomeSourcesGetKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a key'**
+  String get welcomeSourcesGetKey;
+
+  /// No description provided for @welcomeSourcesKeyOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — your own key raises rate limits. Search works without it.'**
+  String get welcomeSourcesKeyOptionalHint;
+
+  /// No description provided for @welcomeSourceDescTmdb.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies, TV shows and animation.'**
+  String get welcomeSourceDescTmdb;
+
+  /// No description provided for @welcomeSourceDescIgdb.
+  ///
+  /// In en, this message translates to:
+  /// **'Video games across every platform.'**
+  String get welcomeSourceDescIgdb;
+
+  /// No description provided for @welcomeSourceDescAniList.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime and manga with rich metadata.'**
+  String get welcomeSourceDescAniList;
+
+  /// No description provided for @welcomeSourceDescMangaBaka.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga, manhwa, manhua and light novels.'**
+  String get welcomeSourceDescMangaBaka;
+
+  /// No description provided for @welcomeSourceDescVndb.
+  ///
+  /// In en, this message translates to:
+  /// **'The visual novel database.'**
+  String get welcomeSourceDescVndb;
+
+  /// No description provided for @welcomeSourceDescOpenLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'An open catalog of millions of books.'**
+  String get welcomeSourceDescOpenLibrary;
+
+  /// No description provided for @welcomeTourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get to know the menu'**
+  String get welcomeTourTitle;
+
+  /// No description provided for @welcomeTourSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick tour of the main navigation — tap Next to step through it.'**
+  String get welcomeTourSubtitle;
+
+  /// No description provided for @welcomeTourStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start exploring'**
+  String get welcomeTourStart;
+
+  /// No description provided for @welcomeHowReleasesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'New episodes and releases for the shows and games you track.'**
+  String get welcomeHowReleasesDesc;
 
   /// No description provided for @updateAvailable.
   ///

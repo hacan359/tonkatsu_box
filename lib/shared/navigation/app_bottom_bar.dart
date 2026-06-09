@@ -10,6 +10,7 @@ import 'liquid_indicator.dart';
 import 'nav_destinations.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
+import 'nav_tour_keys.dart';
 
 /// Height of the bottom bar.
 const double kAppBottomBarHeight = 64;
@@ -35,6 +36,7 @@ class AppBottomBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final int wishlistCount = ref.watch(activeWishlistCountProvider);
+    final NavTourKeys tourKeys = ref.watch(navTourKeysProvider);
 
     final List<NavDestination> destinations = buildNavDestinations(
       context: context,
@@ -72,6 +74,7 @@ class AppBottomBar extends ConsumerWidget {
                       children: <Widget>[
                         for (final NavDestination d in destinations)
                           NavIconButton(
+                            key: tourKeys.keyFor(d.tab),
                             destination: d,
                             active: d.tab == selectedTab,
                             width: itemWidth,

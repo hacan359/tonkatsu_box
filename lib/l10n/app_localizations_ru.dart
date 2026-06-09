@@ -2159,7 +2159,7 @@ class SRu extends S {
 
   @override
   String get welcomeSubtitle =>
-      'Организуйте коллекции игр, фильмов,\nсериалов, аниме, новелл и манги';
+      'Организуйте коллекции игр, фильмов,\nсериалов, аниме, новелл, манги и книг';
 
   @override
   String get welcomeWhatYouCanDo => 'Что вы можете делать';
@@ -2170,7 +2170,7 @@ class SRu extends S {
 
   @override
   String get welcomeFeatureSearch =>
-      'Ищите игры, фильмы, сериалы, аниме, новеллы и мангу через API';
+      'Ищите игры, фильмы, сериалы, аниме, новеллы, мангу и книги через API';
 
   @override
   String get welcomeFeatureTracking =>
@@ -2352,6 +2352,68 @@ class SRu extends S {
   @override
   String get welcomeReadyReturnHint =>
       'Вы всегда можете вернуться сюда из Настроек';
+
+  @override
+  String get welcomeStepSources => 'Источники';
+
+  @override
+  String get welcomeStepTour => 'Тур';
+
+  @override
+  String get welcomeChipBooks => 'Книги (OpenLibrary)';
+
+  @override
+  String get welcomeSourcesTitle => 'Откуда берутся данные';
+
+  @override
+  String get welcomeSourcesSubtitle =>
+      'Эти источники питают поиск по всему приложению. Большинство работает сразу — лишь пара просит бесплатный ключ.';
+
+  @override
+  String get welcomeSourcesNoKeyNeeded => 'БЕЗ КЛЮЧА';
+
+  @override
+  String get welcomeSourcesKeySaved => 'Ключ сохранён';
+
+  @override
+  String get welcomeSourcesGetKey => 'Получить ключ';
+
+  @override
+  String get welcomeSourcesKeyOptionalHint =>
+      'Необязательно — свой ключ повышает лимиты. Поиск работает и без него.';
+
+  @override
+  String get welcomeSourceDescTmdb => 'Фильмы, сериалы и анимация.';
+
+  @override
+  String get welcomeSourceDescIgdb => 'Видеоигры на любой платформе.';
+
+  @override
+  String get welcomeSourceDescAniList => 'Аниме и манга с подробными данными.';
+
+  @override
+  String get welcomeSourceDescMangaBaka => 'Манга, манхва, маньхуа и ранобэ.';
+
+  @override
+  String get welcomeSourceDescVndb => 'База данных визуальных новелл.';
+
+  @override
+  String get welcomeSourceDescOpenLibrary =>
+      'Открытый каталог из миллионов книг.';
+
+  @override
+  String get welcomeTourTitle => 'Знакомство с меню';
+
+  @override
+  String get welcomeTourSubtitle =>
+      'Короткий тур по основной навигации — жмите «Далее», чтобы пройти его.';
+
+  @override
+  String get welcomeTourStart => 'Начать';
+
+  @override
+  String get welcomeHowReleasesDesc =>
+      'Новые эпизоды и релизы отслеживаемых сериалов и игр.';
 
   @override
   String updateAvailable(String version) {

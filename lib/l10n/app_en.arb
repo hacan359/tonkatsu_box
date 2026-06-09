@@ -998,10 +998,10 @@
   "welcomeLanguageHint": "You can change this later in Settings",
 
   "welcomeTitle": "Welcome to Tonkatsu Box",
-  "welcomeSubtitle": "Organize your collections of games, movies,\nTV shows, anime, visual novels & manga",
+  "welcomeSubtitle": "Organize your collections of games, movies,\nTV shows, anime, visual novels, manga & books",
   "welcomeWhatYouCanDo": "What you can do",
   "welcomeFeatureCollections": "Create collections by platform, genre, or any theme",
-  "welcomeFeatureSearch": "Search games, movies, TV shows, anime, visual novels & manga via APIs",
+  "welcomeFeatureSearch": "Search games, movies, TV shows, anime, visual novels, manga & books via APIs",
   "welcomeFeatureTracking": "Track progress, rate 1-10, add notes",
   "welcomeFeatureBoards": "Visual canvas boards with artwork",
   "welcomeFeatureExport": "Export & import — share collections with friends",
@@ -1059,6 +1059,29 @@
   "welcomeReadyGoToSettings": "Go to Settings",
   "welcomeReadySkip": "Skip — explore on my own",
   "welcomeReadyReturnHint": "You can always return here from Settings",
+
+  "welcomeStepSources": "Sources",
+  "welcomeStepTour": "Tour",
+  "welcomeChipBooks": "Books (OpenLibrary)",
+
+  "welcomeSourcesTitle": "Where the data comes from",
+  "welcomeSourcesSubtitle": "These providers power search across the app. Most work right away — only a couple ask for a free key.",
+  "welcomeSourcesNoKeyNeeded": "NO KEY NEEDED",
+  "welcomeSourcesKeySaved": "Key saved",
+  "welcomeSourcesGetKey": "Get a key",
+  "welcomeSourcesKeyOptionalHint": "Optional — your own key raises rate limits. Search works without it.",
+
+  "welcomeSourceDescTmdb": "Movies, TV shows and animation.",
+  "welcomeSourceDescIgdb": "Video games across every platform.",
+  "welcomeSourceDescAniList": "Anime and manga with rich metadata.",
+  "welcomeSourceDescMangaBaka": "Manga, manhwa, manhua and light novels.",
+  "welcomeSourceDescVndb": "The visual novel database.",
+  "welcomeSourceDescOpenLibrary": "An open catalog of millions of books.",
+
+  "welcomeTourTitle": "Get to know the menu",
+  "welcomeTourSubtitle": "A quick tour of the main navigation — tap Next to step through it.",
+  "welcomeTourStart": "Start exploring",
+  "welcomeHowReleasesDesc": "New episodes and releases for the shows and games you track.",
 
   "updateAvailable": "Update available: v{version}",
   "@updateAvailable": {

@@ -39,7 +39,7 @@ abstract class SettingsKeys {
   /// TMDB content language (ru-RU or en-US).
   static const String tmdbLanguage = 'tmdb_language';
 
-  static const String tmdbLanguageDefault = 'ru-RU';
+  static const String tmdbLanguageDefault = 'en-US';
 
   /// App UI language (en / ru).
   static const String appLanguage = 'app_language';

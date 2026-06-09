@@ -1,5 +1,3 @@
-// Шаг 2 Welcome Wizard — ввод имени автора.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,10 +6,11 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import 'welcome_hero.dart';
+import 'welcome_reveal.dart';
 
-/// Шаг 2: Your Name — ввод имени автора коллекций.
+/// Your Name — the author name shown on collections you create.
 class WelcomeStepName extends ConsumerStatefulWidget {
-  /// Создаёт [WelcomeStepName].
   const WelcomeStepName({super.key});
 
   @override
@@ -42,68 +41,61 @@ class _WelcomeStepNameState extends ConsumerState<WelcomeStepName> {
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        // Адаптивные размеры для маленьких экранов
-        final bool isSmallScreen = constraints.maxHeight < 400;
-        final double iconSize = isSmallScreen ? 40 : 56;
-        final double spacing = isSmallScreen ? AppSpacing.sm : 20;
+        final bool compact = constraints.maxHeight < 420;
 
         return Center(
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
-              vertical: isSmallScreen ? AppSpacing.sm : AppSpacing.md,
+              vertical: compact ? AppSpacing.sm : AppSpacing.md,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Icon(
-                  Icons.badge_outlined,
-                  size: iconSize,
-                  color: AppColors.brand,
-                ),
-                SizedBox(height: spacing),
-                Text(
-                  l.welcomeNameTitle,
-                  style: AppTypography.h1.copyWith(
-                    fontSize: isSmallScreen ? 20 : 22,
+                WelcomeReveal(
+                  index: 0,
+                  child: WelcomeHero(
+                    icon: Icons.badge_outlined,
+                    title: l.welcomeNameTitle,
+                    subtitle: l.welcomeNameSubtitle,
+                    compact: compact,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: isSmallScreen ? 6 : AppSpacing.sm),
-                Text(
-                  l.welcomeNameSubtitle,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: isSmallScreen ? 12 : 13,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
-                SizedBox(
-                  width: isSmallScreen ? 240 : 280,
-                  child: TextField(
-                    controller: _controller,
-                    textAlign: TextAlign.center,
-                    style: AppTypography.h3,
-                    decoration: InputDecoration(
-                      hintText: l.settingsAuthorPlaceholder,
-                      border: const OutlineInputBorder(),
+                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                WelcomeReveal(
+                  index: 1,
+                  child: SizedBox(
+                    width: compact ? 240 : 300,
+                    child: TextField(
+                      controller: _controller,
+                      textAlign: TextAlign.center,
+                      style: AppTypography.h3,
+                      decoration: InputDecoration(
+                        hintText: l.settingsAuthorPlaceholder,
+                        prefixIcon: const Icon(
+                          Icons.person_outline,
+                          size: 18,
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                      onChanged: (String value) {
+                        ref
+                            .read(settingsNotifierProvider.notifier)
+                            .setDefaultAuthor(value.trim());
+                      },
                     ),
-                    onChanged: (String value) {
-                      ref
-                          .read(settingsNotifierProvider.notifier)
-                          .setDefaultAuthor(value.trim());
-                    },
                   ),
                 ),
-                SizedBox(height: isSmallScreen ? AppSpacing.sm : AppSpacing.md),
-                Text(
-                  l.welcomeNameHint,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textTertiary,
-                    fontSize: isSmallScreen ? 11 : null,
+                SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+                WelcomeReveal(
+                  index: 2,
+                  child: Text(
+                    l.welcomeNameHint,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),

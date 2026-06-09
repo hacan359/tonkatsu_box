@@ -1,13 +1,9 @@
-// Фильтр формата AniList для аниме (TV / MOVIE / OVA / ONA / SPECIAL).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Фильтр формата аниме AniList.
-///
-/// Значения соответствуют AniList MediaFormat enum для TYPE=ANIME.
+/// AniList MediaFormat values for TYPE=ANIME.
 class AniListAnimeFormatFilter extends SearchFilter {
   @override
   String get key => 'format';
