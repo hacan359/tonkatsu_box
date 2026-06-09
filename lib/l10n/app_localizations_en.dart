@@ -1536,6 +1536,15 @@ class SEn extends S {
   String get animeMarkCompleted => 'Mark as completed';
 
   @override
+  String get bookProgress => 'Reading Progress';
+
+  @override
+  String get bookPages => 'Pages';
+
+  @override
+  String get bookMarkCompleted => 'Mark as completed';
+
+  @override
   String animeNextEpisode(int episode) {
     return 'Ep $episode airing soon';
   }

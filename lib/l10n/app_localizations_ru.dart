@@ -1559,6 +1559,15 @@ class SRu extends S {
   String get animeMarkCompleted => 'Отметить как просмотрено';
 
   @override
+  String get bookProgress => 'Прогресс чтения';
+
+  @override
+  String get bookPages => 'Страницы';
+
+  @override
+  String get bookMarkCompleted => 'Отметить как прочитано';
+
+  @override
   String animeNextEpisode(int episode) {
     return 'Эп. $episode скоро выйдет';
   }

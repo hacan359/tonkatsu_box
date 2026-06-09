@@ -4,6 +4,7 @@ import '../../../../core/services/image_cache_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/media_type_theme.dart';
 import '../../../../shared/models/anime.dart';
+import '../../../../shared/models/book.dart';
 import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/models/custom_media.dart';
 import '../../../../shared/models/manga.dart';
@@ -28,11 +29,13 @@ class ItemDetailMediaConfig {
     required this.hasEpisodeTracker,
     required this.hasMangaProgress,
     required this.hasAnimeProgress,
+    required this.hasBookProgress,
     this.externalUrl,
     this.backdropUrl,
     this.tvShow,
     this.manga,
     this.anime,
+    this.book,
   });
 
   factory ItemDetailMediaConfig.from(CollectionItem item, BuildContext context) {
@@ -66,6 +69,7 @@ class ItemDetailMediaConfig {
               item.platformId == AnimationSource.tvShow),
       hasMangaProgress: item.mediaType == MediaType.manga,
       hasAnimeProgress: item.mediaType == MediaType.anime,
+      hasBookProgress: item.mediaType == MediaType.book,
       externalUrl: externalUrl,
       backdropUrl: item.game?.artworkUrl ??
           item.movie?.backdropUrl ??
@@ -75,6 +79,7 @@ class ItemDetailMediaConfig {
       tvShow: item.tvShow,
       manga: item.manga,
       anime: item.anime,
+      book: item.book,
     );
   }
 
@@ -91,11 +96,13 @@ class ItemDetailMediaConfig {
   final bool hasEpisodeTracker;
   final bool hasMangaProgress;
   final bool hasAnimeProgress;
+  final bool hasBookProgress;
   final String? externalUrl;
   final String? backdropUrl;
   final TvShow? tvShow;
   final Manga? manga;
   final Anime? anime;
+  final Book? book;
 }
 
 String _typeLabel(CollectionItem item, BuildContext context) {

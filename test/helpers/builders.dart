@@ -110,6 +110,7 @@ CollectionItem createTestCollectionItem({
   TvShow? tvShow,
   VisualNovel? visualNovel,
   Manga? manga,
+  Book? book,
   Platform? platform,
 }) {
   return CollectionItem(
@@ -136,6 +137,7 @@ CollectionItem createTestCollectionItem({
     tvShow: tvShow,
     visualNovel: visualNovel,
     manga: manga,
+    book: book,
     platform: platform,
   );
 }

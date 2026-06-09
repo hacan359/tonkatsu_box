@@ -450,14 +450,11 @@ class _CreateCustomItemDialogState
   }
 
   Widget _buildMediaTypeChips(S l) {
-    const List<MediaType> types = <MediaType>[
+    // Derived from MediaType.values (custom first) so every type — including
+    // any newly added one — is offerable as a custom card's display type.
+    final List<MediaType> types = <MediaType>[
       MediaType.custom,
-      MediaType.game,
-      MediaType.movie,
-      MediaType.tvShow,
-      MediaType.animation,
-      MediaType.visualNovel,
-      MediaType.manga,
+      ...MediaType.values.where((MediaType t) => t != MediaType.custom),
     ];
 
     return Wrap(

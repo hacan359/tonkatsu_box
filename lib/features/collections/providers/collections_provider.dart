@@ -931,6 +931,7 @@ class CollectionItemsNotifier
 
       await _autoUpdateMangaStatus(id, currentEpisode, currentSeason);
       await _autoUpdateAnimeStatus(id, currentEpisode);
+      await _autoUpdateBookStatus(id, currentEpisode);
     }
   }
 
@@ -979,6 +980,28 @@ class CollectionItemsNotifier
 
     if (targetStatus != null) {
       await updateStatus(id, targetStatus, MediaType.anime);
+    }
+  }
+
+  /// For books, auto-syncs status from the page read (stored in
+  /// `currentEpisode`): planned/notStarted -> inProgress past page 0,
+  /// -> completed at the last page; `dropped` is never overwritten.
+  Future<void> _autoUpdateBookStatus(int id, int? newPageValue) async {
+    final CollectionItem? item =
+        state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+    if (item == null || item.mediaType != MediaType.book) return;
+
+    final int newPage = newPageValue ?? item.currentEpisode;
+    final int? totalPages = item.book?.pageCount;
+
+    final ItemStatus? targetStatus = computeStatusFromProgress(
+      currentStatus: item.status,
+      hasAnyProgress: newPage > 0,
+      isFullyCompleted: totalPages != null && newPage >= totalPages,
+    );
+
+    if (targetStatus != null) {
+      await updateStatus(id, targetStatus, MediaType.book);
     }
   }
 

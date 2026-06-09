@@ -37,6 +37,7 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
+import '../widgets/book_progress_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/dialogs/add_time_dialog.dart';
 import '../providers/tracker_provider.dart';
@@ -680,6 +681,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             collectionId: widget.collectionId,
             anime: config.anime,
             currentEpisode: item.currentEpisode,
+            accentColor: config.accentColor,
+          ),
+        if (config.hasBookProgress && widget.collectionId != null)
+          BookProgressSection(
+            itemId: item.id,
+            collectionId: widget.collectionId,
+            book: config.book,
+            currentPage: item.currentEpisode,
             accentColor: config.accentColor,
           ),
       ],

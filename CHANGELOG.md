@@ -54,6 +54,23 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (mediaTypeBook, collectionFilterBooks, allItemsBooks): New labels.
   * lib/core/services/discord_rpc_service.dart, lib/core/services/text_export_service.dart, lib/features/collections/helpers/bulk_operations.dart, lib/features/collections/helpers/collection_actions.dart, lib/features/collections/screens/item_detail_screen.dart, lib/features/collections/widgets/canvas_item_actions.dart, lib/features/collections/widgets/canvas_view.dart, lib/features/collections/widgets/collection_filter_bar.dart, lib/features/collections/widgets/item_detail/item_detail_media_config.dart, lib/features/home/screens/all_items_screen.dart, lib/features/releases/screens/releases_screen.dart, lib/features/search/screens/search_screen.dart, lib/features/tier_lists/widgets/mood_grid_cell_media.dart, lib/features/wishlist/screens/wishlist_screen.dart, lib/shared/models/cover_info.dart: Propagate `MediaType.book` / `CanvasItemType.book` through exhaustive switches.
 
+- **Track reading progress for books by page**
+
+  A book's detail page gains a reading-progress block (like manga / anime):
+  current page out of the total from OpenLibrary, with a +1 button and
+  tap-to-edit. Status auto-syncs — past page 0 it becomes In progress, at the
+  last page Completed, back to 0 resets to Not started, and Dropped is left
+  alone. With no known page count it acts as a plain bookmark (page number, no
+  bar, no auto-complete). The page read reuses the existing `current_episode`
+  column, so no migration.
+
+  * lib/features/collections/widgets/book_progress_section.dart (BookProgressSection): New — pages row built on `MediaProgressRow`, writing through `updateProgress(currentEpisode:)`.
+  * lib/features/collections/providers/collections_provider.dart (CollectionItemsNotifier.updateProgress, CollectionItemsNotifier._autoUpdateBookStatus): New auto-status helper for books, gated on `MediaType.book`, total from `Book.pageCount`.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart (ItemDetailMediaConfig.hasBookProgress, ItemDetailMediaConfig.book): Carry the book payload and the progress flag.
+  * lib/features/collections/screens/item_detail_screen.dart: Render BookProgressSection inside a collection.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (bookProgress, bookPages, bookMarkCompleted): New strings.
+  * test/helpers/builders.dart (createTestCollectionItem): Accept a `book` argument.
+
 ### Changed
 
 - **Redesign the first-run Welcome wizard**
@@ -88,6 +105,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/settings/content/credits_content.dart (CreditsContent, _ProviderCard, _MediaTag): Branded provider cards with logos and media-type chips.
   * lib/features/welcome/widgets/welcome_step_api_keys.dart, welcome_step_how_it_works.dart, welcome_step_ready.dart: Removed — folded into the Sources step and the menu tour.
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (welcomeStepSources, welcomeStepTour, welcomeChipBooks, welcomeSourcesTitle, welcomeSourcesSubtitle, welcomeSourcesNoKeyNeeded, welcomeSourcesKeySaved, welcomeSourcesGetKey, welcomeSourcesKeyOptionalHint, welcomeSourceDescTmdb, welcomeSourceDescIgdb, welcomeSourceDescAniList, welcomeSourceDescMangaBaka, welcomeSourceDescVndb, welcomeSourceDescOpenLibrary, welcomeTourTitle, welcomeTourSubtitle, welcomeTourStart, welcomeHowReleasesDesc): New wizard strings; welcomeSubtitle and welcomeFeatureSearch now mention books.
+
+### Fixed
+
+- **Offer every media type when creating a custom item**
+
+  The custom-item dialog's type chooser was a hardcoded list that had silently
+  fallen behind the enum — Anime and Book were missing. It now derives from
+  `MediaType.values`, so every type (and any future one) is selectable as a
+  custom card's display type.
+
+  * lib/features/collections/widgets/create_custom_item_dialog.dart (_CreateCustomItemDialogState._buildMediaTypeChips): Build the chip list from `MediaType.values` (custom first) instead of a fixed list.
+  * test/features/collections/widgets/create_custom_item_dialog_test.dart: Guard test asserting one chip per `MediaType.values`.
 
 ## [0.32.1] - 2026-06-07
 

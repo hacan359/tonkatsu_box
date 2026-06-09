@@ -2821,6 +2821,24 @@ abstract class S {
   /// **'Mark as completed'**
   String get animeMarkCompleted;
 
+  /// No description provided for @bookProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading Progress'**
+  String get bookProgress;
+
+  /// No description provided for @bookPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get bookPages;
+
+  /// No description provided for @bookMarkCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as completed'**
+  String get bookMarkCompleted;
+
   /// No description provided for @animeNextEpisode.
   ///
   /// In en, this message translates to:

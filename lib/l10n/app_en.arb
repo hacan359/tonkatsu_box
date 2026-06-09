@@ -681,6 +681,9 @@
   "animeProgress": "Watch Progress",
   "animeEpisodes": "Episodes",
   "animeMarkCompleted": "Mark as completed",
+  "bookProgress": "Reading Progress",
+  "bookPages": "Pages",
+  "bookMarkCompleted": "Mark as completed",
   "animeNextEpisode": "Ep {episode} airing soon",
   "@animeNextEpisode": {
     "placeholders": {

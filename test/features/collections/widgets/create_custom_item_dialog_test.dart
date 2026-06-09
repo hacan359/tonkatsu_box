@@ -38,8 +38,8 @@ Future<void> _openEdit(
   await tester.pumpAndSettle();
 }
 
-// In the chip row the static order is:
-// custom, game, movie, tvShow, animation, visualNovel, manga.
+// Chip order is custom first, then MediaType.values order, so movie is at
+// index 2 (custom, game, movie, ...).
 const int _movieChipIndex = 2;
 
 void main() {
@@ -48,6 +48,15 @@ void main() {
         (WidgetTester tester) async {
       await _openEdit(tester, existing: _media(displayType: MediaType.game));
       expect(find.byType(ChoiceChip), findsWidgets);
+    });
+
+    testWidgets('offers a chip for every MediaType so a new type is not forgotten',
+        (WidgetTester tester) async {
+      await _openEdit(tester, existing: _media(displayType: MediaType.game));
+      expect(
+        find.byType(ChoiceChip),
+        findsNWidgets(MediaType.values.length),
+      );
     });
 
     testWidgets('preselects exactly one chip — the one matching displayType',
