@@ -73,6 +73,23 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Decompose the TMDB client into a `tmdb/` submodule**
+
+  The 1123-line `TmdbApi` god-class is split into a thin facade over a transport
+  client and focused sub-clients (movies, TV, genres, reviews, cross-type find),
+  matching the existing `igdb/` / `anilist/` / `openlibrary/` layout. Behaviour
+  and the public API are unchanged — the facade re-exports the same types and
+  delegates every method, so callers and mocks are untouched.
+
+  * lib/core/api/tmdb_api.dart (TmdbApi, tmdbApiProvider): Now a facade that wires the sub-clients, delegates every public method, and coordinates genre-cache invalidation on `setLanguage` / `clearApiKey`; re-exports `tmdb/tmdb_types.dart`.
+  * lib/core/api/tmdb/tmdb_http_client.dart (TmdbHttpClient): New — Dio transport owning the API key and request language, injecting both into `get`, plus `validateApiKey`, `extractResults`, `ensureApiKey`, and Dio → `TmdbApiException` mapping.
+  * lib/core/api/tmdb/tmdb_types.dart (TmdbApiException, TmdbPagedResult, TmdbFindResult, TmdbGenre, TmdbMediaType, MultiSearchResult): New — DTOs and the exception moved out of the facade.
+  * lib/core/api/tmdb/tmdb_genres_api.dart (TmdbGenresApi): New — genre catalogs plus the per-language id→name cache and `resolveGenreIds`; `setCacheForTesting` backs the facade's `setGenreCacheForTesting`.
+  * lib/core/api/tmdb/tmdb_movies_api.dart (TmdbMoviesApi), tmdb_tv_api.dart (TmdbTvApi): New — movie / TV search, detail, lists and discover (TV also seasons / episodes).
+  * lib/core/api/tmdb/tmdb_reviews_api.dart (TmdbReviewsApi): New — `getMovieReviews` / `getTvReviews`, pinned to en-US.
+  * lib/core/api/tmdb/tmdb_find_api.dart (TmdbFindApi): New — `findByImdbId` / `findByTvdbId` and `multiSearch`.
+  * lib/core/api/tmdb/README.md: New — layer table and key points.
+
 - **Redesign the first-run Welcome wizard**
 
   The wizard becomes five cinematic steps — Welcome → Language → Name →
