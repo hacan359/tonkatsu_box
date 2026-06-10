@@ -26,6 +26,7 @@ import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 import '../../shared/models/anime.dart';
+import '../../shared/models/book.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/visual_novel.dart';
@@ -591,6 +592,8 @@ class ImportService {
         media['visual_novels'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawMangas =
         media['mangas'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawBooks =
+        media['books'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawAnimes =
         media['animes'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawCustom =
@@ -604,6 +607,7 @@ class ImportService {
         rawPlatforms.length +
         rawVisualNovels.length +
         rawMangas.length +
+        rawBooks.length +
         rawAnimes.length +
         rawCustom.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -750,6 +754,23 @@ class ImportService {
         ));
       }
       await _database.mangaDao.upsertMangas(mangas);
+    }
+
+    if (rawBooks.isNotEmpty) {
+      final List<Book> books = <Book>[];
+      for (final dynamic raw in rawBooks) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        row['cached_at'] = cachedAt;
+        books.add(Book.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.bookDao.upsertBooks(books);
     }
 
     if (rawAnimes.isNotEmpty) {

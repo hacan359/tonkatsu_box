@@ -1973,6 +1973,52 @@ void main() {
         verifyNever(() => mockApi.getGamesByIds(any()));
       });
 
+      test('должен восстановить books из embedded media', () async {
+        setupDefaultMocksForMedia();
+        final MockBookDao mockBookDao = MockBookDao();
+        when(() => mockDb.bookDao).thenReturn(mockBookDao);
+        when(() => mockBookDao.upsertBooks(any())).thenAnswer((_) async {});
+        // Book items carry `source`, which the default media stub omits.
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+            )).thenAnswer((_) async => 1);
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With Books',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'book',
+              'external_id': 3104,
+              'source': 'fantlab',
+            },
+          ],
+          media: const <String, dynamic>{
+            'books': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': '3104',
+                'source': 'fantlab',
+                'native_id': '3104',
+                'title': 'Solaris',
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockBookDao.upsertBooks(any())).called(1);
+      });
+
       test('должен восстановить movies из embedded media', () async {
         setupDefaultMocksForMedia();
 

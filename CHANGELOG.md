@@ -19,6 +19,23 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   rows are fetched in full before the details sheet opens; OpenLibrary rows stay
   instant and lazy-load only the description.
 
+  A book's collection identity now includes its `source`, so an OpenLibrary and
+  a Fantlab work that happen to share a numeric id can both sit in one
+  collection (previously the second was rejected as "already in collection").
+
+  A Fantlab work has many editions, each with its own cover. The book detail
+  sheet shows an inline editions strip (grouped, covers first); picking one
+  saves that edition's cover and bibliographic fields onto the book, while the
+  work identity stays the same.
+
+  * lib/core/api/fantlab/fantlab_editions.dart (FantlabEdition, FantlabEditionBlock, parseFantlabEditionBlocks), fantlab_works_api.dart (FantlabWorksApi.getEditions), fantlab_api.dart (FantlabApi.getEditions): New — parse `/work/{id}/extended` `editions_blocks` into grouped editions (covers first, `pic_num` → `hasCover`, BBCode publisher stripped).
+  * lib/features/collections/widgets/fantlab_edition_picker.dart (FantlabEditionsSection, showFantlabEditionPicker, applyFantlabEdition, editionIdFromCoverUrl): New — inline editions strip and a modal grouped picker; `applyFantlabEdition` overlays cover / year / pages / isbn / language / publisher onto a book.
+  * lib/shared/utils/cover_image_id.dart (coverImageId): Add `coverUrl`; a book cover is now keyed by its Fantlab edition id (`fantlab_3104_e24724`) so picking a different edition is a distinct cache entry instead of a stale overwrite. Threaded through the book cover call sites: lib/features/search/handlers/media_handlers.dart, lib/features/search/widgets/browse_grid.dart, item_details_sheet.dart, lib/features/collections/widgets/book_similars_section.dart, lib/features/tier_lists/widgets/mood_grid_cell_widget.dart, lib/shared/models/collection_item.dart, cover_info.dart, canvas_item.dart.
+  * lib/features/search/widgets/fantlab_book_sheet.dart (FantlabBookSheet): New stateful host that hangs the editions strip on a Fantlab book sheet and reports the picked edition.
+  * lib/features/search/widgets/item_details_sheet.dart (ItemDetailsSheet.editionsSection): New opaque inline-section slot rendered below the overview.
+  * lib/features/search/handlers/media_handlers.dart (MediaHandlers): Route Fantlab book sheets through FantlabBookSheet and apply the picked edition in the add-time enrich step (tagged by work id so it only affects its own book).
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (editionPickerTitle, editionPickerEmpty): New strings.
+
   * lib/core/api/fantlab_api.dart (FantlabApi, fantlabApiProvider): New REST facade — `searchWorks`, `getWork`, `getSimilars`.
   * lib/core/api/fantlab/fantlab_http_client.dart (FantlabHttpClient), fantlab_search_api.dart (FantlabSearchApi), fantlab_works_api.dart (FantlabWorksApi), fantlab_types.dart (FantlabApiException), README.md: New — Dio transport, `/search-works` (non-book types filtered out), `/work/{id}/extended`, `/work/{id}/similars`.
   * lib/shared/models/book.dart (Book.fromFantlabSearchMatch, Book.fromFantlabWork, Book.fromFantlabSimilar): New factories for the three Fantlab payload shapes, with author / language / genre / award extraction helpers.
@@ -31,12 +48,14 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/search/handlers/simple_media_handler.dart (SimpleMediaHandler.enrichBeforeDetails): New flag — enrich sparse rows behind a spinner before opening the details sheet.
   * lib/features/collections/helpers/collection_actions.dart (CollectionActions): Refresh a collected Fantlab book from the API.
   * lib/shared/constants/source_catalog.dart (kSearchGroupToSources): Rename from `kSearchGroupToSource` and map each search group to a `List<DataSource>` so Books carries both OpenLibrary and Fantlab.
+  * lib/core/database/migrations/migration_v48.dart (MigrationV48), migration_registry.dart (MigrationRegistry.all): New migration — carve `book` out of the generic `idx_ci_*_other` unique indexes into source-aware `idx_ci_*_book` indexes.
+  * lib/core/database/database_service.dart (DatabaseService._onCreate, _initDatabase): Replay MigrationV48 on fresh installs (createCollectionItemsTable is shared with the v8 upgrade path and stays untouched); bump schema version to 48.
   * lib/features/search/sources/openlibrary_source.dart (OpenLibrarySource), search_sources.dart (searchSources): Group OpenLibrary and Fantlab under the shared "Books" media label; register the Fantlab source.
   * lib/features/search/utils/filter_ui.dart (filterAccentForGroup): Use the book accent for the Fantlab group's filter bar.
   * lib/shared/models/data_source.dart (DataSource.fantlab), lib/shared/theme/app_assets.dart (AppAssets.iconFantlabColor), assets/images/icon_fantlab_color.png: Fantlab brand icon.
   * lib/features/settings/content/credits_content.dart (CreditsContent), lib/features/welcome/widgets/welcome_step_sources.dart: Fantlab attribution under Credits → Data Providers and its welcome-screen blurb.
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (searchSourceFantlab, searchSourceBooks, fantlabTypeNovel, fantlabTypeNovella, fantlabTypeShortStory, fantlabTypeCycle, bookSimilarTitle, creditsFantlabAttribution, welcomeSourceDescFantlab): New strings.
-  * test/core/api/fantlab_api_test.dart, test/features/search/sources/fantlab_source_test.dart, test/features/search/filters/fantlab_work_type_filter_test.dart, test/shared/utils/bbcode_test.dart, test/features/collections/widgets/book_similars_section_test.dart: New tests.
+  * test/core/api/fantlab_api_test.dart, test/core/api/fantlab/fantlab_editions_test.dart, test/features/search/sources/fantlab_source_test.dart, test/features/search/filters/fantlab_work_type_filter_test.dart, test/shared/utils/bbcode_test.dart, test/features/collections/widgets/book_similars_section_test.dart, test/features/collections/widgets/fantlab_edition_picker_test.dart, test/core/database/migrations/migration_v48_test.dart: New tests.
   * test/shared/models/book_test.dart, test/shared/constants/source_catalog_test.dart, test/features/search/sources/search_sources_test.dart, search_sources_grouping_test.dart, source_output_media_type_test.dart: Cover the Fantlab factories, multi-source groups, and Fantlab source registration.
   * test/helpers/mocks.dart (MockFantlabApi): New mock.
 
@@ -89,6 +108,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/data/repositories/canvas_repository.dart (CanvasRepository._enrichItemsWithMediaData, CanvasRepository.initializeCanvas), lib/features/collections/providers/game_canvas_provider.dart (GameCanvasNotifier._initializeWithCollectionItem): Hydrate book covers on the collection and per-item canvases.
   * lib/data/repositories/collection_repository.dart (CollectionStats.bookCount): New count.
   * lib/core/services/export_service.dart (ExportService._collectMediaData): Emit a `books` section in `.xcoll` / `.xcollx`.
+  * lib/core/services/import_service.dart (ImportService._restoreMedia): Restore the embedded `books` section into `books_cache`; without it, books came back as "Unknown book" after an import / backup restore.
   * lib/shared/models/data_source.dart (DataSource.openLibrary, DataSource.fantlab): New sources.
   * lib/shared/models/media_type.dart (MediaType.book): New media type.
   * lib/shared/models/collection_item.dart (CollectionItem.book), lib/shared/models/canvas_item.dart (CanvasItem.book, CanvasItemType.book): Carry the joined book payload.
