@@ -240,6 +240,16 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/collections/widgets/create_custom_item_dialog.dart (_CreateCustomItemDialogState._buildMediaTypeChips): Build the chip list from `MediaType.values` (custom first) instead of a fixed list.
   * test/features/collections/widgets/create_custom_item_dialog_test.dart: Guard test asserting one chip per `MediaType.values`.
 
+- **Stop the soft keyboard from popping up unprompted on mobile**
+
+  On Android, opening search from a collection, and opening any searchable
+  filter, auto-focused their text field and slid the keyboard up before the
+  user tapped to type. Auto-focus is now desktop-only; on mobile the keyboard
+  waits until the field is tapped.
+
+  * lib/features/search/screens/search_screen.dart (_SearchScreenState.build), lib/features/search/widgets/filter_dropdown.dart (SearchableFilterDialogState.build): Gate `TextField.autofocus` on `!kIsMobile`.
+  * lib/features/search/widgets/platform_filter_sheet.dart (_PlatformFilterSheetState.initState): Skip the `requestFocus` post-frame callback on mobile.
+
 ## [0.32.1] - 2026-06-07
 
 ### Fixed

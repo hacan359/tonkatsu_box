@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/database/database_service.dart';
@@ -312,7 +313,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       appBar: AppBar(
         title: TextField(
           controller: _pushedSearchController,
-          autofocus: true,
+          // Desktop only: on mobile this would pop the soft keyboard before the
+          // user taps the field.
+          autofocus: !kIsMobile,
           decoration: InputDecoration(
             hintText: S.of(context).appBarSearchHint,
             border: InputBorder.none,

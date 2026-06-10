@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -44,10 +45,13 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
   void initState() {
     super.initState();
     _selectedIds = List<int>.from(widget.selectedIds);
-    // Автофокус на поле поиска
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchFocus.requestFocus();
-    });
+    // Desktop only: on mobile the auto-focus pops the soft keyboard before the
+    // user taps the field.
+    if (!kIsMobile) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _searchFocus.requestFocus();
+      });
+    }
   }
 
   @override

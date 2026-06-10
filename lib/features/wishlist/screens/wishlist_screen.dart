@@ -21,6 +21,26 @@ import '../widgets/wishlist_dialogs.dart';
 import '../widgets/wishlist_tag_header.dart';
 import '../widgets/wishlist_tile.dart';
 
+/// Maps a wishlist [MediaType] hint to the primary search source id.
+///
+/// The returned id must exist in `searchSources`; an unknown id makes
+/// `getSearchSourceById` silently fall back to the first source (movies),
+/// which is how a book hint used to open the movies tab.
+String? wishlistSourceIdFor(MediaType? hint) {
+  return switch (hint) {
+    MediaType.game => 'games',
+    MediaType.movie => 'movies',
+    MediaType.tvShow => 'tv',
+    MediaType.animation => 'anime',
+    MediaType.visualNovel => 'visual_novels',
+    MediaType.manga => 'manga',
+    MediaType.anime => 'anilist_anime',
+    MediaType.book => 'openlibrary',
+    MediaType.custom => null,
+    null => null,
+  };
+}
+
 /// Wishlist screen — notes for deferred content search.
 class WishlistScreen extends ConsumerStatefulWidget {
   const WishlistScreen({super.key});
@@ -262,18 +282,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   void _searchForItem(BuildContext context, WishlistItem item) {
-    final String? sourceId = switch (item.mediaTypeHint) {
-      MediaType.game => 'games',
-      MediaType.movie => 'movies',
-      MediaType.tvShow => 'tv',
-      MediaType.animation => 'anime',
-      MediaType.visualNovel => 'visual_novels',
-      MediaType.manga => 'manga',
-      MediaType.anime => 'anilist_anime',
-      MediaType.book => 'books',
-      MediaType.custom => null,
-      null => null,
-    };
+    final String? sourceId = wishlistSourceIdFor(item.mediaTypeHint);
 
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute<void>(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -356,7 +357,9 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
                 height: 36,
                 child: TextField(
                   controller: _controller,
-                  autofocus: true,
+                  // Desktop only: avoid popping the soft keyboard the moment a
+                  // filter opens on mobile.
+                  autofocus: !kIsMobile,
                   style: AppTypography.body.copyWith(
                     color: AppColors.textPrimary,
                   ),
