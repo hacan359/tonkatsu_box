@@ -850,6 +850,8 @@
   "bookSearchAuthor": "Author",
   "bookSearchSubject": "Subject",
   "bookSimilarTitle": "Similar books",
+  "editionPickerTitle": "Choose edition",
+  "editionPickerEmpty": "No editions found",
   "fantlabTypeNovel": "Novel",
   "fantlabTypeNovella": "Novella",
   "fantlabTypeShortStory": "Short story",

@@ -1859,6 +1859,12 @@ class SEn extends S {
   String get bookSimilarTitle => 'Similar books';
 
   @override
+  String get editionPickerTitle => 'Choose edition';
+
+  @override
+  String get editionPickerEmpty => 'No editions found';
+
+  @override
   String get fantlabTypeNovel => 'Novel';
 
   @override

@@ -263,4 +263,45 @@ void main() {
       expect(await sut.getSimilars('3104'), isEmpty);
     });
   });
+
+  group('getEditions', () {
+    test('parses editions_blocks into grouped editions', () async {
+      stubGet('/work/3104/extended', <String, dynamic>{
+        'work_id': 3104,
+        'editions_blocks': <String, dynamic>{
+          '10': <String, dynamic>{
+            'title': 'Издания',
+            'list': <dynamic>[
+              <String, dynamic>{
+                'edition_id': 24724,
+                'name': 'Солярис',
+                'year': 1992,
+                'lang_code': 'ru',
+                'pic_num': 1,
+              },
+            ],
+          },
+        },
+      });
+
+      final List<FantlabEditionBlock> blocks = await sut.getEditions('3104');
+
+      expect(blocks, hasLength(1));
+      expect(blocks.first.title, 'Издания');
+      expect(blocks.first.editions.single.editionId, 24724);
+    });
+
+    test('returns empty on 404', () async {
+      when(() => mockDio.get<dynamic>(
+            '/work/999/extended',
+            queryParameters: any(named: 'queryParameters'),
+          )).thenThrow(_dioError(404));
+      expect(await sut.getEditions('999'), isEmpty);
+    });
+
+    test('returns empty when editions_blocks is absent', () async {
+      stubGet('/work/3104/extended', <String, dynamic>{'work_id': 3104});
+      expect(await sut.getEditions('3104'), isEmpty);
+    });
+  });
 }

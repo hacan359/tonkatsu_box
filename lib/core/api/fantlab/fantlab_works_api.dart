@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../../shared/models/book.dart';
+import 'fantlab_editions.dart';
 import 'fantlab_http_client.dart';
 
 /// `/work/{id}/extended` (a superset of `/work/{id}`) and `/work/{id}/similars`.
@@ -23,6 +24,24 @@ class FantlabWorksApi {
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return null;
       throw _client.handleDioException(e, 'Failed to load work from Fantlab');
+    }
+  }
+
+  /// Editions of work [id], grouped by block, from `/work/{id}/extended`
+  /// `editions_blocks`. Each carries an `edition_id` whose cover lives at
+  /// `/images/editions/big|small/{edition_id}`. Empty on 404 / no editions.
+  Future<List<FantlabEditionBlock>> getEditions(String id) async {
+    try {
+      final Response<dynamic> resp = await _client.get('/work/$id/extended');
+      final Object? work = FantlabHttpClient.decodeBody(resp.data);
+      if (work is! Map<String, dynamic>) return const <FantlabEditionBlock>[];
+      return parseFantlabEditionBlocks(work['editions_blocks']);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return const <FantlabEditionBlock>[];
+      throw _client.handleDioException(
+        e,
+        'Failed to load editions from Fantlab',
+      );
     }
   }
 

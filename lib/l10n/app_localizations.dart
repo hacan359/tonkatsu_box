@@ -3403,6 +3403,18 @@ abstract class S {
   /// **'Similar books'**
   String get bookSimilarTitle;
 
+  /// No description provided for @editionPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose edition'**
+  String get editionPickerTitle;
+
+  /// No description provided for @editionPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No editions found'**
+  String get editionPickerEmpty;
+
   /// No description provided for @fantlabTypeNovel.
   ///
   /// In en, this message translates to:

@@ -1883,6 +1883,12 @@ class SRu extends S {
   String get bookSimilarTitle => 'Похожие книги';
 
   @override
+  String get editionPickerTitle => 'Выбрать издание';
+
+  @override
+  String get editionPickerEmpty => 'Изданий нет';
+
+  @override
   String get fantlabTypeNovel => 'Роман';
 
   @override

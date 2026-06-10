@@ -2,10 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/book.dart';
+import 'fantlab/fantlab_editions.dart';
 import 'fantlab/fantlab_http_client.dart';
 import 'fantlab/fantlab_search_api.dart';
 import 'fantlab/fantlab_works_api.dart';
 
+export 'fantlab/fantlab_editions.dart';
 export 'fantlab/fantlab_types.dart';
 
 /// Fantlab REST facade. See `fantlab/README.md` for the layer breakdown.
@@ -35,6 +37,10 @@ class FantlabApi {
 
   /// Similar works for [id] (`/work/{id}/similars`).
   Future<List<Book>> getSimilars(String id) => _works.getSimilars(id);
+
+  /// Editions of work [id] grouped by block (`/work/{id}/extended`).
+  Future<List<FantlabEditionBlock>> getEditions(String id) =>
+      _works.getEditions(id);
 
   void dispose() => _client.dispose();
 }

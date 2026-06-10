@@ -708,6 +708,8 @@
   "bookSearchAuthor": "Автор",
   "bookSearchSubject": "Тема",
   "bookSimilarTitle": "Похожие книги",
+  "editionPickerTitle": "Выбрать издание",
+  "editionPickerEmpty": "Изданий нет",
   "fantlabTypeNovel": "Роман",
   "fantlabTypeNovella": "Повесть",
   "fantlabTypeShortStory": "Рассказ",
