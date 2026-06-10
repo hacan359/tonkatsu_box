@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO Meta Tags -->
-  <title>Tonkatsu Box — Organize Games, Movies, TV Shows, Anime & Visual Novels</title>
-  <meta name="description" content="Free open-source app to build and manage collections of retro games, movies, TV shows, anime, and visual novels. Track progress, rate favorites, create tier lists, visual boards, and share with friends. Windows, Linux & Android.">
-  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, VNDB, AniList, MangaBaka, Trakt import, Steam import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
+  <title>Tonkatsu Box — Organize Games, Movies, TV Shows, Anime, Manga, Visual Novels & Books</title>
+  <meta name="description" content="Free open-source app to build and manage collections of retro games, movies, TV shows, anime, manga, visual novels, and books. Track progress, rate favorites, create tier lists, visual boards, and share with friends. Windows, Linux & Android.">
+  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, book tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Trakt import, Steam import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
   <meta name="author" content="hacan359">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://hacan359.github.io/tonkatsu_box/">
@@ -15,7 +15,7 @@
   <!-- Open Graph / Social -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Tonkatsu Box — Your Media Collection Manager">
-  <meta property="og:description" content="Organize retro games, movies, TV shows, anime & visual novels. Track progress, create visual boards, share collections. Free & open source.">
+  <meta property="og:description" content="Organize retro games, movies, TV shows, anime, manga, visual novels & books. Track progress, create visual boards, share collections. Free & open source.">
   <meta property="og:url" content="https://hacan359.github.io/tonkatsu_box/">
   <meta property="og:image" content="https://hacan359.github.io/tonkatsu_box/assets/og-image.png">
   <meta property="og:image:width" content="1280">
@@ -24,7 +24,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Tonkatsu Box — Your Media Collection Manager">
-  <meta name="twitter:description" content="Organize retro games, movies, TV shows, anime & visual novels. Free & open source.">
+  <meta name="twitter:description" content="Organize retro games, movies, TV shows, anime, manga, visual novels & books. Free & open source.">
   <meta name="twitter:image" content="https://hacan359.github.io/tonkatsu_box/assets/og-image.png">
 
   <!-- Theme Color -->
@@ -33,48 +33,60 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/favicon.png">
 
-  <!-- Fonts -->
+  <!-- Fonts — Inter, same family the app ships (AppTypography.fontFamily) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     /* ═══════════════════════════════════════
-       CSS Variables — matches app theme
+       Design tokens — mirror of the app theme
+       (AppColors / AppSpacing / AppTypography)
        ═══════════════════════════════════════ */
     :root {
-      --bg-deep:       #050508;
-      --bg-primary:    #0A0A0F;
-      --bg-surface:    #141418;
-      --bg-surface-2:  #1C1C22;
-      --bg-surface-3:  #242430;
+      /* AppColors — backgrounds */
+      --bg:            #0A0A0A;
+      --surface:       #141414;
+      --surface-light: #1E1E1E;
+      --border:        #2A2A2A;
 
-      --text-primary:  #F0F0F5;
-      --text-secondary:#9898A8;
-      --text-tertiary: #5C5C6E;
+      /* AppColors — text */
+      --text-primary:  #FFFFFF;
+      --text-secondary:#B0B0B0;
+      --text-tertiary: #707070;
 
+      /* AppColors — brand */
       --brand:         #EF7B44;
       --brand-light:   #F79D72;
       --brand-pale:    #F7B596;
-      --game-accent:   #707DD2;
-      --movie-accent:  #EF7B44;
-      --tv-accent:     #B1E140;
-      --anime-accent:  #A86ED4;
-      --vn-accent:     #2A5FC1;
 
-      --glow-game:     rgba(112, 125, 210, 0.15);
-      --glow-movie:    rgba(239, 123, 68, 0.15);
-      --glow-tv:       rgba(177, 225, 64, 0.15);
-      --glow-anime:    rgba(168, 110, 212, 0.15);
-      --glow-vn:       rgba(42, 95, 193, 0.15);
+      /* AppColors — media type accents */
+      --game:          #707DD2;
+      --movie:         #EF7B44;
+      --tv:            #B1E140;
+      --animation:     #A86ED4;
+      --vn:            #2A5FC1;
+      --manga:         #3DB4F2;
+      --anime:         #E85D75;
+      --book:          #9B6A4F;
+      --custom:        #26A69A;
 
-      --font-display:  'Space Mono', monospace;
-      --font-body:     'DM Sans', system-ui, sans-serif;
+      /* AppColors — statuses & ratings */
+      --status-progress:  #42A5F5;
+      --status-completed: #66BB6A;
+      --status-planned:   #8B5CF6;
+      --status-dropped:   #EF5350;
+      --rating-star:      #F59E0B;
+      --warning:          #FFA726;
 
+      /* AppSpacing — radii */
+      --radius-xs:     4px;
       --radius-sm:     8px;
       --radius-md:     12px;
-      --radius-lg:     20px;
-      --radius-xl:     28px;
+      --radius-lg:     16px;
+      --radius-xl:     20px;
+
+      --font:          'Inter', system-ui, sans-serif;
     }
 
     /* ═══════════════════════════════════════
@@ -88,8 +100,8 @@
     }
 
     body {
-      font-family: var(--font-body);
-      background: var(--bg-deep);
+      font-family: var(--font);
+      background: var(--bg);
       color: var(--text-primary);
       line-height: 1.6;
       overflow-x: hidden;
@@ -98,17 +110,33 @@
     a { color: inherit; text-decoration: none; }
     img { max-width: 100%; display: block; }
 
+    ::selection { background: rgba(239, 123, 68, 0.35); }
+
+    :focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--surface-light);
+      border-radius: 5px;
+      border: 2px solid var(--bg);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
     /* ═══════════════════════════════════════
-       Background Effects
+       Background — same tiled texture the app
+       paints behind every screen
        ═══════════════════════════════════════ */
     .bg-grid {
       position: fixed;
       inset: 0;
       background-image: url('assets/background_tile.png');
       background-repeat: repeat;
-      background-size: 120px 120px;
+      background-size: 180px 180px;
       opacity: 0.04;
-      zoom: 500%;
       pointer-events: none;
       z-index: 0;
     }
@@ -119,15 +147,15 @@
       height: 600px;
       border-radius: 50%;
       filter: blur(150px);
-      opacity: 0.3;
+      opacity: 0.16;
       pointer-events: none;
       z-index: 0;
     }
 
-    .bg-glow--blue  { background: var(--game-accent);  top: -200px; left: -100px; }
-    .bg-glow--red   { background: var(--movie-accent); top: 400px;  right: -200px; opacity: 0.15; }
-    .bg-glow--green  { background: var(--tv-accent);   top: 1200px; left: -200px; opacity: 0.12; }
-    .bg-glow--purple { background: var(--anime-accent); top: 2000px; right: -100px; opacity: 0.15; }
+    .bg-glow--game  { background: var(--game);  top: -200px;  left: -100px; }
+    .bg-glow--brand { background: var(--brand); top: 400px;   right: -200px; opacity: 0.10; }
+    .bg-glow--manga { background: var(--manga); top: 1200px;  left: -200px;  opacity: 0.08; }
+    .bg-glow--anime { background: var(--anime); top: 2000px;  right: -100px; opacity: 0.08; }
 
     /* ═══════════════════════════════════════
        Layout
@@ -153,11 +181,10 @@
       left: 0;
       right: 0;
       z-index: 100;
-      padding: 16px 0;
-      background: rgba(5, 5, 8, 0.8);
+      padding: 14px 0;
+      background: rgba(10, 10, 10, 0.85);
       backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      transition: background 0.3s;
+      border-bottom: 1px solid var(--border);
     }
 
     .nav .container {
@@ -170,16 +197,15 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      font-family: var(--font-display);
       font-weight: 700;
-      font-size: 18px;
-      letter-spacing: -0.5px;
+      font-size: 17px;
+      letter-spacing: -0.3px;
     }
 
     .nav__logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
       overflow: hidden;
     }
 
@@ -211,41 +237,41 @@
     }
 
     .lang-btn {
-      font-family: var(--font-display);
+      font-family: var(--font);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       padding: 6px 10px;
       background: transparent;
       color: var(--text-tertiary);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .lang-btn:hover {
       color: var(--text-secondary);
-      border-color: rgba(255,255,255,0.15);
+      border-color: var(--text-tertiary);
     }
 
     .lang-btn--active {
       color: var(--text-primary);
-      background: var(--bg-surface-2);
-      border-color: rgba(255,255,255,0.15);
+      background: var(--surface-light);
+      border-color: var(--border);
     }
 
     .nav__cta {
-      font-family: var(--font-display);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       padding: 10px 20px;
       background: var(--brand);
-      color: var(--bg-deep);
+      color: var(--bg);
       border-radius: var(--radius-sm);
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
     }
 
     .nav__cta:hover {
+      background: var(--brand-light);
       transform: translateY(-1px);
       box-shadow: 0 4px 20px rgba(239, 123, 68, 0.3);
     }
@@ -262,7 +288,7 @@
 
     .hero__content {
       text-align: center;
-      max-width: 800px;
+      max-width: 860px;
       margin: 0 auto;
     }
 
@@ -270,43 +296,44 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 16px;
-      background: var(--bg-surface);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 100px;
-      font-size: 13px;
+      padding: 6px 12px;
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      font-size: 12px;
       font-weight: 500;
       color: var(--text-secondary);
       margin-bottom: 32px;
       animation: fadeInUp 0.8s ease-out;
     }
 
-    .hero__badge span {
+    .hero__badge span:first-child {
       color: var(--brand);
-      font-family: var(--font-display);
-      font-size: 12px;
+      font-weight: 700;
     }
 
     .hero__title {
-      font-family: var(--font-display);
-      font-size: clamp(40px, 7vw, 72px);
-      font-weight: 700;
-      line-height: 1.05;
+      font-size: clamp(38px, 6.5vw, 68px);
+      font-weight: 800;
+      line-height: 1.08;
       letter-spacing: -2px;
       margin-bottom: 24px;
       animation: fadeInUp 0.8s ease-out 0.1s both;
     }
 
-    .hero__title .accent-game   { color: var(--game-accent); }
-    .hero__title .accent-movie  { color: var(--movie-accent); }
-    .hero__title .accent-vn     { color: var(--vn-accent); }
-    .hero__title .accent-tv     { color: var(--tv-accent); }
-    .hero__title .accent-anime  { color: var(--anime-accent); }
+    .accent-game      { color: var(--game); }
+    .accent-movie     { color: var(--movie); }
+    .accent-tv        { color: var(--tv); }
+    .accent-animation { color: var(--animation); }
+    .accent-anime     { color: var(--anime); }
+    .accent-manga     { color: var(--manga); }
+    .accent-vn        { color: var(--vn); }
+    .accent-book      { color: var(--book); }
 
     .hero__subtitle {
       font-size: 18px;
       color: var(--text-secondary);
-      max-width: 560px;
+      max-width: 580px;
       margin: 0 auto 40px;
       line-height: 1.7;
       animation: fadeInUp 0.8s ease-out 0.2s both;
@@ -321,15 +348,17 @@
       animation: fadeInUp 0.8s ease-out 0.3s both;
     }
 
+    /* Buttons — app FilledButton/OutlinedButton: 48px tall, 8px radius */
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 14px 28px;
-      border-radius: var(--radius-md);
-      font-family: var(--font-display);
+      height: 48px;
+      padding: 0 24px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 600;
       transition: all 0.25s ease;
       border: none;
       cursor: pointer;
@@ -337,24 +366,25 @@
 
     .btn--primary {
       background: var(--brand);
-      color: var(--bg-deep);
+      color: var(--bg);
     }
 
     .btn--primary:hover {
+      background: var(--brand-light);
       transform: translateY(-2px);
       box-shadow: 0 8px 30px rgba(239, 123, 68, 0.3);
     }
 
-    .btn--ghost {
+    .btn--outlined {
       background: transparent;
       color: var(--text-secondary);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid var(--border);
     }
 
-    .btn--ghost:hover {
+    .btn--outlined:hover {
       color: var(--text-primary);
-      border-color: rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.03);
+      border-color: var(--text-tertiary);
+      background: var(--surface-light);
     }
 
     .btn svg {
@@ -384,72 +414,13 @@
     }
 
     /* ═══════════════════════════════════════
-       Screenshot Showcase
-       ═══════════════════════════════════════ */
-    .showcase {
-      margin-top: -40px;
-      animation: fadeInUp 1s ease-out 0.5s both;
-    }
-
-    .showcase__frame {
-      max-width: 960px;
-      margin: 0 auto;
-      background: var(--bg-surface);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      box-shadow:
-        0 4px 6px rgba(0,0,0,0.3),
-        0 20px 60px rgba(0,0,0,0.5),
-        0 0 100px rgba(239, 123, 68, 0.05);
-    }
-
-    .showcase__titlebar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 20px;
-      background: var(--bg-surface-2);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-
-    .showcase__dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--bg-surface-3);
-    }
-
-    .showcase__dot:nth-child(1) { background: #ff5f57; }
-    .showcase__dot:nth-child(2) { background: #ffbd2e; }
-    .showcase__dot:nth-child(3) { background: #28c840; }
-
-    .showcase__placeholder {
-      aspect-ratio: 16 / 9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      color: var(--text-tertiary);
-      font-size: 15px;
-      background:
-        radial-gradient(ellipse at center, rgba(239,123,68,0.04), transparent 70%),
-        var(--bg-primary);
-    }
-
-    .showcase__placeholder-icon {
-      font-size: 48px;
-      opacity: 0.3;
-    }
-
-    /* ═══════════════════════════════════════
-       Media Type Tags
+       Media Type Chips — app chips: 4px radius,
+       surfaceLight fill, border, accent dot
        ═══════════════════════════════════════ */
     .media-tags {
       display: flex;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       margin: 48px 0;
     }
@@ -458,30 +429,36 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 20px;
-      border-radius: 100px;
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      border: 1px solid;
+      padding: 8px 14px;
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      transition: border-color 0.2s, background 0.2s;
     }
 
-    .media-tag--game   { color: var(--game-accent);  border-color: rgba(112,125,210,0.25);  background: var(--glow-game); }
-    .media-tag--movie  { color: var(--movie-accent); border-color: rgba(239,123,68,0.25);   background: var(--glow-movie); }
-    .media-tag--tv     { color: var(--tv-accent);    border-color: rgba(177,225,64,0.25);  background: var(--glow-tv); }
-    .media-tag--anime  { color: var(--anime-accent); border-color: rgba(168,110,212,0.25); background: var(--glow-anime); }
-    .media-tag--vn     { color: var(--vn-accent);    border-color: rgba(42,95,193,0.25);   background: var(--glow-vn); }
+    .media-tag:hover { border-color: var(--accent); }
+
+    .media-tag--game      { --accent: var(--game); }
+    .media-tag--movie     { --accent: var(--movie); }
+    .media-tag--tv        { --accent: var(--tv); }
+    .media-tag--animation { --accent: var(--animation); }
+    .media-tag--anime     { --accent: var(--anime); }
+    .media-tag--manga     { --accent: var(--manga); }
+    .media-tag--vn        { --accent: var(--vn); }
+    .media-tag--book      { --accent: var(--book); }
 
     .media-tag__dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: currentColor;
+      background: var(--accent);
     }
 
     /* ═══════════════════════════════════════
-       Features
+       Section headers
        ═══════════════════════════════════════ */
     .features__header {
       text-align: center;
@@ -489,9 +466,8 @@
     }
 
     .section-label {
-      font-family: var(--font-display);
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 600;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--brand);
@@ -499,9 +475,8 @@
     }
 
     .section-title {
-      font-family: var(--font-display);
       font-size: clamp(28px, 4vw, 42px);
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: -1px;
       line-height: 1.15;
     }
@@ -510,22 +485,26 @@
       font-size: 16px;
       color: var(--text-secondary);
       margin-top: 16px;
-      max-width: 520px;
+      max-width: 540px;
       margin-left: auto;
       margin-right: auto;
     }
 
+    /* ═══════════════════════════════════════
+       Features — app cards: surface, 12px
+       radius, hairline border
+       ═══════════════════════════════════════ */
     .features__grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      gap: 16px;
     }
 
     .feature-card {
-      padding: 32px;
-      background: var(--bg-surface);
-      border: 1px solid rgba(255,255,255,0.04);
-      border-radius: var(--radius-lg);
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
@@ -538,27 +517,28 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent, var(--game-accent)), transparent);
+      background: linear-gradient(90deg, transparent, var(--accent, var(--brand)), transparent);
       opacity: 0;
       transition: opacity 0.3s;
     }
 
     .feature-card:hover {
-      border-color: rgba(255,255,255,0.08);
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      border-color: color-mix(in srgb, var(--accent, var(--brand)) 40%, var(--border));
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
     }
 
     .feature-card:hover::before { opacity: 1; }
 
-    .feature-card--game   { --accent: var(--game-accent); }
-    .feature-card--movie  { --accent: var(--movie-accent); }
-    .feature-card--tv     { --accent: var(--tv-accent); }
-    .feature-card--anime  { --accent: var(--anime-accent); }
-    .feature-card--export { --accent: #FFB74D; }
-    .feature-card--board  { --accent: #90CAF9; }
-    .feature-card--tier   { --accent: #CE93D8; }
-    .feature-card--lang   { --accent: #4DD0E1; }
+    .feature-card--game   { --accent: var(--game); }
+    .feature-card--movie  { --accent: var(--movie); }
+    .feature-card--tv     { --accent: var(--tv); }
+    .feature-card--book   { --accent: var(--book); }
+    .feature-card--rating { --accent: var(--rating-star); }
+    .feature-card--export { --accent: var(--warning); }
+    .feature-card--board  { --accent: var(--custom); }
+    .feature-card--tier   { --accent: var(--status-planned); }
+    .feature-card--lang   { --accent: var(--status-progress); }
 
     .feature-card__icon {
       width: 48px;
@@ -566,14 +546,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
       font-size: 24px;
       margin-bottom: 20px;
-      background: rgba(255,255,255,0.04);
+      background: var(--surface-light);
+      border: 1px solid var(--border);
     }
 
     .feature-card__title {
-      font-family: var(--font-display);
       font-size: 16px;
       font-weight: 700;
       margin-bottom: 10px;
@@ -584,6 +564,60 @@
       font-size: 14px;
       color: var(--text-secondary);
       line-height: 1.7;
+    }
+
+    /* Status chips — same palette the app uses for item statuses */
+    .status-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 14px;
+    }
+
+    .status-chip {
+      padding: 3px 8px;
+      border-radius: var(--radius-xs);
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid;
+    }
+
+    .status-chip--progress {
+      color: var(--status-progress);
+      border-color: rgba(66, 165, 245, 0.35);
+      background: rgba(66, 165, 245, 0.12);
+    }
+
+    .status-chip--completed {
+      color: var(--status-completed);
+      border-color: rgba(102, 187, 106, 0.35);
+      background: rgba(102, 187, 106, 0.12);
+    }
+
+    .status-chip--planned {
+      color: var(--status-planned);
+      border-color: rgba(139, 92, 246, 0.35);
+      background: rgba(139, 92, 246, 0.12);
+    }
+
+    .status-chip--dropped {
+      color: var(--status-dropped);
+      border-color: rgba(239, 83, 80, 0.35);
+      background: rgba(239, 83, 80, 0.12);
+    }
+
+    .rating-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 14px;
+      padding: 3px 8px;
+      border-radius: var(--radius-xs);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--rating-star);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      background: rgba(245, 158, 11, 0.12);
     }
 
     /* ═══════════════════════════════════════
@@ -602,10 +636,9 @@
     }
 
     .step__number {
-      font-family: var(--font-display);
       font-size: 64px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.04);
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.05);
       line-height: 1;
       margin-bottom: -16px;
       position: relative;
@@ -613,7 +646,6 @@
     }
 
     .step__title {
-      font-family: var(--font-display);
       font-size: 18px;
       font-weight: 700;
       margin-bottom: 12px;
@@ -627,17 +659,13 @@
       line-height: 1.7;
     }
 
-    .step__connector {
-      display: none;
-    }
-
     /* ═══════════════════════════════════════
-       Formats / Export
+       Formats / Import & Share
        ═══════════════════════════════════════ */
     .formats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      gap: 16px;
       margin-top: 48px;
       max-width: 960px;
       margin-left: auto;
@@ -646,25 +674,27 @@
 
     .format-card {
       padding: 28px;
-      background: var(--bg-surface);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius-lg);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       text-align: center;
+      transition: border-color 0.2s;
     }
 
+    .format-card:hover { border-color: var(--text-tertiary); }
+
     .format-card__ext {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 700;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
       margin-bottom: 8px;
-      background: linear-gradient(135deg, var(--game-accent), var(--anime-accent));
+      background: linear-gradient(135deg, var(--brand), var(--brand-pale));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
     .format-card__name {
-      font-family: var(--font-display);
       font-size: 14px;
       font-weight: 700;
       margin-bottom: 8px;
@@ -677,31 +707,30 @@
     }
 
     /* ═══════════════════════════════════════
-       Tech Stack
+       Tech Stack — app chips again
        ═══════════════════════════════════════ */
     .tech-pills {
       display: flex;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       margin-top: 40px;
     }
 
     .tech-pill {
-      padding: 10px 20px;
-      background: var(--bg-surface);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 100px;
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 700;
+      padding: 8px 14px;
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      font-weight: 500;
       color: var(--text-secondary);
       transition: all 0.2s;
     }
 
     .tech-pill:hover {
       color: var(--text-primary);
-      border-color: rgba(255,255,255,0.15);
+      border-color: var(--text-tertiary);
     }
 
     /* ═══════════════════════════════════════
@@ -724,7 +753,7 @@
        Footer
        ═══════════════════════════════════════ */
     .footer {
-      border-top: 1px solid rgba(255,255,255,0.04);
+      border-top: 1px solid var(--border);
       padding: 40px 0;
     }
 
@@ -781,16 +810,22 @@
     /* ═══════════════════════════════════════
        Screenshot Sliders
        ═══════════════════════════════════════ */
+    .showcase {
+      margin-top: -40px;
+      animation: fadeInUp 1s ease-out 0.5s both;
+    }
+
     .screenshot-slider {
       position: relative;
       max-width: 900px;
       margin: 0 auto;
-      border-radius: var(--radius-xl);
+      border-radius: var(--radius-lg);
       overflow: hidden;
+      border: 1px solid var(--border);
       box-shadow:
         0 4px 6px rgba(0,0,0,0.3),
         0 20px 60px rgba(0,0,0,0.5);
-      background: var(--bg-surface);
+      background: var(--surface);
     }
 
     .slider-track {
@@ -818,9 +853,9 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(10, 10, 15, 0.7);
+      background: rgba(10, 10, 10, 0.7);
       color: var(--text-primary);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid var(--border);
       border-radius: 50%;
       width: 40px;
       height: 40px;
@@ -844,8 +879,8 @@
 
     .slider-prev:hover,
     .slider-next:hover {
-      background: rgba(10, 10, 15, 0.9);
-      border-color: rgba(255,255,255,0.2);
+      background: rgba(10, 10, 10, 0.9);
+      border-color: var(--text-tertiary);
     }
 
     .slider-dots {
@@ -853,7 +888,7 @@
       justify-content: center;
       gap: 8px;
       padding: 14px 0;
-      background: var(--bg-surface);
+      background: var(--surface);
     }
 
     .slider-dots button {
@@ -861,7 +896,7 @@
       height: 10px;
       border-radius: 50%;
       border: none;
-      background: var(--bg-surface-3);
+      background: var(--surface-light);
       cursor: pointer;
       transition: background 0.2s, transform 0.2s;
       padding: 0;
@@ -881,7 +916,7 @@
       color: var(--text-tertiary);
       font-size: 13px;
       padding: 0 16px 16px;
-      background: var(--bg-surface);
+      background: var(--surface);
     }
 
     .slider-section {
@@ -980,10 +1015,10 @@
 
   <!-- Background Effects -->
   <div class="bg-grid"></div>
-  <div class="bg-glow bg-glow--blue"></div>
-  <div class="bg-glow bg-glow--red"></div>
-  <div class="bg-glow bg-glow--green"></div>
-  <div class="bg-glow bg-glow--purple"></div>
+  <div class="bg-glow bg-glow--game"></div>
+  <div class="bg-glow bg-glow--brand"></div>
+  <div class="bg-glow bg-glow--manga"></div>
+  <div class="bg-glow bg-glow--anime"></div>
 
   <!-- Navigation -->
   <nav class="nav">
@@ -1021,13 +1056,16 @@
           Your <span class="accent-game">games</span>,
           <span class="accent-movie">movies</span>,
           <span class="accent-tv">shows</span>,
-          <span class="accent-anime">anime</span> &amp;
-          <span class="accent-vn">novels</span><br>
+          <span class="accent-animation">animation</span>,
+          <span class="accent-anime">anime</span>,
+          <span class="accent-manga">manga</span>,
+          <span class="accent-vn">novels</span> &amp;
+          <span class="accent-book">books</span><br>
           — all in one box
         </h1>
 
         <p class="hero__subtitle" data-i18n="hero_subtitle">
-          Build collections, track what you're playing and watching, create tier lists, visual boards, rate your favorites, and share with friends.
+          Build collections, track what you're playing, watching, and reading, create tier lists, visual boards, rate your favorites, and share with friends.
         </p>
 
         <div class="hero__actions">
@@ -1035,11 +1073,11 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download
           </a>
-          <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank" data-i18n="hero_source">
+          <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--outlined" target="_blank" data-i18n="hero_source">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
             View Source
           </a>
-          <a href="https://discord.gg/JZVNPF7cS2" class="btn btn--ghost" target="_blank" data-i18n="hero_discord">
+          <a href="https://discord.gg/JZVNPF7cS2" class="btn btn--outlined" target="_blank" data-i18n="hero_discord">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
             Join Discord
           </a>
@@ -1057,7 +1095,7 @@
   </section>
 
   <!-- Screenshot Showcase: Organize -->
-  <section class="showcase" style="animation: fadeInUp 1s ease-out 0.5s both; margin-top: -40px;">
+  <section class="showcase">
     <div class="container">
       <div class="screenshot-slider" data-autoplay="5000">
         <div class="slider-track">
@@ -1074,7 +1112,7 @@
     </div>
   </section>
 
-  <!-- Media Type Tags -->
+  <!-- Media Type Chips -->
   <div class="container">
     <div class="media-tags reveal">
       <div class="media-tag media-tag--game">
@@ -1089,13 +1127,25 @@
         <div class="media-tag__dot"></div>
         <span data-i18n="tag_tv">TV Shows</span>
       </div>
+      <div class="media-tag media-tag--animation">
+        <div class="media-tag__dot"></div>
+        <span data-i18n="tag_animation">Animation</span>
+      </div>
       <div class="media-tag media-tag--anime">
         <div class="media-tag__dot"></div>
         <span data-i18n="tag_anime">Anime</span>
       </div>
+      <div class="media-tag media-tag--manga">
+        <div class="media-tag__dot"></div>
+        <span data-i18n="tag_manga">Manga</span>
+      </div>
       <div class="media-tag media-tag--vn">
         <div class="media-tag__dot"></div>
         <span data-i18n="tag_vn">Visual Novels</span>
+      </div>
+      <div class="media-tag media-tag--book">
+        <div class="media-tag__dot"></div>
+        <span data-i18n="tag_books">Books</span>
       </div>
     </div>
   </div>
@@ -1107,7 +1157,7 @@
         <div class="section-label" data-i18n="features_label">Features</div>
         <h2 class="section-title" data-i18n="features_title">Everything you need to<br>organize your media</h2>
         <p class="section-subtitle" data-i18n="features_subtitle">
-          Search hundreds of thousands of titles, organize them your way, and track your progress across games, movies, and anime.
+          Search hundreds of thousands of titles, organize them your way, and track your progress across games, movies, anime, manga, and books.
         </p>
       </div>
 
@@ -1116,7 +1166,7 @@
           <div class="feature-card__icon">🎮</div>
           <h3 class="feature-card__title" data-i18n="feat_collections_title">Build Collections</h3>
           <p class="feature-card__desc" data-i18n="feat_collections_desc">
-            Create unlimited collections by platform, genre, or custom lists. Mix games, movies, anime, and visual novels in a single collection. Switch between grid and list views.
+            Create unlimited collections by platform, genre, or custom lists. Mix games, movies, anime, manga, novels, and books in a single collection. Switch between grid and list views.
           </p>
         </div>
 
@@ -1124,7 +1174,7 @@
           <div class="feature-card__icon">🔍</div>
           <h3 class="feature-card__title" data-i18n="feat_search_title">Search & Discover</h3>
           <p class="feature-card__desc" data-i18n="feat_search_desc">
-            Find titles from IGDB, TMDB, AniList, MangaBaka, and VNDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.
+            Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, and Fantlab. Filter by year, genre, or platform. Add anything to your collections with one tap.
           </p>
         </div>
 
@@ -1133,6 +1183,20 @@
           <h3 class="feature-card__title" data-i18n="feat_progress_title">Track Progress</h3>
           <p class="feature-card__desc" data-i18n="feat_progress_desc">
             Mark items as In Progress, Completed, Planned, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.
+          </p>
+          <div class="status-chips">
+            <span class="status-chip status-chip--progress" data-i18n="status_progress">In Progress</span>
+            <span class="status-chip status-chip--completed" data-i18n="status_completed">Completed</span>
+            <span class="status-chip status-chip--planned" data-i18n="status_planned">Planned</span>
+            <span class="status-chip status-chip--dropped" data-i18n="status_dropped">Dropped</span>
+          </div>
+        </div>
+
+        <div class="feature-card feature-card--book reveal">
+          <div class="feature-card__icon">📚</div>
+          <h3 class="feature-card__title" data-i18n="feat_books_title">Books & Reading</h3>
+          <p class="feature-card__desc" data-i18n="feat_books_desc">
+            Search books on OpenLibrary and Fantlab, track your reading, and organize novels and series alongside the rest of your collection.
           </p>
         </div>
 
@@ -1152,16 +1216,17 @@
           </p>
         </div>
 
-        <div class="feature-card feature-card--anime reveal">
+        <div class="feature-card feature-card--rating reveal">
           <div class="feature-card__icon">⭐</div>
           <h3 class="feature-card__title" data-i18n="feat_rate_title">Rate & Review</h3>
           <p class="feature-card__desc" data-i18n="feat_rate_desc">
             Rate every title from 1–10 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.
           </p>
+          <span class="rating-badge">★ 8.5</span>
         </div>
 
         <div class="feature-card feature-card--tier reveal">
-          <div class="feature-card__icon">📊</div>
+          <div class="feature-card__icon">🏆</div>
           <h3 class="feature-card__title" data-i18n="feat_tier_title">Tier Lists</h3>
           <p class="feature-card__desc" data-i18n="feat_tier_desc">
             Rank items from your collections into S/A/B/C tiers with drag-and-drop, or build a Mood Grid — an N×M board of items with labels. Customize tiers, export either layout as a shareable PNG.
@@ -1183,7 +1248,7 @@
   <div class="slider-section reveal">
     <div class="section-label" data-i18n="slider_search_label">Search</div>
     <h2 class="section-title" data-i18n="slider_search_title">Search &amp; Discover</h2>
-    <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB, TMDB, VNDB, AniList, and MangaBaka databases with hundreds of thousands of titles</p>
+    <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, and Fantlab databases with hundreds of thousands of titles</p>
     <div class="screenshot-slider" data-autoplay="5000">
       <div class="slider-track">
         <img src="screenshots/mockup_game_search.jpg" alt="Search games" data-caption="slider_search_2" loading="lazy">
@@ -1236,7 +1301,7 @@
           <div class="step__number">02</div>
           <h3 class="step__title" data-i18n="step2_title">Start Collecting</h3>
           <p class="step__desc" data-i18n="step2_desc">
-            Search for your favorite games, movies, anime, visual novels, and manga — organize them into collections, rate, and track progress. Works out of the box.
+            Search for your favorite games, movies, anime, visual novels, manga, and books — organize them into collections, rate, and track progress. Works out of the box.
           </p>
         </div>
         <div class="step reveal">
@@ -1345,6 +1410,8 @@
         <span class="tech-pill">VNDB API</span>
         <span class="tech-pill">AniList API</span>
         <span class="tech-pill">MangaBaka API</span>
+        <span class="tech-pill">OpenLibrary API</span>
+        <span class="tech-pill">Fantlab API</span>
         <span class="tech-pill">SteamGridDB</span>
         <span class="tech-pill">ScreenScraper</span>
         <span class="tech-pill">MyAnimeList</span>
@@ -1364,7 +1431,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download Latest Release
         </a>
-        <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank" data-i18n="cta_star">
+        <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--outlined" target="_blank" data-i18n="cta_star">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
           Star on GitHub
         </a>
@@ -1392,7 +1459,7 @@
       <span data-i18n="footer_data_by">Data by</span>
       <a href="https://www.themoviedb.org/" target="_blank" rel="noopener"><img src="assets/tmdb_logo.svg" alt="TMDB"></a>
       <a href="https://www.igdb.com/" target="_blank" rel="noopener"><img src="assets/igdb_logo.svg" alt="IGDB"></a>
-      <a href="https://vndb.org/" target="_blank" rel="noopener" style="color:var(--vn-accent);font-weight:700;font-size:14px;text-decoration:none;">VNDB</a>
+      <a href="https://vndb.org/" target="_blank" rel="noopener" style="color:var(--vn);font-weight:700;font-size:14px;text-decoration:none;">VNDB</a>
       <a href="https://mangabaka.org/" target="_blank" rel="noopener"><img src="assets/mangabaka_logo.png" alt="MangaBaka"></a>
       <a href="https://www.steamgriddb.com/" target="_blank" rel="noopener"><img src="assets/steamgriddb_logo.svg" alt="SteamGridDB"></a>
     </div>
@@ -1501,8 +1568,8 @@
         nav_docs: 'Wiki',
         nav_download: 'Download',
         hero_badge: 'Open Source · MIT License',
-        hero_title: 'Your <span class="accent-game">games</span>, <span class="accent-movie">movies</span>, <span class="accent-tv">shows</span>, <span class="accent-anime">anime</span> &amp; <span class="accent-vn">novels</span><br>— all in one box',
-        hero_subtitle: 'Build collections, track what you’re playing and watching, create tier lists, visual boards, rate your favorites, and share with friends.',
+        hero_title: 'Your <span class="accent-game">games</span>, <span class="accent-movie">movies</span>, <span class="accent-tv">shows</span>, <span class="accent-animation">animation</span>, <span class="accent-anime">anime</span>, <span class="accent-manga">manga</span>, <span class="accent-vn">novels</span> &amp; <span class="accent-book">books</span><br>— all in one box',
+        hero_subtitle: 'Build collections, track what you’re playing, watching, and reading, create tier lists, visual boards, rate your favorites, and share with friends.',
         hero_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download',
         hero_source: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> View Source',
         hero_platforms: 'Available for Windows, Linux & Android',
@@ -1510,17 +1577,26 @@
         tag_games: 'Retro Games',
         tag_movies: 'Movies',
         tag_tv: 'TV Shows',
+        tag_animation: 'Animation',
         tag_anime: 'Anime',
+        tag_manga: 'Manga',
         tag_vn: 'Visual Novels',
+        tag_books: 'Books',
         features_label: 'Features',
         features_title: 'Everything you need to<br>organize your media',
-        features_subtitle: 'Search hundreds of thousands of titles, organize them your way, and track your progress across games, movies, anime, and visual novels.',
+        features_subtitle: 'Search hundreds of thousands of titles, organize them your way, and track your progress across games, movies, anime, manga, and books.',
         feat_collections_title: 'Build Collections',
-        feat_collections_desc: 'Create unlimited collections by platform, genre, or custom lists. Mix games, movies, anime, and visual novels in a single collection. Switch between grid and list views.',
+        feat_collections_desc: 'Create unlimited collections by platform, genre, or custom lists. Mix games, movies, anime, manga, novels, and books in a single collection. Switch between grid and list views.',
         feat_search_title: 'Search & Discover',
-        feat_search_desc: 'Find titles from IGDB, TMDB, AniList, MangaBaka, and VNDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.',
+        feat_search_desc: 'Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, and Fantlab. Filter by year, genre, or platform. Add anything to your collections with one tap.',
         feat_progress_title: 'Track Progress',
         feat_progress_desc: 'Mark items as In Progress, Completed, Planned, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.',
+        status_progress: 'In Progress',
+        status_completed: 'Completed',
+        status_planned: 'Planned',
+        status_dropped: 'Dropped',
+        feat_books_title: 'Books & Reading',
+        feat_books_desc: 'Search books on OpenLibrary and Fantlab, track your reading, and organize novels and series alongside the rest of your collection.',
         feat_boards_title: 'Visual Boards',
         feat_boards_desc: 'Arrange posters on a free-form canvas. Add text notes, images, and links. Draw connections between items. Browse artwork from SteamGridDB.',
         feat_share_title: 'Import & Share',
@@ -1533,13 +1609,13 @@
         feat_lang_desc: 'Full interface localization with runtime language switching. All menus, statuses, labels, and messages available in English and Russian.',
         steps_label: 'Get Started',
         steps_title: 'Up and running in minutes',
-        steps_subtitle: 'Grab free API keys, install the app, and start building your collection.',
-        step1_title: 'Get API Keys',
-        step1_desc: 'Register for free at <strong>IGDB</strong> (via Twitch) for games and <strong>TMDB</strong> for movies & TV. <strong>VNDB</strong> for visual novels works without a key. Optional: <strong>SteamGridDB</strong> for extra artwork.',
-        step2_title: 'Install & Run',
-        step2_desc: 'Download the latest release or build from source with Flutter. Available for <strong>Windows</strong>, <strong>Linux</strong> (experimental) and <strong>Android</strong>.',
-        step3_title: 'Start Collecting',
-        step3_desc: 'Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That’s it!',
+        steps_subtitle: 'Install the app and start building your collection — no setup required.',
+        step1_title: 'Install & Run',
+        step1_desc: 'Download the latest release or build from source with Flutter. Available for <strong>Windows</strong>, <strong>Linux</strong> (experimental) and <strong>Android</strong>. A built-in <strong>Welcome Wizard</strong> will guide you through setup on first launch.',
+        step2_title: 'Start Collecting',
+        step2_desc: 'Search for your favorite games, movies, anime, visual novels, manga, and books — organize them into collections, rate, and track progress. Works out of the box.',
+        step3_title: 'Add Your Own Keys (Optional)',
+        step3_desc: 'Want to use your own API keys? Register for free at <strong>IGDB</strong>, <strong>TMDB</strong>, or <strong>SteamGridDB</strong> and enter them in Settings. Completely optional — everything works without them.',
         sharing_label: 'Import & Share',
         sharing_title: 'Import &amp; share your taste',
         sharing_subtitle: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList, export your collections, and share with friends.',
@@ -1567,16 +1643,16 @@
         cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Latest Release',
         cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Star on GitHub',
         slider_organize_1: 'All items from every collection — browse, filter by type, and sort by rating',
-        slider_organize_2: 'Filter by media type — games, movies, TV shows, anime, visual novels, manga',
+        slider_organize_2: 'Filter by media type — games, movies, TV shows, anime, visual novels, manga, books',
         slider_organize_3: 'Collections list with cover mosaics and progress stats',
         slider_organize_4: 'Collection grid view with poster cards, ratings, and search',
         slider_search_label: 'Search',
         slider_search_title: 'Search &amp; Discover',
-        slider_search_subtitle: 'Search IGDB, TMDB, VNDB, AniList, and MangaBaka databases with hundreds of thousands of titles',
+        slider_search_subtitle: 'Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, and Fantlab databases with hundreds of thousands of titles',
         slider_search_1: 'Add anything to your collections — set status, pick platform, leave a note, attach an author comment',
         slider_search_2: 'Search games across hundreds of platforms via IGDB',
         slider_search_3: 'Search manga and light novels via AniList — no API key required',
-        slider_search_4: 'Multiple sources — IGDB, TMDB, AniList, MangaBaka, and VNDB all in one place',
+        slider_search_4: 'Multiple sources — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, and Fantlab all in one place',
         slider_track_label: 'Track',
         slider_track_title: 'Track &amp; Visualize',
         slider_track_subtitle: 'Rank your favorites in tier lists, lay out picks on a mood grid, export both as PNG',
@@ -1596,8 +1672,8 @@
         nav_docs: 'Wiki',
         nav_download: 'Скачать',
         hero_badge: 'Открытый код · MIT License',
-        hero_title: 'Ваши <span class="accent-game">игры</span>, <span class="accent-movie">фильмы</span>, <span class="accent-tv">сериалы</span>, <span class="accent-anime">аниме</span> и <span class="accent-vn">новеллы</span><br>— всё в одном месте',
-        hero_subtitle: 'Создавайте коллекции, отслеживайте прогресс, создавайте тир-листы и визуальные доски, оценивайте любимое и делитесь с друзьями.',
+        hero_title: 'Ваши <span class="accent-game">игры</span>, <span class="accent-movie">фильмы</span>, <span class="accent-tv">сериалы</span>, <span class="accent-animation">мультфильмы</span>, <span class="accent-anime">аниме</span>, <span class="accent-manga">манга</span>, <span class="accent-vn">новеллы</span> и <span class="accent-book">книги</span><br>— всё в одном месте',
+        hero_subtitle: 'Создавайте коллекции, отслеживайте что играете, смотрите и читаете, собирайте тир-листы и визуальные доски, оценивайте любимое и делитесь с друзьями.',
         hero_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Скачать',
         hero_source: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Исходный код',
         hero_platforms: 'Доступно для Windows, Linux и Android',
@@ -1605,17 +1681,26 @@
         tag_games: 'Ретро-игры',
         tag_movies: 'Фильмы',
         tag_tv: 'Сериалы',
+        tag_animation: 'Мультфильмы',
         tag_anime: 'Аниме',
+        tag_manga: 'Манга',
         tag_vn: 'Визуальные новеллы',
+        tag_books: 'Книги',
         features_label: 'Функции',
         features_title: 'Всё что нужно для<br>организации медиа',
-        features_subtitle: 'Ищите среди сотен тысяч названий, организуйте по-своему и отслеживайте прогресс по играм, фильмам, аниме и новеллам.',
+        features_subtitle: 'Ищите среди сотен тысяч названий, организуйте по-своему и отслеживайте прогресс по играм, фильмам, аниме, манге и книгам.',
         feat_collections_title: 'Коллекции',
-        feat_collections_desc: 'Создавайте неограниченное количество коллекций по платформе, жанру или своим спискам. Смешивайте игры, фильмы, аниме и новеллы в одной коллекции. Переключайтесь между сеткой и списком.',
+        feat_collections_desc: 'Создавайте неограниченное количество коллекций по платформе, жанру или своим спискам. Смешивайте игры, фильмы, аниме, мангу, новеллы и книги в одной коллекции. Переключайтесь между сеткой и списком.',
         feat_search_title: 'Поиск',
-        feat_search_desc: 'Находите названия в базах IGDB, TMDB, AniList, MangaBaka и VNDB. Фильтруйте по году, жанру или платформе. Добавляйте в коллекцию одним нажатием.',
+        feat_search_desc: 'Находите названия в базах IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary и Fantlab. Фильтруйте по году, жанру или платформе. Добавляйте в коллекцию одним нажатием.',
         feat_progress_title: 'Прогресс',
         feat_progress_desc: 'Отмечайте статусы: В процессе, Пройдено, Отложено, Брошено. Отслеживайте эпизоды сериалов и аниме. Оценивайте от 1 до 10 звёзд.',
+        status_progress: 'В процессе',
+        status_completed: 'Пройдено',
+        status_planned: 'Отложено',
+        status_dropped: 'Брошено',
+        feat_books_title: 'Книги',
+        feat_books_desc: 'Ищите книги в OpenLibrary и Fantlab, отслеживайте чтение и организуйте романы и циклы вместе с остальной коллекцией.',
         feat_boards_title: 'Визуальные доски',
         feat_boards_desc: 'Расставляйте постеры на свободном холсте. Добавляйте заметки, изображения и ссылки. Рисуйте связи между элементами. Арты из SteamGridDB.',
         feat_share_title: 'Импорт и шаринг',
@@ -1628,13 +1713,13 @@
         feat_lang_desc: 'Полная локализация интерфейса с переключением языка на лету. Все меню, статусы, надписи и сообщения на английском и русском.',
         steps_label: 'Начало работы',
         steps_title: 'Запуск за несколько минут',
-        steps_subtitle: 'Получите бесплатные API-ключи, установите приложение и начните собирать коллекцию.',
-        step1_title: 'Получите API-ключи',
-        step1_desc: 'Зарегистрируйтесь бесплатно на <strong>IGDB</strong> (через Twitch) для игр и <strong>TMDB</strong> для фильмов и сериалов. <strong>VNDB</strong> для новелл работает без ключа. Опционально: <strong>SteamGridDB</strong> для артов.',
-        step2_title: 'Установите',
-        step2_desc: 'Скачайте последний релиз или соберите из исходников через Flutter. Доступно для <strong>Windows</strong>, <strong>Linux</strong> (экспериментально) и <strong>Android</strong>. Встроенный <strong>мастер настройки</strong> поможет при первом запуске.',
-        step3_title: 'Собирайте!',
-        step3_desc: 'Введите API-ключи в Настройках, найдите любимые названия и организуйте их в коллекции. Всё!',
+        steps_subtitle: 'Установите приложение и начните собирать коллекцию — без настройки.',
+        step1_title: 'Установите и запустите',
+        step1_desc: 'Скачайте последний релиз или соберите из исходников через Flutter. Доступно для <strong>Windows</strong>, <strong>Linux</strong> (экспериментально) и <strong>Android</strong>. Встроенный <strong>мастер настройки</strong> поможет при первом запуске.',
+        step2_title: 'Собирайте коллекцию',
+        step2_desc: 'Ищите любимые игры, фильмы, аниме, новеллы, мангу и книги — организуйте их в коллекции, оценивайте и отслеживайте прогресс. Работает из коробки.',
+        step3_title: 'Свои API-ключи (опционально)',
+        step3_desc: 'Хотите использовать свои ключи? Зарегистрируйтесь бесплатно на <strong>IGDB</strong>, <strong>TMDB</strong> или <strong>SteamGridDB</strong> и введите их в Настройках. Полностью опционально — всё работает и без них.',
         sharing_label: 'Импорт и шаринг',
         sharing_title: 'Импорт и обмен',
         sharing_subtitle: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList или AniList, экспорт коллекций и обмен с друзьями.',
@@ -1662,16 +1747,16 @@
         cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Скачать последний релиз',
         cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Звезда на GitHub',
         slider_organize_1: 'Все элементы из всех коллекций — фильтрация по типу и сортировка по рейтингу',
-        slider_organize_2: 'Фильтр по типу медиа — игры, фильмы, сериалы, аниме, новеллы, манга',
+        slider_organize_2: 'Фильтр по типу медиа — игры, фильмы, сериалы, аниме, новеллы, манга, книги',
         slider_organize_3: 'Список коллекций с обложками и статистикой прогресса',
         slider_organize_4: 'Сетка коллекции с постерами, рейтингами и поиском',
         slider_search_label: 'Поиск',
         slider_search_title: 'Поиск и открытия',
-        slider_search_subtitle: 'Ищите в базах IGDB, TMDB, VNDB, AniList и MangaBaka среди сотен тысяч названий',
+        slider_search_subtitle: 'Ищите в базах IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary и Fantlab среди сотен тысяч названий',
         slider_search_1: 'Добавляйте что угодно в коллекции — статус, платформа, заметка, авторский комментарий',
         slider_search_2: 'Поиск игр по сотням платформ через IGDB',
         slider_search_3: 'Поиск манги и ранобэ через AniList — без API-ключа',
-        slider_search_4: 'Множество источников — IGDB, TMDB, AniList, MangaBaka и VNDB в одном окне',
+        slider_search_4: 'Множество источников — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary и Fantlab в одном окне',
         slider_track_label: 'Прогресс',
         slider_track_title: 'Отслеживание и визуализация',
         slider_track_subtitle: 'Ранжируйте фавориты в тир-листах, раскладывайте на mood-доске, экспорт в PNG',
@@ -1718,7 +1803,7 @@
     "name": "Tonkatsu Box",
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Windows, Linux, Android",
-    "description": "Free open-source app to organize collections of retro games, movies, TV shows, and anime. Track progress, create tier lists, visual boards, and share with friends.",
+    "description": "Free open-source app to organize collections of retro games, movies, TV shows, anime, manga, visual novels, and books. Track progress, create tier lists, visual boards, and share with friends.",
     "url": "https://hacan359.github.io/tonkatsu_box/",
     "downloadUrl": "https://github.com/hacan359/tonkatsu_box/releases",
     "softwareVersion": "0.32.1",
