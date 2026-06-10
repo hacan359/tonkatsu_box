@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/update_service.dart';
+import '../../features/welcome/providers/menu_tour_provider.dart';
 import '../constants/platform_features.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
@@ -186,7 +187,11 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
           const ServiceBadges(),
           const SizedBox(width: AppSpacing.sm),
           _SettingsButton(
-            key: ref.watch(navTourKeysProvider).keyFor(NavTab.settings),
+            // Tour key only while the menu tour runs — otherwise two shells
+            // alive at once (DB-reset `pushReplacement`) reuse it and crash.
+            key: ref.watch(menuTourControllerProvider)
+                ? ref.watch(navTourKeysProvider).keyFor(NavTab.settings)
+                : null,
             active: settingsActive,
             pulsing: hasUpdate,
             onTap: widget.onSettingsTap,

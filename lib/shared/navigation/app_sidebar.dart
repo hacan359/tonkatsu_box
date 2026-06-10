@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/releases/providers/releases_provider.dart';
+import '../../features/welcome/providers/menu_tour_provider.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../theme/app_colors.dart';
 import 'liquid_indicator.dart';
@@ -45,6 +46,10 @@ class AppSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final int wishlistCount = ref.watch(activeWishlistCountProvider);
     final NavTourKeys tourKeys = ref.watch(navTourKeysProvider);
+    // Tour keys are app-wide singletons; attach only during the menu tour so two
+    // shells alive at once (DB-reset `pushReplacement`) can't reuse the same
+    // GlobalKeys and crash the tree.
+    final bool tourActive = ref.watch(menuTourControllerProvider);
 
     final List<NavDestination> destinations = buildNavDestinations(
       context: context,
@@ -91,7 +96,7 @@ class AppSidebar extends ConsumerWidget {
                           children: <Widget>[
                             for (final NavDestination d in destinations)
                               NavIconButton(
-                                key: tourKeys.keyFor(d.tab),
+                                key: tourActive ? tourKeys.keyFor(d.tab) : null,
                                 destination: d,
                                 active: d.tab == selectedTab,
                                 width: kAppSidebarWidth,

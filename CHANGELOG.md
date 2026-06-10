@@ -219,6 +219,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Stop the duplicate-GlobalKey crash when resetting the database**
+
+  Resetting the database (Settings → Database) recreates the app shell with
+  `pushReplacement`, so two shells were briefly alive at once. The navigation
+  buttons carried stable app-wide GlobalKeys (used only by the welcome menu
+  tour), and the two shells reused them, crashing the widget tree. The tour
+  keys are now attached only while the menu tour is running.
+
+  * lib/shared/navigation/app_bottom_bar.dart (AppBottomBar.build), app_sidebar.dart (AppSidebar.build), app_top_bar.dart (_AppTopBarState.build): Gate `tourKeys.keyFor(tab)` behind `menuTourControllerProvider`.
+  * test/shared/navigation/app_bottom_bar_tour_keys_test.dart: New — two bars coexist without a duplicate-key crash when the tour is off; keys attached while it runs.
+
 - **Offer every media type when creating a custom item**
 
   The custom-item dialog's type chooser was a hardcoded list that had silently
