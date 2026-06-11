@@ -270,6 +270,16 @@ flutter test       # Все тесты проходят
   ```
 - Пример: `InlineTextField` (`lib/features/settings/widgets/inline_text_field.dart`)
 
+### Layout-ловушки (повторяющиеся краши)
+
+1. **Кнопка внутри Row.** Глобальная тема задаёт кнопкам `minimumSize: Size(double.infinity, 48)`. Как non-flex ребёнок `Row` это даёт «BoxConstraints forces an infinite width» — причём **только в debug** (assert), в release молча работает, поэтому легко пропустить. Любая Material-кнопка внутри `Row` → либо `styleFrom(minimumSize: Size(0, 40))`, либо обернуть в `Expanded`/`Flexible`. Прецеденты: welcome-тур, кнопка Copy на экране ошибки.
+
+2. **AlertDialog с фиксированным контентом.** На телефоне открытая клавиатура ужимает диалог до ~150px высоты → vertical overflow. `content` диалога **всегда** оборачивать в `SingleChildScrollView`. Прецедент: диалог шаблона подписей mood grid.
+
+3. **Вычисляемая ширина offscreen/export-вью.** Если ширина контейнера считается формулой, формула обязана зеркалить реальную раскладку — каждый паддинг каждого ребёнка. Лучше один источник правды: константа «ячейка + её паддинги», используемая и в формуле, и в раскладке. Прецедент: `MoodGridExportView` (формула закладывала md-промежутки, раскладка использовала xs-паддинги).
+
+4. **Тесты ловят это только с боевой темой.** `tester.pumpApp()` подключает настоящую `AppTheme.darkTheme` (не убирать!) — простой тест «renders without exception» (`expect(tester.takeException(), isNull)`) ловит классы 1 и 3. Для диалогов и мобильных раскладок дополнительно прогонять на телефонном размере: `tester.view.physicalSize = const Size(360, 640)` (+ `addTearDown(tester.view.reset)`).
+
 ### Платформо-зависимый код:
 - Проверять платформу через `platform_features.dart` (`kCanvasEnabled`, `kVgMapsEnabled`)
 - VGMaps / WebView2 — только Windows
