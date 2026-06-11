@@ -216,8 +216,7 @@ class SteamImportService {
       );
 
       if (itemId != null && steamGame.playtimeMinutes > 0) {
-        final String playtimeText = _formatPlaytime(steamGame);
-        await _db.updateItemUserComment(itemId, 'Steam: $playtimeText');
+        await _db.updateItemTimeSpent(itemId, steamGame.playtimeMinutes);
 
         if (steamGame.lastPlayed != null) {
           await _db.updateItemActivityDates(
@@ -252,7 +251,7 @@ class SteamImportService {
   }
 
   /// Status is merged via [mergeExternalStatus] (no downgrades, local
-  /// `dropped` preserved); refreshes the playtime comment and last-played date.
+  /// `dropped` preserved); refreshes time spent and the last-played date.
   Future<void> _updateExistingItem(
     CollectionItem existing,
     SteamOwnedGame steamGame,
@@ -273,9 +272,9 @@ class SteamImportService {
       }
     }
 
-    if (steamGame.playtimeMinutes > 0) {
-      final String playtimeText = _formatPlaytime(steamGame);
-      await _db.updateItemUserComment(existing.id, 'Steam: $playtimeText');
+    if (steamGame.playtimeMinutes > 0 &&
+        steamGame.playtimeMinutes != existing.timeSpentMinutes) {
+      await _db.updateItemTimeSpent(existing.id, steamGame.playtimeMinutes);
     }
 
     if (steamGame.lastPlayed != null) {
@@ -286,26 +285,19 @@ class SteamImportService {
     }
   }
 
-  /// When an unresolved wishlist row with the same name already exists, its
-  /// note is updated instead of creating a duplicate.
+  /// When an unresolved wishlist row with the same name already exists, it is
+  /// reused instead of creating a duplicate.
   Future<void> _addToWishlist(SteamOwnedGame steamGame, String importTag) async {
-    final String? note = steamGame.playtimeMinutes > 0
-        ? 'Steam: ${_formatPlaytime(steamGame)}'
-        : null;
-
     final WishlistItem? existing =
         await _db.wishlistDao.findUnresolvedByText(steamGame.name);
 
     if (existing != null) {
       // Stamp the current import tag only when the row was previously
       // untagged — preserve any tag the user (or an earlier import) set.
-      final bool needsTag = existing.tag == null;
-      final bool noteChanged = note != null && note != existing.note;
-      if (needsTag || noteChanged) {
+      if (existing.tag == null) {
         await _db.wishlistDao.updateWishlistItem(
           existing.id,
-          note: noteChanged ? note : null,
-          tag: needsTag ? importTag : null,
+          tag: importTag,
         );
       }
       return;
@@ -314,17 +306,8 @@ class SteamImportService {
     await _db.wishlistDao.addWishlistItem(
       text: steamGame.name,
       mediaTypeHint: MediaType.game,
-      note: note,
       tag: importTag,
     );
-  }
-
-
-  static String _formatPlaytime(SteamOwnedGame game) {
-    if (game.playtimeMinutes >= 60) {
-      return '${game.playtimeHours.toStringAsFixed(1)}h';
-    }
-    return '${game.playtimeMinutes}min';
   }
 }
 

@@ -87,7 +87,7 @@ void main() {
           status: any(named: 'status'),
         )).thenAnswer((_) async => 100);
 
-    when(() => mockDb.updateItemUserComment(any(), any()))
+    when(() => mockDb.updateItemTimeSpent(any(), any()))
         .thenAnswer((_) async {});
 
     when(() => mockDb.updateItemActivityDates(
@@ -194,7 +194,8 @@ void main() {
             )).called(1);
       });
 
-      test('should save playtime as user comment', () async {
+      test('should save playtime into time spent, not user comment',
+          () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(
@@ -211,8 +212,8 @@ void main() {
           onProgress: (_) {},
         );
 
-        verify(() => mockDb.updateItemUserComment(100, 'Steam: 2.1h'))
-            .called(1);
+        verify(() => mockDb.updateItemTimeSpent(100, 125)).called(1);
+        verifyNever(() => mockDb.updateItemUserComment(any(), any()));
       });
 
       test('should save lastPlayed as lastActivityAt', () async {
@@ -240,7 +241,7 @@ void main() {
             )).called(1);
       });
 
-      test('should not update comment for zero playtime', () async {
+      test('should not update time spent for zero playtime', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(
@@ -257,7 +258,7 @@ void main() {
           onProgress: (_) {},
         );
 
-        verifyNever(() => mockDb.updateItemUserComment(any(), any()));
+        verifyNever(() => mockDb.updateItemTimeSpent(any(), any()));
       });
 
       test('should filter DLC and soundtracks', () async {
@@ -314,10 +315,9 @@ void main() {
               ItemStatus.inProgress,
               mediaType: MediaType.game,
             )).called(1);
-        verify(() => mockDb.updateItemUserComment(
-              collectionItem.id,
-              'Steam: 5.0h',
-            )).called(1);
+        verify(() => mockDb.updateItemTimeSpent(collectionItem.id, 300))
+            .called(1);
+        verifyNever(() => mockDb.updateItemUserComment(any(), any()));
         verify(() => mockDb.updateItemActivityDates(
               collectionItem.id,
               lastActivityAt: DateTime(2024, 6, 15),
@@ -329,6 +329,35 @@ void main() {
               platformId: any(named: 'platformId'),
               status: any(named: 'status'),
             ));
+      });
+
+      test('should skip time spent write when value is unchanged', () async {
+        setupStandardMocks(
+          library: <SteamOwnedGame>[
+            createTestSteamOwnedGame(
+              name: 'Already Added',
+              playtimeMinutes: 300,
+            ),
+          ],
+        );
+
+        when(() => mockDb.findCollectionItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+            )).thenAnswer((_) async => createTestCollectionItem(
+              status: ItemStatus.inProgress,
+              timeSpentMinutes: 300,
+            ));
+
+        await sut.importLibrary(
+          apiKey: 'key',
+          steamId: '123',
+          collectionId: 1,
+          onProgress: (_) {},
+        );
+
+        verifyNever(() => mockDb.updateItemTimeSpent(any(), any()));
       });
 
       test('should not downgrade status from completed', () async {
@@ -527,7 +556,7 @@ void main() {
             ));
       });
 
-      test('should update wishlist note when playtime changed', () async {
+      test('should not touch the note of an existing wishlist row', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(
@@ -543,7 +572,7 @@ void main() {
         final WishlistItem existingItem = createTestWishlistItem(
           id: 42,
           text: 'Unknown Game',
-          note: 'Steam: 0.5h',
+          note: 'my own note',
         );
         when(() => mockWishlistDao.findUnresolvedByText('Unknown Game'))
             .thenAnswer((_) async => existingItem);
@@ -555,9 +584,9 @@ void main() {
           onProgress: (_) {},
         );
 
+        // Only the import tag is stamped on the untagged row.
         verify(() => mockWishlistDao.updateWishlistItem(
               42,
-              note: 'Steam: 1.5h',
               tag: any(named: 'tag'),
             )).called(1);
         verifyNever(() => mockWishlistDao.addWishlistItem(
@@ -565,6 +594,43 @@ void main() {
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
               tag: any(named: 'tag'),
+            ));
+      });
+
+      test('should not update an existing wishlist row that already has a tag',
+          () async {
+        setupStandardMocks(
+          library: <SteamOwnedGame>[
+            createTestSteamOwnedGame(name: 'Unknown Game'),
+          ],
+        );
+
+        when(() => mockIgdbApi.lookupSteamGames(any()))
+            .thenAnswer((_) async => <String, Game>{});
+
+        when(() => mockWishlistDao.findUnresolvedByText('Unknown Game'))
+            .thenAnswer((_) async => createTestWishlistItem(
+                  id: 42,
+                  text: 'Unknown Game',
+                  tag: 'Steam 2024-01-01',
+                ));
+
+        await sut.importLibrary(
+          apiKey: 'key',
+          steamId: '123',
+          collectionId: 1,
+          onProgress: (_) {},
+        );
+
+        verifyNever(() => mockWishlistDao.updateWishlistItem(
+              any(),
+              text: any(named: 'text'),
+              mediaTypeHint: any(named: 'mediaTypeHint'),
+              clearMediaTypeHint: any(named: 'clearMediaTypeHint'),
+              note: any(named: 'note'),
+              clearNote: any(named: 'clearNote'),
+              tag: any(named: 'tag'),
+              clearTag: any(named: 'clearTag'),
             ));
       });
 

@@ -138,6 +138,20 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Steam import writes playtime to the time-spent field instead of user notes**
+
+  The import used to stamp "Steam: 12.3h" into the item's personal notes,
+  overwriting whatever the user had written there on every re-import. Playtime
+  now lands in the dedicated time-spent field shown in the item card (the
+  write is skipped when the value hasn't changed), and the import no longer
+  touches notes at all — a wishlist row keeps its note too and only gets the
+  import tag stamped when it was untagged.
+
+  * lib/core/services/steam_import_service.dart (SteamImportService.importLibrary, SteamImportService._updateExistingItem): Write `playtimeMinutes` via `updateItemTimeSpent` instead of `updateItemUserComment`; skip the write when unchanged.
+  * lib/core/services/steam_import_service.dart (SteamImportService._addToWishlist): Drop the "Steam: Xh" note on wishlist rows; remove `_formatPlaytime`.
+  * test/helpers/builders.dart (createTestCollectionItem): Add `timeSpentMinutes`.
+  * test/core/services/steam_import_service_test.dart: Cover the time-spent writes, the unchanged-value skip, and that notes are never touched.
+
 - **Extract the shared filter-value reader used by the search sources**
 
   Four search sources carried an identical private `_readStringList` helper;
