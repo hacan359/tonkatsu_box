@@ -1,5 +1,3 @@
-// Layout канваса с боковыми панелями для CollectionScreen.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,12 +10,9 @@ import 'canvas_view.dart';
 import 'steamgriddb_panel.dart';
 import 'vgmaps_panel.dart';
 
-/// Layout канваса с боковыми панелями SteamGridDB и VGMaps.
-///
-/// Состоит из [CanvasView] слева и анимированных боковых панелей справа.
-/// Панели открываются/закрываются через соответствующие провайдеры.
+/// [CanvasView] on the left plus animated SteamGridDB/VGMaps side panels;
+/// the panels are opened and closed through their respective providers.
 class CollectionCanvasLayout extends StatelessWidget {
-  /// Создаёт [CollectionCanvasLayout].
   const CollectionCanvasLayout({
     required this.collectionId,
     required this.isEditable,
@@ -27,19 +22,15 @@ class CollectionCanvasLayout extends StatelessWidget {
     super.key,
   });
 
-  /// ID коллекции.
   final int? collectionId;
 
-  /// Можно ли редактировать канвас.
   final bool isEditable;
 
-  /// Название коллекции (для SteamGridDB поиска).
+  /// Used as the initial SteamGridDB search query.
   final String collectionName;
 
-  /// Callback добавления изображения из SteamGridDB.
   final void Function(SteamGridDbImage image) onAddSteamGridDbImage;
 
-  /// Callback добавления изображения из VGMaps.
   final void Function(String url, int? width, int? height) onAddVgMapsImage;
 
   @override
@@ -52,13 +43,12 @@ class CollectionCanvasLayout extends StatelessWidget {
             isEditable: isEditable,
           ),
         ),
-        // Боковая панель SteamGridDB
         _SteamGridDbSidePanel(
           collectionId: collectionId,
           collectionName: collectionName,
           onAddImage: onAddSteamGridDbImage,
         ),
-        // Боковая панель VGMaps Browser (Windows only)
+        // VGMaps browser panel is Windows only (WebView2).
         if (kVgMapsEnabled)
           _VgMapsSidePanel(
             collectionId: collectionId,
@@ -68,10 +58,6 @@ class CollectionCanvasLayout extends StatelessWidget {
     );
   }
 }
-
-// =============================================================================
-// Animated side panels
-// =============================================================================
 
 class _SteamGridDbSidePanel extends ConsumerWidget {
   const _SteamGridDbSidePanel({

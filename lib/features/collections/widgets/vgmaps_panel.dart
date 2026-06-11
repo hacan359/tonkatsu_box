@@ -10,11 +10,8 @@ import 'package:webview_windows/webview_windows.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/vgmaps_panel_provider.dart';
 
-/// JS-скрипт для захвата изображения карты со страницы vgmaps.de.
-///
-/// Ищет `<img id="MapViewerImage">` на странице view.php.
-/// Если не найден — ищет первый крупный `<img>` (> 200px).
-/// Возвращает JSON с src, width, height через postMessage.
+/// Looks for `<img id="MapViewerImage">`, falling back to the first large
+/// `<img>` (> 200px); posts src/width/height as JSON via postMessage.
 const String _captureMapScript = '''
 (function() {
   var img = document.getElementById('MapViewerImage');
@@ -38,16 +35,13 @@ const String _captureMapScript = '''
 })();
 ''';
 
-/// Тип колбэка для добавления изображения на канвас.
 typedef VgMapsAddImageCallback = void Function(
   String url,
   int? width,
   int? height,
 );
 
-/// Боковая панель VGMaps Browser для поиска и добавления карт на канвас.
 class VgMapsPanel extends ConsumerStatefulWidget {
-  /// Создаёт [VgMapsPanel].
   const VgMapsPanel({
     required this.collectionId,
     required this.onAddImage,
@@ -55,14 +49,12 @@ class VgMapsPanel extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции (null для uncategorized).
+  /// `null` for the uncategorized collection.
   final int? collectionId;
 
-  /// Колбэк при добавлении изображения на канвас.
   final VgMapsAddImageCallback onAddImage;
 
-  /// Опциональный builder для WebView (для тестов).
-  /// Если null — используется реальный Webview из webview_windows.
+  /// Test seam: when `null`, the real Webview from webview_windows is used.
   final Widget Function(WebviewController controller)? webViewBuilder;
 
   @override
@@ -79,8 +71,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
   @override
   void initState() {
     super.initState();
-    // webview_windows работает только на Windows.
-    // На других платформах не инициализируем WebView.
+    // webview_windows is Windows-only; skip WebView init elsewhere.
     if (Platform.isWindows) {
       _initWebView();
     }
@@ -103,10 +94,9 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
 
       if (!mounted) return;
 
-      // Слушаем сообщения из JS (webMessage уже декодирован из JSON)
+      // webMessage payloads arrive already JSON-decoded.
       _subscriptions.add(_controller.webMessage.listen(_handleWebMessage));
 
-      // Слушаем навигацию
       _subscriptions.add(_controller.url.listen((String url) {
         if (!mounted) return;
         ref
@@ -152,8 +142,8 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
   void _handleWebMessage(Object? message) {
     if (!mounted) return;
     try {
-      // webview_windows автоматически декодирует JSON из postMessage,
-      // поэтому message уже является Map, а не строкой.
+      // webview_windows decodes postMessage JSON automatically, so the
+      // message is already a Map, not a string.
       final Map<String, Object?> data = message is Map<String, Object?>
           ? message
           : (message as Map<Object?, Object?>).cast<String, Object?>();
@@ -169,7 +159,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
         }
       }
     } on Object {
-      // Игнорируем невалидные сообщения
+      // Ignore malformed messages.
     }
   }
 
@@ -196,26 +186,24 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
     _controller.loadUrl('https://vgmaps.de/maps/?search=$encoded');
   }
 
-  /// Захватывает изображение карты с текущей страницы.
-  ///
-  /// Три стратегии по приоритету:
-  /// 1. JS `executeScript` с прямым return (без postMessage)
-  /// 2. HTTP fetch текущей страницы + парсинг HTML из Dart
-  /// 3. Fallback: postMessage через JS injection
+  /// Captures the map image using three strategies, in priority order:
+  /// JS `executeScript` with a direct return (no postMessage), then HTTP
+  /// fetch of the current page with HTML parsing in Dart, then a
+  /// postMessage fallback via JS injection.
   Future<void> _captureMapImage() async {
     if (!_isWebViewReady) return;
 
     final VgMapsPanelNotifier notifier =
         ref.read(vgMapsPanelProvider(widget.collectionId).notifier);
 
-    // Стратегия 1: прямой return из executeScript
+    // Strategy 1: direct return from executeScript.
     try {
       final Object? rawResult = await _controller.executeScript(
         'document.getElementById("MapViewerImage")?.getAttribute("src") ?? ""',
       );
       final String? result = rawResult?.toString();
       if (result != null && result.isNotEmpty) {
-        // WebView2 возвращает JSON-encoded строку: "/files/..."
+        // WebView2 returns a JSON-encoded string: "/files/..."
         String src = result;
         if (src.startsWith('"') && src.endsWith('"')) {
           src = src.substring(1, src.length - 1);
@@ -231,31 +219,28 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
         }
       }
     } on Object {
-      // executeScript не сработал — пробуем fallback
+      // executeScript failed; fall through to the next strategy.
     }
 
-    // Стратегия 2: HTTP fetch + парсинг HTML
+    // Strategy 2: HTTP fetch + HTML parsing.
     final String? httpResult = await _fetchMapImageFromHtml();
     if (httpResult != null && mounted) {
       notifier.captureImage(httpResult);
       return;
     }
 
-    // Стратегия 3: postMessage через JS injection
+    // Strategy 3: postMessage via JS injection.
     _controller.executeScript(_captureMapScript);
   }
 
-  /// Загружает HTML текущей страницы через HTTP и ищет MapViewerImage.
-  ///
-  /// Полностью обходит JS-выполнение в WebView — работает даже если
-  /// Cloudflare блокирует скрипты.
+  /// Bypasses JS execution in the WebView entirely, so it works even when
+  /// Cloudflare blocks scripts.
   Future<String?> _fetchMapImageFromHtml() async {
     try {
       final VgMapsPanelState panelState =
           ref.read(vgMapsPanelProvider(widget.collectionId));
       final String currentUrl = panelState.currentUrl;
 
-      // Работает только на страницах vgmaps.de
       if (!currentUrl.contains('vgmaps.de')) return null;
 
       final Dio dio = Dio();
@@ -270,14 +255,13 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
       final String? html = response.data;
       if (html == null || html.isEmpty) return null;
 
-      // Ищем <img id="MapViewerImage" src="...">
       final RegExp imgRegex = RegExp(
         r'<img\s[^>]*id\s*=\s*"MapViewerImage"[^>]*src\s*=\s*"([^"]+)"',
         caseSensitive: false,
       );
       final RegExpMatch? match = imgRegex.firstMatch(html);
 
-      // Если не нашли по id, пробуем обратный порядок атрибутов
+      // Retry with the reversed attribute order (src before id).
       if (match == null) {
         final RegExp altRegex = RegExp(
           r'<img\s[^>]*src\s*=\s*"([^"]+)"[^>]*id\s*=\s*"MapViewerImage"',
@@ -293,7 +277,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
         return _resolveVgMapsUrl(match.group(1)!);
       }
 
-      // Fallback: ищем любую картинку в /files/ директории
+      // Fallback: any image under the /files/ directory.
       final RegExp filesRegex = RegExp(
         r'src\s*=\s*"(/files/[^"]+)"',
         caseSensitive: false,
@@ -309,7 +293,6 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
     }
   }
 
-  /// Преобразует относительный путь в полный URL vgmaps.de.
   String _resolveVgMapsUrl(String src) {
     if (src.startsWith('/')) {
       return 'https://vgmaps.de$src';
@@ -343,7 +326,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
 
   @override
   Widget build(BuildContext context) {
-    // Safety guard: не рендерим на non-Windows платформах.
+    // Safety guard: never render on non-Windows platforms.
     if (!Platform.isWindows) {
       return const SizedBox.shrink();
     }
@@ -358,25 +341,19 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
       color: colorScheme.surface,
       child: Column(
         children: <Widget>[
-          // Заголовок
           _buildHeader(colorScheme, theme),
           const Divider(height: 1),
 
-          // Тулбар навигации
           _buildNavigationToolbar(panelState, colorScheme),
           const Divider(height: 1),
 
-          // Индикатор загрузки
           if (panelState.isLoading) const LinearProgressIndicator(),
 
-          // Ошибка
           if (panelState.error != null)
             _buildErrorBanner(panelState.error!, colorScheme, theme),
 
-          // WebView
           Expanded(child: _buildWebView()),
 
-          // Нижняя панель с захваченным изображением
           if (panelState.capturedImageUrl != null)
             _buildCapturedImageBar(panelState, colorScheme, theme),
         ],
@@ -546,7 +523,6 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
       ),
       child: Row(
         children: <Widget>[
-          // Превью
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: SizedBox(
@@ -580,7 +556,6 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
           ),
           const SizedBox(width: 8),
 
-          // Информация
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,7 +579,6 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
             ),
           ),
 
-          // Кнопка добавления
           FilledButton.icon(
             onPressed: _handleAddToCanvas,
             icon: const Icon(Icons.add, size: 16),
@@ -617,7 +591,6 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
           ),
           const SizedBox(width: 4),
 
-          // Закрыть
           IconButton(
             icon: const Icon(Icons.close, size: 16),
             tooltip: S.of(context).vgmapsDismiss,

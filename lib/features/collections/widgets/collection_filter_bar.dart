@@ -1,8 +1,3 @@
-// Панель фильтров и сортировки для CollectionScreen.
-//
-// Chevron-бар типов медиа + dropdown статуса, платформы при Games,
-// сортировка. Desktop-first, мобильный вариант будет позже.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -24,12 +19,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import 'collection_filter_sheet.dart';
 
-/// Панель фильтров и сортировки для CollectionScreen.
-///
-/// Chevron-бар типов медиа + status dropdown, ChoiceChip платформ
-/// (видны при Games), строка сортировки.
 class CollectionFilterBar extends ConsumerStatefulWidget {
-  /// Создаёт [CollectionFilterBar].
   const CollectionFilterBar({
     required this.collectionId,
     required this.statsAsync,
@@ -50,25 +40,19 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции (null для uncategorized).
+  /// `null` means the uncategorized collection.
   final int? collectionId;
 
-  /// Статистика коллекции.
   final AsyncValue<CollectionStats> statsAsync;
 
-  /// Элементы коллекции (для извлечения платформ).
   final AsyncValue<List<CollectionItem>> itemsAsync;
 
-  /// Выбранные типы медиа.
   final Set<MediaType> filterTypes;
 
-  /// Выбранные ID платформ.
   final Set<int> filterPlatformIds;
 
-  /// Выбранные ID тегов.
   final Set<int> filterTagIds;
 
-  /// Фильтр по статусу.
   final ItemStatus? filterStatus;
 
   /// Status that drives chevron counts when it diverges from [filterStatus]
@@ -76,28 +60,21 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   /// [filterStatus] when null.
   final ItemStatus? effectiveStatusForCounts;
 
-  /// Теги коллекции.
   final List<CollectionTag> tags;
 
-  /// Текущий поисковый запрос (из глобального top bar).
+  /// Current search query (coming from the global top bar).
   final String searchQuery;
 
-  /// Callback тоггла типа медиа.
   final ValueChanged<MediaType?> onTypeToggled;
 
-  /// Callback тоггла платформы.
   final ValueChanged<int?> onPlatformToggled;
 
-  /// Callback тоггла тега.
   final ValueChanged<int?> onTagToggled;
 
-  /// Callback изменения статуса.
   final ValueChanged<ItemStatus?> onStatusChanged;
 
-  /// Callback тоггла группировки по тегам.
   final VoidCallback onGroupToggled;
 
-  /// Группировка по тегам.
   final bool groupByTags;
 
   @override
@@ -106,11 +83,11 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 }
 
 class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
-  /// Ширина, ниже которой сегменты показывают иконки вместо текста.
+  /// Below this width segments show icons instead of text labels.
   static const double _compactBreakpoint = 700;
 
-  /// Кешированный список платформ — пересчитывается только при смене
-  /// identity списка элементов (валюа AsyncValue.value).
+  /// Cached platform list, recomputed only when the identity of the
+  /// items list (AsyncValue.value) changes.
   List<Platform>? _cachedPlatforms;
   List<CollectionItem>? _cachedPlatformsSource;
 
@@ -127,8 +104,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       ],
     );
   }
-
-  // ===================== Chevron бар типов медиа =====================
 
   Widget _buildTypeChevronBar(S l, CollectionStats? stats) {
     final List<_TypeEntry> entries = _typeEntries(l, stats);
@@ -147,9 +122,9 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
             : entries;
     final bool compact =
         MediaQuery.sizeOf(context).width < _compactBreakpoint;
-    // На узких экранах TagSidebar скрыт — даём кнопку, открывающую sheet
-    // с тегами и сортировкой. На широких остаётся компактный sort-сегмент
-    // (теги доступны через TagSidebar справа).
+    // On narrow screens the TagSidebar is hidden, so show a button that
+    // opens a sheet with tags and sorting. Wide screens keep the compact
+    // sort segment (tags are reachable via the TagSidebar on the right).
     final bool useTagSheetButton = isCompactScreen(context);
 
     return ColoredBox(
@@ -195,8 +170,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     );
   }
 
-  // ===== Кнопка «Теги & Сортировка» (открывает sheet, узкие экраны) =====
-
   Widget _buildTagSheetButton(BuildContext context) {
     final bool active = widget.filterTagIds.isNotEmpty;
     final int count = widget.filterTagIds.length;
@@ -220,8 +193,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       compact: true,
     );
   }
-
-  // ===================== Платформы (ChoiceChip) =====================
 
   Widget _buildPlatformChipsRow() {
     if (!widget.filterTypes.contains(MediaType.game)) {
@@ -280,8 +251,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       },
     );
   }
-
-  // ===================== Сортировка (chevron-сегмент) =====================
 
   Widget _buildSortSegment(BuildContext context) {
     final CollectionSortMode currentSort =
@@ -370,15 +339,13 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     );
   }
 
-  // ===================== Helpers =====================
-
   List<Platform> _extractPlatforms() {
     final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
     if (items == null) return <Platform>[];
 
-    // Кеш действителен пока identity самого списка (references) не изменилось.
-    // Провайдер выдаёт новый List при любом изменении коллекции, так что
-    // identity-сравнение = корректная инвалидация.
+    // The cache is valid while the list identity is unchanged: the provider
+    // emits a new List on any collection change, so an identity comparison
+    // is a correct invalidation check.
     if (identical(_cachedPlatformsSource, items) && _cachedPlatforms != null) {
       return _cachedPlatforms!;
     }

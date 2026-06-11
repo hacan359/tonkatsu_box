@@ -1,10 +1,6 @@
-// Диспетчер карточки коллекции для грида главного экрана.
-//
-// Ветвит на [ClassicCollectionCard] (мозаика 3+3) или [RichCollectionCard]
-// (hero-изображение на всю карточку) в зависимости от включённости
-// rich-режима и наличия hero у коллекции.
-//
-// Публичный API сохраняется: [CollectionCard] и [UncategorizedCard].
+// Dispatches to [ClassicCollectionCard] (3+3 mosaic) or [RichCollectionCard]
+// (full-card hero image) depending on the rich-mode setting and whether the
+// collection has a hero. Public API stays [CollectionCard]/[UncategorizedCard].
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,9 +15,7 @@ import 'classic/classic_collection_card.dart';
 import 'collection_card_shell.dart';
 import 'rich/rich_collection_card.dart';
 
-/// Карточка коллекции (диспетчер classic/rich).
 class CollectionCard extends ConsumerWidget {
-  /// Создаёт [CollectionCard].
   const CollectionCard({
     required this.collection,
     this.onTap,
@@ -31,22 +25,18 @@ class CollectionCard extends ConsumerWidget {
     super.key,
   });
 
-  /// Коллекция для отображения.
   final Collection collection;
 
-  /// Callback при нажатии.
   final VoidCallback? onTap;
 
-  /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
 
-  /// Callback при правом клике (глобальные координаты для showMenu).
+  /// Right-click callback; the position is global, ready for showMenu.
   final void Function(Offset globalPosition)? onSecondaryTap;
 
-  /// Callback при изменении фокуса.
   final ValueChanged<bool>? onFocusChanged;
 
-  /// Радиус скругления карточки (для выравнивания внешних обрамлений).
+  /// Card corner radius, exposed so outer decorations can align with it.
   static const double mosaicRadius = CollectionCardShell.radius;
 
   @override
@@ -74,7 +64,7 @@ class CollectionCard extends ConsumerWidget {
         onFocusChanged: onFocusChanged,
       );
     }
-    // Rich-режим без hero: показываем classic с описанием (если оно есть).
+    // Rich mode without a hero: classic card with the description shown.
     return ClassicCollectionCard(
       collection: collection,
       onTap: onTap,
@@ -86,21 +76,15 @@ class CollectionCard extends ConsumerWidget {
   }
 }
 
-/// Карточка для uncategorized-элементов в стиле «iOS папка».
-///
-/// Вместо мозаики — иконка `inbox` на фоне `surfaceLight`.
 class UncategorizedCard extends StatelessWidget {
-  /// Создаёт [UncategorizedCard].
   const UncategorizedCard({
     required this.count,
     this.onTap,
     super.key,
   });
 
-  /// Количество uncategorized элементов.
   final int count;
 
-  /// Callback при нажатии.
   final VoidCallback? onTap;
 
   @override

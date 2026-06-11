@@ -2,27 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 
-// Диалог добавления/редактирования текстового блока на канвасе.
-
-/// Диалог для ввода текста и выбора размера шрифта.
-///
-/// Возвращает `Map<String, dynamic>` с ключами `content` и `fontSize`,
-/// или `null` если пользователь отменил.
+/// Pops a `Map<String, dynamic>` with `content` and `fontSize` keys,
+/// or `null` if the user cancelled.
 class AddTextDialog extends StatefulWidget {
-  /// Создаёт [AddTextDialog].
   const AddTextDialog({
     this.initialContent,
     this.initialFontSize,
     super.key,
   });
 
-  /// Начальный текст (для редактирования).
+  /// Non-null switches the dialog to edit mode.
   final String? initialContent;
 
-  /// Начальный размер шрифта (для редактирования).
   final double? initialFontSize;
 
-  /// Показывает диалог и возвращает результат.
   static Future<Map<String, dynamic>?> show(
     BuildContext context, {
     String? initialContent,
@@ -43,7 +36,6 @@ class AddTextDialog extends StatefulWidget {
   State<AddTextDialog> createState() => _AddTextDialogState();
 }
 
-/// Доступные размеры шрифта.
 const List<_FontSizeOption> _fontSizeOptions = <_FontSizeOption>[
   _FontSizeOption(labelKey: 'small', size: 12),
   _FontSizeOption(labelKey: 'medium', size: 16),
@@ -56,7 +48,6 @@ class _FontSizeOption {
   final String labelKey;
   final double size;
 
-  /// Возвращает локализованную метку.
   String localizedLabel(S l) {
     switch (labelKey) {
       case 'small':
@@ -85,7 +76,7 @@ class _AddTextDialogState extends State<AddTextDialog> {
       text: widget.initialContent ?? '',
     );
     _selectedFontSize = widget.initialFontSize ?? 16;
-    // Если initialFontSize не совпадает ни с одним вариантом, берём ближайший
+    // Fall back to the default when initialFontSize matches no preset.
     if (!_fontSizeOptions.any(
       (_FontSizeOption o) => o.size == _selectedFontSize,
     )) {

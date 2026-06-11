@@ -1,5 +1,3 @@
-// Реестр источников поиска.
-
 import 'package:flutter/widgets.dart';
 
 import '../models/search_source.dart';
@@ -14,10 +12,10 @@ import 'tmdb_movies_source.dart';
 import 'tmdb_tv_source.dart';
 import 'vndb_source.dart';
 
-/// Все зарегистрированные источники поиска.
+/// All registered search sources.
 ///
-/// Порядок = порядок в popup. Источники одной группы идут подряд.
-/// Добавление нового источника — добавить в этот список рядом с группой.
+/// List order is the popup order, and sources of one group must be
+/// contiguous. Register a new source here, next to its group.
 final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
   <SearchSource>[
     // TMDB
@@ -39,7 +37,7 @@ final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
   ],
 );
 
-/// Возвращает источник по ID или первый по умолчанию.
+/// Falls back to the first source for an unknown ID.
 SearchSource getSearchSourceById(String id) {
   return searchSources.firstWhere(
     (SearchSource s) => s.id == id,
@@ -47,7 +45,6 @@ SearchSource getSearchSourceById(String id) {
   );
 }
 
-/// Одна группа источников для отображения в popup.
 typedef SourceGroupEntry = ({
   String groupId,
   String groupName,
@@ -56,9 +53,7 @@ typedef SourceGroupEntry = ({
   List<SearchSource> sources,
 });
 
-/// Группирует источники по [SearchSource.groupId], сохраняя порядок.
-///
-/// Используется в [SourceDropdown] для построения popup с секциями.
+/// Sources grouped by [SearchSource.groupId], preserving list order.
 final List<SourceGroupEntry> groupedSearchSources = () {
   final List<SourceGroupEntry> groups = <SourceGroupEntry>[];
   String? currentGroupId;

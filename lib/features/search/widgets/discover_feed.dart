@@ -1,5 +1,4 @@
 import '../../../shared/constants/platform_features.dart';
-// Лента подборок Discover (показывается при пустом поиске).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +15,7 @@ import '../providers/discover_provider.dart';
 import 'discover_row.dart';
 import 'item_details_sheet.dart';
 
-/// Провайдер множества TMDB ID элементов в коллекциях (фильмы + сериалы + анимация).
+/// TMDB ids already in collections, merged across movies, TV, and animation.
 final FutureProvider<Set<int>> _existingTmdbIdsProvider =
     FutureProvider<Set<int>>((Ref ref) async {
   final Map<int, List<CollectedItemInfo>> movies =
@@ -28,12 +27,9 @@ final FutureProvider<Set<int>> _existingTmdbIdsProvider =
   return <int>{...movies.keys, ...tvShows.keys, ...animations.keys};
 });
 
-/// Лента подборок Discover.
-///
-/// Показывается на экране поиска когда поле поиска пустое.
-/// Фильтрует секции по текущему [sourceId].
+/// Shown on the search screen while the query is empty; sections are
+/// filtered by the current [sourceId].
 class DiscoverFeed extends ConsumerWidget {
-  /// Создаёт [DiscoverFeed].
   const DiscoverFeed({
     required this.sourceId,
     required this.onAddMovie,
@@ -41,13 +37,11 @@ class DiscoverFeed extends ConsumerWidget {
     super.key,
   });
 
-  /// ID текущего источника (movies, tv, anime).
+  /// Current source id: movies, tv, or anime.
   final String sourceId;
 
-  /// Callback добавления фильма в коллекцию.
   final void Function(Movie movie) onAddMovie;
 
-  /// Callback добавления сериала в коллекцию.
   final void Function(TvShow tvShow) onAddTvShow;
 
   @override
@@ -57,7 +51,6 @@ class DiscoverFeed extends ConsumerWidget {
     final Set<int> ownedIds =
         ref.watch(_existingTmdbIdsProvider).valueOrNull ?? <int>{};
 
-    // Секции, доступные для текущей вкладки
     final Set<DiscoverSectionId> available =
         discoverSectionsPerSource[sourceId] ?? <DiscoverSectionId>{};
 
@@ -147,7 +140,6 @@ class DiscoverFeed extends ConsumerWidget {
 
     return ListView(
       children: <Widget>[
-        // Заголовок Discover
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.md,
@@ -195,9 +187,8 @@ class DiscoverFeed extends ConsumerWidget {
     Set<int> ownedIds,
     DiscoverSettings settings,
   ) {
-    // Movies → trending фильмы, TV/Anime → trending сериалы.
-    // TMDB trending API не поддерживает фильтр по жанру,
-    // поэтому anime и tv используют один провайдер.
+    // Movies tab → trending movies, TV/Anime → trending TV shows. The TMDB
+    // trending API has no genre filter, so anime and tv share one provider.
     if (sourceId == 'movies') {
       return _buildMovieSection(
         context,
@@ -248,7 +239,6 @@ class DiscoverFeed extends ConsumerWidget {
             })
             .whereType<DiscoverItem>()
             .toList();
-        // Не показывать больше 20
         if (items.length > 20) items = items.sublist(0, 20);
 
         return DiscoverRow(

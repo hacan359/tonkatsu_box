@@ -1,5 +1,3 @@
-// Контент экрана импорта библиотеки Steam (без Scaffold/AppBar).
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -25,11 +23,8 @@ import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
-/// Контент экрана импорта библиотеки Steam.
-///
-/// Три состояния: ввод ключей → прогресс → результат.
+/// Flow: key input → progress → result.
 class SteamImportContent extends ConsumerStatefulWidget {
-  /// Создаёт [SteamImportContent].
   const SteamImportContent({super.key});
 
   @override
@@ -47,7 +42,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
 
   bool _rememberCredentials = false;
 
-  // Выбор коллекции
   bool _useNewCollection = true;
   int? _selectedCollectionId;
 
@@ -110,10 +104,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // IGDB warning
-  // ---------------------------------------------------------------------------
-
   Widget _buildIgdbWarning(S l) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -138,10 +128,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       ),
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Input fields
-  // ---------------------------------------------------------------------------
 
   Widget _buildInputSection(S l) {
     return SettingsGroup(
@@ -253,10 +239,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Collection selector
-  // ---------------------------------------------------------------------------
-
   Widget _buildCollectionSelector(S l) {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
@@ -351,10 +333,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Progress
-  // ---------------------------------------------------------------------------
-
   Widget _buildProgressSection(S l) {
     final SteamImportProgress progress = _progress!;
 
@@ -423,10 +401,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
-
   Widget _buildHelperLink(String text, String url) {
     return GestureDetector(
       onTap: () => launchUrl(
@@ -459,10 +433,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Import logic
-  // ---------------------------------------------------------------------------
-
   Future<void> _startImport() async {
     final String apiKey = _apiKeyController.text.trim();
     final String steamId = _steamIdController.text.trim();
@@ -490,8 +460,8 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       final SteamImportService service =
           ref.read(steamImportServiceProvider);
 
-      // Коллекция создаётся лениво — только после успешной загрузки
-      // библиотеки Steam, чтобы не оставлять пустую коллекцию при ошибке.
+      // The collection is created lazily, only after the Steam library loads,
+      // so a failed import doesn't leave an empty collection behind.
       final SteamImportResult result = await service.importLibrary(
         apiKey: apiKey,
         steamId: steamId,

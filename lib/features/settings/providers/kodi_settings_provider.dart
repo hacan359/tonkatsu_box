@@ -1,5 +1,3 @@
-// Провайдер настроек Kodi — per-profile persistence через SharedPreferences.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,20 +10,18 @@ import '../../home/providers/all_items_provider.dart';
 import 'profile_provider.dart';
 import 'settings_provider.dart';
 
-/// Ключи SharedPreferences для Kodi (per-profile, суффикс `_${profileId}`).
-///
-/// Структура уже pluralized (`kodi_profile_{id}_*`) — готова к поддержке
-/// нескольких Kodi хостов в будущем. Для MVP active profile = `default`.
+/// SharedPreferences keys for Kodi, suffixed with `_$profileId`: the
+/// per-profile shape leaves room for multiple Kodi hosts later
+/// (the MVP only uses the `default` profile).
 abstract class KodiSettingsKeys {
-  /// Kodi sync включён.
   static String enabled(String profileId) =>
       'kodi_enabled_$profileId';
 
-  /// Hostname или IP.
+  /// Hostname or IP.
   static String host(String profileId) =>
       'kodi_host_$profileId';
 
-  /// HTTP JSON-RPC порт (default 8080).
+  /// HTTP JSON-RPC port (default 8080).
   static String port(String profileId) =>
       'kodi_port_$profileId';
 
@@ -37,40 +33,33 @@ abstract class KodiSettingsKeys {
   static String password(String profileId) =>
       'kodi_password_$profileId';
 
-  /// Интервал синхронизации в секундах.
   static String syncIntervalSeconds(String profileId) =>
       'kodi_sync_interval_seconds_$profileId';
 
-  /// Копировать userrating из Kodi (1–10) в наш userRating если пусто.
+  /// Copy Kodi userrating (1-10) into our userRating when it is empty.
   static String importRatings(String profileId) =>
       'kodi_import_ratings_$profileId';
 
-  /// Добавлять unmatched items в wishlist.
   static String addUnmatchedToWishlist(String profileId) =>
       'kodi_add_unmatched_to_wishlist_$profileId';
 
-  /// Timestamp последней успешной синхронизации (ISO 8601).
+  /// Timestamp of the last successful sync (ISO 8601).
   static String lastSyncTimestamp(String profileId) =>
       'kodi_last_sync_timestamp_$profileId';
 
-  /// ID целевой коллекции для импорта.
   static String targetCollectionId(String profileId) =>
       'kodi_target_collection_id_$profileId';
 
-  /// Создавать подколлекции из Kodi movie sets.
+  /// Create sub-collections from Kodi movie sets.
   static String createSubCollections(String profileId) =>
       'kodi_create_sub_collections_$profileId';
 }
 
-/// Порт Kodi HTTP JSON-RPC по умолчанию.
 const int kodiDefaultPort = 8080;
 
-/// Интервал синхронизации по умолчанию (60 секунд).
 const int kodiDefaultSyncIntervalSeconds = 60;
 
-/// Состояние настроек Kodi.
 class KodiSettingsState {
-  /// Создаёт [KodiSettingsState].
   const KodiSettingsState({
     this.enabled = false,
     this.host = '',
@@ -85,13 +74,12 @@ class KodiSettingsState {
     this.createSubCollections = true,
   });
 
-  /// Мастер-выключатель sync.
   final bool enabled;
 
-  /// Hostname / IP Kodi.
+  /// Hostname or IP.
   final String host;
 
-  /// HTTP JSON-RPC порт.
+  /// HTTP JSON-RPC port.
   final int port;
 
   /// HTTP Basic Auth username.
@@ -100,28 +88,23 @@ class KodiSettingsState {
   /// HTTP Basic Auth password.
   final String password;
 
-  /// Интервал синхронизации в секундах.
   final int syncIntervalSeconds;
 
-  /// Копировать userrating из Kodi.
   final bool importRatings;
 
-  /// Добавлять unmatched items в wishlist.
   final bool addUnmatchedToWishlist;
 
-  /// Timestamp последней синхронизации (ISO 8601).
+  /// Timestamp of the last sync (ISO 8601).
   final String? lastSyncTimestamp;
 
-  /// ID целевой коллекции для импорта (null = создать новую).
+  /// Target collection id; null means create a new collection.
   final int? targetCollectionId;
 
-  /// Создавать подколлекции из Kodi movie sets.
+  /// Create sub-collections from Kodi movie sets.
   final bool createSubCollections;
 
-  /// Есть ли заполненный host для подключения.
   bool get hasConnection => host.isNotEmpty;
 
-  /// Копирует с изменёнными полями.
   KodiSettingsState copyWith({
     bool? enabled,
     String? host,
@@ -157,16 +140,13 @@ class KodiSettingsState {
   }
 }
 
-/// Провайдер настроек Kodi.
 final NotifierProvider<KodiSettingsNotifier, KodiSettingsState>
     kodiSettingsProvider =
     NotifierProvider<KodiSettingsNotifier, KodiSettingsState>(
   KodiSettingsNotifier.new,
 );
 
-/// Notifier для настроек Kodi с per-profile persistence.
-///
-/// При изменении host/port/creds автоматически вызывает
+/// Host/port/credential changes are pushed to [KodiApi] automatically via
 /// [KodiApi.setConnection] / [KodiApi.clearConnection].
 class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
   late SharedPreferences _prefs;
@@ -181,7 +161,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
 
     final KodiSettingsState loaded = _loadFromPrefs();
 
-    // Синхронизируем KodiApi с сохранёнными настройками.
     if (loaded.hasConnection) {
       _kodiApi.setConnection(
         host: loaded.host,
@@ -191,7 +170,7 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
       );
     }
 
-    // Автозапуск sync при старте если enabled + target collection задана.
+    // Autostart sync on launch when enabled and a target collection is set.
     if (loaded.enabled &&
         loaded.hasConnection &&
         loaded.targetCollectionId != null) {
@@ -270,13 +249,11 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     );
   }
 
-  /// Включает/выключает Kodi sync.
   Future<void> setEnabled({required bool enabled}) async {
     await _prefs.setBool(KodiSettingsKeys.enabled(_profileId), enabled);
     state = state.copyWith(enabled: enabled);
   }
 
-  /// Устанавливает host и обновляет [KodiApi].
   Future<void> setHost(String host) async {
     final String trimmed = host.trim();
     if (trimmed.isNotEmpty) {
@@ -288,14 +265,12 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     _syncKodiApi();
   }
 
-  /// Устанавливает порт и обновляет [KodiApi].
   Future<void> setPort(int port) async {
     await _prefs.setInt(KodiSettingsKeys.port(_profileId), port);
     state = state.copyWith(port: port);
     _syncKodiApi();
   }
 
-  /// Устанавливает username и обновляет [KodiApi].
   Future<void> setUsername(String username) async {
     final String trimmed = username.trim();
     if (trimmed.isNotEmpty) {
@@ -307,7 +282,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     _syncKodiApi();
   }
 
-  /// Устанавливает password и обновляет [KodiApi].
   Future<void> setPassword(String password) async {
     if (password.isNotEmpty) {
       await _prefs.setString(KodiSettingsKeys.password(_profileId), password);
@@ -318,7 +292,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     _syncKodiApi();
   }
 
-  /// Устанавливает интервал синхронизации.
   Future<void> setSyncIntervalSeconds(int seconds) async {
     await _prefs.setInt(
       KodiSettingsKeys.syncIntervalSeconds(_profileId),
@@ -327,7 +300,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     state = state.copyWith(syncIntervalSeconds: seconds);
   }
 
-  /// Включает/выключает импорт рейтингов из Kodi.
   Future<void> setImportRatings({required bool enabled}) async {
     await _prefs.setBool(
       KodiSettingsKeys.importRatings(_profileId),
@@ -336,7 +308,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     state = state.copyWith(importRatings: enabled);
   }
 
-  /// Включает/выключает добавление unmatched в wishlist.
   Future<void> setAddUnmatchedToWishlist({required bool enabled}) async {
     await _prefs.setBool(
       KodiSettingsKeys.addUnmatchedToWishlist(_profileId),
@@ -345,7 +316,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     state = state.copyWith(addUnmatchedToWishlist: enabled);
   }
 
-  /// Обновляет timestamp последней синхронизации.
   Future<void> setLastSyncTimestamp(String timestamp) async {
     await _prefs.setString(
       KodiSettingsKeys.lastSyncTimestamp(_profileId),
@@ -354,7 +324,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     state = state.copyWith(lastSyncTimestamp: timestamp);
   }
 
-  /// Устанавливает целевую коллекцию для импорта.
   Future<void> setTargetCollectionId(int? collectionId) async {
     if (collectionId != null) {
       await _prefs.setInt(
@@ -368,7 +337,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     }
   }
 
-  /// Включает/выключает создание подколлекций из Kodi sets.
   Future<void> setCreateSubCollections({required bool enabled}) async {
     await _prefs.setBool(
       KodiSettingsKeys.createSubCollections(_profileId),
@@ -377,15 +345,13 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     state = state.copyWith(createSubCollections: enabled);
   }
 
-  /// Сбрасывает timestamp последней синхронизации.
-  ///
-  /// Следующая синхронизация заберёт все items с `playcount > 0`.
+  /// After this the next sync re-fetches every item with `playcount > 0`.
   Future<void> clearLastSyncTimestamp() async {
     await _prefs.remove(KodiSettingsKeys.lastSyncTimestamp(_profileId));
     state = state.copyWith(clearLastSync: true);
   }
 
-  /// Сбрасывает все настройки Kodi для текущего профиля.
+  /// Clears every Kodi setting for the current profile only.
   Future<void> clearAll() async {
     await _prefs.remove(KodiSettingsKeys.enabled(_profileId));
     await _prefs.remove(KodiSettingsKeys.host(_profileId));
@@ -403,7 +369,6 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     state = const KodiSettingsState();
   }
 
-  /// Синхронизирует [KodiApi] с текущим state.
   void _syncKodiApi() {
     if (state.hasConnection) {
       _kodiApi.setConnection(

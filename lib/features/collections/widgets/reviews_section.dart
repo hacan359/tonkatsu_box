@@ -1,5 +1,3 @@
-// Секция отзывов TMDB на странице элемента коллекции.
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,15 +11,14 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/providers/settings_provider.dart' show SettingsState, settingsNotifierProvider;
 
-/// Кэш провайдеров отзывов фильмов по tmdbId.
+// Providers are cached per tmdbId so repeated builds reuse the same
+// provider instance instead of creating (and re-fetching) a new one.
 final Map<int, FutureProvider<List<TmdbReview>>> _movieReviewProviders =
     <int, FutureProvider<List<TmdbReview>>>{};
 
-/// Кэш провайдеров отзывов сериалов по tmdbId.
 final Map<int, FutureProvider<List<TmdbReview>>> _tvReviewProviders =
     <int, FutureProvider<List<TmdbReview>>>{};
 
-/// Возвращает кэшированный провайдер отзывов фильмов.
 FutureProvider<List<TmdbReview>> _getMovieReviewProvider(int tmdbId) {
   return _movieReviewProviders.putIfAbsent(
     tmdbId,
@@ -32,7 +29,6 @@ FutureProvider<List<TmdbReview>> _getMovieReviewProvider(int tmdbId) {
   );
 }
 
-/// Возвращает кэшированный провайдер отзывов сериалов.
 FutureProvider<List<TmdbReview>> _getTvReviewProvider(int tmdbId) {
   return _tvReviewProviders.putIfAbsent(
     tmdbId,
@@ -43,22 +39,16 @@ FutureProvider<List<TmdbReview>> _getTvReviewProvider(int tmdbId) {
   );
 }
 
-/// Секция с отзывами TMDB.
-///
-/// Показывает 2-3 отзыва с возможностью развернуть.
-/// Скрывается если отзывов нет.
+/// Renders nothing when reviews are absent or no TMDB API key is configured.
 class ReviewsSection extends ConsumerWidget {
-  /// Создаёт [ReviewsSection].
   const ReviewsSection({
     required this.tmdbId,
     required this.mediaType,
     super.key,
   });
 
-  /// TMDB ID элемента.
   final int tmdbId;
 
-  /// Тип медиа.
   final MediaType mediaType;
 
   bool get _isTvBased =>
@@ -88,7 +78,6 @@ class ReviewsSection extends ConsumerWidget {
   }
 }
 
-/// Список отзывов с разворачиванием.
 class _ReviewsList extends StatefulWidget {
   const _ReviewsList({required this.reviews});
 
@@ -144,7 +133,6 @@ class _ReviewsListState extends State<_ReviewsList> {
   }
 }
 
-/// Карточка одного отзыва.
 class _ReviewCard extends StatefulWidget {
   const _ReviewCard({required this.review});
 
@@ -175,7 +163,6 @@ class _ReviewCardState extends State<_ReviewCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // Заголовок: автор + рейтинг
           Row(
             children: <Widget>[
               if (widget.review.avatarPath != null) ...<Widget>[
@@ -219,7 +206,6 @@ class _ReviewCardState extends State<_ReviewCard> {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          // Текст отзыва
           Text(
             _expanded || !_isLong
                 ? widget.review.content

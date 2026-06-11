@@ -1,13 +1,8 @@
-// Утилита сортировки элементов коллекций.
-
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 
-/// Применяет режим сортировки к списку элементов.
-///
-/// Для [CollectionSortMode.manual] возвращает порядок по `sortOrder`,
-/// направление не инвертируется (порядок определяется пользователем).
-/// Для остальных режимов [isDescending] инвертирует результат.
+/// [CollectionSortMode.manual] returns the user-defined `sortOrder` as is;
+/// [isDescending] inverts every other mode but never manual.
 List<CollectionItem> applySortMode(
   List<CollectionItem> items,
   CollectionSortMode sortMode, {
@@ -21,7 +16,7 @@ List<CollectionItem> applySortMode(
         (CollectionItem a, CollectionItem b) =>
             a.sortOrder.compareTo(b.sortOrder),
       );
-      // Manual не инвертируется — порядок всегда от пользователя
+      // Manual is never inverted: the order is user-defined.
       return sorted;
     case CollectionSortMode.addedDate:
       sorted.sort(
@@ -47,10 +42,9 @@ List<CollectionItem> applySortMode(
       );
     case CollectionSortMode.rating:
       sorted.sort((CollectionItem a, CollectionItem b) {
-        // Эффективный рейтинг: userRating приоритетнее, fallback на apiRating.
         final double? rA = a.userRating?.toDouble() ?? a.apiRating;
         final double? rB = b.userRating?.toDouble() ?? b.apiRating;
-        // Элементы без обоих рейтингов — в конец
+        // Items with neither rating sort last.
         if (rA == null && rB == null) return 0;
         if (rA == null) return 1;
         if (rB == null) return -1;
@@ -58,7 +52,7 @@ List<CollectionItem> applySortMode(
       });
     case CollectionSortMode.externalRating:
       sorted.sort((CollectionItem a, CollectionItem b) {
-        // null рейтинг в конец
+        // Null ratings sort last.
         if (a.apiRating == null && b.apiRating == null) return 0;
         if (a.apiRating == null) return 1;
         if (b.apiRating == null) return -1;
@@ -66,7 +60,7 @@ List<CollectionItem> applySortMode(
       });
     case CollectionSortMode.lastActivity:
       sorted.sort((CollectionItem a, CollectionItem b) {
-        // null lastActivityAt в конец
+        // Null lastActivityAt sorts last.
         if (a.lastActivityAt == null && b.lastActivityAt == null) return 0;
         if (a.lastActivityAt == null) return 1;
         if (b.lastActivityAt == null) return -1;

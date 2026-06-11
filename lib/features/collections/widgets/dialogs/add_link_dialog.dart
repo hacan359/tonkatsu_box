@@ -2,27 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 
-// Диалог добавления/редактирования ссылки на канвасе.
-
-/// Диалог для ввода URL и метки ссылки.
-///
-/// Возвращает `Map<String, dynamic>` с ключами `url` и `label`,
-/// или `null` если пользователь отменил.
+/// Pops a `Map<String, dynamic>` with `url` and `label` keys,
+/// or `null` if the user cancelled.
 class AddLinkDialog extends StatefulWidget {
-  /// Создаёт [AddLinkDialog].
   const AddLinkDialog({
     this.initialUrl,
     this.initialLabel,
     super.key,
   });
 
-  /// Начальный URL (для редактирования).
+  /// Non-null switches the dialog to edit mode.
   final String? initialUrl;
 
-  /// Начальная метка (для редактирования).
   final String? initialLabel;
 
-  /// Показывает диалог и возвращает результат.
   static Future<Map<String, dynamic>?> show(
     BuildContext context, {
     String? initialUrl,

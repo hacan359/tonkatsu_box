@@ -1,5 +1,4 @@
 import '../../../shared/constants/platform_features.dart';
-// Секция рекомендаций и похожих на странице элемента коллекции.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,29 +18,26 @@ import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../../search/widgets/item_details_sheet.dart';
 import '../../settings/providers/settings_provider.dart' show SettingsState, settingsNotifierProvider;
 
-/// Создаёт провайдер рекомендаций к фильму.
 FutureProvider<List<Movie>> _createMovieRecProvider(int tmdbId) =>
     FutureProvider<List<Movie>>((Ref ref) async {
       final TmdbApi tmdb = ref.watch(tmdbApiProvider);
       return tmdb.getMovieRecommendations(tmdbId);
     });
 
-/// Создаёт провайдер рекомендаций к сериалу.
 FutureProvider<List<TvShow>> _createTvRecProvider(int tmdbId) =>
     FutureProvider<List<TvShow>>((Ref ref) async {
       final TmdbApi tmdb = ref.watch(tmdbApiProvider);
       return tmdb.getTvRecommendations(tmdbId);
     });
 
-/// Кэш провайдеров рекомендаций фильмов по tmdbId.
+/// Providers are cached per tmdbId so rebuilding the widget does not
+/// re-fetch recommendations.
 final Map<int, FutureProvider<List<Movie>>> _movieRecProviders =
     <int, FutureProvider<List<Movie>>>{};
 
-/// Кэш провайдеров рекомендаций сериалов по tmdbId.
 final Map<int, FutureProvider<List<TvShow>>> _tvRecProviders =
     <int, FutureProvider<List<TvShow>>>{};
 
-/// Возвращает кэшированный провайдер рекомендаций фильмов.
 FutureProvider<List<Movie>> _getMovieRecProvider(int tmdbId) {
   return _movieRecProviders.putIfAbsent(
     tmdbId,
@@ -49,7 +45,6 @@ FutureProvider<List<Movie>> _getMovieRecProvider(int tmdbId) {
   );
 }
 
-/// Возвращает кэшированный провайдер рекомендаций сериалов.
 FutureProvider<List<TvShow>> _getTvRecProvider(int tmdbId) {
   return _tvRecProviders.putIfAbsent(
     tmdbId,
@@ -57,12 +52,8 @@ FutureProvider<List<TvShow>> _getTvRecProvider(int tmdbId) {
   );
 }
 
-/// Секция с рекомендациями на странице детального просмотра.
-///
-/// Показывает горизонтальный список постеров рекомендованных фильмов/сериалов.
-/// Не показывается для игр.
+/// TMDB-backed recommendations; not shown for games.
 class RecommendationsSection extends ConsumerWidget {
-  /// Создаёт [RecommendationsSection].
   const RecommendationsSection({
     required this.tmdbId,
     required this.mediaType,
@@ -71,16 +62,12 @@ class RecommendationsSection extends ConsumerWidget {
     super.key,
   });
 
-  /// TMDB ID элемента.
   final int tmdbId;
 
-  /// Тип медиа.
   final MediaType mediaType;
 
-  /// Callback для добавления фильма в коллекцию.
   final void Function(Movie movie)? onAddMovie;
 
-  /// Callback для добавления сериала в коллекцию.
   final void Function(TvShow tvShow)? onAddTvShow;
 
   bool get _isTvBased =>
@@ -89,7 +76,6 @@ class RecommendationsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Проверяем что TMDB API ключ установлен
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     if (settings.tmdbApiKey == null || settings.tmdbApiKey!.isEmpty) {
       return const SizedBox.shrink();
@@ -198,7 +184,6 @@ class RecommendationsSection extends ConsumerWidget {
   }
 }
 
-/// Элемент рекомендации для UI.
 class _RecItem {
   const _RecItem({
     required this.title,
@@ -223,7 +208,6 @@ class _RecItem {
   final String cacheImageId;
 }
 
-/// Горизонтальный ряд рекомендаций.
 class _RecommendationRow extends StatefulWidget {
   const _RecommendationRow({
     required this.title,
@@ -302,7 +286,6 @@ class _RecommendationRowState extends State<_RecommendationRow> {
   }
 }
 
-/// Шиммер-заглушка при загрузке.
 class _RecommendationShimmer extends StatelessWidget {
   const _RecommendationShimmer();
 

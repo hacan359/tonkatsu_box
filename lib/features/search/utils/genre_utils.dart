@@ -6,7 +6,7 @@ import '../models/search_source.dart' show tmdbAnimationGenreId;
 /// English name, and the localized name resolved via [genreMap].
 ///
 /// Comparison is case-insensitive: TMDB returns the localized name as it
-/// stored it (e.g. `"мультфильм"` for `ru-RU`), but our local DAO
+/// stored it (all lowercase for `ru-RU`), but our local DAO
 /// capitalises the first letter on read — without ignoreCase the two
 /// would diverge and the filter would silently drop every animation row.
 bool isAnimationGenre(String genre, Map<String, String> genreMap) {

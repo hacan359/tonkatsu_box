@@ -7,14 +7,7 @@ import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
 
-// CustomPainter для рисования связей между элементами канваса.
-//
-// Поддерживает три стиля линий: solid, dashed, arrow.
-// Рисует лейблы в середине линий и временную линию при создании связи.
-
-/// Рисует связи между элементами канваса.
 class CanvasConnectionPainter extends CustomPainter {
-  /// Создаёт [CanvasConnectionPainter].
   CanvasConnectionPainter({
     required this.connections,
     required this.items,
@@ -25,52 +18,42 @@ class CanvasConnectionPainter extends CustomPainter {
     this.dragOffsets = const <int, Offset>{},
   });
 
-  /// Список связей для отрисовки.
   final List<CanvasConnection> connections;
 
-  /// Элементы канваса (для вычисления позиций).
   final List<CanvasItem> items;
 
-  /// Элемент-источник при создании связи (временная линия).
+  /// Source item while a new connection is being drawn (temporary line).
   final CanvasItem? connectingFrom;
 
-  /// Позиция мыши (для временной линии).
+  /// Mouse position the temporary line follows.
   final Offset? mousePosition;
 
-  /// Стиль текста лейблов.
   final TextStyle? labelStyle;
 
-  /// Цвет фона лейблов.
   final Color? labelBackgroundColor;
 
-  /// Текущие смещения перетаскиваемых элементов (itemId → delta).
+  /// In-flight drag offsets keyed by itemId (delta from the stored position).
   final Map<int, Offset> dragOffsets;
 
-  /// Ширина линии.
   static const double _lineWidth = 2.0;
 
-  /// Длина штриха пунктирной линии.
   static const double _dashLength = 8.0;
 
-  /// Промежуток между штрихами.
   static const double _dashGap = 4.0;
 
-  /// Размер стрелки (длина).
   static const double _arrowLength = 12.0;
 
-  /// Допустимое расстояние для hit-test на линию.
+  /// Max distance from a line that still counts as a hit.
   static const double hitTestThreshold = 8.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (connections.isEmpty && connectingFrom == null) return;
 
-    // Быстрый поиск элементов по ID
     final Map<int, CanvasItem> itemMap = <int, CanvasItem>{
       for (final CanvasItem item in items) item.id: item,
     };
 
-    // Рисуем сохранённые связи
     for (final CanvasConnection conn in connections) {
       final CanvasItem? fromItem = itemMap[conn.fromItemId];
       final CanvasItem? toItem = itemMap[conn.toItemId];
@@ -89,7 +72,7 @@ class CanvasConnectionPainter extends CustomPainter {
       }
     }
 
-    // Временная линия при создании связи
+    // Temporary line while a new connection is being drawn.
     if (connectingFrom != null && mousePosition != null) {
       final Offset from = _getEdgePoint(connectingFrom!, mousePosition!);
       _drawDashedLine(
@@ -104,7 +87,6 @@ class CanvasConnectionPainter extends CustomPainter {
     }
   }
 
-  /// Рисует связь заданного стиля.
   void _drawConnection(
     Canvas canvas,
     Offset from,
@@ -129,7 +111,6 @@ class CanvasConnectionPainter extends CustomPainter {
     }
   }
 
-  /// Рисует пунктирную линию.
   void _drawDashedLine(Canvas canvas, Offset from, Offset to, Paint paint) {
     final Path path = Path()..moveTo(from.dx, from.dy);
     path.lineTo(to.dx, to.dy);
@@ -148,7 +129,6 @@ class CanvasConnectionPainter extends CustomPainter {
     }
   }
 
-  /// Рисует стрелку на конце линии.
   void _drawArrowHead(Canvas canvas, Offset from, Offset to, Color color) {
     final double angle = math.atan2(to.dy - from.dy, to.dx - from.dx);
 
@@ -172,7 +152,6 @@ class CanvasConnectionPainter extends CustomPainter {
     );
   }
 
-  /// Рисует лейбл в середине линии.
   void _drawLabel(Canvas canvas, Offset from, Offset to, String label) {
     final TextStyle style = labelStyle ??
         const TextStyle(
@@ -190,7 +169,6 @@ class CanvasConnectionPainter extends CustomPainter {
       (from.dy + to.dy) / 2 - painter.height / 2,
     );
 
-    // Фон под текстом
     final Color bgColor = labelBackgroundColor ??
         Colors.white.withAlpha(220);
     final Rect bgRect = Rect.fromLTWH(
@@ -207,7 +185,7 @@ class CanvasConnectionPainter extends CustomPainter {
     painter.paint(canvas, mid);
   }
 
-  /// Вычисляет центр элемента канваса с учётом drag offset.
+  /// Item center with the in-flight drag offset applied.
   Offset _getItemCenter(CanvasItem item) {
     final double width =
         item.width ?? CanvasRepository.defaultCardWidth;
@@ -220,10 +198,8 @@ class CanvasConnectionPainter extends CustomPainter {
     );
   }
 
-  /// Вычисляет точку на ближайшем краю прямоугольника item,
-  /// направленную к [target].
-  ///
-  /// Возвращает центр ближайшей стороны (top/bottom/left/right).
+  /// Point on the item rect facing [target]: the center of the nearest
+  /// side (top/bottom/left/right).
   Offset _getEdgePoint(CanvasItem item, Offset target) {
     final double width =
         item.width ?? CanvasRepository.defaultCardWidth;
@@ -239,29 +215,25 @@ class CanvasConnectionPainter extends CustomPainter {
     final double dx = target.dx - cx;
     final double dy = target.dy - cy;
 
-    // Self-connection или совпадающие центры — возвращаем центр
+    // Self-connection or coincident centers fall back to the center.
     if (dx == 0 && dy == 0) {
       return Offset(cx, cy);
     }
 
-    // Определяем ближайшую сторону по направлению к target
-    // Сравниваем пропорции dx/width и dy/height
+    // Pick the nearest side by comparing the dx/width and dy/height ratios.
     if (dx.abs() * height > dy.abs() * width) {
-      // Горизонтальная сторона ближе (left или right)
       if (dx > 0) {
-        return Offset(left + width, cy); // Правый край
+        return Offset(left + width, cy);
       }
-      return Offset(left, cy); // Левый край
+      return Offset(left, cy);
     } else {
-      // Вертикальная сторона ближе (top или bottom)
       if (dy > 0) {
-        return Offset(cx, top + height); // Нижний край
+        return Offset(cx, top + height);
       }
-      return Offset(cx, top); // Верхний край
+      return Offset(cx, top);
     }
   }
 
-  /// Парсит hex-строку цвета.
   static Color _parseColor(String hex) {
     try {
       final String clean = hex.startsWith('#') ? hex.substring(1) : hex;
@@ -272,14 +244,13 @@ class CanvasConnectionPainter extends CustomPainter {
         return Color(int.parse(clean, radix: 16));
       }
     } on FormatException {
-      // Невалидный hex — используем цвет по умолчанию
+      // Invalid hex falls through to the default color.
     }
     return const Color(0xFF666666);
   }
 
-  /// Проверяет, попадает ли точка [point] рядом с какой-либо связью.
-  ///
-  /// Возвращает ID связи или null.
+  /// Returns the id of the connection within [hitTestThreshold] of [point],
+  /// or null when no connection is close enough.
   int? hitTestConnection(Offset point) {
     final Map<int, CanvasItem> itemMap = <int, CanvasItem>{
       for (final CanvasItem item in items) item.id: item,
@@ -303,7 +274,7 @@ class CanvasConnectionPainter extends CustomPainter {
     return null;
   }
 
-  /// Вычисляет расстояние от точки до отрезка.
+  /// Distance from a point to a line segment (not the infinite line).
   static double _pointToLineDistance(Offset point, Offset a, Offset b) {
     final double dx = b.dx - a.dx;
     final double dy = b.dy - a.dy;
@@ -313,7 +284,7 @@ class CanvasConnectionPainter extends CustomPainter {
       return (point - a).distance;
     }
 
-    // Проецируем точку на линию, ограничивая отрезком [0, 1]
+    // Project the point onto the line, clamped to the segment.
     final double t = ((point.dx - a.dx) * dx + (point.dy - a.dy) * dy)
         .clamp(0.0, lengthSq) / lengthSq;
 

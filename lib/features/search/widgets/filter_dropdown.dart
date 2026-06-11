@@ -1,5 +1,3 @@
-// Универсальный дропдаун фильтра.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,12 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../models/search_source.dart';
 import '../utils/filter_ui.dart';
 
-/// Универсальный дропдаун для одного фильтра.
-///
-/// Показывает текущее значение фильтра или placeholder.
-/// При тапе открывает PopupMenu с вариантами.
 class FilterDropdown extends ConsumerStatefulWidget {
-  /// Создаёт [FilterDropdown].
   const FilterDropdown({
     required this.filter,
     required this.value,
@@ -24,13 +17,10 @@ class FilterDropdown extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Описание фильтра.
   final SearchFilter filter;
 
-  /// Текущее выбранное значение (null = не выбрано).
   final Object? value;
 
-  /// Callback при выборе нового значения.
   final ValueChanged<Object?> onChanged;
 
   @override
@@ -92,7 +82,6 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
       return widget.filter.placeholder(l);
     }
 
-    // Множественный выбор — показываем количество
     if (widget.filter.multiSelect && widget.value is List<Object>) {
       final List<Object> selected = widget.value! as List<Object>;
       if (selected.isEmpty) return widget.filter.placeholder(l);
@@ -153,7 +142,6 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
       ),
     );
 
-    // Searchable фильтры — диалог с полем поиска
     if (widget.filter.searchable) {
       return InkWell(
         onTap: () => _showSearchableDialog(l),
@@ -162,7 +150,6 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
       );
     }
 
-    // Обычные фильтры — PopupMenuButton
     return PopupMenuButton<Object>(
       onSelected: (Object value) {
         widget.onChanged(value == kFilterResetSentinel ? null : value);
@@ -188,7 +175,8 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
         }
 
         return <PopupMenuEntry<Object>>[
-          // "All" option для сброса (sentinel вместо null)
+          // The reset option uses a sentinel: a null value would never
+          // reach onSelected.
           PopupMenuItem<Object>(
             value: kFilterResetSentinel,
             height: 36,
@@ -205,7 +193,6 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
             ),
           ),
           const PopupMenuDivider(height: 1),
-          // Варианты фильтра
           for (final FilterOption option in _options!)
             if (option.value != null)
               PopupMenuItem<Object>(
@@ -229,7 +216,6 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
     );
   }
 
-  /// Открывает диалог с полем поиска для фильтрации вариантов.
   Future<void> _showSearchableDialog(S l) async {
     final Object? result = await showDialog<Object>(
       context: context,
@@ -247,13 +233,9 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
   }
 }
 
-/// Диалог с полем поиска для фильтров с большим количеством вариантов.
-///
-/// Поддерживает два режима:
-/// - single-select: тап по опции закрывает диалог с выбранным значением
-/// - multi-select: чекбоксы + кнопка подтверждения
+/// Single-select: tapping an option pops the dialog with that value;
+/// multi-select: checkboxes plus a confirm button.
 class SearchableFilterDialog extends StatefulWidget {
-  /// Создаёт [SearchableFilterDialog].
   const SearchableFilterDialog({
     required this.title,
     required this.options,
@@ -280,7 +262,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
   final TextEditingController _controller = TextEditingController();
   String _query = '';
 
-  /// Выбранные значения (только для multiSelect).
+  /// Selected values; used only in multiSelect mode.
   late final Set<Object> _selected = <Object>{
     if (widget.currentValue is List<Object>)
       ...(widget.currentValue! as List<Object>),
@@ -310,7 +292,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
           .toList();
     }
 
-    // В multiSelect — выбранные элементы всегда сверху
+    // In multiSelect, selected options always sort to the top.
     if (widget.multiSelect && _selected.isNotEmpty) {
       result.sort((FilterOption a, FilterOption b) {
         final bool aSelected = _selected.contains(a.value);
@@ -348,7 +330,6 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
         height: 400,
         child: Column(
           children: <Widget>[
-            // Поле поиска
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
@@ -419,7 +400,6 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            // Список вариантов
             Expanded(
               child: _buildList(),
             ),
@@ -466,7 +446,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
 
     final List<FilterOption> filtered = _filteredOptions;
 
-    // single-select: +1 для опции "All" (без поискового запроса)
+    // Single-select with no query shows an extra "All" row at the top.
     final bool showAll = !widget.multiSelect && _query.isEmpty;
     final int itemCount =
         showAll ? filtered.length + 1 : filtered.length;
@@ -475,7 +455,6 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
       padding: EdgeInsets.zero,
       itemCount: itemCount,
       itemBuilder: (BuildContext context, int index) {
-        // Опция "All" — первый элемент, только single-select без запроса
         if (showAll && index == 0) {
           return _buildOptionTile(
             label: widget.allLabel,
@@ -581,9 +560,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
   }
 }
 
-/// Дропдаун сортировки.
 class SortDropdown extends StatelessWidget {
-  /// Создаёт [SortDropdown].
   const SortDropdown({
     required this.options,
     required this.current,
@@ -592,23 +569,19 @@ class SortDropdown extends StatelessWidget {
     super.key,
   });
 
-  /// Доступные варианты сортировки.
   final List<BrowseSortOption> options;
 
-  /// Текущее значение сортировки (API).
+  /// Current sort in API form ([BrowseSortOption.apiValue]), not a label.
   final String current;
 
-  /// Callback при выборе нового значения.
   final ValueChanged<String> onChanged;
 
-  /// Доступен ли дропдаун для взаимодействия.
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    // Найти текущий label
     String currentLabel = l.browseSort;
     for (final BrowseSortOption option in options) {
       if (option.apiValue == current) {

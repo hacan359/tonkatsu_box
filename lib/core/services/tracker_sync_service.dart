@@ -1,5 +1,3 @@
-// Сервис синхронизации данных трекеров (RA, Steam).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -13,7 +11,6 @@ import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'ra_to_igdb_mapper.dart';
 
-/// Провайдер для [TrackerSyncService].
 final Provider<TrackerSyncService> trackerSyncServiceProvider =
     Provider<TrackerSyncService>((Ref ref) {
   return TrackerSyncService(
@@ -22,9 +19,7 @@ final Provider<TrackerSyncService> trackerSyncServiceProvider =
   );
 });
 
-/// Прогресс sync операции.
 class TrackerSyncProgress {
-  /// Создаёт [TrackerSyncProgress].
   const TrackerSyncProgress({
     required this.stage,
     required this.current,
@@ -35,31 +30,23 @@ class TrackerSyncProgress {
     this.skipped = 0,
   });
 
-  /// Стадия sync.
   final String stage;
 
-  /// Текущий элемент.
   final int current;
 
-  /// Всего элементов.
   final int total;
 
-  /// Название текущего элемента.
   final String? currentName;
 
-  /// Добавлено новых.
   final int added;
 
-  /// Обновлено существующих.
   final int updated;
 
-  /// Пропущено (без изменений).
+  /// Skipped because nothing changed.
   final int skipped;
 }
 
-/// Результат sync операции.
 class TrackerSyncResult {
-  /// Создаёт [TrackerSyncResult].
   const TrackerSyncResult({
     required this.success,
     required this.totalGames,
@@ -69,33 +56,25 @@ class TrackerSyncResult {
     this.error,
   });
 
-  /// Успешность.
   final bool success;
 
-  /// Всего игр обработано.
   final int totalGames;
 
-  /// Добавлено новых.
   final int added;
 
-  /// Обновлено.
   final int updated;
 
-  /// Пропущено (без изменений).
+  /// Skipped because nothing changed.
   final int skipped;
 
-  /// Ошибка (если !success).
+  /// Set only when `!success`.
   final String? error;
 }
 
-/// Сервис синхронизации данных трекеров.
-///
-/// Поддерживает:
-/// - **Быстрый sync** — обновляет `tracker_game_data` из RA completion progress
-/// - **Lazy per-game** — загружает `tracker_achievements` для конкретной игры
-/// - **Профиль** — обновляет `tracker_profiles`
+/// Three sync modes: quick sync updates `tracker_game_data` from RA
+/// completion progress, achievements load lazily per game into
+/// `tracker_achievements`, and the profile sync updates `tracker_profiles`.
 class TrackerSyncService {
-  /// Создаёт [TrackerSyncService].
   TrackerSyncService({
     required TrackerDao trackerDao,
     required RaApi raApi,
@@ -107,9 +86,6 @@ class TrackerSyncService {
   final TrackerDao _trackerDao;
   final RaApi _raApi;
 
-  // ==================== RA Profile ====================
-
-  /// Синхронизирует профиль RA и сохраняет в `tracker_profiles`.
   Future<TrackerProfile> syncRaProfile({
     int? linkedCollectionId,
   }) async {
@@ -121,7 +97,6 @@ class TrackerSyncService {
 
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    // Проверяем существующий профиль.
     final TrackerProfile? existing =
         await _trackerDao.getProfile(TrackerType.ra);
 
@@ -142,7 +117,7 @@ class TrackerSyncService {
       profileUrl:
           'https://retroachievements.org/user/$username',
       totalPoints: raProfile.totalPoints,
-      totalGames: null, // заполняется при sync
+      totalGames: null, // filled in by quick sync
       totalAchievements: null,
       memberSince: memberSinceTimestamp,
       profileData: <String, dynamic>{
@@ -158,15 +133,9 @@ class TrackerSyncService {
     return _trackerDao.upsertProfile(profile);
   }
 
-  // ==================== RA Quick Sync ====================
-
-  /// Быстрый sync RA: обновляет `tracker_game_data` из completion progress.
-  ///
-  /// Пропускает игры, где данные не изменились.
-  /// Не трогает `tracker_achievements` (lazy load per-game).
-  ///
-  /// [igdbIdForRaGameId] — маппинг RA GameID → IGDB ID
-  /// для новых игр, которых ещё нет в `tracker_game_data`.
+  /// Skips games whose data did not change and never touches
+  /// `tracker_achievements` (those load lazily per game). [igdbIdForRaGameId]
+  /// maps RA GameID → IGDB ID for games not yet in `tracker_game_data`.
   Future<TrackerSyncResult> quickSyncRa({
     required Map<int, int> igdbIdForRaGameId,
     void Function(TrackerSyncProgress)? onProgress,
@@ -180,7 +149,7 @@ class TrackerSyncService {
         total: 0,
       ));
 
-      // 1. Параллельно: fetch библиотеки, существующие данные, awards.
+      // Fetch the library, existing data, and awards in parallel
       final (
         List<RaGameProgress> raGames,
         List<TrackerGameData> existingData,
@@ -191,7 +160,7 @@ class TrackerSyncService {
         _raApi.getUserAwardDates(username),
       ).wait;
 
-      // Фильтруем не-игры (Hubs, Events, Standalone).
+      // Drop non-game entries (Hubs, Events, Standalone)
       final List<RaGameProgress> realGames =
           raGames.where((RaGameProgress g) => g.isRealGame).toList();
 
@@ -223,24 +192,20 @@ class TrackerSyncService {
           skipped: skipped,
         ));
 
-        // Ищем IGDB ID.
         final int? igdbId = igdbIdForRaGameId[raGame.gameId];
         if (igdbId == null) {
-          // Нет маппинга — пропускаем (нельзя привязать к games.id).
+          // No mapping — skip (can't link to games.id)
           skipped++;
           continue;
         }
 
-        // Сравниваем с существующими данными.
         final TrackerGameData? existing = existingByRaId[raGameId];
 
-        // Award date.
         final DateTime? awardDate = awardDates[raGame.gameId];
         final int? awardTimestamp = awardDate != null
             ? awardDate.millisecondsSinceEpoch ~/ 1000
             : null;
 
-        // Last played.
         final int? lastPlayedTimestamp = raGame.lastPlayedAt != null
             ? raGame.lastPlayedAt!.millisecondsSinceEpoch ~/ 1000
             : null;
@@ -248,7 +213,6 @@ class TrackerSyncService {
         if (existing != null &&
             existing.achievementsEarned == raGame.numAwarded &&
             existing.awardKind == raGame.highestAwardKind) {
-          // Данные не изменились.
           skipped++;
           continue;
         }
@@ -284,10 +248,9 @@ class TrackerSyncService {
         }
       }
 
-      // 4. Batch upsert.
       await _trackerDao.upsertGameDataBatch(toUpsert);
 
-      // 5. Обновляем профиль с общей статой.
+      // Refresh the profile with aggregate stats
       final TrackerProfile? profile =
           await _trackerDao.getProfile(TrackerType.ra);
       if (profile != null) {
@@ -323,12 +286,8 @@ class TrackerSyncService {
     }
   }
 
-  // ==================== RA Per-Game Achievements ====================
-
-  /// Загружает достижения для конкретной RA игры.
-  ///
-  /// Вызывается при открытии карточки игры (lazy load).
-  /// Кэширует результат в `tracker_achievements`.
+  /// Loads achievements for one RA game, caching them in
+  /// `tracker_achievements`; called lazily when a game card is opened.
   Future<List<TrackerAchievement>> loadRaGameAchievements(
     int raGameId,
   ) async {
@@ -337,7 +296,7 @@ class TrackerSyncService {
     return result.achievements;
   }
 
-  /// Загружает достижения и game-level данные (award, hardcore, lastPlayed).
+  /// Loads achievements plus game-level data (award, hardcore, lastPlayed).
   Future<RaGameFullProgress> loadRaGameFullProgress(
     int raGameId,
   ) async {
@@ -366,14 +325,12 @@ class TrackerSyncService {
       ));
     }
 
-    // Кэшируем в БД (replace all).
     await _trackerDao.replaceAchievements(
       TrackerType.ra,
       raGameIdStr,
       result,
     );
 
-    // Парсим game-level данные.
     final int? hardcoreEarned = data['NumAwardedToUserHardcore'] as int?;
     final String? awardKind = data['HighestAwardKind'] as String?;
     final String? awardDateStr = data['HighestAwardDate'] as String?;
@@ -385,7 +342,8 @@ class TrackerSyncService {
       }
     }
 
-    // Даты активности — из earned achievements.
+    // The RA response has no direct first/last-played fields; derive them
+    // from earned achievement timestamps.
     int? lastPlayedTimestamp;
     int? firstPlayedTimestamp;
     for (final TrackerAchievement ach in result) {
@@ -409,23 +367,22 @@ class TrackerSyncService {
     );
   }
 
-  /// Возвращает закэшированные достижения или загружает из API.
-  ///
-  /// [maxCacheAgeMinutes] — макс. возраст кэша. Если кэш старше — перезагружаем.
+  /// Returns cached achievements, reloading from the API when the cache is
+  /// older than [maxCacheAgeMinutes].
   Future<List<TrackerAchievement>> getOrLoadRaAchievements(
     int raGameId, {
     int maxCacheAgeMinutes = 5,
   }) async {
     final String raGameIdStr = raGameId.toString();
 
-    // Проверяем кэш и его возраст.
     final bool hasCached =
         await _trackerDao.hasAchievements(TrackerType.ra, raGameIdStr);
     if (hasCached) {
       final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final int maxAgeSeconds = maxCacheAgeMinutes * 60;
 
-      // Проверяем возраст через tracker_game_data.last_synced_at.
+      // Freshness is tracked on tracker_game_data.last_synced_at, not on the
+      // achievements themselves.
       final TrackerGameData? gameData =
           await _trackerDao.getGameData(TrackerType.ra, raGameId);
       final bool isFresh = gameData != null &&
@@ -440,15 +397,13 @@ class TrackerSyncService {
       }
     }
 
-    // Загружаем из API.
     if (!_raApi.hasCredentials) return <TrackerAchievement>[];
     return loadRaGameAchievements(raGameId);
   }
 }
 
-/// Полный результат загрузки RA игры: достижения + game-level данные.
+/// Full RA game load result: achievements plus game-level data.
 class RaGameFullProgress {
-  /// Создаёт [RaGameFullProgress].
   const RaGameFullProgress({
     required this.achievements,
     this.hardcoreEarned,
@@ -458,21 +413,20 @@ class RaGameFullProgress {
     this.lastPlayedAt,
   });
 
-  /// Список достижений.
   final List<TrackerAchievement> achievements;
 
   /// Hardcore earned count.
   final int? hardcoreEarned;
 
-  /// Тип награды ('mastered-hardcore', 'beaten-softcore', etc).
+  /// Award kind ('mastered-hardcore', 'beaten-softcore', etc).
   final String? awardKind;
 
-  /// Timestamp получения award.
+  /// Timestamp the award was earned.
   final int? awardDate;
 
-  /// Timestamp первого earned achievement (started at).
+  /// Timestamp of the first earned achievement (started at).
   final int? firstPlayedAt;
 
-  /// Timestamp последней активности.
+  /// Timestamp of the latest activity.
   final int? lastPlayedAt;
 }

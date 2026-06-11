@@ -8,16 +8,12 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../../../shared/widgets/cached_image.dart';
 
-// Виджет изображения на канвасе.
-//
-// Поддерживает два формата данных:
-// - {url: String} — сетевое изображение через CachedImage (с диск-кэшем)
-// - {base64: String, mimeType: String} — локальное изображение
+// Two supported data shapes:
+// - {url: String} — network image via CachedImage (disk-cached)
+// - {base64: String, mimeType: String} — local image
 
-/// Вычисляет стабильный хэш строки для использования как imageId.
-///
-/// Используется FNV-1a 32-bit алгоритм — детерминированный,
-/// не зависит от версии Dart или платформы.
+/// Stable string hash used as imageId: FNV-1a 32-bit, deterministic
+/// across Dart versions and platforms.
 String urlToImageId(String url) {
   int hash = 0x811c9dc5;
   for (int i = 0; i < url.length; i++) {
@@ -27,16 +23,11 @@ String urlToImageId(String url) {
   return hash.toRadixString(16).padLeft(8, '0');
 }
 
-/// Изображение на канвасе.
-///
-/// Использует StatefulWidget для кэширования декодированных base64-байтов.
-/// Без кэширования каждый rebuild канваса (при перемещении, зуме)
-/// вызывает base64Decode заново, что приводит к морганию изображения.
+/// Stateful to cache decoded base64 bytes: without the cache every canvas
+/// rebuild (drag, zoom) re-runs base64Decode and the image flickers.
 class CanvasImageItem extends ConsumerStatefulWidget {
-  /// Создаёт [CanvasImageItem].
   const CanvasImageItem({required this.item, super.key});
 
-  /// Элемент канваса с данными изображения.
   final CanvasItem item;
 
   @override
@@ -78,7 +69,7 @@ class _CanvasImageItemState extends ConsumerState<CanvasImageItem> {
         ),
       );
     } else if (base64Data != null && base64Data.isNotEmpty) {
-      // Кэшируем декодированные байты — пересоздаём только при смене данных
+      // Re-decode only when the base64 payload actually changes.
       if (_cachedBytes == null || _cachedBase64Source != base64Data) {
         _cachedBytes = base64Decode(base64Data);
         _cachedBase64Source = base64Data;

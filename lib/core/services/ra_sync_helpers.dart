@@ -1,5 +1,3 @@
-// Shared helper для синхронизации RA данных в collection_items.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/item_status.dart';
@@ -8,14 +6,8 @@ import '../../shared/models/media_type.dart';
 import '../database/database_service.dart';
 import '../../features/collections/providers/collections_provider.dart';
 
-/// Обновляет status, dates в collection_items.
-///
-/// Если [ref] передан — оптимистично обновляет UI без перезагрузки списка.
-/// Используется из RA import service (без ref) и tracker provider (с ref).
-///
-/// Правила слияния статуса вынесены в [mergeExternalStatus]: защита
-/// локального `dropped`, блокировка внешнего `dropped` для `notStarted`/
-/// `planned`, не-понижение статуса.
+/// Pass [ref] to optimistically update the UI without reloading the list.
+/// Status merge rules live in [mergeExternalStatus].
 Future<void> syncRaDataToCollectionItem({
   required DatabaseService db,
   required int itemId,
@@ -27,9 +19,8 @@ Future<void> syncRaDataToCollectionItem({
   DateTime? lastActivityAt,
   DateTime? completedAt,
 }) async {
-  // Применяем правила слияния статуса с внешнего источника.
-  // RA — авторитетный источник прогресса, разрешаем понижение
-  // (completed → inProgress если юзер сбросил часть достижений).
+  // RA is the authoritative progress source, so downgrades are allowed
+  // (completed → inProgress when the user reset some achievements).
   ItemStatus? effectiveStatus;
   if (status != null && currentStatus != null) {
     effectiveStatus = mergeExternalStatus(
@@ -38,7 +29,7 @@ Future<void> syncRaDataToCollectionItem({
       allowDowngrade: true,
     );
   } else if (status != null) {
-    // currentStatus неизвестен (первая запись) — принимаем как есть.
+    // currentStatus unknown (first write) — accept as is
     effectiveStatus = status;
   }
 
@@ -53,7 +44,6 @@ Future<void> syncRaDataToCollectionItem({
     completedAt: completedAt,
   );
 
-  // Оптимистичный update UI — только если ref доступен.
   if (ref != null) {
     ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)

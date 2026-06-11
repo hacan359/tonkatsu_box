@@ -1,42 +1,32 @@
-// Платформенные маппинги осей и кнопок геймпада.
-
 import 'dart:io';
 
-/// Конфигурация осей и кнопок для конкретной платформы.
-///
-/// Пакет `gamepads` возвращает разные key names в зависимости от ОС:
-/// - Windows: JOYINFOEX (`dwXpos`, `pov`, 0–65535)
-/// - Linux: `/dev/input/js*` (`abs-x`, `abs-hat0x`, -32767–32767)
-/// - Android: аналогично Linux
+/// The `gamepads` package returns different axis/button key names per OS:
+/// Windows JOYINFOEX (`dwXpos`, `pov`, 0–65535); Linux and Android use
+/// `/dev/input/js*` style keys (`abs-x`, `abs-hat0x`, -32767–32767).
 abstract class GamepadMapping {
-  /// Создаёт [GamepadMapping].
   const GamepadMapping();
 
-  /// Имена осей стиков.
   String get leftStickX;
   String get leftStickY;
   String get rightStickX;
   String get rightStickY;
 
-  /// Имена осей триггеров.
   String get leftTrigger;
   String get rightTrigger;
 
-  /// Windows использует общую ось dwZpos для обоих триггеров.
+  /// Windows uses a single shared dwZpos axis for both triggers.
   bool get triggersSharedAxis;
 
-  /// Имя оси D-pad (POV hat или null для axis-based D-pad).
+  /// D-pad axis name (POV hat), or null for axis-based D-pads.
   String? get povAxis;
 
-  /// Нормализация значения оси в -1.0..1.0.
+  /// Normalizes a raw axis value to -1.0..1.0.
   double normalizeAxis(double rawValue);
 
-  /// Маппинг D-pad raw key+value → синтетическое направление.
-  ///
-  /// Возвращает `'up'`, `'down'`, `'left'`, `'right'` или null.
+  /// Maps a raw D-pad key+value to `'up'`, `'down'`, `'left'`, `'right'`,
+  /// or null.
   String? mapDpad(String rawKey, double value);
 
-  /// Проверяет является ли ключ осью стика.
   bool isStickAxis(String key) {
     return key == leftStickX ||
         key == leftStickY ||
@@ -44,15 +34,13 @@ abstract class GamepadMapping {
         key == rightStickY;
   }
 
-  /// Проверяет является ли ключ осью триггера.
   bool isTriggerAxis(String key) {
     if (triggersSharedAxis) {
-      return key == leftTrigger; // одна общая ось
+      return key == leftTrigger; // single shared axis
     }
     return key == leftTrigger || key == rightTrigger;
   }
 
-  /// Нормализует платформенный axis key в единый формат.
   String normalizeAxisKey(String key) {
     if (key == leftStickX) return 'stick-left-x';
     if (key == leftStickY) return 'stick-left-y';
@@ -61,7 +49,6 @@ abstract class GamepadMapping {
     return key;
   }
 
-  /// Возвращает маппинг для текущей платформы.
   static GamepadMapping forCurrentPlatform() {
     if (Platform.isWindows) return const WindowsGamepadMapping();
     if (Platform.isLinux) return const LinuxGamepadMapping();
@@ -70,13 +57,9 @@ abstract class GamepadMapping {
   }
 }
 
-/// Windows маппинг (JOYINFOEX).
-///
-/// Оси: 0–65535, центр ~32767.
-/// D-pad: POV hat в градусах×100 (0/9000/18000/27000/65535).
-/// Триггеры: общая ось dwZpos.
+/// Windows JOYINFOEX mapping: axes 0–65535 (center ~32767), D-pad as a POV
+/// hat in degrees×100 (0/9000/18000/27000/65535), triggers share dwZpos.
 class WindowsGamepadMapping extends GamepadMapping {
-  /// Создаёт [WindowsGamepadMapping].
   const WindowsGamepadMapping();
 
   @override
@@ -113,18 +96,14 @@ class WindowsGamepadMapping extends GamepadMapping {
       9000 => 'right',
       18000 => 'down',
       27000 => 'left',
-      _ => null, // released (65535) или диагонали
+      _ => null, // released (65535) or diagonals
     };
   }
 }
 
-/// Linux маппинг (/dev/input/js*).
-///
-/// Оси: -32767–32767.
-/// D-pad: abs-hat0x (left/right), abs-hat0y (up/down).
-/// Триггеры: отдельные оси abs-z (LT), abs-rz (RT).
+/// Linux /dev/input/js* mapping: axes -32767–32767, D-pad via abs-hat0x and
+/// abs-hat0y axes, separate trigger axes abs-z (LT) and abs-rz (RT).
 class LinuxGamepadMapping extends GamepadMapping {
-  /// Создаёт [LinuxGamepadMapping].
   const LinuxGamepadMapping();
 
   @override
@@ -172,11 +151,8 @@ class LinuxGamepadMapping extends GamepadMapping {
   }
 }
 
-/// Android маппинг.
-///
-/// Аналогичен Linux — пакет gamepads использует те же ключи.
-/// Может потребовать корректировки после тестирования на реальных устройствах.
+/// Same as Linux — the gamepads package uses the same keys there. May need
+/// adjustment after testing on real devices.
 class AndroidGamepadMapping extends LinuxGamepadMapping {
-  /// Создаёт [AndroidGamepadMapping].
   const AndroidGamepadMapping();
 }

@@ -1,19 +1,15 @@
-// DAO для работы с тегами коллекций.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/collection_tag.dart';
 
-/// DAO для таблицы `collection_tags` и колонки `tag_id` в `collection_items`.
+/// DAO for the `collection_tags` table and the `tag_id` column in
+/// `collection_items`.
 class TagDao {
-  /// Создаёт DAO с функцией получения базы данных.
   const TagDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  // ==================== Tags CRUD ====================
-
-  /// Возвращает все теги коллекции, отсортированные по sort_order и имени.
+  /// Sorted by sort_order, then by name.
   Future<List<CollectionTag>> getTagsByCollection(int collectionId) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -25,7 +21,6 @@ class TagDao {
     return rows.map(CollectionTag.fromDb).toList();
   }
 
-  /// Возвращает тег по ID.
   Future<CollectionTag?> getTagById(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -38,7 +33,6 @@ class TagDao {
     return CollectionTag.fromDb(rows.first);
   }
 
-  /// Создаёт тег и возвращает его.
   Future<CollectionTag> createTag(
     int collectionId,
     String name, {
@@ -65,7 +59,6 @@ class TagDao {
     );
   }
 
-  /// Переименовывает тег.
   Future<void> renameTag(int id, String name) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -76,7 +69,6 @@ class TagDao {
     );
   }
 
-  /// Обновляет цвет тега.
   Future<void> updateTagColor(int id, int? color) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -87,7 +79,7 @@ class TagDao {
     );
   }
 
-  /// Удаляет тег. ON DELETE SET NULL обнуляет tag_id у элементов.
+  /// ON DELETE SET NULL clears tag_id on the items.
   Future<void> deleteTag(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
@@ -97,11 +89,9 @@ class TagDao {
     );
   }
 
-  /// Возвращает тег коллекции по имени без учёта регистра.
-  ///
-  /// Поиск выполняется в Dart через [String.toLowerCase], потому что SQLite
-  /// `LOWER()` по умолчанию приводит к нижнему регистру только ASCII,
-  /// а имена тегов могут быть на любом языке (в т.ч. кириллица).
+  /// Case-insensitive name lookup done in Dart via [String.toLowerCase],
+  /// because SQLite `LOWER()` only lowercases ASCII by default while tag
+  /// names can be in any language (e.g. Cyrillic).
   Future<CollectionTag?> findTagByNameCaseInsensitive(
     int collectionId,
     String name,
@@ -114,8 +104,8 @@ class TagDao {
     return null;
   }
 
-  /// Ищет тег в коллекции по имени (без учёта регистра) и возвращает его id.
-  /// Если тега нет — создаёт новый с указанным цветом.
+  /// Finds a tag by name (case-insensitive) and returns its id,
+  /// creating a new tag with the given color when none exists.
   Future<int> resolveOrCreateInCollection(
     int collectionId,
     String name, {
@@ -129,7 +119,6 @@ class TagDao {
     return created.id;
   }
 
-  /// Возвращает все теги из всех коллекций.
   Future<List<CollectionTag>> getAll() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -139,9 +128,6 @@ class TagDao {
     return rows.map(CollectionTag.fromDb).toList();
   }
 
-  // ==================== Item tag assignment ====================
-
-  /// Назначает тег элементу коллекции.
   Future<void> setItemTag(int collectionItemId, int? tagId) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -152,7 +138,7 @@ class TagDao {
     );
   }
 
-  /// Обнуляет tag_id у всех элементов с указанным тегом.
+  /// Clears tag_id on all items carrying the given tag.
   Future<void> clearTagFromItems(int tagId) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -163,7 +149,7 @@ class TagDao {
     );
   }
 
-  /// Сохраняет или обновляет список тегов (для импорта).
+  /// Upsert keeping the original IDs — used by import.
   Future<void> upsertAll(List<CollectionTag> tags) async {
     if (tags.isEmpty) return;
     final Database db = await _getDatabase();

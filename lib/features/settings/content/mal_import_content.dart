@@ -1,5 +1,3 @@
-// Контент экрана импорта MyAnimeList выгрузки.
-
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -24,11 +22,8 @@ import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
-/// Контент экрана импорта MyAnimeList.
-///
-/// Состояния: ввод файлов → прогресс → переход на результат.
+/// Flow: file input → progress → navigate to the result screen.
 class MalImportContent extends ConsumerStatefulWidget {
-  /// Создаёт [MalImportContent].
   const MalImportContent({super.key});
 
   @override
@@ -80,10 +75,6 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
       ],
     );
   }
-
-  // -------------------------------------------------------------------------
-  // Input
-  // -------------------------------------------------------------------------
 
   Widget _buildInputSection(S l) {
     return SettingsGroup(
@@ -301,10 +292,6 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
     );
   }
 
-  // -------------------------------------------------------------------------
-  // Progress
-  // -------------------------------------------------------------------------
-
   Widget _buildProgressSection(S l) {
     final MalImportProgress progress = _progress!;
 
@@ -408,10 +395,6 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
     );
   }
 
-  // -------------------------------------------------------------------------
-  // File picking
-  // -------------------------------------------------------------------------
-
   Future<void> _pickFile(MalFileKind expectedKind) async {
     final S l = S.of(context);
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -461,10 +444,6 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
       );
     }
   }
-
-  // -------------------------------------------------------------------------
-  // Import
-  // -------------------------------------------------------------------------
 
   Future<void> _startImport() async {
     final S l = S.of(context);

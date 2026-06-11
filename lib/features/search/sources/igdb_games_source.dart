@@ -1,5 +1,3 @@
-// Источник данных: игры из IGDB.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +13,6 @@ import '../filters/igdb_platform_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 
-/// Источник данных — игры из IGDB.
 class IgdbGamesSource extends SearchSource {
   @override
   String get id => 'games';
@@ -76,7 +73,8 @@ class IgdbGamesSource extends SearchSource {
     final List<int>? genreIds = _readIntList(filterValues['genre']);
     final List<int>? platformIds = _readIntList(filterValues['platform']);
     final List<int>? gameModeIds = _readIntList(filterValues['gameMode']);
-    // UI хранит 1–10 (как TMDB), IGDB API — 0–100, поэтому ×10.
+    // The UI stores 1-10 (TMDB-style) while the IGDB API uses 0-100,
+    // hence the x10.
     final int? minRatingUi = filterValues['minRating'] as int?;
     final int? minRating = minRatingUi == null ? null : minRatingUi * 10;
     final Object? yearValue = filterValues['year'];
@@ -113,7 +111,7 @@ class IgdbGamesSource extends SearchSource {
       );
     }
 
-    // Browse mode: фильтры без текста
+    // Browse mode: filters without a text query.
     const int pageSize = 20;
     final int offset = (page - 1) * pageSize;
 
@@ -141,7 +139,7 @@ class IgdbGamesSource extends SearchSource {
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
-/// Нормализует значение фильтра (multi-select или single) в [List] of int.
+/// Normalizes a filter value (multi-select or single) into a [List] of int.
 List<int>? _readIntList(Object? value) {
   return switch (value) {
     final List<Object?> list => list.whereType<int>().toList(),

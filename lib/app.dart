@@ -12,13 +12,8 @@ import 'l10n/app_localizations.dart';
 import 'shared/gamepad/gamepad_provider.dart';
 import 'shared/theme/app_theme.dart';
 
-/// Главный виджет приложения.
-///
-/// Принудительно тёмная тема через [AppTheme.darkTheme].
-/// Стартовый экран — [SplashScreen] с анимированным логотипом.
-///
-/// [Listener] на верхнем уровне отслеживает движение мыши
-/// для переключения [InputMode] (gamepad ↔ mouse).
+/// Root app widget. A top-level [Listener] watches mouse movement to switch
+/// [InputMode] (gamepad ↔ mouse).
 class TonkatsuBoxApp extends ConsumerStatefulWidget {
   const TonkatsuBoxApp({super.key});
 
@@ -56,7 +51,7 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
     final String appLanguage =
         ref.watch(settingsNotifierProvider).appLanguage;
 
-    // Инициализация Kodi sync (провайдер ленивый — нужен read для запуска).
+    // Kodi sync provider is lazy — a read is required to start it.
     ref.read(kodiSettingsProvider);
 
     return Listener(
@@ -72,8 +67,8 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
         locale: Locale(appLanguage),
         supportedLocales: S.supportedLocales,
         localizationsDelegates: S.localizationsDelegates,
-        // Тайловый фон применяется через PageTransitionsTheme
-        // (каждый route получает свой непрозрачный DecoratedBox).
+        // The tiled background is applied via PageTransitionsTheme
+        // (each route gets its own opaque DecoratedBox).
         home: const SplashScreen(),
         // A captured fatal startup error (failed migration, throw before the
         // first frame) paints over the whole UI so it's visible on-device

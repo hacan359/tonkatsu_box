@@ -1,12 +1,8 @@
-// Фоновая подложка для персонализированных коллекций.
-//
-// Картинка рисуется с `BoxFit.cover, alignment: Alignment.topRight`,
-// поверх накладываются два градиента:
-//   • слева направо: тёмный слева → прозрачный (защита для читаемости текста);
-//   • снизу вверх:   тёмный снизу → прозрачный (плавное втекание в фон).
-//
-// Оба градиента заканчиваются в [AppColors.background], чтобы край картинки
-// не резал по фону. На мобильных градиенты шире.
+// The image is drawn with `BoxFit.cover, alignment: Alignment.topRight`,
+// with two gradients on top: left-to-right (dark left, for text readability)
+// and bottom-to-top (dark bottom, blends into the app background).
+// Both gradients end in [AppColors.background] so the image edge does not
+// cut against the background. On mobile the gradients are wider.
 
 import 'dart:io';
 
@@ -14,13 +10,9 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
 
-/// Подложка hero-картинки с градиентами.
-///
-/// Используется и в `CollectionCard` (карточка грида), и в `CollectionScreen`
-/// (полноразмерный баннер). Сама картинка рендерится на весь размер родителя —
-/// родитель задаёт размеры и скругление углов.
+/// The image fills the parent's size; the parent is responsible for sizing
+/// and corner rounding.
 class CollectionHeroBackground extends StatelessWidget {
-  /// Создаёт [CollectionHeroBackground].
   const CollectionHeroBackground({
     required this.imagePath,
     this.isMobile = false,
@@ -30,25 +22,23 @@ class CollectionHeroBackground extends StatelessWidget {
     super.key,
   });
 
-  /// Абсолютный путь к hero-файлу.
+  /// Absolute path to the hero image file.
   final String imagePath;
 
-  /// Mobile-режим: градиенты шире для лучшей читаемости в portrait.
+  /// Mobile mode: wider gradients for better readability in portrait.
   final bool isMobile;
 
-  /// Сила затемнения (для мелкой карточки можно делать мягче, для баннера —
-  /// стандарт).
   final HeroGradientStrength strength;
 
-  /// Hint для ImageCache: декодировать картинку не в оригинальном разрешении,
-  /// а в указанной ширине. Если не задан — берётся [HeroGradientStrength.defaultCacheWidth].
+  /// ImageCache hint: decode the image at this width instead of its original
+  /// resolution. Defaults to [HeroGradientStrength.defaultCacheWidth].
   ///
-  /// Важно для гридов коллекций: без этого hero 4K на 150×150 карточке
-  /// декодируется целиком и забивает ImageCache.
+  /// Matters for collection grids: without it a 4K hero on a 150x150 card
+  /// is decoded in full and floods the ImageCache.
   final int? cacheWidth;
 
-  /// Контент поверх картинки (текст, кнопки). Без `Positioned` — родитель
-  /// сам размещает через `Stack`, или можно передать `Align`.
+  /// Content laid over the image. Must not be `Positioned` — the parent
+  /// places it via `Stack`, or pass an `Align`.
   final Widget? child;
 
   @override
@@ -66,7 +56,7 @@ class CollectionHeroBackground extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          // 1) Картинка: top-right как смысловой центр.
+          // Image: top-right is the focal point.
           Image.file(
             File(imagePath),
             fit: BoxFit.cover,
@@ -77,7 +67,7 @@ class CollectionHeroBackground extends StatelessWidget {
                 const ColoredBox(color: AppColors.surface),
           ),
 
-          // 2) Затемнение слева → прозрачное справа.
+          // Dark on the left fading to transparent on the right.
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -93,7 +83,7 @@ class CollectionHeroBackground extends StatelessWidget {
             ),
           ),
 
-          // 3) Затемнение снизу → прозрачное сверху (фон приложения внизу).
+          // Dark at the bottom fading upwards (app background at the bottom).
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -116,16 +106,15 @@ class CollectionHeroBackground extends StatelessWidget {
   }
 }
 
-/// Сила градиентов hero.
 enum HeroGradientStrength {
-  /// Для карточек грида (мягче, чтобы не забивать маленькое изображение).
+  /// For grid cards: softer, so a small image is not drowned out.
   soft(
     leftDarkOpacity: 0.75,
     bottomDarkOpacity: 0.90,
     defaultCacheWidth: 320,
   ),
 
-  /// Для полноразмерного баннера.
+  /// For the full-size banner.
   standard(
     leftDarkOpacity: 0.85,
     bottomDarkOpacity: 1.0,
@@ -138,12 +127,11 @@ enum HeroGradientStrength {
     required this.defaultCacheWidth,
   });
 
-  /// Непрозрачность левой части.
   final double leftDarkOpacity;
 
-  /// Непрозрачность нижней части (в самом низу — полностью фон).
+  /// Bottom-gradient opacity; the very bottom is fully the background color.
   final double bottomDarkOpacity;
 
-  /// Дефолтная ширина декодирования в logical pixels (умножается на DPR).
+  /// Default decode width in logical pixels (multiplied by DPR).
   final int defaultCacheWidth;
 }

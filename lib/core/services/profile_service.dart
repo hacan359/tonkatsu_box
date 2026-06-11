@@ -1,5 +1,3 @@
-// Сервис управления пользовательскими профилями.
-
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -16,16 +14,13 @@ import '../../shared/constants/platform_features.dart';
 import '../../shared/models/profile.dart';
 import '../database/database_service.dart';
 
-/// Провайдер [ProfileService].
 final Provider<ProfileService> profileServiceProvider =
     Provider<ProfileService>((Ref ref) {
   return ProfileService();
 });
 
-/// Сервис управления профилями пользователей.
-///
-/// Каждый профиль имеет изолированную БД и кэш изображений.
-/// Данные профилей хранятся в `profiles.json` в корне приложения.
+/// Each profile has an isolated database and image cache. Profile metadata
+/// lives in `profiles.json` at the app root.
 class ProfileService {
   static final Logger _log = Logger('ProfileService');
 
@@ -36,7 +31,6 @@ class ProfileService {
 
   String? _basePath;
 
-  /// Возвращает базовый путь приложения.
   Future<String> getBasePath() async {
     if (_basePath != null) return _basePath!;
     final Directory appDir = await getApplicationSupportDirectory();
@@ -46,9 +40,7 @@ class ProfileService {
     return _basePath!;
   }
 
-  /// Загружает данные профилей из `profiles.json`.
-  ///
-  /// Если файл не существует, создаёт дефолтный профиль.
+  /// Creates a default profile when `profiles.json` does not exist yet.
   Future<ProfilesData> loadProfiles() async {
     final String basePath = await getBasePath();
     final File file = File(p.join(basePath, _profilesFileName));
@@ -58,7 +50,6 @@ class ProfileService {
       return ProfilesData.fromJsonString(content);
     }
 
-    // Первый запуск — создаём дефолтный профиль
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String authorName =
         prefs.getString('default_author') ?? 'Default';
@@ -69,7 +60,6 @@ class ProfileService {
     return data;
   }
 
-  /// Сохраняет данные профилей.
   Future<void> _saveProfiles(ProfilesData data) async {
     final String basePath = await getBasePath();
     final Directory baseDir = Directory(basePath);
@@ -80,7 +70,6 @@ class ProfileService {
     await file.writeAsString(data.toJsonString());
   }
 
-  /// Создаёт новый профиль.
   Future<Profile> createProfile(String name, String color) async {
     final ProfilesData data = await loadProfiles();
 
@@ -93,11 +82,9 @@ class ProfileService {
       createdAt: now,
     );
 
-    // Создаём папку профиля
     final String profileDir = await getProfileDir(id);
     await Directory(profileDir).create(recursive: true);
 
-    // Добавляем в список
     final ProfilesData updated = data.copyWith(
       profiles: <Profile>[...data.profiles, profile],
     );
@@ -107,10 +94,8 @@ class ProfileService {
     return profile;
   }
 
-  /// Удаляет профиль.
-  ///
-  /// Нельзя удалить последний профиль.
-  /// Если удаляется активный — переключаемся на первый оставшийся.
+  /// Throws when deleting the last profile. If the active profile is
+  /// deleted, switches to the first remaining one.
   Future<void> deleteProfile(String profileId) async {
     final ProfilesData data = await loadProfiles();
 
@@ -118,19 +103,16 @@ class ProfileService {
       throw StateError('Cannot delete the last profile');
     }
 
-    // Удаляем папку профиля
     final String profileDir = await getProfileDir(profileId);
     final Directory dir = Directory(profileDir);
     if (await dir.exists()) {
       await dir.delete(recursive: true);
     }
 
-    // Удаляем из списка
     final List<Profile> remaining = data.profiles
         .where((Profile p) => p.id != profileId)
         .toList();
 
-    // Если удаляли активный — переключаемся на первый
     String currentId = data.currentProfileId;
     if (currentId == profileId) {
       currentId = remaining.first.id;
@@ -145,7 +127,6 @@ class ProfileService {
     _log.info('Deleted profile: $profileId');
   }
 
-  /// Обновляет профиль (имя, цвет).
   Future<void> updateProfile(Profile profile) async {
     final ProfilesData data = await loadProfiles();
     final List<Profile> updated = data.profiles.map((Profile p) {
@@ -157,34 +138,29 @@ class ProfileService {
     _log.info('Updated profile: ${profile.name} (${profile.id})');
   }
 
-  /// Переключает активный профиль.
   Future<void> switchProfile(String profileId) async {
     final ProfilesData data = await loadProfiles();
     await _saveProfiles(data.copyWith(currentProfileId: profileId));
     _log.info('Switched to profile: $profileId');
   }
 
-  /// Возвращает путь к папке профиля.
   Future<String> getProfileDir(String profileId) async {
     final String basePath = await getBasePath();
     return p.join(basePath, _profilesFolderName, profileId);
   }
 
-  /// Возвращает путь к БД профиля.
   Future<String> getDatabasePath(String profileId) async {
     final String dir = await getProfileDir(profileId);
     return p.join(dir, _dbFileName);
   }
 
-  /// Возвращает путь к кэшу изображений профиля.
   Future<String> getImageCachePath(String profileId) async {
     final String dir = await getProfileDir(profileId);
     return p.join(dir, _imageCacheFolderName);
   }
 
-  /// Мигрирует старые данные (до профильной системы) в профиль default.
-  ///
-  /// Условие: существует старая БД и нет папки profiles/.
+  /// Migrates pre-profile data into the default profile. Runs only when an
+  /// old database exists and the profiles/ folder does not.
   Future<bool> migrateIfNeeded() async {
     final String basePath = await getBasePath();
     final File oldDb = File(p.join(basePath, _dbFileName));
@@ -197,27 +173,22 @@ class ProfileService {
 
     _log.info('Migrating existing database to profile system...');
 
-    // Создаём папку профиля default
     final String defaultDir =
         p.join(basePath, _profilesFolderName, 'default');
     await Directory(defaultDir).create(recursive: true);
 
-    // Перемещаем БД
     await oldDb.rename(p.join(defaultDir, _dbFileName));
 
-    // Перемещаем кэш изображений
     final Directory oldCache =
         Directory(p.join(basePath, _imageCacheFolderName));
     if (oldCache.existsSync()) {
       await oldCache.rename(p.join(defaultDir, _imageCacheFolderName));
     }
 
-    // Получаем имя из SharedPreferences
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String authorName =
         prefs.getString('default_author') ?? 'Default';
 
-    // Создаём profiles.json
     final ProfilesData data =
         ProfilesData.defaultData(authorName: authorName);
     await _saveProfiles(data);
@@ -226,11 +197,8 @@ class ProfileService {
     return true;
   }
 
-  /// Получает статистику профиля.
-  ///
-  /// Для текущего профиля использует уже открытую БД через [DatabaseService],
-  /// чтобы не закрыть singleton-подключение sqflite.
-  /// Для других профилей открывает БД отдельным подключением.
+  /// Pass [currentDb] for the current profile so the open sqflite singleton
+  /// connection is reused; other profiles are opened separately (read-only).
   Future<ProfileStats> getProfileStats(
     String profileId, {
     DatabaseService? currentDb,
@@ -241,7 +209,6 @@ class ProfileService {
     if (!dbFile.existsSync()) return ProfileStats.empty;
 
     try {
-      // Для текущего профиля — используем уже открытую БД
       if (currentDb != null) {
         final int collectionsCount = await currentDb.getCollectionCount();
         final int itemsCount = await currentDb.getTotalItemCount();
@@ -251,7 +218,6 @@ class ProfileService {
         );
       }
 
-      // Для других профилей — открываем отдельно
       final Database db = await databaseFactory.openDatabase(
         dbPath,
         options: OpenDatabaseOptions(readOnly: true),
@@ -278,22 +244,18 @@ class ProfileService {
     }
   }
 
-  /// Перезапускает приложение после переключения профиля.
-  ///
-  /// На десктопе: запускает новый процесс и завершает текущий.
-  /// На Android: закрывает БД и пересоздаёт [ProviderScope] через
-  /// [AppRestartScope], что обнуляет все провайдеры и показывает SplashScreen.
+  /// Restarts the app after a profile switch. Desktop: spawns a new process
+  /// and exits. Android: closes the DB and recreates [ProviderScope] via
+  /// [AppRestartScope], which resets all providers and shows the SplashScreen.
   static Future<void> restartApp(BuildContext context, WidgetRef ref) async {
     if (kIsMobile) {
-      // Закрываем текущую БД перед пересозданием ProviderScope
+      // The DB must be closed before ProviderScope is recreated
       final DatabaseService db = ref.read(databaseServiceProvider);
       await db.close();
 
-      // Меняем ключ ProviderScope → все провайдеры пересоздаются
       if (!context.mounted) return;
       await AppRestartScope.restart(context);
     } else {
-      // Desktop: запускаем новый экземпляр и завершаем текущий
       final String exe = Platform.resolvedExecutable;
       await Process.start(exe, <String>[], mode: ProcessStartMode.detached);
       exit(0);

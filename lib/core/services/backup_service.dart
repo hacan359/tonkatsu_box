@@ -1,5 +1,3 @@
-// Сервис для полного бэкапа и восстановления данных приложения.
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -31,10 +29,8 @@ import 'export_service.dart';
 import 'import_service.dart';
 import 'xcoll_file.dart';
 
-/// Версия формата бэкапа.
 const int backupFormatVersion = 3;
 
-/// Провайдер для сервиса бэкапа.
 final Provider<BackupService> backupServiceProvider =
     Provider<BackupService>((Ref ref) {
   return BackupService(
@@ -55,12 +51,9 @@ final Provider<BackupService> backupServiceProvider =
 final StateProvider<bool> restoreInProgressProvider =
     StateProvider<bool>((Ref ref) => false);
 
-/// Callback для отслеживания прогресса бэкапа/восстановления.
 typedef BackupProgressCallback = void Function(BackupProgress progress);
 
-/// Прогресс операции бэкапа/восстановления.
 class BackupProgress {
-  /// Создаёт экземпляр [BackupProgress].
   const BackupProgress({
     required this.stage,
     required this.current,
@@ -68,22 +61,16 @@ class BackupProgress {
     this.collectionName,
   });
 
-  /// Текущий этап.
   final String stage;
 
-  /// Текущий элемент.
   final int current;
 
-  /// Общее количество.
   final int total;
 
-  /// Название текущей коллекции (если применимо).
   final String? collectionName;
 }
 
-/// Результат операции бэкапа.
 class BackupResult {
-  /// Создаёт экземпляр [BackupResult].
   const BackupResult({
     required this.success,
     this.filePath,
@@ -92,7 +79,6 @@ class BackupResult {
     this.itemsCount = 0,
   });
 
-  /// Успешный результат.
   const BackupResult.success(
     String path, {
     int collections = 0,
@@ -103,7 +89,6 @@ class BackupResult {
         collectionsCount = collections,
         itemsCount = items;
 
-  /// Неуспешный результат.
   const BackupResult.failure(String message)
       : success = false,
         filePath = null,
@@ -111,7 +96,6 @@ class BackupResult {
         collectionsCount = 0,
         itemsCount = 0;
 
-  /// Отменённая операция.
   const BackupResult.cancelled()
       : success = false,
         filePath = null,
@@ -119,28 +103,21 @@ class BackupResult {
         collectionsCount = 0,
         itemsCount = 0;
 
-  /// Успешность операции.
   final bool success;
 
-  /// Путь к файлу.
   final String? filePath;
 
-  /// Сообщение об ошибке.
   final String? error;
 
-  /// Количество коллекций в бэкапе.
   final int collectionsCount;
 
-  /// Количество элементов в бэкапе.
   final int itemsCount;
 
-  /// Возвращает true, если операция была отменена.
+  /// Cancelled = not successful but with no error message.
   bool get isCancelled => !success && error == null;
 }
 
-/// Результат восстановления из бэкапа.
 class RestoreResult {
-  /// Создаёт экземпляр [RestoreResult].
   const RestoreResult({
     required this.success,
     this.error,
@@ -150,7 +127,6 @@ class RestoreResult {
     this.settingsRestored = false,
   });
 
-  /// Успешный результат.
   const RestoreResult.success({
     int collections = 0,
     int items = 0,
@@ -163,7 +139,6 @@ class RestoreResult {
         wishlistRestored = wishlist,
         settingsRestored = settings;
 
-  /// Неуспешный результат.
   const RestoreResult.failure(String message)
       : success = false,
         error = message,
@@ -172,7 +147,6 @@ class RestoreResult {
         wishlistRestored = 0,
         settingsRestored = false;
 
-  /// Отменённая операция.
   const RestoreResult.cancelled()
       : success = false,
         error = null,
@@ -181,31 +155,24 @@ class RestoreResult {
         wishlistRestored = 0,
         settingsRestored = false;
 
-  /// Успешность операции.
   final bool success;
 
-  /// Сообщение об ошибке.
   final String? error;
 
-  /// Количество восстановленных коллекций.
   final int collectionsRestored;
 
-  /// Количество восстановленных элементов.
   final int itemsRestored;
 
-  /// Количество восстановленных элементов вишлиста.
   final int wishlistRestored;
 
-  /// Были ли восстановлены настройки.
   final bool settingsRestored;
 
-  /// Возвращает true, если операция была отменена.
+  /// Cancelled = not successful but with no error message.
   bool get isCancelled => !success && error == null;
 }
 
-/// Метаданные ZIP-бэкапа (из manifest.json).
+/// ZIP backup metadata, read from manifest.json.
 class BackupManifest {
-  /// Создаёт экземпляр [BackupManifest].
   const BackupManifest({
     required this.version,
     required this.created,
@@ -217,7 +184,6 @@ class BackupManifest {
     this.appVersion,
   });
 
-  /// Парсит manifest из JSON.
   factory BackupManifest.fromJson(Map<String, dynamic> json) {
     return BackupManifest(
       version: json['version'] as int? ?? 1,
@@ -231,37 +197,28 @@ class BackupManifest {
     );
   }
 
-  /// Версия формата.
   final int version;
 
-  /// Дата создания бэкапа.
   final DateTime created;
 
-  /// Количество коллекций.
   final int collectionsCount;
 
-  /// Количество элементов.
   final int itemsCount;
 
-  /// Количество элементов вишлиста.
   final int wishlistCount;
 
-  /// Содержит ли настройки.
   final bool includesConfig;
 
-  /// Имя профиля.
   final String? profileName;
 
-  /// Версия приложения.
   final String? appVersion;
 }
 
-/// Сервис для полного бэкапа и восстановления данных.
+/// Full backup and restore of app data.
 ///
-/// Создаёт ZIP-архив со всеми коллекциями (full export + user data),
-/// вишлистом и настройками. Позволяет восстановить всё одной операцией.
+/// Builds a ZIP archive with all collections (full export + user data),
+/// the wishlist and settings, restorable in a single operation.
 class BackupService {
-  /// Создаёт экземпляр [BackupService].
   BackupService({
     required DatabaseService database,
     required ExportService exportService,
@@ -291,17 +248,15 @@ class BackupService {
   final MoodGridDao? _moodGridDao;
   final WishlistRepository _wishlistRepo;
 
-  // ==================== Backup ====================
-
-  /// Создаёт полный бэкап всех данных и сохраняет как ZIP.
+  /// Creates a full backup of all data and saves it as a ZIP.
   Future<BackupResult> createBackup({
     BackupProgressCallback? onProgress,
   }) async {
     try {
-      // 1. Собираем все коллекции
+      // 1. All collections.
       final List<Collection> collections = await _collectionRepo.getAll();
 
-      // 2. Экспортируем каждую коллекцию
+      // 2. Full export of each collection.
       final Archive archive = Archive();
       int totalItems = 0;
 
@@ -335,7 +290,7 @@ class BackupService {
         ));
       }
 
-      // 3. Вишлист
+      // 3. Wishlist.
       onProgress?.call(const BackupProgress(
         stage: 'wishlist',
         current: 0,
@@ -451,7 +406,7 @@ class BackupService {
         ));
       }
 
-      // 7. Настройки
+      // 7. Settings.
       final Map<String, Object> config = _configService.collectSettings();
       final String configStr =
           const JsonEncoder.withIndent('  ').convert(config);
@@ -462,7 +417,7 @@ class BackupService {
         configBytes,
       ));
 
-      // 6. Манифест
+      // 8. Manifest.
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       final String appVersion = packageInfo.version;
       final Map<String, dynamic> manifest = <String, dynamic>{
@@ -483,7 +438,7 @@ class BackupService {
         manifestBytes,
       ));
 
-      // 7. Кодируем ZIP
+      // 9. Encode the ZIP.
       onProgress?.call(BackupProgress(
         stage: 'saving',
         current: collections.length,
@@ -492,7 +447,7 @@ class BackupService {
 
       final List<int> zipBytes = ZipEncoder().encode(archive);
 
-      // 8. Сохраняем файл
+      // 10. Save the file.
       final String dateSuffix = _dateSuffix();
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
@@ -507,7 +462,7 @@ class BackupService {
         return const BackupResult.cancelled();
       }
 
-      // На десктопе записываем сами
+      // On desktop the file must be written manually (mobile uses SAF).
       if (!Platform.isAndroid && !Platform.isIOS) {
         final String finalPath =
             outputPath.endsWith('.zip') ? outputPath : '$outputPath.zip';
@@ -533,9 +488,7 @@ class BackupService {
     }
   }
 
-  // ==================== Restore ====================
-
-  /// Читает манифест из ZIP-бэкапа без импорта.
+  /// Reads the manifest from a ZIP backup without importing anything.
   Future<BackupManifest?> readManifest(String zipPath) async {
     try {
       final List<int> bytes = File(zipPath).readAsBytesSync();
@@ -557,7 +510,6 @@ class BackupService {
     }
   }
 
-  /// Восстанавливает данные из ZIP-бэкапа.
   Future<RestoreResult> restoreFromBackup({
     required String zipPath,
     bool restoreSettings = false,
@@ -568,7 +520,6 @@ class BackupService {
       final List<int> bytes = File(zipPath).readAsBytesSync();
       final Archive archive = ZipDecoder().decodeBytes(bytes);
 
-      // Разбираем содержимое архива
       final Map<String, String> collectionFiles = <String, String>{};
       String? wishlistContent;
       String? configContent;
@@ -599,7 +550,6 @@ class BackupService {
         }
       }
 
-      // Импорт коллекций
       int collectionsRestored = 0;
       int itemsRestored = 0;
       final List<String> sortedKeys = collectionFiles.keys.toList()..sort();
@@ -640,7 +590,6 @@ class BackupService {
         ));
       }
 
-      // Восстановление вишлиста
       int wishlistRestored = 0;
       if (restoreWishlist && wishlistContent != null) {
         onProgress?.call(const BackupProgress(
@@ -651,7 +600,6 @@ class BackupService {
         wishlistRestored = await _restoreWishlist(wishlistContent);
       }
 
-      // Восстановление настроек
       bool settingsApplied = false;
       if (restoreSettings && configContent != null) {
         onProgress?.call(const BackupProgress(
@@ -666,7 +614,6 @@ class BackupService {
         settingsApplied = applied > 0;
       }
 
-      // Восстановление tracker data
       if (trackerContent != null && _trackerDao != null) {
         try {
           await _restoreTrackerData(trackerContent);
@@ -738,9 +685,6 @@ class BackupService {
     }
   }
 
-  // ==================== Helpers ====================
-
-  /// Конвертирует WishlistItem в Map для экспорта.
   Map<String, dynamic> _wishlistItemToExport(WishlistItem item) {
     return <String, dynamic>{
       'text': item.text,
@@ -755,7 +699,7 @@ class BackupService {
     };
   }
 
-  /// Восстанавливает вишлист из JSON. Дедупликация по тексту.
+  /// Restores the wishlist from JSON, deduplicating by item text.
   Future<int> _restoreWishlist(String jsonContent) async {
     final List<dynamic> items = jsonDecode(jsonContent) as List<dynamic>;
     int restored = 0;
@@ -764,7 +708,7 @@ class BackupService {
       final Map<String, dynamic> data = item as Map<String, dynamic>;
       final String text = data['text'] as String;
 
-      // Дедупликация: не добавлять если уже есть с таким текстом
+      // Skip items whose text already exists unresolved.
       final WishlistItem? existing =
           await _wishlistRepo.findUnresolved(text);
       if (existing != null) continue;
@@ -784,7 +728,6 @@ class BackupService {
     return restored;
   }
 
-  /// Генерирует имя файла для коллекции в архиве.
   String _collectionFileName(int index, String name) {
     final String sanitized = name
         .replaceAll(RegExp(r'[^\w\s-]'), '')
@@ -794,7 +737,6 @@ class BackupService {
     return '${padded}_$sanitized.xcollx';
   }
 
-  /// Восстанавливает tracker profiles и game data из JSON.
   Future<void> _restoreTrackerData(String jsonContent) async {
     final Map<String, dynamic> data =
         jsonDecode(jsonContent) as Map<String, dynamic>;
@@ -920,7 +862,6 @@ class BackupService {
     }
   }
 
-  /// Генерирует суффикс даты для имени файла.
   String _dateSuffix() {
     final DateTime now = DateTime.now();
     return '${now.year}-'

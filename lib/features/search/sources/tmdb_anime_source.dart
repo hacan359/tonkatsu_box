@@ -1,5 +1,3 @@
-// Источник данных: анимация из TMDB.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,7 +17,7 @@ import '../models/search_source.dart';
 import '../providers/genre_provider.dart';
 import '../utils/genre_utils.dart';
 
-/// Источник данных — анимация из TMDB (фильмы и сериалы с жанром Animation).
+/// TMDB movies and TV shows restricted to the Animation genre.
 class TmdbAnimeSource extends SearchSource {
   @override
   String get id => 'anime';
@@ -99,7 +97,8 @@ class TmdbAnimeSource extends SearchSource {
         filterValues['originalLanguage'] as String?;
 
     if (query != null && query.isNotEmpty) {
-      // Текстовый поиск + клиентская фильтрация по animation genre
+      // Text search; the animation genre is filtered client-side because
+      // TMDB search endpoints don't support genre filters.
       return _searchWithFilters(
         tmdb,
         ref,
@@ -143,7 +142,7 @@ class TmdbAnimeSource extends SearchSource {
       );
     }
 
-    // animeType == null → показываем и сериалы, и фильмы
+    // animeType == null means both TV shows and movies.
     final List<BrowseResult> results =
         await Future.wait(<Future<BrowseResult>>[
       _browseTvShows(
@@ -281,7 +280,6 @@ class TmdbAnimeSource extends SearchSource {
     final Map<String, String> movieGenreMap =
         await ref.read(movieGenreMapProvider.future);
 
-    // Ищем сериалы и фильмы параллельно
     final List<Object> results = await Future.wait(<Future<Object>>[
       if (animeType != 'movies')
         tmdb.searchTvShowsPaged(query, page: page, firstAirDateYear: year),
@@ -317,7 +315,7 @@ class TmdbAnimeSource extends SearchSource {
           .toList();
     }
 
-    // Клиентская фильтрация по дополнительным жанрам (multi-select, OR).
+    // Client-side filtering by extra genres (multi-select, OR semantics).
     if (extraGenreIds != null && extraGenreIds.isNotEmpty) {
       final Set<String> tvNames = extraGenreIds
           .map((int id) => tvGenreMap[id.toString()])
@@ -369,7 +367,7 @@ class TmdbAnimeSource extends SearchSource {
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
-/// Нормализует значение фильтра `genre` в список ID (multi-select или single).
+/// Normalizes the `genre` filter value (multi-select or single) into IDs.
 List<int>? _readGenreIds(Object? value) {
   return switch (value) {
     final List<Object?> list => list.whereType<int>().toList(),
@@ -378,8 +376,8 @@ List<int>? _readGenreIds(Object? value) {
   };
 }
 
-/// Возвращает строку `with_genres` с принудительным Animation жанром впереди
-/// и доп. жанрами через запятую.
+/// Builds the `with_genres` value with the Animation genre always forced
+/// first, extra genres comma-separated after it.
 String _genreIdsWithAnimation(List<int>? extraIds) {
   if (extraIds == null || extraIds.isEmpty) {
     return '$tmdbAnimationGenreId';

@@ -5,25 +5,23 @@ import 'package:logging/logging.dart';
 
 import 'startup_error.dart';
 
-/// Настройка логирования для приложения.
+/// App logging setup. Call once in `main()` before `runApp()`.
 ///
-/// Вызывается один раз в `main()` до `runApp()`.
-/// Выводит логи через `dart:developer` — видны в консоли `flutter run`
-/// и во вкладке Logging в Flutter DevTools.
+/// Logs go through `dart:developer`, so they show up in the `flutter run`
+/// console and the Logging tab of Flutter DevTools.
 abstract final class AppLogger {
   static final Logger _log = Logger('AppLogger');
 
-  /// Инициализирует корневой логгер.
   static void init() {
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen(_onLogRecord);
   }
 
-  /// Перехватывает необработанные ошибки Flutter и Dart.
+  /// Catches unhandled Flutter and Dart errors.
   ///
-  /// Вызывать один раз в main() после [init()].
+  /// Call once in main() after [init()].
   static void setupErrorHandlers() {
-    // Ошибки в дереве виджетов (красный экран)
+    // Widget tree errors (red screen).
     FlutterError.onError = (FlutterErrorDetails details) {
       _log.severe(
         'Flutter error: ${details.exceptionAsString()}',
@@ -33,7 +31,7 @@ abstract final class AppLogger {
       FlutterError.presentError(details);
     };
 
-    // Необработанные ошибки вне Flutter (Dart isolate)
+    // Unhandled errors outside Flutter (Dart isolate).
     PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
       _log.severe('Unhandled platform error', error, stack);
       recordStartupError('platform', error, stack);

@@ -1,27 +1,19 @@
-// Общий контейнер карточки коллекции — фокус, hover, InkWell, бордер.
-//
-// Используется и classic (мозаика), и rich (hero) вариантами — различия
-// только в контенте поверх hover-анимации, который они строят сами через
-// builder, получая на вход текущую dim-анимацию.
+// Shared by both the classic (mosaic) and rich (hero) card variants; they
+// differ only in the content they build via the builder, which receives the
+// current dim animation.
 
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
 
-/// Builder содержимого карточки. Получает текущую dim-анимацию, которую
-/// можно использовать в [AnimatedBuilder] для любых hover-эффектов.
+/// Receives the current dim animation, usable in an [AnimatedBuilder] for
+/// hover effects.
 typedef CollectionCardContentBuilder = Widget Function(
   BuildContext context,
   Animation<double> dimAnimation,
 );
 
-/// Универсальный контейнер карточки коллекции.
-///
-/// Содержит всю общую механику (фокус-рамка, hover-анимация, InkWell,
-/// скругление углов). Классика и rich используют его, чтобы не дублировать
-/// одинаковый stateful-шаблон.
 class CollectionCardShell extends StatefulWidget {
-  /// Создаёт [CollectionCardShell].
   const CollectionCardShell({
     required this.builder,
     this.onTap,
@@ -31,25 +23,20 @@ class CollectionCardShell extends StatefulWidget {
     super.key,
   });
 
-  /// Builder контента карточки — получает dim-анимацию для hover-эффектов.
   final CollectionCardContentBuilder builder;
 
-  /// Callback при нажатии.
   final VoidCallback? onTap;
 
-  /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
 
-  /// Callback при правом клике (глобальные координаты).
+  /// Called with the tap position in global coordinates.
   final void Function(Offset globalPosition)? onSecondaryTap;
 
-  /// Callback при изменении фокуса.
   final ValueChanged<bool>? onFocusChanged;
 
-  /// Радиус скругления карточки.
   static const double radius = 16;
 
-  /// Максимальная непрозрачность затемнения вне hover/focus.
+  /// Maximum dim opacity when the card is neither hovered nor focused.
   static const double dimOpacity = 0.25;
 
   @override

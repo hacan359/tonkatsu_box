@@ -1,5 +1,3 @@
-// Строка коллекции для list-вида на HomeScreen.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,9 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/collections_provider.dart';
 import '../providers/rich_collections_provider.dart';
 
-/// Строка коллекции для list-вида (без картинок).
 class CollectionListTile extends ConsumerWidget {
-  /// Создаёт [CollectionListTile].
   const CollectionListTile({
     required this.collection,
     this.onTap,
@@ -22,16 +18,13 @@ class CollectionListTile extends ConsumerWidget {
     super.key,
   });
 
-  /// Коллекция для отображения.
   final Collection collection;
 
-  /// Callback при нажатии.
   final VoidCallback? onTap;
 
-  /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
 
-  /// Callback при правом клике (координаты для showMenu).
+  /// Called with the tap position in global coordinates (for showMenu).
   final void Function(Offset globalPosition)? onSecondaryTap;
 
   @override
@@ -101,19 +94,15 @@ class CollectionListTile extends ConsumerWidget {
   }
 }
 
-/// Строка uncategorized элементов для list-вида.
 class UncategorizedListTile extends StatelessWidget {
-  /// Создаёт [UncategorizedListTile].
   const UncategorizedListTile({
     required this.count,
     this.onTap,
     super.key,
   });
 
-  /// Количество uncategorized элементов.
   final int count;
 
-  /// Callback при нажатии.
   final VoidCallback? onTap;
 
   @override

@@ -1,5 +1,3 @@
-// Bottom sheet для настройки секций Discover.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,16 +7,12 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/discover_provider.dart';
 
-/// Bottom sheet для настройки секций Discover.
-///
-/// Показывает только секции, доступные для текущего [sourceId].
-/// Constraints (ширина и высота) задаются вызывающим кодом через
-/// параметр `constraints` в [showModalBottomSheet].
+/// Shows only sections available for the current [sourceId]; sizing comes
+/// from the `constraints` the caller passes to [showModalBottomSheet].
 class DiscoverCustomizeSheet extends ConsumerWidget {
-  /// Создаёт [DiscoverCustomizeSheet].
   const DiscoverCustomizeSheet({required this.sourceId, super.key});
 
-  /// ID текущего источника (movies, tv, anime).
+  /// Current source id: movies, tv, or anime.
   final String sourceId;
 
   @override
@@ -31,14 +25,12 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        // Скроллируемый контент
         Flexible(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                // Ручка
                 Center(
                   child: Container(
                     width: 32,
@@ -65,7 +57,6 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
 
-                // Секции — только доступные для текущей вкладки
                 ..._buildAvailableSections(
                   context: context,
                   l: l,
@@ -75,7 +66,6 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
 
                 const SizedBox(height: AppSpacing.lg),
 
-                // Режим отображения уже добавленных
                 Text(
                   l.discoverAlreadyInCollection,
                   style:
@@ -111,7 +101,7 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
           ),
         ),
 
-        // Кнопки — фиксированы внизу
+        // Buttons stay pinned below the scrollable content.
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,

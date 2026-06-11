@@ -1,11 +1,6 @@
-// Общий text-overlay для карточек коллекций в home-гриде.
-//
-// Выводит имя → описание → статистику в левом-нижнем углу карточки.
-// Используется и в rich-карточке (на hero), и в classic-карточке (на мозаике
-// поверх bottom-scrim'а). Scrim-фон здесь НЕ рисуется — это ответственность
-// родителя:
-//   • rich → scrim от `CollectionHeroBackground`;
-//   • classic → `CollectionCardBottomScrim` перед overlay'ем.
+// The scrim background is NOT drawn here — that is the parent's job:
+// rich cards get it from `CollectionHeroBackground`, classic cards put
+// `CollectionCardBottomScrim` underneath the overlay.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,9 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Text-блок карточки коллекции: имя + описание + статистика в углу.
 class CollectionCardOverlay extends StatelessWidget {
-  /// Создаёт [CollectionCardOverlay].
   const CollectionCardOverlay({
     required this.name,
     required this.statsAsync,
@@ -25,13 +18,11 @@ class CollectionCardOverlay extends StatelessWidget {
     super.key,
   });
 
-  /// Имя коллекции.
   final String name;
 
-  /// Описание (или `null`/пусто — строка не выводится).
+  /// When `null` or empty, the description line is not rendered.
   final String? description;
 
-  /// Асинхронная статистика (total, completion%).
   final AsyncValue<CollectionStats> statsAsync;
 
   @override
@@ -114,8 +105,6 @@ class CollectionCardOverlay extends StatelessWidget {
   }
 }
 
-/// Метрики overlay'я — шрифты, отступы, межстрочные интервалы для трёх
-/// размеров карточек (xs / sm / default).
 class _OverlayMetrics {
   const _OverlayMetrics({
     required this.nameSize,
@@ -138,7 +127,7 @@ class _OverlayMetrics {
   final int descLines;
 }
 
-// Пресеты: xs — 3 колонки на mobile, sm — 4 колонки на tablet, default — ПК.
+// Presets: xs — 3 columns on mobile, sm — 4 columns on tablet, default — desktop.
 const _OverlayMetrics _metricsXs = _OverlayMetrics(
   nameSize: 13,
   descSize: 10,
@@ -176,13 +165,9 @@ _OverlayMetrics _metricsFor(double cardWidth) {
   return _metricsDefault;
 }
 
-/// Нижний scrim-градиент для classic-карточки (прозрачный сверху → тёмный
-/// снизу), чтобы text-overlay был читаем поверх мозаики.
-///
-/// Занимает нижние ~55% карточки — верхний ряд постеров мозаики остаётся
-/// чистым, нижний ряд приглушается.
+/// Covers the bottom ~55% of the card so the top row of mosaic posters
+/// stays clean while the bottom row is dimmed for text readability.
 class CollectionCardBottomScrim extends StatelessWidget {
-  /// Создаёт [CollectionCardBottomScrim].
   const CollectionCardBottomScrim({super.key});
 
   @override

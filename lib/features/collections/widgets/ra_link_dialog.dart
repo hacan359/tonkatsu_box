@@ -1,5 +1,3 @@
-// Диалог привязки игры к RetroAchievements.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,29 +10,22 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../core/services/image_cache_service.dart';
 
-/// Результат диалога — выбранная RA игра.
 class RaLinkResult {
-  /// Создаёт [RaLinkResult].
   const RaLinkResult({
     required this.raGameId,
     required this.title,
     required this.numAchievements,
   });
 
-  /// RA Game ID.
   final int raGameId;
 
-  /// Название в RA.
   final String title;
 
-  /// Количество достижений.
   final int numAchievements;
 }
 
-/// Показывает диалог поиска и привязки RA игры.
-///
-/// [gameName] — название игры из IGDB (для автоподстановки поиска).
-/// [platformId] — IGDB platform ID (для определения RA консоли).
+/// [gameName] is the IGDB game name, used to pre-fill the search.
+/// [platformId] is the IGDB platform id, mapped to RA console ids.
 Future<RaLinkResult?> showRaLinkDialog(
   BuildContext context, {
   required String gameName,
@@ -130,7 +121,7 @@ class _RaLinkDialogState extends ConsumerState<_RaLinkDialog> {
       return;
     }
 
-    // Сортируем: exact → prefix → contains → остальные.
+    // Rank: exact, then prefix, then contains; non-matches are dropped.
     final List<_ScoredEntry> scored = <_ScoredEntry>[];
     for (final RaGameListEntry game in _allGames) {
       final String normalized = RaToIgdbMapper.normalize(game.title);
@@ -184,7 +175,6 @@ class _RaLinkDialogState extends ConsumerState<_RaLinkDialog> {
               ),
               const SizedBox(height: AppSpacing.sm),
 
-              // Поле поиска.
               SizedBox(
                 height: 36,
                 child: TextField(
@@ -221,7 +211,6 @@ class _RaLinkDialogState extends ConsumerState<_RaLinkDialog> {
               const Divider(height: 1),
               const SizedBox(height: AppSpacing.xs),
 
-              // Контент.
               Expanded(child: _buildContent(l)),
             ],
           ),

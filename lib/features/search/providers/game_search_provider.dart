@@ -5,12 +5,9 @@ import '../../../data/repositories/game_repository.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/search_sort.dart';
 
-/// Количество результатов на одну страницу.
 const int _gamePageSize = 50;
 
-/// Состояние поиска игр.
 class GameSearchState {
-  /// Создаёт [GameSearchState].
   const GameSearchState({
     this.query = '',
     this.results = const <Game>[],
@@ -23,43 +20,33 @@ class GameSearchState {
     this.hasMore = false,
   });
 
-  /// Текущий поисковый запрос.
   final String query;
 
-  /// Результаты поиска.
   final List<Game> results;
 
-  /// Флаг загрузки первой страницы.
+  /// First-page load in progress.
   final bool isLoading;
 
-  /// Флаг загрузки следующей страницы.
+  /// Next-page (pagination) load in progress.
   final bool isLoadingMore;
 
-  /// Сообщение об ошибке.
   final String? error;
 
-  /// Выбранные платформы для фильтрации.
   final List<int> selectedPlatformIds;
 
-  /// Текущая сортировка.
   final SearchSort currentSort;
 
-  /// Текущее смещение для пагинации IGDB.
+  /// Current offset for IGDB pagination.
   final int currentOffset;
 
-  /// Есть ли ещё результаты для загрузки.
   final bool hasMore;
 
-  /// Проверяет, есть ли результаты.
   bool get hasResults => results.isNotEmpty;
 
-  /// Проверяет, пустой ли запрос.
   bool get isEmpty => query.isEmpty && results.isEmpty && !isLoading;
 
-  /// Проверяет, есть ли выбранные платформы.
   bool get hasPlatformFilter => selectedPlatformIds.isNotEmpty;
 
-  /// Копирует с изменёнными полями.
   GameSearchState copyWith({
     String? query,
     List<Game>? results,
@@ -114,18 +101,16 @@ class GameSearchState {
       );
 }
 
-/// Провайдер для поиска игр.
 final NotifierProvider<GameSearchNotifier, GameSearchState>
     gameSearchProvider =
     NotifierProvider<GameSearchNotifier, GameSearchState>(
   GameSearchNotifier.new,
 );
 
-/// Notifier для управления поиском игр.
 class GameSearchNotifier extends Notifier<GameSearchState> {
   late GameRepository _repository;
 
-  /// Минимальная длина запроса для поиска.
+  /// Queries shorter than this are not searched.
   static const int minQueryLength = 2;
 
   @override
@@ -134,9 +119,6 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     return const GameSearchState();
   }
 
-  /// Выполняет поиск игр (первая страница).
-  ///
-  /// [query] — строка поиска.
   Future<void> search(String query) async {
     state = state.copyWith(
       query: query,
@@ -153,7 +135,6 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     await _performSearch(query, offset: 0, append: false);
   }
 
-  /// Загружает следующую страницу результатов.
   Future<void> loadMore() async {
     if (state.isLoadingMore || state.isLoading || !state.hasMore) return;
     if (state.query.length < minQueryLength) return;
@@ -182,7 +163,7 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
         offset: offset,
       );
 
-      // Проверяем, что запрос всё ещё актуален
+      // Drop the result if the query changed while we were awaiting.
       if (state.query == query) {
         final List<Game> allResults = append
             ? <Game>[...state.results, ...results]
@@ -208,7 +189,7 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     }
   }
 
-  /// Устанавливает сортировку и пересортирует текущие результаты.
+  /// Re-sorts the already loaded results in place, without a new fetch.
   void setSort(SearchSort sort) {
     if (state.currentSort == sort) return;
 
@@ -220,7 +201,6 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     state = state.copyWith(currentSort: sort, results: sorted);
   }
 
-  /// Применяет сортировку к списку игр.
   List<Game> _applySort(
     List<Game> games,
     SearchSort sort,
@@ -253,7 +233,7 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     });
   }
 
-  /// Возвращает оценку релевантности (больше = лучше).
+  /// Relevance score; higher is better.
   int _relevanceScore(String name, String query) {
     if (name == query) return 3;
     if (name.startsWith(query)) return 2;
@@ -291,9 +271,8 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     });
   }
 
-  /// Устанавливает фильтр по платформам и повторяет поиск.
-  ///
-  /// [platformIds] — список ID платформ. Пустой список = все платформы.
+  /// Sets the platform filter and re-runs the search.
+  /// An empty [platformIds] means "all platforms".
   Future<void> setPlatformFilters(List<int> platformIds) async {
     state = state.copyWith(selectedPlatformIds: platformIds);
 
@@ -302,7 +281,6 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     }
   }
 
-  /// Добавляет платформу в фильтр.
   Future<void> addPlatformFilter(int platformId) async {
     if (state.selectedPlatformIds.contains(platformId)) return;
 
@@ -310,7 +288,6 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     await setPlatformFilters(newIds);
   }
 
-  /// Удаляет платформу из фильтра.
   Future<void> removePlatformFilter(int platformId) async {
     if (!state.selectedPlatformIds.contains(platformId)) return;
 
@@ -320,12 +297,10 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     await setPlatformFilters(newIds);
   }
 
-  /// Очищает фильтр платформ.
   Future<void> clearPlatformFilters() async {
     await setPlatformFilters(<int>[]);
   }
 
-  /// Очищает результаты поиска.
   void clear() {
     state = const GameSearchState();
   }

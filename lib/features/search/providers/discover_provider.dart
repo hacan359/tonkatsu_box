@@ -1,5 +1,3 @@
-// Провайдеры для Discover подборок.
-
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,41 +10,34 @@ import '../../settings/providers/settings_provider.dart';
 import '../utils/genre_utils.dart';
 import 'genre_provider.dart';
 
-/// Ключи настроек Discover.
+/// SharedPreferences keys for Discover settings.
 abstract final class DiscoverSettingsKeys {
-  /// JSON-массив включённых секций.
+  /// Stored as a JSON array of enabled section keys.
   static const String sections = 'discover_sections';
 
-  /// Скрывать ли элементы, уже добавленные в коллекцию.
+  /// Whether to hide items already added to a collection.
   static const String hideOwned = 'discover_hide_owned';
 }
 
-/// Идентификаторы секций Discover.
 enum DiscoverSectionId {
-  /// Тренды недели.
   trending('trending'),
 
-  /// Лучшие фильмы.
   topRatedMovies('top_rated_movies'),
 
-  /// Популярные сериалы.
   popularTvShows('popular_tv_shows'),
 
-  /// Скоро в кино.
   upcoming('upcoming'),
 
-  /// Аниме.
   anime('anime'),
 
-  /// Лучшие сериалы.
   topRatedTvShows('top_rated_tv_shows');
 
   const DiscoverSectionId(this.key);
 
-  /// Строковый ключ для сохранения в SharedPreferences.
+  /// String key used for SharedPreferences persistence.
   final String key;
 
-  /// Создаёт из строки или null.
+  /// Returns `null` for an unknown key.
   static DiscoverSectionId? fromKey(String key) {
     for (final DiscoverSectionId id in values) {
       if (id.key == key) return id;
@@ -55,9 +46,7 @@ enum DiscoverSectionId {
   }
 }
 
-/// Маппинг секций Discover по sourceId.
-///
-/// Определяет какие секции показывать на каждой вкладке поиска.
+/// Which Discover sections to show on each search tab, keyed by sourceId.
 const Map<String, Set<DiscoverSectionId>> discoverSectionsPerSource =
     <String, Set<DiscoverSectionId>>{
   'movies': <DiscoverSectionId>{
@@ -76,9 +65,7 @@ const Map<String, Set<DiscoverSectionId>> discoverSectionsPerSource =
   },
 };
 
-/// Состояние настроек Discover.
 class DiscoverSettings {
-  /// Создаёт [DiscoverSettings].
   const DiscoverSettings({
     this.enabledSections = const <DiscoverSectionId>{
       DiscoverSectionId.topRatedMovies,
@@ -90,13 +77,11 @@ class DiscoverSettings {
     this.hideOwned = false,
   });
 
-  /// Включённые секции.
   final Set<DiscoverSectionId> enabledSections;
 
-  /// Скрывать элементы, уже добавленные в коллекцию.
+  /// Hide items already added to a collection.
   final bool hideOwned;
 
-  /// Все секции по умолчанию.
   static const Set<DiscoverSectionId> defaultSections = <DiscoverSectionId>{
     DiscoverSectionId.topRatedMovies,
     DiscoverSectionId.popularTvShows,
@@ -105,7 +90,6 @@ class DiscoverSettings {
     DiscoverSectionId.topRatedTvShows,
   };
 
-  /// Копирование с изменениями.
   DiscoverSettings copyWith({
     Set<DiscoverSectionId>? enabledSections,
     bool? hideOwned,
@@ -117,14 +101,12 @@ class DiscoverSettings {
   }
 }
 
-/// Провайдер настроек Discover.
 final NotifierProvider<DiscoverSettingsNotifier, DiscoverSettings>
     discoverSettingsProvider =
     NotifierProvider<DiscoverSettingsNotifier, DiscoverSettings>(
   DiscoverSettingsNotifier.new,
 );
 
-/// Notifier для настроек Discover.
 class DiscoverSettingsNotifier extends Notifier<DiscoverSettings> {
   late SharedPreferences _prefs;
 
@@ -155,7 +137,6 @@ class DiscoverSettingsNotifier extends Notifier<DiscoverSettings> {
     );
   }
 
-  /// Переключает секцию.
   Future<void> toggleSection(DiscoverSectionId section) async {
     final Set<DiscoverSectionId> updated =
         Set<DiscoverSectionId>.from(state.enabledSections);
@@ -168,13 +149,11 @@ class DiscoverSettingsNotifier extends Notifier<DiscoverSettings> {
     await _save();
   }
 
-  /// Устанавливает режим скрытия.
   Future<void> setHideOwned({required bool value}) async {
     state = state.copyWith(hideOwned: value);
     await _save();
   }
 
-  /// Сбрасывает на настройки по умолчанию.
   Future<void> resetToDefault() async {
     state = const DiscoverSettings();
     await _save();
@@ -188,9 +167,6 @@ class DiscoverSettingsNotifier extends Notifier<DiscoverSettings> {
   }
 }
 
-// ===== Провайдеры данных =====
-
-/// Трендовые фильмы.
 final FutureProvider<List<Movie>> discoverTrendingMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
   ref.watch(settingsNotifierProvider
@@ -202,7 +178,6 @@ final FutureProvider<List<Movie>> discoverTrendingMoviesProvider =
   return resolveMovieGenres(movies, genreMap);
 });
 
-/// Трендовые сериалы.
 final FutureProvider<List<TvShow>> discoverTrendingTvShowsProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
   ref.watch(settingsNotifierProvider
@@ -214,7 +189,6 @@ final FutureProvider<List<TvShow>> discoverTrendingTvShowsProvider =
   return resolveTvGenres(shows, genreMap);
 });
 
-/// Лучшие фильмы.
 final FutureProvider<List<Movie>> discoverTopRatedMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
   ref.watch(settingsNotifierProvider
@@ -226,7 +200,6 @@ final FutureProvider<List<Movie>> discoverTopRatedMoviesProvider =
   return resolveMovieGenres(movies, genreMap);
 });
 
-/// Популярные сериалы.
 final FutureProvider<List<TvShow>> discoverPopularTvShowsProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
   ref.watch(settingsNotifierProvider
@@ -238,7 +211,6 @@ final FutureProvider<List<TvShow>> discoverPopularTvShowsProvider =
   return resolveTvGenres(shows, genreMap);
 });
 
-/// Скоро в кино.
 final FutureProvider<List<Movie>> discoverUpcomingMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
   ref.watch(settingsNotifierProvider
@@ -250,7 +222,7 @@ final FutureProvider<List<Movie>> discoverUpcomingMoviesProvider =
   return resolveMovieGenres(movies, genreMap);
 });
 
-/// Аниме (TV с жанром Animation = 16).
+/// Anime: TV shows with the Animation genre (TMDB genre id 16).
 final FutureProvider<List<TvShow>> discoverAnimeProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
   ref.watch(settingsNotifierProvider
@@ -262,7 +234,6 @@ final FutureProvider<List<TvShow>> discoverAnimeProvider =
   return resolveTvGenres(shows, genreMap);
 });
 
-/// Лучшие сериалы.
 final FutureProvider<List<TvShow>> discoverTopRatedTvShowsProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
   ref.watch(settingsNotifierProvider

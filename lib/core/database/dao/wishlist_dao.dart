@@ -1,5 +1,3 @@
-// DAO для работы с вишлистом.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/media_type.dart';
@@ -26,16 +24,13 @@ class WishlistTagCount {
   final int totalCount;
 }
 
-/// DAO для таблицы `wishlist`.
+/// DAO for the `wishlist` table.
 class WishlistDao {
-  /// Создаёт DAO с функцией получения базы данных.
   const WishlistDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  /// Добавляет элемент в вишлист.
-  ///
-  /// Возвращает созданный [WishlistItem] с присвоенным ID.
+  /// Returns the created [WishlistItem] with its assigned ID.
   Future<WishlistItem> addWishlistItem({
     required String text,
     MediaType? mediaTypeHint,
@@ -67,11 +62,8 @@ class WishlistDao {
     );
   }
 
-  /// Возвращает все элементы вишлиста.
-  ///
-  /// Сортировка: активные первыми (по created_at DESC),
-  /// затем resolved (по resolved_at DESC).
-  /// Если [includeResolved] == false, возвращает только активные.
+  /// Active items come first (by created_at DESC), then resolved ones
+  /// (by resolved_at DESC). [includeResolved] == false returns active only.
   Future<List<WishlistItem>> getWishlistItems({
     bool includeResolved = true,
   }) async {
@@ -84,9 +76,7 @@ class WishlistDao {
     return rows.map(WishlistItem.fromDb).toList();
   }
 
-  /// Возвращает количество элементов вишлиста.
-  ///
-  /// Если [onlyActive] == true, считает только неразрешённые.
+  /// [onlyActive] == true counts unresolved items only.
   Future<int> getWishlistItemCount({bool onlyActive = true}) async {
     final Database db = await _getDatabase();
     final String where = onlyActive ? 'WHERE is_resolved = 0' : '';
@@ -96,7 +86,6 @@ class WishlistDao {
     return result.first['count'] as int;
   }
 
-  /// Обновляет элемент вишлиста.
   Future<void> updateWishlistItem(
     int id, {
     String? text,
@@ -135,7 +124,6 @@ class WishlistDao {
     );
   }
 
-  /// Помечает элемент вишлиста как resolved.
   Future<void> resolveWishlistItem(int id) async {
     final Database db = await _getDatabase();
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -150,7 +138,6 @@ class WishlistDao {
     );
   }
 
-  /// Снимает отметку resolved с элемента вишлиста.
   Future<void> unresolveWishlistItem(int id) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -164,7 +151,6 @@ class WishlistDao {
     );
   }
 
-  /// Удаляет элемент вишлиста.
   Future<void> deleteWishlistItem(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
@@ -174,9 +160,8 @@ class WishlistDao {
     );
   }
 
-  /// Находит активный (не resolved) элемент вишлиста по тексту.
-  ///
-  /// Возвращает первый найденный элемент или null.
+  /// Finds an unresolved wishlist item by exact text; returns the first
+  /// match or null.
   Future<WishlistItem?> findUnresolvedByText(String text) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -189,9 +174,7 @@ class WishlistDao {
     return WishlistItem.fromDb(rows.first);
   }
 
-  /// Удаляет все resolved элементы вишлиста.
-  ///
-  /// Возвращает количество удалённых записей.
+  /// Returns the number of deleted rows.
   Future<int> clearResolvedWishlistItems() async {
     final Database db = await _getDatabase();
     return db.delete(
@@ -200,7 +183,6 @@ class WishlistDao {
     );
   }
 
-  /// Возвращает элементы вишлиста с применением [tagFilter].
   Future<List<WishlistItem>> getWishlistItemsFiltered({
     bool includeResolved = true,
     WishlistTagFilter tagFilter = const WishlistTagFilter.all(),
@@ -234,9 +216,8 @@ class WishlistDao {
     return rows.map(WishlistItem.fromDb).toList();
   }
 
-  /// Удаляет все записи с указанным тегом. NULL = «без тега».
-  ///
-  /// Возвращает количество удалённых записей.
+  /// Deletes all rows with the given tag; NULL targets untagged rows.
+  /// Returns the number of deleted rows.
   Future<int> deleteWishlistItemsByTag(String? tag) async {
     final Database db = await _getDatabase();
     if (tag == null) {
@@ -249,9 +230,8 @@ class WishlistDao {
     );
   }
 
-  /// Переименовывает тег у всех носителей. Возвращает количество
-  /// обновлённых записей. NULL в [from] позволяет проставить тег
-  /// для ранее untagged записей.
+  /// Renames a tag on every row carrying it; returns the number of updated
+  /// rows. NULL [from] assigns the tag to previously untagged rows.
   Future<int> renameWishlistTag(String? from, String to) async {
     final Database db = await _getDatabase();
     if (from == null) {

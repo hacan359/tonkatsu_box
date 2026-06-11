@@ -1,5 +1,3 @@
-// Дропдаун выбора источника данных с группировкой по провайдерам.
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -9,22 +7,17 @@ import '../../../shared/theme/app_typography.dart';
 import '../models/search_source.dart';
 import '../sources/search_sources.dart';
 
-/// Дропдаун для выбора источника поиска.
-///
-/// Отображает popup с группами (TMDB, IGDB, AniList, VNDB).
-/// Заголовки групп показывают иконку и название, пункты — label источника.
+/// Search source dropdown with options grouped by provider
+/// (TMDB, IGDB, AniList, VNDB).
 class SourceDropdown extends StatelessWidget {
-  /// Создаёт [SourceDropdown].
   const SourceDropdown({
     required this.current,
     required this.onChanged,
     super.key,
   });
 
-  /// Текущий источник.
   final SearchSource current;
 
-  /// Callback при выборе нового источника.
   final ValueChanged<SearchSource> onChanged;
 
   @override
@@ -81,17 +74,16 @@ class SourceDropdown extends StatelessWidget {
     );
   }
 
-  /// Строит popup с группами источников.
   List<PopupMenuEntry<String>> _buildGroupedItems(S l) {
     final List<PopupMenuEntry<String>> items = <PopupMenuEntry<String>>[];
 
     for (final SourceGroupEntry group in groupedSearchSources) {
-      // Разделитель между группами (не перед первой)
+      // Divider between groups, but not before the first one.
       if (items.isNotEmpty) {
         items.add(const PopupMenuDivider(height: 8));
       }
 
-      // Заголовок группы (не кликабельный)
+      // Group header, not selectable.
       items.add(PopupMenuItem<String>(
         enabled: false,
         height: 28,
@@ -116,7 +108,6 @@ class SourceDropdown extends StatelessWidget {
         ),
       ));
 
-      // Пункты группы
       for (final SearchSource source in group.sources) {
         final bool isSelected = source.id == current.id;
         items.add(PopupMenuItem<String>(
@@ -143,7 +134,7 @@ class SourceDropdown extends StatelessWidget {
   }
 }
 
-/// Рендерит брендовый PNG если задан [asset], иначе Material-иконку.
+/// Renders the brand PNG when [asset] is set, falling back to a Material icon.
 Widget _sourceGlyph({
   required String? asset,
   required IconData icon,
