@@ -8,12 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// BottomSheet для выбора платформ с поиском.
-///
-/// Позволяет фильтровать список платформ по названию
-/// и выбирать несколько платформ через чекбоксы.
 class PlatformFilterSheet extends ConsumerStatefulWidget {
-  /// Создаёт [PlatformFilterSheet].
   const PlatformFilterSheet({
     required this.platforms,
     required this.selectedIds,
@@ -21,13 +16,10 @@ class PlatformFilterSheet extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Список всех доступных платформ.
   final List<Platform> platforms;
 
-  /// Список ID выбранных платформ.
   final List<int> selectedIds;
 
-  /// Callback при применении фильтра.
   final void Function(List<int> selectedIds) onApply;
 
   @override

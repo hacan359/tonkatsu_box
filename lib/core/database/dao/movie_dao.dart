@@ -1,18 +1,14 @@
-// DAO для работы с фильмами и TMDB-жанрами.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/movie.dart';
 import '../query_chunk.dart';
 
-/// DAO для таблиц `movies_cache` и `tmdb_genres`.
+/// DAO for the `movies_cache` and `tmdb_genres` tables.
 class MovieDao {
-  /// Создаёт DAO с функцией получения базы данных.
   const MovieDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  /// Возвращает фильм по TMDB ID или null, если не найден.
   Future<Movie?> getMovieByTmdbId(int tmdbId) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -25,7 +21,6 @@ class MovieDao {
     return Movie.fromDb(rows.first);
   }
 
-  /// Сохраняет или обновляет фильм в кеше.
   Future<void> upsertMovie(Movie movie) async {
     final Database db = await _getDatabase();
     await db.insert(
@@ -35,7 +30,6 @@ class MovieDao {
     );
   }
 
-  /// Сохраняет список фильмов пакетно.
   Future<void> upsertMovies(List<Movie> movies) async {
     if (movies.isEmpty) return;
 
@@ -53,7 +47,6 @@ class MovieDao {
     });
   }
 
-  /// Возвращает несколько фильмов по списку TMDB ID.
   Future<List<Movie>> getMoviesByTmdbIds(List<int> tmdbIds) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(tmdbIds, (List<int> chunk) async {
@@ -68,16 +61,14 @@ class MovieDao {
     });
   }
 
-  /// Удаляет все фильмы из кеша.
   Future<void> clearMovies() async {
     final Database db = await _getDatabase();
     await db.delete('movies_cache');
   }
 
-  /// Возвращает маппинг ID → имя жанров из кэша.
+  /// Returns a genre ID → name map from the cache.
   ///
-  /// [type] — тип медиа: `'movie'` или `'tv'`.
-  /// [lang] — язык: `'en'` или `'ru'`.
+  /// [type] is `'movie'` or `'tv'`; [lang] is `'en'` or `'ru'`.
   Future<Map<String, String>> getTmdbGenreMap(
     String type, {
     String lang = 'en',

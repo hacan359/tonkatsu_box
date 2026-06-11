@@ -1,5 +1,3 @@
-// Discord Rich Presence — показывает текущий элемент в статусе Discord.
-
 import 'dart:async';
 
 import 'package:dart_discord_presence/dart_discord_presence.dart';
@@ -13,10 +11,9 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/tracker_game_data.dart';
 
-/// Application ID из Discord Developer Portal.
+/// Application ID from the Discord Developer Portal.
 const String _kApplicationId = '1492141877456015491';
 
-/// Провайдер сервиса Discord RPC.
 final Provider<DiscordRpcService> discordRpcServiceProvider =
     Provider<DiscordRpcService>((Ref ref) {
   final DiscordRpcService service = DiscordRpcService();
@@ -24,10 +21,10 @@ final Provider<DiscordRpcService> discordRpcServiceProvider =
   return service;
 });
 
-/// Сервис для отображения текущего элемента коллекции в статусе Discord.
+/// Shows the current collection item in the Discord status.
 ///
-/// Подключается к локальному Discord клиенту через IPC pipe.
-/// Работает только на десктопе (Windows/Linux/macOS).
+/// Talks to the local Discord client over an IPC pipe, so it works on
+/// desktop only (Windows/Linux/macOS).
 class DiscordRpcService {
   static final Logger _log = Logger('DiscordRpcService');
 
@@ -43,26 +40,22 @@ class DiscordRpcService {
   String? _raUsername;
   String? _lastRaPresence;
   int? _lastRaGameId;
-  // Кэш game info: {title, consoleName, earned, total}
   _RaGameCache? _raGameCache;
 
-  /// RA sync активен — обычные updatePresence/clearPresence игнорируются.
+  /// While RA sync is active, regular updatePresence/clearPresence calls
+  /// are ignored.
   bool get isRaSyncActive => _raSyncActive;
 
-  /// Подключён ли сервис к Discord IPC.
   bool get isConnected => _initialized;
 
-  /// Включён ли сервис пользователем.
   bool get isEnabled => _enabled;
 
-  /// Подключиться к Discord (вызывается при включении настройки).
   Future<void> enable() async {
     _enabled = true;
     if (!kDiscordRpcAvailable) return;
     await _connect();
   }
 
-  /// Отключиться от Discord (вызывается при выключении настройки).
   Future<void> disable() async {
     _enabled = false;
     _lastPresenceKey = null;
@@ -70,10 +63,8 @@ class DiscordRpcService {
     await _disconnect();
   }
 
-  /// Запустить трансляцию RA Rich Presence в Discord.
-  ///
-  /// Периодически опрашивает RA API и обновляет Discord статус.
-  /// Пока RA sync активен, [updatePresence] и [clearPresence] игнорируются.
+  /// Starts mirroring RA Rich Presence to Discord by polling the RA API.
+  /// While RA sync is active, [updatePresence] and [clearPresence] no-op.
   Future<void> enableRaSync({
     required RaApi raApi,
     required String raUsername,
@@ -87,10 +78,9 @@ class DiscordRpcService {
     if (!_enabled || !kDiscordRpcAvailable) return;
     if (!_initialized) await _connect();
 
-    // Первый опрос сразу
+    // Poll immediately, then every 30 seconds.
     await _pollRaPresence();
 
-    // Затем каждые 30 секунд
     _raPollTimer?.cancel();
     _raPollTimer = Timer.periodic(
       const Duration(seconds: 30),
@@ -100,7 +90,6 @@ class DiscordRpcService {
     _log.info('RA sync started for $raUsername');
   }
 
-  /// Остановить трансляцию RA Rich Presence.
   Future<void> disableRaSync() async {
     _raPollTimer?.cancel();
     _raPollTimer = null;
@@ -111,7 +100,7 @@ class DiscordRpcService {
     _lastRaGameId = null;
     _raGameCache = null;
 
-    // Очищаем Discord статус после остановки RA sync
+    // Clear the Discord status left behind by RA sync.
     if (_initialized && _rpc != null) {
       try {
         await _rpc!.setPresence(const DiscordPresence());
@@ -121,9 +110,8 @@ class DiscordRpcService {
     _log.info('RA sync stopped');
   }
 
-  /// Обновить статус Discord текущим элементом коллекции.
-  ///
-  /// [raData] — данные RA трекера (показывает иконку + прогресс достижений).
+  /// [raData] — RA tracker data; when present, shows the RA icon plus
+  /// achievement progress.
   Future<void> updatePresence(
     CollectionItem item, {
     TrackerGameData? raData,
@@ -131,12 +119,12 @@ class DiscordRpcService {
   }) async {
     if (!_enabled || !kDiscordRpcAvailable || _raSyncActive) return;
 
-    // Дедупликация — не обновлять если уже показываем этот элемент
+    // Dedupe — skip if this item is already being shown.
     final String key = '${item.mediaType.value}:${item.externalId}';
     if (key == _lastPresenceKey) return;
     _lastPresenceKey = key;
 
-    // Lazy reconnect если Discord был запущен после приложения
+    // Lazy reconnect in case Discord was launched after the app.
     if (!_initialized) await _connect();
     if (!_initialized || _rpc == null) return;
 
@@ -165,7 +153,7 @@ class DiscordRpcService {
     }
   }
 
-  /// Очистить статус Discord (вызывается при уходе с экрана деталей).
+  /// Called when leaving the item detail screen.
   Future<void> clearPresence() async {
     _lastPresenceKey = null;
     if (_raSyncActive || !_initialized || _rpc == null) return;
@@ -176,14 +164,12 @@ class DiscordRpcService {
     }
   }
 
-  /// Освободить ресурсы.
   Future<void> dispose() async {
     _raPollTimer?.cancel();
     _raPollTimer = null;
     await _disconnect();
   }
 
-  /// Опрашивает RA API и обновляет Discord presence.
   Future<void> _pollRaPresence() async {
     if (!_raSyncActive || _raApi == null || _raUsername == null) return;
     if (!_initialized) await _connect();
@@ -195,7 +181,7 @@ class DiscordRpcService {
       final String presenceMsg = profile.richPresenceMsg ?? '';
       final int? gameId = profile.lastGameId;
 
-      // Дедупликация — не обновлять если ничего не изменилось
+      // Dedupe — skip the update when nothing changed.
       if (presenceMsg == _lastRaPresence && gameId == _lastRaGameId) return;
       _lastRaPresence = presenceMsg;
 
@@ -206,7 +192,7 @@ class DiscordRpcService {
         return;
       }
 
-      // Подтянуть game info если игра сменилась
+      // Refetch game info only when the game changed.
       if (gameId != _lastRaGameId) {
         _lastRaGameId = gameId;
         _raGameCache = await _fetchGameSummary(gameId);
@@ -245,7 +231,6 @@ class DiscordRpcService {
     }
   }
 
-  /// Загружает краткую инфо об игре для Discord presence.
   Future<_RaGameCache?> _fetchGameSummary(int raGameId) async {
     try {
       final Map<String, dynamic> data =
@@ -287,7 +272,7 @@ class DiscordRpcService {
     _initialized = false;
   }
 
-  /// Строит вторую строку: платформа/прогресс + год + RA достижения.
+  /// Builds the second line: platform/progress + year + RA achievements.
   static String _buildState(CollectionItem item, TrackerGameData? raData) {
     final int? year = item.releaseYear;
     final String yearSuffix = year != null ? ' ($year)' : '';
@@ -315,7 +300,6 @@ class DiscordRpcService {
       MediaType.custom => 'Custom$yearSuffix',
     };
 
-    // Добавляем RA прогресс если есть
     if (raData != null &&
         raData.achievementsEarned != null &&
         raData.achievementsTotal != null) {
@@ -330,7 +314,7 @@ class DiscordRpcService {
     return progress;
   }
 
-  /// Tooltip для RA иконки.
+  /// Tooltip for the RA icon.
   static String _buildRaTooltip(TrackerGameData raData) {
     if (raData.isMastered) return 'Mastered';
     if (raData.isBeaten) return 'Beaten';
@@ -340,7 +324,7 @@ class DiscordRpcService {
     return 'RetroAchievements';
   }
 
-  /// Глагол активности (не локализуется — виден друзьям в Discord).
+  /// Activity verb — intentionally not localized, friends see it in Discord.
   static String _activityVerb(MediaType type) => switch (type) {
         MediaType.game => 'Playing',
         MediaType.movie ||
@@ -353,7 +337,7 @@ class DiscordRpcService {
       };
 }
 
-/// Кэш информации об игре для RA polling.
+/// Cached game info for RA polling.
 class _RaGameCache {
   const _RaGameCache({
     required this.gameId,

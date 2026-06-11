@@ -1,8 +1,5 @@
-// Bottom sheet с тегами и сортировкой коллекции — для узких экранов
-// (где TagSidebar не помещается).
-//
-// Открывается из CollectionFilterBar по тапу на иконку «Теги/Сортировка».
-// Все изменения применяются мгновенно (sheet остаётся открытым).
+// Used on narrow screens where the TagSidebar does not fit. All changes
+// apply immediately; the sheet stays open.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +14,6 @@ import '../../../shared/theme/app_typography.dart';
 import '../../settings/widgets/settings_tile.dart';
 import '../providers/collections_provider.dart';
 
-/// Открыть [CollectionFilterSheet] как modal bottom sheet.
 Future<void> showCollectionFilterSheet(
   BuildContext context, {
   required int? collectionId,
@@ -50,14 +46,11 @@ Future<void> showCollectionFilterSheet(
   );
 }
 
-/// Содержимое bottom sheet: теги (multi-select) + сортировка.
-///
-/// Sheet хранит свой локальный snapshot `selectedTagIds`/`groupByTags` —
-/// иначе он не реагирует на собственные действия (Navigator-овые маршруты
-/// не пересоздаются от setState родителя). После каждого изменения
-/// callback родителя вызывается, чтобы parent тоже обновился.
+/// The sheet keeps its own local snapshot of `selectedTagIds`/`groupByTags`:
+/// otherwise it would not react to its own actions (Navigator routes are not
+/// rebuilt by the parent's setState). After each change the parent callback
+/// is invoked so the parent updates too.
 class CollectionFilterSheet extends ConsumerStatefulWidget {
-  /// Создаёт [CollectionFilterSheet].
   const CollectionFilterSheet({
     required this.scrollController,
     required this.collectionId,
@@ -69,25 +62,22 @@ class CollectionFilterSheet extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Контроллер скролла из [DraggableScrollableSheet].
   final ScrollController scrollController;
 
-  /// ID коллекции (null = uncategorized).
+  /// `null` means the uncategorized collection.
   final int? collectionId;
 
-  /// Все теги коллекции.
   final List<CollectionTag> tags;
 
-  /// ID выбранных тегов (initial snapshot).
+  /// Initial snapshot; the sheet keeps its own local copy afterwards.
   final Set<int> selectedTagIds;
 
-  /// Включена ли группировка по тегам (initial snapshot).
+  /// Initial snapshot; the sheet keeps its own local copy afterwards.
   final bool groupByTags;
 
-  /// Callback при тапе на тег (id) или null = сбросить все.
+  /// Called with the tag id, or `null` to clear all tags.
   final ValueChanged<int?> onTagToggled;
 
-  /// Callback переключения «Группировать по тегам».
   final VoidCallback onGroupToggled;
 
   @override
@@ -109,8 +99,6 @@ class _CollectionFilterSheetState
       } else {
         _selectedTagIds.add(id);
       }
-      // groupByTags сбрасывает теги в parent; учитываем
-      // что parent же сбрасывает _filterTagIds при включении группы.
     });
     widget.onTagToggled(id);
   }
@@ -118,7 +106,7 @@ class _CollectionFilterSheetState
   void _handleGroupToggle() {
     setState(() {
       _groupByTags = !_groupByTags;
-      // Логика parent: при тоггле group сбрасывает выбранные теги.
+      // Mirrors the parent: toggling grouping clears the selected tags.
       _selectedTagIds.clear();
     });
     widget.onGroupToggled();
@@ -152,7 +140,7 @@ class _CollectionFilterSheetState
         ),
         child: Stack(
           children: <Widget>[
-            // Цветной glow brand сверху.
+            // Brand-colored glow at the top.
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -171,7 +159,7 @@ class _CollectionFilterSheetState
                 ),
               ),
             ),
-            // Затемнение к низу.
+            // Darkening towards the bottom.
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -207,7 +195,7 @@ class _CollectionFilterSheetState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                    // Header: drag handle + Сбросить теги (если выбраны).
+                    // Header: drag handle + clear-tags button (when any selected).
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -262,7 +250,6 @@ class _CollectionFilterSheetState
                       ),
                     ),
 
-                    // ===== Tags section =====
                     if (widget.tags.isNotEmpty) ...<Widget>[
                       Padding(
                         padding: const EdgeInsets.fromLTRB(
@@ -299,7 +286,6 @@ class _CollectionFilterSheetState
                           ],
                         ),
                       ),
-                      // Group by tags toggle — стандартный паттерн settings.
                       SettingsTile(
                         title: l.tagSidebarGroup,
                         showChevron: false,
@@ -311,7 +297,6 @@ class _CollectionFilterSheetState
                       ),
                     ],
 
-                    // ===== Sort section =====
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -330,7 +315,6 @@ class _CollectionFilterSheetState
                               ),
                             ),
                           ),
-                          // Переключатель направления.
                           TextButton.icon(
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
@@ -388,11 +372,6 @@ class _CollectionFilterSheetState
   }
 }
 
-// =========================================================================
-// Tag chip
-// =========================================================================
-
-/// Чип-тег для multi-select. Цвет тега + selected состояние.
 class _TagChip extends StatelessWidget {
   const _TagChip({
     required this.tag,
@@ -409,8 +388,6 @@ class _TagChip extends StatelessWidget {
     final Color color = tag.color != null
         ? Color(tag.color!)
         : AppColors.textSecondary;
-    // Selected: цветная заливка + чек-иконка + тёмный текст. Unselected:
-    // прозрачный + цветной бордер + цветной текст.
     final Color bg = selected ? color : Colors.transparent;
     final Color fg = selected ? AppColors.background : color;
     return Material(
@@ -451,11 +428,6 @@ class _TagChip extends StatelessWidget {
   }
 }
 
-// =========================================================================
-// Sort tile
-// =========================================================================
-
-/// Строка-радиокнопка для выбора сортировки.
 class _SortTile extends StatelessWidget {
   const _SortTile({
     required this.label,

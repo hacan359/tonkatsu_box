@@ -1,5 +1,3 @@
-// Секция прогресса чтения манги — главы и тома.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,12 +8,9 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
 
-/// Секция прогресса чтения манги с прогресс-барами и кнопками.
-///
-/// Использует `currentEpisode` для прочитанных глав и `currentSeason`
-/// для прочитанных томов (повторное использование существующих полей).
+/// Reuses existing item fields: `currentEpisode` stores chapters read,
+/// `currentSeason` stores volumes read.
 class MangaProgressSection extends ConsumerWidget {
-  /// Создаёт [MangaProgressSection].
   const MangaProgressSection({
     required this.itemId,
     required this.collectionId,
@@ -26,22 +21,18 @@ class MangaProgressSection extends ConsumerWidget {
     super.key,
   });
 
-  /// ID элемента коллекции.
   final int itemId;
 
-  /// ID коллекции.
   final int? collectionId;
 
-  /// Данные манги.
   final Manga? manga;
 
-  /// Текущая прочитанная глава (из `currentEpisode`).
+  /// Last chapter read (backed by `currentEpisode`).
   final int currentChapter;
 
-  /// Текущий прочитанный том (из `currentSeason`).
+  /// Last volume read (backed by `currentSeason`).
   final int currentVolume;
 
-  /// Акцентный цвет.
   final Color accentColor;
 
   @override
@@ -53,7 +44,6 @@ class MangaProgressSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Заголовок
         Row(
           children: <Widget>[
             Icon(Icons.auto_stories, size: 20, color: accentColor),

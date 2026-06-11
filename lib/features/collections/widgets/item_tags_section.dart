@@ -1,5 +1,3 @@
-// Компактный выбор тега на экране деталей элемента.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,12 +11,9 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/collection_tags_provider.dart';
 import '../providers/collections_provider.dart';
 
-/// Компактный виджет выбора одного тега (секции) на экране деталей элемента.
-///
-/// Отображается как небольшой чип/бейдж с названием тега.
-/// По тапу — popup menu для выбора тега.
+/// An item carries at most one tag; tapping the chip opens a popup menu
+/// to change it.
 class ItemTagsSection extends ConsumerWidget {
-  /// Создаёт [ItemTagsSection].
   const ItemTagsSection({
     required this.collectionId,
     required this.itemId,
@@ -27,16 +22,12 @@ class ItemTagsSection extends ConsumerWidget {
     super.key,
   });
 
-  /// ID коллекции.
   final int collectionId;
 
-  /// ID элемента коллекции.
   final int itemId;
 
-  /// Текущий tag_id элемента.
   final int? currentTagId;
 
-  /// Можно ли редактировать тег.
   final bool isEditable;
 
   @override
@@ -115,7 +106,7 @@ class ItemTagsSection extends ConsumerWidget {
     );
   }
 
-  /// Sentinel value для "без тега".
+  /// Sentinel menu value meaning "no tag".
   static const int _noTagSentinel = -1;
 
   void _showTagPopup(

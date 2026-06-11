@@ -1,5 +1,3 @@
-// Секция прогресса просмотра аниме — эпизоды.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,12 +8,9 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
 
-/// Секция прогресса просмотра аниме с прогресс-баром и кнопками.
-///
-/// Использует `currentEpisode` для просмотренных эпизодов.
-/// `currentSeason` не используется (у AniList аниме нет деления на сезоны).
+/// Tracks watched episodes via `currentEpisode` only; `currentSeason` is
+/// unused because AniList anime have no season split.
 class AnimeProgressSection extends ConsumerWidget {
-  /// Создаёт [AnimeProgressSection].
   const AnimeProgressSection({
     required this.itemId,
     required this.collectionId,
@@ -25,19 +20,15 @@ class AnimeProgressSection extends ConsumerWidget {
     super.key,
   });
 
-  /// ID элемента коллекции.
   final int itemId;
 
-  /// ID коллекции.
   final int? collectionId;
 
-  /// Данные аниме.
   final Anime? anime;
 
-  /// Текущий просмотренный эпизод (из `collection_items.current_episode`).
+  /// Last watched episode (from `collection_items.current_episode`).
   final int currentEpisode;
 
-  /// Акцентный цвет.
   final Color accentColor;
 
   @override
@@ -48,7 +39,6 @@ class AnimeProgressSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Заголовок
         Row(
           children: <Widget>[
             Icon(Icons.play_circle_outline, size: 20, color: accentColor),

@@ -1,18 +1,13 @@
-// Лёгкий провайдер для признака "rich collections".
-//
-// Отдельный Provider нужен, чтобы виджеты (CollectionCard и др.) могли читать
-// настройку без обязательного инстанцирования всего `SettingsNotifier` —
-// в unit-тестах этот Notifier требует целую пачку overrides.
+// Standalone provider so widgets (CollectionCard etc.) can read the setting
+// without instantiating the full `SettingsNotifier`, which needs a whole pile
+// of overrides in unit tests.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../settings/providers/settings_provider.dart';
 
-/// Включён ли rich-вид коллекций (обложка + описание).
-///
-/// В unit-тестах, где `settingsNotifierProvider` не инициализирован,
-/// значение безопасно фолбэчится в `false` — виджеты отображают обычную
-/// мозаику.
+/// In unit tests where `settingsNotifierProvider` is not initialized the
+/// value safely falls back to `false`, so widgets render the plain mosaic.
 final Provider<bool> richCollectionsEnabledProvider = Provider<bool>(
   (Ref ref) {
     try {

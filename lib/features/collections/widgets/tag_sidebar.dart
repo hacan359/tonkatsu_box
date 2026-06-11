@@ -1,5 +1,3 @@
-// Боковая панель тегов-закладок для фильтрации коллекции.
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -7,10 +5,7 @@ import '../../../shared/models/collection_tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Боковая панель с тегами в виде закладок.
-///
-/// Отображается справа от контента коллекции.
-/// Поддерживает мультивыбор: клик переключает тег, «All» сбрасывает всё.
+/// Supports multi-select: a click toggles a tag, "All" clears everything.
 class TagSidebar extends StatelessWidget {
   const TagSidebar({
     required this.tags,
@@ -21,22 +16,18 @@ class TagSidebar extends StatelessWidget {
     super.key,
   });
 
-  /// Все теги коллекции.
   final List<CollectionTag> tags;
 
-  /// ID выбранных тегов (пустой = показать все).
+  /// Empty set means "show everything".
   final Set<int> selectedTagIds;
 
-  /// Включена ли группировка по тегам.
   final bool groupByTags;
 
-  /// Callback при переключении тега (null = сброс всех фильтров).
+  /// Called with `null` to reset all filters.
   final ValueChanged<int?> onTagToggled;
 
-  /// Callback переключения режима группировки по тегам.
   final VoidCallback onGroupToggled;
 
-  /// Ширина боковой панели.
   static const double width = 32.0;
 
   @override
@@ -53,7 +44,6 @@ class TagSidebar extends StatelessWidget {
       child: Column(
         children: <Widget>[
           const SizedBox(height: 8),
-          // Группировка по тегам
           _TagTab(
             label: S.of(context).tagSidebarGroup,
             color: AppColors.brand,
@@ -61,14 +51,12 @@ class TagSidebar extends StatelessWidget {
             onTap: onGroupToggled,
           ),
           const SizedBox(height: 4),
-          // Разделитель
           Container(
             width: 20,
             height: 1,
             color: AppColors.surfaceBorder,
           ),
           const SizedBox(height: 4),
-          // Теги
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 4),
@@ -94,7 +82,6 @@ class TagSidebar extends StatelessWidget {
   }
 }
 
-/// Одна закладка-таб тега.
 class _TagTab extends StatefulWidget {
   const _TagTab({
     required this.label,

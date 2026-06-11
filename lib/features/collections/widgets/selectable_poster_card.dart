@@ -1,17 +1,11 @@
-// Обёртка над MediaPosterCard с чекбоксом-оверлеем для bulk selection.
-//
-// Под Google Photos style: круглая «галка» в верхнем левом углу,
-// тап по ней toggle'ит выделение; тап по остальному телу карточки —
-// обычный open. При активном селекшне любая карточка показывает
-// чекмарк (полупрозрачный для невыделенных, brand-tinted для выделенных).
+// Checkbox overlay for bulk selection, Google Photos style: tapping the
+// circle toggles selection, tapping the rest of the card is a normal open.
 
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
 
-/// Накладывает чекбокс-оверлей на child-карточку.
 class SelectablePosterCard extends StatefulWidget {
-  /// Создаёт [SelectablePosterCard].
   const SelectablePosterCard({
     required this.child,
     required this.isSelected,
@@ -20,17 +14,14 @@ class SelectablePosterCard extends StatefulWidget {
     super.key,
   });
 
-  /// Карточка постера (обычно [MediaPosterCard]).
   final Widget child;
 
-  /// Выделена ли карточка.
   final bool isSelected;
 
-  /// Toggle-колбэк.
   final VoidCallback onToggleSelect;
 
-  /// Активен ли вообще режим выделения (есть выделенные элементы).
-  /// Когда активен, чекмарки видны всегда; иначе — только на hover.
+  /// True while any item is selected. When active, checkmarks are always
+  /// visible; otherwise they appear only on hover.
   final bool selectionActive;
 
   @override
@@ -91,8 +82,8 @@ class _CheckCircle extends StatelessWidget {
 
   final bool isSelected;
 
-  /// Если кружок невидим (opacity 0), отключаем его в hit-testing,
-  /// чтобы не блокировать клики по карточке.
+  /// When the circle is invisible (opacity 0) it is excluded from
+  /// hit-testing so it doesn't swallow clicks meant for the card.
   final bool interactive;
 
   final VoidCallback onTap;

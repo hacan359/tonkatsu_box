@@ -1,6 +1,5 @@
-// Hero-баннер rich-коллекции: картинка справа, имя/описание слева, мягкий
-// fade снизу. Используется как `header`-sliver в `CollectionItemsView` —
-// скроллится вместе с сеткой, а не пинится сверху.
+// Hero banner of a rich collection. Used as the `header` sliver in
+// `CollectionItemsView`: it scrolls away with the grid, not pinned on top.
 
 import 'dart:io';
 
@@ -12,21 +11,17 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 import 'default_hero_assets.dart';
 
-/// Hero-баннер rich-коллекции: картинка справа, текст слева, мягкий fade
-/// снизу. Если [heroAbsolutePath] не задан — пробуем дефолтную картинку
-/// из ассетов, иначе прозрачная подложка.
+/// When [heroAbsolutePath] is not set, falls back to a bundled default
+/// image, and to a transparent backdrop when none are bundled.
 class RichHeroBanner extends StatelessWidget {
-  /// Создаёт [RichHeroBanner].
   const RichHeroBanner({
     required this.collection,
     this.heroAbsolutePath,
     super.key,
   });
 
-  /// Коллекция (имя, описание).
   final Collection collection;
 
-  /// Абсолютный путь к пользовательскому hero (или `null`).
   final String? heroAbsolutePath;
 
   @override
@@ -69,11 +64,8 @@ class RichHeroBanner extends StatelessWidget {
   }
 }
 
-/// Подложка баннера, когда hero-картинка не задана.
-///
-/// Полностью прозрачна — баннер сливается с тем, что нарисовано под ним
-/// (обычно это тот же `AppColors.background`), высота и позиция текста
-/// остаются стабильными.
+/// Fully transparent on purpose: the banner blends with whatever is painted
+/// behind it while the banner height and text position stay stable.
 class _EmptyHeroBackground extends StatelessWidget {
   const _EmptyHeroBackground();
 
@@ -81,8 +73,6 @@ class _EmptyHeroBackground extends StatelessWidget {
   Widget build(BuildContext context) => const SizedBox.expand();
 }
 
-/// Hero-картинка: универсальный рендерер для `File` (обложка коллекции)
-/// и `Asset` (дефолтная заглушка).
 class _HeroImage extends StatelessWidget {
   const _HeroImage({required this.provider});
 
@@ -95,7 +85,7 @@ class _HeroImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final double w = MediaQuery.sizeOf(context).width;
     final double dpr = MediaQuery.devicePixelRatioOf(context);
-    // Квантуем на шаг 256, чтобы мелкие ресайзы не бастили ImageCache.
+    // Quantize to 256px steps so small resizes don't bust the ImageCache.
     final int rawCache = (w * dpr).round().clamp(480, 2560);
     final int cacheW = ((rawCache + 128) ~/ 256) * 256;
 
@@ -112,7 +102,7 @@ class _HeroImage extends StatelessWidget {
   }
 }
 
-/// Горизонтальный градиент слева — читаемость текста поверх картинки.
+/// Left-side gradient that keeps the text readable over the image.
 class _LeftScrim extends StatelessWidget {
   const _LeftScrim();
 
@@ -138,7 +128,7 @@ class _LeftScrim extends StatelessWidget {
   }
 }
 
-/// Вертикальный fade в нижних ~18% — плавная граница с plain grid.
+/// Vertical fade over the bottom ~18%: smooth boundary with the plain grid.
 class _BottomFade extends StatelessWidget {
   const _BottomFade();
 
@@ -163,7 +153,6 @@ class _BottomFade extends StatelessWidget {
   }
 }
 
-/// Текстовый блок hero: имя + описание.
 class _HeroContent extends StatelessWidget {
   const _HeroContent({required this.collection, required this.isCompact});
 

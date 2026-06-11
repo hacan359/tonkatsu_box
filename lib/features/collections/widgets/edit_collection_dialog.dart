@@ -1,7 +1,3 @@
-// Диалог редактирования персонализации коллекции.
-//
-// Позволяет изменить название, добавить описание и обложку (hero).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,18 +10,13 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/collections_provider.dart';
 import 'collection_hero_background.dart';
 
-/// Диалог редактирования коллекции.
-///
-/// Сохраняет изменения напрямую через `collectionsProvider.notifier`.
-/// Возвращает `true` если пользователь нажал «Save» и изменения применились.
+/// Persists changes directly through `collectionsProvider.notifier`.
+/// Pops `true` if the user pressed Save and the changes were applied.
 class EditCollectionDialog extends ConsumerStatefulWidget {
-  /// Создаёт [EditCollectionDialog].
   const EditCollectionDialog({required this.collection, super.key});
 
-  /// Коллекция для редактирования.
   final Collection collection;
 
-  /// Показывает диалог и возвращает `true` при успешном сохранении.
   static Future<bool> show(
     BuildContext context,
     Collection collection,
@@ -48,10 +39,9 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
 
-  /// Имя файла новой выбранной обложки (ещё не сохранено в БД).
+  /// File name of the newly picked hero image, not yet saved to the DB.
   String? _pendingHeroFile;
 
-  /// Отметка «убрать обложку».
   bool _clearHero = false;
 
   bool _saving = false;
@@ -72,7 +62,7 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
     super.dispose();
   }
 
-  /// Текущее состояние обложки (имя файла) с учётом pending-выбора.
+  /// Current hero file name, taking the pending pick into account.
   String? get _currentHeroFile {
     if (_clearHero) return null;
     return _pendingHeroFile ?? widget.collection.heroImagePath;
@@ -83,11 +73,11 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
         ref.read(collectionHeroServiceProvider);
     final String? picked = await service.pickAndSave(
       collectionId: widget.collection.id,
-      // Старый файл удалим только при Save — сейчас может быть revert.
+      // The old file is deleted only on Save — the user may still cancel.
     );
     if (picked == null) return;
 
-    // Если был предыдущий pending, удаляем его (он не был сохранён в БД).
+    // Delete the previous pending pick: it was never saved to the DB.
     if (_pendingHeroFile != null) {
       await service.delete(_pendingHeroFile);
     }
@@ -119,7 +109,7 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
     final bool descEmpty = newDescription.isEmpty;
     final bool heroChanged = _pendingHeroFile != null || _clearHero;
 
-    // Удаляем старый файл обложки, если пользователь выбрал новый или убрал.
+    // Delete the old hero file when the user picked a new one or removed it.
     final CollectionHeroService service =
         ref.read(collectionHeroServiceProvider);
     final String? oldHero = widget.collection.heroImagePath;
@@ -141,7 +131,7 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
   }
 
   Future<void> _cancel() async {
-    // Если пользователь выбрал новую картинку, но нажал Cancel — удаляем её.
+    // The newly picked image was already written to disk — clean it up.
     if (_pendingHeroFile != null) {
       await ref.read(collectionHeroServiceProvider).delete(_pendingHeroFile);
     }
@@ -182,7 +172,6 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // --- Превью обложки ---
               _HeroPreview(
                 absolutePath: heroAbsPath,
                 name: _nameController.text.trim().isEmpty
@@ -201,7 +190,6 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
               ),
               const SizedBox(height: AppSpacing.sm),
 
-              // --- Кнопки действий для обложки ---
               Row(
                 children: <Widget>[
                   Expanded(
@@ -227,7 +215,6 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // --- Название ---
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -248,7 +235,6 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
               ),
               const SizedBox(height: AppSpacing.md),
 
-              // --- Описание ---
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(

@@ -1,18 +1,14 @@
-// DAO для работы с аниме из AniList.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/anime.dart';
 import '../query_chunk.dart';
 
-/// DAO для таблицы `anime_cache`.
+/// DAO for the `anime_cache` table.
 class AnimeDao {
-  /// Создаёт DAO с функцией получения базы данных.
   const AnimeDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  /// Сохраняет или обновляет аниме в кэше.
   Future<void> upsertAnime(Anime anime) async {
     final Database db = await _getDatabase();
     await db.insert(
@@ -22,7 +18,6 @@ class AnimeDao {
     );
   }
 
-  /// Сохраняет или обновляет список аниме.
   Future<void> upsertAnimes(List<Anime> animes) async {
     if (animes.isEmpty) return;
     final Database db = await _getDatabase();
@@ -37,7 +32,7 @@ class AnimeDao {
     await batch.commit(noResult: true);
   }
 
-  /// Получает аниме по AniList ID.
+  /// [id] is the AniList ID.
   Future<Anime?> getAnime(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -50,7 +45,6 @@ class AnimeDao {
     return Anime.fromDb(rows.first);
   }
 
-  /// Получает аниме по списку ID.
   Future<List<Anime>> getAnimeByIds(List<int> ids) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(ids, (List<int> chunk) async {

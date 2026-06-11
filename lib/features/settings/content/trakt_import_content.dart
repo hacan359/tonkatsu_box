@@ -1,5 +1,3 @@
-// Контент экрана импорта данных из Trakt.tv (без Scaffold/AppBar).
-
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -24,17 +22,13 @@ import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
-/// Контент экрана импорта из Trakt.tv ZIP-выгрузки.
-///
-/// Поддерживает: выбор ZIP файла, preview, настройка опций, прогресс.
+/// Flow: ZIP file pick → preview → options → import progress.
 class TraktImportContent extends ConsumerStatefulWidget {
-  /// Создаёт [TraktImportContent].
   const TraktImportContent({
     super.key,
     this.onImportComplete,
   });
 
-  /// Callback при завершении импорта.
   final VoidCallback? onImportComplete;
 
   @override
@@ -110,7 +104,6 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     return SettingsGroup(
       title: S.of(context).traktImportFrom,
       children: <Widget>[
-        // Инструкция по скачиванию данных с Trakt.tv
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
@@ -505,10 +498,6 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     }
   }
 }
-
-// ---------------------------------------------------------------------------
-// Progress Dialog
-// ---------------------------------------------------------------------------
 
 class _TraktImportProgressDialog extends StatelessWidget {
   const _TraktImportProgressDialog({

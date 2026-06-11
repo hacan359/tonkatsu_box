@@ -1,6 +1,6 @@
-// Fantlab edition picker. A Fantlab work has many editions (`издания`), each
-// with its own cover; this sheet lets the user pick which one a book carries.
-// Grouped by Fantlab's blocks (Издания / Иностранные / …), covers first.
+// Fantlab edition picker. A Fantlab work has many editions, each with its own
+// cover; this sheet lets the user pick which one a book carries.
+// Grouped by Fantlab's blocks (domestic / foreign / ...), covers first.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

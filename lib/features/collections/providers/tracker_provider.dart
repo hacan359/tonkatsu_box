@@ -72,7 +72,7 @@ class TrackerDetailNotifier
     return TrackerDetailState(gameData: data);
   }
 
-  /// Загружает достижения из кэша или API.
+  /// Loads achievements from cache first, falling back to the API.
   Future<void> loadAchievements() async {
     final TrackerDetailState current = state.valueOrNull ??
         const TrackerDetailState();
@@ -102,7 +102,7 @@ class TrackerDetailNotifier
         achievements: achievements,
       ));
 
-      // Синкаем даты из achievements в collection_items.
+      // Sync earned dates from achievements into collection_items.
       int? firstEarned;
       int? lastEarned;
       int earnedCount = 0;
@@ -134,7 +134,7 @@ class TrackerDetailNotifier
     }
   }
 
-  /// Привязывает игру к RA: создаёт tracker_game_data и загружает достижения.
+  /// Links the game to RA: creates tracker_game_data and loads achievements.
   Future<void> linkRaGame({
     required int raGameId,
     required String raTitle,
@@ -154,10 +154,8 @@ class TrackerDetailNotifier
     );
     await _trackerDao.upsertGameData(data);
 
-    // Обновляем state — теперь hasRaData = true.
     state = AsyncData<TrackerDetailState>(TrackerDetailState(gameData: data));
 
-    // Загружаем достижения и прогресс из API.
     await refreshAchievements();
   }
 
@@ -172,7 +170,8 @@ class TrackerDetailNotifier
     state = const AsyncData<TrackerDetailState>(TrackerDetailState());
   }
 
-  /// Принудительная перезагрузка достижений и game data из API.
+  /// Forces a reload of achievements and game data from the API,
+  /// bypassing the cache.
   Future<void> refreshAchievements() async {
     final TrackerDetailState current = state.valueOrNull ??
         const TrackerDetailState();
@@ -188,11 +187,11 @@ class TrackerDetailNotifier
           int.tryParse(current.gameData!.trackerGameId) ?? 0;
       if (raGameId == 0) return;
 
-      // Загружаем полные данные из API.
       final RaGameFullProgress progress =
           await _syncService.loadRaGameFullProgress(raGameId);
 
-      // Пустой список = нет credentials или ошибка API — не трогаем game_data.
+      // An empty list means missing credentials or an API error,
+      // so leave game_data untouched.
       if (progress.achievements.isEmpty) {
         state = AsyncData<TrackerDetailState>(TrackerDetailState(
           gameData: current.gameData,
@@ -222,7 +221,6 @@ class TrackerDetailNotifier
         achievements: progress.achievements,
       ));
 
-      // Синк дат и статуса в collection_items.
       await _syncToCollectionItems(
         awardKind: progress.awardKind,
         awardDate: progress.awardDate,
@@ -277,7 +275,7 @@ class TrackerDetailNotifier
 
       for (final ({int id, int? collectionId, int? platformId}) item
           in items) {
-        // Текущий статус для проверки правила dropped.
+        // Current status is needed to apply the "dropped" rule.
         final CollectionItem? current = ref
             .read(collectionItemsNotifierProvider(item.collectionId))
             .valueOrNull

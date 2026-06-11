@@ -1,16 +1,13 @@
-// Ранняя инициализация API ключей до runApp().
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
 import '../../shared/constants/api_defaults.dart';
 
-/// Данные API ключей, загруженные из SharedPreferences + ApiDefaults.
+/// API key data loaded from SharedPreferences + ApiDefaults.
 ///
-/// Создаётся в main() до runApp() и передаётся через ProviderScope override.
+/// Built in main() before runApp() and passed via ProviderScope override.
 class ApiKeys {
-  /// Создаёт [ApiKeys].
   const ApiKeys({
     this.tmdbApiKey,
     this.steamGridDbApiKey,
@@ -21,9 +18,7 @@ class ApiKeys {
     this.raApiKey,
   });
 
-  /// Загружает ключи из SharedPreferences с fallback на встроенные.
-  ///
-  /// Приоритет: пользовательский ключ → встроенный (ApiDefaults) → null.
+  /// Key precedence: user key → built-in (ApiDefaults) → null.
   factory ApiKeys.fromPrefs(SharedPreferences prefs) {
     // TMDB: user key → built-in → null
     final String? userTmdbKey = prefs.getString(SettingsKeys.tmdbApiKey);
@@ -56,7 +51,7 @@ class ApiKeys {
             : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientSecret : null);
     final String? igdbAccessToken = prefs.getString(SettingsKeys.accessToken);
 
-    // RetroAchievements: username + API key из prefs
+    // RetroAchievements: username + API key from prefs only, no built-in.
     final String? raUsername = prefs.getString(SettingsKeys.raUsername);
     final String? raApiKey = prefs.getString(SettingsKeys.raApiKey);
 
@@ -75,32 +70,23 @@ class ApiKeys {
     );
   }
 
-  /// API ключ для TMDB.
   final String? tmdbApiKey;
 
-  /// API ключ для SteamGridDB.
   final String? steamGridDbApiKey;
 
-  /// Client ID для IGDB.
   final String? igdbClientId;
 
-  /// Client Secret для IGDB.
   final String? igdbClientSecret;
 
-  /// OAuth access token для IGDB.
   final String? igdbAccessToken;
 
-  /// Имя пользователя RetroAchievements.
   final String? raUsername;
 
-  /// API ключ RetroAchievements.
   final String? raApiKey;
 }
 
-/// Провайдер загруженных API ключей.
-///
-/// Override в main() через `apiKeysProvider.overrideWithValue(...)`.
-/// Без override возвращает пустые ключи (безопасно для тестов).
+/// Overridden in main() via `apiKeysProvider.overrideWithValue(...)`.
+/// Without an override it returns empty keys (safe for tests).
 final Provider<ApiKeys> apiKeysProvider = Provider<ApiKeys>((Ref ref) {
   return const ApiKeys();
 });

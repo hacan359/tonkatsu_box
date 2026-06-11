@@ -1,5 +1,3 @@
-// Диалог ввода потраченного времени (часы + минуты).
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,26 +6,21 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 
-/// Диалог ввода времени в часах и минутах.
-///
-/// Возвращает количество минут (`int`) через `Navigator.pop`.
-/// [initialMinutes] — начальное значение для редактирования (0 для добавления).
-/// [isEdit] — true для режима «редактировать общее», false для «добавить».
+/// Pops the entered amount as total minutes (`int`) via `Navigator.pop`.
 class AddTimeDialog extends StatefulWidget {
-  /// Создаёт [AddTimeDialog].
   const AddTimeDialog({
     this.initialMinutes = 0,
     this.isEdit = false,
     super.key,
   });
 
-  /// Начальное значение в минутах.
+  /// Initial value in minutes.
   final int initialMinutes;
 
-  /// Режим редактирования (true) или добавления (false).
+  /// `true` — "edit total" mode, `false` — "add time" mode.
   final bool isEdit;
 
-  /// Показывает диалог и возвращает введённые минуты (или null при отмене).
+  /// Returns the entered minutes, or `null` if cancelled.
   static Future<int?> show(
     BuildContext context, {
     int initialMinutes = 0,

@@ -1,5 +1,3 @@
-// Экран всех элементов из всех коллекций (Home tab).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,13 +29,9 @@ import '../../collections/widgets/context_menu_item.dart';
 import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
 
-/// Экран всех элементов из всех коллекций.
-///
-/// Показывает grid-вид всех элементов. Фильтры: media type (segmented
-/// control на всю ширину), status (pill), platforms (pill с multi-select,
-/// появляется только при выборе Games).
+/// Grid of all items across all collections (Home tab). The platforms
+/// filter row appears only while Games is selected.
 class AllItemsScreen extends ConsumerStatefulWidget {
-  /// Создаёт [AllItemsScreen].
   const AllItemsScreen({super.key});
 
   @override
@@ -48,10 +42,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   final Set<MediaType> _selectedTypes = <MediaType>{};
   final Set<int> _selectedPlatformIds = <int>{};
 
-  /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 170;
 
-  /// Ширина, ниже которой сегменты показывают иконки вместо текста.
+  /// Below this width the segments show icons instead of text.
   static const double _compactBreakpoint = 700;
 
   @override
@@ -154,12 +147,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return true;
   }
 
-  // ==================== Filter UI ====================
-
-  /// Chevron-бар: типы медиа (multi-select) + dropdown статуса (последний
-  /// сегмент).
-  ///
-  /// В compact-режиме (< [_compactBreakpoint]) показывает иконки вместо текста.
+  /// Chevron bar: media types (multi-select) plus the status dropdown as
+  /// the last segment.
   Widget _buildMediaTypeBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
     ItemStatus? filterStatus,
@@ -272,9 +261,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  /// Полоска ChoiceChip платформ — видна только при выбранном Games.
-  ///
-  /// Горизонтальный скролл. Стиль как в main, но с цветом семейства.
+  /// Platform chips row, visible only while Games is selected.
   Widget _buildPlatformsRow() {
     if (!_selectedTypes.contains(MediaType.game)) {
       return const SizedBox.shrink();
@@ -355,8 +342,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     });
   }
 
-  // ==================== Helpers ====================
-
   /// Raw item count per media type, ignoring every filter. Drives chevron
   /// visibility — search hits should change the chevron label, not make
   /// non-matching media types disappear when "Hide empty" is on.
@@ -393,8 +378,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     }
     return counts;
   }
-
-  // ==================== Grid ====================
 
   Widget _buildGridView(
     List<CollectionItem> items,
@@ -804,8 +787,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   }
 }
 
-// ==================== Сегменты media type ====================
-
 class _MediaTypeEntry {
   const _MediaTypeEntry({
     required this.type,
@@ -820,7 +801,6 @@ class _MediaTypeEntry {
   String get displayLabel => count > 0 ? '$label ($count)' : label;
 }
 
-/// Группа элементов одной коллекции для отображения секции.
 class _CollectionGroup {
   _CollectionGroup({required this.name, required this.items});
   final String name;

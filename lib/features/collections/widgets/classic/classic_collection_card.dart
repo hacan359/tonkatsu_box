@@ -1,7 +1,5 @@
-// Классическая карточка коллекции: мозаика 3+3 обложек + общий text-overlay
-// (имя/описание/stats) поверх bottom-scrim'а. Использует [CollectionCardShell]
-// для фокуса/hover/рамки — структурно идентична rich-карточке, отличается
-// только содержимым изобразительной зоны.
+// Uses [CollectionCardShell] for focus/hover/border, so it is structurally
+// identical to the rich card and differs only in the image area content.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,9 +15,7 @@ import '../../providers/collections_provider.dart';
 import '../collection_card_overlay.dart';
 import '../collection_card_shell.dart';
 
-/// Классическая карточка коллекции (мозаика 3+3).
 class ClassicCollectionCard extends ConsumerWidget {
-  /// Создаёт [ClassicCollectionCard].
   const ClassicCollectionCard({
     required this.collection,
     this.onTap,
@@ -30,22 +26,18 @@ class ClassicCollectionCard extends ConsumerWidget {
     super.key,
   });
 
-  /// Коллекция для отображения.
   final Collection collection;
 
-  /// Callback при нажатии.
   final VoidCallback? onTap;
 
-  /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
 
-  /// Callback при правом клике (глобальные координаты для showMenu).
+  /// Right-click callback; the position is global, ready for showMenu.
   final void Function(Offset globalPosition)? onSecondaryTap;
 
-  /// Callback при изменении фокуса.
   final ValueChanged<bool>? onFocusChanged;
 
-  /// Показывать ли описание коллекции в overlay'е (rich-режим без hero).
+  /// Shows the collection description in the overlay (rich mode without hero).
   final bool showDescription;
 
   static const double _cellRadius = 8;
@@ -95,10 +87,6 @@ class ClassicCollectionCard extends ConsumerWidget {
     );
   }
 }
-
-// =============================================================================
-// Мозаика 3+3
-// =============================================================================
 
 class _CoverMosaic extends StatelessWidget {
   const _CoverMosaic({required this.covers, required this.totalCount});
@@ -203,10 +191,6 @@ class _CoverMosaic extends StatelessWidget {
     );
   }
 }
-
-// =============================================================================
-// Обложка-изображение с сохранением пропорций
-// =============================================================================
 
 class _CoverImage extends StatelessWidget {
   const _CoverImage({required this.cover});

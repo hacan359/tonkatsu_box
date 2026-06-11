@@ -1,5 +1,3 @@
-// Сервис импорта RetroAchievements → IGDB игры.
-
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,28 +21,19 @@ import '../database/database_service.dart';
 import 'ra_sync_helpers.dart';
 import 'ra_to_igdb_mapper.dart';
 
-// ---------------------------------------------------------------------------
-// Публичные модели
-// ---------------------------------------------------------------------------
-
-/// Этап импорта RetroAchievements.
 enum RaImportStage {
-  /// Загрузка библиотеки из RA API.
   fetchingLibrary,
 
-  /// Поиск игр в IGDB (только для игр без ручной привязки).
+  /// IGDB lookup (only for games without a manual link).
   searchingGames,
 
-  /// Запись в коллекцию (добавление/обновление).
+  /// Writing to the collection (add/update).
   matchingGames,
 
-  /// Импорт завершён.
   completed,
 }
 
-/// Прогресс импорта RetroAchievements.
 class RaImportProgress {
-  /// Создаёт [RaImportProgress].
   const RaImportProgress({
     required this.stage,
     this.current = 0,
@@ -55,31 +44,22 @@ class RaImportProgress {
     this.unmatchedCount = 0,
   });
 
-  /// Текущий этап.
   final RaImportStage stage;
 
-  /// Текущий прогресс.
   final int current;
 
-  /// Общее количество.
   final int total;
 
-  /// Название текущей обрабатываемой игры.
   final String? currentName;
 
-  /// Количество добавленных игр.
   final int addedCount;
 
-  /// Количество обновлённых игр.
   final int updatedCount;
 
-  /// Количество ненайденных игр.
   final int unmatchedCount;
 }
 
-/// Результат импорта RetroAchievements.
 class RaImportResult {
-  /// Создаёт [RaImportResult].
   const RaImportResult({
     required this.totalGames,
     required this.added,
@@ -90,32 +70,25 @@ class RaImportResult {
     required this.collectionId,
   });
 
-  /// Общее количество игр в RA.
   final int totalGames;
 
-  /// Новые элементы в коллекцию.
   final int added;
 
-  /// Обновлена мета у существующих.
   final int updated;
 
-  /// Не найдено в IGDB и нет ручной привязки.
+  /// Not found in IGDB and no manual link.
   final int unmatched;
 
-  /// Фактически добавлено новых записей в вишлист в этом синке.
-  /// Не включает уже существовавшие записи (они только обновляются).
+  /// Wishlist rows actually created during this sync; rows that already
+  /// existed (and were only updated) are not counted.
   final int wishlisted;
 
-  /// Названия ненайденных игр.
   final List<String> unmatchedTitles;
 
-  /// ID целевой коллекции.
   final int collectionId;
 }
 
-/// Расширение для преобразования в [UniversalImportResult].
 extension RaImportResultToUniversal on RaImportResult {
-  /// Преобразует в [UniversalImportResult] для унифицированного экрана.
   UniversalImportResult toUniversal({Collection? collection}) {
     return UniversalImportResult(
       sourceName: 'RetroAchievements',
@@ -135,11 +108,6 @@ extension RaImportResultToUniversal on RaImportResult {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Сервис
-// ---------------------------------------------------------------------------
-
-/// Провайдер для RA import service.
 final Provider<RaImportService> raImportServiceProvider =
     Provider<RaImportService>((Ref ref) {
   return RaImportService(
@@ -150,12 +118,9 @@ final Provider<RaImportService> raImportServiceProvider =
   );
 });
 
-/// Сервис импорта игр из RetroAchievements.
-///
-/// Загружает список играных игр из RA, маппит на IGDB,
-/// добавляет/обновляет в целевой коллекции.
+/// Imports the played-games library from RetroAchievements: maps RA entries
+/// to IGDB and adds/updates them in the target collection.
 class RaImportService {
-  /// Создаёт [RaImportService].
   RaImportService({
     required RaApi raApi,
     required IgdbApi igdbApi,
@@ -172,12 +137,8 @@ class RaImportService {
   final TrackerDao _trackerDao;
   static final Logger _log = Logger('RaImportService');
 
-  /// Импортирует игры из RA профиля в коллекцию.
-  ///
-  /// [collectionId] — ID существующей коллекции.
-  /// [createCollection] — callback для ленивого создания коллекции
-  ///   (вызывается только после успешной загрузки библиотеки RA).
-  ///   Должен быть указан либо [collectionId], либо [createCollection].
+  /// Either [collectionId] or [createCollection] must be provided;
+  /// [createCollection] runs lazily, only after the RA library loads.
   Future<RaImportResult> importFromProfile({
     required String raUsername,
     int? collectionId,
@@ -195,11 +156,10 @@ class RaImportService {
       stage: RaImportStage.fetchingLibrary,
     ));
 
-    // Загружаем игры из RA.
     final List<RaGameProgress> raGames =
         await _raApi.getCompletedGames(raUsername);
 
-    // Фильтруем не-игровые записи (Hubs, Events, Standalone).
+    // Drop non-game entries (Hubs, Events, Standalone)
     final List<RaGameProgress> games =
         raGames.where((RaGameProgress g) => g.isRealGame).toList();
 
@@ -207,13 +167,12 @@ class RaImportService {
       throw const RaApiException('No games found in this RA profile');
     }
 
-    // Создание коллекции — только после успешной загрузки.
+    // Create the collection only after the library loaded successfully
     final int targetCollectionId =
         collectionId ?? await createCollection!();
 
-    // Подтягиваем существующие ручные RA→IGDB привязки из tracker_game_data.
-    // Если игра уже привязана юзером (через showRaLinkDialog/linkRaGame),
-    // не идём в IGDB-поиск, а используем сохранённый IGDB id.
+    // Manual RA→IGDB links from tracker_game_data: already-linked games skip
+    // the IGDB search and use the stored IGDB id.
     final List<TrackerGameData> manualLinks =
         await _trackerDao.getAllGameData(TrackerType.ra);
     final Map<int, int> raIdToIgdbId = <int, int>{};
@@ -222,13 +181,11 @@ class RaImportService {
       if (raId != null) raIdToIgdbId[raId] = d.gameId;
     }
 
-    // IGDB-поиск нужен только для непривязанных игр.
     final List<RaGameProgress> unlinkedGames = <RaGameProgress>[
       for (final RaGameProgress g in games)
         if (!raIdToIgdbId.containsKey(g.gameId)) g,
     ];
 
-    // Этап 1: IGDB-поиск.
     onProgress(RaImportProgress(
       stage: RaImportStage.searchingGames,
       current: 0,
@@ -248,7 +205,7 @@ class RaImportService {
             },
           );
 
-    // Индексируем по RA gameId — стабильный ключ, без позиционных кёрсоров.
+    // Index by RA gameId — a stable key, no positional cursors
     final Map<int, Game?> searchByRaId = <int, Game?>{
       for (int i = 0; i < unlinkedGames.length; i++)
         unlinkedGames[i].gameId: matchesByIndex[i],
@@ -260,7 +217,6 @@ class RaImportService {
       '(${raIdToIgdbId.length} already manually linked)',
     );
 
-    // Этап 2: запись в коллекцию.
     int added = 0;
     int updated = 0;
     int unmatched = 0;
@@ -321,7 +277,6 @@ class RaImportService {
         );
         if (wasUpdated) updated++;
       } else {
-        // Кэшировать игру и добавить в коллекцию.
         await _db.gameDao.upsertGame(igdbGame);
         await _addToCollection(
           collectionId: targetCollectionId,
@@ -332,7 +287,6 @@ class RaImportService {
         added++;
       }
 
-      // Сохраняем/обновляем tracker_game_data (счётчики ачивок, даты).
       await _saveTrackerGameData(igdbGame.id, raGame);
     }
 
@@ -362,12 +316,8 @@ class RaImportService {
     );
   }
 
-  /// Возвращает IGDB-игру для RA-записи: сначала по ручной привязке
-  /// (через локальный кэш игр), потом — fallback на результат IGDB-поиска.
-  ///
-  /// Если ручная привязка указывает на IGDB id, которого нет в локальном
-  /// кэше, делает дополнительный точечный поиск по названию (защита
-  /// от устаревшей записи в `tracker_game_data`).
+  /// Manual link first, then the IGDB search result. A link to an id missing
+  /// from the local cache falls back to a title search (stale-link guard).
   Future<Game?> _resolveIgdbGame(
     RaGameProgress raGame, {
     required int? linkedIgdbId,
@@ -391,11 +341,8 @@ class RaImportService {
     return searchResult;
   }
 
-  /// Batch-поиск игр в IGDB через multiquery.
-  ///
-  /// Возвращает маппинг: индекс в [games] → найденная Game (или null).
-  /// [onBatchDone] вызывается после каждого батча с количеством
-  /// обработанных игр.
+  /// Returns index in [games] → matched Game (or null). [onBatchDone] fires
+  /// after each batch with the number of games processed so far.
   Future<Map<int, Game?>> _batchFindGames(
     List<RaGameProgress> games, {
     void Function(int processed)? onBatchDone,
@@ -410,7 +357,6 @@ class RaImportService {
       final List<RaGameProgress> batch =
           games.sublist(batchStart, batchEnd);
 
-      // Формируем запросы с платформенным фильтром.
       final List<({String name, int? platformId})> queries = batch
           .map((RaGameProgress g) => (
                 name: g.title,
@@ -426,7 +372,6 @@ class RaImportService {
         batchResults = await _fallbackSingleSearch(batch);
       }
 
-      // Выбираем лучшее совпадение для каждой игры.
       for (int j = 0; j < batch.length; j++) {
         final List<Game> candidates = batchResults[j] ?? <Game>[];
         results[batchStart + j] =
@@ -435,7 +380,7 @@ class RaImportService {
 
       onBatchDone?.call(batchEnd);
 
-      // Rate limiting: пауза каждые 4 батча.
+      // Rate limiting: pause every 4 batches
       final int batchIndex = batchStart ~/ batchSize;
       if (batchIndex % 4 == 3) {
         await Future<void>.delayed(const Duration(milliseconds: 1100));
@@ -445,7 +390,6 @@ class RaImportService {
     return results;
   }
 
-  /// Поштучный поиск — fallback при ошибке multiquery.
   Future<Map<int, List<Game>>> _fallbackSingleSearch(
     List<RaGameProgress> batch,
   ) async {
@@ -454,13 +398,12 @@ class RaImportService {
     for (int i = 0; i < batch.length; i++) {
       final Game? game = await mapper.findIgdbGame(batch[i]);
       results[i] = game != null ? <Game>[game] : <Game>[];
-      // findIgdbGame делает 1-2 запроса, пауза после каждого.
+      // findIgdbGame issues 1-2 requests; pause after each one
       await Future<void>.delayed(const Duration(milliseconds: 300));
     }
     return results;
   }
 
-  /// Обновляет мету существующего элемента: статус и даты.
   Future<bool> _updateExistingItem(
     CollectionItem existing,
     RaGameProgress raGame, {
@@ -485,9 +428,8 @@ class RaImportService {
     return true;
   }
 
-  /// Возвращает `true` если запись действительно создана,
-  /// `false` если игра уже была в вишлисте (не перезаписываем,
-  /// чтобы не затереть пользовательские правки).
+  /// Returns `true` only when a new row was created; existing wishlist rows
+  /// are left alone so user edits are not overwritten.
   Future<bool> _addToWishlistIfNotExists(
     RaGameProgress raGame,
     String importTag,

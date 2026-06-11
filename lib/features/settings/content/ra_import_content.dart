@@ -1,5 +1,3 @@
-// Контент экрана импорта RetroAchievements (без Scaffold/AppBar).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,11 +23,8 @@ import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
-/// Контент экрана импорта RetroAchievements.
-///
-/// Три состояния: ввод credentials → прогресс → результат.
+/// Flow: credentials input → progress → result.
 class RaImportContent extends ConsumerStatefulWidget {
-  /// Создаёт [RaImportContent].
   const RaImportContent({super.key});
 
   @override
@@ -45,10 +40,8 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
   RaImportProgress? _progress;
   RaUserProfile? _profile;
 
-  // Опции
   bool _addToWishlist = true;
 
-  // Выбор коллекции
   bool _useNewCollection = true;
   int? _selectedCollectionId;
 
@@ -105,10 +98,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // IGDB warning
-  // ---------------------------------------------------------------------------
-
   Widget _buildIgdbWarning(S l) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -133,10 +122,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       ),
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Input fields
-  // ---------------------------------------------------------------------------
 
   Widget _buildInputSection(S l) {
     return SettingsGroup(
@@ -196,7 +181,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
           _buildProfileCard(),
         ],
         const SizedBox(height: AppSpacing.sm),
-        // Опции
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Column(
@@ -239,10 +223,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       ],
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Collection selector
-  // ---------------------------------------------------------------------------
 
   Widget _buildCollectionSelector(S l) {
     final AsyncValue<List<Collection>> collectionsAsync =
@@ -327,10 +307,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Progress
-  // ---------------------------------------------------------------------------
-
   Widget _buildProgressSection(S l) {
     final RaImportProgress progress = _progress!;
 
@@ -392,10 +368,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
-
   Widget _buildHelperLink(String text, String url) {
     return InkWell(
       onTap: () => launchUrl(
@@ -432,10 +404,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Profile check
-  // ---------------------------------------------------------------------------
-
   Future<void> _checkProfile() async {
     final String username = _usernameController.text.trim();
     final String apiKey = _apiKeyController.text.trim();
@@ -451,8 +419,8 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       api.setCredentials(username: username, apiKey: apiKey);
       final RaUserProfile profile = await api.getUserProfile(username);
 
-      // Сохраняем credentials при успешной верификации —
-      // нужны для refresh ачивок в карточке без полного импорта.
+      // Persist credentials on successful verification: the achievement
+      // refresh on the item card needs them without a full import.
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString(SettingsKeys.raUsername, username);
       await prefs.setString(SettingsKeys.raApiKey, apiKey);
@@ -539,17 +507,12 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Import logic
-  // ---------------------------------------------------------------------------
-
   Future<void> _startImport() async {
     final String username = _usernameController.text.trim();
     final String apiKey = _apiKeyController.text.trim();
     final String authorName =
         ref.read(settingsNotifierProvider).authorName;
 
-    // Сохраняем credentials.
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(SettingsKeys.raUsername, username);
     await prefs.setString(SettingsKeys.raApiKey, apiKey);
@@ -560,7 +523,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     });
 
     try {
-      // Устанавливаем credentials на API клиенте.
       ref.read(raApiProvider).setCredentials(
             username: username,
             apiKey: apiKey,
@@ -568,8 +530,8 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
 
       final RaImportService service = ref.read(raImportServiceProvider);
 
-      // Коллекция создаётся лениво — только после успешной загрузки
-      // библиотеки RA, чтобы не оставлять пустую коллекцию при ошибке.
+      // The collection is created lazily, only after the RA library loads,
+      // so a failed import doesn't leave an empty collection behind.
       final RaImportResult result = await service.importFromProfile(
         raUsername: username,
         collectionId: _useNewCollection ? null : _selectedCollectionId,

@@ -1,5 +1,3 @@
-// DAO для работы с таблицами трекеров.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/tracker_achievement.dart';
@@ -7,16 +5,12 @@ import '../../../shared/models/tracker_game_data.dart';
 import '../../../shared/models/tracker_profile.dart';
 import '../query_chunk.dart';
 
-/// DAO для `tracker_profiles`, `tracker_game_data`, `tracker_achievements`.
+/// DAO for `tracker_profiles`, `tracker_game_data`, `tracker_achievements`.
 class TrackerDao {
-  /// Создаёт DAO с функцией получения базы данных.
   const TrackerDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  // ==================== Profiles ====================
-
-  /// Возвращает профиль трекера по типу.
   Future<TrackerProfile?> getProfile(TrackerType type) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -29,7 +23,6 @@ class TrackerDao {
     return TrackerProfile.fromDb(rows.first);
   }
 
-  /// Возвращает все подключённые профили.
   Future<List<TrackerProfile>> getAllProfiles() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -39,7 +32,7 @@ class TrackerDao {
     return rows.map(TrackerProfile.fromDb).toList();
   }
 
-  /// Создаёт или обновляет профиль трекера (upsert по tracker_type).
+  /// Upsert keyed by tracker_type.
   Future<TrackerProfile> upsertProfile(TrackerProfile profile) async {
     final Database db = await _getDatabase();
     final int id = await db.insert(
@@ -50,23 +43,20 @@ class TrackerDao {
     return profile.copyWith(id: id);
   }
 
-  /// Удаляет профиль трекера и все связанные данные.
+  /// Deletes a tracker profile together with all of its data.
   Future<void> deleteProfile(TrackerType type) async {
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {
-      // Удаляем достижения по всем играм этого трекера.
       await txn.delete(
         'tracker_achievements',
         where: 'tracker_type = ?',
         whereArgs: <Object?>[type.value],
       );
-      // Удаляем game data.
       await txn.delete(
         'tracker_game_data',
         where: 'tracker_type = ?',
         whereArgs: <Object?>[type.value],
       );
-      // Удаляем профиль.
       await txn.delete(
         'tracker_profiles',
         where: 'tracker_type = ?',
@@ -74,8 +64,6 @@ class TrackerDao {
       );
     });
   }
-
-  // ==================== Game Data ====================
 
   /// Returns the tracker row for `(tracker_type, game_id, platform_id)`.
   /// Pass `platformId = null` to look up the legacy platform-agnostic row.
@@ -115,7 +103,6 @@ class TrackerDao {
     return rows.map(TrackerGameData.fromDb).toList();
   }
 
-  /// Возвращает все tracker data для типа трекера.
   Future<List<TrackerGameData>> getAllGameData(TrackerType type) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -126,7 +113,6 @@ class TrackerDao {
     return rows.map(TrackerGameData.fromDb).toList();
   }
 
-  /// Возвращает tracker data для нескольких игр (batch query).
   Future<List<TrackerGameData>> getGameDataForGameIds(
     List<int> gameIds,
   ) async {
@@ -142,7 +128,7 @@ class TrackerDao {
     });
   }
 
-  /// Возвращает все tracker data для игры (от всех трекеров).
+  /// Returns tracker data for a game from all trackers.
   Future<List<TrackerGameData>> getGameDataForGame(int gameId) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -153,7 +139,7 @@ class TrackerDao {
     return rows.map(TrackerGameData.fromDb).toList();
   }
 
-  /// Создаёт или обновляет game data (upsert по UNIQUE index tracker_type+game_id).
+  /// Upsert keyed by the UNIQUE index on tracker_type + game_id.
   Future<void> upsertGameData(TrackerGameData data) async {
     final Database db = await _getDatabase();
     await db.insert(
@@ -163,7 +149,6 @@ class TrackerDao {
     );
   }
 
-  /// Batch upsert game data в одной транзакции.
   Future<void> upsertGameDataBatch(List<TrackerGameData> items) async {
     if (items.isEmpty) return;
     final Database db = await _getDatabase();
@@ -243,9 +228,6 @@ class TrackerDao {
     );
   }
 
-  // ==================== Achievements ====================
-
-  /// Возвращает достижения для игры.
   Future<List<TrackerAchievement>> getAchievements(
     TrackerType type,
     String trackerGameId,
@@ -260,7 +242,6 @@ class TrackerDao {
     return rows.map(TrackerAchievement.fromDb).toList();
   }
 
-  /// Проверяет есть ли закэшированные достижения для игры.
   Future<bool> hasAchievements(
     TrackerType type,
     String trackerGameId,
@@ -274,7 +255,8 @@ class TrackerDao {
     return (rows.first['cnt'] as int) > 0;
   }
 
-  /// Заменяет все достижения для игры (delete + insert в транзакции).
+  /// Replaces all achievements for a game (delete + insert in one
+  /// transaction).
   Future<void> replaceAchievements(
     TrackerType type,
     String trackerGameId,

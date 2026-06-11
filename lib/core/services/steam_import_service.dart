@@ -1,5 +1,3 @@
-// Сервис импорта библиотеки Steam → IGDB игры.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -16,25 +14,16 @@ import '../api/igdb_api.dart';
 import '../api/steam_api.dart';
 import '../database/database_service.dart';
 
-// ---------------------------------------------------------------------------
-// Публичные модели
-// ---------------------------------------------------------------------------
-
-/// Этап импорта Steam библиотеки.
 enum SteamImportStage {
-  /// Загрузка библиотеки из Steam API.
   fetchingLibrary,
 
-  /// Поиск игр в IGDB и добавление в коллекцию.
+  /// IGDB lookup and writing to the collection.
   matchingGames,
 
-  /// Импорт завершён.
   completed,
 }
 
-/// Прогресс импорта Steam библиотеки.
 class SteamImportProgress {
-  /// Создаёт [SteamImportProgress].
   const SteamImportProgress({
     required this.stage,
     required this.current,
@@ -45,34 +34,27 @@ class SteamImportProgress {
     this.updatedCount = 0,
   });
 
-  /// Текущий этап.
   final SteamImportStage stage;
 
-  /// Текущий прогресс.
   final int current;
 
-  /// Общее количество.
   final int total;
 
-  /// Название текущей обрабатываемой игры.
   final String? currentName;
 
-  /// Количество импортированных игр.
   final int importedCount;
 
-  /// Количество добавленных в вишлист (не найдены в IGDB).
+  /// Games not found in IGDB, added to the wishlist instead.
   final int wishlistedCount;
 
-  /// Количество обновлённых (дубликаты с обновлёнными данными).
+  /// Duplicates whose data was refreshed.
   final int updatedCount;
 
-  /// Прогресс в долях (0.0 – 1.0).
+  /// Progress fraction (0.0–1.0).
   double get progress => total > 0 ? current / total : 0;
 }
 
-/// Результат импорта Steam библиотеки.
 class SteamImportResult {
-  /// Создаёт [SteamImportResult].
   const SteamImportResult({
     required this.imported,
     required this.wishlisted,
@@ -81,27 +63,20 @@ class SteamImportResult {
     required this.collectionId,
   });
 
-  /// Количество импортированных игр.
   final int imported;
 
-  /// Количество добавленных в вишлист (не найдены в IGDB).
+  /// Games not found in IGDB, added to the wishlist instead.
   final int wishlisted;
 
-  /// Количество обновлённых (дубликаты с обновлёнными данными).
+  /// Duplicates whose data was refreshed.
   final int updated;
 
-  /// Общее количество игр в библиотеке (после фильтрации DLC).
+  /// Library size after DLC filtering.
   final int total;
 
-  /// ID коллекции импорта.
   final int collectionId;
 }
 
-// ---------------------------------------------------------------------------
-// Провайдер
-// ---------------------------------------------------------------------------
-
-/// Провайдер для [SteamImportService].
 final Provider<SteamImportService> steamImportServiceProvider =
     Provider<SteamImportService>((Ref ref) {
   return SteamImportService(
@@ -111,13 +86,7 @@ final Provider<SteamImportService> steamImportServiceProvider =
   );
 });
 
-// ---------------------------------------------------------------------------
-// Сервис
-// ---------------------------------------------------------------------------
-
-/// Сервис импорта библиотеки Steam в коллекцию IGDB-игр.
 class SteamImportService {
-  /// Создаёт [SteamImportService].
   SteamImportService({
     required SteamApi steamApi,
     required IgdbApi igdbApi,
@@ -128,23 +97,15 @@ class SteamImportService {
 
   static final Logger _log = Logger('SteamImportService');
 
-  /// IGDB platform ID для "PC (Microsoft Windows)".
+  /// IGDB platform id for "PC (Microsoft Windows)".
   static const int _pcPlatformId = 6;
 
   final SteamApi _steamApi;
   final IgdbApi _igdbApi;
   final DatabaseService _db;
 
-  /// Импортирует библиотеку Steam в коллекцию IGDB-игр.
-  ///
-  /// [apiKey] — Steam Web API ключ.
-  /// [steamId] — 64-битный Steam ID пользователя.
-  /// [collectionId] — ID целевой коллекции (если уже создана).
-  /// [createCollection] — callback для ленивого создания коллекции.
-  ///   Вызывается только после успешной загрузки библиотеки Steam,
-  ///   чтобы не создавать пустую коллекцию при ошибке API.
-  ///   Должен быть указан либо [collectionId], либо [createCollection].
-  /// [onProgress] — callback прогресса.
+  /// Either [collectionId] or [createCollection] must be set; the callback
+  /// runs only after the library loads (no empty collection on API failure).
   Future<SteamImportResult> importLibrary({
     required String apiKey,
     required String steamId,
@@ -158,7 +119,6 @@ class SteamImportService {
       );
     }
 
-    // 1. Получить библиотеку Steam
     onProgress(const SteamImportProgress(
       stage: SteamImportStage.fetchingLibrary,
       current: 0,
@@ -170,7 +130,7 @@ class SteamImportService {
       steamId: steamId,
     );
 
-    // 2. Фильтрация DLC/саундтреков
+    // Drop DLC/soundtracks
     final List<SteamOwnedGame> games = library
         .where((SteamOwnedGame g) => !g.shouldSkip)
         .toList();
@@ -187,11 +147,11 @@ class SteamImportService {
       throw const SteamApiException('No games found in this Steam library');
     }
 
-    // 3. Создание коллекции (если нужно) — только после успешной загрузки.
+    // Create the collection only after the library loaded successfully
     final int targetCollectionId =
         collectionId ?? await createCollection!();
 
-    // 4. Batch-поиск всех игр в IGDB по Steam App ID (1-2 запроса).
+    // Batch-resolve all games in IGDB by Steam App ID (1-2 requests)
     onProgress(SteamImportProgress(
       stage: SteamImportStage.matchingGames,
       current: 0,
@@ -204,7 +164,6 @@ class SteamImportService {
 
     _log.info('IGDB matched ${igdbMatches.length}/${games.length} games');
 
-    // 5. Обработка каждой игры.
     int imported = 0;
     int wishlisted = 0;
     int updated = 0;
@@ -231,7 +190,6 @@ class SteamImportService {
         continue;
       }
 
-      // Проверка дубликата
       final CollectionItem? existing = await _db.findCollectionItem(
         collectionId: targetCollectionId,
         mediaType: MediaType.game,
@@ -243,10 +201,8 @@ class SteamImportService {
         continue;
       }
 
-      // Кэшировать IGDB игру
       await _db.gameDao.upsertGame(match);
 
-      // Добавить в коллекцию
       final ItemStatus status = steamGame.playtimeMinutes > 0
           ? ItemStatus.inProgress
           : ItemStatus.notStarted;
@@ -259,7 +215,6 @@ class SteamImportService {
         status: status,
       );
 
-      // Обновить userComment и startedAt (если есть playtime)
       if (itemId != null && steamGame.playtimeMinutes > 0) {
         final String playtimeText = _formatPlaytime(steamGame);
         await _db.updateItemUserComment(itemId, 'Steam: $playtimeText');
@@ -296,18 +251,14 @@ class SteamImportService {
     );
   }
 
-  /// Обновляет существующий элемент коллекции данными из Steam.
-  ///
-  /// Повышает статус через [mergeExternalStatus] (защищает от понижения
-  /// и локальный `dropped`), обновляет playtime-комментарий и дату последней
-  /// игры.
+  /// Status is merged via [mergeExternalStatus] (no downgrades, local
+  /// `dropped` preserved); refreshes the playtime comment and last-played date.
   Future<void> _updateExistingItem(
     CollectionItem existing,
     SteamOwnedGame steamGame,
   ) async {
-    // Повышаем статус через общее правило: Steam означает "в процессе",
-    // если есть playtime. mergeExternalStatus не понизит completed и не
-    // тронет dropped.
+    // Playtime on Steam means "in progress"; mergeExternalStatus won't
+    // downgrade completed or touch dropped.
     if (steamGame.playtimeMinutes > 0) {
       final ItemStatus? newStatus = mergeExternalStatus(
         currentStatus: existing.status,
@@ -322,13 +273,11 @@ class SteamImportService {
       }
     }
 
-    // Обновляем playtime комментарий
     if (steamGame.playtimeMinutes > 0) {
       final String playtimeText = _formatPlaytime(steamGame);
       await _db.updateItemUserComment(existing.id, 'Steam: $playtimeText');
     }
 
-    // Обновляем lastActivityAt если есть данные
     if (steamGame.lastPlayed != null) {
       await _db.updateItemActivityDates(
         existing.id,
@@ -337,10 +286,8 @@ class SteamImportService {
     }
   }
 
-  /// Добавляет ненайденную Steam игру в вишлист.
-  ///
-  /// Если в вишлисте уже есть активный элемент с таким же именем,
-  /// обновляет его заметку вместо создания дубликата.
+  /// When an unresolved wishlist row with the same name already exists, its
+  /// note is updated instead of creating a duplicate.
   Future<void> _addToWishlist(SteamOwnedGame steamGame, String importTag) async {
     final String? note = steamGame.playtimeMinutes > 0
         ? 'Steam: ${_formatPlaytime(steamGame)}'
@@ -373,7 +320,6 @@ class SteamImportService {
   }
 
 
-  /// Форматирует время в игре.
   static String _formatPlaytime(SteamOwnedGame game) {
     if (game.playtimeMinutes >= 60) {
       return '${game.playtimeHours.toStringAsFixed(1)}h';
@@ -382,13 +328,7 @@ class SteamImportService {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Extension: toUniversal()
-// ---------------------------------------------------------------------------
-
-/// Конвертация [SteamImportResult] в [UniversalImportResult].
 extension SteamImportResultToUniversal on SteamImportResult {
-  /// Преобразует в универсальный результат.
   UniversalImportResult toUniversal({Collection? collection}) {
     final Map<MediaType, int> importedByType = <MediaType, int>{};
     final Map<MediaType, int> wishlistedByType = <MediaType, int>{};

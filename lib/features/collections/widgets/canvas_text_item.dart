@@ -2,17 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/models/canvas_item.dart';
 
-// Виджет текстового блока на канвасе.
-//
-// Отображает текст с настраиваемым размером шрифта.
-// Данные хранятся в CanvasItem.data: {content: String, fontSize: double}.
-
-/// Текстовый блок на канвасе.
+/// Data lives in CanvasItem.data: {content: String, fontSize: double}.
 class CanvasTextItem extends StatelessWidget {
-  /// Создаёт [CanvasTextItem].
   const CanvasTextItem({required this.item, super.key});
 
-  /// Элемент канваса с данными текста.
   final CanvasItem item;
 
   @override

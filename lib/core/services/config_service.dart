@@ -9,66 +9,53 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
 
-// Версия формата конфигурации.
 const int configFormatVersion = 1;
 
-// Ключ версии в JSON.
 const String _configVersionKey = 'tonkatsu_box_config_version';
 
-// Устаревший ключ версии (для обратной совместимости при импорте).
+// Legacy version key, accepted on import for backwards compatibility.
 const String _legacyConfigVersionKey = 'xerabora_config_version';
 
-/// Провайдер для сервиса конфигурации.
 final Provider<ConfigService> configServiceProvider =
     Provider<ConfigService>((Ref ref) {
   return ConfigService(prefs: ref.watch(sharedPreferencesProvider));
 });
 
-/// Результат операции с конфигурацией.
 class ConfigResult {
-  /// Создаёт экземпляр [ConfigResult].
   const ConfigResult({
     required this.success,
     this.filePath,
     this.error,
   });
 
-  /// Успешный результат.
   const ConfigResult.success(String path)
       : success = true,
         filePath = path,
         error = null;
 
-  /// Неуспешный результат.
   const ConfigResult.failure(String message)
       : success = false,
         filePath = null,
         error = message;
 
-  /// Отменённая операция.
   const ConfigResult.cancelled()
       : success = false,
         filePath = null,
         error = null;
 
-  /// Успешность операции.
   final bool success;
 
-  /// Путь к файлу.
   final String? filePath;
 
-  /// Сообщение об ошибке.
   final String? error;
 
-  /// Возвращает true, если операция была отменена.
+  /// Cancelled = not successful but with no error message.
   bool get isCancelled => !success && error == null;
 }
 
-/// Сервис для экспорта и импорта конфигурации приложения.
-///
-/// Работает с 7 ключами SharedPreferences (API ключи IGDB, SteamGridDB, TMDB).
+/// Exports and imports app configuration stored in SharedPreferences
+/// (IGDB, SteamGridDB, TMDB API keys and related settings).
 class ConfigService {
-  /// Создаёт экземпляр [ConfigService].
   ConfigService({required SharedPreferences prefs}) : _prefs = prefs;
 
   // ignore: unused_field
@@ -76,7 +63,6 @@ class ConfigService {
 
   final SharedPreferences _prefs;
 
-  /// Все ключи настроек для экспорта/импорта.
   static const List<String> _settingsKeys = <String>[
     SettingsKeys.clientId,
     SettingsKeys.clientSecret,
@@ -91,13 +77,12 @@ class ConfigService {
     SettingsKeys.animeMangaTitleLanguage,
   ];
 
-  /// Ключи с int-значениями.
+  /// Keys whose values are ints, not strings.
   static const List<String> _intKeys = <String>[
     SettingsKeys.tokenExpires,
     SettingsKeys.lastSync,
   ];
 
-  /// Собирает все настройки в Map.
   Map<String, Object> collectSettings() {
     final Map<String, Object> config = <String, Object>{
       _configVersionKey: configFormatVersion,
@@ -120,7 +105,7 @@ class ConfigService {
     return config;
   }
 
-  /// Применяет настройки из Map в SharedPreferences.
+  /// Returns the number of applied settings.
   Future<int> applySettings(Map<String, Object?> config) async {
     int applied = 0;
 
@@ -147,16 +132,13 @@ class ConfigService {
     return applied;
   }
 
-  /// Экспортирует конфигурацию в файл.
-  ///
-  /// Открывает диалог сохранения и записывает JSON с настройками.
   Future<ConfigResult> exportToFile() async {
     try {
       final Map<String, Object> config = collectSettings();
       final String json = const JsonEncoder.withIndent('  ').convert(config);
       final Uint8List jsonBytes = Uint8List.fromList(utf8.encode(json));
 
-      // На Android/iOS FileType.custom не поддерживает кастомные расширения.
+      // On Android/iOS FileType.custom doesn't support custom extensions.
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Configuration',
@@ -170,8 +152,8 @@ class ConfigService {
         return const ConfigResult.cancelled();
       }
 
-      // На Android/iOS file_picker записывает bytes через SAF.
-      // На десктопе нужно записать файл самостоятельно.
+      // On Android/iOS file_picker writes the bytes via SAF;
+      // on desktop the file must be written manually.
       if (!Platform.isAndroid && !Platform.isIOS) {
         final String finalPath =
             outputPath.endsWith('.json') ? outputPath : '$outputPath.json';
@@ -190,12 +172,9 @@ class ConfigService {
     }
   }
 
-  /// Импортирует конфигурацию из файла.
-  ///
-  /// Открывает диалог выбора файла и применяет настройки из JSON.
   Future<ConfigResult> importFromFile() async {
     try {
-      // На Android FileType.custom не поддерживает кастомные расширения.
+      // On Android FileType.custom doesn't support custom extensions.
       final bool useAny = Platform.isAndroid;
       final FilePickerResult? result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Import Configuration',

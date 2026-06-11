@@ -1,5 +1,3 @@
-// Диагональная ленточка статуса для карточек коллекции.
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -7,26 +5,18 @@ import 'package:flutter/material.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 
-/// Диагональная ленточка статуса в верхнем левом углу карточки.
-///
-/// Используется в list-карточках для визуальной индикации статуса.
-/// Только для отображения — без интерактивности.
-///
-/// Для [ItemStatus.notStarted] ленточка не показывается.
-/// Должна размещаться в [Stack] внутри виджета с
-/// `clipBehavior: Clip.antiAlias` (например, [Card]).
+/// Hidden for [ItemStatus.notStarted]. Must be placed in a [Stack] inside
+/// a widget with `clipBehavior: Clip.antiAlias` (e.g. [Card]).
 class StatusRibbon extends StatelessWidget {
-  /// Создаёт [StatusRibbon].
   const StatusRibbon({
     required this.status,
     required this.mediaType,
     super.key,
   });
 
-  /// Статус для отображения.
   final ItemStatus status;
 
-  /// Тип медиа (влияет на метку).
+  /// Affects the ribbon label.
   final MediaType mediaType;
 
   @override

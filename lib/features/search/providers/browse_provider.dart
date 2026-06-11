@@ -1,5 +1,3 @@
-// Провайдер Browse mode для поиска с фильтрами.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,15 +6,12 @@ import '../../settings/providers/settings_provider.dart';
 import '../models/search_source.dart';
 import '../sources/search_sources.dart';
 
-/// Ключи SharedPreferences для сохранения состояния Browse.
+/// SharedPreferences keys for persisting Browse state.
 abstract final class BrowseSettingsKeys {
-  /// Выбранный источник.
   static const String sourceId = 'browse_source_id';
 }
 
-/// Состояние Browse mode.
 class BrowseState {
-  /// Создаёт [BrowseState].
   const BrowseState({
     required this.sourceId,
     this.filterValues = const <String, Object?>{},
@@ -31,61 +26,50 @@ class BrowseState {
     this.searchQuery = '',
   });
 
-  /// ID текущего источника.
   final String sourceId;
 
-  /// Значения фильтров: {"genre": 28, "year": 2024, "platform": 19}.
+  /// Filter values, e.g. {"genre": 28, "year": 2024, "platform": 19}.
   final Map<String, Object?> filterValues;
 
-  /// Текущая сортировка (API-значение).
+  /// Current sort as the raw API value.
   final String? sortBy;
 
-  /// Список элементов (Game, Movie, TvShow).
+  /// Result items (Game, Movie or TvShow).
   final List<Object> items;
 
-  /// Загрузка первой страницы.
+  /// First-page load in progress.
   final bool isLoading;
 
-  /// Загрузка следующей страницы (пагинация).
+  /// Next-page (pagination) load in progress.
   final bool isLoadingMore;
 
-  /// Текущая страница.
   final int currentPage;
 
-  /// Есть ли ещё страницы.
   final bool hasMore;
 
-  /// Сообщение об ошибке.
   final String? error;
 
-  /// Подробная отладочная информация об ошибке (для копирования).
+  /// Detailed error debug info, meant for copy-to-clipboard.
   final String? errorDetail;
 
-  /// Текстовый поисковый запрос.
   final String searchQuery;
 
-  /// Есть ли активные фильтры (не null и не пустой список).
+  /// True when any filter is set (non-null and not an empty list).
   bool get hasFilters => filterValues.values.any(
         (Object? v) =>
             v != null && (v is! List<Object> || v.isNotEmpty),
       );
 
-  /// Есть ли текстовый запрос.
   bool get hasSearchQuery => searchQuery.trim().length >= 2;
 
-  /// Есть ли активный запрос (текст или фильтры).
   bool get hasActiveQuery => hasSearchQuery || hasFilters;
 
-  /// Пустое состояние.
   bool get isEmpty => items.isEmpty && !isLoading;
 
-  /// Текущий источник.
   SearchSource get source => getSearchSourceById(sourceId);
 
-  /// Текущая сортировка или дефолтная.
   String get effectiveSortBy => sortBy ?? source.defaultSort.apiValue;
 
-  /// Копирование с изменениями.
   BrowseState copyWith({
     String? sourceId,
     Map<String, Object?>? filterValues,
@@ -117,11 +101,9 @@ class BrowseState {
   }
 }
 
-/// Провайдер состояния Browse.
 final NotifierProvider<BrowseNotifier, BrowseState> browseProvider =
     NotifierProvider<BrowseNotifier, BrowseState>(BrowseNotifier.new);
 
-/// Notifier для Browse mode.
 class BrowseNotifier extends Notifier<BrowseState> {
   late SharedPreferences _prefs;
 
@@ -133,9 +115,9 @@ class BrowseNotifier extends Notifier<BrowseState> {
     return BrowseState(sourceId: savedSourceId);
   }
 
-  /// Сменить источник — сбросить фильтры и контент. Текстовый запрос
-  /// сохраняется (фильтры у нового источника другие, а текст пользователь
-  /// уже ввёл — переключение источника не должно его терять).
+  /// Switching the source resets filters and content, but keeps the text
+  /// query: the new source has different filters, while the text the user
+  /// already typed shouldn't be lost by switching.
   void setSource(String sourceId) {
     _generation++;
     final String preservedQuery = state.searchQuery;
@@ -146,13 +128,11 @@ class BrowseNotifier extends Notifier<BrowseState> {
     }
   }
 
-  /// Монотонный счётчик для защиты от race condition.
-  ///
-  /// Каждая новая операция (fetch/search/loadMore) инкрементирует счётчик.
-  /// Если после await счётчик изменился — результат игнорируется.
+  /// Monotonic counter guarding against race conditions: every new
+  /// operation increments it, and a result whose generation no longer
+  /// matches after an await is discarded as stale.
   int _generation = 0;
 
-  /// Установить значение фильтра и перезагрузить.
   Future<void> setFilter(String key, Object? value) async {
     final Map<String, Object?> updated =
         Map<String, Object?>.from(state.filterValues);
@@ -169,7 +149,6 @@ class BrowseNotifier extends Notifier<BrowseState> {
     await _fetch();
   }
 
-  /// Сменить сортировку и перезагрузить.
   Future<void> setSort(String sortBy) async {
     state = state.copyWith(
       sortBy: sortBy,
@@ -182,7 +161,6 @@ class BrowseNotifier extends Notifier<BrowseState> {
     await _fetch();
   }
 
-  /// Сбросить все фильтры.
   void clearFilters() {
     _generation++;
     state = state.copyWith(
@@ -194,22 +172,20 @@ class BrowseNotifier extends Notifier<BrowseState> {
       clearSortBy: true,
     );
 
-    // Если есть текстовый запрос — перезагрузить только с текстом
+    // A remaining text query still warrants a reload with text only.
     if (state.hasSearchQuery) {
       _fetch();
     }
   }
 
-  /// Обновить текстовый запрос без запуска поиска.
-  ///
-  /// Используется для синхронизации текста из контроллера перед сменой фильтра.
+  /// Updates the text query without triggering a search. Used to sync the
+  /// text from the controller right before a filter change.
   void setSearchQuery(String query) {
     final String trimmed = query.trim();
     if (trimmed.length < 2 || state.searchQuery == trimmed) return;
     state = state.copyWith(searchQuery: trimmed);
   }
 
-  /// Выполнить текстовый поиск.
   Future<void> search(String query) async {
     if (query.trim().length < 2) return;
 
@@ -223,7 +199,6 @@ class BrowseNotifier extends Notifier<BrowseState> {
     await _fetch();
   }
 
-  /// Очистить текстовый поиск. Перезагружает если есть фильтры.
   void clearSearch() {
     _generation++;
     state = state.copyWith(
@@ -234,13 +209,12 @@ class BrowseNotifier extends Notifier<BrowseState> {
       clearError: true,
     );
 
-    // Если есть фильтры — перезагрузить только с фильтрами
+    // Remaining filters still warrant a reload with filters only.
     if (state.hasFilters) {
       _fetch();
     }
   }
 
-  /// Загрузить следующую страницу.
   Future<void> loadMore() async {
     if (state.isLoading || state.isLoadingMore || !state.hasMore) return;
 
@@ -279,7 +253,6 @@ class BrowseNotifier extends Notifier<BrowseState> {
     }
   }
 
-  /// Загрузить/перезагрузить контент с текущими параметрами.
   Future<void> _fetch() async {
     if (!state.hasActiveQuery) return;
 
@@ -319,7 +292,6 @@ class BrowseNotifier extends Notifier<BrowseState> {
     }
   }
 
-  /// Принудительная перезагрузка.
   Future<void> refresh() async {
     if (state.hasActiveQuery) {
       await _fetch();

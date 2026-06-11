@@ -11,63 +11,46 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/models/profile.dart';
 import 'profile_service.dart';
 
-/// Ключи для SharedPreferences.
 class _CacheKeys {
   static const String customCachePath = 'image_cache_path';
   static const String cacheEnabled = 'image_cache_enabled';
 }
 
-/// Типы изображений для кэширования.
 enum ImageType {
-  /// Обложки игр.
   gameCover('game_covers'),
 
-  /// Постеры фильмов.
   moviePoster('movie_posters'),
 
-  /// Постеры сериалов.
   tvShowPoster('tv_show_posters'),
 
-  /// Изображения с канваса (URL).
   canvasImage('canvas_images'),
 
-  /// Обложки манги.
   mangaCover('manga_covers'),
 
-  /// Обложки визуальных новелл.
   vnCover('vn_covers'),
 
-  /// Обложки аниме.
   animeCover('anime_covers'),
 
-  /// Обложки книг.
   bookCover('book_covers'),
 
-  /// Обложки кастомных элементов.
   customCover('custom_covers');
 
   const ImageType(this.folder);
 
-  /// Имя папки для данного типа.
   final String folder;
 }
 
-/// Провайдер сервиса кэширования изображений.
 final Provider<ImageCacheService> imageCacheServiceProvider =
     Provider<ImageCacheService>((Ref ref) {
   return ImageCacheService();
 });
 
-/// Сервис для локального кэширования изображений.
-///
-/// Поддерживает кэширование логотипов платформ и обложек игр.
-/// При включённом кэшировании изображения сохраняются локально
-/// и используются в оффлайн режиме.
+/// Caches images locally; when caching is enabled, cached files are served
+/// instead of the network so images keep working offline.
 class ImageCacheService {
   static final Logger _log = Logger('ImageCacheService');
   final Dio _dio = Dio();
 
-  /// Возвращает базовый путь к директории кэша.
   Future<String> getBaseCachePath() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? customPath = prefs.getString(_CacheKeys.customCachePath);
@@ -76,14 +59,14 @@ class ImageCacheService {
       return customPath;
     }
 
-    // AppSupport вместо Documents — Documents может быть под OneDrive,
-    // который блокирует создание файлов (PathAccessException).
+    // AppSupport instead of Documents: Documents may live under OneDrive,
+    // which blocks file creation (PathAccessException).
     final Directory appDir = await getApplicationSupportDirectory();
     const String folderName =
         kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
     final String basePath = p.join(appDir.path, folderName);
 
-    // Если профильная система инициализирована — кэш в папке профиля
+    // If the profile system is initialized, the cache lives in the profile folder
     final File profilesFile = File(p.join(basePath, 'profiles.json'));
     if (profilesFile.existsSync()) {
       final ProfileService profileService = ProfileService();
@@ -94,45 +77,37 @@ class ImageCacheService {
     return p.join(basePath, 'image_cache');
   }
 
-  /// Возвращает путь к директории для конкретного типа изображений.
   Future<String> getCachePath(ImageType type) async {
     final String basePath = await getBaseCachePath();
     return p.join(basePath, type.folder);
   }
 
-  /// Устанавливает кастомный путь к кэшу.
   Future<void> setCachePath(String path) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(_CacheKeys.customCachePath, path);
   }
 
-  /// Сбрасывает путь к кэшу на значение по умолчанию.
   Future<void> resetCachePath() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(_CacheKeys.customCachePath);
   }
 
-  /// Возвращает включено ли кэширование.
   Future<bool> isCacheEnabled() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
   }
 
-  /// Устанавливает состояние кэширования.
   Future<void> setCacheEnabled(bool enabled) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_CacheKeys.cacheEnabled, enabled);
   }
 
-  /// Возвращает путь к локальному файлу изображения.
   Future<String> getLocalImagePath(ImageType type, String imageId) async {
     final String cachePath = await getCachePath(type);
     return p.join(cachePath, '$imageId.png');
   }
 
-  /// Читает байты изображения из кэша.
-  ///
-  /// Возвращает null, если файл не существует или пуст.
+  /// Returns null if the file does not exist or is empty.
   Future<Uint8List?> readImageBytes(ImageType type, String imageId) async {
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
@@ -142,11 +117,8 @@ class ImageCacheService {
     return file.readAsBytes();
   }
 
-  /// Сохраняет байты изображения в кэш.
-  ///
-  /// Создаёт директорию при необходимости.
-  /// Отклоняет пустые данные (предотвращает создание 0-byte файлов).
-  /// Возвращает true при успехе.
+  /// Rejects empty data to avoid creating 0-byte files.
+  /// Returns true on success.
   Future<bool> saveImageBytes(
     ImageType type,
     String imageId,
@@ -168,16 +140,13 @@ class ImageCacheService {
     }
   }
 
-  /// Проверяет есть ли валидное изображение в кэше.
   Future<bool> isImageCached(ImageType type, String imageId) async {
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     return file.existsSync() && _isValidImageFile(file);
   }
 
-  /// Удаляет изображение из кэша.
-  ///
-  /// Безопасно обрабатывает блокировку файла на Windows.
+  /// Tolerates files locked by another process on Windows.
   Future<void> deleteImage(ImageType type, String imageId) async {
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
@@ -186,13 +155,9 @@ class ImageCacheService {
     }
   }
 
-  /// Возвращает результат получения изображения.
-  ///
-  /// Логика:
-  /// - Кэширование выключено: возвращает удалённый URL
-  /// - Кэширование включено + файл есть: возвращает локальный путь
-  /// - Кэширование включено + файла нет: возвращает удалённый URL
-  ///   с isMissing = true для фоновой загрузки
+  /// Returns the local path when a valid cached file exists; otherwise the
+  /// remote URL, with isMissing = true (when caching is on) so callers can
+  /// download in the background.
   Future<ImageResult> getImageUri({
     required ImageType type,
     required String imageId,
@@ -201,11 +166,9 @@ class ImageCacheService {
     final bool enabled = await isCacheEnabled();
 
     if (!enabled) {
-      // Кэширование выключено - используем удалённый URL
       return ImageResult(uri: remoteUrl, isLocal: false, isMissing: false);
     }
 
-    // Кэширование включено - проверяем локальный файл
     final String localPath = await getLocalImagePath(type, imageId);
     final File file = File(localPath);
 
@@ -213,16 +176,11 @@ class ImageCacheService {
       return ImageResult(uri: localPath, isLocal: true, isMissing: false);
     }
 
-    // Файл отсутствует — показать из сети, пометить как отсутствующий в кэше
     return ImageResult(uri: remoteUrl, isLocal: false, isMissing: true);
   }
 
-  /// Проверяет, что файл является валидным изображением.
-  ///
-  /// Проверяет magic bytes (начало) и маркер конца файла,
-  /// чтобы поймать обрезанные при скачивании файлы.
-  /// Поддерживает JPEG (FF D8 FF … FF D9), PNG (89 50 4E 47 … IEND),
-  /// WebP (RIFF…WEBP).
+  /// Checks the magic bytes and the end-of-file marker to catch files
+  /// truncated during download. Supports JPEG, PNG, and WebP.
   bool _isValidImageFile(File file) {
     if (!file.existsSync()) return false;
     final int length = file.lengthSync();
@@ -232,14 +190,14 @@ class ImageCacheService {
     try {
       final Uint8List header = raf.readSync(12);
 
-      // JPEG: начало FF D8 FF, конец FF D9
+      // JPEG: starts FF D8 FF, ends FF D9
       if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF) {
         raf.setPositionSync(length - 2);
         final Uint8List tail = raf.readSync(2);
         return tail[0] == 0xFF && tail[1] == 0xD9;
       }
 
-      // PNG: начало 89 50 4E 47, конец IEND (49 45 4E 44 AE 42 60 82)
+      // PNG: starts 89 50 4E 47, ends with IEND (49 45 4E 44 AE 42 60 82)
       if (header[0] == 0x89 &&
           header[1] == 0x50 &&
           header[2] == 0x4E &&
@@ -257,7 +215,7 @@ class ImageCacheService {
             tail[7] == 0x82;
       }
 
-      // WebP: RIFF....WEBP — проверяем заявленный размер
+      // WebP: RIFF....WEBP — verify the declared size
       if (header[0] == 0x52 &&
           header[1] == 0x49 &&
           header[2] == 0x46 &&
@@ -266,10 +224,10 @@ class ImageCacheService {
           header[9] == 0x45 &&
           header[10] == 0x42 &&
           header[11] == 0x50) {
-        // RIFF header содержит размер данных в байтах 4-7 (little-endian)
+        // RIFF header stores the data size in bytes 4-7 (little-endian)
         final int declaredSize =
             header[4] | header[5] << 8 | header[6] << 16 | header[7] << 24;
-        // Реальный размер = declaredSize + 8 (RIFF + size bytes)
+        // Actual size = declaredSize + 8 (RIFF + size bytes)
         return length >= declaredSize + 8;
       }
 
@@ -279,17 +237,16 @@ class ImageCacheService {
     }
   }
 
-  /// Безопасно удаляет файл, игнорируя ошибку блокировки на Windows.
+  /// Deletes the file, ignoring Windows file-lock errors.
   Future<void> _tryDelete(File file) async {
     try {
       await file.delete();
     } on FileSystemException {
-      // Файл может быть занят другим процессом (Windows lock).
-      // Пропускаем — файл будет перезаписан при следующем скачивании.
+      // The file may be locked by another process (Windows). Skip it;
+      // the next download will overwrite it.
     }
   }
 
-  /// Скачивает изображение в кэш.
   Future<bool> downloadImage({
     required ImageType type,
     required String imageId,
@@ -299,16 +256,13 @@ class ImageCacheService {
       final String localPath = await getLocalImagePath(type, imageId);
       final File file = File(localPath);
 
-      // Создаём директорию если не существует
       final Directory dir = file.parent;
       if (!dir.existsSync()) {
         await dir.create(recursive: true);
       }
 
-      // Скачиваем файл
       await _dio.download(remoteUrl, localPath);
 
-      // Проверяем что файл валидный
       if (!_isValidImageFile(file)) {
         await _tryDelete(file);
         return false;
@@ -317,7 +271,7 @@ class ImageCacheService {
       return true;
     } catch (e) {
       _log.warning('Failed to download image: $imageId', e);
-      // Удаляем невалидный/частичный файл при ошибке
+      // Remove the invalid/partial file left by the failed download
       final String localPath = await getLocalImagePath(type, imageId);
       final File partial = File(localPath);
       if (partial.existsSync()) {
@@ -327,9 +281,7 @@ class ImageCacheService {
     }
   }
 
-  /// Скачивает список изображений.
-  ///
-  /// Возвращает количество успешно скачанных.
+  /// Returns the number of successfully downloaded images.
   Future<int> downloadImages({
     required ImageType type,
     required List<ImageDownloadTask> tasks,
@@ -349,7 +301,6 @@ class ImageCacheService {
     return downloaded;
   }
 
-  /// Очищает весь кэш изображений.
   Future<void> clearCache() async {
     final String basePath = await getBaseCachePath();
     final Directory dir = Directory(basePath);
@@ -359,7 +310,6 @@ class ImageCacheService {
     }
   }
 
-  /// Очищает кэш для конкретного типа изображений.
   Future<void> clearCacheForType(ImageType type) async {
     final String cachePath = await getCachePath(type);
     final Directory dir = Directory(cachePath);
@@ -369,7 +319,6 @@ class ImageCacheService {
     }
   }
 
-  /// Возвращает размер кэша в байтах.
   Future<int> getCacheSize() async {
     final String basePath = await getBaseCachePath();
     final Directory dir = Directory(basePath);
@@ -385,7 +334,6 @@ class ImageCacheService {
     return size;
   }
 
-  /// Возвращает количество файлов в кэше.
   Future<int> getCachedCount() async {
     final String basePath = await getBaseCachePath();
     final Directory dir = Directory(basePath);
@@ -401,7 +349,6 @@ class ImageCacheService {
     return count;
   }
 
-  /// Форматирует размер в читаемый вид.
   String formatSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
@@ -409,36 +356,30 @@ class ImageCacheService {
   }
 }
 
-/// Результат получения изображения.
 class ImageResult {
-  /// Создаёт [ImageResult].
   const ImageResult({
     required this.uri,
     required this.isLocal,
     required this.isMissing,
   });
 
-  /// URI изображения (локальный путь или удалённый URL).
+  /// Local file path or remote URL.
   final String? uri;
 
-  /// true если используется локальный файл.
   final bool isLocal;
 
-  /// true если локальный файл отсутствует (кэш повреждён).
+  /// True when caching is on but no valid local file exists.
   final bool isMissing;
 }
 
-/// Задача для скачивания изображения.
 class ImageDownloadTask {
-  /// Создаёт [ImageDownloadTask].
   const ImageDownloadTask({
     required this.imageId,
     required this.remoteUrl,
   });
 
-  /// ID изображения (имя файла без расширения).
+  /// Image id, used as the cache file name (without extension).
   final String imageId;
 
-  /// URL для скачивания.
   final String remoteUrl;
 }

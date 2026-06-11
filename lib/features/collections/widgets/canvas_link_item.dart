@@ -3,17 +3,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/models/canvas_item.dart';
 
-// Виджет ссылки на канвасе.
-//
-// Отображает карточку с иконкой ссылки и текстом.
-// Данные хранятся в CanvasItem.data: {url: String, label: String}.
-
-/// Ссылка на канвасе.
+/// Data lives in CanvasItem.data: {url: String, label: String}.
 class CanvasLinkItem extends StatelessWidget {
-  /// Создаёт [CanvasLinkItem].
   const CanvasLinkItem({required this.item, super.key});
 
-  /// Элемент канваса с данными ссылки.
   final CanvasItem item;
 
   Future<void> _openUrl() async {

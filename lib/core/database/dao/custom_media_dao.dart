@@ -1,18 +1,15 @@
-// DAO для работы с кастомными элементами.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/custom_media.dart';
 import '../query_chunk.dart';
 
-/// DAO для таблицы `custom_items`.
+/// DAO for the `custom_items` table.
 class CustomMediaDao {
-  /// Создаёт DAO с функцией получения базы данных.
   const CustomMediaDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  /// Создаёт кастомный элемент. Возвращает ID.
+  /// Returns the new row ID.
   Future<int> create(CustomMedia item) async {
     final Database db = await _getDatabase();
     final Map<String, dynamic> data = item.toDb();
@@ -20,7 +17,6 @@ class CustomMediaDao {
     return db.insert('custom_items', data);
   }
 
-  /// Обновляет кастомный элемент.
   Future<void> update(CustomMedia item) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -31,7 +27,6 @@ class CustomMediaDao {
     );
   }
 
-  /// Получает кастомный элемент по ID.
   Future<CustomMedia?> getById(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -44,7 +39,6 @@ class CustomMediaDao {
     return CustomMedia.fromDb(rows.first);
   }
 
-  /// Получает кастомные элементы по списку ID.
   Future<List<CustomMedia>> getByIds(List<int> ids) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(ids, (List<int> chunk) async {
@@ -58,7 +52,7 @@ class CustomMediaDao {
     });
   }
 
-  /// Сохраняет или обновляет кастомный элемент (для импорта).
+  /// Upsert keeping the original ID — used by import.
   Future<void> upsert(CustomMedia item) async {
     final Database db = await _getDatabase();
     await db.insert(
@@ -68,7 +62,7 @@ class CustomMediaDao {
     );
   }
 
-  /// Сохраняет или обновляет список кастомных элементов (для импорта).
+  /// Upsert keeping the original IDs — used by import.
   Future<void> upsertAll(List<CustomMedia> items) async {
     if (items.isEmpty) return;
     final Database db = await _getDatabase();
@@ -83,7 +77,6 @@ class CustomMediaDao {
     await batch.commit(noResult: true);
   }
 
-  /// Удаляет кастомный элемент по ID.
   Future<void> delete(int id) async {
     final Database db = await _getDatabase();
     await db.delete(

@@ -27,7 +27,6 @@ import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
 
-/// Провайдер для сервиса экспорта.
 final Provider<ExportService> exportServiceProvider =
     Provider<ExportService>((Ref ref) {
   return ExportService(
@@ -39,53 +38,42 @@ final Provider<ExportService> exportServiceProvider =
   );
 });
 
-/// Результат экспорта.
 class ExportResult {
-  /// Создаёт экземпляр [ExportResult].
   const ExportResult({
     required this.success,
     this.filePath,
     this.error,
   });
 
-  /// Успешный результат.
   const ExportResult.success(String path)
       : success = true,
         filePath = path,
         error = null;
 
-  /// Неуспешный результат.
   const ExportResult.failure(String message)
       : success = false,
         filePath = null,
         error = message;
 
-  /// Отменённый экспорт.
   const ExportResult.cancelled()
       : success = false,
         filePath = null,
         error = null;
 
-  /// Успешность операции.
   final bool success;
 
-  /// Путь к сохранённому файлу.
   final String? filePath;
 
-  /// Сообщение об ошибке.
   final String? error;
 
-  /// Возвращает true, если экспорт был отменён.
+  /// Cancelled = not successful but with no error message.
   bool get isCancelled => !success && error == null;
 }
 
-/// Сервис для экспорта коллекций в .xcoll / .xcollx форматы.
+/// Exports collections to the .xcoll / .xcollx formats.
 class ExportService {
-  /// Создаёт экземпляр [ExportService].
-  ///
-  /// [canvasRepository] нужен для full export (.xcollx) с canvas-данными.
-  /// [imageCacheService] нужен для full export с обложками.
-  /// [database] нужен для full export с данными сезонов.
+  /// [canvasRepository], [imageCacheService] and [database] are only needed
+  /// for full export (.xcollx): canvas data, covers and season data.
   ExportService({
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
@@ -106,12 +94,7 @@ class ExportService {
   final TrackerDao? _trackerDao;
   final CollectionHeroService? _heroService;
 
-  // ==================== v2 Light (.xcoll) ====================
-
-  /// Создаёт v2 light export (.xcoll).
-  ///
-  /// Включает все элементы коллекции (игры, фильмы, сериалы)
-  /// через [CollectionItem.toExport].
+  /// Creates a v2 light export (.xcoll).
   XcollFile createLightExport(
     Collection collection,
     List<CollectionItem> items, {
@@ -134,13 +117,9 @@ class ExportService {
     );
   }
 
-  // ==================== v2 Full (.xcollx) ====================
-
-  /// Создаёт v2 full export (.xcollx).
-  ///
-  /// Включает элементы, collection canvas, per-item canvas, images
-  /// и полные медиа-данные (Game/Movie/TvShow) для офлайн-импорта.
-  /// Требует [canvasRepository] для получения canvas-данных.
+  /// Creates a v2 full export (.xcollx): items, collection canvas, per-item
+  /// canvas, images and full media data (Game/Movie/TvShow) for offline
+  /// import. Requires [canvasRepository] for the canvas data.
   Future<XcollFile> createFullExport(
     Collection collection,
     List<CollectionItem> items,
@@ -194,7 +173,7 @@ class ExportService {
       final _TagExportResult tagResult =
           await _collectTagData(collectionId, items);
       tags = tagResult.tags;
-      // Записываем tag_name в каждый элемент для восстановления при импорте.
+      // Write tag_name into each item so import can restore the assignment.
       for (int i = 0; i < items.length; i++) {
         final String? tagName = tagResult.itemTagNames[i];
         if (tagName != null) {
@@ -227,8 +206,8 @@ class ExportService {
     );
   }
 
-  /// Вкладывает hero-картинку коллекции в секцию `images` под ключом
-  /// `collection_hero/{id}.{ext}` (base64).
+  /// Embeds the collection hero image into the `images` section under the
+  /// key `collection_hero/{id}.{ext}` (base64).
   Future<void> _collectHeroImage(
     Collection collection,
     Map<String, String> images,
@@ -254,7 +233,6 @@ class ExportService {
     return fileName.substring(dot + 1).toLowerCase();
   }
 
-  /// Собирает canvas-данные коллекции (viewport, items, connections).
   Future<ExportCanvas?> _buildCollectionCanvas(int collectionId) async {
     final CanvasRepository repo = _canvasRepository!;
     final CanvasViewport? viewport = await repo.getViewport(collectionId);
@@ -277,7 +255,6 @@ class ExportService {
     );
   }
 
-  /// Добавляет per-item canvas (_canvas) в соответствующие export items.
   Future<void> _attachPerItemCanvas(
     List<CollectionItem> items,
     List<Map<String, dynamic>> exportItems,
@@ -311,12 +288,8 @@ class ExportService {
     }
   }
 
-  // ==================== Cover Images ====================
-
-  /// Собирает кэшированные обложки для всех элементов коллекции.
-  ///
-  /// Только те изображения, которые уже есть в локальном кэше.
-  /// Ключ — '{ImageType.folder}/{externalId}', значение — base64.
+  /// Collects covers already present in the local cache (nothing is
+  /// downloaded). Key is '{ImageType.folder}/{externalId}', value is base64.
   Future<Map<String, String>> _collectCachedImages(
     List<CollectionItem> items,
   ) async {
@@ -328,7 +301,7 @@ class ExportService {
       final String imageId = item.coverImageId;
       final String key = '${imageType.folder}/$imageId';
 
-      // Пропускаем дубли (один externalId может встретиться несколько раз)
+      // Skip duplicates — the same externalId can appear more than once.
       if (images.containsKey(key)) continue;
 
       final Uint8List? bytes =
@@ -341,12 +314,8 @@ class ExportService {
     return images;
   }
 
-  // ==================== Canvas Images ====================
-
-  /// Собирает кэшированные изображения с канваса.
-  ///
-  /// Для canvas items типа [CanvasItemType.image] с URL,
-  /// читает кэшированные данные по imageId = FNV-1a hash URL.
+  /// Collects cached canvas images: for [CanvasItemType.image] items with a
+  /// URL, reads cached data by imageId = FNV-1a hash of the URL.
   Future<Map<String, String>> _collectCanvasImages(
     int collectionId,
     List<CollectionItem> items,
@@ -389,9 +358,8 @@ class ExportService {
     return images;
   }
 
-  /// Вычисляет FNV-1a 32-bit хэш URL для imageId.
-  ///
-  /// Детерминированный хэш, не зависит от платформы.
+  /// FNV-1a 32-bit hash of the URL, used as imageId.
+  /// Deterministic and platform-independent.
   static String _urlToImageId(String url) {
     int hash = 0x811c9dc5;
     for (int i = 0; i < url.length; i++) {
@@ -401,13 +369,9 @@ class ExportService {
     return hash.toRadixString(16).padLeft(8, '0');
   }
 
-  // ==================== Media Data ====================
-
-  /// Собирает полные данные Game/Movie/TvShow/TvSeason/TvEpisode из элементов.
-  ///
-  /// Используется для офлайн-импорта: при наличии этих данных
-  /// импорт не требует обращения к IGDB/TMDB API.
-  /// Сезоны и эпизоды загружаются из кэша БД для всех tvShow и animation-tvShow.
+  /// Collects full Game/Movie/TvShow/TvSeason/TvEpisode data so that import
+  /// can run offline without hitting the IGDB/TMDB APIs. Seasons and episodes
+  /// come from the DB cache for every tvShow and animation-tvShow.
   Future<Map<String, dynamic>> _collectMediaData(
     List<CollectionItem> items,
   ) async {
@@ -439,7 +403,6 @@ class ExportService {
             final Map<String, dynamic> data = item.game!.toDb();
             data.remove('cached_at');
             games[item.externalId] = data;
-            // Собираем platformIds для экспорта
             if (item.game!.platformIds != null) {
               platformIds.addAll(item.game!.platformIds!);
             }
@@ -501,7 +464,7 @@ class ExportService {
       }
     }
 
-    // Собираем сезоны и эпизоды из кэша БД (параллельно для каждого showId)
+    // Seasons and episodes from the DB cache, fetched in parallel per showId.
     final List<Map<String, dynamic>> allSeasons = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> allEpisodes = <Map<String, dynamic>>[];
     if (_database != null && tvShowIds.isNotEmpty) {
@@ -523,7 +486,6 @@ class ExportService {
       }
     }
 
-    // Собираем платформы из кэша БД
     final List<Map<String, dynamic>> allPlatforms = <Map<String, dynamic>>[];
     if (_database != null && platformIds.isNotEmpty) {
       final List<model.Platform> platforms =
@@ -562,11 +524,8 @@ class ExportService {
     };
   }
 
-  // ==================== Export API ====================
-
-  /// Экспортирует коллекцию в v2 light JSON строку.
-  ///
-  /// Для full export используйте [exportToJsonFull] (async).
+  /// Exports a collection to a v2 light JSON string.
+  /// For full export use [exportToJsonFull] (async).
   String exportToJson(
     Collection collection,
     List<CollectionItem> items,
@@ -575,7 +534,6 @@ class ExportService {
     return xcoll.toJsonString();
   }
 
-  /// Экспортирует коллекцию в JSON строку (async, для full export).
   Future<String> exportToJsonFull(
     Collection collection,
     List<CollectionItem> items,
@@ -586,14 +544,9 @@ class ExportService {
     return xcoll.toJsonString();
   }
 
-  /// Экспортирует коллекцию в файл.
-  ///
-  /// [format] определяет режим экспорта:
-  /// - [ExportFormat.light] → `.xcoll` (метаданные + ID элементов)
-  /// - [ExportFormat.full] → `.xcollx` (+ canvas + images)
-  ///
-  /// Открывает диалог выбора места сохранения.
-  /// Возвращает [ExportResult] с результатом операции.
+  /// [format] selects the export mode:
+  /// [ExportFormat.light] → `.xcoll` (metadata + item IDs),
+  /// [ExportFormat.full] → `.xcollx` (+ canvas + images).
   Future<ExportResult> exportToFile(
     Collection collection,
     List<CollectionItem> items, {
@@ -625,7 +578,7 @@ class ExportService {
       final Uint8List jsonBytes = Uint8List.fromList(utf8.encode(json));
       final String suggestedName = _sanitizeFileName(collection.name);
 
-      // На Android FileType.custom не поддерживает кастомные расширения.
+      // On Android FileType.custom doesn't support custom extensions.
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Collection',
@@ -639,8 +592,8 @@ class ExportService {
         return const ExportResult.cancelled();
       }
 
-      // На Android/iOS file_picker записывает bytes через SAF.
-      // На десктопе нужно записать файл самостоятельно.
+      // On Android/iOS file_picker writes the bytes via SAF;
+      // on desktop the file must be written manually.
       if (!Platform.isAndroid && !Platform.isIOS) {
         final String finalPath = outputPath.endsWith('.$extension')
             ? outputPath
@@ -661,10 +614,9 @@ class ExportService {
     }
   }
 
-  /// Собирает данные тир-листов привязанных к коллекции.
-  ///
-  /// Записи обогащаются `external_id` и `media_type` для разрешения
-  /// при импорте (т.к. `collection_item_id` меняется).
+  /// Collects tier lists bound to the collection. Entries are enriched with
+  /// `external_id` and `media_type` so import can resolve them, since
+  /// `collection_item_id` changes on import.
   Future<List<Map<String, dynamic>>?> _collectTierListData(
     int collectionId,
   ) async {
@@ -673,7 +625,7 @@ class ExportService {
         await db.tierListDao.getTierListsByCollection(collectionId);
     if (lists.isEmpty) return null;
 
-    // Загружаем элементы коллекции для маппинга id → (external_id, media_type)
+    // Collection items for the id → (external_id, media_type) mapping.
     final List<CollectionItem> items =
         await db.collectionDao.getCollectionItems(collectionId);
     final Map<int, CollectionItem> itemsById = <int, CollectionItem>{
@@ -687,7 +639,6 @@ class ExportService {
       final List<TierListEntry> entries =
           await db.tierListDao.getTierListEntries(tl.id);
 
-      // Обогащаем entries external_id и media_type
       final List<Map<String, dynamic>> exportedEntries =
           <Map<String, dynamic>>[];
       for (final TierListEntry entry in entries) {
@@ -712,7 +663,7 @@ class ExportService {
     return result;
   }
 
-  /// Собирает данные тегов коллекции и маппинг item index → tag name.
+  /// Collects collection tag data plus an item index → tag name mapping.
   Future<_TagExportResult> _collectTagData(
     int collectionId,
     List<CollectionItem> items,
@@ -743,7 +694,8 @@ class ExportService {
     );
   }
 
-  /// Собирает tracker_game_data для игр коллекции (single batch query).
+  /// Collects tracker_game_data for the collection's games (single batch
+  /// query).
   Future<List<Map<String, dynamic>>?> _collectTrackerData(
     List<CollectionItem> items,
   ) async {
@@ -758,7 +710,6 @@ class ExportService {
     return dataList.map((TrackerGameData d) => d.toDb()).toList();
   }
 
-  /// Очищает название файла от недопустимых символов.
   String _sanitizeFileName(String name) {
     return name
         .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
@@ -768,13 +719,12 @@ class ExportService {
   }
 }
 
-/// Результат сбора тегов для экспорта.
 class _TagExportResult {
   _TagExportResult({required this.tags, required this.itemTagNames});
 
-  /// Экспортные данные тегов (null если тегов нет).
+  /// Tag export data; null when the collection has no tags.
   final List<Map<String, dynamic>>? tags;
 
-  /// Имя тега для каждого элемента (по индексу, null если без тега).
+  /// Tag name per item (by index); null for untagged items.
   final List<String?> itemTagNames;
 }

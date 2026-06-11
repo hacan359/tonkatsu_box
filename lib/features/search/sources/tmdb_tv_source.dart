@@ -1,5 +1,3 @@
-// Источник данных: сериалы из TMDB.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,7 +15,7 @@ import '../models/search_source.dart';
 import '../providers/genre_provider.dart';
 import '../utils/genre_utils.dart';
 
-/// Источник данных — сериалы из TMDB (без анимации).
+/// TMDB TV series with animation excluded (covered by a separate source).
 class TmdbTvSource extends SearchSource {
   @override
   String get id => 'tv';
@@ -97,14 +95,13 @@ class TmdbTvSource extends SearchSource {
         filterValues['originalLanguage'] as String?;
 
     if (query != null && query.isNotEmpty) {
-      // Текстовый поиск + клиентская фильтрация
       final TmdbPagedResult<TvShow> result = await tmdb.searchTvShowsPaged(
         query,
         page: page,
         firstAirDateYear: year,
       );
 
-      // Фильтруем анимацию из результатов поиска
+      // Drop animation from search results: it belongs to the anime source.
       List<TvShow> filtered = result.results
           .where(
             (TvShow s) =>
@@ -113,7 +110,8 @@ class TmdbTvSource extends SearchSource {
           )
           .toList();
 
-      // Клиентская фильтрация по жанрам (multi-select, OR).
+      // Genre filtering is client-side (multi-select, OR): TMDB search
+      // has no genre param.
       if (genreIds != null && genreIds.isNotEmpty) {
         final Set<String> genreNames = genreIds
             .map((int id) => genreMap[id.toString()])
@@ -139,7 +137,7 @@ class TmdbTvSource extends SearchSource {
       );
     }
 
-    // Browse mode: Discover с фильтрами
+    // Browse mode: TMDB Discover with server-side filters.
     final List<TvShow> tvShows = await tmdb.discoverTvShows(
       genreIds: _genreIdsToParam(genreIds),
       year: year,
@@ -167,7 +165,6 @@ class TmdbTvSource extends SearchSource {
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
-/// Нормализует значение фильтра `genre` в список ID (multi-select или single).
 List<int>? _readGenreIds(Object? value) {
   return switch (value) {
     final List<Object?> list => list.whereType<int>().toList(),
@@ -176,7 +173,6 @@ List<int>? _readGenreIds(Object? value) {
   };
 }
 
-/// Склеивает ID в строку для `with_genres`. null если список пуст.
 String? _genreIdsToParam(List<int>? ids) {
   if (ids == null || ids.isEmpty) return null;
   return ids.join(',');

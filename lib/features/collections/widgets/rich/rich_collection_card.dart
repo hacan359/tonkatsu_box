@@ -1,6 +1,6 @@
-// Rich-карточка коллекции: hero-изображение на всю площадь с общим
-// text-overlay (имя/описание/stats) поверх. Использует [CollectionCardShell]
-// для фокуса/hover/рамки — структурно идентична classic-карточке.
+// Rich collection card: full-bleed hero image with a text overlay on top.
+// Built on [CollectionCardShell] for focus/hover/border, so it stays
+// structurally identical to the classic card.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,9 +13,7 @@ import '../collection_card_overlay.dart';
 import '../collection_card_shell.dart';
 import '../collection_hero_background.dart';
 
-/// Rich-карточка с hero-изображением на всю площадь.
 class RichCollectionCard extends ConsumerWidget {
-  /// Создаёт [RichCollectionCard].
   const RichCollectionCard({
     required this.collection,
     required this.heroAbsolutePath,
@@ -26,22 +24,17 @@ class RichCollectionCard extends ConsumerWidget {
     super.key,
   });
 
-  /// Коллекция для отображения.
   final Collection collection;
 
-  /// Абсолютный путь к hero-файлу.
   final String heroAbsolutePath;
 
-  /// Callback при нажатии.
   final VoidCallback? onTap;
 
-  /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
 
-  /// Callback при правом клике (глобальные координаты для showMenu).
+  /// Right-click callback; receives global coordinates for `showMenu`.
   final void Function(Offset globalPosition)? onSecondaryTap;
 
-  /// Callback при изменении фокуса.
   final ValueChanged<bool>? onFocusChanged;
 
   @override

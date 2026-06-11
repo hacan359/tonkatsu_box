@@ -1,5 +1,4 @@
 import '../../../shared/constants/platform_features.dart';
-// Переиспользуемый горизонтальный ряд постеров для Discover.
 
 import 'package:flutter/material.dart';
 
@@ -10,9 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 
-/// Элемент для отображения в ряду Discover.
 class DiscoverItem {
-  /// Создаёт [DiscoverItem].
   const DiscoverItem({
     required this.title,
     required this.tmdbId,
@@ -23,31 +20,25 @@ class DiscoverItem {
     this.isMovie = true,
   });
 
-  /// Название.
   final String title;
 
-  /// TMDB ID.
   final int tmdbId;
 
-  /// URL постера.
   final String? posterUrl;
 
-  /// Год.
   final int? year;
 
-  /// Рейтинг (форматированный).
+  /// Rating, already formatted for display.
   final String? rating;
 
-  /// Уже в коллекции.
   final bool isOwned;
 
-  /// Фильм (true) или сериал (false) — для различия при одинаковых tmdbId.
+  /// Distinguishes movies (true) from TV shows: tmdbId values may collide
+  /// between the two.
   final bool isMovie;
 }
 
-/// Горизонтальный ряд постеров с заголовком.
 class DiscoverRow extends StatefulWidget {
-  /// Создаёт [DiscoverRow].
   const DiscoverRow({
     required this.title,
     required this.items,
@@ -56,16 +47,12 @@ class DiscoverRow extends StatefulWidget {
     super.key,
   });
 
-  /// Заголовок секции.
   final String title;
 
-  /// Элементы для отображения.
   final List<DiscoverItem> items;
 
-  /// Callback при тапе на элемент.
   final void Function(DiscoverItem item) onTap;
 
-  /// Иконка в заголовке.
   final IconData? icon;
 
   @override

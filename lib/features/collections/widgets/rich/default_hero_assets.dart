@@ -1,30 +1,20 @@
-// Дефолтные hero-картинки для коллекций без собственной обложки.
-//
-// Файлы лежат в `assets/images/collection_hero_defaults/`. Чтобы добавить
-// новую заглушку:
-//   1) положить PNG/JPG в каталог (желательно 2560×1080, 21:9);
-//   2) добавить имя файла в [_defaultHeroAssets] ниже.
-//
-// Выбор заглушки — детерминированный: одна коллекция всегда получает
-// одну и ту же картинку (по `id` коллекции).
+// Default hero images for collections without a custom cover.
 
-/// Имена файлов в `assets/images/collection_hero_defaults/`.
-///
-/// Добавляй сюда новые заглушки. Если список пустой — фолбэк выключен.
+/// To add a placeholder: drop a PNG/JPG (ideally 2560×1080, 21:9) into
+/// `assets/images/collection_hero_defaults/` and list it here.
+/// An empty list disables the fallback.
 const List<String> _defaultHeroAssets = <String>[
   'hero_4.jpg',
   'hero_5.jpg',
   'hero_6.jpg',
 ];
 
-/// Базовый путь к каталогу дефолтных картинок.
 const String _defaultHeroDir = 'assets/images/collection_hero_defaults/';
 
-/// Возвращает asset-путь дефолтной hero-картинки для коллекции с id
-/// [collectionId] или `null`, если дефолтных картинок пока нет.
+/// Returns `null` when no default images are bundled.
 ///
-/// Выбор детерминированный: `collectionId % N` — та же коллекция всегда
-/// получит ту же картинку.
+/// Selection is deterministic (`collectionId % N`): the same collection
+/// always gets the same image.
 String? defaultHeroAssetForCollection(int collectionId) {
   if (_defaultHeroAssets.isEmpty) return null;
   final int index = collectionId.abs() % _defaultHeroAssets.length;

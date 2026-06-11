@@ -1,26 +1,19 @@
-// Диалог прогресса импорта коллекции.
-
 import 'package:flutter/material.dart';
 
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Диалог прогресса импорта коллекции.
-///
-/// Показывает этап, прогресс-бар и сообщение. Закрывается кнопкой "Done"
-/// после завершения.
+/// Can only be dismissed via the "Done" button, which appears once the
+/// import future completes.
 class ImportProgressDialog extends StatelessWidget {
-  /// Создаёт [ImportProgressDialog].
   const ImportProgressDialog({
     required this.progressNotifier,
     required this.importFuture,
     super.key,
   });
 
-  /// Нотификатор прогресса импорта.
   final ValueNotifier<ImportProgress?> progressNotifier;
 
-  /// Future результата импорта.
   final Future<ImportResult> importFuture;
 
   @override
