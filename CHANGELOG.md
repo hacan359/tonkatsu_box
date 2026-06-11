@@ -7,6 +7,59 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Custom data folder: the database and profiles can live in any user-picked directory**
+
+  Settings → Database grows a "Data Location" section: pick any folder for the
+  app's data (database, profiles), reset back to the default, see which folder
+  is active. Picking a folder that already holds a database switches to it
+  without copying — a quick way to look at another data set; picking an empty
+  folder offers to copy the current data (live database flushed via WAL
+  checkpoint first, image caches re-download on demand). Switching always asks
+  for an app restart. A configured folder that is missing or emptied at startup
+  falls back to the default location with a warning instead of crashing or
+  silently creating a fresh database.
+
+  On Android the system SAF picker is replaced with an in-app folder browser
+  over the real filesystem (the SAF URI-to-path conversion is firmware
+  guesswork and produced non-existent paths on some devices); it lists all
+  mounted volumes (internal storage, SD card, USB OTG) and can create folders.
+  Storage permissions are handled per Android version: "All files access" on
+  Android 11+ (with a system-list fallback for OEM firmwares that hide the
+  per-app screen) and the classic storage permission on Android 10 and below.
+
+  * lib/core/services/storage_root.dart (StorageRoot, StorageRootResolution):
+    New. Single resolver of the data root: custom dir from prefs
+    (custom_storage_dir) with fallback to the default AppSupport location;
+    hasData, isWritable, copyDataTo helpers; public dbFileName,
+    profilesFileName, profilesFolderName constants.
+  * lib/core/services/storage_volumes.dart (StorageVolumes, StorageVolume):
+    New. Detects mounted Android volumes under /storage; primaryPath getter.
+  * lib/shared/widgets/folder_picker_dialog.dart (FolderPickerDialog,
+    FolderPickerRoot): New. In-app folder browser with multi-volume root list,
+    ".." navigation and folder creation.
+  * lib/features/settings/widgets/storage_location_section.dart
+    (StorageLocationSection): New. Settings group with the current path,
+    change/reset buttons, copy and restart flows, per-version Android
+    permission handling.
+  * lib/features/settings/content/database_content.dart (DatabaseContent.build):
+    Mount StorageLocationSection between Configuration and Danger Zone.
+  * lib/core/database/database_service.dart (DatabaseService._initDatabase,
+    DatabaseService.checkpointWal): Resolve the base path via
+    StorageRoot.resolve(); new checkpointWal() flushes the WAL (logs an
+    incomplete busy checkpoint) so a live database can be file-copied.
+  * lib/core/services/profile_service.dart (ProfileService.getBasePath):
+    Resolve via StorageRoot; layout constants now referenced from StorageRoot.
+  * lib/core/services/image_cache_service.dart
+    (ImageCacheService.getBaseCachePath): Default branch resolves via
+    StorageRoot so profile image caches follow the data root.
+  * android/app/src/main/AndroidManifest.xml: MANAGE_EXTERNAL_STORAGE,
+    legacy READ/WRITE_EXTERNAL_STORAGE (maxSdkVersion 29),
+    requestLegacyExternalStorage.
+  * pubspec.yaml: Add permission_handler, android_intent_plus,
+    device_info_plus.
+
 ## [0.33.0] - 2026-06-11
 
 ### Added

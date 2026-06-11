@@ -4,12 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../shared/models/collected_item_info.dart';
 import '../../shared/models/profile.dart';
 import '../services/profile_service.dart';
+import '../services/storage_root.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/cover_info.dart';
@@ -212,31 +212,25 @@ class DatabaseService {
       CalendarEntryDao(() => database);
 
   Future<Database> _initDatabase() async {
-    // AppSupport rather than Documents: Documents may sit under OneDrive,
-    // which blocks file creation (PathAccessException).
-    final Directory appDir = await getApplicationSupportDirectory();
-
-    // Separate folder in debug to avoid polluting the real collection.
-    const String folderName =
-        kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
+    final String basePath = (await StorageRoot.resolve()).path;
 
     // If profile system is initialised, use the per-profile path.
-    final String basePath = p.join(appDir.path, folderName);
     final String dbDir;
-    final File profilesFile = File(p.join(basePath, 'profiles.json'));
+    final File profilesFile =
+        File(p.join(basePath, StorageRoot.profilesFileName));
     if (profilesFile.existsSync()) {
       final ProfileService profileService = ProfileService();
       final ProfilesData data = await profileService.loadProfiles();
       dbDir = p.join(
         basePath,
-        'profiles',
+        StorageRoot.profilesFolderName,
         data.currentProfileId,
       );
     } else {
       dbDir = basePath;
     }
 
-    final String dbPath = p.join(dbDir, 'tonkatsu_box.db');
+    final String dbPath = p.join(dbDir, StorageRoot.dbFileName);
 
     final Directory dir = Directory(dbDir);
     if (!dir.existsSync()) {
@@ -575,6 +569,20 @@ class DatabaseService {
     int limit = 4,
   }) =>
       collectionDao.getCollectionCovers(collectionId, limit: limit);
+
+  /// Empties the WAL into the main database file so a plain file copy
+  /// of the open database is complete.
+  Future<void> checkpointWal() async {
+    final Database db = await database;
+    final List<Map<String, Object?>> result =
+        await db.rawQuery('PRAGMA wal_checkpoint(TRUNCATE)');
+    // busy=1 means active readers kept the checkpoint incomplete; the
+    // copied sidecars still carry the tail, but it is worth a trace.
+    final Object? busy = result.isNotEmpty ? result.first['busy'] : null;
+    if (busy != 0) {
+      _log.warning('WAL checkpoint incomplete (busy=$busy)');
+    }
+  }
 
   Future<void> close() async {
     final Database? db = _database;

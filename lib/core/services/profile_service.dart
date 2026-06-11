@@ -1,11 +1,9 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -13,6 +11,7 @@ import '../../main.dart' show AppRestartScope;
 import '../../shared/constants/platform_features.dart';
 import '../../shared/models/profile.dart';
 import '../database/database_service.dart';
+import 'storage_root.dart';
 
 final Provider<ProfileService> profileServiceProvider =
     Provider<ProfileService>((Ref ref) {
@@ -24,26 +23,20 @@ final Provider<ProfileService> profileServiceProvider =
 class ProfileService {
   static final Logger _log = Logger('ProfileService');
 
-  static const String _profilesFileName = 'profiles.json';
-  static const String _profilesFolderName = 'profiles';
-  static const String _dbFileName = 'tonkatsu_box.db';
   static const String _imageCacheFolderName = 'image_cache';
 
   String? _basePath;
 
   Future<String> getBasePath() async {
     if (_basePath != null) return _basePath!;
-    final Directory appDir = await getApplicationSupportDirectory();
-    const String folderName =
-        kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
-    _basePath = p.join(appDir.path, folderName);
+    _basePath = (await StorageRoot.resolve()).path;
     return _basePath!;
   }
 
   /// Creates a default profile when `profiles.json` does not exist yet.
   Future<ProfilesData> loadProfiles() async {
     final String basePath = await getBasePath();
-    final File file = File(p.join(basePath, _profilesFileName));
+    final File file = File(p.join(basePath, StorageRoot.profilesFileName));
 
     if (await file.exists()) {
       final String content = await file.readAsString();
@@ -66,7 +59,7 @@ class ProfileService {
     if (!baseDir.existsSync()) {
       await baseDir.create(recursive: true);
     }
-    final File file = File(p.join(basePath, _profilesFileName));
+    final File file = File(p.join(basePath, StorageRoot.profilesFileName));
     await file.writeAsString(data.toJsonString());
   }
 
@@ -146,12 +139,12 @@ class ProfileService {
 
   Future<String> getProfileDir(String profileId) async {
     final String basePath = await getBasePath();
-    return p.join(basePath, _profilesFolderName, profileId);
+    return p.join(basePath, StorageRoot.profilesFolderName, profileId);
   }
 
   Future<String> getDatabasePath(String profileId) async {
     final String dir = await getProfileDir(profileId);
-    return p.join(dir, _dbFileName);
+    return p.join(dir, StorageRoot.dbFileName);
   }
 
   Future<String> getImageCachePath(String profileId) async {
@@ -163,9 +156,9 @@ class ProfileService {
   /// old database exists and the profiles/ folder does not.
   Future<bool> migrateIfNeeded() async {
     final String basePath = await getBasePath();
-    final File oldDb = File(p.join(basePath, _dbFileName));
+    final File oldDb = File(p.join(basePath, StorageRoot.dbFileName));
     final Directory profilesDir =
-        Directory(p.join(basePath, _profilesFolderName));
+        Directory(p.join(basePath, StorageRoot.profilesFolderName));
 
     if (!oldDb.existsSync() || profilesDir.existsSync()) {
       return false;
@@ -174,10 +167,10 @@ class ProfileService {
     _log.info('Migrating existing database to profile system...');
 
     final String defaultDir =
-        p.join(basePath, _profilesFolderName, 'default');
+        p.join(basePath, StorageRoot.profilesFolderName, 'default');
     await Directory(defaultDir).create(recursive: true);
 
-    await oldDb.rename(p.join(defaultDir, _dbFileName));
+    await oldDb.rename(p.join(defaultDir, StorageRoot.dbFileName));
 
     final Directory oldCache =
         Directory(p.join(basePath, _imageCacheFolderName));

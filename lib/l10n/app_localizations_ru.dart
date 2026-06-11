@@ -907,6 +907,124 @@ class SRu extends S {
   String get databaseReset => 'База данных сброшена';
 
   @override
+  String get storageLocationTitle => 'Расположение данных';
+
+  @override
+  String get storageLocationSubtitle =>
+      'Папка, где хранятся база данных и профили. Не выбирайте папку, которую облако синхронизирует на лету (OneDrive, Syncthing): база может повредиться посреди записи. Для переноса между устройствами используйте экспорт.';
+
+  @override
+  String get storageLocationDangerWarning =>
+      'Внимание: смена папки данных может привести к их потере. Вы делаете это на свой страх и риск.';
+
+  @override
+  String get storageLocationFolder => 'Папка данных';
+
+  @override
+  String get storageLocationFallbackWarning =>
+      'Выбранная папка недоступна, используется стандартная';
+
+  @override
+  String get storageLocationChange => 'Выбрать папку';
+
+  @override
+  String get storageLocationReset => 'Сбросить на стандартную';
+
+  @override
+  String get storageLocationSelectDialog => 'Выберите папку для данных';
+
+  @override
+  String storageLocationNotWritable(String path) {
+    return 'Нет прав на запись: $path';
+  }
+
+  @override
+  String get storageLocationPermissionTitle => 'Нужен доступ к файлам';
+
+  @override
+  String get storageLocationPermissionMessage =>
+      'Для своей папки Android требует разрешение «Доступ ко всем файлам». В открывшемся списке найдите Tonkatsu Box, включите доступ, затем вернитесь и выберите папку ещё раз.';
+
+  @override
+  String get storageLocationLegacyPermissionMessage =>
+      'Для своей папки нужно разрешение «Память». Включите его в настройках приложения, затем вернитесь и выберите папку ещё раз.';
+
+  @override
+  String get storageLocationOpenSettings => 'Открыть настройки';
+
+  @override
+  String get storageLocationUseExistingTitle => 'Найдены существующие данные';
+
+  @override
+  String get storageLocationUseExistingMessage =>
+      'В выбранной папке уже есть база данных. После перезапуска приложение переключится на эти данные.';
+
+  @override
+  String get storageLocationUseExistingConfirm => 'Использовать';
+
+  @override
+  String get storageLocationCopyTitle => 'Скопировать текущие данные?';
+
+  @override
+  String get storageLocationCopyMessage =>
+      'Выбранная папка пуста. Коллекции будут скопированы туда; сохранённые картинки загрузятся заново по мере надобности. Данные в старой папке останутся на месте.';
+
+  @override
+  String get storageLocationCopyConfirm => 'Копировать';
+
+  @override
+  String get storageLocationCopyError =>
+      'Не удалось скопировать данные в выбранную папку';
+
+  @override
+  String get storageLocationResetTitle => 'Сбросить папку данных?';
+
+  @override
+  String get storageLocationResetMessage =>
+      'После перезапуска приложение вернётся к стандартной папке данных. Данные в вашей папке останутся на месте.';
+
+  @override
+  String get storageLocationRestartTitle => 'Нужен перезапуск';
+
+  @override
+  String get storageLocationRestartMessage =>
+      'Новая папка данных начнёт использоваться после перезапуска. Перезапустить сейчас?';
+
+  @override
+  String get storageLocationRestartNow => 'Перезапустить';
+
+  @override
+  String get storageLocationRestartLater =>
+      'Изменение вступит в силу после перезапуска';
+
+  @override
+  String get folderPickerNewFolder => 'Новая папка';
+
+  @override
+  String get folderPickerVolumeList => 'Накопители';
+
+  @override
+  String get folderPickerInternalStorage => 'Внутренняя память';
+
+  @override
+  String get folderPickerSelect => 'Выбрать';
+
+  @override
+  String get folderPickerFolderName => 'Имя папки';
+
+  @override
+  String get folderPickerInvalidName => 'Недопустимое имя папки';
+
+  @override
+  String get folderPickerEmpty => 'Подпапок нет';
+
+  @override
+  String get folderPickerReadError => 'Не удалось прочитать папку';
+
+  @override
+  String get folderPickerCreateError => 'Не удалось создать папку';
+
+  @override
   String get traktTitle => 'Импорт Trakt';
 
   @override

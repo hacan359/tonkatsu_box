@@ -17,6 +17,7 @@ import '../../tier_lists/providers/tier_lists_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
+import '../widgets/storage_location_section.dart';
 
 class DatabaseContent extends ConsumerWidget {
   const DatabaseContent({super.key});
@@ -83,6 +84,9 @@ class DatabaseContent extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.md),
+
+        const StorageLocationSection(),
         const SizedBox(height: AppSpacing.md),
 
         SettingsGroup(
