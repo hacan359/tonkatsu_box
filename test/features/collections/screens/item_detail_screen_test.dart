@@ -1835,4 +1835,83 @@ void main() {
       expect(find.text('5 seasons \u2022 62 ep'), findsNothing);
     });
   });
+
+  group('Autosave on back', () {
+    testWidgets(
+        'should save unsaved notes without exception when route is popped '
+        'while editing', (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      final CollectionItem item = CollectionItem(
+        id: 1,
+        collectionId: 1,
+        mediaType: MediaType.game,
+        externalId: 100,
+        platformId: 18,
+        status: ItemStatus.notStarted,
+        addedAt: testDate,
+        game: game,
+        platform: const Platform(id: 18, name: 'SNES'),
+      );
+      when(() => mockRepo.getItemsWithData(
+            1,
+            mediaType: any(named: 'mediaType'),
+          )).thenAnswer((_) async => <CollectionItem>[item]);
+      when(() => mockRepo.updateItemUserComment(any(), any()))
+          .thenAnswer((_) async {});
+
+      await tester.pumpWidget(ProviderScope(
+        overrides: <Override>[
+          collectionRepositoryProvider.overrideWithValue(mockRepo),
+          databaseServiceProvider.overrideWithValue(mockDb),
+          tmdbApiProvider.overrideWithValue(mockTmdbApi),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Builder(
+            builder: (BuildContext context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext _) => const ItemDetailScreen(
+                        collectionId: 1,
+                        itemId: 1,
+                        isEditable: true,
+                      ),
+                    ),
+                  ),
+                  child: const Text('open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      // My Notes is the first edit icon (author's review is the last one).
+      await tester.scrollUntilVisible(
+        find.byIcon(Icons.edit).first,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'unsaved note');
+      await tester.pump();
+
+      // Back without pressing the check mark.
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      verify(() => mockRepo.updateItemUserComment(1, 'unsaved note'))
+          .called(1);
+    });
+  });
 }

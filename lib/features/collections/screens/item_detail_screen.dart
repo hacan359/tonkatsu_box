@@ -96,7 +96,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   DiscordRpcService? _discordRpc;
   String? _currentItemName;
 
+  // Comment autosave is triggered from MediaDetailView.dispose() during route
+  // teardown, when ref.read's ProviderScope ancestor lookup is already unsafe
+  // ("Looking up a deactivated widget's ancestor"), so the container is
+  // resolved once upfront and the save callbacks read through it.
+  late final ProviderContainer _container;
+
   bool get _hasCanvas => kCanvasEnabled && widget.collectionId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _container = ProviderScope.containerOf(context, listen: false);
+  }
 
   void _updateDiscordPresence(CollectionItem item) {
     if (!kDiscordRpcAvailable) return;
@@ -938,13 +950,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Future<void> _saveAuthorComment(int id, String? text) async {
-    await ref
+    await _container
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateAuthorComment(id, text);
   }
 
   Future<void> _saveUserComment(int id, String? text) async {
-    await ref
+    await _container
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateUserComment(id, text);
   }

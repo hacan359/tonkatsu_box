@@ -86,7 +86,9 @@ class StartupErrorView extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      'Startup error',
+                      // The overlay also catches runtime zone errors, so the
+                      // header doesn't claim "startup".
+                      'Error',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: AppColors.error,
                             fontWeight: FontWeight.bold,
@@ -176,6 +178,9 @@ class _CopyButtonState extends State<_CopyButton> {
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.surfaceLight,
         foregroundColor: AppColors.textPrimary,
+        // The global theme forces minimumSize Size(infinity, 48); inside a
+        // Row that means "BoxConstraints forces an infinite width".
+        minimumSize: const Size(0, 40),
       ),
     );
   }
