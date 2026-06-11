@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-06-11
+
 ### Added
 
 - **Add Fantlab as a second book provider with a similar-books row**
@@ -263,6 +265,14 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/features/search/screens/search_screen.dart (_SearchScreenState.build), lib/features/search/widgets/filter_dropdown.dart (SearchableFilterDialogState.build): Gate `TextField.autofocus` on `!kIsMobile`.
   * lib/features/search/widgets/platform_filter_sheet.dart (_PlatformFilterSheetState.initState): Skip the `requestFocus` post-frame callback on mobile.
+
+- Mood grid PNG export no longer cuts off the right edge; the caption-template dialog no longer overflows on phones with the keyboard open (lib/features/tier_lists/widgets/mood_grid_export_view.dart, lib/features/tier_lists/screens/mood_grid_detail_screen.dart).
+
+- Notes on an item's detail page now autosave when leaving the screen via back navigation, without crashing (lib/features/collections/screens/item_detail_screen.dart).
+
+- The "add books" hint on an empty wishlist opened the Movies search tab instead of Books (lib/features/wishlist/screens/wishlist_screen.dart).
+
+- Redesign the landing page to match the app's design system (docs/index.html).
 
 ## [0.32.1] - 2026-06-07
 
