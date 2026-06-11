@@ -1,15 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/models/profile.dart';
 import 'profile_service.dart';
+import 'storage_root.dart';
 
 class _CacheKeys {
   static const String customCachePath = 'image_cache_path';
@@ -59,19 +59,20 @@ class ImageCacheService {
       return customPath;
     }
 
-    // AppSupport instead of Documents: Documents may live under OneDrive,
-    // which blocks file creation (PathAccessException).
-    final Directory appDir = await getApplicationSupportDirectory();
-    const String folderName =
-        kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
-    final String basePath = p.join(appDir.path, folderName);
+    final String basePath = (await StorageRoot.resolve()).path;
 
     // If the profile system is initialized, the cache lives in the profile folder
-    final File profilesFile = File(p.join(basePath, 'profiles.json'));
+    final File profilesFile =
+        File(p.join(basePath, StorageRoot.profilesFileName));
     if (profilesFile.existsSync()) {
       final ProfileService profileService = ProfileService();
       final ProfilesData data = await profileService.loadProfiles();
-      return p.join(basePath, 'profiles', data.currentProfileId, 'image_cache');
+      return p.join(
+        basePath,
+        StorageRoot.profilesFolderName,
+        data.currentProfileId,
+        'image_cache',
+      );
     }
 
     return p.join(basePath, 'image_cache');

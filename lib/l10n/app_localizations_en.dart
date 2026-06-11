@@ -892,6 +892,124 @@ class SEn extends S {
   String get databaseReset => 'Database has been reset';
 
   @override
+  String get storageLocationTitle => 'Data Location';
+
+  @override
+  String get storageLocationSubtitle =>
+      'Folder that stores the database and profiles. Avoid folders that a cloud service syncs live (OneDrive, Syncthing): the database can get corrupted mid-write. To move data between devices, use export instead.';
+
+  @override
+  String get storageLocationDangerWarning =>
+      'Warning: changing the data folder can lead to data loss. You do this at your own risk.';
+
+  @override
+  String get storageLocationFolder => 'Data folder';
+
+  @override
+  String get storageLocationFallbackWarning =>
+      'Selected folder is unavailable, using the default one';
+
+  @override
+  String get storageLocationChange => 'Change Folder';
+
+  @override
+  String get storageLocationReset => 'Reset to Default';
+
+  @override
+  String get storageLocationSelectDialog => 'Select data folder';
+
+  @override
+  String storageLocationNotWritable(String path) {
+    return 'No write access: $path';
+  }
+
+  @override
+  String get storageLocationPermissionTitle => 'Storage Access Needed';
+
+  @override
+  String get storageLocationPermissionMessage =>
+      'Android requires the \"All files access\" permission for a custom data folder. In the list that opens, find Tonkatsu Box, enable the access, then come back and pick the folder again.';
+
+  @override
+  String get storageLocationLegacyPermissionMessage =>
+      'A custom data folder needs the Storage permission. Enable it in the app settings, then come back and pick the folder again.';
+
+  @override
+  String get storageLocationOpenSettings => 'Open Settings';
+
+  @override
+  String get storageLocationUseExistingTitle => 'Existing Data Found';
+
+  @override
+  String get storageLocationUseExistingMessage =>
+      'The selected folder already contains a database. The app will switch to that data after restart.';
+
+  @override
+  String get storageLocationUseExistingConfirm => 'Use It';
+
+  @override
+  String get storageLocationCopyTitle => 'Copy Current Data?';
+
+  @override
+  String get storageLocationCopyMessage =>
+      'The selected folder is empty. Your collections will be copied there; saved images will download again as needed. Data in the old folder stays untouched.';
+
+  @override
+  String get storageLocationCopyConfirm => 'Copy';
+
+  @override
+  String get storageLocationCopyError =>
+      'Failed to copy data to the selected folder';
+
+  @override
+  String get storageLocationResetTitle => 'Reset Data Folder?';
+
+  @override
+  String get storageLocationResetMessage =>
+      'The app will switch back to the default data folder after restart. Data in the custom folder stays untouched.';
+
+  @override
+  String get storageLocationRestartTitle => 'Restart Required';
+
+  @override
+  String get storageLocationRestartMessage =>
+      'The new data folder will be used after restart. Restart now?';
+
+  @override
+  String get storageLocationRestartNow => 'Restart';
+
+  @override
+  String get storageLocationRestartLater =>
+      'The change will take effect after restart';
+
+  @override
+  String get folderPickerNewFolder => 'New folder';
+
+  @override
+  String get folderPickerVolumeList => 'Storage devices';
+
+  @override
+  String get folderPickerInternalStorage => 'Internal storage';
+
+  @override
+  String get folderPickerSelect => 'Select';
+
+  @override
+  String get folderPickerFolderName => 'Folder name';
+
+  @override
+  String get folderPickerInvalidName => 'Invalid folder name';
+
+  @override
+  String get folderPickerEmpty => 'No subfolders';
+
+  @override
+  String get folderPickerReadError => 'Cannot read this folder';
+
+  @override
+  String get folderPickerCreateError => 'Could not create folder';
+
+  @override
   String get traktTitle => 'Trakt Import';
 
   @override

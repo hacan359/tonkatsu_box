@@ -1639,6 +1639,216 @@ abstract class S {
   /// **'Database has been reset'**
   String get databaseReset;
 
+  /// No description provided for @storageLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Location'**
+  String get storageLocationTitle;
+
+  /// No description provided for @storageLocationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder that stores the database and profiles. Avoid folders that a cloud service syncs live (OneDrive, Syncthing): the database can get corrupted mid-write. To move data between devices, use export instead.'**
+  String get storageLocationSubtitle;
+
+  /// No description provided for @storageLocationDangerWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: changing the data folder can lead to data loss. You do this at your own risk.'**
+  String get storageLocationDangerWarning;
+
+  /// No description provided for @storageLocationFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Data folder'**
+  String get storageLocationFolder;
+
+  /// No description provided for @storageLocationFallbackWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected folder is unavailable, using the default one'**
+  String get storageLocationFallbackWarning;
+
+  /// No description provided for @storageLocationChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Folder'**
+  String get storageLocationChange;
+
+  /// No description provided for @storageLocationReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Default'**
+  String get storageLocationReset;
+
+  /// No description provided for @storageLocationSelectDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Select data folder'**
+  String get storageLocationSelectDialog;
+
+  /// No description provided for @storageLocationNotWritable.
+  ///
+  /// In en, this message translates to:
+  /// **'No write access: {path}'**
+  String storageLocationNotWritable(String path);
+
+  /// No description provided for @storageLocationPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Access Needed'**
+  String get storageLocationPermissionTitle;
+
+  /// No description provided for @storageLocationPermissionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Android requires the \"All files access\" permission for a custom data folder. In the list that opens, find Tonkatsu Box, enable the access, then come back and pick the folder again.'**
+  String get storageLocationPermissionMessage;
+
+  /// No description provided for @storageLocationLegacyPermissionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A custom data folder needs the Storage permission. Enable it in the app settings, then come back and pick the folder again.'**
+  String get storageLocationLegacyPermissionMessage;
+
+  /// No description provided for @storageLocationOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get storageLocationOpenSettings;
+
+  /// No description provided for @storageLocationUseExistingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing Data Found'**
+  String get storageLocationUseExistingTitle;
+
+  /// No description provided for @storageLocationUseExistingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected folder already contains a database. The app will switch to that data after restart.'**
+  String get storageLocationUseExistingMessage;
+
+  /// No description provided for @storageLocationUseExistingConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Use It'**
+  String get storageLocationUseExistingConfirm;
+
+  /// No description provided for @storageLocationCopyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Current Data?'**
+  String get storageLocationCopyTitle;
+
+  /// No description provided for @storageLocationCopyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected folder is empty. Your collections will be copied there; saved images will download again as needed. Data in the old folder stays untouched.'**
+  String get storageLocationCopyMessage;
+
+  /// No description provided for @storageLocationCopyConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get storageLocationCopyConfirm;
+
+  /// No description provided for @storageLocationCopyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to copy data to the selected folder'**
+  String get storageLocationCopyError;
+
+  /// No description provided for @storageLocationResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Data Folder?'**
+  String get storageLocationResetTitle;
+
+  /// No description provided for @storageLocationResetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The app will switch back to the default data folder after restart. Data in the custom folder stays untouched.'**
+  String get storageLocationResetMessage;
+
+  /// No description provided for @storageLocationRestartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart Required'**
+  String get storageLocationRestartTitle;
+
+  /// No description provided for @storageLocationRestartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The new data folder will be used after restart. Restart now?'**
+  String get storageLocationRestartMessage;
+
+  /// No description provided for @storageLocationRestartNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get storageLocationRestartNow;
+
+  /// No description provided for @storageLocationRestartLater.
+  ///
+  /// In en, this message translates to:
+  /// **'The change will take effect after restart'**
+  String get storageLocationRestartLater;
+
+  /// No description provided for @folderPickerNewFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get folderPickerNewFolder;
+
+  /// No description provided for @folderPickerVolumeList.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage devices'**
+  String get folderPickerVolumeList;
+
+  /// No description provided for @folderPickerInternalStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal storage'**
+  String get folderPickerInternalStorage;
+
+  /// No description provided for @folderPickerSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get folderPickerSelect;
+
+  /// No description provided for @folderPickerFolderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder name'**
+  String get folderPickerFolderName;
+
+  /// No description provided for @folderPickerInvalidName.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid folder name'**
+  String get folderPickerInvalidName;
+
+  /// No description provided for @folderPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No subfolders'**
+  String get folderPickerEmpty;
+
+  /// No description provided for @folderPickerReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot read this folder'**
+  String get folderPickerReadError;
+
+  /// No description provided for @folderPickerCreateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create folder'**
+  String get folderPickerCreateError;
+
   /// No description provided for @traktTitle.
   ///
   /// In en, this message translates to:
