@@ -12,6 +12,7 @@ import 'app.dart';
 import 'core/logging/app_logger.dart';
 import 'core/logging/startup_error.dart';
 import 'core/services/api_key_initializer.dart';
+import 'core/services/app_http_overrides.dart';
 import 'core/services/collection_hero_service.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
@@ -32,6 +33,7 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
       AppLogger.setupErrorHandlers();
+      HttpOverrides.global = AppHttpOverrides();
 
       // Инициализация SQLite FFI для Windows/Linux/macOS
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {

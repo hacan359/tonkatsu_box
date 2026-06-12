@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
+import '../../services/app_http_overrides.dart';
 import '../api_error_detail.dart';
 import 'anilist_types.dart';
 
@@ -10,10 +11,19 @@ class AniListGraphQLClient {
             Dio(BaseOptions(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
+              headers: <String, String>{'User-Agent': _userAgent},
             ));
 
   static const Duration _timeout = Duration(seconds: 5);
   static const String _endpoint = 'https://graphql.anilist.co';
+
+  // AniList manually blocks anonymous default UAs when scrapers hide
+  // behind them — "Dart/3.12 (dart:io)" is banned at the time of writing,
+  // which 403s every Flutter app that does not identify itself.
+  // AppHttpOverrides covers this app-wide; the explicit header here keeps
+  // the API client safe even when constructed without the overrides
+  // (tests, isolates).
+  static const String _userAgent = AppHttpOverrides.userAgent;
   static final Logger _log = Logger('AniListApi');
 
   final Dio _dio;
