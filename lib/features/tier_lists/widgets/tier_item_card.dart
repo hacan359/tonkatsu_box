@@ -128,7 +128,7 @@ class TierItemCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: item.platform!.familyColor.withAlpha(210),
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                           ),
                           child: Text(
                             item.platform!.displayName,

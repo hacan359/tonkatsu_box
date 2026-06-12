@@ -19,6 +19,7 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/constants/screenscraper_systemes.dart';
@@ -477,7 +478,7 @@ class ItemDetailsSheet extends StatelessWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(80),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
                   ),
                 ),
               ),
@@ -823,7 +824,7 @@ class _AddButtonState extends State<_AddButton> {
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedScale(
         scale: _hovered ? 1.1 : 1.0,
-        duration: const Duration(milliseconds: 150),
+        duration: AppDurations.fast,
         child: Material(
           color: _hovered
               ? AppColors.brand.withAlpha(240)

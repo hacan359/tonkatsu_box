@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/canvas_connection.dart';
+import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/color_picker_dialog.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
 
@@ -131,7 +132,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
                 if (picked == null) return;
                 setState(() => _selectedColor = _colorToHex(picked));
               },
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[

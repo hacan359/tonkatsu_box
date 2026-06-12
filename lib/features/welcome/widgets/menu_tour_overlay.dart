@@ -319,7 +319,7 @@ class _TourCard extends StatelessWidget {
                 onPressed: onSkip,
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.textTertiary,
-                  minimumSize: const Size(0, 36),
+                  minimumSize: const Size(0, AppSpacing.buttonHeightCompact),
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
                 child: Text(skipLabel, style: const TextStyle(fontSize: 12)),
@@ -339,7 +339,7 @@ class _TourCard extends StatelessWidget {
                   foregroundColor: Colors.black,
                   // The theme makes FilledButtons full-width; pin a content
                   // min so this one fits inside the Row.
-                  minimumSize: const Size(0, 38),
+                  minimumSize: const Size(0, AppSpacing.buttonHeightCompact),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 8,

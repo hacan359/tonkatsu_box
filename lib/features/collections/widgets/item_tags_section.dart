@@ -63,7 +63,7 @@ class ItemTagsSection extends ConsumerWidget {
         color: currentTag != null
             ? accentColor.withAlpha(30)
             : AppColors.surface,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
         border: Border.all(
           color: currentTag != null
               ? accentColor.withAlpha(80)

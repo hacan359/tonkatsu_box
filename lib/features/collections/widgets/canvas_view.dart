@@ -7,6 +7,7 @@ import '../../../data/repositories/canvas_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/canvas_item.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -977,7 +978,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
                   SizedBox.expand(child: widget.child)
                 else
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                    duration: AppDurations.fast,
                     decoration: BoxDecoration(
                       boxShadow: _isDragging
                           ? <BoxShadow>[

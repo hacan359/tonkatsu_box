@@ -125,7 +125,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 if (picked == null) return;
                 setState(() => _selectedColor = Profile.colorToHex(picked));
               },
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(

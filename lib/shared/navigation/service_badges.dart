@@ -18,6 +18,7 @@ import '../../features/settings/providers/settings_provider.dart';
 import '../constants/platform_features.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
 import 'service_status_provider.dart';
 
@@ -198,7 +199,7 @@ class _ServiceIconState extends State<_ServiceIcon> {
 
     return Tooltip(
       message: widget.tooltip,
-      waitDuration: const Duration(milliseconds: 300),
+      waitDuration: AppDurations.tooltipDelay,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _hovered = true),
@@ -206,7 +207,7 @@ class _ServiceIconState extends State<_ServiceIcon> {
         child: GestureDetector(
           onTap: widget.onTap,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+            duration: AppDurations.fast,
             padding: const EdgeInsets.all(AppSpacing.xs + 2),
             decoration: BoxDecoration(
               color: _hovered

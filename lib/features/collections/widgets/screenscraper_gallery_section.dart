@@ -468,7 +468,7 @@ class _FullscreenViewerState extends State<_FullscreenViewer> {
                     ),
                     decoration: BoxDecoration(
                       color: Colors.black54,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                     ),
                     child: Text(
                       '${widget.entries[_current].label}   ${_current + 1} / ${widget.entries.length}',

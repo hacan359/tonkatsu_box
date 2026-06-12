@@ -179,7 +179,7 @@ class _RaAchievementsSectionState
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white.withAlpha(6),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           border: Border.all(color: Colors.white.withAlpha(10)),
         ),
         child: Column(
@@ -277,7 +277,7 @@ class _RaAchievementsSectionState
           height: 4,
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
           ),
           child: FractionallySizedBox(
             alignment: Alignment.centerLeft,
@@ -285,7 +285,7 @@ class _RaAchievementsSectionState
             child: Container(
               decoration: BoxDecoration(
                 color: complete ? AppColors.success : color,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
               ),
             ),
           ),
@@ -361,7 +361,7 @@ class _RaAchievementsSectionState
           height: 28,
           decoration: BoxDecoration(
             color: selected ? chipColor.withAlpha(25) : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             border: Border.all(
               color: selected ? chipColor.withAlpha(80) : _raBlue.withAlpha(20),
             ),
@@ -423,7 +423,7 @@ class _RaAchievementsSectionState
           child: Row(
             children: <Widget>[
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                 child: Image.asset(
                   'assets/images/ra_logo.png',
                   width: 18,
@@ -827,7 +827,7 @@ class _AchievementIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
       child: SizedBox(
         width: _size,
         height: _size,

@@ -49,7 +49,7 @@ class WelcomeStepMenuTour extends StatelessWidget {
               foregroundColor: Colors.black,
               // The theme makes FilledButtons full-width; pin a content min so
               // this one sizes to its label.
-              minimumSize: const Size(0, 48),
+              minimumSize: const Size(0, AppSpacing.buttonHeight),
               padding: const EdgeInsets.symmetric(
                 horizontal: 28,
                 vertical: 12,

@@ -7,6 +7,7 @@ import '../../../../core/services/ra_to_igdb_mapper.dart';
 import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/models/tracker_game_data.dart';
+import '../../../../shared/theme/app_spacing.dart';
 import '../../providers/tracker_provider.dart';
 import 'pulsing_ra_link.dart';
 
@@ -39,7 +40,7 @@ class ItemDetailRaBadge extends ConsumerWidget {
             mode: LaunchMode.externalApplication,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
             child: Image.asset(
               'assets/images/ra_logo.png',
               width: 18,

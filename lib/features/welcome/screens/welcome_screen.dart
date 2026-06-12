@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../providers/menu_tour_provider.dart';
 import '../widgets/step_indicator.dart';
@@ -196,7 +197,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
               return GestureDetector(
                 onTap: () => _goToPage(index),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: AppDurations.normal,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   width: isActive ? 20 : 6,
                   height: 6,
@@ -206,7 +207,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                         : isDone
                             ? AppColors.success
                             : AppColors.surfaceBorder,
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                   ),
                 ),
               );
@@ -249,7 +250,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   void _goToPage(int page) {
     _pageController.animateToPage(
       page,
-      duration: const Duration(milliseconds: 300),
+      duration: AppDurations.slow,
       curve: Curves.easeInOut,
     );
   }

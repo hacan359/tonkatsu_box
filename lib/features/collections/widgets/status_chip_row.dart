@@ -5,6 +5,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 
 const String _kStatusMenuPrefix = 'status:';
@@ -123,7 +124,7 @@ class _StatusSegment extends StatelessWidget {
     final Color statusColor = status.color;
     return Tooltip(
       message: status.localizedLabel(S.of(context), mediaType),
-      waitDuration: const Duration(milliseconds: 500),
+      waitDuration: AppDurations.tooltipDelay,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,

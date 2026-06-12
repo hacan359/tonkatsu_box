@@ -274,7 +274,7 @@ class _RaLinkDialogState extends ConsumerState<_RaLinkDialog> {
         vertical: 2,
       ),
       leading: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
         child: SizedBox(
           width: 32,
           height: 32,

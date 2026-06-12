@@ -118,7 +118,7 @@ class _ProfileColorPickerButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(

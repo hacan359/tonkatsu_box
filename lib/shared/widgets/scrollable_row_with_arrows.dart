@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
 import 'horizontal_mouse_scroll.dart';
 
 /// Горизонтальный список с кнопками-стрелками для навигации на десктопе.
@@ -75,7 +76,7 @@ class _ScrollableRowWithArrowsState extends State<ScrollableRowWithArrows> {
     );
     widget.controller.animateTo(
       target,
-      duration: const Duration(milliseconds: 300),
+      duration: AppDurations.slow,
       curve: Curves.easeInOut,
     );
   }

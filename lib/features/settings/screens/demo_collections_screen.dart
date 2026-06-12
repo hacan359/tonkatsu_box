@@ -725,7 +725,7 @@ class _DemoCollectionsScreenState
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       border: Border.all(color: AppColors.surfaceBorder),
                     ),
                     child: _log.isEmpty

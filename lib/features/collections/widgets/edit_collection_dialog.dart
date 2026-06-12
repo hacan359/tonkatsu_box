@@ -281,7 +281,7 @@ class _HeroPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: absolutePath == null
@@ -356,7 +356,7 @@ class _EmptyPreview extends StatelessWidget {
           colors: <Color>[AppColors.surface, AppColors.surfaceLight],
         ),
         border: Border.all(color: AppColors.surfaceBorder),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       ),
       child: Center(
         child: Column(

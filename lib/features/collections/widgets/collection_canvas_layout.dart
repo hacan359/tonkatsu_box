@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import 'canvas_view.dart';
@@ -77,7 +78,7 @@ class _SteamGridDbSidePanel extends ConsumerWidget {
           .select((SteamGridDbPanelState s) => s.isOpen),
     );
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: AppDurations.normal,
       width: isPanelOpen ? 320 : 0,
       curve: Curves.easeInOut,
       clipBehavior: Clip.hardEdge,
@@ -121,7 +122,7 @@ class _VgMapsSidePanel extends ConsumerWidget {
           .select((VgMapsPanelState s) => s.isOpen),
     );
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: AppDurations.normal,
       width: isPanelOpen ? 500 : 0,
       curve: Curves.easeInOut,
       clipBehavior: Clip.hardEdge,

@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 
 /// Receives the current dim animation, usable in an [AnimatedBuilder] for
 /// hover effects.
@@ -55,7 +56,7 @@ class _CollectionCardShellState extends State<CollectionCardShell>
     super.initState();
     _hoverController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: AppDurations.normal,
     );
     _dimAnimation = Tween<double>(
       begin: CollectionCardShell.dimOpacity,

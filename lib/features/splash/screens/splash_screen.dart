@@ -12,6 +12,7 @@ import 'profile_picker_screen.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_assets.dart';
+import '../../../shared/theme/app_durations.dart';
 
 /// Controller runs 2s total: [0..0.75] animation, [0.75..1.0] hold.
 ///
@@ -185,7 +186,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         ) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: AppDurations.slower,
       ),
     );
   }

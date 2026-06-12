@@ -6,6 +6,7 @@ import '../constants/media_type_theme.dart';
 import '../models/item_status.dart';
 import '../models/media_type.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
@@ -153,7 +154,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       _focusNode = FocusNode();
       _hoverController = AnimationController(
         vsync: this,
-        duration: const Duration(milliseconds: 150),
+        duration: AppDurations.fast,
       );
       _scaleAnimation = Tween<double>(begin: 1.0, end: _hoverScale).animate(
         CurvedAnimation(parent: _hoverController!, curve: Curves.easeOut),
@@ -228,7 +229,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   // Fixed height keeps grid rows aligned.
                   Tooltip(
                     message: widget.title,
-                    waitDuration: const Duration(milliseconds: 500),
+                    waitDuration: AppDurations.tooltipDelay,
                     child: SizedBox(
                       height: _isCompact ? 38 : 52,
                       child: Padding(
@@ -393,7 +394,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   ),
                   decoration: BoxDecoration(
                     color: widget.platformColor!.withAlpha(210),
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                   ),
                   child: Text(
                     widget.platformLabel!,
@@ -569,7 +570,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       clipBehavior: Clip.antiAlias,
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         side: BorderSide(color: borderColor, width: 2),
       ),
       child: GestureDetector(
@@ -793,7 +794,7 @@ class _TagBadge extends StatelessWidget {
         color: hasTag
             ? accentColor.withAlpha(200)
             : AppColors.surface.withAlpha(180),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
       ),
       child: hasTag
           ? Text(

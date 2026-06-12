@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/theme/app_spacing.dart';
+
 class PulsingRaLink extends StatefulWidget {
   const PulsingRaLink({required this.onTap, super.key});
 
@@ -44,7 +46,7 @@ class _PulsingRaLinkState extends State<PulsingRaLink>
             return Opacity(opacity: _opacity.value, child: child);
           },
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
             child: Image.asset(
               'assets/images/ra_logo.png',
               width: 18,

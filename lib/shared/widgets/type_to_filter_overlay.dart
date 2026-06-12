@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../constants/platform_features.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../../l10n/app_localizations.dart';
@@ -55,7 +56,7 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: AppDurations.normal,
     );
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),

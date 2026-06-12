@@ -167,7 +167,7 @@ class _ReviewCardState extends State<_ReviewCard> {
             children: <Widget>[
               if (widget.review.avatarPath != null) ...<Widget>[
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   child: CachedNetworkImage(
                     imageUrl: widget.review.avatarPath!,
                     width: 24,

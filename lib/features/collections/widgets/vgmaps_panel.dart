@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_windows/webview_windows.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/theme/app_spacing.dart';
 import '../providers/vgmaps_panel_provider.dart';
 
 /// Looks for `<img id="MapViewerImage">`, falling back to the first large
@@ -524,7 +525,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
       child: Row(
         children: <Widget>[
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
             child: SizedBox(
               width: 48,
               height: 48,
@@ -586,7 +587,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
             style: FilledButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              minimumSize: const Size(0, 36),
+              minimumSize: const Size(0, AppSpacing.buttonHeightCompact),
             ),
           ),
           const SizedBox(width: 4),

@@ -112,7 +112,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.textSecondary.withAlpha(102),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
                 ),
               ),
             ),

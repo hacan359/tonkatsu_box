@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
 
 /// Индикатор одного шага wizard'а.
 ///
@@ -64,7 +65,7 @@ class StepIndicator extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

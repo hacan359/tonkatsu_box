@@ -312,7 +312,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         color: selected ? Colors.transparent : accentColor.withAlpha(50),
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -7,6 +7,7 @@ import '../../../../shared/constants/platform_features.dart';
 import '../../../../shared/extensions/snackbar_extension.dart';
 import '../../../../shared/models/steamgriddb_image.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_durations.dart';
 import '../../providers/canvas_provider.dart';
 import '../../providers/steamgriddb_panel_provider.dart';
 import '../../providers/vgmaps_panel_provider.dart';
@@ -141,7 +142,7 @@ class _AnimatedSidePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: AppDurations.normal,
       width: isOpen ? width : 0,
       curve: Curves.easeInOut,
       clipBehavior: Clip.hardEdge,

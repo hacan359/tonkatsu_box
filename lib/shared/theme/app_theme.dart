@@ -1,4 +1,4 @@
-// Централизованная тема приложения.
+// Centralized application theme.
 
 import 'package:flutter/material.dart';
 
@@ -7,12 +7,12 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// Централизованная тёмная тема приложения.
+/// Centralized dark application theme.
 ///
-/// Все компоненты Material стилизованы через [AppColors].
-/// Принудительно тёмная тема — светлая не поддерживается.
+/// All Material components are styled through [AppColors].
+/// Dark theme is forced — light theme is not supported.
 abstract final class AppTheme {
-  /// Тёмная тема приложения.
+  /// The app's dark theme.
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     useMaterial3: true,
@@ -99,7 +99,7 @@ abstract final class AppTheme {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         ),
@@ -107,7 +107,7 @@ abstract final class AppTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
         side: const BorderSide(color: AppColors.surfaceBorder),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -151,11 +151,11 @@ abstract final class AppTheme {
   );
 }
 
-/// Обёртка для [ZoomPageTransitionsBuilder], делающая каждую страницу непрозрачной.
+/// Wrapper around [ZoomPageTransitionsBuilder] that makes every page opaque.
 ///
-/// Каждый route оборачивается в [DecoratedBox] с тайловым фоном —
-/// это предотвращает просвечивание контента двух страниц друг через друга
-/// при переходе (scaffold'ы прозрачные для отображения фона из builder).
+/// Each route is wrapped in a [DecoratedBox] with the tiled background —
+/// this keeps the two pages' content from showing through each other during
+/// a transition (scaffolds are transparent to expose the builder background).
 class _OpaquePageTransitionsBuilder extends PageTransitionsBuilder {
   const _OpaquePageTransitionsBuilder();
 

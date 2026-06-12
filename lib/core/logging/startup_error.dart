@@ -180,7 +180,7 @@ class _CopyButtonState extends State<_CopyButton> {
         foregroundColor: AppColors.textPrimary,
         // The global theme forces minimumSize Size(infinity, 48); inside a
         // Row that means "BoxConstraints forces an infinite width".
-        minimumSize: const Size(0, 40),
+        minimumSize: const Size(0, AppSpacing.buttonHeightCompact),
       ),
     );
   }

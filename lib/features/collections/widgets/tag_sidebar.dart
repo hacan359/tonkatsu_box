@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collection_tag.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_typography.dart';
 
 /// Supports multi-select: a click toggles a tag, "All" clears everything.
@@ -116,7 +117,7 @@ class _TagTabState extends State<_TagTab> {
           message: widget.label,
           waitDuration: const Duration(milliseconds: 400),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+            duration: AppDurations.fast,
             width: TagSidebar.width,
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(

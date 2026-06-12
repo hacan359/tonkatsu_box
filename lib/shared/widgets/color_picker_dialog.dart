@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
 /// Стандартная палитра для всех диалогов выбора цвета (теги, тир-листы,
@@ -136,7 +137,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                     height: 36,
                     decoration: BoxDecoration(
                       color: _currentColor,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       border: Border.all(color: Colors.white.withAlpha(40)),
                     ),
                   ),

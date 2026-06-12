@@ -222,7 +222,7 @@ class _RowContent extends ConsumerWidget {
               decoration: BoxDecoration(
                 color:
                     MediaTypeTheme.colorFor(item.mediaType).withAlpha(40),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               child: Icon(
                 MediaTypeTheme.iconFor(item.mediaType),

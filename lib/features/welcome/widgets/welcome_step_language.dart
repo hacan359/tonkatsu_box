@@ -5,6 +5,7 @@ import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import 'welcome_hero.dart';
@@ -210,7 +211,7 @@ class _LanguageOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppDurations.normal,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: 14,

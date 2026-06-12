@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../models/collection.dart';
 import '../models/collection_list_sort_mode.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../../features/collections/providers/collections_provider.dart';
 
@@ -206,7 +207,7 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
                 ),
                 InkWell(
                   onTap: _toggleSort,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -359,7 +360,7 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
         border: Border.all(
           color: AppColors.success.withValues(alpha: 0.4),
         ),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Text(
         l.collectionPickerAlreadyAdded,
@@ -386,7 +387,7 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
       height: 36,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Icon(icon, size: 18, color: color),
     );

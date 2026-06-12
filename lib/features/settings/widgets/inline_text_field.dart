@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
@@ -166,7 +167,7 @@ class _InlineTextFieldState extends State<InlineTextField> {
             child: GestureDetector(
               onTap: _editing ? null : _startEditing,
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
+                duration: AppDurations.fast,
                 height: height,
                 decoration: BoxDecoration(
                   color: AppColors.surfaceLight,

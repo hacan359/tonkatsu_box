@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
 
 class SelectablePosterCard extends StatefulWidget {
   const SelectablePosterCard({
@@ -49,7 +50,7 @@ class _SelectablePosterCardState extends State<SelectablePosterCard> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.black.withAlpha(120),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
                 ),
               ),

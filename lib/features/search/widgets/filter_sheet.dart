@@ -142,7 +142,7 @@ class FilterSheet extends ConsumerWidget {
                                 height: 4,
                                 decoration: BoxDecoration(
                                   color: Colors.white.withAlpha(80),
-                                  borderRadius: BorderRadius.circular(2),
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
                                 ),
                               ),
                               if (hasActiveFilters)
@@ -153,7 +153,7 @@ class FilterSheet extends ConsumerWidget {
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: AppSpacing.sm,
                                     ),
-                                    minimumSize: const Size(0, 28),
+                                    minimumSize: const Size(0, AppSpacing.buttonHeightDense),
                                     tapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                     visualDensity: VisualDensity.compact,

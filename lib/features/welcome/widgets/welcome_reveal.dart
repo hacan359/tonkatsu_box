@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/theme/app_durations.dart';
+
 /// Fades and slides its [child] up on mount. Stagger a column by passing an
 /// increasing [index] — later items start later within the same animation.
 class WelcomeReveal extends StatefulWidget {
@@ -22,7 +24,7 @@ class _WelcomeRevealState extends State<WelcomeReveal>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: widget.duration + const Duration(milliseconds: 300),
+    duration: widget.duration + AppDurations.slow,
   );
 
   // Stagger purely through an Interval — no timers means no pending-timer

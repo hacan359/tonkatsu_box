@@ -7,6 +7,45 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Fixed
+
+- **AniList search and images failing with 403 "manually blocked"**
+
+  AniList banned the default Dart User-Agent (`Dart/3.12 (dart:io)`), which
+  403s every Flutter app that does not identify itself — both the GraphQL
+  API and the image CDN (covers, avatars). The app now sends a descriptive
+  TonkatsuBox User-Agent on every HTTP client.
+
+  * lib/core/services/app_http_overrides.dart (AppHttpOverrides): New.
+    Global HttpOverrides stamping the User-Agent onto all clients (Dio,
+    NetworkImage, cached_network_image); installed in main.dart.
+  * lib/core/api/anilist/anilist_graphql_client.dart
+    (AniListGraphQLClient): Explicit User-Agent header as well.
+
+### Changed
+
+- **Skeleton loaders on the main list screens instead of spinners**
+
+  The collection grid, wishlist, releases and the home collections list
+  now show shimmer placeholders shaped like the incoming content.
+
+  * lib/shared/widgets/shimmer_loading.dart (ShimmerList,
+    ShimmerPosterGrid): New.
+  * collection_screen.dart, wishlist_screen.dart, releases_screen.dart,
+    home_screen.dart: Loading branches switched to the shimmer widgets.
+
+- **Design tokens for animation durations, border radii and button heights**
+
+  Duration, radius and button-height literals across widgets replaced
+  with a shared scale; a few stray values unified along the way (tooltip
+  delay, compact button heights, platform badge rounding).
+
+  * lib/shared/theme/app_durations.dart (AppDurations): New.
+  * lib/shared/theme/app_spacing.dart (AppSpacing.radiusXxs,
+    AppSpacing.buttonHeight, buttonHeightCompact, buttonHeightDense): New.
+  * lib/shared/theme/app_colors.dart (AppColors.brandLight,
+    AppColors.brandPale): Removed — unused.
+
 ### Added
 
 - **Network sync: pull data directly from another device on the same Wi-Fi**

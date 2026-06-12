@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
 /// Заголовок секции с опциональной кнопкой действия.
@@ -42,7 +43,7 @@ class SectionHeader extends StatelessWidget {
             style: TextButton.styleFrom(
               foregroundColor: AppColors.textSecondary,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: const Size(0, 36),
+              minimumSize: const Size(0, AppSpacing.buttonHeightCompact),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(actionLabel!, style: AppTypography.bodySmall),
