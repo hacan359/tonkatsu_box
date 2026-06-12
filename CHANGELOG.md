@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-06-12
+
 ### Fixed
 
 - **AniList search and images failing with 403 "manually blocked"**
