@@ -1717,6 +1717,18 @@ abstract class S {
   /// **'Open Settings'**
   String get storageLocationOpenSettings;
 
+  /// No description provided for @storageLocationDbTooNew.
+  ///
+  /// In en, this message translates to:
+  /// **'The database in this folder was made by a newer app version. Update the app on this device first.'**
+  String get storageLocationDbTooNew;
+
+  /// No description provided for @storageLocationDbCorrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'The database in this folder is corrupted or incomplete. If a sync tool is still copying it, try again later.'**
+  String get storageLocationDbCorrupted;
+
   /// No description provided for @storageLocationUseExistingTitle.
   ///
   /// In en, this message translates to:
@@ -1794,6 +1806,191 @@ abstract class S {
   /// In en, this message translates to:
   /// **'The change will take effect after restart'**
   String get storageLocationRestartLater;
+
+  /// No description provided for @backupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backupTitle;
+
+  /// No description provided for @backupRestoreTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore the previous database'**
+  String get backupRestoreTile;
+
+  /// No description provided for @backupNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No backup yet'**
+  String get backupNone;
+
+  /// No description provided for @backupRestoreConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Previous Database?'**
+  String get backupRestoreConfirmTitle;
+
+  /// No description provided for @backupRestoreConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Current data will be replaced with the backup from {date}. The replaced data becomes the new backup, so restoring again undoes this.'**
+  String backupRestoreConfirmMessage(String date);
+
+  /// No description provided for @backupRestoreConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get backupRestoreConfirm;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Database restored'**
+  String get backupRestored;
+
+  /// No description provided for @backupRestoreError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to restore the backup'**
+  String get backupRestoreError;
+
+  /// No description provided for @backupRestartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The restored data will be used after restart. Restart now?'**
+  String get backupRestartMessage;
+
+  /// No description provided for @lanSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Sync'**
+  String get lanSyncTitle;
+
+  /// No description provided for @lanSyncOpenTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby devices'**
+  String get lanSyncOpenTile;
+
+  /// No description provided for @lanSyncTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer data directly between devices on the same Wi-Fi network'**
+  String get lanSyncTileSubtitle;
+
+  /// No description provided for @lanSyncVisibleAs.
+  ///
+  /// In en, this message translates to:
+  /// **'This device is visible as {name}'**
+  String lanSyncVisibleAs(String name);
+
+  /// No description provided for @lanSyncNoDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'No devices found. Open this screen on both devices connected to the same Wi-Fi network. Access point isolation and VPNs block discovery.'**
+  String get lanSyncNoDevices;
+
+  /// No description provided for @lanSyncPull.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to get its data'**
+  String get lanSyncPull;
+
+  /// No description provided for @lanSyncReceiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace Data?'**
+  String get lanSyncReceiveTitle;
+
+  /// No description provided for @lanSyncReceiveMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Data from {device}, {date}: {collections} collections, {items} items.\n\nCurrent data will be REPLACED. A backup copy stays next to the database.'**
+  String lanSyncReceiveMessage(
+    String device,
+    String date,
+    int collections,
+    int items,
+  );
+
+  /// No description provided for @lanSyncReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get lanSyncReplace;
+
+  /// No description provided for @lanSyncWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the request on {name}...'**
+  String lanSyncWaiting(String name);
+
+  /// No description provided for @lanSyncIncomingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Request'**
+  String get lanSyncIncomingTitle;
+
+  /// No description provided for @lanSyncIncomingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to get a copy of your data. Allow?'**
+  String lanSyncIncomingMessage(String name);
+
+  /// No description provided for @lanSyncAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get lanSyncAllow;
+
+  /// No description provided for @lanSyncDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'The other device declined the request'**
+  String get lanSyncDenied;
+
+  /// No description provided for @lanSyncManifestError.
+  ///
+  /// In en, this message translates to:
+  /// **'The device did not respond'**
+  String get lanSyncManifestError;
+
+  /// No description provided for @lanSyncReceiveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to get the data'**
+  String get lanSyncReceiveError;
+
+  /// No description provided for @lanSyncTooNew.
+  ///
+  /// In en, this message translates to:
+  /// **'The data on that device was made by a newer app version. Update the app on this device first.'**
+  String get lanSyncTooNew;
+
+  /// No description provided for @lanSyncCorrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'The transfer came through damaged. Try again.'**
+  String get lanSyncCorrupted;
+
+  /// No description provided for @lanSyncReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Data received'**
+  String get lanSyncReceived;
+
+  /// No description provided for @lanSyncRestartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The received data will be used after restart. Restart now?'**
+  String get lanSyncRestartMessage;
+
+  /// No description provided for @lanSyncFirewallNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Windows may ask for firewall permission on first start - allow access on private networks.'**
+  String get lanSyncFirewallNote;
 
   /// No description provided for @folderPickerNewFolder.
   ///

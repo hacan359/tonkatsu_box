@@ -415,6 +415,8 @@
   "storageLocationPermissionMessage": "Android requires the \"All files access\" permission for a custom data folder. In the list that opens, find Tonkatsu Box, enable the access, then come back and pick the folder again.",
   "storageLocationLegacyPermissionMessage": "A custom data folder needs the Storage permission. Enable it in the app settings, then come back and pick the folder again.",
   "storageLocationOpenSettings": "Open Settings",
+  "storageLocationDbTooNew": "The database in this folder was made by a newer app version. Update the app on this device first.",
+  "storageLocationDbCorrupted": "The database in this folder is corrupted or incomplete. If a sync tool is still copying it, try again later.",
   "storageLocationUseExistingTitle": "Existing Data Found",
   "storageLocationUseExistingMessage": "The selected folder already contains a database. The app will switch to that data after restart.",
   "storageLocationUseExistingConfirm": "Use It",
@@ -428,6 +430,66 @@
   "storageLocationRestartMessage": "The new data folder will be used after restart. Restart now?",
   "storageLocationRestartNow": "Restart",
   "storageLocationRestartLater": "The change will take effect after restart",
+
+  "backupTitle": "Backup",
+  "backupRestoreTile": "Restore the previous database",
+  "backupNone": "No backup yet",
+  "backupRestoreConfirmTitle": "Restore Previous Database?",
+  "backupRestoreConfirmMessage": "Current data will be replaced with the backup from {date}. The replaced data becomes the new backup, so restoring again undoes this.",
+  "@backupRestoreConfirmMessage": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "backupRestoreConfirm": "Restore",
+  "backupRestored": "Database restored",
+  "backupRestoreError": "Failed to restore the backup",
+  "backupRestartMessage": "The restored data will be used after restart. Restart now?",
+
+  "lanSyncTitle": "Network Sync",
+  "lanSyncOpenTile": "Nearby devices",
+  "lanSyncTileSubtitle": "Transfer data directly between devices on the same Wi-Fi network",
+  "lanSyncVisibleAs": "This device is visible as {name}",
+  "@lanSyncVisibleAs": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncNoDevices": "No devices found. Open this screen on both devices connected to the same Wi-Fi network. Access point isolation and VPNs block discovery.",
+  "lanSyncPull": "Tap to get its data",
+  "lanSyncReceiveTitle": "Replace Data?",
+  "lanSyncReceiveMessage": "Data from {device}, {date}: {collections} collections, {items} items.\n\nCurrent data will be REPLACED. A backup copy stays next to the database.",
+  "@lanSyncReceiveMessage": {
+    "placeholders": {
+      "device": {"type": "String"},
+      "date": {"type": "String"},
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "lanSyncReplace": "Replace",
+  "lanSyncWaiting": "Confirm the request on {name}...",
+  "@lanSyncWaiting": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncIncomingTitle": "Data Request",
+  "lanSyncIncomingMessage": "{name} wants to get a copy of your data. Allow?",
+  "@lanSyncIncomingMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncAllow": "Allow",
+  "lanSyncDenied": "The other device declined the request",
+  "lanSyncManifestError": "The device did not respond",
+  "lanSyncReceiveError": "Failed to get the data",
+  "lanSyncTooNew": "The data on that device was made by a newer app version. Update the app on this device first.",
+  "lanSyncCorrupted": "The transfer came through damaged. Try again.",
+  "lanSyncReceived": "Data received",
+  "lanSyncRestartMessage": "The received data will be used after restart. Restart now?",
+  "lanSyncFirewallNote": "Windows may ask for firewall permission on first start - allow access on private networks.",
 
   "folderPickerNewFolder": "New folder",
   "folderPickerVolumeList": "Storage devices",

@@ -33,6 +33,8 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
+      // The Danger Zone sits below the storage/sync sections now.
+      await tester.ensureVisible(find.text('Reset Database'));
       await tester.tap(find.text('Reset Database'));
       await tester.pumpAndSettle();
 
@@ -43,6 +45,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Reset Database'));
       await tester.tap(find.text('Reset Database'));
       await tester.pumpAndSettle();
 

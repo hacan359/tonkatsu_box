@@ -15,11 +15,16 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('storage_section_test');
     StorageRoot.defaultPathProvider = () async => tempDir.path;
+    // Real SQLite IO never completes inside FakeAsync; stub the verdict.
+    StorageRoot.validateDataDirOverride =
+        (String dir) async => DataDirVerdict.ok;
+    StorageRoot.resetSessionCache();
     SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
   tearDown(() async {
     StorageRoot.defaultPathProvider = null;
+    StorageRoot.validateDataDirOverride = null;
     if (tempDir.existsSync()) {
       await tempDir.delete(recursive: true);
     }

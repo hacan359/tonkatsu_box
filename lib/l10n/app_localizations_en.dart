@@ -938,6 +938,14 @@ class SEn extends S {
   String get storageLocationOpenSettings => 'Open Settings';
 
   @override
+  String get storageLocationDbTooNew =>
+      'The database in this folder was made by a newer app version. Update the app on this device first.';
+
+  @override
+  String get storageLocationDbCorrupted =>
+      'The database in this folder is corrupted or incomplete. If a sync tool is still copying it, try again later.';
+
+  @override
   String get storageLocationUseExistingTitle => 'Existing Data Found';
 
   @override
@@ -981,6 +989,118 @@ class SEn extends S {
   @override
   String get storageLocationRestartLater =>
       'The change will take effect after restart';
+
+  @override
+  String get backupTitle => 'Backup';
+
+  @override
+  String get backupRestoreTile => 'Restore the previous database';
+
+  @override
+  String get backupNone => 'No backup yet';
+
+  @override
+  String get backupRestoreConfirmTitle => 'Restore Previous Database?';
+
+  @override
+  String backupRestoreConfirmMessage(String date) {
+    return 'Current data will be replaced with the backup from $date. The replaced data becomes the new backup, so restoring again undoes this.';
+  }
+
+  @override
+  String get backupRestoreConfirm => 'Restore';
+
+  @override
+  String get backupRestored => 'Database restored';
+
+  @override
+  String get backupRestoreError => 'Failed to restore the backup';
+
+  @override
+  String get backupRestartMessage =>
+      'The restored data will be used after restart. Restart now?';
+
+  @override
+  String get lanSyncTitle => 'Network Sync';
+
+  @override
+  String get lanSyncOpenTile => 'Nearby devices';
+
+  @override
+  String get lanSyncTileSubtitle =>
+      'Transfer data directly between devices on the same Wi-Fi network';
+
+  @override
+  String lanSyncVisibleAs(String name) {
+    return 'This device is visible as $name';
+  }
+
+  @override
+  String get lanSyncNoDevices =>
+      'No devices found. Open this screen on both devices connected to the same Wi-Fi network. Access point isolation and VPNs block discovery.';
+
+  @override
+  String get lanSyncPull => 'Tap to get its data';
+
+  @override
+  String get lanSyncReceiveTitle => 'Replace Data?';
+
+  @override
+  String lanSyncReceiveMessage(
+    String device,
+    String date,
+    int collections,
+    int items,
+  ) {
+    return 'Data from $device, $date: $collections collections, $items items.\n\nCurrent data will be REPLACED. A backup copy stays next to the database.';
+  }
+
+  @override
+  String get lanSyncReplace => 'Replace';
+
+  @override
+  String lanSyncWaiting(String name) {
+    return 'Confirm the request on $name...';
+  }
+
+  @override
+  String get lanSyncIncomingTitle => 'Data Request';
+
+  @override
+  String lanSyncIncomingMessage(String name) {
+    return '$name wants to get a copy of your data. Allow?';
+  }
+
+  @override
+  String get lanSyncAllow => 'Allow';
+
+  @override
+  String get lanSyncDenied => 'The other device declined the request';
+
+  @override
+  String get lanSyncManifestError => 'The device did not respond';
+
+  @override
+  String get lanSyncReceiveError => 'Failed to get the data';
+
+  @override
+  String get lanSyncTooNew =>
+      'The data on that device was made by a newer app version. Update the app on this device first.';
+
+  @override
+  String get lanSyncCorrupted =>
+      'The transfer came through damaged. Try again.';
+
+  @override
+  String get lanSyncReceived => 'Data received';
+
+  @override
+  String get lanSyncRestartMessage =>
+      'The received data will be used after restart. Restart now?';
+
+  @override
+  String get lanSyncFirewallNote =>
+      'Windows may ask for firewall permission on first start - allow access on private networks.';
 
   @override
   String get folderPickerNewFolder => 'New folder';

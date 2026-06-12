@@ -100,6 +100,9 @@ abstract final class MigrationRegistry {
     MigrationV48(),
   ];
 
+  /// Schema version this build can open; newer databases must be rejected.
+  static int get latestVersion => all.last.version;
+
   static List<Migration> pending(int oldVersion) {
     return all
         .where((Migration m) => m.version > oldVersion)

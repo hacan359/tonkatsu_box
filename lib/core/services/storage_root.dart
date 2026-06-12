@@ -5,6 +5,25 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import '../../shared/models/profile.dart';
+import '../database/migrations/migration_registry.dart';
+import '../database/sqlite_health.dart';
+
+/// Verdict on whether a data directory's database can be opened by this
+/// build.
+enum DataDirVerdict {
+  /// Database is absent or opens cleanly with a supported schema.
+  ok,
+
+  /// Database schema is newer than this build can open.
+  tooNew,
+
+  /// Database fails the integrity check (e.g. a sync client delivered
+  /// it half-written).
+  corrupted,
+}
 
 /// Result of resolving the data root.
 class StorageRootResolution {
@@ -54,6 +73,11 @@ class StorageRoot {
   @visibleForTesting
   static Future<String> Function()? defaultPathProvider;
 
+  /// Test seam: real SQLite IO never completes inside widget tests'
+  /// FakeAsync zone, so widget tests stub the verdict here.
+  @visibleForTesting
+  static Future<DataDirVerdict> Function(String dir)? validateDataDirOverride;
+
   /// Default data root when no custom directory is configured.
   static Future<String> defaultPath() async {
     final Future<String> Function()? override = defaultPathProvider;
@@ -75,30 +99,115 @@ class StorageRoot {
     return value;
   }
 
+  // Validation verdict is memoized per session: resolve() sits on hot
+  // paths (every image load), while opening the DB read-only for
+  // validation is only affordable once. setCustomDir/clearCustomDir
+  // reset the memo; a process restart revalidates naturally.
+  static String? _validatedCustomDir;
+  static String? _rejectedCustomDir;
+
+  /// Clears the per-session validation memo.
+  @visibleForTesting
+  static void resetSessionCache() {
+    _validatedCustomDir = null;
+    _rejectedCustomDir = null;
+  }
+
   /// Resolves the effective data root.
   ///
   /// A configured-but-unusable custom directory falls back to the default
   /// location so the app still boots; [StorageRootResolution.fellBack]
-  /// lets the UI surface that. Unusable covers both a missing directory
-  /// (unplugged drive, dead network share) and an existing-but-emptied
-  /// one: opening the latter would silently spawn a fresh database,
-  /// which reads as data loss.
+  /// lets the UI surface that. Unusable covers a missing directory
+  /// (unplugged drive, dead network share), an existing-but-emptied one
+  /// (opening it would silently spawn a fresh database, which reads as
+  /// data loss), and a database that fails [validateDataDir] — e.g. a
+  /// sync client delivered a newer-schema or half-written file.
   static Future<StorageRootResolution> resolve() async {
     final String? custom = await customDir();
-    if (custom != null) {
-      if (hasData(custom)) {
+    if (custom == null) {
+      return StorageRootResolution(path: await defaultPath());
+    }
+    if (custom == _validatedCustomDir) {
+      return StorageRootResolution(path: custom, isCustom: true);
+    }
+    if (custom != _rejectedCustomDir) {
+      if (hasData(custom) &&
+          await validateDataDir(custom) == DataDirVerdict.ok) {
+        _validatedCustomDir = custom;
         return StorageRootResolution(path: custom, isCustom: true);
       }
+      _rejectedCustomDir = custom;
       _log.warning(
-        'Custom storage dir is inaccessible or empty, using default: '
-        '$custom',
-      );
-      return StorageRootResolution(
-        path: await defaultPath(),
-        fellBack: true,
+        'Custom storage dir is missing, empty or holds an unusable '
+        'database, using default: $custom',
       );
     }
-    return StorageRootResolution(path: await defaultPath());
+    return StorageRootResolution(
+      path: await defaultPath(),
+      fellBack: true,
+    );
+  }
+
+  /// Database file the app would open for the data root [root],
+  /// honouring the profile layout.
+  static String activeDbPath(String root) {
+    final File profilesFile = File(p.join(root, profilesFileName));
+    if (profilesFile.existsSync()) {
+      try {
+        final ProfilesData data =
+            ProfilesData.fromJsonString(profilesFile.readAsStringSync());
+        return p.join(
+          root,
+          profilesFolderName,
+          data.currentProfileId,
+          dbFileName,
+        );
+      } on Exception catch (e) {
+        _log.warning('Unreadable profiles.json under $root', e);
+      }
+    }
+    return p.join(root, dbFileName);
+  }
+
+  /// Checks that the database [dir] would be opened with is usable:
+  /// schema not newer than this build and `PRAGMA quick_check` clean.
+  /// An absent database is [DataDirVerdict.ok] — a fresh one gets
+  /// created on open.
+  static Future<DataDirVerdict> validateDataDir(String dir) async {
+    final Future<DataDirVerdict> Function(String dir)? override =
+        validateDataDirOverride;
+    if (override != null) return override(dir);
+
+    final String dbPath = activeDbPath(dir);
+    if (!File(dbPath).existsSync()) return DataDirVerdict.ok;
+
+    try {
+      final Database db = await databaseFactory.openDatabase(
+        dbPath,
+        options: OpenDatabaseOptions(readOnly: true),
+      );
+      try {
+        final int version = await readUserVersion(db);
+        if (version > MigrationRegistry.latestVersion) {
+          _log.warning(
+            'Database at $dbPath has schema $version, newer than '
+            '${MigrationRegistry.latestVersion}',
+          );
+          return DataDirVerdict.tooNew;
+        }
+
+        if (!await quickCheckOk(db)) {
+          _log.warning('quick_check failed for $dbPath');
+          return DataDirVerdict.corrupted;
+        }
+        return DataDirVerdict.ok;
+      } finally {
+        await db.close();
+      }
+    } on Exception catch (e) {
+      _log.warning('Database validation failed for $dbPath', e);
+      return DataDirVerdict.corrupted;
+    }
   }
 
   /// Whether [dir] already holds app data: a database file or a profile
@@ -111,12 +220,14 @@ class StorageRoot {
 
   /// Saves [path] as the custom data root.
   static Future<void> setCustomDir(String path) async {
+    resetSessionCache();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(prefsKey, path);
   }
 
   /// Removes the custom data root, returning to the default location.
   static Future<void> clearCustomDir() async {
+    resetSessionCache();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(prefsKey);
   }
@@ -141,9 +252,17 @@ class StorageRoot {
   /// not initialised. Image caches are intentionally skipped — they
   /// re-download on demand.
   ///
-  /// The caller must checkpoint the open database first (see
-  /// `DatabaseService.checkpointWal`) so the copied main file is complete.
-  static Future<void> copyDataTo(String sourceDir, String targetDir) async {
+  /// [flushDatabase] runs before any file is copied; pass
+  /// `DatabaseService.checkpointWal` when the live database is open so
+  /// the copied main file is complete.
+  static Future<void> copyDataTo(
+    String sourceDir,
+    String targetDir, {
+    Future<void> Function()? flushDatabase,
+  }) async {
+    if (flushDatabase != null) {
+      await flushDatabase();
+    }
     await Directory(targetDir).create(recursive: true);
 
     final File profilesFile = File(p.join(sourceDir, profilesFileName));
@@ -169,7 +288,10 @@ class StorageRoot {
   }
 
   static Future<void> _copyDbFiles(String fromDir, String toDir) async {
-    for (final String suffix in <String>['', '-wal', '-shm']) {
+    // `.bak` travels along: it may be the only good copy after a sync
+    // the user regrets, and the restore flow looks for it next to the
+    // active database.
+    for (final String suffix in <String>['', '-wal', '-shm', '.bak']) {
       final File file = File(p.join(fromDir, '$dbFileName$suffix'));
       if (file.existsSync()) {
         await file.copy(p.join(toDir, '$dbFileName$suffix'));

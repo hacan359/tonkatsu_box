@@ -134,6 +134,39 @@ Already tracking elsewhere? Bring your data:
 
 > [Import guides on Wiki](https://github.com/hacan359/tonkatsu_box/wiki)
 
+## Device-to-Device Sync
+
+Move your whole collection from one device to another over your home network. No cloud, no account: the two devices talk to each other directly.
+
+How it works:
+
+1. Open **Settings → Database → Device-to-device sync** on both devices. While the screen is open, each device announces itself on the local network and finds the other one.
+2. On the device that should **receive** the data, tap the other device in the list.
+3. Confirm on both sides: the receiving device shows what it is about to download (device name, date, collection and item counts), and the sending device asks you to allow the transfer.
+4. The full database is copied over and **replaces** everything on the receiving device. Restart the app when asked.
+
+This is a full replace, not a merge. Changes made on the receiving device that the sender doesn't have are gone after the transfer.
+
+Before replacing anything, the app keeps the previous database as a backup. **Settings → Database → Backup → Restore** swaps the current database with that backup, and restoring again swaps them back.
+
+> [!CAUTION]
+> **This feature can destroy data. Read this before using it.**
+> - Receiving a snapshot **overwrites your entire local database**. Anything you added on this device and nowhere else is lost.
+> - There is only **one backup slot**. Receiving a second snapshot overwrites the backup made before the first one — after that, the original data is gone for good.
+> - The transfer is **not encrypted** and there is no pairing between devices. Use it only on a network you trust (your home Wi-Fi), never on public or shared networks.
+> - If the app is killed or the device loses power in the middle of a transfer or restore, the database can end up corrupted. Keep a regular backup (Settings → Backup) before syncing.
+
+### Custom Data Folder
+
+By default the database lives in the app's private folder. **Settings → Database → Storage location** lets you move it to any folder you pick — for example an SD card or a folder synced by a cloud client.
+
+When you pick an empty folder, the app copies your current data there. When you pick a folder that already holds Tonkatsu Box data, the app switches to that data instead. Either way a restart is required. If the custom folder is missing on startup (unplugged drive, dead network share), the app falls back to the default location instead of failing — Settings shows a warning when that happens.
+
+> [!CAUTION]
+> - Pointing two devices or a cloud client at the **same live folder** is not supported and can corrupt the database. Sync clients copy files while they are being written; SQLite does not survive that.
+> - When the custom folder is unavailable, the app silently runs on the default (possibly empty) data. Your collection is not lost — plug the drive back in and restart — but anything you add meanwhile lands in the default folder, not the custom one.
+> - On Android this feature needs the "All files access" permission, which the app requests only when you actually pick a folder.
+
 ## Data Sources
 
 | | Type | Source | API Key |

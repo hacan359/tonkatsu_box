@@ -16,7 +16,10 @@ import '../../tier_lists/providers/mood_grids_provider.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';
+import '../screens/lan_sync_screen.dart';
+import '../widgets/backup_section.dart';
 import '../widgets/settings_group.dart';
+import '../widgets/settings_tile.dart';
 import '../widgets/storage_location_section.dart';
 
 class DatabaseContent extends ConsumerWidget {
@@ -87,6 +90,26 @@ class DatabaseContent extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
 
         const StorageLocationSection(),
+        const SizedBox(height: AppSpacing.md),
+
+        SettingsGroup(
+          title: l10n.lanSyncTitle,
+          children: <Widget>[
+            SettingsTile(
+              title: l10n.lanSyncOpenTile,
+              subtitle: l10n.lanSyncTileSubtitle,
+              leadingIcon: Icons.devices,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => const LanSyncScreen(),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        const BackupSection(),
         const SizedBox(height: AppSpacing.md),
 
         SettingsGroup(

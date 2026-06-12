@@ -3,9 +3,16 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:tonkatsu_box/core/database/migrations/migration_registry.dart';
 import 'package:tonkatsu_box/core/services/storage_root.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   late Directory tempDir;
   late String defaultDir;
 
@@ -14,15 +21,27 @@ void main() {
     defaultDir = p.join(tempDir.path, 'default_root');
     await Directory(defaultDir).create(recursive: true);
     StorageRoot.defaultPathProvider = () async => defaultDir;
+    StorageRoot.resetSessionCache();
     SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
   tearDown(() async {
     StorageRoot.defaultPathProvider = null;
+    StorageRoot.validateDataDirOverride = null;
     if (tempDir.existsSync()) {
       await tempDir.delete(recursive: true);
     }
   });
+
+  Future<void> createSqliteDb(String path, {int? userVersion}) async {
+    await Directory(p.dirname(path)).create(recursive: true);
+    final Database db = await databaseFactory.openDatabase(path);
+    await db.execute('CREATE TABLE IF NOT EXISTS t (id INTEGER)');
+    if (userVersion != null) {
+      await db.execute('PRAGMA user_version = $userVersion');
+    }
+    await db.close();
+  }
 
   group('StorageRoot', () {
     group('resolve', () {
@@ -34,10 +53,10 @@ void main() {
         expect(result.fellBack, isFalse);
       });
 
-      test('returns custom dir when set and holding data', () async {
+      test('returns custom dir when set and holding a usable database',
+          () async {
         final String customDir = p.join(tempDir.path, 'custom_root');
-        await Directory(customDir).create(recursive: true);
-        await File(p.join(customDir, 'tonkatsu_box.db')).writeAsString('db');
+        await createSqliteDb(p.join(customDir, 'tonkatsu_box.db'));
         SharedPreferences.setMockInitialValues(<String, Object>{
           StorageRoot.prefsKey: customDir,
         });
@@ -49,18 +68,52 @@ void main() {
         expect(result.fellBack, isFalse);
       });
 
-      test('accepts a custom dir with a profiles.json layout', () async {
+      test('falls back when the custom dir database is too new', () async {
         final String customDir = p.join(tempDir.path, 'custom_root');
-        await Directory(customDir).create(recursive: true);
-        await File(p.join(customDir, 'profiles.json')).writeAsString('{}');
+        await createSqliteDb(
+          p.join(customDir, 'tonkatsu_box.db'),
+          userVersion: MigrationRegistry.latestVersion + 1,
+        );
         SharedPreferences.setMockInitialValues(<String, Object>{
           StorageRoot.prefsKey: customDir,
         });
 
         final StorageRootResolution result = await StorageRoot.resolve();
 
-        expect(result.path, customDir);
-        expect(result.isCustom, isTrue);
+        expect(result.path, defaultDir);
+        expect(result.fellBack, isTrue);
+      });
+
+      test('falls back when the custom dir database is corrupted', () async {
+        final String customDir = p.join(tempDir.path, 'custom_root');
+        await Directory(customDir).create(recursive: true);
+        await File(p.join(customDir, 'tonkatsu_box.db'))
+            .writeAsString('this is not a database');
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          StorageRoot.prefsKey: customDir,
+        });
+
+        final StorageRootResolution result = await StorageRoot.resolve();
+
+        expect(result.path, defaultDir);
+        expect(result.fellBack, isTrue);
+      });
+
+      test('memoizes the verdict until the custom dir changes', () async {
+        final String customDir = p.join(tempDir.path, 'custom_root');
+        await Directory(customDir).create(recursive: true);
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          StorageRoot.prefsKey: customDir,
+        });
+
+        // Empty dir → rejected; verdict sticks even after data appears.
+        expect((await StorageRoot.resolve()).fellBack, isTrue);
+        await createSqliteDb(p.join(customDir, 'tonkatsu_box.db'));
+        expect((await StorageRoot.resolve()).fellBack, isTrue);
+
+        // setCustomDir resets the memo and revalidates.
+        await StorageRoot.setCustomDir(customDir);
+        expect((await StorageRoot.resolve()).isCustom, isTrue);
       });
 
       test('falls back to default when custom dir exists but is empty',
@@ -106,8 +159,7 @@ void main() {
     group('setCustomDir / clearCustomDir', () {
       test('round-trips through preferences', () async {
         final String customDir = p.join(tempDir.path, 'custom_root');
-        await Directory(customDir).create(recursive: true);
-        await File(p.join(customDir, 'tonkatsu_box.db')).writeAsString('db');
+        await createSqliteDb(p.join(customDir, 'tonkatsu_box.db'));
 
         await StorageRoot.setCustomDir(customDir);
         expect(await StorageRoot.customDir(), customDir);
@@ -139,6 +191,64 @@ void main() {
         await File(p.join(tempDir.path, 'profiles.json')).writeAsString('{}');
 
         expect(StorageRoot.hasData(tempDir.path), isTrue);
+      });
+    });
+
+    group('validateDataDir', () {
+      test('absent database is ok', () async {
+        expect(
+          await StorageRoot.validateDataDir(tempDir.path),
+          DataDirVerdict.ok,
+        );
+      });
+
+      test('usable database is ok', () async {
+        await createSqliteDb(p.join(tempDir.path, 'tonkatsu_box.db'));
+
+        expect(
+          await StorageRoot.validateDataDir(tempDir.path),
+          DataDirVerdict.ok,
+        );
+      });
+
+      test('newer schema is tooNew', () async {
+        await createSqliteDb(
+          p.join(tempDir.path, 'tonkatsu_box.db'),
+          userVersion: MigrationRegistry.latestVersion + 1,
+        );
+
+        expect(
+          await StorageRoot.validateDataDir(tempDir.path),
+          DataDirVerdict.tooNew,
+        );
+      });
+
+      test('garbage file is corrupted', () async {
+        await File(p.join(tempDir.path, 'tonkatsu_box.db'))
+            .writeAsString('garbage');
+
+        expect(
+          await StorageRoot.validateDataDir(tempDir.path),
+          DataDirVerdict.corrupted,
+        );
+      });
+
+      test('validates the current profile database in a profile layout',
+          () async {
+        await File(p.join(tempDir.path, 'profiles.json')).writeAsString(
+          '{"version": 1, "currentProfileId": "alpha", "profiles": ['
+          '{"id": "alpha", "name": "A", "color": "#fff", '
+          '"createdAt": "2026-01-01T00:00:00.000"}]}',
+        );
+        await createSqliteDb(
+          p.join(tempDir.path, 'profiles', 'alpha', 'tonkatsu_box.db'),
+          userVersion: MigrationRegistry.latestVersion + 1,
+        );
+
+        expect(
+          await StorageRoot.validateDataDir(tempDir.path),
+          DataDirVerdict.tooNew,
+        );
       });
     });
 
@@ -180,6 +290,8 @@ void main() {
             .then((File f) => f.writeAsString('db'));
         await File(p.join(profileDir, 'tonkatsu_box.db-wal'))
             .writeAsString('wal');
+        await File(p.join(profileDir, 'tonkatsu_box.db.bak'))
+            .writeAsString('bak');
 
         await StorageRoot.copyDataTo(source, target);
 
@@ -196,6 +308,11 @@ void main() {
           File(p.join(target, 'profiles', 'default', 'tonkatsu_box.db-wal'))
               .readAsStringSync(),
           'wal',
+        );
+        expect(
+          File(p.join(target, 'profiles', 'default', 'tonkatsu_box.db.bak'))
+              .readAsStringSync(),
+          'bak',
         );
       });
 

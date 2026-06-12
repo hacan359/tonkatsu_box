@@ -953,6 +953,14 @@ class SRu extends S {
   String get storageLocationOpenSettings => 'Открыть настройки';
 
   @override
+  String get storageLocationDbTooNew =>
+      'База данных в этой папке создана более новой версией приложения. Сначала обновите приложение на этом устройстве.';
+
+  @override
+  String get storageLocationDbCorrupted =>
+      'База данных в этой папке повреждена или скопирована не до конца. Если её ещё копирует программа синхронизации, попробуйте позже.';
+
+  @override
   String get storageLocationUseExistingTitle => 'Найдены существующие данные';
 
   @override
@@ -996,6 +1004,118 @@ class SRu extends S {
   @override
   String get storageLocationRestartLater =>
       'Изменение вступит в силу после перезапуска';
+
+  @override
+  String get backupTitle => 'Резервная копия';
+
+  @override
+  String get backupRestoreTile => 'Восстановить предыдущую базу';
+
+  @override
+  String get backupNone => 'Копии пока нет';
+
+  @override
+  String get backupRestoreConfirmTitle => 'Восстановить предыдущую базу?';
+
+  @override
+  String backupRestoreConfirmMessage(String date) {
+    return 'Текущие данные будут заменены резервной копией от $date. Заменённые данные сами станут копией, так что повторное восстановление отменит это действие.';
+  }
+
+  @override
+  String get backupRestoreConfirm => 'Восстановить';
+
+  @override
+  String get backupRestored => 'База данных восстановлена';
+
+  @override
+  String get backupRestoreError => 'Не удалось восстановить копию';
+
+  @override
+  String get backupRestartMessage =>
+      'Восстановленные данные начнут использоваться после перезапуска. Перезапустить сейчас?';
+
+  @override
+  String get lanSyncTitle => 'Синхронизация по сети';
+
+  @override
+  String get lanSyncOpenTile => 'Устройства поблизости';
+
+  @override
+  String get lanSyncTileSubtitle =>
+      'Прямая передача данных между устройствами в одной Wi-Fi сети';
+
+  @override
+  String lanSyncVisibleAs(String name) {
+    return 'Это устройство видно в сети как $name';
+  }
+
+  @override
+  String get lanSyncNoDevices =>
+      'Устройства не найдены. Откройте этот экран на обоих устройствах в одной Wi-Fi сети. Изоляция точки доступа и VPN мешают обнаружению.';
+
+  @override
+  String get lanSyncPull => 'Нажмите, чтобы забрать его данные';
+
+  @override
+  String get lanSyncReceiveTitle => 'Заменить данные?';
+
+  @override
+  String lanSyncReceiveMessage(
+    String device,
+    String date,
+    int collections,
+    int items,
+  ) {
+    return 'Данные с $device, $date: коллекций $collections, элементов $items.\n\nТекущие данные будут ЗАМЕНЕНЫ. Резервная копия останется рядом с базой данных.';
+  }
+
+  @override
+  String get lanSyncReplace => 'Заменить';
+
+  @override
+  String lanSyncWaiting(String name) {
+    return 'Подтвердите запрос на $name...';
+  }
+
+  @override
+  String get lanSyncIncomingTitle => 'Запрос данных';
+
+  @override
+  String lanSyncIncomingMessage(String name) {
+    return '$name хочет забрать копию ваших данных. Разрешить?';
+  }
+
+  @override
+  String get lanSyncAllow => 'Разрешить';
+
+  @override
+  String get lanSyncDenied => 'На другом устройстве отклонили запрос';
+
+  @override
+  String get lanSyncManifestError => 'Устройство не ответило';
+
+  @override
+  String get lanSyncReceiveError => 'Не удалось получить данные';
+
+  @override
+  String get lanSyncTooNew =>
+      'Данные на том устройстве созданы более новой версией приложения. Сначала обновите приложение здесь.';
+
+  @override
+  String get lanSyncCorrupted =>
+      'Передача прошла с ошибкой. Попробуйте ещё раз.';
+
+  @override
+  String get lanSyncReceived => 'Данные получены';
+
+  @override
+  String get lanSyncRestartMessage =>
+      'Полученные данные начнут использоваться после перезапуска. Перезапустить сейчас?';
+
+  @override
+  String get lanSyncFirewallNote =>
+      'При первом запуске Windows может спросить разрешение брандмауэра - разрешите доступ в частных сетях.';
 
   @override
   String get folderPickerNewFolder => 'Новая папка';
