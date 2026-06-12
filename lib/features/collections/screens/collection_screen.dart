@@ -14,6 +14,7 @@ import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/navigation/search_providers.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
@@ -453,7 +454,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           setState(() => _tableFilterStatus = status);
         },
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ShimmerPosterGrid(),
       error: (Object error, StackTrace stack) => CollectionErrorState(
         error: error,
         onRetry: () => ref

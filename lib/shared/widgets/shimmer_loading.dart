@@ -1,15 +1,15 @@
-// Shimmer-эффект загрузки без внешних зависимостей.
+// Shimmer loading effect without external dependencies.
 
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Базовый shimmer-блок с анимированным градиентом.
+/// Base shimmer block with an animated gradient.
 ///
-/// Используется как строительный блок для заглушек загрузки.
+/// Building block for loading placeholders.
 class ShimmerBox extends StatefulWidget {
-  /// Создаёт shimmer-блок.
+  /// Creates a shimmer block.
   const ShimmerBox({
     required this.width,
     required this.height,
@@ -17,13 +17,13 @@ class ShimmerBox extends StatefulWidget {
     super.key,
   });
 
-  /// Ширина блока.
+  /// Block width.
   final double width;
 
-  /// Высота блока.
+  /// Block height.
   final double height;
 
-  /// Радиус скругления углов.
+  /// Corner radius.
   final double borderRadius;
 
   @override
@@ -75,11 +75,11 @@ class _ShimmerBoxState extends State<ShimmerBox>
   }
 }
 
-/// Заглушка для постерной карточки (shimmer).
+/// Poster card placeholder (shimmer).
 ///
-/// Прямоугольник 2:3 + две строки текста снизу.
+/// A 2:3 rectangle plus two text lines below.
 class ShimmerPosterCard extends StatelessWidget {
-  /// Создаёт shimmer-заглушку постерной карточки.
+  /// Creates a poster card shimmer placeholder.
   const ShimmerPosterCard({super.key});
 
   @override
@@ -103,12 +103,12 @@ class ShimmerPosterCard extends StatelessWidget {
   }
 }
 
-/// Заглушка для карточки тир-листа в списке (shimmer).
+/// Tier list card placeholder (shimmer).
 ///
-/// Иконка слева + две строки текста + chevron справа.
-/// Повторяет структуру _TierListCard.
+/// Icon on the left, two text lines, chevron on the right.
+/// Mirrors the _TierListCard structure.
 class ShimmerTierListCard extends StatelessWidget {
-  /// Создаёт shimmer-заглушку карточки тир-листа.
+  /// Creates a tier list card shimmer placeholder.
   const ShimmerTierListCard({super.key});
 
   @override
@@ -139,11 +139,11 @@ class ShimmerTierListCard extends StatelessWidget {
   }
 }
 
-/// Заглушка для экрана деталей тир-листа (shimmer).
+/// Tier list detail screen placeholder (shimmer).
 ///
-/// Несколько тир-рядов (цветная полоска + карточки-заглушки).
+/// A few tier rows (colored label strip plus card placeholders).
 class ShimmerTierListDetail extends StatelessWidget {
-  /// Создаёт shimmer-заглушку деталей тир-листа.
+  /// Creates a tier list detail shimmer placeholder.
   const ShimmerTierListDetail({super.key});
 
   @override
@@ -216,11 +216,61 @@ class _ShimmerUnrankedPool extends StatelessWidget {
   }
 }
 
-/// Заглушка для горизонтальной карточки списка (shimmer).
+/// List screen placeholder: a column of [ShimmerListTile]s.
+class ShimmerList extends StatelessWidget {
+  /// Creates a list shimmer placeholder.
+  const ShimmerList({this.itemCount = 3, super.key});
+
+  /// Number of placeholder tiles.
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: itemCount,
+      itemBuilder: (BuildContext context, int index) =>
+          const ShimmerListTile(),
+    );
+  }
+}
+
+/// Poster grid placeholder: a grid of [ShimmerPosterCard]s.
 ///
-/// Квадрат-постер слева + три строки текста справа.
+/// The max-extent delegate adapts the column count to the available
+/// width on its own, so the skeleton stays close to the real grid
+/// without mirroring its breakpoint logic.
+class ShimmerPosterGrid extends StatelessWidget {
+  /// Creates a poster grid shimmer placeholder.
+  const ShimmerPosterGrid({this.itemCount = 12, super.key});
+
+  /// Number of placeholder cards.
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 170,
+        crossAxisSpacing: AppSpacing.gridGap,
+        mainAxisSpacing: AppSpacing.lg,
+        childAspectRatio: 0.55,
+      ),
+      itemCount: itemCount,
+      itemBuilder: (BuildContext context, int index) =>
+          const ShimmerPosterCard(),
+    );
+  }
+}
+
+/// Horizontal list tile placeholder (shimmer).
+///
+/// Poster on the left plus three text lines on the right.
 class ShimmerListTile extends StatelessWidget {
-  /// Создаёт shimmer-заглушку горизонтальной карточки.
+  /// Creates a horizontal list tile shimmer placeholder.
   const ShimmerListTile({super.key});
 
   @override

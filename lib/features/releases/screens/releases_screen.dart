@@ -11,6 +11,7 @@ import '../../../shared/utils/date_format_preset.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../../../shared/widgets/segmented_pill.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/release_event.dart';
@@ -65,7 +66,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         ref.watch(releasesProvider);
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ShimmerList(),
       error: (Object _, StackTrace _) => const Center(
         child: Icon(Icons.error_outline,
             size: 48, color: AppColors.textTertiary),
@@ -747,7 +748,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: AppColors.surfaceBorder,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -774,7 +775,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         e?.imageType != null &&
         e?.cacheImageId != null;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
       child: SizedBox(
         width: width,
         height: height,

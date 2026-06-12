@@ -291,14 +291,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildLoadingState() {
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      children: const <Widget>[
-        ShimmerListTile(),
-        ShimmerListTile(),
-        ShimmerListTile(),
-      ],
-    );
+    return const ShimmerList();
   }
 
   Widget _buildEmptyState(BuildContext context) {

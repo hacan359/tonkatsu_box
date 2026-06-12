@@ -14,6 +14,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/add_wishlist_dialog.dart';
@@ -74,8 +75,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       child: Stack(
         children: <Widget>[
           itemsAsync.when(
-            loading: () =>
-                const Center(child: CircularProgressIndicator()),
+            loading: () => const ShimmerList(),
             error: (Object error, StackTrace stack) => Center(
               child: Text(S.of(context).errorPrefix(error.toString())),
             ),
