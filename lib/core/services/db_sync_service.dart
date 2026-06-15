@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -13,6 +14,7 @@ import '../../shared/models/sync_manifest.dart';
 import '../database/database_service.dart';
 import '../database/migrations/migration_registry.dart';
 import '../database/sqlite_health.dart';
+import 'image_cache_service.dart';
 import 'storage_root.dart';
 
 final Provider<DbSyncService> dbSyncServiceProvider =
@@ -320,6 +322,81 @@ class DbSyncService {
 
     await _writeTimestamp(prefsLastReceivedKey, DateTime.now());
     _log.info('Snapshot received into $dbPath (backup at $dbPath.bak)');
+  }
+
+  /// Image-cache subfolders that hold user-supplied, non-re-downloadable
+  /// images (everything else under `image_cache` re-fetches from its URL).
+  static final List<String> _userImageFolders = <String>[
+    ImageType.customCover.folder,
+    ImageType.canvasImage.folder,
+  ];
+
+  /// Builds a ZIP of the user-supplied images that cannot be re-downloaded:
+  /// collection hero banners plus the custom-cover and canvas-image caches of
+  /// the current profile. The re-downloadable cover cache is left out — the
+  /// receiving device re-fetches it from the source URLs.
+  Future<List<int>> buildUserImagesArchive() async {
+    final StorageRootResolution root = await StorageRoot.resolve();
+    final String profileBase = p.dirname(StorageRoot.activeDbPath(root.path));
+    final Archive archive = Archive();
+
+    _addDirToArchive(
+      archive,
+      dir: p.join(root.path, StorageRoot.collectionsFolderName),
+      prefix: StorageRoot.collectionsFolderName,
+    );
+    for (final String folder in _userImageFolders) {
+      _addDirToArchive(
+        archive,
+        dir: p.join(profileBase, StorageRoot.imageCacheFolderName, folder),
+        prefix: p.posix.join(StorageRoot.imageCacheFolderName, folder),
+      );
+    }
+    return ZipEncoder().encode(archive);
+  }
+
+  /// Extracts an archive from [buildUserImagesArchive] over the current data
+  /// root: `collections/` at the root, `image_cache/<sub>` under the current
+  /// profile. Existing files are overwritten; unrelated local files are left
+  /// in place (merge, not mirror).
+  Future<void> applyUserImagesArchive(List<int> bytes) async {
+    final StorageRootResolution root = await StorageRoot.resolve();
+    final String profileBase = p.dirname(StorageRoot.activeDbPath(root.path));
+    final Archive archive = ZipDecoder().decodeBytes(bytes);
+
+    for (final ArchiveFile file in archive) {
+      if (!file.isFile) continue;
+      final List<String> parts = p.posix.split(file.name);
+      if (parts.isEmpty) continue;
+      final String base;
+      if (parts.first == StorageRoot.collectionsFolderName) {
+        base = root.path;
+      } else if (parts.first == StorageRoot.imageCacheFolderName) {
+        base = profileBase;
+      } else {
+        continue;
+      }
+      final File out = File(p.joinAll(<String>[base, ...parts]));
+      await out.parent.create(recursive: true);
+      await out.writeAsBytes(file.content as List<int>);
+    }
+  }
+
+  static void _addDirToArchive(
+    Archive archive, {
+    required String dir,
+    required String prefix,
+  }) {
+    final Directory source = Directory(dir);
+    if (!source.existsSync()) return;
+    for (final FileSystemEntity entity
+        in source.listSync(recursive: true, followLinks: false)) {
+      if (entity is! File) continue;
+      final List<int> bytes = entity.readAsBytesSync();
+      final String rel = p.relative(entity.path, from: dir);
+      final String name = p.posix.joinAll(<String>[prefix, ...p.split(rel)]);
+      archive.addFile(ArchiveFile(name, bytes.length, bytes));
+    }
   }
 
   /// Identity of this device for manifests and network announcements.

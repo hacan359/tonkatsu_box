@@ -197,14 +197,9 @@ class _StorageLocationSectionState
       );
       if (!useExisting) return;
     } else {
-      final bool copy = await ConfirmDialog.show(
-        context,
-        title: l10n.storageLocationCopyTitle,
-        message: l10n.storageLocationCopyMessage,
-        confirmLabel: l10n.storageLocationCopyConfirm,
-        destructive: false,
-      );
-      if (!copy) return;
+      final ({bool includeImages})? choice =
+          await _askCopyOptions(context, l10n);
+      if (choice == null) return;
       if (!context.mounted) return;
 
       try {
@@ -212,6 +207,7 @@ class _StorageLocationSectionState
           current.path,
           dir,
           flushDatabase: ref.read(databaseServiceProvider).checkpointWal,
+          includeImages: choice.includeImages,
         );
       } on Exception catch (e) {
         _log.warning('Data copy to $dir failed', e);
@@ -228,6 +224,57 @@ class _StorageLocationSectionState
     if (!context.mounted) return;
     _refresh();
     await _offerRestart(context);
+  }
+
+  /// Copy confirmation with an opt-in "bring the images too" checkbox
+  /// (off by default — the re-downloadable cover cache re-fetches, so most
+  /// moves skip it; on copies hero banners and the whole image cache for an
+  /// offline mirror). Returns null on cancel.
+  Future<({bool includeImages})?> _askCopyOptions(
+    BuildContext context,
+    S l10n,
+  ) {
+    bool includeImages = false;
+    return showDialog<({bool includeImages})>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text(l10n.storageLocationCopyTitle),
+              scrollable: true,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(l10n.storageLocationCopyMessage),
+                  const SizedBox(height: AppSpacing.sm),
+                  CheckboxListTile(
+                    value: includeImages,
+                    onChanged: (bool? value) =>
+                        setState(() => includeImages = value ?? false),
+                    title: Text(l10n.storageLocationCopyImages),
+                    subtitle: Text(l10n.storageLocationCopyImagesHint),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(context)
+                      .pop((includeImages: includeImages)),
+                  child: Text(l10n.storageLocationCopyConfirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _resetFolder(BuildContext context) async {

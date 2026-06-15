@@ -1765,6 +1765,18 @@ abstract class S {
   /// **'Copy'**
   String get storageLocationCopyConfirm;
 
+  /// No description provided for @storageLocationCopyImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the image cache too'**
+  String get storageLocationCopyImages;
+
+  /// No description provided for @storageLocationCopyImagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hero banners and saved covers — larger, but the new folder works offline without re-downloading'**
+  String get storageLocationCopyImagesHint;
+
   /// No description provided for @storageLocationCopyError.
   ///
   /// In en, this message translates to:
@@ -1979,6 +1991,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Data received'**
   String get lanSyncReceived;
+
+  /// No description provided for @lanSyncReceivingImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferring images...'**
+  String get lanSyncReceivingImages;
+
+  /// No description provided for @lanSyncImagesWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Database received, but the images could not be transferred'**
+  String get lanSyncImagesWarning;
 
   /// No description provided for @lanSyncRestartMessage.
   ///

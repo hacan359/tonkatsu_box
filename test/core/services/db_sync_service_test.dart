@@ -250,5 +250,56 @@ void main() {
         );
       });
     });
+
+    group('user images archive', () {
+      String dataDir() => p.join(tempDir.path, 'data');
+
+      Future<void> writeImage(String rel, String content) async {
+        final String path = p.join(dataDir(), rel);
+        await File(path).create(recursive: true);
+        await File(path).writeAsString(content);
+      }
+
+      test('round-trips user images and excludes the cover cache', () async {
+        await writeImage(p.join('collections', 'hero_1_0.png'), 'hero');
+        await writeImage(
+            p.join('image_cache', 'custom_covers', 'c.png'), 'custom');
+        await writeImage(
+            p.join('image_cache', 'canvas_images', 'n.png'), 'canvas');
+        await writeImage(
+            p.join('image_cache', 'game_covers', 'g.png'), 'cover');
+
+        final List<int> bytes = await sync.buildUserImagesArchive();
+
+        await Directory(p.join(dataDir(), 'collections'))
+            .delete(recursive: true);
+        await Directory(p.join(dataDir(), 'image_cache'))
+            .delete(recursive: true);
+
+        await sync.applyUserImagesArchive(bytes);
+
+        expect(
+          File(p.join(dataDir(), 'collections', 'hero_1_0.png'))
+              .readAsStringSync(),
+          'hero',
+        );
+        expect(
+          File(p.join(dataDir(), 'image_cache', 'custom_covers', 'c.png'))
+              .readAsStringSync(),
+          'custom',
+        );
+        expect(
+          File(p.join(dataDir(), 'image_cache', 'canvas_images', 'n.png'))
+              .readAsStringSync(),
+          'canvas',
+        );
+        // The re-downloadable cover cache is intentionally not in the archive.
+        expect(
+          File(p.join(dataDir(), 'image_cache', 'game_covers', 'g.png'))
+              .existsSync(),
+          isFalse,
+        );
+      });
+    });
   });
 }

@@ -24,6 +24,48 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     via collectionListSortProvider.setSortMode and
     collectionListSortDescProvider.setDescending.
 
+- **Keep user-supplied images with the data they belong to**
+
+  Collection hero banners and custom / canvas cover images were stored
+  outside the data folder, so they were lost when the folder moved or a
+  custom folder was picked, and were never carried over a device-to-device
+  sync. Hero images now live inside the data folder (existing ones migrate
+  on first launch); LAN sync transfers the user images as a second step
+  after the database (the re-downloadable cover cache is skipped — it
+  re-fetches on the receiving device); and the folder copy grows an opt-in
+  "copy the image cache too" checkbox for a full offline mirror.
+
+  * lib/core/services/collection_hero_service.dart
+    (CollectionHeroService.resolveRoot,
+    CollectionHeroService.migrateLegacyHeroImages): Resolve `collections/`
+    under the data root via StorageRoot; one-time idempotent migration of
+    hero images from the legacy AppSupport location.
+  * lib/core/services/storage_root.dart (StorageRoot.collectionsFolderName,
+    StorageRoot.imageCacheFolderName, StorageRoot.copyDataTo,
+    StorageRoot._copyTree): New folder-name constants; copyDataTo gains
+    includeImages to recursively copy `collections/` and each profile's
+    `image_cache/`.
+  * lib/core/services/db_sync_service.dart
+    (DbSyncService.buildUserImagesArchive,
+    DbSyncService.applyUserImagesArchive): Zip of the hero, custom-cover and
+    canvas-image folders (re-downloadable covers excluded), extracted over
+    the data root on receive.
+  * lib/core/services/lan_sync_service.dart (LanSyncService._serveImages,
+    LanSyncService.downloadUserImages): New `/images` endpoint and client
+    for the image step.
+  * lib/features/settings/screens/lan_sync_screen.dart
+    (_LanSyncScreenState._pull): Two-phase pull (database, then images) with
+    a soft warning when the image step fails.
+  * lib/features/settings/widgets/storage_location_section.dart
+    (_StorageLocationSectionState._askCopyOptions): Copy dialog with the
+    "copy images too" checkbox, off by default.
+  * lib/core/services/image_cache_service.dart
+    (ImageCacheService.getBaseCachePath): Reference
+    StorageRoot.imageCacheFolderName instead of the string literal.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (storageLocationCopyImages,
+    storageLocationCopyImagesHint, lanSyncReceivingImages,
+    lanSyncImagesWarning): New strings.
+
 ## [0.34.0] - 2026-06-12
 
 ### Fixed

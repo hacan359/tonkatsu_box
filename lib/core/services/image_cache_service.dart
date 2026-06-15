@@ -71,11 +71,11 @@ class ImageCacheService {
         basePath,
         StorageRoot.profilesFolderName,
         data.currentProfileId,
-        'image_cache',
+        StorageRoot.imageCacheFolderName,
       );
     }
 
-    return p.join(basePath, 'image_cache');
+    return p.join(basePath, StorageRoot.imageCacheFolderName);
   }
 
   Future<String> getCachePath(ImageType type) async {

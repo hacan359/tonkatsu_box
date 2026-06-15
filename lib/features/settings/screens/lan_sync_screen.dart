@@ -39,6 +39,10 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
   String? _deviceName;
   bool _busy = false;
 
+  // Live text for the single progress dialog, updated between the database
+  // and the image transfer phases.
+  final ValueNotifier<String> _progressText = ValueNotifier<String>('');
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +53,7 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
   @override
   void dispose() {
     _lan.stop();
+    _progressText.dispose();
     super.dispose();
   }
 
@@ -185,6 +190,7 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
       );
       if (!confirm || !mounted) return;
 
+      bool imagesFailed = false;
       _showProgress(l10n.lanSyncWaiting(peer.name));
       final Directory tmpDir =
           await Directory.systemTemp.createTemp('xerabora_lan_in');
@@ -207,6 +213,16 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
         }
 
         await dbSync.receiveSnapshot(tmpDir.path);
+
+        // Step 2: user images. The database is already swapped in, so a
+        // failure here is a warning, not a rollback.
+        _updateProgress(l10n.lanSyncReceivingImages);
+        try {
+          await lan.downloadUserImages(peer);
+        } on Exception catch (e) {
+          _log.warning('LAN image pull failed (database already received)', e);
+          imagesFailed = true;
+        }
       } on StateError catch (e) {
         _log.warning('LAN pull failed', e);
         _finish(
@@ -226,7 +242,10 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
         }
       }
 
-      _finish(l10n.lanSyncReceived);
+      _finish(
+        imagesFailed ? l10n.lanSyncImagesWarning : l10n.lanSyncReceived,
+        type: imagesFailed ? SnackType.info : SnackType.success,
+      );
       if (!mounted) return;
       await offerAppRestart(
         context,
@@ -243,6 +262,7 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
   }
 
   void _showProgress(String message) {
+    _progressText.value = message;
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -251,20 +271,28 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
           children: <Widget>[
             const CircularProgressIndicator(),
             const SizedBox(width: AppSpacing.md),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: ValueListenableBuilder<String>(
+                valueListenable: _progressText,
+                builder: (BuildContext context, String text, Widget? _) =>
+                    Text(text),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
+  void _updateProgress(String message) => _progressText.value = message;
+
   /// Closes the progress dialog and shows the outcome.
-  void _finish(String message, {bool error = false}) {
+  void _finish(String message, {bool error = false, SnackType? type}) {
     if (!mounted) return;
     Navigator.of(context, rootNavigator: true).pop();
     context.showSnack(
       message,
-      type: error ? SnackType.error : SnackType.success,
+      type: type ?? (error ? SnackType.error : SnackType.success),
     );
   }
 

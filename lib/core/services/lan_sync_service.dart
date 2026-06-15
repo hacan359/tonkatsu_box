@@ -284,6 +284,8 @@ class LanSyncService {
           await _serveManifest(request);
         case '/snapshot':
           await _serveSnapshot(request);
+        case '/images':
+          await _serveImages(request);
         default:
           request.response.statusCode = HttpStatus.notFound;
           await request.response.close();
@@ -356,6 +358,19 @@ class LanSyncService {
         await tmpDir.delete(recursive: true);
       }
     }
+  }
+
+  Future<void> _serveImages(HttpRequest request) async {
+    // No second approval dialog: the requester already cleared the snapshot
+    // approval that precedes this step, and these are the same user images
+    // the just-served database references. The private-subnet guard in
+    // _handleRequest still applies.
+    final List<int> bytes = await _sync.buildUserImagesArchive();
+    request.response.headers.contentType = ContentType.binary;
+    request.response.contentLength = bytes.length;
+    request.response.add(bytes);
+    await request.response.close();
+    _log.info('User images served (${bytes.length} bytes)');
   }
 
   /// Loopback plus RFC1918/link-local ranges; everything else is refused.
@@ -435,6 +450,31 @@ class LanSyncService {
       } finally {
         await sink.close();
       }
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  /// Downloads and applies the peer's user images (hero banners, custom and
+  /// canvas covers). Run after [downloadSnapshot] + receive; a failure here
+  /// leaves the already-received database intact.
+  Future<void> downloadUserImages(LanPeer peer) async {
+    final HttpClient client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 5);
+    try {
+      final HttpClientRequest request = await client.getUrl(
+        Uri.http('${peer.address.address}:${peer.port}', '/images'),
+      );
+      final HttpClientResponse response =
+          await request.close().timeout(const Duration(minutes: 3));
+      if (response.statusCode != HttpStatus.ok) {
+        throw StateError('HTTP ${response.statusCode}');
+      }
+      final List<int> bytes = <int>[];
+      await for (final List<int> chunk in response) {
+        bytes.addAll(chunk);
+      }
+      await _sync.applyUserImagesArchive(bytes);
     } finally {
       client.close(force: true);
     }

@@ -423,6 +423,8 @@
   "storageLocationCopyTitle": "Copy Current Data?",
   "storageLocationCopyMessage": "The selected folder is empty. Your collections will be copied there; saved images will download again as needed. Data in the old folder stays untouched.",
   "storageLocationCopyConfirm": "Copy",
+  "storageLocationCopyImages": "Copy the image cache too",
+  "storageLocationCopyImagesHint": "Hero banners and saved covers — larger, but the new folder works offline without re-downloading",
   "storageLocationCopyError": "Failed to copy data to the selected folder",
   "storageLocationResetTitle": "Reset Data Folder?",
   "storageLocationResetMessage": "The app will switch back to the default data folder after restart. Data in the custom folder stays untouched.",
@@ -488,6 +490,8 @@
   "lanSyncTooNew": "The data on that device was made by a newer app version. Update the app on this device first.",
   "lanSyncCorrupted": "The transfer came through damaged. Try again.",
   "lanSyncReceived": "Data received",
+  "lanSyncReceivingImages": "Transferring images...",
+  "lanSyncImagesWarning": "Database received, but the images could not be transferred",
   "lanSyncRestartMessage": "The received data will be used after restart. Restart now?",
   "lanSyncFirewallNote": "Windows may ask for firewall permission on first start - allow access on private networks.",
 

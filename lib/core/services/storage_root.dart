@@ -66,6 +66,12 @@ class StorageRoot {
   /// Folder under the data root holding per-profile subfolders.
   static const String profilesFolderName = 'profiles';
 
+  /// Folder under the data root holding collection hero images.
+  static const String collectionsFolderName = 'collections';
+
+  /// Folder (per profile) holding the on-disk image cache.
+  static const String imageCacheFolderName = 'image_cache';
+
   static final Logger _log = Logger('StorageRoot');
 
   /// Test seam: path_provider's platform channel is unavailable in unit
@@ -249,8 +255,12 @@ class StorageRoot {
   /// Copies database data from [sourceDir] into [targetDir]:
   /// `profiles.json` plus each profile's database (with `-wal`/`-shm`
   /// sidecars), or the single root database when the profile system is
-  /// not initialised. Image caches are intentionally skipped — they
-  /// re-download on demand.
+  /// not initialised.
+  ///
+  /// When [includeImages] is set, the `collections` hero images and each
+  /// profile's `image_cache` are copied too — a full offline mirror. By
+  /// default images are skipped: the re-downloadable cover cache re-fetches
+  /// on demand, so most folder moves need not haul it along.
   ///
   /// [flushDatabase] runs before any file is copied; pass
   /// `DatabaseService.checkpointWal` when the live database is open so
@@ -259,11 +269,20 @@ class StorageRoot {
     String sourceDir,
     String targetDir, {
     Future<void> Function()? flushDatabase,
+    bool includeImages = false,
   }) async {
     if (flushDatabase != null) {
       await flushDatabase();
     }
     await Directory(targetDir).create(recursive: true);
+
+    if (includeImages) {
+      // Hero images live at the data-root level, shared across profiles.
+      await _copyTree(
+        p.join(sourceDir, collectionsFolderName),
+        p.join(targetDir, collectionsFolderName),
+      );
+    }
 
     final File profilesFile = File(p.join(sourceDir, profilesFileName));
     if (profilesFile.existsSync()) {
@@ -279,12 +298,43 @@ class StorageRoot {
               p.join(targetDir, profilesFolderName, profileId);
           await Directory(targetProfileDir).create(recursive: true);
           await _copyDbFiles(entity.path, targetProfileDir);
+          if (includeImages) {
+            await _copyTree(
+              p.join(entity.path, imageCacheFolderName),
+              p.join(targetProfileDir, imageCacheFolderName),
+            );
+          }
         }
       }
       return;
     }
 
     await _copyDbFiles(sourceDir, targetDir);
+    if (includeImages) {
+      await _copyTree(
+        p.join(sourceDir, imageCacheFolderName),
+        p.join(targetDir, imageCacheFolderName),
+      );
+    }
+  }
+
+  /// Recursively copies the tree at [fromDir] into [toDir]. A no-op when
+  /// [fromDir] is absent, so callers need not pre-check optional folders.
+  static Future<void> _copyTree(String fromDir, String toDir) async {
+    final Directory src = Directory(fromDir);
+    if (!src.existsSync()) return;
+    await Directory(toDir).create(recursive: true);
+    await for (final FileSystemEntity entity
+        in src.list(recursive: true, followLinks: false)) {
+      final String rel = p.relative(entity.path, from: fromDir);
+      final String dest = p.join(toDir, rel);
+      if (entity is Directory) {
+        await Directory(dest).create(recursive: true);
+      } else if (entity is File) {
+        await Directory(p.dirname(dest)).create(recursive: true);
+        await entity.copy(dest);
+      }
+    }
   }
 
   static Future<void> _copyDbFiles(String fromDir, String toDir) async {

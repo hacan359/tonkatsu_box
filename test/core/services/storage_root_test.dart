@@ -369,6 +369,58 @@ void main() {
         expect(Directory(target).existsSync(), isTrue);
         expect(Directory(target).listSync(), isEmpty);
       });
+
+      test('copies collections and per-profile image_cache when includeImages',
+          () async {
+        final String source = p.join(tempDir.path, 'source');
+        final String target = p.join(tempDir.path, 'target');
+        await File(p.join(source, 'profiles.json'))
+            .create(recursive: true)
+            .then((File f) => f.writeAsString('{"profiles": []}'));
+        final String profileDir = p.join(source, 'profiles', 'default');
+        await File(p.join(profileDir, 'tonkatsu_box.db'))
+            .create(recursive: true)
+            .then((File f) => f.writeAsString('db'));
+        await File(p.join(source, 'collections', 'hero_1_0.png'))
+            .create(recursive: true)
+            .then((File f) => f.writeAsString('hero'));
+        await File(p.join(
+                profileDir, 'image_cache', 'custom_covers', 'c.png'))
+            .create(recursive: true)
+            .then((File f) => f.writeAsString('cover'));
+
+        await StorageRoot.copyDataTo(source, target, includeImages: true);
+
+        expect(
+          File(p.join(target, 'collections', 'hero_1_0.png'))
+              .readAsStringSync(),
+          'hero',
+        );
+        expect(
+          File(p.join(target, 'profiles', 'default', 'image_cache',
+                  'custom_covers', 'c.png'))
+              .readAsStringSync(),
+          'cover',
+        );
+      });
+
+      test('leaves images behind when includeImages is false', () async {
+        final String source = p.join(tempDir.path, 'source');
+        final String target = p.join(tempDir.path, 'target');
+        await File(p.join(source, 'profiles.json'))
+            .create(recursive: true)
+            .then((File f) => f.writeAsString('{"profiles": []}'));
+        await File(p.join(source, 'profiles', 'default', 'tonkatsu_box.db'))
+            .create(recursive: true)
+            .then((File f) => f.writeAsString('db'));
+        await File(p.join(source, 'collections', 'hero_1_0.png'))
+            .create(recursive: true)
+            .then((File f) => f.writeAsString('hero'));
+
+        await StorageRoot.copyDataTo(source, target);
+
+        expect(Directory(p.join(target, 'collections')).existsSync(), isFalse);
+      });
     });
   });
 }

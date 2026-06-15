@@ -981,6 +981,13 @@ class SRu extends S {
   String get storageLocationCopyConfirm => 'Копировать';
 
   @override
+  String get storageLocationCopyImages => 'Перенести и кэш картинок';
+
+  @override
+  String get storageLocationCopyImagesHint =>
+      'Hero-баннеры и сохранённые обложки — больше по размеру, зато новая папка работает офлайн без перекачки';
+
+  @override
   String get storageLocationCopyError =>
       'Не удалось скопировать данные в выбранную папку';
 
@@ -1108,6 +1115,13 @@ class SRu extends S {
 
   @override
   String get lanSyncReceived => 'Данные получены';
+
+  @override
+  String get lanSyncReceivingImages => 'Перенос картинок...';
+
+  @override
+  String get lanSyncImagesWarning =>
+      'База перенесена, но картинки не удалось перенести';
 
   @override
   String get lanSyncRestartMessage =>

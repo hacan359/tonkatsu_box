@@ -1,16 +1,18 @@
-// Images live in `<appSupport>/collections/hero_<id>_<ts>.<ext>`.
+// Images live in `<dataRoot>/collections/hero_<id>_<ts>.<ext>`, inside the
+// active data folder so they travel with it on a folder switch or copy.
 // The DB stores only the filename; the absolute path is resolved via
 // `resolve(fileName)`.
 
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-const String _heroDirName = 'collections';
+import 'storage_root.dart';
 
 /// Overridden in `main.dart` with the value resolved at app startup.
 final Provider<String> collectionsHeroDirProvider = Provider<String>(
@@ -33,15 +35,58 @@ class CollectionHeroService {
 
   final String _rootDir;
 
-  /// Creates `<appSupport>/collections/` if needed and returns its path.
-  /// Called once at app startup.
+  /// Resolves `<dataRoot>/collections/`, creating it if needed, and migrates
+  /// any hero images left behind in the legacy `<appSupport>/collections/`
+  /// location (where they lived before the folder was tied to the data
+  /// root). Called once at app startup.
   static Future<String> resolveRoot() async {
+    final StorageRootResolution root = await StorageRoot.resolve();
+    final String newDir =
+        p.join(root.path, StorageRoot.collectionsFolderName);
+    await Directory(newDir).create(recursive: true);
+
     final Directory appDir = await getApplicationSupportDirectory();
-    final Directory dir = Directory(p.join(appDir.path, _heroDirName));
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
+    final String legacyDir =
+        p.join(appDir.path, StorageRoot.collectionsFolderName);
+    await migrateLegacyHeroImages(legacyDir: legacyDir, newDir: newDir);
+
+    return newDir;
+  }
+
+  /// Moves `hero_*` files from [legacyDir] into [newDir] without clobbering
+  /// existing targets, then removes [legacyDir] once drained. Idempotent: a
+  /// no-op when the legacy folder is the same as [newDir], absent or empty.
+  @visibleForTesting
+  static Future<void> migrateLegacyHeroImages({
+    required String legacyDir,
+    required String newDir,
+  }) async {
+    if (p.equals(legacyDir, newDir)) return;
+    final Directory legacy = Directory(legacyDir);
+    if (!legacy.existsSync()) return;
+
+    for (final FileSystemEntity entity in legacy.listSync(followLinks: false)) {
+      if (entity is! File) continue;
+      if (!p.basename(entity.path).startsWith('hero_')) continue;
+      final String target = p.join(newDir, p.basename(entity.path));
+      if (File(target).existsSync()) continue;
+      try {
+        await entity.rename(target);
+      } on FileSystemException {
+        // Cross-volume rename fails when the data root is on another drive;
+        // fall back to copy + delete.
+        await entity.copy(target);
+        await entity.delete();
+      }
     }
-    return dir.path;
+
+    try {
+      if (legacy.listSync(followLinks: false).isEmpty) {
+        await legacy.delete();
+      }
+    } on FileSystemException catch (e) {
+      _log.fine('Could not remove drained legacy hero dir: ${e.message}');
+    }
   }
 
   String? resolve(String? fileName) {

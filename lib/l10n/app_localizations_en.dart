@@ -966,6 +966,13 @@ class SEn extends S {
   String get storageLocationCopyConfirm => 'Copy';
 
   @override
+  String get storageLocationCopyImages => 'Copy the image cache too';
+
+  @override
+  String get storageLocationCopyImagesHint =>
+      'Hero banners and saved covers — larger, but the new folder works offline without re-downloading';
+
+  @override
   String get storageLocationCopyError =>
       'Failed to copy data to the selected folder';
 
@@ -1093,6 +1100,13 @@ class SEn extends S {
 
   @override
   String get lanSyncReceived => 'Data received';
+
+  @override
+  String get lanSyncReceivingImages => 'Transferring images...';
+
+  @override
+  String get lanSyncImagesWarning =>
+      'Database received, but the images could not be transferred';
 
   @override
   String get lanSyncRestartMessage =>
