@@ -7,6 +7,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Settings cache button now clears only unused covers instead of wiping the whole cache**
+
+  The image-cache action no longer deletes the entire cache folder. It now
+  removes only downloaded covers whose media is no longer in any collection
+  (the metadata cache tables only ever grow and are never pruned, so covers
+  pile up after an item or collection is deleted). Custom covers and canvas
+  board images are never touched, and the success toast reports how many
+  files were removed.
+
+  * lib/core/services/cache_cleanup_service.dart (CacheCleanupService, cacheCleanupServiceProvider):
+    New. Builds the keep-set from CollectionRepository.getAllItemsWithData()
+    using CollectionItem.imageType and CollectionItem.coverImageId, limited to
+    the re-downloadable cover folders (custom and canvas folders excluded).
+  * lib/core/services/image_cache_service.dart (ImageCacheService.removeOrphans, CacheCleanupResult):
+    New. Deletes `.png` files not in the keep-set per ImageType folder,
+    tolerating Windows file locks. Removed the now-unused
+    ImageCacheService.clearCache (full-wipe) that the button used to call.
+  * lib/features/settings/content/cache_content.dart (_CacheContentState._clearCache):
+    Call removeOrphans through the cleanup service and report the deleted count.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (cacheClearCache, cacheClearCacheTitle, cacheClearCacheMessage, cacheOrphansRemoved, cacheCleared):
+    Reword for the orphan-only behaviour; add cacheOrphansRemoved with a
+    `{count}` placeholder; drop the now-unused cacheCleared toast string.
+
 ### Fixed
 
 - **Folder picker crashing with "Permission denied" on some newer Android builds**

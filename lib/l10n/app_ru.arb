@@ -348,11 +348,16 @@
   "cacheCacheFolder": "Папка кэша",
   "cacheSelectFolder": "Выбрать папку",
   "cacheCacheSize": "Размер кэша",
-  "cacheClearCache": "Очистить кэш",
-  "cacheClearCacheTitle": "Очистить кэш?",
-  "cacheClearCacheMessage": "Все локально сохранённые изображения будут удалены. Они загрузятся снова при следующей синхронизации.",
+  "cacheClearCache": "Удалить неиспользуемые",
+  "cacheClearCacheTitle": "Удалить неиспользуемые картинки?",
+  "cacheClearCacheMessage": "Удалит загруженные обложки для медиа, которых больше нет ни в одной коллекции. Ваши собственные обложки и картинки досок не трогаются.",
   "cacheFolderUpdated": "Папка кэша обновлена",
-  "cacheCleared": "Кэш очищен",
+  "cacheOrphansRemoved": "Удалено неиспользуемых картинок: {count}",
+  "@cacheOrphansRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "cacheSelectFolderDialog": "Выберите папку для кэша изображений",
   "cacheCacheStats": "{count} файлов, {size}",
   "@cacheCacheStats": {

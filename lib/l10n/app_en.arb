@@ -364,11 +364,16 @@
   "cacheCacheFolder": "Cache folder",
   "cacheSelectFolder": "Select folder",
   "cacheCacheSize": "Cache size",
-  "cacheClearCache": "Clear cache",
-  "cacheClearCacheTitle": "Clear cache?",
-  "cacheClearCacheMessage": "This will delete all locally saved images. They will be downloaded again during the next sync.",
+  "cacheClearCache": "Remove unused images",
+  "cacheClearCacheTitle": "Remove unused images?",
+  "cacheClearCacheMessage": "Deletes downloaded covers for media that is no longer in any collection. Your custom covers and board images are kept.",
   "cacheFolderUpdated": "Cache folder updated",
-  "cacheCleared": "Cache cleared",
+  "cacheOrphansRemoved": "Removed unused images: {count}",
+  "@cacheOrphansRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "cacheSelectFolderDialog": "Select cache folder for images",
   "cacheCacheStats": "{count} files, {size}",
   "@cacheCacheStats": {

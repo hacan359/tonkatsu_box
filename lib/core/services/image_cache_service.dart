@@ -302,15 +302,6 @@ class ImageCacheService {
     return downloaded;
   }
 
-  Future<void> clearCache() async {
-    final String basePath = await getBaseCachePath();
-    final Directory dir = Directory(basePath);
-
-    if (dir.existsSync()) {
-      await dir.delete(recursive: true);
-    }
-  }
-
   Future<void> clearCacheForType(ImageType type) async {
     final String cachePath = await getCachePath(type);
     final Directory dir = Directory(cachePath);
@@ -318,6 +309,48 @@ class ImageCacheService {
     if (dir.existsSync()) {
       await dir.delete(recursive: true);
     }
+  }
+
+  /// Deletes cached image files that no longer have a backing entry.
+  ///
+  /// [keep] maps each [ImageType] to the set of cache ids (file names without
+  /// the `.png` extension) that must be preserved. Only `.png` files inside the
+  /// listed type folders are scanned; type folders absent from [keep] and any
+  /// non-image files are left untouched. Windows file locks are tolerated.
+  /// Returns the number of files deleted and the bytes freed.
+  Future<CacheCleanupResult> removeOrphans(
+    Map<ImageType, Set<String>> keep,
+  ) async {
+    int deletedCount = 0;
+    int freedBytes = 0;
+
+    for (final MapEntry<ImageType, Set<String>> entry in keep.entries) {
+      final String cachePath = await getCachePath(entry.key);
+      final Directory dir = Directory(cachePath);
+      if (!dir.existsSync()) continue;
+
+      final Set<String> referenced = entry.value;
+      await for (final FileSystemEntity item in dir.list()) {
+        if (item is! File || !item.path.endsWith('.png')) continue;
+        final String id = p.basenameWithoutExtension(item.path);
+        if (referenced.contains(id)) continue;
+
+        try {
+          final int length = await item.length();
+          await item.delete();
+          deletedCount++;
+          freedBytes += length;
+        } on FileSystemException {
+          // Locked or vanished mid-scan (Windows lock / concurrent download);
+          // skip it — a later run retries.
+        }
+      }
+    }
+
+    return CacheCleanupResult(
+      deletedCount: deletedCount,
+      freedBytes: freedBytes,
+    );
   }
 
   Future<int> getCacheSize() async {
@@ -355,6 +388,17 @@ class ImageCacheService {
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
+}
+
+/// Outcome of [ImageCacheService.removeOrphans].
+class CacheCleanupResult {
+  const CacheCleanupResult({
+    required this.deletedCount,
+    required this.freedBytes,
+  });
+
+  final int deletedCount;
+  final int freedBytes;
 }
 
 class ImageResult {

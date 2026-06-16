@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/cache_cleanup_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
@@ -98,9 +99,7 @@ class _CacheContentState extends ConsumerState<CacheContent> {
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline, size: 18),
                 tooltip: S.of(context).cacheClearCache,
-                onPressed: count > 0
-                    ? () => _clearCache(cacheService)
-                    : null,
+                onPressed: count > 0 ? _clearCache : null,
               ),
             );
           },
@@ -133,7 +132,7 @@ class _CacheContentState extends ConsumerState<CacheContent> {
     }
   }
 
-  Future<void> _clearCache(ImageCacheService cacheService) async {
+  Future<void> _clearCache() async {
     final S l10n = S.of(context);
     final bool confirm = await ConfirmDialog.show(
       context,
@@ -143,12 +142,16 @@ class _CacheContentState extends ConsumerState<CacheContent> {
       destructive: false,
     );
 
-    if (confirm) {
-      await cacheService.clearCache();
-      if (!mounted) return;
-      _refreshFutures();
-      setState(() {});
-      context.showSnack(S.of(context).cacheCleared, type: SnackType.success);
-    }
+    if (!confirm) return;
+
+    final CacheCleanupResult result =
+        await ref.read(cacheCleanupServiceProvider).removeOrphans();
+    if (!mounted) return;
+    _refreshFutures();
+    setState(() {});
+    context.showSnack(
+      S.of(context).cacheOrphansRemoved(result.deletedCount),
+      type: SnackType.success,
+    );
   }
 }

@@ -1522,19 +1522,19 @@ abstract class S {
   /// No description provided for @cacheClearCache.
   ///
   /// In en, this message translates to:
-  /// **'Clear cache'**
+  /// **'Remove unused images'**
   String get cacheClearCache;
 
   /// No description provided for @cacheClearCacheTitle.
   ///
   /// In en, this message translates to:
-  /// **'Clear cache?'**
+  /// **'Remove unused images?'**
   String get cacheClearCacheTitle;
 
   /// No description provided for @cacheClearCacheMessage.
   ///
   /// In en, this message translates to:
-  /// **'This will delete all locally saved images. They will be downloaded again during the next sync.'**
+  /// **'Deletes downloaded covers for media that is no longer in any collection. Your custom covers and board images are kept.'**
   String get cacheClearCacheMessage;
 
   /// No description provided for @cacheFolderUpdated.
@@ -1543,11 +1543,11 @@ abstract class S {
   /// **'Cache folder updated'**
   String get cacheFolderUpdated;
 
-  /// No description provided for @cacheCleared.
+  /// No description provided for @cacheOrphansRemoved.
   ///
   /// In en, this message translates to:
-  /// **'Cache cleared'**
-  String get cacheCleared;
+  /// **'Removed unused images: {count}'**
+  String cacheOrphansRemoved(int count);
 
   /// No description provided for @cacheSelectFolderDialog.
   ///

@@ -824,20 +824,22 @@ class SEn extends S {
   String get cacheCacheSize => 'Cache size';
 
   @override
-  String get cacheClearCache => 'Clear cache';
+  String get cacheClearCache => 'Remove unused images';
 
   @override
-  String get cacheClearCacheTitle => 'Clear cache?';
+  String get cacheClearCacheTitle => 'Remove unused images?';
 
   @override
   String get cacheClearCacheMessage =>
-      'This will delete all locally saved images. They will be downloaded again during the next sync.';
+      'Deletes downloaded covers for media that is no longer in any collection. Your custom covers and board images are kept.';
 
   @override
   String get cacheFolderUpdated => 'Cache folder updated';
 
   @override
-  String get cacheCleared => 'Cache cleared';
+  String cacheOrphansRemoved(int count) {
+    return 'Removed unused images: $count';
+  }
 
   @override
   String get cacheSelectFolderDialog => 'Select cache folder for images';

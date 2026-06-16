@@ -839,20 +839,22 @@ class SRu extends S {
   String get cacheCacheSize => 'Размер кэша';
 
   @override
-  String get cacheClearCache => 'Очистить кэш';
+  String get cacheClearCache => 'Удалить неиспользуемые';
 
   @override
-  String get cacheClearCacheTitle => 'Очистить кэш?';
+  String get cacheClearCacheTitle => 'Удалить неиспользуемые картинки?';
 
   @override
   String get cacheClearCacheMessage =>
-      'Все локально сохранённые изображения будут удалены. Они загрузятся снова при следующей синхронизации.';
+      'Удалит загруженные обложки для медиа, которых больше нет ни в одной коллекции. Ваши собственные обложки и картинки досок не трогаются.';
 
   @override
   String get cacheFolderUpdated => 'Папка кэша обновлена';
 
   @override
-  String get cacheCleared => 'Кэш очищен';
+  String cacheOrphansRemoved(int count) {
+    return 'Удалено неиспользуемых картинок: $count';
+  }
 
   @override
   String get cacheSelectFolderDialog => 'Выберите папку для кэша изображений';
