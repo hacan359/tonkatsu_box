@@ -209,5 +209,22 @@ Phase 2 R1 critical fix: SQLite LOWER() doesn't handle Cyrillic → switched to 
 Phase 3 tests: 20 new tests across 3 files, all green.
 Phase 4 changelog: 1 Changed entry; no docs/ touched.
 Phase 5 gate: analyze clean, 4776 tests passed.
+Risk: Low — re-downloadable cache only, no permanent data loss; affects the Settings cache button.
 Status: ready for commit. Awaiting explicit /commit.
 ```
+
+## Phase 6 — Risk assessment & impact (always, after the gate)
+
+A green gate proves the code compiles and the tests pass — it does **not** prove the change is safe to put in front of a real user. Close every run with a short, honest risk assessment so the user can decide whether to ship. Never rubber-stamp; if you can't find a risk, say why the change is inherently safe (pure addition, read-only, behind a flag), don't just assert "looks fine".
+
+Cover four points, one or two lines each:
+
+1. **Blast radius — what it affects.** The features, flows, screens, files, and stored data this change touches, and *who* is hit: all users, one platform (Windows / Android), or only users with a precondition (feature X enabled, a custom data folder, a specific profile, a populated cache/DB). Name the concrete surface, not "the app".
+
+2. **End-user safety.** Can it lose or corrupt user data, delete files, break a DB migration, or wedge the app on the splash screen? Is the effect **reversible** (undo, re-download, re-sync from source) or **permanent**? Anything irreversible is called out explicitly. If the change deletes or overwrites anything on disk or in the DB, this point is **mandatory**, and you must distinguish destructive-but-recoverable (e.g. re-downloadable cache) from destructive-and-permanent (e.g. the only copy of a user upload).
+
+3. **Worst-case failure.** If the change is subtly wrong despite the tests, what does the user actually experience — cosmetic glitch → broken flow → crash → silent data loss — and how likely is that given what the tests in Phase 3 actually pin down. Be specific about which failure modes the tests do *not* cover.
+
+4. **Bottom line.** One rating — **Low / Medium / High** risk — with a one-sentence justification, plus any "watch this in the wild" notes: edge cases left untested, platform-specific behaviour, interactions with the data folder / profile / cache / migration chain.
+
+Keep it factual and scoped to *this* diff. The bottom-line rating goes on the `Risk:` line of the report (see above); the four points expand it underneath when the change is anything more than trivial.
