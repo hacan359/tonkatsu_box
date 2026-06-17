@@ -33,6 +33,12 @@ class WishlistRepository {
     );
   }
 
+  /// Bulk-inserts wishlist entries in one transaction (used by imports).
+  /// Callers dedup against existing entries first. Returns the count inserted.
+  Future<int> addWishlistItemsBatch(List<Map<String, dynamic>> rows) {
+    return _wishlistDao.addWishlistItemsBatch(rows);
+  }
+
   Future<List<WishlistItem>> getAll({
     bool includeResolved = true,
     WishlistTagFilter tagFilter = const WishlistTagFilter.all(),

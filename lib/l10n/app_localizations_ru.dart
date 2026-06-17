@@ -460,6 +460,13 @@ class SRu extends S {
       'История просмотров, оценки, вишлист';
 
   @override
+  String get settingsKinoriumImport => 'Импорт Kinorium';
+
+  @override
+  String get settingsKinoriumImportSubtitle =>
+      'Фильмы и сериалы из CSV-выгрузки';
+
+  @override
   String get settingsDebug => 'Отладка';
 
   @override
@@ -1265,6 +1272,64 @@ class SRu extends S {
 
   @override
   String get traktInvalidExport => 'Некорректный экспорт Trakt';
+
+  @override
+  String get kinoriumImportFrom => 'Импорт из Kinorium';
+
+  @override
+  String get kinoriumImportDescription =>
+      'Выгрузите список из Kinorium (приходит на почту в виде CSV) и выберите файл ниже.';
+
+  @override
+  String get kinoriumSelectCsvFile => 'Выбрать CSV-файл';
+
+  @override
+  String get kinoriumSelectCsvExport => 'Выберите CSV-выгрузку Kinorium';
+
+  @override
+  String get kinoriumOptions => 'Параметры';
+
+  @override
+  String get kinoriumIsWatchlist => 'Это список «Буду смотреть»';
+
+  @override
+  String get kinoriumIsWatchlistDesc =>
+      'Импортировать все тайтлы как запланированные, а не просмотренные';
+
+  @override
+  String get kinoriumImportNotes => 'Импортировать актёров и режиссёров';
+
+  @override
+  String get kinoriumImportNotesDesc =>
+      'Добавить режиссёров и актёров в заметку элемента';
+
+  @override
+  String get kinoriumTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get kinoriumCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get kinoriumUseExisting => 'Использовать существующую';
+
+  @override
+  String get kinoriumNoCollections => 'Нет доступных коллекций';
+
+  @override
+  String get kinoriumSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get kinoriumErrorLoadingCollections => 'Ошибка загрузки коллекций';
+
+  @override
+  String get kinoriumStartImport => 'Начать импорт';
+
+  @override
+  String get kinoriumImporting => 'Импорт из Kinorium...';
+
+  @override
+  String get kinoriumRecommendOwnTmdbKey =>
+      'Совет: для больших импортов рекомендуется свой ключ TMDB (Настройки → API ключи), но это не обязательно — встроенный ключ тоже работает.';
 
   @override
   String traktImportedItems(int count) {

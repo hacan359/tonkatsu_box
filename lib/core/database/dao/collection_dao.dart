@@ -383,6 +383,70 @@ class CollectionDao {
     return maxSort + 1;
   }
 
+  /// Bulk-inserts collection items in a single transaction. Each [rows] map
+  /// holds the item's own columns (media_type, external_id, status,
+  /// user_rating, completed_at, …); collection_id, added_at and an
+  /// incrementing sort_order are filled here. Rows that violate the unique
+  /// (collection_id, media_type, external_id, platform_id) constraint are
+  /// ignored. Returns the number of rows actually inserted.
+  Future<int> addItemsBatch(
+    int? collectionId,
+    List<Map<String, dynamic>> rows,
+  ) async {
+    if (rows.isEmpty) return 0;
+    final Database db = await _getDatabase();
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    int sortOrder = await getNextSortOrder(collectionId);
+
+    final List<Object?> results =
+        await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final Map<String, dynamic> row in rows) {
+        batch.insert(
+          'collection_items',
+          <String, dynamic>{
+            ...row,
+            'collection_id': collectionId,
+            'added_at': now,
+            'sort_order': sortOrder++,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      return batch.commit();
+    });
+
+    int inserted = 0;
+    for (final Object? r in results) {
+      if (r is int && r > 0) inserted++;
+    }
+    return inserted;
+  }
+
+  /// Batch-updates selected columns of existing items in one transaction. Each
+  /// entry is an `(id, columns)` pair; only the given columns are written, so
+  /// callers update just the fields that changed. Empty column maps are
+  /// skipped.
+  Future<void> updateItemFieldsBatch(
+    List<(int id, Map<String, dynamic> fields)> updates,
+  ) async {
+    if (updates.isEmpty) return;
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final (int id, Map<String, dynamic> fields) in updates) {
+        if (fields.isEmpty) continue;
+        batch.update(
+          'collection_items',
+          fields,
+          where: 'id = ?',
+          whereArgs: <Object?>[id],
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   /// Rewrites sort_order for the given ids in a single transaction.
   Future<void> reorderItems(
     int? collectionId,

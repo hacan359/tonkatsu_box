@@ -8,6 +8,8 @@ import '../../helpers/test_helpers.dart';
 void main() {
   setUpAll(() {
     registerAllFallbacks();
+    registerFallbackValue(<Map<String, dynamic>>[]);
+    registerFallbackValue(<(int, Map<String, dynamic>)>[]);
   });
 
   group('CollectionStats', () {
@@ -161,6 +163,40 @@ void main() {
         final List<Collection> result = await repository.getAll();
 
         expect(result, isEmpty);
+      });
+    });
+
+    group('addItemsBatch', () {
+      test('delegates to CollectionDao.addItemsBatch', () async {
+        final MockCollectionDao dao = MockCollectionDao();
+        when(() => mockDb.collectionDao).thenReturn(dao);
+        when(() => dao.addItemsBatch(any(), any())).thenAnswer((_) async => 3);
+
+        final int inserted = await repository.addItemsBatch(
+          1,
+          <Map<String, dynamic>>[
+            <String, dynamic>{'external_id': 1},
+          ],
+        );
+
+        expect(inserted, 3);
+        verify(() => dao.addItemsBatch(1, any())).called(1);
+      });
+    });
+
+    group('updateItemFieldsBatch', () {
+      test('delegates to CollectionDao.updateItemFieldsBatch', () async {
+        final MockCollectionDao dao = MockCollectionDao();
+        when(() => mockDb.collectionDao).thenReturn(dao);
+        when(() => dao.updateItemFieldsBatch(any())).thenAnswer((_) async {});
+
+        await repository.updateItemFieldsBatch(
+          <(int, Map<String, dynamic>)>[
+            (7, <String, dynamic>{'user_rating': 9.0}),
+          ],
+        );
+
+        verify(() => dao.updateItemFieldsBatch(any())).called(1);
       });
     });
 

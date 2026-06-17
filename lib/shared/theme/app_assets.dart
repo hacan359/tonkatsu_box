@@ -11,6 +11,8 @@ abstract final class AppAssets {
 
   static const String iconSteamColor = 'assets/images/icon_steam_color.png';
   static const String iconTraktColor = 'assets/images/icon_trakt_color.png';
+  static const String iconKinoriumColor =
+      'assets/images/icon_kinorium_color.png';
   static const String iconRaColor = 'assets/images/ra_logo.png';
   static const String iconGithub = 'assets/images/icon_github.png';
   static const String iconTmdbColor = 'assets/images/icon_tmdb_color.png';

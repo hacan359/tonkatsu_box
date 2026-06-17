@@ -877,6 +877,18 @@ abstract class S {
   /// **'Watch history, ratings, watchlist'**
   String get settingsTraktImportSubtitle;
 
+  /// No description provided for @settingsKinoriumImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Kinorium Import'**
+  String get settingsKinoriumImport;
+
+  /// No description provided for @settingsKinoriumImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies & shows from a CSV export'**
+  String get settingsKinoriumImportSubtitle;
+
   /// No description provided for @settingsDebug.
   ///
   /// In en, this message translates to:
@@ -2267,6 +2279,114 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Invalid Trakt export'**
   String get traktInvalidExport;
+
+  /// No description provided for @kinoriumImportFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from Kinorium'**
+  String get kinoriumImportFrom;
+
+  /// No description provided for @kinoriumImportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Export your list from Kinorium (it arrives by email as a CSV) and select the file below.'**
+  String get kinoriumImportDescription;
+
+  /// No description provided for @kinoriumSelectCsvFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Select CSV File'**
+  String get kinoriumSelectCsvFile;
+
+  /// No description provided for @kinoriumSelectCsvExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Kinorium CSV Export'**
+  String get kinoriumSelectCsvExport;
+
+  /// No description provided for @kinoriumOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get kinoriumOptions;
+
+  /// No description provided for @kinoriumIsWatchlist.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a \"Watchlist\" file'**
+  String get kinoriumIsWatchlist;
+
+  /// No description provided for @kinoriumIsWatchlistDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Import every title as planned instead of watched'**
+  String get kinoriumIsWatchlistDesc;
+
+  /// No description provided for @kinoriumImportNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Import cast & crew'**
+  String get kinoriumImportNotes;
+
+  /// No description provided for @kinoriumImportNotesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add directors and actors to the item note'**
+  String get kinoriumImportNotesDesc;
+
+  /// No description provided for @kinoriumTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get kinoriumTargetCollection;
+
+  /// No description provided for @kinoriumCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get kinoriumCreateNew;
+
+  /// No description provided for @kinoriumUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use existing collection'**
+  String get kinoriumUseExisting;
+
+  /// No description provided for @kinoriumNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get kinoriumNoCollections;
+
+  /// No description provided for @kinoriumSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get kinoriumSelectCollection;
+
+  /// No description provided for @kinoriumErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading collections'**
+  String get kinoriumErrorLoadingCollections;
+
+  /// No description provided for @kinoriumStartImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Import'**
+  String get kinoriumStartImport;
+
+  /// No description provided for @kinoriumImporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing from Kinorium...'**
+  String get kinoriumImporting;
+
+  /// No description provided for @kinoriumRecommendOwnTmdbKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it\'s optional — the built-in key works too.'**
+  String get kinoriumRecommendOwnTmdbKey;
 
   /// No description provided for @traktImportedItems.
   ///

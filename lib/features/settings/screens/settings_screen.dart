@@ -41,6 +41,7 @@ import 'browse_collections_screen.dart';
 import 'anilist_import_screen.dart';
 import 'mal_import_screen.dart';
 import 'ra_import_screen.dart';
+import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
@@ -262,6 +263,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsTraktImport,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
+          ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconKinoriumColor,
+            leadingAssetColored: true,
+            title: l.settingsKinoriumImport,
+            subtitle: l.settingsKinoriumImportSubtitle,
+            onTap: () => _pushScreen(const KinoriumImportScreen()),
           ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconSteamColor,

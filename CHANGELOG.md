@@ -9,6 +9,72 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Kinorium CSV import**
+
+  Imports a Kinorium list from its emailed CSV export (UTF-16, tab-separated).
+  Every title is matched against TMDB by its original or localized name, with a
+  year filter that is dropped on retry so older or alternate editions still
+  match. Watched titles are imported as completed with their Kinorium rating
+  and watch date; a "Watchlist" toggle imports everything as planned instead.
+  Animated films and series land under the animation media type. Titles TMDB
+  can't resolve are dropped into the text wishlist under a single import tag,
+  and an optional toggle appends directors and actors to each item's note.
+  Re-importing the same list into an existing collection refreshes only the
+  rating and note when they changed. A personal TMDB key is recommended for
+  large imports but not required.
+
+  Built on a new shared import layer (`lib/core/import/`, ports & adapters) so
+  future importers can shed their duplicated matching / writing / backoff logic;
+  Kinorium is its first adapter and the existing importers will migrate onto it
+  one at a time.
+
+  * lib/core/import/import_source.dart (ImportSource, ImportOptions): New — the
+    import port: `import(options) → UniversalImportResult`, one adapter per
+    source.
+  * lib/core/import/import_writer.dart (ImportWriter, ImportCandidate, WishlistCandidate, ImportWriteResult):
+    New — shared write-side: resolve-or-create the collection, batch-insert new
+    items, selectively update existing ones (per-source merge via a closure),
+    batch-write wishlist fallbacks. Goes through the repositories, never the DAOs.
+  * lib/core/import/tmdb_matcher.dart (TmdbMatcher, TmdbMatch): New — match a
+    title against TMDB by name (original + localized query, year-then-no-year,
+    pick-best, animation-by-genre).
+  * lib/core/import/rate_limited_retry.dart (RateLimitedRetry): New —
+    source-agnostic exponential backoff for 429s.
+  * lib/core/import/sources/kinorium/kinorium_import_service.dart (KinoriumImportService, KinoriumImportOptions, kinoriumImportServiceProvider):
+    New — the Kinorium adapter: match every row against TMDB (throttled, 429
+    backoff), then write the whole scope through ImportWriter.
+  * lib/core/import/sources/kinorium/kinorium_csv_parser.dart (KinoriumCsvParser, KinoriumParseException):
+    New — decodes UTF-16 LE (with BOM) and parses the quoted, tab-separated body,
+    addressing columns by header name so the watched and watchlist layouts (which
+    order columns differently) both parse.
+  * lib/core/import/sources/kinorium/kinorium_entry.dart (KinoriumEntry, KinoriumType):
+    New — one parsed CSV row plus the Russian `Type` mapping and its
+    movie / TV / animation search hints.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.addItemsBatch, CollectionDao.updateItemFieldsBatch):
+    New — transactional bulk insert (sort_order filled, unique conflicts ignored,
+    inserted count returned) and selective field update.
+  * lib/core/database/dao/wishlist_dao.dart (WishlistDao.addWishlistItemsBatch):
+    New — transactional bulk insert of unresolved wishlist entries.
+  * lib/data/repositories/collection_repository.dart (CollectionRepository.addItemsBatch, CollectionRepository.updateItemFieldsBatch),
+    lib/data/repositories/wishlist_repository.dart (WishlistRepository.addWishlistItemsBatch):
+    New — repository pass-throughs so the import layer writes via repositories.
+  * lib/features/settings/content/kinorium_import_content.dart (KinoriumImportContent),
+    lib/features/settings/screens/kinorium_import_screen.dart (KinoriumImportScreen):
+    New — file pick → options (watchlist toggle, cast/crew note, target
+    collection) → progress dialog.
+  * lib/features/settings/screens/settings_screen.dart: Add the Kinorium import tile.
+  * lib/features/settings/screens/import_result_screen.dart (ImportResultScreen):
+    "Open collection" now uses `push` instead of `pushReplacement`, so an
+    importer that auto-pops its screen on completion no longer immediately
+    closes the collection it just opened (also fixes the existing Trakt flow).
+  * lib/shared/theme/app_assets.dart (AppAssets.iconKinoriumColor),
+    assets/images/icon_kinorium_color.png: Brand icon.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (settingsKinoriumImport, settingsKinoriumImportSubtitle, kinoriumImportFrom, kinoriumImportDescription, kinoriumSelectCsvFile, kinoriumSelectCsvExport, kinoriumOptions, kinoriumIsWatchlist, kinoriumIsWatchlistDesc, kinoriumImportNotes, kinoriumImportNotesDesc, kinoriumTargetCollection, kinoriumCreateNew, kinoriumUseExisting, kinoriumNoCollections, kinoriumSelectCollection, kinoriumErrorLoadingCollections, kinoriumStartImport, kinoriumImporting, kinoriumRecommendOwnTmdbKey):
+    Import screen strings.
+  * docs/ARCHITECTURE.md, lib/core/import/README.md, lib/core/import/sources/kinorium/README.md:
+    Document the import layer (ports & adapters) and the Kinorium adapter.
+  * README.md: List Kinorium among the supported imports.
+
 - **ComicVine comics source in search**
 
   Adds ComicVine (comicvine.gamespot.com) as a comics / graphic-novel source

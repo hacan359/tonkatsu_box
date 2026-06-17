@@ -87,6 +87,7 @@ lib/
 - **`api/`** — Dio-based HTTP clients. Each client is its own class exposed through a `Provider`. Auth (Twitch OAuth for IGDB, Bearer for TMDB / SteamGridDB, etc.) lives inside the client. Errors are normalized into custom `*ApiException` types via `api_error_extract.dart`.
 - **`database/`** — `DatabaseService` (singleton via `databaseServiceProvider`) delegates CRUD to DAOs. Schema is declared in `schema.dart` (`DatabaseSchema.create*Table`). Migrations are incremental: one file per version under `migrations/`, registered in `MigrationRegistry.all`. **Never edit historical migration SQL** — add a new version instead.
 - **`services/`** — anything that's not an API client and not raw CRUD: `.xcoll` / `.xcollx` import/export, tracker sync (RA, Steam, Trakt, Kodi, MAL, AniList), Discord RPC, update checker, image cache, config.
+- **`import/`** — library import layer (ports & adapters). The `ImportSource` port with one adapter per source under `sources/<name>/`, plus shared domain pieces (`ImportWriter` for collection write, `TmdbMatcher`, `RateLimitedRetry`). **Kinorium** is the first adapter on it; the other source importers still live in `services/*_import_service.dart` and migrate onto the layer one at a time. See [core/import/README.md](../lib/core/import/README.md).
 - **`logging/`** — wrapper around `package:logging`. `print` is forbidden in production code.
 
 ### `data/`
@@ -183,6 +184,7 @@ Navigation is imperative `Navigator.push(MaterialPageRoute(...))`. No `go_router
 5. **Optimistic updates.** Status / rating changes update Riverpod state immediately; the DB write happens in the background. Notifiers `try/catch` the write to roll back on failure.
 6. **Search debouncing.** Every text-driven search debounces by ≥400ms before hitting the network.
 7. **`Future.wait` for parallel requests.** When two independent API calls go to the same backend (e.g. movie+tv on the Anime tab), launch them with `await Future.wait([...])`. Timeouts are bounded by the slowest response.
+8. **Pluggable import sources (ports & adapters).** Library importers implement the `ImportSource` port and return a `UniversalImportResult`. The shared write-side (`ImportWriter`, which goes through the repositories, never the DAOs) and title matching (`TmdbMatcher`) are injected into each adapter, not inherited. A new source is a new adapter under `core/import/sources/` — see [core/import/README.md](../lib/core/import/README.md).
 
 ---
 

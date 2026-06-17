@@ -48,6 +48,46 @@ void main() {
       });
     });
 
+    group('addWishlistItemsBatch', () {
+      test('returns 0 for empty rows', () async {
+        final TransactionMockDatabase txnDb = TransactionMockDatabase();
+        final WishlistDao batchDao = WishlistDao(() async => txnDb);
+
+        final int count =
+            await batchDao.addWishlistItemsBatch(<Map<String, dynamic>>[]);
+
+        expect(count, 0);
+      });
+
+      test('inserts rows with is_resolved and created_at defaults', () async {
+        final TransactionMockDatabase txnDb = TransactionMockDatabase();
+        final MockTransaction mockTxn = MockTransaction();
+        final MockBatch mockBatch = MockBatch();
+        final WishlistDao batchDao = WishlistDao(() async => txnDb);
+        txnDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
+        when(() => mockBatch.insert(any(), any())).thenReturn(null);
+        when(() => mockBatch.commit(noResult: true))
+            .thenAnswer((_) async => <Object?>[]);
+
+        final int count =
+            await batchDao.addWishlistItemsBatch(<Map<String, dynamic>>[
+          <String, dynamic>{'text': 'The Postman', 'tag': 'Kinorium'},
+          <String, dynamic>{'text': "X-Men '97", 'tag': 'Kinorium'},
+        ]);
+
+        expect(count, 2);
+        final List<dynamic> rows =
+            verify(() => mockBatch.insert('wishlist', captureAny())).captured;
+        expect(rows, hasLength(2));
+        final Map<String, dynamic> first = rows.first as Map<String, dynamic>;
+        expect(first['text'], 'The Postman');
+        expect(first['tag'], 'Kinorium');
+        expect(first['is_resolved'], 0);
+        expect(first['created_at'], isA<int>());
+      });
+    });
+
     group('getWishlistItems', () {
       test('returns all items including resolved', () async {
         when(
