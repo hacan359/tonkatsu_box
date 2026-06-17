@@ -756,6 +756,86 @@ void main() {
       });
     });
 
+    group('addItemsBatch', () {
+      test('returns 0 and skips the transaction for empty rows', () async {
+        final int inserted =
+            await dao.addItemsBatch(1, <Map<String, dynamic>>[]);
+
+        expect(inserted, 0);
+        verifyNever(() => mockTxn.batch());
+      });
+
+      test('fills collection id and incrementing sort order, counts inserts',
+          () async {
+        final MockBatch mockBatch = MockBatch();
+        when(() => mockDb.rawQuery(any(), any())).thenAnswer(
+          (_) async =>
+              <Map<String, dynamic>>[<String, dynamic>{'max_sort': 4}],
+        );
+        mockDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
+        when(() => mockBatch.insert(any(), any(),
+                conflictAlgorithm: any(named: 'conflictAlgorithm')))
+            .thenReturn(null);
+        when(() => mockBatch.commit())
+            .thenAnswer((_) async => <Object?>[10, 0, 11]);
+
+        final int inserted = await dao.addItemsBatch(7, <Map<String, dynamic>>[
+          <String, dynamic>{'media_type': 'movie', 'external_id': 1},
+          <String, dynamic>{'media_type': 'movie', 'external_id': 2},
+          <String, dynamic>{'media_type': 'movie', 'external_id': 3},
+        ]);
+
+        expect(inserted, 2,
+            reason: 'two ids > 0; the 0 is an ignored unique conflict');
+        final List<dynamic> rows = verify(
+          () => mockBatch.insert('collection_items', captureAny(),
+              conflictAlgorithm: any(named: 'conflictAlgorithm')),
+        ).captured;
+        expect(rows, hasLength(3));
+        final Map<String, dynamic> first = rows.first as Map<String, dynamic>;
+        expect(first['collection_id'], 7);
+        expect(first['external_id'], 1);
+        expect(first['sort_order'], 5, reason: 'max_sort 4 → first is 5');
+        expect((rows[1] as Map<String, dynamic>)['sort_order'], 6);
+        expect((rows[2] as Map<String, dynamic>)['sort_order'], 7);
+      });
+    });
+
+    group('updateItemFieldsBatch', () {
+      test('does nothing for empty updates', () async {
+        await dao.updateItemFieldsBatch(<(int, Map<String, dynamic>)>[]);
+
+        verifyNever(() => mockTxn.batch());
+      });
+
+      test('updates only entries with non-empty field maps', () async {
+        final MockBatch mockBatch = MockBatch();
+        mockDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
+        when(() => mockBatch.update(any(), any(),
+                where: any(named: 'where'), whereArgs: any(named: 'whereArgs')))
+            .thenReturn(null);
+        when(() => mockBatch.commit(noResult: true))
+            .thenAnswer((_) async => <Object?>[]);
+
+        await dao.updateItemFieldsBatch(<(int, Map<String, dynamic>)>[
+          (42, <String, dynamic>{'user_rating': 9.0}),
+          (43, <String, dynamic>{}),
+        ]);
+
+        verify(() => mockBatch.update(
+              'collection_items',
+              <String, dynamic>{'user_rating': 9.0},
+              where: 'id = ?',
+              whereArgs: <Object?>[42],
+            )).called(1);
+        verifyNever(() => mockBatch.update(any(), any(),
+            where: any(named: 'where'), whereArgs: <Object?>[43]));
+        verify(() => mockBatch.commit(noResult: true)).called(1);
+      });
+    });
+
     group('removeItemFromCollection', () {
       test('deletes by id', () async {
         when(

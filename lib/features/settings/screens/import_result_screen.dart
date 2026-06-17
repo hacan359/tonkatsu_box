@@ -134,7 +134,11 @@ class ImportResultScreen extends StatelessWidget {
         if (collectionId != null)
           FilledButton.icon(
             onPressed: () {
-              Navigator.of(context).pushReplacement(
+              // push (not pushReplacement): replacing this screen completes the
+              // caller's `await push(result)` and triggers its onImportComplete
+              // pop, which would immediately close the collection we just
+              // opened. Keeping the result screen underneath avoids that.
+              Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (BuildContext context) => CollectionScreen(
                     collectionId: collectionId,

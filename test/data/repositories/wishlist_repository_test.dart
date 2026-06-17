@@ -17,6 +17,7 @@ void main() {
 
   setUpAll(() {
     registerAllFallbacks();
+    registerFallbackValue(<Map<String, dynamic>>[]);
   });
 
   final WishlistItem testItem = WishlistItem(
@@ -72,6 +73,23 @@ void main() {
             note: null,
           ),
         ).called(1);
+      });
+    });
+
+    group('addWishlistItemsBatch', () {
+      test('делегирует в WishlistDao.addWishlistItemsBatch', () async {
+        when(() => mockWishlistDao.addWishlistItemsBatch(any()))
+            .thenAnswer((_) async => 2);
+
+        final int count = await repository.addWishlistItemsBatch(
+          <Map<String, dynamic>>[
+            <String, dynamic>{'text': 'A'},
+            <String, dynamic>{'text': 'B'},
+          ],
+        );
+
+        expect(count, 2);
+        verify(() => mockWishlistDao.addWishlistItemsBatch(any())).called(1);
       });
     });
 

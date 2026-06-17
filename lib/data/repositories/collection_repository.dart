@@ -183,6 +183,24 @@ class CollectionRepository {
     );
   }
 
+  /// Bulk-inserts collection items in one transaction (used by imports).
+  /// Returns the number of rows actually inserted; rows that collide with the
+  /// unique item constraint are ignored. Delegates to `CollectionDao`.
+  Future<int> addItemsBatch(
+    int? collectionId,
+    List<Map<String, dynamic>> rows,
+  ) {
+    return _db.collectionDao.addItemsBatch(collectionId, rows);
+  }
+
+  /// Batch-updates selected columns of existing items in one transaction.
+  /// Delegates to `CollectionDao`.
+  Future<void> updateItemFieldsBatch(
+    List<(int id, Map<String, dynamic> fields)> updates,
+  ) {
+    return _db.collectionDao.updateItemFieldsBatch(updates);
+  }
+
   /// Returns `true` on success, `false` if the target collection already
   /// holds an item with the same `(mediaType, externalId, platformId)` —
   /// callers should fall back to [cloneItemToCollection] or surface a

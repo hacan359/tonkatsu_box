@@ -62,6 +62,27 @@ class WishlistDao {
     );
   }
 
+  /// Bulk-inserts wishlist entries in a single transaction. Each [rows] map
+  /// holds text/media_type_hint/note/tag; is_resolved and created_at are filled
+  /// here. Callers dedup against existing entries beforehand. Returns the count.
+  Future<int> addWishlistItemsBatch(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) return 0;
+    final Database db = await _getDatabase();
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final Map<String, dynamic> row in rows) {
+        batch.insert('wishlist', <String, dynamic>{
+          ...row,
+          'is_resolved': 0,
+          'created_at': now,
+        });
+      }
+      await batch.commit(noResult: true);
+    });
+    return rows.length;
+  }
+
   /// Active items come first (by created_at DESC), then resolved ones
   /// (by resolved_at DESC). [includeResolved] == false returns active only.
   Future<List<WishlistItem>> getWishlistItems({

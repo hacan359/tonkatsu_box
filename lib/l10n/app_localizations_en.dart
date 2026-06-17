@@ -448,6 +448,13 @@ class SEn extends S {
   String get settingsTraktImportSubtitle => 'Watch history, ratings, watchlist';
 
   @override
+  String get settingsKinoriumImport => 'Kinorium Import';
+
+  @override
+  String get settingsKinoriumImportSubtitle =>
+      'Movies & shows from a CSV export';
+
+  @override
   String get settingsDebug => 'Debug';
 
   @override
@@ -1247,6 +1254,64 @@ class SEn extends S {
 
   @override
   String get traktInvalidExport => 'Invalid Trakt export';
+
+  @override
+  String get kinoriumImportFrom => 'Import from Kinorium';
+
+  @override
+  String get kinoriumImportDescription =>
+      'Export your list from Kinorium (it arrives by email as a CSV) and select the file below.';
+
+  @override
+  String get kinoriumSelectCsvFile => 'Select CSV File';
+
+  @override
+  String get kinoriumSelectCsvExport => 'Select Kinorium CSV Export';
+
+  @override
+  String get kinoriumOptions => 'Options';
+
+  @override
+  String get kinoriumIsWatchlist => 'This is a \"Watchlist\" file';
+
+  @override
+  String get kinoriumIsWatchlistDesc =>
+      'Import every title as planned instead of watched';
+
+  @override
+  String get kinoriumImportNotes => 'Import cast & crew';
+
+  @override
+  String get kinoriumImportNotesDesc =>
+      'Add directors and actors to the item note';
+
+  @override
+  String get kinoriumTargetCollection => 'Target collection';
+
+  @override
+  String get kinoriumCreateNew => 'Create new collection';
+
+  @override
+  String get kinoriumUseExisting => 'Use existing collection';
+
+  @override
+  String get kinoriumNoCollections => 'No collections available';
+
+  @override
+  String get kinoriumSelectCollection => 'Select collection';
+
+  @override
+  String get kinoriumErrorLoadingCollections => 'Error loading collections';
+
+  @override
+  String get kinoriumStartImport => 'Start Import';
+
+  @override
+  String get kinoriumImporting => 'Importing from Kinorium...';
+
+  @override
+  String get kinoriumRecommendOwnTmdbKey =>
+      'Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it\'s optional — the built-in key works too.';
 
   @override
   String traktImportedItems(int count) {

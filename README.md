@@ -33,7 +33,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, and ComicVine. Track your progress, rate everything, create visual boards and mood grids, and import your library from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList.
+Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, and ComicVine. Track your progress, rate everything, create visual boards and mood grids, and import your library from Steam, Trakt.tv, Kinorium, RetroAchievements, MyAnimeList, or AniList.
 
 <p align="center">
   <img src="docs/screenshots/mockup_main_all.jpg" width="800" alt="Main screen">
@@ -72,7 +72,7 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | **Discord Rich Presence** | Show what you're playing/watching/reading in Discord (desktop) |
 | **Visual Boards** | Drag-and-drop canvas with posters, notes, and connections |
 | **Tier Lists & Mood Grids** | Rank items into S/A/B/C tiers, or arrange them on a visual N×M board with labels — export either as PNG |
-| **Import** | Steam library, Trakt.tv history, RetroAchievements progress, MyAnimeList XML, AniList by username |
+| **Import** | Steam library, Trakt.tv history, Kinorium CSV, RetroAchievements progress, MyAnimeList XML, AniList by username |
 | **Kodi Sync** | Pull watched status and ratings for your movies from a Kodi media server over JSON-RPC |
 | **Export & Share** | .xcoll / .xcollx files with full offline support |
 | **Gamepad** | Navigate with Xbox controller (desktop and Android handhelds) |
@@ -127,6 +127,7 @@ Already tracking elsewhere? Bring your data:
 |:-:|--------|-----------------|
 | <img src="assets/images/icon_steam_color.png" width="28" alt="Steam"> | **Steam** | Owned games, playtime, last played date |
 | <img src="assets/images/icon_trakt_color.png" width="28" alt="Trakt.tv"> | **Trakt.tv** | Watch history, ratings, watchlist, episode progress |
+| <img src="assets/images/icon_kinorium_color.png" width="28" alt="Kinorium"> | **Kinorium** | Movies, TV & animation from a CSV export — ratings and watch dates |
 | <img src="assets/images/ra_logo.png" width="28" alt="RetroAchievements"> | **RetroAchievements** | Retro game library, achievement progress, awards |
 | <img src="assets/images/icon_myanimelist_color.png" width="28" alt="MyAnimeList"> | **MyAnimeList** | Anime and manga lists with scores, status and progress from an XML export |
 | <img src="assets/images/icon_anilist_color.png" width="28" alt="AniList"> | **AniList** | Anime and manga directly by a public username — no API key required |
