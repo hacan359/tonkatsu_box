@@ -220,5 +220,59 @@ void main() {
         expect((inserted.single as Map<String, dynamic>)['tag'], 'Kinorium');
       });
     });
+
+    group('writeItems onItem', () {
+      test('fires per candidate with running imported/updated tallies and label',
+          () async {
+        when(() => mockCollections.getItems(any())).thenAnswer((_) async =>
+            <CollectionItem>[
+              createTestCollectionItem(
+                id: 7,
+                mediaType: MediaType.movie,
+                externalId: 2,
+              ),
+            ]);
+
+        final List<(int, int, int, int, String?)> events =
+            <(int, int, int, int, String?)>[];
+
+        await writer.writeItems(
+          collectionId: 1,
+          candidates: <ImportCandidate>[
+            ImportCandidate(
+              mediaType: MediaType.movie,
+              externalId: 1,
+              platformId: null,
+              label: 'New One',
+              insertRow: <String, dynamic>{
+                'external_id': 1,
+                'media_type': MediaType.movie.value,
+              },
+              changedFields: (CollectionItem e) => <String, dynamic>{},
+            ),
+            ImportCandidate(
+              mediaType: MediaType.movie,
+              externalId: 2,
+              platformId: null,
+              label: 'Existing Changed',
+              insertRow: <String, dynamic>{
+                'external_id': 2,
+                'media_type': MediaType.movie.value,
+              },
+              changedFields: (CollectionItem e) =>
+                  <String, dynamic>{'user_rating': 9.0},
+            ),
+          ],
+          onItem: (int processed, int total, int imported, int updated,
+              String? label) {
+            events.add((processed, total, imported, updated, label));
+          },
+        );
+
+        expect(events, hasLength(2));
+        expect(events[0], (1, 2, 1, 0, 'New One'));
+        expect(events[1], (2, 2, 1, 1, 'Existing Changed'));
+      });
+    });
   });
 }

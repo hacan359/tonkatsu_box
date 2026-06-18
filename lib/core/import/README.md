@@ -8,9 +8,9 @@ adapters (one per source, under `sources/`). The reusable domain pieces —
 collection writing, TMDB matching, rate-limit retry — live at the root and are
 **injected** into adapters, not inherited.
 
-> Status: the layer is new. **Kinorium** is the first adapter on it. The other
-> importers still live in `lib/core/services/*_import_service.dart` with their
-> own copies of this logic and will be migrated onto the layer one at a time.
+> Status: **Kinorium, Steam, RetroAchievements, MyAnimeList and AniList** are all
+> adapters on this layer. `trakt_zip_import_service.dart` in `core/services` is
+> the last importer still carrying its own copy of this logic.
 
 ## Layers
 

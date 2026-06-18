@@ -40,7 +40,7 @@ import 'package:tonkatsu_box/core/services/import_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/core/services/profile_service.dart';
 import 'package:tonkatsu_box/core/api/steam_api.dart';
-import 'package:tonkatsu_box/core/services/steam_import_service.dart';
+import 'package:tonkatsu_box/core/import/sources/steam/steam_import_service.dart';
 import 'package:tonkatsu_box/core/api/ra_api.dart';
 import 'package:tonkatsu_box/core/services/ra_to_igdb_mapper.dart';
 import 'package:tonkatsu_box/core/services/trakt_zip_import_service.dart';

@@ -115,6 +115,66 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Moved the Steam, RetroAchievements, MyAnimeList and AniList importers onto the shared import layer**
+
+  The four source importers now live under `lib/core/import/sources/<name>/` next
+  to Kinorium and are built on the same ports-and-adapters layer: each implements
+  `ImportSource`, returns a `UniversalImportResult`, and writes through
+  `ImportWriter` instead of its own per-row collection / wishlist code. Writes are
+  batched now (one bulk item insert, one bulk wishlist insert, one media-cache
+  upsert) instead of a row at a time, and the duplicated resolve-or-create, merge,
+  tally and wishlist-dedup logic is gone. Behaviour is preserved, with two
+  deliberate changes: a re-seen item that needs no change is reported as "skipped"
+  rather than "updated", and the import tag is no longer stamped onto pre-existing
+  untagged wishlist rows.
+
+  The import progress screens are unchanged for the user: the live per-item
+  counters, the current-title line and the MyAnimeList rate-limit countdown all
+  stay. They now read these off the shared `ImportProgress`, and the running
+  tallies come from a per-item callback on `ImportWriter.writeItems` so the
+  classification stays in one place.
+
+  * lib/core/services/import_service.dart (ImportProgress): Added optional
+    `currentItem`, `imported` / `updated` / `wishlisted` tallies and
+    `retryWaitSeconds` / `retryAttempt` / `retryMaxAttempts` so source adapters
+    can report the same rich progress through the shared type.
+  * lib/core/import/import_writer.dart (ImportCandidate.label, ImportWriter.writeItems, ImportItemProgress):
+    `ImportCandidate` carries an optional progress `label`; `writeItems` takes an
+    `onItem` callback that fires per candidate with the running imported / updated
+    tallies.
+  * lib/core/import/import_columns.dart (epochSeconds, statusDateColumns, sumByType):
+    New. Shared helpers: a status transition turned into collection_items columns
+    (used by the adapters that merge an external status into a local item) and a
+    per-media-type tally sum.
+  * lib/core/import/sources/steam/steam_import_service.dart (SteamImportService, SteamImportOptions),
+    lib/core/import/sources/anilist/anilist_import_service.dart (AniListImportService, AniListImportOptions),
+    lib/core/import/sources/mal/mal_import_service.dart (MalImportService, MalImportOptions),
+    lib/core/import/sources/ra/ra_import_service.dart (RaImportService, RaImportOptions):
+    Reimplemented on `ImportSource` / `ImportWriter`; removed the bespoke
+    `SteamImportResult` / `AniListImportResult` / `MalImportResult` /
+    `RaImportResult`, their `*ImportProgress` / `*ImportStage` types and the
+    `toUniversal()` extensions. RaImportService writes its `tracker_game_data`
+    side-table in one batch (TrackerDao.upsertGameDataBatch) after the items.
+  * lib/features/settings/content/steam_import_content.dart,
+    lib/features/settings/content/anilist_import_content.dart,
+    lib/features/settings/content/mal_import_content.dart,
+    lib/features/settings/content/ra_import_content.dart:
+    Call `import(options)` and consume `UniversalImportResult`; map the shared
+    `ImportStage` to the existing localized stage labels.
+  * lib/core/import/sources/steam/README.md, lib/core/import/sources/anilist/README.md,
+    lib/core/import/sources/mal/README.md, lib/core/import/sources/ra/README.md:
+    New per-source docs.
+  * lib/core/import/README.md, docs/ARCHITECTURE.md:
+    Import-layer status now lists the five adapters on the layer; only Trakt
+    remains unmigrated.
+  * test/core/import/sources/steam/steam_import_service_test.dart,
+    test/core/import/sources/anilist/anilist_import_service_test.dart,
+    test/core/import/sources/mal/mal_import_service_test.dart,
+    test/core/import/sources/ra/ra_import_service_test.dart:
+    Rewritten to verify repository-routed batch writes.
+  * test/core/services/import_result_extensions_test.dart:
+    Dropped the removed `SteamImportResult.toUniversal()` group.
+
 - **Settings cache button now clears only unused covers instead of wiping the whole cache**
 
   The image-cache action no longer deletes the entire cache folder. It now

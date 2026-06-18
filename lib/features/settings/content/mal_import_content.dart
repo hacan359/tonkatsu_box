@@ -4,11 +4,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/database_service.dart';
-import '../../../core/services/mal_import_service.dart';
+import '../../../core/import/sources/mal/mal_import_service.dart';
+import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -36,7 +37,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
   );
 
   bool _isImporting = false;
-  MalImportProgress? _progress;
+  ImportProgress? _progress;
 
   bool _useNewCollection = true;
   int? _selectedCollectionId;
@@ -293,29 +294,22 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
   }
 
   Widget _buildProgressSection(S l) {
-    final MalImportProgress progress = _progress!;
+    final ImportProgress progress = _progress!;
+    final bool isRateLimitWait = progress.retryWaitSeconds != null;
 
-    final String stageText;
-    switch (progress.stage) {
-      case MalImportStage.readingFiles:
-        stageText = l.malImportReadingFiles;
-      case MalImportStage.resolvingAnime:
-        stageText = l.malImportResolvingAnime;
-      case MalImportStage.resolvingManga:
-        stageText = l.malImportResolvingManga;
-      case MalImportStage.rateLimitWait:
-        stageText = l.malImportRateLimitWait(
-          progress.rateLimitWaitSeconds ?? 0,
-          progress.rateLimitAttempt ?? 1,
-          progress.rateLimitMaxAttempts ?? 3,
-        );
-      case MalImportStage.matchingEntries:
-        stageText = l.malImportMatching;
-      case MalImportStage.completed:
-        stageText = l.malImportComplete;
-    }
-
-    final bool isRateLimitWait = progress.stage == MalImportStage.rateLimitWait;
+    final String stageText = isRateLimitWait
+        ? l.malImportRateLimitWait(
+            progress.retryWaitSeconds ?? 0,
+            progress.retryAttempt ?? 1,
+            progress.retryMaxAttempts ?? 3,
+          )
+        : switch (progress.stage) {
+            ImportStage.reading => l.malImportReadingFiles,
+            ImportStage.fetchingAnime => l.malImportResolvingAnime,
+            ImportStage.fetchingManga => l.malImportResolvingManga,
+            ImportStage.completed => l.malImportComplete,
+            _ => l.malImportMatching,
+          };
 
     return SettingsGroup(
       title: stageText,
@@ -340,10 +334,10 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
                   style: AppTypography.bodySmall,
                 ),
               ],
-              if (progress.currentName != null) ...<Widget>[
+              if (progress.currentItem != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l.malImportLookingUp(progress.currentName!),
+                  l.malImportLookingUp(progress.currentItem!),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -355,24 +349,18 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
               _buildStatRow(
                 Icons.check_circle,
                 AppColors.statusCompleted,
-                l.malImportImported(progress.importedCount),
+                l.malImportImported(progress.imported),
               ),
               _buildStatRow(
                 Icons.bookmark_add,
                 AppColors.brand,
-                l.malImportWishlisted(progress.wishlistedCount),
+                l.malImportWishlisted(progress.wishlisted),
               ),
               _buildStatRow(
                 Icons.sync,
                 AppColors.statusInProgress,
-                l.malImportUpdated(progress.updatedCount),
+                l.malImportUpdated(progress.updated),
               ),
-              if (progress.failedLookupCount > 0)
-                _buildStatRow(
-                  Icons.warning_amber,
-                  AppColors.statusDropped,
-                  l.malImportFailedLookup(progress.failedLookupCount),
-                ),
             ],
           ),
         ),
@@ -458,43 +446,42 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
     try {
       final MalImportService service = ref.read(malImportServiceProvider);
 
-      final MalImportResult result = await service.importFiles(
-        animeFile: _animePicked?.file,
-        mangaFile: _mangaPicked?.file,
-        collectionId: _useNewCollection ? null : _selectedCollectionId,
-        overwriteExistingItems: _overwriteExisting,
-        createCollection: _useNewCollection
-            ? () async {
-                final DatabaseService db = ref.read(databaseServiceProvider);
-                final Collection collection = await db.createCollection(
-                  name: _newNameController.text.trim(),
-                  author: authorName,
-                );
-                return collection.id;
-              }
-            : null,
-        onProgress: (MalImportProgress progress) {
+      final UniversalImportResult result = await service.import(
+        MalImportOptions(
+          animeFile: _animePicked?.file,
+          mangaFile: _mangaPicked?.file,
+          author: authorName,
+          newCollectionName: _newNameController.text.trim(),
+          overwriteExistingItems: _overwriteExisting,
+          collectionId: _useNewCollection ? null : _selectedCollectionId,
+        ),
+        onProgress: (ImportProgress progress) {
           if (mounted) {
             setState(() => _progress = progress);
           }
         },
       );
 
-      final int collectionId = result.collectionId;
-
       if (!mounted) return;
 
+      if (!result.success) {
+        setState(() => _isImporting = false);
+        if (result.fatalError != null) {
+          context.showSnack(result.fatalError!, type: SnackType.error);
+        }
+        return;
+      }
+
+      final int? collectionId = result.effectiveCollectionId;
       ref.invalidate(collectionsProvider);
-      ref.invalidate(collectionStatsProvider(collectionId));
-      ref.invalidate(collectionCoversProvider(collectionId));
-      ref.invalidate(collectionItemsNotifierProvider(collectionId));
-      ref.invalidate(canvasNotifierProvider(collectionId));
+      if (collectionId != null) {
+        ref.invalidate(collectionStatsProvider(collectionId));
+        ref.invalidate(collectionCoversProvider(collectionId));
+        ref.invalidate(collectionItemsNotifierProvider(collectionId));
+        ref.invalidate(canvasNotifierProvider(collectionId));
+      }
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
-
-      final Collection? resultCollection = await ref
-          .read(databaseServiceProvider)
-          .getCollectionById(collectionId);
 
       setState(() => _isImporting = false);
 
@@ -502,9 +489,8 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (BuildContext context) => ImportResultScreen(
-            result: result.toUniversal(collection: resultCollection),
-          ),
+          builder: (BuildContext context) =>
+              ImportResultScreen(result: result),
         ),
       );
     } on Exception catch (e) {
