@@ -18,6 +18,7 @@ class ImportCandidate {
     required this.platformId,
     required this.insertRow,
     required this.changedFields,
+    this.label,
   });
 
   final MediaType mediaType;
@@ -25,7 +26,20 @@ class ImportCandidate {
   final int? platformId;
   final Map<String, dynamic> insertRow;
   final Map<String, dynamic> Function(CollectionItem existing) changedFields;
+
+  /// Title shown in per-item import progress; not written to the database.
+  final String? label;
 }
+
+/// Per-item progress while [ImportWriter.writeItems] classifies candidates:
+/// running [imported] / [updated] tallies and the [label] just processed.
+typedef ImportItemProgress = void Function(
+  int processed,
+  int total,
+  int imported,
+  int updated,
+  String? label,
+);
 
 /// An unmatched title to drop into the text wishlist as a fallback.
 class WishlistCandidate {
@@ -97,6 +111,7 @@ class ImportWriter {
   Future<ImportWriteResult> writeItems({
     required int collectionId,
     required List<ImportCandidate> candidates,
+    ImportItemProgress? onItem,
   }) async {
     final Map<String, CollectionItem> existing = <String, CollectionItem>{};
     for (final CollectionItem item in await _collections.getItems(collectionId)) {
@@ -110,8 +125,12 @@ class ImportWriter {
         <(int, Map<String, dynamic>)>[];
     final Set<String> seen = <String>{};
     int skipped = 0;
+    int importedRunning = 0;
+    int updatedRunning = 0;
+    int processed = 0;
 
     for (final ImportCandidate candidate in candidates) {
+      processed++;
       final String key = itemKey(
         candidate.mediaType,
         candidate.externalId,
@@ -119,6 +138,8 @@ class ImportWriter {
       );
       if (!seen.add(key)) {
         skipped++;
+        onItem?.call(processed, candidates.length, importedRunning,
+            updatedRunning, candidate.label);
         continue;
       }
 
@@ -127,17 +148,21 @@ class ImportWriter {
         rows.add(candidate.insertRow);
         importedByType[candidate.mediaType] =
             (importedByType[candidate.mediaType] ?? 0) + 1;
-        continue;
+        importedRunning++;
+      } else {
+        final Map<String, dynamic> changed = candidate.changedFields(current);
+        if (changed.isEmpty) {
+          skipped++;
+        } else {
+          updates.add((current.id, changed));
+          updatedByType[candidate.mediaType] =
+              (updatedByType[candidate.mediaType] ?? 0) + 1;
+          updatedRunning++;
+        }
       }
 
-      final Map<String, dynamic> changed = candidate.changedFields(current);
-      if (changed.isEmpty) {
-        skipped++;
-      } else {
-        updates.add((current.id, changed));
-        updatedByType[candidate.mediaType] =
-            (updatedByType[candidate.mediaType] ?? 0) + 1;
-      }
+      onItem?.call(processed, candidates.length, importedRunning,
+          updatedRunning, candidate.label);
     }
 
     await _collections.addItemsBatch(collectionId, rows);

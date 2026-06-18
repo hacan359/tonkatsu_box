@@ -5,11 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/anilist_api.dart';
-import '../../../core/database/database_service.dart';
-import '../../../core/services/anilist_import_service.dart';
+import '../../../core/import/sources/anilist/anilist_import_service.dart';
+import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -37,7 +38,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
   final TextEditingController _newNameController = TextEditingController();
 
   bool _isImporting = false;
-  AniListImportProgress? _progress;
+  ImportProgress? _progress;
 
   bool _includeAnime = true;
   bool _includeManga = true;
@@ -319,19 +320,14 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
   }
 
   Widget _buildProgressSection(S l) {
-    final AniListImportProgress progress = _progress!;
+    final ImportProgress progress = _progress!;
 
-    final String stageText;
-    switch (progress.stage) {
-      case AniListImportStage.fetchingAnime:
-        stageText = l.aniListImportFetchingAnime;
-      case AniListImportStage.fetchingManga:
-        stageText = l.aniListImportFetchingManga;
-      case AniListImportStage.matchingEntries:
-        stageText = l.aniListImportMatching;
-      case AniListImportStage.completed:
-        stageText = l.aniListImportComplete;
-    }
+    final String stageText = switch (progress.stage) {
+      ImportStage.fetchingAnime => l.aniListImportFetchingAnime,
+      ImportStage.fetchingManga => l.aniListImportFetchingManga,
+      ImportStage.completed => l.aniListImportComplete,
+      _ => l.aniListImportMatching,
+    };
 
     return SettingsGroup(
       title: stageText,
@@ -354,10 +350,10 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
                   style: AppTypography.bodySmall,
                 ),
               ],
-              if (progress.currentName != null) ...<Widget>[
+              if (progress.currentItem != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l.aniListImportLookingUp(progress.currentName!),
+                  l.aniListImportLookingUp(progress.currentItem!),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -369,12 +365,12 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
               _buildStatRow(
                 Icons.check_circle,
                 AppColors.statusCompleted,
-                l.aniListImportImported(progress.importedCount),
+                l.aniListImportImported(progress.imported),
               ),
               _buildStatRow(
                 Icons.sync,
                 AppColors.statusInProgress,
-                l.aniListImportUpdated(progress.updatedCount),
+                l.aniListImportUpdated(progress.updated),
               ),
             ],
           ),
@@ -438,30 +434,22 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
       final AniListImportService service =
           ref.read(aniListImportServiceProvider);
 
-      final AniListImportResult result = await service.importUserLists(
-        userName: userName,
-        mode: _mode,
-        includeAnime: _includeAnime,
-        includeManga: _includeManga,
-        collectionId: _useNewCollection ? null : _selectedCollectionId,
-        createCollection: _useNewCollection
-            ? () async {
-                final DatabaseService db = ref.read(databaseServiceProvider);
-                final Collection collection = await db.createCollection(
-                  name: newCollectionName,
-                  author: authorName,
-                );
-                return collection.id;
-              }
-            : null,
-        onProgress: (AniListImportProgress progress) {
+      final UniversalImportResult result = await service.import(
+        AniListImportOptions(
+          userName: userName,
+          mode: _mode,
+          author: authorName,
+          newCollectionName: newCollectionName,
+          includeAnime: _includeAnime,
+          includeManga: _includeManga,
+          collectionId: _useNewCollection ? null : _selectedCollectionId,
+        ),
+        onProgress: (ImportProgress progress) {
           if (mounted) {
             setState(() => _progress = progress);
           }
         },
       );
-
-      final int collectionId = result.collectionId;
 
       // Persist the username for the next import — fire and forget.
       unawaited(
@@ -472,16 +460,23 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
 
       if (!mounted) return;
 
-      ref.invalidate(collectionsProvider);
-      ref.invalidate(collectionStatsProvider(collectionId));
-      ref.invalidate(collectionCoversProvider(collectionId));
-      ref.invalidate(collectionItemsNotifierProvider(collectionId));
-      ref.invalidate(canvasNotifierProvider(collectionId));
-      ref.invalidate(allItemsNotifierProvider);
+      if (!result.success) {
+        setState(() => _isImporting = false);
+        if (result.fatalError != null) {
+          context.showSnack(result.fatalError!, type: SnackType.error);
+        }
+        return;
+      }
 
-      final Collection? resultCollection = await ref
-          .read(databaseServiceProvider)
-          .getCollectionById(collectionId);
+      final int? collectionId = result.effectiveCollectionId;
+      ref.invalidate(collectionsProvider);
+      if (collectionId != null) {
+        ref.invalidate(collectionStatsProvider(collectionId));
+        ref.invalidate(collectionCoversProvider(collectionId));
+        ref.invalidate(collectionItemsNotifierProvider(collectionId));
+        ref.invalidate(canvasNotifierProvider(collectionId));
+      }
+      ref.invalidate(allItemsNotifierProvider);
 
       setState(() => _isImporting = false);
 
@@ -489,9 +484,8 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
 
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (BuildContext context) => ImportResultScreen(
-            result: result.toUniversal(collection: resultCollection),
-          ),
+          builder: (BuildContext context) =>
+              ImportResultScreen(result: result),
         ),
       );
     } on AniListUserNotFoundException {

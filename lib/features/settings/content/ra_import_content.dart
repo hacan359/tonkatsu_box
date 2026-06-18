@@ -4,12 +4,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/api/ra_api.dart';
-import '../../../core/database/database_service.dart';
-import '../../../core/services/ra_import_service.dart';
+import '../../../core/import/sources/ra/ra_import_service.dart';
+import '../../../core/services/import_service.dart';
 import '../../../shared/models/ra_user_profile.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -37,7 +38,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
 
   bool _isImporting = false;
   bool _isCheckingProfile = false;
-  RaImportProgress? _progress;
+  ImportProgress? _progress;
   RaUserProfile? _profile;
 
   bool _addToWishlist = true;
@@ -308,19 +309,14 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
   }
 
   Widget _buildProgressSection(S l) {
-    final RaImportProgress progress = _progress!;
+    final ImportProgress progress = _progress!;
 
-    final String stageText;
-    switch (progress.stage) {
-      case RaImportStage.fetchingLibrary:
-        stageText = l.raImportFetchingLibrary;
-      case RaImportStage.searchingGames:
-        stageText = l.raImportSearchingIgdb;
-      case RaImportStage.matchingGames:
-        stageText = l.raImportMatching(progress.currentName ?? '');
-      case RaImportStage.completed:
-        stageText = l.raImportComplete;
-    }
+    final String stageText = switch (progress.stage) {
+      ImportStage.reading => l.raImportFetchingLibrary,
+      ImportStage.fetchingGames => l.raImportSearchingIgdb,
+      ImportStage.completed => l.raImportComplete,
+      _ => l.raImportMatching(progress.currentItem ?? ''),
+    };
 
     return SettingsGroup(
       title: stageText,
@@ -349,22 +345,37 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
               _buildStatRow(
                 Icons.check_circle,
                 AppColors.statusCompleted,
-                l.raImportAdded(progress.addedCount),
+                l.raImportAdded(progress.imported),
               ),
               _buildStatRow(
                 Icons.sync,
                 AppColors.statusInProgress,
-                l.raImportUpdated(progress.updatedCount),
+                l.raImportUpdated(progress.updated),
               ),
               _buildStatRow(
                 Icons.bookmark_add,
                 AppColors.brand,
-                l.raImportToWishlist(progress.unmatchedCount),
+                l.raImportToWishlist(progress.wishlisted),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStatRow(IconData icon, Color color, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: <Widget>[
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(text, style: AppTypography.body),
+          ),
+        ],
+      ),
     );
   }
 
@@ -385,21 +396,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
             decorationColor: AppColors.brand,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildStatRow(IconData icon, Color color, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: <Widget>[
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(text, style: AppTypography.body),
-          ),
-        ],
       ),
     );
   }
@@ -530,43 +526,43 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
 
       final RaImportService service = ref.read(raImportServiceProvider);
 
-      // The collection is created lazily, only after the RA library loads,
-      // so a failed import doesn't leave an empty collection behind.
-      final RaImportResult result = await service.importFromProfile(
-        raUsername: username,
-        collectionId: _useNewCollection ? null : _selectedCollectionId,
-        createCollection: _useNewCollection
-            ? () async {
-                final DatabaseService db = ref.read(databaseServiceProvider);
-                final Collection collection = await db.createCollection(
-                  name: 'RA Games',
-                  author: authorName,
-                );
-                return collection.id;
-              }
-            : null,
-        addToWishlist: _addToWishlist,
-        onProgress: (RaImportProgress progress) {
+      // The collection is created lazily inside the adapter, only after the RA
+      // library loads, so a failed import never leaves an empty collection.
+      final UniversalImportResult result = await service.import(
+        RaImportOptions(
+          raUsername: username,
+          author: authorName,
+          newCollectionName: 'RA Games',
+          addToWishlist: _addToWishlist,
+          collectionId: _useNewCollection ? null : _selectedCollectionId,
+        ),
+        onProgress: (ImportProgress progress) {
           if (mounted) {
             setState(() => _progress = progress);
           }
         },
       );
-      final int collectionId = result.collectionId;
 
       if (!mounted) return;
 
+      if (!result.success) {
+        setState(() => _isImporting = false);
+        if (result.fatalError != null) {
+          context.showSnack(result.fatalError!, type: SnackType.error);
+        }
+        return;
+      }
+
+      final int? collectionId = result.effectiveCollectionId;
       ref.invalidate(collectionsProvider);
-      ref.invalidate(collectionStatsProvider(collectionId));
-      ref.invalidate(collectionCoversProvider(collectionId));
-      ref.invalidate(collectionItemsNotifierProvider(collectionId));
-      ref.invalidate(canvasNotifierProvider(collectionId));
+      if (collectionId != null) {
+        ref.invalidate(collectionStatsProvider(collectionId));
+        ref.invalidate(collectionCoversProvider(collectionId));
+        ref.invalidate(collectionItemsNotifierProvider(collectionId));
+        ref.invalidate(canvasNotifierProvider(collectionId));
+      }
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
-
-      final Collection? resultCollection = await ref
-          .read(databaseServiceProvider)
-          .getCollectionById(collectionId);
 
       setState(() => _isImporting = false);
 
@@ -574,9 +570,8 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
 
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (BuildContext context) => ImportResultScreen(
-            result: result.toUniversal(collection: resultCollection),
-          ),
+          builder: (BuildContext context) =>
+              ImportResultScreen(result: result),
         ),
       );
     } on Exception catch (e) {

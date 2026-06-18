@@ -1,67 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/core/services/steam_import_service.dart';
 import 'package:tonkatsu_box/core/services/trakt_zip_import_service.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
 
 import '../../helpers/builders.dart';
 
 void main() {
-  group('SteamImportResult.toUniversal()', () {
-    test('converts successful result', () {
-      const SteamImportResult steamResult = SteamImportResult(
-        imported: 10,
-        wishlisted: 3,
-        updated: 2,
-        total: 15,
-        collectionId: 42,
-      );
-      final UniversalImportResult result = steamResult.toUniversal();
-
-      expect(result.sourceName, 'Steam');
-      expect(result.success, true);
-      expect(result.totalImported, 10);
-      expect(result.totalWishlisted, 3);
-      expect(result.totalUpdated, 2);
-      expect(result.collectionId, 42);
-      expect(result.importedByType[MediaType.game], 10);
-      expect(result.wishlistedByType[MediaType.game], 3);
-      expect(result.updatedByType[MediaType.game], 2);
-    });
-
-    test('passes collection when provided', () {
-      const SteamImportResult steamResult = SteamImportResult(
-        imported: 5,
-        wishlisted: 0,
-        updated: 0,
-        total: 5,
-        collectionId: 1,
-      );
-      final Collection collection = createTestCollection(id: 1);
-      final UniversalImportResult result =
-          steamResult.toUniversal(collection: collection);
-
-      expect(result.collection, collection);
-      expect(result.effectiveCollectionId, 1);
-    });
-
-    test('skips zero counts in maps', () {
-      const SteamImportResult steamResult = SteamImportResult(
-        imported: 5,
-        wishlisted: 0,
-        updated: 0,
-        total: 5,
-        collectionId: 1,
-      );
-      final UniversalImportResult result = steamResult.toUniversal();
-
-      expect(result.importedByType.containsKey(MediaType.game), true);
-      expect(result.wishlistedByType.containsKey(MediaType.game), false);
-      expect(result.updatedByType.containsKey(MediaType.game), false);
-    });
-  });
-
   group('TraktImportResult.toUniversal()', () {
     test('converts successful result with per-type data', () {
       final TraktImportResult traktResult = TraktImportResult.success(

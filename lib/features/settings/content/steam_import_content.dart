@@ -5,11 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/database/database_service.dart';
-import '../../../core/services/steam_import_service.dart';
+import '../../../core/import/sources/steam/steam_import_service.dart';
+import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -37,8 +38,8 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
   final TextEditingController _steamIdController = TextEditingController();
 
   bool _isImporting = false;
-  SteamImportProgress? _progress;
-  SteamImportResult? _result;
+  ImportProgress? _progress;
+  UniversalImportResult? _result;
 
   bool _rememberCredentials = false;
 
@@ -334,17 +335,13 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
   }
 
   Widget _buildProgressSection(S l) {
-    final SteamImportProgress progress = _progress!;
+    final ImportProgress progress = _progress!;
 
-    final String stageText;
-    switch (progress.stage) {
-      case SteamImportStage.fetchingLibrary:
-        stageText = l.steamImportFetchingLibrary;
-      case SteamImportStage.matchingGames:
-        stageText = l.steamImportMatching;
-      case SteamImportStage.completed:
-        stageText = l.steamImportComplete;
-    }
+    final String stageText = switch (progress.stage) {
+      ImportStage.fetchingGames => l.steamImportFetchingLibrary,
+      ImportStage.completed => l.steamImportComplete,
+      _ => l.steamImportMatching,
+    };
 
     return SettingsGroup(
       title: stageText,
@@ -367,10 +364,10 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
                   style: AppTypography.bodySmall,
                 ),
               ],
-              if (progress.currentName != null) ...<Widget>[
+              if (progress.currentItem != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l.steamImportLookingUp(progress.currentName!),
+                  l.steamImportLookingUp(progress.currentItem!),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -382,22 +379,37 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
               _buildStatRow(
                 Icons.check_circle,
                 AppColors.statusCompleted,
-                l.steamImportImported(progress.importedCount),
+                l.steamImportImported(progress.imported),
               ),
               _buildStatRow(
                 Icons.bookmark_add,
                 AppColors.brand,
-                l.steamImportWishlisted(progress.wishlistedCount),
+                l.steamImportWishlisted(progress.wishlisted),
               ),
               _buildStatRow(
                 Icons.sync,
                 AppColors.statusInProgress,
-                l.steamImportUpdated(progress.updatedCount),
+                l.steamImportUpdated(progress.updated),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStatRow(IconData icon, Color color, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: <Widget>[
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(text, style: AppTypography.body),
+          ),
+        ],
+      ),
     );
   }
 
@@ -414,21 +426,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
           decoration: TextDecoration.underline,
           decorationColor: AppColors.brand,
         ),
-      ),
-    );
-  }
-
-  Widget _buildStatRow(IconData icon, Color color, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: <Widget>[
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(text, style: AppTypography.body),
-          ),
-        ],
       ),
     );
   }
@@ -456,66 +453,56 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       unawaited(prefs.setBool(SettingsKeys.steamRememberCredentials, false));
     }
 
-    try {
-      final SteamImportService service =
-          ref.read(steamImportServiceProvider);
+    final SteamImportService service = ref.read(steamImportServiceProvider);
 
-      // The collection is created lazily, only after the Steam library loads,
-      // so a failed import doesn't leave an empty collection behind.
-      final SteamImportResult result = await service.importLibrary(
+    // The collection is created lazily inside the adapter, only after the Steam
+    // library loads, so a failed import never leaves an empty collection behind.
+    final UniversalImportResult result = await service.import(
+      SteamImportOptions(
         apiKey: apiKey,
         steamId: steamId,
+        author: authorName,
         collectionId: _useNewCollection ? null : _selectedCollectionId,
-        createCollection: _useNewCollection
-            ? () async {
-                final DatabaseService db = ref.read(databaseServiceProvider);
-                final Collection collection = await db.createCollection(
-                  name: 'Steam Library',
-                  author: authorName,
-                );
-                return collection.id;
-              }
-            : null,
-        onProgress: (SteamImportProgress progress) {
-          if (mounted) {
-            setState(() => _progress = progress);
-          }
-        },
-      );
-      final int collectionId = result.collectionId;
+      ),
+      onProgress: (ImportProgress progress) {
+        if (mounted) {
+          setState(() => _progress = progress);
+        }
+      },
+    );
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      ref.invalidate(collectionsProvider);
+    if (!result.success) {
+      setState(() => _isImporting = false);
+      if (result.fatalError != null) {
+        context.showSnack(result.fatalError!, type: SnackType.error);
+      }
+      return;
+    }
+
+    final int? collectionId = result.effectiveCollectionId;
+    ref.invalidate(collectionsProvider);
+    if (collectionId != null) {
       ref.invalidate(collectionStatsProvider(collectionId));
       ref.invalidate(collectionCoversProvider(collectionId));
       ref.invalidate(collectionItemsNotifierProvider(collectionId));
       ref.invalidate(canvasNotifierProvider(collectionId));
-      ref.invalidate(allItemsNotifierProvider);
-      ref.invalidate(wishlistProvider);
-
-      // Fetch collection for result screen
-      final Collection? resultCollection =
-          await ref.read(databaseServiceProvider).getCollectionById(collectionId);
-
-      setState(() {
-        _isImporting = false;
-        _result = result;
-      });
-
-      if (!mounted) return;
-
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => ImportResultScreen(
-            result: result.toUniversal(collection: resultCollection),
-          ),
-        ),
-      );
-    } on Exception catch (e) {
-      if (!mounted) return;
-      setState(() => _isImporting = false);
-      context.showSnack(e.toString(), type: SnackType.error);
     }
+    ref.invalidate(allItemsNotifierProvider);
+    ref.invalidate(wishlistProvider);
+
+    setState(() {
+      _isImporting = false;
+      _result = result;
+    });
+
+    if (!mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => ImportResultScreen(result: result),
+      ),
+    );
   }
 }

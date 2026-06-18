@@ -107,6 +107,13 @@ class ImportProgress {
     required this.current,
     required this.total,
     this.message,
+    this.currentItem,
+    this.imported = 0,
+    this.updated = 0,
+    this.wishlisted = 0,
+    this.retryWaitSeconds,
+    this.retryAttempt,
+    this.retryMaxAttempts,
   });
 
   final ImportStage stage;
@@ -116,6 +123,19 @@ class ImportProgress {
   final int total;
 
   final String? message;
+
+  /// Title of the item currently being processed (raw data, not localized).
+  final String? currentItem;
+
+  /// Running tallies for the source-import progress UIs.
+  final int imported;
+  final int updated;
+  final int wishlisted;
+
+  /// Rate-limit back-off info, set only while a source waits out a 429 window.
+  final int? retryWaitSeconds;
+  final int? retryAttempt;
+  final int? retryMaxAttempts;
 
   double get progress => total > 0 ? current / total : 0;
 }
