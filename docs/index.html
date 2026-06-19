@@ -7,7 +7,7 @@
   <!-- SEO Meta Tags -->
   <title>Tonkatsu Box — Organize Games, Movies, TV Shows, Anime, Manga, Visual Novels & Books</title>
   <meta name="description" content="Free open-source app to build and manage collections of retro games, movies, TV shows, anime, manga, visual novels, and books. Track progress, rate favorites, create tier lists, visual boards, and share with friends. Windows, Linux & Android.">
-  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, book tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Trakt import, Steam import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
+  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, book tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, ComicVine, Google Books, Trakt import, Steam import, Kinorium import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
   <meta name="author" content="hacan359">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://hacan359.github.io/tonkatsu_box/">
@@ -1174,7 +1174,7 @@
           <div class="feature-card__icon">🔍</div>
           <h3 class="feature-card__title" data-i18n="feat_search_title">Search & Discover</h3>
           <p class="feature-card__desc" data-i18n="feat_search_desc">
-            Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, and Fantlab. Filter by year, genre, or platform. Add anything to your collections with one tap.
+            Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, and ComicVine. Filter by year, genre, or platform. Add anything to your collections with one tap.
           </p>
         </div>
 
@@ -1196,7 +1196,7 @@
           <div class="feature-card__icon">📚</div>
           <h3 class="feature-card__title" data-i18n="feat_books_title">Books & Reading</h3>
           <p class="feature-card__desc" data-i18n="feat_books_desc">
-            Search books on OpenLibrary and Fantlab, track your reading, and organize novels and series alongside the rest of your collection.
+            Search books on OpenLibrary, Fantlab, and Google Books, and comics on ComicVine — track your reading and organize novels and series alongside the rest of your collection.
           </p>
         </div>
 
@@ -1212,7 +1212,7 @@
           <div class="feature-card__icon">📤</div>
           <h3 class="feature-card__title" data-i18n="feat_share_title">Import & Share</h3>
           <p class="feature-card__desc" data-i18n="feat_share_desc">
-            Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.
+            Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.
           </p>
         </div>
 
@@ -1248,7 +1248,7 @@
   <div class="slider-section reveal">
     <div class="section-label" data-i18n="slider_search_label">Search</div>
     <h2 class="section-title" data-i18n="slider_search_title">Search &amp; Discover</h2>
-    <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, and Fantlab databases with hundreds of thousands of titles</p>
+    <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Google Books, and ComicVine databases with hundreds of thousands of titles</p>
     <div class="screenshot-slider" data-autoplay="5000">
       <div class="slider-track">
         <img src="screenshots/mockup_game_search.jpg" alt="Search games" data-caption="slider_search_2" loading="lazy">
@@ -1322,7 +1322,7 @@
         <div class="section-label" data-i18n="sharing_label">Import & Share</div>
         <h2 class="section-title" data-i18n="sharing_title">Import &amp; share your taste</h2>
         <p class="section-subtitle" data-i18n="sharing_subtitle">
-          Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList, export your collections, and share with friends.
+          Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium, export your collections, and share with friends.
         </p>
       </div>
 
@@ -1353,6 +1353,13 @@
           <div class="format-card__name" data-i18n="format_anilist_name">AniList Import</div>
           <p class="format-card__desc" data-i18n="format_anilist_desc">
             Import anime and manga directly by a public AniList username — no API key, no file export needed.
+          </p>
+        </div>
+        <div class="format-card">
+          <div class="format-card__ext">Kinorium</div>
+          <div class="format-card__name" data-i18n="format_kinorium_name">Kinorium Import</div>
+          <p class="format-card__desc" data-i18n="format_kinorium_desc">
+            Import your watched movies and shows from a Kinorium CSV export, matched against TMDB with ratings and watch dates.
           </p>
         </div>
         <div class="format-card">
@@ -1412,9 +1419,12 @@
         <span class="tech-pill">MangaBaka API</span>
         <span class="tech-pill">OpenLibrary API</span>
         <span class="tech-pill">Fantlab API</span>
+        <span class="tech-pill">Google Books API</span>
+        <span class="tech-pill">ComicVine API</span>
         <span class="tech-pill">SteamGridDB</span>
         <span class="tech-pill">ScreenScraper</span>
         <span class="tech-pill">MyAnimeList</span>
+        <span class="tech-pill">Kinorium</span>
         <span class="tech-pill">MIT License</span>
       </div>
     </div>
@@ -1588,7 +1598,7 @@
         feat_collections_title: 'Build Collections',
         feat_collections_desc: 'Create unlimited collections by platform, genre, or custom lists. Mix games, movies, anime, manga, novels, and books in a single collection. Switch between grid and list views.',
         feat_search_title: 'Search & Discover',
-        feat_search_desc: 'Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, and Fantlab. Filter by year, genre, or platform. Add anything to your collections with one tap.',
+        feat_search_desc: 'Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, and ComicVine. Filter by year, genre, or platform. Add anything to your collections with one tap.',
         feat_progress_title: 'Track Progress',
         feat_progress_desc: 'Mark items as In Progress, Completed, Planned, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.',
         status_progress: 'In Progress',
@@ -1596,11 +1606,11 @@
         status_planned: 'Planned',
         status_dropped: 'Dropped',
         feat_books_title: 'Books & Reading',
-        feat_books_desc: 'Search books on OpenLibrary and Fantlab, track your reading, and organize novels and series alongside the rest of your collection.',
+        feat_books_desc: 'Search books on OpenLibrary, Fantlab, and Google Books, and comics on ComicVine — track your reading and organize novels and series alongside the rest of your collection.',
         feat_boards_title: 'Visual Boards',
         feat_boards_desc: 'Arrange posters on a free-form canvas. Add text notes, images, and links. Draw connections between items. Browse artwork from SteamGridDB.',
         feat_share_title: 'Import & Share',
-        feat_share_desc: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.',
+        feat_share_desc: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.',
         feat_rate_title: 'Rate & Review',
         feat_rate_desc: 'Rate every title from 1–10 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.',
         feat_tier_title: 'Tier Lists',
@@ -1618,7 +1628,7 @@
         step3_desc: 'Want to use your own API keys? Register for free at <strong>IGDB</strong>, <strong>TMDB</strong>, or <strong>SteamGridDB</strong> and enter them in Settings. Completely optional — everything works without them.',
         sharing_label: 'Import & Share',
         sharing_title: 'Import &amp; share your taste',
-        sharing_subtitle: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList, export your collections, and share with friends.',
+        sharing_subtitle: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium, export your collections, and share with friends.',
         format_trakt_name: 'Trakt Import',
         format_trakt_desc: 'Import watched movies, shows, ratings, and watchlist from your Trakt.tv ZIP data export.',
         format_ra_name: 'RA Import',
@@ -1627,6 +1637,8 @@
         format_mal_desc: 'Import your anime and manga lists from a MyAnimeList XML export, including scores, watch status and progress.',
         format_anilist_name: 'AniList Import',
         format_anilist_desc: 'Import anime and manga directly by a public AniList username — no API key, no file export needed.',
+        format_kinorium_name: 'Kinorium Import',
+        format_kinorium_desc: 'Import your watched movies and shows from a Kinorium CSV export, matched against TMDB with ratings and watch dates.',
         format_light_name: 'Light Export',
         format_light_desc: 'Small file with the list of items. Recipient needs internet to load images and details.',
         format_full_name: 'Full Export',
@@ -1648,11 +1660,11 @@
         slider_organize_4: 'Collection grid view with poster cards, ratings, and search',
         slider_search_label: 'Search',
         slider_search_title: 'Search &amp; Discover',
-        slider_search_subtitle: 'Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, and Fantlab databases with hundreds of thousands of titles',
+        slider_search_subtitle: 'Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Google Books, and ComicVine databases with hundreds of thousands of titles',
         slider_search_1: 'Add anything to your collections — set status, pick platform, leave a note, attach an author comment',
         slider_search_2: 'Search games across hundreds of platforms via IGDB',
         slider_search_3: 'Search manga and light novels via AniList — no API key required',
-        slider_search_4: 'Multiple sources — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, and Fantlab all in one place',
+        slider_search_4: 'Multiple sources — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, and ComicVine all in one place',
         slider_track_label: 'Track',
         slider_track_title: 'Track &amp; Visualize',
         slider_track_subtitle: 'Rank your favorites in tier lists, lay out picks on a mood grid, export both as PNG',
@@ -1692,7 +1704,7 @@
         feat_collections_title: 'Коллекции',
         feat_collections_desc: 'Создавайте неограниченное количество коллекций по платформе, жанру или своим спискам. Смешивайте игры, фильмы, аниме, мангу, новеллы и книги в одной коллекции. Переключайтесь между сеткой и списком.',
         feat_search_title: 'Поиск',
-        feat_search_desc: 'Находите названия в базах IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary и Fantlab. Фильтруйте по году, жанру или платформе. Добавляйте в коллекцию одним нажатием.',
+        feat_search_desc: 'Находите названия в базах IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books и ComicVine. Фильтруйте по году, жанру или платформе. Добавляйте в коллекцию одним нажатием.',
         feat_progress_title: 'Прогресс',
         feat_progress_desc: 'Отмечайте статусы: В процессе, Пройдено, Отложено, Брошено. Отслеживайте эпизоды сериалов и аниме. Оценивайте от 1 до 10 звёзд.',
         status_progress: 'В процессе',
@@ -1700,11 +1712,11 @@
         status_planned: 'Отложено',
         status_dropped: 'Брошено',
         feat_books_title: 'Книги',
-        feat_books_desc: 'Ищите книги в OpenLibrary и Fantlab, отслеживайте чтение и организуйте романы и циклы вместе с остальной коллекцией.',
+        feat_books_desc: 'Ищите книги в OpenLibrary, Fantlab и Google Books, а комиксы — в ComicVine, отслеживайте чтение и организуйте романы и циклы вместе с остальной коллекцией.',
         feat_boards_title: 'Визуальные доски',
         feat_boards_desc: 'Расставляйте постеры на свободном холсте. Добавляйте заметки, изображения и ссылки. Рисуйте связи между элементами. Арты из SteamGridDB.',
         feat_share_title: 'Импорт и шаринг',
-        feat_share_desc: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList или AniList. Делитесь коллекциями через <code>.xcoll</code> и <code>.xcollx</code>. Друзья могут импортировать и форкнуть.',
+        feat_share_desc: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList или Kinorium. Делитесь коллекциями через <code>.xcoll</code> и <code>.xcollx</code>. Друзья могут импортировать и форкнуть.',
         feat_rate_title: 'Оценки и отзывы',
         feat_rate_desc: 'Оценивайте от 1 до 10 звёзд. Пишите личные заметки и рецензии, видимые при экспорте. Отслеживайте даты начала и окончания.',
         feat_tier_title: 'Тир-листы',
@@ -1722,7 +1734,7 @@
         step3_desc: 'Хотите использовать свои ключи? Зарегистрируйтесь бесплатно на <strong>IGDB</strong>, <strong>TMDB</strong> или <strong>SteamGridDB</strong> и введите их в Настройках. Полностью опционально — всё работает и без них.',
         sharing_label: 'Импорт и шаринг',
         sharing_title: 'Импорт и обмен',
-        sharing_subtitle: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList или AniList, экспорт коллекций и обмен с друзьями.',
+        sharing_subtitle: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList или Kinorium, экспорт коллекций и обмен с друзьями.',
         format_trakt_name: 'Импорт Trakt',
         format_trakt_desc: 'Импортируйте просмотренные фильмы, сериалы, оценки и вишлист из ZIP-выгрузки Trakt.tv.',
         format_ra_name: 'Импорт RA',
@@ -1731,6 +1743,8 @@
         format_mal_desc: 'Импортируйте списки аниме и манги из XML-выгрузки MyAnimeList — оценки, статусы и прогресс.',
         format_anilist_name: 'Импорт AniList',
         format_anilist_desc: 'Импорт аниме и манги напрямую по публичному имени пользователя AniList — без API-ключа и файлов.',
+        format_kinorium_name: 'Импорт Kinorium',
+        format_kinorium_desc: 'Импортируйте просмотренные фильмы и сериалы из CSV-выгрузки Kinorium — сопоставление с TMDB, оценки и даты просмотра.',
         format_light_name: 'Лёгкий экспорт',
         format_light_desc: 'Небольшой файл со списком элементов. Получателю нужен интернет для загрузки изображений.',
         format_full_name: 'Полный экспорт',
@@ -1752,11 +1766,11 @@
         slider_organize_4: 'Сетка коллекции с постерами, рейтингами и поиском',
         slider_search_label: 'Поиск',
         slider_search_title: 'Поиск и открытия',
-        slider_search_subtitle: 'Ищите в базах IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary и Fantlab среди сотен тысяч названий',
+        slider_search_subtitle: 'Ищите в базах IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Google Books и ComicVine среди сотен тысяч названий',
         slider_search_1: 'Добавляйте что угодно в коллекции — статус, платформа, заметка, авторский комментарий',
         slider_search_2: 'Поиск игр по сотням платформ через IGDB',
         slider_search_3: 'Поиск манги и ранобэ через AniList — без API-ключа',
-        slider_search_4: 'Множество источников — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary и Fantlab в одном окне',
+        slider_search_4: 'Множество источников — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books и ComicVine в одном окне',
         slider_track_label: 'Прогресс',
         slider_track_title: 'Отслеживание и визуализация',
         slider_track_subtitle: 'Ранжируйте фавориты в тир-листах, раскладывайте на mood-доске, экспорт в PNG',
