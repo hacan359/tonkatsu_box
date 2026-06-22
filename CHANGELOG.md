@@ -9,6 +9,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Show average time-to-beat on game search cards**
+
+  IGDB game search and browse cards now carry a clock badge with the average
+  time to beat (IGDB `game_time_to_beats`), in whole hours. The value is the
+  normal playthrough, falling back to the rushed or completionist figure. It is
+  fetched per page alongside the results and kept only in memory — never written
+  to the database — so it appears on the search screen only.
+
+  * lib/shared/models/game_time_to_beat.dart (GameTimeToBeat, GameTimeToBeat.fromJson, GameTimeToBeat.primarySeconds, GameTimeToBeat.primaryHours):
+    New — transient model wrapping IGDB time-to-beat (seconds), with the
+    primary-value selection and hours rounding.
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.getTimeToBeat), lib/core/api/igdb_api.dart (IgdbApi.getTimeToBeat):
+    Fetch `game_time_to_beats` for a batch of game ids (batched by 500), keyed
+    by game id.
+  * lib/shared/models/game.dart (Game.timeToBeat, Game.copyWith): New transient
+    field, excluded from `toDb` / `fromDb` / `fromJson`.
+  * lib/features/search/sources/igdb_games_source.dart (IgdbGamesSource.fetch, IgdbGamesSource._attachTimeToBeat):
+    Attach time-to-beat to each game with one batched request; best-effort, so a
+    failure leaves the search results unchanged.
+  * lib/features/search/widgets/browse_grid.dart (_BrowseGridState._buildCard):
+    Pass `timeToBeatHours: item.timeToBeat?.primaryHours` for game cards.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.timeToBeatHours):
+    New optional clock badge drawn over the poster (grid/compact), hidden when a
+    status badge is shown; reuses the `runtimeHours` localization.
+
 - **Show manga/anime format on cards and filter by it**
 
   Manga and anime cards now caption the specific format (Manhwa, OVA, Light

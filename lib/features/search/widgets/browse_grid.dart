@@ -340,6 +340,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         apiRating: item.rating != null ? item.rating! / 10.0 : null,
         year: item.releaseYear,
         platformLabel: _buildPlatformLabel(item.platformIds),
+        timeToBeatHours: item.timeToBeat?.primaryHours,
         mediaType: mediaType,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, mediaType),

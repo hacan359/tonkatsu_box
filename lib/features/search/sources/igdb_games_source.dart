@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/game.dart';
+import '../../../shared/models/game_time_to_beat.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../filters/igdb_game_mode_filter.dart';
@@ -103,8 +104,10 @@ class IgdbGamesSource extends SearchSource {
         offset: offset,
       );
 
+      final List<Game> withTime = await _attachTimeToBeat(igdb, games);
+
       return BrowseResult(
-        items: games,
+        items: withTime,
         mediaType: MediaType.game,
         hasMore: games.length >= pageSize,
         currentPage: page,
@@ -127,12 +130,32 @@ class IgdbGamesSource extends SearchSource {
       offset: offset,
     );
 
+    final List<Game> withTime = await _attachTimeToBeat(igdb, games);
+
     return BrowseResult(
-      items: games,
+      items: withTime,
       mediaType: MediaType.game,
       hasMore: games.length >= pageSize,
       currentPage: page,
     );
+  }
+
+  /// Attaches IGDB average time-to-beat to each game (one batched request).
+  ///
+  /// Best-effort: a failure here must not break search, so the games are
+  /// returned unchanged if the extra request fails.
+  Future<List<Game>> _attachTimeToBeat(IgdbApi igdb, List<Game> games) async {
+    if (games.isEmpty) return games;
+    try {
+      final Map<int, GameTimeToBeat> byId =
+          await igdb.getTimeToBeat(games.map((Game g) => g.id).toList());
+      if (byId.isEmpty) return games;
+      return games
+          .map((Game g) => g.copyWith(timeToBeat: byId[g.id]))
+          .toList();
+    } on Exception {
+      return games;
+    }
   }
 
   @override
