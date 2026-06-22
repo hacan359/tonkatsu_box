@@ -54,7 +54,7 @@ class ConfigResult {
 }
 
 /// Exports and imports app configuration stored in SharedPreferences
-/// (IGDB, SteamGridDB, TMDB API keys and related settings).
+/// (API keys, source credentials and related display settings).
 class ConfigService {
   ConfigService({required SharedPreferences prefs}) : _prefs = prefs;
 
@@ -71,6 +71,15 @@ class ConfigService {
     SettingsKeys.lastSync,
     SettingsKeys.steamGridDbApiKey,
     SettingsKeys.tmdbApiKey,
+    SettingsKeys.comicVineApiKey,
+    SettingsKeys.googleBooksApiKey,
+    SettingsKeys.screenScraperSsid,
+    SettingsKeys.screenScraperSspassword,
+    SettingsKeys.raApiKey,
+    SettingsKeys.raUsername,
+    SettingsKeys.steamApiKey,
+    SettingsKeys.steamId,
+    SettingsKeys.aniListUsername,
     SettingsKeys.defaultAuthor,
     SettingsKeys.tmdbLanguage,
     SettingsKeys.dateFormat,
