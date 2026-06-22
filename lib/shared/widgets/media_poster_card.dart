@@ -49,6 +49,7 @@ class MediaPosterCard extends StatefulWidget {
     this.platformLabel,
     this.platformColor,
     this.platformOverlayAsset,
+    this.timeToBeatHours,
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
@@ -100,6 +101,10 @@ class MediaPosterCard extends StatefulWidget {
   /// Platform overlay asset (PNG 600×900); when set, drawn over the poster
   /// instead of a text badge.
   final String? platformOverlayAsset;
+
+  /// Average time-to-beat in whole hours (IGDB). When set, a small clock
+  /// badge is drawn over the poster. Grid/compact only; used on search cards.
+  final int? timeToBeatHours;
 
   /// Drives the border color and placeholder icon (canvas).
   final MediaType? mediaType;
@@ -429,6 +434,44 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                     widget.status!.materialIcon,
                     size: _isCompact ? 8 : 12,
                     color: Colors.white,
+                  ),
+                ),
+              ),
+
+            // Average time-to-beat (bottom-left) — search cards only.
+            if (widget.timeToBeatHours != null &&
+                !(widget.status != null &&
+                    widget.status != ItemStatus.notStarted))
+              Positioned(
+                bottom: _isCompact ? 2 : AppSpacing.xs,
+                left: _isCompact ? 2 : AppSpacing.xs,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _isCompact ? 3 : 5,
+                    vertical: _isCompact ? 1 : 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(170),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Icon(
+                        Icons.schedule,
+                        size: _isCompact ? 8 : 11,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: _isCompact ? 1 : 2),
+                      Text(
+                        S.of(context).runtimeHours(widget.timeToBeatHours!),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: _isCompact ? 7 : 9,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

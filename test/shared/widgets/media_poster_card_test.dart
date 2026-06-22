@@ -22,6 +22,7 @@ void main() {
     String? subtitle,
     MediaType? mediaType,
     IconData? placeholderIcon,
+    int? timeToBeatHours,
     VoidCallback? onTap,
     VoidCallback? onLongPress,
     VoidCallback? onOpenInCollection,
@@ -47,6 +48,7 @@ void main() {
             subtitle: subtitle,
             mediaType: mediaType,
             placeholderIcon: placeholderIcon,
+            timeToBeatHours: timeToBeatHours,
             onTap: onTap,
             onLongPress: onLongPress,
             onOpenInCollection: onOpenInCollection,
@@ -313,6 +315,47 @@ void main() {
         expect(tooltipFinder, findsOneWidget);
         final Tooltip tooltip = tester.widget<Tooltip>(tooltipFinder);
         expect(tooltip.message, 'Wolfenstein II: The New Colossus');
+      });
+    });
+
+    group('time-to-beat badge', () {
+      testWidgets('shows the formatted hours when timeToBeatHours is set',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(timeToBeatHours: 71));
+        await tester.pumpAndSettle();
+
+        expect(find.text('71h'), findsOneWidget);
+      });
+
+      testWidgets('is hidden when timeToBeatHours is null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard());
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.schedule), findsNothing);
+      });
+
+      testWidgets('is hidden when a status badge is shown',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          timeToBeatHours: 71,
+          status: ItemStatus.inProgress,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('71h'), findsNothing);
+      });
+
+      testWidgets('is not rendered on the canvas variant',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          variant: CardVariant.canvas,
+          mediaType: MediaType.game,
+          timeToBeatHours: 71,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('71h'), findsNothing);
       });
     });
 

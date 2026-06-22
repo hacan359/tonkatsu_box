@@ -1,3 +1,5 @@
+import 'game_time_to_beat.dart';
+
 /// Модель игры из IGDB.
 ///
 /// Представляет игру с метаданными из IGDB API.
@@ -16,6 +18,7 @@ class Game {
     this.externalUrl,
     this.cachedAt,
     this.artworkUrl,
+    this.timeToBeat,
   });
 
   /// Создаёт [Game] из JSON ответа IGDB API.
@@ -162,6 +165,12 @@ class Game {
   /// URL artwork для фонового изображения.
   final String? artworkUrl;
 
+  /// Среднее время прохождения (IGDB `game_time_to_beats`).
+  ///
+  /// Транзиентное поле: подтягивается при поиске, в базе не хранится
+  /// (исключено из [toDb] / [fromDb] / [fromJson]).
+  final GameTimeToBeat? timeToBeat;
+
   /// Возвращает год релиза или null.
   int? get releaseYear => releaseDate?.year;
 
@@ -238,6 +247,7 @@ class Game {
     String? externalUrl,
     int? cachedAt,
     String? artworkUrl,
+    GameTimeToBeat? timeToBeat,
   }) {
     return Game(
       id: id ?? this.id,
@@ -252,6 +262,7 @@ class Game {
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
       artworkUrl: artworkUrl ?? this.artworkUrl,
+      timeToBeat: timeToBeat ?? this.timeToBeat,
     );
   }
 }

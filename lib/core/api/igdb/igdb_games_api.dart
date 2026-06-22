@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../../shared/models/game.dart';
+import '../../../shared/models/game_time_to_beat.dart';
 import 'igdb_http_client.dart';
 import 'igdb_types.dart';
 
@@ -305,6 +306,57 @@ class IgdbGamesApi {
       return allGames;
     } on DioException catch (e) {
       throw _client.handleDioException(e, 'Failed to fetch games');
+    }
+  }
+
+  /// Fetches average time-to-beat for the given IGDB game ids.
+  ///
+  /// Returns a map keyed by game id; games without time-to-beat data are
+  /// simply absent. Times are kept in seconds (IGDB's unit).
+  Future<Map<int, GameTimeToBeat>> getTimeToBeat(List<int> gameIds) async {
+    _client.ensureCredentials();
+
+    if (gameIds.isEmpty) {
+      return <int, GameTimeToBeat>{};
+    }
+
+    try {
+      final Map<int, GameTimeToBeat> result = <int, GameTimeToBeat>{};
+
+      // IGDB caps a single request at 500 records.
+      for (int i = 0; i < gameIds.length; i += 500) {
+        final List<int> batch = gameIds.sublist(
+          i,
+          i + 500 > gameIds.length ? gameIds.length : i + 500,
+        );
+
+        final String idsString = batch.join(',');
+
+        final Response<dynamic> response = await _client.post(
+          '/game_time_to_beats',
+          data: 'fields game_id,hastily,normally,completely,count; '
+              'where game_id = ($idsString); limit 500;',
+        );
+
+        if (response.statusCode != 200 || response.data == null) {
+          throw IgdbApiException(
+            'Failed to fetch time to beat',
+            statusCode: response.statusCode,
+          );
+        }
+
+        final List<dynamic> data = response.data as List<dynamic>;
+        for (final dynamic item in data) {
+          final Map<String, dynamic> map = item as Map<String, dynamic>;
+          final int? gameId = map['game_id'] as int?;
+          if (gameId == null) continue;
+          result[gameId] = GameTimeToBeat.fromJson(map);
+        }
+      }
+
+      return result;
+    } on DioException catch (e) {
+      throw _client.handleDioException(e, 'Failed to fetch time to beat');
     }
   }
 

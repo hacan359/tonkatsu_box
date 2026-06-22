@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/api_key_initializer.dart';
 import '../../shared/models/game.dart';
+import '../../shared/models/game_time_to_beat.dart';
 import '../../shared/models/platform.dart';
 import 'igdb/igdb_games_api.dart';
 import 'igdb/igdb_genres_api.dart';
@@ -119,6 +120,9 @@ class IgdbApi {
 
   Future<List<Game>> getGamesByIds(List<int> gameIds) =>
       _games.getGamesByIds(gameIds);
+
+  Future<Map<int, GameTimeToBeat>> getTimeToBeat(List<int> gameIds) =>
+      _games.getTimeToBeat(gameIds);
 
   Future<List<Game>> getTopGamesByPlatform({
     required int platformId,
