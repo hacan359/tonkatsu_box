@@ -14,6 +14,7 @@ import 'package:tonkatsu_box/shared/models/collection_tag.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart' as p;
 import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/filter_subfilter_bar.dart';
 
 class TestSettingsNotifier extends SettingsNotifier {
   TestSettingsNotifier({this.hideEmptyChevrons = false});
@@ -294,7 +295,7 @@ void main() {
       });
     });
 
-    group('формат (ChoiceChip)', () {
+    group('формат (чипы)', () {
       testWidgets(
         'shows manga format chips when manga is selected and items carry formats',
         (WidgetTester tester) async {
@@ -312,8 +313,8 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(tester.takeException(), isNull);
-          expect(find.widgetWithText(ChoiceChip, 'Manga'), findsOneWidget);
-          expect(find.widgetWithText(ChoiceChip, 'Manhwa'), findsOneWidget);
+          expect(find.byType(FilterTabChip), findsWidgets);
+          expect(find.text('Manhwa'), findsOneWidget);
         },
       );
 
@@ -332,12 +333,12 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
     });
 
-    group('платформы (ChoiceChip)', () {
+    group('платформы (чипы)', () {
       testWidgets(
         'should show платформы из игровых элементов когда активен фильтр Games',
         (WidgetTester tester) async {
@@ -406,7 +407,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -436,7 +437,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -453,7 +454,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -499,7 +500,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -518,7 +519,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
     });

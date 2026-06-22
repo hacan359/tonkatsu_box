@@ -14,15 +14,20 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   Manga and anime cards now caption the specific format (Manhwa, OVA, Light
   Novel, …) instead of the generic "Manga"/"Anime"; titles with no reported
   format keep the generic caption. Selecting the Manga or Anime filter chevron —
-  inside a collection and on the Home tab — reveals a row of format subfilter
-  chips built from the formats actually present, mirroring the platform
-  subfilter for games. The format filter narrows the whole list to the chosen
-  format like the platform filter does for games — everything else is hidden;
-  selecting both a manga and an anime format keeps either.
+  inside a collection and on the Home tab — reveals format subfilter chips built
+  from the formats actually present, mirroring the platform subfilter for games.
+  Game-platform, manga-format and anime-format subfilters share one row, each
+  drawn as a flat underline tab tinted with its media-type accent. The format
+  filter narrows the whole list to the chosen format like the platform filter
+  does for games — everything else is hidden; selecting both a manga and an
+  anime format keeps either.
 
-  * lib/shared/utils/media_format.dart (MediaFormat.present, MediaFormat.matches, MediaFormat.label, MediaFormat.mangaOrder, MediaFormat.animeOrder):
+  * lib/shared/utils/media_format.dart (MediaFormat.present, MediaFormat.matchesFormatFilter, MediaFormat.label, MediaFormat.mangaOrder, MediaFormat.animeOrder):
     New — shared helper for format chip ordering, display labels, presence
-    extraction, and type-scoped match testing.
+    extraction, and the global narrowing match test.
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar, FilterTabChip, SubfilterChipData):
+    New — single-row, media-type-tinted subfilter chip bar shared by the
+    collection and Home filter bars.
   * lib/shared/models/manga.dart (Manga.mangaFormatLabel), lib/shared/models/anime.dart (Anime.animeFormatLabel):
     Extract the format-to-label mapping into a static method; the instance
     `formatLabel` getter delegates to it.
@@ -35,14 +40,14 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     Pass `typeLabelOverride: item.formatLabel` when building poster cards.
   * lib/features/collections/helpers/collection_filters.dart (CollectionFilters.mangaFormats, CollectionFilters.animeFormats, CollectionFilters.apply):
     New format filter sets, applied as a single global narrowing pass.
-  * lib/features/collections/widgets/collection_filter_bar.dart (CollectionFilterBar.filterMangaFormats, CollectionFilterBar.filterAnimeFormats, CollectionFilterBar.onMangaFormatToggled, CollectionFilterBar.onAnimeFormatToggled, _CollectionFilterBarState._buildFormatChipsRow, _CollectionFilterBarState._formatsFor, _CollectionFilterBarState._buildChoiceChip):
-    Render the manga/anime format chip rows; extract a shared chip builder
-    reused by the platform row.
+  * lib/features/collections/widgets/collection_filter_bar.dart (CollectionFilterBar.filterMangaFormats, CollectionFilterBar.filterAnimeFormats, CollectionFilterBar.onMangaFormatToggled, CollectionFilterBar.onAnimeFormatToggled, _CollectionFilterBarState._subfilterGroups, _CollectionFilterBarState._formatGroup, _CollectionFilterBarState._formatsFor):
+    Build the platform / manga / anime subfilter groups for the shared
+    `SubfilterBar`.
   * lib/features/collections/screens/collection_screen.dart (_CollectionScreenState.onMangaFormatToggled, _CollectionScreenState.onTypeToggled):
     Track the format filter sets, wire toggle handlers, and clear a type's
     formats when the type is deselected.
-  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState._buildFormatRow, _AllItemsScreenState._buildFormatChip, _AllItemsScreenState._buildChoiceChip, _AllItemsScreenState._matchesNonTypeFilters, _AllItemsScreenState._toggleMediaType):
-    Home-tab format chip rows, filtering, and clear-on-deselect.
+  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState._subfilterGroups, _AllItemsScreenState._formatGroup, _AllItemsScreenState._matchesNonTypeFilters, _AllItemsScreenState._toggleMediaType):
+    Home-tab subfilter groups, filtering, and clear-on-deselect.
 
 - **Inline manage buttons on wishlist cards** — resolve/unresolve, edit and delete on each card, next to the existing context menu.
 

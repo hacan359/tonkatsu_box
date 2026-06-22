@@ -18,6 +18,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/helpers/collection_actions.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
@@ -76,9 +77,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return Column(
       children: <Widget>[
         _buildMediaTypeBar(itemsAsync, filterStatus, tagsMap, searchQuery),
-        _buildPlatformsRow(),
-        _buildFormatRow(MediaType.manga, itemsAsync),
-        _buildFormatRow(MediaType.anime, itemsAsync),
+        SubfilterBar(groups: _subfilterGroups(itemsAsync)),
         if (selectedItems.isNotEmpty)
           BulkActionBar(
             items: selectedItems,
@@ -273,136 +272,58 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  /// Platform chips row, visible only while Games is selected.
-  Widget _buildPlatformsRow() {
-    if (!_selectedTypes.contains(MediaType.game)) {
-      return const SizedBox.shrink();
-    }
-    final AsyncValue<List<Platform>> platformsAsync =
-        ref.watch(allItemsPlatformsProvider);
-    final List<Platform> platforms =
-        platformsAsync.valueOrNull ?? <Platform>[];
-    if (platforms.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: <Widget>[
-            for (final Platform p in platforms) ...<Widget>[
-              _buildPlatformChip(p),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlatformChip(Platform platform) {
-    return _buildChoiceChip(
-      label: platform.displayName,
-      selected: _selectedPlatformIds.contains(platform.id),
-      onSelected: (bool value) {
-        setState(() {
-          if (value) {
-            _selectedPlatformIds.add(platform.id);
-          } else {
-            _selectedPlatformIds.remove(platform.id);
-          }
-        });
-      },
-    );
-  }
-
-  /// Format chip row for [type] (manga or anime), visible only while that type
-  /// is selected and at least one format is present across all items.
-  Widget _buildFormatRow(
-    MediaType type,
+  /// One subfilter group per active type — game platforms, manga formats,
+  /// anime formats — each tinted with its media-type accent, on one row.
+  List<List<SubfilterChipData>> _subfilterGroups(
     AsyncValue<List<CollectionItem>> itemsAsync,
   ) {
-    if (!_selectedTypes.contains(type)) return const SizedBox.shrink();
     final List<CollectionItem> items =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
-    final List<String> formats = MediaFormat.present(items, type);
-    if (formats.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: <Widget>[
-            for (final String code in formats) ...<Widget>[
-              _buildFormatChip(type, code),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-          ],
-        ),
-      ),
-    );
+    return <List<SubfilterChipData>>[
+      if (_selectedTypes.contains(MediaType.game))
+        <SubfilterChipData>[
+          for (final Platform p
+              in ref.watch(allItemsPlatformsProvider).valueOrNull ??
+                  const <Platform>[])
+            SubfilterChipData(
+              label: p.displayName,
+              accent: MediaTypeTheme.colorFor(MediaType.game),
+              selected: _selectedPlatformIds.contains(p.id),
+              onTap: () => setState(() {
+                if (_selectedPlatformIds.contains(p.id)) {
+                  _selectedPlatformIds.remove(p.id);
+                } else {
+                  _selectedPlatformIds.add(p.id);
+                }
+              }),
+            ),
+        ],
+      _formatGroup(MediaType.manga, _selectedMangaFormats, items),
+      _formatGroup(MediaType.anime, _selectedAnimeFormats, items),
+    ];
   }
 
-  Widget _buildFormatChip(MediaType type, String code) {
-    final Set<String> selectedSet = type == MediaType.manga
-        ? _selectedMangaFormats
-        : _selectedAnimeFormats;
-
-    return _buildChoiceChip(
-      label: MediaFormat.label(type, code),
-      selected: selectedSet.contains(code),
-      onSelected: (bool value) {
-        setState(() {
-          if (value) {
-            selectedSet.add(code);
-          } else {
-            selectedSet.remove(code);
-          }
-        });
-      },
-    );
-  }
-
-  Widget _buildChoiceChip({
-    required String label,
-    required bool selected,
-    required ValueChanged<bool> onSelected,
-  }) {
-    const Color accentColor = AppColors.brand;
-
-    return ChoiceChip(
-      label: Text(
-        label,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : AppColors.textTertiary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+  List<SubfilterChipData> _formatGroup(
+    MediaType type,
+    Set<String> selected,
+    List<CollectionItem> items,
+  ) {
+    if (!_selectedTypes.contains(type)) return const <SubfilterChipData>[];
+    return <SubfilterChipData>[
+      for (final String code in MediaFormat.present(items, type))
+        SubfilterChipData(
+          label: MediaFormat.label(type, code),
+          accent: MediaTypeTheme.colorFor(type),
+          selected: selected.contains(code),
+          onTap: () => setState(() {
+            if (selected.contains(code)) {
+              selected.remove(code);
+            } else {
+              selected.add(code);
+            }
+          }),
         ),
-      ),
-      selected: selected,
-      selectedColor: accentColor,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected ? Colors.transparent : accentColor.withAlpha(50),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: onSelected,
-    );
+    ];
   }
 
   void _toggleMediaType(MediaType type) {

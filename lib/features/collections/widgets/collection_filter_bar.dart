@@ -13,9 +13,9 @@ import '../../../shared/models/platform.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import 'collection_filter_sheet.dart';
@@ -120,11 +120,53 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         _buildTypeChevronBar(l, stats),
-        _buildPlatformChipsRow(),
-        _buildFormatChipsRow(MediaType.manga),
-        _buildFormatChipsRow(MediaType.anime),
+        SubfilterBar(groups: _subfilterGroups()),
       ],
     );
+  }
+
+  /// One subfilter group per active type — game platforms, manga formats,
+  /// anime formats — each tinted with its media-type accent.
+  List<List<SubfilterChipData>> _subfilterGroups() {
+    return <List<SubfilterChipData>>[
+      if (widget.filterTypes.contains(MediaType.game))
+        <SubfilterChipData>[
+          for (final Platform p in _extractPlatforms())
+            SubfilterChipData(
+              label: p.displayName,
+              accent: MediaTypeTheme.colorFor(MediaType.game),
+              selected: widget.filterPlatformIds.contains(p.id),
+              onTap: () => widget.onPlatformToggled(p.id),
+            ),
+        ],
+      _formatGroup(
+        MediaType.manga,
+        widget.filterMangaFormats,
+        widget.onMangaFormatToggled,
+      ),
+      _formatGroup(
+        MediaType.anime,
+        widget.filterAnimeFormats,
+        widget.onAnimeFormatToggled,
+      ),
+    ];
+  }
+
+  List<SubfilterChipData> _formatGroup(
+    MediaType type,
+    Set<String> selected,
+    ValueChanged<String?> onToggled,
+  ) {
+    if (!widget.filterTypes.contains(type)) return const <SubfilterChipData>[];
+    return <SubfilterChipData>[
+      for (final String code in _formatsFor(type))
+        SubfilterChipData(
+          label: MediaFormat.label(type, code),
+          accent: MediaTypeTheme.colorFor(type),
+          selected: selected.contains(code),
+          onTap: () => onToggled(code),
+        ),
+    ];
   }
 
   Widget _buildTypeChevronBar(S l, CollectionStats? stats) {
@@ -213,114 +255,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       ),
       tintWhenInactive: true,
       compact: true,
-    );
-  }
-
-  Widget _buildPlatformChipsRow() {
-    if (!widget.filterTypes.contains(MediaType.game)) {
-      return const SizedBox.shrink();
-    }
-    final List<Platform> platforms = _extractPlatforms();
-    if (platforms.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: <Widget>[
-            for (final Platform p in platforms) ...<Widget>[
-              _buildPlatformChip(p),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlatformChip(Platform platform) {
-    return _buildChoiceChip(
-      label: platform.displayName,
-      selected: widget.filterPlatformIds.contains(platform.id),
-      onToggled: () => widget.onPlatformToggled(platform.id),
-    );
-  }
-
-  /// Format chip row for [type] (manga or anime); mirrors the platform row.
-  /// Visible only while [type] is selected and at least one format is present.
-  Widget _buildFormatChipsRow(MediaType type) {
-    if (!widget.filterTypes.contains(type)) {
-      return const SizedBox.shrink();
-    }
-    final List<String> formats = _formatsFor(type);
-    if (formats.isEmpty) return const SizedBox.shrink();
-
-    final Set<String> selected = type == MediaType.manga
-        ? widget.filterMangaFormats
-        : widget.filterAnimeFormats;
-    final ValueChanged<String?> onToggled = type == MediaType.manga
-        ? widget.onMangaFormatToggled
-        : widget.onAnimeFormatToggled;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: <Widget>[
-            for (final String code in formats) ...<Widget>[
-              _buildChoiceChip(
-                label: MediaFormat.label(type, code),
-                selected: selected.contains(code),
-                onToggled: () => onToggled(code),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildChoiceChip({
-    required String label,
-    required bool selected,
-    required VoidCallback onToggled,
-  }) {
-    const Color accentColor = AppColors.brand;
-
-    return ChoiceChip(
-      label: Text(
-        label,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : AppColors.textTertiary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      selected: selected,
-      selectedColor: accentColor,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected ? Colors.transparent : accentColor.withAlpha(50),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) => onToggled(),
     );
   }
 
