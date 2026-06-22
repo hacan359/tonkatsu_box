@@ -79,17 +79,42 @@ class ConfigService {
     SettingsKeys.raUsername,
     SettingsKeys.steamApiKey,
     SettingsKeys.steamId,
+    SettingsKeys.steamRememberCredentials,
     SettingsKeys.aniListUsername,
     SettingsKeys.defaultAuthor,
     SettingsKeys.tmdbLanguage,
+    SettingsKeys.appLanguage,
     SettingsKeys.dateFormat,
     SettingsKeys.animeMangaTitleLanguage,
+    // Display & feature toggles.
+    SettingsKeys.showRecommendations,
+    SettingsKeys.showBlurayOverlay,
+    SettingsKeys.showPlatformOverlay,
+    SettingsKeys.discordRpcEnabled,
+    SettingsKeys.discordRaSyncEnabled,
+    SettingsKeys.richCollectionsEnabled,
+    SettingsKeys.hideEmptyMediaTypeChevrons,
   ];
 
   /// Keys whose values are ints, not strings.
   static const List<String> _intKeys = <String>[
     SettingsKeys.tokenExpires,
     SettingsKeys.lastSync,
+  ];
+
+  /// Keys whose values are bools, not strings. Steam's "remember credentials"
+  /// flag must round-trip: the import screen only restores the saved Steam
+  /// key/id when this flag is set, so exporting the keys without it leaves
+  /// them invisible after an import.
+  static const List<String> _boolKeys = <String>[
+    SettingsKeys.steamRememberCredentials,
+    SettingsKeys.showRecommendations,
+    SettingsKeys.showBlurayOverlay,
+    SettingsKeys.showPlatformOverlay,
+    SettingsKeys.discordRpcEnabled,
+    SettingsKeys.discordRaSyncEnabled,
+    SettingsKeys.richCollectionsEnabled,
+    SettingsKeys.hideEmptyMediaTypeChevrons,
   ];
 
   Map<String, Object> collectSettings() {
@@ -100,6 +125,11 @@ class ConfigService {
     for (final String key in _settingsKeys) {
       if (_intKeys.contains(key)) {
         final int? value = _prefs.getInt(key);
+        if (value != null) {
+          config[key] = value;
+        }
+      } else if (_boolKeys.contains(key)) {
+        final bool? value = _prefs.getBool(key);
         if (value != null) {
           config[key] = value;
         }
@@ -128,6 +158,11 @@ class ConfigService {
           applied++;
         } else if (value is num) {
           await _prefs.setInt(key, value.toInt());
+          applied++;
+        }
+      } else if (_boolKeys.contains(key)) {
+        if (value is bool) {
+          await _prefs.setBool(key, value);
           applied++;
         }
       } else {

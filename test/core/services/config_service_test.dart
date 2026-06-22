@@ -115,6 +115,18 @@ void main() {
         expect(config[SettingsKeys.aniListUsername], equals('anilist_user'));
       });
 
+      test('должен собрать bool ключи (галки)', () async {
+        await prefs.setBool(SettingsKeys.steamRememberCredentials, true);
+        await prefs.setBool(SettingsKeys.showRecommendations, false);
+        await prefs.setBool(SettingsKeys.discordRpcEnabled, true);
+
+        final Map<String, Object> config = sut.collectSettings();
+
+        expect(config[SettingsKeys.steamRememberCredentials], isTrue);
+        expect(config[SettingsKeys.showRecommendations], isFalse);
+        expect(config[SettingsKeys.discordRpcEnabled], isTrue);
+      });
+
       test('должен собрать int ключи', () async {
         await prefs.setInt(SettingsKeys.tokenExpires, 1234567890);
         await prefs.setInt(SettingsKeys.lastSync, 9876543210);
@@ -260,6 +272,35 @@ void main() {
           prefs.getString(SettingsKeys.aniListUsername),
           equals('anilist_user'),
         );
+      });
+
+      test('должен применить bool ключи (галки)', () async {
+        final int applied = await sut.applySettings(<String, Object?>{
+          SettingsKeys.steamRememberCredentials: true,
+          SettingsKeys.showBlurayOverlay: false,
+          SettingsKeys.richCollectionsEnabled: true,
+        });
+
+        expect(applied, equals(3));
+        expect(prefs.getBool(SettingsKeys.steamRememberCredentials), isTrue);
+        expect(prefs.getBool(SettingsKeys.showBlurayOverlay), isFalse);
+        expect(prefs.getBool(SettingsKeys.richCollectionsEnabled), isTrue);
+      });
+
+      test('bool ключ со значением false должен round-trip-нуться', () async {
+        // Регресс: Steam-ключи не «возвращались», потому что флаг
+        // steamRememberCredentials (bool) не входил в конфиг.
+        await prefs.setBool(SettingsKeys.steamRememberCredentials, true);
+        await prefs.setBool(SettingsKeys.showPlatformOverlay, false);
+
+        final Map<String, Object> config = sut.collectSettings();
+
+        await prefs.clear();
+        final int applied = await sut.applySettings(config);
+
+        expect(applied, greaterThanOrEqualTo(2));
+        expect(prefs.getBool(SettingsKeys.steamRememberCredentials), isTrue);
+        expect(prefs.getBool(SettingsKeys.showPlatformOverlay), isFalse);
       });
 
       test('должен перезаписать существующие значения', () async {
