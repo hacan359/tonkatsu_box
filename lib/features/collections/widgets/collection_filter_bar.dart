@@ -14,6 +14,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
@@ -26,6 +27,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.itemsAsync,
     required this.filterTypes,
     required this.filterPlatformIds,
+    required this.filterMangaFormats,
+    required this.filterAnimeFormats,
     required this.filterTagIds,
     required this.filterStatus,
     this.effectiveStatusForCounts,
@@ -33,6 +36,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     this.searchQuery = '',
     required this.onTypeToggled,
     required this.onPlatformToggled,
+    required this.onMangaFormatToggled,
+    required this.onAnimeFormatToggled,
     required this.onTagToggled,
     required this.onStatusChanged,
     required this.onGroupToggled,
@@ -51,6 +56,12 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   final Set<int> filterPlatformIds;
 
+  /// Active manga `format` subfilter codes.
+  final Set<String> filterMangaFormats;
+
+  /// Active anime `format` subfilter codes.
+  final Set<String> filterAnimeFormats;
+
   final Set<int> filterTagIds;
 
   final ItemStatus? filterStatus;
@@ -68,6 +79,10 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   final ValueChanged<MediaType?> onTypeToggled;
 
   final ValueChanged<int?> onPlatformToggled;
+
+  final ValueChanged<String?> onMangaFormatToggled;
+
+  final ValueChanged<String?> onAnimeFormatToggled;
 
   final ValueChanged<int?> onTagToggled;
 
@@ -91,6 +106,11 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   List<Platform>? _cachedPlatforms;
   List<CollectionItem>? _cachedPlatformsSource;
 
+  /// Cached manga/anime format lists, invalidated on items-list identity.
+  List<CollectionItem>? _cachedFormatsSource;
+  List<String>? _cachedMangaFormats;
+  List<String>? _cachedAnimeFormats;
+
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -101,6 +121,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       children: <Widget>[
         _buildTypeChevronBar(l, stats),
         _buildPlatformChipsRow(),
+        _buildFormatChipsRow(MediaType.manga),
+        _buildFormatChipsRow(MediaType.anime),
       ],
     );
   }
@@ -223,12 +245,64 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   }
 
   Widget _buildPlatformChip(Platform platform) {
-    final bool selected = widget.filterPlatformIds.contains(platform.id);
+    return _buildChoiceChip(
+      label: platform.displayName,
+      selected: widget.filterPlatformIds.contains(platform.id),
+      onToggled: () => widget.onPlatformToggled(platform.id),
+    );
+  }
+
+  /// Format chip row for [type] (manga or anime); mirrors the platform row.
+  /// Visible only while [type] is selected and at least one format is present.
+  Widget _buildFormatChipsRow(MediaType type) {
+    if (!widget.filterTypes.contains(type)) {
+      return const SizedBox.shrink();
+    }
+    final List<String> formats = _formatsFor(type);
+    if (formats.isEmpty) return const SizedBox.shrink();
+
+    final Set<String> selected = type == MediaType.manga
+        ? widget.filterMangaFormats
+        : widget.filterAnimeFormats;
+    final ValueChanged<String?> onToggled = type == MediaType.manga
+        ? widget.onMangaFormatToggled
+        : widget.onAnimeFormatToggled;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.xs,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: <Widget>[
+            for (final String code in formats) ...<Widget>[
+              _buildChoiceChip(
+                label: MediaFormat.label(type, code),
+                selected: selected.contains(code),
+                onToggled: () => onToggled(code),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChoiceChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onToggled,
+  }) {
     const Color accentColor = AppColors.brand;
 
     return ChoiceChip(
       label: Text(
-        platform.displayName,
+        label,
         style: AppTypography.caption.copyWith(
           color: selected ? AppColors.background : AppColors.textTertiary,
           fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
@@ -246,10 +320,23 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        widget.onPlatformToggled(platform.id);
-      },
+      onSelected: (bool value) => onToggled(),
     );
+  }
+
+  List<String> _formatsFor(MediaType type) {
+    final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
+    if (items == null) return const <String>[];
+
+    if (!identical(_cachedFormatsSource, items)) {
+      _cachedFormatsSource = items;
+      _cachedMangaFormats = MediaFormat.present(items, MediaType.manga);
+      _cachedAnimeFormats = MediaFormat.present(items, MediaType.anime);
+    }
+    return (type == MediaType.manga
+            ? _cachedMangaFormats
+            : _cachedAnimeFormats) ??
+        const <String>[];
   }
 
   Widget _buildSortSegment(BuildContext context) {

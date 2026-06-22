@@ -8,6 +8,7 @@ import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
@@ -111,6 +112,7 @@ CollectionItem createTestCollectionItem({
   TvShow? tvShow,
   VisualNovel? visualNovel,
   Manga? manga,
+  Anime? anime,
   Book? book,
   Platform? platform,
 }) {
@@ -139,6 +141,7 @@ CollectionItem createTestCollectionItem({
     tvShow: tvShow,
     visualNovel: visualNovel,
     manga: manga,
+    anime: anime,
     book: book,
     platform: platform,
   );
@@ -283,6 +286,28 @@ Manga createTestManga({
     averageScore: averageScore,
     chapters: chapters,
     volumes: volumes,
+    format: format,
+    genres: genres,
+  );
+}
+
+Anime createTestAnime({
+  int id = 600,
+  String title = 'Test Anime',
+  String? description,
+  String? coverUrl,
+  int? averageScore,
+  int? episodes,
+  String? format,
+  List<String>? genres,
+}) {
+  return Anime(
+    id: id,
+    title: title,
+    description: description,
+    coverUrl: coverUrl,
+    averageScore: averageScore,
+    episodes: episodes,
     format: format,
     genres: genres,
   );

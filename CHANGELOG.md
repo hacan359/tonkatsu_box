@@ -7,6 +7,43 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Show manga/anime format on cards and filter by it**
+
+  Manga and anime cards now caption the specific format (Manhwa, OVA, Light
+  Novel, …) instead of the generic "Manga"/"Anime"; titles with no reported
+  format keep the generic caption. Selecting the Manga or Anime filter chevron —
+  inside a collection and on the Home tab — reveals a row of format subfilter
+  chips built from the formats actually present, mirroring the platform
+  subfilter for games. The format filter narrows the whole list to the chosen
+  format like the platform filter does for games — everything else is hidden;
+  selecting both a manga and an anime format keeps either.
+
+  * lib/shared/utils/media_format.dart (MediaFormat.present, MediaFormat.matches, MediaFormat.label, MediaFormat.mangaOrder, MediaFormat.animeOrder):
+    New — shared helper for format chip ordering, display labels, presence
+    extraction, and type-scoped match testing.
+  * lib/shared/models/manga.dart (Manga.mangaFormatLabel), lib/shared/models/anime.dart (Anime.animeFormatLabel):
+    Extract the format-to-label mapping into a static method; the instance
+    `formatLabel` getter delegates to it.
+  * lib/shared/models/collection_item.dart (CollectionItem.formatLabel): New
+    getter returning the manga/anime format label, null for other media types.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.typeLabelOverride):
+    New optional caption that replaces the media-type label in the subtitle row,
+    falling back to the localized type label when null.
+  * lib/features/collections/widgets/collection_items_view.dart, lib/features/search/widgets/browse_grid.dart, lib/features/home/screens/all_items_screen.dart:
+    Pass `typeLabelOverride: item.formatLabel` when building poster cards.
+  * lib/features/collections/helpers/collection_filters.dart (CollectionFilters.mangaFormats, CollectionFilters.animeFormats, CollectionFilters.apply):
+    New format filter sets, applied as a single global narrowing pass.
+  * lib/features/collections/widgets/collection_filter_bar.dart (CollectionFilterBar.filterMangaFormats, CollectionFilterBar.filterAnimeFormats, CollectionFilterBar.onMangaFormatToggled, CollectionFilterBar.onAnimeFormatToggled, _CollectionFilterBarState._buildFormatChipsRow, _CollectionFilterBarState._formatsFor, _CollectionFilterBarState._buildChoiceChip):
+    Render the manga/anime format chip rows; extract a shared chip builder
+    reused by the platform row.
+  * lib/features/collections/screens/collection_screen.dart (_CollectionScreenState.onMangaFormatToggled, _CollectionScreenState.onTypeToggled):
+    Track the format filter sets, wire toggle handlers, and clear a type's
+    formats when the type is deselected.
+  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState._buildFormatRow, _AllItemsScreenState._buildFormatChip, _AllItemsScreenState._buildChoiceChip, _AllItemsScreenState._matchesNonTypeFilters, _AllItemsScreenState._toggleMediaType):
+    Home-tab format chip rows, filtering, and clear-on-deselect.
+
 ## [0.35.0] - 2026-06-19
 
 ### Added

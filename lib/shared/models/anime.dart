@@ -258,7 +258,11 @@ class Anime {
 
   String? get studiosString => studios?.join(', ');
 
-  String? get formatLabel => switch (format) {
+  String? get formatLabel => animeFormatLabel(format);
+
+  /// Maps an AniList anime [format] code to a display label.
+  /// Returns the raw code for unrecognised values and `null` when absent.
+  static String? animeFormatLabel(String? format) => switch (format) {
         'TV' => 'TV',
         'TV_SHORT' => 'TV Short',
         'MOVIE' => 'Movie',

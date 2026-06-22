@@ -2689,5 +2689,61 @@ void main() {
         expect(item.displayName('english'), 'Unknown Anime');
       });
     });
+
+    group('formatLabel', () {
+      final DateTime now = DateTime(2024);
+
+      test('returns the manga format label for manga items', () {
+        const Manga manga = Manga(id: 1, title: 'M', format: 'MANHWA');
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.manga,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          manga: manga,
+        );
+        expect(item.formatLabel, 'Manhwa');
+      });
+
+      test('returns the anime format label for anime items', () {
+        const Anime anime = Anime(id: 1, title: 'A', format: 'OVA');
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.anime,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          anime: anime,
+        );
+        expect(item.formatLabel, 'OVA');
+      });
+
+      test('is null for non manga/anime media types', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.formatLabel, isNull);
+      });
+
+      test('is null when the manga model is absent', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.manga,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.formatLabel, isNull);
+      });
+    });
   });
 }

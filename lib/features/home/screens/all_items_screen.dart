@@ -16,6 +16,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/helpers/collection_actions.dart';
@@ -41,6 +42,8 @@ class AllItemsScreen extends ConsumerStatefulWidget {
 class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   final Set<MediaType> _selectedTypes = <MediaType>{};
   final Set<int> _selectedPlatformIds = <int>{};
+  final Set<String> _selectedMangaFormats = <String>{};
+  final Set<String> _selectedAnimeFormats = <String>{};
 
   static const double _desktopMaxCardWidth = 170;
 
@@ -74,6 +77,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       children: <Widget>[
         _buildMediaTypeBar(itemsAsync, filterStatus, tagsMap, searchQuery),
         _buildPlatformsRow(),
+        _buildFormatRow(MediaType.manga, itemsAsync),
+        _buildFormatRow(MediaType.anime, itemsAsync),
         if (selectedItems.isNotEmpty)
           BulkActionBar(
             items: selectedItems,
@@ -130,6 +135,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     if (_selectedPlatformIds.isNotEmpty &&
         (item.platformId == null ||
             !_selectedPlatformIds.contains(item.platformId))) {
+      return false;
+    }
+    if (!MediaFormat.matchesFormatFilter(
+      item,
+      mangaFormats: _selectedMangaFormats,
+      animeFormats: _selectedAnimeFormats,
+    )) {
       return false;
     }
     if (lowerQuery.isNotEmpty) {
@@ -294,12 +306,84 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   }
 
   Widget _buildPlatformChip(Platform platform) {
-    final bool selected = _selectedPlatformIds.contains(platform.id);
+    return _buildChoiceChip(
+      label: platform.displayName,
+      selected: _selectedPlatformIds.contains(platform.id),
+      onSelected: (bool value) {
+        setState(() {
+          if (value) {
+            _selectedPlatformIds.add(platform.id);
+          } else {
+            _selectedPlatformIds.remove(platform.id);
+          }
+        });
+      },
+    );
+  }
+
+  /// Format chip row for [type] (manga or anime), visible only while that type
+  /// is selected and at least one format is present across all items.
+  Widget _buildFormatRow(
+    MediaType type,
+    AsyncValue<List<CollectionItem>> itemsAsync,
+  ) {
+    if (!_selectedTypes.contains(type)) return const SizedBox.shrink();
+    final List<CollectionItem> items =
+        itemsAsync.valueOrNull ?? const <CollectionItem>[];
+    final List<String> formats = MediaFormat.present(items, type);
+    if (formats.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.xs,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: <Widget>[
+            for (final String code in formats) ...<Widget>[
+              _buildFormatChip(type, code),
+              const SizedBox(width: AppSpacing.xs),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormatChip(MediaType type, String code) {
+    final Set<String> selectedSet = type == MediaType.manga
+        ? _selectedMangaFormats
+        : _selectedAnimeFormats;
+
+    return _buildChoiceChip(
+      label: MediaFormat.label(type, code),
+      selected: selectedSet.contains(code),
+      onSelected: (bool value) {
+        setState(() {
+          if (value) {
+            selectedSet.add(code);
+          } else {
+            selectedSet.remove(code);
+          }
+        });
+      },
+    );
+  }
+
+  Widget _buildChoiceChip({
+    required String label,
+    required bool selected,
+    required ValueChanged<bool> onSelected,
+  }) {
     const Color accentColor = AppColors.brand;
 
     return ChoiceChip(
       label: Text(
-        platform.displayName,
+        label,
         style: AppTypography.caption.copyWith(
           color: selected ? AppColors.background : AppColors.textTertiary,
           fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
@@ -317,15 +401,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        setState(() {
-          if (value) {
-            _selectedPlatformIds.add(platform.id);
-          } else {
-            _selectedPlatformIds.remove(platform.id);
-          }
-        });
-      },
+      onSelected: onSelected,
     );
   }
 
@@ -338,6 +414,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       }
       if (!_selectedTypes.contains(MediaType.game)) {
         _selectedPlatformIds.clear();
+      }
+      if (!_selectedTypes.contains(MediaType.manga)) {
+        _selectedMangaFormats.clear();
+      }
+      if (!_selectedTypes.contains(MediaType.anime)) {
+        _selectedAnimeFormats.clear();
       }
     });
   }
@@ -471,6 +553,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                             mediaTypeOverlay: item.mediaType.overlayAsset,
                           ),
                       mediaType: item.mediaType,
+                      typeLabelOverride: item.formatLabel,
                       status: item.status,
                       tagName: tag?.name,
                       tagColor: tag?.color,

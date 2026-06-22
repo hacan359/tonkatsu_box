@@ -506,6 +506,15 @@ class CollectionItem with Exportable {
           ? customMedia!.displayType!
           : mediaType;
 
+  /// Format label for manga / anime (e.g. "Manhwa", "OVA"). `null` for other
+  /// media types or when the source did not report a format — callers fall
+  /// back to the generic media-type caption in that case.
+  String? get formatLabel => switch (mediaType) {
+        MediaType.manga => manga?.formatLabel,
+        MediaType.anime => anime?.formatLabel,
+        _ => null,
+      };
+
   String get platformName => platform?.displayName ?? 'Unknown Platform';
 
   static IconData _placeholderIconFor(MediaType type) => switch (type) {

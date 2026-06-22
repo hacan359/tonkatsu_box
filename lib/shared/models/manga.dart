@@ -352,7 +352,11 @@ class Manga {
 
   String? get authorsString => authors?.join(', ');
 
-  String? get formatLabel => switch (format) {
+  String? get formatLabel => mangaFormatLabel(format);
+
+  /// Maps an AniList / MangaBaka manga [format] code to a display label.
+  /// Returns the raw code for unrecognised values and `null` when absent.
+  static String? mangaFormatLabel(String? format) => switch (format) {
         'MANGA' => 'Manga',
         'NOVEL' => 'Novel',
         'ONE_SHOT' => 'One-shot',

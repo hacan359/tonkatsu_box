@@ -44,6 +44,7 @@ class MediaPosterCard extends StatefulWidget {
     this.year,
     this.subtitle,
     this.mediaType,
+    this.typeLabelOverride,
     this.placeholderIcon,
     this.platformLabel,
     this.platformColor,
@@ -102,6 +103,11 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Drives the border color and placeholder icon (canvas).
   final MediaType? mediaType;
+
+  /// Replaces the [mediaType] caption in the subtitle row (e.g. a manga/anime
+  /// format like "Manhwa" or "OVA"). When null, the media-type label is shown.
+  /// The caption keeps the [mediaType] accent color either way.
+  final String? typeLabelOverride;
 
   /// Fallback: [Icons.image_outlined].
   final IconData? placeholderIcon;
@@ -525,7 +531,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       );
     }
 
-    final String typeLabel = widget.mediaType!.localizedLabel(S.of(context));
+    final String typeLabel =
+        widget.typeLabelOverride ?? widget.mediaType!.localizedLabel(S.of(context));
     final Color typeColor = MediaTypeTheme.colorFor(widget.mediaType!);
 
     return Text.rich(

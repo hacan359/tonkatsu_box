@@ -395,6 +395,7 @@ class CollectionItemsView extends ConsumerWidget {
       platformColor: item.platform?.familyColor,
       platformOverlayAsset: settings.resolveOverlayFor(item),
       mediaType: item.displayMediaType,
+      typeLabelOverride: item.formatLabel,
       status: item.status,
       tagName: tag?.name,
       tagColor: tag?.color,
