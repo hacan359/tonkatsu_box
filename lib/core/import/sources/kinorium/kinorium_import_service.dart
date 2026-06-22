@@ -132,8 +132,10 @@ class KinoriumImportService implements ImportSource {
         ));
 
         if (!_isSupported(entry) || !entry.hasValidQuery) {
-          errors.add('Skipped "${entry.title}" (unsupported type)');
-          skipped++;
+          // Not representable as a collection item (episodes, unrecognized
+          // types). Route to the wishlist instead of dropping, so nothing the
+          // file lists disappears silently.
+          unmatched.add(entry);
           continue;
         }
 
@@ -157,15 +159,35 @@ class KinoriumImportService implements ImportSource {
         }
       }
 
+      // Two rows can resolve to the same TMDB id (a real re-listing, or a
+      // mismatch where different titles collapse onto one film). Keep the first
+      // and send the rest to the wishlist rather than dropping them as silent
+      // duplicates, so a wrong collapse is recoverable by hand.
+      final Set<String> seenKeys = <String>{};
+      final List<(KinoriumEntry, TmdbMatch)> uniqueMatched =
+          <(KinoriumEntry, TmdbMatch)>[];
+      for (final (KinoriumEntry, TmdbMatch) pair in matched) {
+        final String key = ImportWriter.itemKey(
+          pair.$2.mediaType,
+          pair.$2.tmdbId,
+          pair.$2.platformId,
+        );
+        if (seenKeys.add(key)) {
+          uniqueMatched.add(pair);
+        } else {
+          unmatched.add(pair.$1);
+        }
+      }
+
       // Phase 2 — write the whole scope in batches.
       onProgress?.call(ImportProgress(
         stage: ImportStage.creatingCollection,
         current: 0,
         total: 1,
-        message: 'Saving ${matched.length} items...',
+        message: 'Saving ${uniqueMatched.length} items...',
       ));
 
-      await _upsertMedia(matched);
+      await _upsertMedia(uniqueMatched);
 
       final Collection? collection = await _writer.resolveCollection(
         collectionId: options.collectionId,
@@ -186,7 +208,7 @@ class KinoriumImportService implements ImportSource {
       final ImportWriteResult write = await _writer.writeItems(
         collectionId: collection.id,
         candidates: <ImportCandidate>[
-          for (final (KinoriumEntry, TmdbMatch) pair in matched)
+          for (final (KinoriumEntry, TmdbMatch) pair in uniqueMatched)
             _candidate(pair.$1, pair.$2, status, options),
         ],
       );

@@ -121,24 +121,35 @@ class TmdbMatcher {
           onRetry: onRateLimit,
         );
         await Future<void>.delayed(_throttle);
-        if (results.isNotEmpty) {
-          return _pickBest<T>(results, year, yearOf);
-        }
+        if (results.isEmpty) continue;
+        final T? pick = _pickAcceptable<T>(results, year, yearOf);
+        if (pick != null) return pick;
+        // Results came back but none fall within the requested year. TMDB's
+        // year filter matches alternate titles and any-region re-release dates,
+        // so a hit here can be an unrelated film (e.g. "The Long Night" 2019
+        // returning "Friday the 13th"). Keep trying the remaining query/year
+        // combinations instead of accepting a wrong-year guess.
       }
     }
     return null;
   }
 
-  /// Prefers a result whose year matches (year filters are dropped on later
-  /// attempts, so the first hit may be the wrong edition); otherwise the most
-  /// relevant (first) result.
-  T _pickBest<T>(List<T> results, int? year, int? Function(T result) yearOf) {
-    if (year != null) {
-      for (final T result in results) {
-        if (yearOf(result) == year) return result;
-      }
+  /// The first result whose release year equals [year]. When [year] is null the
+  /// row carries no year to enforce, so the most relevant (first) result is
+  /// taken. Returns null when a year is required but no result matches it — the
+  /// caller then widens the search (later query/year combinations) and
+  /// ultimately treats the title as unmatched. The year is checked across the
+  /// whole result list, not just the top hit, so a correct-year film ranked
+  /// below an unrelated popular one is still found.
+  T? _pickAcceptable<T>(
+      List<T> results, int? year, int? Function(T result) yearOf) {
+    if (year == null) {
+      return results.isEmpty ? null : results.first;
     }
-    return results.first;
+    for (final T result in results) {
+      if (yearOf(result) == year) return result;
+    }
+    return null;
   }
 
   /// True when TMDB genres mark the title as animation (genre name or id 16).
