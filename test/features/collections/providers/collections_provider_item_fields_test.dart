@@ -30,6 +30,11 @@ void main() {
         .thenAnswer((_) async {});
     when(() => repo.updateItemTimeSpent(any(), any()))
         .thenAnswer((_) async {});
+    when(() => repo.setItemFavorite(any(), isFavorite: any(named: 'isFavorite')))
+        .thenAnswer((_) async {});
+    // setFavorite syncs the All Items notifier, which loads via this method.
+    when(() => repo.getAllItemsWithData())
+        .thenAnswer((_) async => <CollectionItem>[]);
   });
 
   ProviderContainer makeContainer(List<CollectionItem> items) {
@@ -106,6 +111,40 @@ void main() {
 
       await n.updateAuthorComment(7, null);
       expect(readItem(n)!.authorComment, isNull);
+    });
+  });
+
+  group('favorite', () {
+    test('toggleFavorite flips false -> true, persists and reflects', () async {
+      final CollectionItemsNotifier n = await loaded(<CollectionItem>[item()]);
+
+      await n.toggleFavorite(7);
+
+      verify(() => repo.setItemFavorite(7, isFavorite: true)).called(1);
+      expect(readItem(n)!.isFavorite, isTrue);
+    });
+
+    test('toggleFavorite flips true -> false', () async {
+      final CollectionItemsNotifier n = await loaded(
+        <CollectionItem>[item().copyWith(isFavorite: true)],
+      );
+
+      await n.toggleFavorite(7);
+
+      verify(() => repo.setItemFavorite(7, isFavorite: false)).called(1);
+      expect(readItem(n)!.isFavorite, isFalse);
+    });
+
+    test('setFavorite persists the explicit value', () async {
+      final CollectionItemsNotifier n = await loaded(<CollectionItem>[item()]);
+
+      await n.setFavorite(7, isFavorite: true);
+      verify(() => repo.setItemFavorite(7, isFavorite: true)).called(1);
+      expect(readItem(n)!.isFavorite, isTrue);
+
+      await n.setFavorite(7, isFavorite: false);
+      verify(() => repo.setItemFavorite(7, isFavorite: false)).called(1);
+      expect(readItem(n)!.isFavorite, isFalse);
     });
   });
 

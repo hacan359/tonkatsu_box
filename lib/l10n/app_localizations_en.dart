@@ -195,6 +195,15 @@ class SEn extends S {
   String get sortRatingDesc => 'Highest first';
 
   @override
+  String get sortFavoriteDisplay => 'Favorite';
+
+  @override
+  String get sortFavoriteShort => 'Favorite';
+
+  @override
+  String get sortFavoriteDesc => 'Favorites first';
+
+  @override
   String get sortExternalRatingDisplay => 'External Rating';
 
   @override
@@ -283,6 +292,15 @@ class SEn extends S {
 
   @override
   String get moveToBottom => 'Move to bottom';
+
+  @override
+  String get favorite => 'Favorite';
+
+  @override
+  String get addToFavorites => 'Add to favorites';
+
+  @override
+  String get removeFromFavorites => 'Remove from favorites';
 
   @override
   String bulkSelected(int count) {

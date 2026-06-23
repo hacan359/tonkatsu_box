@@ -78,6 +78,7 @@ void main() {
       'Type': TableColumn.type,
       'Platform': TableColumn.platform,
       'Status': TableColumn.status,
+      'Favorite': TableColumn.favorite,
       'Rating': TableColumn.rating,
       'Year': TableColumn.year,
       'Added': TableColumn.added,
@@ -98,8 +99,8 @@ void main() {
   }
 
   group('TableColumn', () {
-    test('should have 9 values', () {
-      expect(TableColumn.values.length, 9);
+    test('should have 10 values', () {
+      expect(TableColumn.values.length, 10);
     });
 
     test('should contain all expected columns', () {
@@ -110,6 +111,7 @@ void main() {
           TableColumn.type,
           TableColumn.platform,
           TableColumn.status,
+          TableColumn.favorite,
           TableColumn.tag,
           TableColumn.rating,
           TableColumn.externalRating,
@@ -296,6 +298,33 @@ void main() {
 
         // Fourth tap: reset to show all
         await tester.tap(headerFinder('Rating').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names.length, 3);
+      });
+
+      testWidgets('should filter by favorite on tap, cycle through values',
+          (WidgetTester tester) async {
+        await pumpTableView(tester, items: <CollectionItem>[
+          gameAlpha.copyWith(isFavorite: true),
+          movieBeta,
+          tvGamma,
+        ]);
+
+        // First tap: favorites only.
+        await tester.tap(headerFinder('Favorite').first);
+        await tester.pumpAndSettle();
+        expect(itemNamesInOrder(tester), <String>['Alpha Game']);
+
+        // Second tap: non-favorites only.
+        await tester.tap(headerFinder('Favorite').first);
+        await tester.pumpAndSettle();
+        List<String> names = itemNamesInOrder(tester);
+        expect(names.length, 2);
+        expect(names, isNot(contains('Alpha Game')));
+
+        // Third tap: reset to all.
+        await tester.tap(headerFinder('Favorite').first);
         await tester.pumpAndSettle();
         names = itemNamesInOrder(tester);
         expect(names.length, 3);

@@ -463,6 +463,24 @@ abstract class S {
   /// **'Highest first'**
   String get sortRatingDesc;
 
+  /// No description provided for @sortFavoriteDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get sortFavoriteDisplay;
+
+  /// No description provided for @sortFavoriteShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get sortFavoriteShort;
+
+  /// No description provided for @sortFavoriteDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites first'**
+  String get sortFavoriteDesc;
+
   /// No description provided for @sortExternalRatingDisplay.
   ///
   /// In en, this message translates to:
@@ -642,6 +660,24 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Move to bottom'**
   String get moveToBottom;
+
+  /// No description provided for @favorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get favorite;
+
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get addToFavorites;
+
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFromFavorites;
 
   /// No description provided for @bulkSelected.
   ///

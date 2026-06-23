@@ -10,6 +10,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 import '../../extensions/item_display_name.dart';
+import 'cells/favorite_cell.dart';
 import 'cells/rating_cell.dart';
 import 'cells/status_cell.dart';
 import 'cells/tag_cell.dart';
@@ -27,6 +28,7 @@ class TableRow extends StatefulWidget {
     this.onRatingChanged,
     this.onStatusChanged,
     this.onTagChanged,
+    this.onFavoriteToggled,
     this.tag,
     this.tags = const <CollectionTag>[],
     this.dragIndex,
@@ -42,6 +44,7 @@ class TableRow extends StatefulWidget {
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
       onStatusChanged;
   final void Function(int itemId, int? tagId)? onTagChanged;
+  final void Function(int itemId)? onFavoriteToggled;
   final CollectionTag? tag;
   final List<CollectionTag> tags;
 
@@ -102,6 +105,7 @@ class _TableRowState extends State<TableRow> {
                   onRatingChanged: widget.onRatingChanged,
                   onStatusChanged: widget.onStatusChanged,
                   onTagChanged: widget.onTagChanged,
+                  onFavoriteToggled: widget.onFavoriteToggled,
                 ),
               ),
             ),
@@ -123,6 +127,7 @@ class _RowContent extends ConsumerWidget {
     required this.onRatingChanged,
     required this.onStatusChanged,
     required this.onTagChanged,
+    required this.onFavoriteToggled,
   });
 
   final CollectionItem item;
@@ -135,6 +140,7 @@ class _RowContent extends ConsumerWidget {
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
       onStatusChanged;
   final void Function(int itemId, int? tagId)? onTagChanged;
+  final void Function(int itemId)? onFavoriteToggled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -240,6 +246,15 @@ class _RowContent extends ConsumerWidget {
             onStatusChanged: onStatusChanged != null
                 ? (ItemStatus s) =>
                     onStatusChanged!(item.id, s, item.mediaType)
+                : null,
+          ),
+        ),
+        SizedBox(
+          width: 44,
+          child: FavoriteCell(
+            isFavorite: item.isFavorite,
+            onToggle: onFavoriteToggled != null
+                ? () => onFavoriteToggled!(item.id)
                 : null,
           ),
         ),

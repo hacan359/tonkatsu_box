@@ -21,6 +21,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onToggleCanvas,
     required this.onEditCustom,
     required this.onMenuSelected,
+    this.onToggleFavorite,
     this.canTrackReleases = false,
     this.isTracked = false,
     this.onToggleTracked,
@@ -39,6 +40,9 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onToggleCanvas;
   final VoidCallback onEditCustom;
   final ValueChanged<ItemDetailMenuAction> onMenuSelected;
+
+  /// Toggles the favorite flag; when null the heart is hidden.
+  final VoidCallback? onToggleFavorite;
 
   /// Whether the calendar bell applies to this item.
   final bool canTrackReleases;
@@ -66,6 +70,19 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     return ScreenAppBar(
       title: displayName,
       actions: <Widget>[
+        if (isEditable && onToggleFavorite != null)
+          IconButton(
+            icon: Icon(
+              item.isFavorite ? Icons.favorite : Icons.heart_broken,
+            ),
+            color: item.isFavorite
+                ? AppColors.favorite
+                : AppColors.textSecondary,
+            tooltip: item.isFavorite
+                ? l.removeFromFavorites
+                : l.addToFavorites,
+            onPressed: onToggleFavorite,
+          ),
         if (canTrackReleases)
           IconButton(
             icon: Icon(

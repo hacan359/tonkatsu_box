@@ -143,6 +143,11 @@ class CollectionItemsView extends ConsumerWidget {
                       .updateItemTag(itemId, tagId);
                 }
               : null,
+          onFavoriteToggled: canEdit
+              ? (int itemId) => ref
+                  .read(collectionItemsNotifierProvider(collectionId).notifier)
+                  .toggleFavorite(itemId)
+              : null,
           onReorder: isManualSort
               ? (int oldIndex, int newIndex) {
                   ref
@@ -397,6 +402,14 @@ class CollectionItemsView extends ConsumerWidget {
       mediaType: item.displayMediaType,
       typeLabelOverride: item.formatLabel,
       status: item.status,
+      isFavorite: item.isFavorite,
+      showFavorite: canEdit,
+      enableHoverScale: !isSelected,
+      onToggleFavorite: canEdit && !selectionActive
+          ? () => ref
+              .read(collectionItemsNotifierProvider(collectionId).notifier)
+              .toggleFavorite(item.id)
+          : null,
       tagName: tag?.name,
       tagColor: tag?.color,
       tagGlow: tagGlow,
@@ -539,6 +552,15 @@ class CollectionItemsView extends ConsumerWidget {
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<String>>[
+        if (canEdit) ...<PopupMenuEntry<String>>[
+          contextMenuItem<String>(
+            value: 'favorite',
+            icon: item.isFavorite ? Icons.favorite : Icons.favorite_border,
+            label:
+                item.isFavorite ? l.removeFromFavorites : l.addToFavorites,
+          ),
+          const PopupMenuDivider(),
+        ],
         if (isManualSort) ...<PopupMenuEntry<String>>[
           contextMenuItem<String>(
             value: 'moveToTop',
@@ -589,6 +611,10 @@ class CollectionItemsView extends ConsumerWidget {
         return;
       }
       switch (value) {
+        case 'favorite':
+          ref
+              .read(collectionItemsNotifierProvider(collectionId).notifier)
+              .toggleFavorite(item.id);
         case 'moveToTop':
           ref
               .read(collectionItemsNotifierProvider(collectionId).notifier)

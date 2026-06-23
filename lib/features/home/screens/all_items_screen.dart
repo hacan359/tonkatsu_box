@@ -60,13 +60,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<int, CollectionTag> tagsMap =
         ref.watch(allTagsMapProvider).valueOrNull ?? <int, CollectionTag>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
+    final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
 
     final Set<int> selection = ref.watch(allItemsSelectionProvider);
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
     final List<CollectionItem> visibleItems =
-        _applyFilter(allItems, filterStatus, tagsMap, searchQuery);
+        _applyFilter(allItems, filterStatus, favoriteOnly, tagsMap, searchQuery);
     final List<CollectionItem> selectedItems = selection.isEmpty
         ? const <CollectionItem>[]
         : <CollectionItem>[
@@ -76,7 +77,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     return Column(
       children: <Widget>[
-        _buildMediaTypeBar(itemsAsync, filterStatus, tagsMap, searchQuery),
+        _buildMediaTypeBar(
+            itemsAsync, filterStatus, favoriteOnly, tagsMap, searchQuery),
         SubfilterBar(groups: _subfilterGroups(itemsAsync)),
         if (selectedItems.isNotEmpty)
           BulkActionBar(
@@ -109,6 +111,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   List<CollectionItem> _applyFilter(
     List<CollectionItem> items,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String searchQuery,
   ) {
@@ -119,17 +122,20 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         .where((CollectionItem item) =>
             (_selectedTypes.isEmpty ||
                 _selectedTypes.contains(item.mediaType)) &&
-            _matchesNonTypeFilters(item, filterStatus, tagsMap, query, lang))
+            _matchesNonTypeFilters(
+                item, filterStatus, favoriteOnly, tagsMap, query, lang))
         .toList();
   }
 
   bool _matchesNonTypeFilters(
     CollectionItem item,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String lowerQuery,
     String animeMangaTitleLanguage,
   ) {
+    if (favoriteOnly && !item.isFavorite) return false;
     if (filterStatus != null && item.status != filterStatus) return false;
     if (_selectedPlatformIds.isNotEmpty &&
         (item.platformId == null ||
@@ -163,12 +169,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Widget _buildMediaTypeBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String searchQuery,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
     final Map<MediaType, int> counts =
-        _countByMediaType(items, filterStatus, tagsMap, searchQuery);
+        _countByMediaType(items, filterStatus, favoriteOnly, tagsMap, searchQuery);
     final Map<MediaType, int> totals = _rawTotalsByMediaType(items);
     final S l = S.of(context);
 
@@ -262,8 +269,23 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 status: filterStatus,
                 compact: compact,
                 subtitle: l.detailStatus,
+                isLast: false,
                 onChanged: (ItemStatus? s) =>
                     ref.read(homeStatusFilterProvider.notifier).setFilter(s),
+              ),
+            ),
+            Expanded(
+              child: ChevronSegment(
+                label: l.favorite,
+                icon: Icons.favorite,
+                selected: favoriteOnly,
+                accentColor: AppColors.favorite,
+                isFirst: false,
+                isLast: true,
+                onTap: () =>
+                    ref.read(homeFavoriteFilterProvider.notifier).toggle(),
+                compact: compact,
+                tintWhenInactive: true,
               ),
             ),
           ],
@@ -365,6 +387,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Map<MediaType, int> _countByMediaType(
     List<CollectionItem>? items,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String searchQuery,
   ) {
@@ -374,7 +397,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     final Map<MediaType, int> counts = <MediaType, int>{};
     for (final CollectionItem item in items) {
-      if (!_matchesNonTypeFilters(item, filterStatus, tagsMap, lower, lang)) {
+      if (!_matchesNonTypeFilters(
+          item, filterStatus, favoriteOnly, tagsMap, lower, lang)) {
         continue;
       }
       counts[item.mediaType] = (counts[item.mediaType] ?? 0) + 1;
@@ -476,6 +500,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       mediaType: item.mediaType,
                       typeLabelOverride: item.formatLabel,
                       status: item.status,
+                      isFavorite: item.isFavorite,
+                      showFavorite: true,
+                      enableHoverScale: !isSelected,
+                      onToggleFavorite: selection.isEmpty
+                          ? () => ref
+                              .read(allItemsNotifierProvider.notifier)
+                              .toggleFavorite(item.id)
+                          : null,
                       tagName: tag?.name,
                       tagColor: tag?.color,
                       onTap: selection.isEmpty
@@ -666,6 +698,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       ),
       items: <PopupMenuEntry<String>>[
         contextMenuItem<String>(
+          value: 'favorite',
+          icon: item.isFavorite ? Icons.favorite : Icons.favorite_border,
+          label: item.isFavorite ? l.removeFromFavorites : l.addToFavorites,
+        ),
+        const PopupMenuDivider(),
+        contextMenuItem<String>(
           value: 'move',
           icon: Icons.drive_file_move_outlined,
           label: l.collectionMoveToCollection,
@@ -697,6 +735,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       return;
     }
     switch (value) {
+      case 'favorite':
+        await ref.read(allItemsNotifierProvider.notifier).toggleFavorite(item.id);
       case 'move':
         await CollectionActions.moveItem(
           context: context,

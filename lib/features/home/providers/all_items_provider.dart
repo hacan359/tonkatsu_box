@@ -165,6 +165,34 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
           .toList(),
     );
   }
+
+  /// Flips the favorite flag from the All Items screen: writes the DB, patches
+  /// this (visible) list, and invalidates the item's per-collection notifier so
+  /// it reloads from the DB when next shown. Invalidating (rather than patching
+  /// that notifier) avoids a race where a freshly-built, still-loading
+  /// collection notifier would overwrite the new flag with its pre-write
+  /// snapshot — which left the item detail screen showing a stale state.
+  Future<void> toggleFavorite(int id) async {
+    final CollectionItem? target =
+        state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+    if (target == null) return;
+    final bool newValue = !target.isFavorite;
+    await _repository.setItemFavorite(id, isFavorite: newValue);
+    updateFavoriteLocally(id, isFavorite: newValue);
+    ref.invalidate(collectionItemsNotifierProvider(target.collectionId));
+  }
+
+  /// Patches an item's favorite flag locally without re-querying the DB.
+  void updateFavoriteLocally(int id, {required bool isFavorite}) {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+    state = AsyncData<List<CollectionItem>>(
+      items
+          .map((CollectionItem i) =>
+              i.id == id ? i.copyWith(isFavorite: isFavorite) : i)
+          .toList(),
+    );
+  }
 }
 
 // ==================== Platform Filter ====================

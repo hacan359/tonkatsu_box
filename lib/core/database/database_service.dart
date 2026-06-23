@@ -244,7 +244,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 49,
+        version: 50,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -495,6 +495,9 @@ class DatabaseService {
   /// `totalMinutes` is stored in minutes.
   Future<void> updateItemTimeSpent(int id, int totalMinutes) =>
       collectionDao.updateItemTimeSpent(id, totalMinutes);
+
+  Future<void> setItemFavorite(int id, {required bool isFavorite}) =>
+      collectionDao.setItemFavorite(id, isFavorite: isFavorite);
 
   Future<bool> updateItemCollectionId(int id, int? collectionId) =>
       collectionDao.updateItemCollectionId(id, collectionId);

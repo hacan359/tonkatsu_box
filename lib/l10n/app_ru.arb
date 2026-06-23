@@ -73,6 +73,9 @@
   "sortRatingDisplay": "Мой рейтинг",
   "sortRatingShort": "Оценка",
   "sortRatingDesc": "Сначала лучшие",
+  "sortFavoriteDisplay": "Избранное",
+  "sortFavoriteShort": "Избранное",
+  "sortFavoriteDesc": "Сначала избранные",
   "sortExternalRatingDisplay": "Внешний рейтинг",
   "sortExternalRatingShort": "IGDB/TMDB",
   "sortExternalRatingDesc": "Сначала лучшие",
@@ -105,6 +108,9 @@
   "remove": "Убрать",
   "moveToTop": "В начало списка",
   "moveToBottom": "В конец списка",
+  "favorite": "Избранное",
+  "addToFavorites": "В избранное",
+  "removeFromFavorites": "Убрать из избранного",
   "bulkSelected": "{count, plural, =1{Выбран 1} few{Выбрано {count}} many{Выбрано {count}} other{Выбрано {count}}}",
   "@bulkSelected": {
     "placeholders": {

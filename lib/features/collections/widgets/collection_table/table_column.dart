@@ -4,6 +4,7 @@ enum TableColumn {
   type,
   platform,
   status,
+  favorite,
   tag,
   rating,
   externalRating,

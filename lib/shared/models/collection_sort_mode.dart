@@ -19,6 +19,9 @@ enum CollectionSortMode {
   /// По пользовательскому рейтингу (userRating DESC, высшие первыми).
   rating('rating', 'My Rating', 'Rating', 'Highest first'),
 
+  /// Favorites first (isFavorite DESC, then by name).
+  favorite('favorite', 'Favorite', 'Favorite', 'Favorites first'),
+
   /// По внешнему API-рейтингу (apiRating DESC, IGDB/TMDB).
   externalRating('external_rating', 'External Rating', 'IGDB/TMDB', 'Highest first'),
 
@@ -69,6 +72,8 @@ enum CollectionSortMode {
         return l.sortNameDisplay;
       case CollectionSortMode.rating:
         return l.sortRatingDisplay;
+      case CollectionSortMode.favorite:
+        return l.sortFavoriteDisplay;
       case CollectionSortMode.externalRating:
         return l.sortExternalRatingDisplay;
       case CollectionSortMode.lastActivity:
@@ -89,6 +94,8 @@ enum CollectionSortMode {
         return l.sortNameShort;
       case CollectionSortMode.rating:
         return l.sortRatingShort;
+      case CollectionSortMode.favorite:
+        return l.sortFavoriteShort;
       case CollectionSortMode.externalRating:
         return l.sortExternalRatingShort;
       case CollectionSortMode.lastActivity:
@@ -109,6 +116,8 @@ enum CollectionSortMode {
         return l.sortNameDesc;
       case CollectionSortMode.rating:
         return l.sortRatingDesc;
+      case CollectionSortMode.favorite:
+        return l.sortFavoriteDesc;
       case CollectionSortMode.externalRating:
         return l.sortExternalRatingDesc;
       case CollectionSortMode.lastActivity:

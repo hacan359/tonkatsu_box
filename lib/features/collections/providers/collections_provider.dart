@@ -348,6 +348,34 @@ class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
   }
 }
 
+const String _homeFavoriteFilterKey = 'home_favorite_filter';
+
+/// `true` shows only favorited items on the home (All Items) screen.
+final NotifierProvider<HomeFavoriteFilterNotifier, bool>
+    homeFavoriteFilterProvider =
+    NotifierProvider<HomeFavoriteFilterNotifier, bool>(
+  HomeFavoriteFilterNotifier.new,
+);
+
+/// Per-profile persistence: key `home_favorite_filter_{profileId}`.
+class HomeFavoriteFilterNotifier extends Notifier<bool> {
+  String get _prefsKey {
+    final String profileId = ref.read(currentProfileProvider).id;
+    return '${_homeFavoriteFilterKey}_$profileId';
+  }
+
+  @override
+  bool build() {
+    final SharedPreferences prefs = ref.watch(sharedPreferencesProvider);
+    return prefs.getBool(_prefsKey) ?? false;
+  }
+
+  void toggle() {
+    state = !state;
+    ref.read(sharedPreferencesProvider).setBool(_prefsKey, state);
+  }
+}
+
 /// Collection IDs containing items with the selected status.
 final FutureProvider<Set<int?>> filteredCollectionIdsProvider =
     FutureProvider<Set<int?>>((Ref ref) async {
@@ -781,6 +809,34 @@ class CollectionItemsNotifier
     ref
         .read(allItemsNotifierProvider.notifier)
         .updateStatusLocally(id, status);
+  }
+
+  /// Flips the favorite flag based on the current (loaded) state.
+  Future<void> toggleFavorite(int id) async {
+    final CollectionItem? target =
+        state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+    await setFavorite(id, isFavorite: !(target?.isFavorite ?? false));
+  }
+
+  /// Persists [isFavorite] and patches local state without a reload. Also syncs
+  /// the All Items view so both stay consistent regardless of which screen
+  /// triggered the change.
+  Future<void> setFavorite(int id, {required bool isFavorite}) async {
+    await _repository.setItemFavorite(id, isFavorite: isFavorite);
+
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items
+            .map((CollectionItem i) =>
+                i.id == id ? i.copyWith(isFavorite: isFavorite) : i)
+            .toList(),
+      );
+    }
+
+    ref
+        .read(allItemsNotifierProvider.notifier)
+        .updateFavoriteLocally(id, isFavorite: isFavorite);
   }
 
   // Bulk ops needing single-collection context (sort_order). Collection-agnostic

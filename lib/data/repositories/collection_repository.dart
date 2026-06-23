@@ -262,6 +262,10 @@ class CollectionRepository {
     await _db.updateItemTimeSpent(id, totalMinutes);
   }
 
+  Future<void> setItemFavorite(int id, {required bool isFavorite}) async {
+    await _db.setItemFavorite(id, isFavorite: isFavorite);
+  }
+
   Future<void> updateItemActivityDates(
     int id, {
     DateTime? startedAt,

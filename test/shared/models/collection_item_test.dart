@@ -86,6 +86,57 @@ void main() {
       });
     });
 
+    group('isFavorite', () {
+      Map<String, dynamic> baseRow(Object? isFavorite) => <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'media_type': 'game',
+            'external_id': 1942,
+            'status': 'completed',
+            'added_at': testAddedAtUnix,
+            'is_favorite': isFavorite,
+          };
+
+      test('fromDb reads 1 as true, 0 and null as false', () {
+        expect(CollectionItem.fromDb(baseRow(1)).isFavorite, isTrue);
+        expect(CollectionItem.fromDb(baseRow(0)).isFavorite, isFalse);
+        expect(CollectionItem.fromDb(baseRow(null)).isFavorite, isFalse);
+      });
+
+      test('toDb writes 1 / 0', () {
+        expect(CollectionItem.fromDb(baseRow(1)).toDb()['is_favorite'], 1);
+        expect(CollectionItem.fromDb(baseRow(0)).toDb()['is_favorite'], 0);
+      });
+
+      test('toExport carries is_favorite only with user data', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(1));
+        expect(item.toExport(includeUserData: true)['is_favorite'], 1);
+        expect(item.toExport().containsKey('is_favorite'), isFalse);
+      });
+
+      test('fromExport reads is_favorite, defaulting to false when absent', () {
+        final CollectionItem present =
+            CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'is_favorite': 1,
+        });
+        final CollectionItem absent =
+            CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+        });
+        expect(present.isFavorite, isTrue);
+        expect(absent.isFavorite, isFalse);
+      });
+
+      test('copyWith updates the flag', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(0));
+        expect(item.copyWith(isFavorite: true).isFavorite, isTrue);
+        expect(item.isFavorite, isFalse);
+      });
+    });
+
     group('fromDb', () {
       test('should create CollectionItem из полной записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{

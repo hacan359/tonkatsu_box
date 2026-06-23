@@ -333,6 +333,31 @@ void main() {
       expect(find.textContaining('Watch List'), findsOneWidget);
       expect(find.textContaining('My Games'), findsOneWidget);
     });
+
+    testWidgets('фильтр Избранное оставляет только избранные и сбрасывается',
+        (WidgetTester tester) async {
+      when(() =>
+              mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')))
+          .thenAnswer((_) async => <CollectionItem>[
+                testItems[0].copyWith(isFavorite: true), // game, My Games
+                testItems[2], // tvShow, Watch List, not favorite
+              ]);
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('My Games'), findsOneWidget);
+      expect(find.textContaining('Watch List'), findsOneWidget);
+
+      await tester.tap(find.text('Favorite'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('My Games'), findsOneWidget);
+      expect(find.textContaining('Watch List'), findsNothing);
+
+      await tester.tap(find.text('Favorite'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsOneWidget);
+    });
   });
 
   group('AllItemsScreen платформенный фильтр', () {

@@ -305,8 +305,8 @@ void main() {
           await gesture.up();
           await tester.pumpAndSettle();
 
-          // Menu shows move/clone/remove + status header + status pill.
-          expect(find.byType(PopupMenuItem<String>), findsNWidgets(5));
+          // Menu shows favorite + move/clone/remove + status header + status pill.
+          expect(find.byType(PopupMenuItem<String>), findsNWidgets(6));
 
           expect(moveCalled, isFalse);
           expect(cloneCalled, isFalse);
@@ -347,7 +347,12 @@ void main() {
           await gesture.up();
           await tester.pumpAndSettle();
 
-          await tester.tap(find.byType(PopupMenuItem<String>).first);
+          await tester.tap(
+            find.widgetWithIcon(
+              PopupMenuItem<String>,
+              Icons.drive_file_move_outlined,
+            ),
+          );
           await tester.pumpAndSettle();
 
           expect(movedItem, isNotNull);

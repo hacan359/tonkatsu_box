@@ -195,6 +195,15 @@ class SRu extends S {
   String get sortRatingDesc => 'Сначала лучшие';
 
   @override
+  String get sortFavoriteDisplay => 'Избранное';
+
+  @override
+  String get sortFavoriteShort => 'Избранное';
+
+  @override
+  String get sortFavoriteDesc => 'Сначала избранные';
+
+  @override
   String get sortExternalRatingDisplay => 'Внешний рейтинг';
 
   @override
@@ -283,6 +292,15 @@ class SRu extends S {
 
   @override
   String get moveToBottom => 'В конец списка';
+
+  @override
+  String get favorite => 'Избранное';
+
+  @override
+  String get addToFavorites => 'В избранное';
+
+  @override
+  String get removeFromFavorites => 'Убрать из избранного';
 
   @override
   String bulkSelected(int count) {

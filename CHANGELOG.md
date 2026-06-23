@@ -9,6 +9,64 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Mark collection items as favorite**
+
+  A per-item favorite flag the user sets from the poster card (a heart in the
+  top-right corner), the item detail screen, the right-click / long-press menu,
+  or the table view. Favorites are per collection item, so the same title in
+  two collections is tracked independently. The collection table gains a
+  favorite column with an inline toggle and a header filter that cycles all →
+  favorites only → non-favorites only; the collection Sort menu gains a
+  "Favorite" mode (favorites first); and the home (All Items) screen gains a
+  favorites-only toggle in the filter bar after the status filter, persisted
+  per profile. The flag travels in `.xcollx` exports and backups under the
+  "personal data" toggle.
+
+  * lib/core/database/migrations/migration_v50.dart (MigrationV50): New — adds
+    the `is_favorite` column to `collection_items` via idempotent
+    `addColumnIfAbsent`.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all),
+    lib/core/database/database_service.dart (DatabaseService.setItemFavorite):
+    Register v50 and bump the schema version 49 → 50; delegate the setter to the DAO.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.setItemFavorite),
+    lib/data/repositories/collection_repository.dart (CollectionRepository.setItemFavorite):
+    Single-column update of `is_favorite`.
+  * lib/shared/models/collection_item.dart (CollectionItem.isFavorite, CollectionItem.fromDbWithJoins, CollectionItem.toDb, CollectionItem.fromExport, CollectionItem.toExport, CollectionItem.copyWith, CollectionItem.internalDbFields):
+    New field; round-trips through the DB and, under `user_data`, the export.
+  * lib/features/collections/providers/collections_provider.dart (CollectionItemsNotifier.toggleFavorite, CollectionItemsNotifier.setFavorite, HomeFavoriteFilterNotifier, homeFavoriteFilterProvider),
+    lib/features/home/providers/all_items_provider.dart (AllItemsNotifier.toggleFavorite, AllItemsNotifier.updateFavoriteLocally):
+    Persist with an optimistic local patch. All Items toggles write the DB,
+    patch the All Items list, and invalidate the item's per-collection notifier
+    so the collection grid and detail screen reload the new flag — avoiding a
+    race where a freshly-built, still-loading collection notifier overwrote it
+    with its pre-write snapshot. `HomeFavoriteFilterNotifier` holds the home
+    favorites-only filter, persisted per profile.
+  * lib/features/home/screens/all_items_screen.dart (AllItemsScreen._buildMediaTypeBar, AllItemsScreen._matchesNonTypeFilters, AllItemsScreen._countByMediaType),
+    lib/shared/widgets/chevron_filter_bar.dart (StatusDropdownSegment.isLast):
+    Favorites-only chevron segment after the status filter; `isLast` lets the
+    status segment grow a right-pointing edge so the favorite segment can follow.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.isFavorite, MediaPosterCard.showFavorite, MediaPosterCard.onToggleFavorite, _FavoriteButton):
+    Heart badge in the top-right stack — small visible circle with a finger-sized
+    tap target, shown as a static indicator during multi-select.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart (ItemDetailAppBar.onToggleFavorite),
+    lib/features/collections/screens/item_detail_screen.dart: Heart toggle in the detail app bar.
+  * lib/features/collections/widgets/collection_items_view.dart, lib/features/home/screens/all_items_screen.dart:
+    Favorite entry in the item context menu; wire the card heart toggle.
+  * lib/features/collections/widgets/collection_table/table_column.dart (TableColumn.favorite),
+    lib/features/collections/widgets/collection_table/table_header.dart (TableHeader.filterFavorite),
+    lib/features/collections/widgets/collection_table/table_row.dart (TableRow.onFavoriteToggled),
+    lib/features/collections/widgets/collection_table/collection_table_view.dart (CollectionTableView.onFavoriteToggled),
+    lib/features/collections/widgets/collection_table/cells/favorite_cell.dart (FavoriteCell):
+    Favorite table column with an inline toggle and a three-state header filter.
+  * lib/shared/models/collection_sort_mode.dart (CollectionSortMode.favorite),
+    lib/features/collections/providers/sort_utils.dart (applySortMode, _compareByDisplayName):
+    "Favorite" sort mode (favorites first, then by name); extracted the shared name comparison.
+  * lib/core/services/import_service.dart (ImportService._hasUserData, ImportService._restoreUserData):
+    Restore `is_favorite` on import.
+  * lib/shared/theme/app_colors.dart (AppColors.favorite): New heart colour.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (favorite, addToFavorites, removeFromFavorites, sortFavoriteDisplay, sortFavoriteShort, sortFavoriteDesc): New strings.
+  * docs/RCOLL_FORMAT.md: Document the `is_favorite` user-data field.
+
 - **Show average time-to-beat on game search cards**
 
   IGDB game search and browse cards now carry a clock badge with the average

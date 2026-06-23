@@ -41,6 +41,7 @@ class CollectionItem with Exportable {
     this.userComment,
     this.userRating,
     this.overrideName,
+    this.isFavorite = false,
     this.game,
     this.movie,
     this.tvShow,
@@ -89,6 +90,7 @@ class CollectionItem with Exportable {
       userComment: row['user_comment'] as String?,
       userRating: (row['user_rating'] as num?)?.toDouble(),
       overrideName: row['override_name'] as String?,
+      isFavorite: (row['is_favorite'] as int?) == 1,
       addedAt: DateTime.fromMillisecondsSinceEpoch(
         (row['added_at'] as int) * 1000,
       ),
@@ -144,6 +146,7 @@ class CollectionItem with Exportable {
       userComment: json['user_comment'] as String?,
       userRating: (json['user_rating'] as num?)?.toDouble(),
       overrideName: json['override_name'] as String?,
+      isFavorite: (json['is_favorite'] as int?) == 1,
       sortOrder: (json['sort_order'] as int?) ?? 0,
       addedAt: json['added_at'] != null
           ? DateTime.fromMillisecondsSinceEpoch(
@@ -219,6 +222,10 @@ class CollectionItem with Exportable {
   /// User-set display name that overrides the cached API title. `null` means
   /// "no override" — UI falls back to the joined media's name.
   final String? overrideName;
+
+  /// User-set favorite flag. Per-item and per-collection: the same title in
+  /// two collections has independent flags.
+  final bool isFavorite;
 
   final DateTime addedAt;
   final DateTime? startedAt;
@@ -580,6 +587,7 @@ class CollectionItem with Exportable {
         'started_at', 'completed_at', 'last_activity_at',
         'status', 'current_season', 'current_episode',
         'tag_id', 'time_spent_minutes', 'override_name',
+        'is_favorite',
       };
 
   @override
@@ -604,6 +612,7 @@ class CollectionItem with Exportable {
       'user_rating': userRating,
       'time_spent_minutes': timeSpentMinutes,
       'override_name': overrideName,
+      'is_favorite': isFavorite ? 1 : 0,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,
       'sort_order': sortOrder,
       'started_at': startedAt != null
@@ -637,6 +646,7 @@ class CollectionItem with Exportable {
       }
       data['status'] = status.value;
       data['user_comment'] = userComment;
+      data['is_favorite'] = isFavorite ? 1 : 0;
       data['current_season'] = currentSeason;
       data['current_episode'] = currentEpisode;
       data['time_spent_minutes'] = timeSpentMinutes;
@@ -678,6 +688,7 @@ class CollectionItem with Exportable {
     bool clearUserRating = false,
     String? overrideName,
     bool clearOverrideName = false,
+    bool? isFavorite,
     DateTime? addedAt,
     DateTime? startedAt,
     bool clearStartedAt = false,
@@ -715,6 +726,7 @@ class CollectionItem with Exportable {
       userRating: clearUserRating ? null : (userRating ?? this.userRating),
       overrideName:
           clearOverrideName ? null : (overrideName ?? this.overrideName),
+      isFavorite: isFavorite ?? this.isFavorite,
       addedAt: addedAt ?? this.addedAt,
       startedAt: clearStartedAt ? null : (startedAt ?? this.startedAt),
       completedAt: clearCompletedAt ? null : (completedAt ?? this.completedAt),

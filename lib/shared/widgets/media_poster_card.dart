@@ -50,6 +50,10 @@ class MediaPosterCard extends StatefulWidget {
     this.platformColor,
     this.platformOverlayAsset,
     this.timeToBeatHours,
+    this.isFavorite = false,
+    this.showFavorite = false,
+    this.onToggleFavorite,
+    this.enableHoverScale = true,
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
@@ -106,6 +110,23 @@ class MediaPosterCard extends StatefulWidget {
   /// badge is drawn over the poster. Grid/compact only; used on search cards.
   final int? timeToBeatHours;
 
+  /// Whether this item is marked favorite. Grid/compact only; drives the
+  /// heart toggle's filled/broken state.
+  final bool isFavorite;
+
+  /// Forces the heart to render as a static (non-tappable) indicator even when
+  /// [onToggleFavorite] is null — e.g. during multi-select, so the heart stays
+  /// visible while taps select the card. Grid/compact only.
+  final bool showFavorite;
+
+  /// Fired when the favorite heart is tapped. When null the heart isn't
+  /// tappable (and is hidden unless [showFavorite] is set). Grid/compact only.
+  final VoidCallback? onToggleFavorite;
+
+  /// When false the hover zoom is suppressed — used for selected cards, whose
+  /// fixed-size selection scrim would otherwise not track the scaled card.
+  final bool enableHoverScale;
+
   /// Drives the border color and placeholder icon (canvas).
   final MediaType? mediaType;
 
@@ -150,7 +171,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   Animation<double>? _scaleAnimation;
   FocusNode? _focusNode;
 
-  static const double _hoverScale = 1.04;
+  static const double _hoverScale = 1.02;
 
   bool get _isGridVariant =>
       widget.variant == CardVariant.grid ||
@@ -222,7 +243,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             animation: _hoverController!,
             builder: (BuildContext context, Widget? child) {
               return Transform.scale(
-                scale: _scaleAnimation!.value,
+                scale:
+                    widget.enableHoverScale ? _scaleAnimation!.value : 1.0,
                 child: child,
               );
             },
@@ -281,6 +303,12 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         widget.platformOverlayAsset != null && !widget.isInCollection;
     final double borderRadius =
         hasOverlay ? 0 : (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
+
+    final bool showFavoriteBadge =
+        widget.onToggleFavorite != null || widget.showFavorite;
+    final bool showPlatformBadge = widget.platformOverlayAsset == null &&
+        widget.platformLabel != null &&
+        widget.platformColor != null;
 
     final Color? glowColor = widget.tagGlow && widget.tagColor != null
         ? Color(widget.tagColor!)
@@ -367,57 +395,68 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 ),
               ),
 
-            if (widget.isInCollection)
-              Positioned(
-                top: _isCompact ? 2 : AppSpacing.xs,
-                right: _isCompact ? 2 : AppSpacing.xs,
-                child: widget.onOpenInCollection != null
-                    ? _InCollectionButton(
-                        compact: _isCompact,
-                        onTap: widget.onOpenInCollection!,
-                      )
-                    : Container(
-                        padding: EdgeInsets.all(_isCompact ? 2 : 4),
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.check,
+            // Top-right row: the favorite heart (collection only) sits before
+            // the in-collection button (search) or the platform text badge
+            // (games), which are mutually exclusive.
+            Positioned(
+              top: _isCompact ? 2 : AppSpacing.xs,
+              right: _isCompact ? 2 : AppSpacing.xs,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (showFavoriteBadge)
+                    _FavoriteButton(
+                      isFavorite: widget.isFavorite,
+                      compact: _isCompact,
+                      onTap: widget.onToggleFavorite,
+                    ),
+                  if (showFavoriteBadge &&
+                      (widget.isInCollection || showPlatformBadge))
+                    SizedBox(width: _isCompact ? 2 : 4),
+                  if (widget.isInCollection)
+                    widget.onOpenInCollection != null
+                        ? _InCollectionButton(
+                            compact: _isCompact,
+                            onTap: widget.onOpenInCollection!,
+                          )
+                        : Container(
+                            padding: EdgeInsets.all(_isCompact ? 2 : 4),
+                            decoration: const BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: _isCompact ? 8 : 12,
+                            ),
+                          )
+                  // Platform text badge — fallback when there's no overlay.
+                  else if (showPlatformBadge)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: _isCompact ? 3 : 5,
+                        vertical: _isCompact ? 1 : 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.platformColor!.withAlpha(210),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusXs),
+                      ),
+                      child: Text(
+                        widget.platformLabel!,
+                        style: TextStyle(
                           color: Colors.white,
-                          size: _isCompact ? 8 : 12,
+                          fontSize: _isCompact ? 7 : 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
                         ),
                       ),
-              ),
-
-            // Platform text badge (top-right) — fallback when there's no overlay.
-            if (widget.platformOverlayAsset == null &&
-                widget.platformLabel != null &&
-                widget.platformColor != null &&
-                !widget.isInCollection)
-              Positioned(
-                top: _isCompact ? 2 : AppSpacing.xs,
-                right: _isCompact ? 2 : AppSpacing.xs,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _isCompact ? 3 : 5,
-                    vertical: _isCompact ? 1 : 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: widget.platformColor!.withAlpha(210),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-                  ),
-                  child: Text(
-                    widget.platformLabel!,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: _isCompact ? 7 : 9,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
                     ),
-                  ),
-                ),
+                ],
               ),
+            ),
 
             if (widget.status != null &&
                 widget.status != ItemStatus.notStarted)
@@ -872,6 +911,67 @@ class _TagBadge extends StatelessWidget {
         onTap!(details.globalPosition);
       },
       child: badge,
+    );
+  }
+}
+
+/// Tappable favorite heart shown over the poster (top-right).
+///
+/// A solid colored circle with a white icon, matching the status /
+/// in-collection badges: the favorite color when on, a dark scrim when off. A
+/// red heart on a translucent scrim blended into colorful, warm-toned covers;
+/// white on a solid fill stays legible over any poster, and the elevation
+/// shadow separates the badge from the background.
+///
+/// The visible badge stays small, but the tap target is padded out to a finger-
+/// friendly box (the bare icon is far under the ~40px touch guideline, so on a
+/// phone it was easy to miss and open the card instead). The heart's own tap
+/// recognizer wins over the card's open-tap, so a hit on the target toggles the
+/// flag rather than opening the item.
+class _FavoriteButton extends StatelessWidget {
+  const _FavoriteButton({
+    required this.isFavorite,
+    required this.compact,
+    this.onTap,
+  });
+
+  final bool isFavorite;
+  final bool compact;
+
+  /// When null the heart is a static indicator: taps fall through to the card
+  /// (e.g. select it) instead of toggling the flag.
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget badge = Material(
+      color: isFavorite ? AppColors.favorite : Colors.black.withAlpha(160),
+      shape: const CircleBorder(),
+      elevation: 2,
+      child: Padding(
+        padding: EdgeInsets.all(compact ? 2 : 4),
+        child: Icon(
+          isFavorite ? Icons.favorite : Icons.heart_broken,
+          color: Colors.white,
+          size: compact ? 10 : 13,
+        ),
+      ),
+    );
+
+    if (onTap == null) return badge;
+
+    final double target = compact ? 28 : 32;
+    return SizedBox(
+      width: target,
+      height: target,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Align(alignment: Alignment.topRight, child: badge),
+        ),
+      ),
     );
   }
 }

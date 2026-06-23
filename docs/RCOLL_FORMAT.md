@@ -171,6 +171,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 |-------|------|-------------|
 | status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, or `"planned"` |
 | user_comment | string | User's personal notes |
+| is_favorite | number | `1` if the user marked the item a favorite; absent or `0` otherwise |
 | current_season | number | Current season (TV shows) |
 | current_episode | number | Current episode (TV shows) |
 | added_at | number | Unix timestamp (seconds) when item was added |

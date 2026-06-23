@@ -1,6 +1,11 @@
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 
+int _compareByDisplayName(CollectionItem a, CollectionItem b, String lang) =>
+    a.displayName(lang).toLowerCase().compareTo(
+          b.displayName(lang).toLowerCase(),
+        );
+
 /// [CollectionSortMode.manual] returns the user-defined `sortOrder` as is;
 /// [isDescending] inverts every other mode but never manual.
 List<CollectionItem> applySortMode(
@@ -28,17 +33,12 @@ List<CollectionItem> applySortMode(
         final int cmp =
             a.status.statusSortPriority.compareTo(b.status.statusSortPriority);
         if (cmp != 0) return cmp;
-        return a
-            .displayName(animeMangaTitleLanguage)
-            .toLowerCase()
-            .compareTo(b.displayName(animeMangaTitleLanguage).toLowerCase());
+        return _compareByDisplayName(a, b, animeMangaTitleLanguage);
       });
     case CollectionSortMode.name:
       sorted.sort(
-        (CollectionItem a, CollectionItem b) => a
-            .displayName(animeMangaTitleLanguage)
-            .toLowerCase()
-            .compareTo(b.displayName(animeMangaTitleLanguage).toLowerCase()),
+        (CollectionItem a, CollectionItem b) =>
+            _compareByDisplayName(a, b, animeMangaTitleLanguage),
       );
     case CollectionSortMode.rating:
       sorted.sort((CollectionItem a, CollectionItem b) {
@@ -49,6 +49,13 @@ List<CollectionItem> applySortMode(
         if (rA == null) return 1;
         if (rB == null) return -1;
         return rB.compareTo(rA);
+      });
+    case CollectionSortMode.favorite:
+      sorted.sort((CollectionItem a, CollectionItem b) {
+        if (a.isFavorite != b.isFavorite) {
+          return a.isFavorite ? -1 : 1;
+        }
+        return _compareByDisplayName(a, b, animeMangaTitleLanguage);
       });
     case CollectionSortMode.externalRating:
       sorted.sort((CollectionItem a, CollectionItem b) {

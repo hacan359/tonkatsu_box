@@ -569,6 +569,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           onEditCustom: () => _editCustomItem(item),
           onMenuSelected: (ItemDetailMenuAction action) =>
               _handleMenuAction(action, item),
+          onToggleFavorite: () => ref
+              .read(
+                collectionItemsNotifierProvider(widget.collectionId).notifier,
+              )
+              .toggleFavorite(item.id),
           canTrackReleases: true,
           isTracked: _isEpisodeType(item)
               ? ref

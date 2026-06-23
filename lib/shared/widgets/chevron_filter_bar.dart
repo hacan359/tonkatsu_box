@@ -270,6 +270,7 @@ class StatusDropdownSegment extends StatelessWidget {
     required this.compact,
     required this.onChanged,
     this.subtitle,
+    this.isLast = true,
     super.key,
   });
 
@@ -284,6 +285,9 @@ class StatusDropdownSegment extends StatelessWidget {
 
   /// Опциональный двухстрочный режим: подпись сверху, выбранный статус снизу.
   final String? subtitle;
+
+  /// `false` draws a right-pointing chevron edge so another segment can follow.
+  final bool isLast;
 
   static const double _chevronWidth = 6;
 
@@ -323,19 +327,19 @@ class StatusDropdownSegment extends StatelessWidget {
               status == s, s.color),
       ],
       child: ClipPath(
-        clipper: const ChevronClipper(
+        clipper: ChevronClipper(
           chevronWidth: _chevronWidth,
           hasLeftNotch: true,
-          hasRightPoint: false,
+          hasRightPoint: !isLast,
         ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOut,
           color: accentColor,
           child: Padding(
-            padding: const EdgeInsets.only(
+            padding: EdgeInsets.only(
               left: _chevronWidth + 1,
-              right: 4,
+              right: isLast ? 4 : _chevronWidth + 1,
             ),
             child: Center(
               child: FittedBox(

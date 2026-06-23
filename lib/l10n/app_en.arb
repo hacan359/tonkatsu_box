@@ -73,6 +73,9 @@
   "sortRatingDisplay": "My Rating",
   "sortRatingShort": "Rating",
   "sortRatingDesc": "Highest first",
+  "sortFavoriteDisplay": "Favorite",
+  "sortFavoriteShort": "Favorite",
+  "sortFavoriteDesc": "Favorites first",
   "sortExternalRatingDisplay": "External Rating",
   "sortExternalRatingShort": "IGDB/TMDB",
   "sortExternalRatingDesc": "Highest first",
@@ -105,6 +108,9 @@
   "remove": "Remove",
   "moveToTop": "Move to top",
   "moveToBottom": "Move to bottom",
+  "favorite": "Favorite",
+  "addToFavorites": "Add to favorites",
+  "removeFromFavorites": "Remove from favorites",
   "bulkSelected": "{count, plural, =1{1 selected} other{{count} selected}}",
   "@bulkSelected": {
     "placeholders": {

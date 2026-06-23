@@ -14,6 +14,7 @@ CollectionItem _makeItem({
   double? userRating,
   DateTime? addedAt,
   double? apiRating,
+  bool isFavorite = false,
 }) {
   return CollectionItem(
     id: id,
@@ -24,6 +25,7 @@ CollectionItem _makeItem({
     sortOrder: sortOrder,
     userRating: userRating,
     addedAt: addedAt ?? DateTime(2024, 1, id),
+    isFavorite: isFavorite,
     game: Game(id: id * 100, name: name, rating: apiRating),
   );
 }
@@ -528,6 +530,62 @@ void main() {
         expect(result[1].id, 2);
         expect(result[2].apiRating, isNull);
         expect(result[3].apiRating, isNull);
+      });
+    });
+
+    group('CollectionSortMode.favorite', () {
+      test('по умолчанию избранные первыми', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Plain A'),
+          _makeItem(id: 2, name: 'Fav', isFavorite: true),
+          _makeItem(id: 3, name: 'Plain B'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.favorite,
+        );
+
+        expect(result.first.id, 2);
+      });
+
+      test('при равном флаге — вторичная сортировка по имени (A-Z)', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Zelda', isFavorite: true),
+          _makeItem(id: 2, name: 'Ape Escape', isFavorite: true),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.favorite,
+        );
+
+        expect(
+          result.map((CollectionItem i) => i.itemName).toList(),
+          <String>['Ape Escape', 'Zelda'],
+        );
+      });
+
+      test('isDescending=true — избранные последними', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Fav', isFavorite: true),
+          _makeItem(id: 2, name: 'Plain'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.favorite,
+          isDescending: true,
+        );
+
+        expect(result.last.id, 1);
+      });
+
+      test('пустой список возвращается пустым', () {
+        expect(
+          applySortMode(<CollectionItem>[], CollectionSortMode.favorite),
+          isEmpty,
+        );
       });
     });
 
