@@ -47,11 +47,14 @@ final Provider<FocusNode> appTopBarFocusProvider = Provider<FocusNode>((
   return node;
 });
 
-/// Collection that items added from the Search tab go into. Set when search is
-/// opened from a collection's "add items"; `null` means the normal "add to any
-/// collection" picker. Cleared whenever the Search tab is entered plainly.
-final StateProvider<int?> searchTargetCollectionProvider =
-    StateProvider<int?>((Ref ref) => null);
+/// Collections that items added from the Search tab go into, shown as a
+/// multi-select chip row under the filter bar. Empty means the normal "open
+/// details, pick a collection in the sheet" flow; a non-empty set switches the
+/// tab into "tap a result to add it straight into all of these" mode. Prefilled
+/// when search is opened from a collection's "add items"; cleared whenever the
+/// Search tab is entered plainly.
+final StateProvider<Set<int>> searchTargetCollectionsProvider =
+    StateProvider<Set<int>>((Ref ref) => <int>{});
 
 /// One-shot request to open the Search tab, optionally prefilled. Set from
 /// another tab (Wishlist, a collection) instead of pushing a separate search
@@ -66,7 +69,8 @@ class SearchTabRequest {
   /// Browse source to preselect (e.g. `games`), or null to keep the current.
   final String? sourceId;
 
-  /// Collection to add results into; sets [searchTargetCollectionProvider].
+  /// Collection to add results into; preselected in
+  /// [searchTargetCollectionsProvider].
   final int? collectionId;
 }
 

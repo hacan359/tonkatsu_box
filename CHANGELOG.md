@@ -136,6 +136,50 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/features/wishlist/widgets/wishlist_tile.dart (WishlistTile): trailing resolve, edit and delete icon buttons.
 
+- **Add search results to several collections at once**
+
+  The Search tab gains a row of collection chips under the filter bar. With
+  none selected, tapping a result opens its details as before. Select one or
+  more and a tap drops the result straight into every selected collection — no
+  per-result dialog — and a single summary snackbar reports how many it landed
+  in. A pinned counter at the row's leading edge shows how many collections are
+  selected (visible even when the chips have scrolled off-screen, e.g. on a
+  phone) and clears the selection on tap. Opening Search from a collection's
+  "add items" prefills that collection's chip. Games still ask for the platform
+  once, then reuse it for every target.
+
+  * lib/features/search/widgets/collection_chips_row.dart (CollectionChipsRow):
+    New — horizontal, multi-select chip row that reads and writes
+    `searchTargetCollectionsProvider`; collapses to nothing when there are no
+    collections; pins a `SelectedCountChip` at the leading edge while a
+    selection is active.
+  * lib/shared/widgets/selected_count_chip.dart (SelectedCountChip): New —
+    reusable pinned pill showing the selected count and clearing the selection
+    on tap.
+  * lib/features/search/services/search_collection_adder.dart (SearchCollectionAdder.addToCollections):
+    New — batch add that upserts the model and caches the image once, skips
+    collections that already hold the item, drops ids of collections deleted
+    while selected, and reports one summary snackbar.
+  * lib/shared/navigation/search_providers.dart (searchTargetCollectionsProvider, SearchTabRequest.collectionId):
+    Replace the single `searchTargetCollectionProvider` (`int?`) with a
+    `Set<int>` for the multi-select selection.
+  * lib/features/search/handlers/game_handler.dart (GameHandler.onTap, GameHandler._addToCollections),
+    lib/features/search/handlers/movie_handler.dart (MovieHandler.onTap, MovieHandler._addToCollections),
+    lib/features/search/handlers/tv_show_handler.dart (TvShowHandler.onTap, TvShowHandler._addToCollections),
+    lib/features/search/handlers/simple_media_handler.dart (SimpleMediaHandler.onTap, SimpleMediaHandler._addToCollections),
+    lib/features/search/handlers/media_handlers.dart (MediaHandlers):
+    Take a `Set<int> Function() targetCollections` closure resolved at tap time
+    and forward to `addToCollections`.
+  * lib/features/search/screens/search_screen.dart (_SearchScreenState._buildHandlers):
+    Read the target collections live so the handlers never rebuild when the
+    selection changes; mount `CollectionChipsRow` under the filter bar.
+  * lib/shared/navigation/app_shell.dart (resetSearchTabState, _AppShellState._openSearchTab):
+    Reset clears the set; opening Search from a collection seeds it with that
+    one id.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (searchAddedToCollections, searchAlreadyInCollections):
+    New pluralised "added to N collections" / "already in the selected
+    collections" snackbar strings.
+
 ### Changed
 
 - **Config export/import now covers every credential and setting** — all source credentials (ComicVine, Google Books, ScreenScraper, RetroAchievements, Steam, AniList), the app language, and the display/feature toggles (recommendations, Blu-ray and platform overlays, Discord RPC, RA sync, rich collections, hide-empty-media chevrons).
@@ -146,6 +190,20 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/core/import/sources/trakt/trakt_import_service.dart (TraktImportService): relocated from lib/core/services and reimplemented as an ImportSource over ImportWriter.
   * lib/features/settings/content/trakt_import_content.dart, test/helpers/mocks.dart (MockTraktImportService): updated to the new API.
+
+- **Media-type subfilter bar: scroll affordances and a selection highlight**
+
+  The subfilter chip row under the search and collection filters now uses the
+  same ScrollableRowWithArrows treatment as the rest of the app, so overflowing
+  chips can be reached with hover arrows and the mouse wheel on desktop, not
+  just a touch swipe. When any subfilter is active the whole strip is tinted
+  with the selected media type's accent, so an active filter stays obvious even
+  when the selected chip has scrolled off-screen.
+
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar): Converted to a
+    StatefulWidget that owns a ScrollController, wraps its row in
+    ScrollableRowWithArrows, and tints the strip with the first selected chip's
+    accent while a subfilter is active.
 
 ### Fixed
 

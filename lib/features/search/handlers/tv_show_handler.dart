@@ -20,17 +20,17 @@ import 'media_action_handler.dart';
 /// seasons/episodes cache is warmed so the detail screen opens without
 /// a network round-trip.
 class TvShowHandler implements MediaActionHandler {
-  const TvShowHandler({
+  TvShowHandler({
     required WidgetRef ref,
     required SearchCollectionAdder adder,
-    required int? targetCollectionId,
+    required Set<int> Function() targetCollections,
   })  : _ref = ref,
         _adder = adder,
-        _targetCollectionId = targetCollectionId;
+        _targetCollections = targetCollections;
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
-  final int? _targetCollectionId;
+  final Set<int> Function() _targetCollections;
 
   @override
   Future<void> onTap(
@@ -39,8 +39,9 @@ class TvShowHandler implements MediaActionHandler {
     MediaType mediaType,
   ) async {
     final TvShow tvShow = item as TvShow;
-    if (_targetCollectionId != null) {
-      await _addToCollection(context, _targetCollectionId, tvShow, mediaType);
+    final Set<int> targets = _targetCollections();
+    if (targets.isNotEmpty) {
+      await _addToCollections(context, targets, tvShow, mediaType);
       return;
     }
     showDetails(context, tvShow, mediaType);
@@ -99,15 +100,15 @@ class TvShowHandler implements MediaActionHandler {
     );
   }
 
-  Future<void> _addToCollection(
+  Future<void> _addToCollections(
     BuildContext context,
-    int collectionId,
+    Set<int> collectionIds,
     TvShow tvShow,
     MediaType mediaType,
   ) async {
-    await _adder.addToCollection(
+    await _adder.addToCollections(
       context: context,
-      collectionId: collectionId,
+      collectionIds: collectionIds,
       mediaType: mediaType,
       externalId: tvShow.tmdbId,
       platformId: mediaType == MediaType.animation

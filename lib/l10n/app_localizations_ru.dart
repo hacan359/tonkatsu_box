@@ -2318,6 +2318,23 @@ class SRu extends S {
   }
 
   @override
+  String searchAddedToCollections(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count коллекций',
+      few: '$count коллекции',
+      one: '1 коллекцию',
+    );
+    return '$name добавлен в $_temp0';
+  }
+
+  @override
+  String searchAlreadyInCollections(String name) {
+    return '$name уже во всех выбранных коллекциях';
+  }
+
+  @override
   String get searchGoToSettings => 'Перейти в настройки';
 
   @override

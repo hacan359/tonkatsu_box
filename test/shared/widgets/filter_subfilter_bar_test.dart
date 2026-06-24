@@ -78,5 +78,45 @@ void main() {
 
       expect(tapped, isTrue);
     });
+
+    BoxDecoration stripDecoration(WidgetTester tester) {
+      return tester
+              .widget<AnimatedContainer>(
+                find.descendant(
+                  of: find.byType(SubfilterBar),
+                  matching: find.byType(AnimatedContainer),
+                ),
+              )
+              .decoration!
+          as BoxDecoration;
+    }
+
+    testWidgets('strip is not highlighted when nothing is selected', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        SubfilterBar(
+          groups: <List<SubfilterChipData>>[
+            <SubfilterChipData>[chip('A'), chip('B')],
+          ],
+        ),
+      );
+
+      expect(stripDecoration(tester).color, Colors.transparent);
+    });
+
+    testWidgets('strip is highlighted when any subfilter is selected', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        SubfilterBar(
+          groups: <List<SubfilterChipData>>[
+            <SubfilterChipData>[chip('A', selected: true), chip('B')],
+          ],
+        ),
+      );
+
+      expect(stripDecoration(tester).color, isNot(Colors.transparent));
+    });
   });
 }

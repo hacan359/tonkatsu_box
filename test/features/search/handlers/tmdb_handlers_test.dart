@@ -13,10 +13,9 @@ import '../../../helpers/test_helpers.dart';
 
 class _MockAdder extends Mock implements SearchCollectionAdder {}
 
-/// Captured args for the most recent `addToCollection` call.
+/// Captured args for the most recent `addToCollections` call.
 class _Capture {
-  int? collectionId;
-  String? collectionName;
+  Set<int>? collectionIds;
   MediaType? mediaType;
   int? externalId;
   int? platformId;
@@ -24,6 +23,7 @@ class _Capture {
   ImageType? imageType;
   String? imageId;
   String? imageUrl;
+  Future<void> Function()? afterAdd;
 }
 
 void main() {
@@ -35,9 +35,9 @@ void main() {
   setUp(() {
     adder = _MockAdder();
     cap = _Capture();
-    when(() => adder.addToCollection(
+    when(() => adder.addToCollections(
           context: any(named: 'context'),
-          collectionId: any(named: 'collectionId'),
+          collectionIds: any(named: 'collectionIds'),
           mediaType: any(named: 'mediaType'),
           externalId: any(named: 'externalId'),
           platformId: any(named: 'platformId'),
@@ -47,29 +47,28 @@ void main() {
           imageId: any(named: 'imageId'),
           imageUrl: any(named: 'imageUrl'),
           afterAdd: any(named: 'afterAdd'),
-          collectionName: any(named: 'collectionName'),
         )).thenAnswer((Invocation inv) async {
       cap
-        ..collectionId = inv.namedArguments[#collectionId] as int?
-        ..collectionName = inv.namedArguments[#collectionName] as String?
+        ..collectionIds = inv.namedArguments[#collectionIds] as Set<int>?
         ..mediaType = inv.namedArguments[#mediaType] as MediaType?
         ..externalId = inv.namedArguments[#externalId] as int?
         ..platformId = inv.namedArguments[#platformId] as int?
         ..title = inv.namedArguments[#title] as String?
         ..imageType = inv.namedArguments[#imageType] as ImageType?
         ..imageId = inv.namedArguments[#imageId] as String?
-        ..imageUrl = inv.namedArguments[#imageUrl] as String?;
-      return true;
+        ..imageUrl = inv.namedArguments[#imageUrl] as String?
+        ..afterAdd =
+            inv.namedArguments[#afterAdd] as Future<void> Function()?;
     });
   });
 
-  group('MovieHandler.onTap with targetCollectionId', () {
-    testWidgets('regular movie → platformId is null',
+  group('MovieHandler.onTap with target collections', () {
+    testWidgets('regular movie → platformId is null, adds to all targets',
         (WidgetTester tester) async {
       final MovieHandler handler = MovieHandler(
         ref: MockWidgetRef(),
         adder: adder,
-        targetCollectionId: 42,
+        targetCollections: () => <int>{42, 43},
       );
       await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
       await handler.onTap(
@@ -78,7 +77,7 @@ void main() {
         MediaType.movie,
       );
 
-      expect(cap.collectionId, 42);
+      expect(cap.collectionIds, <int>{42, 43});
       expect(cap.mediaType, MediaType.movie);
       expect(cap.externalId, 100);
       expect(cap.platformId, isNull);
@@ -90,7 +89,7 @@ void main() {
       final MovieHandler handler = MovieHandler(
         ref: MockWidgetRef(),
         adder: adder,
-        targetCollectionId: 42,
+        targetCollections: () => <int>{42},
       );
       await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
       await handler.onTap(
@@ -104,37 +103,14 @@ void main() {
     });
   });
 
-  group('TvShowHandler.onTap with targetCollectionId', () {
+  group('TvShowHandler.onTap with target collections', () {
     testWidgets('regular tv show → platformId is null, afterAdd is set',
         (WidgetTester tester) async {
       final TvShowHandler handler = TvShowHandler(
         ref: MockWidgetRef(),
         adder: adder,
-        targetCollectionId: 7,
+        targetCollections: () => <int>{7},
       );
-      Future<void> Function()? capturedAfterAdd;
-      when(() => adder.addToCollection(
-            context: any(named: 'context'),
-            collectionId: any(named: 'collectionId'),
-            mediaType: any(named: 'mediaType'),
-            externalId: any(named: 'externalId'),
-            platformId: any(named: 'platformId'),
-            title: any(named: 'title'),
-            upsert: any(named: 'upsert'),
-            imageType: any(named: 'imageType'),
-            imageId: any(named: 'imageId'),
-            imageUrl: any(named: 'imageUrl'),
-            afterAdd: any(named: 'afterAdd'),
-            collectionName: any(named: 'collectionName'),
-          )).thenAnswer((Invocation inv) async {
-        capturedAfterAdd =
-            inv.namedArguments[#afterAdd] as Future<void> Function()?;
-        cap
-          ..mediaType = inv.namedArguments[#mediaType] as MediaType?
-          ..platformId = inv.namedArguments[#platformId] as int?
-          ..imageType = inv.namedArguments[#imageType] as ImageType?;
-        return true;
-      });
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
       await handler.onTap(
@@ -143,10 +119,11 @@ void main() {
         MediaType.tvShow,
       );
 
+      expect(cap.collectionIds, <int>{7});
       expect(cap.mediaType, MediaType.tvShow);
       expect(cap.platformId, isNull);
       expect(cap.imageType, ImageType.tvShowPoster);
-      expect(capturedAfterAdd, isNotNull);
+      expect(cap.afterAdd, isNotNull);
     });
 
     testWidgets('animation tv → platformId = AnimationSource.tvShow',
@@ -154,7 +131,7 @@ void main() {
       final TvShowHandler handler = TvShowHandler(
         ref: MockWidgetRef(),
         adder: adder,
-        targetCollectionId: 7,
+        targetCollections: () => <int>{7},
       );
       await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
       await handler.onTap(

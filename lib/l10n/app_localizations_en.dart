@@ -2291,6 +2291,22 @@ class SEn extends S {
   }
 
   @override
+  String searchAddedToCollections(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count collections',
+      one: '1 collection',
+    );
+    return '$name added to $_temp0';
+  }
+
+  @override
+  String searchAlreadyInCollections(String name) {
+    return '$name already in the selected collections';
+  }
+
+  @override
   String get searchGoToSettings => 'Go to Settings';
 
   @override

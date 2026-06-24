@@ -24,18 +24,18 @@ class GameHandler implements MediaActionHandler {
     required WidgetRef ref,
     required SearchCollectionAdder adder,
     required Map<int, Platform> Function() platformMap,
-    required int? targetCollectionId,
+    required Set<int> Function() targetCollections,
     void Function(Game game)? onGameSelected,
   })  : _ref = ref,
         _adder = adder,
         _platformMap = platformMap,
-        _targetCollectionId = targetCollectionId,
+        _targetCollections = targetCollections,
         _onGameSelected = onGameSelected;
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
   final Map<int, Platform> Function() _platformMap;
-  final int? _targetCollectionId;
+  final Set<int> Function() _targetCollections;
   final void Function(Game game)? _onGameSelected;
 
   @override
@@ -49,8 +49,9 @@ class GameHandler implements MediaActionHandler {
       _onGameSelected(game);
       return;
     }
-    if (_targetCollectionId != null) {
-      await _addToCollection(context, _targetCollectionId, game);
+    final Set<int> targets = _targetCollections();
+    if (targets.isNotEmpty) {
+      await _addToCollections(context, targets, game);
       return;
     }
     showDetails(context, game, mediaType);
@@ -114,14 +115,19 @@ class GameHandler implements MediaActionHandler {
     );
   }
 
-  Future<void> _addToCollection(
+  /// Adds [game] to all [collectionIds] (multi-select add). The platform is
+  /// asked once, then reused for every target collection.
+  Future<void> _addToCollections(
     BuildContext context,
-    int collectionId,
+    Set<int> collectionIds,
     Game game,
   ) async {
     final List<CollectedItemInfo> infos = await _collectedInfos(game.id);
+    // Platforms already present in any of the target collections — used only to
+    // mark them in the picker, not to block (same game on a new platform is OK).
     final Set<int> alreadyPlatforms = infos
-        .where((CollectedItemInfo i) => i.collectionId == collectionId)
+        .where((CollectedItemInfo i) =>
+            i.collectionId != null && collectionIds.contains(i.collectionId))
         .map((CollectedItemInfo i) => i.platformId)
         .whereType<int>()
         .toSet();
@@ -134,9 +140,9 @@ class GameHandler implements MediaActionHandler {
     );
     if (platformId == null || !context.mounted) return;
 
-    await _adder.addToCollection(
+    await _adder.addToCollections(
       context: context,
-      collectionId: collectionId,
+      collectionIds: collectionIds,
       mediaType: MediaType.game,
       externalId: game.id,
       platformId: platformId,

@@ -844,6 +844,8 @@
   "searchAddedToNamed": "{name} добавлен в {collection}",
   "searchAlreadyInCollection": "{name} уже в коллекции",
   "searchAlreadyInNamed": "{name} уже в {collection}",
+  "searchAddedToCollections": "{name} добавлен в {count, plural, =1{1 коллекцию} few{{count} коллекции} other{{count} коллекций}}",
+  "searchAlreadyInCollections": "{name} уже во всех выбранных коллекциях",
   "searchGoToSettings": "Перейти в настройки",
   "searchMinCharsHint": "Введите минимум 2 символа и нажмите Enter",
   "searchNoResults": "Ничего не найдено",

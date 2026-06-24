@@ -56,7 +56,7 @@ void main() {
       handlers = MediaHandlers(
         ref: ref,
         platformMap: () => const <int, Platform>{},
-        targetCollectionId: null,
+        targetCollections: () => <int>{},
       );
     });
 

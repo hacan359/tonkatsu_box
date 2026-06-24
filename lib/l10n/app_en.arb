@@ -1041,6 +1041,19 @@
       "collection": {"type": "String"}
     }
   },
+  "searchAddedToCollections": "{name} added to {count, plural, =1{1 collection} other{{count} collections}}",
+  "@searchAddedToCollections": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "searchAlreadyInCollections": "{name} already in the selected collections",
+  "@searchAlreadyInCollections": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "searchGoToSettings": "Go to Settings",
   "searchMinCharsHint": "Type at least 2 characters and press Enter",
   "searchNoResults": "No results found",

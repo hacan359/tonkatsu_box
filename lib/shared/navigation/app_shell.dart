@@ -40,7 +40,7 @@ const int _tabCount = 7;
 @visibleForTesting
 void resetSearchTabState(WidgetRef ref) {
   ref.read(searchTabQueryProvider.notifier).state = '';
-  ref.read(searchTargetCollectionProvider.notifier).state = null;
+  ref.read(searchTargetCollectionsProvider.notifier).state = <int>{};
   ref.read(browseProvider.notifier).clearSearch();
 }
 
@@ -345,8 +345,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       });
     }
 
-    ref.read(searchTargetCollectionProvider.notifier).state =
-        request.collectionId;
+    final int? collectionId = request.collectionId;
+    if (collectionId != null) {
+      ref.read(searchTargetCollectionsProvider.notifier).state = <int>{
+        collectionId,
+      };
+    }
     if (request.sourceId != null) {
       ref.read(browseProvider.notifier).setSource(request.sourceId!);
     }

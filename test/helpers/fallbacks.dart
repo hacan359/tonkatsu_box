@@ -46,6 +46,7 @@ void registerAllFallbacks() {
   registerFallbackValue(const <Anime>[]);
   registerFallbackValue(const <Manga>[]);
   registerFallbackValue(const <int>[]);
+  registerFallbackValue(const <int>{});
 
   registerFallbackValue(<TierDefinition>[]);
 

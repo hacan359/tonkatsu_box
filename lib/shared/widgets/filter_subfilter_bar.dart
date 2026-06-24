@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'scrollable_row_with_arrows.dart';
+
+/// Row height passed to [ScrollableRowWithArrows] for arrow positioning.
+const double _kSubfilterRowHeight = 34;
 
 /// One subfilter chip in a [SubfilterBar].
 class SubfilterChipData {
@@ -29,17 +34,34 @@ class SubfilterChipData {
 /// accent and split from the next group by a divider, so when several types
 /// are active their subfilters share one scrolling row instead of stacking.
 /// Empty groups are dropped; renders nothing when all are empty.
-class SubfilterBar extends StatelessWidget {
+class SubfilterBar extends StatefulWidget {
   const SubfilterBar({required this.groups, super.key});
 
   final List<List<SubfilterChipData>> groups;
 
   @override
+  State<SubfilterBar> createState() => _SubfilterBarState();
+}
+
+class _SubfilterBarState extends State<SubfilterBar> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<List<SubfilterChipData>> active = groups
+    final List<List<SubfilterChipData>> active = widget.groups
         .where((List<SubfilterChipData> g) => g.isNotEmpty)
         .toList();
     if (active.isEmpty) return const SizedBox.shrink();
+
+    // Highlight the whole strip when any subfilter is on, tinted with the first
+    // selected chip's media accent (any one of them when several types are on).
+    final Color? highlight = _selectedAccent(active);
 
     final List<Widget> children = <Widget>[];
     for (int g = 0; g < active.length; g++) {
@@ -60,17 +82,48 @@ class SubfilterBar extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.sm,
+      // Vertical only — the highlight band runs full width (edge to edge), so
+      // the horizontal inset lives inside it (below) instead.
+      padding: const EdgeInsets.only(
+        top: AppSpacing.xs,
+        bottom: AppSpacing.sm,
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(children: children),
+      // Full-bleed band with no border or radius so the highlight reads as one
+      // even row with no seams; the inner padding keeps the chips inset. Geometry
+      // is constant, so the strip never jumps when the highlight toggles — only
+      // the color animates in.
+      child: AnimatedContainer(
+        duration: AppDurations.fast,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: highlight?.withAlpha(38) ?? Colors.transparent,
+        ),
+        // Desktop scrolling, all three ways: hover arrows, mouse wheel, and
+        // click-drag (ScrollableRowWithArrows bundles them). Touch swipe on mobile.
+        child: ScrollableRowWithArrows(
+          controller: _scrollController,
+          height: _kSubfilterRowHeight,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            child: Row(children: children),
+          ),
+        ),
       ),
     );
+  }
+
+  /// Accent of the first selected chip, or null when nothing is selected.
+  Color? _selectedAccent(List<List<SubfilterChipData>> groups) {
+    for (final List<SubfilterChipData> group in groups) {
+      for (final SubfilterChipData chip in group) {
+        if (chip.selected) return chip.accent;
+      }
+    }
+    return null;
   }
 }
 

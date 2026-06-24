@@ -4158,6 +4158,18 @@ abstract class S {
   /// **'{name} already in {collection}'**
   String searchAlreadyInNamed(String name, String collection);
 
+  /// No description provided for @searchAddedToCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to {count, plural, =1{1 collection} other{{count} collections}}'**
+  String searchAddedToCollections(String name, int count);
+
+  /// No description provided for @searchAlreadyInCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} already in the selected collections'**
+  String searchAlreadyInCollections(String name);
+
   /// No description provided for @searchGoToSettings.
   ///
   /// In en, this message translates to:

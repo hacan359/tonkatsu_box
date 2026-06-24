@@ -43,7 +43,7 @@ class MediaHandlers {
   MediaHandlers({
     required WidgetRef ref,
     required Map<int, Platform> Function() platformMap,
-    required int? targetCollectionId,
+    required Set<int> Function() targetCollections,
     void Function(Game game)? onGameSelected,
   }) {
     final SearchCollectionAdder adder = SearchCollectionAdder(ref);
@@ -51,23 +51,23 @@ class MediaHandlers {
       ref: ref,
       adder: adder,
       platformMap: platformMap,
-      targetCollectionId: targetCollectionId,
+      targetCollections: targetCollections,
       onGameSelected: onGameSelected,
     );
     _byType[Movie] = MovieHandler(
       ref: ref,
       adder: adder,
-      targetCollectionId: targetCollectionId,
+      targetCollections: targetCollections,
     );
     _byType[TvShow] = TvShowHandler(
       ref: ref,
       adder: adder,
-      targetCollectionId: targetCollectionId,
+      targetCollections: targetCollections,
     );
     _byType[VisualNovel] = SimpleMediaHandler<VisualNovel>(
       ref: ref,
       adder: adder,
-      targetCollectionId: targetCollectionId,
+      targetCollections: targetCollections,
       mediaType: MediaType.visualNovel,
       imageType: ImageType.vnCover,
       collectedProvider: collectedVisualNovelIdsProvider,
@@ -83,7 +83,7 @@ class MediaHandlers {
     _byType[Manga] = SimpleMediaHandler<Manga>(
       ref: ref,
       adder: adder,
-      targetCollectionId: targetCollectionId,
+      targetCollections: targetCollections,
       mediaType: MediaType.manga,
       imageType: ImageType.mangaCover,
       collectedProvider: collectedMangaIdsProvider,
@@ -109,7 +109,7 @@ class MediaHandlers {
     _byType[Anime] = SimpleMediaHandler<Anime>(
       ref: ref,
       adder: adder,
-      targetCollectionId: targetCollectionId,
+      targetCollections: targetCollections,
       mediaType: MediaType.anime,
       imageType: ImageType.animeCover,
       collectedProvider: collectedAnimeIdsProvider,
@@ -134,7 +134,7 @@ class MediaHandlers {
     _byType[Book] = SimpleMediaHandler<Book>(
       ref: ref,
       adder: adder,
-      targetCollectionId: targetCollectionId,
+      targetCollections: targetCollections,
       mediaType: MediaType.book,
       imageType: ImageType.bookCover,
       collectedProvider: collectedBookIdsProvider,

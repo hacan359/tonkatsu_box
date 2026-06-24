@@ -90,13 +90,13 @@ void main() {
       expect(container.read(browseProvider).sourceId, 'games');
     });
 
-    testWidgets('clears the add-target collection', (WidgetTester tester) async {
+    testWidgets('clears the add-target collections', (WidgetTester tester) async {
       final ProviderContainer container = createContainer();
-      container.read(searchTargetCollectionProvider.notifier).state = 7;
+      container.read(searchTargetCollectionsProvider.notifier).state = <int>{7};
 
       await pumpAndReset(tester, container);
 
-      expect(container.read(searchTargetCollectionProvider), isNull);
+      expect(container.read(searchTargetCollectionsProvider), isEmpty);
     });
 
     testWidgets('is a no-op on an already empty search',
@@ -107,7 +107,7 @@ void main() {
 
       expect(container.read(searchTabQueryProvider), isEmpty);
       expect(container.read(browseProvider).searchQuery, isEmpty);
-      expect(container.read(searchTargetCollectionProvider), isNull);
+      expect(container.read(searchTargetCollectionsProvider), isEmpty);
     });
   });
 }

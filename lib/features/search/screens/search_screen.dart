@@ -20,6 +20,7 @@ import '../../collections/screens/item_detail_screen.dart';
 import '../handlers/media_handlers.dart';
 import '../providers/browse_provider.dart';
 import '../widgets/browse_grid.dart';
+import '../widgets/collection_chips_row.dart';
 import '../widgets/discover_customize_sheet.dart';
 import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
@@ -50,16 +51,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    _handlers = _buildHandlers(ref.read(searchTargetCollectionProvider));
+    _handlers = _buildHandlers();
     _loadPlatforms();
   }
 
-  /// Builds the per-source handlers, targeting [targetCollectionId] for adds
-  /// (set when search is opened from a collection; null = normal picker).
-  MediaHandlers _buildHandlers(int? targetCollectionId) => MediaHandlers(
+  /// Builds the per-source handlers. Both the platform map and the add-target
+  /// collections are read live (closures), so the handlers never need rebuilding
+  /// when either changes — a tap resolves the current selection at tap time.
+  MediaHandlers _buildHandlers() => MediaHandlers(
         ref: ref,
         platformMap: () => _platformMap,
-        targetCollectionId: targetCollectionId,
+        targetCollections: () => ref.read(searchTargetCollectionsProvider),
       );
 
   Future<void> _loadPlatforms() async {
@@ -241,11 +243,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     ref.listen<String>(searchTabQueryProvider, (String? prev, String next) {
       _onQueryChanged(next);
     });
-    // Rebuild handlers when the add-target collection changes (e.g. search
-    // opened from a collection's "add items").
-    ref.listen<int?>(searchTargetCollectionProvider, (int? prev, int? next) {
-      setState(() => _handlers = _buildHandlers(next));
-    });
 
     final Widget body = Column(
       children: <Widget>[
@@ -253,6 +250,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           onBeforeFilterChange: _syncSearchText,
           onDiscoverCustomize: _showDiscoverCustomizeSheet,
         ),
+        const CollectionChipsRow(),
         const SizedBox(height: AppSpacing.xs),
         Expanded(child: _buildContent(browseState)),
       ],
