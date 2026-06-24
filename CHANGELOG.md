@@ -149,6 +149,16 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Tier list across all collections no longer shows duplicate cards**
+
+  A global tier list (one not scoped to a single collection) pulls items from
+  every collection, so a title saved in several collections showed up as one
+  unranked card per collection. The unranked pool now collapses those to a
+  single card per title and hides a title entirely once one of its copies is
+  placed in a tier. The same game on different platforms stays separate.
+
+  * lib/features/tier_lists/providers/tier_list_detail_provider.dart (_tierItemContentKey, _computeUnrankedItems, TierListDetailState): De-duplicate the unranked pool by media type + external id + platform for global tier lists; scoped lists are unchanged.
+
 - **Opening search from Wishlist or a collection keeps the shell and starts clean**
 
   Searching for a wishlist title, or adding items to a collection, now opens the
