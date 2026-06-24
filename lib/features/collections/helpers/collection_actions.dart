@@ -37,7 +37,7 @@ import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/copy_as_text_dialog.dart';
 import '../widgets/edit_collection_dialog.dart';
-import '../../search/screens/search_screen.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../settings/providers/settings_provider.dart';
 
 /// Static action methods for the collection screen.
@@ -47,25 +47,18 @@ import '../../settings/providers/settings_provider.dart';
 class CollectionActions {
   CollectionActions._();
 
-  /// Navigates to search to add items.
-  static Future<void> addItems({
-    required BuildContext context,
+  /// Opens the Search tab to add items into [collectionId].
+  ///
+  /// Switches to the shared Search tab (handled by [AppShell]) with this
+  /// collection set as the add target, rather than pushing a separate search
+  /// screen — so the shell and its single search field stay consistent. Adds go
+  /// straight into the collection, which refreshes itself via its items notifier.
+  static void addItems({
     required WidgetRef ref,
     required int? collectionId,
-  }) async {
-    await Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => SearchScreen(
-          collectionId: collectionId,
-          isPushed: true,
-        ),
-      ),
-    );
-    if (context.mounted) {
-      ref
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh();
-    }
+  }) {
+    ref.read(searchTabRequestProvider.notifier).state =
+        SearchTabRequest(collectionId: collectionId);
   }
 
   /// Moves an item to another collection.

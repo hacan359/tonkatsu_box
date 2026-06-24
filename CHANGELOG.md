@@ -149,6 +149,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Tier list across all collections no longer shows duplicate cards**
+
+  A global tier list (one not scoped to a single collection) pulls items from
+  every collection, so a title saved in several collections showed up as one
+  unranked card per collection. The unranked pool now collapses those to a
+  single card per title and hides a title entirely once one of its copies is
+  placed in a tier. The same game on different platforms stays separate.
+
+  * lib/features/tier_lists/providers/tier_list_detail_provider.dart (_tierItemContentKey, _computeUnrankedItems, TierListDetailState): De-duplicate the unranked pool by media type + external id + platform for global tier lists; scoped lists are unchanged.
+
+- **Opening search from Wishlist or a collection keeps the shell and starts clean**
+
+  Searching for a wishlist title, or adding items to a collection, now opens the
+  real Search tab prefilled instead of pushing a separate full-screen search — so
+  the sidebar / top bar stay visible and there is no second search field. The
+  Search tab also resets its query and results whenever it is entered, so a query
+  carried over from a previous search (or a wishlist prefill) no longer sticks.
+
+  * lib/shared/navigation/search_providers.dart (searchTabRequestProvider, SearchTabRequest, searchTargetCollectionProvider): New — a one-shot "open the Search tab, optionally prefilled and optionally targeting a collection" request, plus the add-target collection.
+  * lib/shared/navigation/app_shell.dart (resetSearchTabState, _AppShellState.build, _AppShellState._onDestinationSelected, _AppShellState._resetSearchTab, _AppShellState._openSearchTab): Listen for the request and switch to the Search tab prefilled; clear query / add-target / browse search on plain entry to the tab.
+  * lib/features/wishlist/screens/wishlist_screen.dart (_WishlistScreenState._searchForItem): Set the request instead of pushing SearchScreen.
+  * lib/features/collections/helpers/collection_actions.dart (CollectionActions.addItems): Set the request with the collection as add target instead of pushing SearchScreen; now synchronous.
+  * lib/features/collections/screens/collection_screen.dart (_CollectionScreenState): Drop the now-unused context argument from addItems calls.
+  * lib/features/search/screens/search_screen.dart (SearchScreen, _SearchScreenState): Parameterless tab — removed isPushed/collectionId/initialQuery/initialSourceId/initialTabIndex/onGameSelected and its own Scaffold/AppBar; reads searchTargetCollectionProvider for add-targeting.
+
 - **Steam credentials in an exported config now restore on import** — the saved Steam key and ID reappear after importing a config.
 
   * lib/core/services/config_service.dart (ConfigService): round-trip the steamRememberCredentials flag.

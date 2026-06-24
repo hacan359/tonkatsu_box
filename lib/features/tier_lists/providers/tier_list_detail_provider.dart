@@ -11,6 +11,44 @@ import '../../../shared/models/tier_definition.dart';
 import '../../../shared/models/tier_list.dart';
 import '../../../shared/models/tier_list_entry.dart';
 
+/// Identity of a tier-list item for de-duplication. A global tier list
+/// aggregates every collection, so the same title arrives as several rows (one
+/// per collection it lives in). Mirrors the `collection_items` unique key
+/// (media type + external id + platform).
+String _tierItemContentKey(CollectionItem item) =>
+    '${item.mediaType.value}:${item.externalId}:${item.platformId ?? -1}';
+
+/// Items not placed in any tier. When [dedupe] (global tier lists, which pull
+/// the same title from every collection it lives in) the pool collapses those
+/// duplicates to one card per title and hides a title entirely once any of its
+/// rows is placed. Scoped lists can't hold such duplicates, so they skip it.
+List<CollectionItem> _computeUnrankedItems(
+  List<CollectionItem> items,
+  Set<int> placedItemIds, {
+  required bool dedupe,
+}) {
+  if (!dedupe) {
+    return <CollectionItem>[
+      for (final CollectionItem item in items)
+        if (!placedItemIds.contains(item.id)) item,
+    ];
+  }
+  final Set<String> placedContentKeys = <String>{
+    for (final CollectionItem item in items)
+      if (placedItemIds.contains(item.id)) _tierItemContentKey(item),
+  };
+  final Set<String> seenContentKeys = <String>{};
+  final List<CollectionItem> result = <CollectionItem>[];
+  for (final CollectionItem item in items) {
+    if (placedItemIds.contains(item.id)) continue;
+    final String key = _tierItemContentKey(item);
+    if (placedContentKeys.contains(key)) continue;
+    if (!seenContentKeys.add(key)) continue;
+    result.add(item);
+  }
+  return result;
+}
+
 /// Derived collections (entriesByTier, itemsById, unrankedItems,
 /// placedItemIds) are precomputed once to avoid O(N) recomputation per
 /// widget build on large tier lists.
@@ -41,10 +79,11 @@ class TierListDetailState {
       for (final MapEntry<String, List<TierListEntry>> e in byTier.entries)
         e.key: List<TierListEntry>.unmodifiable(e.value),
     };
-    final List<CollectionItem> unrankedItems = <CollectionItem>[
-      for (final CollectionItem item in items)
-        if (!placedItemIds.contains(item.id)) item,
-    ];
+    final List<CollectionItem> unrankedItems = _computeUnrankedItems(
+      items,
+      placedItemIds,
+      dedupe: tierList.isGlobal,
+    );
     return TierListDetailState._(
       tierList: tierList,
       definitions: definitions,

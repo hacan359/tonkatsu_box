@@ -47,6 +47,33 @@ final Provider<FocusNode> appTopBarFocusProvider = Provider<FocusNode>((
   return node;
 });
 
+/// Collection that items added from the Search tab go into. Set when search is
+/// opened from a collection's "add items"; `null` means the normal "add to any
+/// collection" picker. Cleared whenever the Search tab is entered plainly.
+final StateProvider<int?> searchTargetCollectionProvider =
+    StateProvider<int?>((Ref ref) => null);
+
+/// One-shot request to open the Search tab, optionally prefilled. Set from
+/// another tab (Wishlist, a collection) instead of pushing a separate search
+/// screen; consumed and reset to `null` by [AppShell].
+class SearchTabRequest {
+  /// Creates a [SearchTabRequest].
+  const SearchTabRequest({this.query, this.sourceId, this.collectionId});
+
+  /// Query to prefill (and run). When null/empty the Search tab opens empty.
+  final String? query;
+
+  /// Browse source to preselect (e.g. `games`), or null to keep the current.
+  final String? sourceId;
+
+  /// Collection to add results into; sets [searchTargetCollectionProvider].
+  final int? collectionId;
+}
+
+/// Pending [SearchTabRequest]; see [SearchTabRequest].
+final StateProvider<SearchTabRequest?> searchTabRequestProvider =
+    StateProvider<SearchTabRequest?>((Ref ref) => null);
+
 /// Describes the search context for one tab.
 class SearchContext {
   /// Creates a [SearchContext].

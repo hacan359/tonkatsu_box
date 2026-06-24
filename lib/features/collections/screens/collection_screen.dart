@@ -247,7 +247,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             isTableMode: _isTableMode,
             isViewModeLocked: _isViewModeLocked,
             onAddItems: () => CollectionActions.addItems(
-              context: context,
               ref: ref,
               collectionId: widget.collectionId,
             ),
@@ -267,7 +266,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return <ShortcutActivator, VoidCallback>{
       if (_canEdit)
         const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-            () => CollectionActions.addItems(context: context, ref: ref, collectionId: widget.collectionId),
+            () => CollectionActions.addItems(ref: ref, collectionId: widget.collectionId),
       if (!_isUncategorized && _collection != null)
         const SingleActivator(LogicalKeyboardKey.keyE, control: true):
             () => CollectionActions.exportCollection(context: context, ref: ref, collectionId: widget.collectionId, collection: _collection!),

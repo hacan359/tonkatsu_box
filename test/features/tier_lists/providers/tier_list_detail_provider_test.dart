@@ -59,14 +59,16 @@ void main() {
       });
     });
 
-    group('unrankedItems', () {
+    group('unrankedItems (scoped)', () {
+      // A scoped tier list (collectionId set) can't hold cross-collection
+      // duplicates, so the pool is simply every item not placed in a tier.
       test('should return all items when no entries', () {
         final List<CollectionItem> items = <CollectionItem>[
           createTestCollectionItem(id: 1),
           createTestCollectionItem(id: 2),
         ];
         final TierListDetailState state = TierListDetailState(
-          tierList: createTestTierList(),
+          tierList: createTestTierList(collectionId: 1),
           definitions: const <TierDefinition>[],
           entries: const <TierListEntry>[],
           items: items,
@@ -82,7 +84,7 @@ void main() {
           createTestCollectionItem(id: 3),
         ];
         final TierListDetailState state = TierListDetailState(
-          tierList: createTestTierList(),
+          tierList: createTestTierList(collectionId: 1),
           definitions: const <TierDefinition>[],
           entries: <TierListEntry>[
             createTestTierListEntry(collectionItemId: 1, tierKey: 'S'),
@@ -100,6 +102,45 @@ void main() {
           createTestCollectionItem(id: 1),
         ];
         final TierListDetailState state = TierListDetailState(
+          tierList: createTestTierList(collectionId: 1),
+          definitions: const <TierDefinition>[],
+          entries: <TierListEntry>[
+            createTestTierListEntry(collectionItemId: 1, tierKey: 'S'),
+          ],
+          items: items,
+        );
+
+        expect(state.unrankedItems, isEmpty);
+      });
+    });
+
+    group('unrankedItems (global de-duplication)', () {
+      test('collapses the same title coming from several collections', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestCollectionItem(id: 1, collectionId: 1, externalId: 100),
+          createTestCollectionItem(id: 2, collectionId: 2, externalId: 100),
+          createTestCollectionItem(id: 3, collectionId: 1, externalId: 200),
+        ];
+        final TierListDetailState state = TierListDetailState(
+          tierList: createTestTierList(),
+          definitions: const <TierDefinition>[],
+          entries: const <TierListEntry>[],
+          items: items,
+        );
+
+        expect(state.unrankedItems, hasLength(2));
+        expect(
+          state.unrankedItems.map((CollectionItem i) => i.externalId).toSet(),
+          equals(<int>{100, 200}),
+        );
+      });
+
+      test('hides a title from the pool once any of its copies is placed', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestCollectionItem(id: 1, collectionId: 1, externalId: 100),
+          createTestCollectionItem(id: 2, collectionId: 2, externalId: 100),
+        ];
+        final TierListDetailState state = TierListDetailState(
           tierList: createTestTierList(),
           definitions: const <TierDefinition>[],
           entries: <TierListEntry>[
@@ -109,6 +150,23 @@ void main() {
         );
 
         expect(state.unrankedItems, isEmpty);
+      });
+
+      test('keeps the same game on different platforms separate', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestCollectionItem(
+              id: 1, collectionId: 1, externalId: 100, platformId: 7),
+          createTestCollectionItem(
+              id: 2, collectionId: 2, externalId: 100, platformId: 9),
+        ];
+        final TierListDetailState state = TierListDetailState(
+          tierList: createTestTierList(),
+          definitions: const <TierDefinition>[],
+          entries: const <TierListEntry>[],
+          items: items,
+        );
+
+        expect(state.unrankedItems, hasLength(2));
       });
     });
 

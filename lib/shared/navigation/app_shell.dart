@@ -10,6 +10,7 @@ import '../../features/collections/screens/home_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
 import '../../features/collections/screens/item_detail_screen.dart';
 import '../../features/releases/screens/releases_screen.dart';
+import '../../features/search/providers/browse_provider.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/welcome/providers/menu_tour_provider.dart';
@@ -30,6 +31,18 @@ import 'search_providers.dart';
 
 /// Number of primary tabs.
 const int _tabCount = 7;
+
+/// Clears the Search tab's transient state when it is freshly entered, so it
+/// always opens empty instead of showing whatever a previous search (including
+/// one opened prefilled from Wishlist or a collection) left in the shared
+/// providers. Browse filters and the chosen source are kept — those are a
+/// deliberate browse setup, not transient search input.
+@visibleForTesting
+void resetSearchTabState(WidgetRef ref) {
+  ref.read(searchTabQueryProvider.notifier).state = '';
+  ref.read(searchTargetCollectionProvider.notifier).state = null;
+  ref.read(browseProvider.notifier).clearSearch();
+}
 
 /// Main app shell.
 ///
@@ -95,6 +108,14 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<SearchTabRequest?>(
+      searchTabRequestProvider,
+      (SearchTabRequest? previous, SearchTabRequest? request) {
+        if (request == null) return;
+        _openSearchTab(request);
+        ref.read(searchTabRequestProvider.notifier).state = null;
+      },
+    );
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
@@ -288,6 +309,9 @@ class _AppShellState extends ConsumerState<AppShell> {
           ?.popUntil((Route<dynamic> route) => route.isFirst);
       return;
     }
+    if (NavTab.values[index] == NavTab.search) {
+      _resetSearchTab();
+    }
     _initializedTabs.add(index);
     setState(() => _selectedIndex = index);
     // Explicitly focus the new tab's content for the gamepad.
@@ -297,6 +321,40 @@ class _AppShellState extends ConsumerState<AppShell> {
       scope.requestFocus();
       scope.nextFocus();
     });
+  }
+
+  void _resetSearchTab() => resetSearchTabState(ref);
+
+  /// Opens the Search tab in response to a [SearchTabRequest] from another tab,
+  /// optionally prefilled. Used instead of pushing a separate search screen, so
+  /// the shell and its single top-bar search field stay consistent (no second
+  /// AppBar / second search field).
+  void _openSearchTab(SearchTabRequest request) {
+    // Start from a clean Search tab (also clears any stale target collection).
+    resetSearchTabState(ref);
+
+    final int index = NavTab.search.index;
+    if (_selectedIndex != index) {
+      _initializedTabs.add(index);
+      setState(() => _selectedIndex = index);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final FocusScopeNode scope = _tabFocusScopeNodes[index];
+        scope.requestFocus();
+        scope.nextFocus();
+      });
+    }
+
+    ref.read(searchTargetCollectionProvider.notifier).state =
+        request.collectionId;
+    if (request.sourceId != null) {
+      ref.read(browseProvider.notifier).setSource(request.sourceId!);
+    }
+    final String query = request.query?.trim() ?? '';
+    if (query.isNotEmpty) {
+      ref.read(searchTabQueryProvider.notifier).state = query;
+      ref.read(browseProvider.notifier).search(query);
+    }
   }
 
   /// Handles the back button (Android back, Gamepad B).
