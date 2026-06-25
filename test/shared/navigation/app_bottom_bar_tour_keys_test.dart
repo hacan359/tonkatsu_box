@@ -19,6 +19,7 @@ void main() {
     Widget bar() => AppBottomBar(
           selectedTab: NavTab.home,
           onDestinationSelected: (_) {},
+          onCenterTap: () {},
         );
 
     Widget wrap(Widget child, {required ProviderContainer container}) {

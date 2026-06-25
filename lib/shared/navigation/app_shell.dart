@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/collections/screens/collection_screen.dart';
 import '../../features/collections/screens/home_screen.dart';
+import '../../features/genre_cloud/screens/genre_cloud_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
 import '../../features/collections/screens/item_detail_screen.dart';
 import '../../features/releases/screens/releases_screen.dart';
@@ -199,6 +200,8 @@ class _AppShellState extends ConsumerState<AppShell> {
         bottomNavigationBar: AppBottomBar(
           selectedTab: activeTab,
           onDestinationSelected: onTabSelected,
+          onCenterTap: _openPreferenceCloud,
+          centerActive: _personalizationOpen,
         ),
       );
     }
@@ -209,11 +212,32 @@ class _AppShellState extends ConsumerState<AppShell> {
           AppSidebar(
             selectedTab: activeTab,
             onDestinationSelected: onTabSelected,
+            onCenterTap: _openPreferenceCloud,
+            centerActive: _personalizationOpen,
           ),
           Expanded(child: _buildContent()),
         ],
       ),
     );
+  }
+
+  /// Whether the Personalization view is the active view (shown in the content
+  /// area and highlighting the centre nav button like a selected tab).
+  bool _personalizationOpen = false;
+
+  /// Whether Personalization has been opened at least once, so its IndexedStack
+  /// child is built lazily on first open rather than on every app start.
+  bool _personalizationEverOpened = false;
+
+  /// Shows the preference cloud as a shell-level destination — a sibling of the
+  /// tab navigators, not a route pushed onto one — so switching tabs simply
+  /// hides it instead of leaving it on a tab's navigator stack.
+  void _openPreferenceCloud() {
+    if (_personalizationOpen) return;
+    setState(() {
+      _personalizationEverOpened = true;
+      _personalizationOpen = true;
+    });
   }
 
   /// Captures printable characters from the global Focus and redirects them to
@@ -223,6 +247,8 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// not already inside another [EditableText].
   KeyEventResult _handleTypeToSearch(FocusNode node, KeyEvent event) {
     if (kIsMobile) return KeyEventResult.ignored;
+    // Personalization has no search field; don't hijack typing for it.
+    if (_personalizationOpen) return KeyEventResult.ignored;
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
@@ -266,13 +292,23 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Widget _buildContent() {
     return IndexedStack(
-      index: _selectedIndex,
-      children: List<Widget>.generate(_tabCount, (int index) {
-        if (!_initializedTabs.contains(index)) {
-          return const SizedBox.shrink();
-        }
-        return _buildTabNavigator(index);
-      }),
+      index: _personalizationOpen ? _tabCount : _selectedIndex,
+      children: <Widget>[
+        for (int index = 0; index < _tabCount; index++)
+          if (_initializedTabs.contains(index))
+            _buildTabNavigator(index)
+          else
+            const SizedBox.shrink(),
+        // Personalization is a shell-level destination, not a tab: it lives as
+        // an extra IndexedStack child rather than a route pushed onto a tab's
+        // navigator, so switching tabs hides it instead of leaving it glued to
+        // a tab's stack with the highlight pointing elsewhere. Built lazily on
+        // first open, then kept alive alongside the tabs.
+        if (_personalizationEverOpened)
+          const GenreCloudScreen()
+        else
+          const SizedBox.shrink(),
+      ],
     );
   }
 
@@ -302,8 +338,10 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   void _onDestinationSelected(int index) {
-    if (index == _selectedIndex) {
-      // Pressing again returns to the tab root.
+    if (index == _selectedIndex && !_personalizationOpen) {
+      // Pressing again returns to the tab root. While Personalization is open
+      // this must fall through instead, so tapping the underlying tab closes
+      // the cloud rather than silently popping a hidden tab to its root.
       _navigatorKeys[index]
           .currentState
           ?.popUntil((Route<dynamic> route) => route.isFirst);
@@ -313,7 +351,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       _resetSearchTab();
     }
     _initializedTabs.add(index);
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+      // Switching to a real tab moves the selection highlight off the centre
+      // button.
+      _personalizationOpen = false;
+    });
     // Explicitly focus the new tab's content for the gamepad.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -365,6 +408,10 @@ class _AppShellState extends ConsumerState<AppShell> {
   ///
   /// Returns `true` if navigation was handled; `false` if the app should exit.
   bool _handleBack() {
+    if (_personalizationOpen) {
+      setState(() => _personalizationOpen = false);
+      return true;
+    }
     final NavigatorState? tabNav =
         _navigatorKeys[_selectedIndex].currentState;
     if (tabNav != null && tabNav.canPop()) {

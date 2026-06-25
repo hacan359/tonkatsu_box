@@ -10,7 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/update_service.dart';
 import '../../features/welcome/providers/menu_tour_provider.dart';
 import '../constants/platform_features.dart';
-import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -150,14 +149,6 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
       ),
       child: Row(
         children: <Widget>[
-          Image.asset(
-            AppAssets.logo,
-            width: 40,
-            height: 40,
-          ),
-          SizedBox(
-            width: MediaQuery.sizeOf(context).width < 700 ? 12 : 56,
-          ),
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,

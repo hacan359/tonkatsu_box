@@ -9,6 +9,53 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Personalization word cloud of genres, platforms and decades**
+
+  A new Personalization view that lays out the whole library's genres, platforms
+  and release decades as a frequency-sized word cloud. Word size follows how
+  often a value appears; word colour follows the dominant media type. Two chip
+  rows filter the cloud by facet (genres / platforms / decades) and by media
+  type, and the result can be saved as a PNG poster. The view opens from the new
+  centre nav button, which replaces the old top-bar logo; the nav row and rail
+  reserve a middle slot for it.
+
+  * lib/features/genre_cloud/facet.dart (Facet), genre_cloud/facet_value.dart
+    (FacetValue): The facet dimensions and a single (facet, value) tally. New.
+  * lib/features/genre_cloud/genre_cloud_aggregate.dart (extractItemFacets,
+    aggregateFacets, presentFacets, presentMediaTypes): Pure aggregation over
+    collection items, reading the typed sub-models. Counting is case-insensitive
+    and de-duped per item. New.
+  * lib/features/genre_cloud/genre_cloud_layout.dart (layoutGenreCloud,
+    PlacedWord, GenreCloudLayout, rotatedAtIndex): Flutter-free Archimedean
+    spiral placement with rank-based font tiers and auto-fit shrinking. New.
+  * lib/features/genre_cloud/widgets/genre_cloud_view.dart (GenreCloudView,
+    genreWordSpan, measureGenreWord): On-screen painter sharing one span builder
+    between measurement and painting. Grows the canvas to fit every word, wraps
+    it in an InteractiveViewer for pan and pinch-zoom, and shows a recenter
+    button that restores the default centred view. New.
+  * lib/features/genre_cloud/widgets/genre_cloud_export_view.dart
+    (GenreCloudExportView): Fixed 1200×800 poster captured to PNG; renders the
+    cloud non-interactively. New.
+  * lib/features/genre_cloud/providers/genre_cloud_provider.dart
+    (genreCloudItemsProvider): Exposes the whole library's items from the
+    all-items notifier. New.
+  * lib/features/genre_cloud/screens/genre_cloud_screen.dart (GenreCloudScreen):
+    Facet legend, media-type legend, cloud and image export. New.
+  * lib/shared/navigation/nav_center_button.dart (NavCenterButton): The app logo
+    as a focusable centre nav item. New.
+  * lib/shared/navigation/nav_destinations.dart (kNavCenterSlot, navSelectedSlot):
+    Shared centre-slot index and the selected-index → visual-slot mapping that
+    skips the reserved centre slot.
+  * lib/shared/navigation/app_bottom_bar.dart (AppBottomBar.onCenterTap,
+    AppBottomBar.centerActive), lib/shared/navigation/app_sidebar.dart
+    (AppSidebar.onCenterTap, AppSidebar.centerActive): Reserve the middle slot,
+    draw the centre button, and highlight it when Personalization is open.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._openPreferenceCloud):
+    Show the cloud as a shell-level destination (an extra IndexedStack child),
+    toggled by the centre nav button.
+  * lib/shared/navigation/app_top_bar.dart: Drop the top-bar logo, now shown as
+    the centre nav button.
+
 - **Mark collection items as favorite**
 
   A per-item favorite flag the user sets from the poster card (a heart in the

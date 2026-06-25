@@ -2334,5 +2334,21 @@
   "screenScraperMediaTitle": "Title",
   "screenScraperMediaScreenshot": "Screenshot",
   "screenScraperMediaFanart": "Fanart",
-  "screenScraperMediaMix": "Mix"
+  "screenScraperMediaMix": "Mix",
+  "genreCloudTitle": "Personalization",
+  "genreCloudEmpty": "No genres yet",
+  "genreCloudEmptyHint": "Add items with genres to build the cloud",
+  "genreCloudExportImage": "Save as image",
+  "genreCloudImageSaved": "Image saved",
+  "genreCloudExportFailed": "Couldn't save the image",
+  "genreCloudResetView": "Reset view",
+  "genreCloudHidden": "{count, plural, =1{1 hidden (didn't fit)} other{{count} hidden (didn't fit)}}",
+  "@genreCloudHidden": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "facetGenre": "Genres",
+  "facetPlatform": "Platforms",
+  "facetDecade": "Decades"
 }

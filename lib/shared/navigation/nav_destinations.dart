@@ -59,3 +59,18 @@ List<NavDestination> buildNavDestinations({
     ),
   ];
 }
+
+/// Slot the centre button occupies in the nav row/rail. [AppShell] draws the
+/// button (a docked logo); the bars reserve an empty slot here so the tabs
+/// split evenly around it.
+const int kNavCenterSlot = 3;
+
+/// Maps the selected destination index to its visual slot once the empty
+/// centre slot is accounted for. Returns [kNavCenterSlot] while the centre
+/// button is active, -1 when nothing is selected, and otherwise shifts any
+/// destination at or past the centre by one to skip the reserved slot.
+int navSelectedSlot({required int selectedIndex, required bool centerActive}) {
+  if (centerActive) return kNavCenterSlot;
+  if (selectedIndex < 0) return -1;
+  return selectedIndex < kNavCenterSlot ? selectedIndex : selectedIndex + 1;
+}

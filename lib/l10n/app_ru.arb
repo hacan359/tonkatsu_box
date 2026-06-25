@@ -2009,5 +2009,16 @@
   "screenScraperMediaTitle": "Заставка",
   "screenScraperMediaScreenshot": "Скриншот",
   "screenScraperMediaFanart": "Фан-арт",
-  "screenScraperMediaMix": "Микс"
+  "screenScraperMediaMix": "Микс",
+  "genreCloudTitle": "Персонализация",
+  "genreCloudEmpty": "Пока нет жанров",
+  "genreCloudEmptyHint": "Добавьте элементы с жанрами, чтобы построить облако",
+  "genreCloudExportImage": "Сохранить картинкой",
+  "genreCloudImageSaved": "Картинка сохранена",
+  "genreCloudExportFailed": "Не удалось сохранить картинку",
+  "genreCloudResetView": "Сбросить вид",
+  "genreCloudHidden": "{count, plural, =1{скрыто {count} (не поместилось)} few{скрыто {count} (не поместились)} many{скрыто {count} (не поместились)} other{скрыто {count} (не поместились)}}",
+  "facetGenre": "Жанры",
+  "facetPlatform": "Платформы",
+  "facetDecade": "Десятилетия"
 }

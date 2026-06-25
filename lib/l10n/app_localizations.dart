@@ -9125,6 +9125,72 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Mix'**
   String get screenScraperMediaMix;
+
+  /// No description provided for @genreCloudTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalization'**
+  String get genreCloudTitle;
+
+  /// No description provided for @genreCloudEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No genres yet'**
+  String get genreCloudEmpty;
+
+  /// No description provided for @genreCloudEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items with genres to build the cloud'**
+  String get genreCloudEmptyHint;
+
+  /// No description provided for @genreCloudExportImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as image'**
+  String get genreCloudExportImage;
+
+  /// No description provided for @genreCloudImageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Image saved'**
+  String get genreCloudImageSaved;
+
+  /// No description provided for @genreCloudExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the image'**
+  String get genreCloudExportFailed;
+
+  /// No description provided for @genreCloudResetView.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset view'**
+  String get genreCloudResetView;
+
+  /// No description provided for @genreCloudHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hidden (didn\'t fit)} other{{count} hidden (didn\'t fit)}}'**
+  String genreCloudHidden(int count);
+
+  /// No description provided for @facetGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get facetGenre;
+
+  /// No description provided for @facetPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platforms'**
+  String get facetPlatform;
+
+  /// No description provided for @facetDecade.
+  ///
+  /// In en, this message translates to:
+  /// **'Decades'**
+  String get facetDecade;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

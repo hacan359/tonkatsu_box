@@ -300,6 +300,9 @@ Anime createTestAnime({
   int? episodes,
   String? format,
   List<String>? genres,
+  List<String>? tags,
+  String? status,
+  int? startYear,
 }) {
   return Anime(
     id: id,
@@ -310,6 +313,9 @@ Anime createTestAnime({
     episodes: episodes,
     format: format,
     genres: genres,
+    tags: tags,
+    status: status,
+    startYear: startYear,
   );
 }
 

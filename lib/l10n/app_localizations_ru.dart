@@ -5166,4 +5166,48 @@ class SRu extends S {
 
   @override
   String get screenScraperMediaMix => 'Микс';
+
+  @override
+  String get genreCloudTitle => 'Персонализация';
+
+  @override
+  String get genreCloudEmpty => 'Пока нет жанров';
+
+  @override
+  String get genreCloudEmptyHint =>
+      'Добавьте элементы с жанрами, чтобы построить облако';
+
+  @override
+  String get genreCloudExportImage => 'Сохранить картинкой';
+
+  @override
+  String get genreCloudImageSaved => 'Картинка сохранена';
+
+  @override
+  String get genreCloudExportFailed => 'Не удалось сохранить картинку';
+
+  @override
+  String get genreCloudResetView => 'Сбросить вид';
+
+  @override
+  String genreCloudHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'скрыто $count (не поместились)',
+      many: 'скрыто $count (не поместились)',
+      few: 'скрыто $count (не поместились)',
+      one: 'скрыто $count (не поместилось)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get facetGenre => 'Жанры';
+
+  @override
+  String get facetPlatform => 'Платформы';
+
+  @override
+  String get facetDecade => 'Десятилетия';
 }

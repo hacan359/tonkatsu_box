@@ -5080,4 +5080,45 @@ class SEn extends S {
 
   @override
   String get screenScraperMediaMix => 'Mix';
+
+  @override
+  String get genreCloudTitle => 'Personalization';
+
+  @override
+  String get genreCloudEmpty => 'No genres yet';
+
+  @override
+  String get genreCloudEmptyHint => 'Add items with genres to build the cloud';
+
+  @override
+  String get genreCloudExportImage => 'Save as image';
+
+  @override
+  String get genreCloudImageSaved => 'Image saved';
+
+  @override
+  String get genreCloudExportFailed => 'Couldn\'t save the image';
+
+  @override
+  String get genreCloudResetView => 'Reset view';
+
+  @override
+  String genreCloudHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hidden (didn\'t fit)',
+      one: '1 hidden (didn\'t fit)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get facetGenre => 'Genres';
+
+  @override
+  String get facetPlatform => 'Platforms';
+
+  @override
+  String get facetDecade => 'Decades';
 }
