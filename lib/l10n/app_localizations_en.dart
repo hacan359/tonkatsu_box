@@ -5121,4 +5121,48 @@ class SEn extends S {
 
   @override
   String get facetDecade => 'Decades';
+
+  @override
+  String get personalizationTabCloud => 'Genre cloud';
+
+  @override
+  String get personalizationTabRecommendations => 'Recommendations';
+
+  @override
+  String get recommendationsRefresh => 'Refresh';
+
+  @override
+  String get recommendationsEmpty => 'No recommendations yet';
+
+  @override
+  String get recommendationsEmptyHint =>
+      'Complete and rate some movies or shows to get personalized picks';
+
+  @override
+  String get recommendationsNoCandidates => 'Nothing new to suggest';
+
+  @override
+  String get recommendationsNoCandidatesHint =>
+      'We couldn\'t find anything new to suggest right now. Try again later';
+
+  @override
+  String get recommendationsNoApiKey => 'TMDB API key required';
+
+  @override
+  String get recommendationsNoApiKeyHint =>
+      'Add your TMDB API key in Settings to get recommendations';
+
+  @override
+  String get recommendationsBecauseLabel => 'Because you liked';
+
+  @override
+  String recommendationsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recommendations',
+      one: '1 recommendation',
+    );
+    return '$_temp0';
+  }
 }

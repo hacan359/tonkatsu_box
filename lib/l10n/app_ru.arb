@@ -2020,5 +2020,21 @@
   "genreCloudHidden": "{count, plural, =1{скрыто {count} (не поместилось)} few{скрыто {count} (не поместились)} many{скрыто {count} (не поместились)} other{скрыто {count} (не поместились)}}",
   "facetGenre": "Жанры",
   "facetPlatform": "Платформы",
-  "facetDecade": "Десятилетия"
+  "facetDecade": "Десятилетия",
+  "personalizationTabCloud": "Облако жанров",
+  "personalizationTabRecommendations": "Рекомендации",
+  "recommendationsRefresh": "Обновить",
+  "recommendationsEmpty": "Пока нет рекомендаций",
+  "recommendationsEmptyHint": "Заверши и оцени фильмы или сериалы, чтобы получить персональные подборки",
+  "recommendationsNoCandidates": "Ничего не нашлось",
+  "recommendationsNoCandidatesHint": "Не удалось ничего подобрать прямо сейчас. Попробуй позже",
+  "recommendationsNoApiKey": "Нужен ключ TMDB API",
+  "recommendationsNoApiKeyHint": "Добавь ключ TMDB API в настройках, чтобы получать рекомендации",
+  "recommendationsBecauseLabel": "Потому что тебе понравилось",
+  "recommendationsCount": "{count, plural, =1{{count} подборка} few{{count} подборки} many{{count} подборок} other{{count} подборок}}",
+  "@recommendationsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

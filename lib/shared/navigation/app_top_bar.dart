@@ -212,7 +212,7 @@ class _SettingsButton extends StatelessWidget {
 
     Widget icon = Icon(
       active ? Icons.settings : Icons.settings_outlined,
-      size: 22,
+      size: kTopBarIconSize,
       color: color,
     );
 

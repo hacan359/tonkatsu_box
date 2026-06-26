@@ -7,8 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/collections/screens/collection_screen.dart';
 import '../../features/collections/screens/home_screen.dart';
-import '../../features/genre_cloud/screens/genre_cloud_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
+import '../../features/personalization/screens/personalization_screen.dart';
 import '../../features/collections/screens/item_detail_screen.dart';
 import '../../features/releases/screens/releases_screen.dart';
 import '../../features/search/providers/browse_provider.dart';
@@ -305,7 +305,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         // a tab's stack with the highlight pointing elsewhere. Built lazily on
         // first open, then kept alive alongside the tabs.
         if (_personalizationEverOpened)
-          const GenreCloudScreen()
+          const PersonalizationScreen()
         else
           const SizedBox.shrink(),
       ],
@@ -377,9 +377,15 @@ class _AppShellState extends ConsumerState<AppShell> {
     resetSearchTabState(ref);
 
     final int index = NavTab.search.index;
-    if (_selectedIndex != index) {
+    // Switch when the Search tab isn't already active, or when Personalization
+    // is open over it — a search request must close the overlay and surface the
+    // tab rather than be swallowed.
+    if (_selectedIndex != index || _personalizationOpen) {
       _initializedTabs.add(index);
-      setState(() => _selectedIndex = index);
+      setState(() {
+        _selectedIndex = index;
+        _personalizationOpen = false;
+      });
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final FocusScopeNode scope = _tabFocusScopeNodes[index];
