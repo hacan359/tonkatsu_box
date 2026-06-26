@@ -39,8 +39,10 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/genre_cloud/providers/genre_cloud_provider.dart
     (genreCloudItemsProvider): Exposes the whole library's items from the
     all-items notifier. New.
-  * lib/features/genre_cloud/screens/genre_cloud_screen.dart (GenreCloudScreen):
-    Facet legend, media-type legend, cloud and image export. New.
+  * lib/features/genre_cloud/screens/genre_cloud_screen.dart (GenreCloudScreen, GenreCloudScreen.showTitle):
+    Facet legend, media-type legend, cloud and image export; `showTitle` hides
+    the screen's own title strip when the cloud is embedded under the
+    Personalization tab. New.
   * lib/shared/navigation/nav_center_button.dart (NavCenterButton): The app logo
     as a focusable centre nav item. New.
   * lib/shared/navigation/nav_destinations.dart (kNavCenterSlot, navSelectedSlot):
@@ -50,11 +52,78 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     AppBottomBar.centerActive), lib/shared/navigation/app_sidebar.dart
     (AppSidebar.onCenterTap, AppSidebar.centerActive): Reserve the middle slot,
     draw the centre button, and highlight it when Personalization is open.
-  * lib/shared/navigation/app_shell.dart (_AppShellState._openPreferenceCloud):
-    Show the cloud as a shell-level destination (an extra IndexedStack child),
-    toggled by the centre nav button.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._openPreferenceCloud,
+    _AppShellState._openSearchTab): Show the Personalization hub as a shell-level
+    destination (an extra IndexedStack child), toggled by the centre nav button;
+    an incoming search request closes the hub when it is open over another tab.
   * lib/shared/navigation/app_top_bar.dart: Drop the top-bar logo, now shown as
     the centre nav button.
+
+- **Content-based movie and TV recommendations**
+
+  A second Personalization tab suggests movies and shows learned from the user's
+  completed, rated and favorited library. Taste is clustered by genre (rare
+  genres weighted higher via IDF); candidates come from TMDB (recommendations
+  and similar titles for what you liked, topped up by discover-by-genre),
+  scored, and grouped into "Because you liked …" rows. Each row is a
+  self-contained section card with a two-tier header — an uppercase reason label
+  over the driver titles — and the cluster's defining genres as chips, so coarse
+  matches stay explainable while feedback is gathered. Rows lead with the highest
+  TMDB-rated picks. A pinned collection chips row adds a pick straight into the
+  selected collections, or, with nothing selected, opens the same details sheet
+  Search uses. The Personalization hub switches between the genre cloud and
+  recommendations with a segmented pill.
+
+  * lib/features/recommendations/engine/sparse_vector.dart (SparseVector):
+    Sparse feature vector — norm, dot, cosine, normalized, weightedSum. New.
+  * lib/features/recommendations/engine/recommendation_config.dart
+    (RecommendationConfig): Engine tuning constants in one place. New.
+  * lib/features/recommendations/engine/recommendation_models.dart (TasteTitle,
+    ScoredTitle, TasteCluster, TasteProfile, RecommendationRow): Media-agnostic
+    engine types. New.
+  * lib/features/recommendations/engine/recommender.dart (Recommender): IDF,
+    per-title weights, deterministic cosine k-means taste profile, candidate
+    scoring with a dislike penalty, similarTo and kNN predictRating. Pure Dart. New.
+  * lib/features/recommendations/tmdb_taste_input.dart (GenreKeyResolver,
+    tasteTitleFromItem, tasteTitleFromMovie, tasteTitleFromTvShow, ownedTasteIds,
+    movieTasteId, tvTasteId): Adapter from TMDB models to engine TasteTitles.
+    GenreKeyResolver collapses every genre token — a numeric id or a localized
+    name in any language and case — to its TMDB id, the one key identical across
+    languages, so genres match regardless of the request language. New.
+  * lib/features/recommendations/providers/recommendations_provider.dart
+    (recommendationsProvider, RecommendedItem, RecommendationRowUi,
+    RecommendationResult, RecommendationStatus, recommendationTargetCollectionsProvider,
+    collectedRecommendationIdsProvider, byRatingDesc): Learns one taste profile
+    from the completed library, fetches candidates via the shared TMDB client in
+    the user's content language (titles render localized), matches them to the
+    profile by genre id, scores them and sorts each row highest-rated first.
+    Distinguishes empty / no-API-key / no-candidates states. Reads the library
+    once and tracks added titles via the collected-id provider, so adding a pick
+    marks just that card without reloading the list. New.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (personalizationTabCloud,
+    personalizationTabRecommendations, recommendationsRefresh, recommendationsEmpty,
+    recommendationsEmptyHint, recommendationsNoCandidates, recommendationsNoCandidatesHint,
+    recommendationsNoApiKey, recommendationsNoApiKeyHint, recommendationsBecauseLabel,
+    recommendationsCount): Personalization and recommendation strings.
+  * lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget, RecommendationsEmptyState): Section card for one
+    "because you liked" group — a two-tier header (uppercase reason label over
+    the driver titles), the cluster's genres as chips, and a horizontal carousel
+    of recommended cards. A card whose title is already in a collection renders
+    dimmed, checked and non-interactive. Plus the empty / no-candidates
+    placeholder. New.
+  * lib/features/recommendations/screens/recommendations_screen.dart
+    (RecommendationsScreen): A titled header (the tab name plus a live "N
+    recommendations" count) with the refresh action, section-card rows, empty
+    states, the target-collection chips row, and add-from-card routed through the
+    Search MediaHandlers; tapped picks are marked added in place. New.
+  * lib/features/personalization/screens/personalization_screen.dart
+    (PersonalizationScreen): Two-view hub (genre cloud + recommendations)
+    switched by a SegmentedPill over an IndexedStack. New.
+  * lib/features/search/widgets/collection_chips_row.dart
+    (CollectionChipsRow.targetProvider): Accept a selection provider so the
+    Recommendations tab keeps its own target-collection selection, independent
+    of Search.
 
 - **Mark collection items as favorite**
 
@@ -228,6 +297,24 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     collections" snackbar strings.
 
 ### Changed
+
+- **Compact, consistent icons in the item-detail app bar and the top bar**
+
+  The item-detail screen's action icons (favorite, release bell, board lock,
+  board toggle, edit, overflow) shrink to match the back arrow, and the bar
+  drops to the same compact height as the rest of the app. The top bar's
+  settings gear and the service badges (Discord, Kodi) now share one icon size
+  so they read as a single set.
+
+  * lib/shared/widgets/screen_app_bar.dart (kScreenAppBarIconSize): New shared
+    icon size for the compact bar; the leading back button references it.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailAppBar.preferredSize, ItemDetailAppBar): Bar height tied to
+    kScreenAppBarHeight (was kToolbarHeight, leaving a too-tall bar); action
+    icons sized to kScreenAppBarIconSize via a shared _action builder.
+  * lib/shared/navigation/service_badges.dart (kTopBarIconSize): New shared size
+    for the top bar's right-hand chrome; the service badge icons use it.
+  * lib/shared/navigation/app_top_bar.dart: The settings gear uses kTopBarIconSize.
 
 - **Config export/import now covers every credential and setting** — all source credentials (ComicVine, Google Books, ScreenScraper, RetroAchievements, Steam, AniList), the app language, and the display/feature toggles (recommendations, Blu-ray and platform overlays, Discord RPC, RA sync, rich collections, hide-empty-media chevrons).
 

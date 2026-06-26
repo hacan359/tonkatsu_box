@@ -27,7 +27,13 @@ import '../widgets/genre_cloud_view.dart';
 /// by media type.
 class GenreCloudScreen extends ConsumerStatefulWidget {
   /// Creates a [GenreCloudScreen].
-  const GenreCloudScreen({super.key});
+  ///
+  /// [showTitle] draws the screen's own title strip. Set it to `false` when the
+  /// cloud is embedded under a tab that already names it (Personalization).
+  const GenreCloudScreen({this.showTitle = true, super.key});
+
+  /// Whether to draw the own title strip; see the constructor.
+  final bool showTitle;
 
   @override
   ConsumerState<GenreCloudScreen> createState() => _GenreCloudScreenState();
@@ -74,7 +80,7 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
         children: <Widget>[
           Column(
             children: <Widget>[
-              _buildHeader(l),
+              if (widget.showTitle) _buildHeader(l),
               if (facets.length > 1) _buildFacetLegend(l, facets),
               if (types.length > 1) _buildTypeLegend(l, types),
               Expanded(child: _buildBody(l, itemsAsync, words)),

@@ -31,7 +31,14 @@ const double _kRowHeight = 32;
 /// media-type subfilters — tinted with the brand accent.
 class CollectionChipsRow extends ConsumerStatefulWidget {
   /// Creates a [CollectionChipsRow].
-  const CollectionChipsRow({super.key});
+  ///
+  /// [targetProvider] is the selection it reads/writes; defaults to the Search
+  /// tab's [searchTargetCollectionsProvider]. Other surfaces (e.g. the
+  /// Recommendations tab) pass their own so the selections stay independent.
+  const CollectionChipsRow({this.targetProvider, super.key});
+
+  /// Selection provider; `null` falls back to [searchTargetCollectionsProvider].
+  final StateProvider<Set<int>>? targetProvider;
 
   @override
   ConsumerState<CollectionChipsRow> createState() => _CollectionChipsRowState();
@@ -39,6 +46,9 @@ class CollectionChipsRow extends ConsumerStatefulWidget {
 
 class _CollectionChipsRowState extends ConsumerState<CollectionChipsRow> {
   final ScrollController _scrollController = ScrollController();
+
+  StateProvider<Set<int>> get _target =>
+      widget.targetProvider ?? searchTargetCollectionsProvider;
 
   @override
   void dispose() {
@@ -52,7 +62,7 @@ class _CollectionChipsRowState extends ConsumerState<CollectionChipsRow> {
         ref.watch(collectionsProvider).valueOrNull ?? <Collection>[];
     if (collections.isEmpty) return const SizedBox.shrink();
 
-    final Set<int> selected = ref.watch(searchTargetCollectionsProvider);
+    final Set<int> selected = ref.watch(_target);
 
     final List<Widget> chips = <Widget>[];
     for (int i = 0; i < collections.length; i++) {
@@ -108,11 +118,10 @@ class _CollectionChipsRowState extends ConsumerState<CollectionChipsRow> {
   }
 
   void _toggle(int collectionId) {
-    final Set<int> next = <int>{...ref.read(searchTargetCollectionsProvider)};
+    final Set<int> next = <int>{...ref.read(_target)};
     if (!next.remove(collectionId)) next.add(collectionId);
-    ref.read(searchTargetCollectionsProvider.notifier).state = next;
+    ref.read(_target.notifier).state = next;
   }
 
-  void _clear() =>
-      ref.read(searchTargetCollectionsProvider.notifier).state = <int>{};
+  void _clear() => ref.read(_target.notifier).state = <int>{};
 }

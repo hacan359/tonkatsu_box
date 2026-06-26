@@ -9191,6 +9191,72 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Decades'**
   String get facetDecade;
+
+  /// No description provided for @personalizationTabCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre cloud'**
+  String get personalizationTabCloud;
+
+  /// No description provided for @personalizationTabRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get personalizationTabRecommendations;
+
+  /// No description provided for @recommendationsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get recommendationsRefresh;
+
+  /// No description provided for @recommendationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendations yet'**
+  String get recommendationsEmpty;
+
+  /// No description provided for @recommendationsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete and rate some movies or shows to get personalized picks'**
+  String get recommendationsEmptyHint;
+
+  /// No description provided for @recommendationsNoCandidates.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new to suggest'**
+  String get recommendationsNoCandidates;
+
+  /// No description provided for @recommendationsNoCandidatesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find anything new to suggest right now. Try again later'**
+  String get recommendationsNoCandidatesHint;
+
+  /// No description provided for @recommendationsNoApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'TMDB API key required'**
+  String get recommendationsNoApiKey;
+
+  /// No description provided for @recommendationsNoApiKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your TMDB API key in Settings to get recommendations'**
+  String get recommendationsNoApiKeyHint;
+
+  /// No description provided for @recommendationsBecauseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you liked'**
+  String get recommendationsBecauseLabel;
+
+  /// No description provided for @recommendationsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 recommendation} other{{count} recommendations}}'**
+  String recommendationsCount(int count);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

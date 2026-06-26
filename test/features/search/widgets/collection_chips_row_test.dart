@@ -12,6 +12,10 @@ import 'package:tonkatsu_box/shared/widgets/selected_count_chip.dart';
 
 import '../../../helpers/test_helpers.dart';
 
+/// Stand-in for another surface's selection (e.g. the Recommendations tab).
+final StateProvider<Set<int>> _customTarget =
+    StateProvider<Set<int>>((Ref ref) => <int>{});
+
 class _FakeCollectionsNotifier extends CollectionsNotifier {
   _FakeCollectionsNotifier(this._collections);
 
@@ -167,6 +171,34 @@ void main() {
       await tester.tap(find.byType(SelectedCountChip));
       await tester.pumpAndSettle();
 
+      expect(container.read(searchTargetCollectionsProvider), isEmpty);
+    });
+
+    testWidgets('a custom targetProvider keeps its selection independent',
+        (WidgetTester tester) async {
+      final ProviderContainer container = _pump(
+        tester,
+        collections: <Collection>[createTestCollection(id: 7, name: 'Gamma')],
+      );
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
+            locale: const Locale('en'),
+            home: Scaffold(
+              body: CollectionChipsRow(targetProvider: _customTarget),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Gamma'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(_customTarget), <int>{7});
       expect(container.read(searchTargetCollectionsProvider), isEmpty);
     });
   });

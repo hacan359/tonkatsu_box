@@ -5210,4 +5210,50 @@ class SRu extends S {
 
   @override
   String get facetDecade => 'Десятилетия';
+
+  @override
+  String get personalizationTabCloud => 'Облако жанров';
+
+  @override
+  String get personalizationTabRecommendations => 'Рекомендации';
+
+  @override
+  String get recommendationsRefresh => 'Обновить';
+
+  @override
+  String get recommendationsEmpty => 'Пока нет рекомендаций';
+
+  @override
+  String get recommendationsEmptyHint =>
+      'Заверши и оцени фильмы или сериалы, чтобы получить персональные подборки';
+
+  @override
+  String get recommendationsNoCandidates => 'Ничего не нашлось';
+
+  @override
+  String get recommendationsNoCandidatesHint =>
+      'Не удалось ничего подобрать прямо сейчас. Попробуй позже';
+
+  @override
+  String get recommendationsNoApiKey => 'Нужен ключ TMDB API';
+
+  @override
+  String get recommendationsNoApiKeyHint =>
+      'Добавь ключ TMDB API в настройках, чтобы получать рекомендации';
+
+  @override
+  String get recommendationsBecauseLabel => 'Потому что тебе понравилось';
+
+  @override
+  String recommendationsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count подборок',
+      many: '$count подборок',
+      few: '$count подборки',
+      one: '$count подборка',
+    );
+    return '$_temp0';
+  }
 }

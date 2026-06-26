@@ -2350,5 +2350,21 @@
   },
   "facetGenre": "Genres",
   "facetPlatform": "Platforms",
-  "facetDecade": "Decades"
+  "facetDecade": "Decades",
+  "personalizationTabCloud": "Genre cloud",
+  "personalizationTabRecommendations": "Recommendations",
+  "recommendationsRefresh": "Refresh",
+  "recommendationsEmpty": "No recommendations yet",
+  "recommendationsEmptyHint": "Complete and rate some movies or shows to get personalized picks",
+  "recommendationsNoCandidates": "Nothing new to suggest",
+  "recommendationsNoCandidatesHint": "We couldn't find anything new to suggest right now. Try again later",
+  "recommendationsNoApiKey": "TMDB API key required",
+  "recommendationsNoApiKeyHint": "Add your TMDB API key in Settings to get recommendations",
+  "recommendationsBecauseLabel": "Because you liked",
+  "recommendationsCount": "{count, plural, =1{1 recommendation} other{{count} recommendations}}",
+  "@recommendationsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }
