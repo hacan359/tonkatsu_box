@@ -28,6 +28,11 @@ const Color _kDiscordColor = Color(0xFF5865F2);
 /// Брендовый цвет Kodi.
 const Color _kKodiColor = Color(0xFF17B2E7);
 
+/// Icon size for the top bar's right-hand chrome — the service badges and the
+/// settings gear share it so they read as one set. Tied to the smaller of the
+/// two prior sizes (service badges) so nothing grows.
+const double kTopBarIconSize = 18;
+
 /// Строка шилдиков активных фоновых сервисов.
 ///
 /// На мобильных платформах возвращает [SizedBox.shrink].
@@ -188,8 +193,8 @@ class _ServiceIconState extends State<_ServiceIcon> {
 
     Widget icon = SvgPicture.asset(
       widget.asset,
-      width: 18,
-      height: 18,
+      width: kTopBarIconSize,
+      height: kTopBarIconSize,
       colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
     );
 

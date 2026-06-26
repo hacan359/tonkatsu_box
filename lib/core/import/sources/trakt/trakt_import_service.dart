@@ -5,21 +5,23 @@ import 'package:archive/archive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../data/repositories/collection_repository.dart';
-import '../../data/repositories/wishlist_repository.dart';
-import '../../shared/models/collection.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/item_status.dart';
-import '../../shared/models/item_status_logic.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/movie.dart';
-import '../../shared/models/wishlist_item.dart';
-import '../../shared/models/wishlist_tag.dart';
-import '../../shared/models/tv_show.dart';
-import '../../shared/models/universal_import_result.dart';
-import '../api/tmdb_api.dart';
-import '../database/database_service.dart';
-import 'import_service.dart';
+import '../../../../data/repositories/collection_repository.dart';
+import '../../../../data/repositories/wishlist_repository.dart';
+import '../../../../shared/models/collection.dart';
+import '../../../../shared/models/collection_item.dart';
+import '../../../../shared/models/item_status.dart';
+import '../../../../shared/models/item_status_logic.dart';
+import '../../../../shared/models/media_type.dart';
+import '../../../../shared/models/movie.dart';
+import '../../../../shared/models/tv_show.dart';
+import '../../../../shared/models/universal_import_result.dart';
+import '../../../../shared/models/wishlist_tag.dart';
+import '../../../api/tmdb_api.dart';
+import '../../../database/database_service.dart';
+import '../../../services/import_service.dart';
+import '../../import_columns.dart';
+import '../../import_source.dart';
+import '../../import_writer.dart';
 
 class TraktZipInfo {
   const TraktZipInfo({
@@ -60,10 +62,10 @@ class TraktZipInfo {
       watchlistCount;
 }
 
-class TraktImportOptions {
+class TraktImportOptions extends ImportOptions {
   const TraktImportOptions({
     required this.zipPath,
-    this.collectionId,
+    super.collectionId,
     this.importWatched = true,
     this.importRatings = true,
     this.importWatchlist = true,
@@ -71,75 +73,9 @@ class TraktImportOptions {
 
   final String zipPath;
 
-  /// null = create new collection.
-  final int? collectionId;
-
   final bool importWatched;
   final bool importRatings;
   final bool importWatchlist;
-}
-
-class TraktImportResult {
-  const TraktImportResult({
-    required this.success,
-    this.collection,
-    this.itemsImported = 0,
-    this.itemsSkipped = 0,
-    this.itemsUpdated = 0,
-    this.wishlistItemsAdded = 0,
-    this.importedByType = const <MediaType, int>{},
-    this.wishlistedByType = const <MediaType, int>{},
-    this.updatedByType = const <MediaType, int>{},
-    this.errors = const <String>[],
-    this.error,
-  });
-
-  const TraktImportResult.success({
-    required Collection this.collection,
-    required this.itemsImported,
-    this.itemsSkipped = 0,
-    this.itemsUpdated = 0,
-    this.wishlistItemsAdded = 0,
-    this.importedByType = const <MediaType, int>{},
-    this.wishlistedByType = const <MediaType, int>{},
-    this.updatedByType = const <MediaType, int>{},
-    this.errors = const <String>[],
-  })  : success = true,
-        error = null;
-
-  const TraktImportResult.failure(String message)
-      : success = false,
-        collection = null,
-        itemsImported = 0,
-        itemsSkipped = 0,
-        itemsUpdated = 0,
-        wishlistItemsAdded = 0,
-        importedByType = const <MediaType, int>{},
-        wishlistedByType = const <MediaType, int>{},
-        updatedByType = const <MediaType, int>{},
-        errors = const <String>[],
-        error = message;
-
-  final bool success;
-  final Collection? collection;
-  final int itemsImported;
-
-  /// Skipped due to missing TMDB ID or TMDB fetch error.
-  final int itemsSkipped;
-
-  /// Updated via conflict-resolution.
-  final int itemsUpdated;
-
-  final int wishlistItemsAdded;
-  final Map<MediaType, int> importedByType;
-  final Map<MediaType, int> wishlistedByType;
-  final Map<MediaType, int> updatedByType;
-
-  /// Per-item errors (non-fatal).
-  final List<String> errors;
-
-  /// Fatal error if import failed.
-  final String? error;
 }
 
 class _TraktMovie {
@@ -216,9 +152,9 @@ class _TraktWatchlistEntry {
   final String type; // 'movie' | 'show'
 }
 
-final Provider<TraktZipImportService> traktZipImportServiceProvider =
-    Provider<TraktZipImportService>((Ref ref) {
-  return TraktZipImportService(
+final Provider<TraktImportService> traktImportServiceProvider =
+    Provider<TraktImportService>((Ref ref) {
+  return TraktImportService(
     tmdbApi: ref.watch(tmdbApiProvider),
     repository: ref.watch(collectionRepositoryProvider),
     database: ref.watch(databaseServiceProvider),
@@ -226,24 +162,34 @@ final Provider<TraktZipImportService> traktZipImportServiceProvider =
   );
 });
 
-class TraktZipImportService {
-  TraktZipImportService({
+/// Imports a Trakt.tv ZIP export onto the shared import layer.
+///
+/// Parses the archive, fetches each title's TMDB data once, then writes every
+/// section (watched, ratings, watchlist) through [ImportWriter] in batches.
+/// Watched episodes are marked directly (no collection-item analogue), and
+/// titles without TMDB data fall back to the text wishlist.
+class TraktImportService implements ImportSource {
+  TraktImportService({
     required TmdbApi tmdbApi,
     required CollectionRepository repository,
     required DatabaseService database,
     required WishlistRepository wishlistRepository,
   })  : _tmdbApi = tmdbApi,
-        _repository = repository,
         _database = database,
-        _wishlistRepository = wishlistRepository;
+        _writer = ImportWriter(
+          collections: repository,
+          wishlist: wishlistRepository,
+        );
 
   // ignore: unused_field
-  static final Logger _log = Logger('TraktZipImportService');
+  static final Logger _log = Logger('TraktImportService');
 
   final TmdbApi _tmdbApi;
-  final CollectionRepository _repository;
   final DatabaseService _database;
-  final WishlistRepository _wishlistRepository;
+  final ImportWriter _writer;
+
+  @override
+  String get displayName => 'Trakt';
 
   Future<TraktZipInfo> validateZip(String zipPath) async {
     try {
@@ -328,8 +274,9 @@ class TraktZipImportService {
     }
   }
 
-  Future<TraktImportResult> importFromZip({
-    required TraktImportOptions options,
+  @override
+  Future<UniversalImportResult> import(
+    covariant TraktImportOptions options, {
     ImportProgressCallback? onProgress,
   }) async {
     try {
@@ -343,12 +290,14 @@ class TraktZipImportService {
       final ({Map<String, String> files, String username}) archive =
           _readArchive(options.zipPath);
       if (archive.files.isEmpty) {
-        return const TraktImportResult.failure('No data found in archive');
+        return const UniversalImportResult.failure(
+          sourceName: 'Trakt',
+          error: 'No data found in archive',
+        );
       }
 
       final Map<String, String> files = archive.files;
       final String username = archive.username;
-      final String importTag = buildImportTag('Trakt');
 
       final List<_TraktMovie> watchedMovies = options.importWatched
           ? _parseWatchedMovies(_getFile(
@@ -410,7 +359,6 @@ class TraktZipImportService {
       final Map<int, TvShow> fetchedShows = <int, TvShow>{};
       final Map<int, bool> movieIsAnimation = <int, bool>{};
       final Map<int, bool> showIsAnimation = <int, bool>{};
-      final List<String> errors = <String>[];
 
       final int totalToFetch = movieTmdbIds.length + showTmdbIds.length;
       int fetchProgress = 0;
@@ -464,356 +412,192 @@ class TraktZipImportService {
         message: 'Preparing collection...',
       ));
 
-      final int collectionId;
-      final Collection collection;
-
-      if (options.collectionId != null) {
-        collectionId = options.collectionId!;
-        final Collection? existing =
-            await _repository.getById(collectionId);
-        if (existing == null) {
-          return const TraktImportResult.failure('Collection not found');
-        }
-        collection = existing;
-      } else {
-        collection = await _repository.create(
-          name: 'Trakt: $username',
-          author: username,
+      // Resolve the collection only after the data loaded, so a failed fetch
+      // never leaves an empty collection behind.
+      final Collection? collection = await _writer.resolveCollection(
+        collectionId: options.collectionId,
+        newCollectionName: 'Trakt: $username',
+        author: username,
+      );
+      if (collection == null) {
+        return const UniversalImportResult.failure(
+          sourceName: 'Trakt',
+          error: 'Collection not found',
         );
-        collectionId = collection.id;
       }
-
-      int itemsImported = 0;
-      int itemsSkipped = 0;
-      int itemsUpdated = 0;
+      final int collectionId = collection.id;
 
       final Map<MediaType, int> importedByType = <MediaType, int>{};
-      final Map<MediaType, int> wishlistedByType = <MediaType, int>{};
       final Map<MediaType, int> updatedByType = <MediaType, int>{};
+      final List<WishlistCandidate> wishlistFallback = <WishlistCandidate>[];
+      int skipped = 0;
 
-      final int totalItems = watchedMovies.length + watchedShows.length;
-      int itemProgress = 0;
+      void accumulate(ImportWriteResult write) {
+        write.importedByType.forEach((MediaType k, int v) {
+          importedByType[k] = (importedByType[k] ?? 0) + v;
+        });
+        write.updatedByType.forEach((MediaType k, int v) {
+          updatedByType[k] = (updatedByType[k] ?? 0) + v;
+        });
+        skipped += write.skipped;
+      }
 
-      for (final _TraktMovie traktMovie in watchedMovies) {
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.addingItems,
-          current: itemProgress,
-          total: totalItems,
-          message: 'Importing "${traktMovie.title}"...',
-        ));
-
-        if (traktMovie.tmdbId == null) {
-          errors.add('Skipped "${traktMovie.title}" (no TMDB ID)');
-          itemsSkipped++;
-          itemProgress++;
+      // Pass 1 — watched movies and shows become completed/in-progress items.
+      final List<ImportCandidate> watchedCandidates = <ImportCandidate>[];
+      for (final _TraktMovie m in watchedMovies) {
+        if (m.tmdbId == null) {
+          skipped++;
           continue;
         }
-
-        if (!fetchedMovies.containsKey(traktMovie.tmdbId)) {
-          // Wishlist fallback: TMDB data unavailable → add to wishlist
-          const MediaType hintType = MediaType.movie;
-          final WishlistItem? existingWl =
-              await _wishlistRepository.findUnresolved(traktMovie.title);
-          if (existingWl == null) {
-            await _wishlistRepository.add(
-              text: traktMovie.title,
-              mediaTypeHint: hintType,
-              tag: importTag,
-            );
-            wishlistedByType[hintType] =
-                (wishlistedByType[hintType] ?? 0) + 1;
-          } else if (existingWl.tag == null) {
-            await _wishlistRepository.update(existingWl.id, tag: importTag);
-          }
-          errors.add(
-            'Wishlisted "${traktMovie.title}" (TMDB data not available)',
-          );
-          itemsSkipped++;
-          itemProgress++;
+        if (!fetchedMovies.containsKey(m.tmdbId)) {
+          wishlistFallback.add(
+              WishlistCandidate(text: m.title, mediaType: MediaType.movie));
+          skipped++;
           continue;
         }
-
-        final bool isAnim = movieIsAnimation[traktMovie.tmdbId] ?? false;
-        final MediaType mediaType =
-            isAnim ? MediaType.animation : MediaType.movie;
-        final int? platformId = isAnim ? AnimationSource.movie : null;
-
-        final _ImportItemResult result = await _importOrUpdateItem(
-          collectionId: collectionId,
-          mediaType: mediaType,
-          externalId: traktMovie.tmdbId!,
-          platformId: platformId,
+        final bool isAnim = movieIsAnimation[m.tmdbId] ?? false;
+        watchedCandidates.add(_watchedCandidate(
+          mediaType: isAnim ? MediaType.animation : MediaType.movie,
+          externalId: m.tmdbId!,
+          platformId: isAnim ? AnimationSource.movie : null,
           status: ItemStatus.completed,
-          completedAt: traktMovie.lastWatchedAt,
-        );
-
-        switch (result) {
-          case _ImportItemResult.added:
-            itemsImported++;
-            importedByType[mediaType] =
-                (importedByType[mediaType] ?? 0) + 1;
-          case _ImportItemResult.updated:
-            itemsUpdated++;
-            updatedByType[mediaType] =
-                (updatedByType[mediaType] ?? 0) + 1;
-          case _ImportItemResult.skipped:
-            itemsSkipped++;
-        }
-
-        itemProgress++;
-      }
-
-      for (final _TraktShow traktShow in watchedShows) {
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.addingItems,
-          current: itemProgress,
-          total: totalItems,
-          message: 'Importing "${traktShow.title}"...',
+          completedAt: m.lastWatchedAt,
+          label: m.title,
         ));
-
-        if (traktShow.tmdbId == null) {
-          errors.add('Skipped "${traktShow.title}" (no TMDB ID)');
-          itemsSkipped++;
-          itemProgress++;
-          continue;
-        }
-
-        if (!fetchedShows.containsKey(traktShow.tmdbId)) {
-          // Wishlist fallback: TMDB data unavailable → add to wishlist
-          const MediaType hintType = MediaType.tvShow;
-          final WishlistItem? existingWl =
-              await _wishlistRepository.findUnresolved(traktShow.title);
-          if (existingWl == null) {
-            await _wishlistRepository.add(
-              text: traktShow.title,
-              mediaTypeHint: hintType,
-              tag: importTag,
-            );
-            wishlistedByType[hintType] =
-                (wishlistedByType[hintType] ?? 0) + 1;
-          } else if (existingWl.tag == null) {
-            await _wishlistRepository.update(existingWl.id, tag: importTag);
-          }
-          errors.add(
-            'Wishlisted "${traktShow.title}" (TMDB data not available)',
-          );
-          itemsSkipped++;
-          itemProgress++;
-          continue;
-        }
-
-        final bool isAnim = showIsAnimation[traktShow.tmdbId] ?? false;
-        final MediaType mediaType =
-            isAnim ? MediaType.animation : MediaType.tvShow;
-        final int? platformId = isAnim ? AnimationSource.tvShow : null;
-
-        final ItemStatus showStatus = _resolveShowStatus(traktShow);
-
-        final _ImportItemResult result = await _importOrUpdateItem(
-          collectionId: collectionId,
-          mediaType: mediaType,
-          externalId: traktShow.tmdbId!,
-          platformId: platformId,
-          status: showStatus,
-          completedAt: showStatus == ItemStatus.completed
-              ? traktShow.lastWatchedAt
-              : null,
-        );
-
-        switch (result) {
-          case _ImportItemResult.added:
-            itemsImported++;
-            importedByType[mediaType] =
-                (importedByType[mediaType] ?? 0) + 1;
-          case _ImportItemResult.updated:
-            itemsUpdated++;
-            updatedByType[mediaType] =
-                (updatedByType[mediaType] ?? 0) + 1;
-          case _ImportItemResult.skipped:
-            itemsSkipped++;
-        }
-
-        itemProgress++;
       }
-
-      if (options.importWatched && watchedShows.isNotEmpty) {
-        int episodeProgress = 0;
-        int totalEpisodes = 0;
-        for (final _TraktShow s in watchedShows) {
-          for (final _TraktSeason season in s.seasons) {
-            totalEpisodes += season.episodes.length;
-          }
+      for (final _TraktShow s in watchedShows) {
+        if (s.tmdbId == null) {
+          skipped++;
+          continue;
         }
+        if (!fetchedShows.containsKey(s.tmdbId)) {
+          wishlistFallback.add(
+              WishlistCandidate(text: s.title, mediaType: MediaType.tvShow));
+          skipped++;
+          continue;
+        }
+        final bool isAnim = showIsAnimation[s.tmdbId] ?? false;
+        final ItemStatus status = _resolveShowStatus(s);
+        watchedCandidates.add(_watchedCandidate(
+          mediaType: isAnim ? MediaType.animation : MediaType.tvShow,
+          externalId: s.tmdbId!,
+          platformId: isAnim ? AnimationSource.tvShow : null,
+          status: status,
+          completedAt:
+              status == ItemStatus.completed ? s.lastWatchedAt : null,
+          label: s.title,
+        ));
+      }
+      accumulate(await _writer.writeItems(
+        collectionId: collectionId,
+        candidates: watchedCandidates,
+        onItem: (int processed, int total, int imported, int updated,
+            String? label) {
+          onProgress?.call(ImportProgress(
+            stage: ImportStage.addingItems,
+            current: processed,
+            total: total,
+            currentItem: label,
+            imported: imported,
+            updated: updated,
+          ));
+        },
+      ));
 
+      // Watched episodes are marked directly — there is no collection-item
+      // analogue for an individual episode.
+      if (options.importWatched && watchedShows.isNotEmpty) {
         for (final _TraktShow traktShow in watchedShows) {
           if (traktShow.tmdbId == null) continue;
-
           for (final _TraktSeason season in traktShow.seasons) {
             for (final _TraktEpisode episode in season.episodes) {
-              onProgress?.call(ImportProgress(
-                stage: ImportStage.addingItems,
-                current: episodeProgress,
-                total: totalEpisodes,
-                message: 'Importing episodes for "${traktShow.title}"...',
-              ));
-
               await _database.tvShowDao.markEpisodeWatched(
                 collectionId,
                 traktShow.tmdbId!,
                 season.number,
                 episode.number,
               );
-              episodeProgress++;
             }
           }
         }
       }
 
+      // Pass 2 — ratings. Only titles whose TMDB data was fetched can be added
+      // or matched; an existing user rating is never overwritten.
       if (options.importRatings) {
-        final List<_TraktRating> allRatings = <_TraktRating>[
+        final List<ImportCandidate> ratingCandidates = <ImportCandidate>[];
+        for (final _TraktRating r in <_TraktRating>[
           ...movieRatings,
           ...showRatings,
-        ];
-
-        for (int i = 0; i < allRatings.length; i++) {
-          final _TraktRating rating = allRatings[i];
-
-          onProgress?.call(ImportProgress(
-            stage: ImportStage.addingItems,
-            current: i,
-            total: allRatings.length,
-            message: 'Applying rating for "${rating.title}"...',
-          ));
-
-          if (rating.tmdbId == null) continue;
-
+        ]) {
+          if (r.tmdbId == null) continue;
+          final bool isMovie = r.type == 'movie';
+          final bool hasData = isMovie
+              ? fetchedMovies.containsKey(r.tmdbId)
+              : fetchedShows.containsKey(r.tmdbId);
+          if (!hasData) continue;
           final ({MediaType mediaType, int? platformId}) resolved =
               _resolveMediaType(
-            isMovie: rating.type == 'movie',
+            isMovie: isMovie,
             movieIsAnimation: movieIsAnimation,
             showIsAnimation: showIsAnimation,
-            tmdbId: rating.tmdbId!,
+            tmdbId: r.tmdbId!,
           );
-
-          final CollectionItem? existing = await _repository.findItem(
-            collectionId: collectionId,
+          ratingCandidates.add(_ratingCandidate(
             mediaType: resolved.mediaType,
-            externalId: rating.tmdbId!,
-          );
-
-          if (existing != null) {
-            // Only set rating if local one is unset — never overwrite user input.
-            if (existing.userRating == null) {
-              await _database.updateItemUserRating(
-                existing.id,
-                rating.rating.clamp(1, 10).toDouble(),
-              );
-              itemsUpdated++;
-              updatedByType[resolved.mediaType] =
-                  (updatedByType[resolved.mediaType] ?? 0) + 1;
-            }
-          } else {
-            // No existing item: only add if TMDB data was fetched.
-            final bool hasData = rating.type == 'movie'
-                ? fetchedMovies.containsKey(rating.tmdbId)
-                : fetchedShows.containsKey(rating.tmdbId);
-
-            if (hasData) {
-              final int? itemId = await _repository.addItem(
-                collectionId: collectionId,
-                mediaType: resolved.mediaType,
-                externalId: rating.tmdbId!,
-                platformId: resolved.platformId,
-              );
-              if (itemId != null) {
-                await _database.updateItemUserRating(
-                  itemId,
-                  rating.rating.clamp(1, 10).toDouble(),
-                );
-                itemsImported++;
-                importedByType[resolved.mediaType] =
-                    (importedByType[resolved.mediaType] ?? 0) + 1;
-              }
-            }
-          }
+            externalId: r.tmdbId!,
+            platformId: resolved.platformId,
+            rating: r.rating,
+            label: r.title,
+          ));
         }
+        accumulate(await _writer.writeItems(
+          collectionId: collectionId,
+          candidates: ratingCandidates,
+        ));
       }
 
-      int wishlistItemsAdded = 0;
-
-      if (options.importWatchlist && watchlistEntries.isNotEmpty) {
-        for (int i = 0; i < watchlistEntries.length; i++) {
-          final _TraktWatchlistEntry entry = watchlistEntries[i];
-
-          onProgress?.call(ImportProgress(
-            stage: ImportStage.addingItems,
-            current: i,
-            total: watchlistEntries.length,
-            message: 'Adding "${entry.title}" to wishlist...',
-          ));
-
-          if (entry.tmdbId != null) {
+      // Pass 3 — watchlist. Entries with TMDB data become planned items; the
+      // rest fall back to the text wishlist.
+      if (options.importWatchlist) {
+        final List<ImportCandidate> watchlistCandidates = <ImportCandidate>[];
+        for (final _TraktWatchlistEntry e in watchlistEntries) {
+          final bool isMovie = e.type == 'movie';
+          final bool hasData = e.tmdbId != null &&
+              (isMovie
+                  ? fetchedMovies.containsKey(e.tmdbId)
+                  : fetchedShows.containsKey(e.tmdbId));
+          if (hasData) {
             final ({MediaType mediaType, int? platformId}) resolved =
                 _resolveMediaType(
-              isMovie: entry.type == 'movie',
+              isMovie: isMovie,
               movieIsAnimation: movieIsAnimation,
               showIsAnimation: showIsAnimation,
-              tmdbId: entry.tmdbId!,
+              tmdbId: e.tmdbId!,
             );
-
-            final CollectionItem? existing = await _repository.findItem(
-              collectionId: collectionId,
+            watchlistCandidates.add(_watchlistCandidate(
               mediaType: resolved.mediaType,
-              externalId: entry.tmdbId!,
-            );
-
-            if (existing == null) {
-              final bool hasData = entry.type == 'movie'
-                  ? fetchedMovies.containsKey(entry.tmdbId)
-                  : fetchedShows.containsKey(entry.tmdbId);
-
-              if (hasData) {
-                final int? itemId = await _repository.addItem(
-                  collectionId: collectionId,
-                  mediaType: resolved.mediaType,
-                  externalId: entry.tmdbId!,
-                  platformId: resolved.platformId,
-                  status: ItemStatus.planned,
-                );
-                if (itemId != null) {
-                  itemsImported++;
-                  importedByType[resolved.mediaType] =
-                      (importedByType[resolved.mediaType] ?? 0) + 1;
-                  continue;
-                }
-              }
-            } else {
-              continue;
-            }
-          }
-
-          // Fallback: add to text Wishlist with title-based dedup.
-          final MediaType hint = entry.type == 'movie'
-              ? MediaType.movie
-              : MediaType.tvShow;
-
-          final WishlistItem? existingWishlist =
-              await _wishlistRepository.findUnresolved(entry.title);
-          if (existingWishlist == null) {
-            await _wishlistRepository.add(
-              text: entry.title,
-              mediaTypeHint: hint,
-              tag: importTag,
-            );
-            wishlistItemsAdded++;
-          } else if (existingWishlist.tag == null) {
-            await _wishlistRepository.update(
-              existingWishlist.id,
-              tag: importTag,
-            );
+              externalId: e.tmdbId!,
+              platformId: resolved.platformId,
+              label: e.title,
+            ));
+          } else {
+            wishlistFallback.add(WishlistCandidate(
+              text: e.title,
+              mediaType: isMovie ? MediaType.movie : MediaType.tvShow,
+            ));
           }
         }
+        accumulate(await _writer.writeItems(
+          collectionId: collectionId,
+          candidates: watchlistCandidates,
+        ));
       }
+
+      final Map<MediaType, int> wishlistedByType = await _writer.writeWishlist(
+        entries: wishlistFallback,
+        tag: buildImportTag('Trakt'),
+      );
 
       onProgress?.call(const ImportProgress(
         stage: ImportStage.completed,
@@ -821,24 +605,114 @@ class TraktZipImportService {
         total: 1,
       ));
 
-      // Total wishlist = watched fallback + watchlist section
-      final int totalWishlistAdded = wishlistItemsAdded +
-          wishlistedByType.values.fold<int>(0, (int s, int v) => s + v);
-
-      return TraktImportResult.success(
+      return UniversalImportResult(
+        sourceName: 'Trakt',
+        success: true,
         collection: collection,
-        itemsImported: itemsImported,
-        itemsSkipped: itemsSkipped,
-        itemsUpdated: itemsUpdated,
-        wishlistItemsAdded: totalWishlistAdded,
         importedByType: importedByType,
-        wishlistedByType: wishlistedByType,
         updatedByType: updatedByType,
-        errors: errors,
+        wishlistedByType: wishlistedByType,
+        skipped: skipped,
       );
     } on Exception catch (e) {
-      return TraktImportResult.failure('Import failed: $e');
+      return UniversalImportResult.failure(
+        sourceName: 'Trakt',
+        error: 'Import failed: $e',
+      );
     }
+  }
+
+  /// Watched item: completed/in-progress status with the watch date. Re-sync
+  /// merges the external status without downgrading the local one and stamps
+  /// the completion date only when the local one is empty.
+  ImportCandidate _watchedCandidate({
+    required MediaType mediaType,
+    required int externalId,
+    required int? platformId,
+    required ItemStatus status,
+    required DateTime? completedAt,
+    required String label,
+  }) {
+    final int? epoch = epochSeconds(completedAt);
+    return ImportCandidate(
+      mediaType: mediaType,
+      externalId: externalId,
+      platformId: platformId,
+      label: label,
+      insertRow: <String, dynamic>{
+        'media_type': mediaType.value,
+        'external_id': externalId,
+        'platform_id': platformId,
+        'status': status.value,
+        'completed_at': ?epoch,
+        'last_activity_at': ?epoch,
+      },
+      changedFields: (CollectionItem existing) {
+        final Map<String, dynamic> fields = <String, dynamic>{};
+        final ItemStatus? merged = mergeExternalStatus(
+          currentStatus: existing.status,
+          externalStatus: status,
+        );
+        if (merged != null) {
+          fields.addAll(statusDateColumns(merged, existing));
+        }
+        if (completedAt != null && existing.completedAt == null) {
+          fields['completed_at'] = epochSeconds(completedAt);
+        }
+        return fields;
+      },
+    );
+  }
+
+  /// Rating item: a new not-started item carrying the rating, or — when the
+  /// item already exists — the rating only if the user has not set one.
+  ImportCandidate _ratingCandidate({
+    required MediaType mediaType,
+    required int externalId,
+    required int? platformId,
+    required int rating,
+    required String label,
+  }) {
+    final double value = rating.clamp(1, 10).toDouble();
+    return ImportCandidate(
+      mediaType: mediaType,
+      externalId: externalId,
+      platformId: platformId,
+      label: label,
+      insertRow: <String, dynamic>{
+        'media_type': mediaType.value,
+        'external_id': externalId,
+        'platform_id': platformId,
+        'status': ItemStatus.notStarted.value,
+        'user_rating': value,
+      },
+      changedFields: (CollectionItem existing) => existing.userRating == null
+          ? <String, dynamic>{'user_rating': value}
+          : <String, dynamic>{},
+    );
+  }
+
+  /// Watchlist item: a new planned item. An existing item is left untouched so
+  /// a watched/rated title is never downgraded to planned.
+  ImportCandidate _watchlistCandidate({
+    required MediaType mediaType,
+    required int externalId,
+    required int? platformId,
+    required String label,
+  }) {
+    return ImportCandidate(
+      mediaType: mediaType,
+      externalId: externalId,
+      platformId: platformId,
+      label: label,
+      insertRow: <String, dynamic>{
+        'media_type': mediaType.value,
+        'external_id': externalId,
+        'platform_id': platformId,
+        'status': ItemStatus.planned.value,
+      },
+      changedFields: (CollectionItem existing) => <String, dynamic>{},
+    );
   }
 
   /// Reads JSON files and username in a single pass.
@@ -1104,93 +978,5 @@ class TraktZipImportService {
     // Some episodes watched → inProgress. Cannot detect "completed" reliably
     // since Trakt export doesn't include total episode count for the show.
     return ItemStatus.inProgress;
-  }
-
-  Future<_ImportItemResult> _importOrUpdateItem({
-    required int collectionId,
-    required MediaType mediaType,
-    required int externalId,
-    int? platformId,
-    required ItemStatus status,
-    DateTime? completedAt,
-  }) async {
-    final CollectionItem? existing = await _repository.findItem(
-      collectionId: collectionId,
-      mediaType: mediaType,
-      externalId: externalId,
-    );
-
-    if (existing == null) {
-      final int? itemId = await _repository.addItem(
-        collectionId: collectionId,
-        mediaType: mediaType,
-        externalId: externalId,
-        platformId: platformId,
-        status: status,
-      );
-
-      if (itemId == null) return _ImportItemResult.skipped;
-
-      if (completedAt != null) {
-        await _database.updateItemActivityDates(
-          itemId,
-          completedAt: completedAt,
-          lastActivityAt: completedAt,
-        );
-      }
-
-      return _ImportItemResult.added;
-    }
-
-    bool updated = false;
-
-    // Status merge protects `dropped` and never downgrades existing status.
-    final ItemStatus? mergedStatus = mergeExternalStatus(
-      currentStatus: existing.status,
-      externalStatus: status,
-    );
-    if (mergedStatus != null) {
-      await _repository.updateItemStatus(
-        existing.id,
-        mergedStatus,
-        mediaType: mediaType,
-      );
-      updated = true;
-    }
-
-    // Set completedAt only if local is null — never overwrite existing dates.
-    if (completedAt != null && existing.completedAt == null) {
-      await _database.updateItemActivityDates(
-        existing.id,
-        completedAt: completedAt,
-      );
-      updated = true;
-    }
-
-    return updated ? _ImportItemResult.updated : _ImportItemResult.skipped;
-  }
-}
-
-enum _ImportItemResult { added, updated, skipped }
-
-extension TraktImportResultToUniversal on TraktImportResult {
-  UniversalImportResult toUniversal() {
-    if (!success) {
-      return UniversalImportResult.failure(
-        sourceName: 'Trakt',
-        error: error ?? 'Unknown error',
-      );
-    }
-
-    return UniversalImportResult(
-      sourceName: 'Trakt',
-      success: true,
-      collection: collection,
-      importedByType: importedByType,
-      wishlistedByType: wishlistedByType,
-      updatedByType: updatedByType,
-      skipped: itemsSkipped,
-      errors: errors,
-    );
   }
 }

@@ -195,6 +195,15 @@ class SEn extends S {
   String get sortRatingDesc => 'Highest first';
 
   @override
+  String get sortFavoriteDisplay => 'Favorite';
+
+  @override
+  String get sortFavoriteShort => 'Favorite';
+
+  @override
+  String get sortFavoriteDesc => 'Favorites first';
+
+  @override
   String get sortExternalRatingDisplay => 'External Rating';
 
   @override
@@ -283,6 +292,15 @@ class SEn extends S {
 
   @override
   String get moveToBottom => 'Move to bottom';
+
+  @override
+  String get favorite => 'Favorite';
+
+  @override
+  String get addToFavorites => 'Add to favorites';
+
+  @override
+  String get removeFromFavorites => 'Remove from favorites';
 
   @override
   String bulkSelected(int count) {
@@ -2270,6 +2288,22 @@ class SEn extends S {
   @override
   String searchAlreadyInNamed(String name, String collection) {
     return '$name already in $collection';
+  }
+
+  @override
+  String searchAddedToCollections(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count collections',
+      one: '1 collection',
+    );
+    return '$name added to $_temp0';
+  }
+
+  @override
+  String searchAlreadyInCollections(String name) {
+    return '$name already in the selected collections';
   }
 
   @override
@@ -5046,4 +5080,89 @@ class SEn extends S {
 
   @override
   String get screenScraperMediaMix => 'Mix';
+
+  @override
+  String get genreCloudTitle => 'Personalization';
+
+  @override
+  String get genreCloudEmpty => 'No genres yet';
+
+  @override
+  String get genreCloudEmptyHint => 'Add items with genres to build the cloud';
+
+  @override
+  String get genreCloudExportImage => 'Save as image';
+
+  @override
+  String get genreCloudImageSaved => 'Image saved';
+
+  @override
+  String get genreCloudExportFailed => 'Couldn\'t save the image';
+
+  @override
+  String get genreCloudResetView => 'Reset view';
+
+  @override
+  String genreCloudHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hidden (didn\'t fit)',
+      one: '1 hidden (didn\'t fit)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get facetGenre => 'Genres';
+
+  @override
+  String get facetPlatform => 'Platforms';
+
+  @override
+  String get facetDecade => 'Decades';
+
+  @override
+  String get personalizationTabCloud => 'Genre cloud';
+
+  @override
+  String get personalizationTabRecommendations => 'Recommendations';
+
+  @override
+  String get recommendationsRefresh => 'Refresh';
+
+  @override
+  String get recommendationsEmpty => 'No recommendations yet';
+
+  @override
+  String get recommendationsEmptyHint =>
+      'Complete and rate some movies or shows to get personalized picks';
+
+  @override
+  String get recommendationsNoCandidates => 'Nothing new to suggest';
+
+  @override
+  String get recommendationsNoCandidatesHint =>
+      'We couldn\'t find anything new to suggest right now. Try again later';
+
+  @override
+  String get recommendationsNoApiKey => 'TMDB API key required';
+
+  @override
+  String get recommendationsNoApiKeyHint =>
+      'Add your TMDB API key in Settings to get recommendations';
+
+  @override
+  String get recommendationsBecauseLabel => 'Because you liked';
+
+  @override
+  String recommendationsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recommendations',
+      one: '1 recommendation',
+    );
+    return '$_temp0';
+  }
 }

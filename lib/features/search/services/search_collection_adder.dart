@@ -82,6 +82,67 @@ class SearchCollectionAdder {
     return success;
   }
 
+  /// Adds [externalId] to every collection in [collectionIds] at once — the
+  /// Search tab's multi-select "add straight to these collections" flow. The
+  /// model is upserted and the image cached once; collections that already hold
+  /// the item are skipped. A single summary snackbar reports the outcome instead
+  /// of one per collection. [afterAdd] runs once if at least one add succeeded.
+  Future<void> addToCollections({
+    required BuildContext context,
+    required Set<int> collectionIds,
+    required MediaType mediaType,
+    required int externalId,
+    int? platformId,
+    DataSource? source,
+    required String title,
+    required Future<void> Function() upsert,
+    required ImageType imageType,
+    required String imageId,
+    String? imageUrl,
+    Future<void> Function()? afterAdd,
+  }) async {
+    if (collectionIds.isEmpty) return;
+
+    // Adding to a deleted collection_id violates the FK and throws mid-batch;
+    // drop ids whose collection no longer exists (defensive — the Search tab
+    // already clears the selection on re-entry).
+    final Set<int> existingIds =
+        (_ref.read(collectionsProvider).valueOrNull ?? <Collection>[])
+            .map((Collection c) => c.id)
+            .toSet();
+    final Set<int> targets = collectionIds.intersection(existingIds);
+    if (targets.isEmpty) return;
+
+    await upsert();
+
+    int added = 0;
+    for (final int collectionId in targets) {
+      final bool success = await _ref
+          .read(collectionItemsNotifierProvider(collectionId).notifier)
+          .addItem(
+            mediaType: mediaType,
+            externalId: externalId,
+            platformId: platformId,
+            source: source,
+          );
+      if (success) added++;
+    }
+
+    if (added > 0) {
+      _cacheImage(imageType, imageId, imageUrl);
+      if (afterAdd != null) await afterAdd();
+    }
+
+    if (!context.mounted) return;
+    final S l = S.of(context);
+    context.showSnack(
+      added > 0
+          ? l.searchAddedToCollections(title, added)
+          : l.searchAlreadyInCollections(title),
+      type: added > 0 ? SnackType.success : SnackType.info,
+    );
+  }
+
   /// Returns `null` when the user cancels or the context unmounts.
   Future<PickedCollection?> pickCollection({
     required BuildContext context,

@@ -85,6 +85,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _isViewModeLocked = false;
   Set<MediaType> _filterTypes = <MediaType>{};
   Set<int> _filterPlatformIds = <int>{};
+  Set<String> _filterMangaFormats = <String>{};
+  Set<String> _filterAnimeFormats = <String>{};
   Set<int> _filterTagIds = <int>{};
   bool _groupByTags = false;
   ItemStatus? _filterStatus;
@@ -177,6 +179,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CollectionFilters activeFilters = CollectionFilters(
       mediaTypes: _filterTypes,
       platformIds: _filterPlatformIds,
+      mangaFormats: _filterMangaFormats,
+      animeFormats: _filterAnimeFormats,
       tagIds: _filterTagIds,
       status: _filterStatus,
       searchQuery: searchQuery,
@@ -243,7 +247,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             isTableMode: _isTableMode,
             isViewModeLocked: _isViewModeLocked,
             onAddItems: () => CollectionActions.addItems(
-              context: context,
               ref: ref,
               collectionId: widget.collectionId,
             ),
@@ -263,7 +266,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return <ShortcutActivator, VoidCallback>{
       if (_canEdit)
         const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-            () => CollectionActions.addItems(context: context, ref: ref, collectionId: widget.collectionId),
+            () => CollectionActions.addItems(ref: ref, collectionId: widget.collectionId),
       if (!_isUncategorized && _collection != null)
         const SingleActivator(LogicalKeyboardKey.keyE, control: true):
             () => CollectionActions.exportCollection(context: context, ref: ref, collectionId: widget.collectionId, collection: _collection!),
@@ -321,6 +324,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       itemsAsync: itemsAsync,
       filterTypes: _filterTypes,
       filterPlatformIds: _filterPlatformIds,
+      filterMangaFormats: _filterMangaFormats,
+      filterAnimeFormats: _filterAnimeFormats,
       filterTagIds: _filterTagIds,
       filterStatus: _filterStatus,
       effectiveStatusForCounts: _effectiveStatusForChevrons,
@@ -343,6 +348,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             _filterTypes = Set<MediaType>.from(_filterTypes)..add(type);
           }
           _filterPlatformIds = <int>{};
+          // Drop a type's subfilter when that type is no longer selected.
+          if (!_filterTypes.contains(MediaType.manga)) {
+            _filterMangaFormats = <String>{};
+          }
+          if (!_filterTypes.contains(MediaType.anime)) {
+            _filterAnimeFormats = <String>{};
+          }
         });
       },
       onPlatformToggled: (int? id) {
@@ -354,6 +366,32 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               ..remove(id);
           } else {
             _filterPlatformIds = Set<int>.from(_filterPlatformIds)..add(id);
+          }
+        });
+      },
+      onMangaFormatToggled: (String? code) {
+        setState(() {
+          if (code == null) {
+            _filterMangaFormats = <String>{};
+          } else if (_filterMangaFormats.contains(code)) {
+            _filterMangaFormats = Set<String>.from(_filterMangaFormats)
+              ..remove(code);
+          } else {
+            _filterMangaFormats = Set<String>.from(_filterMangaFormats)
+              ..add(code);
+          }
+        });
+      },
+      onAnimeFormatToggled: (String? code) {
+        setState(() {
+          if (code == null) {
+            _filterAnimeFormats = <String>{};
+          } else if (_filterAnimeFormats.contains(code)) {
+            _filterAnimeFormats = Set<String>.from(_filterAnimeFormats)
+              ..remove(code);
+          } else {
+            _filterAnimeFormats = Set<String>.from(_filterAnimeFormats)
+              ..add(code);
           }
         });
       },
@@ -416,6 +454,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CollectionFilters filters = CollectionFilters(
       mediaTypes: _filterTypes,
       platformIds: _filterPlatformIds,
+      mangaFormats: _filterMangaFormats,
+      animeFormats: _filterAnimeFormats,
       tagIds: _filterTagIds,
       status: _filterStatus,
       searchQuery: searchQuery,

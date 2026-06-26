@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
@@ -22,6 +20,7 @@ import '../../collections/screens/item_detail_screen.dart';
 import '../handlers/media_handlers.dart';
 import '../providers/browse_provider.dart';
 import '../widgets/browse_grid.dart';
+import '../widgets/collection_chips_row.dart';
 import '../widgets/discover_customize_sheet.dart';
 import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
@@ -29,25 +28,7 @@ import '../widgets/filter_bar.dart';
 /// Search and browse screen — two modes: Browse (filter bar + Discover/Grid)
 /// and Search (query field + results).
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({
-    this.onGameSelected,
-    this.collectionId,
-    this.initialTabIndex,
-    this.initialSourceId,
-    this.initialQuery,
-    this.isPushed = false,
-    super.key,
-  });
-
-  final void Function(Game game)? onGameSelected;
-  final int? collectionId;
-  final int? initialTabIndex;
-  final String? initialSourceId;
-  final String? initialQuery;
-
-  /// When pushed on the root navigator the global [AppTopBar] is hidden,
-  /// so the screen draws its own AppBar bound to [searchTabQueryProvider].
-  final bool isPushed;
+  const SearchScreen({super.key});
 
   static const ShortcutGroup shortcutGroup = ShortcutGroup(
     title: 'Поиск',
@@ -64,49 +45,24 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   Timer? _searchDebounce;
-  TextEditingController? _pushedSearchController;
   Map<int, Platform> _platformMap = <int, Platform>{};
-  late final MediaHandlers _handlers;
+  late MediaHandlers _handlers;
 
   @override
   void initState() {
     super.initState();
-    _handlers = MediaHandlers(
-      ref: ref,
-      platformMap: () => _platformMap,
-      targetCollectionId: widget.collectionId,
-      onGameSelected: widget.onGameSelected,
-    );
+    _handlers = _buildHandlers();
     _loadPlatforms();
-
-    if (widget.isPushed) {
-      final String initial =
-          widget.initialQuery ?? ref.read(searchTabQueryProvider);
-      _pushedSearchController = TextEditingController(text: initial);
-    }
-
-    final String? sourceToSet = widget.initialSourceId ??
-        (widget.initialTabIndex == 1 ? 'games' : null);
-
-    if (sourceToSet != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(browseProvider.notifier).setSource(sourceToSet);
-        if (widget.initialQuery != null &&
-            widget.initialQuery!.isNotEmpty) {
-          ref.read(searchTabQueryProvider.notifier).state =
-              widget.initialQuery!;
-          ref.read(browseProvider.notifier).search(widget.initialQuery!);
-        }
-      });
-    } else if (widget.initialQuery != null &&
-        widget.initialQuery!.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(searchTabQueryProvider.notifier).state =
-            widget.initialQuery!;
-        ref.read(browseProvider.notifier).search(widget.initialQuery!);
-      });
-    }
   }
+
+  /// Builds the per-source handlers. Both the platform map and the add-target
+  /// collections are read live (closures), so the handlers never need rebuilding
+  /// when either changes — a tap resolves the current selection at tap time.
+  MediaHandlers _buildHandlers() => MediaHandlers(
+        ref: ref,
+        platformMap: () => _platformMap,
+        targetCollections: () => ref.read(searchTargetCollectionsProvider),
+      );
 
   Future<void> _loadPlatforms() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
@@ -123,7 +79,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void dispose() {
     _searchDebounce?.cancel();
-    _pushedSearchController?.dispose();
     super.dispose();
   }
 
@@ -287,13 +242,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     ref.listen<String>(searchTabQueryProvider, (String? prev, String next) {
       _onQueryChanged(next);
-      final TextEditingController? c = _pushedSearchController;
-      if (c != null && c.text != next) {
-        c.value = TextEditingValue(
-          text: next,
-          selection: TextSelection.collapsed(offset: next.length),
-        );
-      }
     });
 
     final Widget body = Column(
@@ -302,34 +250,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           onBeforeFilterChange: _syncSearchText,
           onDiscoverCustomize: _showDiscoverCustomizeSheet,
         ),
+        const CollectionChipsRow(),
         const SizedBox(height: AppSpacing.xs),
         Expanded(child: _buildContent(browseState)),
       ],
     );
 
-    if (!widget.isPushed) return body;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          controller: _pushedSearchController,
-          // Desktop only: on mobile this would pop the soft keyboard before the
-          // user taps the field.
-          autofocus: !kIsMobile,
-          decoration: InputDecoration(
-            hintText: S.of(context).appBarSearchHint,
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            filled: false,
-          ),
-          onChanged: (String value) {
-            ref.read(searchTabQueryProvider.notifier).state = value;
-          },
-        ),
-      ),
-      body: body,
-    );
+    return body;
   }
 
   Widget _buildContent(BrowseState browseState) {

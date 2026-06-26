@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/game_time_to_beat.dart';
 
 void main() {
   group('Game', () {
@@ -297,6 +298,28 @@ void main() {
 
         expect(copy.summary, 'Summary');
         expect(copy.rating, 80.0);
+      });
+
+      test('carries the transient timeToBeat', () {
+        const Game original = Game(id: 1, name: 'Original');
+
+        final Game copy = original.copyWith(
+          timeToBeat: const GameTimeToBeat(normally: 7200),
+        );
+
+        expect(copy.timeToBeat?.normally, 7200);
+      });
+    });
+
+    group('timeToBeat is transient', () {
+      test('is excluded from toDb', () {
+        const Game game = Game(
+          id: 1,
+          name: 'Test',
+          timeToBeat: GameTimeToBeat(normally: 7200),
+        );
+
+        expect(game.toDb().containsKey('time_to_beat'), isFalse);
       });
     });
 

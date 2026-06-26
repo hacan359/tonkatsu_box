@@ -4,8 +4,8 @@ import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
 void main() {
   group('CollectionSortMode', () {
     group('значения enum', () {
-      test('should contain 7 значений', () {
-        expect(CollectionSortMode.values.length, 7);
+      test('should contain 8 значений', () {
+        expect(CollectionSortMode.values.length, 8);
       });
 
       test('should contain все режимы сортировки', () {
@@ -17,6 +17,10 @@ void main() {
         expect(CollectionSortMode.values, contains(CollectionSortMode.status));
         expect(CollectionSortMode.values, contains(CollectionSortMode.name));
         expect(CollectionSortMode.values, contains(CollectionSortMode.rating));
+        expect(
+          CollectionSortMode.values,
+          contains(CollectionSortMode.favorite),
+        );
         expect(
           CollectionSortMode.values,
           contains(CollectionSortMode.externalRating),

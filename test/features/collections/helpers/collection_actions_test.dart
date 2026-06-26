@@ -9,6 +9,7 @@ import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/models/canvas_item.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/steamgriddb_image.dart';
+import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 
 class _TestCanvasNotifier extends CanvasNotifier {
   _TestCanvasNotifier();
@@ -134,6 +135,36 @@ void main() {
   });
 
   group('CollectionActions', () {
+    group('addItems', () {
+      testWidgets('requests the Search tab with the collection as add target',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(_buildTestApp(overrides: <Override>[]));
+        await tester.pumpAndSettle();
+
+        CollectionActions.addItems(ref: _capturedRef!, collectionId: 42);
+
+        final SearchTabRequest? request =
+            _capturedRef!.read(searchTabRequestProvider);
+        expect(request, isNotNull);
+        expect(request!.collectionId, 42);
+        expect(request.query, isNull);
+        expect(request.sourceId, isNull);
+      });
+
+      testWidgets('passes a null collectionId through (uncategorized)',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(_buildTestApp(overrides: <Override>[]));
+        await tester.pumpAndSettle();
+
+        CollectionActions.addItems(ref: _capturedRef!, collectionId: null);
+
+        final SearchTabRequest? request =
+            _capturedRef!.read(searchTabRequestProvider);
+        expect(request, isNotNull);
+        expect(request!.collectionId, isNull);
+      });
+    });
+
     group('addSteamGridDbImage', () {
       testWidgets(
         'should call addImageItem на canvasNotifier с правильными параметрами',

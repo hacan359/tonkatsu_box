@@ -20,7 +20,7 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   SimpleMediaHandler({
     required WidgetRef ref,
     required SearchCollectionAdder adder,
-    required int? targetCollectionId,
+    required Set<int> Function() targetCollections,
     required this.mediaType,
     required this.imageType,
     required this.collectedProvider,
@@ -35,11 +35,11 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     this.enrichBeforeDetails,
   })  : _ref = ref,
         _adder = adder,
-        _targetCollectionId = targetCollectionId;
+        _targetCollections = targetCollections;
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
-  final int? _targetCollectionId;
+  final Set<int> Function() _targetCollections;
 
   final MediaType mediaType;
   final ImageType imageType;
@@ -84,8 +84,9 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     MediaType mediaType,
   ) async {
     final T typed = item as T;
-    if (_targetCollectionId != null) {
-      await _addToCollection(context, _targetCollectionId, typed);
+    final Set<int> targets = _targetCollections();
+    if (targets.isNotEmpty) {
+      await _addToCollections(context, targets, typed);
       return;
     }
     // Sources with sparse search rows (Fantlab) fetch the full record before
@@ -146,16 +147,16 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     );
   }
 
-  Future<void> _addToCollection(
+  Future<void> _addToCollections(
     BuildContext context,
-    int collectionId,
+    Set<int> collectionIds,
     T item,
   ) async {
     final T typed = await _enriched(context, item);
     if (!context.mounted) return;
-    await _adder.addToCollection(
+    await _adder.addToCollections(
       context: context,
-      collectionId: collectionId,
+      collectionIds: collectionIds,
       mediaType: mediaType,
       externalId: externalIdOf(typed),
       source: sourceOf?.call(typed),

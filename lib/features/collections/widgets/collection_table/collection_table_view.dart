@@ -29,6 +29,7 @@ class CollectionTableView extends ConsumerStatefulWidget {
     this.onRatingChanged,
     this.onStatusChanged,
     this.onTagChanged,
+    this.onFavoriteToggled,
     this.onReorder,
     this.selectedIds,
     this.onToggleSelect,
@@ -47,6 +48,7 @@ class CollectionTableView extends ConsumerStatefulWidget {
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
       onStatusChanged;
   final void Function(int itemId, int? tagId)? onTagChanged;
+  final void Function(int itemId)? onFavoriteToggled;
   final void Function(int oldIndex, int newIndex)? onReorder;
   final Set<int>? selectedIds;
   final void Function(int itemId)? onToggleSelect;
@@ -61,7 +63,7 @@ class CollectionTableView extends ConsumerStatefulWidget {
 }
 
 class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
-  static const double _minTableWidth = 864;
+  static const double _minTableWidth = 908;
 
   TableColumn _sortColumn = TableColumn.name;
   bool _sortAscending = true;
@@ -71,6 +73,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
   double? _filterRating;
   int? _filterTagId;
   String? _filterPlatform;
+  bool? _filterFavorite;
 
   late Map<int, CollectionTag> _cachedTagMap;
 
@@ -94,6 +97,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
       _filterRating = null;
       _filterTagId = null;
       _filterPlatform = null;
+      _filterFavorite = null;
       if (hadStatusFilter) {
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => widget.onFilterStatusChanged?.call(null),
@@ -127,6 +131,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
           filterRating: _filterRating,
           filterTagId: _filterTagId,
           filterPlatform: _filterPlatform,
+          filterFavorite: _filterFavorite,
           tagMap: _cachedTagMap,
           l: l,
           isReorderable: isReorderable,
@@ -208,6 +213,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         onRatingChanged: widget.onRatingChanged,
         onStatusChanged: widget.onStatusChanged,
         onTagChanged: widget.onTagChanged,
+        onFavoriteToggled: widget.onFavoriteToggled,
         dragIndex: dragIndex,
         isSelected: widget.selectedIds?.contains(item.id) ?? false,
         onToggleSelect: widget.onToggleSelect != null
@@ -251,6 +257,13 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
             widget.items.map(_platformLabel),
             (String a, String b) => a.compareTo(b),
           );
+        case TableColumn.favorite:
+          // All -> favorites only -> non-favorites only -> all.
+          _filterFavorite = switch (_filterFavorite) {
+            null => true,
+            true => false,
+            false => null,
+          };
         default:
           if (_sortColumn == column) {
             _sortAscending = !_sortAscending;
@@ -282,7 +295,8 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         _filterType != null ||
         _filterRating != null ||
         _filterTagId != null ||
-        _filterPlatform != null;
+        _filterPlatform != null ||
+        _filterFavorite != null;
 
     final List<CollectionItem> list = hasFilter
         ? widget.items
@@ -293,7 +307,8 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
                     (i.userRating ?? 0) == _filterRating) &&
                 (_filterTagId == null || (i.tagId ?? 0) == _filterTagId) &&
                 (_filterPlatform == null ||
-                    _platformLabel(i) == _filterPlatform))
+                    _platformLabel(i) == _filterPlatform) &&
+                (_filterFavorite == null || i.isFavorite == _filterFavorite))
             .toList()
         : List<CollectionItem>.of(widget.items);
 
@@ -309,6 +324,11 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
           return _platformLabel(a).compareTo(_platformLabel(b)) * dir;
         case TableColumn.status:
           return a.status.index.compareTo(b.status.index) * dir;
+        case TableColumn.favorite:
+          // Favorite is a filter-only column; this keeps the switch exhaustive.
+          final int fa = a.isFavorite ? 1 : 0;
+          final int fb = b.isFavorite ? 1 : 0;
+          return fb.compareTo(fa) * dir;
         case TableColumn.tag:
           return _tagName(a).compareTo(_tagName(b)) * dir;
         case TableColumn.rating:

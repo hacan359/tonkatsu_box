@@ -73,6 +73,9 @@
   "sortRatingDisplay": "Мой рейтинг",
   "sortRatingShort": "Оценка",
   "sortRatingDesc": "Сначала лучшие",
+  "sortFavoriteDisplay": "Избранное",
+  "sortFavoriteShort": "Избранное",
+  "sortFavoriteDesc": "Сначала избранные",
   "sortExternalRatingDisplay": "Внешний рейтинг",
   "sortExternalRatingShort": "IGDB/TMDB",
   "sortExternalRatingDesc": "Сначала лучшие",
@@ -105,6 +108,9 @@
   "remove": "Убрать",
   "moveToTop": "В начало списка",
   "moveToBottom": "В конец списка",
+  "favorite": "Избранное",
+  "addToFavorites": "В избранное",
+  "removeFromFavorites": "Убрать из избранного",
   "bulkSelected": "{count, plural, =1{Выбран 1} few{Выбрано {count}} many{Выбрано {count}} other{Выбрано {count}}}",
   "@bulkSelected": {
     "placeholders": {
@@ -838,6 +844,8 @@
   "searchAddedToNamed": "{name} добавлен в {collection}",
   "searchAlreadyInCollection": "{name} уже в коллекции",
   "searchAlreadyInNamed": "{name} уже в {collection}",
+  "searchAddedToCollections": "{name} добавлен в {count, plural, =1{1 коллекцию} few{{count} коллекции} other{{count} коллекций}}",
+  "searchAlreadyInCollections": "{name} уже во всех выбранных коллекциях",
   "searchGoToSettings": "Перейти в настройки",
   "searchMinCharsHint": "Введите минимум 2 символа и нажмите Enter",
   "searchNoResults": "Ничего не найдено",
@@ -2001,5 +2009,32 @@
   "screenScraperMediaTitle": "Заставка",
   "screenScraperMediaScreenshot": "Скриншот",
   "screenScraperMediaFanart": "Фан-арт",
-  "screenScraperMediaMix": "Микс"
+  "screenScraperMediaMix": "Микс",
+  "genreCloudTitle": "Персонализация",
+  "genreCloudEmpty": "Пока нет жанров",
+  "genreCloudEmptyHint": "Добавьте элементы с жанрами, чтобы построить облако",
+  "genreCloudExportImage": "Сохранить картинкой",
+  "genreCloudImageSaved": "Картинка сохранена",
+  "genreCloudExportFailed": "Не удалось сохранить картинку",
+  "genreCloudResetView": "Сбросить вид",
+  "genreCloudHidden": "{count, plural, =1{скрыто {count} (не поместилось)} few{скрыто {count} (не поместились)} many{скрыто {count} (не поместились)} other{скрыто {count} (не поместились)}}",
+  "facetGenre": "Жанры",
+  "facetPlatform": "Платформы",
+  "facetDecade": "Десятилетия",
+  "personalizationTabCloud": "Облако жанров",
+  "personalizationTabRecommendations": "Рекомендации",
+  "recommendationsRefresh": "Обновить",
+  "recommendationsEmpty": "Пока нет рекомендаций",
+  "recommendationsEmptyHint": "Заверши и оцени фильмы или сериалы, чтобы получить персональные подборки",
+  "recommendationsNoCandidates": "Ничего не нашлось",
+  "recommendationsNoCandidatesHint": "Не удалось ничего подобрать прямо сейчас. Попробуй позже",
+  "recommendationsNoApiKey": "Нужен ключ TMDB API",
+  "recommendationsNoApiKeyHint": "Добавь ключ TMDB API в настройках, чтобы получать рекомендации",
+  "recommendationsBecauseLabel": "Потому что тебе понравилось",
+  "recommendationsCount": "{count, plural, =1{{count} подборка} few{{count} подборки} many{{count} подборок} other{{count} подборок}}",
+  "@recommendationsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

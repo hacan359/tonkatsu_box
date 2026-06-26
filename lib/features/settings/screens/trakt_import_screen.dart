@@ -35,9 +35,7 @@ class TraktImportScreen extends StatelessWidget {
                   horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                child: TraktImportContent(
-                  onImportComplete: () => Navigator.of(context).pop(),
-                ),
+                child: const TraktImportContent(),
               ),
             ),
           ),

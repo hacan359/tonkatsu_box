@@ -24,12 +24,7 @@ import '../widgets/settings_group.dart';
 
 /// Flow: CSV file pick → options (watchlist toggle, target) → import progress.
 class KinoriumImportContent extends ConsumerStatefulWidget {
-  const KinoriumImportContent({
-    super.key,
-    this.onImportComplete,
-  });
-
-  final VoidCallback? onImportComplete;
+  const KinoriumImportContent({super.key});
 
   @override
   ConsumerState<KinoriumImportContent> createState() =>
@@ -345,15 +340,15 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
 
       if (!mounted) return;
 
-      await Navigator.of(context).push(
+      // Push the result over the import screen (no await / no follow-up pop):
+      // the import screen stays underneath so a later tab-root reset can't
+      // resolve a pending push and pop the tab root out. Mirrors the RA flow.
+      Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (BuildContext context) =>
               ImportResultScreen(result: result),
         ),
       );
-      if (mounted) {
-        widget.onImportComplete?.call();
-      }
     } else if (result.fatalError != null) {
       context.showSnack(result.fatalError!, type: SnackType.error);
     }

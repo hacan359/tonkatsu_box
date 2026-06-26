@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/core/services/trakt_zip_import_service.dart';
+import 'package:tonkatsu_box/core/import/sources/trakt/trakt_import_service.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
@@ -12,10 +12,10 @@ import 'package:tonkatsu_box/shared/models/collection.dart';
 import '../../../helpers/test_helpers.dart';
 
 void main() {
-  late MockTraktZipImportService mockService;
+  late MockTraktImportService mockService;
 
   setUp(() {
-    mockService = MockTraktZipImportService();
+    mockService = MockTraktImportService();
   });
 
   Widget createWidget({
@@ -25,7 +25,7 @@ void main() {
   }) {
     return ProviderScope(
       overrides: <Override>[
-        traktZipImportServiceProvider.overrideWithValue(mockService),
+        traktImportServiceProvider.overrideWithValue(mockService),
         collectionsProvider.overrideWith(
           () => _TestCollectionsNotifier(collections),
         ),

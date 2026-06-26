@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../core/services/trakt_zip_import_service.dart';
+import '../../../core/import/sources/trakt/trakt_import_service.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -24,12 +25,7 @@ import '../widgets/settings_group.dart';
 
 /// Flow: ZIP file pick → preview → options → import progress.
 class TraktImportContent extends ConsumerStatefulWidget {
-  const TraktImportContent({
-    super.key,
-    this.onImportComplete,
-  });
-
-  final VoidCallback? onImportComplete;
+  const TraktImportContent({super.key});
 
   @override
   ConsumerState<TraktImportContent> createState() =>
@@ -409,8 +405,8 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
       _zipPath = null;
     });
 
-    final TraktZipImportService service =
-        ref.read(traktZipImportServiceProvider);
+    final TraktImportService service =
+        ref.read(traktImportServiceProvider);
     final TraktZipInfo info = await service.validateZip(path);
 
     if (!mounted) return;
@@ -430,16 +426,16 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   }
 
   Future<void> _startImport() async {
-    final TraktZipImportService service =
-        ref.read(traktZipImportServiceProvider);
+    final TraktImportService service =
+        ref.read(traktImportServiceProvider);
 
     final ValueNotifier<ImportProgress?> progressNotifier =
         ValueNotifier<ImportProgress?>(null);
 
-    TraktImportResult? importResult;
+    UniversalImportResult? importResult;
 
-    final Future<TraktImportResult> importFuture = service.importFromZip(
-      options: TraktImportOptions(
+    final Future<UniversalImportResult> importFuture = service.import(
+      TraktImportOptions(
         zipPath: _zipPath!,
         collectionId: _useNewCollection ? null : _selectedCollectionId,
         importWatched: _importWatched,
@@ -449,7 +445,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
       onProgress: (ImportProgress progress) {
         progressNotifier.value = progress;
       },
-    ).then((TraktImportResult result) {
+    ).then((UniversalImportResult result) {
       importResult = result;
       return result;
     });
@@ -467,7 +463,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
     if (importResult == null || !mounted) return;
 
-    final TraktImportResult result = importResult!;
+    final UniversalImportResult result = importResult!;
 
     if (result.success) {
       ref.invalidate(collectionsProvider);
@@ -483,18 +479,18 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
       if (!mounted) return;
 
-      await Navigator.of(context).push(
+      // Push the result over the import screen (no await / no follow-up pop):
+      // the import screen stays underneath so a later tab-root reset can't
+      // resolve a pending push and pop the tab root out. Mirrors the RA flow.
+      Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (BuildContext context) => ImportResultScreen(
-            result: result.toUniversal(),
+            result: result,
           ),
         ),
       );
-      if (mounted) {
-        widget.onImportComplete?.call();
-      }
-    } else if (result.error != null) {
-      context.showSnack(result.error!, type: SnackType.error);
+    } else if (result.fatalError != null) {
+      context.showSnack(result.fatalError!, type: SnackType.error);
     }
   }
 }
@@ -506,7 +502,7 @@ class _TraktImportProgressDialog extends StatelessWidget {
   });
 
   final ValueNotifier<ImportProgress?> progressNotifier;
-  final Future<TraktImportResult> importFuture;
+  final Future<UniversalImportResult> importFuture;
 
   @override
   Widget build(BuildContext context) {
@@ -557,10 +553,10 @@ class _TraktImportProgressDialog extends StatelessWidget {
         },
       ),
       actions: <Widget>[
-        FutureBuilder<TraktImportResult>(
+        FutureBuilder<UniversalImportResult>(
           future: importFuture,
           builder: (BuildContext context,
-              AsyncSnapshot<TraktImportResult> snapshot) {
+              AsyncSnapshot<UniversalImportResult> snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               return FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),

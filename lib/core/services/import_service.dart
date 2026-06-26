@@ -552,7 +552,8 @@ class ImportService {
         parsed.lastActivityAt != null ||
         parsed.currentSeason > 0 ||
         parsed.currentEpisode > 0 ||
-        parsed.overrideName != null;
+        parsed.overrideName != null ||
+        parsed.isFavorite;
   }
 
   Future<void> _restoreUserData(int itemId, CollectionItem parsed) async {
@@ -571,6 +572,9 @@ class ImportService {
     }
     if (parsed.overrideName != null) {
       await _database.setItemOverrideName(itemId, parsed.overrideName);
+    }
+    if (parsed.isFavorite) {
+      await _database.setItemFavorite(itemId, isFavorite: true);
     }
     if (parsed.startedAt != null ||
         parsed.completedAt != null ||

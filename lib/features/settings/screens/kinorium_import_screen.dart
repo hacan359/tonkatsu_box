@@ -31,9 +31,7 @@ class KinoriumImportScreen extends StatelessWidget {
                   horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                child: KinoriumImportContent(
-                  onImportComplete: () => Navigator.of(context).pop(),
-                ),
+                child: const KinoriumImportContent(),
               ),
             ),
           ),

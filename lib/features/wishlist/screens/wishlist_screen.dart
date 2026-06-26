@@ -15,7 +15,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/add_wishlist_dialog.dart';
 import '../widgets/wishlist_dialogs.dart';
@@ -115,7 +114,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                               final WishlistItem item = filtered[index];
                               return WishlistTile(
                                 item: item,
-                                onTap: () => _searchForItem(context, item),
+                                onTap: () => _searchForItem(item),
                                 onResolve: () => _toggleResolved(item),
                                 onEdit: () => _editItem(context, item),
                                 onDelete: () => _deleteItem(context, item),
@@ -281,17 +280,12 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     await ref.read(wishlistProvider.notifier).delete(item.id);
   }
 
-  void _searchForItem(BuildContext context, WishlistItem item) {
-    final String? sourceId = wishlistSourceIdFor(item.mediaTypeHint);
-
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => SearchScreen(
-          initialQuery: item.text,
-          initialSourceId: sourceId,
-          isPushed: true,
-        ),
-      ),
+  void _searchForItem(WishlistItem item) {
+    // Open the Search tab prefilled (handled by AppShell) rather than pushing a
+    // separate search screen — keeps the shell and its single search field.
+    ref.read(searchTabRequestProvider.notifier).state = SearchTabRequest(
+      query: item.text,
+      sourceId: wishlistSourceIdFor(item.mediaTypeHint),
     );
   }
 

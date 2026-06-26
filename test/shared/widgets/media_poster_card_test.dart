@@ -22,9 +22,13 @@ void main() {
     String? subtitle,
     MediaType? mediaType,
     IconData? placeholderIcon,
+    int? timeToBeatHours,
+    bool isFavorite = false,
+    bool showFavorite = false,
     VoidCallback? onTap,
     VoidCallback? onLongPress,
     VoidCallback? onOpenInCollection,
+    VoidCallback? onToggleFavorite,
   }) {
     return MaterialApp(
       localizationsDelegates: S.localizationsDelegates,
@@ -47,9 +51,13 @@ void main() {
             subtitle: subtitle,
             mediaType: mediaType,
             placeholderIcon: placeholderIcon,
+            timeToBeatHours: timeToBeatHours,
+            isFavorite: isFavorite,
+            showFavorite: showFavorite,
             onTap: onTap,
             onLongPress: onLongPress,
             onOpenInCollection: onOpenInCollection,
+            onToggleFavorite: onToggleFavorite,
           ),
         ),
       ),
@@ -177,6 +185,39 @@ void main() {
           matching: find.byType(Focus),
         );
         expect(focusWidgets, findsOneWidget);
+      });
+    });
+
+    group('favorite heart', () {
+      // The heart is the only InkWell in a plain grid card, so locating it by
+      // type stays robust if the icon/colour changes.
+      testWidgets('tapping the heart fires onToggleFavorite, not onTap',
+          (WidgetTester tester) async {
+        bool toggled = false;
+        bool cardTapped = false;
+        await tester.pumpWidget(buildCard(
+          onTap: () => cardTapped = true,
+          onToggleFavorite: () => toggled = true,
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(InkWell));
+        await tester.pumpAndSettle();
+
+        expect(toggled, isTrue);
+        expect(cardTapped, isFalse);
+      });
+
+      testWidgets('renders a static indicator when forced without a callback',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildCard(isFavorite: true, showFavorite: true),
+        );
+        await tester.pumpAndSettle();
+
+        // Forced indicator is not interactive — no InkWell tap target.
+        expect(find.byType(InkWell), findsNothing);
+        expect(tester.takeException(), isNull);
       });
     });
 
@@ -313,6 +354,47 @@ void main() {
         expect(tooltipFinder, findsOneWidget);
         final Tooltip tooltip = tester.widget<Tooltip>(tooltipFinder);
         expect(tooltip.message, 'Wolfenstein II: The New Colossus');
+      });
+    });
+
+    group('time-to-beat badge', () {
+      testWidgets('shows the formatted hours when timeToBeatHours is set',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(timeToBeatHours: 71));
+        await tester.pumpAndSettle();
+
+        expect(find.text('71h'), findsOneWidget);
+      });
+
+      testWidgets('is hidden when timeToBeatHours is null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard());
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.schedule), findsNothing);
+      });
+
+      testWidgets('is hidden when a status badge is shown',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          timeToBeatHours: 71,
+          status: ItemStatus.inProgress,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('71h'), findsNothing);
+      });
+
+      testWidgets('is not rendered on the canvas variant',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          variant: CardVariant.canvas,
+          mediaType: MediaType.game,
+          timeToBeatHours: 71,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('71h'), findsNothing);
       });
     });
 

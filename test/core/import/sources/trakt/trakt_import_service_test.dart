@@ -6,16 +6,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
-import 'package:tonkatsu_box/core/services/trakt_zip_import_service.dart';
+import 'package:tonkatsu_box/core/import/sources/trakt/trakt_import_service.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/movie.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
 import 'package:tonkatsu_box/shared/models/wishlist_item.dart';
 
-import '../../helpers/test_helpers.dart';
+import '../../../../helpers/test_helpers.dart';
 
 List<int> createTestZip({
   String username = 'testuser',
@@ -140,13 +141,15 @@ void main() {
   late MockMovieDao mockMovieDao;
   late MockTvShowDao mockTvShowDao;
   late MockWishlistRepository mockWishlist;
-  late TraktZipImportService sut;
+  late TraktImportService sut;
 
   late Directory tempDir;
   late String zipPath;
 
   setUpAll(() {
     registerAllFallbacks();
+    registerFallbackValue(<Map<String, dynamic>>[]);
+    registerFallbackValue(<(int, Map<String, dynamic>)>[]);
   });
 
   setUp(() {
@@ -158,7 +161,7 @@ void main() {
     mockTvShowDao = MockTvShowDao();
     when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
     mockWishlist = MockWishlistRepository();
-    sut = TraktZipImportService(
+    sut = TraktImportService(
       tmdbApi: mockTmdb,
       repository: mockRepo,
       database: mockDb,
@@ -283,98 +286,7 @@ void main() {
     });
   });
 
-  group('TraktImportResult', () {
-    group('constructor', () {
-      test('should create экземпляр с параметрами', () {
-        final Collection collection = createTestCollection();
-        final TraktImportResult result = TraktImportResult(
-          success: true,
-          collection: collection,
-          itemsImported: 10,
-          itemsSkipped: 2,
-          itemsUpdated: 3,
-          wishlistItemsAdded: 1,
-          errors: const <String>['error1'],
-          error: null,
-        );
-
-        expect(result.success, isTrue);
-        expect(result.collection, equals(collection));
-        expect(result.itemsImported, equals(10));
-        expect(result.itemsSkipped, equals(2));
-        expect(result.itemsUpdated, equals(3));
-        expect(result.wishlistItemsAdded, equals(1));
-        expect(result.errors.length, equals(1));
-        expect(result.error, isNull);
-      });
-
-      test('should use значения по умолчанию', () {
-        const TraktImportResult result = TraktImportResult(success: false);
-
-        expect(result.collection, isNull);
-        expect(result.itemsImported, equals(0));
-        expect(result.itemsSkipped, equals(0));
-        expect(result.itemsUpdated, equals(0));
-        expect(result.wishlistItemsAdded, equals(0));
-        expect(result.errors, isEmpty);
-        expect(result.error, isNull);
-      });
-    });
-
-    group('success()', () {
-      test('should create успешный результат', () {
-        final Collection collection = createTestCollection();
-        final TraktImportResult result = TraktImportResult.success(
-          collection: collection,
-          itemsImported: 15,
-          itemsSkipped: 3,
-          itemsUpdated: 2,
-          wishlistItemsAdded: 4,
-          errors: const <String>['warn1'],
-        );
-
-        expect(result.success, isTrue);
-        expect(result.collection, equals(collection));
-        expect(result.itemsImported, equals(15));
-        expect(result.itemsSkipped, equals(3));
-        expect(result.itemsUpdated, equals(2));
-        expect(result.wishlistItemsAdded, equals(4));
-        expect(result.errors, equals(const <String>['warn1']));
-        expect(result.error, isNull);
-      });
-
-      test('should use значения по умолчанию для success()', () {
-        final Collection collection = createTestCollection();
-        final TraktImportResult result = TraktImportResult.success(
-          collection: collection,
-          itemsImported: 5,
-        );
-
-        expect(result.itemsSkipped, equals(0));
-        expect(result.itemsUpdated, equals(0));
-        expect(result.wishlistItemsAdded, equals(0));
-        expect(result.errors, isEmpty);
-      });
-    });
-
-    group('failure()', () {
-      test('should create неудачный результат', () {
-        const TraktImportResult result =
-            TraktImportResult.failure('Something broke');
-
-        expect(result.success, isFalse);
-        expect(result.collection, isNull);
-        expect(result.itemsImported, equals(0));
-        expect(result.itemsSkipped, equals(0));
-        expect(result.itemsUpdated, equals(0));
-        expect(result.wishlistItemsAdded, equals(0));
-        expect(result.errors, isEmpty);
-        expect(result.error, equals('Something broke'));
-      });
-    });
-  });
-
-  group('TraktZipImportService', () {
+  group('TraktImportService', () {
     group('validateZip', () {
       test('should return valid для правильного ZIP со всеми файлами',
           () async {
@@ -525,7 +437,10 @@ void main() {
       });
     });
 
-    group('importFromZip', () {
+    group('import', () {
+      // Sets up the ImportWriter-backed mocks: collection resolution, batch
+      // item reads/writes, and wishlist batch writes. Per-test overrides layer
+      // on top (e.g. getItems returning an existing item).
       void setupDefaultMocks({
         int collectionId = 1,
         String collectionName = 'Trakt: testuser',
@@ -540,69 +455,64 @@ void main() {
         when(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
-              type: any(named: 'type'),
             )).thenAnswer((_) async => collection);
 
         when(() => mockRepo.getById(collectionId))
             .thenAnswer((_) async => collection);
 
-        when(() => mockRepo.findItem(
-              collectionId: any(named: 'collectionId'),
-              mediaType: any(named: 'mediaType'),
-              externalId: any(named: 'externalId'),
-            )).thenAnswer((_) async => null);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[]);
 
-        when(() => mockRepo.addItem(
-              collectionId: any(named: 'collectionId'),
-              mediaType: any(named: 'mediaType'),
-              externalId: any(named: 'externalId'),
-              platformId: any(named: 'platformId'),
-              status: any(named: 'status'),
-            )).thenAnswer((_) async => 10);
+        when(() => mockRepo.addItemsBatch(any(), any())).thenAnswer(
+            (Invocation inv) async =>
+                (inv.positionalArguments[1] as List<dynamic>).length);
 
-        when(() => mockRepo.updateItemStatus(
-              any(),
-              any(),
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async {});
+        when(() => mockRepo.updateItemFieldsBatch(any()))
+            .thenAnswer((_) async {});
 
         when(() => mockMovieDao.upsertMovie(any())).thenAnswer((_) async {});
         when(() => mockTvShowDao.upsertTvShow(any())).thenAnswer((_) async {});
-        when(() => mockDb.updateItemActivityDates(
-              any(),
-              startedAt: any(named: 'startedAt'),
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-            )).thenAnswer((_) async {});
-        when(() => mockDb.updateItemUserRating(any(), any()))
-            .thenAnswer((_) async {});
         when(() => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any()))
             .thenAnswer((_) async {});
 
-        when(() => mockWishlist.add(
-              text: any(named: 'text'),
-              mediaTypeHint: any(named: 'mediaTypeHint'),
-              note: any(named: 'note'),
-              tag: any(named: 'tag'),
-            )).thenAnswer((_) async => WishlistItem(
-              id: 1,
-              text: 'test',
-              createdAt: testDate,
-            ));
+        when(() => mockWishlist.getAll(
+              includeResolved: any(named: 'includeResolved'),
+            )).thenAnswer((_) async => <WishlistItem>[]);
+        when(() => mockWishlist.addWishlistItemsBatch(any())).thenAnswer(
+            (Invocation inv) async =>
+                (inv.positionalArguments[0] as List<dynamic>).length);
+      }
 
-        when(() => mockWishlist.update(
-              any(),
-              text: any(named: 'text'),
-              mediaTypeHint: any(named: 'mediaTypeHint'),
-              clearMediaTypeHint: any(named: 'clearMediaTypeHint'),
-              note: any(named: 'note'),
-              clearNote: any(named: 'clearNote'),
-              tag: any(named: 'tag'),
-              clearTag: any(named: 'clearTag'),
-            )).thenAnswer((_) async {});
+      // All insert rows passed to addItemsBatch, flattened across every pass.
+      List<Map<String, dynamic>> capturedItemRows() {
+        final List<dynamic> calls =
+            verify(() => mockRepo.addItemsBatch(any(), captureAny())).captured;
+        return <Map<String, dynamic>>[
+          for (final dynamic batch in calls)
+            ...(batch as List<dynamic>).cast<Map<String, dynamic>>(),
+        ];
+      }
 
-        when(() => mockWishlist.findUnresolved(any()))
-            .thenAnswer((_) async => null);
+      // All (id, columns) update tuples passed to updateItemFieldsBatch.
+      List<(int, Map<String, dynamic>)> capturedUpdates() {
+        final List<dynamic> calls =
+            verify(() => mockRepo.updateItemFieldsBatch(captureAny()))
+                .captured;
+        return <(int, Map<String, dynamic>)>[
+          for (final dynamic batch in calls)
+            ...(batch as List<dynamic>).cast<(int, Map<String, dynamic>)>(),
+        ];
+      }
+
+      // All rows passed to addWishlistItemsBatch.
+      List<Map<String, dynamic>> capturedWishlistRows() {
+        final List<dynamic> calls =
+            verify(() => mockWishlist.addWishlistItemsBatch(captureAny()))
+                .captured;
+        return <Map<String, dynamic>>[
+          for (final dynamic batch in calls)
+            ...(batch as List<dynamic>).cast<Map<String, dynamic>>(),
+        ];
       }
 
       test('should create новую коллекцию когда collectionId == null',
@@ -614,15 +524,14 @@ void main() {
           watchedMoviesJson: watchedMovieJson(),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
         verify(() => mockRepo.create(
               name: 'Trakt: testuser',
               author: 'testuser',
-              type: any(named: 'type'),
             )).called(1);
       });
 
@@ -634,8 +543,8 @@ void main() {
           watchedMoviesJson: watchedMovieJson(),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             collectionId: 42,
           ),
@@ -646,7 +555,6 @@ void main() {
         verifyNever(() => mockRepo.create(
               name: any(named: 'name'),
               author: any(named: 'author'),
-              type: any(named: 'type'),
             ));
       });
 
@@ -660,22 +568,21 @@ void main() {
           watchedMoviesJson: watchedMovieJson(),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             collectionId: 999,
           ),
         );
 
         expect(result.success, isFalse);
-        expect(result.error, equals('Collection not found'));
+        expect(result.fatalError, equals('Collection not found'));
       });
 
       test('должен импортировать watched movies как completed', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'Inception');
-        when(() => mockTmdb.getMovie(100))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(
             title: 'Inception',
@@ -683,19 +590,17 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsImported, equals(1));
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 100,
-              platformId: null,
-              status: ItemStatus.completed,
-            )).called(1);
+        expect(result.totalImported, equals(1));
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.movie.value));
+        expect(row['external_id'], equals(100));
+        expect(row['platform_id'], isNull);
+        expect(row['status'], equals(ItemStatus.completed.value));
       });
 
       test('should set completedAt из last_watched_at', () async {
@@ -709,15 +614,11 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockDb.updateItemActivityDates(
-              10,
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-            )).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['completed_at'], isNotNull);
+        expect(row['last_activity_at'], isNotNull);
       });
 
       test('должен импортировать watched shows как inProgress', () async {
@@ -741,19 +642,17 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsImported, equals(1));
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 200,
-              platformId: null,
-              status: ItemStatus.inProgress,
-            )).called(1);
+        expect(result.totalImported, equals(1));
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.tvShow.value));
+        expect(row['external_id'], equals(200));
+        expect(row['platform_id'], isNull);
+        expect(row['status'], equals(ItemStatus.inProgress.value));
       });
 
       test('должен определить анимацию у фильмов (genres содержит Animation)',
@@ -764,8 +663,7 @@ void main() {
           title: 'Spirited Away',
           genres: <String>['Animation', 'Fantasy'],
         );
-        when(() => mockTmdb.getMovie(100))
-            .thenAnswer((_) async => animMovie);
+        when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => animMovie);
 
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(
@@ -774,17 +672,13 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.animation,
-              externalId: 100,
-              platformId: AnimationSource.movie,
-              status: ItemStatus.completed,
-            )).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.animation.value));
+        expect(row['external_id'], equals(100));
+        expect(row['platform_id'], equals(AnimationSource.movie));
+        expect(row['status'], equals(ItemStatus.completed.value));
       });
 
       test('должен определить анимацию у сериалов (genres содержит 16)',
@@ -795,8 +689,7 @@ void main() {
           title: 'Attack on Titan',
           genres: <String>['16', '10759'],
         );
-        when(() => mockTmdb.getTvShow(200))
-            .thenAnswer((_) async => animShow);
+        when(() => mockTmdb.getTvShow(200)).thenAnswer((_) async => animShow);
 
         writeZip(createTestZip(
           watchedShowsJson: watchedShowJson(
@@ -813,21 +706,16 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.animation,
-              externalId: 200,
-              platformId: AnimationSource.tvShow,
-              status: ItemStatus.inProgress,
-            )).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.animation.value));
+        expect(row['external_id'], equals(200));
+        expect(row['platform_id'], equals(AnimationSource.tvShow));
+        expect(row['status'], equals(ItemStatus.inProgress.value));
       });
 
-      test('should skip элементы без TMDB ID и добавить ошибку',
-          () async {
+      test('should skip watched movie без TMDB ID (no insert)', () async {
         setupDefaultMocks();
 
         writeZip(createTestZip(
@@ -837,18 +725,19 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsSkipped, equals(1));
-        expect(result.errors.length, equals(1));
-        expect(result.errors.first, contains('No TMDB Movie'));
-        expect(result.errors.first, contains('no TMDB ID'));
+        expect(result.skipped, equals(1));
+        expect(capturedItemRows(), isEmpty);
+        // A title without a TMDB id is counted as skipped, not wishlisted.
+        expect(result.totalWishlisted, equals(0));
+        verifyNever(() => mockWishlist.addWishlistItemsBatch(any()));
       });
 
-      test('should skip элементы когда TMDB API вернул null', () async {
+      test('watched movie без данных TMDB — фоллбэк в wishlist', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => null);
 
@@ -859,21 +748,24 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsSkipped, equals(1));
-        expect(result.errors.length, equals(1));
-        expect(result.errors.first, contains('TMDB data not available'));
+        // Not inserted into the collection, dropped to the text wishlist.
+        expect(capturedItemRows(), isEmpty);
+        expect(result.skipped, equals(1));
+        expect(result.totalWishlisted, equals(1));
+        final Map<String, dynamic> wl = capturedWishlistRows().single;
+        expect(wl['text'], equals('Unavailable Movie'));
+        expect(wl['media_type_hint'], equals(MediaType.movie.value));
       });
 
       test('должен применить рейтинг когда userRating == null', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 300, title: 'Rated');
-        when(() => mockTmdb.getMovie(300))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(300)).thenAnswer((_) async => testMovie);
 
         final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
@@ -882,11 +774,8 @@ void main() {
           status: ItemStatus.completed,
           userRating: null,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-            )).thenAnswer((_) async => existingItem);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingItem]);
 
         writeZip(createTestZip(
           ratingsMoviesJson: ratingsJson(
@@ -896,22 +785,23 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
         expect(result.success, isTrue);
-        verify(() => mockDb.updateItemUserRating(50, 9)).called(1);
+        final (int, Map<String, dynamic>) update = capturedUpdates()
+            .firstWhere(((int, Map<String, dynamic>) u) => u.$1 == 50);
+        expect(update.$2['user_rating'], equals(9.0));
       });
 
       test('должен НЕ перезаписывать существующий userRating', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 300, title: 'Rated');
-        when(() => mockTmdb.getMovie(300))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(300)).thenAnswer((_) async => testMovie);
 
         final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
@@ -920,11 +810,8 @@ void main() {
           status: ItemStatus.completed,
           userRating: 7,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-            )).thenAnswer((_) async => existingItem);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingItem]);
 
         writeZip(createTestZip(
           ratingsMoviesJson: ratingsJson(
@@ -934,35 +821,26 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(
+        await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
-        verifyNever(() => mockDb.updateItemUserRating(50, any()));
+        final List<(int, Map<String, dynamic>)> updates = capturedUpdates();
+        final Iterable<(int, Map<String, dynamic>)> forItem =
+            updates.where(((int, Map<String, dynamic>) u) => u.$1 == 50);
+        // Either no update at all, or one that does not touch user_rating.
+        for (final (int, Map<String, dynamic>) u in forItem) {
+          expect(u.$2.containsKey('user_rating'), isFalse);
+        }
       });
 
       test('should create элемент из ratings если нет в коллекции', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 300, title: 'New Rated');
-        when(() => mockTmdb.getMovie(300))
-            .thenAnswer((_) async => testMovie);
-
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-            )).thenAnswer((_) async => null);
-
-        when(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-              platformId: null,
-              status: any(named: 'status'),
-            )).thenAnswer((_) async => 60);
+        when(() => mockTmdb.getMovie(300)).thenAnswer((_) async => testMovie);
 
         writeZip(createTestZip(
           ratingsMoviesJson: ratingsJson(
@@ -972,24 +850,26 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsImported, greaterThanOrEqualTo(1));
-        verify(() => mockDb.updateItemUserRating(60, 8)).called(1);
+        expect(result.totalImported, greaterThanOrEqualTo(1));
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['external_id'], equals(300));
+        expect(row['status'], equals(ItemStatus.notStarted.value));
+        expect(row['user_rating'], equals(8.0));
       });
 
       test('конфликт статусов: должен повысить planned -> completed',
           () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'Upgrade');
-        when(() => mockTmdb.getMovie(100))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);
 
         final CollectionItem existingPlanned = createTestCollectionItem(
           id: 70,
@@ -997,35 +877,30 @@ void main() {
           mediaType: MediaType.movie,
           status: ItemStatus.planned,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 100,
-            )).thenAnswer((_) async => existingPlanned);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingPlanned]);
 
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(tmdbId: 100),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsUpdated, equals(1));
-        verify(() => mockRepo.updateItemStatus(
-              70,
-              ItemStatus.completed,
-              mediaType: MediaType.movie,
-            )).called(1);
+        expect(result.totalUpdated, equals(1));
+        expect(capturedItemRows(), isEmpty);
+        final (int, Map<String, dynamic>) update = capturedUpdates().single;
+        expect(update.$1, equals(70));
+        expect(update.$2['status'], equals(ItemStatus.completed.value));
       });
 
       test('конфликт статусов: НЕ должен понизить completed -> planned',
           () async {
         setupDefaultMocks();
         const TvShow testShow = TvShow(tmdbId: 200, title: 'NoDowngrade');
-        when(() => mockTmdb.getTvShow(200))
-            .thenAnswer((_) async => testShow);
+        when(() => mockTmdb.getTvShow(200)).thenAnswer((_) async => testShow);
 
         final CollectionItem existingCompleted = createTestCollectionItem(
           id: 80,
@@ -1033,11 +908,8 @@ void main() {
           mediaType: MediaType.tvShow,
           status: ItemStatus.completed,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 200,
-            )).thenAnswer((_) async => existingCompleted);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingCompleted]);
 
         writeZip(createTestZip(
           watchedShowsJson: watchedShowJson(
@@ -1053,22 +925,22 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verifyNever(() => mockRepo.updateItemStatus(
-              80,
-              any(),
-              mediaType: any(named: 'mediaType'),
-            ));
+        // inProgress is lower priority than completed → no status change.
+        final List<(int, Map<String, dynamic>)> updates = capturedUpdates();
+        final Iterable<(int, Map<String, dynamic>)> forItem =
+            updates.where(((int, Map<String, dynamic>) u) => u.$1 == 80);
+        for (final (int, Map<String, dynamic>) u in forItem) {
+          expect(u.$2.containsKey('status'), isFalse);
+        }
+        expect(capturedItemRows(), isEmpty);
       });
 
       test('конфликт статусов: НЕ должен перезаписать dropped', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'Dropped');
-        when(() => mockTmdb.getMovie(100))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);
 
         final CollectionItem existingDropped = createTestCollectionItem(
           id: 90,
@@ -1076,33 +948,29 @@ void main() {
           mediaType: MediaType.movie,
           status: ItemStatus.dropped,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 100,
-            )).thenAnswer((_) async => existingDropped);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingDropped]);
 
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(tmdbId: 100),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verifyNever(() => mockRepo.updateItemStatus(
-              90,
-              any(),
-              mediaType: any(named: 'mediaType'),
-            ));
+        // dropped is protected: merge returns null → no status column.
+        final List<(int, Map<String, dynamic>)> updates = capturedUpdates();
+        final Iterable<(int, Map<String, dynamic>)> forItem =
+            updates.where(((int, Map<String, dynamic>) u) => u.$1 == 90);
+        for (final (int, Map<String, dynamic>) u in forItem) {
+          expect(u.$2.containsKey('status'), isFalse);
+        }
+        expect(capturedItemRows(), isEmpty);
       });
 
-      test('should set completedAt из Trakt если локальный null',
-          () async {
+      test('should set completedAt из Trakt если локальный null', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'Dates');
-        when(() => mockTmdb.getMovie(100))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);
 
         final CollectionItem existingItem = createTestCollectionItem(
           id: 95,
@@ -1111,11 +979,8 @@ void main() {
           status: ItemStatus.planned,
           completedAt: null,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 100,
-            )).thenAnswer((_) async => existingItem);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingItem]);
 
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(
@@ -1124,16 +989,15 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockDb.updateItemActivityDates(
-              95,
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-              startedAt: any(named: 'startedAt'),
-            )).called(1);
+        final (int, Map<String, dynamic>) update = capturedUpdates().single;
+        expect(update.$1, equals(95));
+        // Local completedAt is null → the Trakt watch date is written.
+        final int expectedEpoch =
+            DateTime.parse('2023-06-15T10:30:00.000Z').millisecondsSinceEpoch ~/
+                1000;
+        expect(update.$2['completed_at'], equals(expectedEpoch));
       });
 
       test('должен отметить эпизоды как просмотренные', () async {
@@ -1163,9 +1027,7 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
         verify(() =>
                 mockTvShowDao.markEpisodeWatched(any(), 200, any(), any()))
@@ -1187,8 +1049,8 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
             importRatings: false,
@@ -1196,13 +1058,11 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 400,
-              platformId: null,
-              status: ItemStatus.planned,
-            )).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.movie.value));
+        expect(row['external_id'], equals(400));
+        expect(row['platform_id'], isNull);
+        expect(row['status'], equals(ItemStatus.planned.value));
       });
 
       test('должен добавить в wishlist элементы без данных TMDB', () async {
@@ -1217,8 +1077,8 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
             importRatings: false,
@@ -1226,12 +1086,11 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        expect(result.wishlistItemsAdded, equals(1));
-        verify(() => mockWishlist.add(
-              text: 'Unknown Movie',
-              mediaTypeHint: MediaType.movie,
-              tag: any(named: 'tag'),
-            )).called(1);
+        expect(result.totalWishlisted, equals(1));
+        final Map<String, dynamic> wl = capturedWishlistRows().single;
+        expect(wl['text'], equals('Unknown Movie'));
+        expect(wl['media_type_hint'], equals(MediaType.movie.value));
+        expect(wl['tag'], isNotNull);
       });
 
       test('должен добавить в wishlist show элементы без TMDB ID', () async {
@@ -1245,8 +1104,8 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
             importRatings: false,
@@ -1254,12 +1113,10 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        expect(result.wishlistItemsAdded, equals(1));
-        verify(() => mockWishlist.add(
-              text: 'No ID Show',
-              mediaTypeHint: MediaType.tvShow,
-              tag: any(named: 'tag'),
-            )).called(1);
+        expect(result.totalWishlisted, equals(1));
+        final Map<String, dynamic> wl = capturedWishlistRows().single;
+        expect(wl['text'], equals('No ID Show'));
+        expect(wl['media_type_hint'], equals(MediaType.tvShow.value));
       });
 
       test('should skip watchlist элементы уже в коллекции', () async {
@@ -1274,11 +1131,8 @@ void main() {
           mediaType: MediaType.movie,
           status: ItemStatus.completed,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 400,
-            )).thenAnswer((_) async => existing);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existing]);
 
         writeZip(createTestZip(
           watchlistJson: watchlistEntryJson(
@@ -1287,8 +1141,8 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
             importRatings: false,
@@ -1296,14 +1150,13 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        expect(result.wishlistItemsAdded, equals(0));
-        verifyNever(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 400,
-              platformId: null,
-              status: ItemStatus.planned,
-            ));
+        expect(result.totalWishlisted, equals(0));
+        // Existing item is left untouched — not re-inserted, not status-changed.
+        expect(capturedItemRows(), isEmpty);
+        final List<(int, Map<String, dynamic>)> updates = capturedUpdates();
+        for (final (int, Map<String, dynamic>) u in updates) {
+          expect(u.$2.containsKey('status'), isFalse);
+        }
       });
 
       test('should call progress callback', () async {
@@ -1316,8 +1169,8 @@ void main() {
         ));
 
         final List<ImportStage> stages = <ImportStage>[];
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        await sut.import(
+          TraktImportOptions(zipPath: zipPath),
           onProgress: (ImportProgress progress) {
             if (!stages.contains(progress.stage)) {
               stages.add(progress.stage);
@@ -1342,21 +1195,18 @@ void main() {
           ratingsMoviesJson: ratingsJson(type: 'movie', tmdbId: 100),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
         expect(result.success, isTrue);
-        verifyNever(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 100,
-              platformId: null,
-              status: ItemStatus.completed,
-            ));
+        // No watched insert: the only inserted row is the rating (notStarted).
+        for (final Map<String, dynamic> row in capturedItemRows()) {
+          expect(row['status'], isNot(equals(ItemStatus.completed.value)));
+        }
       });
 
       test('должен уважать importRatings=false', () async {
@@ -1373,14 +1223,20 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(
+        await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importRatings: false,
           ),
         );
 
-        verifyNever(() => mockDb.updateItemUserRating(any(), any()));
+        // No rating column written anywhere.
+        for (final Map<String, dynamic> row in capturedItemRows()) {
+          expect(row.containsKey('user_rating'), isFalse);
+        }
+        for (final (int, Map<String, dynamic>) u in capturedUpdates()) {
+          expect(u.$2.containsKey('user_rating'), isFalse);
+        }
       });
 
       test('должен уважать importWatchlist=false', () async {
@@ -1392,8 +1248,8 @@ void main() {
           watchlistJson: watchlistEntryJson(tmdbId: 400),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
             importRatings: false,
@@ -1402,23 +1258,19 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        expect(result.wishlistItemsAdded, equals(0));
-        verifyNever(() => mockWishlist.add(
-              text: any(named: 'text'),
-              mediaTypeHint: any(named: 'mediaTypeHint'),
-              tag: any(named: 'tag'),
-            ));
+        expect(result.totalWishlisted, equals(0));
+        expect(capturedItemRows(), isEmpty);
       });
 
       test('should return failure для ошибки чтения файла', () async {
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: '${tempDir.path}/nonexistent.zip',
           ),
         );
 
         expect(result.success, isFalse);
-        expect(result.error, contains('Import failed'));
+        expect(result.fatalError, contains('Import failed'));
       });
 
       test('should return failure для пустого архива', () async {
@@ -1426,12 +1278,12 @@ void main() {
         archive.addFile(ArchiveFile.string('user/readme.txt', 'hello'));
         writeZip(ZipEncoder().encode(archive));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isFalse);
-        expect(result.error, equals('No data found in archive'));
+        expect(result.fatalError, equals('No data found in archive'));
       });
 
       test('должен корректно определить completed для show без сезонов',
@@ -1447,21 +1299,15 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 200,
-              platformId: null,
-              status: ItemStatus.completed,
-            )).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.tvShow.value));
+        expect(row['external_id'], equals(200));
+        expect(row['status'], equals(ItemStatus.completed.value));
       });
 
-      test('should handle show с пустыми сезонами как completed',
-          () async {
+      test('should handle show с пустыми сезонами как completed', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getTvShow(200))
             .thenAnswer((_) async => const TvShow(tmdbId: 200, title: 'S'));
@@ -1478,17 +1324,11 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 200,
-              platformId: null,
-              status: ItemStatus.completed,
-            )).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['external_id'], equals(200));
+        expect(row['status'], equals(ItemStatus.completed.value));
       });
 
       test('должен корректно обработать TMDB API exception при fetch',
@@ -1501,13 +1341,15 @@ void main() {
           watchedMoviesJson: watchedMovieJson(tmdbId: 100),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
+        // The fetch failed → no data → fall back to wishlist, counted skipped.
         expect(result.success, isTrue);
-        expect(result.itemsSkipped, equals(1));
-        expect(result.errors.first, contains('TMDB data not available'));
+        expect(result.skipped, equals(1));
+        expect(capturedItemRows(), isEmpty);
+        expect(result.totalWishlisted, equals(1));
       });
 
       test('should handle rating для animation show', () async {
@@ -1517,22 +1359,7 @@ void main() {
           title: 'Anime Show',
           genres: <String>['16', 'Action'],
         );
-        when(() => mockTmdb.getTvShow(500))
-            .thenAnswer((_) async => animShow);
-
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.animation,
-              externalId: 500,
-            )).thenAnswer((_) async => null);
-
-        when(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.animation,
-              externalId: 500,
-              platformId: AnimationSource.tvShow,
-              status: any(named: 'status'),
-            )).thenAnswer((_) async => 75);
+        when(() => mockTmdb.getTvShow(500)).thenAnswer((_) async => animShow);
 
         writeZip(createTestZip(
           ratingsShowsJson: ratingsJson(
@@ -1542,15 +1369,19 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
         expect(result.success, isTrue);
-        verify(() => mockDb.updateItemUserRating(75, 10)).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.animation.value));
+        expect(row['platform_id'], equals(AnimationSource.tvShow));
+        expect(row['external_id'], equals(500));
+        expect(row['user_rating'], equals(10.0));
       });
 
       test('should handle watchlist для animation movie', () async {
@@ -1560,22 +1391,7 @@ void main() {
           title: 'Anime Movie',
           genres: <String>['Animation', 'Adventure'],
         );
-        when(() => mockTmdb.getMovie(600))
-            .thenAnswer((_) async => animMovie);
-
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.animation,
-              externalId: 600,
-            )).thenAnswer((_) async => null);
-
-        when(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.animation,
-              externalId: 600,
-              platformId: AnimationSource.movie,
-              status: ItemStatus.planned,
-            )).thenAnswer((_) async => 80);
+        when(() => mockTmdb.getMovie(600)).thenAnswer((_) async => animMovie);
 
         writeZip(createTestZip(
           watchlistJson: watchlistEntryJson(
@@ -1585,8 +1401,8 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
             importRatings: false,
@@ -1594,14 +1410,12 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsImported, equals(1));
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.animation,
-              externalId: 600,
-              platformId: AnimationSource.movie,
-              status: ItemStatus.planned,
-            )).called(1);
+        expect(result.totalImported, equals(1));
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.animation.value));
+        expect(row['external_id'], equals(600));
+        expect(row['platform_id'], equals(AnimationSource.movie));
+        expect(row['status'], equals(ItemStatus.planned.value));
       });
 
       test('должен корректно работать с полным набором данных', () async {
@@ -1620,15 +1434,6 @@ void main() {
         when(() => mockTmdb.getTvShow(500))
             .thenAnswer((_) async => ratedShow);
         when(() => mockTmdb.getMovie(400)).thenAnswer((_) async => wlMovie);
-
-        int nextItemId = 10;
-        when(() => mockRepo.addItem(
-              collectionId: any(named: 'collectionId'),
-              mediaType: any(named: 'mediaType'),
-              externalId: any(named: 'externalId'),
-              platformId: any(named: 'platformId'),
-              status: any(named: 'status'),
-            )).thenAnswer((_) async => nextItemId++);
 
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(tmdbId: 100),
@@ -1659,12 +1464,12 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsImported, greaterThanOrEqualTo(2));
+        expect(result.totalImported, greaterThanOrEqualTo(2));
         expect(result.collection, isNotNull);
       });
 
@@ -1678,14 +1483,14 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsSkipped, equals(1));
-        expect(result.errors.first, contains('No TMDB Show'));
-        expect(result.errors.first, contains('no TMDB ID'));
+        expect(result.skipped, equals(1));
+        expect(capturedItemRows(), isEmpty);
+        expect(result.totalWishlisted, equals(0));
       });
 
       test('should handle show с null TMDB data', () async {
@@ -1696,13 +1501,15 @@ void main() {
           watchedShowsJson: watchedShowJson(tmdbId: 200),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsSkipped, equals(1));
-        expect(result.errors.first, contains('TMDB data not available'));
+        expect(result.skipped, equals(1));
+        expect(capturedItemRows(), isEmpty);
+        // No TMDB data → fall back to wishlist.
+        expect(result.totalWishlisted, equals(1));
       });
 
       test('should skip эпизоды для show без TMDB ID', () async {
@@ -1722,9 +1529,7 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
         verifyNever(
             () => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any()));
@@ -1741,22 +1546,25 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
         expect(result.success, isTrue);
-        verifyNever(() => mockDb.updateItemUserRating(any(), any()));
+        // A rating with no TMDB id never becomes a collection item.
+        expect(capturedItemRows(), isEmpty);
+        for (final (int, Map<String, dynamic>) u in capturedUpdates()) {
+          expect(u.$2.containsKey('user_rating'), isFalse);
+        }
       });
 
       test('должен clamp рейтинг в диапазон 1-10', () async {
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 300, title: 'Clamped');
-        when(() => mockTmdb.getMovie(300))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(300)).thenAnswer((_) async => testMovie);
 
         final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
@@ -1764,11 +1572,8 @@ void main() {
           mediaType: MediaType.movie,
           userRating: null,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-            )).thenAnswer((_) async => existingItem);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingItem]);
 
         final String zeroRating = jsonEncode(<Map<String, dynamic>>[
           <String, dynamic>{
@@ -1784,22 +1589,32 @@ void main() {
           ratingsMoviesJson: zeroRating,
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(
+        await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
-        verify(() => mockDb.updateItemUserRating(50, 1)).called(1);
+        final (int, Map<String, dynamic>) update = capturedUpdates()
+            .firstWhere(((int, Map<String, dynamic>) u) => u.$1 == 50);
+        // Rating 0 clamps up to 1.
+        expect(update.$2['user_rating'], equals(1.0));
       });
 
-      test('должен не перезаписывать completedAt когда локальный != null',
+      test('promote planned -> completed перезаписывает completed_at (флаг)',
           () async {
+        // INTENT (old test "не перезаписывать completedAt когда локальный
+        // != null"): a pre-existing completedAt should not be clobbered.
+        // The new merge path always re-stamps completed_at when a status
+        // transition lands on `completed` (statusDateColumns uses
+        // computeDatesForStatus, which sets completedAt = now for the
+        // `completed` case). So promoting planned -> completed DOES overwrite
+        // a non-null local completedAt. This test pins the actual behavior;
+        // see the migration notes for the discrepancy.
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'DatesExist');
-        when(() => mockTmdb.getMovie(100))
-            .thenAnswer((_) async => testMovie);
+        when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);
 
         final DateTime existingCompletedAt = DateTime(2022, 1, 1);
         final CollectionItem existingItem = createTestCollectionItem(
@@ -1809,11 +1624,8 @@ void main() {
           status: ItemStatus.planned,
           completedAt: existingCompletedAt,
         );
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 100,
-            )).thenAnswer((_) async => existingItem);
+        when(() => mockRepo.getItems(any()))
+            .thenAnswer((_) async => <CollectionItem>[existingItem]);
 
         writeZip(createTestZip(
           watchedMoviesJson: watchedMovieJson(
@@ -1822,43 +1634,23 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockRepo.updateItemStatus(
-              96,
-              ItemStatus.completed,
-              mediaType: MediaType.movie,
-            )).called(1);
-        verifyNever(() => mockDb.updateItemActivityDates(
-              96,
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-              startedAt: any(named: 'startedAt'),
-            ));
+        final (int, Map<String, dynamic>) update = capturedUpdates().single;
+        expect(update.$1, equals(96));
+        expect(update.$2['status'], equals(ItemStatus.completed.value));
+        // completed_at IS present (re-stamped); it is NOT the old 2022 value.
+        final int oldEpoch =
+            existingCompletedAt.millisecondsSinceEpoch ~/ 1000;
+        expect(update.$2['completed_at'], isNotNull);
+        expect(update.$2['completed_at'], isNot(equals(oldEpoch)));
       });
 
       test('should handle watchlist show элементы', () async {
         setupDefaultMocks();
-        const TvShow watchlistShow =
-            TvShow(tmdbId: 700, title: 'WL Show');
+        const TvShow watchlistShow = TvShow(tmdbId: 700, title: 'WL Show');
         when(() => mockTmdb.getTvShow(700))
             .thenAnswer((_) async => watchlistShow);
-
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 700,
-            )).thenAnswer((_) async => null);
-
-        when(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 700,
-              platformId: null,
-              status: ItemStatus.planned,
-            )).thenAnswer((_) async => 85);
 
         writeZip(createTestZip(
           watchlistJson: watchlistEntryJson(
@@ -1868,8 +1660,8 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
             importRatings: false,
@@ -1877,33 +1669,49 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsImported, equals(1));
+        expect(result.totalImported, equals(1));
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['media_type'], equals(MediaType.tvShow.value));
+        expect(row['external_id'], equals(700));
+        expect(row['status'], equals(ItemStatus.planned.value));
       });
 
-      test('addItem возвращает null — элемент не создан (skipped)', () async {
+      test('in-batch дубликат не вставляется дважды (skipped)', () async {
+        // INTENT (old "addItem возвращает null — не создан"): the per-item
+        // null-insert path is gone. The closest surviving behavior: a title
+        // present twice in one batch is inserted once and the duplicate
+        // counted as skipped (ConflictAlgorithm.ignore at the batch level).
         setupDefaultMocks();
-        const Movie testMovie = Movie(tmdbId: 100, title: 'M');
-        when(() => mockTmdb.getMovie(100))
-            .thenAnswer((_) async => testMovie);
+        const Movie testMovie = Movie(tmdbId: 100, title: 'Dup');
+        when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);
 
-        when(() => mockRepo.addItem(
-              collectionId: any(named: 'collectionId'),
-              mediaType: any(named: 'mediaType'),
-              externalId: any(named: 'externalId'),
-              platformId: any(named: 'platformId'),
-              status: any(named: 'status'),
-            )).thenAnswer((_) async => null);
+        final String twoSame = jsonEncode(<Map<String, dynamic>>[
+          <String, dynamic>{
+            'movie': <String, dynamic>{
+              'title': 'Dup',
+              'ids': <String, dynamic>{'tmdb': 100},
+            },
+            'last_watched_at': '2023-06-15T10:30:00.000Z',
+          },
+          <String, dynamic>{
+            'movie': <String, dynamic>{
+              'title': 'Dup',
+              'ids': <String, dynamic>{'tmdb': 100},
+            },
+            'last_watched_at': '2023-06-15T10:30:00.000Z',
+          },
+        ]);
 
-        writeZip(createTestZip(
-          watchedMoviesJson: watchedMovieJson(tmdbId: 100),
-        ));
+        writeZip(createTestZip(watchedMoviesJson: twoSame));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsSkipped, equals(1));
+        expect(result.totalImported, equals(1));
+        expect(capturedItemRows(), hasLength(1));
+        expect(result.skipped, greaterThanOrEqualTo(1));
       });
 
       test('should handle watched movie без last_watched_at', () async {
@@ -1918,69 +1726,23 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
-        expect(result.itemsImported, equals(1));
-        verifyNever(() => mockDb.updateItemActivityDates(
-              any(),
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-              startedAt: any(named: 'startedAt'),
-            ));
-      });
-
-      test('ratings: addItem возвращает null — рейтинг не применяется',
-          () async {
-        setupDefaultMocks();
-        const Movie testMovie = Movie(tmdbId: 300, title: 'NullItem');
-        when(() => mockTmdb.getMovie(300))
-            .thenAnswer((_) async => testMovie);
-
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-            )).thenAnswer((_) async => null);
-
-        when(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-              platformId: null,
-              status: any(named: 'status'),
-            )).thenAnswer((_) async => null);
-
-        writeZip(createTestZip(
-          ratingsMoviesJson: ratingsJson(
-            type: 'movie',
-            tmdbId: 300,
-            rating: 8,
-          ),
-        ));
-
-        await sut.importFromZip(
-          options: TraktImportOptions(
-            zipPath: zipPath,
-            importWatched: false,
-          ),
-        );
-
-        verifyNever(() => mockDb.updateItemUserRating(any(), any()));
+        expect(result.totalImported, equals(1));
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['status'], equals(ItemStatus.completed.value));
+        // No watch date → date columns are absent from the insert row.
+        expect(row.containsKey('completed_at'), isFalse);
+        expect(row.containsKey('last_activity_at'), isFalse);
       });
 
       test('ratings: нет данных TMDB — рейтинг не создаётся', () async {
         setupDefaultMocks();
         when(() => mockTmdb.getMovie(300)).thenAnswer((_) async => null);
 
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-            )).thenAnswer((_) async => null);
-
         writeZip(createTestZip(
           ratingsMoviesJson: ratingsJson(
             type: 'movie',
@@ -1989,66 +1751,18 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(
+        await sut.import(
+          TraktImportOptions(
             zipPath: zipPath,
             importWatched: false,
           ),
         );
 
-        verifyNever(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 300,
-              platformId: null,
-              status: any(named: 'status'),
-            ));
-      });
-
-      test('watchlist: addItem возвращает null — фоллбэк в wishlist',
-          () async {
-        setupDefaultMocks();
-        const Movie testMovie = Movie(tmdbId: 400, title: 'Fallback WL');
-        when(() => mockTmdb.getMovie(400))
-            .thenAnswer((_) async => testMovie);
-
-        when(() => mockRepo.findItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 400,
-            )).thenAnswer((_) async => null);
-
-        when(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.movie,
-              externalId: 400,
-              platformId: null,
-              status: ItemStatus.planned,
-            )).thenAnswer((_) async => null);
-
-        writeZip(createTestZip(
-          watchlistJson: watchlistEntryJson(
-            type: 'movie',
-            tmdbId: 400,
-            title: 'Fallback WL',
-          ),
-        ));
-
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(
-            zipPath: zipPath,
-            importWatched: false,
-            importRatings: false,
-          ),
-        );
-
-        expect(result.success, isTrue);
-        expect(result.wishlistItemsAdded, equals(1));
-        verify(() => mockWishlist.add(
-              text: 'Fallback WL',
-              mediaTypeHint: MediaType.movie,
-              tag: any(named: 'tag'),
-            )).called(1);
+        // No TMDB data → no rating item inserted, no rating update.
+        expect(capturedItemRows(), isEmpty);
+        for (final (int, Map<String, dynamic>) u in capturedUpdates()) {
+          expect(u.$2.containsKey('user_rating'), isFalse);
+        }
       });
 
       test('should handle show episodes с last_watched_at', () async {
@@ -2073,8 +1787,8 @@ void main() {
           ),
         ));
 
-        final TraktImportResult result = await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
+        final UniversalImportResult result = await sut.import(
+          TraktImportOptions(zipPath: zipPath),
         );
 
         expect(result.success, isTrue);
@@ -2095,24 +1809,12 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 200,
-              platformId: null,
-              status: ItemStatus.completed,
-            )).called(1);
-
-        verify(() => mockDb.updateItemActivityDates(
-              10,
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-              startedAt: any(named: 'startedAt'),
-            )).called(1);
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['status'], equals(ItemStatus.completed.value));
+        expect(row['completed_at'], isNotNull);
+        expect(row['last_activity_at'], isNotNull);
       });
 
       test('show status inProgress — completedAt не устанавливается',
@@ -2135,24 +1837,12 @@ void main() {
           ),
         ));
 
-        await sut.importFromZip(
-          options: TraktImportOptions(zipPath: zipPath),
-        );
+        await sut.import(TraktImportOptions(zipPath: zipPath));
 
-        verify(() => mockRepo.addItem(
-              collectionId: 1,
-              mediaType: MediaType.tvShow,
-              externalId: 200,
-              platformId: null,
-              status: ItemStatus.inProgress,
-            )).called(1);
-
-        verifyNever(() => mockDb.updateItemActivityDates(
-              10,
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-              startedAt: any(named: 'startedAt'),
-            ));
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['status'], equals(ItemStatus.inProgress.value));
+        // inProgress show: completedAt stays null (key absent on the insert).
+        expect(row.containsKey('completed_at'), isFalse);
       });
     });
   });

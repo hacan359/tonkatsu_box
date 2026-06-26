@@ -633,6 +633,16 @@ class CollectionDao {
     );
   }
 
+  Future<void> setItemFavorite(int id, {required bool isFavorite}) async {
+    final Database db = await _getDatabase();
+    await db.update(
+      'collection_items',
+      <String, dynamic>{'is_favorite': isFavorite ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
   /// Moves item to another collection (null = uncategorized) and appends to its
   /// sort order. Returns false on UNIQUE conflict (already present in target).
   Future<bool> updateItemCollectionId(int id, int? collectionId) async {

@@ -91,6 +91,42 @@ void main() {
         expect(config[SettingsKeys.tmdbLanguage], equals('en-US'));
       });
 
+      test('должен собрать ключи новых источников', () async {
+        await prefs.setString(SettingsKeys.comicVineApiKey, 'cv_key');
+        await prefs.setString(SettingsKeys.googleBooksApiKey, 'gb_key');
+        await prefs.setString(SettingsKeys.screenScraperSsid, 'ss_user');
+        await prefs.setString(SettingsKeys.screenScraperSspassword, 'ss_pass');
+        await prefs.setString(SettingsKeys.raApiKey, 'ra_key');
+        await prefs.setString(SettingsKeys.raUsername, 'ra_user');
+        await prefs.setString(SettingsKeys.steamApiKey, 'steam_key');
+        await prefs.setString(SettingsKeys.steamId, 'steam_id');
+        await prefs.setString(SettingsKeys.aniListUsername, 'anilist_user');
+
+        final Map<String, Object> config = sut.collectSettings();
+
+        expect(config[SettingsKeys.comicVineApiKey], equals('cv_key'));
+        expect(config[SettingsKeys.googleBooksApiKey], equals('gb_key'));
+        expect(config[SettingsKeys.screenScraperSsid], equals('ss_user'));
+        expect(config[SettingsKeys.screenScraperSspassword], equals('ss_pass'));
+        expect(config[SettingsKeys.raApiKey], equals('ra_key'));
+        expect(config[SettingsKeys.raUsername], equals('ra_user'));
+        expect(config[SettingsKeys.steamApiKey], equals('steam_key'));
+        expect(config[SettingsKeys.steamId], equals('steam_id'));
+        expect(config[SettingsKeys.aniListUsername], equals('anilist_user'));
+      });
+
+      test('должен собрать bool ключи (галки)', () async {
+        await prefs.setBool(SettingsKeys.steamRememberCredentials, true);
+        await prefs.setBool(SettingsKeys.showRecommendations, false);
+        await prefs.setBool(SettingsKeys.discordRpcEnabled, true);
+
+        final Map<String, Object> config = sut.collectSettings();
+
+        expect(config[SettingsKeys.steamRememberCredentials], isTrue);
+        expect(config[SettingsKeys.showRecommendations], isFalse);
+        expect(config[SettingsKeys.discordRpcEnabled], isTrue);
+      });
+
       test('должен собрать int ключи', () async {
         await prefs.setInt(SettingsKeys.tokenExpires, 1234567890);
         await prefs.setInt(SettingsKeys.lastSync, 9876543210);
@@ -209,6 +245,62 @@ void main() {
         });
 
         expect(applied, equals(8));
+      });
+
+      test('должен применить ключи новых источников', () async {
+        final int applied = await sut.applySettings(<String, Object?>{
+          SettingsKeys.comicVineApiKey: 'cv_key',
+          SettingsKeys.googleBooksApiKey: 'gb_key',
+          SettingsKeys.screenScraperSsid: 'ss_user',
+          SettingsKeys.screenScraperSspassword: 'ss_pass',
+          SettingsKeys.raApiKey: 'ra_key',
+          SettingsKeys.raUsername: 'ra_user',
+          SettingsKeys.steamApiKey: 'steam_key',
+          SettingsKeys.steamId: 'steam_id',
+          SettingsKeys.aniListUsername: 'anilist_user',
+        });
+
+        expect(applied, equals(9));
+        expect(prefs.getString(SettingsKeys.comicVineApiKey), equals('cv_key'));
+        expect(
+          prefs.getString(SettingsKeys.screenScraperSspassword),
+          equals('ss_pass'),
+        );
+        expect(prefs.getString(SettingsKeys.raApiKey), equals('ra_key'));
+        expect(prefs.getString(SettingsKeys.steamId), equals('steam_id'));
+        expect(
+          prefs.getString(SettingsKeys.aniListUsername),
+          equals('anilist_user'),
+        );
+      });
+
+      test('должен применить bool ключи (галки)', () async {
+        final int applied = await sut.applySettings(<String, Object?>{
+          SettingsKeys.steamRememberCredentials: true,
+          SettingsKeys.showBlurayOverlay: false,
+          SettingsKeys.richCollectionsEnabled: true,
+        });
+
+        expect(applied, equals(3));
+        expect(prefs.getBool(SettingsKeys.steamRememberCredentials), isTrue);
+        expect(prefs.getBool(SettingsKeys.showBlurayOverlay), isFalse);
+        expect(prefs.getBool(SettingsKeys.richCollectionsEnabled), isTrue);
+      });
+
+      test('bool ключ со значением false должен round-trip-нуться', () async {
+        // Регресс: Steam-ключи не «возвращались», потому что флаг
+        // steamRememberCredentials (bool) не входил в конфиг.
+        await prefs.setBool(SettingsKeys.steamRememberCredentials, true);
+        await prefs.setBool(SettingsKeys.showPlatformOverlay, false);
+
+        final Map<String, Object> config = sut.collectSettings();
+
+        await prefs.clear();
+        final int applied = await sut.applySettings(config);
+
+        expect(applied, greaterThanOrEqualTo(2));
+        expect(prefs.getBool(SettingsKeys.steamRememberCredentials), isTrue);
+        expect(prefs.getBool(SettingsKeys.showPlatformOverlay), isFalse);
       });
 
       test('должен перезаписать существующие значения', () async {

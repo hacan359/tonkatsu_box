@@ -73,6 +73,9 @@
   "sortRatingDisplay": "My Rating",
   "sortRatingShort": "Rating",
   "sortRatingDesc": "Highest first",
+  "sortFavoriteDisplay": "Favorite",
+  "sortFavoriteShort": "Favorite",
+  "sortFavoriteDesc": "Favorites first",
   "sortExternalRatingDisplay": "External Rating",
   "sortExternalRatingShort": "IGDB/TMDB",
   "sortExternalRatingDesc": "Highest first",
@@ -105,6 +108,9 @@
   "remove": "Remove",
   "moveToTop": "Move to top",
   "moveToBottom": "Move to bottom",
+  "favorite": "Favorite",
+  "addToFavorites": "Add to favorites",
+  "removeFromFavorites": "Remove from favorites",
   "bulkSelected": "{count, plural, =1{1 selected} other{{count} selected}}",
   "@bulkSelected": {
     "placeholders": {
@@ -1033,6 +1039,19 @@
     "placeholders": {
       "name": {"type": "String"},
       "collection": {"type": "String"}
+    }
+  },
+  "searchAddedToCollections": "{name} added to {count, plural, =1{1 collection} other{{count} collections}}",
+  "@searchAddedToCollections": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "searchAlreadyInCollections": "{name} already in the selected collections",
+  "@searchAlreadyInCollections": {
+    "placeholders": {
+      "name": {"type": "String"}
     }
   },
   "searchGoToSettings": "Go to Settings",
@@ -2315,5 +2334,37 @@
   "screenScraperMediaTitle": "Title",
   "screenScraperMediaScreenshot": "Screenshot",
   "screenScraperMediaFanart": "Fanart",
-  "screenScraperMediaMix": "Mix"
+  "screenScraperMediaMix": "Mix",
+  "genreCloudTitle": "Personalization",
+  "genreCloudEmpty": "No genres yet",
+  "genreCloudEmptyHint": "Add items with genres to build the cloud",
+  "genreCloudExportImage": "Save as image",
+  "genreCloudImageSaved": "Image saved",
+  "genreCloudExportFailed": "Couldn't save the image",
+  "genreCloudResetView": "Reset view",
+  "genreCloudHidden": "{count, plural, =1{1 hidden (didn't fit)} other{{count} hidden (didn't fit)}}",
+  "@genreCloudHidden": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "facetGenre": "Genres",
+  "facetPlatform": "Platforms",
+  "facetDecade": "Decades",
+  "personalizationTabCloud": "Genre cloud",
+  "personalizationTabRecommendations": "Recommendations",
+  "recommendationsRefresh": "Refresh",
+  "recommendationsEmpty": "No recommendations yet",
+  "recommendationsEmptyHint": "Complete and rate some movies or shows to get personalized picks",
+  "recommendationsNoCandidates": "Nothing new to suggest",
+  "recommendationsNoCandidatesHint": "We couldn't find anything new to suggest right now. Try again later",
+  "recommendationsNoApiKey": "TMDB API key required",
+  "recommendationsNoApiKeyHint": "Add your TMDB API key in Settings to get recommendations",
+  "recommendationsBecauseLabel": "Because you liked",
+  "recommendationsCount": "{count, plural, =1{1 recommendation} other{{count} recommendations}}",
+  "@recommendationsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

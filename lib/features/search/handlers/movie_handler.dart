@@ -17,17 +17,17 @@ import 'media_action_handler.dart';
 /// unions movie + animation collections because the same TMDB id may
 /// have been added under either media type.
 class MovieHandler implements MediaActionHandler {
-  const MovieHandler({
+  MovieHandler({
     required WidgetRef ref,
     required SearchCollectionAdder adder,
-    required int? targetCollectionId,
+    required Set<int> Function() targetCollections,
   })  : _ref = ref,
         _adder = adder,
-        _targetCollectionId = targetCollectionId;
+        _targetCollections = targetCollections;
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
-  final int? _targetCollectionId;
+  final Set<int> Function() _targetCollections;
 
   @override
   Future<void> onTap(
@@ -36,8 +36,9 @@ class MovieHandler implements MediaActionHandler {
     MediaType mediaType,
   ) async {
     final Movie movie = item as Movie;
-    if (_targetCollectionId != null) {
-      await _addToCollection(context, _targetCollectionId, movie, mediaType);
+    final Set<int> targets = _targetCollections();
+    if (targets.isNotEmpty) {
+      await _addToCollections(context, targets, movie, mediaType);
       return;
     }
     showDetails(context, movie, mediaType);
@@ -95,15 +96,15 @@ class MovieHandler implements MediaActionHandler {
     );
   }
 
-  Future<void> _addToCollection(
+  Future<void> _addToCollections(
     BuildContext context,
-    int collectionId,
+    Set<int> collectionIds,
     Movie movie,
     MediaType mediaType,
   ) async {
-    await _adder.addToCollection(
+    await _adder.addToCollections(
       context: context,
-      collectionId: collectionId,
+      collectionIds: collectionIds,
       mediaType: mediaType,
       externalId: movie.tmdbId,
       platformId: mediaType == MediaType.animation
@@ -116,5 +117,4 @@ class MovieHandler implements MediaActionHandler {
       imageUrl: movie.posterUrl,
     );
   }
-
 }

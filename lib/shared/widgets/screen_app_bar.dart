@@ -9,6 +9,10 @@ import 'copyable_text.dart';
 /// Высота toolbar для [ScreenAppBar].
 const double kScreenAppBarHeight = 44;
 
+/// Icon size for [ScreenAppBar]'s leading/action buttons. Sized down from the
+/// Material default (24) to sit right in the compact 44px bar.
+const double kScreenAppBarIconSize = 20;
+
 /// Единый AppBar для всех экранов приложения.
 ///
 /// Компактный (44px), с тонкой подсветкой-градиентом снизу.
@@ -73,7 +77,8 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
         titleSpacing: 0,
         leading: canPop
             ? IconButton(
-                icon: const Icon(Icons.arrow_back, size: 20),
+                icon: const Icon(Icons.arrow_back,
+                    size: kScreenAppBarIconSize),
                 color: AppColors.textTertiary,
                 onPressed: () => Navigator.of(context).pop(),
               )

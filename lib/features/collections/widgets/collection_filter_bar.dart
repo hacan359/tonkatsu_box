@@ -13,8 +13,9 @@ import '../../../shared/models/platform.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import 'collection_filter_sheet.dart';
@@ -26,6 +27,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.itemsAsync,
     required this.filterTypes,
     required this.filterPlatformIds,
+    required this.filterMangaFormats,
+    required this.filterAnimeFormats,
     required this.filterTagIds,
     required this.filterStatus,
     this.effectiveStatusForCounts,
@@ -33,6 +36,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     this.searchQuery = '',
     required this.onTypeToggled,
     required this.onPlatformToggled,
+    required this.onMangaFormatToggled,
+    required this.onAnimeFormatToggled,
     required this.onTagToggled,
     required this.onStatusChanged,
     required this.onGroupToggled,
@@ -51,6 +56,12 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   final Set<int> filterPlatformIds;
 
+  /// Active manga `format` subfilter codes.
+  final Set<String> filterMangaFormats;
+
+  /// Active anime `format` subfilter codes.
+  final Set<String> filterAnimeFormats;
+
   final Set<int> filterTagIds;
 
   final ItemStatus? filterStatus;
@@ -68,6 +79,10 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   final ValueChanged<MediaType?> onTypeToggled;
 
   final ValueChanged<int?> onPlatformToggled;
+
+  final ValueChanged<String?> onMangaFormatToggled;
+
+  final ValueChanged<String?> onAnimeFormatToggled;
 
   final ValueChanged<int?> onTagToggled;
 
@@ -91,6 +106,11 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   List<Platform>? _cachedPlatforms;
   List<CollectionItem>? _cachedPlatformsSource;
 
+  /// Cached manga/anime format lists, invalidated on items-list identity.
+  List<CollectionItem>? _cachedFormatsSource;
+  List<String>? _cachedMangaFormats;
+  List<String>? _cachedAnimeFormats;
+
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -100,9 +120,53 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         _buildTypeChevronBar(l, stats),
-        _buildPlatformChipsRow(),
+        SubfilterBar(groups: _subfilterGroups()),
       ],
     );
+  }
+
+  /// One subfilter group per active type — game platforms, manga formats,
+  /// anime formats — each tinted with its media-type accent.
+  List<List<SubfilterChipData>> _subfilterGroups() {
+    return <List<SubfilterChipData>>[
+      if (widget.filterTypes.contains(MediaType.game))
+        <SubfilterChipData>[
+          for (final Platform p in _extractPlatforms())
+            SubfilterChipData(
+              label: p.displayName,
+              accent: MediaTypeTheme.colorFor(MediaType.game),
+              selected: widget.filterPlatformIds.contains(p.id),
+              onTap: () => widget.onPlatformToggled(p.id),
+            ),
+        ],
+      _formatGroup(
+        MediaType.manga,
+        widget.filterMangaFormats,
+        widget.onMangaFormatToggled,
+      ),
+      _formatGroup(
+        MediaType.anime,
+        widget.filterAnimeFormats,
+        widget.onAnimeFormatToggled,
+      ),
+    ];
+  }
+
+  List<SubfilterChipData> _formatGroup(
+    MediaType type,
+    Set<String> selected,
+    ValueChanged<String?> onToggled,
+  ) {
+    if (!widget.filterTypes.contains(type)) return const <SubfilterChipData>[];
+    return <SubfilterChipData>[
+      for (final String code in _formatsFor(type))
+        SubfilterChipData(
+          label: MediaFormat.label(type, code),
+          accent: MediaTypeTheme.colorFor(type),
+          selected: selected.contains(code),
+          onTap: () => onToggled(code),
+        ),
+    ];
   }
 
   Widget _buildTypeChevronBar(S l, CollectionStats? stats) {
@@ -194,62 +258,19 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     );
   }
 
-  Widget _buildPlatformChipsRow() {
-    if (!widget.filterTypes.contains(MediaType.game)) {
-      return const SizedBox.shrink();
+  List<String> _formatsFor(MediaType type) {
+    final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
+    if (items == null) return const <String>[];
+
+    if (!identical(_cachedFormatsSource, items)) {
+      _cachedFormatsSource = items;
+      _cachedMangaFormats = MediaFormat.present(items, MediaType.manga);
+      _cachedAnimeFormats = MediaFormat.present(items, MediaType.anime);
     }
-    final List<Platform> platforms = _extractPlatforms();
-    if (platforms.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: <Widget>[
-            for (final Platform p in platforms) ...<Widget>[
-              _buildPlatformChip(p),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlatformChip(Platform platform) {
-    final bool selected = widget.filterPlatformIds.contains(platform.id);
-    const Color accentColor = AppColors.brand;
-
-    return ChoiceChip(
-      label: Text(
-        platform.displayName,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : AppColors.textTertiary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      selected: selected,
-      selectedColor: accentColor,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected ? Colors.transparent : accentColor.withAlpha(50),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        widget.onPlatformToggled(platform.id);
-      },
-    );
+    return (type == MediaType.manga
+            ? _cachedMangaFormats
+            : _cachedAnimeFormats) ??
+        const <String>[];
   }
 
   Widget _buildSortSegment(BuildContext context) {

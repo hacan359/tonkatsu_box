@@ -11,8 +11,10 @@ import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/manga.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart' as p;
 import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/filter_subfilter_bar.dart';
 
 class TestSettingsNotifier extends SettingsNotifier {
   TestSettingsNotifier({this.hideEmptyChevrons = false});
@@ -143,6 +145,27 @@ final List<CollectionItem> _movieItems = <CollectionItem>[
   ),
 ];
 
+final List<CollectionItem> _mangaItemsWithFormats = <CollectionItem>[
+  CollectionItem(
+    id: 30,
+    collectionId: _testCollectionId,
+    mediaType: MediaType.manga,
+    externalId: 700,
+    status: ItemStatus.completed,
+    addedAt: DateTime(2024),
+    manga: const Manga(id: 700, title: 'Solo Leveling', format: 'MANHWA'),
+  ),
+  CollectionItem(
+    id: 31,
+    collectionId: _testCollectionId,
+    mediaType: MediaType.manga,
+    externalId: 701,
+    status: ItemStatus.notStarted,
+    addedAt: DateTime(2024),
+    manga: const Manga(id: 701, title: 'Berserk', format: 'MANGA'),
+  ),
+];
+
 Widget _buildTestApp({
   required Widget child,
   List<Override> overrides = const <Override>[],
@@ -165,11 +188,15 @@ Widget _buildFilterBar({
       const AsyncData<List<CollectionItem>>(<CollectionItem>[]),
   Set<MediaType> filterTypes = const <MediaType>{},
   Set<int> filterPlatformIds = const <int>{},
+  Set<String> filterMangaFormats = const <String>{},
+  Set<String> filterAnimeFormats = const <String>{},
   Set<int> filterTagIds = const <int>{},
   List<CollectionTag> tags = const <CollectionTag>[],
   String searchQuery = '',
   ValueChanged<MediaType?>? onTypeToggled,
   ValueChanged<int?>? onPlatformToggled,
+  ValueChanged<String?>? onMangaFormatToggled,
+  ValueChanged<String?>? onAnimeFormatToggled,
   ValueChanged<int?>? onTagToggled,
   ValueChanged<ItemStatus?>? onStatusChanged,
   ItemStatus? filterStatus,
@@ -180,12 +207,16 @@ Widget _buildFilterBar({
     itemsAsync: itemsAsync,
     filterTypes: filterTypes,
     filterPlatformIds: filterPlatformIds,
+    filterMangaFormats: filterMangaFormats,
+    filterAnimeFormats: filterAnimeFormats,
     filterTagIds: filterTagIds,
     filterStatus: filterStatus,
     tags: tags,
     searchQuery: searchQuery,
     onTypeToggled: onTypeToggled ?? (_) {},
     onPlatformToggled: onPlatformToggled ?? (_) {},
+    onMangaFormatToggled: onMangaFormatToggled ?? (_) {},
+    onAnimeFormatToggled: onAnimeFormatToggled ?? (_) {},
     onTagToggled: onTagToggled ?? (_) {},
     onStatusChanged: onStatusChanged ?? (_) {},
     onGroupToggled: () {},
@@ -264,7 +295,50 @@ void main() {
       });
     });
 
-    group('платформы (ChoiceChip)', () {
+    group('формат (чипы)', () {
+      testWidgets(
+        'shows manga format chips when manga is selected and items carry formats',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: _defaultOverrides(),
+              child: _buildFilterBar(
+                filterTypes: <MediaType>{MediaType.manga},
+                itemsAsync: AsyncData<List<CollectionItem>>(
+                  _mangaItemsWithFormats,
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(tester.takeException(), isNull);
+          expect(find.byType(FilterTabChip), findsWidgets);
+          expect(find.text('Manhwa'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'hides format chips when manga is not selected',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: _defaultOverrides(),
+              child: _buildFilterBar(
+                itemsAsync: AsyncData<List<CollectionItem>>(
+                  _mangaItemsWithFormats,
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.byType(FilterTabChip), findsNothing);
+        },
+      );
+    });
+
+    group('платформы (чипы)', () {
       testWidgets(
         'should show платформы из игровых элементов когда активен фильтр Games',
         (WidgetTester tester) async {
@@ -333,7 +407,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -363,7 +437,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -380,7 +454,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -426,7 +500,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
 
@@ -445,7 +519,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(ChoiceChip), findsNothing);
+          expect(find.byType(FilterTabChip), findsNothing);
         },
       );
     });

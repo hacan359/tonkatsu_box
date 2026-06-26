@@ -8,9 +8,11 @@ adapters (one per source, under `sources/`). The reusable domain pieces —
 collection writing, TMDB matching, rate-limit retry — live at the root and are
 **injected** into adapters, not inherited.
 
-> Status: **Kinorium, Steam, RetroAchievements, MyAnimeList and AniList** are all
-> adapters on this layer. `trakt_zip_import_service.dart` in `core/services` is
-> the last importer still carrying its own copy of this logic.
+> Status: every importer — **Kinorium, Steam, Trakt, RetroAchievements,
+> MyAnimeList and AniList** — is now an adapter on this layer. The `.xcoll` /
+> `.xcollx` collection-file import (`core/services/import_service.dart`) stays
+> separate by design: it restores a full collection snapshot rather than
+> resolving titles against an external catalog.
 
 ## Layers
 

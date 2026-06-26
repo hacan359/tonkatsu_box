@@ -21,6 +21,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onToggleCanvas,
     required this.onEditCustom,
     required this.onMenuSelected,
+    this.onToggleFavorite,
     this.canTrackReleases = false,
     this.isTracked = false,
     this.onToggleTracked,
@@ -40,6 +41,9 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onEditCustom;
   final ValueChanged<ItemDetailMenuAction> onMenuSelected;
 
+  /// Toggles the favorite flag; when null the heart is hidden.
+  final VoidCallback? onToggleFavorite;
+
   /// Whether the calendar bell applies to this item.
   final bool canTrackReleases;
 
@@ -54,7 +58,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? untrackTooltip;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kScreenAppBarHeight);
 
   String _withShortcut(String label, String shortcut) =>
       kIsMobile ? label : '$label ($shortcut)';
@@ -66,11 +70,22 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     return ScreenAppBar(
       title: displayName,
       actions: <Widget>[
+        if (isEditable && onToggleFavorite != null)
+          _action(
+            iconData: item.isFavorite ? Icons.favorite : Icons.heart_broken,
+            color: item.isFavorite
+                ? AppColors.favorite
+                : AppColors.textSecondary,
+            tooltip: item.isFavorite
+                ? l.removeFromFavorites
+                : l.addToFavorites,
+            onPressed: onToggleFavorite,
+          ),
         if (canTrackReleases)
-          IconButton(
-            icon: Icon(
-              isTracked ? Icons.notifications_active : Icons.notifications_none,
-            ),
+          _action(
+            iconData: isTracked
+                ? Icons.notifications_active
+                : Icons.notifications_none,
             color: isTracked ? AppColors.brand : AppColors.textSecondary,
             tooltip: isTracked
                 ? (untrackTooltip ?? l.releasesUntrackShow)
@@ -78,8 +93,8 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             onPressed: onToggleTracked,
           ),
         if (isEditable && hasCanvas && showCanvas)
-          IconButton(
-            icon: Icon(isViewModeLocked ? Icons.lock : Icons.lock_open),
+          _action(
+            iconData: isViewModeLocked ? Icons.lock : Icons.lock_open,
             color: isViewModeLocked
                 ? AppColors.warning
                 : AppColors.textSecondary,
@@ -92,23 +107,22 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             onPressed: onToggleLock,
           ),
         if (hasCanvas)
-          IconButton(
-            icon: Icon(
-              showCanvas ? Icons.dashboard : Icons.dashboard_outlined,
-            ),
+          _action(
+            iconData: showCanvas ? Icons.dashboard : Icons.dashboard_outlined,
             color: showCanvas ? AppColors.brand : AppColors.textSecondary,
             tooltip: _withShortcut(l.boardTab, 'Ctrl+B'),
             onPressed: onToggleCanvas,
           ),
         if (isEditable && item.mediaType == MediaType.custom)
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
+          _action(
+            iconData: Icons.edit_outlined,
             color: AppColors.textSecondary,
             tooltip: l.customItemEdit,
             onPressed: onEditCustom,
           ),
         if (isEditable)
           PopupMenuButton<ItemDetailMenuAction>(
+            iconSize: kScreenAppBarIconSize,
             icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
             onSelected: onMenuSelected,
             itemBuilder: (BuildContext context) =>
@@ -145,6 +159,23 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             ],
           ),
       ],
+    );
+  }
+
+  /// An app-bar action whose icon matches the compact bar — the Material
+  /// default (24) reads oversized next to the 20px back button.
+  Widget _action({
+    required IconData iconData,
+    required Color color,
+    required String tooltip,
+    required VoidCallback? onPressed,
+  }) {
+    return IconButton(
+      icon: Icon(iconData),
+      color: color,
+      tooltip: tooltip,
+      iconSize: kScreenAppBarIconSize,
+      onPressed: onPressed,
     );
   }
 

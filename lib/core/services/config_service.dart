@@ -54,7 +54,7 @@ class ConfigResult {
 }
 
 /// Exports and imports app configuration stored in SharedPreferences
-/// (IGDB, SteamGridDB, TMDB API keys and related settings).
+/// (API keys, source credentials and related display settings).
 class ConfigService {
   ConfigService({required SharedPreferences prefs}) : _prefs = prefs;
 
@@ -71,16 +71,48 @@ class ConfigService {
     SettingsKeys.lastSync,
     SettingsKeys.steamGridDbApiKey,
     SettingsKeys.tmdbApiKey,
+    SettingsKeys.comicVineApiKey,
+    SettingsKeys.googleBooksApiKey,
+    SettingsKeys.screenScraperSsid,
+    SettingsKeys.screenScraperSspassword,
+    SettingsKeys.raApiKey,
+    SettingsKeys.raUsername,
+    SettingsKeys.steamApiKey,
+    SettingsKeys.steamId,
+    SettingsKeys.steamRememberCredentials,
+    SettingsKeys.aniListUsername,
     SettingsKeys.defaultAuthor,
     SettingsKeys.tmdbLanguage,
+    SettingsKeys.appLanguage,
     SettingsKeys.dateFormat,
     SettingsKeys.animeMangaTitleLanguage,
+    // Display & feature toggles.
+    SettingsKeys.showRecommendations,
+    SettingsKeys.showBlurayOverlay,
+    SettingsKeys.showPlatformOverlay,
+    SettingsKeys.discordRpcEnabled,
+    SettingsKeys.discordRaSyncEnabled,
+    SettingsKeys.richCollectionsEnabled,
+    SettingsKeys.hideEmptyMediaTypeChevrons,
   ];
 
   /// Keys whose values are ints, not strings.
   static const List<String> _intKeys = <String>[
     SettingsKeys.tokenExpires,
     SettingsKeys.lastSync,
+  ];
+
+  /// Keys whose values are bools. steamRememberCredentials must round-trip —
+  /// the import screen only restores the saved Steam key/id when it is set.
+  static const List<String> _boolKeys = <String>[
+    SettingsKeys.steamRememberCredentials,
+    SettingsKeys.showRecommendations,
+    SettingsKeys.showBlurayOverlay,
+    SettingsKeys.showPlatformOverlay,
+    SettingsKeys.discordRpcEnabled,
+    SettingsKeys.discordRaSyncEnabled,
+    SettingsKeys.richCollectionsEnabled,
+    SettingsKeys.hideEmptyMediaTypeChevrons,
   ];
 
   Map<String, Object> collectSettings() {
@@ -91,6 +123,11 @@ class ConfigService {
     for (final String key in _settingsKeys) {
       if (_intKeys.contains(key)) {
         final int? value = _prefs.getInt(key);
+        if (value != null) {
+          config[key] = value;
+        }
+      } else if (_boolKeys.contains(key)) {
+        final bool? value = _prefs.getBool(key);
         if (value != null) {
           config[key] = value;
         }
@@ -119,6 +156,11 @@ class ConfigService {
           applied++;
         } else if (value is num) {
           await _prefs.setInt(key, value.toInt());
+          applied++;
+        }
+      } else if (_boolKeys.contains(key)) {
+        if (value is bool) {
+          await _prefs.setBool(key, value);
           applied++;
         }
       } else {

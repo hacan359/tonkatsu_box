@@ -26,6 +26,7 @@ class TableHeader extends StatelessWidget {
     this.filterRating,
     this.filterTagId,
     this.filterPlatform,
+    this.filterFavorite,
     this.isReorderable = false,
     this.selectionState,
     this.onToggleSelectAll,
@@ -41,6 +42,10 @@ class TableHeader extends StatelessWidget {
   final double? filterRating;
   final int? filterTagId;
   final String? filterPlatform;
+
+  /// Favorite column filter: null = all, true = favorites only, false =
+  /// non-favorites only.
+  final bool? filterFavorite;
   final Map<int, CollectionTag> tagMap;
   final bool isReorderable;
 
@@ -113,6 +118,16 @@ class TableHeader extends StatelessWidget {
             isFiltered: filterStatus != null,
           ),
           _col(
+            l.favorite,
+            TableColumn.favorite,
+            width: 44,
+            alignCenter: true,
+            isFiltered: filterFavorite != null,
+            icon: filterFavorite == null
+                ? Icons.favorite_border
+                : (filterFavorite! ? Icons.favorite : Icons.heart_broken),
+          ),
+          _col(
             filterRating != null
                 ? (filterRating == 0
                     ? '—'
@@ -158,10 +173,36 @@ class TableHeader extends StatelessWidget {
     bool alignEnd = false,
     bool alignCenter = false,
     bool isFiltered = false,
+    IconData? icon,
   }) {
     final bool isActive = !isReorderable && column == sortColumn;
     final bool showFilterIcon = !isReorderable && isFiltered;
     final bool highlighted = isActive || showFilterIcon;
+
+    // Icon-only header (favorite column): the heart shape already conveys the
+    // filter state, so [label] is used as a tooltip instead of a caption.
+    if (icon != null) {
+      return SizedBox(
+        width: width,
+        child: InkWell(
+          key: ValueKey<TableColumn>(column),
+          onTap: isReorderable ? null : () => onSort(column),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          child: Tooltip(
+            message: label,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+              child: Icon(
+                icon,
+                size: 14,
+                color: highlighted ? AppColors.brand : AppColors.textTertiary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     final Widget cell = InkWell(
       key: ValueKey<TableColumn>(column),
       onTap: isReorderable ? null : () => onSort(column),

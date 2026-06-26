@@ -195,6 +195,15 @@ class SRu extends S {
   String get sortRatingDesc => 'Сначала лучшие';
 
   @override
+  String get sortFavoriteDisplay => 'Избранное';
+
+  @override
+  String get sortFavoriteShort => 'Избранное';
+
+  @override
+  String get sortFavoriteDesc => 'Сначала избранные';
+
+  @override
   String get sortExternalRatingDisplay => 'Внешний рейтинг';
 
   @override
@@ -283,6 +292,15 @@ class SRu extends S {
 
   @override
   String get moveToBottom => 'В конец списка';
+
+  @override
+  String get favorite => 'Избранное';
+
+  @override
+  String get addToFavorites => 'В избранное';
+
+  @override
+  String get removeFromFavorites => 'Убрать из избранного';
 
   @override
   String bulkSelected(int count) {
@@ -2297,6 +2315,23 @@ class SRu extends S {
   @override
   String searchAlreadyInNamed(String name, String collection) {
     return '$name уже в $collection';
+  }
+
+  @override
+  String searchAddedToCollections(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count коллекций',
+      few: '$count коллекции',
+      one: '1 коллекцию',
+    );
+    return '$name добавлен в $_temp0';
+  }
+
+  @override
+  String searchAlreadyInCollections(String name) {
+    return '$name уже во всех выбранных коллекциях';
   }
 
   @override
@@ -5131,4 +5166,94 @@ class SRu extends S {
 
   @override
   String get screenScraperMediaMix => 'Микс';
+
+  @override
+  String get genreCloudTitle => 'Персонализация';
+
+  @override
+  String get genreCloudEmpty => 'Пока нет жанров';
+
+  @override
+  String get genreCloudEmptyHint =>
+      'Добавьте элементы с жанрами, чтобы построить облако';
+
+  @override
+  String get genreCloudExportImage => 'Сохранить картинкой';
+
+  @override
+  String get genreCloudImageSaved => 'Картинка сохранена';
+
+  @override
+  String get genreCloudExportFailed => 'Не удалось сохранить картинку';
+
+  @override
+  String get genreCloudResetView => 'Сбросить вид';
+
+  @override
+  String genreCloudHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'скрыто $count (не поместились)',
+      many: 'скрыто $count (не поместились)',
+      few: 'скрыто $count (не поместились)',
+      one: 'скрыто $count (не поместилось)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get facetGenre => 'Жанры';
+
+  @override
+  String get facetPlatform => 'Платформы';
+
+  @override
+  String get facetDecade => 'Десятилетия';
+
+  @override
+  String get personalizationTabCloud => 'Облако жанров';
+
+  @override
+  String get personalizationTabRecommendations => 'Рекомендации';
+
+  @override
+  String get recommendationsRefresh => 'Обновить';
+
+  @override
+  String get recommendationsEmpty => 'Пока нет рекомендаций';
+
+  @override
+  String get recommendationsEmptyHint =>
+      'Заверши и оцени фильмы или сериалы, чтобы получить персональные подборки';
+
+  @override
+  String get recommendationsNoCandidates => 'Ничего не нашлось';
+
+  @override
+  String get recommendationsNoCandidatesHint =>
+      'Не удалось ничего подобрать прямо сейчас. Попробуй позже';
+
+  @override
+  String get recommendationsNoApiKey => 'Нужен ключ TMDB API';
+
+  @override
+  String get recommendationsNoApiKeyHint =>
+      'Добавь ключ TMDB API в настройках, чтобы получать рекомендации';
+
+  @override
+  String get recommendationsBecauseLabel => 'Потому что тебе понравилось';
+
+  @override
+  String recommendationsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count подборок',
+      many: '$count подборок',
+      few: '$count подборки',
+      one: '$count подборка',
+    );
+    return '$_temp0';
+  }
 }

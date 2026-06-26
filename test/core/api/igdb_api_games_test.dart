@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
+import 'package:tonkatsu_box/shared/models/game_time_to_beat.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -639,6 +640,151 @@ void main() {
 
         // Should make 2 requests: first for 500, second for 100
         expect(callCount, 2);
+      });
+    });
+
+    group('getTimeToBeat', () {
+      test('returns time-to-beat keyed by game id', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 200,
+              data: <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'game_id': 1942,
+                  'hastily': 134552,
+                  'normally': 254778,
+                  'completely': 581483,
+                  'count': 41,
+                },
+                <String, dynamic>{
+                  'game_id': 732,
+                  'normally': 122400,
+                  'count': 18,
+                },
+              ],
+            ));
+
+        final Map<int, GameTimeToBeat> result =
+            await api.getTimeToBeat(<int>[1942, 732]);
+
+        expect(result, hasLength(2));
+        expect(result[1942]!.normally, 254778);
+        expect(result[1942]!.count, 41);
+        expect(result[732]!.normally, 122400);
+        expect(result[732]!.hastily, isNull);
+      });
+
+      test('returns empty map for empty ids without calling the API',
+          () async {
+        final Map<int, GameTimeToBeat> result =
+            await api.getTimeToBeat(<int>[]);
+
+        expect(result, isEmpty);
+        verifyNever(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            ));
+      });
+
+      test('posts to /game_time_to_beats with game_id filter', () async {
+        String? capturedUrl;
+        String? capturedData;
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedUrl = inv.positionalArguments[0] as String;
+          capturedData = inv.namedArguments[const Symbol('data')] as String?;
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[],
+          );
+        });
+
+        await api.getTimeToBeat(<int>[1942, 732]);
+
+        expect(capturedUrl, endsWith('/game_time_to_beats'));
+        expect(capturedData, contains('where game_id = (1942,732)'));
+      });
+
+      test('skips entries missing a game id', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 200,
+              data: <Map<String, dynamic>>[
+                <String, dynamic>{'normally': 7200},
+                <String, dynamic>{'game_id': 1942, 'normally': 254778},
+              ],
+            ));
+
+        final Map<int, GameTimeToBeat> result =
+            await api.getTimeToBeat(<int>[1942]);
+
+        expect(result, hasLength(1));
+        expect(result.containsKey(1942), isTrue);
+      });
+
+      test('batches requests for more than 500 ids', () async {
+        int callCount = 0;
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async {
+          callCount++;
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[],
+          );
+        });
+
+        await api.getTimeToBeat(List<int>.generate(600, (int i) => i + 1));
+
+        expect(callCount, 2);
+      });
+
+      test('throws IgdbApiException on HTTP error', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          requestOptions: RequestOptions(path: ''),
+          response: Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 500,
+          ),
+          type: DioExceptionType.badResponse,
+        ));
+
+        expect(
+          () => api.getTimeToBeat(<int>[1942]),
+          throwsA(isA<IgdbApiException>()),
+        );
+      });
+
+      test('throws IgdbApiException when credentials not set', () async {
+        final IgdbApi apiWithoutCreds = IgdbApi(dio: mockDio);
+
+        expect(
+          () => apiWithoutCreds.getTimeToBeat(<int>[1942]),
+          throwsA(isA<IgdbApiException>()
+              .having((IgdbApiException e) => e.message, 'message',
+                  contains('credentials'))),
+        );
       });
     });
   });

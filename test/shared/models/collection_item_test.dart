@@ -86,6 +86,57 @@ void main() {
       });
     });
 
+    group('isFavorite', () {
+      Map<String, dynamic> baseRow(Object? isFavorite) => <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'media_type': 'game',
+            'external_id': 1942,
+            'status': 'completed',
+            'added_at': testAddedAtUnix,
+            'is_favorite': isFavorite,
+          };
+
+      test('fromDb reads 1 as true, 0 and null as false', () {
+        expect(CollectionItem.fromDb(baseRow(1)).isFavorite, isTrue);
+        expect(CollectionItem.fromDb(baseRow(0)).isFavorite, isFalse);
+        expect(CollectionItem.fromDb(baseRow(null)).isFavorite, isFalse);
+      });
+
+      test('toDb writes 1 / 0', () {
+        expect(CollectionItem.fromDb(baseRow(1)).toDb()['is_favorite'], 1);
+        expect(CollectionItem.fromDb(baseRow(0)).toDb()['is_favorite'], 0);
+      });
+
+      test('toExport carries is_favorite only with user data', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(1));
+        expect(item.toExport(includeUserData: true)['is_favorite'], 1);
+        expect(item.toExport().containsKey('is_favorite'), isFalse);
+      });
+
+      test('fromExport reads is_favorite, defaulting to false when absent', () {
+        final CollectionItem present =
+            CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'is_favorite': 1,
+        });
+        final CollectionItem absent =
+            CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+        });
+        expect(present.isFavorite, isTrue);
+        expect(absent.isFavorite, isFalse);
+      });
+
+      test('copyWith updates the flag', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(0));
+        expect(item.copyWith(isFavorite: true).isFavorite, isTrue);
+        expect(item.isFavorite, isFalse);
+      });
+    });
+
     group('fromDb', () {
       test('should create CollectionItem из полной записи БД', () {
         final Map<String, dynamic> row = <String, dynamic>{
@@ -2687,6 +2738,62 @@ void main() {
           addedAt: now,
         );
         expect(item.displayName('english'), 'Unknown Anime');
+      });
+    });
+
+    group('formatLabel', () {
+      final DateTime now = DateTime(2024);
+
+      test('returns the manga format label for manga items', () {
+        const Manga manga = Manga(id: 1, title: 'M', format: 'MANHWA');
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.manga,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          manga: manga,
+        );
+        expect(item.formatLabel, 'Manhwa');
+      });
+
+      test('returns the anime format label for anime items', () {
+        const Anime anime = Anime(id: 1, title: 'A', format: 'OVA');
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.anime,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          anime: anime,
+        );
+        expect(item.formatLabel, 'OVA');
+      });
+
+      test('is null for non manga/anime media types', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.formatLabel, isNull);
+      });
+
+      test('is null when the manga model is absent', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.manga,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.formatLabel, isNull);
       });
     });
   });

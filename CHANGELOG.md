@@ -7,6 +7,377 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Personalization word cloud of genres, platforms and decades**
+
+  A new Personalization view that lays out the whole library's genres, platforms
+  and release decades as a frequency-sized word cloud. Word size follows how
+  often a value appears; word colour follows the dominant media type. Two chip
+  rows filter the cloud by facet (genres / platforms / decades) and by media
+  type, and the result can be saved as a PNG poster. The view opens from the new
+  centre nav button, which replaces the old top-bar logo; the nav row and rail
+  reserve a middle slot for it.
+
+  * lib/features/genre_cloud/facet.dart (Facet), genre_cloud/facet_value.dart
+    (FacetValue): The facet dimensions and a single (facet, value) tally. New.
+  * lib/features/genre_cloud/genre_cloud_aggregate.dart (extractItemFacets,
+    aggregateFacets, presentFacets, presentMediaTypes): Pure aggregation over
+    collection items, reading the typed sub-models. Counting is case-insensitive
+    and de-duped per item. New.
+  * lib/features/genre_cloud/genre_cloud_layout.dart (layoutGenreCloud,
+    PlacedWord, GenreCloudLayout, rotatedAtIndex): Flutter-free Archimedean
+    spiral placement with rank-based font tiers and auto-fit shrinking. New.
+  * lib/features/genre_cloud/widgets/genre_cloud_view.dart (GenreCloudView,
+    genreWordSpan, measureGenreWord): On-screen painter sharing one span builder
+    between measurement and painting. Grows the canvas to fit every word, wraps
+    it in an InteractiveViewer for pan and pinch-zoom, and shows a recenter
+    button that restores the default centred view. New.
+  * lib/features/genre_cloud/widgets/genre_cloud_export_view.dart
+    (GenreCloudExportView): Fixed 1200×800 poster captured to PNG; renders the
+    cloud non-interactively. New.
+  * lib/features/genre_cloud/providers/genre_cloud_provider.dart
+    (genreCloudItemsProvider): Exposes the whole library's items from the
+    all-items notifier. New.
+  * lib/features/genre_cloud/screens/genre_cloud_screen.dart (GenreCloudScreen, GenreCloudScreen.showTitle):
+    Facet legend, media-type legend, cloud and image export; `showTitle` hides
+    the screen's own title strip when the cloud is embedded under the
+    Personalization tab. New.
+  * lib/shared/navigation/nav_center_button.dart (NavCenterButton): The app logo
+    as a focusable centre nav item. New.
+  * lib/shared/navigation/nav_destinations.dart (kNavCenterSlot, navSelectedSlot):
+    Shared centre-slot index and the selected-index → visual-slot mapping that
+    skips the reserved centre slot.
+  * lib/shared/navigation/app_bottom_bar.dart (AppBottomBar.onCenterTap,
+    AppBottomBar.centerActive), lib/shared/navigation/app_sidebar.dart
+    (AppSidebar.onCenterTap, AppSidebar.centerActive): Reserve the middle slot,
+    draw the centre button, and highlight it when Personalization is open.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._openPreferenceCloud,
+    _AppShellState._openSearchTab): Show the Personalization hub as a shell-level
+    destination (an extra IndexedStack child), toggled by the centre nav button;
+    an incoming search request closes the hub when it is open over another tab.
+  * lib/shared/navigation/app_top_bar.dart: Drop the top-bar logo, now shown as
+    the centre nav button.
+
+- **Content-based movie and TV recommendations**
+
+  A second Personalization tab suggests movies and shows learned from the user's
+  completed, rated and favorited library. Taste is clustered by genre (rare
+  genres weighted higher via IDF); candidates come from TMDB (recommendations
+  and similar titles for what you liked, topped up by discover-by-genre),
+  scored, and grouped into "Because you liked …" rows. Each row is a
+  self-contained section card with a two-tier header — an uppercase reason label
+  over the driver titles — and the cluster's defining genres as chips, so coarse
+  matches stay explainable while feedback is gathered. Rows lead with the highest
+  TMDB-rated picks. A pinned collection chips row adds a pick straight into the
+  selected collections, or, with nothing selected, opens the same details sheet
+  Search uses. The Personalization hub switches between the genre cloud and
+  recommendations with a segmented pill.
+
+  * lib/features/recommendations/engine/sparse_vector.dart (SparseVector):
+    Sparse feature vector — norm, dot, cosine, normalized, weightedSum. New.
+  * lib/features/recommendations/engine/recommendation_config.dart
+    (RecommendationConfig): Engine tuning constants in one place. New.
+  * lib/features/recommendations/engine/recommendation_models.dart (TasteTitle,
+    ScoredTitle, TasteCluster, TasteProfile, RecommendationRow): Media-agnostic
+    engine types. New.
+  * lib/features/recommendations/engine/recommender.dart (Recommender): IDF,
+    per-title weights, deterministic cosine k-means taste profile, candidate
+    scoring with a dislike penalty, similarTo and kNN predictRating. Pure Dart. New.
+  * lib/features/recommendations/tmdb_taste_input.dart (GenreKeyResolver,
+    tasteTitleFromItem, tasteTitleFromMovie, tasteTitleFromTvShow, ownedTasteIds,
+    movieTasteId, tvTasteId): Adapter from TMDB models to engine TasteTitles.
+    GenreKeyResolver collapses every genre token — a numeric id or a localized
+    name in any language and case — to its TMDB id, the one key identical across
+    languages, so genres match regardless of the request language. New.
+  * lib/features/recommendations/providers/recommendations_provider.dart
+    (recommendationsProvider, RecommendedItem, RecommendationRowUi,
+    RecommendationResult, RecommendationStatus, recommendationTargetCollectionsProvider,
+    collectedRecommendationIdsProvider, byRatingDesc): Learns one taste profile
+    from the completed library, fetches candidates via the shared TMDB client in
+    the user's content language (titles render localized), matches them to the
+    profile by genre id, scores them and sorts each row highest-rated first.
+    Distinguishes empty / no-API-key / no-candidates states. Reads the library
+    once and tracks added titles via the collected-id provider, so adding a pick
+    marks just that card without reloading the list. New.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (personalizationTabCloud,
+    personalizationTabRecommendations, recommendationsRefresh, recommendationsEmpty,
+    recommendationsEmptyHint, recommendationsNoCandidates, recommendationsNoCandidatesHint,
+    recommendationsNoApiKey, recommendationsNoApiKeyHint, recommendationsBecauseLabel,
+    recommendationsCount): Personalization and recommendation strings.
+  * lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget, RecommendationsEmptyState): Section card for one
+    "because you liked" group — a two-tier header (uppercase reason label over
+    the driver titles), the cluster's genres as chips, and a horizontal carousel
+    of recommended cards. A card whose title is already in a collection renders
+    dimmed, checked and non-interactive. Plus the empty / no-candidates
+    placeholder. New.
+  * lib/features/recommendations/screens/recommendations_screen.dart
+    (RecommendationsScreen): A titled header (the tab name plus a live "N
+    recommendations" count) with the refresh action, section-card rows, empty
+    states, the target-collection chips row, and add-from-card routed through the
+    Search MediaHandlers; tapped picks are marked added in place. New.
+  * lib/features/personalization/screens/personalization_screen.dart
+    (PersonalizationScreen): Two-view hub (genre cloud + recommendations)
+    switched by a SegmentedPill over an IndexedStack. New.
+  * lib/features/search/widgets/collection_chips_row.dart
+    (CollectionChipsRow.targetProvider): Accept a selection provider so the
+    Recommendations tab keeps its own target-collection selection, independent
+    of Search.
+
+- **Mark collection items as favorite**
+
+  A per-item favorite flag the user sets from the poster card (a heart in the
+  top-right corner), the item detail screen, the right-click / long-press menu,
+  or the table view. Favorites are per collection item, so the same title in
+  two collections is tracked independently. The collection table gains a
+  favorite column with an inline toggle and a header filter that cycles all →
+  favorites only → non-favorites only; the collection Sort menu gains a
+  "Favorite" mode (favorites first); and the home (All Items) screen gains a
+  favorites-only toggle in the filter bar after the status filter, persisted
+  per profile. The flag travels in `.xcollx` exports and backups under the
+  "personal data" toggle.
+
+  * lib/core/database/migrations/migration_v50.dart (MigrationV50): New — adds
+    the `is_favorite` column to `collection_items` via idempotent
+    `addColumnIfAbsent`.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all),
+    lib/core/database/database_service.dart (DatabaseService.setItemFavorite):
+    Register v50 and bump the schema version 49 → 50; delegate the setter to the DAO.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.setItemFavorite),
+    lib/data/repositories/collection_repository.dart (CollectionRepository.setItemFavorite):
+    Single-column update of `is_favorite`.
+  * lib/shared/models/collection_item.dart (CollectionItem.isFavorite, CollectionItem.fromDbWithJoins, CollectionItem.toDb, CollectionItem.fromExport, CollectionItem.toExport, CollectionItem.copyWith, CollectionItem.internalDbFields):
+    New field; round-trips through the DB and, under `user_data`, the export.
+  * lib/features/collections/providers/collections_provider.dart (CollectionItemsNotifier.toggleFavorite, CollectionItemsNotifier.setFavorite, HomeFavoriteFilterNotifier, homeFavoriteFilterProvider),
+    lib/features/home/providers/all_items_provider.dart (AllItemsNotifier.toggleFavorite, AllItemsNotifier.updateFavoriteLocally):
+    Persist with an optimistic local patch. All Items toggles write the DB,
+    patch the All Items list, and invalidate the item's per-collection notifier
+    so the collection grid and detail screen reload the new flag — avoiding a
+    race where a freshly-built, still-loading collection notifier overwrote it
+    with its pre-write snapshot. `HomeFavoriteFilterNotifier` holds the home
+    favorites-only filter, persisted per profile.
+  * lib/features/home/screens/all_items_screen.dart (AllItemsScreen._buildMediaTypeBar, AllItemsScreen._matchesNonTypeFilters, AllItemsScreen._countByMediaType),
+    lib/shared/widgets/chevron_filter_bar.dart (StatusDropdownSegment.isLast):
+    Favorites-only chevron segment after the status filter; `isLast` lets the
+    status segment grow a right-pointing edge so the favorite segment can follow.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.isFavorite, MediaPosterCard.showFavorite, MediaPosterCard.onToggleFavorite, _FavoriteButton):
+    Heart badge in the top-right stack — small visible circle with a finger-sized
+    tap target, shown as a static indicator during multi-select.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart (ItemDetailAppBar.onToggleFavorite),
+    lib/features/collections/screens/item_detail_screen.dart: Heart toggle in the detail app bar.
+  * lib/features/collections/widgets/collection_items_view.dart, lib/features/home/screens/all_items_screen.dart:
+    Favorite entry in the item context menu; wire the card heart toggle.
+  * lib/features/collections/widgets/collection_table/table_column.dart (TableColumn.favorite),
+    lib/features/collections/widgets/collection_table/table_header.dart (TableHeader.filterFavorite),
+    lib/features/collections/widgets/collection_table/table_row.dart (TableRow.onFavoriteToggled),
+    lib/features/collections/widgets/collection_table/collection_table_view.dart (CollectionTableView.onFavoriteToggled),
+    lib/features/collections/widgets/collection_table/cells/favorite_cell.dart (FavoriteCell):
+    Favorite table column with an inline toggle and a three-state header filter.
+  * lib/shared/models/collection_sort_mode.dart (CollectionSortMode.favorite),
+    lib/features/collections/providers/sort_utils.dart (applySortMode, _compareByDisplayName):
+    "Favorite" sort mode (favorites first, then by name); extracted the shared name comparison.
+  * lib/core/services/import_service.dart (ImportService._hasUserData, ImportService._restoreUserData):
+    Restore `is_favorite` on import.
+  * lib/shared/theme/app_colors.dart (AppColors.favorite): New heart colour.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (favorite, addToFavorites, removeFromFavorites, sortFavoriteDisplay, sortFavoriteShort, sortFavoriteDesc): New strings.
+  * docs/RCOLL_FORMAT.md: Document the `is_favorite` user-data field.
+
+- **Show average time-to-beat on game search cards**
+
+  IGDB game search and browse cards now carry a clock badge with the average
+  time to beat (IGDB `game_time_to_beats`), in whole hours. The value is the
+  normal playthrough, falling back to the rushed or completionist figure. It is
+  fetched per page alongside the results and kept only in memory — never written
+  to the database — so it appears on the search screen only.
+
+  * lib/shared/models/game_time_to_beat.dart (GameTimeToBeat, GameTimeToBeat.fromJson, GameTimeToBeat.primarySeconds, GameTimeToBeat.primaryHours):
+    New — transient model wrapping IGDB time-to-beat (seconds), with the
+    primary-value selection and hours rounding.
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.getTimeToBeat), lib/core/api/igdb_api.dart (IgdbApi.getTimeToBeat):
+    Fetch `game_time_to_beats` for a batch of game ids (batched by 500), keyed
+    by game id.
+  * lib/shared/models/game.dart (Game.timeToBeat, Game.copyWith): New transient
+    field, excluded from `toDb` / `fromDb` / `fromJson`.
+  * lib/features/search/sources/igdb_games_source.dart (IgdbGamesSource.fetch, IgdbGamesSource._attachTimeToBeat):
+    Attach time-to-beat to each game with one batched request; best-effort, so a
+    failure leaves the search results unchanged.
+  * lib/features/search/widgets/browse_grid.dart (_BrowseGridState._buildCard):
+    Pass `timeToBeatHours: item.timeToBeat?.primaryHours` for game cards.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.timeToBeatHours):
+    New optional clock badge drawn over the poster (grid/compact), hidden when a
+    status badge is shown; reuses the `runtimeHours` localization.
+
+- **Show manga/anime format on cards and filter by it**
+
+  Manga and anime cards now caption the specific format (Manhwa, OVA, Light
+  Novel, …) instead of the generic "Manga"/"Anime"; titles with no reported
+  format keep the generic caption. Selecting the Manga or Anime filter chevron —
+  inside a collection and on the Home tab — reveals format subfilter chips built
+  from the formats actually present, mirroring the platform subfilter for games.
+  Game-platform, manga-format and anime-format subfilters share one row, each
+  drawn as a flat underline tab tinted with its media-type accent. The format
+  filter narrows the whole list to the chosen format like the platform filter
+  does for games — everything else is hidden; selecting both a manga and an
+  anime format keeps either.
+
+  * lib/shared/utils/media_format.dart (MediaFormat.present, MediaFormat.matchesFormatFilter, MediaFormat.label, MediaFormat.mangaOrder, MediaFormat.animeOrder):
+    New — shared helper for format chip ordering, display labels, presence
+    extraction, and the global narrowing match test.
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar, FilterTabChip, SubfilterChipData):
+    New — single-row, media-type-tinted subfilter chip bar shared by the
+    collection and Home filter bars.
+  * lib/shared/models/manga.dart (Manga.mangaFormatLabel), lib/shared/models/anime.dart (Anime.animeFormatLabel):
+    Extract the format-to-label mapping into a static method; the instance
+    `formatLabel` getter delegates to it.
+  * lib/shared/models/collection_item.dart (CollectionItem.formatLabel): New
+    getter returning the manga/anime format label, null for other media types.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.typeLabelOverride):
+    New optional caption that replaces the media-type label in the subtitle row,
+    falling back to the localized type label when null.
+  * lib/features/collections/widgets/collection_items_view.dart, lib/features/search/widgets/browse_grid.dart, lib/features/home/screens/all_items_screen.dart:
+    Pass `typeLabelOverride: item.formatLabel` when building poster cards.
+  * lib/features/collections/helpers/collection_filters.dart (CollectionFilters.mangaFormats, CollectionFilters.animeFormats, CollectionFilters.apply):
+    New format filter sets, applied as a single global narrowing pass.
+  * lib/features/collections/widgets/collection_filter_bar.dart (CollectionFilterBar.filterMangaFormats, CollectionFilterBar.filterAnimeFormats, CollectionFilterBar.onMangaFormatToggled, CollectionFilterBar.onAnimeFormatToggled, _CollectionFilterBarState._subfilterGroups, _CollectionFilterBarState._formatGroup, _CollectionFilterBarState._formatsFor):
+    Build the platform / manga / anime subfilter groups for the shared
+    `SubfilterBar`.
+  * lib/features/collections/screens/collection_screen.dart (_CollectionScreenState.onMangaFormatToggled, _CollectionScreenState.onTypeToggled):
+    Track the format filter sets, wire toggle handlers, and clear a type's
+    formats when the type is deselected.
+  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState._subfilterGroups, _AllItemsScreenState._formatGroup, _AllItemsScreenState._matchesNonTypeFilters, _AllItemsScreenState._toggleMediaType):
+    Home-tab subfilter groups, filtering, and clear-on-deselect.
+
+- **Inline manage buttons on wishlist cards** — resolve/unresolve, edit and delete on each card, next to the existing context menu.
+
+  * lib/features/wishlist/widgets/wishlist_tile.dart (WishlistTile): trailing resolve, edit and delete icon buttons.
+
+- **Add search results to several collections at once**
+
+  The Search tab gains a row of collection chips under the filter bar. With
+  none selected, tapping a result opens its details as before. Select one or
+  more and a tap drops the result straight into every selected collection — no
+  per-result dialog — and a single summary snackbar reports how many it landed
+  in. A pinned counter at the row's leading edge shows how many collections are
+  selected (visible even when the chips have scrolled off-screen, e.g. on a
+  phone) and clears the selection on tap. Opening Search from a collection's
+  "add items" prefills that collection's chip. Games still ask for the platform
+  once, then reuse it for every target.
+
+  * lib/features/search/widgets/collection_chips_row.dart (CollectionChipsRow):
+    New — horizontal, multi-select chip row that reads and writes
+    `searchTargetCollectionsProvider`; collapses to nothing when there are no
+    collections; pins a `SelectedCountChip` at the leading edge while a
+    selection is active.
+  * lib/shared/widgets/selected_count_chip.dart (SelectedCountChip): New —
+    reusable pinned pill showing the selected count and clearing the selection
+    on tap.
+  * lib/features/search/services/search_collection_adder.dart (SearchCollectionAdder.addToCollections):
+    New — batch add that upserts the model and caches the image once, skips
+    collections that already hold the item, drops ids of collections deleted
+    while selected, and reports one summary snackbar.
+  * lib/shared/navigation/search_providers.dart (searchTargetCollectionsProvider, SearchTabRequest.collectionId):
+    Replace the single `searchTargetCollectionProvider` (`int?`) with a
+    `Set<int>` for the multi-select selection.
+  * lib/features/search/handlers/game_handler.dart (GameHandler.onTap, GameHandler._addToCollections),
+    lib/features/search/handlers/movie_handler.dart (MovieHandler.onTap, MovieHandler._addToCollections),
+    lib/features/search/handlers/tv_show_handler.dart (TvShowHandler.onTap, TvShowHandler._addToCollections),
+    lib/features/search/handlers/simple_media_handler.dart (SimpleMediaHandler.onTap, SimpleMediaHandler._addToCollections),
+    lib/features/search/handlers/media_handlers.dart (MediaHandlers):
+    Take a `Set<int> Function() targetCollections` closure resolved at tap time
+    and forward to `addToCollections`.
+  * lib/features/search/screens/search_screen.dart (_SearchScreenState._buildHandlers):
+    Read the target collections live so the handlers never rebuild when the
+    selection changes; mount `CollectionChipsRow` under the filter bar.
+  * lib/shared/navigation/app_shell.dart (resetSearchTabState, _AppShellState._openSearchTab):
+    Reset clears the set; opening Search from a collection seeds it with that
+    one id.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (searchAddedToCollections, searchAlreadyInCollections):
+    New pluralised "added to N collections" / "already in the selected
+    collections" snackbar strings.
+
+### Changed
+
+- **Compact, consistent icons in the item-detail app bar and the top bar**
+
+  The item-detail screen's action icons (favorite, release bell, board lock,
+  board toggle, edit, overflow) shrink to match the back arrow, and the bar
+  drops to the same compact height as the rest of the app. The top bar's
+  settings gear and the service badges (Discord, Kodi) now share one icon size
+  so they read as a single set.
+
+  * lib/shared/widgets/screen_app_bar.dart (kScreenAppBarIconSize): New shared
+    icon size for the compact bar; the leading back button references it.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailAppBar.preferredSize, ItemDetailAppBar): Bar height tied to
+    kScreenAppBarHeight (was kToolbarHeight, leaving a too-tall bar); action
+    icons sized to kScreenAppBarIconSize via a shared _action builder.
+  * lib/shared/navigation/service_badges.dart (kTopBarIconSize): New shared size
+    for the top bar's right-hand chrome; the service badge icons use it.
+  * lib/shared/navigation/app_top_bar.dart: The settings gear uses kTopBarIconSize.
+
+- **Config export/import now covers every credential and setting** — all source credentials (ComicVine, Google Books, ScreenScraper, RetroAchievements, Steam, AniList), the app language, and the display/feature toggles (recommendations, Blu-ray and platform overlays, Discord RPC, RA sync, rich collections, hide-empty-media chevrons).
+
+  * lib/core/services/config_service.dart (ConfigService): export/import the new keys; add bool value support.
+
+- **Trakt import moved onto the shared import layer** — same behaviour, batched writes.
+
+  * lib/core/import/sources/trakt/trakt_import_service.dart (TraktImportService): relocated from lib/core/services and reimplemented as an ImportSource over ImportWriter.
+  * lib/features/settings/content/trakt_import_content.dart, test/helpers/mocks.dart (MockTraktImportService): updated to the new API.
+
+- **Media-type subfilter bar: scroll affordances and a selection highlight**
+
+  The subfilter chip row under the search and collection filters now uses the
+  same ScrollableRowWithArrows treatment as the rest of the app, so overflowing
+  chips can be reached with hover arrows and the mouse wheel on desktop, not
+  just a touch swipe. When any subfilter is active the whole strip is tinted
+  with the selected media type's accent, so an active filter stays obvious even
+  when the selected chip has scrolled off-screen.
+
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar): Converted to a
+    StatefulWidget that owns a ScrollController, wraps its row in
+    ScrollableRowWithArrows, and tints the strip with the first selected chip's
+    accent while a subfilter is active.
+
+### Fixed
+
+- **Tier list across all collections no longer shows duplicate cards**
+
+  A global tier list (one not scoped to a single collection) pulls items from
+  every collection, so a title saved in several collections showed up as one
+  unranked card per collection. The unranked pool now collapses those to a
+  single card per title and hides a title entirely once one of its copies is
+  placed in a tier. The same game on different platforms stays separate.
+
+  * lib/features/tier_lists/providers/tier_list_detail_provider.dart (_tierItemContentKey, _computeUnrankedItems, TierListDetailState): De-duplicate the unranked pool by media type + external id + platform for global tier lists; scoped lists are unchanged.
+
+- **Opening search from Wishlist or a collection keeps the shell and starts clean**
+
+  Searching for a wishlist title, or adding items to a collection, now opens the
+  real Search tab prefilled instead of pushing a separate full-screen search — so
+  the sidebar / top bar stay visible and there is no second search field. The
+  Search tab also resets its query and results whenever it is entered, so a query
+  carried over from a previous search (or a wishlist prefill) no longer sticks.
+
+  * lib/shared/navigation/search_providers.dart (searchTabRequestProvider, SearchTabRequest, searchTargetCollectionProvider): New — a one-shot "open the Search tab, optionally prefilled and optionally targeting a collection" request, plus the add-target collection.
+  * lib/shared/navigation/app_shell.dart (resetSearchTabState, _AppShellState.build, _AppShellState._onDestinationSelected, _AppShellState._resetSearchTab, _AppShellState._openSearchTab): Listen for the request and switch to the Search tab prefilled; clear query / add-target / browse search on plain entry to the tab.
+  * lib/features/wishlist/screens/wishlist_screen.dart (_WishlistScreenState._searchForItem): Set the request instead of pushing SearchScreen.
+  * lib/features/collections/helpers/collection_actions.dart (CollectionActions.addItems): Set the request with the collection as add target instead of pushing SearchScreen; now synchronous.
+  * lib/features/collections/screens/collection_screen.dart (_CollectionScreenState): Drop the now-unused context argument from addItems calls.
+  * lib/features/search/screens/search_screen.dart (SearchScreen, _SearchScreenState): Parameterless tab — removed isPushed/collectionId/initialQuery/initialSourceId/initialTabIndex/onGameSelected and its own Scaffold/AppBar; reads searchTargetCollectionProvider for add-targeting.
+
+- **Steam credentials in an exported config now restore on import** — the saved Steam key and ID reappear after importing a config.
+
+  * lib/core/services/config_service.dart (ConfigService): round-trip the steamRememberCredentials flag.
+
+- **Kinorium import matches the correct title** — titles resolve by exact release year, so different films sharing a name no longer merge into one; episodes and duplicate rows go to the wishlist instead of being dropped.
+
+  * lib/core/import/tmdb_matcher.dart (TmdbMatcher), lib/core/import/sources/kinorium/kinorium_import_service.dart (KinoriumImportService).
+
+- **Settings no longer go blank after opening a collection from an import** — tapping the Settings gear after using "Open Collection" on the import result keeps Settings working.
+
+  * lib/features/settings/content/kinorium_import_content.dart, lib/features/settings/content/trakt_import_content.dart, lib/features/settings/screens/kinorium_import_screen.dart, lib/features/settings/screens/trakt_import_screen.dart.
+
 ## [0.35.0] - 2026-06-19
 
 ### Added

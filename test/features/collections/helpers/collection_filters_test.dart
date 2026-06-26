@@ -125,6 +125,52 @@ void main() {
       );
     });
 
+    test('manga format filter narrows to the format, hiding other types', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        createTestCollectionItem(
+          id: 1,
+          mediaType: MediaType.manga,
+          manga: createTestManga(format: 'MANGA'),
+        ),
+        createTestCollectionItem(
+          id: 2,
+          mediaType: MediaType.manga,
+          manga: createTestManga(format: 'MANHWA'),
+        ),
+        createTestCollectionItem(id: 3, mediaType: MediaType.game),
+      ];
+      final List<CollectionItem> r = const CollectionFilters(
+        mangaFormats: <String>{'MANGA'},
+      ).apply(items, tags);
+      expect(r.map((CollectionItem i) => i.id), <int>[1]);
+    });
+
+    test('manga and anime format filters keep either type (OR)', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        createTestCollectionItem(
+          id: 1,
+          mediaType: MediaType.manga,
+          manga: createTestManga(format: 'MANGA'),
+        ),
+        createTestCollectionItem(
+          id: 2,
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'TV'),
+        ),
+        createTestCollectionItem(
+          id: 3,
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'OVA'),
+        ),
+        createTestCollectionItem(id: 4, mediaType: MediaType.game),
+      ];
+      final List<CollectionItem> r = const CollectionFilters(
+        mangaFormats: <String>{'MANGA'},
+        animeFormats: <String>{'TV'},
+      ).apply(items, tags);
+      expect(r.map((CollectionItem i) => i.id), <int>[1, 2]);
+    });
+
     test('combines filters with AND semantics', () {
       final List<CollectionItem> items = <CollectionItem>[
         make(id: 1, mediaType: MediaType.game, status: ItemStatus.completed),

@@ -65,6 +65,10 @@ void main() {
         .thenAnswer((_) async => <Collection>[]);
     when(() => mockRepo.getStats(any()))
         .thenAnswer((_) async => CollectionStats.empty);
+    when(() => mockRepo.getItemsWithData(any()))
+        .thenAnswer((_) async => <CollectionItem>[]);
+    when(() => mockRepo.setItemFavorite(any(),
+        isFavorite: any(named: 'isFavorite'))).thenAnswer((_) async {});
 
     mockDb = MockDatabaseService();
     mockGameDao = MockGameDao();
@@ -405,6 +409,62 @@ void main() {
       expect(
         container.read(allItemsNotifierProvider).valueOrNull?.first.id,
         2,
+      );
+    });
+
+    test('updateFavoriteLocally патчит флаг только у нужного элемента',
+        () async {
+      final List<CollectionItem> items = <CollectionItem>[
+        _makeItem(id: 1),
+        _makeItem(id: 2),
+      ];
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => items);
+
+      final ProviderContainer container = createContainer();
+      container.read(allItemsNotifierProvider);
+      await _pump();
+
+      container
+          .read(allItemsNotifierProvider.notifier)
+          .updateFavoriteLocally(1, isFavorite: true);
+
+      final List<CollectionItem>? state =
+          container.read(allItemsNotifierProvider).valueOrNull;
+      expect(
+        state!.firstWhere((CollectionItem i) => i.id == 1).isFavorite,
+        isTrue,
+      );
+      expect(
+        state.firstWhere((CollectionItem i) => i.id == 2).isFavorite,
+        isFalse,
+      );
+    });
+
+    test('toggleFavorite пишет в БД и обновляет состояние', () async {
+      final List<CollectionItem> items = <CollectionItem>[
+        _makeItem(id: 1, collectionId: 1),
+      ];
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => items);
+
+      final ProviderContainer container = createContainer();
+      container.read(allItemsNotifierProvider);
+      await _pump();
+
+      await container
+          .read(allItemsNotifierProvider.notifier)
+          .toggleFavorite(1);
+      await _pump();
+
+      verify(() => mockRepo.setItemFavorite(1, isFavorite: true)).called(1);
+      expect(
+        container
+            .read(allItemsNotifierProvider)
+            .valueOrNull
+            ?.firstWhere((CollectionItem i) => i.id == 1)
+            .isFavorite,
+        isTrue,
       );
     });
   });

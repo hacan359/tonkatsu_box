@@ -463,6 +463,24 @@ abstract class S {
   /// **'Highest first'**
   String get sortRatingDesc;
 
+  /// No description provided for @sortFavoriteDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get sortFavoriteDisplay;
+
+  /// No description provided for @sortFavoriteShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get sortFavoriteShort;
+
+  /// No description provided for @sortFavoriteDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites first'**
+  String get sortFavoriteDesc;
+
   /// No description provided for @sortExternalRatingDisplay.
   ///
   /// In en, this message translates to:
@@ -642,6 +660,24 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Move to bottom'**
   String get moveToBottom;
+
+  /// No description provided for @favorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get favorite;
+
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get addToFavorites;
+
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFromFavorites;
 
   /// No description provided for @bulkSelected.
   ///
@@ -4121,6 +4157,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{name} already in {collection}'**
   String searchAlreadyInNamed(String name, String collection);
+
+  /// No description provided for @searchAddedToCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to {count, plural, =1{1 collection} other{{count} collections}}'**
+  String searchAddedToCollections(String name, int count);
+
+  /// No description provided for @searchAlreadyInCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} already in the selected collections'**
+  String searchAlreadyInCollections(String name);
 
   /// No description provided for @searchGoToSettings.
   ///
@@ -9077,6 +9125,138 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Mix'**
   String get screenScraperMediaMix;
+
+  /// No description provided for @genreCloudTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalization'**
+  String get genreCloudTitle;
+
+  /// No description provided for @genreCloudEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No genres yet'**
+  String get genreCloudEmpty;
+
+  /// No description provided for @genreCloudEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items with genres to build the cloud'**
+  String get genreCloudEmptyHint;
+
+  /// No description provided for @genreCloudExportImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as image'**
+  String get genreCloudExportImage;
+
+  /// No description provided for @genreCloudImageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Image saved'**
+  String get genreCloudImageSaved;
+
+  /// No description provided for @genreCloudExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the image'**
+  String get genreCloudExportFailed;
+
+  /// No description provided for @genreCloudResetView.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset view'**
+  String get genreCloudResetView;
+
+  /// No description provided for @genreCloudHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hidden (didn\'t fit)} other{{count} hidden (didn\'t fit)}}'**
+  String genreCloudHidden(int count);
+
+  /// No description provided for @facetGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get facetGenre;
+
+  /// No description provided for @facetPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platforms'**
+  String get facetPlatform;
+
+  /// No description provided for @facetDecade.
+  ///
+  /// In en, this message translates to:
+  /// **'Decades'**
+  String get facetDecade;
+
+  /// No description provided for @personalizationTabCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre cloud'**
+  String get personalizationTabCloud;
+
+  /// No description provided for @personalizationTabRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get personalizationTabRecommendations;
+
+  /// No description provided for @recommendationsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get recommendationsRefresh;
+
+  /// No description provided for @recommendationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendations yet'**
+  String get recommendationsEmpty;
+
+  /// No description provided for @recommendationsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete and rate some movies or shows to get personalized picks'**
+  String get recommendationsEmptyHint;
+
+  /// No description provided for @recommendationsNoCandidates.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new to suggest'**
+  String get recommendationsNoCandidates;
+
+  /// No description provided for @recommendationsNoCandidatesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find anything new to suggest right now. Try again later'**
+  String get recommendationsNoCandidatesHint;
+
+  /// No description provided for @recommendationsNoApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'TMDB API key required'**
+  String get recommendationsNoApiKey;
+
+  /// No description provided for @recommendationsNoApiKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your TMDB API key in Settings to get recommendations'**
+  String get recommendationsNoApiKeyHint;
+
+  /// No description provided for @recommendationsBecauseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you liked'**
+  String get recommendationsBecauseLabel;
+
+  /// No description provided for @recommendationsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 recommendation} other{{count} recommendations}}'**
+  String recommendationsCount(int count);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -41,6 +41,7 @@ class WishlistTile extends StatelessWidget {
                 : null,
           ),
           subtitle: _buildSubtitle(context),
+          trailing: _buildActions(context),
           onLongPress: () => _showContextMenu(
             context,
             _centerOfContext(context),
@@ -128,6 +129,40 @@ class WishlistTile extends StatelessWidget {
       case _TileAction.delete:
         onDelete();
     }
+  }
+
+  /// Inline quick actions, mirroring the context menu so the item can be
+  /// managed without the right-click / long-press menu. Tapping the row still
+  /// runs the search, so it is not duplicated here.
+  Widget _buildActions(BuildContext context) {
+    final S l = S.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        IconButton(
+          icon: Icon(item.isResolved ? Icons.undo : Icons.check_circle_outline),
+          tooltip:
+              item.isResolved ? l.wishlistUnresolve : l.wishlistMarkResolved,
+          iconSize: 20,
+          visualDensity: VisualDensity.compact,
+          onPressed: onResolve,
+        ),
+        IconButton(
+          icon: const Icon(Icons.edit),
+          tooltip: l.edit,
+          iconSize: 20,
+          visualDensity: VisualDensity.compact,
+          onPressed: onEdit,
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          tooltip: l.delete,
+          iconSize: 20,
+          visualDensity: VisualDensity.compact,
+          onPressed: onDelete,
+        ),
+      ],
+    );
   }
 
   Widget _buildLeadingIcon() {

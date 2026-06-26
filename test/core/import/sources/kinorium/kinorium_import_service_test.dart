@@ -116,7 +116,8 @@ void main() {
             'Фильм', '1999'],
       ]));
       when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 603)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 1999)]);
 
       final UniversalImportResult result =
           await sut.import(KinoriumImportOptions(filePath: csvPath));
@@ -140,7 +141,8 @@ void main() {
             'Фильм', '1997'],
       ]));
       when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 7)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 7, releaseYear: 1997)]);
 
       final UniversalImportResult result = await sut.import(
         KinoriumImportOptions(filePath: csvPath, isWishlist: true),
@@ -159,7 +161,8 @@ void main() {
       when(() => mockTmdb.searchMovies(any(), year: 1992))
           .thenAnswer((_) async => <Movie>[]);
       when(() => mockTmdb.searchMovies(any(), year: null))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 88)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 88, releaseYear: 1992)]);
 
       final UniversalImportResult result =
           await sut.import(KinoriumImportOptions(filePath: csvPath));
@@ -174,7 +177,8 @@ void main() {
         <String>['9', '', 'Матрица', 'The Matrix', 'Фильм', '1999'],
       ]));
       when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 603)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 1999)]);
       when(() => mockRepo.getById(1))
           .thenAnswer((_) async => createTestCollection(id: 1));
       when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
@@ -209,7 +213,8 @@ void main() {
         <String>['5', '', 'Матрица', 'The Matrix', 'Фильм', '1999'],
       ]));
       when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 603)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 1999)]);
       when(() => mockRepo.getById(1))
           .thenAnswer((_) async => createTestCollection(id: 1));
       when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
@@ -276,7 +281,8 @@ void main() {
       ]));
       when(() => mockTmdb.searchTvShows(any(),
               firstAirDateYear: any(named: 'firstAirDateYear')))
-          .thenAnswer((_) async => <TvShow>[createTestTvShow(tmdbId: 1396)]);
+          .thenAnswer((_) async =>
+              <TvShow>[createTestTvShow(tmdbId: 1396, firstAirYear: 2026)]);
 
       final UniversalImportResult result =
           await sut.import(KinoriumImportOptions(filePath: csvPath));
@@ -298,7 +304,8 @@ void main() {
             'Мультфильм', '2026'],
       ]));
       when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 129)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 129, releaseYear: 2026)]);
 
       final UniversalImportResult result =
           await sut.import(KinoriumImportOptions(filePath: csvPath));
@@ -317,7 +324,8 @@ void main() {
       ]));
       when(() => mockTmdb.searchTvShows(any(),
               firstAirDateYear: any(named: 'firstAirDateYear')))
-          .thenAnswer((_) async => <TvShow>[createTestTvShow(tmdbId: 219)]);
+          .thenAnswer((_) async =>
+              <TvShow>[createTestTvShow(tmdbId: 219, firstAirYear: 2024)]);
 
       final UniversalImportResult result =
           await sut.import(KinoriumImportOptions(filePath: csvPath));
@@ -341,7 +349,8 @@ void main() {
             'Мэтт Беттинелли-Олпин, Тайлер Джиллетт']),
       ].join('\n'));
       when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 603)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 2025)]);
 
       final UniversalImportResult result = await sut.import(
         KinoriumImportOptions(filePath: csvPath, importNotes: true),
@@ -364,7 +373,8 @@ void main() {
             'The Toxic Avenger, Part II', 'Фильм', '1989'],
       ]));
       when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
-          .thenAnswer((_) async => <Movie>[createTestMovie(tmdbId: 603)]);
+          .thenAnswer(
+              (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 1989)]);
 
       final UniversalImportResult result =
           await sut.import(KinoriumImportOptions(filePath: csvPath));
@@ -372,10 +382,12 @@ void main() {
       expect(result.success, isTrue);
       expect(result.totalImported, 1);
       expect(capturedItemRows(), hasLength(1));
-      expect(result.skipped, greaterThanOrEqualTo(1));
+      // The duplicate row resolves to the same TMDB id; rather than being
+      // silently dropped it is routed to the wishlist so nothing is lost.
+      expect(result.totalWishlisted, 1);
     });
 
-    test('unsupported type (episode) → skipped without a TMDB search',
+    test('unsupported type (episode) → wishlisted without a TMDB search',
         () async {
       writeCsv(_csv(<List<String>>[
         <String>['', '', 'Пилот', 'Pilot', 'Эпизод', '2010'],
@@ -386,7 +398,9 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.totalImported, 0);
-      expect(result.skipped, greaterThanOrEqualTo(1));
+      // Episodes aren't collection items, but the row is preserved in the
+      // wishlist rather than dropped — and no TMDB search is spent on it.
+      expect(result.totalWishlisted, 1);
       verifyNever(() => mockTmdb.searchMovies(any(), year: any(named: 'year')));
     });
   });

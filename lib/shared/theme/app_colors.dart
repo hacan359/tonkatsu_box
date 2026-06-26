@@ -76,6 +76,9 @@ abstract final class AppColors {
   /// Error.
   static const Color error = Color(0xFFEF5350);
 
+  /// Favorite heart (filled).
+  static const Color favorite = Color(0xFFFF4D6D);
+
   // ==================== Statuses ====================
 
   /// "In Progress" status (playing/watching).

@@ -16,7 +16,9 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/helpers/collection_actions.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
@@ -41,6 +43,8 @@ class AllItemsScreen extends ConsumerStatefulWidget {
 class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   final Set<MediaType> _selectedTypes = <MediaType>{};
   final Set<int> _selectedPlatformIds = <int>{};
+  final Set<String> _selectedMangaFormats = <String>{};
+  final Set<String> _selectedAnimeFormats = <String>{};
 
   static const double _desktopMaxCardWidth = 170;
 
@@ -56,13 +60,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<int, CollectionTag> tagsMap =
         ref.watch(allTagsMapProvider).valueOrNull ?? <int, CollectionTag>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
+    final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
 
     final Set<int> selection = ref.watch(allItemsSelectionProvider);
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
     final List<CollectionItem> visibleItems =
-        _applyFilter(allItems, filterStatus, tagsMap, searchQuery);
+        _applyFilter(allItems, filterStatus, favoriteOnly, tagsMap, searchQuery);
     final List<CollectionItem> selectedItems = selection.isEmpty
         ? const <CollectionItem>[]
         : <CollectionItem>[
@@ -72,8 +77,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     return Column(
       children: <Widget>[
-        _buildMediaTypeBar(itemsAsync, filterStatus, tagsMap, searchQuery),
-        _buildPlatformsRow(),
+        _buildMediaTypeBar(
+            itemsAsync, filterStatus, favoriteOnly, tagsMap, searchQuery),
+        SubfilterBar(groups: _subfilterGroups(itemsAsync)),
         if (selectedItems.isNotEmpty)
           BulkActionBar(
             items: selectedItems,
@@ -105,6 +111,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   List<CollectionItem> _applyFilter(
     List<CollectionItem> items,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String searchQuery,
   ) {
@@ -115,21 +122,31 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         .where((CollectionItem item) =>
             (_selectedTypes.isEmpty ||
                 _selectedTypes.contains(item.mediaType)) &&
-            _matchesNonTypeFilters(item, filterStatus, tagsMap, query, lang))
+            _matchesNonTypeFilters(
+                item, filterStatus, favoriteOnly, tagsMap, query, lang))
         .toList();
   }
 
   bool _matchesNonTypeFilters(
     CollectionItem item,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String lowerQuery,
     String animeMangaTitleLanguage,
   ) {
+    if (favoriteOnly && !item.isFavorite) return false;
     if (filterStatus != null && item.status != filterStatus) return false;
     if (_selectedPlatformIds.isNotEmpty &&
         (item.platformId == null ||
             !_selectedPlatformIds.contains(item.platformId))) {
+      return false;
+    }
+    if (!MediaFormat.matchesFormatFilter(
+      item,
+      mangaFormats: _selectedMangaFormats,
+      animeFormats: _selectedAnimeFormats,
+    )) {
       return false;
     }
     if (lowerQuery.isNotEmpty) {
@@ -152,12 +169,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Widget _buildMediaTypeBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String searchQuery,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
     final Map<MediaType, int> counts =
-        _countByMediaType(items, filterStatus, tagsMap, searchQuery);
+        _countByMediaType(items, filterStatus, favoriteOnly, tagsMap, searchQuery);
     final Map<MediaType, int> totals = _rawTotalsByMediaType(items);
     final S l = S.of(context);
 
@@ -251,8 +269,23 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 status: filterStatus,
                 compact: compact,
                 subtitle: l.detailStatus,
+                isLast: false,
                 onChanged: (ItemStatus? s) =>
                     ref.read(homeStatusFilterProvider.notifier).setFilter(s),
+              ),
+            ),
+            Expanded(
+              child: ChevronSegment(
+                label: l.favorite,
+                icon: Icons.favorite,
+                selected: favoriteOnly,
+                accentColor: AppColors.favorite,
+                isFirst: false,
+                isLast: true,
+                onTap: () =>
+                    ref.read(homeFavoriteFilterProvider.notifier).toggle(),
+                compact: compact,
+                tintWhenInactive: true,
               ),
             ),
           ],
@@ -261,72 +294,58 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  /// Platform chips row, visible only while Games is selected.
-  Widget _buildPlatformsRow() {
-    if (!_selectedTypes.contains(MediaType.game)) {
-      return const SizedBox.shrink();
-    }
-    final AsyncValue<List<Platform>> platformsAsync =
-        ref.watch(allItemsPlatformsProvider);
-    final List<Platform> platforms =
-        platformsAsync.valueOrNull ?? <Platform>[];
-    if (platforms.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: <Widget>[
-            for (final Platform p in platforms) ...<Widget>[
-              _buildPlatformChip(p),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-          ],
-        ),
-      ),
-    );
+  /// One subfilter group per active type — game platforms, manga formats,
+  /// anime formats — each tinted with its media-type accent, on one row.
+  List<List<SubfilterChipData>> _subfilterGroups(
+    AsyncValue<List<CollectionItem>> itemsAsync,
+  ) {
+    final List<CollectionItem> items =
+        itemsAsync.valueOrNull ?? const <CollectionItem>[];
+    return <List<SubfilterChipData>>[
+      if (_selectedTypes.contains(MediaType.game))
+        <SubfilterChipData>[
+          for (final Platform p
+              in ref.watch(allItemsPlatformsProvider).valueOrNull ??
+                  const <Platform>[])
+            SubfilterChipData(
+              label: p.displayName,
+              accent: MediaTypeTheme.colorFor(MediaType.game),
+              selected: _selectedPlatformIds.contains(p.id),
+              onTap: () => setState(() {
+                if (_selectedPlatformIds.contains(p.id)) {
+                  _selectedPlatformIds.remove(p.id);
+                } else {
+                  _selectedPlatformIds.add(p.id);
+                }
+              }),
+            ),
+        ],
+      _formatGroup(MediaType.manga, _selectedMangaFormats, items),
+      _formatGroup(MediaType.anime, _selectedAnimeFormats, items),
+    ];
   }
 
-  Widget _buildPlatformChip(Platform platform) {
-    final bool selected = _selectedPlatformIds.contains(platform.id);
-    const Color accentColor = AppColors.brand;
-
-    return ChoiceChip(
-      label: Text(
-        platform.displayName,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : AppColors.textTertiary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+  List<SubfilterChipData> _formatGroup(
+    MediaType type,
+    Set<String> selected,
+    List<CollectionItem> items,
+  ) {
+    if (!_selectedTypes.contains(type)) return const <SubfilterChipData>[];
+    return <SubfilterChipData>[
+      for (final String code in MediaFormat.present(items, type))
+        SubfilterChipData(
+          label: MediaFormat.label(type, code),
+          accent: MediaTypeTheme.colorFor(type),
+          selected: selected.contains(code),
+          onTap: () => setState(() {
+            if (selected.contains(code)) {
+              selected.remove(code);
+            } else {
+              selected.add(code);
+            }
+          }),
         ),
-      ),
-      selected: selected,
-      selectedColor: accentColor,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected ? Colors.transparent : accentColor.withAlpha(50),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        setState(() {
-          if (value) {
-            _selectedPlatformIds.add(platform.id);
-          } else {
-            _selectedPlatformIds.remove(platform.id);
-          }
-        });
-      },
-    );
+    ];
   }
 
   void _toggleMediaType(MediaType type) {
@@ -338,6 +357,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       }
       if (!_selectedTypes.contains(MediaType.game)) {
         _selectedPlatformIds.clear();
+      }
+      if (!_selectedTypes.contains(MediaType.manga)) {
+        _selectedMangaFormats.clear();
+      }
+      if (!_selectedTypes.contains(MediaType.anime)) {
+        _selectedAnimeFormats.clear();
       }
     });
   }
@@ -362,6 +387,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Map<MediaType, int> _countByMediaType(
     List<CollectionItem>? items,
     ItemStatus? filterStatus,
+    bool favoriteOnly,
     Map<int, CollectionTag> tagsMap,
     String searchQuery,
   ) {
@@ -371,7 +397,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     final Map<MediaType, int> counts = <MediaType, int>{};
     for (final CollectionItem item in items) {
-      if (!_matchesNonTypeFilters(item, filterStatus, tagsMap, lower, lang)) {
+      if (!_matchesNonTypeFilters(
+          item, filterStatus, favoriteOnly, tagsMap, lower, lang)) {
         continue;
       }
       counts[item.mediaType] = (counts[item.mediaType] ?? 0) + 1;
@@ -471,7 +498,16 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                             mediaTypeOverlay: item.mediaType.overlayAsset,
                           ),
                       mediaType: item.mediaType,
+                      typeLabelOverride: item.formatLabel,
                       status: item.status,
+                      isFavorite: item.isFavorite,
+                      showFavorite: true,
+                      enableHoverScale: !isSelected,
+                      onToggleFavorite: selection.isEmpty
+                          ? () => ref
+                              .read(allItemsNotifierProvider.notifier)
+                              .toggleFavorite(item.id)
+                          : null,
                       tagName: tag?.name,
                       tagColor: tag?.color,
                       onTap: selection.isEmpty
@@ -662,6 +698,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       ),
       items: <PopupMenuEntry<String>>[
         contextMenuItem<String>(
+          value: 'favorite',
+          icon: item.isFavorite ? Icons.favorite : Icons.favorite_border,
+          label: item.isFavorite ? l.removeFromFavorites : l.addToFavorites,
+        ),
+        const PopupMenuDivider(),
+        contextMenuItem<String>(
           value: 'move',
           icon: Icons.drive_file_move_outlined,
           label: l.collectionMoveToCollection,
@@ -693,6 +735,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       return;
     }
     switch (value) {
+      case 'favorite':
+        await ref.read(allItemsNotifierProvider.notifier).toggleFavorite(item.id);
       case 'move':
         await CollectionActions.moveItem(
           context: context,
