@@ -83,6 +83,14 @@
   "sortLastActivityShort": "Activity",
   "sortLastActivityDesc": "Recent first",
 
+  "sortDateOldest": "Oldest first",
+  "sortStatusFinished": "Finished first",
+  "sortNameZa": "Z to A",
+  "sortRatingLowest": "Lowest first",
+  "sortFavoriteLast": "Favorites last",
+  "sortExternalRatingLowest": "Lowest first",
+  "sortLastActivityOldest": "Oldest first",
+
   "searchSortRelevanceShort": "Rel",
   "searchSortRelevanceDisplay": "Relevance",
   "searchSortDateShort": "Date",

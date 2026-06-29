@@ -517,6 +517,48 @@ abstract class S {
   /// **'Recent first'**
   String get sortLastActivityDesc;
 
+  /// No description provided for @sortDateOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortDateOldest;
+
+  /// No description provided for @sortStatusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished first'**
+  String get sortStatusFinished;
+
+  /// No description provided for @sortNameZa.
+  ///
+  /// In en, this message translates to:
+  /// **'Z to A'**
+  String get sortNameZa;
+
+  /// No description provided for @sortRatingLowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest first'**
+  String get sortRatingLowest;
+
+  /// No description provided for @sortFavoriteLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites last'**
+  String get sortFavoriteLast;
+
+  /// No description provided for @sortExternalRatingLowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest first'**
+  String get sortExternalRatingLowest;
+
+  /// No description provided for @sortLastActivityOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortLastActivityOldest;
+
   /// No description provided for @searchSortRelevanceShort.
   ///
   /// In en, this message translates to:

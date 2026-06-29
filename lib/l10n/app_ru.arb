@@ -83,6 +83,14 @@
   "sortLastActivityShort": "Активность",
   "sortLastActivityDesc": "Сначала недавние",
 
+  "sortDateOldest": "Сначала старые",
+  "sortStatusFinished": "Сначала завершённые",
+  "sortNameZa": "Я – А",
+  "sortRatingLowest": "Сначала худшие",
+  "sortFavoriteLast": "Избранные последними",
+  "sortExternalRatingLowest": "Сначала худшие",
+  "sortLastActivityOldest": "Сначала старые",
+
   "searchSortRelevanceShort": "Рел",
   "searchSortRelevanceDisplay": "Релевантность",
   "searchSortDateShort": "Дата",

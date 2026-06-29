@@ -222,6 +222,27 @@ class SEn extends S {
   String get sortLastActivityDesc => 'Recent first';
 
   @override
+  String get sortDateOldest => 'Oldest first';
+
+  @override
+  String get sortStatusFinished => 'Finished first';
+
+  @override
+  String get sortNameZa => 'Z to A';
+
+  @override
+  String get sortRatingLowest => 'Lowest first';
+
+  @override
+  String get sortFavoriteLast => 'Favorites last';
+
+  @override
+  String get sortExternalRatingLowest => 'Lowest first';
+
+  @override
+  String get sortLastActivityOldest => 'Oldest first';
+
+  @override
   String get searchSortRelevanceShort => 'Rel';
 
   @override

@@ -222,6 +222,27 @@ class SRu extends S {
   String get sortLastActivityDesc => 'Сначала недавние';
 
   @override
+  String get sortDateOldest => 'Сначала старые';
+
+  @override
+  String get sortStatusFinished => 'Сначала завершённые';
+
+  @override
+  String get sortNameZa => 'Я – А';
+
+  @override
+  String get sortRatingLowest => 'Сначала худшие';
+
+  @override
+  String get sortFavoriteLast => 'Избранные последними';
+
+  @override
+  String get sortExternalRatingLowest => 'Сначала худшие';
+
+  @override
+  String get sortLastActivityOldest => 'Сначала старые';
+
+  @override
   String get searchSortRelevanceShort => 'Рел';
 
   @override

@@ -337,9 +337,10 @@ class _CollectionFilterSheetState
                               color: AppColors.textSecondary,
                             ),
                             label: Text(
-                              isDescending
-                                  ? l.collectionFilterDescending
-                                  : l.collectionFilterAscending,
+                              currentSort.localizedDirectionLabel(
+                                l,
+                                descending: isDescending,
+                              ),
                               style: AppTypography.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                               ),
