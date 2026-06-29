@@ -350,13 +350,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   Future<void> _moveToCollection(CollectionItem item) async {
     final S l = S.of(context);
     final NavigatorState navigator = Navigator.of(context);
-    final bool isUncategorized = widget.collectionId == null;
 
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       excludeCollectionId: widget.collectionId,
-      showUncategorized: !isUncategorized,
+      showUncategorized: false,
       title: l.collectionMoveToCollection,
     );
     if (choice == null || !mounted) return;
@@ -854,6 +853,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       ref: ref,
       title: l.searchAddToCollection,
       alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
     );
     if (choice == null || !mounted) return;
 
@@ -901,6 +901,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       ref: ref,
       title: l.searchAddToCollection,
       alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
     );
     if (choice == null || !mounted) return;
 

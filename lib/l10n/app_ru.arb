@@ -1265,6 +1265,8 @@
 
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
   "uncategorizedBannerAction": "Добавить в коллекцию",
+  "uncategorizedDeprecationNotice": "Эта системная коллекция скоро будет удалена. Создайте свою коллекцию и перенесите в неё все элементы отсюда.",
+  "uncategorizedDeprecationBadge": "Будет удалена",
 
   "browseFilterGenre": "Жанр",
   "browseFilterTag": "Тэг",

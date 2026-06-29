@@ -154,6 +154,7 @@ class SearchCollectionAdder {
       ref: _ref,
       title: l.searchAddToCollection,
       alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
     );
     if (choice == null || !context.mounted) return null;
     return switch (choice) {

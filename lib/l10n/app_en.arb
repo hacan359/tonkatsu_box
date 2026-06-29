@@ -1538,6 +1538,14 @@
 
   "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
   "uncategorizedBannerAction": "Add to Collection",
+  "uncategorizedDeprecationNotice": "This system collection will be removed soon. Create your own collection and move all items here into it.",
+  "@uncategorizedDeprecationNotice": {
+    "description": "Warns that the Uncategorized system collection is deprecated and will be removed."
+  },
+  "uncategorizedDeprecationBadge": "Will be removed",
+  "@uncategorizedDeprecationBadge": {
+    "description": "Short warning shown on the Uncategorized collection card/tile that it will be removed."
+  },
 
   "browseFilterGenre": "Genre",
   "browseFilterTag": "Tag",

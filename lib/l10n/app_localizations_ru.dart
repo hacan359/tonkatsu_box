@@ -3493,6 +3493,13 @@ class SRu extends S {
   String get uncategorizedBannerAction => 'Добавить в коллекцию';
 
   @override
+  String get uncategorizedDeprecationNotice =>
+      'Эта системная коллекция скоро будет удалена. Создайте свою коллекцию и перенесите в неё все элементы отсюда.';
+
+  @override
+  String get uncategorizedDeprecationBadge => 'Будет удалена';
+
+  @override
   String get browseFilterGenre => 'Жанр';
 
   @override

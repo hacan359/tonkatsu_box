@@ -45,7 +45,9 @@ class CollectionScreenFab extends StatelessWidget {
   final ValueChanged<CollectionMenuAction> onMenuAction;
 
   DraggableFabItem? _mainAction(S l) {
-    if (!canEdit || isCanvasMode) return null;
+    // Uncategorized is a read-only legacy bucket: items can be moved out of it
+    // but no longer added to it, so the "add items" action is hidden here.
+    if (!canEdit || isCanvasMode || isUncategorized) return null;
     return DraggableFabItem(
       icon: Icons.add,
       label: l.collectionAddItems,

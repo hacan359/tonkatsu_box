@@ -3446,6 +3446,13 @@ class SEn extends S {
   String get uncategorizedBannerAction => 'Add to Collection';
 
   @override
+  String get uncategorizedDeprecationNotice =>
+      'This system collection will be removed soon. Create your own collection and move all items here into it.';
+
+  @override
+  String get uncategorizedDeprecationBadge => 'Will be removed';
+
+  @override
   String get browseFilterGenre => 'Genre';
 
   @override

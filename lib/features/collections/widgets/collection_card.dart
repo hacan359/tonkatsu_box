@@ -103,13 +103,35 @@ class UncategorizedCard extends StatelessWidget {
                 color: AppColors.surfaceLight,
                 borderRadius:
                     BorderRadius.circular(CollectionCard.mosaicRadius),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.5),
+                ),
               ),
               clipBehavior: Clip.antiAlias,
-              child: const Center(
-                child: Icon(
-                  Icons.inbox_rounded,
-                  color: AppColors.brand,
-                  size: 40,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: AppColors.error,
+                        size: 48,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l.uncategorizedDeprecationBadge,
+                        style: AppTypography.h3.copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

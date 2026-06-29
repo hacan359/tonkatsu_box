@@ -6180,6 +6180,18 @@ abstract class S {
   /// **'Add to Collection'**
   String get uncategorizedBannerAction;
 
+  /// Warns that the Uncategorized system collection is deprecated and will be removed.
+  ///
+  /// In en, this message translates to:
+  /// **'This system collection will be removed soon. Create your own collection and move all items here into it.'**
+  String get uncategorizedDeprecationNotice;
+
+  /// Short warning shown on the Uncategorized collection card/tile that it will be removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be removed'**
+  String get uncategorizedDeprecationBadge;
+
   /// No description provided for @browseFilterGenre.
   ///
   /// In en, this message translates to:

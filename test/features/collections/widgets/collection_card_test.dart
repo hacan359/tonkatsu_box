@@ -550,7 +550,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Uncategorized'), findsOneWidget);
-      expect(find.byIcon(Icons.inbox_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
     });
 
     testWidgets('should call onTap when pressed',

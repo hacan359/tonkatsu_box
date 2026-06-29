@@ -70,14 +70,13 @@ class CollectionActions {
     required int? collectionId,
     required CollectionItem item,
   }) async {
-    final bool isUncategorized = collectionId == null;
     final S l = S.of(context);
 
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       excludeCollectionId: collectionId,
-      showUncategorized: !isUncategorized,
+      showUncategorized: false,
       title: l.collectionMoveToCollection,
     );
     if (choice == null || !context.mounted) return false;
