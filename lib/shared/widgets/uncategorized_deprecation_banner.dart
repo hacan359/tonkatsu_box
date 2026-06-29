@@ -7,8 +7,8 @@ import '../theme/app_typography.dart';
 
 /// Warns that the Uncategorized system collection is deprecated: new items can
 /// no longer be added to it, and it will be removed in a future version. Shown
-/// wherever the Uncategorized bucket surfaces (home collections list, All
-/// Items) so users migrate their data into a real collection.
+/// on the All Items screen above the Uncategorized group; the collections list
+/// flags the bucket inline on its card/tile instead.
 class UncategorizedDeprecationBanner extends StatelessWidget {
   const UncategorizedDeprecationBanner({super.key});
 

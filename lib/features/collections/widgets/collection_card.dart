@@ -108,7 +108,10 @@ class UncategorizedCard extends StatelessWidget {
                 ),
               ),
               clipBehavior: Clip.antiAlias,
-              child: Center(
+              // scaleDown keeps the icon + label from overflowing the image
+              // area on small/narrow grid cards (no scaling at normal sizes).
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
@@ -126,8 +129,6 @@ class UncategorizedCard extends StatelessWidget {
                           color: AppColors.error,
                           fontWeight: FontWeight.w700,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                       ),
                     ],
