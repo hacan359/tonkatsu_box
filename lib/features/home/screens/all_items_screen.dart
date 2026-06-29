@@ -20,6 +20,7 @@ import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -460,6 +461,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 isFirst: i == 0,
               ),
             ),
+            if (groups[i].isUncategorized)
+              const SliverToBoxAdapter(
+                child: UncategorizedDeprecationBanner(),
+              ),
             SliverPadding(
               padding: EdgeInsets.symmetric(
                 horizontal: gridPadding,
@@ -562,8 +567,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         final String name = colId != null
             ? (collectionNames[colId] ?? 'Unknown')
             : uncategorizedLabel;
-        final _CollectionGroup group =
-            _CollectionGroup(name: name, items: <CollectionItem>[item]);
+        final _CollectionGroup group = _CollectionGroup(
+          name: name,
+          items: <CollectionItem>[item],
+          isUncategorized: colId == null,
+        );
         map[colId] = group;
         order.add(colId);
       } else {
@@ -846,7 +854,12 @@ class _MediaTypeEntry {
 }
 
 class _CollectionGroup {
-  _CollectionGroup({required this.name, required this.items});
+  _CollectionGroup({
+    required this.name,
+    required this.items,
+    this.isUncategorized = false,
+  });
   final String name;
   final List<CollectionItem> items;
+  final bool isUncategorized;
 }

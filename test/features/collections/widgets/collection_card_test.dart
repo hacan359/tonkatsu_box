@@ -550,7 +550,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Uncategorized'), findsOneWidget);
-      expect(find.byIcon(Icons.inbox_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
     });
 
     testWidgets('should call onTap when pressed',
@@ -570,5 +570,26 @@ void main() {
       expect(tapped, isTrue);
     });
 
+    testWidgets('renders without overflow in a small grid cell',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 120,
+                height: 120,
+                child: UncategorizedCard(count: 5),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
   });
 }

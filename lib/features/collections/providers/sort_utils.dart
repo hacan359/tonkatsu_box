@@ -42,13 +42,20 @@ List<CollectionItem> applySortMode(
       );
     case CollectionSortMode.rating:
       sorted.sort((CollectionItem a, CollectionItem b) {
-        final double? rA = a.userRating?.toDouble() ?? a.apiRating;
-        final double? rB = b.userRating?.toDouble() ?? b.apiRating;
-        // Items with neither rating sort last.
-        if (rA == null && rB == null) return 0;
+        // "My Rating" ranks by the user's own rating only — the external API
+        // rating is a separate mode. Items the user hasn't rated sort last,
+        // ordered by name so the unrated bucket stays stable across re-sorts.
+        final double? rA = a.userRating?.toDouble();
+        final double? rB = b.userRating?.toDouble();
+        if (rA == null && rB == null) {
+          return _compareByDisplayName(a, b, animeMangaTitleLanguage);
+        }
         if (rA == null) return 1;
         if (rB == null) return -1;
-        return rB.compareTo(rA);
+        final int byRating = rB.compareTo(rA);
+        return byRating != 0
+            ? byRating
+            : _compareByDisplayName(a, b, animeMangaTitleLanguage);
       });
     case CollectionSortMode.favorite:
       sorted.sort((CollectionItem a, CollectionItem b) {
@@ -67,11 +74,11 @@ List<CollectionItem> applySortMode(
       });
     case CollectionSortMode.lastActivity:
       sorted.sort((CollectionItem a, CollectionItem b) {
-        // Null lastActivityAt sorts last.
-        if (a.lastActivityAt == null && b.lastActivityAt == null) return 0;
-        if (a.lastActivityAt == null) return 1;
-        if (b.lastActivityAt == null) return -1;
-        return b.lastActivityAt!.compareTo(a.lastActivityAt!);
+        // An item untouched since it was added has no activity date yet; fall
+        // back to its added date so fresh items don't sink below older ones.
+        final DateTime aAt = a.lastActivityAt ?? a.addedAt;
+        final DateTime bAt = b.lastActivityAt ?? b.addedAt;
+        return bAt.compareTo(aAt);
       });
   }
   if (isDescending) {

@@ -241,6 +241,7 @@ class DbSyncService {
       collections: await _database.getCollectionCount(),
       items: await _database.getTotalItemCount(),
       profileName: profileName,
+      supportsSettingsTransfer: true,
     );
   }
 

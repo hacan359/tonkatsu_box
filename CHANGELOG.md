@@ -7,6 +7,159 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Personalization step in the welcome menu tour**
+
+  The coachmark tour now highlights the centre nav button (genre cloud +
+  recommendations), which it previously skipped because that button is a
+  shell-level destination rather than a nav tab. The tour scrim is also denser
+  so the app's text behind it no longer bleeds through the description card.
+
+  * lib/shared/navigation/nav_tour_keys.dart (NavTourKeys.personalization): New
+    stable key for the centre button.
+  * lib/shared/navigation/app_sidebar.dart (AppSidebar.build),
+    lib/shared/navigation/app_bottom_bar.dart (AppBottomBar.build): Attach the
+    personalization key to NavCenterButton while the tour runs.
+  * lib/features/welcome/widgets/menu_tour_items.dart (MenuTourItem,
+    buildMenuTourItems): Make `tab` nullable for the centre-button step and
+    insert it at the centre slot in menu order.
+  * lib/features/welcome/widgets/menu_tour_overlay.dart
+    (_MenuTourOverlayState._syncSpot, _MenuTourOverlayState._readRect,
+    _SpotlightPainter): Drive the spotlight off the item list, resolve the centre
+    button by its key, and raise the scrim alpha from 130 to 200.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (welcomeHowPersonalizationDesc): New.
+
+- **Carry app settings and API keys over network sync**
+
+  Receiving data from another device now offers an "Also transfer settings"
+  checkbox (on by default, all-or-nothing) that pulls the sending device's full
+  configuration — every preference plus all API keys and source logins — and
+  applies it here. The bundle rides a new `/config` endpoint alongside the
+  database and images, is written straight to preferences, and takes effect on
+  the restart the received database requires anyway. The checkbox only appears
+  when the sending device is new enough to serve its config. The transfer stays
+  on the local network in the clear, like the database it accompanies.
+
+  * lib/shared/models/sync_manifest.dart (SyncManifest.supportsSettingsTransfer):
+    New capability flag (`supports_settings`), absent on older peers so the
+    receiver hides the option.
+  * lib/core/services/db_sync_service.dart (DbSyncService.buildManifest):
+    Advertise supportsSettingsTransfer.
+  * lib/core/services/lan_sync_service.dart (LanSyncService._serveConfig,
+    LanSyncService.downloadConfig): New `/config` endpoint serving the full
+    ConfigService bundle, plus the client that fetches and applies it;
+    LanSyncService now takes a ConfigService.
+  * lib/features/settings/screens/lan_sync_screen.dart
+    (_LanSyncScreenState._askReceiveOptions, _ReceiveChoice): Receive dialog
+    grows the opt-in checkbox; the pull applies the bundle after the database.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (lanSyncImportConfig,
+    lanSyncImportConfigSubtitle, lanSyncReceivingSettings): New.
+
+### Changed
+
+- **Mark the Uncategorized collection as deprecated across the UI**
+
+  The Uncategorized bucket is now a read-only legacy collection: it can no
+  longer be picked as a move/add destination, its card and list tile show a red
+  "will be removed" warning, the All Items screen shows a deprecation banner
+  above the group, and the add-items FAB and Ctrl+N shortcut are hidden while
+  viewing it.
+
+  * lib/features/collections/widgets/collection_card.dart (UncategorizedCard),
+    lib/features/collections/widgets/collection_list_tile.dart
+    (UncategorizedListTile): Red warning triangle plus badge text; the card uses
+    a FittedBox so the warning never overflows a small grid cell.
+  * lib/shared/widgets/uncategorized_deprecation_banner.dart
+    (UncategorizedDeprecationBanner): New banner shown on All Items.
+  * lib/features/home/screens/all_items_screen.dart
+    (_CollectionGroup.isUncategorized): Flag the Uncategorized group and render
+    the banner above it.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.moveItem),
+    lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._moveToCollection),
+    lib/features/collections/widgets/bulk_action_bar.dart
+    (BulkActionBar._handleMove),
+    lib/features/search/services/search_collection_adder.dart
+    (SearchCollectionAdder.pickCollection): Pass showUncategorized: false to the
+    collection picker.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._buildScreenShortcuts),
+    lib/features/collections/widgets/collection_screen/collection_screen_fab.dart
+    (CollectionScreenFab._mainAction): Hide the add-items shortcut and FAB for it.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (uncategorizedDeprecationBadge,
+    uncategorizedDeprecationNotice): New.
+
+- **Collection items re-sort immediately after an in-card edit**
+
+  Changing rating, status, progress, favorite, comments or the override name in
+  the item card now re-applies the active sort right away, so the item moves to
+  its correct place instead of staying put until you re-enter. Any such edit
+  also counts as activity (stamps last_activity_at), so it surfaces in the "by
+  activity" sort. Manual (drag-and-drop) order is never re-sorted, and the
+  re-sort is local — no reload, so the list does not flash.
+
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier._patchItem, CollectionItemsNotifier._stampActivity):
+    New helpers; every card-edit method routes through them.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateStatus, CollectionItemsNotifier.setFavorite,
+    CollectionItemsNotifier.updateActivityDates,
+    CollectionItemsNotifier.updateProgress,
+    CollectionItemsNotifier.updateAuthorComment,
+    CollectionItemsNotifier.updateUserComment,
+    CollectionItemsNotifier.setOverrideName,
+    CollectionItemsNotifier.updateUserRating,
+    CollectionItemsNotifier.addTimeSpent, CollectionItemsNotifier.setTimeSpent):
+    Stamp activity and re-sort when the edited field feeds the active mode.
+
+- **Sort-direction labels spell out the order instead of "ascending/descending"**
+
+  The direction toggle now reads "Newest first / Oldest first", "Highest first /
+  Lowest first", etc. per mode, so it no longer claims "ascending" while showing
+  newest/highest on top.
+
+  * lib/shared/models/collection_sort_mode.dart
+    (CollectionSortMode.localizedDirectionLabel): New.
+  * lib/features/collections/widgets/collection_filter_bar.dart,
+    lib/features/collections/widgets/collection_filter_sheet.dart: Use the
+    mode-aware label instead of collectionFilterAscending/Descending.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (sortDateOldest, sortStatusFinished,
+    sortNameZa, sortRatingLowest, sortFavoriteLast, sortExternalRatingLowest,
+    sortLastActivityOldest): New.
+
+### Fixed
+
+- **API Keys counter no longer counts built-in default keys**
+
+  In production builds with TMDB / SteamGridDB / IGDB keys baked in via
+  `--dart-define`, the Settings "API Keys" tally showed e.g. 2/6 even with no
+  user-entered keys and empty credential fields. It now counts only keys the
+  user actually set, matching the credentials screen (0/6 on a fresh install).
+
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._apiKeyStates): Exclude built-in defaults via
+    isIgdbKeyBuiltIn / isSteamGridDbKeyBuiltIn / isTmdbKeyBuiltIn.
+
+- **"My Rating" sort ignores the external rating**
+
+  It now ranks by the user's own rating only; items the user has not rated sort
+  last (by name), instead of being ranked by their external API rating — which
+  used to push an unrated-but-high-API item above personally-rated ones.
+
+  * lib/features/collections/providers/sort_utils.dart (applySortMode): Drop the
+    apiRating fallback for CollectionSortMode.rating; add a name tie-break.
+
+- **"By activity" sort no longer sinks freshly added items**
+
+  An item never touched since it was added now falls back to its added date for
+  the activity sort, so new items don't drop below older ones with a stale
+  activity date.
+
+  * lib/features/collections/providers/sort_utils.dart (applySortMode): Use
+    lastActivityAt ?? addedAt for CollectionSortMode.lastActivity.
+
 ## [0.36.0] - 2026-06-26
 
 ### Added

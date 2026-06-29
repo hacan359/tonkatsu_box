@@ -21,6 +21,16 @@ void main() {
       expect(unique.length, NavTab.values.length);
     });
 
+    test('personalization key is stable and distinct from the tab keys', () {
+      final NavTourKeys keys = NavTourKeys();
+      expect(keys.personalization, same(keys.personalization));
+
+      final Set<GlobalKey> tabKeys = <GlobalKey>{
+        for (final NavTab tab in NavTab.values) keys.keyFor(tab),
+      };
+      expect(tabKeys.contains(keys.personalization), isFalse);
+    });
+
     test('provider exposes a single shared instance', () {
       final ProviderContainer container = ProviderContainer();
       addTearDown(container.dispose);

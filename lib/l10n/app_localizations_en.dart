@@ -222,6 +222,27 @@ class SEn extends S {
   String get sortLastActivityDesc => 'Recent first';
 
   @override
+  String get sortDateOldest => 'Oldest first';
+
+  @override
+  String get sortStatusFinished => 'Finished first';
+
+  @override
+  String get sortNameZa => 'Z to A';
+
+  @override
+  String get sortRatingLowest => 'Lowest first';
+
+  @override
+  String get sortFavoriteLast => 'Favorites last';
+
+  @override
+  String get sortExternalRatingLowest => 'Lowest first';
+
+  @override
+  String get sortLastActivityOldest => 'Oldest first';
+
+  @override
   String get searchSortRelevanceShort => 'Rel';
 
   @override
@@ -1156,6 +1177,16 @@ class SEn extends S {
 
   @override
   String get lanSyncReceivingImages => 'Transferring images...';
+
+  @override
+  String get lanSyncReceivingSettings => 'Transferring settings...';
+
+  @override
+  String get lanSyncImportConfig => 'Also transfer settings';
+
+  @override
+  String get lanSyncImportConfigSubtitle =>
+      'Includes API keys. All or nothing.';
 
   @override
   String get lanSyncImagesWarning =>
@@ -2710,6 +2741,10 @@ class SEn extends S {
       'API keys, cache, database export/import, debug tools.';
 
   @override
+  String get welcomeHowPersonalizationDesc =>
+      'Your taste in one place: a cloud of your favourite genres plus recommendations picked from what you\'ve rated.';
+
+  @override
   String get welcomeHowQuickStart => 'Quick Start';
 
   @override
@@ -3444,6 +3479,13 @@ class SEn extends S {
 
   @override
   String get uncategorizedBannerAction => 'Add to Collection';
+
+  @override
+  String get uncategorizedDeprecationNotice =>
+      'This system collection will be removed soon. Create your own collection and move all items here into it.';
+
+  @override
+  String get uncategorizedDeprecationBadge => 'Will be removed';
 
   @override
   String get browseFilterGenre => 'Genre';

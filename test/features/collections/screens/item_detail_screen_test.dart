@@ -1858,6 +1858,13 @@ void main() {
           )).thenAnswer((_) async => <CollectionItem>[item]);
       when(() => mockRepo.updateItemUserComment(any(), any()))
           .thenAnswer((_) async {});
+      // Comment edits now stamp last_activity_at via this method.
+      when(() => mockRepo.updateItemActivityDates(
+            any(),
+            startedAt: any(named: 'startedAt'),
+            completedAt: any(named: 'completedAt'),
+            lastActivityAt: any(named: 'lastActivityAt'),
+          )).thenAnswer((_) async {});
 
       await tester.pumpWidget(ProviderScope(
         overrides: <Override>[

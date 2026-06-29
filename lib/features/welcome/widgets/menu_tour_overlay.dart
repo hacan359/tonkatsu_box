@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/navigation/nav_tab.dart';
 import '../../../shared/navigation/nav_tour_keys.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -85,10 +84,10 @@ class _MenuTourOverlayState extends ConsumerState<MenuTourOverlay>
   /// frames while it isn't available yet.
   void _syncSpot() {
     if (!mounted) return;
-    // Item order matches NavTab.values 1:1, so the tab needs no item list.
-    const List<NavTab> tabs = NavTab.values;
-    final NavTab tab = tabs[_index.clamp(0, tabs.length - 1)];
-    final Rect? rect = _readRect(tab);
+    final List<MenuTourItem> items = buildMenuTourItems(context);
+    if (items.isEmpty) return;
+    final MenuTourItem item = items[_index.clamp(0, items.length - 1)];
+    final Rect? rect = _readRect(item);
     if (rect != null) {
       _retries = 0;
       final Rect spot = rect.inflate(8);
@@ -99,11 +98,13 @@ class _MenuTourOverlayState extends ConsumerState<MenuTourOverlay>
     }
   }
 
-  /// On-screen rect of [tab]'s real button, or null if it isn't available.
-  Rect? _readRect(NavTab tab) {
+  /// On-screen rect of [item]'s real button, or null if it isn't available.
+  Rect? _readRect(MenuTourItem item) {
     final NavTourKeys keys = ref.read(navTourKeysProvider);
-    final RenderObject? box =
-        keys.keyFor(tab).currentContext?.findRenderObject();
+    final GlobalKey key = item.isPersonalization
+        ? keys.personalization
+        : keys.keyFor(item.tab!);
+    final RenderObject? box = key.currentContext?.findRenderObject();
     if (box is! RenderBox || !box.attached || !box.hasSize) return null;
     return box.localToGlobal(Offset.zero) & box.size;
   }
@@ -168,10 +169,14 @@ class _SpotlightPainter extends CustomPainter {
 
   static const double _radius = 14;
 
+  /// Opacity of the dim layer over the app. Dense enough that the real UI's
+  /// text behind it stays subdued and doesn't clash with the tour card.
+  static const int _scrimAlpha = 200;
+
   @override
   void paint(Canvas canvas, Size size) {
     final Rect full = Offset.zero & size;
-    final Paint dim = Paint()..color = Colors.black.withAlpha(130);
+    final Paint dim = Paint()..color = Colors.black.withAlpha(_scrimAlpha);
 
     final Rect? spot = this.spot;
     if (spot == null) {

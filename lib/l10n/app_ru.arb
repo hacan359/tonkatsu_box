@@ -83,6 +83,14 @@
   "sortLastActivityShort": "Активность",
   "sortLastActivityDesc": "Сначала недавние",
 
+  "sortDateOldest": "Сначала старые",
+  "sortStatusFinished": "Сначала завершённые",
+  "sortNameZa": "Я – А",
+  "sortRatingLowest": "Сначала худшие",
+  "sortFavoriteLast": "Избранные последними",
+  "sortExternalRatingLowest": "Сначала худшие",
+  "sortLastActivityOldest": "Сначала старые",
+
   "searchSortRelevanceShort": "Рел",
   "searchSortRelevanceDisplay": "Релевантность",
   "searchSortDateShort": "Дата",
@@ -459,6 +467,9 @@
   "lanSyncCorrupted": "Передача прошла с ошибкой. Попробуйте ещё раз.",
   "lanSyncReceived": "Данные получены",
   "lanSyncReceivingImages": "Перенос картинок...",
+  "lanSyncReceivingSettings": "Перенос настроек...",
+  "lanSyncImportConfig": "Также перенести настройки",
+  "lanSyncImportConfigSubtitle": "Включая ключи API. Всё или ничего.",
   "lanSyncImagesWarning": "База перенесена, но картинки не удалось перенести",
   "lanSyncRestartMessage": "Полученные данные начнут использоваться после перезапуска. Перезапустить сейчас?",
   "lanSyncFirewallNote": "При первом запуске Windows может спросить разрешение брандмауэра - разрешите доступ в частных сетях.",
@@ -995,6 +1006,7 @@
   "welcomeHowWishlistDesc": "Быстрый список того, что хотите посмотреть позже. API не нужен.",
   "welcomeHowSearchDesc": "Поиск игр, фильмов, сериалов, новелл и манги через API. Добавляйте в любую коллекцию.",
   "welcomeHowSettingsDesc": "Ключи API, кэш, экспорт/импорт БД, отладочные инструменты.",
+  "welcomeHowPersonalizationDesc": "Ваш вкус в одном месте: облако любимых жанров и рекомендации на основе ваших оценок.",
   "welcomeHowQuickStart": "Быстрый старт",
   "welcomeHowStep1": "Откройте Настройки → Учётные данные, введите ключи API",
   "welcomeHowStep2": "Нажмите «Проверить подключение», дождитесь синхронизации",
@@ -1265,6 +1277,8 @@
 
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
   "uncategorizedBannerAction": "Добавить в коллекцию",
+  "uncategorizedDeprecationNotice": "Эта системная коллекция скоро будет удалена. Создайте свою коллекцию и перенесите в неё все элементы отсюда.",
+  "uncategorizedDeprecationBadge": "Будет удалена",
 
   "browseFilterGenre": "Жанр",
   "browseFilterTag": "Тэг",

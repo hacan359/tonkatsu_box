@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/core/services/config_service.dart';
 import 'package:tonkatsu_box/core/services/db_sync_service.dart';
 import 'package:tonkatsu_box/core/services/lan_sync_service.dart';
 import 'package:tonkatsu_box/features/settings/screens/lan_sync_screen.dart';
@@ -12,7 +14,7 @@ import '../../../helpers/test_helpers.dart';
 
 /// Real sockets never complete inside FakeAsync; stub the network out.
 class _FakeLanSyncService extends LanSyncService {
-  _FakeLanSyncService({required super.sync});
+  _FakeLanSyncService({required super.sync, required super.config});
 
   bool started = false;
 
@@ -34,13 +36,18 @@ void main() {
   late DbSyncService dbSync;
   late _FakeLanSyncService fakeLan;
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     dbSync = DbSyncService(
       database: DatabaseService(),
       metaProvider: () async =>
           const SyncDeviceMeta(deviceName: 'TEST-DEVICE', appVersion: '1.0'),
     );
-    fakeLan = _FakeLanSyncService(sync: dbSync);
+    fakeLan = _FakeLanSyncService(
+      sync: dbSync,
+      config: ConfigService(prefs: prefs),
+    );
   });
 
   Future<void> pumpScreen(WidgetTester tester) async {

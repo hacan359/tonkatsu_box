@@ -222,6 +222,27 @@ class SRu extends S {
   String get sortLastActivityDesc => 'Сначала недавние';
 
   @override
+  String get sortDateOldest => 'Сначала старые';
+
+  @override
+  String get sortStatusFinished => 'Сначала завершённые';
+
+  @override
+  String get sortNameZa => 'Я – А';
+
+  @override
+  String get sortRatingLowest => 'Сначала худшие';
+
+  @override
+  String get sortFavoriteLast => 'Избранные последними';
+
+  @override
+  String get sortExternalRatingLowest => 'Сначала худшие';
+
+  @override
+  String get sortLastActivityOldest => 'Сначала старые';
+
+  @override
   String get searchSortRelevanceShort => 'Рел';
 
   @override
@@ -1173,6 +1194,16 @@ class SRu extends S {
 
   @override
   String get lanSyncReceivingImages => 'Перенос картинок...';
+
+  @override
+  String get lanSyncReceivingSettings => 'Перенос настроек...';
+
+  @override
+  String get lanSyncImportConfig => 'Также перенести настройки';
+
+  @override
+  String get lanSyncImportConfigSubtitle =>
+      'Включая ключи API. Всё или ничего.';
 
   @override
   String get lanSyncImagesWarning =>
@@ -2755,6 +2786,10 @@ class SRu extends S {
       'Ключи API, кэш, экспорт/импорт БД, отладочные инструменты.';
 
   @override
+  String get welcomeHowPersonalizationDesc =>
+      'Ваш вкус в одном месте: облако любимых жанров и рекомендации на основе ваших оценок.';
+
+  @override
   String get welcomeHowQuickStart => 'Быстрый старт';
 
   @override
@@ -3491,6 +3526,13 @@ class SRu extends S {
 
   @override
   String get uncategorizedBannerAction => 'Добавить в коллекцию';
+
+  @override
+  String get uncategorizedDeprecationNotice =>
+      'Эта системная коллекция скоро будет удалена. Создайте свою коллекцию и перенесите в неё все элементы отсюда.';
+
+  @override
+  String get uncategorizedDeprecationBadge => 'Будет удалена';
 
   @override
   String get browseFilterGenre => 'Жанр';

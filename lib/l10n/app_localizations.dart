@@ -517,6 +517,48 @@ abstract class S {
   /// **'Recent first'**
   String get sortLastActivityDesc;
 
+  /// No description provided for @sortDateOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortDateOldest;
+
+  /// No description provided for @sortStatusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished first'**
+  String get sortStatusFinished;
+
+  /// No description provided for @sortNameZa.
+  ///
+  /// In en, this message translates to:
+  /// **'Z to A'**
+  String get sortNameZa;
+
+  /// No description provided for @sortRatingLowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest first'**
+  String get sortRatingLowest;
+
+  /// No description provided for @sortFavoriteLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites last'**
+  String get sortFavoriteLast;
+
+  /// No description provided for @sortExternalRatingLowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest first'**
+  String get sortExternalRatingLowest;
+
+  /// No description provided for @sortLastActivityOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortLastActivityOldest;
+
   /// No description provided for @searchSortRelevanceShort.
   ///
   /// In en, this message translates to:
@@ -2093,6 +2135,24 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Transferring images...'**
   String get lanSyncReceivingImages;
+
+  /// No description provided for @lanSyncReceivingSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferring settings...'**
+  String get lanSyncReceivingSettings;
+
+  /// No description provided for @lanSyncImportConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Also transfer settings'**
+  String get lanSyncImportConfig;
+
+  /// No description provided for @lanSyncImportConfigSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes API keys. All or nothing.'**
+  String get lanSyncImportConfigSubtitle;
 
   /// No description provided for @lanSyncImagesWarning.
   ///
@@ -4854,6 +4914,12 @@ abstract class S {
   /// **'API keys, cache, database export/import, debug tools.'**
   String get welcomeHowSettingsDesc;
 
+  /// Menu-tour description for the Personalization centre button (genre cloud + recommendations).
+  ///
+  /// In en, this message translates to:
+  /// **'Your taste in one place: a cloud of your favourite genres plus recommendations picked from what you\'ve rated.'**
+  String get welcomeHowPersonalizationDesc;
+
   /// No description provided for @welcomeHowQuickStart.
   ///
   /// In en, this message translates to:
@@ -6179,6 +6245,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Add to Collection'**
   String get uncategorizedBannerAction;
+
+  /// Warns that the Uncategorized system collection is deprecated and will be removed.
+  ///
+  /// In en, this message translates to:
+  /// **'This system collection will be removed soon. Create your own collection and move all items here into it.'**
+  String get uncategorizedDeprecationNotice;
+
+  /// Short warning shown on the Uncategorized collection card/tile that it will be removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be removed'**
+  String get uncategorizedDeprecationBadge;
 
   /// No description provided for @browseFilterGenre.
   ///

@@ -83,6 +83,14 @@
   "sortLastActivityShort": "Activity",
   "sortLastActivityDesc": "Recent first",
 
+  "sortDateOldest": "Oldest first",
+  "sortStatusFinished": "Finished first",
+  "sortNameZa": "Z to A",
+  "sortRatingLowest": "Lowest first",
+  "sortFavoriteLast": "Favorites last",
+  "sortExternalRatingLowest": "Lowest first",
+  "sortLastActivityOldest": "Oldest first",
+
   "searchSortRelevanceShort": "Rel",
   "searchSortRelevanceDisplay": "Relevance",
   "searchSortDateShort": "Date",
@@ -513,6 +521,9 @@
   "lanSyncCorrupted": "The transfer came through damaged. Try again.",
   "lanSyncReceived": "Data received",
   "lanSyncReceivingImages": "Transferring images...",
+  "lanSyncReceivingSettings": "Transferring settings...",
+  "lanSyncImportConfig": "Also transfer settings",
+  "lanSyncImportConfigSubtitle": "Includes API keys. All or nothing.",
   "lanSyncImagesWarning": "Database received, but the images could not be transferred",
   "lanSyncRestartMessage": "The received data will be used after restart. Restart now?",
   "lanSyncFirewallNote": "Windows may ask for firewall permission on first start - allow access on private networks.",
@@ -1228,6 +1239,10 @@
   "welcomeHowWishlistDesc": "Quick list of items to check out later. No API needed.",
   "welcomeHowSearchDesc": "Find games, movies, TV shows, visual novels & manga via API. Add to any collection.",
   "welcomeHowSettingsDesc": "API keys, cache, database export/import, debug tools.",
+  "welcomeHowPersonalizationDesc": "Your taste in one place: a cloud of your favourite genres plus recommendations picked from what you've rated.",
+  "@welcomeHowPersonalizationDesc": {
+    "description": "Menu-tour description for the Personalization centre button (genre cloud + recommendations)."
+  },
   "welcomeHowQuickStart": "Quick Start",
   "welcomeHowStep1": "Go to Settings → Credentials, enter API keys",
   "welcomeHowStep2": "Click Verify Connection, wait for platforms sync",
@@ -1538,6 +1553,14 @@
 
   "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
   "uncategorizedBannerAction": "Add to Collection",
+  "uncategorizedDeprecationNotice": "This system collection will be removed soon. Create your own collection and move all items here into it.",
+  "@uncategorizedDeprecationNotice": {
+    "description": "Warns that the Uncategorized system collection is deprecated and will be removed."
+  },
+  "uncategorizedDeprecationBadge": "Will be removed",
+  "@uncategorizedDeprecationBadge": {
+    "description": "Short warning shown on the Uncategorized collection card/tile that it will be removed."
+  },
 
   "browseFilterGenre": "Genre",
   "browseFilterTag": "Tag",

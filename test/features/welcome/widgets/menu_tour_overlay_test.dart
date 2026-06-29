@@ -45,6 +45,13 @@ void main() {
                             width: 64,
                             height: 56,
                           ),
+                        // The Personalization centre button (genre cloud +
+                        // recommendations) is a tour target too.
+                        SizedBox(
+                          key: keys.personalization,
+                          width: 64,
+                          height: 56,
+                        ),
                       ],
                     ),
                   ),
@@ -82,7 +89,8 @@ void main() {
       await tester.pumpWidget(harness());
       await settle(tester);
 
-      for (int i = 0; i < NavTab.values.length; i++) {
+      // One step per NavTab plus the Personalization centre button.
+      for (int i = 0; i < NavTab.values.length + 1; i++) {
         await tester.tap(find.byType(FilledButton));
         await settle(tester);
       }

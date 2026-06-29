@@ -328,9 +328,10 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                   color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
-                Text(isDescending
-                    ? S.of(ctx).collectionFilterDescending
-                    : S.of(ctx).collectionFilterAscending),
+                Text(currentSort.localizedDirectionLabel(
+                  sl,
+                  descending: isDescending,
+                )),
               ],
             ),
           ),

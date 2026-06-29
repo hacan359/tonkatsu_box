@@ -103,6 +103,31 @@ enum CollectionSortMode {
     }
   }
 
+  /// Direction-toggle label that spells out what ends up on top for the
+  /// current direction, instead of an ambiguous ascending/descending (which
+  /// reads backwards for date/rating/activity modes).
+  String localizedDirectionLabel(S l, {required bool descending}) {
+    if (!descending) return localizedDescription(l);
+    switch (this) {
+      case CollectionSortMode.manual:
+        return l.sortManualDesc; // custom order does not reverse
+      case CollectionSortMode.addedDate:
+        return l.sortDateOldest;
+      case CollectionSortMode.status:
+        return l.sortStatusFinished;
+      case CollectionSortMode.name:
+        return l.sortNameZa;
+      case CollectionSortMode.rating:
+        return l.sortRatingLowest;
+      case CollectionSortMode.favorite:
+        return l.sortFavoriteLast;
+      case CollectionSortMode.externalRating:
+        return l.sortExternalRatingLowest;
+      case CollectionSortMode.lastActivity:
+        return l.sortLastActivityOldest;
+    }
+  }
+
   /// Локализованное описание порядка сортировки.
   String localizedDescription(S l) {
     switch (this) {
