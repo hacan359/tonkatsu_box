@@ -2136,6 +2136,24 @@ abstract class S {
   /// **'Transferring images...'**
   String get lanSyncReceivingImages;
 
+  /// No description provided for @lanSyncReceivingSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferring settings...'**
+  String get lanSyncReceivingSettings;
+
+  /// No description provided for @lanSyncImportConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Also transfer settings'**
+  String get lanSyncImportConfig;
+
+  /// No description provided for @lanSyncImportConfigSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes API keys. All or nothing.'**
+  String get lanSyncImportConfigSubtitle;
+
   /// No description provided for @lanSyncImagesWarning.
   ///
   /// In en, this message translates to:

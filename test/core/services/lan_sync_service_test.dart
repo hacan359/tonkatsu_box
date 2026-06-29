@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/core/services/config_service.dart';
 import 'package:tonkatsu_box/core/services/db_sync_service.dart';
 import 'package:tonkatsu_box/core/services/lan_sync_service.dart';
 import 'package:tonkatsu_box/core/services/storage_root.dart';
@@ -101,7 +102,11 @@ void main() {
 
         dbService = DatabaseService();
         dbSync = DbSyncService(database: dbService, metaProvider: testMeta);
-        lan = LanSyncService(sync: dbSync);
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        lan = LanSyncService(
+          sync: dbSync,
+          config: ConfigService(prefs: prefs),
+        );
       });
 
       tearDown(() async {
@@ -131,6 +136,56 @@ void main() {
         expect(manifest, isNotNull);
         expect(manifest!.deviceName, 'SERVER');
         expect(manifest.appVersion, '1.0.0');
+      });
+
+      test('advertises settings transfer in the manifest', () async {
+        await lan.start(
+          deviceName: 'SERVER',
+          onSnapshotRequest: (_) async => true,
+        );
+
+        final SyncManifest? manifest = await lan.fetchManifest(self());
+
+        expect(manifest?.supportsSettingsTransfer, isTrue);
+      });
+
+      test('serves the settings bundle over /config', () async {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('tmdb_api_key', 'CONFIG-TMDB');
+        await lan.start(
+          deviceName: 'SERVER',
+          onSnapshotRequest: (_) async => true,
+        );
+
+        final HttpClient client = HttpClient();
+        try {
+          final HttpClientRequest request = await client.getUrl(
+            Uri.http(
+              '${InternetAddress.loopbackIPv4.address}:${lan.port}',
+              '/config',
+            ),
+          );
+          final HttpClientResponse response = await request.close();
+          final String body = await response.transform(utf8.decoder).join();
+          final Map<String, dynamic> config =
+              jsonDecode(body) as Map<String, dynamic>;
+
+          expect(config['tmdb_api_key'], 'CONFIG-TMDB');
+          expect(config['tonkatsu_box_config_version'], isNotNull);
+        } finally {
+          client.close(force: true);
+        }
+      });
+
+      test('downloadConfig applies the served bundle', () async {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('app_language', 'ru');
+        await lan.start(
+          deviceName: 'SERVER',
+          onSnapshotRequest: (_) async => true,
+        );
+
+        expect(await lan.downloadConfig(self()), greaterThan(0));
       });
 
       test('serves a receivable snapshot when approved', () async {

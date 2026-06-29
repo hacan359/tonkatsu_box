@@ -30,6 +30,32 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     button by its key, and raise the scrim alpha from 130 to 200.
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (welcomeHowPersonalizationDesc): New.
 
+- **Carry app settings and API keys over network sync**
+
+  Receiving data from another device now offers an "Also transfer settings"
+  checkbox (on by default, all-or-nothing) that pulls the sending device's full
+  configuration — every preference plus all API keys and source logins — and
+  applies it here. The bundle rides a new `/config` endpoint alongside the
+  database and images, is written straight to preferences, and takes effect on
+  the restart the received database requires anyway. The checkbox only appears
+  when the sending device is new enough to serve its config. The transfer stays
+  on the local network in the clear, like the database it accompanies.
+
+  * lib/shared/models/sync_manifest.dart (SyncManifest.supportsSettingsTransfer):
+    New capability flag (`supports_settings`), absent on older peers so the
+    receiver hides the option.
+  * lib/core/services/db_sync_service.dart (DbSyncService.buildManifest):
+    Advertise supportsSettingsTransfer.
+  * lib/core/services/lan_sync_service.dart (LanSyncService._serveConfig,
+    LanSyncService.downloadConfig): New `/config` endpoint serving the full
+    ConfigService bundle, plus the client that fetches and applies it;
+    LanSyncService now takes a ConfigService.
+  * lib/features/settings/screens/lan_sync_screen.dart
+    (_LanSyncScreenState._askReceiveOptions, _ReceiveChoice): Receive dialog
+    grows the opt-in checkbox; the pull applies the bundle after the database.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (lanSyncImportConfig,
+    lanSyncImportConfigSubtitle, lanSyncReceivingSettings): New.
+
 ### Changed
 
 - **Mark the Uncategorized collection as deprecated across the UI**

@@ -1196,6 +1196,16 @@ class SRu extends S {
   String get lanSyncReceivingImages => 'Перенос картинок...';
 
   @override
+  String get lanSyncReceivingSettings => 'Перенос настроек...';
+
+  @override
+  String get lanSyncImportConfig => 'Также перенести настройки';
+
+  @override
+  String get lanSyncImportConfigSubtitle =>
+      'Включая ключи API. Всё или ничего.';
+
+  @override
   String get lanSyncImagesWarning =>
       'База перенесена, но картинки не удалось перенести';
 

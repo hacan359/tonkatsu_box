@@ -1179,6 +1179,16 @@ class SEn extends S {
   String get lanSyncReceivingImages => 'Transferring images...';
 
   @override
+  String get lanSyncReceivingSettings => 'Transferring settings...';
+
+  @override
+  String get lanSyncImportConfig => 'Also transfer settings';
+
+  @override
+  String get lanSyncImportConfigSubtitle =>
+      'Includes API keys. All or nothing.';
+
+  @override
   String get lanSyncImagesWarning =>
       'Database received, but the images could not be transferred';
 

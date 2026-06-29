@@ -9,12 +9,15 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 import '../../shared/models/sync_manifest.dart';
+import 'config_service.dart';
 import 'db_sync_service.dart';
 
 final Provider<LanSyncService> lanSyncServiceProvider =
     Provider<LanSyncService>((Ref ref) {
-  final LanSyncService service =
-      LanSyncService(sync: ref.watch(dbSyncServiceProvider));
+  final LanSyncService service = LanSyncService(
+    sync: ref.watch(dbSyncServiceProvider),
+    config: ref.watch(configServiceProvider),
+  );
   // The screen stops the service on dispose; this covers container
   // teardown (mobile in-place restart) so sockets never outlive the scope.
   ref.onDispose(service.stop);
@@ -54,7 +57,9 @@ class LanPeer {
 /// serving device.
 class LanSyncService {
   /// Creates a [LanSyncService].
-  LanSyncService({required DbSyncService sync}) : _sync = sync;
+  LanSyncService({required DbSyncService sync, required ConfigService config})
+      : _sync = sync,
+        _config = config;
 
   /// UDP port used for discovery announcements.
   static const int discoveryPort = 47813;
@@ -66,6 +71,7 @@ class LanSyncService {
   static final Logger _log = Logger('LanSyncService');
 
   final DbSyncService _sync;
+  final ConfigService _config;
 
   static final Random _random = Random();
 
@@ -286,6 +292,8 @@ class LanSyncService {
           await _serveSnapshot(request);
         case '/images':
           await _serveImages(request);
+        case '/config':
+          await _serveConfig(request);
         default:
           request.response.statusCode = HttpStatus.notFound;
           await request.response.close();
@@ -371,6 +379,18 @@ class LanSyncService {
     request.response.add(bytes);
     await request.response.close();
     _log.info('User images served (${bytes.length} bytes)');
+  }
+
+  Future<void> _serveConfig(HttpRequest request) async {
+    // No second approval, mirroring /images: the requester already cleared
+    // the snapshot approval, and this is a same-user device migration where
+    // settings and keys move as one bundle. The private-subnet guard in
+    // _handleRequest still applies.
+    final Map<String, Object> config = _config.collectSettings();
+    request.response.headers.contentType = ContentType.json;
+    request.response.write(jsonEncode(config));
+    await request.response.close();
+    _log.info('Settings served');
   }
 
   /// Loopback plus RFC1918/link-local ranges; everything else is refused.
@@ -475,6 +495,29 @@ class LanSyncService {
         bytes.addAll(chunk);
       }
       await _sync.applyUserImagesArchive(bytes);
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  /// Downloads the peer's settings + API keys and applies them into prefs.
+  /// Best-effort, all-or-nothing: returns the number of applied values, or
+  /// 0 when the peer is too old to serve config or sent nothing usable. The
+  /// caller refreshes the settings notifier so the new values go live.
+  Future<int> downloadConfig(LanPeer peer) async {
+    final HttpClient client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 5);
+    try {
+      final HttpClientRequest request = await client.getUrl(
+        Uri.http('${peer.address.address}:${peer.port}', '/config'),
+      );
+      final HttpClientResponse response =
+          await request.close().timeout(const Duration(seconds: 30));
+      if (response.statusCode != HttpStatus.ok) return 0;
+      final String body = await response.transform(utf8.decoder).join();
+      final Object? decoded = jsonDecode(body);
+      if (decoded is! Map<String, Object?>) return 0;
+      return _config.applySettings(decoded);
     } finally {
       client.close(force: true);
     }
