@@ -595,10 +595,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   /// Key-source states in the same order as the credentials screen sections.
+  ///
+  /// Built-in default keys (IGDB / SteamGridDB / TMDB, baked in at build time)
+  /// don't count: the credentials screen shows them as empty "using built-in
+  /// key" fields, so a fresh production install with no keys entered must read
+  /// 0/6 here rather than tallying the bundled defaults the user never set.
   List<bool> _apiKeyStates(SettingsState settings) => <bool>[
-        settings.hasCredentials,
-        settings.hasSteamGridDbKey,
-        settings.hasTmdbKey,
+        settings.hasCredentials && !settings.isIgdbKeyBuiltIn,
+        settings.hasSteamGridDbKey && !settings.isSteamGridDbKeyBuiltIn,
+        settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
         settings.hasScreenScraperCreds,
