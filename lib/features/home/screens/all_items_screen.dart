@@ -297,13 +297,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   /// One subfilter group per active type — game platforms, manga formats,
   /// anime formats — each tinted with its media-type accent, on one row.
+  ///
+  /// A group normally appears only once its media-type chevron is selected;
+  /// with the "always show subcategories" setting every group whose type has
+  /// items is shown upfront.
   List<List<SubfilterChipData>> _subfilterGroups(
     AsyncValue<List<CollectionItem>> itemsAsync,
   ) {
     final List<CollectionItem> items =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
+    final bool alwaysShow = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.alwaysShowSubcategories,
+      ),
+    );
     return <List<SubfilterChipData>>[
-      if (_selectedTypes.contains(MediaType.game))
+      if (alwaysShow || _selectedTypes.contains(MediaType.game))
         <SubfilterChipData>[
           for (final Platform p
               in ref.watch(allItemsPlatformsProvider).valueOrNull ??
@@ -321,17 +330,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               }),
             ),
         ],
-      _formatGroup(MediaType.manga, _selectedMangaFormats, items),
-      _formatGroup(MediaType.anime, _selectedAnimeFormats, items),
+      _formatGroup(MediaType.manga, _selectedMangaFormats, items,
+          alwaysShow: alwaysShow),
+      _formatGroup(MediaType.anime, _selectedAnimeFormats, items,
+          alwaysShow: alwaysShow),
     ];
   }
 
   List<SubfilterChipData> _formatGroup(
     MediaType type,
     Set<String> selected,
-    List<CollectionItem> items,
-  ) {
-    if (!_selectedTypes.contains(type)) return const <SubfilterChipData>[];
+    List<CollectionItem> items, {
+    required bool alwaysShow,
+  }) {
+    if (!alwaysShow && !_selectedTypes.contains(type)) {
+      return const <SubfilterChipData>[];
+    }
     return <SubfilterChipData>[
       for (final String code in MediaFormat.present(items, type))
         SubfilterChipData(

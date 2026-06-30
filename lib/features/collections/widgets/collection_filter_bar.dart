@@ -116,20 +116,31 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     final S l = S.of(context);
     final CollectionStats? stats = widget.statsAsync.valueOrNull;
 
+    final bool alwaysShowSubcategories = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.alwaysShowSubcategories,
+      ),
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         _buildTypeChevronBar(l, stats),
-        SubfilterBar(groups: _subfilterGroups()),
+        SubfilterBar(
+          groups: _subfilterGroups(alwaysShow: alwaysShowSubcategories),
+        ),
       ],
     );
   }
 
   /// One subfilter group per active type — game platforms, manga formats,
   /// anime formats — each tinted with its media-type accent.
-  List<List<SubfilterChipData>> _subfilterGroups() {
+  ///
+  /// A group normally appears only once its media-type chevron is selected;
+  /// with [alwaysShow] every group whose type has items is shown upfront.
+  List<List<SubfilterChipData>> _subfilterGroups({required bool alwaysShow}) {
     return <List<SubfilterChipData>>[
-      if (widget.filterTypes.contains(MediaType.game))
+      if (alwaysShow || widget.filterTypes.contains(MediaType.game))
         <SubfilterChipData>[
           for (final Platform p in _extractPlatforms())
             SubfilterChipData(
@@ -143,11 +154,13 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.manga,
         widget.filterMangaFormats,
         widget.onMangaFormatToggled,
+        alwaysShow: alwaysShow,
       ),
       _formatGroup(
         MediaType.anime,
         widget.filterAnimeFormats,
         widget.onAnimeFormatToggled,
+        alwaysShow: alwaysShow,
       ),
     ];
   }
@@ -155,9 +168,12 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   List<SubfilterChipData> _formatGroup(
     MediaType type,
     Set<String> selected,
-    ValueChanged<String?> onToggled,
-  ) {
-    if (!widget.filterTypes.contains(type)) return const <SubfilterChipData>[];
+    ValueChanged<String?> onToggled, {
+    required bool alwaysShow,
+  }) {
+    if (!alwaysShow && !widget.filterTypes.contains(type)) {
+      return const <SubfilterChipData>[];
+    }
     return <SubfilterChipData>[
       for (final String code in _formatsFor(type))
         SubfilterChipData(

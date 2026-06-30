@@ -140,14 +140,16 @@ void main() {
     );
   });
 
-  Widget buildTestWidget() {
+  Widget buildTestWidget({bool alwaysShowSubcategories = false}) {
     return ProviderScope(
       overrides: <Override>[
         collectionRepositoryProvider.overrideWithValue(mockRepo),
         databaseServiceProvider.overrideWithValue(mockDb),
         sharedPreferencesProvider.overrideWithValue(prefs),
         settingsNotifierProvider.overrideWith(
-          () => _FakeSettingsNotifier(),
+          () => _FakeSettingsNotifier(
+            alwaysShowSubcategories: alwaysShowSubcategories,
+          ),
         ),
         currentProfileProvider.overrideWithValue(Profile(
           id: 'test',
@@ -412,6 +414,17 @@ void main() {
 
       expect(find.byType(CustomScrollView), findsOneWidget);
     });
+
+    testWidgets(
+        'показывает чипы платформ без выбора Games когда настройка включена',
+        (WidgetTester tester) async {
+      await tester
+          .pumpWidget(buildTestWidget(alwaysShowSubcategories: true));
+      await tester.pumpAndSettle();
+
+      expect(find.text('SNES'), findsOneWidget);
+      expect(find.text('GBA'), findsOneWidget);
+    });
   });
 
   group('AllItemsScreen Visual Novel фильтр', () {
@@ -498,12 +511,17 @@ void main() {
 }
 
 class _FakeSettingsNotifier extends SettingsNotifier {
-  _FakeSettingsNotifier({this.hideEmptyMediaTypeChevrons = false});
+  _FakeSettingsNotifier({
+    this.hideEmptyMediaTypeChevrons = false,
+    this.alwaysShowSubcategories = false,
+  });
 
   final bool hideEmptyMediaTypeChevrons;
+  final bool alwaysShowSubcategories;
 
   @override
   SettingsState build() => SettingsState(
         hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
+        alwaysShowSubcategories: alwaysShowSubcategories,
       );
 }

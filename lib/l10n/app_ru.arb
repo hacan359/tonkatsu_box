@@ -1278,6 +1278,8 @@
   "settingsShowRecommendationsSubtitle": "Похожие фильмы и сериалы на странице деталей",
   "settingsHideEmptyMediaTypeChevrons": "Скрывать пустые фильтры типов",
   "settingsHideEmptyMediaTypeChevronsSubtitle": "Скрывать шевроны типов медиа (Игры, Фильмы и т.д.), если в коллекции нет таких записей",
+  "settingsAlwaysShowSubcategories": "Всегда показывать подкатегории",
+  "settingsAlwaysShowSubcategoriesSubtitle": "Показывать фильтры подкатегорий (платформы игр, типы аниме и манги) без предварительного выбора типа медиа",
   "settingsShowPlatformOverlay": "Обложки платформ",
   "settingsShowPlatformOverlaySubtitle": "Оверлей платформы на постерах игр (PS5, Switch и т.д.)",
   "settingsShowBlurayOverlay": "Обложки Blu-ray",

@@ -3502,6 +3502,14 @@ class SRu extends S {
       'Скрывать шевроны типов медиа (Игры, Фильмы и т.д.), если в коллекции нет таких записей';
 
   @override
+  String get settingsAlwaysShowSubcategories =>
+      'Всегда показывать подкатегории';
+
+  @override
+  String get settingsAlwaysShowSubcategoriesSubtitle =>
+      'Показывать фильтры подкатегорий (платформы игр, типы аниме и манги) без предварительного выбора типа медиа';
+
+  @override
   String get settingsShowPlatformOverlay => 'Обложки платформ';
 
   @override

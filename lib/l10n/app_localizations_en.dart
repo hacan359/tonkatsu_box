@@ -3454,6 +3454,13 @@ class SEn extends S {
       'Hide media type chevrons (Games, Movies, etc.) when there are no items of that type';
 
   @override
+  String get settingsAlwaysShowSubcategories => 'Always show subcategories';
+
+  @override
+  String get settingsAlwaysShowSubcategoriesSubtitle =>
+      'Show subcategory filters (game platforms, anime/manga types) without selecting their media type first';
+
+  @override
   String get settingsShowPlatformOverlay => 'Game platform covers';
 
   @override

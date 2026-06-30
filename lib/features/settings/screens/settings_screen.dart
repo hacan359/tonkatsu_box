@@ -392,6 +392,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           SettingsTile(
+            leadingIcon: Icons.account_tree_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsAlwaysShowSubcategories,
+            subtitle: l.settingsAlwaysShowSubcategoriesSubtitle,
+            showChevron: false,
+            trailing: Switch(
+              value: settings.alwaysShowSubcategories,
+              onChanged: (bool value) {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setAlwaysShowSubcategories(enabled: value);
+              },
+            ),
+          ),
+          SettingsTile(
             leadingIcon: Icons.videogame_asset_outlined,
             leadingColor: _kAppearanceColor,
             title: l.settingsShowPlatformOverlay,

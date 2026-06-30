@@ -6198,6 +6198,18 @@ abstract class S {
   /// **'Hide media type chevrons (Games, Movies, etc.) when there are no items of that type'**
   String get settingsHideEmptyMediaTypeChevronsSubtitle;
 
+  /// No description provided for @settingsAlwaysShowSubcategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Always show subcategories'**
+  String get settingsAlwaysShowSubcategories;
+
+  /// No description provided for @settingsAlwaysShowSubcategoriesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show subcategory filters (game platforms, anime/manga types) without selecting their media type first'**
+  String get settingsAlwaysShowSubcategoriesSubtitle;
+
   /// No description provided for @settingsShowPlatformOverlay.
   ///
   /// In en, this message translates to:

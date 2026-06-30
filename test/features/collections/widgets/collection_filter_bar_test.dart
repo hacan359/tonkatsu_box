@@ -17,13 +17,20 @@ import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
 import 'package:tonkatsu_box/shared/widgets/filter_subfilter_bar.dart';
 
 class TestSettingsNotifier extends SettingsNotifier {
-  TestSettingsNotifier({this.hideEmptyChevrons = false});
+  TestSettingsNotifier({
+    this.hideEmptyChevrons = false,
+    this.alwaysShowSubcategories = false,
+  });
 
   final bool hideEmptyChevrons;
+  final bool alwaysShowSubcategories;
 
   @override
   SettingsState build() {
-    return SettingsState(hideEmptyMediaTypeChevrons: hideEmptyChevrons);
+    return SettingsState(
+      hideEmptyMediaTypeChevrons: hideEmptyChevrons,
+      alwaysShowSubcategories: alwaysShowSubcategories,
+    );
   }
 }
 
@@ -226,13 +233,18 @@ Widget _buildFilterBar({
 List<Override> _defaultOverrides({
   CollectionSortMode sortMode = CollectionSortMode.addedDate,
   bool isDescending = false,
+  bool alwaysShowSubcategories = false,
 }) {
   return <Override>[
     collectionSortProvider
         .overrideWith(() => TestCollectionSortNotifier(sortMode)),
     collectionSortDescProvider
         .overrideWith(() => TestCollectionSortDescNotifier(isDescending)),
-    settingsNotifierProvider.overrideWith(TestSettingsNotifier.new),
+    settingsNotifierProvider.overrideWith(
+      () => TestSettingsNotifier(
+        alwaysShowSubcategories: alwaysShowSubcategories,
+      ),
+    ),
   ];
 }
 
@@ -520,6 +532,49 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(find.byType(FilterTabChip), findsNothing);
+        },
+      );
+    });
+
+    group('always show subcategories setting', () {
+      testWidgets(
+        'shows platform chips without selecting Games when setting is on',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides:
+                  _defaultOverrides(alwaysShowSubcategories: true),
+              child: _buildFilterBar(
+                itemsAsync: AsyncData<List<CollectionItem>>(
+                  _gameItemsWithPlatforms,
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.text('PS1'), findsOneWidget);
+          expect(find.text('SNES'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'shows manga format chips without selecting Manga when setting is on',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides:
+                  _defaultOverrides(alwaysShowSubcategories: true),
+              child: _buildFilterBar(
+                itemsAsync: AsyncData<List<CollectionItem>>(
+                  _mangaItemsWithFormats,
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.text('Manhwa'), findsOneWidget);
         },
       );
     });

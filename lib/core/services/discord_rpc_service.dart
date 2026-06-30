@@ -128,6 +128,21 @@ class DiscordRpcService {
     if (!_initialized) await _connect();
     if (!_initialized || _rpc == null) return;
 
+    // The item's cover becomes the large image; the logo moves to the small
+    // icon for branding. With no usable cover URL the logo stays large.
+    final String? coverUrl = _remoteCoverUrl(item);
+    final DiscordAsset largeAsset = coverUrl != null
+        ? DiscordAsset.fromUrl(
+            coverUrl,
+            text: item.displayName(animeMangaTitleLanguage),
+          )
+        : const DiscordAsset(key: 'logo', text: 'Tonkatsu Box');
+    final DiscordAsset? smallAsset = raData != null
+        ? DiscordAsset(key: 'ra', text: _buildRaTooltip(raData))
+        : coverUrl != null
+            ? const DiscordAsset(key: 'logo', text: 'Tonkatsu Box')
+            : null;
+
     try {
       await _rpc!.setPresence(DiscordPresence(
         details: '${_activityVerb(item.mediaType)} '
@@ -136,16 +151,8 @@ class DiscordRpcService {
         timestamps: DiscordTimestamps(
           start: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         ),
-        largeAsset: const DiscordAsset(
-          key: 'logo',
-          text: 'Tonkatsu Box',
-        ),
-        smallAsset: raData != null
-            ? DiscordAsset(
-                key: 'ra',
-                text: _buildRaTooltip(raData),
-              )
-            : null,
+        largeAsset: largeAsset,
+        smallAsset: smallAsset,
       ));
     } on Exception catch (e) {
       _log.fine('Failed to update Discord presence: $e');
@@ -315,6 +322,15 @@ class DiscordRpcService {
     }
 
     return progress;
+  }
+
+  /// The item's cover URL when Discord can fetch it directly — i.e. a remote
+  /// http(s) link. Custom items may store a `local://` file marker instead;
+  /// those return null so the caller falls back to the logo.
+  static String? _remoteCoverUrl(CollectionItem item) {
+    final String? url = item.coverUrl;
+    if (url == null) return null;
+    return url.startsWith('http') ? url : null;
   }
 
   /// Tooltip for the RA icon.

@@ -1554,6 +1554,8 @@
   "settingsShowRecommendationsSubtitle": "Similar movies and TV shows on detail pages",
   "settingsHideEmptyMediaTypeChevrons": "Hide empty media type filters",
   "settingsHideEmptyMediaTypeChevronsSubtitle": "Hide media type chevrons (Games, Movies, etc.) when there are no items of that type",
+  "settingsAlwaysShowSubcategories": "Always show subcategories",
+  "settingsAlwaysShowSubcategoriesSubtitle": "Show subcategory filters (game platforms, anime/manga types) without selecting their media type first",
   "settingsShowPlatformOverlay": "Game platform covers",
   "settingsShowPlatformOverlaySubtitle": "Show platform overlay on game posters (PS5, Switch, etc.)",
   "settingsShowBlurayOverlay": "Blu-ray covers",

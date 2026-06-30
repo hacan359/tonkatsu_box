@@ -9,6 +9,25 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Setting to always show subcategory filters**
+
+  A new appearance toggle keeps the subcategory subfilters (game platforms,
+  anime / manga formats) visible without first selecting their media-type
+  chevron. Off by default; mirrors how the other appearance toggles persist.
+  Applies to both the collection screen and the all-items (Home) screen.
+
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.alwaysShowSubcategories,
+    SettingsState.alwaysShowSubcategories, SettingsNotifier.setAlwaysShowSubcategories):
+    New persisted flag with loader, copyWith, setter and clear handling.
+  * lib/features/settings/screens/settings_screen.dart: New toggle tile under appearance.
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (_CollectionFilterBarState._subfilterGroups, _formatGroup): Gate subfilters on
+    the setting in addition to the selected type.
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._subfilterGroups, _formatGroup): Same gating for the Home grid.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (settingsAlwaysShowSubcategories,
+    settingsAlwaysShowSubcategoriesSubtitle): New strings.
+
 - **Universal progress tracker for custom items**
 
   Custom cards now carry a count and reading/watching progress, mirroring manga
@@ -130,6 +149,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lanSyncImportConfigSubtitle, lanSyncReceivingSettings): New.
 
 ### Changed
+
+- **Show the item cover as the Discord Rich Presence large image**
+
+  The Discord status now uses the current item's real cover (game / movie /
+  manga art) as the large image, with the app logo moved to the small icon for
+  branding. Custom items with a local-file cover fall back to the logo since
+  Discord can only fetch remote URLs; the RetroAchievements icon still takes the
+  small slot when present.
+
+  * lib/core/services/discord_rpc_service.dart (DiscordRpcService.updatePresence,
+    DiscordRpcService._remoteCoverUrl): Build the large/small assets from the
+    item's cover URL, falling back to the logo.
 
 - **Kinorium import: restore title matching and explain every wishlist skip**
 
