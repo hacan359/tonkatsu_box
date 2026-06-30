@@ -131,6 +131,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Kinorium import: restore title matching and explain every wishlist skip**
+
+  Title matching is back: when no TMDB result carries the row's exact year the
+  importer keeps the best title match instead of dropping the row, so far fewer
+  real films are missed. Rows that still can't be imported now land in the
+  wishlist with the reason spelled out in their note — not found on TMDB, a TMDB
+  error or rate limit, an unsupported type (the original Kinorium kind is named,
+  e.g. "Эпизод"), or a duplicate of another row's title. The reasons are
+  localized.
+
+  * lib/core/import/tmdb_matcher.dart (TmdbMatcher._search, _pickBest): Prefer
+    the matching-year result, otherwise fall back to the first (title) result.
+  * lib/core/import/sources/kinorium/kinorium_import_service.dart
+    (KinoriumImportOptions.reasons, KinoriumWishlistReasons, KinoriumImportService.import,
+    _composeNote): Track a per-row skip reason and prepend it to the wishlist note.
+  * lib/core/import/sources/kinorium/kinorium_entry.dart (KinoriumEntry.rawType,
+    typeLabel), kinorium_csv_parser.dart: Keep the verbatim `Type` text so the
+    reason can name the original kind.
+  * lib/features/settings/content/kinorium_import_content.dart
+    (_KinoriumImportContentState._startImport): Build the localized reasons from
+    the UI and pass them into the import.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (kinoriumReasonNotFound,
+    kinoriumReasonApiError, kinoriumReasonUnsupportedType, kinoriumReasonDuplicate):
+    New strings.
+
 - **Mark the Uncategorized collection as deprecated across the UI**
 
   The Uncategorized bucket is now a read-only legacy collection: it can no

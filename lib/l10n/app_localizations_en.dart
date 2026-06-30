@@ -1377,6 +1377,23 @@ class SEn extends S {
       'Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it\'s optional — the built-in key works too.';
 
   @override
+  String get kinoriumReasonNotFound => 'Not found on TMDB';
+
+  @override
+  String get kinoriumReasonApiError =>
+      'TMDB error or rate limit — try again later';
+
+  @override
+  String kinoriumReasonUnsupportedType(String type) {
+    return 'Unsupported type: $type';
+  }
+
+  @override
+  String kinoriumReasonDuplicate(String title) {
+    return 'Duplicate of \"$title\"';
+  }
+
+  @override
   String traktImportedItems(int count) {
     return 'Imported $count items';
   }

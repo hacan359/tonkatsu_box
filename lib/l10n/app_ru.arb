@@ -532,6 +532,20 @@
   "kinoriumStartImport": "Начать импорт",
   "kinoriumImporting": "Импорт из Kinorium...",
   "kinoriumRecommendOwnTmdbKey": "Совет: для больших импортов рекомендуется свой ключ TMDB (Настройки → API ключи), но это не обязательно — встроенный ключ тоже работает.",
+  "kinoriumReasonNotFound": "Не найдено в TMDB",
+  "kinoriumReasonApiError": "Ошибка TMDB или лимит запросов — попробуйте позже",
+  "kinoriumReasonUnsupportedType": "Тип не поддерживается: {type}",
+  "@kinoriumReasonUnsupportedType": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "kinoriumReasonDuplicate": "Дубль тайтла «{title}»",
+  "@kinoriumReasonDuplicate": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
   "traktImportedItems": "Импортировано тайтлов: {count}",
   "traktImporting": "Импорт из Trakt",
 

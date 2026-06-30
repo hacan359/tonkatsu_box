@@ -2508,6 +2508,30 @@ abstract class S {
   /// **'Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it\'s optional — the built-in key works too.'**
   String get kinoriumRecommendOwnTmdbKey;
 
+  /// No description provided for @kinoriumReasonNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found on TMDB'**
+  String get kinoriumReasonNotFound;
+
+  /// No description provided for @kinoriumReasonApiError.
+  ///
+  /// In en, this message translates to:
+  /// **'TMDB error or rate limit — try again later'**
+  String get kinoriumReasonApiError;
+
+  /// No description provided for @kinoriumReasonUnsupportedType.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported type: {type}'**
+  String kinoriumReasonUnsupportedType(String type);
+
+  /// No description provided for @kinoriumReasonDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate of \"{title}\"'**
+  String kinoriumReasonDuplicate(String title);
+
   /// No description provided for @traktImportedItems.
   ///
   /// In en, this message translates to:

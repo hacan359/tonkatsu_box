@@ -1396,6 +1396,23 @@ class SRu extends S {
       'Совет: для больших импортов рекомендуется свой ключ TMDB (Настройки → API ключи), но это не обязательно — встроенный ключ тоже работает.';
 
   @override
+  String get kinoriumReasonNotFound => 'Не найдено в TMDB';
+
+  @override
+  String get kinoriumReasonApiError =>
+      'Ошибка TMDB или лимит запросов — попробуйте позже';
+
+  @override
+  String kinoriumReasonUnsupportedType(String type) {
+    return 'Тип не поддерживается: $type';
+  }
+
+  @override
+  String kinoriumReasonDuplicate(String title) {
+    return 'Дубль тайтла «$title»';
+  }
+
+  @override
   String traktImportedItems(int count) {
     return 'Импортировано тайтлов: $count';
   }

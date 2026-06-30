@@ -291,6 +291,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
   Future<void> _startImport() async {
     final KinoriumImportService service =
         ref.read(kinoriumImportServiceProvider);
+    final S l = S.of(context);
 
     final ValueNotifier<ImportProgress?> progressNotifier =
         ValueNotifier<ImportProgress?>(null);
@@ -303,6 +304,12 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
         collectionId: _useNewCollection ? null : _selectedCollectionId,
         isWishlist: _isWishlist,
         importNotes: _importNotes,
+        reasons: KinoriumWishlistReasons(
+          notFound: l.kinoriumReasonNotFound,
+          apiError: l.kinoriumReasonApiError,
+          unsupportedType: l.kinoriumReasonUnsupportedType,
+          duplicate: l.kinoriumReasonDuplicate,
+        ),
       ),
       onProgress: (ImportProgress progress) {
         progressNotifier.value = progress;

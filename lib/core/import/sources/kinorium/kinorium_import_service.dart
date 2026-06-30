@@ -39,6 +39,7 @@ class KinoriumImportOptions extends ImportOptions {
     super.collectionId,
     this.isWishlist = false,
     this.importNotes = false,
+    this.reasons = const KinoriumWishlistReasons.english(),
   });
 
   final String filePath;
@@ -50,6 +51,38 @@ class KinoriumImportOptions extends ImportOptions {
 
   /// Append actors/directors/notes to the item comment.
   final bool importNotes;
+
+  /// Localized texts for why a row was wishlisted instead of imported.
+  final KinoriumWishlistReasons reasons;
+}
+
+/// Localized reasons a Kinorium row landed in the wishlist. Built in the UI
+/// (the import service has no [BuildContext]) and passed via the options; the
+/// service falls back to [KinoriumWishlistReasons.english] when none is given.
+class KinoriumWishlistReasons {
+  const KinoriumWishlistReasons({
+    required this.notFound,
+    required this.apiError,
+    required this.unsupportedType,
+    required this.duplicate,
+  });
+
+  /// English defaults so the service and tests work without the UI layer.
+  const KinoriumWishlistReasons.english()
+      : notFound = 'Not found on TMDB',
+        apiError = 'TMDB error or rate limit',
+        unsupportedType = _englishUnsupportedType,
+        duplicate = _englishDuplicate;
+
+  final String notFound;
+  final String apiError;
+  final String Function(String type) unsupportedType;
+  final String Function(String otherTitle) duplicate;
+
+  static String _englishUnsupportedType(String type) =>
+      'Unsupported type: $type';
+  static String _englishDuplicate(String otherTitle) =>
+      'Duplicate of "$otherTitle"';
 }
 
 /// Imports a Kinorium CSV export by matching each title against TMDB.
@@ -114,9 +147,13 @@ class KinoriumImportService implements ImportSource {
       }
 
       // Phase 1 — match every row against TMDB (the slow, network-bound part).
+      final KinoriumWishlistReasons reasons = options.reasons;
       final List<(KinoriumEntry, TmdbMatch)> matched =
           <(KinoriumEntry, TmdbMatch)>[];
-      final List<KinoriumEntry> unmatched = <KinoriumEntry>[];
+      // Each unmatched row carries the reason it was wishlisted instead of
+      // imported, surfaced in the wishlist note so the user knows what to fix.
+      final List<(KinoriumEntry, String)> unmatched =
+          <(KinoriumEntry, String)>[];
       final List<String> errors = <String>[];
       int skipped = 0;
       final Map<String, TmdbMatch?> matchCache = <String, TmdbMatch?>{};
@@ -131,15 +168,20 @@ class KinoriumImportService implements ImportSource {
           message: 'Matching "${entry.title}"...',
         ));
 
-        if (!_isSupported(entry) || !entry.hasValidQuery) {
-          // Not representable as a collection item (episodes, unrecognized
-          // types). Route to the wishlist instead of dropping, so nothing the
-          // file lists disappears silently.
-          unmatched.add(entry);
+        // Not representable as a collection item (episodes, unrecognized
+        // types). Route to the wishlist instead of dropping, so nothing the
+        // file lists disappears silently.
+        if (!_isSupported(entry)) {
+          unmatched.add((entry, reasons.unsupportedType(entry.typeLabel)));
+          continue;
+        }
+        if (!entry.hasValidQuery) {
+          unmatched.add((entry, reasons.notFound));
           continue;
         }
 
         TmdbMatch? match;
+        bool apiFailed = false;
         try {
           match = await _resolveMatch(
             entry,
@@ -149,11 +191,12 @@ class KinoriumImportService implements ImportSource {
             onProgress,
           );
         } on TmdbApiException catch (e) {
+          apiFailed = true;
           _log.warning('TMDB search failed for "${entry.title}": ${e.message}');
         }
 
         if (match == null) {
-          unmatched.add(entry);
+          unmatched.add((entry, apiFailed ? reasons.apiError : reasons.notFound));
         } else {
           matched.add((entry, match));
         }
@@ -164,6 +207,7 @@ class KinoriumImportService implements ImportSource {
       // and send the rest to the wishlist rather than dropping them as silent
       // duplicates, so a wrong collapse is recoverable by hand.
       final Set<String> seenKeys = <String>{};
+      final Map<String, String> firstTitleByKey = <String, String>{};
       final List<(KinoriumEntry, TmdbMatch)> uniqueMatched =
           <(KinoriumEntry, TmdbMatch)>[];
       for (final (KinoriumEntry, TmdbMatch) pair in matched) {
@@ -174,8 +218,11 @@ class KinoriumImportService implements ImportSource {
         );
         if (seenKeys.add(key)) {
           uniqueMatched.add(pair);
+          firstTitleByKey[key] = pair.$1.title;
         } else {
-          unmatched.add(pair.$1);
+          unmatched.add(
+            (pair.$1, reasons.duplicate(firstTitleByKey[key] ?? '')),
+          );
         }
       }
 
@@ -216,11 +263,11 @@ class KinoriumImportService implements ImportSource {
 
       final Map<MediaType, int> wishlistedByType = await _writer.writeWishlist(
         entries: <WishlistCandidate>[
-          for (final KinoriumEntry entry in unmatched)
+          for (final (KinoriumEntry, String) u in unmatched)
             WishlistCandidate(
-              text: entry.title,
-              mediaType: _wishlistType(entry),
-              note: _composeNote(entry, includeCastCrew: true),
+              text: u.$1.title,
+              mediaType: _wishlistType(u.$1),
+              note: _composeNote(u.$1, includeCastCrew: true, reason: u.$2),
             ),
         ],
         tag: buildImportTag('Kinorium'),
@@ -376,14 +423,19 @@ class KinoriumImportService implements ImportSource {
     return match;
   }
 
-  /// Builds the item comment. Cast & crew are included only when
-  /// [includeCastCrew] is set (the wishlist always passes it), followed by any
-  /// original Note text, and always a Kinorium search link (markdown, so the
-  /// note renders a clickable "Link" instead of a raw URL).
-  String _composeNote(KinoriumEntry entry, {required bool includeCastCrew}) {
+  /// Builds the item comment. An optional [reason] (why the row was wishlisted)
+  /// leads, then cast & crew when [includeCastCrew] is set (the wishlist always
+  /// passes it), any original Note text, and always a Kinorium search link
+  /// (markdown, so the note renders a clickable "Link" instead of a raw URL).
+  String _composeNote(
+    KinoriumEntry entry, {
+    required bool includeCastCrew,
+    String? reason,
+  }) {
     final String url = 'https://en.kinorium.com/search/?q='
         '${Uri.encodeComponent(entry.searchQuery)}';
     final List<String> parts = <String>[
+      ?reason,
       if (includeCastCrew && entry.directors != null)
         'Directors: ${entry.directors}',
       if (includeCastCrew && entry.actors != null) 'Actors: ${entry.actors}',

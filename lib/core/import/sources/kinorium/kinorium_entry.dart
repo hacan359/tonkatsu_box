@@ -47,6 +47,7 @@ class KinoriumEntry {
   const KinoriumEntry({
     required this.title,
     required this.type,
+    this.rawType = '',
     this.originalTitle,
     this.year,
     this.myRating,
@@ -65,6 +66,10 @@ class KinoriumEntry {
   final String? originalTitle;
 
   final KinoriumType type;
+
+  /// Verbatim `Type` column text, kept so a skipped row can name its original
+  /// Kinorium kind in the wishlist reason even when [type] is [KinoriumType.unknown].
+  final String rawType;
 
   /// Release year; `null` when the CSV holds `0` or a blank.
   final int? year;
@@ -95,4 +100,9 @@ class KinoriumEntry {
   }
 
   bool get hasValidQuery => searchQuery.isNotEmpty;
+
+  /// Human-readable kind for wishlist reasons: the source `Type` text when
+  /// present, otherwise the parsed enum name.
+  String get typeLabel =>
+      rawType.trim().isNotEmpty ? rawType.trim() : type.name;
 }

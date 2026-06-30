@@ -26,11 +26,11 @@ void main() {
 
   group('TmdbMatcher', () {
     group('matchMovie', () {
-      test('drops the server year filter, still verifies the result year',
+      test('drops the server year filter and still prefers the matching year',
           () async {
         // TMDB's `year=` filter is unreliable and can miss a correctly-dated
-        // film. The matcher widens to a no-year search, but only accepts a
-        // result whose actual release year matches the requested one.
+        // film. The matcher widens to a no-year search and prefers the result
+        // whose actual release year matches the requested one.
         when(() => mockTmdb.searchMovies(any(), year: 1992))
             .thenAnswer((_) async => <Movie>[]);
         when(() => mockTmdb.searchMovies(any(), year: null)).thenAnswer(
@@ -44,10 +44,11 @@ void main() {
         expect(match.mediaType, MediaType.movie);
       });
 
-      test('does not accept a wrong-year result from the no-year search',
+      test('falls back to the title match when no result has the wanted year',
           () async {
-        // Regression guard: a popular same-title film of a different year must
-        // not be substituted when the requested year has no match.
+        // When the requested year has no hit, the matcher keeps the best title
+        // match (first result) rather than dropping the row — fewer real films
+        // are missed, at the cost of an occasional wrong-edition guess.
         when(() => mockTmdb.searchMovies(any(), year: 1997))
             .thenAnswer((_) async => <Movie>[]);
         when(() => mockTmdb.searchMovies(any(), year: null)).thenAnswer(
@@ -56,7 +57,8 @@ void main() {
         final TmdbMatch? match =
             await matcher.matchMovie(primaryQuery: 'The Odyssey', year: 1997);
 
-        expect(match, isNull);
+        expect(match, isNotNull);
+        expect(match!.tmdbId, 99);
       });
 
       test('prefers the result whose year matches the requested year',

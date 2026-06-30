@@ -591,6 +591,20 @@
   "kinoriumStartImport": "Start Import",
   "kinoriumImporting": "Importing from Kinorium...",
   "kinoriumRecommendOwnTmdbKey": "Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it's optional — the built-in key works too.",
+  "kinoriumReasonNotFound": "Not found on TMDB",
+  "kinoriumReasonApiError": "TMDB error or rate limit — try again later",
+  "kinoriumReasonUnsupportedType": "Unsupported type: {type}",
+  "@kinoriumReasonUnsupportedType": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "kinoriumReasonDuplicate": "Duplicate of \"{title}\"",
+  "@kinoriumReasonDuplicate": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
   "traktImportedItems": "Imported {count} items",
   "@traktImportedItems": {
     "placeholders": {
