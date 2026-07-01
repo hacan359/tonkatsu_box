@@ -116,20 +116,31 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     final S l = S.of(context);
     final CollectionStats? stats = widget.statsAsync.valueOrNull;
 
+    final bool alwaysShowSubcategories = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.alwaysShowSubcategories,
+      ),
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         _buildTypeChevronBar(l, stats),
-        SubfilterBar(groups: _subfilterGroups()),
+        SubfilterBar(
+          groups: _subfilterGroups(alwaysShow: alwaysShowSubcategories),
+        ),
       ],
     );
   }
 
   /// One subfilter group per active type — game platforms, manga formats,
   /// anime formats — each tinted with its media-type accent.
-  List<List<SubfilterChipData>> _subfilterGroups() {
+  ///
+  /// A group normally appears only once its media-type chevron is selected;
+  /// with [alwaysShow] every group whose type has items is shown upfront.
+  List<List<SubfilterChipData>> _subfilterGroups({required bool alwaysShow}) {
     return <List<SubfilterChipData>>[
-      if (widget.filterTypes.contains(MediaType.game))
+      if (alwaysShow || widget.filterTypes.contains(MediaType.game))
         <SubfilterChipData>[
           for (final Platform p in _extractPlatforms())
             SubfilterChipData(
@@ -143,11 +154,13 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.manga,
         widget.filterMangaFormats,
         widget.onMangaFormatToggled,
+        alwaysShow: alwaysShow,
       ),
       _formatGroup(
         MediaType.anime,
         widget.filterAnimeFormats,
         widget.onAnimeFormatToggled,
+        alwaysShow: alwaysShow,
       ),
     ];
   }
@@ -155,9 +168,12 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   List<SubfilterChipData> _formatGroup(
     MediaType type,
     Set<String> selected,
-    ValueChanged<String?> onToggled,
-  ) {
-    if (!widget.filterTypes.contains(type)) return const <SubfilterChipData>[];
+    ValueChanged<String?> onToggled, {
+    required bool alwaysShow,
+  }) {
+    if (!alwaysShow && !widget.filterTypes.contains(type)) {
+      return const <SubfilterChipData>[];
+    }
     return <SubfilterChipData>[
       for (final String code in _formatsFor(type))
         SubfilterChipData(
@@ -176,11 +192,18 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         (SettingsState s) => s.hideEmptyMediaTypeChevrons,
       ),
     );
+    // Visibility uses effective totals ignoring the status filter so a chevron
+    // never vanishes just because the current status hides its only items.
+    final Map<MediaType, int> effectiveTotals =
+        _effectiveTotals(widget.itemsAsync.valueOrNull);
     final List<_TypeEntry> visibleEntries =
         (hideEmpty && stats != null)
             ? entries
                 .where((_TypeEntry e) =>
-                    (_totalCountFor(e.type, stats) ?? 0) > 0 ||
+                    (effectiveTotals[e.type] ??
+                            _totalCountFor(e.type, stats) ??
+                            0) >
+                        0 ||
                     widget.filterTypes.contains(e.type))
                 .toList()
             : entries;
@@ -328,9 +351,10 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                   color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
-                Text(isDescending
-                    ? S.of(ctx).collectionFilterDescending
-                    : S.of(ctx).collectionFilterAscending),
+                Text(currentSort.localizedDirectionLabel(
+                  sl,
+                  descending: isDescending,
+                )),
               ],
             ),
           ),
@@ -373,11 +397,11 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
 
     final Map<int, Platform> map = <int, Platform>{};
     for (final CollectionItem item in items) {
-      if (item.mediaType == MediaType.game &&
-          item.platformId != null &&
-          item.platformId != -1 &&
+      if (item.displayMediaType == MediaType.game &&
+          item.effectivePlatformId != null &&
+          item.effectivePlatformId != -1 &&
           item.platform != null) {
-        map[item.platformId!] = item.platform!;
+        map[item.effectivePlatformId!] = item.platform!;
       }
     }
     final List<Platform> result = map.values.toList()
@@ -403,10 +427,27 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     ];
   }
 
+  /// Effective item count per type ignoring every filter — drives chevron
+  /// visibility. Empty when items have not loaded, so callers fall back to the
+  /// raw stats buckets.
+  static Map<MediaType, int> _effectiveTotals(List<CollectionItem>? items) {
+    if (items == null) return const <MediaType, int>{};
+    final Map<MediaType, int> totals = <MediaType, int>{};
+    for (final CollectionItem item in items) {
+      for (final MediaType bucket in item.filterTypeBuckets) {
+        totals[bucket] = (totals[bucket] ?? 0) + 1;
+      }
+    }
+    return totals;
+  }
+
   Map<MediaType, int?> _typeCounts(CollectionStats? stats) {
     final ItemStatus? statusFilter =
         widget.effectiveStatusForCounts ?? widget.filterStatus;
-    if (statusFilter == null) {
+    final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
+    // Before the items list resolves, fall back to the raw stats buckets so the
+    // chevrons are not blank on first paint.
+    if (items == null) {
       return <MediaType, int?>{
         MediaType.game: stats?.gameCount,
         MediaType.movie: stats?.movieCount,
@@ -419,16 +460,16 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.custom: stats?.customCount,
       };
     }
-    final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
-    if (items == null) {
-      return const <MediaType, int?>{};
-    }
+    // Count by effective type so a custom item that masquerades as e.g. anime
+    // is tallied under Anime, matching what the type filter will show.
     final Map<MediaType, int> tally = <MediaType, int>{
       for (final MediaType t in MediaType.values) t: 0,
     };
     for (final CollectionItem item in items) {
-      if (item.status == statusFilter) {
-        tally[item.mediaType] = tally[item.mediaType]! + 1;
+      if (statusFilter == null || item.status == statusFilter) {
+        for (final MediaType bucket in item.filterTypeBuckets) {
+          tally[bucket] = tally[bucket]! + 1;
+        }
       }
     }
     return tally;

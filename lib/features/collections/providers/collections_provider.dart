@@ -470,6 +470,35 @@ class CollectionItemsNotifier
     );
   }
 
+  /// Replaces item [id] in the loaded list via [update], then re-applies the
+  /// active sort when a field that just changed feeds it ([affects]). Manual
+  /// order is never re-sorted. Local only — no DB reload, so the list doesn't
+  /// flash; the in-memory item must already carry the edited values.
+  void _patchItem(
+    int id,
+    CollectionItem Function(CollectionItem) update, {
+    Set<CollectionSortMode> affects = const <CollectionSortMode>{},
+  }) {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+    final List<CollectionItem> next = items
+        .map((CollectionItem i) => i.id == id ? update(i) : i)
+        .toList();
+    final bool resort = _sortMode != CollectionSortMode.manual &&
+        affects.contains(_sortMode);
+    state = AsyncData<List<CollectionItem>>(
+      resort
+          ? _applySortMode(next, _sortMode, isDescending: _isDescending)
+          : next,
+    );
+  }
+
+  /// Stamps last_activity_at = [now] for [id] so activity sorting reflects a
+  /// card edit. Status and explicit date edits stamp it through their own
+  /// writes, so they don't call this.
+  Future<void> _stampActivity(int id, DateTime now) =>
+      _repository.updateItemActivityDates(id, lastActivityAt: now);
+
   /// Optimistic in-state update; avoids full reload.
   void updateItemDates(
     int itemId, {
@@ -794,16 +823,15 @@ class CollectionItemsNotifier
   Future<void> updateStatus(int id, ItemStatus status, MediaType mediaType) async {
     await _repository.updateItemStatus(id, status, mediaType: mediaType);
 
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items != null) {
-      final DateTime now = DateTime.now();
-      state = AsyncData<List<CollectionItem>>(
-        items
-            .map((CollectionItem i) =>
-                i.id == id ? i.withStatus(status, now: now) : i)
-            .toList(),
-      );
-    }
+    final DateTime now = DateTime.now();
+    _patchItem(
+      id,
+      (CollectionItem i) => i.withStatus(status, now: now),
+      affects: const <CollectionSortMode>{
+        CollectionSortMode.status,
+        CollectionSortMode.lastActivity,
+      },
+    );
 
     ref.invalidate(collectionStatsProvider(_collectionId));
     ref
@@ -822,17 +850,19 @@ class CollectionItemsNotifier
   /// the All Items view so both stay consistent regardless of which screen
   /// triggered the change.
   Future<void> setFavorite(int id, {required bool isFavorite}) async {
+    final DateTime now = DateTime.now();
     await _repository.setItemFavorite(id, isFavorite: isFavorite);
+    await _stampActivity(id, now);
 
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items
-            .map((CollectionItem i) =>
-                i.id == id ? i.copyWith(isFavorite: isFavorite) : i)
-            .toList(),
-      );
-    }
+    _patchItem(
+      id,
+      (CollectionItem i) =>
+          i.copyWith(isFavorite: isFavorite, lastActivityAt: now),
+      affects: const <CollectionSortMode>{
+        CollectionSortMode.favorite,
+        CollectionSortMode.lastActivity,
+      },
+    );
 
     ref
         .read(allItemsNotifierProvider.notifier)
@@ -935,18 +965,18 @@ class CollectionItemsNotifier
         await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
       }
 
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return i.copyWith(
-              startedAt: startedAt ?? i.startedAt,
-              completedAt: completedAt ?? i.completedAt,
-              lastActivityAt: lastActivityAt ?? i.lastActivityAt,
-              status: newStatus ?? i.status,
-            );
-          }
-          return i;
-        }).toList(),
+      _patchItem(
+        id,
+        (CollectionItem i) => i.copyWith(
+          startedAt: startedAt ?? i.startedAt,
+          completedAt: completedAt ?? i.completedAt,
+          lastActivityAt: lastActivityAt ?? i.lastActivityAt,
+          status: newStatus ?? i.status,
+        ),
+        affects: const <CollectionSortMode>{
+          CollectionSortMode.status,
+          CollectionSortMode.lastActivity,
+        },
       );
 
       if (newStatus != null) {
@@ -965,29 +995,56 @@ class CollectionItemsNotifier
     int? currentSeason,
     int? currentEpisode,
   }) async {
+    final DateTime now = DateTime.now();
     await _repository.updateItemProgress(
       id,
       currentSeason: currentSeason,
       currentEpisode: currentEpisode,
     );
+    await _stampActivity(id, now);
 
     final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return i.copyWith(
-              currentSeason: currentSeason ?? i.currentSeason,
-              currentEpisode: currentEpisode ?? i.currentEpisode,
-            );
-          }
-          return i;
-        }).toList(),
+      _patchItem(
+        id,
+        (CollectionItem i) => i.copyWith(
+          currentSeason: currentSeason ?? i.currentSeason,
+          currentEpisode: currentEpisode ?? i.currentEpisode,
+          lastActivityAt: now,
+        ),
+        affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
       );
 
       await _autoUpdateMangaStatus(id, currentEpisode, currentSeason);
       await _autoUpdateAnimeStatus(id, currentEpisode);
       await _autoUpdateBookStatus(id, currentEpisode);
+      await _autoUpdateCustomStatus(id, currentEpisode, currentSeason);
+    }
+  }
+
+  /// Mirrors the manga path for custom items: status follows the fine-axis
+  /// progress (stored in `currentEpisode`) against the item's `unitTotal`.
+  Future<void> _autoUpdateCustomStatus(
+    int id,
+    int? newUnitValue,
+    int? newGroupValue,
+  ) async {
+    final CollectionItem? item =
+        state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+    if (item == null || item.mediaType != MediaType.custom) return;
+
+    final int newUnit = newUnitValue ?? item.currentEpisode;
+    final int newGroup = newGroupValue ?? item.currentSeason;
+    final int? totalUnits = item.customUnitTotal;
+
+    final ItemStatus? targetStatus = computeStatusFromProgress(
+      currentStatus: item.status,
+      hasAnyProgress: newUnit > 0 || newGroup > 0,
+      isFullyCompleted: totalUnits != null && newUnit >= totalUnits,
+    );
+
+    if (targetStatus != null) {
+      await updateStatus(id, targetStatus, MediaType.custom);
     }
   }
 
@@ -1062,60 +1119,52 @@ class CollectionItemsNotifier
   }
 
   Future<void> updateAuthorComment(int id, String? comment) async {
+    final DateTime now = DateTime.now();
     await _repository.updateItemAuthorComment(id, comment);
+    await _stampActivity(id, now);
 
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return comment == null
-                ? i.copyWith(clearAuthorComment: true)
-                : i.copyWith(authorComment: comment);
-          }
-          return i;
-        }).toList(),
-      );
-    }
+    _patchItem(
+      id,
+      (CollectionItem i) => comment == null
+          ? i.copyWith(clearAuthorComment: true, lastActivityAt: now)
+          : i.copyWith(authorComment: comment, lastActivityAt: now),
+      affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
+    );
   }
 
   Future<void> updateUserComment(int id, String? comment) async {
+    final DateTime now = DateTime.now();
     await _repository.updateItemUserComment(id, comment);
+    await _stampActivity(id, now);
 
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return comment == null
-                ? i.copyWith(clearUserComment: true)
-                : i.copyWith(userComment: comment);
-          }
-          return i;
-        }).toList(),
-      );
-    }
+    _patchItem(
+      id,
+      (CollectionItem i) => comment == null
+          ? i.copyWith(clearUserComment: true, lastActivityAt: now)
+          : i.copyWith(userComment: comment, lastActivityAt: now),
+      affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
+    );
   }
 
   /// Empty / whitespace-only `name` clears the override.
   Future<void> setOverrideName(int id, String? name) async {
     final String? normalized =
         (name == null || name.trim().isEmpty) ? null : name.trim();
+    final DateTime now = DateTime.now();
     await _repository.setItemOverrideName(id, normalized);
+    await _stampActivity(id, now);
 
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return normalized == null
-                ? i.copyWith(clearOverrideName: true)
-                : i.copyWith(overrideName: normalized);
-          }
-          return i;
-        }).toList(),
-      );
-    }
+    _patchItem(
+      id,
+      (CollectionItem i) => normalized == null
+          ? i.copyWith(clearOverrideName: true, lastActivityAt: now)
+          : i.copyWith(overrideName: normalized, lastActivityAt: now),
+      // Renaming changes displayName (name sort) and counts as activity.
+      affects: const <CollectionSortMode>{
+        CollectionSortMode.name,
+        CollectionSortMode.lastActivity,
+      },
+    );
     ref.invalidate(allItemsNotifierProvider);
   }
 
@@ -1125,21 +1174,20 @@ class CollectionItemsNotifier
       rating == null || (rating >= 1.0 && rating <= 10.0),
       'Rating must be 1.0-10.0 or null, got $rating',
     );
+    final DateTime now = DateTime.now();
     await _repository.updateItemUserRating(id, rating);
+    await _stampActivity(id, now);
 
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return rating == null
-                ? i.copyWith(clearUserRating: true)
-                : i.copyWith(userRating: rating);
-          }
-          return i;
-        }).toList(),
-      );
-    }
+    _patchItem(
+      id,
+      (CollectionItem i) => rating == null
+          ? i.copyWith(clearUserRating: true, lastActivityAt: now)
+          : i.copyWith(userRating: rating, lastActivityAt: now),
+      affects: const <CollectionSortMode>{
+        CollectionSortMode.rating,
+        CollectionSortMode.lastActivity,
+      },
+    );
     ref.invalidate(allItemsNotifierProvider);
   }
 
@@ -1152,35 +1200,30 @@ class CollectionItemsNotifier
             );
     final int current = item?.timeSpentMinutes ?? 0;
     final int total = current + minutesToAdd;
+    final DateTime now = DateTime.now();
     await _repository.updateItemTimeSpent(id, total);
+    await _stampActivity(id, now);
 
-    if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return i.copyWith(timeSpentMinutes: total);
-          }
-          return i;
-        }).toList(),
-      );
-    }
+    _patchItem(
+      id,
+      (CollectionItem i) =>
+          i.copyWith(timeSpentMinutes: total, lastActivityAt: now),
+      affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
+    );
     ref.invalidate(allItemsNotifierProvider);
   }
 
   Future<void> setTimeSpent(int id, int totalMinutes) async {
+    final DateTime now = DateTime.now();
     await _repository.updateItemTimeSpent(id, totalMinutes);
+    await _stampActivity(id, now);
 
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items != null) {
-      state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id == id) {
-            return i.copyWith(timeSpentMinutes: totalMinutes);
-          }
-          return i;
-        }).toList(),
-      );
-    }
+    _patchItem(
+      id,
+      (CollectionItem i) =>
+          i.copyWith(timeSpentMinutes: totalMinutes, lastActivityAt: now),
+      affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
+    );
     ref.invalidate(allItemsNotifierProvider);
   }
 }

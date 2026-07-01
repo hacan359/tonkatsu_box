@@ -46,9 +46,8 @@ abstract final class MediaFormat {
         type == MediaType.manga ? mangaOrder : animeOrder;
     final Set<String> found = <String>{};
     for (final CollectionItem item in items) {
-      if (item.mediaType != type) continue;
-      final String? code =
-          type == MediaType.manga ? item.manga?.format : item.anime?.format;
+      if (item.displayMediaType != type) continue;
+      final String? code = item.formatCode;
       if (code != null && code.isNotEmpty) found.add(code);
     }
     final List<String> result = found.toList()
@@ -75,12 +74,12 @@ abstract final class MediaFormat {
     required Set<String> animeFormats,
   }) {
     if (mangaFormats.isEmpty && animeFormats.isEmpty) return true;
-    switch (item.mediaType) {
+    switch (item.displayMediaType) {
       case MediaType.manga:
-        final String? code = item.manga?.format;
+        final String? code = item.formatCode;
         return code != null && mangaFormats.contains(code);
       case MediaType.anime:
-        final String? code = item.anime?.format;
+        final String? code = item.formatCode;
         return code != null && animeFormats.contains(code);
       default:
         return false;

@@ -7,6 +7,317 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Import a game list exported from IGDB (CSV)**
+
+  A new import source under Settings → Import. Every export row carries the
+  IGDB game id, so titles are matched in one batched id lookup with no fuzzy
+  search; ids IGDB no longer returns fall back to the text wishlist under an
+  `IGDB-<timestamp>` tag. The export has no personal data, so the status is
+  picked once for the whole file (the card status switcher) and the platform
+  is chosen from the same searchable platform list used in search — required,
+  since without it every item would render as "unknown platform". Re-import is
+  idempotent: an unset status leaves existing items untouched, a chosen status
+  only bumps upward without downgrading the user's own decision.
+
+  * lib/core/import/sources/igdb_list/igdb_list_csv_parser.dart (IgdbListCsvParser,
+    IgdbListEntry, IgdbListParseException): New RFC 4180 CSV parser addressing
+    columns by header; reads only `id` and `game`.
+  * lib/core/import/sources/igdb_list/igdb_list_import_service.dart (IgdbListImportService,
+    IgdbListImportOptions, igdbListImportServiceProvider): New import adapter over
+    the shared ImportWriter; matches via IgdbApi.getGamesByIds, applies a required
+    platform and a per-file status.
+  * lib/features/settings/content/igdb_list_import_content.dart (IgdbListImportContent):
+    New form — file picker, StatusChipRow, searchable platform picker, collection target.
+  * lib/features/settings/screens/igdb_list_import_screen.dart (IgdbListImportScreen): New.
+  * lib/features/settings/screens/settings_screen.dart: New import tile after Steam.
+  * lib/features/search/widgets/filter_dropdown.dart (SearchableFilterDialog.showAllOption):
+    Add flag to hide the leading "All" reset row when a selection is mandatory.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (settingsIgdbImport, igdbImportTitle,
+    igdbImportPlatformSelect and related keys): New strings.
+  * README.md: List IGDB in the import table.
+
+- **Setting to always show subcategory filters**
+
+  A new appearance toggle keeps the subcategory subfilters (game platforms,
+  anime / manga formats) visible without first selecting their media-type
+  chevron. Off by default; mirrors how the other appearance toggles persist.
+  Applies to both the collection screen and the all-items (Home) screen.
+
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.alwaysShowSubcategories,
+    SettingsState.alwaysShowSubcategories, SettingsNotifier.setAlwaysShowSubcategories):
+    New persisted flag with loader, copyWith, setter and clear handling.
+  * lib/features/settings/screens/settings_screen.dart: New toggle tile under appearance.
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (_CollectionFilterBarState._subfilterGroups, _formatGroup): Gate subfilters on
+    the setting in addition to the selected type.
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._subfilterGroups, _formatGroup): Same gating for the Home grid.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (settingsAlwaysShowSubcategories,
+    settingsAlwaysShowSubcategoriesSubtitle): New strings.
+
+- **Universal progress tracker for custom items**
+
+  Custom cards now carry a count and reading/watching progress, mirroring manga
+  and anime. A fine axis (episodes / chapters / pages / parts) and, for types
+  with a sub-division, a coarse axis (seasons for series, volumes for manga);
+  the unit labels follow the card's display type. Totals are entered in the
+  create / edit form and the item detail shows a +/- progress section that
+  auto-advances the status (in-progress / completed) just like the real types.
+  Totals live on the item's own row, so exports, backups and sync carry them;
+  the "done" position reuses the existing `current_episode` / `current_season`
+  slots, so no new progress columns.
+
+  * lib/core/database/migrations/migration_v52.dart (MigrationV52),
+    migration_registry.dart, database_service.dart (version): Add `unit_total`
+    and `unit_group_total` to `custom_items`; DB version 51 → 52.
+  * lib/shared/models/custom_media.dart (CustomMedia.unitTotal, unitGroupTotal),
+    lib/shared/models/collection_item.dart (CollectionItem.customUnitTotal,
+    customUnitGroupTotal): New fields / accessors.
+  * lib/shared/utils/custom_progress_units.dart (CustomProgressUnits): Resolves
+    fine / coarse unit labels and whether a display type has a coarse axis.
+  * lib/features/collections/widgets/custom_progress_section.dart
+    (CustomProgressSection): Universal +/- progress section.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (hasCustomProgress), lib/features/collections/screens/item_detail_screen.dart:
+    Render the section for custom items.
+  * lib/features/collections/providers/collections_provider.dart
+    (_autoUpdateCustomStatus): Status follows custom progress.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_buildCountsSection), custom_item/custom_item_data.dart (unitTotal,
+    unitGroupTotal): Total inputs in the create / edit form.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (customProgress,
+    customMarkCompleted, customUnit*): New strings.
+
+- **Custom items count under their masqueraded type, with platform / format subfilters**
+
+  A custom card that masquerades as a real type (e.g. a custom "anime") now
+  surfaces under that type's filter chevron — on the collection screen and on
+  All Items — and still under "Custom", since it is a custom element either way;
+  the chevron counts follow suit (it is tallied in both). Custom games can pick a
+  platform and custom manga / anime a format, both strictly from the existing
+  reference lists (no free-text), so the platform and format subfilters include
+  them too. Stored on the item's own row, so exports, backups and network sync
+  carry them.
+
+  * lib/core/database/migrations/migration_v51.dart (MigrationV51),
+    lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all),
+    lib/core/database/database_service.dart (version): Add `platform_id` and
+    `format` to `custom_items`; DB version 50 → 51.
+  * lib/shared/models/custom_media.dart (CustomMedia.platformId,
+    CustomMedia.format, fromDb, toDb, copyWith): New fields.
+  * lib/shared/models/collection_item.dart (CollectionItem.effectivePlatformId,
+    CollectionItem.formatCode, formatLabel, filterTypeBuckets,
+    matchesTypeFilter): Resolve platform / format through the custom item when it
+    masquerades, and place it in both its display-type and Custom filter buckets.
+  * lib/features/collections/helpers/collection_filters.dart (CollectionFilters.apply),
+    lib/shared/utils/media_format.dart (MediaFormat.present, matchesFormatFilter):
+    Filter by effective type / platform / format.
+  * lib/core/database/dao/collection_dao.dart (_loadJoinedData): Hydrate the
+    platform object for custom games.
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (_effectiveTotals, _typeCounts, _extractPlatforms),
+    lib/features/home/screens/all_items_screen.dart (_applyFilter,
+    _matchesNonTypeFilters, _countByMediaType, _rawTotalsByMediaType),
+    lib/features/home/providers/all_items_provider.dart (allItemsPlatformsProvider):
+    Count and subfilter by effective type / platform.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_pickPlatform, _buildFormatChip, _pickFormat),
+    custom_item/custom_item_data.dart (CustomItemData.platformId, format):
+    Reference-list-only pickers.
+  * lib/core/services/export_service.dart (custom export case): Export the custom
+    game's platform so the target resolves it after import.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (customItemFormat): New.
+
+- **Personalization step in the welcome menu tour**
+
+  The coachmark tour now highlights the centre nav button (genre cloud +
+  recommendations), which it previously skipped because that button is a
+  shell-level destination rather than a nav tab. The tour scrim is also denser
+  so the app's text behind it no longer bleeds through the description card.
+
+  * lib/shared/navigation/nav_tour_keys.dart (NavTourKeys.personalization): New
+    stable key for the centre button.
+  * lib/shared/navigation/app_sidebar.dart (AppSidebar.build),
+    lib/shared/navigation/app_bottom_bar.dart (AppBottomBar.build): Attach the
+    personalization key to NavCenterButton while the tour runs.
+  * lib/features/welcome/widgets/menu_tour_items.dart (MenuTourItem,
+    buildMenuTourItems): Make `tab` nullable for the centre-button step and
+    insert it at the centre slot in menu order.
+  * lib/features/welcome/widgets/menu_tour_overlay.dart
+    (_MenuTourOverlayState._syncSpot, _MenuTourOverlayState._readRect,
+    _SpotlightPainter): Drive the spotlight off the item list, resolve the centre
+    button by its key, and raise the scrim alpha from 130 to 200.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (welcomeHowPersonalizationDesc): New.
+
+- **Carry app settings and API keys over network sync**
+
+  Receiving data from another device now offers an "Also transfer settings"
+  checkbox (on by default, all-or-nothing) that pulls the sending device's full
+  configuration — every preference plus all API keys and source logins — and
+  applies it here. The bundle rides a new `/config` endpoint alongside the
+  database and images, is written straight to preferences, and takes effect on
+  the restart the received database requires anyway. The checkbox only appears
+  when the sending device is new enough to serve its config. The transfer stays
+  on the local network in the clear, like the database it accompanies.
+
+  * lib/shared/models/sync_manifest.dart (SyncManifest.supportsSettingsTransfer):
+    New capability flag (`supports_settings`), absent on older peers so the
+    receiver hides the option.
+  * lib/core/services/db_sync_service.dart (DbSyncService.buildManifest):
+    Advertise supportsSettingsTransfer.
+  * lib/core/services/lan_sync_service.dart (LanSyncService._serveConfig,
+    LanSyncService.downloadConfig): New `/config` endpoint serving the full
+    ConfigService bundle, plus the client that fetches and applies it;
+    LanSyncService now takes a ConfigService.
+  * lib/features/settings/screens/lan_sync_screen.dart
+    (_LanSyncScreenState._askReceiveOptions, _ReceiveChoice): Receive dialog
+    grows the opt-in checkbox; the pull applies the bundle after the database.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (lanSyncImportConfig,
+    lanSyncImportConfigSubtitle, lanSyncReceivingSettings): New.
+
+### Changed
+
+- **Show the item cover as the Discord Rich Presence large image**
+
+  The Discord status now uses the current item's real cover (game / movie /
+  manga art) as the large image, with the app logo moved to the small icon for
+  branding. Custom items with a local-file cover fall back to the logo since
+  Discord can only fetch remote URLs; the RetroAchievements icon still takes the
+  small slot when present.
+
+  * lib/core/services/discord_rpc_service.dart (DiscordRpcService.updatePresence,
+    DiscordRpcService._remoteCoverUrl): Build the large/small assets from the
+    item's cover URL, falling back to the logo.
+
+- **Kinorium import: restore title matching and explain every wishlist skip**
+
+  Title matching is back: when no TMDB result carries the row's exact year the
+  importer keeps the best title match instead of dropping the row, so far fewer
+  real films are missed. Rows that still can't be imported now land in the
+  wishlist with the reason spelled out in their note — not found on TMDB, a TMDB
+  error or rate limit, an unsupported type (the original Kinorium kind is named,
+  e.g. "Эпизод"), or a duplicate of another row's title. The reasons are
+  localized.
+
+  * lib/core/import/tmdb_matcher.dart (TmdbMatcher._search, _pickBest): Prefer
+    the matching-year result, otherwise fall back to the first (title) result.
+  * lib/core/import/sources/kinorium/kinorium_import_service.dart
+    (KinoriumImportOptions.reasons, KinoriumWishlistReasons, KinoriumImportService.import,
+    _composeNote): Track a per-row skip reason and prepend it to the wishlist note.
+  * lib/core/import/sources/kinorium/kinorium_entry.dart (KinoriumEntry.rawType,
+    typeLabel), kinorium_csv_parser.dart: Keep the verbatim `Type` text so the
+    reason can name the original kind.
+  * lib/features/settings/content/kinorium_import_content.dart
+    (_KinoriumImportContentState._startImport): Build the localized reasons from
+    the UI and pass them into the import.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (kinoriumReasonNotFound,
+    kinoriumReasonApiError, kinoriumReasonUnsupportedType, kinoriumReasonDuplicate):
+    New strings.
+
+- **Mark the Uncategorized collection as deprecated across the UI**
+
+  The Uncategorized bucket is now a read-only legacy collection: it can no
+  longer be picked as a move/add destination, its card and list tile show a red
+  "will be removed" warning, the All Items screen shows a deprecation banner
+  above the group, and the add-items FAB and Ctrl+N shortcut are hidden while
+  viewing it.
+
+  * lib/features/collections/widgets/collection_card.dart (UncategorizedCard),
+    lib/features/collections/widgets/collection_list_tile.dart
+    (UncategorizedListTile): Red warning triangle plus badge text; the card uses
+    a FittedBox so the warning never overflows a small grid cell.
+  * lib/shared/widgets/uncategorized_deprecation_banner.dart
+    (UncategorizedDeprecationBanner): New banner shown on All Items.
+  * lib/features/home/screens/all_items_screen.dart
+    (_CollectionGroup.isUncategorized): Flag the Uncategorized group and render
+    the banner above it.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.moveItem),
+    lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._moveToCollection),
+    lib/features/collections/widgets/bulk_action_bar.dart
+    (BulkActionBar._handleMove),
+    lib/features/search/services/search_collection_adder.dart
+    (SearchCollectionAdder.pickCollection): Pass showUncategorized: false to the
+    collection picker.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._buildScreenShortcuts),
+    lib/features/collections/widgets/collection_screen/collection_screen_fab.dart
+    (CollectionScreenFab._mainAction): Hide the add-items shortcut and FAB for it.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (uncategorizedDeprecationBadge,
+    uncategorizedDeprecationNotice): New.
+
+- **Collection items re-sort immediately after an in-card edit**
+
+  Changing rating, status, progress, favorite, comments or the override name in
+  the item card now re-applies the active sort right away, so the item moves to
+  its correct place instead of staying put until you re-enter. Any such edit
+  also counts as activity (stamps last_activity_at), so it surfaces in the "by
+  activity" sort. Manual (drag-and-drop) order is never re-sorted, and the
+  re-sort is local — no reload, so the list does not flash.
+
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier._patchItem, CollectionItemsNotifier._stampActivity):
+    New helpers; every card-edit method routes through them.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateStatus, CollectionItemsNotifier.setFavorite,
+    CollectionItemsNotifier.updateActivityDates,
+    CollectionItemsNotifier.updateProgress,
+    CollectionItemsNotifier.updateAuthorComment,
+    CollectionItemsNotifier.updateUserComment,
+    CollectionItemsNotifier.setOverrideName,
+    CollectionItemsNotifier.updateUserRating,
+    CollectionItemsNotifier.addTimeSpent, CollectionItemsNotifier.setTimeSpent):
+    Stamp activity and re-sort when the edited field feeds the active mode.
+
+- **Sort-direction labels spell out the order instead of "ascending/descending"**
+
+  The direction toggle now reads "Newest first / Oldest first", "Highest first /
+  Lowest first", etc. per mode, so it no longer claims "ascending" while showing
+  newest/highest on top.
+
+  * lib/shared/models/collection_sort_mode.dart
+    (CollectionSortMode.localizedDirectionLabel): New.
+  * lib/features/collections/widgets/collection_filter_bar.dart,
+    lib/features/collections/widgets/collection_filter_sheet.dart: Use the
+    mode-aware label instead of collectionFilterAscending/Descending.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (sortDateOldest, sortStatusFinished,
+    sortNameZa, sortRatingLowest, sortFavoriteLast, sortExternalRatingLowest,
+    sortLastActivityOldest): New.
+
+### Fixed
+
+- **API Keys counter no longer counts built-in default keys**
+
+  In production builds with TMDB / SteamGridDB / IGDB keys baked in via
+  `--dart-define`, the Settings "API Keys" tally showed e.g. 2/6 even with no
+  user-entered keys and empty credential fields. It now counts only keys the
+  user actually set, matching the credentials screen (0/6 on a fresh install).
+
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._apiKeyStates): Exclude built-in defaults via
+    isIgdbKeyBuiltIn / isSteamGridDbKeyBuiltIn / isTmdbKeyBuiltIn.
+
+- **"My Rating" sort ignores the external rating**
+
+  It now ranks by the user's own rating only; items the user has not rated sort
+  last (by name), instead of being ranked by their external API rating — which
+  used to push an unrated-but-high-API item above personally-rated ones.
+
+  * lib/features/collections/providers/sort_utils.dart (applySortMode): Drop the
+    apiRating fallback for CollectionSortMode.rating; add a name tie-break.
+
+- **"By activity" sort no longer sinks freshly added items**
+
+  An item never touched since it was added now falls back to its added date for
+  the activity sort, so new items don't drop below older ones with a stale
+  activity date.
+
+  * lib/features/collections/providers/sort_utils.dart (applySortMode): Use
+    lastActivityAt ?? addedAt for CollectionSortMode.lastActivity.
+
 ## [0.36.0] - 2026-06-26
 
 ### Added

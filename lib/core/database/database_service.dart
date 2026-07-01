@@ -244,7 +244,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 50,
+        version: 52,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {

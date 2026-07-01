@@ -30,6 +30,7 @@ class ItemDetailMediaConfig {
     required this.hasMangaProgress,
     required this.hasAnimeProgress,
     required this.hasBookProgress,
+    required this.hasCustomProgress,
     this.externalUrl,
     this.backdropUrl,
     this.tvShow,
@@ -70,6 +71,8 @@ class ItemDetailMediaConfig {
       hasMangaProgress: item.mediaType == MediaType.manga,
       hasAnimeProgress: item.mediaType == MediaType.anime,
       hasBookProgress: item.mediaType == MediaType.book,
+      hasCustomProgress: item.mediaType == MediaType.custom &&
+          (item.customUnitTotal != null || item.customUnitGroupTotal != null),
       externalUrl: externalUrl,
       backdropUrl: item.game?.artworkUrl ??
           item.movie?.backdropUrl ??
@@ -97,6 +100,7 @@ class ItemDetailMediaConfig {
   final bool hasMangaProgress;
   final bool hasAnimeProgress;
   final bool hasBookProgress;
+  final bool hasCustomProgress;
   final String? externalUrl;
   final String? backdropUrl;
   final TvShow? tvShow;

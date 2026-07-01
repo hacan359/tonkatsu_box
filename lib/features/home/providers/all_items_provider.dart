@@ -210,10 +210,10 @@ final FutureProvider<List<Platform>> allItemsPlatformsProvider =
 
   final Set<int> uniqueIds = items
       .where((CollectionItem i) =>
-          i.mediaType == MediaType.game &&
-          i.platformId != null &&
-          i.platformId != -1)
-      .map((CollectionItem i) => i.platformId!)
+          i.displayMediaType == MediaType.game &&
+          i.effectivePlatformId != null &&
+          i.effectivePlatformId != -1)
+      .map((CollectionItem i) => i.effectivePlatformId!)
       .toSet();
 
   if (uniqueIds.isEmpty) return <Platform>[];

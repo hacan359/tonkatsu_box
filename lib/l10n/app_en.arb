@@ -83,6 +83,14 @@
   "sortLastActivityShort": "Activity",
   "sortLastActivityDesc": "Recent first",
 
+  "sortDateOldest": "Oldest first",
+  "sortStatusFinished": "Finished first",
+  "sortNameZa": "Z to A",
+  "sortRatingLowest": "Lowest first",
+  "sortFavoriteLast": "Favorites last",
+  "sortExternalRatingLowest": "Lowest first",
+  "sortLastActivityOldest": "Oldest first",
+
   "searchSortRelevanceShort": "Rel",
   "searchSortRelevanceDisplay": "Relevance",
   "searchSortDateShort": "Date",
@@ -513,6 +521,9 @@
   "lanSyncCorrupted": "The transfer came through damaged. Try again.",
   "lanSyncReceived": "Data received",
   "lanSyncReceivingImages": "Transferring images...",
+  "lanSyncReceivingSettings": "Transferring settings...",
+  "lanSyncImportConfig": "Also transfer settings",
+  "lanSyncImportConfigSubtitle": "Includes API keys. All or nothing.",
   "lanSyncImagesWarning": "Database received, but the images could not be transferred",
   "lanSyncRestartMessage": "The received data will be used after restart. Restart now?",
   "lanSyncFirewallNote": "Windows may ask for firewall permission on first start - allow access on private networks.",
@@ -580,6 +591,20 @@
   "kinoriumStartImport": "Start Import",
   "kinoriumImporting": "Importing from Kinorium...",
   "kinoriumRecommendOwnTmdbKey": "Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it's optional — the built-in key works too.",
+  "kinoriumReasonNotFound": "Not found on TMDB",
+  "kinoriumReasonApiError": "TMDB error or rate limit — try again later",
+  "kinoriumReasonUnsupportedType": "Unsupported type: {type}",
+  "@kinoriumReasonUnsupportedType": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "kinoriumReasonDuplicate": "Duplicate of \"{title}\"",
+  "@kinoriumReasonDuplicate": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
   "traktImportedItems": "Imported {count} items",
   "@traktImportedItems": {
     "placeholders": {
@@ -700,6 +725,15 @@
   "customItemGenresHint": "e.g. RPG, Action, Puzzle",
   "customItemPlatform": "Platform",
   "customItemPlatformHint": "e.g. PC, SNES, Custom",
+  "customItemFormat": "Format",
+  "customProgress": "Progress",
+  "customMarkCompleted": "Mark as completed",
+  "customUnitParts": "Parts",
+  "customUnitEpisodes": "Episodes",
+  "customUnitChapters": "Chapters",
+  "customUnitPages": "Pages",
+  "customUnitVolumes": "Volumes",
+  "customUnitSeasons": "Seasons",
   "customItemDescription": "Description",
   "customItemDescriptionHint": "Brief description or notes",
   "customItemOptionalFields": "More fields",
@@ -1228,6 +1262,10 @@
   "welcomeHowWishlistDesc": "Quick list of items to check out later. No API needed.",
   "welcomeHowSearchDesc": "Find games, movies, TV shows, visual novels & manga via API. Add to any collection.",
   "welcomeHowSettingsDesc": "API keys, cache, database export/import, debug tools.",
+  "welcomeHowPersonalizationDesc": "Your taste in one place: a cloud of your favourite genres plus recommendations picked from what you've rated.",
+  "@welcomeHowPersonalizationDesc": {
+    "description": "Menu-tour description for the Personalization centre button (genre cloud + recommendations)."
+  },
   "welcomeHowQuickStart": "Quick Start",
   "welcomeHowStep1": "Go to Settings → Credentials, enter API keys",
   "welcomeHowStep2": "Click Verify Connection, wait for platforms sync",
@@ -1516,6 +1554,8 @@
   "settingsShowRecommendationsSubtitle": "Similar movies and TV shows on detail pages",
   "settingsHideEmptyMediaTypeChevrons": "Hide empty media type filters",
   "settingsHideEmptyMediaTypeChevronsSubtitle": "Hide media type chevrons (Games, Movies, etc.) when there are no items of that type",
+  "settingsAlwaysShowSubcategories": "Always show subcategories",
+  "settingsAlwaysShowSubcategoriesSubtitle": "Show subcategory filters (game platforms, anime/manga types) without selecting their media type first",
   "settingsShowPlatformOverlay": "Game platform covers",
   "settingsShowPlatformOverlaySubtitle": "Show platform overlay on game posters (PS5, Switch, etc.)",
   "settingsShowBlurayOverlay": "Blu-ray covers",
@@ -1538,6 +1578,14 @@
 
   "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
   "uncategorizedBannerAction": "Add to Collection",
+  "uncategorizedDeprecationNotice": "This system collection will be removed soon. Create your own collection and move all items here into it.",
+  "@uncategorizedDeprecationNotice": {
+    "description": "Warns that the Uncategorized system collection is deprecated and will be removed."
+  },
+  "uncategorizedDeprecationBadge": "Will be removed",
+  "@uncategorizedDeprecationBadge": {
+    "description": "Short warning shown on the Uncategorized collection card/tile that it will be removed."
+  },
 
   "browseFilterGenre": "Genre",
   "browseFilterTag": "Tag",
@@ -1698,6 +1746,26 @@
 
   "settingsSteamImport": "Steam Library",
   "settingsSteamImportSubtitle": "Import games via Steam Web API",
+  "settingsIgdbImport": "IGDB List",
+  "settingsIgdbImportSubtitle": "Import a game list exported from IGDB (CSV)",
+  "igdbImportTitle": "Import IGDB List",
+  "igdbImportDescription": "Pick a CSV list exported from IGDB. Games are matched by their IGDB id; anything IGDB no longer has goes to the wishlist.",
+  "igdbImportSelectCsvFile": "Select CSV file",
+  "igdbImportSelectCsvExport": "Select IGDB CSV export",
+  "igdbImportOptions": "Options",
+  "igdbImportStatusLabel": "Status for imported games",
+  "igdbImportPlatformLabel": "Platform",
+  "igdbImportPlatformSelect": "Select platform",
+  "igdbImportTargetCollection": "Target collection",
+  "igdbImportCreateNew": "Create new collection",
+  "igdbImportUseExisting": "Use existing collection",
+  "igdbImportNoCollections": "No collections available",
+  "igdbImportSelectCollection": "Select collection",
+  "igdbImportErrorLoadingCollections": "Error loading collections",
+  "igdbImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
+  "igdbStartImport": "Start Import",
+  "igdbImporting": "Importing...",
+  "igdbReasonNotFound": "Not found on IGDB",
   "steamImportTitle": "Import Steam Library",
   "steamImportSubtitle": "Games will be matched to IGDB database",
   "steamImportApiKey": "Steam API Key",

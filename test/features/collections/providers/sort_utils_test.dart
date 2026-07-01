@@ -13,6 +13,7 @@ CollectionItem _makeItem({
   ItemStatus status = ItemStatus.notStarted,
   double? userRating,
   DateTime? addedAt,
+  DateTime? lastActivityAt,
   double? apiRating,
   bool isFavorite = false,
 }) {
@@ -25,6 +26,7 @@ CollectionItem _makeItem({
     sortOrder: sortOrder,
     userRating: userRating,
     addedAt: addedAt ?? DateTime(2024, 1, id),
+    lastActivityAt: lastActivityAt,
     isFavorite: isFavorite,
     game: Game(id: id * 100, name: name, rating: apiRating),
   );
@@ -280,7 +282,7 @@ void main() {
 
     // Priority: userRating -> apiRating -> nulls last.
     group('CollectionSortMode.rating', () {
-      test('по умолчанию высший рейтинг первым', () {
+      test('по умолчанию высшая личная оценка первой', () {
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'Low', userRating: 3),
           _makeItem(id: 2, name: 'High', userRating: 10),
@@ -298,11 +300,10 @@ void main() {
         );
       });
 
-      test('fallback на apiRating когда userRating отсутствует', () {
-        // Game.rating is divided by 10 in _resolvedMedia (80 -> 8.0).
+      test('внешний рейтинг не учитывается — без личной оценки в конце', () {
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'User 5', userRating: 5),
-          _makeItem(id: 2, name: 'API 8', apiRating: 80.0),
+          _makeItem(id: 2, name: 'API only', apiRating: 95.0),
           _makeItem(id: 3, name: 'User 9', userRating: 9),
         ];
 
@@ -311,17 +312,53 @@ void main() {
           CollectionSortMode.rating,
         );
 
+        // Высокий API (95) не поднимает элемент выше оценённых лично.
         expect(
           result.map((CollectionItem i) => i.id).toList(),
-          <int>[3, 2, 1],
+          <int>[3, 1, 2],
         );
       });
 
-      test('userRating приоритетнее apiRating при наличии обоих', () {
+      test('при наличии личной оценки внешняя игнорируется', () {
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'Low user, high api',
               userRating: 3, apiRating: 95.0),
-          _makeItem(id: 2, name: 'Only api', apiRating: 70.0),
+          _makeItem(id: 2, name: 'API only', apiRating: 70.0),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.rating,
+        );
+
+        // id=1 оценён лично (3), id=2 без личной оценки → в конец.
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[1, 2],
+        );
+      });
+
+      test('неоценённые лично — в конце, по алфавиту', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Zeta', apiRating: 90.0),
+          _makeItem(id: 2, name: 'Rated', userRating: 5),
+          _makeItem(id: 3, name: 'Alpha'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.rating,
+        );
+
+        expect(result[0].id, 2); // оценённый — первым
+        expect(result[1].id, 3); // 'Alpha' < 'Zeta' среди неоценённых
+        expect(result[2].id, 1);
+      });
+
+      test('одинаковые личные оценки — тай-брейк по имени', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Zelda', userRating: 8),
+          _makeItem(id: 2, name: 'Ape Escape', userRating: 8),
         ];
 
         final List<CollectionItem> result = applySortMode(
@@ -335,32 +372,11 @@ void main() {
         );
       });
 
-      test('элементы без обоих рейтингов — в конце', () {
-        final List<CollectionItem> items = <CollectionItem>[
-          _makeItem(id: 1, name: 'No Rating'),
-          _makeItem(id: 2, name: 'Has User', userRating: 5),
-          _makeItem(id: 3, name: 'Has API', apiRating: 60.0),
-          _makeItem(id: 4, name: 'Also No Rating'),
-        ];
-
-        final List<CollectionItem> result = applySortMode(
-          items,
-          CollectionSortMode.rating,
-        );
-
-        expect(result[0].id, 3);
-        expect(result[1].id, 2);
-        expect(result[2].userRating, isNull);
-        expect(result[2].apiRating, isNull);
-        expect(result[3].userRating, isNull);
-        expect(result[3].apiRating, isNull);
-      });
-
-      test('isDescending=true — низший рейтинг первым, null в начале', () {
+      test('isDescending=true инвертирует порядок', () {
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'Low', userRating: 3),
           _makeItem(id: 2, name: 'High', userRating: 10),
-          _makeItem(id: 3, name: 'No Rating'),
+          _makeItem(id: 3, name: 'Unrated'),
         ];
 
         final List<CollectionItem> result = applySortMode(
@@ -369,77 +385,11 @@ void main() {
           isDescending: true,
         );
 
+        // forward [2,1,3] → reversed [3,1,2]
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[3, 1, 2],
         );
-      });
-
-      test('isDescending=true с apiRating fallback', () {
-        final List<CollectionItem> items = <CollectionItem>[
-          _makeItem(id: 1, name: 'API 2', apiRating: 20.0),
-          _makeItem(id: 2, name: 'User 8', userRating: 8),
-          _makeItem(id: 3, name: 'None'),
-        ];
-
-        final List<CollectionItem> result = applySortMode(
-          items,
-          CollectionSortMode.rating,
-          isDescending: true,
-        );
-
-        expect(
-          result.map((CollectionItem i) => i.id).toList(),
-          <int>[3, 1, 2],
-        );
-      });
-
-      test('все null рейтинги — стабильный порядок', () {
-        final List<CollectionItem> items = <CollectionItem>[
-          _makeItem(id: 1, name: 'A'),
-          _makeItem(id: 2, name: 'B'),
-          _makeItem(id: 3, name: 'C'),
-        ];
-
-        final List<CollectionItem> result = applySortMode(
-          items,
-          CollectionSortMode.rating,
-        );
-
-        expect(result.length, 3);
-      });
-
-      test('одинаковые рейтинги сохраняют стабильный порядок', () {
-        final List<CollectionItem> items = <CollectionItem>[
-          _makeItem(id: 1, name: 'A', userRating: 8),
-          _makeItem(id: 2, name: 'B', userRating: 8),
-        ];
-
-        final List<CollectionItem> result = applySortMode(
-          items,
-          CollectionSortMode.rating,
-        );
-
-        expect(result.length, 2);
-      });
-
-      test('смешанные user/api/null рейтинги корректно сортируются', () {
-        final List<CollectionItem> items = <CollectionItem>[
-          _makeItem(id: 1, name: 'A'),
-          _makeItem(id: 2, name: 'B', userRating: 1),
-          _makeItem(id: 3, name: 'C', apiRating: 50.0),
-          _makeItem(id: 4, name: 'D', userRating: 10),
-        ];
-
-        final List<CollectionItem> result = applySortMode(
-          items,
-          CollectionSortMode.rating,
-        );
-
-        expect(result[0].id, 4);
-        expect(result[1].id, 3);
-        expect(result[2].id, 2);
-        expect(result[3].id, 1);
       });
     });
 
@@ -586,6 +536,62 @@ void main() {
           applySortMode(<CollectionItem>[], CollectionSortMode.favorite),
           isEmpty,
         );
+      });
+    });
+
+    group('CollectionSortMode.lastActivity', () {
+      test('по умолчанию недавняя активность первой', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Old', lastActivityAt: DateTime(2024, 1, 1)),
+          _makeItem(id: 2, name: 'Recent', lastActivityAt: DateTime(2024, 6, 1)),
+          _makeItem(id: 3, name: 'Mid', lastActivityAt: DateTime(2024, 3, 1)),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.lastActivity,
+        );
+
+        expect(result.map((CollectionItem i) => i.id).toList(), <int>[2, 3, 1]);
+      });
+
+      test('без активности используется дата добавления как запасной ключ', () {
+        // Свежедобавленный элемент без активности должен стоять выше старого с
+        // давней активностью — а не падать в самый низ.
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(
+            id: 1,
+            name: 'Touched long ago',
+            lastActivityAt: DateTime(2024, 1, 1),
+          ),
+          _makeItem(
+            id: 2,
+            name: 'Just added, untouched',
+            addedAt: DateTime(2024, 6, 1),
+          ),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.lastActivity,
+        );
+
+        expect(result.first.id, 2);
+      });
+
+      test('isDescending=true инвертирует порядок', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Old', lastActivityAt: DateTime(2024, 1, 1)),
+          _makeItem(id: 2, name: 'Recent', lastActivityAt: DateTime(2024, 6, 1)),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.lastActivity,
+          isDescending: true,
+        );
+
+        expect(result.first.id, 1);
       });
     });
 

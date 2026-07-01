@@ -61,10 +61,12 @@ class KinoriumCsvParser {
       final String title = _cell(row, index, _titleCol);
       if (title.isEmpty) continue;
 
+      final String rawType = _cell(row, index, _typeCol);
       entries.add(KinoriumEntry(
         title: title,
         originalTitle: _nullable(_cell(row, index, _originalTitleCol)),
-        type: KinoriumType.fromRaw(_cell(row, index, _typeCol)),
+        type: KinoriumType.fromRaw(rawType),
+        rawType: rawType,
         year: _parseYear(_cell(row, index, _yearCol)),
         myRating: _parseRating(_cell(row, index, _ratingCol)),
         date: _parseDate(_cell(row, index, _dateCol)),

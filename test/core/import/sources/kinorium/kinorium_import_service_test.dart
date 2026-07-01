@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/import/sources/kinorium/kinorium_import_service.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
@@ -105,6 +106,11 @@ void main() {
 
   List<Map<String, dynamic>> capturedItemRows() =>
       verify(() => mockRepo.addItemsBatch(any(), captureAny()))
+          .captured
+          .single as List<Map<String, dynamic>>;
+
+  List<Map<String, dynamic>> capturedWishlistRows() =>
+      verify(() => mockWishlist.addWishlistItemsBatch(captureAny()))
           .captured
           .single as List<Map<String, dynamic>>;
 
@@ -263,6 +269,24 @@ void main() {
           reason: 'wishlist items get a single import tag');
       expect(wlRows.single['note'],
           contains('https://en.kinorium.com/search/?q='));
+      expect(wlRows.single['note'], contains('Not found on TMDB'),
+          reason: 'wishlist note states why the row did not match');
+    });
+
+    test('TMDB API error → wishlisted with the API-error reason', () async {
+      writeCsv(_csv(<List<String>>[
+        <String>['', '', 'Фильм с ошибкой', 'Broken Movie', 'Фильм', '2020'],
+      ]));
+      when(() => mockTmdb.searchMovies(any(), year: any(named: 'year')))
+          .thenThrow(const TmdbApiException('boom'));
+
+      final UniversalImportResult result =
+          await sut.import(KinoriumImportOptions(filePath: csvPath));
+
+      expect(result.success, isTrue);
+      expect(result.totalWishlisted, 1);
+      expect(capturedWishlistRows().single['note'],
+          contains('TMDB error or rate limit'));
     });
 
     test('missing file → failure result', () async {
@@ -385,6 +409,8 @@ void main() {
       // The duplicate row resolves to the same TMDB id; rather than being
       // silently dropped it is routed to the wishlist so nothing is lost.
       expect(result.totalWishlisted, 1);
+      expect(capturedWishlistRows().single['note'],
+          contains('Duplicate of "Токсичный мститель 2"'));
     });
 
     test('unsupported type (episode) → wishlisted without a TMDB search',
@@ -401,6 +427,8 @@ void main() {
       // Episodes aren't collection items, but the row is preserved in the
       // wishlist rather than dropped — and no TMDB search is spent on it.
       expect(result.totalWishlisted, 1);
+      expect(capturedWishlistRows().single['note'],
+          contains('Unsupported type: Эпизод'));
       verifyNever(() => mockTmdb.searchMovies(any(), year: any(named: 'year')));
     });
   });

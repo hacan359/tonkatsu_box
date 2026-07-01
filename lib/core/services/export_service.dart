@@ -460,6 +460,12 @@ class ExportService {
           if (item.customMedia != null &&
               !customItems.containsKey(item.externalId)) {
             customItems[item.externalId] = item.customMedia!.toExport();
+            // Custom games reference a platform from the catalog; export it
+            // too so the target resolves the platform after import.
+            final int? customPlatformId = item.customMedia!.platformId;
+            if (customPlatformId != null) {
+              platformIds.add(customPlatformId);
+            }
           }
       }
     }

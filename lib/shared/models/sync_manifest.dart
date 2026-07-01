@@ -11,6 +11,7 @@ class SyncManifest {
     required this.collections,
     required this.items,
     this.profileName,
+    this.supportsSettingsTransfer = false,
   });
 
   /// Parses a manifest; throws [FormatException] on malformed JSON.
@@ -28,6 +29,8 @@ class SyncManifest {
       collections: decoded['collections'] as int? ?? 0,
       items: decoded['items'] as int? ?? 0,
       profileName: decoded['profile_name'] as String?,
+      supportsSettingsTransfer:
+          decoded['supports_settings'] as bool? ?? false,
     );
   }
 
@@ -52,6 +55,10 @@ class SyncManifest {
   /// Active profile name at snapshot time, when profiles are in use.
   final String? profileName;
 
+  /// Whether the serving app can also hand over app settings and API keys
+  /// over LAN. Absent on older peers, so the receiver hides those options.
+  final bool supportsSettingsTransfer;
+
   /// Serialises to pretty-printed JSON.
   String toJsonString() {
     return const JsonEncoder.withIndent('  ').convert(<String, dynamic>{
@@ -62,6 +69,7 @@ class SyncManifest {
       'collections': collections,
       'items': items,
       if (profileName != null) 'profile_name': profileName,
+      'supports_settings': supportsSettingsTransfer,
     });
   }
 }

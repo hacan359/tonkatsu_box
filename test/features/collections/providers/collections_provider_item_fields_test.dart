@@ -32,6 +32,14 @@ void main() {
         .thenAnswer((_) async {});
     when(() => repo.setItemFavorite(any(), isFavorite: any(named: 'isFavorite')))
         .thenAnswer((_) async {});
+    when(() => repo.setItemOverrideName(any(), any())).thenAnswer((_) async {});
+    // Card edits stamp last_activity_at through this method.
+    when(() => repo.updateItemActivityDates(
+          any(),
+          startedAt: any(named: 'startedAt'),
+          completedAt: any(named: 'completedAt'),
+          lastActivityAt: any(named: 'lastActivityAt'),
+        )).thenAnswer((_) async {});
     // setFavorite syncs the All Items notifier, which loads via this method.
     when(() => repo.getAllItemsWithData())
         .thenAnswer((_) async => <CollectionItem>[]);
@@ -167,6 +175,65 @@ void main() {
 
       verify(() => repo.updateItemTimeSpent(7, 120)).called(1);
       expect(readItem(n)!.timeSpentMinutes, 120);
+    });
+  });
+
+  group('resort and activity stamping', () {
+    // Default sort mode is lastActivity, so the list starts newest-activity
+    // first: [2, 1].
+    List<CollectionItem> twoByActivity() => <CollectionItem>[
+          createTestCollectionItem(
+            id: 1,
+            mediaType: MediaType.movie,
+            externalId: 1,
+            addedAt: DateTime(2024),
+            lastActivityAt: DateTime(2024),
+          ),
+          createTestCollectionItem(
+            id: 2,
+            mediaType: MediaType.movie,
+            externalId: 2,
+            addedAt: DateTime(2024, 6),
+            lastActivityAt: DateTime(2024, 6),
+          ),
+        ];
+
+    List<int> order(CollectionItemsNotifier n) =>
+        n.state.valueOrNull!.map((CollectionItem i) => i.id).toList();
+
+    CollectionItem byId(CollectionItemsNotifier n, int id) =>
+        n.state.valueOrNull!.firstWhere((CollectionItem i) => i.id == id);
+
+    test('rating an item stamps activity and bubbles it up in activity sort',
+        () async {
+      final CollectionItemsNotifier n = await loaded(twoByActivity());
+      expect(order(n), <int>[2, 1]);
+
+      await n.updateUserRating(1, 9.0);
+
+      expect(order(n), <int>[1, 2]);
+      expect(byId(n, 1).lastActivityAt!.isAfter(DateTime(2024, 6)), isTrue);
+    });
+
+    test('editing a comment counts as activity and bubbles the item up',
+        () async {
+      final CollectionItemsNotifier n = await loaded(twoByActivity());
+      expect(order(n), <int>[2, 1]);
+
+      await n.updateUserComment(1, 'note');
+
+      expect(order(n), <int>[1, 2]);
+      expect(byId(n, 1).lastActivityAt!.isAfter(DateTime(2024, 6)), isTrue);
+    });
+
+    test('renaming counts as activity and bubbles the item up', () async {
+      final CollectionItemsNotifier n = await loaded(twoByActivity());
+      expect(order(n), <int>[2, 1]);
+
+      await n.setOverrideName(1, 'ZZZ');
+
+      expect(order(n), <int>[1, 2]);
+      expect(byId(n, 1).lastActivityAt!.isAfter(DateTime(2024, 6)), isTrue);
     });
   });
 }

@@ -222,6 +222,27 @@ class SRu extends S {
   String get sortLastActivityDesc => 'Сначала недавние';
 
   @override
+  String get sortDateOldest => 'Сначала старые';
+
+  @override
+  String get sortStatusFinished => 'Сначала завершённые';
+
+  @override
+  String get sortNameZa => 'Я – А';
+
+  @override
+  String get sortRatingLowest => 'Сначала худшие';
+
+  @override
+  String get sortFavoriteLast => 'Избранные последними';
+
+  @override
+  String get sortExternalRatingLowest => 'Сначала худшие';
+
+  @override
+  String get sortLastActivityOldest => 'Сначала старые';
+
+  @override
   String get searchSortRelevanceShort => 'Рел';
 
   @override
@@ -1175,6 +1196,16 @@ class SRu extends S {
   String get lanSyncReceivingImages => 'Перенос картинок...';
 
   @override
+  String get lanSyncReceivingSettings => 'Перенос настроек...';
+
+  @override
+  String get lanSyncImportConfig => 'Также перенести настройки';
+
+  @override
+  String get lanSyncImportConfigSubtitle =>
+      'Включая ключи API. Всё или ничего.';
+
+  @override
   String get lanSyncImagesWarning =>
       'База перенесена, но картинки не удалось перенести';
 
@@ -1363,6 +1394,23 @@ class SRu extends S {
   @override
   String get kinoriumRecommendOwnTmdbKey =>
       'Совет: для больших импортов рекомендуется свой ключ TMDB (Настройки → API ключи), но это не обязательно — встроенный ключ тоже работает.';
+
+  @override
+  String get kinoriumReasonNotFound => 'Не найдено в TMDB';
+
+  @override
+  String get kinoriumReasonApiError =>
+      'Ошибка TMDB или лимит запросов — попробуйте позже';
+
+  @override
+  String kinoriumReasonUnsupportedType(String type) {
+    return 'Тип не поддерживается: $type';
+  }
+
+  @override
+  String kinoriumReasonDuplicate(String title) {
+    return 'Дубль тайтла «$title»';
+  }
 
   @override
   String traktImportedItems(int count) {
@@ -1625,6 +1673,33 @@ class SRu extends S {
 
   @override
   String get customItemPlatformHint => 'напр. PC, SNES, Custom';
+
+  @override
+  String get customItemFormat => 'Формат';
+
+  @override
+  String get customProgress => 'Прогресс';
+
+  @override
+  String get customMarkCompleted => 'Отметить пройденным';
+
+  @override
+  String get customUnitParts => 'Части';
+
+  @override
+  String get customUnitEpisodes => 'Серии';
+
+  @override
+  String get customUnitChapters => 'Главы';
+
+  @override
+  String get customUnitPages => 'Страницы';
+
+  @override
+  String get customUnitVolumes => 'Тома';
+
+  @override
+  String get customUnitSeasons => 'Сезоны';
 
   @override
   String get customItemDescription => 'Описание';
@@ -2755,6 +2830,10 @@ class SRu extends S {
       'Ключи API, кэш, экспорт/импорт БД, отладочные инструменты.';
 
   @override
+  String get welcomeHowPersonalizationDesc =>
+      'Ваш вкус в одном месте: облако любимых жанров и рекомендации на основе ваших оценок.';
+
+  @override
   String get welcomeHowQuickStart => 'Быстрый старт';
 
   @override
@@ -3423,6 +3502,14 @@ class SRu extends S {
       'Скрывать шевроны типов медиа (Игры, Фильмы и т.д.), если в коллекции нет таких записей';
 
   @override
+  String get settingsAlwaysShowSubcategories =>
+      'Всегда показывать подкатегории';
+
+  @override
+  String get settingsAlwaysShowSubcategoriesSubtitle =>
+      'Показывать фильтры подкатегорий (платформы игр, типы аниме и манги) без предварительного выбора типа медиа';
+
+  @override
   String get settingsShowPlatformOverlay => 'Обложки платформ';
 
   @override
@@ -3491,6 +3578,13 @@ class SRu extends S {
 
   @override
   String get uncategorizedBannerAction => 'Добавить в коллекцию';
+
+  @override
+  String get uncategorizedDeprecationNotice =>
+      'Эта системная коллекция скоро будет удалена. Создайте свою коллекцию и перенесите в неё все элементы отсюда.';
+
+  @override
+  String get uncategorizedDeprecationBadge => 'Будет удалена';
 
   @override
   String get browseFilterGenre => 'Жанр';
@@ -3911,6 +4005,69 @@ class SRu extends S {
 
   @override
   String get settingsSteamImportSubtitle => 'Импорт игр через Steam Web API';
+
+  @override
+  String get settingsIgdbImport => 'Список IGDB';
+
+  @override
+  String get settingsIgdbImportSubtitle =>
+      'Импорт списка игр, выгруженного из IGDB (CSV)';
+
+  @override
+  String get igdbImportTitle => 'Импорт списка IGDB';
+
+  @override
+  String get igdbImportDescription =>
+      'Выберите CSV-список, выгруженный из IGDB. Игры сопоставляются по их IGDB id; всё, чего в IGDB больше нет, попадает в вишлист.';
+
+  @override
+  String get igdbImportSelectCsvFile => 'Выбрать CSV-файл';
+
+  @override
+  String get igdbImportSelectCsvExport => 'Выберите CSV-выгрузку IGDB';
+
+  @override
+  String get igdbImportOptions => 'Параметры';
+
+  @override
+  String get igdbImportStatusLabel => 'Статус для импортируемых игр';
+
+  @override
+  String get igdbImportPlatformLabel => 'Платформа';
+
+  @override
+  String get igdbImportPlatformSelect => 'Выберите платформу';
+
+  @override
+  String get igdbImportTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get igdbImportCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get igdbImportUseExisting => 'Использовать существующую';
+
+  @override
+  String get igdbImportNoCollections => 'Нет доступных коллекций';
+
+  @override
+  String get igdbImportSelectCollection => 'Выбрать коллекцию';
+
+  @override
+  String get igdbImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
+
+  @override
+  String get igdbImportIgdbRequired =>
+      'Требуется подключение к IGDB. Сначала настройте API-ключи в Настройки → Credentials.';
+
+  @override
+  String get igdbStartImport => 'Начать импорт';
+
+  @override
+  String get igdbImporting => 'Импорт…';
+
+  @override
+  String get igdbReasonNotFound => 'Не найдено в IGDB';
 
   @override
   String get steamImportTitle => 'Импорт библиотеки Steam';

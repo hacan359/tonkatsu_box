@@ -16,6 +16,11 @@ class NavTourKeys {
 
   /// The button key for [tab], created on first use.
   GlobalKey keyFor(NavTab tab) => _keys.putIfAbsent(tab, GlobalKey.new);
+
+  /// Key for the Personalization centre button (genre cloud + recommendations).
+  /// It is a shell-level destination rather than a [NavTab], so it gets its own
+  /// stable key instead of living in [_keys].
+  final GlobalKey personalization = GlobalKey();
 }
 
 /// Single shared [NavTourKeys] instance for the app.

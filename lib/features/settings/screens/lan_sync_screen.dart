@@ -80,6 +80,66 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
     );
   }
 
+  /// Receive confirmation with an optional "also transfer settings" toggle.
+  /// The toggle only appears when the peer is new enough to serve its config;
+  /// it is all-or-nothing (settings + API keys together) and on by default.
+  Future<_ReceiveChoice?> _askReceiveOptions(SyncManifest manifest) async {
+    final S l10n = S.of(context);
+    final bool canTransferSettings = manifest.supportsSettingsTransfer;
+    bool includeSettings = true;
+    return showDialog<_ReceiveChoice>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setLocal) {
+            return AlertDialog(
+              title: Text(l10n.lanSyncReceiveTitle),
+              scrollable: true,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(l10n.lanSyncReceiveMessage(
+                    manifest.deviceName,
+                    _formatDate(manifest.createdAt),
+                    manifest.collections,
+                    manifest.items,
+                  )),
+                  if (canTransferSettings) ...<Widget>[
+                    const SizedBox(height: AppSpacing.sm),
+                    CheckboxListTile(
+                      value: includeSettings,
+                      onChanged: (bool? value) =>
+                          setLocal(() => includeSettings = value ?? false),
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(l10n.lanSyncImportConfig),
+                      subtitle: Text(l10n.lanSyncImportConfigSubtitle),
+                    ),
+                  ],
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(
+                    _ReceiveChoice(
+                      includeSettings: canTransferSettings && includeSettings,
+                    ),
+                  ),
+                  child: Text(l10n.lanSyncReplace),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final S l10n = S.of(context);
@@ -177,18 +237,8 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
         return;
       }
 
-      final bool confirm = await ConfirmDialog.show(
-        context,
-        title: l10n.lanSyncReceiveTitle,
-        message: l10n.lanSyncReceiveMessage(
-          manifest.deviceName,
-          _formatDate(manifest.createdAt),
-          manifest.collections,
-          manifest.items,
-        ),
-        confirmLabel: l10n.lanSyncReplace,
-      );
-      if (!confirm || !mounted) return;
+      final _ReceiveChoice? choice = await _askReceiveOptions(manifest);
+      if (choice == null || !mounted) return;
 
       bool imagesFailed = false;
       _showProgress(l10n.lanSyncWaiting(peer.name));
@@ -213,6 +263,19 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
         }
 
         await dbSync.receiveSnapshot(tmpDir.path);
+
+        // Settings + API keys ride along when opted in. All-or-nothing and
+        // best-effort: written straight to prefs and picked up on the
+        // restart that the received database requires anyway, so a failure
+        // here is logged, not surfaced as a hard error.
+        if (choice.includeSettings) {
+          _updateProgress(l10n.lanSyncReceivingSettings);
+          try {
+            await lan.downloadConfig(peer);
+          } on Exception catch (e) {
+            _log.warning('LAN config pull failed (database received)', e);
+          }
+        }
 
         // Step 2: user images. The database is already swapped in, so a
         // failure here is a warning, not a rollback.
@@ -302,4 +365,12 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
     return '${material.formatCompactDate(local)} '
         '${material.formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
   }
+}
+
+/// Outcome of the receive confirmation dialog.
+class _ReceiveChoice {
+  const _ReceiveChoice({required this.includeSettings});
+
+  /// Whether to also pull the peer's settings + API keys after the database.
+  final bool includeSettings;
 }

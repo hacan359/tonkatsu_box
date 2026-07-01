@@ -243,6 +243,7 @@ class SearchableFilterDialog extends StatefulWidget {
     required this.currentValue,
     required this.allLabel,
     this.multiSelect = false,
+    this.showAllOption = true,
     super.key,
   });
 
@@ -252,6 +253,10 @@ class SearchableFilterDialog extends StatefulWidget {
   final Object? currentValue;
   final String allLabel;
   final bool multiSelect;
+
+  /// Whether the single-select list shows the leading "All" reset row. Set to
+  /// `false` when a selection is mandatory (e.g. a required platform).
+  final bool showAllOption;
 
   @override
   State<SearchableFilterDialog> createState() =>
@@ -447,7 +452,8 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
     final List<FilterOption> filtered = _filteredOptions;
 
     // Single-select with no query shows an extra "All" row at the top.
-    final bool showAll = !widget.multiSelect && _query.isEmpty;
+    final bool showAll =
+        !widget.multiSelect && _query.isEmpty && widget.showAllOption;
     final int itemCount =
         showAll ? filtered.length + 1 : filtered.length;
 

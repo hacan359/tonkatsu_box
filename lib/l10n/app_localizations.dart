@@ -517,6 +517,48 @@ abstract class S {
   /// **'Recent first'**
   String get sortLastActivityDesc;
 
+  /// No description provided for @sortDateOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortDateOldest;
+
+  /// No description provided for @sortStatusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished first'**
+  String get sortStatusFinished;
+
+  /// No description provided for @sortNameZa.
+  ///
+  /// In en, this message translates to:
+  /// **'Z to A'**
+  String get sortNameZa;
+
+  /// No description provided for @sortRatingLowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest first'**
+  String get sortRatingLowest;
+
+  /// No description provided for @sortFavoriteLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites last'**
+  String get sortFavoriteLast;
+
+  /// No description provided for @sortExternalRatingLowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest first'**
+  String get sortExternalRatingLowest;
+
+  /// No description provided for @sortLastActivityOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortLastActivityOldest;
+
   /// No description provided for @searchSortRelevanceShort.
   ///
   /// In en, this message translates to:
@@ -2094,6 +2136,24 @@ abstract class S {
   /// **'Transferring images...'**
   String get lanSyncReceivingImages;
 
+  /// No description provided for @lanSyncReceivingSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferring settings...'**
+  String get lanSyncReceivingSettings;
+
+  /// No description provided for @lanSyncImportConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Also transfer settings'**
+  String get lanSyncImportConfig;
+
+  /// No description provided for @lanSyncImportConfigSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes API keys. All or nothing.'**
+  String get lanSyncImportConfigSubtitle;
+
   /// No description provided for @lanSyncImagesWarning.
   ///
   /// In en, this message translates to:
@@ -2447,6 +2507,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it\'s optional — the built-in key works too.'**
   String get kinoriumRecommendOwnTmdbKey;
+
+  /// No description provided for @kinoriumReasonNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found on TMDB'**
+  String get kinoriumReasonNotFound;
+
+  /// No description provided for @kinoriumReasonApiError.
+  ///
+  /// In en, this message translates to:
+  /// **'TMDB error or rate limit — try again later'**
+  String get kinoriumReasonApiError;
+
+  /// No description provided for @kinoriumReasonUnsupportedType.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported type: {type}'**
+  String kinoriumReasonUnsupportedType(String type);
+
+  /// No description provided for @kinoriumReasonDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate of \"{title}\"'**
+  String kinoriumReasonDuplicate(String title);
 
   /// No description provided for @traktImportedItems.
   ///
@@ -2897,6 +2981,60 @@ abstract class S {
   /// In en, this message translates to:
   /// **'e.g. PC, SNES, Custom'**
   String get customItemPlatformHint;
+
+  /// No description provided for @customItemFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get customItemFormat;
+
+  /// No description provided for @customProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get customProgress;
+
+  /// No description provided for @customMarkCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as completed'**
+  String get customMarkCompleted;
+
+  /// No description provided for @customUnitParts.
+  ///
+  /// In en, this message translates to:
+  /// **'Parts'**
+  String get customUnitParts;
+
+  /// No description provided for @customUnitEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes'**
+  String get customUnitEpisodes;
+
+  /// No description provided for @customUnitChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get customUnitChapters;
+
+  /// No description provided for @customUnitPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get customUnitPages;
+
+  /// No description provided for @customUnitVolumes.
+  ///
+  /// In en, this message translates to:
+  /// **'Volumes'**
+  String get customUnitVolumes;
+
+  /// No description provided for @customUnitSeasons.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasons'**
+  String get customUnitSeasons;
 
   /// No description provided for @customItemDescription.
   ///
@@ -4854,6 +4992,12 @@ abstract class S {
   /// **'API keys, cache, database export/import, debug tools.'**
   String get welcomeHowSettingsDesc;
 
+  /// Menu-tour description for the Personalization centre button (genre cloud + recommendations).
+  ///
+  /// In en, this message translates to:
+  /// **'Your taste in one place: a cloud of your favourite genres plus recommendations picked from what you\'ve rated.'**
+  String get welcomeHowPersonalizationDesc;
+
   /// No description provided for @welcomeHowQuickStart.
   ///
   /// In en, this message translates to:
@@ -6054,6 +6198,18 @@ abstract class S {
   /// **'Hide media type chevrons (Games, Movies, etc.) when there are no items of that type'**
   String get settingsHideEmptyMediaTypeChevronsSubtitle;
 
+  /// No description provided for @settingsAlwaysShowSubcategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Always show subcategories'**
+  String get settingsAlwaysShowSubcategories;
+
+  /// No description provided for @settingsAlwaysShowSubcategoriesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show subcategory filters (game platforms, anime/manga types) without selecting their media type first'**
+  String get settingsAlwaysShowSubcategoriesSubtitle;
+
   /// No description provided for @settingsShowPlatformOverlay.
   ///
   /// In en, this message translates to:
@@ -6179,6 +6335,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Add to Collection'**
   String get uncategorizedBannerAction;
+
+  /// Warns that the Uncategorized system collection is deprecated and will be removed.
+  ///
+  /// In en, this message translates to:
+  /// **'This system collection will be removed soon. Create your own collection and move all items here into it.'**
+  String get uncategorizedDeprecationNotice;
+
+  /// Short warning shown on the Uncategorized collection card/tile that it will be removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be removed'**
+  String get uncategorizedDeprecationBadge;
 
   /// No description provided for @browseFilterGenre.
   ///
@@ -6983,6 +7151,126 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Import games via Steam Web API'**
   String get settingsSteamImportSubtitle;
+
+  /// No description provided for @settingsIgdbImport.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB List'**
+  String get settingsIgdbImport;
+
+  /// No description provided for @settingsIgdbImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a game list exported from IGDB (CSV)'**
+  String get settingsIgdbImportSubtitle;
+
+  /// No description provided for @igdbImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import IGDB List'**
+  String get igdbImportTitle;
+
+  /// No description provided for @igdbImportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a CSV list exported from IGDB. Games are matched by their IGDB id; anything IGDB no longer has goes to the wishlist.'**
+  String get igdbImportDescription;
+
+  /// No description provided for @igdbImportSelectCsvFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Select CSV file'**
+  String get igdbImportSelectCsvFile;
+
+  /// No description provided for @igdbImportSelectCsvExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Select IGDB CSV export'**
+  String get igdbImportSelectCsvExport;
+
+  /// No description provided for @igdbImportOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get igdbImportOptions;
+
+  /// No description provided for @igdbImportStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status for imported games'**
+  String get igdbImportStatusLabel;
+
+  /// No description provided for @igdbImportPlatformLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get igdbImportPlatformLabel;
+
+  /// No description provided for @igdbImportPlatformSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select platform'**
+  String get igdbImportPlatformSelect;
+
+  /// No description provided for @igdbImportTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get igdbImportTargetCollection;
+
+  /// No description provided for @igdbImportCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get igdbImportCreateNew;
+
+  /// No description provided for @igdbImportUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use existing collection'**
+  String get igdbImportUseExisting;
+
+  /// No description provided for @igdbImportNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get igdbImportNoCollections;
+
+  /// No description provided for @igdbImportSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get igdbImportSelectCollection;
+
+  /// No description provided for @igdbImportErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading collections'**
+  String get igdbImportErrorLoadingCollections;
+
+  /// No description provided for @igdbImportIgdbRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
+  String get igdbImportIgdbRequired;
+
+  /// No description provided for @igdbStartImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Import'**
+  String get igdbStartImport;
+
+  /// No description provided for @igdbImporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing...'**
+  String get igdbImporting;
+
+  /// No description provided for @igdbReasonNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found on IGDB'**
+  String get igdbReasonNotFound;
 
   /// No description provided for @steamImportTitle.
   ///

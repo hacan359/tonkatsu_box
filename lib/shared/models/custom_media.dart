@@ -18,6 +18,10 @@ class CustomMedia {
     this.year,
     this.genres,
     this.platformName,
+    this.platformId,
+    this.format,
+    this.unitTotal,
+    this.unitGroupTotal,
     this.externalUrl,
     this.cachedAt,
   });
@@ -37,6 +41,10 @@ class CustomMedia {
       year: row['year'] as int?,
       genres: row['genres'] as String?,
       platformName: row['platform_name'] as String?,
+      platformId: row['platform_id'] as int?,
+      format: row['format'] as String?,
+      unitTotal: row['unit_total'] as int?,
+      unitGroupTotal: row['unit_group_total'] as int?,
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
     );
@@ -79,8 +87,30 @@ class CustomMedia {
   /// Жанры через запятую (напр. "RPG, Action, Puzzle").
   final String? genres;
 
-  /// Название платформы (свободный текст, не FK).
+  /// Platform display name (free text, not an FK).
+  ///
+  /// Fallback for platforms absent from the catalog. The platform subfilter uses
+  /// [platformId]; when picked from the catalog the display name is mirrored here
+  /// too, so the card shows without joining `platforms`.
   final String? platformName;
+
+  /// Platform FK value from the `platforms` catalog — only for custom games
+  /// (`displayType == game`). `null` when the platform is not from the catalog.
+  final int? platformId;
+
+  /// Manga / anime format code (e.g. `MANHWA`, `OVA`) for custom cards with
+  /// `displayType == manga`/`anime`. `null` for other types.
+  final String? format;
+
+  /// Total fine progress units — episodes / chapters / pages / parts depending
+  /// on `displayType`. The "done" position lives in
+  /// `collection_items.current_episode`. `null` when no total is set.
+  final int? unitTotal;
+
+  /// Total coarse units — seasons (series) / volumes (manga). The "done"
+  /// position lives in `collection_items.current_season`. `null` for types
+  /// without a coarse axis.
+  final int? unitGroupTotal;
 
   /// URL внешней страницы.
   final String? externalUrl;
@@ -104,6 +134,10 @@ class CustomMedia {
       'year': year,
       'genres': genres,
       'platform_name': platformName,
+      'platform_id': platformId,
+      'format': format,
+      'unit_total': unitTotal,
+      'unit_group_total': unitGroupTotal,
       'external_url': externalUrl,
       'cached_at': cachedAt ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
@@ -134,6 +168,14 @@ class CustomMedia {
     bool clearGenres = false,
     String? platformName,
     bool clearPlatformName = false,
+    int? platformId,
+    bool clearPlatformId = false,
+    String? format,
+    bool clearFormat = false,
+    int? unitTotal,
+    bool clearUnitTotal = false,
+    int? unitGroupTotal,
+    bool clearUnitGroupTotal = false,
     String? externalUrl,
     bool clearExternalUrl = false,
   }) {
@@ -150,6 +192,11 @@ class CustomMedia {
       genres: clearGenres ? null : (genres ?? this.genres),
       platformName:
           clearPlatformName ? null : (platformName ?? this.platformName),
+      platformId: clearPlatformId ? null : (platformId ?? this.platformId),
+      format: clearFormat ? null : (format ?? this.format),
+      unitTotal: clearUnitTotal ? null : (unitTotal ?? this.unitTotal),
+      unitGroupTotal:
+          clearUnitGroupTotal ? null : (unitGroupTotal ?? this.unitGroupTotal),
       externalUrl:
           clearExternalUrl ? null : (externalUrl ?? this.externalUrl),
     );

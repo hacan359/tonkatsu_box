@@ -8,6 +8,7 @@ import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/custom_media.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
@@ -116,6 +117,7 @@ CollectionItem createTestCollectionItem({
   Anime? anime,
   Book? book,
   Platform? platform,
+  CustomMedia? customMedia,
 }) {
   return CollectionItem(
     id: id,
@@ -146,6 +148,7 @@ CollectionItem createTestCollectionItem({
     anime: anime,
     book: book,
     platform: platform,
+    customMedia: customMedia,
   );
 }
 

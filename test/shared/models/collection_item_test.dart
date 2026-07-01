@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/custom_media.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
@@ -2794,6 +2795,166 @@ void main() {
           addedAt: now,
         );
         expect(item.formatLabel, isNull);
+      });
+
+      test('uses the custom item format when masquerading as manga', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.custom,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          customMedia: const CustomMedia(
+            id: 1,
+            title: 'Homebrew',
+            displayType: MediaType.manga,
+            format: 'MANHWA',
+          ),
+        );
+        expect(item.formatLabel, 'Manhwa');
+      });
+    });
+
+    group('custom masquerade getters', () {
+      final DateTime now = DateTime(2024);
+
+      CollectionItem customItem({
+        MediaType? displayType,
+        int? platformId,
+        String? format,
+        int? unitTotal,
+        int? unitGroupTotal,
+      }) {
+        return CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.custom,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          customMedia: CustomMedia(
+            id: 1,
+            title: 'Custom',
+            displayType: displayType,
+            platformId: platformId,
+            format: format,
+            unitTotal: unitTotal,
+            unitGroupTotal: unitGroupTotal,
+          ),
+        );
+      }
+
+      group('filterTypeBuckets', () {
+        test('puts a masquerading custom item under both its display type and '
+            'Custom', () {
+          final List<MediaType> buckets =
+              customItem(displayType: MediaType.anime).filterTypeBuckets;
+          expect(buckets, containsAll(<MediaType>[
+            MediaType.anime,
+            MediaType.custom,
+          ]));
+          expect(buckets.length, 2);
+        });
+
+        test('puts a plain custom item under Custom only', () {
+          expect(
+            customItem().filterTypeBuckets,
+            <MediaType>[MediaType.custom],
+          );
+        });
+
+        test('puts a non-custom item under its own type only', () {
+          final CollectionItem game = CollectionItem(
+            id: 2,
+            collectionId: 1,
+            mediaType: MediaType.game,
+            externalId: 2,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+          );
+          expect(game.filterTypeBuckets, <MediaType>[MediaType.game]);
+        });
+      });
+
+      group('matchesTypeFilter', () {
+        test('a custom anime matches both the Anime and Custom filters', () {
+          final CollectionItem item =
+              customItem(displayType: MediaType.anime);
+          expect(item.matchesTypeFilter(<MediaType>{MediaType.anime}), isTrue);
+          expect(item.matchesTypeFilter(<MediaType>{MediaType.custom}), isTrue);
+          expect(item.matchesTypeFilter(<MediaType>{MediaType.game}), isFalse);
+        });
+      });
+
+      group('effectivePlatformId', () {
+        test('resolves through the custom item when masquerading as a game', () {
+          expect(
+            customItem(displayType: MediaType.game, platformId: 48)
+                .effectivePlatformId,
+            48,
+          );
+        });
+
+        test('ignores the custom platform for a non-game display type', () {
+          expect(
+            customItem(displayType: MediaType.anime, platformId: 48)
+                .effectivePlatformId,
+            isNull,
+          );
+        });
+
+        test('falls back to the joined platformId for a real game', () {
+          final CollectionItem game = CollectionItem(
+            id: 2,
+            collectionId: 1,
+            mediaType: MediaType.game,
+            externalId: 2,
+            platformId: 7,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+          );
+          expect(game.effectivePlatformId, 7);
+        });
+      });
+
+      group('formatCode', () {
+        test('reads the custom format for a custom manga', () {
+          expect(
+            customItem(displayType: MediaType.manga, format: 'MANHWA')
+                .formatCode,
+            'MANHWA',
+          );
+        });
+
+        test('is null for a display type without a format', () {
+          expect(customItem(displayType: MediaType.game).formatCode, isNull);
+        });
+      });
+
+      group('customUnitTotal / customUnitGroupTotal', () {
+        test('expose the totals stored on the custom item', () {
+          final CollectionItem item = customItem(
+            displayType: MediaType.tvShow,
+            unitTotal: 24,
+            unitGroupTotal: 2,
+          );
+          expect(item.customUnitTotal, 24);
+          expect(item.customUnitGroupTotal, 2);
+        });
+
+        test('are null for a non-custom item', () {
+          final CollectionItem game = CollectionItem(
+            id: 2,
+            collectionId: 1,
+            mediaType: MediaType.game,
+            externalId: 2,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+          );
+          expect(game.customUnitTotal, isNull);
+          expect(game.customUnitGroupTotal, isNull);
+        });
       });
     });
   });

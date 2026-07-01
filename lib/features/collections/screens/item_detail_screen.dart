@@ -32,6 +32,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
 import '../widgets/create_custom_item_dialog.dart';
 import '../providers/collections_provider.dart';
+import '../../home/providers/all_items_provider.dart';
 import '../extensions/item_display_name.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
@@ -40,6 +41,7 @@ import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/book_progress_section.dart';
 import '../widgets/book_similars_section.dart';
+import '../widgets/custom_progress_section.dart';
 import '../widgets/google_books_similars_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/dialogs/add_time_dialog.dart';
@@ -350,13 +352,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   Future<void> _moveToCollection(CollectionItem item) async {
     final S l = S.of(context);
     final NavigatorState navigator = Navigator.of(context);
-    final bool isUncategorized = widget.collectionId == null;
 
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       excludeCollectionId: widget.collectionId,
-      showUncategorized: !isUncategorized,
+      showUncategorized: false,
       title: l.collectionMoveToCollection,
     );
     if (choice == null || !mounted) return;
@@ -486,6 +487,15 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       year: data.year,
       genres: data.genres,
       platformName: data.platform,
+      clearPlatformName: data.platform == null,
+      platformId: data.platformId,
+      clearPlatformId: data.platformId == null,
+      format: data.format,
+      clearFormat: data.format == null,
+      unitTotal: data.unitTotal,
+      clearUnitTotal: data.unitTotal == null,
+      unitGroupTotal: data.unitGroupTotal,
+      clearUnitGroupTotal: data.unitGroupTotal == null,
       externalUrl: data.externalUrl,
       displayType: clearDisplayType ? null : data.mediaType,
       clearDisplayType: clearDisplayType,
@@ -499,6 +509,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           collectionItemsNotifierProvider(widget.collectionId).notifier,
         )
         .refresh();
+    // The custom edit can change display type / platform / format / counts,
+    // which drive type and subfilters on the All Items screen too — reload it
+    // so it re-buckets instead of showing the stale pre-edit type.
+    ref.invalidate(allItemsNotifierProvider);
 
     if (mounted) {
       context.showSnack(
@@ -711,6 +725,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             currentPage: item.currentEpisode,
             accentColor: config.accentColor,
           ),
+        if (config.hasCustomProgress && widget.collectionId != null)
+          CustomProgressSection(
+            itemId: item.id,
+            collectionId: widget.collectionId,
+            displayType: item.displayMediaType,
+            unitTotal: item.customUnitTotal,
+            unitGroupTotal: item.customUnitGroupTotal,
+            currentUnit: item.currentEpisode,
+            currentGroup: item.currentSeason,
+            accentColor: config.accentColor,
+          ),
       ],
       recommendationSections: <Widget>[
         if (showRecs)
@@ -854,6 +879,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       ref: ref,
       title: l.searchAddToCollection,
       alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
     );
     if (choice == null || !mounted) return;
 
@@ -901,6 +927,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       ref: ref,
       title: l.searchAddToCollection,
       alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
     );
     if (choice == null || !mounted) return;
 

@@ -23,20 +23,31 @@ void main() {
   }
 
   group('buildMenuTourItems', () {
-    testWidgets('count matches the real menu (NavTab.values)',
+    testWidgets('count is every NavTab plus the Personalization step',
         (WidgetTester tester) async {
       final List<MenuTourItem> items = await buildItems(tester);
 
-      expect(items.length, NavTab.values.length);
+      expect(items.length, NavTab.values.length + 1);
     });
 
-    testWidgets('covers every NavTab exactly once',
+    testWidgets('covers every NavTab exactly once, in menu order',
+        (WidgetTester tester) async {
+      final List<MenuTourItem> items = await buildItems(tester);
+
+      final List<NavTab?> tabs =
+          items.map((MenuTourItem i) => i.tab).where((NavTab? t) => t != null).toList();
+
+      expect(tabs.toSet(), NavTab.values.toSet());
+      expect(tabs, NavTab.values);
+    });
+
+    testWidgets('includes exactly one Personalization step',
         (WidgetTester tester) async {
       final List<MenuTourItem> items = await buildItems(tester);
 
       expect(
-        items.map((MenuTourItem i) => i.tab).toSet(),
-        NavTab.values.toSet(),
+        items.where((MenuTourItem i) => i.isPersonalization).length,
+        1,
       );
     });
 

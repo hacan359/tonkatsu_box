@@ -39,6 +39,7 @@ import '../../releases/providers/releases_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'browse_collections_screen.dart';
 import 'anilist_import_screen.dart';
+import 'igdb_list_import_screen.dart';
 import 'mal_import_screen.dart';
 import 'ra_import_screen.dart';
 import 'kinorium_import_screen.dart';
@@ -278,6 +279,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _pushScreen(const SteamImportScreen()),
           ),
           SettingsTile(
+            leadingAssetPath: AppAssets.iconIgdbColor,
+            leadingAssetColored: true,
+            title: l.settingsIgdbImport,
+            subtitle: l.settingsIgdbImportSubtitle,
+            onTap: () => _pushScreen(const IgdbListImportScreen()),
+          ),
+          SettingsTile(
             leadingAssetPath: AppAssets.iconRaColor,
             leadingAssetColored: true,
             title: l.settingsRaImport,
@@ -388,6 +396,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ref
                     .read(settingsNotifierProvider.notifier)
                     .setHideEmptyMediaTypeChevrons(enabled: value);
+              },
+            ),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.account_tree_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsAlwaysShowSubcategories,
+            subtitle: l.settingsAlwaysShowSubcategoriesSubtitle,
+            showChevron: false,
+            trailing: Switch(
+              value: settings.alwaysShowSubcategories,
+              onChanged: (bool value) {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setAlwaysShowSubcategories(enabled: value);
               },
             ),
           ),
@@ -595,10 +618,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   /// Key-source states in the same order as the credentials screen sections.
+  ///
+  /// Built-in default keys (IGDB / SteamGridDB / TMDB, baked in at build time)
+  /// don't count: the credentials screen shows them as empty "using built-in
+  /// key" fields, so a fresh production install with no keys entered must read
+  /// 0/6 here rather than tallying the bundled defaults the user never set.
   List<bool> _apiKeyStates(SettingsState settings) => <bool>[
-        settings.hasCredentials,
-        settings.hasSteamGridDbKey,
-        settings.hasTmdbKey,
+        settings.hasCredentials && !settings.isIgdbKeyBuiltIn,
+        settings.hasSteamGridDbKey && !settings.isSteamGridDbKeyBuiltIn,
+        settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
         settings.hasScreenScraperCreds,

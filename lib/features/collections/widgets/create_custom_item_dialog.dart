@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
@@ -13,6 +14,8 @@ import '../../../shared/models/platform.dart' as model;
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/custom_progress_units.dart';
+import '../../../shared/utils/media_format.dart';
 import 'custom_item/cover_image_picker.dart';
 import 'custom_item/custom_item_data.dart';
 import 'custom_item/multi_select_genre_dialog.dart';
@@ -59,11 +62,15 @@ class _CreateCustomItemDialogState
   late final TextEditingController _coverUrlController;
   late final TextEditingController _genresController;
   late final TextEditingController _platformController;
+  late final TextEditingController _unitTotalController;
+  late final TextEditingController _unitGroupTotalController;
   late final TextEditingController _externalUrlController;
 
   late MediaType _selectedType;
   String? _titleError;
   int? _selectedYear;
+  int? _selectedPlatformId;
+  String? _selectedFormat;
   String? _localCoverPath;
   String? _cachedCoverPath;
 
@@ -85,9 +92,15 @@ class _CreateCustomItemDialogState
     _coverUrlController = TextEditingController(text: e?.coverUrl ?? '');
     _genresController = TextEditingController(text: e?.genres ?? '');
     _platformController = TextEditingController(text: e?.platformName ?? '');
+    _unitTotalController =
+        TextEditingController(text: e?.unitTotal?.toString() ?? '');
+    _unitGroupTotalController =
+        TextEditingController(text: e?.unitGroupTotal?.toString() ?? '');
     _externalUrlController =
         TextEditingController(text: e?.externalUrl ?? '');
     _selectedYear = e?.year;
+    _selectedPlatformId = e?.platformId;
+    _selectedFormat = e?.format;
     _loadReferences();
     if (_isEditing) _loadCachedCover();
   }
@@ -136,6 +149,8 @@ class _CreateCustomItemDialogState
     _coverUrlController.dispose();
     _genresController.dispose();
     _platformController.dispose();
+    _unitTotalController.dispose();
+    _unitGroupTotalController.dispose();
     _externalUrlController.dispose();
     super.dispose();
   }
@@ -164,8 +179,19 @@ class _CreateCustomItemDialogState
       genres: _genresController.text.trim().isNotEmpty
           ? _genresController.text.trim()
           : null,
-      platform: _platformController.text.trim().isNotEmpty
+      platform: _selectedType == MediaType.game &&
+              _platformController.text.trim().isNotEmpty
           ? _platformController.text.trim()
+          : null,
+      platformId:
+          _selectedType == MediaType.game ? _selectedPlatformId : null,
+      format: _selectedType == MediaType.manga ||
+              _selectedType == MediaType.anime
+          ? _selectedFormat
+          : null,
+      unitTotal: _parsePositiveInt(_unitTotalController.text),
+      unitGroupTotal: CustomProgressUnits.hasGroupAxis(_selectedType)
+          ? _parsePositiveInt(_unitGroupTotalController.text)
           : null,
       externalUrl: _externalUrlController.text.trim().isNotEmpty
           ? _externalUrlController.text.trim()
@@ -213,6 +239,8 @@ class _CreateCustomItemDialogState
           _buildMediaTypeChips(l),
           const SizedBox(height: AppSpacing.md),
           _buildGenresSection(l),
+          const SizedBox(height: AppSpacing.md),
+          _buildCountsSection(l),
           const SizedBox(height: AppSpacing.md),
           _buildDescriptionSection(l),
           const SizedBox(height: AppSpacing.md),
@@ -301,9 +329,10 @@ class _CreateCustomItemDialogState
                 runSpacing: 6,
                 children: <Widget>[
                   _buildYearChip(l),
-                  if (_selectedType == MediaType.game ||
-                      _selectedType == MediaType.custom)
-                    _buildPlatformChip(l),
+                  if (_selectedType == MediaType.game) _buildPlatformChip(l),
+                  if (_selectedType == MediaType.manga ||
+                      _selectedType == MediaType.anime)
+                    _buildFormatChip(l),
                 ],
               ),
             ],
@@ -378,11 +407,63 @@ class _CreateCustomItemDialogState
       items: _platforms
           .map((model.Platform p) => p.displayName)
           .toList(),
-      allowCustom: true,
+      allowCustom: false,
       currentValue: _platformController.text,
     );
+    if (result == null || !mounted) return;
+    model.Platform? picked;
+    for (final model.Platform p in _platforms) {
+      if (p.displayName == result) {
+        picked = p;
+        break;
+      }
+    }
+    setState(() {
+      _platformController.text = result;
+      _selectedPlatformId = picked?.id;
+    });
+  }
+
+  Widget _buildFormatChip(S l) {
+    final List<String> codes = _selectedType == MediaType.manga
+        ? MediaFormat.mangaOrder
+        : MediaFormat.animeOrder;
+    final bool hasValue =
+        _selectedFormat != null && codes.contains(_selectedFormat);
+    return ActionChip(
+      avatar: const Icon(Icons.category_outlined, size: 14),
+      label: Text(
+        hasValue
+            ? MediaFormat.label(_selectedType, _selectedFormat!)
+            : l.customItemFormat,
+      ),
+      labelStyle: AppTypography.caption.copyWith(
+        color: hasValue ? AppColors.textPrimary : AppColors.textTertiary,
+      ),
+      onPressed: _pickFormat,
+    );
+  }
+
+  Future<void> _pickFormat() async {
+    final List<String> codes = _selectedType == MediaType.manga
+        ? MediaFormat.mangaOrder
+        : MediaFormat.animeOrder;
+    final Map<String, String> labelToCode = <String, String>{
+      for (final String code in codes)
+        MediaFormat.label(_selectedType, code): code,
+    };
+    final String? current = _selectedFormat != null
+        ? MediaFormat.label(_selectedType, _selectedFormat!)
+        : null;
+    final String? result = await SearchableListDialog.show(
+      context,
+      title: S.of(context).customItemFormat,
+      items: labelToCode.keys.toList(),
+      allowCustom: false,
+      currentValue: current,
+    );
     if (result != null && mounted) {
-      setState(() => _platformController.text = result);
+      setState(() => _selectedFormat = labelToCode[result]);
     }
   }
 
@@ -467,7 +548,25 @@ class _CreateCustomItemDialogState
           label: Text(type.localizedLabel(l)),
           selected: isSelected,
           onSelected: (bool selected) {
-            if (selected) setState(() => _selectedType = type);
+            if (!selected) return;
+            setState(() {
+              _selectedType = type;
+              // Drop subtype values that no longer apply to the new type so a
+              // stale platform / format is never submitted.
+              if (type != MediaType.game) {
+                _selectedPlatformId = null;
+                _platformController.clear();
+              }
+              if (type != MediaType.manga && type != MediaType.anime) {
+                _selectedFormat = null;
+              } else if (type == MediaType.manga &&
+                  !MediaFormat.mangaOrder.contains(_selectedFormat)) {
+                _selectedFormat = null;
+              } else if (type == MediaType.anime &&
+                  !MediaFormat.animeOrder.contains(_selectedFormat)) {
+                _selectedFormat = null;
+              }
+            });
           },
           selectedColor: typeColor.withValues(alpha: 0.3),
           side: isSelected
@@ -484,6 +583,76 @@ class _CreateCustomItemDialogState
           padding: const EdgeInsets.symmetric(horizontal: 6),
         );
       }).toList(),
+    );
+  }
+
+  static int? _parsePositiveInt(String text) {
+    final int? value = int.tryParse(text.trim());
+    return value != null && value > 0 ? value : null;
+  }
+
+  /// Totals for the universal progress tracker. The fine field always shows
+  /// (label follows the display type); the coarse field only for types with a
+  /// sub-division (series → seasons, manga → volumes).
+  Widget _buildCountsSection(S l) {
+    final bool showGroup = CustomProgressUnits.hasGroupAxis(_selectedType);
+    final String? groupLabel =
+        CustomProgressUnits.groupLabel(_selectedType, l);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          l.customProgress,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: _buildCountField(
+                label: CustomProgressUnits.fineLabel(_selectedType, l),
+                controller: _unitTotalController,
+              ),
+            ),
+            if (showGroup && groupLabel != null) ...<Widget>[
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _buildCountField(
+                  label: groupLabel,
+                  controller: _unitGroupTotalController,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountField({
+    required String label,
+    required TextEditingController controller,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly,
+      ],
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          borderSide: const BorderSide(color: AppColors.surfaceBorder),
+        ),
+        filled: true,
+        fillColor: AppColors.surfaceLight,
+        isDense: true,
+      ),
     );
   }
 

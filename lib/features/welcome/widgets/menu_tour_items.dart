@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/navigation/nav_tab.dart';
 
-/// One entry of the interactive menu tour. Carries its [tab] so the item set
-/// can be proven to match the real menu — see `menu_tour_items_test`.
+/// One entry of the interactive menu tour. [tab] carries the highlighted nav
+/// tab so the item set can be proven to match the real menu (see
+/// `menu_tour_items_test`); it is null for the Personalization centre button,
+/// which is a shell-level destination rather than a [NavTab].
 class MenuTourItem {
   const MenuTourItem({
     required this.tab,
@@ -14,29 +16,52 @@ class MenuTourItem {
     required this.description,
   });
 
-  final NavTab tab;
+  final NavTab? tab;
   final IconData icon;
   final IconData activeIcon;
   final String label;
   final String description;
+
+  /// Whether this step highlights the Personalization centre button instead of
+  /// a [NavTab] button.
+  bool get isPersonalization => tab == null;
 }
 
-/// Builds the tour items, one per [NavTab] in menu order: the six destinations
-/// from `buildNavDestinations` plus the Settings gear from the top bar.
-/// Iterating [NavTab.values] guarantees the count equals the real menu.
+/// Builds the tour items in the order they sit in the live menu: the six
+/// destinations from `buildNavDestinations` with the Personalization centre
+/// button slotted into the middle (matching `kNavCenterSlot`), then the
+/// Settings gear from the top bar. Every [NavTab] is covered exactly once.
 List<MenuTourItem> buildMenuTourItems(BuildContext context) {
   final S l = S.of(context);
   return <MenuTourItem>[
-    for (final NavTab tab in NavTab.values)
-      MenuTourItem(
-        tab: tab,
-        icon: _icon(tab),
-        activeIcon: _activeIcon(tab),
-        label: _label(l, tab),
-        description: _description(l, tab),
-      ),
+    _tabItem(l, NavTab.home),
+    _tabItem(l, NavTab.collections),
+    _tabItem(l, NavTab.tierLists),
+    _personalizationItem(l),
+    _tabItem(l, NavTab.releases),
+    _tabItem(l, NavTab.wishlist),
+    _tabItem(l, NavTab.search),
+    _tabItem(l, NavTab.settings),
   ];
 }
+
+MenuTourItem _tabItem(S l, NavTab tab) => MenuTourItem(
+      tab: tab,
+      icon: _icon(tab),
+      activeIcon: _activeIcon(tab),
+      label: _label(l, tab),
+      description: _description(l, tab),
+    );
+
+/// The Personalization centre button: the genre cloud and recommendations
+/// built from your rated items.
+MenuTourItem _personalizationItem(S l) => MenuTourItem(
+      tab: null,
+      icon: Icons.auto_awesome_outlined,
+      activeIcon: Icons.auto_awesome,
+      label: l.genreCloudTitle,
+      description: l.welcomeHowPersonalizationDesc,
+    );
 
 IconData _icon(NavTab tab) => switch (tab) {
       NavTab.home => Icons.home_outlined,

@@ -83,6 +83,10 @@ abstract class SettingsKeys {
   static const String hideEmptyMediaTypeChevrons =
       'hide_empty_media_type_chevrons';
 
+  /// Always show subcategory subfilters (game platforms, anime/manga formats)
+  /// even when their media-type chevron is not selected.
+  static const String alwaysShowSubcategories = 'always_show_subcategories';
+
   /// Date display format id (see [DateFormatPreset]).
   static const String dateFormat = 'date_format';
 
@@ -120,6 +124,7 @@ class SettingsState {
     this.discordRaSyncEnabled = false,
     this.richCollectionsEnabled = false,
     this.hideEmptyMediaTypeChevrons = false,
+    this.alwaysShowSubcategories = false,
     this.dateFormat = SettingsKeys.dateFormatDefault,
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
   });
@@ -181,6 +186,10 @@ class SettingsState {
 
   /// Hide media-type chevrons with zero items in the current filter bar.
   final bool hideEmptyMediaTypeChevrons;
+
+  /// Always show subcategory subfilters (platforms, formats) without first
+  /// selecting their media-type chevron.
+  final bool alwaysShowSubcategories;
 
   /// Date display format preset id.
   final String dateFormat;
@@ -275,6 +284,7 @@ class SettingsState {
     bool? discordRaSyncEnabled,
     bool? richCollectionsEnabled,
     bool? hideEmptyMediaTypeChevrons,
+    bool? alwaysShowSubcategories,
     String? dateFormat,
     String? animeMangaTitleLanguage,
   }) {
@@ -306,6 +316,8 @@ class SettingsState {
           richCollectionsEnabled ?? this.richCollectionsEnabled,
       hideEmptyMediaTypeChevrons:
           hideEmptyMediaTypeChevrons ?? this.hideEmptyMediaTypeChevrons,
+      alwaysShowSubcategories:
+          alwaysShowSubcategories ?? this.alwaysShowSubcategories,
       dateFormat: dateFormat ?? this.dateFormat,
       animeMangaTitleLanguage:
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
@@ -440,6 +452,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.richCollectionsEnabled) ?? false;
     final bool hideEmptyMediaTypeChevrons =
         _prefs.getBool(SettingsKeys.hideEmptyMediaTypeChevrons) ?? false;
+    final bool alwaysShowSubcategories =
+        _prefs.getBool(SettingsKeys.alwaysShowSubcategories) ?? false;
     final String dateFormat =
         _prefs.getString(SettingsKeys.dateFormat) ??
             SettingsKeys.dateFormatDefault;
@@ -478,6 +492,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       discordRaSyncEnabled: discordRaSyncEnabled,
       richCollectionsEnabled: richCollectionsEnabled,
       hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
+      alwaysShowSubcategories: alwaysShowSubcategories,
       dateFormat: dateFormat,
       animeMangaTitleLanguage: animeMangaTitleLanguage,
     );
@@ -749,6 +764,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(hideEmptyMediaTypeChevrons: enabled);
   }
 
+  Future<void> setAlwaysShowSubcategories({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.alwaysShowSubcategories, enabled);
+    state = state.copyWith(alwaysShowSubcategories: enabled);
+  }
+
   Future<void> setDateFormat(String presetId) async {
     await _prefs.setString(SettingsKeys.dateFormat, presetId);
     state = state.copyWith(dateFormat: presetId);
@@ -881,6 +901,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.discordRaSyncEnabled);
     await _prefs.remove(SettingsKeys.richCollectionsEnabled);
     await _prefs.remove(SettingsKeys.hideEmptyMediaTypeChevrons);
+    await _prefs.remove(SettingsKeys.alwaysShowSubcategories);
     await _prefs.remove(SettingsKeys.dateFormat);
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
     await _prefs.remove(SettingsKeys.raUsername);

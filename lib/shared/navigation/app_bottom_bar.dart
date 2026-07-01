@@ -102,6 +102,9 @@ class AppBottomBar extends ConsumerWidget {
                         for (int i = 0; i < destinations.length; i++) ...<Widget>[
                           if (i == kNavCenterSlot)
                             NavCenterButton(
+                              key: tourActive
+                                  ? tourKeys.personalization
+                                  : null,
                               width: itemWidth,
                               height: kAppBottomBarHeight,
                               tooltip: S.of(context).genreCloudTitle,

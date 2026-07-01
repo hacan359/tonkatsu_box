@@ -36,16 +36,18 @@ class CollectionFilters {
     List<CollectionItem> result = items;
 
     if (mediaTypes.isNotEmpty) {
+      // Match by the item's filter buckets so a custom item masquerading as
+      // e.g. anime survives both the "Anime" and the "Custom" filter.
       result = result
-          .where((CollectionItem item) => mediaTypes.contains(item.mediaType))
+          .where((CollectionItem item) => item.matchesTypeFilter(mediaTypes))
           .toList();
     }
 
     if (platformIds.isNotEmpty) {
       result = result
           .where((CollectionItem item) =>
-              item.platformId != null &&
-              platformIds.contains(item.platformId))
+              item.effectivePlatformId != null &&
+              platformIds.contains(item.effectivePlatformId))
           .toList();
     }
 

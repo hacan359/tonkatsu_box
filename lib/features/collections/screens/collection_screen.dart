@@ -264,7 +264,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts(S l) {
     if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
     return <ShortcutActivator, VoidCallback>{
-      if (_canEdit)
+      if (_canEdit && !_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.keyN, control: true):
             () => CollectionActions.addItems(ref: ref, collectionId: widget.collectionId),
       if (!_isUncategorized && _collection != null)
@@ -614,6 +614,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       year: data.year,
       genres: data.genres,
       platformName: data.platform,
+      platformId: data.platformId,
+      format: data.format,
+      unitTotal: data.unitTotal,
+      unitGroupTotal: data.unitGroupTotal,
       externalUrl: data.externalUrl,
     );
 

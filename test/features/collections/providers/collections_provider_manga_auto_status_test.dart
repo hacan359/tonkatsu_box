@@ -61,6 +61,13 @@ void main() {
           any(),
           mediaType: any(named: 'mediaType'),
         )).thenAnswer((_) async {});
+
+    when(() => mockRepository.updateItemActivityDates(
+          any(),
+          startedAt: any(named: 'startedAt'),
+          completedAt: any(named: 'completedAt'),
+          lastActivityAt: any(named: 'lastActivityAt'),
+        )).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer({

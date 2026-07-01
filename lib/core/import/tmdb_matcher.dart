@@ -121,32 +121,24 @@ class TmdbMatcher {
           onRetry: onRateLimit,
         );
         await Future<void>.delayed(_throttle);
-        if (results.isEmpty) continue;
-        final T? pick = _pickAcceptable<T>(results, year, yearOf);
-        if (pick != null) return pick;
-        // Results came back but none fall within the requested year. TMDB's
-        // year filter matches alternate titles and any-region re-release dates,
-        // so a hit here can be an unrelated film (e.g. "The Long Night" 2019
-        // returning "Friday the 13th"). Keep trying the remaining query/year
-        // combinations instead of accepting a wrong-year guess.
+        if (results.isNotEmpty) {
+          return _pickBest<T>(results, year, yearOf);
+        }
       }
     }
     return null;
   }
 
-  /// First result whose year equals [year], scanning the whole list (a
-  /// correct-year film can rank below an unrelated popular one); null when a
-  /// year is required but unmatched, so the caller widens or drops it. Null
-  /// [year] takes the first result.
-  T? _pickAcceptable<T>(
-      List<T> results, int? year, int? Function(T result) yearOf) {
-    if (year == null) {
-      return results.isEmpty ? null : results.first;
+  /// Prefers a result whose year matches (year filters are dropped on later
+  /// attempts, so the first hit may be the wrong edition); otherwise the most
+  /// relevant (first) result.
+  T _pickBest<T>(List<T> results, int? year, int? Function(T result) yearOf) {
+    if (year != null) {
+      for (final T result in results) {
+        if (yearOf(result) == year) return result;
+      }
     }
-    for (final T result in results) {
-      if (yearOf(result) == year) return result;
-    }
-    return null;
+    return results.first;
   }
 
   /// True when TMDB genres mark the title as animation (genre name or id 16).

@@ -1053,6 +1053,22 @@ class CollectionDao {
       for (final Platform p in platforms) p.id: p,
     };
 
+    // Custom games keep their platform FK on `custom_items`, not on the
+    // collection row, so their platform ids surface only after the custom
+    // media loads. Fetch any that the games pass above did not already cover.
+    final List<int> customPlatformIds = <int>[
+      for (final CustomMedia c in customMediaList)
+        if (c.platformId != null && !platformsMap.containsKey(c.platformId))
+          c.platformId!,
+    ];
+    if (customPlatformIds.isNotEmpty) {
+      final List<Platform> extra =
+          await _gameDao.getPlatformsByIds(customPlatformIds);
+      for (final Platform p in extra) {
+        platformsMap[p.id] = p;
+      }
+    }
+
     // Resolve numeric genre IDs to names where unresolved.
     final List<Movie> resolvedMovies = await _resolveGenresIfNeeded(
       movies,
@@ -1130,7 +1146,13 @@ class CollectionDao {
                 '${(item.source ?? DataSource.openLibrary).name}:${item.externalId}'],
           );
         case MediaType.custom:
-          return item.copyWith(customMedia: customMap[item.externalId]);
+          final CustomMedia? cm = customMap[item.externalId];
+          return item.copyWith(
+            customMedia: cm,
+            platform: cm?.platformId != null
+                ? platformsMap[cm!.platformId]
+                : null,
+          );
       }
     }).toList();
   }

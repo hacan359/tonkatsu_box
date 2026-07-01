@@ -513,12 +513,55 @@ class CollectionItem with Exportable {
           ? customMedia!.displayType!
           : mediaType;
 
+  /// Type-filter chevrons this item belongs to. A masquerading custom item
+  /// shows under both its display type (e.g. Anime) and Custom — it is a custom
+  /// element regardless of what it imitates, so the Custom filter still finds
+  /// it. Every other item belongs to exactly its own type.
+  List<MediaType> get filterTypeBuckets =>
+      mediaType == MediaType.custom && displayMediaType != MediaType.custom
+          ? <MediaType>[displayMediaType, MediaType.custom]
+          : <MediaType>[displayMediaType];
+
+  /// Whether this item passes a media-type filter selecting [selected].
+  bool matchesTypeFilter(Set<MediaType> selected) =>
+      filterTypeBuckets.any(selected.contains);
+
+  /// Platform FK used by the platform subfilter. Real games use the joined
+  /// [platformId]; custom games carry their chosen platform on [customMedia],
+  /// so resolve it from there when the item masquerades as a game.
+  int? get effectivePlatformId =>
+      mediaType == MediaType.custom &&
+              customMedia?.displayType == MediaType.game
+          ? customMedia?.platformId
+          : platformId;
+
+  /// Raw manga / anime format code keyed by [displayMediaType]: the real
+  /// media's format, or the custom item's stored format when masquerading as
+  /// manga / anime. `null` for every other type.
+  String? get formatCode => switch (displayMediaType) {
+        MediaType.manga =>
+          mediaType == MediaType.custom ? customMedia?.format : manga?.format,
+        MediaType.anime =>
+          mediaType == MediaType.custom ? customMedia?.format : anime?.format,
+        _ => null,
+      };
+
+  /// Total for the fine progress axis of a custom item (episodes / chapters /
+  /// pages / parts). `null` for non-custom items or when not set.
+  int? get customUnitTotal =>
+      mediaType == MediaType.custom ? customMedia?.unitTotal : null;
+
+  /// Total for the coarse progress axis of a custom item (seasons / volumes).
+  /// `null` for non-custom items, types without a coarse axis, or when not set.
+  int? get customUnitGroupTotal =>
+      mediaType == MediaType.custom ? customMedia?.unitGroupTotal : null;
+
   /// Format label for manga / anime (e.g. "Manhwa", "OVA"). `null` for other
   /// media types or when the source did not report a format — callers fall
   /// back to the generic media-type caption in that case.
-  String? get formatLabel => switch (mediaType) {
-        MediaType.manga => manga?.formatLabel,
-        MediaType.anime => anime?.formatLabel,
+  String? get formatLabel => switch (displayMediaType) {
+        MediaType.manga => Manga.mangaFormatLabel(formatCode),
+        MediaType.anime => Anime.animeFormatLabel(formatCode),
         _ => null,
       };
 

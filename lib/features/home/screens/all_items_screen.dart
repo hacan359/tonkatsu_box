@@ -20,6 +20,7 @@ import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -121,7 +122,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return items
         .where((CollectionItem item) =>
             (_selectedTypes.isEmpty ||
-                _selectedTypes.contains(item.mediaType)) &&
+                item.matchesTypeFilter(_selectedTypes)) &&
             _matchesNonTypeFilters(
                 item, filterStatus, favoriteOnly, tagsMap, query, lang))
         .toList();
@@ -138,8 +139,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     if (favoriteOnly && !item.isFavorite) return false;
     if (filterStatus != null && item.status != filterStatus) return false;
     if (_selectedPlatformIds.isNotEmpty &&
-        (item.platformId == null ||
-            !_selectedPlatformIds.contains(item.platformId))) {
+        (item.effectivePlatformId == null ||
+            !_selectedPlatformIds.contains(item.effectivePlatformId))) {
       return false;
     }
     if (!MediaFormat.matchesFormatFilter(
@@ -296,13 +297,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   /// One subfilter group per active type — game platforms, manga formats,
   /// anime formats — each tinted with its media-type accent, on one row.
+  ///
+  /// A group normally appears only once its media-type chevron is selected;
+  /// with the "always show subcategories" setting every group whose type has
+  /// items is shown upfront.
   List<List<SubfilterChipData>> _subfilterGroups(
     AsyncValue<List<CollectionItem>> itemsAsync,
   ) {
     final List<CollectionItem> items =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
+    final bool alwaysShow = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.alwaysShowSubcategories,
+      ),
+    );
     return <List<SubfilterChipData>>[
-      if (_selectedTypes.contains(MediaType.game))
+      if (alwaysShow || _selectedTypes.contains(MediaType.game))
         <SubfilterChipData>[
           for (final Platform p
               in ref.watch(allItemsPlatformsProvider).valueOrNull ??
@@ -320,17 +330,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               }),
             ),
         ],
-      _formatGroup(MediaType.manga, _selectedMangaFormats, items),
-      _formatGroup(MediaType.anime, _selectedAnimeFormats, items),
+      _formatGroup(MediaType.manga, _selectedMangaFormats, items,
+          alwaysShow: alwaysShow),
+      _formatGroup(MediaType.anime, _selectedAnimeFormats, items,
+          alwaysShow: alwaysShow),
     ];
   }
 
   List<SubfilterChipData> _formatGroup(
     MediaType type,
     Set<String> selected,
-    List<CollectionItem> items,
-  ) {
-    if (!_selectedTypes.contains(type)) return const <SubfilterChipData>[];
+    List<CollectionItem> items, {
+    required bool alwaysShow,
+  }) {
+    if (!alwaysShow && !_selectedTypes.contains(type)) {
+      return const <SubfilterChipData>[];
+    }
     return <SubfilterChipData>[
       for (final String code in MediaFormat.present(items, type))
         SubfilterChipData(
@@ -376,7 +391,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     if (items == null) return const <MediaType, int>{};
     final Map<MediaType, int> totals = <MediaType, int>{};
     for (final CollectionItem item in items) {
-      totals[item.mediaType] = (totals[item.mediaType] ?? 0) + 1;
+      for (final MediaType bucket in item.filterTypeBuckets) {
+        totals[bucket] = (totals[bucket] ?? 0) + 1;
+      }
     }
     return totals;
   }
@@ -401,7 +418,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           item, filterStatus, favoriteOnly, tagsMap, lower, lang)) {
         continue;
       }
-      counts[item.mediaType] = (counts[item.mediaType] ?? 0) + 1;
+      for (final MediaType bucket in item.filterTypeBuckets) {
+        counts[bucket] = (counts[bucket] ?? 0) + 1;
+      }
     }
     return counts;
   }
@@ -460,6 +479,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 isFirst: i == 0,
               ),
             ),
+            if (groups[i].isUncategorized)
+              const SliverToBoxAdapter(
+                child: UncategorizedDeprecationBanner(),
+              ),
             SliverPadding(
               padding: EdgeInsets.symmetric(
                 horizontal: gridPadding,
@@ -497,7 +520,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                             platformOverlay: item.platform?.overlayAsset,
                             mediaTypeOverlay: item.mediaType.overlayAsset,
                           ),
-                      mediaType: item.mediaType,
+                      mediaType: item.displayMediaType,
                       typeLabelOverride: item.formatLabel,
                       status: item.status,
                       isFavorite: item.isFavorite,
@@ -562,8 +585,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         final String name = colId != null
             ? (collectionNames[colId] ?? 'Unknown')
             : uncategorizedLabel;
-        final _CollectionGroup group =
-            _CollectionGroup(name: name, items: <CollectionItem>[item]);
+        final _CollectionGroup group = _CollectionGroup(
+          name: name,
+          items: <CollectionItem>[item],
+          isUncategorized: colId == null,
+        );
         map[colId] = group;
         order.add(colId);
       } else {
@@ -846,7 +872,12 @@ class _MediaTypeEntry {
 }
 
 class _CollectionGroup {
-  _CollectionGroup({required this.name, required this.items});
+  _CollectionGroup({
+    required this.name,
+    required this.items,
+    this.isUncategorized = false,
+  });
   final String name;
   final List<CollectionItem> items;
+  final bool isUncategorized;
 }

@@ -118,6 +118,9 @@ class AppSidebar extends ConsumerWidget {
                             for (int i = 0; i < destinations.length; i++) ...<Widget>[
                               if (i == kNavCenterSlot)
                                 NavCenterButton(
+                                  key: tourActive
+                                      ? tourKeys.personalization
+                                      : null,
                                   width: kAppSidebarWidth,
                                   height: itemHeight,
                                   tooltip: S.of(context).genreCloudTitle,

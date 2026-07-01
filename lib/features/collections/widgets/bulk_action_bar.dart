@@ -163,7 +163,7 @@ class BulkActionBar extends ConsumerWidget {
       context: context,
       ref: ref,
       excludeCollectionId: collectionId,
-      showUncategorized: collectionId != null,
+      showUncategorized: false,
       title: l.bulkMove,
     );
     if (choice == null || !context.mounted) return;

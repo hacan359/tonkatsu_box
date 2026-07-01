@@ -110,6 +110,7 @@ class UncategorizedListTile extends StatelessWidget {
     final S l = S.of(context);
 
     return ListTile(
+      isThreeLine: true,
       leading: const Icon(Icons.inbox_rounded, color: AppColors.brand),
       title: Text(
         l.collectionsUncategorized,
@@ -117,11 +118,41 @@ class UncategorizedListTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: AppTypography.h3,
       ),
-      subtitle: Text(
-        l.collectionsUncategorizedItems(count),
-        style: AppTypography.bodySmall.copyWith(
-          color: AppColors.textSecondary,
-        ),
+      subtitle: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            l.collectionsUncategorizedItems(count),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Row(
+              children: <Widget>[
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: AppColors.error,
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    l.uncategorizedDeprecationBadge,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       onTap: onTap,
     );

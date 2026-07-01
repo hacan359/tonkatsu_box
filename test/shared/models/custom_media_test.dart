@@ -77,6 +77,55 @@ void main() {
       expect(m.toExport().containsKey('cached_at'), isFalse);
       expect(m.toExport()['title'], 't');
     });
+
+    test('fromDb reads platform_id, format and unit totals', () {
+      final CustomMedia m = CustomMedia.fromDb(<String, dynamic>{
+        'id': 5,
+        'title': 'Homebrew',
+        'display_type': 'game',
+        'platform_id': 48,
+        'format': 'MANHWA',
+        'unit_total': 24,
+        'unit_group_total': 2,
+      });
+      expect(m.platformId, 48);
+      expect(m.format, 'MANHWA');
+      expect(m.unitTotal, 24);
+      expect(m.unitGroupTotal, 2);
+    });
+
+    test('round-trips platform_id, format and unit totals through toDb', () {
+      const CustomMedia m = CustomMedia(
+        id: 1,
+        title: 't',
+        displayType: MediaType.manga,
+        platformId: 7,
+        format: 'OVA',
+        unitTotal: 12,
+        unitGroupTotal: 3,
+      );
+      final CustomMedia restored = CustomMedia.fromDb(m.toDb());
+      expect(restored.platformId, 7);
+      expect(restored.format, 'OVA');
+      expect(restored.unitTotal, 12);
+      expect(restored.unitGroupTotal, 3);
+    });
+
+    test('toExport carries the new fields', () {
+      const CustomMedia m = CustomMedia(
+        id: 1,
+        title: 't',
+        platformId: 48,
+        format: 'MANHWA',
+        unitTotal: 24,
+        unitGroupTotal: 2,
+      );
+      final Map<String, dynamic> export = m.toExport();
+      expect(export['platform_id'], 48);
+      expect(export['format'], 'MANHWA');
+      expect(export['unit_total'], 24);
+      expect(export['unit_group_total'], 2);
+    });
   });
 
   group('copyWith', () {
@@ -97,6 +146,27 @@ void main() {
     test('updates a single field', () {
       const CustomMedia m = CustomMedia(id: 1, title: 'old');
       expect(m.copyWith(title: 'new').title, 'new');
+    });
+
+    test('clear flags null out the new fields', () {
+      const CustomMedia m = CustomMedia(
+        id: 1,
+        title: 't',
+        platformId: 48,
+        format: 'OVA',
+        unitTotal: 12,
+        unitGroupTotal: 3,
+      );
+      final CustomMedia cleared = m.copyWith(
+        clearPlatformId: true,
+        clearFormat: true,
+        clearUnitTotal: true,
+        clearUnitGroupTotal: true,
+      );
+      expect(cleared.platformId, isNull);
+      expect(cleared.format, isNull);
+      expect(cleared.unitTotal, isNull);
+      expect(cleared.unitGroupTotal, isNull);
     });
   });
 }
