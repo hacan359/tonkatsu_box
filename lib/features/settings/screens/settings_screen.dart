@@ -39,6 +39,7 @@ import '../../releases/providers/releases_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'browse_collections_screen.dart';
 import 'anilist_import_screen.dart';
+import 'igdb_list_import_screen.dart';
 import 'mal_import_screen.dart';
 import 'ra_import_screen.dart';
 import 'kinorium_import_screen.dart';
@@ -276,6 +277,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsSteamImport,
             subtitle: l.settingsSteamImportSubtitle,
             onTap: () => _pushScreen(const SteamImportScreen()),
+          ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconIgdbColor,
+            leadingAssetColored: true,
+            title: l.settingsIgdbImport,
+            subtitle: l.settingsIgdbImportSubtitle,
+            onTap: () => _pushScreen(const IgdbListImportScreen()),
           ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconRaColor,

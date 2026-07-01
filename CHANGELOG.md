@@ -9,6 +9,35 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Import a game list exported from IGDB (CSV)**
+
+  A new import source under Settings → Import. Every export row carries the
+  IGDB game id, so titles are matched in one batched id lookup with no fuzzy
+  search; ids IGDB no longer returns fall back to the text wishlist under an
+  `IGDB-<timestamp>` tag. The export has no personal data, so the status is
+  picked once for the whole file (the card status switcher) and the platform
+  is chosen from the same searchable platform list used in search — required,
+  since without it every item would render as "unknown platform". Re-import is
+  idempotent: an unset status leaves existing items untouched, a chosen status
+  only bumps upward without downgrading the user's own decision.
+
+  * lib/core/import/sources/igdb_list/igdb_list_csv_parser.dart (IgdbListCsvParser,
+    IgdbListEntry, IgdbListParseException): New RFC 4180 CSV parser addressing
+    columns by header; reads only `id` and `game`.
+  * lib/core/import/sources/igdb_list/igdb_list_import_service.dart (IgdbListImportService,
+    IgdbListImportOptions, igdbListImportServiceProvider): New import adapter over
+    the shared ImportWriter; matches via IgdbApi.getGamesByIds, applies a required
+    platform and a per-file status.
+  * lib/features/settings/content/igdb_list_import_content.dart (IgdbListImportContent):
+    New form — file picker, StatusChipRow, searchable platform picker, collection target.
+  * lib/features/settings/screens/igdb_list_import_screen.dart (IgdbListImportScreen): New.
+  * lib/features/settings/screens/settings_screen.dart: New import tile after Steam.
+  * lib/features/search/widgets/filter_dropdown.dart (SearchableFilterDialog.showAllOption):
+    Add flag to hide the leading "All" reset row when a selection is mandatory.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (settingsIgdbImport, igdbImportTitle,
+    igdbImportPlatformSelect and related keys): New strings.
+  * README.md: List IGDB in the import table.
+
 - **Setting to always show subcategory filters**
 
   A new appearance toggle keeps the subcategory subfilters (game platforms,

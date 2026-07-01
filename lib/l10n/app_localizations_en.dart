@@ -3957,6 +3957,69 @@ class SEn extends S {
   String get settingsSteamImportSubtitle => 'Import games via Steam Web API';
 
   @override
+  String get settingsIgdbImport => 'IGDB List';
+
+  @override
+  String get settingsIgdbImportSubtitle =>
+      'Import a game list exported from IGDB (CSV)';
+
+  @override
+  String get igdbImportTitle => 'Import IGDB List';
+
+  @override
+  String get igdbImportDescription =>
+      'Pick a CSV list exported from IGDB. Games are matched by their IGDB id; anything IGDB no longer has goes to the wishlist.';
+
+  @override
+  String get igdbImportSelectCsvFile => 'Select CSV file';
+
+  @override
+  String get igdbImportSelectCsvExport => 'Select IGDB CSV export';
+
+  @override
+  String get igdbImportOptions => 'Options';
+
+  @override
+  String get igdbImportStatusLabel => 'Status for imported games';
+
+  @override
+  String get igdbImportPlatformLabel => 'Platform';
+
+  @override
+  String get igdbImportPlatformSelect => 'Select platform';
+
+  @override
+  String get igdbImportTargetCollection => 'Target collection';
+
+  @override
+  String get igdbImportCreateNew => 'Create new collection';
+
+  @override
+  String get igdbImportUseExisting => 'Use existing collection';
+
+  @override
+  String get igdbImportNoCollections => 'No collections available';
+
+  @override
+  String get igdbImportSelectCollection => 'Select collection';
+
+  @override
+  String get igdbImportErrorLoadingCollections => 'Error loading collections';
+
+  @override
+  String get igdbImportIgdbRequired =>
+      'IGDB connection required. Set up API keys in Settings → Credentials first.';
+
+  @override
+  String get igdbStartImport => 'Start Import';
+
+  @override
+  String get igdbImporting => 'Importing...';
+
+  @override
+  String get igdbReasonNotFound => 'Not found on IGDB';
+
+  @override
   String get steamImportTitle => 'Import Steam Library';
 
   @override

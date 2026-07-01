@@ -4007,6 +4007,69 @@ class SRu extends S {
   String get settingsSteamImportSubtitle => 'Импорт игр через Steam Web API';
 
   @override
+  String get settingsIgdbImport => 'Список IGDB';
+
+  @override
+  String get settingsIgdbImportSubtitle =>
+      'Импорт списка игр, выгруженного из IGDB (CSV)';
+
+  @override
+  String get igdbImportTitle => 'Импорт списка IGDB';
+
+  @override
+  String get igdbImportDescription =>
+      'Выберите CSV-список, выгруженный из IGDB. Игры сопоставляются по их IGDB id; всё, чего в IGDB больше нет, попадает в вишлист.';
+
+  @override
+  String get igdbImportSelectCsvFile => 'Выбрать CSV-файл';
+
+  @override
+  String get igdbImportSelectCsvExport => 'Выберите CSV-выгрузку IGDB';
+
+  @override
+  String get igdbImportOptions => 'Параметры';
+
+  @override
+  String get igdbImportStatusLabel => 'Статус для импортируемых игр';
+
+  @override
+  String get igdbImportPlatformLabel => 'Платформа';
+
+  @override
+  String get igdbImportPlatformSelect => 'Выберите платформу';
+
+  @override
+  String get igdbImportTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get igdbImportCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get igdbImportUseExisting => 'Использовать существующую';
+
+  @override
+  String get igdbImportNoCollections => 'Нет доступных коллекций';
+
+  @override
+  String get igdbImportSelectCollection => 'Выбрать коллекцию';
+
+  @override
+  String get igdbImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
+
+  @override
+  String get igdbImportIgdbRequired =>
+      'Требуется подключение к IGDB. Сначала настройте API-ключи в Настройки → Credentials.';
+
+  @override
+  String get igdbStartImport => 'Начать импорт';
+
+  @override
+  String get igdbImporting => 'Импорт…';
+
+  @override
+  String get igdbReasonNotFound => 'Не найдено в IGDB';
+
+  @override
   String get steamImportTitle => 'Импорт библиотеки Steam';
 
   @override

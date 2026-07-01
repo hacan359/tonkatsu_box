@@ -33,7 +33,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, ComicVine, and Google Books. Track your progress, rate everything, create visual boards and mood grids, and import your library from Steam, Trakt.tv, Kinorium, RetroAchievements, MyAnimeList, or AniList.
+Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, ComicVine, and Google Books. Track your progress, rate everything, create visual boards and mood grids, and import your library from Steam, IGDB lists, Trakt.tv, Kinorium, RetroAchievements, MyAnimeList, or AniList.
 
 <p align="center">
   <img src="docs/screenshots/mockup_main_all.jpg" width="800" alt="Main screen">
@@ -72,7 +72,7 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | **Discord Rich Presence** | Show what you're playing/watching/reading in Discord (desktop) |
 | **Visual Boards** | Drag-and-drop canvas with posters, notes, and connections |
 | **Tier Lists & Mood Grids** | Rank items into S/A/B/C tiers, or arrange them on a visual N×M board with labels — export either as PNG |
-| **Import** | Steam library, Trakt.tv history, Kinorium CSV, RetroAchievements progress, MyAnimeList XML, AniList by username |
+| **Import** | Steam library, IGDB list CSV, Trakt.tv history, Kinorium CSV, RetroAchievements progress, MyAnimeList XML, AniList by username |
 | **Kodi Sync** | Pull watched status and ratings for your movies from a Kodi media server over JSON-RPC |
 | **Export & Share** | .xcoll / .xcollx files with full offline support |
 | **Gamepad** | Navigate with Xbox controller (desktop and Android handhelds) |
@@ -126,6 +126,7 @@ Already tracking elsewhere? Bring your data:
 | | Source | What's imported |
 |:-:|--------|-----------------|
 | <img src="assets/images/icon_steam_color.png" width="28" alt="Steam"> | **Steam** | Owned games, playtime, last played date |
+| <img src="assets/images/icon_igdb_color.png" width="28" alt="IGDB"> | **IGDB** | A game list exported as CSV — matched by IGDB id, with a status you pick for the list |
 | <img src="assets/images/icon_trakt_color.png" width="28" alt="Trakt.tv"> | **Trakt.tv** | Watch history, ratings, watchlist, episode progress |
 | <img src="assets/images/icon_kinorium_color.png" width="28" alt="Kinorium"> | **Kinorium** | Movies, TV & animation from a CSV export — ratings and watch dates |
 | <img src="assets/images/ra_logo.png" width="28" alt="RetroAchievements"> | **RetroAchievements** | Retro game library, achievement progress, awards |

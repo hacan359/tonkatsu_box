@@ -7152,6 +7152,126 @@ abstract class S {
   /// **'Import games via Steam Web API'**
   String get settingsSteamImportSubtitle;
 
+  /// No description provided for @settingsIgdbImport.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB List'**
+  String get settingsIgdbImport;
+
+  /// No description provided for @settingsIgdbImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a game list exported from IGDB (CSV)'**
+  String get settingsIgdbImportSubtitle;
+
+  /// No description provided for @igdbImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import IGDB List'**
+  String get igdbImportTitle;
+
+  /// No description provided for @igdbImportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a CSV list exported from IGDB. Games are matched by their IGDB id; anything IGDB no longer has goes to the wishlist.'**
+  String get igdbImportDescription;
+
+  /// No description provided for @igdbImportSelectCsvFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Select CSV file'**
+  String get igdbImportSelectCsvFile;
+
+  /// No description provided for @igdbImportSelectCsvExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Select IGDB CSV export'**
+  String get igdbImportSelectCsvExport;
+
+  /// No description provided for @igdbImportOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get igdbImportOptions;
+
+  /// No description provided for @igdbImportStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status for imported games'**
+  String get igdbImportStatusLabel;
+
+  /// No description provided for @igdbImportPlatformLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get igdbImportPlatformLabel;
+
+  /// No description provided for @igdbImportPlatformSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select platform'**
+  String get igdbImportPlatformSelect;
+
+  /// No description provided for @igdbImportTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get igdbImportTargetCollection;
+
+  /// No description provided for @igdbImportCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get igdbImportCreateNew;
+
+  /// No description provided for @igdbImportUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use existing collection'**
+  String get igdbImportUseExisting;
+
+  /// No description provided for @igdbImportNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get igdbImportNoCollections;
+
+  /// No description provided for @igdbImportSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get igdbImportSelectCollection;
+
+  /// No description provided for @igdbImportErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading collections'**
+  String get igdbImportErrorLoadingCollections;
+
+  /// No description provided for @igdbImportIgdbRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
+  String get igdbImportIgdbRequired;
+
+  /// No description provided for @igdbStartImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Import'**
+  String get igdbStartImport;
+
+  /// No description provided for @igdbImporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing...'**
+  String get igdbImporting;
+
+  /// No description provided for @igdbReasonNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found on IGDB'**
+  String get igdbReasonNotFound;
+
   /// No description provided for @steamImportTitle.
   ///
   /// In en, this message translates to:

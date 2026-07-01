@@ -1,15 +1,16 @@
 # Import layer
 
 Shared infrastructure for importing a user's library from third-party services
-(Steam, Trakt, Kinorium, RetroAchievements, MyAnimeList, AniList, …).
+(Steam, IGDB lists, Trakt, Kinorium, RetroAchievements, MyAnimeList, AniList, …).
 
 The layer follows **ports & adapters**: one port (`ImportSource`) with many
 adapters (one per source, under `sources/`). The reusable domain pieces —
 collection writing, TMDB matching, rate-limit retry — live at the root and are
 **injected** into adapters, not inherited.
 
-> Status: every importer — **Kinorium, Steam, Trakt, RetroAchievements,
-> MyAnimeList and AniList** — is now an adapter on this layer. The `.xcoll` /
+> Status: every importer — **Kinorium, Steam, IGDB lists, Trakt,
+> RetroAchievements, MyAnimeList and AniList** — is now an adapter on this
+> layer. The `.xcoll` /
 > `.xcollx` collection-file import (`core/services/import_service.dart`) stays
 > separate by design: it restores a full collection snapshot rather than
 > resolving titles against an external catalog.
