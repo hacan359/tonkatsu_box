@@ -7,11 +7,9 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../core/database/dao/tag_dao.dart';
-import '../../../core/database/database_service.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -19,9 +17,11 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
+import '../providers/item_tags_provider.dart';
 import '../extensions/item_display_name.dart';
 import 'collection_table/collection_table_view.dart';
 import 'context_menu_item.dart';
+import 'tag_picker_dialog.dart';
 import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 
@@ -39,7 +39,8 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemClone,
     this.onItemRemove,
     this.onItemFocusChanged,
-    this.tags = const <CollectionTag>[],
+    this.tags = const <Tag>[],
+    this.itemTags = const <int, Set<int>>{},
     this.filterTagIds = const <int>{},
     this.groupByTags = false,
     this.header,
@@ -58,7 +59,10 @@ class CollectionItemsView extends ConsumerWidget {
   final ValueChanged<CollectionItem>? onItemClone;
   final ValueChanged<CollectionItem>? onItemRemove;
   final void Function(CollectionItem item, bool hasFocus)? onItemFocusChanged;
-  final List<CollectionTag> tags;
+  final List<Tag> tags;
+
+  /// Item id → global tag ids (from `itemTagsProvider`).
+  final Map<int, Set<int>> itemTags;
   final Set<int> filterTagIds;
   final bool groupByTags;
 
@@ -93,6 +97,7 @@ class CollectionItemsView extends ConsumerWidget {
           heroHeader: header,
           items: items,
           tags: tags,
+          itemTags: itemTags,
           onItemTap: onItemTap,
           onItemSecondaryTap: canEdit
               ? (CollectionItem item, Offset pos) =>
@@ -133,15 +138,8 @@ class CollectionItemsView extends ConsumerWidget {
                       .updateStatus(itemId, status, mediaType);
                 }
               : null,
-          onTagChanged: canEdit
-              ? (int itemId, int? tagId) async {
-                  final TagDao dao = ref.read(tagDaoProvider);
-                  await dao.setItemTag(itemId, tagId);
-                  ref
-                      .read(collectionItemsNotifierProvider(collectionId)
-                          .notifier)
-                      .updateItemTag(itemId, tagId);
-                }
+          onTagsEdit: canEdit
+              ? (int itemId) => _editItemTags(context, ref, itemId)
               : null,
           onFavoriteToggled: canEdit
               ? (int itemId) => ref
@@ -164,8 +162,8 @@ class CollectionItemsView extends ConsumerWidget {
     return _buildGridView(context, ref);
   }
 
-  /// Buckets items by their `tagId`. Items pointing at an unknown tag (e.g.
-  /// after the tag was deleted) land in the "untagged" bucket.
+  /// Buckets items by their primary (first in display order) tag, so every
+  /// item appears exactly once even when it carries several tags.
   List<_TagGroup> _groupByTag(String untaggedLabel) {
     if (tags.isEmpty) {
       return <_TagGroup>[
@@ -173,25 +171,23 @@ class CollectionItemsView extends ConsumerWidget {
       ];
     }
 
-    final Set<int> knownTagIds = <int>{
-      for (final CollectionTag tag in tags) tag.id,
-    };
     final Map<int, List<CollectionItem>> grouped =
         <int, List<CollectionItem>>{
-      for (final CollectionTag tag in tags) tag.id: <CollectionItem>[],
+      for (final Tag tag in tags) tag.id: <CollectionItem>[],
     };
     final List<CollectionItem> untagged = <CollectionItem>[];
 
     for (final CollectionItem item in items) {
-      if (item.tagId != null && knownTagIds.contains(item.tagId)) {
-        grouped[item.tagId]!.add(item);
+      final Tag? primary = tags.primaryFor(itemTags[item.id]);
+      if (primary != null) {
+        grouped[primary.id]!.add(item);
       } else {
         untagged.add(item);
       }
     }
 
     final List<_TagGroup> result = <_TagGroup>[];
-    for (final CollectionTag tag in tags) {
+    for (final Tag tag in tags) {
       final List<CollectionItem> tagItems = grouped[tag.id]!;
       if (tagItems.isNotEmpty) {
         result.add(_TagGroup(
@@ -265,9 +261,6 @@ class CollectionItemsView extends ConsumerWidget {
 
     final S l = S.of(context);
     final List<_TagGroup> groups = _groupByTag(l.tagNone);
-    final Map<int, CollectionTag> tagById = <int, CollectionTag>{
-      for (final CollectionTag tag in tags) tag.id: tag,
-    };
 
     // Flatten the per-tag buckets — the grid renders the joined sequence as
     // a regular grid; the headers come from the buckets above.
@@ -290,7 +283,6 @@ class CollectionItemsView extends ConsumerWidget {
                   ref,
                   sorted[index],
                   isLandscape,
-                  tagById,
                   settings,
                   tagGlow: true,
                 );
@@ -310,7 +302,6 @@ class CollectionItemsView extends ConsumerWidget {
                         ref,
                         sorted[index],
                         isLandscape,
-                        tagById,
                         settings,
                         tagGlow: true,
                       );
@@ -330,9 +321,6 @@ class CollectionItemsView extends ConsumerWidget {
     SettingsState settings,
   ) {
     final bool isLandscape = isLandscapeMobile(context);
-    final Map<int, CollectionTag> tagById = <int, CollectionTag>{
-      for (final CollectionTag tag in tags) tag.id: tag,
-    };
     return RefreshIndicator(
       onRefresh: () => ref
           .read(collectionItemsNotifierProvider(collectionId).notifier)
@@ -344,7 +332,7 @@ class CollectionItemsView extends ConsumerWidget {
               itemCount: items.length,
               itemBuilder: (BuildContext context, int index) {
                 return _buildGridCard(
-                    context, ref, items[index], isLandscape, tagById, settings);
+                    context, ref, items[index], isLandscape, settings);
               },
             )
           : CustomScrollView(
@@ -356,8 +344,8 @@ class CollectionItemsView extends ConsumerWidget {
                     gridDelegate: gridDelegate,
                     itemCount: items.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return _buildGridCard(context, ref, items[index],
-                          isLandscape, tagById, settings);
+                      return _buildGridCard(
+                          context, ref, items[index], isLandscape, settings);
                     },
                   ),
                 ),
@@ -371,12 +359,11 @@ class CollectionItemsView extends ConsumerWidget {
     WidgetRef ref,
     CollectionItem item,
     bool isLandscape,
-    Map<int, CollectionTag> tagById,
     SettingsState settings, {
     bool tagGlow = false,
   }) {
-    final CollectionTag? tag =
-        item.tagId != null ? tagById[item.tagId] : null;
+    final Tag? tag = tags.primaryFor(itemTags[item.id]);
+    final int tagCount = itemTags[item.id]?.length ?? 0;
     final Set<int> selection = canEdit
         ? ref.watch(collectionSelectionProvider(collectionId))
         : const <int>{};
@@ -412,9 +399,11 @@ class CollectionItemsView extends ConsumerWidget {
           : null,
       tagName: tag?.name,
       tagColor: tag?.color,
+      tagTextColor: tag?.textColor,
+      tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
       tagGlow: tagGlow,
-      onTagTap: canEdit && tags.isNotEmpty
-          ? (Offset pos) => _showTagPopup(context, pos, item)
+      onTagTap: canEdit
+          ? (Offset pos) => _editItemTags(context, ref, item.id)
           : null,
       onTap: selectionActive
           ? () => ref
@@ -444,90 +433,24 @@ class CollectionItemsView extends ConsumerWidget {
     );
   }
 
-  /// Distinct from `null` (popup dismissed) — picked when the user explicitly
-  /// chose "no tag".
-  static const int _noTagSentinel = -1;
-
-  void _showTagPopup(
-    BuildContext context,
-    Offset position,
-    CollectionItem item,
-  ) {
-    final S l = S.of(context);
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject()! as RenderBox;
-
-    showMenu<int>(
-      context: context,
-      position: RelativeRect.fromRect(
-        position & const Size(1, 1),
-        Offset.zero & overlay.size,
-      ),
-      items: <PopupMenuEntry<int>>[
-        PopupMenuItem<int>(
-          value: _noTagSentinel,
-          child: Text(
-            l.tagNone,
-            style: AppTypography.bodySmall.copyWith(
-              color: item.tagId == null
-                  ? AppColors.brand
-                  : AppColors.textTertiary,
-            ),
-          ),
-        ),
-        const PopupMenuDivider(),
-        for (final CollectionTag tag in tags)
-          PopupMenuItem<int>(
-            value: tag.id,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: tag.color != null
-                        ? Color(tag.color!)
-                        : AppColors.brand,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  tag.name,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: item.tagId == tag.id
-                        ? AppColors.brand
-                        : null,
-                    fontWeight: item.tagId == tag.id
-                        ? FontWeight.w600
-                        : null,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    ).then((int? selected) {
+  /// Opens the multi-select tag picker for the item and persists the result.
+  void _editItemTags(BuildContext context, WidgetRef ref, int itemId) {
+    final Set<int> current =
+        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? <int>{};
+    TagPickerDialog.show(context, initialSelection: current)
+        .then((Set<int>? selected) {
       if (selected == null || !context.mounted) return;
-      final int? newTagId = selected == _noTagSentinel ? null : selected;
-      if (newTagId == item.tagId) return;
-      _setItemTag(context, item, newTagId);
-    });
-  }
-
-  void _setItemTag(BuildContext context, CollectionItem item, int? tagId) {
-    final ProviderContainer container = ProviderScope.containerOf(context);
-    final TagDao dao = container.read(tagDaoProvider);
-    dao.setItemTag(item.id, tagId).then((_) {
+      final ProviderContainer container = ProviderScope.containerOf(context);
       container
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .updateItemTag(item.id, tagId);
-    }).catchError((Object error, StackTrace stack) {
-      _log.warning('Failed to set tag on item ${item.id}', error, stack);
-      if (context.mounted) {
-        context.showSnack(S.of(context).tagUpdateFailed, type: SnackType.error);
-      }
+          .read(itemTagsProvider.notifier)
+          .setItemTags(itemId, selected)
+          .catchError((Object error, StackTrace stack) {
+        _log.warning('Failed to set tags on item $itemId', error, stack);
+        if (context.mounted) {
+          context.showSnack(S.of(context).tagUpdateFailed,
+              type: SnackType.error);
+        }
+      });
     });
   }
 
@@ -558,6 +481,11 @@ class CollectionItemsView extends ConsumerWidget {
             icon: item.isFavorite ? Icons.favorite : Icons.favorite_border,
             label:
                 item.isFavorite ? l.removeFromFavorites : l.addToFavorites,
+          ),
+          contextMenuItem<String>(
+            value: 'tags',
+            icon: Icons.label_outline,
+            label: l.tagPickerTitle,
           ),
           const PopupMenuDivider(),
         ],
@@ -615,6 +543,8 @@ class CollectionItemsView extends ConsumerWidget {
           ref
               .read(collectionItemsNotifierProvider(collectionId).notifier)
               .toggleFavorite(item.id);
+        case 'tags':
+          if (context.mounted) _editItemTags(context, ref, item.id);
         case 'moveToTop':
           ref
               .read(collectionItemsNotifierProvider(collectionId).notifier)

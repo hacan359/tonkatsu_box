@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/collection_tag.dart';
+import '../../../../shared/models/tag.dart';
 import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/theme/app_spacing.dart';
@@ -25,10 +25,11 @@ class CollectionTableView extends ConsumerStatefulWidget {
     required this.onItemTap,
     this.heroHeader,
     this.onItemSecondaryTap,
-    this.tags = const <CollectionTag>[],
+    this.tags = const <Tag>[],
+    this.itemTags = const <int, Set<int>>{},
     this.onRatingChanged,
     this.onStatusChanged,
-    this.onTagChanged,
+    this.onTagsEdit,
     this.onFavoriteToggled,
     this.onReorder,
     this.selectedIds,
@@ -43,11 +44,14 @@ class CollectionTableView extends ConsumerStatefulWidget {
   final Widget? heroHeader;
   final void Function(CollectionItem item, Offset globalPosition)?
       onItemSecondaryTap;
-  final List<CollectionTag> tags;
+  final List<Tag> tags;
+
+  /// Item id → global tag ids (from `itemTagsProvider`).
+  final Map<int, Set<int>> itemTags;
   final void Function(int itemId, double? rating)? onRatingChanged;
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
       onStatusChanged;
-  final void Function(int itemId, int? tagId)? onTagChanged;
+  final void Function(int itemId)? onTagsEdit;
   final void Function(int itemId)? onFavoriteToggled;
   final void Function(int oldIndex, int newIndex)? onReorder;
   final Set<int>? selectedIds;
@@ -75,7 +79,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
   String? _filterPlatform;
   bool? _filterFavorite;
 
-  late Map<int, CollectionTag> _cachedTagMap;
+  late Map<int, Tag> _cachedTagMap;
 
   @override
   void initState() {
@@ -109,8 +113,8 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    _cachedTagMap = <int, CollectionTag>{
-      for (final CollectionTag t in widget.tags) t.id: t,
+    _cachedTagMap = <int, Tag>{
+      for (final Tag t in widget.tags) t.id: t,
     };
     final bool isReorderable = widget.onReorder != null;
     final List<CollectionItem> sorted =
@@ -204,15 +208,14 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs / 2),
       child: table_row.TableRow(
         item: item,
-        tag: item.tagId != null ? _cachedTagMap[item.tagId] : null,
-        tags: widget.tags,
+        itemTags: widget.tags.orderedFor(widget.itemTags[item.id]),
         onTap: () => widget.onItemTap(item),
         onSecondaryTap: widget.onItemSecondaryTap != null
             ? (Offset pos) => widget.onItemSecondaryTap!(item, pos)
             : null,
         onRatingChanged: widget.onRatingChanged,
         onStatusChanged: widget.onStatusChanged,
-        onTagChanged: widget.onTagChanged,
+        onTagsEdit: widget.onTagsEdit,
         onFavoriteToggled: widget.onFavoriteToggled,
         dragIndex: dragIndex,
         isSelected: widget.selectedIds?.contains(item.id) ?? false,
@@ -248,7 +251,10 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         case TableColumn.tag:
           _filterTagId = _cycleFilter<int>(
             _filterTagId,
-            widget.items.map((CollectionItem i) => i.tagId ?? 0),
+            widget.items.expand((CollectionItem i) {
+              final Set<int> ids = widget.itemTags[i.id] ?? const <int>{};
+              return ids.isEmpty ? const <int>[0] : ids;
+            }),
             (int a, int b) => a.compareTo(b),
           );
         case TableColumn.platform:
@@ -305,7 +311,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
                 (_filterType == null || i.mediaType == _filterType) &&
                 (_filterRating == null ||
                     (i.userRating ?? 0) == _filterRating) &&
-                (_filterTagId == null || (i.tagId ?? 0) == _filterTagId) &&
+                (_filterTagId == null || _matchesTagFilter(i)) &&
                 (_filterPlatform == null ||
                     _platformLabel(i) == _filterPlatform) &&
                 (_filterFavorite == null || i.isFavorite == _filterFavorite))
@@ -351,10 +357,16 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
     return list;
   }
 
-  String _tagName(CollectionItem item) {
-    if (item.tagId == null) return '';
-    return _cachedTagMap[item.tagId]?.name ?? '';
+  /// Tag column cycle filter: `0` means "untagged".
+  bool _matchesTagFilter(CollectionItem item) {
+    final Set<int> ids = widget.itemTags[item.id] ?? const <int>{};
+    if (_filterTagId == 0) return ids.isEmpty;
+    return ids.contains(_filterTagId);
   }
+
+  /// Primary (first in display order) tag name — drives the tag column sort.
+  String _tagName(CollectionItem item) =>
+      widget.tags.primaryFor(widget.itemTags[item.id])?.name ?? '';
 
   bool? _selectionStateForVisible(List<CollectionItem> visible) {
     final Set<int>? selected = widget.selectedIds;

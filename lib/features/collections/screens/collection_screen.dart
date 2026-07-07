@@ -19,7 +19,7 @@ import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/steamgriddb_image.dart';
@@ -30,7 +30,8 @@ import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
 import '../helpers/collection_filters.dart';
 import '../providers/collection_covers_provider.dart';
-import '../providers/collection_tags_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/collection_screen/collection_bulk_action_bar.dart';
 import '../widgets/collection_screen/collection_error_state.dart';
@@ -171,11 +172,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ref.watch(collectionStatsProvider(widget.collectionId));
 
     final String searchQuery = ref.watch(collectionsSearchQueryProvider);
-    final List<CollectionTag> tags = widget.collectionId != null
-        ? (ref.watch(collectionTagsProvider(widget.collectionId!))
-                .valueOrNull ??
-            <CollectionTag>[])
-        : <CollectionTag>[];
+    final List<Tag> tags = _visibleTags(itemsAsync);
+    final Map<int, Set<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
     final CollectionFilters activeFilters = CollectionFilters(
       mediaTypes: _filterTypes,
       platformIds: _filterPlatformIds,
@@ -193,7 +192,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           Column(
             children: <Widget>[
               if (!_isCanvasMode)
-                _buildFilterBar(itemsAsync, statsAsync, searchQuery),
+                _buildFilterBar(itemsAsync, statsAsync, searchQuery, tags),
               SubScreenTitleBar(
                 title: _isUncategorized
                     ? l.collectionsUncategorized
@@ -235,7 +234,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                         },
                       )
                     : _buildListLayout(
-                        itemsAsync, statsAsync, searchQuery),
+                        itemsAsync, statsAsync, searchQuery, tags, itemTags),
               ),
             ],
           ),
@@ -303,20 +302,28 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     }
   }
 
+  /// Global tags actually used by this collection's items, in display order.
+  List<Tag> _visibleTags(AsyncValue<List<CollectionItem>> itemsAsync) {
+    final List<Tag> all = ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
+    final Map<int, Set<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
+    final List<CollectionItem> items =
+        itemsAsync.valueOrNull ?? <CollectionItem>[];
+    final Set<int> used = <int>{
+      for (final CollectionItem item in items) ...?itemTags[item.id],
+    };
+    return all.where((Tag t) => used.contains(t.id)).toList();
+  }
+
   Widget _buildFilterBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
     AsyncValue<CollectionStats> statsAsync,
     String searchQuery,
+    List<Tag> tags,
   ) {
     if ((statsAsync.valueOrNull?.total ?? 0) == 0) {
       return const SizedBox.shrink();
     }
-
-    final List<CollectionTag> tags = widget.collectionId != null
-        ? (ref.watch(collectionTagsProvider(widget.collectionId!))
-                .valueOrNull ??
-            <CollectionTag>[])
-        : <CollectionTag>[];
 
     return CollectionFilterBar(
       collectionId: widget.collectionId,
@@ -416,15 +423,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     AsyncValue<List<CollectionItem>> itemsAsync,
     AsyncValue<CollectionStats> statsAsync,
     String searchQuery,
+    List<Tag> tags,
+    Map<int, Set<int>> itemTags,
   ) {
-    final List<CollectionTag> tags = widget.collectionId != null
-        ? (ref.watch(collectionTagsProvider(widget.collectionId!))
-                .valueOrNull ??
-            <CollectionTag>[])
-        : <CollectionTag>[];
-
     final Set<int> validTagIds = <int>{
-      for (final CollectionTag tag in tags) tag.id,
+      for (final Tag tag in tags) tag.id,
     };
     if (_filterTagIds.isNotEmpty &&
         !_filterTagIds.every(validTagIds.contains)) {
@@ -469,9 +472,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         items: filters.apply(
           items,
           tags,
+          itemTags,
           animeMangaTitleLanguage: anilistLang,
         ),
         tags: tags,
+        itemTags: itemTags,
         filterTagIds: _filterTagIds,
         groupByTags: _groupByTags,
         isTableMode: _isTableMode,
@@ -586,7 +591,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       case CollectionMenuAction.tierList:
         _handleCreateTierList();
       case CollectionMenuAction.manageTags:
-        TagManagementDialog.show(context, widget.collectionId!);
+        TagManagementDialog.show(context);
       case CollectionMenuAction.copyAsText:
         _handleCopyAsText();
       case CollectionMenuAction.export:
@@ -759,6 +764,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       ref.invalidate(collectionStatsProvider(widget.collectionId));
       ref.invalidate(collectionCoversProvider(widget.collectionId));
       ref.invalidate(allItemsNotifierProvider);
+      // Import writes tags straight through the DAO, so the in-memory tag
+      // state must be rebuilt.
+      ref.invalidate(globalTagsProvider);
+      ref.invalidate(itemTagsProvider);
 
       final S l = S.of(context);
       final StringBuffer message = StringBuffer(

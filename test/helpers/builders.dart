@@ -7,7 +7,7 @@ import 'package:tonkatsu_box/shared/models/canvas_item.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/tag.dart';
 import 'package:tonkatsu_box/shared/models/custom_media.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
@@ -583,19 +583,19 @@ ProfileStats createTestProfileStats({
   );
 }
 
-CollectionTag createTestCollectionTag({
+Tag createTestTag({
   int id = 1,
-  int collectionId = 1,
   String name = 'RPG',
   int? color,
+  int? textColor,
   int sortOrder = 0,
   int createdAt = 1700000000,
 }) {
-  return CollectionTag(
+  return Tag(
     id: id,
-    collectionId: collectionId,
     name: name,
     color: color,
+    textColor: textColor,
     sortOrder: sortOrder,
     createdAt: createdAt,
   );

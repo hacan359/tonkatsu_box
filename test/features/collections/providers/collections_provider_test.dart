@@ -513,14 +513,16 @@ void main() {
 
   group('CollectionItemsNotifier.moveItem', () {
     late MockTierListDao mockTierListDao;
-    late MockTagDao mockTagDao;
+    late MockGlobalTagDao mockTagDao;
 
     setUp(() {
       mockTierListDao = MockTierListDao();
-      mockTagDao = MockTagDao();
+      mockTagDao = MockGlobalTagDao();
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
-      when(() => mockTagDao.setItemTag(any(), any()))
+      when(() => mockTagDao.getTagIdsByItem(any()))
+          .thenAnswer((_) async => <int>{});
+      when(() => mockTagDao.setItemTags(any(), any()))
           .thenAnswer((_) async {});
     });
 
@@ -538,7 +540,7 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(sharedPrefs),
           tierListDaoProvider.overrideWithValue(mockTierListDao),
-          tagDaoProvider.overrideWithValue(mockTagDao),
+          globalTagDaoProvider.overrideWithValue(mockTagDao),
         ],
       );
       addTearDown(container.dispose);
@@ -618,7 +620,7 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(sharedPrefs),
           tierListDaoProvider.overrideWithValue(mockTierListDao),
-          tagDaoProvider.overrideWithValue(mockTagDao),
+          globalTagDaoProvider.overrideWithValue(mockTagDao),
         ],
       );
       addTearDown(container.dispose);
@@ -644,13 +646,13 @@ void main() {
     });
   });
 
-  group('CollectionItemsNotifier tag remap', () {
+  group('CollectionItemsNotifier global tags on move/clone', () {
     late MockTierListDao mockTierListDao;
-    late MockTagDao mockTagDao;
+    late MockGlobalTagDao mockTagDao;
 
     setUp(() {
       mockTierListDao = MockTierListDao();
-      mockTagDao = MockTagDao();
+      mockTagDao = MockGlobalTagDao();
       when(() => mockTierListDao.getTierListIdsForItem(any()))
           .thenAnswer((_) async => <int>[]);
       when(() => mockTierListDao.removeItemFromCollectionTierLists(
@@ -659,10 +661,10 @@ void main() {
           )).thenAnswer((_) async {});
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
-      when(() => mockTagDao.setItemTag(any(), any()))
+      when(() => mockTagDao.getTagIdsByItem(any()))
+          .thenAnswer((_) async => <int>{});
+      when(() => mockTagDao.setItemTags(any(), any()))
           .thenAnswer((_) async {});
-      when(() => mockTagDao.getTagById(any()))
-          .thenAnswer((_) async => null);
     });
 
     ProviderContainer createRemapContainer({
@@ -680,80 +682,14 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(sharedPrefs),
           tierListDaoProvider.overrideWithValue(mockTierListDao),
-          tagDaoProvider.overrideWithValue(mockTagDao),
+          globalTagDaoProvider.overrideWithValue(mockTagDao),
         ],
       );
       addTearDown(container.dispose);
       return container;
     }
 
-    test('moveItem remaps tag by name into target collection', () async {
-      when(() => mockTagDao.getTagById(7))
-          .thenAnswer((_) async => createTestCollectionTag(
-                id: 7,
-                collectionId: testCollectionId,
-                name: 'РПГ',
-                color: 0xFF00FF00,
-              ));
-      when(() => mockTagDao.resolveOrCreateInCollection(
-            99,
-            'РПГ',
-            color: 0xFF00FF00,
-          )).thenAnswer((_) async => 42);
-
-      final ProviderContainer container = createRemapContainer(
-        initialItems: <CollectionItem>[_makeItem()],
-      );
-      await waitForLoad(container, testCollectionId);
-      when(() => mockRepository.getItemsWithData(testCollectionId))
-          .thenAnswer((_) async => <CollectionItem>[]);
-
-      final CollectionItemsNotifier notifier = container
-          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
-      await notifier.moveItem(
-        1,
-        targetCollectionId: 99,
-        mediaType: MediaType.game,
-        sourceTagId: 7,
-      );
-
-      verify(() => mockTagDao.getTagById(7)).called(1);
-      verify(() => mockTagDao.resolveOrCreateInCollection(
-            99,
-            'РПГ',
-            color: 0xFF00FF00,
-          )).called(1);
-      verify(() => mockTagDao.setItemTag(1, 42)).called(1);
-      // No null wipe before remap — one write, not two.
-      verifyNever(() => mockTagDao.setItemTag(1, null));
-    });
-
-    test('moveItem nulls tag when target is uncategorized', () async {
-      final ProviderContainer container = createRemapContainer(
-        initialItems: <CollectionItem>[_makeItem()],
-      );
-      await waitForLoad(container, testCollectionId);
-      when(() => mockRepository.getItemsWithData(testCollectionId))
-          .thenAnswer((_) async => <CollectionItem>[]);
-
-      final CollectionItemsNotifier notifier = container
-          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
-      await notifier.moveItem(
-        1,
-        targetCollectionId: null,
-        mediaType: MediaType.game,
-        sourceTagId: 7,
-      );
-
-      verify(() => mockTagDao.setItemTag(1, null)).called(1);
-      verifyNever(() => mockTagDao.resolveOrCreateInCollection(
-            any(),
-            any(),
-            color: any(named: 'color'),
-          ));
-    });
-
-    test('moveItem does not touch tag when source item has none', () async {
+    test('moveItem never touches tags — they stay with the item', () async {
       final ProviderContainer container = createRemapContainer(
         initialItems: <CollectionItem>[_makeItem()],
       );
@@ -769,51 +705,13 @@ void main() {
         mediaType: MediaType.game,
       );
 
-      verifyNever(() => mockTagDao.getTagById(any()));
-      verifyNever(() => mockTagDao.setItemTag(any(), any()));
+      verifyNever(() => mockTagDao.getTagIdsByItem(any()));
+      verifyNever(() => mockTagDao.setItemTags(any(), any()));
     });
 
-    test('moveItem skips tag write when source tag was deleted', () async {
-      when(() => mockTagDao.getTagById(7)).thenAnswer((_) async => null);
-
-      final ProviderContainer container = createRemapContainer(
-        initialItems: <CollectionItem>[_makeItem()],
-      );
-      await waitForLoad(container, testCollectionId);
-      when(() => mockRepository.getItemsWithData(testCollectionId))
-          .thenAnswer((_) async => <CollectionItem>[]);
-
-      final CollectionItemsNotifier notifier = container
-          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
-      await notifier.moveItem(
-        1,
-        targetCollectionId: 99,
-        mediaType: MediaType.game,
-        sourceTagId: 7,
-      );
-
-      // sourceTagId non-null + tag deleted → write null to clear stale ref.
-      verify(() => mockTagDao.setItemTag(1, null)).called(1);
-      verifyNever(() => mockTagDao.resolveOrCreateInCollection(
-            any(),
-            any(),
-            color: any(named: 'color'),
-          ));
-    });
-
-    test('cloneItem remaps tag in target collection', () async {
-      when(() => mockTagDao.getTagById(7))
-          .thenAnswer((_) async => createTestCollectionTag(
-                id: 7,
-                collectionId: testCollectionId,
-                name: 'Action',
-                color: 0xFFFF0000,
-              ));
-      when(() => mockTagDao.resolveOrCreateInCollection(
-            99,
-            'Action',
-            color: 0xFFFF0000,
-          )).thenAnswer((_) async => 55);
+    test('cloneItem carries the source tag links onto the copy', () async {
+      when(() => mockTagDao.getTagIdsByItem(1))
+          .thenAnswer((_) async => <int>{7, 8});
 
       final ProviderContainer container = createRemapContainer(
         initialItems: <CollectionItem>[_makeItem()],
@@ -826,14 +724,14 @@ void main() {
         1,
         targetCollectionId: 99,
         mediaType: MediaType.game,
-        sourceTagId: 7,
       );
 
       expect(success, isTrue);
-      verify(() => mockTagDao.setItemTag(777, 55)).called(1);
+      verify(() => mockTagDao.setItemTags(777, <int>{7, 8})).called(1);
     });
 
-    test('cloneItem skips tag write when source item has none', () async {
+    test('cloneItem skips the tag write when the source has no tags',
+        () async {
       final ProviderContainer container = createRemapContainer(
         initialItems: <CollectionItem>[_makeItem()],
       );
@@ -847,8 +745,8 @@ void main() {
         mediaType: MediaType.game,
       );
 
-      verifyNever(() => mockTagDao.getTagById(any()));
-      verifyNever(() => mockTagDao.setItemTag(any(), any()));
+      verify(() => mockTagDao.getTagIdsByItem(1)).called(1);
+      verifyNever(() => mockTagDao.setItemTags(any(), any()));
     });
 
     test('cloneItem returns false when repo reports duplicate', () async {
@@ -865,11 +763,10 @@ void main() {
         1,
         targetCollectionId: 99,
         mediaType: MediaType.game,
-        sourceTagId: 7,
       );
 
       expect(success, isFalse);
-      verifyNever(() => mockTagDao.getTagById(any()));
+      verifyNever(() => mockTagDao.getTagIdsByItem(any()));
     });
   });
 

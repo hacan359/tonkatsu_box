@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
-import '../providers/collection_tags_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 
+/// Manager over the global tag set: create, rename, recolor (background and
+/// label text), reorder by drag, delete. Shows per-tag usage counts.
 class TagManagementDialog extends ConsumerStatefulWidget {
-  const TagManagementDialog({required this.collectionId, super.key});
+  const TagManagementDialog({super.key});
 
-  final int collectionId;
-
-  static Future<void> show(BuildContext context, int collectionId) {
+  static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
-      builder: (BuildContext context) =>
-          TagManagementDialog(collectionId: collectionId),
+      builder: (BuildContext context) => const TagManagementDialog(),
     );
   }
 
@@ -45,14 +45,14 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
     if (name.isEmpty) return;
 
     await ref
-        .read(collectionTagsProvider(widget.collectionId).notifier)
+        .read(globalTagsProvider.notifier)
         .create(name, color: _selectedColor?.toARGB32());
     _newTagController.clear();
     setState(() => _selectedColor = null);
     _newTagFocus.requestFocus();
   }
 
-  Future<void> _renameTag(CollectionTag tag) async {
+  Future<void> _renameTag(Tag tag) async {
     final S l = S.of(context);
     final TextEditingController controller =
         TextEditingController(text: tag.name);
@@ -81,12 +81,10 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
     );
     controller.dispose();
     if (newName == null || newName.isEmpty || newName == tag.name) return;
-    await ref
-        .read(collectionTagsProvider(widget.collectionId).notifier)
-        .rename(tag.id, newName);
+    await ref.read(globalTagsProvider.notifier).rename(tag.id, newName);
   }
 
-  Future<void> _changeColor(CollectionTag tag) async {
+  Future<void> _changeColor(Tag tag) async {
     final Color? picked = await ColorPickerDialog.show(
       context: context,
       currentColor: tag.color != null ? Color(tag.color!) : null,
@@ -96,12 +94,25 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
     final int? colorValue = picked == ColorPickerDialog.noColorSentinel
         ? null
         : picked.toARGB32();
-    await ref
-        .read(collectionTagsProvider(widget.collectionId).notifier)
-        .updateColor(tag.id, colorValue);
+    await ref.read(globalTagsProvider.notifier).updateColor(tag.id, colorValue);
   }
 
-  Future<void> _deleteTag(CollectionTag tag) async {
+  Future<void> _changeTextColor(Tag tag) async {
+    final Color? picked = await ColorPickerDialog.show(
+      context: context,
+      currentColor: tag.textColor != null ? Color(tag.textColor!) : null,
+      allowNoColor: true,
+    );
+    if (picked == null) return;
+    final int? colorValue = picked == ColorPickerDialog.noColorSentinel
+        ? null
+        : picked.toARGB32();
+    await ref
+        .read(globalTagsProvider.notifier)
+        .updateTextColor(tag.id, colorValue);
+  }
+
+  Future<void> _deleteTag(Tag tag) async {
     final S l = S.of(context);
     final bool confirmed = await ConfirmDialog.show(
       context,
@@ -110,22 +121,26 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
       confirmLabel: l.delete,
     );
     if (!confirmed) return;
-    await ref
-        .read(collectionTagsProvider(widget.collectionId).notifier)
-        .delete(tag.id);
+    await ref.read(globalTagsProvider.notifier).delete(tag.id);
   }
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<List<CollectionTag>> tagsAsync =
-        ref.watch(collectionTagsProvider(widget.collectionId));
+    final AsyncValue<List<Tag>> tagsAsync = ref.watch(globalTagsProvider);
+    final Map<int, int> usage = <int, int>{};
+    final Map<int, Set<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
+    for (final Set<int> ids in itemTags.values) {
+      for (final int id in ids) {
+        usage[id] = (usage[id] ?? 0) + 1;
+      }
+    }
 
     return AlertDialog(
       title: Text(l.tagManage),
-      scrollable: true,
       content: SizedBox(
-        width: 360,
+        width: 400,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -142,9 +157,10 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
                     );
                     if (picked == null) return;
                     setState(() {
-                      _selectedColor = picked == ColorPickerDialog.noColorSentinel
-                          ? null
-                          : picked;
+                      _selectedColor =
+                          picked == ColorPickerDialog.noColorSentinel
+                              ? null
+                              : picked;
                     });
                   },
                 ),
@@ -169,63 +185,57 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-
-            tagsAsync.when(
-              data: (List<CollectionTag> tags) {
-                if (tags.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.lg,
-                    ),
-                    child: Text(
-                      l.tagNone,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textTertiary,
+            Flexible(
+              child: tagsAsync.when(
+                data: (List<Tag> tags) {
+                  if (tags.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.lg,
                       ),
-                    ),
+                      child: Text(
+                        l.tagNone,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    );
+                  }
+                  return ReorderableListView.builder(
+                    shrinkWrap: true,
+                    buildDefaultDragHandles: false,
+                    itemCount: tags.length,
+                    onReorderItem: (int oldIndex, int newIndex) {
+                      final List<int> ids =
+                          tags.map((Tag t) => t.id).toList();
+                      final int moved = ids.removeAt(oldIndex);
+                      ids.insert(newIndex, moved);
+                      ref.read(globalTagsProvider.notifier).reorder(ids);
+                    },
+                    itemBuilder: (BuildContext context, int index) {
+                      final Tag tag = tags[index];
+                      return _TagRow(
+                        key: ValueKey<int>(tag.id),
+                        index: index,
+                        tag: tag,
+                        usageCount: usage[tag.id] ?? 0,
+                        onColorTap: () => _changeColor(tag),
+                        onTextColorTap: () => _changeTextColor(tag),
+                        onRename: () => _renameTag(tag),
+                        onDelete: () => _deleteTag(tag),
+                      );
+                    },
                   );
-                }
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    for (final CollectionTag tag in tags)
-                      ListTile(
-                        dense: true,
-                        leading: _ColorDot(
-                          color: tag.color != null
-                              ? Color(tag.color!)
-                              : null,
-                          size: 20,
-                          onTap: () => _changeColor(tag),
-                        ),
-                        title: Text(tag.name),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 18),
-                              onPressed: () => _renameTag(tag),
-                              tooltip: l.tagRename,
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline, size: 18),
-                              onPressed: () => _deleteTag(tag),
-                              tooltip: l.tagDelete,
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                );
-              },
-              loading: () => const Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                child: CircularProgressIndicator(),
-              ),
-              error: (Object e, StackTrace? stack) => SelectableText(
-                'Error: $e\n\n$stack',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.error,
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(),
+                ),
+                error: (Object e, StackTrace? stack) => SelectableText(
+                  'Error: $e\n\n$stack',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.error,
+                  ),
                 ),
               ),
             ),
@@ -242,20 +252,112 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
   }
 }
 
+class _TagRow extends StatelessWidget {
+  const _TagRow({
+    required this.index,
+    required this.tag,
+    required this.usageCount,
+    required this.onColorTap,
+    required this.onTextColorTap,
+    required this.onRename,
+    required this.onDelete,
+    super.key,
+  });
+
+  final int index;
+  final Tag tag;
+  final int usageCount;
+  final VoidCallback onColorTap;
+  final VoidCallback onTextColorTap;
+  final VoidCallback onRename;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          ReorderableDragStartListener(
+            index: index,
+            child: const Icon(
+              Icons.drag_indicator,
+              size: 18,
+              color: AppColors.textTertiary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          _ColorDot(
+            color: tag.color != null ? Color(tag.color!) : null,
+            size: 20,
+            onTap: onColorTap,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          _ColorDot(
+            color: tag.textColor != null ? Color(tag.textColor!) : null,
+            size: 20,
+            icon: Icons.text_fields,
+            onTap: onTextColorTap,
+            tooltip: l.tagTextColor,
+          ),
+        ],
+      ),
+      title: Text(
+        tag.name,
+        style: tag.textColor != null
+            ? TextStyle(color: Color(tag.textColor!))
+            : null,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: usageCount > 0
+          ? Text(
+              '$usageCount',
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            )
+          : null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            onPressed: onRename,
+            tooltip: l.tagRename,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 18),
+            onPressed: onDelete,
+            tooltip: l.tagDelete,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ColorDot extends StatelessWidget {
   const _ColorDot({
     required this.color,
     required this.size,
+    this.icon,
     this.onTap,
+    this.tooltip,
   });
 
   final Color? color;
   final double size;
+  final IconData? icon;
   final VoidCallback? onTap;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final Widget dot = GestureDetector(
       onTap: onTap,
       child: MouseRegion(
         cursor: onTap != null
@@ -275,13 +377,18 @@ class _ColorDot extends StatelessWidget {
           ),
           child: color == null
               ? Icon(
-                  Icons.palette_outlined,
+                  icon ?? Icons.palette_outlined,
                   size: size * 0.6,
                   color: AppColors.textTertiary,
                 )
-              : null,
+              : (icon != null
+                  ? Icon(icon, size: size * 0.6, color: Colors.white)
+                  : null),
         ),
       ),
     );
+    final String? message = tooltip;
+    if (message == null) return dot;
+    return Tooltip(message: message, child: dot);
   }
 }

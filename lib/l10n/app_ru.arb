@@ -671,6 +671,8 @@
   "tagManage": "Управление тегами",
   "tagAssign": "Назначить теги",
   "tagNone": "Нет тегов",
+  "tagPickerTitle": "Теги",
+  "tagTextColor": "Цвет текста",
   "tagCreated": "Тег создан",
   "tagRenamed": "Тег переименован",
   "tagDeleted": "Тег удалён",

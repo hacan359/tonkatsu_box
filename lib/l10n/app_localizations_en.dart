@@ -1761,6 +1761,12 @@ class SEn extends S {
   String get tagNone => 'No tags';
 
   @override
+  String get tagPickerTitle => 'Select tags';
+
+  @override
+  String get tagTextColor => 'Text color';
+
+  @override
   String get tagCreated => 'Tag created';
 
   @override
@@ -3570,9 +3576,6 @@ class SEn extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'Has adaptation';
-
-  @override
-  String get tagPickerTitle => 'Select tags';
 
   @override
   String get tagPickerSearchHint => 'Search tags';

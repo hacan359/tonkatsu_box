@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/helpers/collection_filters.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/collection_tag.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/tag.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -13,7 +13,6 @@ void main() {
       int id = 1,
       MediaType mediaType = MediaType.game,
       int? platformId,
-      int? tagId,
       ItemStatus status = ItemStatus.notStarted,
       String? name,
       String? userComment,
@@ -24,21 +23,21 @@ void main() {
           mediaType: mediaType,
           externalId: id,
           platformId: platformId,
-          tagId: tagId,
           status: status,
           overrideName: name,
           userComment: userComment,
           authorComment: authorComment,
         );
 
-    final List<CollectionTag> tags = <CollectionTag>[
-      createTestCollectionTag(id: 10, name: 'Favorites'),
-      createTestCollectionTag(id: 20, name: 'Backlog'),
+    final List<Tag> tags = <Tag>[
+      createTestTag(id: 10, name: 'Favorites'),
+      createTestTag(id: 20, name: 'Backlog'),
     ];
+    const Map<int, Set<int>> noLinks = <int, Set<int>>{};
 
     test('no filters returns the list unchanged', () {
       final List<CollectionItem> items = <CollectionItem>[make(id: 1), make(id: 2)];
-      expect(const CollectionFilters().apply(items, tags), items);
+      expect(const CollectionFilters().apply(items, tags, noLinks), items);
     });
 
     test('filters by media type', () {
@@ -49,7 +48,7 @@ void main() {
       ];
       final List<CollectionItem> r = const CollectionFilters(
         mediaTypes: <MediaType>{MediaType.movie},
-      ).apply(items, tags);
+      ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[2, 3]);
     });
 
@@ -59,19 +58,56 @@ void main() {
         make(id: 2, platformId: 6),
         make(id: 3),
       ];
-      final List<CollectionItem> r =
-          const CollectionFilters(platformIds: <int>{48}).apply(items, tags);
+      final List<CollectionItem> r = const CollectionFilters(
+        platformIds: <int>{48},
+      ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
 
-    test('filters by tag id', () {
+    test('filters by tag id over the item-tags map', () {
       final List<CollectionItem> items = <CollectionItem>[
-        make(id: 1, tagId: 10),
-        make(id: 2, tagId: 20),
+        make(id: 1),
+        make(id: 2),
         make(id: 3),
       ];
-      final List<CollectionItem> r =
-          const CollectionFilters(tagIds: <int>{10}).apply(items, tags);
+      final Map<int, Set<int>> links = <int, Set<int>>{
+        1: <int>{10},
+        2: <int>{20},
+      };
+      final List<CollectionItem> r = const CollectionFilters(
+        tagIds: <int>{10},
+      ).apply(items, tags, links);
+      expect(r.map((CollectionItem i) => i.id), <int>[1]);
+    });
+
+    test('tag filter is OR: any selected tag keeps the item', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1),
+        make(id: 2),
+        make(id: 3),
+      ];
+      final Map<int, Set<int>> links = <int, Set<int>>{
+        1: <int>{10},
+        2: <int>{20},
+        3: <int>{10, 20},
+      };
+      final List<CollectionItem> r = const CollectionFilters(
+        tagIds: <int>{10, 20},
+      ).apply(items, tags, links);
+      expect(r.map((CollectionItem i) => i.id), <int>[1, 2, 3]);
+    });
+
+    test('tag filter hides untagged items', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1),
+        make(id: 2),
+      ];
+      final Map<int, Set<int>> links = <int, Set<int>>{
+        1: <int>{10},
+      };
+      final List<CollectionItem> r = const CollectionFilters(
+        tagIds: <int>{10, 20},
+      ).apply(items, tags, links);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
 
@@ -80,8 +116,9 @@ void main() {
         make(id: 1, status: ItemStatus.completed),
         make(id: 2, status: ItemStatus.inProgress),
       ];
-      final List<CollectionItem> r =
-          const CollectionFilters(status: ItemStatus.completed).apply(items, tags);
+      final List<CollectionItem> r = const CollectionFilters(
+        status: ItemStatus.completed,
+      ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
 
@@ -90,18 +127,24 @@ void main() {
         make(id: 1, name: 'The Legend of Zelda'),
         make(id: 2, name: 'Halo'),
       ];
-      final List<CollectionItem> r =
-          const CollectionFilters(searchQuery: 'zelda').apply(items, tags);
+      final List<CollectionItem> r = const CollectionFilters(
+        searchQuery: 'zelda',
+      ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
 
-    test('search matches by tag name', () {
+    test('search matches by any tag name of the item', () {
       final List<CollectionItem> items = <CollectionItem>[
-        make(id: 1, name: 'A', tagId: 10), // tag "Favorites"
-        make(id: 2, name: 'B', tagId: 20), // tag "Backlog"
+        make(id: 1, name: 'A'),
+        make(id: 2, name: 'B'),
       ];
-      final List<CollectionItem> r =
-          const CollectionFilters(searchQuery: 'favor').apply(items, tags);
+      final Map<int, Set<int>> links = <int, Set<int>>{
+        1: <int>{20, 10}, // Backlog + Favorites
+        2: <int>{20}, // Backlog
+      };
+      final List<CollectionItem> r = const CollectionFilters(
+        searchQuery: 'favor',
+      ).apply(items, tags, links);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
 
@@ -113,13 +156,13 @@ void main() {
       ];
       expect(
         const CollectionFilters(searchQuery: 'master')
-            .apply(items, tags)
+            .apply(items, tags, noLinks)
             .map((CollectionItem i) => i.id),
         <int>[1],
       );
       expect(
         const CollectionFilters(searchQuery: 'gem')
-            .apply(items, tags)
+            .apply(items, tags, noLinks)
             .map((CollectionItem i) => i.id),
         <int>[2],
       );
@@ -141,7 +184,7 @@ void main() {
       ];
       final List<CollectionItem> r = const CollectionFilters(
         mangaFormats: <String>{'MANGA'},
-      ).apply(items, tags);
+      ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
 
@@ -167,7 +210,7 @@ void main() {
       final List<CollectionItem> r = const CollectionFilters(
         mangaFormats: <String>{'MANGA'},
         animeFormats: <String>{'TV'},
-      ).apply(items, tags);
+      ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1, 2]);
     });
 
@@ -180,7 +223,7 @@ void main() {
       final List<CollectionItem> r = const CollectionFilters(
         mediaTypes: <MediaType>{MediaType.game},
         status: ItemStatus.completed,
-      ).apply(items, tags);
+      ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
   });

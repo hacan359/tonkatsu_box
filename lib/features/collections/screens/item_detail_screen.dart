@@ -666,9 +666,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           : null,
       tagWidget: widget.collectionId != null
           ? ItemTagsSection(
-              collectionId: widget.collectionId!,
               itemId: item.id,
-              currentTagId: item.tagId,
               isEditable: widget.isEditable,
             )
           : null,

@@ -766,6 +766,8 @@
   "tagManage": "Manage tags",
   "tagAssign": "Assign tags",
   "tagNone": "No tags",
+  "tagPickerTitle": "Tags",
+  "tagTextColor": "Text color",
   "tagCreated": "Tag created",
   "tagRenamed": "Tag renamed",
   "tagDeleted": "Tag deleted",

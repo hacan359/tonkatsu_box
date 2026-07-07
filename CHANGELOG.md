@@ -7,6 +7,115 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Tags are now global and an item can carry several of them**
+
+  Tags moved from per-collection lists to one app-wide set shared by all
+  collections; existing tags are merged by name (case-insensitive, Cyrillic
+  aware) with links preserved. An item can now hold any number of tags: the
+  detail card, grid badge (first tag plus a "+N" counter), table cell and a
+  new multi-select picker with inline quick-create all work over the shared
+  set. Tags gained an optional label text color for cases where the
+  auto-white text is unreadable on the background color. The tag filter is
+  include-only OR — selected tags show every item carrying any of them.
+  Moving an item between collections keeps its tags; copying duplicates the
+  links. Exports write a `tag_names` array per item (plus the legacy
+  `tag_name` so older app versions still restore one tag), imports accept
+  both formats, and full backups add a `tags.json` with the complete global
+  set. A global tag manager (create / rename / both colors / drag reorder /
+  usage counts / delete) opens from the collections screen menu and from a
+  collection.
+
+  * lib/core/database/migrations/migration_v54.dart (MigrationV54): New
+    `tags` (with `text_color`) + `item_tags` junction; merges
+    `collection_tags` case-insensitively, most-used tag donates name casing
+    and color, links copied into the junction; legacy structures untouched.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all),
+    lib/core/database/database_service.dart (DatabaseService._initDatabase,
+    DatabaseService.globalTagDao, globalTagDaoProvider,
+    DatabaseService.clearAllData): Register v54, bump version to 54, wire the
+    DAO, truncate `tags`/`item_tags` on clear; legacy `TagDao` wiring removed.
+  * lib/shared/models/tag.dart (Tag, Tag.findByNameCaseInsensitive,
+    TagListProjection.orderedFor, TagListProjection.primaryFor): New global
+    model with `textColor` and shared display-order projections.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao): New — CRUD,
+    resolveOrCreate, setItemTags, getTagIdsByItem, getTagIdsForItems
+    (chunked), getAllItemTags, setSortOrders, upsertAll.
+  * lib/features/collections/providers/global_tags_provider.dart
+    (globalTagsProvider, GlobalTagsNotifier),
+    lib/features/collections/providers/item_tags_provider.dart
+    (itemTagsProvider, ItemTagsNotifier): New state layer — tag list with
+    CRUD/reorder and the whole-DB item→tag-ids map.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    New multi-select picker with inline tag creation.
+  * lib/features/collections/widgets/tag_management_dialog.dart
+    (TagManagementDialog): Global manager — text color dot, drag reorder,
+    usage counts; no longer takes a collection id.
+  * lib/features/collections/widgets/item_tags_section.dart (ItemTagsSection):
+    Multi-chip section over the global set; opens the picker.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView): `itemTags` map prop, primary-tag grouping, "Tags"
+    context-menu entry, picker-based tag editing.
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (CollectionTableView), table_row.dart (TableRow), table_header.dart
+    (TableHeader), cells/tag_cell.dart (TagCell): Multi-tag chips in the tag
+    column, cycle filter understands multi-tags and "untagged", sort by
+    primary tag, `onTagsEdit` callback.
+  * lib/features/collections/widgets/tag_sidebar.dart (TagSidebar),
+    collection_filter_bar.dart (CollectionFilterBar),
+    collection_filter_sheet.dart (CollectionFilterSheet): Work over `Tag`.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply): Filters and text search read the item→tags
+    map; OR semantics over selected tag ids.
+  * lib/features/collections/helpers/bulk_operations.dart (BulkOperations),
+    lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.moveItem, CollectionActions.cloneItem),
+    lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.cloneItem, CollectionItemsNotifier.moveItem):
+    Move keeps tags implicitly, clone copies the links; per-collection tag
+    remap logic removed.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._visibleTags): Filters show only tags used by the
+    collection's items; single computation per build.
+  * lib/features/collections/screens/home_screen.dart (HomeScreen): Tag
+    manager entry in the collections FAB menu.
+  * lib/features/home/providers/all_items_provider.dart (allTagsMapProvider),
+    lib/features/home/screens/all_items_screen.dart (AllItemsScreen): Global
+    tag map, multi-tag search match, primary tag + "+N" on cards.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.tagTextColor,
+    MediaPosterCard.tagMoreCount, _TagBadge): Label text color and "+N".
+  * lib/core/services/export_service.dart (ExportService._collectTagData):
+    Exports the global tags used by the collection and per-item `tag_names`.
+  * lib/core/services/import_service.dart (ImportService._importTags):
+    Resolves names into the global set, accepts `tag_names` and legacy
+    `tag_name`, writes links via setItemTags.
+  * lib/core/services/backup_service.dart (BackupService.createBackup,
+    BackupService._restoreTags): `tags.json` in full backups, restored before
+    collections.
+  * lib/shared/models/collection_tag.dart (CollectionTag),
+    lib/core/database/dao/tag_dao.dart (TagDao),
+    lib/features/collections/providers/collection_tags_provider.dart
+    (collectionTagsProvider): Removed — superseded by the global stack.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (tagPickerTitle, tagTextColor):
+    New keys.
+
+### Fixed
+
+- **Windows crash in gamepads_windows_plugin.dll on USB connect/disconnect**
+
+  The gamepads plugin's native Windows DLL listens to device changes even
+  though the app never subscribes to gamepad input on Windows, and its
+  listener crashes the app (0xc0000005) when a non-gamepad USB device is
+  plugged or unplugged. The Windows implementation is now replaced with a
+  local Dart-only stub via `dependency_overrides`, so the DLL is not built or
+  shipped at all. Android keeps the real implementation.
+
+  * packages/gamepads_windows_stub/pubspec.yaml,
+    packages/gamepads_windows_stub/lib/gamepads_windows.dart: New stub
+    package named `gamepads_windows` with no native plugin declaration.
+  * pubspec.yaml (dependency_overrides): Point `gamepads_windows` at the stub.
+
 ## [0.37.0] - 2026-07-05
 
 ### Added

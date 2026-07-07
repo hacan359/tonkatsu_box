@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/models/collection_tag.dart';
+import '../../../../shared/models/tag.dart';
 import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -46,7 +46,7 @@ class TableHeader extends StatelessWidget {
   /// Favorite column filter: null = all, true = favorites only, false =
   /// non-favorites only.
   final bool? filterFavorite;
-  final Map<int, CollectionTag> tagMap;
+  final Map<int, Tag> tagMap;
   final bool isReorderable;
 
   /// `null` hides the select-all checkbox column; otherwise the value drives

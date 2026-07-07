@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -17,7 +17,7 @@ import '../providers/collections_provider.dart';
 Future<void> showCollectionFilterSheet(
   BuildContext context, {
   required int? collectionId,
-  required List<CollectionTag> tags,
+  required List<Tag> tags,
   required Set<int> selectedTagIds,
   required bool groupByTags,
   required ValueChanged<int?> onTagToggled,
@@ -67,7 +67,7 @@ class CollectionFilterSheet extends ConsumerStatefulWidget {
   /// `null` means the uncategorized collection.
   final int? collectionId;
 
-  final List<CollectionTag> tags;
+  final List<Tag> tags;
 
   /// Initial snapshot; the sheet keeps its own local copy afterwards.
   final Set<int> selectedTagIds;
@@ -277,7 +277,7 @@ class _CollectionFilterSheetState
                           spacing: AppSpacing.xs,
                           runSpacing: AppSpacing.xs,
                           children: <Widget>[
-                            for (final CollectionTag tag in widget.tags)
+                            for (final Tag tag in widget.tags)
                               _TagChip(
                                 tag: tag,
                                 selected: _selectedTagIds.contains(tag.id),
@@ -380,7 +380,7 @@ class _TagChip extends StatelessWidget {
     required this.onTap,
   });
 
-  final CollectionTag tag;
+  final Tag tag;
   final bool selected;
   final VoidCallback onTap;
 

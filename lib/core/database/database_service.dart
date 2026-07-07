@@ -25,7 +25,7 @@ import 'dao/book_dao.dart';
 import 'dao/game_dao.dart';
 import 'dao/item_mark_dao.dart';
 import 'dao/movie_dao.dart';
-import 'dao/tag_dao.dart';
+import 'dao/global_tag_dao.dart';
 import 'dao/tv_show_dao.dart';
 import 'dao/manga_dao.dart';
 import 'dao/mangabaka_genre_dao.dart';
@@ -108,8 +108,9 @@ final Provider<CustomMediaDao> customMediaDaoProvider =
   return ref.watch(databaseServiceProvider).customMediaDao;
 });
 
-final Provider<TagDao> tagDaoProvider = Provider<TagDao>((Ref ref) {
-  return ref.watch(databaseServiceProvider).tagDao;
+final Provider<GlobalTagDao> globalTagDaoProvider =
+    Provider<GlobalTagDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).globalTagDao;
 });
 
 final Provider<AniListTagDao> aniListTagDaoProvider =
@@ -195,7 +196,7 @@ class DatabaseService {
 
   late final TrackerDao trackerDao = TrackerDao(() => database);
 
-  late final TagDao tagDao = TagDao(() => database);
+  late final GlobalTagDao globalTagDao = GlobalTagDao(() => database);
 
   late final AniListTagDao aniListTagDao = AniListTagDao(() => database);
 
@@ -247,7 +248,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 53,
+        version: 54,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -546,6 +547,8 @@ class DatabaseService {
       await txn.delete('tier_definitions');
       await txn.delete('tier_lists');
       await txn.delete('collection_tags');
+      await txn.delete('item_tags');
+      await txn.delete('tags');
       await txn.delete('tracker_achievements');
       await txn.delete('tracker_game_data');
       await txn.delete('tracker_profiles');
