@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -17,7 +17,7 @@ class TagSidebar extends StatelessWidget {
     super.key,
   });
 
-  final List<CollectionTag> tags;
+  final List<Tag> tags;
 
   /// Empty set means "show everything".
   final Set<int> selectedTagIds;
@@ -64,7 +64,7 @@ class TagSidebar extends StatelessWidget {
               itemCount: tags.length,
               separatorBuilder: (_, _) => const SizedBox(height: 2),
               itemBuilder: (BuildContext context, int index) {
-                final CollectionTag tag = tags[index];
+                final Tag tag = tags[index];
                 final Color tagColor = tag.color != null
                     ? Color(tag.color!)
                     : AppColors.textSecondary;

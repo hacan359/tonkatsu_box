@@ -19,7 +19,7 @@ import 'package:tonkatsu_box/shared/models/movie.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
 import 'package:tonkatsu_box/shared/models/tv_season.dart';
-import 'package:tonkatsu_box/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/tag.dart';
 import 'package:tonkatsu_box/shared/models/tier_list.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
@@ -1391,7 +1391,7 @@ void main() {
       late MockDatabaseService mockDatabase;
       late MockTvShowDao mockTvShowDao;
       late MockTierListDao mockTierListDao;
-      late MockTagDao mockTagDao;
+      late MockGlobalTagDao mockTagDao;
 
       setUp(() {
         mockCanvasRepo = MockCanvasRepository();
@@ -1400,7 +1400,7 @@ void main() {
         mockTvShowDao = MockTvShowDao();
         when(() => mockDatabase.tvShowDao).thenReturn(mockTvShowDao);
         mockTierListDao = MockTierListDao();
-        mockTagDao = MockTagDao();
+        mockTagDao = MockGlobalTagDao();
 
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
@@ -1417,9 +1417,10 @@ void main() {
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
-        when(() => mockDatabase.tagDao).thenReturn(mockTagDao);
-        when(() => mockTagDao.getTagsByCollection(any()))
-            .thenAnswer((_) async => <CollectionTag>[]);
+        when(() => mockDatabase.globalTagDao).thenReturn(mockTagDao);
+        when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
+        when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
+            .thenAnswer((_) async => <int, Set<int>>{});
       });
 
       test('должен включить tv_seasons для tvShow элементов', () async {
@@ -1651,7 +1652,7 @@ void main() {
       late MockDatabaseService mockDatabase;
       late MockTvShowDao mockTvShowDao;
       late MockTierListDao mockTierListDao;
-      late MockTagDao mockTagDao;
+      late MockGlobalTagDao mockTagDao;
 
       setUp(() {
         mockCanvasRepo = MockCanvasRepository();
@@ -1660,7 +1661,7 @@ void main() {
         mockTvShowDao = MockTvShowDao();
         when(() => mockDatabase.tvShowDao).thenReturn(mockTvShowDao);
         mockTierListDao = MockTierListDao();
-        mockTagDao = MockTagDao();
+        mockTagDao = MockGlobalTagDao();
 
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
@@ -1679,9 +1680,10 @@ void main() {
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
-        when(() => mockDatabase.tagDao).thenReturn(mockTagDao);
-        when(() => mockTagDao.getTagsByCollection(any()))
-            .thenAnswer((_) async => <CollectionTag>[]);
+        when(() => mockDatabase.globalTagDao).thenReturn(mockTagDao);
+        when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
+        when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
+            .thenAnswer((_) async => <int, Set<int>>{});
       });
 
       test('должен включить tv_episodes для tvShow элементов', () async {
@@ -1820,7 +1822,7 @@ void main() {
       late MockDatabaseService mockDatabase;
       late MockGameDao mockGameDao;
       late MockTierListDao mockTierListDao;
-      late MockTagDao mockTagDao;
+      late MockGlobalTagDao mockTagDao;
 
       setUp(() {
         mockCanvasRepo = MockCanvasRepository();
@@ -1829,7 +1831,7 @@ void main() {
         mockGameDao = MockGameDao();
         when(() => mockDatabase.gameDao).thenReturn(mockGameDao);
         mockTierListDao = MockTierListDao();
-        mockTagDao = MockTagDao();
+        mockTagDao = MockGlobalTagDao();
 
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
@@ -1844,9 +1846,10 @@ void main() {
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
-        when(() => mockDatabase.tagDao).thenReturn(mockTagDao);
-        when(() => mockTagDao.getTagsByCollection(any()))
-            .thenAnswer((_) async => <CollectionTag>[]);
+        when(() => mockDatabase.globalTagDao).thenReturn(mockTagDao);
+        when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
+        when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
+            .thenAnswer((_) async => <int, Set<int>>{});
       });
 
       test('должен включить platforms для game элементов', () async {
@@ -2006,7 +2009,7 @@ void main() {
       late MockTvShowDao mockTvShowDao;
       late MockItemMarkDao mockItemMarkDao;
       late MockTierListDao mockTierListDao;
-      late MockTagDao mockTagDao;
+      late MockGlobalTagDao mockTagDao;
       late ExportService sutMarks;
 
       setUp(() {
@@ -2016,12 +2019,12 @@ void main() {
         mockTvShowDao = MockTvShowDao();
         mockItemMarkDao = MockItemMarkDao();
         mockTierListDao = MockTierListDao();
-        mockTagDao = MockTagDao();
+        mockTagDao = MockGlobalTagDao();
 
         when(() => mockDatabase.tvShowDao).thenReturn(mockTvShowDao);
         when(() => mockDatabase.itemMarkDao).thenReturn(mockItemMarkDao);
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
-        when(() => mockDatabase.tagDao).thenReturn(mockTagDao);
+        when(() => mockDatabase.globalTagDao).thenReturn(mockTagDao);
 
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
@@ -2039,8 +2042,9 @@ void main() {
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
-        when(() => mockTagDao.getTagsByCollection(any()))
-            .thenAnswer((_) async => <CollectionTag>[]);
+        when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
+        when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
+            .thenAnswer((_) async => <int, Set<int>>{});
 
         sutMarks = ExportService(
           canvasRepository: mockCanvasRepo,

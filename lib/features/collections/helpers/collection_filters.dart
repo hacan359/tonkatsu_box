@@ -1,7 +1,7 @@
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/utils/media_format.dart';
 
 class CollectionFilters {
@@ -24,13 +24,16 @@ class CollectionFilters {
   /// Anime `format` codes; scoped to anime items only (other types pass).
   final Set<String> animeFormats;
 
+  /// Selected global tag ids; an item passes when it carries ANY of them (OR).
   final Set<int> tagIds;
   final ItemStatus? status;
   final String searchQuery;
 
+  /// [itemTags] is the item id → global tag ids map from `itemTagsProvider`.
   List<CollectionItem> apply(
     List<CollectionItem> items,
-    List<CollectionTag> tags, {
+    List<Tag> tags,
+    Map<int, Set<int>> itemTags, {
     String animeMangaTitleLanguage = 'romaji',
   }) {
     List<CollectionItem> result = items;
@@ -64,7 +67,7 @@ class CollectionFilters {
     if (tagIds.isNotEmpty) {
       result = result
           .where((CollectionItem item) =>
-              item.tagId != null && tagIds.contains(item.tagId))
+              itemTags[item.id]?.any(tagIds.contains) ?? false)
           .toList();
     }
 
@@ -78,8 +81,14 @@ class CollectionFilters {
 
     final String query = searchQuery.toLowerCase();
     final Map<int, String> tagNames = <int, String>{
-      for (final CollectionTag tag in tags) tag.id: tag.name.toLowerCase(),
+      for (final Tag tag in tags) tag.id: tag.name.toLowerCase(),
     };
+    bool matchesTagName(CollectionItem item) {
+      final Set<int>? ids = itemTags[item.id];
+      if (ids == null) return false;
+      return ids.any((int id) => tagNames[id]?.contains(query) ?? false);
+    }
+
     return result
         .where(
           (CollectionItem item) =>
@@ -87,8 +96,7 @@ class CollectionFilters {
                       .displayName(animeMangaTitleLanguage)
                       .toLowerCase()
                       .contains(query) ||
-              (item.tagId != null &&
-                  (tagNames[item.tagId]?.contains(query) ?? false)) ||
+              matchesTagName(item) ||
               (item.userComment?.toLowerCase().contains(query) ?? false) ||
               (item.authorComment?.toLowerCase().contains(query) ?? false),
         )

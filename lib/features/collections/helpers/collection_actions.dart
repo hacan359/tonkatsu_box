@@ -100,7 +100,6 @@ class CollectionActions {
           item.id,
           targetCollectionId: targetCollectionId,
           mediaType: item.mediaType,
-          sourceTagId: item.tagId,
         );
 
     if (!context.mounted) return false;
@@ -158,7 +157,6 @@ class CollectionActions {
           item.id,
           targetCollectionId: targetCollectionId,
           mediaType: item.mediaType,
-          sourceTagId: item.tagId,
         );
 
     if (!context.mounted) return;

@@ -30,7 +30,7 @@ import 'package:tonkatsu_box/core/services/discord_rpc_service.dart';
 import 'package:tonkatsu_box/core/database/dao/book_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/tag_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tier_list_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tracker_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/wishlist_dao.dart';
@@ -129,7 +129,7 @@ class MockWishlistDao extends Mock implements WishlistDao {}
 
 class MockTrackerDao extends Mock implements TrackerDao {}
 
-class MockTagDao extends Mock implements TagDao {}
+class MockGlobalTagDao extends Mock implements GlobalTagDao {}
 
 class MockIgdbApi extends Mock implements IgdbApi {}
 

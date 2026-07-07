@@ -3198,6 +3198,18 @@ abstract class S {
   /// **'No tags'**
   String get tagNone;
 
+  /// No description provided for @tagPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select tags'**
+  String get tagPickerTitle;
+
+  /// No description provided for @tagTextColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Text color'**
+  String get tagTextColor;
+
   /// No description provided for @tagCreated.
   ///
   /// In en, this message translates to:
@@ -6413,12 +6425,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Has adaptation'**
   String get vndbHasAnimeAdaptation;
-
-  /// No description provided for @tagPickerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Select tags'**
-  String get tagPickerTitle;
 
   /// No description provided for @tagPickerSearchHint.
   ///

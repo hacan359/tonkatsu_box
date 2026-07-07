@@ -34,6 +34,8 @@ import 'credits_screen.dart';
 import 'database_screen.dart';
 import '../../../core/services/backup_service.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../collections/providers/global_tags_provider.dart';
+import '../../collections/providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../releases/providers/releases_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
@@ -1037,6 +1039,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
       ref.invalidate(releasesProvider);
+      ref.invalidate(globalTagsProvider);
+      ref.invalidate(itemTagsProvider);
 
       context.showSnack(
         l.restoreSuccess(result.collectionsRestored, result.itemsRestored),

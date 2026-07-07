@@ -305,8 +305,9 @@ void main() {
           await gesture.up();
           await tester.pumpAndSettle();
 
-          // Menu shows favorite + move/clone/remove + status header + status pill.
-          expect(find.byType(PopupMenuItem<String>), findsNWidgets(6));
+          // Menu shows favorite + tags + move/clone/remove + status header
+          // + status pill.
+          expect(find.byType(PopupMenuItem<String>), findsNWidgets(7));
 
           expect(moveCalled, isFalse);
           expect(cloneCalled, isFalse);

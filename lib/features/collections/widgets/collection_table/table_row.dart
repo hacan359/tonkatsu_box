@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/constants/media_type_theme.dart';
 import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/collection_tag.dart';
+import '../../../../shared/models/tag.dart';
 import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -27,10 +27,9 @@ class TableRow extends StatefulWidget {
     this.onSecondaryTap,
     this.onRatingChanged,
     this.onStatusChanged,
-    this.onTagChanged,
+    this.onTagsEdit,
     this.onFavoriteToggled,
-    this.tag,
-    this.tags = const <CollectionTag>[],
+    this.itemTags = const <Tag>[],
     this.dragIndex,
     this.isSelected = false,
     this.onToggleSelect,
@@ -43,10 +42,11 @@ class TableRow extends StatefulWidget {
   final void Function(int itemId, double? rating)? onRatingChanged;
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
       onStatusChanged;
-  final void Function(int itemId, int? tagId)? onTagChanged;
+  final void Function(int itemId)? onTagsEdit;
   final void Function(int itemId)? onFavoriteToggled;
-  final CollectionTag? tag;
-  final List<CollectionTag> tags;
+
+  /// The item's tags in display order.
+  final List<Tag> itemTags;
 
   /// Non-null in reorder mode — drives the drag handle hit area.
   final int? dragIndex;
@@ -97,14 +97,13 @@ class _TableRowState extends State<TableRow> {
                 ),
                 child: _RowContent(
                   item: item,
-                  tag: widget.tag,
-                  tags: widget.tags,
+                  itemTags: widget.itemTags,
                   dragIndex: widget.dragIndex,
                   isSelected: widget.isSelected,
                   onToggleSelect: widget.onToggleSelect,
                   onRatingChanged: widget.onRatingChanged,
                   onStatusChanged: widget.onStatusChanged,
-                  onTagChanged: widget.onTagChanged,
+                  onTagsEdit: widget.onTagsEdit,
                   onFavoriteToggled: widget.onFavoriteToggled,
                 ),
               ),
@@ -119,27 +118,25 @@ class _TableRowState extends State<TableRow> {
 class _RowContent extends ConsumerWidget {
   const _RowContent({
     required this.item,
-    required this.tag,
-    required this.tags,
+    required this.itemTags,
     required this.dragIndex,
     required this.isSelected,
     required this.onToggleSelect,
     required this.onRatingChanged,
     required this.onStatusChanged,
-    required this.onTagChanged,
+    required this.onTagsEdit,
     required this.onFavoriteToggled,
   });
 
   final CollectionItem item;
-  final CollectionTag? tag;
-  final List<CollectionTag> tags;
+  final List<Tag> itemTags;
   final int? dragIndex;
   final bool isSelected;
   final VoidCallback? onToggleSelect;
   final void Function(int itemId, double? rating)? onRatingChanged;
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
       onStatusChanged;
-  final void Function(int itemId, int? tagId)? onTagChanged;
+  final void Function(int itemId)? onTagsEdit;
   final void Function(int itemId)? onFavoriteToggled;
 
   @override
@@ -285,11 +282,9 @@ class _RowContent extends ConsumerWidget {
         Expanded(
           flex: 2,
           child: TagCell(
-            tag: tag,
-            tags: tags,
-            onTagChanged: onTagChanged != null
-                ? (int? tagId) => onTagChanged!(item.id, tagId)
-                : null,
+            tags: itemTags,
+            onEditTags:
+                onTagsEdit != null ? () => onTagsEdit!(item.id) : null,
           ),
         ),
       ],

@@ -149,7 +149,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | canvas | object | no | Collection-level canvas (full only) |
 | images | object | no | Base64 cover images (full only) |
 | media | object | no | Embedded Game/Movie/TvShow/VisualNovel/Manga/TvSeason/TvEpisode data for offline import (full only) |
-| tags | array | no | Collection tag definitions (full only). Each: `{ name, color?, sort_order }` |
+| tags | array | no | Global tag definitions used by the collection's items (full only). Each: `{ name, color?, text_color?, sort_order }` |
 | tracker_data | array | no | Tracker progress data for games (full + user_data only). Each entry is a `tracker_game_data` row: `{ tracker_type, game_id, tracker_game_id, achievements_earned, achievements_total, ... }` |
 
 ### Item Object
@@ -163,7 +163,8 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1.0–10.0, one decimal). Integers from v2 files load as doubles |
 | _canvas | object | no | Per-item canvas data (full only) |
-| tag_name | string | no | Name of the assigned tag/section (full only, resolved to `tag_id` on import) |
+| tag_names | array | no | Names of all assigned tags in display order (full only, resolved into the global tag set on import) |
+| tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
 
 **User data fields** (present only when top-level `user_data` is `true`):
@@ -257,15 +258,16 @@ Entries include `external_id`, `media_type`, and optional `platform_id` fields f
 
 ### Tags Object
 
-Contains tag (section) definitions for the exported collection. Only present in full exports when the collection has tags.
+Contains the global tag definitions used by the exported collection's items. Only present in full exports when at least one item is tagged.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| name | string | Tag name |
-| color | int? | Tag color (0xAARRGGBB int), null for default |
+| name | string | Tag name (unique app-wide, case-insensitive) |
+| color | int? | Tag background color (0xAARRGGBB int), null for default |
+| text_color | int? | Tag label text color (0xAARRGGBB int), null for default |
 | sort_order | int | Display order |
 
-Item-tag assignments are stored per-item via the `tag_name` field (see Item Object). On import, tags are created first, then items are matched by `tag_name` to assign `tag_id`.
+Item-tag assignments are stored per-item via the `tag_names` array (see Item Object); the legacy single `tag_name` field is still written and accepted. On import, names are resolved case-insensitively into the global tag set (missing tags are created with the exported colors), then item links are written into the `item_tags` junction.
 
 ### Tracker Data Object
 

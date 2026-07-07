@@ -23,12 +23,15 @@ import '../providers/canvas_provider.dart';
 import '../providers/collection_covers_provider.dart';
 import '../widgets/collection_screen/collection_error_state.dart';
 import '../providers/collections_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../widgets/collection_card.dart';
 import '../widgets/collection_list_tile.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/edit_collection_dialog.dart';
 import '../widgets/import_progress_dialog.dart';
+import '../widgets/tag_management_dialog.dart';
 import 'collection_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -109,6 +112,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 icon: Icons.sort,
                 label: l.collectionFilterSort,
                 onTap: () => _showSortOptions(context, ref, sortMode, sortDesc),
+              ),
+              DraggableFabItem(
+                icon: Icons.label_outlined,
+                label: l.tagManage,
+                onTap: () => TagManagementDialog.show(context),
               ),
             ],
           ),
@@ -680,6 +688,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.invalidate(collectionItemsNotifierProvider(cid));
       ref.invalidate(canvasNotifierProvider(cid));
       ref.invalidate(allItemsNotifierProvider);
+      // Import writes tags straight through the DAO, so the in-memory tag
+      // state must be rebuilt.
+      ref.invalidate(globalTagsProvider);
+      ref.invalidate(itemTagsProvider);
 
       final StringBuffer message = StringBuffer(
         S.of(context).collectionsImported(

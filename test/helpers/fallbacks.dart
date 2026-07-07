@@ -30,6 +30,7 @@ void registerAllFallbacks() {
   registerFallbackValue(CollectionType.own);
   registerFallbackValue(ImageType.gameCover);
 
+  registerFallbackValue(<int>{});
   registerFallbackValue(const Game(id: 0, name: 'fallback'));
   registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
   registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));

@@ -14,6 +14,7 @@ import '../../data/repositories/wishlist_repository.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/tag.dart';
 import '../../shared/models/calendar_entry.dart';
 import '../../shared/models/mood_grid.dart';
 import '../../shared/models/mood_grid_cell.dart';
@@ -311,6 +312,20 @@ class BackupService {
         wishlistBytes,
       ));
 
+      // Global tags — full set including unused ones (per-collection
+      // exports only carry the tags their items actually use).
+      final List<Tag> allTags = await _database.globalTagDao.getAll();
+      if (allTags.isNotEmpty) {
+        final String tagsStr = const JsonEncoder.withIndent('  ')
+            .convert(allTags.map((Tag t) => t.toExport()).toList());
+        final List<int> tagsBytes = utf8.encode(tagsStr);
+        archive.addFile(ArchiveFile(
+          'tags.json',
+          tagsBytes.length,
+          tagsBytes,
+        ));
+      }
+
       // 4. Tracker data (RA, Steam profiles + game data)
       if (_trackerDao != null) {
         final List<TrackerProfile> profiles =
@@ -522,6 +537,7 @@ class BackupService {
 
       final Map<String, String> collectionFiles = <String, String>{};
       String? wishlistContent;
+      String? tagsContent;
       String? configContent;
       String? trackerContent;
       String? moodGridsContent;
@@ -537,6 +553,8 @@ class BackupService {
           collectionFiles[file.name] = content;
         } else if (file.name == 'wishlist.json') {
           wishlistContent = content;
+        } else if (file.name == 'tags.json') {
+          tagsContent = content;
         } else if (file.name == 'config.json') {
           configContent = content;
         } else if (file.name == 'tracker_data.json') {
@@ -548,6 +566,12 @@ class BackupService {
         } else if (file.name == 'watched_episodes.json') {
           watchedContent = content;
         }
+      }
+
+      // Restore the global tag set first so collection imports resolve to
+      // tags that already carry their exported colors.
+      if (tagsContent != null) {
+        await _restoreTags(tagsContent);
       }
 
       int collectionsRestored = 0;
@@ -697,6 +721,26 @@ class BackupService {
           : null,
       'tag': item.tag,
     };
+  }
+
+  /// Restores the global tag set: existing names keep their local settings,
+  /// missing tags are created with the exported colors.
+  Future<void> _restoreTags(String jsonContent) async {
+    try {
+      final List<dynamic> tags = jsonDecode(jsonContent) as List<dynamic>;
+      for (final dynamic raw in tags) {
+        final Map<String, dynamic> data = raw as Map<String, dynamic>;
+        final String? name = data['name'] as String?;
+        if (name == null || name.isEmpty) continue;
+        await _database.globalTagDao.resolveOrCreate(
+          name,
+          color: data['color'] as int?,
+          textColor: data['text_color'] as int?,
+        );
+      }
+    } catch (e) {
+      _log.warning('Failed to restore tags.json', e);
+    }
   }
 
   /// Restores the wishlist from JSON, deduplicating by item text.

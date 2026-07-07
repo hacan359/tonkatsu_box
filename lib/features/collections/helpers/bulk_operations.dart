@@ -4,18 +4,17 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/tag_dao.dart';
+import '../../../core/database/dao/global_tag_dao.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../providers/collection_covers_provider.dart';
-import '../providers/collection_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 import '../providers/collections_provider.dart';
 
 /// Bulk operations over collection items.
@@ -70,12 +69,10 @@ class BulkOperations {
     final CollectionRepository repo =
         ref.read(collectionRepositoryProvider);
     final TierListDao tierDao = ref.read(tierListDaoProvider);
-    final TagDao tagDao = ref.read(tagDaoProvider);
 
     final Set<int?> affectedCollections = <int?>{targetCollectionId};
     final Set<MediaType> affectedTypes = <MediaType>{};
     final Set<int> affectedTierLists = <int>{};
-    bool tagAssignedAny = false;
     int moved = 0;
     int skipped = 0;
 
@@ -89,12 +86,7 @@ class BulkOperations {
         );
       }
 
-      final int? resolvedTagId = await _resolveTargetTagId(
-        tagDao: tagDao,
-        sourceTagId: item.tagId,
-        targetCollectionId: targetCollectionId,
-      );
-
+      // Tags are global — they stay with the item across collections.
       final bool ok = await repo.moveItemToCollection(
         item.id,
         targetCollectionId,
@@ -103,11 +95,6 @@ class BulkOperations {
         skipped++;
         continue;
       }
-
-      if (item.tagId != null) {
-        await tagDao.setItemTag(item.id, resolvedTagId);
-      }
-      if (resolvedTagId != null) tagAssignedAny = true;
 
       affectedCollections.add(item.collectionId);
       affectedTypes.add(item.mediaType);
@@ -119,8 +106,6 @@ class BulkOperations {
       affectedCollections: affectedCollections,
       affectedTypes: affectedTypes,
       affectedTierLists: affectedTierLists,
-      tagAssignedTargetId:
-          tagAssignedAny ? targetCollectionId : null,
     );
     return (moved: moved, skipped: skipped);
   }
@@ -134,11 +119,11 @@ class BulkOperations {
     if (items.isEmpty) return (cloned: 0, skipped: 0);
     final CollectionRepository repo =
         ref.read(collectionRepositoryProvider);
-    final TagDao tagDao = ref.read(tagDaoProvider);
+    final GlobalTagDao tagDao = ref.read(globalTagDaoProvider);
 
     final Set<int?> affectedCollections = <int?>{targetCollectionId};
     final Set<MediaType> affectedTypes = <MediaType>{};
-    bool tagAssignedAny = false;
+    bool tagsCopiedAny = false;
     int cloned = 0;
     int skipped = 0;
 
@@ -151,14 +136,11 @@ class BulkOperations {
         skipped++;
         continue;
       }
-      final int? resolvedTagId = await _resolveTargetTagId(
-        tagDao: tagDao,
-        sourceTagId: item.tagId,
-        targetCollectionId: targetCollectionId,
-      );
-      if (resolvedTagId != null) {
-        await tagDao.setItemTag(newId, resolvedTagId);
-        tagAssignedAny = true;
+      // Tags are global — the copy simply carries the same links.
+      final Set<int> tagIds = await tagDao.getTagIdsByItem(item.id);
+      if (tagIds.isNotEmpty) {
+        await tagDao.setItemTags(newId, tagIds);
+        tagsCopiedAny = true;
       }
       affectedTypes.add(item.mediaType);
       cloned++;
@@ -169,8 +151,7 @@ class BulkOperations {
       affectedCollections: affectedCollections,
       affectedTypes: affectedTypes,
       affectedTierLists: const <int>{},
-      tagAssignedTargetId:
-          tagAssignedAny ? targetCollectionId : null,
+      tagsChanged: tagsCopiedAny,
     );
     return (cloned: cloned, skipped: skipped);
   }
@@ -217,35 +198,20 @@ class BulkOperations {
 
   // ---------------------------------------------------------------------------
 
-  static Future<int?> _resolveTargetTagId({
-    required TagDao tagDao,
-    required int? sourceTagId,
-    required int? targetCollectionId,
-  }) async {
-    if (sourceTagId == null || targetCollectionId == null) return null;
-    final CollectionTag? sourceTag = await tagDao.getTagById(sourceTagId);
-    if (sourceTag == null) return null;
-    return tagDao.resolveOrCreateInCollection(
-      targetCollectionId,
-      sourceTag.name,
-      color: sourceTag.color,
-    );
-  }
-
   static void _invalidateAfterMutation(
     WidgetRef ref, {
     required Set<int?> affectedCollections,
     required Set<MediaType> affectedTypes,
     required Set<int> affectedTierLists,
-    int? tagAssignedTargetId,
+    bool tagsChanged = false,
   }) {
     for (final int? cid in affectedCollections) {
       ref.invalidate(collectionItemsNotifierProvider(cid));
       ref.invalidate(collectionStatsProvider(cid));
       ref.invalidate(collectionCoversProvider(cid));
     }
-    if (tagAssignedTargetId != null) {
-      ref.invalidate(collectionTagsProvider(tagAssignedTargetId));
+    if (tagsChanged) {
+      ref.invalidate(itemTagsProvider);
     }
     for (final MediaType t in affectedTypes) {
       _invalidateCollectedIds(ref, t);

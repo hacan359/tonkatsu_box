@@ -10,7 +10,7 @@ import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/collection_tag.dart';
+import 'package:tonkatsu_box/shared/models/tag.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart' as p;
 import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
@@ -198,7 +198,7 @@ Widget _buildFilterBar({
   Set<String> filterMangaFormats = const <String>{},
   Set<String> filterAnimeFormats = const <String>{},
   Set<int> filterTagIds = const <int>{},
-  List<CollectionTag> tags = const <CollectionTag>[],
+  List<Tag> tags = const <Tag>[],
   String searchQuery = '',
   ValueChanged<MediaType?>? onTypeToggled,
   ValueChanged<int?>? onPlatformToggled,

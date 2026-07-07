@@ -61,6 +61,8 @@ class MediaPosterCard extends StatefulWidget {
     this.onFocusChanged,
     this.tagName,
     this.tagColor,
+    this.tagTextColor,
+    this.tagMoreCount = 0,
     this.tagGlow = false,
     this.onTagTap,
     super.key,
@@ -154,6 +156,12 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Tag color (ARGB int). Grid/compact only.
   final int? tagColor;
+
+  /// Explicit tag label color (ARGB int); `null` means white.
+  final int? tagTextColor;
+
+  /// How many more tags the item carries beyond the shown one ("+N").
+  final int tagMoreCount;
 
   /// Glow the poster with the tag color.
   final bool tagGlow;
@@ -523,6 +531,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 child: _TagBadge(
                   tagName: widget.tagName,
                   tagColor: widget.tagColor,
+                  tagTextColor: widget.tagTextColor,
+                  moreCount: widget.tagMoreCount,
                   compact: _isCompact,
                   onTap: widget.onTagTap,
                 ),
@@ -858,11 +868,15 @@ class _TagBadge extends StatelessWidget {
     required this.tagName,
     required this.tagColor,
     required this.compact,
+    this.tagTextColor,
+    this.moreCount = 0,
     this.onTap,
   });
 
   final String? tagName;
   final int? tagColor;
+  final int? tagTextColor;
+  final int moreCount;
   final bool compact;
   final void Function(Offset globalPosition)? onTap;
 
@@ -872,6 +886,10 @@ class _TagBadge extends StatelessWidget {
         ? Color(tagColor!)
         : AppColors.textSecondary;
     final bool hasTag = tagName != null;
+    final Color labelColor =
+        tagTextColor != null ? Color(tagTextColor!) : Colors.white;
+    final String label =
+        moreCount > 0 ? '$tagName +$moreCount' : (tagName ?? '');
 
     final Widget badge = Container(
       constraints: BoxConstraints(
@@ -889,9 +907,9 @@ class _TagBadge extends StatelessWidget {
       ),
       child: hasTag
           ? Text(
-              tagName!,
+              label,
               style: TextStyle(
-                color: Colors.white,
+                color: labelColor,
                 fontSize: compact ? 7 : 9,
                 fontWeight: FontWeight.w600,
               ),
