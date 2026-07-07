@@ -1,0 +1,17 @@
+name: gamepads_windows
+description: >-
+  Local stub replacing the native Windows implementation of the gamepads
+  plugin. The app never listens to gamepads on Windows (kGamepadSupported
+  excludes it), yet the real plugin's USB device listener crashes the app
+  (0xc0000005 in gamepads_windows_plugin.dll). Overriding with this stub
+  keeps the DLL out of the Windows build entirely.
+version: 0.3.0+1
+publish_to: none
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
