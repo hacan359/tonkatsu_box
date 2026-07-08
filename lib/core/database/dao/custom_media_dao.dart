@@ -17,6 +17,24 @@ class CustomMediaDao {
     return db.insert('custom_items', data);
   }
 
+  /// Batch-inserts [items] in one transaction; returns the new row IDs in the
+  /// same order. Used by the custom-cards file import.
+  Future<List<int>> createAll(List<CustomMedia> items) async {
+    if (items.isEmpty) return const <int>[];
+    final Database db = await _getDatabase();
+    final List<Object?> results =
+        await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final CustomMedia item in items) {
+        final Map<String, dynamic> data = item.toDb();
+        data.remove('id'); // autoincrement
+        batch.insert('custom_items', data);
+      }
+      return batch.commit();
+    });
+    return results.cast<int>();
+  }
+
   Future<void> update(CustomMedia item) async {
     final Database db = await _getDatabase();
     await db.update(
