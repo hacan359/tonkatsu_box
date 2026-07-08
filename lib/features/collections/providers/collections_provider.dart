@@ -919,6 +919,11 @@ class CollectionItemsNotifier
           completedAt: completedAt ?? i.completedAt,
           lastActivityAt: lastActivityAt ?? i.lastActivityAt,
           status: newStatus ?? i.status,
+          rewatchCount: computeRewatchCountForStatus(
+            oldStatus: i.status,
+            newStatus: newStatus ?? i.status,
+            currentCount: i.rewatchCount,
+          ),
         ),
         affects: const <CollectionSortMode>{
           CollectionSortMode.status,
@@ -1170,6 +1175,23 @@ class CollectionItemsNotifier
       (CollectionItem i) =>
           i.copyWith(timeSpentMinutes: totalMinutes, lastActivityAt: now),
       affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
+    );
+    ref.invalidate(allItemsNotifierProvider);
+  }
+
+  /// Manual rewatch-count edit; [count] is >= 0, or null to clear back to
+  /// "not tracked". Transitions into `completed` bump the count automatically
+  /// (see [updateStatus]); this is the override for everything else.
+  Future<void> setRewatchCount(int id, int? count) async {
+    assert(count == null || count >= 0, 'Count must be >= 0 or null');
+    await _repository.updateItemRewatchCount(id, count);
+
+    _patchItem(
+      id,
+      (CollectionItem i) => count == null
+          ? i.copyWith(clearRewatchCount: true)
+          : i.copyWith(rewatchCount: count),
+      affects: const <CollectionSortMode>{},
     );
     ref.invalidate(allItemsNotifierProvider);
   }

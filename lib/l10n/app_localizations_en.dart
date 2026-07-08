@@ -120,6 +120,24 @@ class SEn extends S {
   String get statusPlanned => 'Planned';
 
   @override
+  String get statusReplay => 'Replay';
+
+  @override
+  String get rewatchCountEdit => 'Replay count';
+
+  @override
+  String get rewatchCountHint => 'Empty = not tracked';
+
+  @override
+  String get statusReplaying => 'Replaying';
+
+  @override
+  String get statusRewatching => 'Rewatching';
+
+  @override
+  String get statusRereading => 'Rereading';
+
+  @override
   String get homeFilterAll => 'All';
 
   @override

@@ -351,6 +351,79 @@ void main() {
         expect(row['tag'], startsWith('MyAnimeList-'));
       });
 
+      test('completed пишет my_times_watched в rewatch_count (0 включая)',
+          () async {
+        stubAnimeLookup(resolved: const <int, Anime>{
+          5114: Anime(id: 999, title: 'FMA', episodes: 64),
+        });
+
+        await _runWithTempFile(singleAnimeXml, (String path) async {
+          await sut.import(opts(path));
+          return null;
+        });
+
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['status'], 'completed');
+        expect(row['rewatch_count'], 0);
+      });
+
+      test('watching с times_watched > 0 пишет rewatch_count', () async {
+        const String rewatchXml = '''
+<?xml version="1.0"?>
+<myanimelist>
+  <myinfo><user_export_type>1</user_export_type></myinfo>
+  <anime>
+    <series_animedb_id>5114</series_animedb_id>
+    <series_title>FMA</series_title>
+    <series_episodes>64</series_episodes>
+    <my_watched_episodes>10</my_watched_episodes>
+    <my_status>Watching</my_status>
+    <my_times_watched>2</my_times_watched>
+  </anime>
+</myanimelist>
+''';
+        stubAnimeLookup(resolved: const <int, Anime>{
+          5114: Anime(id: 999, title: 'FMA', episodes: 64),
+        });
+
+        await _runWithTempFile(rewatchXml, (String path) async {
+          await sut.import(opts(path));
+          return null;
+        });
+
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row['status'], 'in_progress');
+        expect(row['rewatch_count'], 2);
+      });
+
+      test('planned с times_watched 0 не трогает rewatch_count', () async {
+        const String plannedXml = '''
+<?xml version="1.0"?>
+<myanimelist>
+  <myinfo><user_export_type>1</user_export_type></myinfo>
+  <anime>
+    <series_animedb_id>5114</series_animedb_id>
+    <series_title>FMA</series_title>
+    <series_episodes>64</series_episodes>
+    <my_watched_episodes>0</my_watched_episodes>
+    <my_status>Plan to Watch</my_status>
+    <my_times_watched>0</my_times_watched>
+  </anime>
+</myanimelist>
+''';
+        stubAnimeLookup(resolved: const <int, Anime>{
+          5114: Anime(id: 999, title: 'FMA', episodes: 64),
+        });
+
+        await _runWithTempFile(plannedXml, (String path) async {
+          await sut.import(opts(path));
+          return null;
+        });
+
+        final Map<String, dynamic> row = capturedItemRows().single;
+        expect(row.containsKey('rewatch_count'), isFalse);
+      });
+
       test('повторный импорт обновляет существующий, не создаёт новый',
           () async {
         stubAnimeLookup(resolved: const <int, Anime>{

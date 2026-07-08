@@ -91,6 +91,9 @@ StatusDatesUpdate computeDatesForStatus({
       );
     case ItemStatus.planned:
     case ItemStatus.dropped:
+    // `replaying` is a bare indicator: the item was already completed once,
+    // so a replay must not erase or rewrite the existing dates.
+    case ItemStatus.replaying:
       return StatusDatesUpdate(
         status: newStatus,
         startedAt: currentStartedAt,
@@ -98,6 +101,26 @@ StatusDatesUpdate computeDatesForStatus({
         lastActivityAt: now,
       );
   }
+}
+
+/// New rewatch count after a status change.
+///
+/// Every transition *into* `completed` counts as one more completion:
+/// `null` (never completed) becomes `0` (completed once, no repeats),
+/// any tracked value gets `+1`. Re-setting `completed` on an already
+/// completed item is a no-op, as is any other transition.
+///
+/// Matches MAL "times watched" / AniList "repeat" semantics.
+int? computeRewatchCountForStatus({
+  required ItemStatus oldStatus,
+  required ItemStatus newStatus,
+  required int? currentCount,
+}) {
+  if (newStatus != ItemStatus.completed ||
+      oldStatus == ItemStatus.completed) {
+    return currentCount;
+  }
+  return currentCount == null ? 0 : currentCount + 1;
 }
 
 /// Вычисляет новый статус при ручной установке дат активности.
@@ -240,7 +263,11 @@ int _externalStatusPriority(ItemStatus status) {
       return 2;
     case ItemStatus.completed:
       return 3;
-    case ItemStatus.dropped:
+    // Above `completed`: an external "replaying" means the user re-engaged
+    // with an already finished item.
+    case ItemStatus.replaying:
       return 4;
+    case ItemStatus.dropped:
+      return 5;
   }
 }

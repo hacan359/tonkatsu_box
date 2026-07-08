@@ -37,6 +37,7 @@ class CollectionItem with Exportable {
     this.currentEpisode = 0,
     this.sortOrder = 0,
     this.timeSpentMinutes = 0,
+    this.rewatchCount,
     this.authorComment,
     this.userComment,
     this.userRating,
@@ -85,6 +86,7 @@ class CollectionItem with Exportable {
       currentEpisode: (row['current_episode'] as int?) ?? 0,
       sortOrder: (row['sort_order'] as int?) ?? 0,
       timeSpentMinutes: (row['time_spent_minutes'] as int?) ?? 0,
+      rewatchCount: row['rewatch_count'] as int?,
       status: ItemStatus.fromString(row['status'] as String),
       authorComment: row['author_comment'] as String?,
       userComment: row['user_comment'] as String?,
@@ -139,6 +141,7 @@ class CollectionItem with Exportable {
       currentSeason: (json['current_season'] as int?) ?? 0,
       currentEpisode: (json['current_episode'] as int?) ?? 0,
       timeSpentMinutes: (json['time_spent_minutes'] as int?) ?? 0,
+      rewatchCount: json['rewatch_count'] as int?,
       status: json['status'] != null
           ? ItemStatus.fromString(json['status'] as String)
           : ItemStatus.notStarted,
@@ -206,6 +209,11 @@ class CollectionItem with Exportable {
 
   /// Manual playtime in minutes — separate from any provider-side stats.
   final int timeSpentMinutes;
+
+  /// How many times the item was completed again after the first completion
+  /// (MAL "times watched" / AniList "repeat" semantics: 0 = completed once,
+  /// no repeats). `null` = never completed / not tracked.
+  final int? rewatchCount;
 
   final ItemStatus status;
 
@@ -630,7 +638,7 @@ class CollectionItem with Exportable {
         'started_at', 'completed_at', 'last_activity_at',
         'status', 'current_season', 'current_episode',
         'tag_id', 'time_spent_minutes', 'override_name',
-        'is_favorite',
+        'is_favorite', 'rewatch_count',
       };
 
   @override
@@ -654,6 +662,7 @@ class CollectionItem with Exportable {
       'user_comment': userComment,
       'user_rating': userRating,
       'time_spent_minutes': timeSpentMinutes,
+      'rewatch_count': rewatchCount,
       'override_name': overrideName,
       'is_favorite': isFavorite ? 1 : 0,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,
@@ -693,6 +702,7 @@ class CollectionItem with Exportable {
       data['current_season'] = currentSeason;
       data['current_episode'] = currentEpisode;
       data['time_spent_minutes'] = timeSpentMinutes;
+      data['rewatch_count'] = rewatchCount;
       data['added_at'] = addedAt.millisecondsSinceEpoch ~/ 1000;
       data['sort_order'] = sortOrder;
       data['started_at'] = startedAt != null
@@ -722,6 +732,8 @@ class CollectionItem with Exportable {
     int? currentEpisode,
     int? sortOrder,
     int? timeSpentMinutes,
+    int? rewatchCount,
+    bool clearRewatchCount = false,
     ItemStatus? status,
     String? authorComment,
     bool clearAuthorComment = false,
@@ -761,6 +773,8 @@ class CollectionItem with Exportable {
       currentEpisode: currentEpisode ?? this.currentEpisode,
       sortOrder: sortOrder ?? this.sortOrder,
       timeSpentMinutes: timeSpentMinutes ?? this.timeSpentMinutes,
+      rewatchCount:
+          clearRewatchCount ? null : (rewatchCount ?? this.rewatchCount),
       status: status ?? this.status,
       authorComment:
           clearAuthorComment ? null : (authorComment ?? this.authorComment),
@@ -786,9 +800,10 @@ class CollectionItem with Exportable {
     );
   }
 
-  /// Returns a copy with the new status and recomputed activity dates.
-  /// All date math goes through [computeDatesForStatus] so UI, importers and
-  /// external syncs stay in lockstep.
+  /// Returns a copy with the new status, recomputed activity dates and
+  /// rewatch count. All the math goes through [computeDatesForStatus] /
+  /// [computeRewatchCountForStatus] so UI, importers and external syncs stay
+  /// in lockstep.
   CollectionItem withStatus(ItemStatus newStatus, {DateTime? now}) {
     final StatusDatesUpdate update = computeDatesForStatus(
       newStatus: newStatus,
@@ -803,6 +818,11 @@ class CollectionItem with Exportable {
       lastActivityAt: update.lastActivityAt,
       clearStartedAt: update.clearStartedAt,
       clearCompletedAt: update.clearCompletedAt,
+      rewatchCount: computeRewatchCountForStatus(
+        oldStatus: status,
+        newStatus: newStatus,
+        currentCount: rewatchCount,
+      ),
     );
   }
 

@@ -46,6 +46,12 @@
   "statusCompleted": "Completed",
   "statusDropped": "Dropped",
   "statusPlanned": "Planned",
+  "statusReplay": "Replay",
+  "rewatchCountEdit": "Replay count",
+  "rewatchCountHint": "Empty = not tracked",
+  "statusReplaying": "Replaying",
+  "statusRewatching": "Rewatching",
+  "statusRereading": "Rereading",
   "homeFilterAll": "All",
 
   "mediaTypeGame": "Game",

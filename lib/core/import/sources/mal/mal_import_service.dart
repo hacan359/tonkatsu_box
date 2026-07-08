@@ -596,6 +596,8 @@ class MalImportService implements ImportSource {
       'completed_at': ?epochSeconds(dates.completedAt),
       'last_activity_at': ?epochSeconds(dates.lastActivityAt),
       if (comment.isNotEmpty) 'user_comment': comment,
+      if (repeatIsTracked(entry.status, entry.timesWatched))
+        'rewatch_count': entry.timesWatched,
     };
   }
 
@@ -658,6 +660,11 @@ class MalImportService implements ImportSource {
 
     final String comment = _buildUserComment(entry);
     if (comment.isNotEmpty) fields['user_comment'] = comment;
+
+    if (repeatIsTracked(entry.status, entry.timesWatched) &&
+        entry.timesWatched != existing.rewatchCount) {
+      fields['rewatch_count'] = entry.timesWatched;
+    }
 
     return fields;
   }
@@ -799,6 +806,8 @@ class MalImportService implements ImportSource {
         return 'Dropped';
       case ItemStatus.planned:
         return 'Planned';
+      case ItemStatus.replaying:
+        return 'Replay';
     }
   }
 

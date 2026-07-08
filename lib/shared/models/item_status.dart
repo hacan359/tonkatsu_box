@@ -23,7 +23,13 @@ enum ItemStatus {
   dropped('dropped'),
 
   /// Запланирован.
-  planned('planned');
+  planned('planned'),
+
+  /// Replaying / rewatching / rereading a previously finished item.
+  ///
+  /// A bare indicator status: switching to it never touches
+  /// `startedAt`/`completedAt` (the item was already completed once).
+  replaying('replaying');
 
   const ItemStatus(this.value);
 
@@ -53,6 +59,8 @@ enum ItemStatus {
         return AppColors.statusDropped;
       case ItemStatus.planned:
         return AppColors.statusPlanned;
+      case ItemStatus.replaying:
+        return AppColors.statusReplaying;
     }
   }
 
@@ -69,6 +77,8 @@ enum ItemStatus {
         return Icons.pause_circle_filled;
       case ItemStatus.planned:
         return Icons.bookmark;
+      case ItemStatus.replaying:
+        return Icons.replay_circle_filled;
     }
   }
 
@@ -85,6 +95,21 @@ enum ItemStatus {
         return l.statusDropped;
       case ItemStatus.planned:
         return l.statusPlanned;
+      case ItemStatus.replaying:
+        switch (mediaType) {
+          case MediaType.game:
+          case MediaType.visualNovel:
+            return l.statusReplaying;
+          case MediaType.manga:
+          case MediaType.book:
+            return l.statusRereading;
+          case MediaType.movie:
+          case MediaType.tvShow:
+          case MediaType.animation:
+          case MediaType.anime:
+          case MediaType.custom:
+            return l.statusRewatching;
+        }
     }
   }
 
@@ -103,6 +128,8 @@ enum ItemStatus {
         return l.statusDropped;
       case ItemStatus.planned:
         return l.statusPlanned;
+      case ItemStatus.replaying:
+        return l.statusReplay;
     }
   }
 
@@ -113,14 +140,16 @@ enum ItemStatus {
     switch (this) {
       case ItemStatus.inProgress:
         return 0;
-      case ItemStatus.planned:
+      case ItemStatus.replaying:
         return 1;
-      case ItemStatus.notStarted:
+      case ItemStatus.planned:
         return 2;
-      case ItemStatus.completed:
+      case ItemStatus.notStarted:
         return 3;
-      case ItemStatus.dropped:
+      case ItemStatus.completed:
         return 4;
+      case ItemStatus.dropped:
+        return 5;
     }
   }
 }

@@ -293,6 +293,7 @@ class StatusDropdownSegment extends StatelessWidget {
 
   static const List<ItemStatus> _order = <ItemStatus>[
     ItemStatus.inProgress,
+    ItemStatus.replaying,
     ItemStatus.planned,
     ItemStatus.notStarted,
     ItemStatus.completed,

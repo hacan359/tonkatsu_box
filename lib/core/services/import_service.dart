@@ -563,7 +563,8 @@ class ImportService {
         parsed.currentSeason > 0 ||
         parsed.currentEpisode > 0 ||
         parsed.overrideName != null ||
-        parsed.isFavorite;
+        parsed.isFavorite ||
+        parsed.rewatchCount != null;
   }
 
   Future<void> _restoreUserData(int itemId, CollectionItem parsed) async {
@@ -573,6 +574,13 @@ class ImportService {
         parsed.status,
         mediaType: parsed.mediaType,
       );
+    }
+    // After the status restore: a transition into `completed` bumps
+    // rewatch_count, and the file value must win over that bump. `null` is
+    // never applied — it would wipe a locally tracked counter on re-import
+    // of an older export.
+    if (parsed.rewatchCount != null) {
+      await _database.updateItemRewatchCount(itemId, parsed.rewatchCount);
     }
     if (parsed.userComment != null) {
       await _database.updateItemUserComment(itemId, parsed.userComment);

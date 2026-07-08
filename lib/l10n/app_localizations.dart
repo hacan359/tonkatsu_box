@@ -313,6 +313,42 @@ abstract class S {
   /// **'Planned'**
   String get statusPlanned;
 
+  /// No description provided for @statusReplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay'**
+  String get statusReplay;
+
+  /// No description provided for @rewatchCountEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay count'**
+  String get rewatchCountEdit;
+
+  /// No description provided for @rewatchCountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty = not tracked'**
+  String get rewatchCountHint;
+
+  /// No description provided for @statusReplaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Replaying'**
+  String get statusReplaying;
+
+  /// No description provided for @statusRewatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewatching'**
+  String get statusRewatching;
+
+  /// No description provided for @statusRereading.
+  ///
+  /// In en, this message translates to:
+  /// **'Rereading'**
+  String get statusRereading;
+
   /// No description provided for @homeFilterAll.
   ///
   /// In en, this message translates to:

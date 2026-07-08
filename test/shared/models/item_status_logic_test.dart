@@ -166,6 +166,105 @@ void main() {
         expect(result.completedAt, isNull);
       });
     });
+
+    group('replaying', () {
+      test('не меняет startedAt/completedAt (повтор не отменяет завершение)',
+          () {
+        final StatusDatesUpdate result = computeDatesForStatus(
+          newStatus: ItemStatus.replaying,
+          currentStartedAt: pastStart,
+          currentCompletedAt: pastComplete,
+          now: now,
+        );
+
+        expect(result.status, ItemStatus.replaying);
+        expect(result.startedAt, pastStart);
+        expect(result.completedAt, pastComplete);
+        expect(result.clearStartedAt, isFalse);
+        expect(result.clearCompletedAt, isFalse);
+        expect(result.lastActivityAt, now);
+      });
+
+      test('с null датами оставляет null (не проставляет startedAt)', () {
+        final StatusDatesUpdate result = computeDatesForStatus(
+          newStatus: ItemStatus.replaying,
+          currentStartedAt: null,
+          currentCompletedAt: null,
+          now: now,
+        );
+
+        expect(result.startedAt, isNull);
+        expect(result.completedAt, isNull);
+        expect(result.lastActivityAt, now);
+      });
+    });
+  });
+
+  group('computeRewatchCountForStatus', () {
+    test('первый переход в completed: null → 0', () {
+      expect(
+        computeRewatchCountForStatus(
+          oldStatus: ItemStatus.inProgress,
+          newStatus: ItemStatus.completed,
+          currentCount: null,
+        ),
+        0,
+      );
+    });
+
+    test('повторный переход в completed: +1', () {
+      expect(
+        computeRewatchCountForStatus(
+          oldStatus: ItemStatus.replaying,
+          newStatus: ItemStatus.completed,
+          currentCount: 0,
+        ),
+        1,
+      );
+      expect(
+        computeRewatchCountForStatus(
+          oldStatus: ItemStatus.inProgress,
+          newStatus: ItemStatus.completed,
+          currentCount: 4,
+        ),
+        5,
+      );
+    });
+
+    test('completed → completed не инкрементит', () {
+      expect(
+        computeRewatchCountForStatus(
+          oldStatus: ItemStatus.completed,
+          newStatus: ItemStatus.completed,
+          currentCount: 2,
+        ),
+        2,
+      );
+    });
+
+    test('переходы не в completed не меняют счётчик', () {
+      for (final ItemStatus target in ItemStatus.values) {
+        if (target == ItemStatus.completed) continue;
+        expect(
+          computeRewatchCountForStatus(
+            oldStatus: ItemStatus.completed,
+            newStatus: target,
+            currentCount: 3,
+          ),
+          3,
+          reason: 'переход в $target',
+        );
+        expect(
+          computeRewatchCountForStatus(
+            oldStatus: ItemStatus.notStarted,
+            newStatus: target,
+            currentCount: null,
+          ),
+          isNull,
+          reason: 'переход в $target из null',
+        );
+      }
+    });
   });
 
   group('computeStatusForDates', () {
@@ -536,6 +635,26 @@ void main() {
           ItemStatus.completed,
         );
       });
+
+      test('completed → replaying: повышение (AniList REPEATING)', () {
+        expect(
+          mergeExternalStatus(
+            currentStatus: ItemStatus.completed,
+            externalStatus: ItemStatus.replaying,
+          ),
+          ItemStatus.replaying,
+        );
+      });
+
+      test('replaying → dropped: принимаем', () {
+        expect(
+          mergeExternalStatus(
+            currentStatus: ItemStatus.replaying,
+            externalStatus: ItemStatus.dropped,
+          ),
+          ItemStatus.dropped,
+        );
+      });
     });
 
     group('не понижает', () {
@@ -594,6 +713,16 @@ void main() {
           mergeExternalStatus(
             currentStatus: ItemStatus.planned,
             externalStatus: ItemStatus.notStarted,
+          ),
+          isNull,
+        );
+      });
+
+      test('replaying → completed: игнор (уже выше по приоритету)', () {
+        expect(
+          mergeExternalStatus(
+            currentStatus: ItemStatus.replaying,
+            externalStatus: ItemStatus.completed,
           ),
           isNull,
         );

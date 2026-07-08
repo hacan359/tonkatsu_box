@@ -45,6 +45,7 @@ import '../widgets/custom_progress_section.dart';
 import '../widgets/google_books_similars_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/dialogs/add_time_dialog.dart';
+import '../widgets/dialogs/rewatch_count_dialog.dart';
 import '../providers/tracker_provider.dart';
 import '../../../shared/models/tracker_game_data.dart';
 import '../widgets/ra_achievements_section.dart';
@@ -678,6 +679,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       onTimeSpentTap: widget.collectionId != null && widget.isEditable
           ? () => _showTimeSpentDialog(item)
           : null,
+      rewatchCount: item.rewatchCount,
+      onRewatchCountTap: widget.collectionId != null && widget.isEditable
+          ? () => _showRewatchCountDialog(item)
+          : null,
       mediaGallery: ScreenScraperGallerySection(
         gameName: item.itemName,
         igdbPlatformId: item.platformId,
@@ -818,6 +823,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     await ref
         .read(collectionItemsNotifierProvider(collId).notifier)
         .setTimeSpent(item.id, minutes);
+  }
+
+  Future<void> _showRewatchCountDialog(CollectionItem item) async {
+    final int? collId = widget.collectionId;
+    if (collId == null) return;
+    final ({int? count})? result = await RewatchCountDialog.show(
+      context,
+      initialCount: item.rewatchCount,
+    );
+    if (result == null || !mounted) return;
+    await ref
+        .read(collectionItemsNotifierProvider(collId).notifier)
+        .setRewatchCount(item.id, result.count);
   }
 
   Widget? _buildTrackerSection(CollectionItem item) {
