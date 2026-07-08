@@ -9084,6 +9084,234 @@ abstract class S {
   /// **'Select anime or manga to import'**
   String get aniListImportSelectAtLeastOne;
 
+  /// No description provided for @settingsCustomCardsImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom cards'**
+  String get settingsCustomCardsImport;
+
+  /// No description provided for @settingsCustomCardsImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import cards from a JSON or CSV file'**
+  String get settingsCustomCardsImportSubtitle;
+
+  /// No description provided for @customImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import custom cards'**
+  String get customImportTitle;
+
+  /// No description provided for @customImportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.'**
+  String get customImportDescription;
+
+  /// No description provided for @customImportSelectFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Select JSON/CSV file'**
+  String get customImportSelectFile;
+
+  /// No description provided for @customImportCsvTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV template'**
+  String get customImportCsvTemplate;
+
+  /// No description provided for @customImportJsonTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON template'**
+  String get customImportJsonTemplate;
+
+  /// No description provided for @customImportTemplateSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Template saved'**
+  String get customImportTemplateSaved;
+
+  /// No description provided for @customImportTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get customImportTargetCollection;
+
+  /// No description provided for @customImportCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get customImportCreateNew;
+
+  /// No description provided for @customImportUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to existing collection'**
+  String get customImportUseExisting;
+
+  /// No description provided for @customImportSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get customImportSelectCollection;
+
+  /// No description provided for @customImportNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet'**
+  String get customImportNoCollections;
+
+  /// No description provided for @customImportErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load collections'**
+  String get customImportErrorLoadingCollections;
+
+  /// No description provided for @customImportPreviewButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview and import'**
+  String get customImportPreviewButton;
+
+  /// No description provided for @customImportPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import preview'**
+  String get customImportPreviewTitle;
+
+  /// No description provided for @customImportSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognized {valid} · Errors {errors} · Duplicates {duplicates}'**
+  String customImportSummary(int valid, int errors, int duplicates);
+
+  /// No description provided for @customImportSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get customImportSelectAll;
+
+  /// No description provided for @customImportSelectNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get customImportSelectNone;
+
+  /// No description provided for @customImportSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{selected} of {total} selected'**
+  String customImportSelectedCount(int selected, int total);
+
+  /// No description provided for @customImportDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate — already in the collection'**
+  String get customImportDuplicate;
+
+  /// No description provided for @customImportRowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {index}'**
+  String customImportRowLabel(int index);
+
+  /// No description provided for @customImportStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Import selected'**
+  String get customImportStart;
+
+  /// No description provided for @customImportImporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing custom cards...'**
+  String get customImportImporting;
+
+  /// No description provided for @customImportErrorEmptyFile.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is empty'**
+  String get customImportErrorEmptyFile;
+
+  /// No description provided for @customImportErrorInvalidJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken JSON — the file could not be parsed'**
+  String get customImportErrorInvalidJson;
+
+  /// No description provided for @customImportErrorMissingColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV must have \"title\" and \"type\" columns'**
+  String get customImportErrorMissingColumns;
+
+  /// No description provided for @customImportIssueNotAnObject.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a JSON object'**
+  String get customImportIssueNotAnObject;
+
+  /// No description provided for @customImportIssueMissingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing \"title\"'**
+  String get customImportIssueMissingTitle;
+
+  /// No description provided for @customImportIssueMissingType.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing \"type\"'**
+  String get customImportIssueMissingType;
+
+  /// No description provided for @customImportIssueUnknownType.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown type: {value}'**
+  String customImportIssueUnknownType(String value);
+
+  /// No description provided for @customImportIssueInvalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid value in \"{field}\": {value}'**
+  String customImportIssueInvalidNumber(String field, String value);
+
+  /// No description provided for @customImportIssueUnknownStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown status: {value}'**
+  String customImportIssueUnknownStatus(String value);
+
+  /// No description provided for @customImportIssueUnknownFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown format: {value}'**
+  String customImportIssueUnknownFormat(String value);
+
+  /// No description provided for @customImportIssueFormatNotApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'\"format\" is only for manga and anime'**
+  String get customImportIssueFormatNotApplicable;
+
+  /// No description provided for @customImportIssueInvalidCover.
+  ///
+  /// In en, this message translates to:
+  /// **'\"cover\" must be an http(s) URL'**
+  String get customImportIssueInvalidCover;
+
+  /// No description provided for @customImportIssueInvalidDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid date in \"{field}\": {value} (expected YYYY-MM-DD)'**
+  String customImportIssueInvalidDate(String field, String value);
+
+  /// No description provided for @customImportIssueInvalidBool.
+  ///
+  /// In en, this message translates to:
+  /// **'\"favorite\" must be true/false: {value}'**
+  String customImportIssueInvalidBool(String value);
+
   /// No description provided for @moodGridCreate.
   ///
   /// In en, this message translates to:

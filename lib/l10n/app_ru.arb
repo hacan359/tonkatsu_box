@@ -2010,6 +2010,95 @@
   "aniListImportEmptyUsername": "Введите имя пользователя AniList",
   "aniListImportSelectAtLeastOne": "Выберите хотя бы один тип: аниме или манга",
 
+  "settingsCustomCardsImport": "Кастомные карточки",
+  "settingsCustomCardsImportSubtitle": "Импорт карточек из JSON или CSV файла",
+  "customImportTitle": "Импорт кастомных карточек",
+  "customImportDescription": "Загрузите JSON или CSV файл, собранный вашим скриптом или парсером — каждая строка станет кастомной карточкой. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.",
+  "customImportSelectFile": "Выбрать JSON/CSV файл",
+  "customImportCsvTemplate": "Шаблон CSV",
+  "customImportJsonTemplate": "Шаблон JSON",
+  "customImportTemplateSaved": "Шаблон сохранён",
+  "customImportTargetCollection": "Целевая коллекция",
+  "customImportCreateNew": "Создать новую коллекцию",
+  "customImportUseExisting": "Добавить в существующую",
+  "customImportSelectCollection": "Выберите коллекцию",
+  "customImportNoCollections": "Коллекций пока нет",
+  "customImportErrorLoadingCollections": "Не удалось загрузить коллекции",
+  "customImportPreviewButton": "Предпросмотр и импорт",
+  "customImportPreviewTitle": "Предпросмотр импорта",
+  "customImportSummary": "Распознано {valid} · Ошибок {errors} · Дублей {duplicates}",
+  "@customImportSummary": {
+    "placeholders": {
+      "valid": {"type": "int"},
+      "errors": {"type": "int"},
+      "duplicates": {"type": "int"}
+    }
+  },
+  "customImportSelectAll": "Выбрать все",
+  "customImportSelectNone": "Снять все",
+  "customImportSelectedCount": "Выбрано {selected} из {total}",
+  "@customImportSelectedCount": {
+    "placeholders": {
+      "selected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "customImportDuplicate": "Дубль — уже есть в коллекции",
+  "customImportRowLabel": "Строка {index}",
+  "@customImportRowLabel": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "customImportStart": "Импортировать отмеченные",
+  "customImportImporting": "Импорт кастомных карточек...",
+  "customImportErrorEmptyFile": "Файл пуст",
+  "customImportErrorInvalidJson": "Битый JSON — файл не удалось разобрать",
+  "customImportErrorMissingColumns": "В CSV должны быть колонки \"title\" и \"type\"",
+  "customImportIssueNotAnObject": "Не JSON-объект",
+  "customImportIssueMissingTitle": "Нет \"title\"",
+  "customImportIssueMissingType": "Нет \"type\"",
+  "customImportIssueUnknownType": "Неизвестный тип: {value}",
+  "@customImportIssueUnknownType": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidNumber": "Неверное значение в \"{field}\": {value}",
+  "@customImportIssueInvalidNumber": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownStatus": "Неизвестный статус: {value}",
+  "@customImportIssueUnknownStatus": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownFormat": "Неизвестный формат: {value}",
+  "@customImportIssueUnknownFormat": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueFormatNotApplicable": "\"format\" только для манги и аниме",
+  "customImportIssueInvalidCover": "\"cover\" должен быть http(s) URL",
+  "customImportIssueInvalidDate": "Неверная дата в \"{field}\": {value} (нужен формат YYYY-MM-DD)",
+  "@customImportIssueInvalidDate": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidBool": "\"favorite\" должен быть true/false: {value}",
+  "@customImportIssueInvalidBool": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+
   "moodGridCreate": "Создать mood-сетку",
   "moodGridCreateTitle": "Новая mood-сетка",
   "moodGridName": "Название",

@@ -9,6 +9,64 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Custom-card import from JSON/CSV files**
+
+  A new import source (Settings → Import → Custom cards) for loading cards
+  produced by the user's own scripts or parsers. One file per run: JSON (an
+  array of objects, or a single object) or CSV (RFC 4180, header-addressed
+  columns). Only `title` and `type` are required; the schema covers every
+  card field (alt title, description, year, genres, link, cover URL,
+  platform, manga/anime format, unit totals) and every personal field
+  (status, rating, note, rewatch counter, start/finish dates, time spent,
+  favorite, episode/season progress, global tags — missing tags are created
+  automatically). The file is parsed and validated up front without touching
+  the database; a preview screen shows "Recognized N · Errors M ·
+  Duplicates K" with a lazy checkbox list — invalid rows float to the top
+  with their reasons, duplicates (same title already in the target
+  collection, or repeated in the file) are unchecked by default. Covers
+  (http/https only) are downloaded into the image cache only after
+  confirmation and only for the imported rows. Two downloadable templates
+  document the format: a header-only CSV and a self-describing JSON whose
+  `_`-prefixed hint keys the parser ignores, so the template itself imports
+  cleanly. Platform text is matched against the platform catalog
+  case-insensitively (abbreviation or full name); unmatched text is kept as
+  a free-form platform name.
+
+  * lib/core/import/sources/custom_file/custom_card_entry.dart
+    (CustomCardFields, CustomCardEntry, CustomCardRow, CustomCardIssue,
+    CustomCardIssueCode, CustomCardsParseException,
+    CustomCardsParseErrorCode): New — schema constants, parsed-entry model,
+    per-row validation issues, whole-file parse errors.
+  * lib/core/import/sources/custom_file/custom_cards_parser.dart
+    (CustomCardsParser.parseBytes, CustomCardsParser.parseJson,
+    CustomCardsParser.parseCsv): New — format sniffing, UTF-8 BOM handling,
+    quote-aware CSV splitting over code units, full field validation.
+  * lib/core/import/sources/custom_file/custom_cards_template.dart
+    (CustomCardsTemplate.csv, CustomCardsTemplate.json): New — downloadable
+    templates.
+  * lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService.parseFile,
+    CustomCardsImportService.duplicateRowIndexes,
+    CustomCardsImportService.importSelected,
+    customCardsImportServiceProvider): New — preview-driven two-phase
+    import: batch card creation, platform catalog matching, explicit dates
+    overriding status-derived ones, tag resolve-or-create and assignment,
+    post-import cover downloads with per-card failure notes.
+  * lib/core/database/dao/custom_media_dao.dart (CustomMediaDao.createAll):
+    New batch insert returning the new row ids in order.
+  * lib/features/settings/content/custom_cards_import_content.dart
+    (CustomCardsImportContent, localizedParseError): New — file pick,
+    template download buttons, target collection choice.
+  * lib/features/settings/screens/custom_cards_import_screen.dart
+    (CustomCardsImportScreen): New — title-bar wrapper.
+  * lib/features/settings/screens/custom_cards_preview_screen.dart
+    (CustomCardsPreviewScreen): New — summary, select all/none, lazy
+    checkbox list with problem rows first, import progress dialog.
+  * lib/features/settings/screens/settings_screen.dart: Custom cards tile
+    in the Import group.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb: customImport* /
+    settingsCustomCardsImport* keys.
+
 - **Replay status and a rewatch counter**
 
   A sixth item status for going through a finished title again: Replaying

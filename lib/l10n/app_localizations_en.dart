@@ -5063,6 +5063,145 @@ class SEn extends S {
   String get aniListImportSelectAtLeastOne => 'Select anime or manga to import';
 
   @override
+  String get settingsCustomCardsImport => 'Custom cards';
+
+  @override
+  String get settingsCustomCardsImportSubtitle =>
+      'Import cards from a JSON or CSV file';
+
+  @override
+  String get customImportTitle => 'Import custom cards';
+
+  @override
+  String get customImportDescription =>
+      'Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.';
+
+  @override
+  String get customImportSelectFile => 'Select JSON/CSV file';
+
+  @override
+  String get customImportCsvTemplate => 'CSV template';
+
+  @override
+  String get customImportJsonTemplate => 'JSON template';
+
+  @override
+  String get customImportTemplateSaved => 'Template saved';
+
+  @override
+  String get customImportTargetCollection => 'Target collection';
+
+  @override
+  String get customImportCreateNew => 'Create new collection';
+
+  @override
+  String get customImportUseExisting => 'Add to existing collection';
+
+  @override
+  String get customImportSelectCollection => 'Select collection';
+
+  @override
+  String get customImportNoCollections => 'No collections yet';
+
+  @override
+  String get customImportErrorLoadingCollections =>
+      'Failed to load collections';
+
+  @override
+  String get customImportPreviewButton => 'Preview and import';
+
+  @override
+  String get customImportPreviewTitle => 'Import preview';
+
+  @override
+  String customImportSummary(int valid, int errors, int duplicates) {
+    return 'Recognized $valid · Errors $errors · Duplicates $duplicates';
+  }
+
+  @override
+  String get customImportSelectAll => 'Select all';
+
+  @override
+  String get customImportSelectNone => 'Deselect all';
+
+  @override
+  String customImportSelectedCount(int selected, int total) {
+    return '$selected of $total selected';
+  }
+
+  @override
+  String get customImportDuplicate => 'Duplicate — already in the collection';
+
+  @override
+  String customImportRowLabel(int index) {
+    return 'Row $index';
+  }
+
+  @override
+  String get customImportStart => 'Import selected';
+
+  @override
+  String get customImportImporting => 'Importing custom cards...';
+
+  @override
+  String get customImportErrorEmptyFile => 'The file is empty';
+
+  @override
+  String get customImportErrorInvalidJson =>
+      'Broken JSON — the file could not be parsed';
+
+  @override
+  String get customImportErrorMissingColumns =>
+      'CSV must have \"title\" and \"type\" columns';
+
+  @override
+  String get customImportIssueNotAnObject => 'Not a JSON object';
+
+  @override
+  String get customImportIssueMissingTitle => 'Missing \"title\"';
+
+  @override
+  String get customImportIssueMissingType => 'Missing \"type\"';
+
+  @override
+  String customImportIssueUnknownType(String value) {
+    return 'Unknown type: $value';
+  }
+
+  @override
+  String customImportIssueInvalidNumber(String field, String value) {
+    return 'Invalid value in \"$field\": $value';
+  }
+
+  @override
+  String customImportIssueUnknownStatus(String value) {
+    return 'Unknown status: $value';
+  }
+
+  @override
+  String customImportIssueUnknownFormat(String value) {
+    return 'Unknown format: $value';
+  }
+
+  @override
+  String get customImportIssueFormatNotApplicable =>
+      '\"format\" is only for manga and anime';
+
+  @override
+  String get customImportIssueInvalidCover =>
+      '\"cover\" must be an http(s) URL';
+
+  @override
+  String customImportIssueInvalidDate(String field, String value) {
+    return 'Invalid date in \"$field\": $value (expected YYYY-MM-DD)';
+  }
+
+  @override
+  String customImportIssueInvalidBool(String value) {
+    return '\"favorite\" must be true/false: $value';
+  }
+
+  @override
   String get moodGridCreate => 'Create Mood Grid';
 
   @override

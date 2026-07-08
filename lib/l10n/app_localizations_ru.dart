@@ -5152,6 +5152,145 @@ class SRu extends S {
       'Выберите хотя бы один тип: аниме или манга';
 
   @override
+  String get settingsCustomCardsImport => 'Кастомные карточки';
+
+  @override
+  String get settingsCustomCardsImportSubtitle =>
+      'Импорт карточек из JSON или CSV файла';
+
+  @override
+  String get customImportTitle => 'Импорт кастомных карточек';
+
+  @override
+  String get customImportDescription =>
+      'Загрузите JSON или CSV файл, собранный вашим скриптом или парсером — каждая строка станет кастомной карточкой. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.';
+
+  @override
+  String get customImportSelectFile => 'Выбрать JSON/CSV файл';
+
+  @override
+  String get customImportCsvTemplate => 'Шаблон CSV';
+
+  @override
+  String get customImportJsonTemplate => 'Шаблон JSON';
+
+  @override
+  String get customImportTemplateSaved => 'Шаблон сохранён';
+
+  @override
+  String get customImportTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get customImportCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get customImportUseExisting => 'Добавить в существующую';
+
+  @override
+  String get customImportSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get customImportNoCollections => 'Коллекций пока нет';
+
+  @override
+  String get customImportErrorLoadingCollections =>
+      'Не удалось загрузить коллекции';
+
+  @override
+  String get customImportPreviewButton => 'Предпросмотр и импорт';
+
+  @override
+  String get customImportPreviewTitle => 'Предпросмотр импорта';
+
+  @override
+  String customImportSummary(int valid, int errors, int duplicates) {
+    return 'Распознано $valid · Ошибок $errors · Дублей $duplicates';
+  }
+
+  @override
+  String get customImportSelectAll => 'Выбрать все';
+
+  @override
+  String get customImportSelectNone => 'Снять все';
+
+  @override
+  String customImportSelectedCount(int selected, int total) {
+    return 'Выбрано $selected из $total';
+  }
+
+  @override
+  String get customImportDuplicate => 'Дубль — уже есть в коллекции';
+
+  @override
+  String customImportRowLabel(int index) {
+    return 'Строка $index';
+  }
+
+  @override
+  String get customImportStart => 'Импортировать отмеченные';
+
+  @override
+  String get customImportImporting => 'Импорт кастомных карточек...';
+
+  @override
+  String get customImportErrorEmptyFile => 'Файл пуст';
+
+  @override
+  String get customImportErrorInvalidJson =>
+      'Битый JSON — файл не удалось разобрать';
+
+  @override
+  String get customImportErrorMissingColumns =>
+      'В CSV должны быть колонки \"title\" и \"type\"';
+
+  @override
+  String get customImportIssueNotAnObject => 'Не JSON-объект';
+
+  @override
+  String get customImportIssueMissingTitle => 'Нет \"title\"';
+
+  @override
+  String get customImportIssueMissingType => 'Нет \"type\"';
+
+  @override
+  String customImportIssueUnknownType(String value) {
+    return 'Неизвестный тип: $value';
+  }
+
+  @override
+  String customImportIssueInvalidNumber(String field, String value) {
+    return 'Неверное значение в \"$field\": $value';
+  }
+
+  @override
+  String customImportIssueUnknownStatus(String value) {
+    return 'Неизвестный статус: $value';
+  }
+
+  @override
+  String customImportIssueUnknownFormat(String value) {
+    return 'Неизвестный формат: $value';
+  }
+
+  @override
+  String get customImportIssueFormatNotApplicable =>
+      '\"format\" только для манги и аниме';
+
+  @override
+  String get customImportIssueInvalidCover =>
+      '\"cover\" должен быть http(s) URL';
+
+  @override
+  String customImportIssueInvalidDate(String field, String value) {
+    return 'Неверная дата в \"$field\": $value (нужен формат YYYY-MM-DD)';
+  }
+
+  @override
+  String customImportIssueInvalidBool(String value) {
+    return '\"favorite\" должен быть true/false: $value';
+  }
+
+  @override
   String get moodGridCreate => 'Создать mood-сетку';
 
   @override

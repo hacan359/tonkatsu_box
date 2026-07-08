@@ -2344,6 +2344,95 @@
   "aniListImportEmptyUsername": "Enter your AniList username",
   "aniListImportSelectAtLeastOne": "Select anime or manga to import",
 
+  "settingsCustomCardsImport": "Custom cards",
+  "settingsCustomCardsImportSubtitle": "Import cards from a JSON or CSV file",
+  "customImportTitle": "Import custom cards",
+  "customImportDescription": "Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.",
+  "customImportSelectFile": "Select JSON/CSV file",
+  "customImportCsvTemplate": "CSV template",
+  "customImportJsonTemplate": "JSON template",
+  "customImportTemplateSaved": "Template saved",
+  "customImportTargetCollection": "Target collection",
+  "customImportCreateNew": "Create new collection",
+  "customImportUseExisting": "Add to existing collection",
+  "customImportSelectCollection": "Select collection",
+  "customImportNoCollections": "No collections yet",
+  "customImportErrorLoadingCollections": "Failed to load collections",
+  "customImportPreviewButton": "Preview and import",
+  "customImportPreviewTitle": "Import preview",
+  "customImportSummary": "Recognized {valid} · Errors {errors} · Duplicates {duplicates}",
+  "@customImportSummary": {
+    "placeholders": {
+      "valid": {"type": "int"},
+      "errors": {"type": "int"},
+      "duplicates": {"type": "int"}
+    }
+  },
+  "customImportSelectAll": "Select all",
+  "customImportSelectNone": "Deselect all",
+  "customImportSelectedCount": "{selected} of {total} selected",
+  "@customImportSelectedCount": {
+    "placeholders": {
+      "selected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "customImportDuplicate": "Duplicate — already in the collection",
+  "customImportRowLabel": "Row {index}",
+  "@customImportRowLabel": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "customImportStart": "Import selected",
+  "customImportImporting": "Importing custom cards...",
+  "customImportErrorEmptyFile": "The file is empty",
+  "customImportErrorInvalidJson": "Broken JSON — the file could not be parsed",
+  "customImportErrorMissingColumns": "CSV must have \"title\" and \"type\" columns",
+  "customImportIssueNotAnObject": "Not a JSON object",
+  "customImportIssueMissingTitle": "Missing \"title\"",
+  "customImportIssueMissingType": "Missing \"type\"",
+  "customImportIssueUnknownType": "Unknown type: {value}",
+  "@customImportIssueUnknownType": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidNumber": "Invalid value in \"{field}\": {value}",
+  "@customImportIssueInvalidNumber": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownStatus": "Unknown status: {value}",
+  "@customImportIssueUnknownStatus": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownFormat": "Unknown format: {value}",
+  "@customImportIssueUnknownFormat": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueFormatNotApplicable": "\"format\" is only for manga and anime",
+  "customImportIssueInvalidCover": "\"cover\" must be an http(s) URL",
+  "customImportIssueInvalidDate": "Invalid date in \"{field}\": {value} (expected YYYY-MM-DD)",
+  "@customImportIssueInvalidDate": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidBool": "\"favorite\" must be true/false: {value}",
+  "@customImportIssueInvalidBool": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+
   "moodGridCreate": "Create Mood Grid",
   "moodGridCreateTitle": "New Mood Grid",
   "moodGridName": "Name",
