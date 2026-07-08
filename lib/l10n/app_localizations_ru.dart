@@ -120,6 +120,24 @@ class SRu extends S {
   String get statusPlanned => 'Запланировано';
 
   @override
+  String get statusReplay => 'Повтор';
+
+  @override
+  String get rewatchCountEdit => 'Счётчик повторов';
+
+  @override
+  String get rewatchCountHint => 'Пусто = не отслеживается';
+
+  @override
+  String get statusReplaying => 'Перепрохожу';
+
+  @override
+  String get statusRewatching => 'Пересматриваю';
+
+  @override
+  String get statusRereading => 'Перечитываю';
+
+  @override
   String get homeFilterAll => 'Все';
 
   @override

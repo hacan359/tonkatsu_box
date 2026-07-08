@@ -7,6 +7,85 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Replay status and a rewatch counter**
+
+  A sixth item status for going through a finished title again: Replaying
+  for games and visual novels, Rewatching for movies / TV / anime,
+  Rereading for manga and books («Повтор» in filters and tables). Switching
+  to it never touches the started/completed dates — the item stays
+  completed-once. Alongside it, every item gets a rewatch counter with
+  MAL/AniList semantics: empty = not tracked, 0 = completed once, N = number
+  of repeats. Any transition into Completed bumps it automatically (first
+  completion writes 0), and it is editable by hand from the item card chip
+  next to the time-spent timer. AniList imports map REPEATING to the new
+  status and store `repeat` in the counter; MAL imports store
+  `my_times_watched` / `my_times_read`; both keep the old comment line too.
+  The counter round-trips through .xcoll/.xcollx exports and backups; files
+  saved before this version import as "not tracked".
+
+  * lib/shared/models/item_status.dart (ItemStatus.replaying,
+    ItemStatus.localizedLabel, ItemStatus.genericLabel,
+    ItemStatus.statusSortPriority): New enum value; media-type labels;
+    sorts right after In Progress.
+  * lib/shared/models/item_status_logic.dart (computeDatesForStatus,
+    computeRewatchCountForStatus, _externalStatusPriority): Replaying keeps
+    both dates; new pure counter rule (null → 0, else +1, only on
+    transitions into completed); external-merge priority above completed.
+  * lib/shared/models/collection_item.dart (CollectionItem.rewatchCount,
+    CollectionItem.fromDbWithJoins, CollectionItem.fromExport,
+    CollectionItem.toDb, CollectionItem.toExport, CollectionItem.copyWith,
+    CollectionItem.withStatus): New nullable field with full round-trip;
+    withStatus applies the counter rule.
+  * lib/core/database/migrations/migration_v55.dart (MigrationV55): New —
+    nullable `collection_items.rewatch_count`.
+  * lib/core/database/migrations/migration_registry.dart
+    (MigrationRegistry.all), lib/core/database/database_service.dart
+    (DatabaseService._initDatabase, DatabaseService.updateItemRewatchCount):
+    Register v55, bump version to 55, DAO passthrough.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.updateItemStatus,
+    CollectionDao.updateItemRewatchCount, CollectionDao.getCollectionItemStats):
+    Status write bumps the counter via computeRewatchCountForStatus and
+    leaves dates alone for replaying; verbatim counter setter; replaying
+    bucket in stats.
+  * lib/data/repositories/collection_repository.dart (CollectionStats.replaying,
+    CollectionRepository.updateItemRewatchCount, CollectionRepository.getStats):
+    New stats bucket (not counted into completionPercent) and setter.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.setRewatchCount,
+    CollectionItemsNotifier.updateActivityDates): Manual counter editing;
+    date-picker completion patches the counter locally.
+  * lib/features/collections/widgets/dialogs/rewatch_count_dialog.dart
+    (RewatchCountDialog): New — numeric editor, empty field clears back to
+    "not tracked".
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView.rewatchCount,
+    MediaDetailView.onRewatchCountTap, _buildStatChip): Counter chip next to
+    the time-spent chip; both now share one chip builder.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_showRewatchCountDialog): Wires the chip to the dialog and provider.
+  * lib/core/import/import_columns.dart (repeatIsTracked): Shared rule for
+    when a source repeat value is worth storing.
+  * lib/core/import/sources/anilist/anilist_import_service.dart
+    (AniListImportService._mapStatus, AniListImportService._insertRow,
+    AniListImportService._changedFields): REPEATING → replaying; `repeat`
+    into `rewatch_count` on insert and overwrite re-import.
+  * lib/core/import/sources/mal/mal_import_service.dart
+    (MalImportService._insertRow, MalImportService._changedFields,
+    MalImportService._statusLabel): `timesWatched` into `rewatch_count`;
+    label for the new status.
+  * lib/core/services/import_service.dart (ImportService._restoreUserData,
+    ImportService._hasUserData): Restores the file's counter after the
+    status write so the file value wins; never wipes a local counter with
+    null.
+  * lib/core/services/text_export_service.dart (_statusLabel),
+    lib/shared/widgets/chevron_filter_bar.dart (_order): "Replay" label and
+    filter entry.
+  * lib/shared/theme/app_colors.dart (AppColors.statusReplaying): New color.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (statusReplay, statusReplaying,
+    statusRewatching, statusRereading, rewatchCountEdit, rewatchCountHint):
+    New keys.
+
 ### Changed
 
 - **Tags are now global and an item can carry several of them**

@@ -70,6 +70,8 @@ class MediaDetailView extends ConsumerStatefulWidget {
     this.trackerSection,
     this.timeSpentMinutes = 0,
     this.onTimeSpentTap,
+    this.rewatchCount,
+    this.onRewatchCountTap,
     this.extraSections,
     this.mediaGallery,
     this.recommendationSections,
@@ -113,6 +115,11 @@ class MediaDetailView extends ConsumerStatefulWidget {
   /// 0 means not set.
   final int timeSpentMinutes;
   final VoidCallback? onTimeSpentTap;
+
+  /// Rewatch counter (0 = completed once, `null` = not tracked). The chip is
+  /// shown only when [onRewatchCountTap] is set.
+  final int? rewatchCount;
+  final VoidCallback? onRewatchCountTap;
 
   /// Extra type-specific sections (e.g. Progress for TV shows).
   final List<Widget>? extraSections;
@@ -407,6 +414,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
                   if (widget.tagWidget != null) widget.tagWidget!,
                   if (widget.raBadge != null) widget.raBadge!,
                   if (widget.onTimeSpentTap != null) _buildTimeSpentChip(),
+                  if (widget.onRewatchCountTap != null) _buildRewatchChip(),
                 ],
               ),
               if (widget.infoChips.isNotEmpty) ...<Widget>[
@@ -503,31 +511,41 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     final int hours = widget.timeSpentMinutes ~/ 60;
     final int minutes = widget.timeSpentMinutes % 60;
     final S l = S.of(context);
-    final String display = widget.timeSpentMinutes > 0
-        ? l.timeSpentValue(hours, minutes)
-        : '—';
-
-    return GestureDetector(
+    return _buildStatChip(
+      icon: Icons.timer_outlined,
+      text: widget.timeSpentMinutes > 0
+          ? l.timeSpentValue(hours, minutes)
+          : '—',
+      active: widget.timeSpentMinutes > 0,
       onTap: widget.onTimeSpentTap,
+    );
+  }
+
+  Widget _buildRewatchChip() {
+    return _buildStatChip(
+      icon: Icons.replay,
+      text: widget.rewatchCount?.toString() ?? '—',
+      active: widget.rewatchCount != null,
+      onTap: widget.onRewatchCountTap,
+    );
+  }
+
+  Widget _buildStatChip({
+    required IconData icon,
+    required String text,
+    required bool active,
+    required VoidCallback? onTap,
+  }) {
+    final Color color =
+        active ? AppColors.textSecondary : AppColors.textTertiary;
+    return GestureDetector(
+      onTap: onTap,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(
-            Icons.timer_outlined,
-            size: 12,
-            color: widget.timeSpentMinutes > 0
-                ? AppColors.textSecondary
-                : AppColors.textTertiary,
-          ),
+          Icon(icon, size: 12, color: color),
           const SizedBox(width: 3),
-          Text(
-            display,
-            style: AppTypography.caption.copyWith(
-              color: widget.timeSpentMinutes > 0
-                  ? AppColors.textSecondary
-                  : AppColors.textTertiary,
-            ),
-          ),
+          Text(text, style: AppTypography.caption.copyWith(color: color)),
         ],
       ),
     );

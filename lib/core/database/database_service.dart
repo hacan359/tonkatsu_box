@@ -248,7 +248,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 54,
+        version: 55,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -421,6 +421,9 @@ class DatabaseService {
     required MediaType mediaType,
   }) =>
       collectionDao.updateItemStatus(id, status, mediaType: mediaType);
+
+  Future<void> updateItemRewatchCount(int id, int? count) =>
+      collectionDao.updateItemRewatchCount(id, count);
 
   Future<void> updateItemActivityDates(
     int id, {

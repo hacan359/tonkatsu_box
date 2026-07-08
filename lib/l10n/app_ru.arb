@@ -46,6 +46,12 @@
   "statusCompleted": "Завершено",
   "statusDropped": "Брошено",
   "statusPlanned": "Запланировано",
+  "statusReplay": "Повтор",
+  "rewatchCountEdit": "Счётчик повторов",
+  "rewatchCountHint": "Пусто = не отслеживается",
+  "statusReplaying": "Перепрохожу",
+  "statusRewatching": "Пересматриваю",
+  "statusRereading": "Перечитываю",
   "homeFilterAll": "Все",
 
   "mediaTypeGame": "Игра",

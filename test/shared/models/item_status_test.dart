@@ -8,13 +8,14 @@ import 'package:tonkatsu_box/shared/models/item_status.dart';
 void main() {
   group('ItemStatus', () {
     group('значения enum', () {
-      test('содержит 5 статусов', () {
-        expect(ItemStatus.values.length, 5);
+      test('содержит 6 статусов', () {
+        expect(ItemStatus.values.length, 6);
         expect(ItemStatus.values, contains(ItemStatus.notStarted));
         expect(ItemStatus.values, contains(ItemStatus.inProgress));
         expect(ItemStatus.values, contains(ItemStatus.completed));
         expect(ItemStatus.values, contains(ItemStatus.dropped));
         expect(ItemStatus.values, contains(ItemStatus.planned));
+        expect(ItemStatus.values, contains(ItemStatus.replaying));
       });
     });
 
@@ -25,6 +26,7 @@ void main() {
         expect(ItemStatus.completed.value, 'completed');
         expect(ItemStatus.dropped.value, 'dropped');
         expect(ItemStatus.planned.value, 'planned');
+        expect(ItemStatus.replaying.value, 'replaying');
       });
     });
 
@@ -35,6 +37,7 @@ void main() {
         expect(ItemStatus.fromString('completed'), ItemStatus.completed);
         expect(ItemStatus.fromString('dropped'), ItemStatus.dropped);
         expect(ItemStatus.fromString('planned'), ItemStatus.planned);
+        expect(ItemStatus.fromString('replaying'), ItemStatus.replaying);
       });
 
       test('fallback в notStarted для удалённого статуса on_hold', () {
@@ -69,8 +72,9 @@ void main() {
     });
 
     group('statusSortPriority', () {
-      test('порядок: inProgress → planned → notStarted → completed → dropped',
-          () {
+      test(
+          'порядок: inProgress → replaying → planned → notStarted → '
+          'completed → dropped', () {
         final List<ItemStatus> sorted = List<ItemStatus>.from(ItemStatus.values)
           ..sort(
             (ItemStatus a, ItemStatus b) =>
@@ -79,6 +83,7 @@ void main() {
 
         expect(sorted, <ItemStatus>[
           ItemStatus.inProgress,
+          ItemStatus.replaying,
           ItemStatus.planned,
           ItemStatus.notStarted,
           ItemStatus.completed,

@@ -1138,6 +1138,126 @@ void main() {
       });
     });
 
+    group('rewatchCount', () {
+      CollectionItem baseItem({int? rewatchCount, ItemStatus? status}) =>
+          CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: status ?? ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            rewatchCount: rewatchCount,
+          );
+
+      test('fromDb читает rewatch_count, null остаётся null', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 1942,
+          'status': 'completed',
+          'added_at': testAddedAtUnix,
+          'rewatch_count': 3,
+        };
+        expect(CollectionItem.fromDb(row).rewatchCount, 3);
+
+        row['rewatch_count'] = null;
+        expect(CollectionItem.fromDb(row).rewatchCount, isNull);
+      });
+
+      test('toDb пишет rewatch_count как есть (включая null и 0)', () {
+        expect(baseItem(rewatchCount: 2).toDb()['rewatch_count'], 2);
+        expect(baseItem(rewatchCount: 0).toDb()['rewatch_count'], 0);
+        expect(baseItem().toDb()['rewatch_count'], isNull);
+      });
+
+      test('toExport выдаёт rewatch_count только с includeUserData', () {
+        final CollectionItem item = baseItem(rewatchCount: 2);
+        expect(
+          item.toExport().containsKey('rewatch_count'),
+          isFalse,
+        );
+        expect(
+          item.toExport(includeUserData: true)['rewatch_count'],
+          2,
+        );
+      });
+
+      test('fromExport: отсутствие поля → null (старые файлы)', () {
+        final CollectionItem parsed = CollectionItem.fromExport(
+          <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 1942,
+          },
+        );
+        expect(parsed.rewatchCount, isNull);
+      });
+
+      test('round-trip toExport → fromExport сохраняет значение', () {
+        final CollectionItem parsed = CollectionItem.fromExport(
+          baseItem(rewatchCount: 5).toExport(includeUserData: true),
+        );
+        expect(parsed.rewatchCount, 5);
+      });
+
+      test('copyWith меняет и чистит счётчик', () {
+        final CollectionItem item = baseItem(rewatchCount: 1);
+        expect(item.copyWith(rewatchCount: 7).rewatchCount, 7);
+        expect(item.copyWith().rewatchCount, 1);
+        expect(
+          item.copyWith(clearRewatchCount: true).rewatchCount,
+          isNull,
+        );
+      });
+
+      group('withStatus инкремент', () {
+        test('переход в completed: null → 0', () {
+          final CollectionItem updated =
+              baseItem(status: ItemStatus.inProgress)
+                  .withStatus(ItemStatus.completed);
+          expect(updated.rewatchCount, 0);
+        });
+
+        test('replaying → completed: +1', () {
+          final CollectionItem updated =
+              baseItem(rewatchCount: 0, status: ItemStatus.replaying)
+                  .withStatus(ItemStatus.completed);
+          expect(updated.rewatchCount, 1);
+        });
+
+        test('completed → completed: без изменений', () {
+          final CollectionItem updated =
+              baseItem(rewatchCount: 2, status: ItemStatus.completed)
+                  .withStatus(ItemStatus.completed);
+          expect(updated.rewatchCount, 2);
+        });
+
+        test('переход в replaying не меняет счётчик и даты', () {
+          final DateTime started = DateTime(2024, 2, 1);
+          final DateTime completed = DateTime(2024, 3, 1);
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.completed,
+            addedAt: testAddedAt,
+            startedAt: started,
+            completedAt: completed,
+            rewatchCount: 1,
+          );
+
+          final CollectionItem updated =
+              item.withStatus(ItemStatus.replaying);
+          expect(updated.status, ItemStatus.replaying);
+          expect(updated.rewatchCount, 1);
+          expect(updated.startedAt, started);
+          expect(updated.completedAt, completed);
+        });
+      });
+    });
+
     group('equality', () {
       test('should be equal другому CollectionItem с тем же id', () {
         final CollectionItem item1 = CollectionItem(

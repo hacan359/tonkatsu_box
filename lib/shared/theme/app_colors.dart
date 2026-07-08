@@ -93,6 +93,9 @@ abstract final class AppColors {
   /// "Planned" status (backlog, wishlist).
   static const Color statusPlanned = Color(0xFF8B5CF6);
 
+  /// "Replay" status (replaying / rewatching / rereading).
+  static const Color statusReplaying = Color(0xFF26C6DA);
+
   // ==================== Ratings ====================
 
   /// Rating star icon (amber).

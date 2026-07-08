@@ -171,7 +171,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, or `"planned"` |
+| status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, `"planned"`, or `"replaying"` |
 | user_comment | string | User's personal notes |
 | is_favorite | number | `1` if the user marked the item a favorite; absent or `0` otherwise |
 | current_season | number | Current season (TV shows) |
@@ -181,6 +181,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | started_at | number | Unix timestamp (seconds) when started |
 | completed_at | number | Unix timestamp (seconds) when completed |
 | last_activity_at | number | Unix timestamp (seconds) of last activity |
+| rewatch_count | number | Rewatch counter (MAL/AniList semantics: `0` = completed once, `N` = repeats). Absent/`null` = not tracked; never overwrites a locally tracked value on re-import |
 
 ### Item Marks
 

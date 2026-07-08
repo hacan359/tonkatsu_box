@@ -264,7 +264,7 @@ void main() {
     test('should map AniList status values to ItemStatus', () async {
       const Map<String, ItemStatus> mapping = <String, ItemStatus>{
         'CURRENT': ItemStatus.inProgress,
-        'REPEATING': ItemStatus.inProgress,
+        'REPEATING': ItemStatus.replaying,
         'COMPLETED': ItemStatus.completed,
         'PLANNING': ItemStatus.planned,
         'DROPPED': ItemStatus.dropped,
@@ -293,6 +293,50 @@ void main() {
       expect(comment, contains('https://anilist.co/anime/100922'));
       expect(comment, contains('Rewatched times: 3'));
       expect(comment, contains('great show'));
+    });
+
+    test('should store repeat as rewatch_count for completed and replaying',
+        () async {
+      stubAnime(<AniListListEntry>[
+        animeEntry(mediaId: 1, rawStatus: 'COMPLETED', repeat: 0),
+        animeEntry(mediaId: 2, rawStatus: 'COMPLETED', repeat: 3),
+        animeEntry(mediaId: 3, rawStatus: 'REPEATING', repeat: 0),
+        animeEntry(mediaId: 4, rawStatus: 'CURRENT', repeat: 0),
+        animeEntry(mediaId: 5, rawStatus: 'CURRENT', repeat: 2),
+      ]);
+      stubManga(<AniListListEntry>[]);
+
+      await sut.import(opts());
+
+      final List<Map<String, dynamic>> rows = capturedItemRows();
+      Map<String, dynamic> rowFor(int id) =>
+          rows.firstWhere((Map<String, dynamic> r) => r['external_id'] == id);
+      expect(rowFor(1)['rewatch_count'], 0);
+      expect(rowFor(2)['rewatch_count'], 3);
+      expect(rowFor(3)['rewatch_count'], 0);
+      expect(rowFor(4).containsKey('rewatch_count'), isFalse);
+      expect(rowFor(5)['rewatch_count'], 2);
+    });
+
+    test('should refresh rewatch_count on overwrite re-import', () async {
+      stubAnime(<AniListListEntry>[animeEntry(repeat: 4)]);
+      stubManga(<AniListListEntry>[]);
+      when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 7,
+              mediaType: MediaType.anime,
+              externalId: 100922,
+              status: ItemStatus.completed,
+              rewatchCount: 1,
+            ),
+          ]);
+
+      await sut.import(opts(mode: ImportMode.overwrite));
+
+      final (int, Map<String, dynamic>) update = capturedUpdates().single;
+      expect(update.$1, 7);
+      expect(update.$2['rewatch_count'], 4);
     });
 
     test('should top up manga chapters and volumes when COMPLETED', () async {
