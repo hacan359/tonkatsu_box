@@ -617,14 +617,25 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Added: '), findsOneWidget);
-        expect(find.text('Jan 15, 2025'), findsOneWidget);
-        expect(find.text('Started: '), findsOneWidget);
+        expect(find.text('Started'), findsOneWidget);
         expect(find.text('Feb 1, 2025'), findsOneWidget);
-        expect(find.text('Completed: '), findsOneWidget);
+        expect(find.text('Completed'), findsOneWidget);
         expect(find.text('Mar 10, 2025'), findsOneWidget);
-        expect(find.text('Last Activity: '), findsOneWidget);
-        expect(find.text('Mar 12, 2025'), findsOneWidget);
+        // System dates (added / last activity) live behind the info button.
+        expect(find.text('Jan 15, 2025'), findsNothing);
+        expect(find.text('Mar 12, 2025'), findsNothing);
+        expect(find.byIcon(Icons.info_outline), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.info_outline));
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Added: Jan 15, 2025'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Last Activity: Mar 12, 2025'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('не должен отображать даты когда addedAt == null',
@@ -632,8 +643,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('Added: '), findsNothing);
-        expect(find.text('Started: '), findsNothing);
+        expect(find.text('Added'), findsNothing);
+        expect(find.text('Started'), findsNothing);
       });
 
       testWidgets('should show тире для null Started/Completed',
@@ -643,8 +654,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Started: '), findsOneWidget);
-        expect(find.text('Completed: '), findsOneWidget);
+        expect(find.text('Started'), findsOneWidget);
+        expect(find.text('Completed'), findsOneWidget);
         // \u2014 — em dash
         expect(find.text('\u2014'), findsNWidgets(2));
       });
@@ -656,7 +667,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Last Activity: '), findsNothing);
+        expect(find.text('Last Activity'), findsNothing);
       });
 
       testWidgets('should show иконки редактирования для editable дат',
@@ -700,7 +711,13 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Completed in 2 weeks'), findsOneWidget);
+        // Auto-derived completion time is a tooltip on the Completed tile.
+        expect(
+          find.byWidgetPredicate(
+            (Widget w) => w is Tooltip && w.message == 'Completed in 2 weeks',
+          ),
+          findsOneWidget,
+        );
       });
 
       testWidgets('should not display completion time when null',
@@ -721,7 +738,13 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Completed in less than a day'), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (Widget w) =>
+                w is Tooltip && w.message == 'Completed in less than a day',
+          ),
+          findsOneWidget,
+        );
       });
     });
 
@@ -757,11 +780,12 @@ void main() {
         expect(find.text('Author text'), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
         expect(find.text('User text'), findsOneWidget);
-        // Activity dates row
-        expect(find.text('Added: '), findsOneWidget);
-        expect(find.text('Jun 1, 2025'), findsOneWidget);
-        expect(find.text('Started: '), findsOneWidget);
+        // Progress tiles: user-set dates inline, system dates behind the
+        // info button.
+        expect(find.text('Started'), findsOneWidget);
         expect(find.text('Jun 5, 2025'), findsOneWidget);
+        expect(find.text('Jun 1, 2025'), findsNothing);
+        expect(find.byIcon(Icons.info_outline), findsOneWidget);
         expect(find.text('Extra'), findsOneWidget);
       });
     });

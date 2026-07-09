@@ -2467,6 +2467,12 @@ class SRu extends S {
   String get searchDescription => 'Описание';
 
   @override
+  String get showMore => 'Ещё…';
+
+  @override
+  String get showLess => 'Свернуть';
+
+  @override
   String get platformFilterTitle => 'Выбор платформ';
 
   @override
@@ -4616,6 +4622,33 @@ class SRu extends S {
 
   @override
   String get filtersClear => 'Сбросить';
+
+  @override
+  String get collectionTableColumns => 'Колонки';
+
+  @override
+  String get tableFilterHint => 'Все правила действуют одновременно (И).';
+
+  @override
+  String get tableFilterAddRule => 'Добавить правило';
+
+  @override
+  String get tableFilterCondContains => 'Содержит';
+
+  @override
+  String get tableFilterCondEquals => 'Равно';
+
+  @override
+  String get tableFilterCondStartsWith => 'Начинается с';
+
+  @override
+  String get tableFilterCondEndsWith => 'Заканчивается на';
+
+  @override
+  String get tableFilterCondAtLeast => 'Не меньше (≥)';
+
+  @override
+  String get tableFilterCondAtMost => 'Не больше (≤)';
 
   @override
   String get profiles => 'Профили приложения';

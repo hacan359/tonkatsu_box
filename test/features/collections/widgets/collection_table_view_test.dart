@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_table/collection_table_view.dart';
+import 'package:tonkatsu_box/features/collections/widgets/collection_table/table_filter.dart';
+import 'package:tonkatsu_box/features/collections/widgets/collection_table/table_layout_store.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart' as p;
+import 'package:trina_grid/trina_grid.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -59,66 +65,103 @@ void main() {
     WidgetTester tester, {
     required List<CollectionItem> items,
     ValueChanged<CollectionItem>? onItemTap,
+    Set<int>? selectedIds,
+    void Function(int itemId)? onToggleSelect,
+    void Function(bool selectAll)? onToggleSelectAll,
+    void Function(int oldIndex, int newIndex)? onReorder,
   }) async {
-    final List<CollectionItem> tapped = <CollectionItem>[];
+    // The grid lays out against the real test surface (MediaQuery overrides
+    // don't affect layout), so widen it to fit every column.
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpApp(
       CollectionTableView(
         items: items,
-        onItemTap: onItemTap ?? tapped.add,
+        onItemTap: onItemTap ?? (CollectionItem _) {},
+        selectedIds: selectedIds,
+        onToggleSelect: onToggleSelect,
+        onToggleSelectAll: onToggleSelectAll,
+        onReorder: onReorder,
       ),
       wrapInScaffold: true,
-      mediaQuerySize: const Size(1200, 800),
     );
+    // Extra frame for the async column-layout load.
+    await tester.pump();
   }
 
-  // Header text changes after filtering, so we resolve via TableColumn Key.
-  Finder headerFinder(String label) {
-    const Map<String, TableColumn> columnMap = <String, TableColumn>{
-      'Name': TableColumn.name,
-      'Type': TableColumn.type,
-      'Platform': TableColumn.platform,
-      'Status': TableColumn.status,
-      'Favorite': TableColumn.favorite,
-      'Rating': TableColumn.rating,
-      'Year': TableColumn.year,
-      'Added': TableColumn.added,
-    };
-    final TableColumn? column = columnMap[label];
-    if (column != null) {
-      return find.byKey(ValueKey<TableColumn>(column));
-    }
-    final String lower = label.toLowerCase();
-    return find.ancestor(
-      of: find.byWidgetPredicate((Widget w) {
-        if (w is! Text) return false;
-        final String? t = w.data ?? w.textSpan?.toPlainText();
-        return t != null && t.toLowerCase().contains(lower);
-      }),
-      matching: find.byType(InkWell),
-    );
+  // Cells carry a double-tap recognizer (row double tap opens the item), so
+  // a single tap only resolves after the double-tap window expires.
+  Future<void> tapAndResolve(WidgetTester tester, Finder finder) async {
+    await tester.tap(finder);
+    await tester.pump(const Duration(milliseconds: 400));
   }
 
-  group('TableColumn', () {
-    test('should have 10 values', () {
-      expect(TableColumn.values.length, 10);
+  group('TableFilterCondition', () {
+    test('maps each condition to the matching trina filter type', () {
+      expect(
+        TableFilterCondition.contains.trinaType,
+        isA<TrinaFilterTypeContains>(),
+      );
+      expect(
+        TableFilterCondition.equals.trinaType,
+        isA<TrinaFilterTypeEquals>(),
+      );
+      expect(
+        TableFilterCondition.startsWith.trinaType,
+        isA<TrinaFilterTypeStartsWith>(),
+      );
+      expect(
+        TableFilterCondition.endsWith.trinaType,
+        isA<TrinaFilterTypeEndsWith>(),
+      );
+      expect(
+        TableFilterCondition.atLeast.trinaType,
+        isA<TrinaFilterTypeGreaterThanOrEqualTo>(),
+      );
+      expect(
+        TableFilterCondition.atMost.trinaType,
+        isA<TrinaFilterTypeLessThanOrEqualTo>(),
+      );
+    });
+  });
+
+  group('TableColumnLayout', () {
+    test('encode/fromJson roundtrip preserves order and widths', () {
+      const TableColumnLayout layout = TableColumnLayout(
+        order: <String>['name', 'year', 'status'],
+        widths: <String, double>{'name': 280, 'year': 72.5},
+      );
+      final TableColumnLayout decoded = TableColumnLayout.fromJson(
+        jsonDecode(layout.encode()) as Map<String, dynamic>,
+      );
+      expect(decoded.order, <String>['name', 'year', 'status']);
+      expect(decoded.widths['name'], 280);
+      expect(decoded.widths['year'], 72.5);
     });
 
-    test('should contain all expected columns', () {
-      expect(
-        TableColumn.values,
-        containsAll(<TableColumn>[
-          TableColumn.name,
-          TableColumn.type,
-          TableColumn.platform,
-          TableColumn.status,
-          TableColumn.favorite,
-          TableColumn.tag,
-          TableColumn.rating,
-          TableColumn.externalRating,
-          TableColumn.year,
-          TableColumn.added,
-        ]),
+    test('store saves and loads layout per collection', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      const TableColumnLayout layout = TableColumnLayout(
+        order: <String>['thumb', 'name'],
+        widths: <String, double>{'name': 300},
       );
+      await TableLayoutStore.save(7, layout);
+
+      final TableColumnLayout? loaded = await TableLayoutStore.load(7);
+      expect(loaded, isNotNull);
+      expect(loaded!.order, <String>['thumb', 'name']);
+      expect(loaded.widths['name'], 300);
+
+      expect(await TableLayoutStore.load(8), isNull);
+    });
+
+    test('load returns null on corrupt json', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'collection_table_layout_9': 'not-json',
+      });
+      expect(await TableLayoutStore.load(9), isNull);
     });
   });
 
@@ -130,377 +173,119 @@ void main() {
         expect(find.text('Alpha Game'), findsOneWidget);
         expect(find.text('Beta Movie'), findsOneWidget);
         expect(find.text('Gamma Show'), findsOneWidget);
+        expect(tester.takeException(), isNull);
       });
 
       testWidgets('should render empty list without errors',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: <CollectionItem>[]);
-
-        expect(find.byType(CollectionTableView), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 
       testWidgets('should display genres when present',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: <CollectionItem>[gameAlpha]);
-
         expect(find.text('RPG, Action'), findsOneWidget);
-      });
-
-      testWidgets('should hide genres when null',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: <CollectionItem>[tvGamma]);
-
-        // tvGamma has no genres — only the item name should be present
-        expect(find.text('Gamma Show'), findsOneWidget);
       });
 
       testWidgets('should show platform abbreviation for games',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: <CollectionItem>[gameAlpha]);
-
         expect(find.text('PS'), findsOneWidget);
-      });
-
-      testWidgets('should show empty platform label for non-games',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: <CollectionItem>[movieBeta]);
-
-        // Movie should have empty platform label — no platform text
-        expect(find.text('Beta Movie'), findsOneWidget);
-      });
-
-      testWidgets('should show platform name when abbreviation is null',
-          (WidgetTester tester) async {
-        final CollectionItem gameNoPlatformAbbr = createTestCollectionItem(
-          id: 10,
-          mediaType: MediaType.game,
-          game: createTestGame(id: 110, name: 'NoAbbrGame'),
-          platform: const p.Platform(id: 5, name: 'Nintendo 64'),
-        );
-
-        await pumpTableView(
-          tester,
-          items: <CollectionItem>[gameNoPlatformAbbr],
-        );
-
-        expect(find.text('Nintendo 64'), findsOneWidget);
-      });
-    });
-
-    group('rating display', () {
-      testWidgets('should show rating value when present',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: <CollectionItem>[gameAlpha]);
-
-        expect(find.text('9.0'), findsOneWidget);
-      });
-
-      testWidgets('should render empty rating cell when null',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: <CollectionItem>[tvGamma]);
-
-        // tvGamma has no userRating — star icon must be absent in rating cell.
-        expect(find.byIcon(Icons.star_rounded), findsNothing);
       });
     });
 
     group('onItemTap', () {
-      testWidgets('should fire callback with correct item when row tapped',
+      testWidgets('tapping the item name opens it',
           (WidgetTester tester) async {
         final List<CollectionItem> tapped = <CollectionItem>[];
-
         await pumpTableView(
           tester,
           items: threeItems(),
           onItemTap: tapped.add,
         );
 
-        await tester.tap(find.text('Beta Movie'));
-        await tester.pumpAndSettle();
+        await tapAndResolve(tester, find.text('Beta Movie'));
 
         expect(tapped, hasLength(1));
-        expect(tapped.first.id, movieBeta.id);
+        expect(tapped.single.id, movieBeta.id);
       });
     });
 
     group('sorting', () {
-      List<String> itemNamesInOrder(WidgetTester tester) {
-        final Iterable<Text> textWidgets = tester
-            .widgetList<Text>(find.byType(Text))
-            .where(
-              (Text t) =>
-                  t.data == 'Alpha Game' ||
-                  t.data == 'Beta Movie' ||
-                  t.data == 'Gamma Show',
-            );
-        return textWidgets.map((Text t) => t.data!).toList();
-      }
-
-      testWidgets('should sort by name ascending by default',
+      testWidgets('tapping the year header sorts rows by year',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: threeItems());
 
-        final List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Alpha Game', 'Beta Movie', 'Gamma Show']);
-      });
-
-      testWidgets(
-          'should toggle to descending when tapping same column header',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: threeItems());
-
-        // Name is the active sort column — tap its header InkWell
-        await tester.tap(headerFinder('Name').first);
-        await tester.pumpAndSettle();
-
-        final List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Gamma Show', 'Beta Movie', 'Alpha Game']);
-      });
-
-      testWidgets(
-          'should switch to ascending when tapping a different column header',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: threeItems());
-
-        // Tap "Year" header — switches column to year, ascending
-        await tester.tap(headerFinder('Year').first);
-        await tester.pumpAndSettle();
-
-        // Year ascending: movieBeta(2018) < gameAlpha(2020) < tvGamma(2023)
-        final List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Beta Movie', 'Alpha Game', 'Gamma Show']);
-      });
-
-      testWidgets('should filter by rating on tap, cycle through values',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: threeItems());
-
-        // First tap: filter to first rating value (0 = null rating)
-        await tester.tap(headerFinder('Rating').first);
-        await tester.pumpAndSettle();
-
-        // Only Gamma Show has null rating (0)
-        List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Gamma Show']);
-
-        // Second tap: next rating value (7)
-        await tester.tap(headerFinder('Rating').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names, <String>['Beta Movie']);
-
-        // Third tap: next rating value (9)
-        await tester.tap(headerFinder('Rating').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names, <String>['Alpha Game']);
-
-        // Fourth tap: reset to show all
-        await tester.tap(headerFinder('Rating').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names.length, 3);
-      });
-
-      testWidgets('should filter by favorite on tap, cycle through values',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: <CollectionItem>[
-          gameAlpha.copyWith(isFavorite: true),
-          movieBeta,
-          tvGamma,
-        ]);
-
-        // First tap: favorites only.
-        await tester.tap(headerFinder('Favorite').first);
-        await tester.pumpAndSettle();
-        expect(itemNamesInOrder(tester), <String>['Alpha Game']);
-
-        // Second tap: non-favorites only.
-        await tester.tap(headerFinder('Favorite').first);
-        await tester.pumpAndSettle();
-        List<String> names = itemNamesInOrder(tester);
-        expect(names.length, 2);
-        expect(names, isNot(contains('Alpha Game')));
-
-        // Third tap: reset to all.
-        await tester.tap(headerFinder('Favorite').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names.length, 3);
-      });
-
-      testWidgets('should filter by status on tap, cycle through values',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: threeItems());
-
-        // First tap: filter to first status (inProgress)
-        await tester.tap(headerFinder('Status').first);
-        await tester.pumpAndSettle();
-
-        List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Beta Movie']);
-
-        // Second tap: next status (completed)
-        await tester.tap(headerFinder('Status').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names, <String>['Alpha Game']);
-
-        // Third tap: next status (planned)
-        await tester.tap(headerFinder('Status').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names, <String>['Gamma Show']);
-
-        // Fourth tap: reset
-        await tester.tap(headerFinder('Status').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names.length, 3);
-      });
-
-      testWidgets('should filter by type on tap, cycle through values',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: threeItems());
-
-        // First tap: filter to first type (game)
-        await tester.tap(headerFinder('Type').first);
-        await tester.pumpAndSettle();
-
-        List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Alpha Game']);
-
-        // Second tap: next type (movie)
-        await tester.tap(headerFinder('Type').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names, <String>['Beta Movie']);
-
-        // Third tap: next type (tvShow)
-        await tester.tap(headerFinder('Type').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names, <String>['Gamma Show']);
-
-        // Fourth tap: reset
-        await tester.tap(headerFinder('Type').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names.length, 3);
-      });
-
-      testWidgets('should filter by platform on tap, cycle through values',
-          (WidgetTester tester) async {
-        final CollectionItem gameZ = createTestCollectionItem(
-          id: 10,
-          mediaType: MediaType.game,
-          game: createTestGame(id: 110, name: 'ZZZ Game'),
-          platform: const p.Platform(id: 2, name: 'Zzz Platform'),
+        // Tap the title's left corner: the resize/menu icon overlays the
+        // centre of narrow column titles.
+        await tester.tapAt(
+          tester.getTopLeft(find.text('YEAR')) + const Offset(2, 2),
         );
-        final CollectionItem gameA = createTestCollectionItem(
-          id: 11,
-          mediaType: MediaType.game,
-          game: createTestGame(id: 111, name: 'AAA Game'),
-          platform: const p.Platform(id: 3, name: 'Aaa Platform'),
-        );
+        await tester.pumpAndSettle();
 
+        final double alphaY = tester.getTopLeft(find.text('Alpha Game')).dy;
+        final double betaY = tester.getTopLeft(find.text('Beta Movie')).dy;
+        final double gammaY = tester.getTopLeft(find.text('Gamma Show')).dy;
+        // Ascending: Beta (2018) < Alpha (2020) < Gamma (2023).
+        expect(betaY, lessThan(alphaY));
+        expect(alphaY, lessThan(gammaY));
+      });
+
+      testWidgets('second tap flips the direction',
+          (WidgetTester tester) async {
+        await pumpTableView(tester, items: threeItems());
+
+        await tester.tapAt(
+          tester.getTopLeft(find.text('YEAR')) + const Offset(2, 2),
+        );
+        await tester.pumpAndSettle();
+        await tester.tapAt(
+          tester.getTopLeft(find.text('YEAR')) + const Offset(2, 2),
+        );
+        await tester.pumpAndSettle();
+
+        final double betaY = tester.getTopLeft(find.text('Beta Movie')).dy;
+        final double gammaY = tester.getTopLeft(find.text('Gamma Show')).dy;
+        expect(gammaY, lessThan(betaY));
+      });
+    });
+
+    group('selection', () {
+      testWidgets('row checkbox toggles selection via callback',
+          (WidgetTester tester) async {
+        final List<int> toggled = <int>[];
         await pumpTableView(
           tester,
-          items: <CollectionItem>[gameZ, gameA],
+          items: <CollectionItem>[gameAlpha],
+          selectedIds: <int>{},
+          onToggleSelect: toggled.add,
+          onToggleSelectAll: (bool _) {},
         );
 
-        // Both visible initially
-        expect(find.text('ZZZ Game'), findsOneWidget);
-        expect(find.text('AAA Game'), findsOneWidget);
+        // The grid paints body rows before the header, so the row checkbox
+        // comes first in the tree and the select-all one last.
+        final Finder checkboxes = find.byType(Checkbox);
+        expect(checkboxes, findsNWidgets(2));
+        await tapAndResolve(tester, checkboxes.first);
 
-        // Tap Platform header → filter to first platform ("Aaa Platform")
-        await tester.tap(headerFinder('Platform').first);
-        await tester.pumpAndSettle();
-
-        expect(find.text('AAA Game'), findsOneWidget);
-        expect(find.text('ZZZ Game'), findsNothing);
-
-        // Tap again → filter to next platform ("Zzz Platform")
-        await tester.tap(headerFinder('Aaa Platform').first);
-        await tester.pumpAndSettle();
-
-        expect(find.text('ZZZ Game'), findsOneWidget);
-        expect(find.text('AAA Game'), findsNothing);
-
-        // Tap again → reset filter (null)
-        await tester.tap(headerFinder('Zzz Platform').first);
-        await tester.pumpAndSettle();
-
-        expect(find.text('ZZZ Game'), findsOneWidget);
-        expect(find.text('AAA Game'), findsOneWidget);
+        expect(toggled, <int>[gameAlpha.id]);
       });
 
-      testWidgets('should sort by year with nulls as zero',
+      testWidgets('header checkbox fires select-all',
           (WidgetTester tester) async {
-        final CollectionItem noYearItem = createTestCollectionItem(
-          id: 4,
-          mediaType: MediaType.game,
-          game: createTestGame(id: 104, name: 'Delta Game'),
-          addedAt: DateTime(2024, 5, 1),
-        );
-
+        final List<bool> selectAllCalls = <bool>[];
         await pumpTableView(
           tester,
-          items: <CollectionItem>[gameAlpha, noYearItem],
+          items: threeItems(),
+          selectedIds: <int>{},
+          onToggleSelect: (int _) {},
+          onToggleSelectAll: selectAllCalls.add,
         );
 
-        await tester.tap(headerFinder('Year').first);
-        await tester.pumpAndSettle();
+        await tapAndResolve(tester, find.byType(Checkbox).last);
 
-        // Ascending: noYearItem(null=0) < gameAlpha(2020)
-        final Iterable<Text> texts = tester
-            .widgetList<Text>(find.byType(Text))
-            .where(
-              (Text t) => t.data == 'Alpha Game' || t.data == 'Delta Game',
-            );
-        final List<String> names = texts.map((Text t) => t.data!).toList();
-        expect(names, <String>['Delta Game', 'Alpha Game']);
-      });
-
-      testWidgets('should toggle descending and back to ascending',
-          (WidgetTester tester) async {
-        await pumpTableView(tester, items: threeItems());
-
-        // Default: ascending by name
-        List<String> names = itemNamesInOrder(tester);
-        expect(names.first, 'Alpha Game');
-
-        // Tap Name → descending
-        await tester.tap(headerFinder('Name').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names.first, 'Gamma Show');
-
-        // Tap Name again → ascending
-        await tester.tap(headerFinder('Name').first);
-        await tester.pumpAndSettle();
-        names = itemNamesInOrder(tester);
-        expect(names.first, 'Alpha Game');
-      });
-
-      testWidgets('should not filter when only one value exists',
-          (WidgetTester tester) async {
-        // All three items have different status — test with same status
-        // Use threeItems but override all to same status
-        final List<CollectionItem> sameStatus = <CollectionItem>[
-          gameAlpha.copyWith(status: ItemStatus.completed),
-          movieBeta.copyWith(status: ItemStatus.completed),
-          tvGamma.copyWith(status: ItemStatus.completed),
-        ];
-        await pumpTableView(tester, items: sameStatus);
-
-        // Tap Status — single value, no filter applied
-        await tester.tap(headerFinder('Status').first);
-        await tester.pumpAndSettle();
-
-        final List<String> names = itemNamesInOrder(tester);
-        expect(names.length, 3);
+        expect(selectAllCalls, <bool>[true]);
       });
     });
   });

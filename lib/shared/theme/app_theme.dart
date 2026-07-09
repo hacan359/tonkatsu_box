@@ -79,6 +79,19 @@ abstract final class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       ),
+      // Without these M3 falls back to headlineSmall (24px) titles and
+      // 24px action insets — dialogs read bloated next to the app's type
+      // scale.
+      titleTextStyle: AppTypography.h2,
+      contentTextStyle: AppTypography.body.copyWith(
+        color: AppColors.textSecondary,
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.surface,

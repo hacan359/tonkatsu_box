@@ -94,6 +94,7 @@ class CollectionItemsView extends ConsumerWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: CollectionTableView(
+          collectionId: collectionId,
           heroHeader: header,
           items: items,
           tags: tags,

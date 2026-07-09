@@ -491,8 +491,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           for (int i = 0; i < groups.length; i++) ...<Widget>[
             SliverToBoxAdapter(
               child: _buildCollectionDivider(
-                groups[i].name,
-                groups[i].items.length,
+                groups[i],
                 isFirst: i == 0,
               ),
             ),
@@ -501,8 +500,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 child: UncategorizedDeprecationBanner(),
               ),
             SliverPadding(
-              padding: EdgeInsets.symmetric(
-                horizontal: gridPadding,
+              padding: EdgeInsets.fromLTRB(
+                gridPadding,
+                AppSpacing.sm,
+                gridPadding,
+                0,
               ),
               sliver: SliverGrid(
                 gridDelegate: gridDelegate,
@@ -621,46 +623,103 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     ];
   }
 
+  /// Section header for a collection group: the collection name with a thick
+  /// accent underline, its total count, then per-type tallies and a
+  /// favourites count.
   Widget _buildCollectionDivider(
-    String name,
-    int count, {
+    _CollectionGroup group, {
     required bool isFirst,
   }) {
+    final Color accent =
+        group.isUncategorized ? AppColors.textTertiary : AppColors.brand;
+
+    // Item count per media type, in enum order, for the per-type tallies.
+    final Map<MediaType, int> typeCounts = <MediaType, int>{};
+    for (final CollectionItem item in group.items) {
+      final MediaType t = item.displayMediaType;
+      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+    }
+    final Map<MediaType, int> orderedCounts = <MediaType, int>{
+      for (final MediaType t in MediaType.values)
+        if (typeCounts.containsKey(t)) t: typeCounts[t]!,
+    };
+    final int favorites =
+        group.items.where((CollectionItem i) => i.isFavorite).length;
+
     return Padding(
-      padding: EdgeInsets.only(
-        top: isFirst ? AppSpacing.xs : AppSpacing.md,
-        bottom: AppSpacing.sm,
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        isFirst ? AppSpacing.sm : AppSpacing.lg,
+        AppSpacing.md,
+        0,
       ),
       child: Row(
         children: <Widget>[
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: AppColors.surfaceBorder,
+          Container(
+            padding: const EdgeInsets.only(bottom: 4),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: accent, width: 3)),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
             child: Text(
-              '$name ($count)',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textTertiary,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.5,
-              ),
+              group.name,
+              style: AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: AppColors.surfaceBorder,
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            '${group.items.length}',
+            style: AppTypography.body.copyWith(
+              color: AppColors.textTertiary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(width: AppSpacing.md),
+          ..._headerInfo(orderedCounts, favorites),
         ],
       ),
     );
+  }
+
+  /// Shared info cluster: per-type icon with its item count, then a
+  /// favourites tally.
+  List<Widget> _headerInfo(Map<MediaType, int> typeCounts, int favorites) {
+    const double iconSize = 20;
+    return <Widget>[
+      for (final MapEntry<MediaType, int> e in typeCounts.entries.take(6))
+        Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.sm),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                MediaTypeTheme.iconFor(e.key),
+                size: iconSize,
+                color: MediaTypeTheme.colorFor(e.key).withAlpha(220),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                '${e.value}',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      if (favorites > 0) ...<Widget>[
+        const SizedBox(width: AppSpacing.sm),
+        const Icon(Icons.favorite, size: iconSize - 2, color: AppColors.favorite),
+        const SizedBox(width: 3),
+        Text(
+          '$favorites',
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ];
   }
 
   Widget _buildEmptyState(bool noItemsAtAll) {

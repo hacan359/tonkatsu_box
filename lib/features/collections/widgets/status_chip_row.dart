@@ -82,6 +82,7 @@ class StatusChipRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const List<ItemStatus> statuses = ItemStatus.values;
+    final int selectedIndex = statuses.indexOf(status);
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
@@ -89,18 +90,54 @@ class StatusChipRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(color: AppColors.surfaceBorder),
       ),
-      child: Row(
-        children: <Widget>[
-          for (final ItemStatus s in statuses)
-            Expanded(
-              child: _StatusSegment(
-                status: s,
-                mediaType: mediaType,
-                isSelected: s == status,
-                onTap: () => onChanged(s),
+      child: SizedBox(
+        height: _StatusSegment.height,
+        child: Stack(
+          children: <Widget>[
+            // Sliding highlight: position and tint are both implicit
+            // animations, so while the pill glides to the new segment its
+            // color morphs from the old status color to the new one.
+            // Alignment-based (not LayoutBuilder) so the row still reports
+            // intrinsic sizes — popup menus measure it via IntrinsicWidth.
+            Positioned.fill(
+              child: AnimatedAlign(
+                duration: AppDurations.slow,
+                curve: Curves.easeOutCubic,
+                alignment: Alignment(
+                  statuses.length > 1
+                      ? -1 + 2 * selectedIndex / (statuses.length - 1)
+                      : 0,
+                  0,
+                ),
+                child: FractionallySizedBox(
+                  widthFactor: 1 / statuses.length,
+                  heightFactor: 1,
+                  child: AnimatedContainer(
+                    duration: AppDurations.slow,
+                    curve: Curves.easeOutCubic,
+                    decoration: BoxDecoration(
+                      color: status.color.withAlpha(48),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                ),
               ),
             ),
-        ],
+            Row(
+              children: <Widget>[
+                for (final ItemStatus s in statuses)
+                  Expanded(
+                    child: _StatusSegment(
+                      status: s,
+                      mediaType: mediaType,
+                      isSelected: s == status,
+                      onTap: () => onChanged(s),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -114,6 +151,8 @@ class _StatusSegment extends StatelessWidget {
     required this.onTap,
   });
 
+  static const double height = 34;
+
   final ItemStatus status;
   final MediaType mediaType;
   final bool isSelected;
@@ -121,26 +160,24 @@ class _StatusSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color statusColor = status.color;
     return Tooltip(
       message: status.localizedLabel(S.of(context), mediaType),
       waitDuration: AppDurations.tooltipDelay,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
-          height: 34,
-          decoration: BoxDecoration(
-            color: isSelected ? statusColor.withAlpha(48) : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
-          alignment: Alignment.center,
-          child: Icon(
-            status.materialIcon,
-            size: 18,
-            color: isSelected ? statusColor : AppColors.textTertiary,
+        child: SizedBox(
+          height: height,
+          child: Center(
+            child: TweenAnimationBuilder<Color?>(
+              tween: ColorTween(
+                end: isSelected ? status.color : AppColors.textTertiary,
+              ),
+              duration: AppDurations.slow,
+              curve: Curves.easeOutCubic,
+              builder: (BuildContext context, Color? color, Widget? _) =>
+                  Icon(status.materialIcon, size: 18, color: color),
+            ),
           ),
         ),
       ),
