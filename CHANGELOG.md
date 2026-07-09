@@ -146,6 +146,101 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Collection table view rebuilt on the trina_grid package**
+
+  The hand-rolled table is replaced with a grid that supports dragging and
+  resizing columns, hiding columns, per-column sorting and multi-rule
+  filtering, all styled to match the app's dark theme. Column order, widths
+  and hidden columns persist per collection. A single "Filters" button opens
+  a rule editor (column + condition + value, combined with AND; status picks
+  from a dropdown of real statuses, other columns use text conditions like
+  "contains"); a "Columns" button toggles visibility. Manual sort mode gets
+  a dedicated left-frozen drag-handle column so reordering rows works on
+  touch. Inline editing (rating stars, status, favorite, tags), row
+  selection with select-all, right-click context menu and manual reorder are
+  preserved; opening an item is now a single tap on its name or a double tap
+  on the row. On narrow screens the filter dialog stacks each rule
+  vertically so its controls stay readable.
+
+  * pubspec.yaml, pubspec.lock: Add `trina_grid` and its transitive
+    `shadcn_ui` (promoted to a direct dependency — the grid's popups need
+    `ShadTheme` in context).
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (CollectionTableView): Rewritten over `TrinaGrid` — column builders with
+    our cell renderers, row build/reload, sort/filter/selection/reorder
+    wiring, per-collection layout persistence, a scoped rounded checkbox
+    theme, and a `_skipNextReload` guard so a grid-initiated row drag isn't
+    torn down mid-gesture on touch.
+  * lib/features/collections/widgets/collection_table/table_filter.dart
+    (TableFilterCondition, TableFilterRule, TableFilterDialog): New — filter
+    model and the responsive rule-editor dialog.
+  * lib/features/collections/widgets/collection_table/table_style.dart
+    (collectionTableConfiguration): New — dark `TrinaGridConfiguration`.
+  * lib/features/collections/widgets/collection_table/table_layout_store.dart
+    (TableColumnLayout, TableLayoutStore): New — per-collection column layout
+    (order, widths, hidden) in SharedPreferences.
+  * lib/features/collections/widgets/collection_table/cells/name_cell.dart
+    (NameCell): New — name + genres cell extracted from the view.
+  * lib/features/collections/widgets/collection_table/table_column.dart,
+    table_header.dart, table_row.dart: Removed — superseded by the grid.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView): Pass `collectionId` to the table for layout
+    persistence.
+
+- **Item detail card regrouped, with an animated status switcher**
+
+  The detail card no longer crams everything beside the cover: the header
+  keeps only short identity facts, the description spans full width with an
+  "More…/Collapse" toggle, tags sit below it, and user-set progress (started
+  / completed dates, time spent, rewatch count) becomes a symmetric tile row
+  (2×2 on narrow widths). System metadata (added / last activity dates,
+  auto-computed completion time) moved behind an info button. The status
+  switcher's highlight now slides between segments while its color morphs
+  from the old status color to the new one. Long joined info chips (genres,
+  studios, tags) expand on tap to show the full text. The translucent
+  backing now stretches edge to edge so narrow screens don't lose width to a
+  doubled-up margin.
+
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView,
+    _InfoChip, _ExpandableDescription): Regrouped layout, expandable
+    description and info chips, progress tiles, system-metadata info button.
+  * lib/features/collections/widgets/status_chip_row.dart (StatusChipRow,
+    _StatusSegment): Sliding, color-morphing selection highlight built with
+    `AnimatedAlign` + `FractionallySizedBox` (keeps intrinsic sizes so popup
+    menus still measure it).
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (showMore, showLess): New keys
+    for the description toggle.
+
+- **Compacter, on-theme dialogs**
+
+  Dialog titles use the app's 18px heading instead of Material's 24px, and
+  action rows are tighter. The tag manager, tag picker and rename dialogs
+  lost their doubled padding and second-line usage counts; the date picker
+  no longer overflows when the window is squeezed narrow. The rename-tag
+  dialog owns its text controller so it no longer throws "used after
+  disposed" while the dialog animates closed.
+
+  * lib/shared/theme/app_theme.dart (AppTheme.darkTheme): `dialogTheme`
+    gains title/content text styles and tighter `actionsPadding`.
+  * lib/features/collections/widgets/tag_management_dialog.dart
+    (TagManagementDialog, _RenameTagDialog, _TagRow): Compact padding,
+    inline usage count, controller owned by a stateful rename dialog.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    Compact padding and dense rows.
+  * lib/shared/widgets/dual_date_picker_dialog.dart (DualDatePickerDialog):
+    Responsive side-by-side/stacked body via `LayoutBuilder`; use
+    `kIsMobile`.
+
+- **Centered subcategory filter chips**
+
+  Subcategory chips (game platforms, manga/anime formats) center within the
+  strip when they fit and still scroll when they overflow, instead of
+  hugging the left edge.
+
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar): Center the
+    chip row via a `ConstrainedBox` min-width so `MainAxisAlignment.center`
+    has room, keeping horizontal scroll on overflow.
+
 - **Tags are now global and an item can carry several of them**
 
   Tags moved from per-collection lists to one app-wide set shared by all

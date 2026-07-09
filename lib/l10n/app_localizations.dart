@@ -4416,6 +4416,18 @@ abstract class S {
   /// **'Description'**
   String get searchDescription;
 
+  /// No description provided for @showMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More…'**
+  String get showMore;
+
+  /// No description provided for @showLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get showLess;
+
   /// No description provided for @platformFilterTitle.
   ///
   /// In en, this message translates to:
@@ -8237,6 +8249,60 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Clear'**
   String get filtersClear;
+
+  /// No description provided for @collectionTableColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns'**
+  String get collectionTableColumns;
+
+  /// No description provided for @tableFilterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'All rules apply together (AND).'**
+  String get tableFilterHint;
+
+  /// No description provided for @tableFilterAddRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get tableFilterAddRule;
+
+  /// No description provided for @tableFilterCondContains.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains'**
+  String get tableFilterCondContains;
+
+  /// No description provided for @tableFilterCondEquals.
+  ///
+  /// In en, this message translates to:
+  /// **'Equals'**
+  String get tableFilterCondEquals;
+
+  /// No description provided for @tableFilterCondStartsWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts with'**
+  String get tableFilterCondStartsWith;
+
+  /// No description provided for @tableFilterCondEndsWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends with'**
+  String get tableFilterCondEndsWith;
+
+  /// No description provided for @tableFilterCondAtLeast.
+  ///
+  /// In en, this message translates to:
+  /// **'At least (≥)'**
+  String get tableFilterCondAtLeast;
+
+  /// No description provided for @tableFilterCondAtMost.
+  ///
+  /// In en, this message translates to:
+  /// **'At most (≤)'**
+  String get tableFilterCondAtMost;
 
   /// No description provided for @profiles.
   ///

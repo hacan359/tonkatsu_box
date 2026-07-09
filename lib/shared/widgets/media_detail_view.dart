@@ -248,8 +248,11 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    // The backing stretches edge to edge: the only outer inset is the
+    // backing's own padding, so narrow screens don't lose width to a
+    // doubled-up margin.
     final Widget content = ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.zero,
       children: <Widget>[
         // Material wraps the fill so descendant ListTile/ExpansionTile widgets
         // paint their ink on a Material ancestor — Flutter 3.44 asserts when
@@ -263,47 +266,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               border: Border.all(color: AppColors.surfaceBorder.withAlpha(40)),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _buildHeader(),
-                if (widget.statusWidget != null) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  _buildStatusSection(context),
-                ],
-                if (widget.onUserRatingChanged != null) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  _buildUserRatingSection(context),
-                ],
-                if (widget.addedAt != null) ...<Widget>[
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildActivityDatesRow(context),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                _TrackerCommentsLayout(
-                  trackerSection: widget.trackerSection,
-                  notesSection: _buildUserNotesSection(context),
-                  authorSection: _buildAuthorCommentSection(context),
-                ),
-                if (widget.mediaGallery != null) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  widget.mediaGallery!,
-                ],
-                if (widget.extraSections != null &&
-                    widget.extraSections!.isNotEmpty)
-                  for (final Widget section in widget.extraSections!) ...<Widget>[
-                    const SizedBox(height: AppSpacing.md),
-                    section,
-                  ],
-                if (widget.recommendationSections != null &&
-                    widget.recommendationSections!.isNotEmpty)
-                  for (final Widget section
-                      in widget.recommendationSections!) ...<Widget>[
-                    const SizedBox(height: AppSpacing.md),
-                    section,
-                  ],
-              ],
-            ),
+            child: _buildBody(context),
           ),
         ),
       ],
@@ -353,7 +316,68 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     );
   }
 
-  Widget _buildHeader() {
+  /// Regrouped card: the header keeps only short identity facts beside the
+  /// cover; description and tags go full width below; user-set progress
+  /// (dates, time, rewatches) is a symmetric tile row; system metadata
+  /// (added / last activity / auto completion time) sits behind the info
+  /// button next to the tiles.
+  Widget _buildBody(BuildContext context) {
+    final bool hasDescription =
+        widget.description != null && widget.description!.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _buildIdentityHeader(),
+        if (hasDescription) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          _ExpandableDescription(text: widget.description!),
+        ],
+        if (widget.tagWidget != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          widget.tagWidget!,
+        ],
+        if (widget.statusWidget != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          _buildStatusSection(context),
+        ],
+        if (widget.onUserRatingChanged != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          _buildUserRatingSection(context),
+        ],
+        if (widget.addedAt != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          _buildProgressTiles(context),
+        ],
+        const SizedBox(height: AppSpacing.md),
+        _TrackerCommentsLayout(
+          trackerSection: widget.trackerSection,
+          notesSection: _buildUserNotesSection(context),
+          authorSection: _buildAuthorCommentSection(context),
+        ),
+        if (widget.mediaGallery != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          widget.mediaGallery!,
+        ],
+        if (widget.extraSections != null && widget.extraSections!.isNotEmpty)
+          for (final Widget section in widget.extraSections!) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            section,
+          ],
+        if (widget.recommendationSections != null &&
+            widget.recommendationSections!.isNotEmpty)
+          for (final Widget section
+              in widget.recommendationSections!) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            section,
+          ],
+      ],
+    );
+  }
+
+  /// Cover + short identity facts only: source, type, RA badge, info chips.
+  /// Description, tags, time and rewatch counters live elsewhere in the
+  /// grouped layout.
+  Widget _buildIdentityHeader() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -411,10 +435,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
                       ),
                     ],
                   ),
-                  if (widget.tagWidget != null) widget.tagWidget!,
                   if (widget.raBadge != null) widget.raBadge!,
-                  if (widget.onTimeSpentTap != null) _buildTimeSpentChip(),
-                  if (widget.onRewatchCountTap != null) _buildRewatchChip(),
                 ],
               ),
               if (widget.infoChips.isNotEmpty) ...<Widget>[
@@ -424,32 +445,263 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
                   runSpacing: 4,
                   children: <Widget>[
                     for (final MediaDetailChip chip in widget.infoChips)
-                      _buildInfoChip(
-                        chip.icon,
-                        chip.text,
+                      _InfoChip(
+                        icon: chip.icon,
+                        text: chip.text,
                         iconColor: chip.iconColor,
                         onTap: chip.onTap,
                       ),
                   ],
                 ),
               ],
-              if (widget.description != null &&
-                  widget.description!.isNotEmpty) ...<Widget>[
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  widget.description!,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
             ],
           ),
         ),
       ],
+    );
+  }
+
+  /// Symmetric row (2×N grid on narrow widths) of the user-set progress
+  /// facts: started / completed dates, time spent, rewatch count.
+  Widget _buildProgressTiles(BuildContext context) {
+    final S l = S.of(context);
+    final String Function(DateTime) fmt = _dateFormatter(context);
+    final bool editableDates = widget.onActivityDateChanged != null;
+    final int hours = widget.timeSpentMinutes ~/ 60;
+    final int minutes = widget.timeSpentMinutes % 60;
+
+    final List<Widget> tiles = <Widget>[
+      _buildProgressTile(
+        icon: Icons.play_circle_outline,
+        label: l.activityDatesStarted,
+        value: widget.startedAt != null ? fmt(widget.startedAt!) : '—',
+        hasValue: widget.startedAt != null,
+        onTap: editableDates
+            ? () => _pickActivityDate(context, 'started', widget.startedAt)
+            : null,
+      ),
+      _buildProgressTile(
+        icon: Icons.check_circle_outline,
+        label: l.activityDatesCompleted,
+        value: widget.completedAt != null ? fmt(widget.completedAt!) : '—',
+        hasValue: widget.completedAt != null,
+        tooltip: widget.completionTime != null
+            ? formatCompletionTime(widget.completionTime!, l)
+            : null,
+        onTap: editableDates
+            ? () => _pickActivityDate(context, 'completed', widget.completedAt)
+            : null,
+      ),
+      if (widget.onTimeSpentTap != null)
+        _buildProgressTile(
+          icon: Icons.timer_outlined,
+          label: l.timeSpentTitle,
+          value: widget.timeSpentMinutes > 0
+              ? l.timeSpentValue(hours, minutes)
+              : '—',
+          hasValue: widget.timeSpentMinutes > 0,
+          onTap: widget.onTimeSpentTap,
+        ),
+      if (widget.onRewatchCountTap != null)
+        _buildProgressTile(
+          icon: Icons.replay,
+          label: l.rewatchCountEdit,
+          value: widget.rewatchCount?.toString() ?? '—',
+          hasValue: widget.rewatchCount != null,
+          onTap: widget.onRewatchCountTap,
+        ),
+    ];
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final int perRow =
+            constraints.maxWidth < 480 ? 2 : tiles.length;
+        final List<Widget> rows = <Widget>[];
+        for (int i = 0; i < tiles.length; i += perRow) {
+          final int end =
+              (i + perRow > tiles.length) ? tiles.length : i + perRow;
+          final List<Widget> chunk = tiles.sublist(i, end);
+          if (rows.isNotEmpty) rows.add(const SizedBox(height: AppSpacing.sm));
+          rows.add(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                for (int j = 0; j < perRow; j++) ...<Widget>[
+                  if (j > 0) const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: j < chunk.length ? chunk[j] : const SizedBox(),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }
+        final Widget grid = Column(children: rows);
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(child: grid),
+            const SizedBox(width: AppSpacing.xs),
+            _buildSystemMetaInfoButton(context),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildProgressTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool hasValue,
+    String? tooltip,
+    VoidCallback? onTap,
+  }) {
+    final Widget body = Padding(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(icon, size: 12, color: AppColors.textTertiary),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: <Widget>[
+              Flexible(
+                child: Text(
+                  value,
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: hasValue ? FontWeight.w500 : FontWeight.w400,
+                    color: hasValue
+                        ? AppColors.textPrimary
+                        : AppColors.textTertiary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (onTap != null) ...<Widget>[
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.edit_outlined,
+                  size: 12,
+                  color: AppColors.brand,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+
+    Widget tile = Material(
+      color: AppColors.surfaceLight.withAlpha(120),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      child: onTap != null
+          ? InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              child: body,
+            )
+          : body,
+    );
+    if (tooltip != null) {
+      tile = Tooltip(message: tooltip, child: tile);
+    }
+    return tile;
+  }
+
+  String Function(DateTime) _dateFormatter(BuildContext context) {
+    final DateFormatPreset preset = DateFormatPreset.fromId(
+      ref.watch(
+        settingsNotifierProvider.select((SettingsState s) => s.dateFormat),
+      ),
+    );
+    final String localeName = Localizations.localeOf(context).toLanguageTag();
+    return (DateTime d) => _formatActivityDate(d, preset, localeName);
+  }
+
+  /// System metadata the user never sets directly: added / last activity
+  /// dates and the auto-derived completion time.
+  List<String> _systemMetaParts(BuildContext context) {
+    final S l = S.of(context);
+    final String Function(DateTime) fmt = _dateFormatter(context);
+    return <String>[
+      if (widget.addedAt != null)
+        '${l.activityDatesAdded}: ${fmt(widget.addedAt!)}',
+      if (widget.lastActivityAt != null)
+        '${l.activityDatesLastActivity}: ${fmt(widget.lastActivityAt!)}',
+      if (widget.completionTime != null)
+        formatCompletionTime(widget.completionTime!, l),
+    ];
+  }
+
+  Future<void> _pickActivityDate(
+    BuildContext context,
+    String type,
+    DateTime? current,
+  ) async {
+    final DateTime initialDate = current ?? DateTime.now();
+    final DateTime firstDate = DateTime(1980);
+    final DateTime lastDate = DateTime.now().add(const Duration(days: 365));
+
+    final DateTime? picked = await showDualDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      helpText: type == 'started'
+          ? S.of(context).activityDatesSelectStart
+          : S.of(context).activityDatesSelectCompletion,
+    );
+
+    if (picked != null && context.mounted) {
+      await widget.onActivityDateChanged!(type, picked);
+    }
+  }
+
+  Widget _buildSystemMetaInfoButton(BuildContext context) {
+    final String text = _systemMetaParts(context).join('\n');
+    return IconButton(
+      icon: const Icon(
+        Icons.info_outline,
+        size: 16,
+        color: AppColors.textTertiary,
+      ),
+      visualDensity: VisualDensity.compact,
+      tooltip: text,
+      onPressed: () => showDialog<void>(
+        context: context,
+        builder: (BuildContext ctx) => AlertDialog(
+          title: Text(S.of(ctx).activityDatesTitle),
+          content: SingleChildScrollView(
+            child: Text(
+              text,
+              style: AppTypography.body.copyWith(height: 1.6),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(S.of(ctx).done),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -507,89 +759,6 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     );
   }
 
-  Widget _buildTimeSpentChip() {
-    final int hours = widget.timeSpentMinutes ~/ 60;
-    final int minutes = widget.timeSpentMinutes % 60;
-    final S l = S.of(context);
-    return _buildStatChip(
-      icon: Icons.timer_outlined,
-      text: widget.timeSpentMinutes > 0
-          ? l.timeSpentValue(hours, minutes)
-          : '—',
-      active: widget.timeSpentMinutes > 0,
-      onTap: widget.onTimeSpentTap,
-    );
-  }
-
-  Widget _buildRewatchChip() {
-    return _buildStatChip(
-      icon: Icons.replay,
-      text: widget.rewatchCount?.toString() ?? '—',
-      active: widget.rewatchCount != null,
-      onTap: widget.onRewatchCountTap,
-    );
-  }
-
-  Widget _buildStatChip({
-    required IconData icon,
-    required String text,
-    required bool active,
-    required VoidCallback? onTap,
-  }) {
-    final Color color =
-        active ? AppColors.textSecondary : AppColors.textTertiary;
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 3),
-          Text(text, style: AppTypography.caption.copyWith(color: color)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(
-    IconData icon,
-    String text, {
-    Color? iconColor,
-    VoidCallback? onTap,
-  }) {
-    final Widget chip = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: onTap != null
-            ? Border.all(
-                color: (iconColor ?? AppColors.textSecondary).withAlpha(60),
-              )
-            : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 12, color: iconColor ?? AppColors.textSecondary),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              text,
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-    if (onTap == null) return chip;
-    return GestureDetector(onTap: onTap, child: chip);
-  }
-
   Widget _buildStatusSection(BuildContext context) {
     return widget.statusWidget!;
   }
@@ -626,155 +795,6 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         ),
       ],
     );
-  }
-
-  Widget _buildActivityDatesRow(BuildContext context) {
-    final S l = S.of(context);
-    final DateFormatPreset preset = DateFormatPreset.fromId(
-      ref.watch(
-        settingsNotifierProvider.select((SettingsState s) => s.dateFormat),
-      ),
-    );
-    final String localeName =
-        Localizations.localeOf(context).toLanguageTag();
-    String formatter(DateTime d) =>
-        _formatActivityDate(d, preset, localeName);
-    return Wrap(
-      spacing: AppSpacing.md,
-      runSpacing: AppSpacing.xs,
-      children: <Widget>[
-        _buildDateChip(
-          icon: Icons.add_circle_outline,
-          label: l.activityDatesAdded,
-          date: widget.addedAt,
-          formatter: formatter,
-        ),
-        _buildDateChip(
-          icon: Icons.play_circle_outline,
-          label: l.activityDatesStarted,
-          date: widget.startedAt,
-          formatter: formatter,
-          editable: widget.onActivityDateChanged != null,
-          onTap: widget.onActivityDateChanged != null
-              ? () => _pickActivityDate(context, 'started', widget.startedAt)
-              : null,
-        ),
-        _buildDateChip(
-          icon: Icons.check_circle_outline,
-          label: l.activityDatesCompleted,
-          date: widget.completedAt,
-          formatter: formatter,
-          editable: widget.onActivityDateChanged != null,
-          onTap: widget.onActivityDateChanged != null
-              ? () =>
-                    _pickActivityDate(context, 'completed', widget.completedAt)
-              : null,
-        ),
-        if (widget.completionTime != null) _buildCompletionTimeChip(l),
-        if (widget.lastActivityAt != null)
-          _buildDateChip(
-            icon: Icons.update,
-            label: l.activityDatesLastActivity,
-            date: widget.lastActivityAt,
-            formatter: formatter,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildCompletionTimeChip(S l) {
-    final String formatted = formatCompletionTime(widget.completionTime!, l);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        const Icon(
-          Icons.timer_outlined,
-          size: 14,
-          color: AppColors.textTertiary,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          formatted,
-          style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateChip({
-    required IconData icon,
-    required String label,
-    required String Function(DateTime) formatter,
-    DateTime? date,
-    bool editable = false,
-    VoidCallback? onTap,
-  }) {
-    final Widget content = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Icon(icon, size: 14, color: AppColors.textSecondary),
-        const SizedBox(width: 4),
-        Text(
-          '$label: ',
-          style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
-        ),
-        Text(
-          date != null ? formatter(date) : '\u2014',
-          style: AppTypography.bodySmall.copyWith(
-            color: date != null
-                ? AppColors.textSecondary
-                : AppColors.textTertiary,
-          ),
-        ),
-        if (editable) ...<Widget>[
-          const SizedBox(width: 2),
-          const Icon(Icons.edit_outlined, size: 12, color: AppColors.brand),
-        ],
-      ],
-    );
-
-    if (editable && onTap != null) {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: content,
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: content,
-    );
-  }
-
-  Future<void> _pickActivityDate(
-    BuildContext context,
-    String type,
-    DateTime? current,
-  ) async {
-    final DateTime initialDate = current ?? DateTime.now();
-    final DateTime firstDate = DateTime(1980);
-    final DateTime lastDate = DateTime.now().add(const Duration(days: 365));
-
-    final DateTime? picked = await showDualDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: firstDate,
-      lastDate: lastDate,
-      helpText: type == 'started'
-          ? S.of(context).activityDatesSelectStart
-          : S.of(context).activityDatesSelectCompletion,
-    );
-
-    if (picked != null && context.mounted) {
-      await widget.onActivityDateChanged!(type, picked);
-    }
   }
 
   Widget _buildAuthorCommentSection(BuildContext context) {
@@ -987,6 +1007,178 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       );
     }
     return content;
+  }
+}
+
+/// Info chip whose long joined text (genres, studios, tags) truncates to one
+/// line; when truncated, tapping expands it to the full multi-line text and
+/// back. Chips with an external [onTap] keep their original tap action.
+class _InfoChip extends StatefulWidget {
+  const _InfoChip({
+    required this.icon,
+    required this.text,
+    this.iconColor,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color? iconColor;
+  final VoidCallback? onTap;
+
+  @override
+  State<_InfoChip> createState() => _InfoChipState();
+}
+
+class _InfoChipState extends State<_InfoChip> {
+  /// Horizontal chrome around the text: padding 8+8, icon 12, icon gap 4.
+  static const double _chrome = 32;
+
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle style = AppTypography.caption.copyWith(
+      color: AppColors.textSecondary,
+    );
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        bool overflows = false;
+        if (constraints.maxWidth.isFinite) {
+          final TextPainter painter = TextPainter(
+            text: TextSpan(text: widget.text, style: style),
+            maxLines: 1,
+            textDirection: Directionality.of(context),
+          )..layout(
+              maxWidth: (constraints.maxWidth - _chrome)
+                  .clamp(0.0, double.infinity),
+            );
+          overflows = painter.didExceedMaxLines;
+          painter.dispose();
+        }
+        final bool expandable =
+            widget.onTap == null && (overflows || _expanded);
+
+        final ShapeBorder shape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          side: widget.onTap != null
+              ? BorderSide(
+                  color: (widget.iconColor ?? AppColors.textSecondary)
+                      .withAlpha(60),
+                )
+              : BorderSide.none,
+        );
+
+        final Widget inner = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: _expanded
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(top: _expanded ? 1 : 0),
+                child: Icon(
+                  widget.icon,
+                  size: 12,
+                  color: widget.iconColor ?? AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  widget.text,
+                  style: style,
+                  overflow:
+                      _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                  maxLines: _expanded ? null : 1,
+                ),
+              ),
+            ],
+          ),
+        );
+
+        return Material(
+          color: AppColors.surfaceLight,
+          shape: shape,
+          child: widget.onTap != null || expandable
+              ? InkWell(
+                  customBorder: shape,
+                  onTap: widget.onTap ??
+                      () => setState(() => _expanded = !_expanded),
+                  child: inner,
+                )
+              : inner,
+        );
+      },
+    );
+  }
+}
+
+/// Full-width description collapsed to a few lines with an expand toggle,
+/// shown only when the text actually overflows.
+class _ExpandableDescription extends StatefulWidget {
+  const _ExpandableDescription({required this.text});
+
+  final String text;
+
+  @override
+  State<_ExpandableDescription> createState() =>
+      _ExpandableDescriptionState();
+}
+
+class _ExpandableDescriptionState extends State<_ExpandableDescription> {
+  static const int _collapsedLines = 3;
+
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle style = AppTypography.bodySmall.copyWith(
+      color: AppColors.textSecondary,
+      height: 1.4,
+    );
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final TextPainter painter = TextPainter(
+          text: TextSpan(text: widget.text, style: style),
+          maxLines: _collapsedLines,
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        final bool overflows = painter.didExceedMaxLines;
+        painter.dispose();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              widget.text,
+              style: style,
+              maxLines: _expanded ? null : _collapsedLines,
+              overflow:
+                  _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+            ),
+            if (overflows)
+              InkWell(
+                onTap: () => setState(() => _expanded = !_expanded),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(
+                    _expanded
+                        ? S.of(context).showLess
+                        : S.of(context).showMore,
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.brand,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
   }
 }
 

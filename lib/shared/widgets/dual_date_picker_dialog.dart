@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../constants/platform_features.dart';
 import '../theme/app_spacing.dart';
 
 const String _isoPattern = 'yyyy-MM-dd';
@@ -118,7 +117,7 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final ThemeData theme = Theme.of(context);
-    final bool isMobile = Platform.isAndroid || Platform.isIOS;
+    final bool isMobile = kIsMobile;
     final String? errorText = _resolveError(l);
 
     final Widget calendar = SizedBox(
@@ -143,25 +142,36 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
       onChanged: _onTextChanged,
     );
 
-    final Widget body = isMobile
-        ? Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const SizedBox(height: AppSpacing.md),
-              textInput,
-              const SizedBox(height: AppSpacing.md),
-              calendar,
-            ],
-          )
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              calendar,
-              const SizedBox(width: AppSpacing.md),
-              SizedBox(width: 220, child: textInput),
-            ],
-          );
+    // Side-by-side needs the calendar plus the input column to fit; when the
+    // dialog is squeezed narrower (small window), fall back to stacking.
+    const double sideBySideMinWidth = 320 + AppSpacing.md + 220;
+    final Widget body = LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final bool stacked =
+            isMobile || constraints.maxWidth < sideBySideMinWidth;
+        return SingleChildScrollView(
+          child: stacked
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const SizedBox(height: AppSpacing.md),
+                    textInput,
+                    const SizedBox(height: AppSpacing.md),
+                    calendar,
+                  ],
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    calendar,
+                    const SizedBox(width: AppSpacing.md),
+                    SizedBox(width: 220, child: textInput),
+                  ],
+                ),
+        );
+      },
+    );
 
     final MediaQueryData mq = MediaQuery.of(context);
     final double maxHeight = mq.size.height - mq.viewInsets.bottom - 48;
@@ -187,11 +197,7 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
                     style: theme.textTheme.titleMedium,
                   ),
                 ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: body,
-                ),
-              ),
+              Expanded(child: body),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

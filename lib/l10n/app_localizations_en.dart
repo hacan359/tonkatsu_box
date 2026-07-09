@@ -2439,6 +2439,12 @@ class SEn extends S {
   String get searchDescription => 'Description';
 
   @override
+  String get showMore => 'More…';
+
+  @override
+  String get showLess => 'Collapse';
+
+  @override
   String get platformFilterTitle => 'Select Platforms';
 
   @override
@@ -4560,6 +4566,33 @@ class SEn extends S {
 
   @override
   String get filtersClear => 'Clear';
+
+  @override
+  String get collectionTableColumns => 'Columns';
+
+  @override
+  String get tableFilterHint => 'All rules apply together (AND).';
+
+  @override
+  String get tableFilterAddRule => 'Add rule';
+
+  @override
+  String get tableFilterCondContains => 'Contains';
+
+  @override
+  String get tableFilterCondEquals => 'Equals';
+
+  @override
+  String get tableFilterCondStartsWith => 'Starts with';
+
+  @override
+  String get tableFilterCondEndsWith => 'Ends with';
+
+  @override
+  String get tableFilterCondAtLeast => 'At least (≥)';
+
+  @override
+  String get tableFilterCondAtMost => 'At most (≤)';
 
   @override
   String get profiles => 'App profiles';

@@ -61,6 +61,18 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
         ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
 
     return AlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.xs,
+        AppSpacing.md,
+        0,
+      ),
       title: Text(l.tagPickerTitle),
       content: SizedBox(
         width: 360,
@@ -73,13 +85,17 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
                   Expanded(
                     child: TextField(
                       controller: _createController,
-                      decoration: InputDecoration(hintText: l.tagCreateHint),
+                      decoration: InputDecoration(
+                        hintText: l.tagCreateHint,
+                        isDense: true,
+                      ),
                       onSubmitted: (_) => _createTag(),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
+                  const SizedBox(width: AppSpacing.xs),
                   IconButton(
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add, size: 20),
+                    visualDensity: VisualDensity.compact,
                     tooltip: l.tagCreate,
                     onPressed: _createTag,
                   ),
@@ -99,6 +115,7 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
                 for (final Tag tag in tags)
                   CheckboxListTile(
                     dense: true,
+                    visualDensity: VisualDensity.compact,
                     contentPadding: EdgeInsets.zero,
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _selected.contains(tag.id),

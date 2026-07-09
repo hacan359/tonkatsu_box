@@ -53,33 +53,10 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
   }
 
   Future<void> _renameTag(Tag tag) async {
-    final S l = S.of(context);
-    final TextEditingController controller =
-        TextEditingController(text: tag.name);
     final String? newName = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
-        title: Text(l.tagRename),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          onSubmitted: (String value) =>
-              Navigator.of(ctx).pop(value.trim()),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l.cancel),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text(l.save),
-          ),
-        ],
-      ),
+      builder: (BuildContext ctx) => _RenameTagDialog(initialName: tag.name),
     );
-    controller.dispose();
     if (newName == null || newName.isEmpty || newName == tag.name) return;
     await ref.read(globalTagsProvider.notifier).rename(tag.id, newName);
   }
@@ -138,6 +115,18 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
     }
 
     return AlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.xs,
+        AppSpacing.md,
+        0,
+      ),
       title: Text(l.tagManage),
       content: SizedBox(
         width: 400,
@@ -176,15 +165,16 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
                     onSubmitted: (_) => _createTag(),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.xs),
                 IconButton(
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(Icons.add, size: 20),
+                  visualDensity: VisualDensity.compact,
                   onPressed: _createTag,
                   tooltip: l.tagCreate,
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
             Flexible(
               child: tagsAsync.when(
                 data: (List<Tag> tags) {
@@ -252,6 +242,65 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
   }
 }
 
+/// Owns its [TextEditingController] so it is disposed with the dialog's own
+/// State — disposing right after `showDialog` returns races the closing
+/// route's focus teardown ("used after being disposed" assert).
+class _RenameTagDialog extends StatefulWidget {
+  const _RenameTagDialog({required this.initialName});
+
+  final String initialName;
+
+  @override
+  State<_RenameTagDialog> createState() => _RenameTagDialogState();
+}
+
+class _RenameTagDialogState extends State<_RenameTagDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialName);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    return AlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.xs,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
+      title: Text(l.tagRename),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(isDense: true),
+        onSubmitted: (String value) => Navigator.of(context).pop(value.trim()),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l.cancel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: Text(l.save),
+        ),
+      ],
+    );
+  }
+}
+
 class _TagRow extends StatelessWidget {
   const _TagRow({
     required this.index,
@@ -277,6 +326,8 @@ class _TagRow extends StatelessWidget {
     final S l = S.of(context);
     return ListTile(
       dense: true,
+      visualDensity: VisualDensity.compact,
+      minVerticalPadding: 0,
       contentPadding: EdgeInsets.zero,
       leading: Row(
         mainAxisSize: MainAxisSize.min,
@@ -305,32 +356,41 @@ class _TagRow extends StatelessWidget {
           ),
         ],
       ),
-      title: Text(
-        tag.name,
-        style: tag.textColor != null
-            ? TextStyle(color: Color(tag.textColor!))
-            : null,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: usageCount > 0
-          ? Text(
-              '$usageCount',
+      title: Row(
+        children: <Widget>[
+          Flexible(
+            child: Text(
+              tag.name,
+              style: tag.textColor != null
+                  ? TextStyle(color: Color(tag.textColor!))
+                  : null,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (usageCount > 0) ...<Widget>[
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              '· $usageCount',
               style: AppTypography.caption.copyWith(
                 color: AppColors.textTertiary,
               ),
-            )
-          : null,
+            ),
+          ],
+        ],
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 18),
+            visualDensity: VisualDensity.compact,
             onPressed: onRename,
             tooltip: l.tagRename,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 18),
+            visualDensity: VisualDensity.compact,
             onPressed: onDelete,
             tooltip: l.tagDelete,
           ),
