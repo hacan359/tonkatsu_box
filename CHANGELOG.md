@@ -231,6 +231,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     Responsive side-by-side/stacked body via `LayoutBuilder`; use
     `kIsMobile`.
 
+- **Collection section headers on the All Items screen**
+
+  Each collection group on the All Items (Home) grid is now headed by the
+  collection name with a thick accent underline, its total count, per-type
+  tallies (a media-type icon with the number of items of that type) and a
+  favourites count. Uncategorized uses a muted grey accent.
+
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildCollectionDivider,
+    _AllItemsScreenState._headerInfo): Replace the centered thin-line
+    divider with the underlined header and per-type info cluster.
+
 - **Centered subcategory filter chips**
 
   Subcategory chips (game platforms, manga/anime formats) center within the
