@@ -674,7 +674,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             ),
           ),
           const SizedBox(width: AppSpacing.md),
-          ..._headerInfo(orderedCounts, favorites, iconSize: 20),
+          ..._headerInfo(orderedCounts, favorites),
         ],
       ),
     );
@@ -682,11 +682,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   /// Shared info cluster: per-type icon with its item count, then a
   /// favourites tally.
-  List<Widget> _headerInfo(
-    Map<MediaType, int> typeCounts,
-    int favorites, {
-    required double iconSize,
-  }) {
+  List<Widget> _headerInfo(Map<MediaType, int> typeCounts, int favorites) {
+    const double iconSize = 20;
     return <Widget>[
       for (final MapEntry<MediaType, int> e in typeCounts.entries.take(6))
         Padding(
@@ -712,7 +709,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ),
       if (favorites > 0) ...<Widget>[
         const SizedBox(width: AppSpacing.sm),
-        Icon(Icons.favorite, size: iconSize - 2, color: AppColors.favorite),
+        const Icon(Icons.favorite, size: iconSize - 2, color: AppColors.favorite),
         const SizedBox(width: 3),
         Text(
           '$favorites',
