@@ -14,6 +14,7 @@ import '../../../../shared/models/tag.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../settings/providers/profile_provider.dart';
 import '../../../settings/providers/settings_provider.dart';
 import 'cells/favorite_cell.dart';
 import 'cells/name_cell.dart';
@@ -132,7 +133,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
   Future<void> _loadLayout() async {
     final int? id = widget.collectionId;
     final TableColumnLayout? layout = id != null
-        ? await TableLayoutStore.load(id)
+        ? await TableLayoutStore.load(ref.read(currentProfileProvider).id, id)
         : null;
     if (!mounted) return;
     setState(() {
@@ -821,7 +822,9 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
     if (encoded == _lastSavedJson) return;
     _lastSavedJson = encoded;
     _layout = layout;
-    unawaited(TableLayoutStore.save(id, layout));
+    unawaited(
+      TableLayoutStore.save(ref.read(currentProfileProvider).id, id, layout),
+    );
   }
 }
 

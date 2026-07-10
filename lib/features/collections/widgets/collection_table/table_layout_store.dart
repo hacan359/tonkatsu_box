@@ -45,23 +45,33 @@ class TableColumnLayout {
 
 /// Persists the table column layout per collection in [SharedPreferences].
 abstract final class TableLayoutStore {
-  static String _key(int collectionId) => 'collection_table_layout_$collectionId';
+  // Collection ids are autoincrement and scoped to each profile's own DB, so
+  // they collide across profiles; the key must be namespaced by profile.
+  static String _key(String profileId, int collectionId) =>
+      'collection_table_layout_${profileId}_$collectionId';
 
-  static Future<TableColumnLayout?> load(int collectionId) async {
+  static Future<TableColumnLayout?> load(
+    String profileId,
+    int collectionId,
+  ) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? raw = prefs.getString(_key(collectionId));
+    final String? raw = prefs.getString(_key(profileId, collectionId));
     if (raw == null || raw.isEmpty) return null;
     try {
-      return TableColumnLayout.fromJson(
-        jsonDecode(raw) as Map<String, dynamic>,
-      );
+      final Object? decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+      return TableColumnLayout.fromJson(decoded);
     } on FormatException {
       return null;
     }
   }
 
-  static Future<void> save(int collectionId, TableColumnLayout layout) async {
+  static Future<void> save(
+    String profileId,
+    int collectionId,
+    TableColumnLayout layout,
+  ) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key(collectionId), layout.encode());
+    await prefs.setString(_key(profileId, collectionId), layout.encode());
   }
 }

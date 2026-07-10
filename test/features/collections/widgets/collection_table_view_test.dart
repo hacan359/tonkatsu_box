@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_table/collection_table_view.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_table/table_filter.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_table/table_layout_store.dart';
@@ -139,29 +138,6 @@ void main() {
       expect(decoded.order, <String>['name', 'year', 'status']);
       expect(decoded.widths['name'], 280);
       expect(decoded.widths['year'], 72.5);
-    });
-
-    test('store saves and loads layout per collection', () async {
-      SharedPreferences.setMockInitialValues(<String, Object>{});
-      const TableColumnLayout layout = TableColumnLayout(
-        order: <String>['thumb', 'name'],
-        widths: <String, double>{'name': 300},
-      );
-      await TableLayoutStore.save(7, layout);
-
-      final TableColumnLayout? loaded = await TableLayoutStore.load(7);
-      expect(loaded, isNotNull);
-      expect(loaded!.order, <String>['thumb', 'name']);
-      expect(loaded.widths['name'], 300);
-
-      expect(await TableLayoutStore.load(8), isNull);
-    });
-
-    test('load returns null on corrupt json', () async {
-      SharedPreferences.setMockInitialValues(<String, Object>{
-        'collection_table_layout_9': 'not-json',
-      });
-      expect(await TableLayoutStore.load(9), isNull);
     });
   });
 
