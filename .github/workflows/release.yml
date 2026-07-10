@@ -163,10 +163,53 @@ jobs:
           path: tonkatsu-box-${{ github.ref_name }}-linux-experimental.tar.gz
           retention-days: 1
 
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    needs: quality-gate
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS release
+        run: >
+          flutter build macos --release
+          --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
+          --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
+          --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
+          --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
+          --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+
+      # Unsigned/not notarized: Gatekeeper warns until an Apple Developer ID is set up.
+      - name: Package macOS DMG
+        run: |
+          VERSION="${{ github.ref_name }}"
+          APP="build/macos/Build/Products/Release/Tonkatsu Box.app"
+          mkdir -p dmg_staging
+          cp -R "$APP" dmg_staging/
+          ln -s /Applications dmg_staging/Applications
+          hdiutil create -volname "Tonkatsu Box" -srcfolder dmg_staging -ov -format UDZO \
+            "tonkatsu-box-${VERSION}-macos-experimental.dmg"
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: tonkatsu-box-${{ github.ref_name }}-macos-experimental.dmg
+          retention-days: 1
+
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-windows, build-android, build-linux]
+    needs: [build-windows, build-android, build-linux, build-macos]
     permissions:
       contents: write
     steps:
@@ -202,6 +245,11 @@ jobs:
         with:
           name: linux-build
 
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -212,4 +260,5 @@ jobs:
             --notes-file release_notes.md \
             "tonkatsu-box-${VERSION}-windows.zip" \
             "tonkatsu-box-${VERSION}-android.apk" \
-            "tonkatsu-box-${VERSION}-linux-experimental.tar.gz"
+            "tonkatsu-box-${VERSION}-linux-experimental.tar.gz" \
+            "tonkatsu-box-${VERSION}-macos-experimental.dmg"
