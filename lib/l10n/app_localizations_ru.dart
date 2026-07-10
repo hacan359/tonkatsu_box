@@ -120,6 +120,24 @@ class SRu extends S {
   String get statusPlanned => 'Запланировано';
 
   @override
+  String get statusReplay => 'Повтор';
+
+  @override
+  String get rewatchCountEdit => 'Счётчик повторов';
+
+  @override
+  String get rewatchCountHint => 'Пусто = не отслеживается';
+
+  @override
+  String get statusReplaying => 'Перепрохожу';
+
+  @override
+  String get statusRewatching => 'Пересматриваю';
+
+  @override
+  String get statusRereading => 'Перечитываю';
+
+  @override
   String get homeFilterAll => 'Все';
 
   @override
@@ -1786,6 +1804,12 @@ class SRu extends S {
   String get tagNone => 'Нет тегов';
 
   @override
+  String get tagPickerTitle => 'Выбор тэгов';
+
+  @override
+  String get tagTextColor => 'Цвет текста';
+
+  @override
   String get tagCreated => 'Тег создан';
 
   @override
@@ -2441,6 +2465,12 @@ class SRu extends S {
 
   @override
   String get searchDescription => 'Описание';
+
+  @override
+  String get showMore => 'Ещё…';
+
+  @override
+  String get showLess => 'Свернуть';
 
   @override
   String get platformFilterTitle => 'Выбор платформ';
@@ -3620,9 +3650,6 @@ class SRu extends S {
   String get vndbHasAnimeAdaptation => 'Есть адаптация';
 
   @override
-  String get tagPickerTitle => 'Выбор тэгов';
-
-  @override
   String get tagPickerSearchHint => 'Поиск по тэгам';
 
   @override
@@ -4597,6 +4624,33 @@ class SRu extends S {
   String get filtersClear => 'Сбросить';
 
   @override
+  String get collectionTableColumns => 'Колонки';
+
+  @override
+  String get tableFilterHint => 'Все правила действуют одновременно (И).';
+
+  @override
+  String get tableFilterAddRule => 'Добавить правило';
+
+  @override
+  String get tableFilterCondContains => 'Содержит';
+
+  @override
+  String get tableFilterCondEquals => 'Равно';
+
+  @override
+  String get tableFilterCondStartsWith => 'Начинается с';
+
+  @override
+  String get tableFilterCondEndsWith => 'Заканчивается на';
+
+  @override
+  String get tableFilterCondAtLeast => 'Не меньше (≥)';
+
+  @override
+  String get tableFilterCondAtMost => 'Не больше (≤)';
+
+  @override
   String get profiles => 'Профили приложения';
 
   @override
@@ -5131,6 +5185,145 @@ class SRu extends S {
       'Выберите хотя бы один тип: аниме или манга';
 
   @override
+  String get settingsCustomCardsImport => 'Кастомные карточки';
+
+  @override
+  String get settingsCustomCardsImportSubtitle =>
+      'Импорт карточек из JSON или CSV файла';
+
+  @override
+  String get customImportTitle => 'Импорт кастомных карточек';
+
+  @override
+  String get customImportDescription =>
+      'Загрузите JSON или CSV файл, собранный вашим скриптом или парсером — каждая строка станет кастомной карточкой. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.';
+
+  @override
+  String get customImportSelectFile => 'Выбрать JSON/CSV файл';
+
+  @override
+  String get customImportCsvTemplate => 'Шаблон CSV';
+
+  @override
+  String get customImportJsonTemplate => 'Шаблон JSON';
+
+  @override
+  String get customImportTemplateSaved => 'Шаблон сохранён';
+
+  @override
+  String get customImportTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get customImportCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get customImportUseExisting => 'Добавить в существующую';
+
+  @override
+  String get customImportSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get customImportNoCollections => 'Коллекций пока нет';
+
+  @override
+  String get customImportErrorLoadingCollections =>
+      'Не удалось загрузить коллекции';
+
+  @override
+  String get customImportPreviewButton => 'Предпросмотр и импорт';
+
+  @override
+  String get customImportPreviewTitle => 'Предпросмотр импорта';
+
+  @override
+  String customImportSummary(int valid, int errors, int duplicates) {
+    return 'Распознано $valid · Ошибок $errors · Дублей $duplicates';
+  }
+
+  @override
+  String get customImportSelectAll => 'Выбрать все';
+
+  @override
+  String get customImportSelectNone => 'Снять все';
+
+  @override
+  String customImportSelectedCount(int selected, int total) {
+    return 'Выбрано $selected из $total';
+  }
+
+  @override
+  String get customImportDuplicate => 'Дубль — уже есть в коллекции';
+
+  @override
+  String customImportRowLabel(int index) {
+    return 'Строка $index';
+  }
+
+  @override
+  String get customImportStart => 'Импортировать отмеченные';
+
+  @override
+  String get customImportImporting => 'Импорт кастомных карточек...';
+
+  @override
+  String get customImportErrorEmptyFile => 'Файл пуст';
+
+  @override
+  String get customImportErrorInvalidJson =>
+      'Битый JSON — файл не удалось разобрать';
+
+  @override
+  String get customImportErrorMissingColumns =>
+      'В CSV должны быть колонки \"title\" и \"type\"';
+
+  @override
+  String get customImportIssueNotAnObject => 'Не JSON-объект';
+
+  @override
+  String get customImportIssueMissingTitle => 'Нет \"title\"';
+
+  @override
+  String get customImportIssueMissingType => 'Нет \"type\"';
+
+  @override
+  String customImportIssueUnknownType(String value) {
+    return 'Неизвестный тип: $value';
+  }
+
+  @override
+  String customImportIssueInvalidNumber(String field, String value) {
+    return 'Неверное значение в \"$field\": $value';
+  }
+
+  @override
+  String customImportIssueUnknownStatus(String value) {
+    return 'Неизвестный статус: $value';
+  }
+
+  @override
+  String customImportIssueUnknownFormat(String value) {
+    return 'Неизвестный формат: $value';
+  }
+
+  @override
+  String get customImportIssueFormatNotApplicable =>
+      '\"format\" только для манги и аниме';
+
+  @override
+  String get customImportIssueInvalidCover =>
+      '\"cover\" должен быть http(s) URL';
+
+  @override
+  String customImportIssueInvalidDate(String field, String value) {
+    return 'Неверная дата в \"$field\": $value (нужен формат YYYY-MM-DD)';
+  }
+
+  @override
+  String customImportIssueInvalidBool(String value) {
+    return '\"favorite\" должен быть true/false: $value';
+  }
+
+  @override
   String get moodGridCreate => 'Создать mood-сетку';
 
   @override
@@ -5495,4 +5688,163 @@ class SRu extends S {
 
   @override
   String get unitCustom => 'Своё';
+
+  @override
+  String get cardLinkCopy => 'Скопировать ссылку на карточку';
+
+  @override
+  String get cardLinkCopied => 'Ссылка на карточку скопирована';
+
+  @override
+  String get cardLinkNotFound => 'Карточка не найдена';
+
+  @override
+  String get cardLinkPickCollection => 'Открыть в коллекции';
+
+  @override
+  String get cardLinkSearchTitle => 'Ссылка на карточку';
+
+  @override
+  String get cardLinkSearchHint => 'Поиск карточек';
+
+  @override
+  String get shortcutsDialogTitle => 'Клавиатурные сочетания';
+
+  @override
+  String get shortcutsGroupNavigation => 'Навигация';
+
+  @override
+  String get shortcutSwitchTab => 'Переключить таб';
+
+  @override
+  String get shortcutNextTab => 'Следующий таб';
+
+  @override
+  String get shortcutPreviousTab => 'Предыдущий таб';
+
+  @override
+  String get shortcutBack => 'Назад';
+
+  @override
+  String get shortcutSearch => 'Поиск';
+
+  @override
+  String get shortcutRefresh => 'Обновить';
+
+  @override
+  String get shortcutThisHelp => 'Эта справка';
+
+  @override
+  String get shortcutsGroupCollections => 'Коллекции';
+
+  @override
+  String get shortcutCreateCollection => 'Создать коллекцию';
+
+  @override
+  String get shortcutImportCollection => 'Импорт коллекции';
+
+  @override
+  String get shortcutToggleView => 'Переключить вид';
+
+  @override
+  String get shortcutDeleteCollection => 'Удалить коллекцию';
+
+  @override
+  String get shortcutRenameCollection => 'Переименовать коллекцию';
+
+  @override
+  String get shortcutOpenCollection => 'Открыть коллекцию';
+
+  @override
+  String get shortcutsGroupCollection => 'Коллекция';
+
+  @override
+  String get shortcutAddItems => 'Добавить элементы';
+
+  @override
+  String get shortcutExportCollection => 'Экспорт коллекции';
+
+  @override
+  String get shortcutImportIntoCollection => 'Импорт в коллекцию';
+
+  @override
+  String get shortcutToggleBoard => 'Переключить Board/Canvas';
+
+  @override
+  String get shortcutDeleteItem => 'Удалить элемент';
+
+  @override
+  String get shortcutMoveItem => 'Переместить элемент';
+
+  @override
+  String get shortcutsGroupItemDetail => 'Деталь элемента';
+
+  @override
+  String get shortcutLockCanvas => 'Lock/Unlock канвас';
+
+  @override
+  String get shortcutMoveToCollection => 'Переместить в коллекцию';
+
+  @override
+  String get shortcutSetRating => 'Установить рейтинг';
+
+  @override
+  String get shortcutResetRating => 'Сбросить рейтинг';
+
+  @override
+  String get shortcutsGroupTierLists => 'Тир-листы';
+
+  @override
+  String get shortcutCreateTierList => 'Создать тир-лист';
+
+  @override
+  String get shortcutOpenTierList => 'Открыть тир-лист';
+
+  @override
+  String get shortcutDeleteTierList => 'Удалить тир-лист';
+
+  @override
+  String get shortcutRename => 'Переименовать';
+
+  @override
+  String get shortcutsGroupTierList => 'Тир-лист';
+
+  @override
+  String get shortcutExportAsImage => 'Экспорт как изображение';
+
+  @override
+  String get shortcutAddTier => 'Добавить тир';
+
+  @override
+  String get shortcutClearAll => 'Очистить все';
+
+  @override
+  String get shortcutsGroupWishlist => 'Вишлист';
+
+  @override
+  String get shortcutAddItem => 'Добавить элемент';
+
+  @override
+  String get shortcutToggleCompleted => 'Показать/скрыть выполненные';
+
+  @override
+  String get shortcutClearCompleted => 'Очистить выполненные';
+
+  @override
+  String get shortcutsGroupSearch => 'Поиск';
+
+  @override
+  String get shortcutFocusSearchField => 'Фокус в поле поиска';
+
+  @override
+  String get shortcutClearOrBack => 'Очистить / назад';
+
+  @override
+  String get shortcutRunSearch => 'Выполнить поиск';
+
+  @override
+  String get debugKeyEvents => 'Кнопки (key events)';
+
+  @override
+  String get settingsGamepadDebugSubtitle => 'Снять коды кнопок контроллера';
 }

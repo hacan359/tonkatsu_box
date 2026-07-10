@@ -19,6 +19,7 @@ import '../../features/welcome/widgets/menu_tour_overlay.dart';
 import '../../features/tier_lists/screens/tier_list_detail_screen.dart';
 import '../../features/tier_lists/screens/tier_lists_screen.dart';
 import '../../features/wishlist/screens/wishlist_screen.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/platform_features.dart';
 import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
@@ -139,7 +140,7 @@ class _AppShellState extends ConsumerState<AppShell> {
           onRefresh: _onRefresh,
           onShowHelp: () => KeyboardShortcutsDialog.show(
             context,
-            screenGroups: _currentScreenShortcutGroups(),
+            screenGroups: _currentScreenShortcutGroups(S.of(context)),
           ),
         ),
         child: FocusTraversalGroup(
@@ -433,21 +434,21 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   /// Shortcut groups for the current tab (for the F1 dialog).
-  List<ShortcutGroup> _currentScreenShortcutGroups() {
+  List<ShortcutGroup> _currentScreenShortcutGroups(S l) {
     return switch (NavTab.values[_selectedIndex]) {
       NavTab.home => const <ShortcutGroup>[],
       NavTab.releases => const <ShortcutGroup>[],
-      NavTab.collections => const <ShortcutGroup>[
-          HomeScreen.shortcutGroup,
-          CollectionScreen.shortcutGroup,
-          ItemDetailScreen.shortcutGroup,
+      NavTab.collections => <ShortcutGroup>[
+          HomeScreen.shortcutGroup(l),
+          CollectionScreen.shortcutGroup(l),
+          ItemDetailScreen.shortcutGroup(l),
         ],
-      NavTab.tierLists => const <ShortcutGroup>[
-          TierListsScreen.shortcutGroup,
-          TierListDetailScreen.shortcutGroup,
+      NavTab.tierLists => <ShortcutGroup>[
+          TierListsScreen.shortcutGroup(l),
+          TierListDetailScreen.shortcutGroup(l),
         ],
-      NavTab.wishlist => const <ShortcutGroup>[WishlistScreen.shortcutGroup],
-      NavTab.search => const <ShortcutGroup>[SearchScreen.shortcutGroup],
+      NavTab.wishlist => <ShortcutGroup>[WishlistScreen.shortcutGroup(l)],
+      NavTab.search => <ShortcutGroup>[SearchScreen.shortcutGroup(l)],
       NavTab.settings => const <ShortcutGroup>[],
     };
   }

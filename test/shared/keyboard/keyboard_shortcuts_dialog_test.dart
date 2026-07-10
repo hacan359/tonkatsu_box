@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/keyboard/keyboard_shortcuts.dart';
 import 'package:tonkatsu_box/shared/keyboard/keyboard_shortcuts_dialog.dart';
+
+Widget _wrap(Widget home) => MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
+      locale: const Locale('ru'),
+      home: home,
+    );
 
 void main() {
   group('KeyboardShortcutsDialog', () {
     testWidgets('should display global shortcuts group',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: KeyboardShortcutsDialog(
-              screenGroups: <ShortcutGroup>[],
-            ),
+        _wrap(
+          const Scaffold(
+            body: KeyboardShortcutsDialog(screenGroups: <ShortcutGroup>[]),
           ),
         ),
       );
@@ -34,8 +40,8 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
+        _wrap(
+          const Scaffold(
             body: KeyboardShortcutsDialog(screenGroups: groups),
           ),
         ),
@@ -58,8 +64,8 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
+        _wrap(
+          const Scaffold(
             body: KeyboardShortcutsDialog(screenGroups: groups),
           ),
         ),
@@ -73,8 +79,8 @@ void main() {
 
     testWidgets('should close on button tap', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
+        _wrap(
+          Builder(
             builder: (BuildContext context) => ElevatedButton(
               onPressed: () => KeyboardShortcutsDialog.show(context),
               child: const Text('Open'),
@@ -111,8 +117,8 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
+        _wrap(
+          const Scaffold(
             body: KeyboardShortcutsDialog(screenGroups: groups),
           ),
         ),
@@ -128,8 +134,8 @@ void main() {
     testWidgets('show() should open dialog with screen groups',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
+        _wrap(
+          Builder(
             builder: (BuildContext context) => ElevatedButton(
               onPressed: () => KeyboardShortcutsDialog.show(
                 context,

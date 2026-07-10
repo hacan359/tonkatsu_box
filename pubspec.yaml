@@ -84,6 +84,16 @@ dependencies:
   # Sensors (gyroscope parallax on mobile)
   sensors_plus: ^6.1.1
   calendar_view: ^2.0.0
+  trina_grid: ^2.2.2
+  shadcn_ui: ^0.43.4
+
+# The real gamepads_windows is native-only and its USB device listener
+# crashes the app (0xc0000005) even though the Dart side never subscribes
+# on Windows. The stub keeps the DLL out of the Windows build; Android
+# keeps the real implementation.
+dependency_overrides:
+  gamepads_windows:
+    path: packages/gamepads_windows_stub
 
 dev_dependencies:
   flutter_test:
@@ -140,3 +150,5 @@ flutter_launcher_icons:
   windows:
     generate: true
     icon_size: 256
+  macos:
+    generate: true

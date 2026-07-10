@@ -43,6 +43,7 @@ linux/flutter/generated_plugin_registrant.cc
 linux/flutter/generated_plugin_registrant.h
 linux/flutter/generated_plugins.cmake
 android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+macos/Flutter/GeneratedPluginRegistrant.swift
 
 # Symbolication related
 app.*.symbols

@@ -45,14 +45,15 @@ String? wishlistSourceIdFor(MediaType? hint) {
 class WishlistScreen extends ConsumerStatefulWidget {
   const WishlistScreen({super.key});
 
-  static const ShortcutGroup shortcutGroup = ShortcutGroup(
-    title: 'Вишлист',
-    entries: <ShortcutEntry>[
-      ShortcutEntry(keys: 'Ctrl+N', description: 'Добавить элемент'),
-      ShortcutEntry(keys: 'Ctrl+H', description: 'Показать/скрыть выполненные'),
-      ShortcutEntry(keys: 'Ctrl+Shift+D', description: 'Очистить выполненные'),
-    ],
-  );
+  static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
+        title: l.shortcutsGroupWishlist,
+        entries: <ShortcutEntry>[
+          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItem),
+          ShortcutEntry(keys: 'Ctrl+H', description: l.shortcutToggleCompleted),
+          ShortcutEntry(
+              keys: 'Ctrl+Shift+D', description: l.shortcutClearCompleted),
+        ],
+      );
 
   @override
   ConsumerState<WishlistScreen> createState() => _WishlistScreenState();

@@ -212,7 +212,7 @@ void main() {
       await tester.tap(find.text('Completed'));
       await tester.pumpAndSettle();
 
-      expect(find.text('My Games (1)'), findsOneWidget);
+      expect(find.text('My Games'), findsOneWidget);
       expect(find.textContaining('Watch List'), findsNothing);
     });
 
@@ -278,8 +278,8 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('My Games (3)'), findsOneWidget);
-      expect(find.text('Watch List (2)'), findsOneWidget);
+      expect(find.text('My Games'), findsOneWidget);
+      expect(find.text('Watch List'), findsOneWidget);
     });
 
     testWidgets('разделители обновляются при фильтрации',
@@ -290,7 +290,7 @@ void main() {
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
-      expect(find.text('My Games (2)'), findsOneWidget);
+      expect(find.text('My Games'), findsOneWidget);
       expect(find.textContaining('Watch List'), findsNothing);
     });
   });

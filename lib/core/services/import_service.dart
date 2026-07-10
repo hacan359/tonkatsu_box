@@ -13,7 +13,6 @@ import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
-import '../../shared/models/collection_tag.dart';
 import '../../shared/models/custom_media.dart';
 import '../../shared/models/item_mark.dart';
 import '../../shared/models/item_status.dart';
@@ -21,6 +20,7 @@ import '../../shared/models/tier_definition.dart';
 import '../../shared/models/tier_list.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/tag.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
@@ -485,7 +485,6 @@ class ImportService {
         await _importTags(
           xcoll.tags!,
           xcoll.items,
-          collection.id,
           itemIdMapping,
         );
       }
@@ -564,7 +563,8 @@ class ImportService {
         parsed.currentSeason > 0 ||
         parsed.currentEpisode > 0 ||
         parsed.overrideName != null ||
-        parsed.isFavorite;
+        parsed.isFavorite ||
+        parsed.rewatchCount != null;
   }
 
   Future<void> _restoreUserData(int itemId, CollectionItem parsed) async {
@@ -574,6 +574,13 @@ class ImportService {
         parsed.status,
         mediaType: parsed.mediaType,
       );
+    }
+    // After the status restore: a transition into `completed` bumps
+    // rewatch_count, and the file value must win over that bump. `null` is
+    // never applied — it would wipe a locally tracked counter on re-import
+    // of an older export.
+    if (parsed.rewatchCount != null) {
+      await _database.updateItemRewatchCount(itemId, parsed.rewatchCount);
     }
     if (parsed.userComment != null) {
       await _database.updateItemUserComment(itemId, parsed.userComment);
@@ -1381,31 +1388,49 @@ class ImportService {
     }
   }
 
+  /// Restores tags into the global set: names resolve case-insensitively to
+  /// existing global tags, missing ones are created with the exported colors.
+  /// Accepts both the multi-tag `tag_names` array and the legacy single
+  /// `tag_name` string on items.
   Future<void> _importTags(
     List<Map<String, dynamic>> tagsData,
     List<Map<String, dynamic>> exportedItems,
-    int collectionId,
     Map<String, int> itemIdMapping,
   ) async {
-    final Map<String, int> tagNameToId = <String, int>{};
+    // One snapshot of the global set; per-tag resolveOrCreate would rescan
+    // the table for every entry.
+    final List<Tag> existing = await _database.globalTagDao.getAll();
+    final Map<String, int> tagNameToId = <String, int>{
+      for (final Tag tag in existing) tag.name.toLowerCase(): tag.id,
+    };
     for (final Map<String, dynamic> tagData in tagsData) {
       final String name = tagData['name'] as String? ?? 'Imported Tag';
-      final int? color = tagData['color'] as int?;
-
-      final CollectionTag tag = await _database.tagDao.createTag(
-        collectionId,
+      final String key = name.toLowerCase();
+      if (tagNameToId.containsKey(key)) continue;
+      final Tag created = await _database.globalTagDao.create(
         name,
-        color: color,
+        color: tagData['color'] as int?,
+        textColor: tagData['text_color'] as int?,
       );
-      tagNameToId[name] = tag.id;
+      tagNameToId[key] = created.id;
     }
 
     for (final Map<String, dynamic> itemData in exportedItems) {
-      final String? tagName = itemData['tag_name'] as String?;
-      if (tagName == null) continue;
+      final List<String> tagNames = switch (itemData['tag_names']) {
+        final List<dynamic> names => names.cast<String>(),
+        _ => <String>[
+            if (itemData['tag_name'] is String)
+              itemData['tag_name'] as String,
+          ],
+      };
+      if (tagNames.isEmpty) continue;
 
-      final int? tagId = tagNameToId[tagName];
-      if (tagId == null) continue;
+      final Set<int> tagIds = <int>{
+        for (final String name in tagNames)
+          if (tagNameToId[name.toLowerCase()] != null)
+            tagNameToId[name.toLowerCase()]!,
+      };
+      if (tagIds.isEmpty) continue;
 
       final String? mediaType = itemData['media_type'] as String?;
       final int? externalId = itemData['external_id'] as int?;
@@ -1419,7 +1444,9 @@ class ImportService {
           itemIdMapping[keyWithPlatform] ?? itemIdMapping[keyWithout];
       if (itemId == null) continue;
 
-      await _database.tagDao.setItemTag(itemId, tagId);
+      // Imported items are freshly created, so a replace-set write is safe
+      // and avoids one INSERT round-trip per link.
+      await _database.globalTagDao.setItemTags(itemId, tagIds);
     }
   }
 

@@ -257,6 +257,7 @@ class AniListImportService implements ImportSource {
       'completed_at': ?epochSeconds(dates.completedAt),
       'last_activity_at': ?epochSeconds(dates.lastActivityAt),
       if (comment.isNotEmpty) 'user_comment': comment,
+      if (repeatIsTracked(status, entry.repeat)) 'rewatch_count': entry.repeat,
     };
   }
 
@@ -319,6 +320,11 @@ class AniListImportService implements ImportSource {
 
     final String comment = _buildUserComment(entry);
     if (comment.isNotEmpty) fields['user_comment'] = comment;
+
+    if (repeatIsTracked(status, entry.repeat) &&
+        entry.repeat != existing.rewatchCount) {
+      fields['rewatch_count'] = entry.repeat;
+    }
 
     return fields;
   }
@@ -404,8 +410,9 @@ class AniListImportService implements ImportSource {
     final String s = raw.toUpperCase().trim();
     switch (s) {
       case 'CURRENT':
-      case 'REPEATING':
         return ItemStatus.inProgress;
+      case 'REPEATING':
+        return ItemStatus.replaying;
       case 'COMPLETED':
         return ItemStatus.completed;
       case 'PLANNING':

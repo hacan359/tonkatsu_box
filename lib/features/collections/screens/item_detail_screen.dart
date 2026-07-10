@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
@@ -15,6 +17,7 @@ import '../../../core/database/dao/calendar_entry_dao.dart';
 import '../../../core/database/dao/tracked_release_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/calendar_entry.dart';
+import '../../../shared/models/card_link.dart';
 import '../../../shared/models/data_source.dart';
 import '../../releases/providers/releases_provider.dart';
 import '../../releases/widgets/add_to_calendar_dialog.dart';
@@ -45,6 +48,7 @@ import '../widgets/custom_progress_section.dart';
 import '../widgets/google_books_similars_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/dialogs/add_time_dialog.dart';
+import '../widgets/dialogs/rewatch_count_dialog.dart';
 import '../providers/tracker_provider.dart';
 import '../../../shared/models/tracker_game_data.dart';
 import '../widgets/ra_achievements_section.dart';
@@ -78,16 +82,16 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
   final int itemId;
   final bool isEditable;
 
-  static const ShortcutGroup shortcutGroup = ShortcutGroup(
-    title: 'Деталь элемента',
-    entries: <ShortcutEntry>[
-      ShortcutEntry(keys: 'Ctrl+B', description: 'Переключить Board/Canvas'),
-      ShortcutEntry(keys: 'Ctrl+L', description: 'Lock/Unlock канвас'),
-      ShortcutEntry(keys: 'Ctrl+M', description: 'Переместить в коллекцию'),
-      ShortcutEntry(keys: 'Alt+1..5', description: 'Установить рейтинг'),
-      ShortcutEntry(keys: 'Alt+0', description: 'Сбросить рейтинг'),
-    ],
-  );
+  static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
+        title: l.shortcutsGroupItemDetail,
+        entries: <ShortcutEntry>[
+          ShortcutEntry(keys: 'Ctrl+B', description: l.shortcutToggleBoard),
+          ShortcutEntry(keys: 'Ctrl+L', description: l.shortcutLockCanvas),
+          ShortcutEntry(keys: 'Ctrl+M', description: l.shortcutMoveToCollection),
+          ShortcutEntry(keys: 'Alt+1..5', description: l.shortcutSetRating),
+          ShortcutEntry(keys: 'Alt+0', description: l.shortcutResetRating),
+        ],
+      );
 
   @override
   ConsumerState<ItemDetailScreen> createState() => _ItemDetailScreenState();
@@ -186,6 +190,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         _moveToCollection(item);
       case ItemDetailMenuAction.clone:
         _cloneToCollection(item);
+      case ItemDetailMenuAction.copyLink:
+        CollectionActions.copyItemLink(context, item);
       case ItemDetailMenuAction.remove:
         _removeFromCollection(item);
     }
@@ -666,9 +672,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           : null,
       tagWidget: widget.collectionId != null
           ? ItemTagsSection(
-              collectionId: widget.collectionId!,
               itemId: item.id,
-              currentTagId: item.tagId,
               isEditable: widget.isEditable,
             )
           : null,
@@ -679,6 +683,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       timeSpentMinutes: item.timeSpentMinutes,
       onTimeSpentTap: widget.collectionId != null && widget.isEditable
           ? () => _showTimeSpentDialog(item)
+          : null,
+      rewatchCount: item.rewatchCount,
+      onRewatchCountTap: widget.collectionId != null && widget.isEditable
+          ? () => _showRewatchCountDialog(item)
           : null,
       mediaGallery: ScreenScraperGallerySection(
         gameName: item.itemName,
@@ -788,7 +796,81 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             platformOverlay: item.platform?.overlayAsset,
             mediaTypeOverlay: item.mediaType.overlayAsset,
           ),
+      onCardLinkTap: _openCardLink,
       embedded: true,
+    );
+  }
+
+  /// Resolves a cross-link and opens the target; picker on multiple matches.
+  Future<void> _openCardLink(CardLinkRef ref) async {
+    final DatabaseService db = this.ref.read(databaseServiceProvider);
+    final List<CollectionItem> matches = await db.resolveCardLink(
+      mediaType: ref.mediaType,
+      externalId: ref.externalId,
+      source: ref.source,
+      platformId: ref.platformId,
+      collectionId: ref.collectionId,
+    );
+    if (!mounted) return;
+
+    if (matches.isEmpty) {
+      context.showSnack(S.of(context).cardLinkNotFound, type: SnackType.error);
+      return;
+    }
+
+    final CollectionItem target = matches.length == 1
+        ? matches.first
+        : await _pickCardLinkTarget(matches) ?? matches.first;
+    if (!mounted) return;
+
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (BuildContext context) => ItemDetailScreen(
+        collectionId: target.collectionId,
+        itemId: target.id,
+        isEditable: widget.isEditable,
+      ),
+    ));
+  }
+
+  Future<CollectionItem?> _pickCardLinkTarget(
+    List<CollectionItem> matches,
+  ) {
+    return showModalBottomSheet<CollectionItem>(
+      context: context,
+      builder: (BuildContext context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Text(
+                S.of(context).cardLinkPickCollection,
+                style: AppTypography.h3,
+              ),
+            ),
+            for (final CollectionItem match in matches)
+              ListTile(
+                leading: Icon(match.placeholderIcon),
+                title: Text(match.itemName),
+                subtitle: FutureBuilder<Collection?>(
+                  future: match.collectionId == null
+                      ? Future<Collection?>.value(null)
+                      : ref
+                          .read(databaseServiceProvider)
+                          .getCollectionById(match.collectionId!),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<Collection?> snapshot) {
+                    return Text(
+                      snapshot.data?.name ??
+                          S.of(context).collectionsUncategorized,
+                    );
+                  },
+                ),
+                onTap: () => Navigator.of(context).pop(match),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -820,6 +902,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     await ref
         .read(collectionItemsNotifierProvider(collId).notifier)
         .setTimeSpent(item.id, minutes);
+  }
+
+  Future<void> _showRewatchCountDialog(CollectionItem item) async {
+    final int? collId = widget.collectionId;
+    if (collId == null) return;
+    final ({int? count})? result = await RewatchCountDialog.show(
+      context,
+      initialCount: item.rewatchCount,
+    );
+    if (result == null || !mounted) return;
+    await ref
+        .read(collectionItemsNotifierProvider(collId).notifier)
+        .setRewatchCount(item.id, result.count);
   }
 
   Widget? _buildTrackerSection(CollectionItem item) {

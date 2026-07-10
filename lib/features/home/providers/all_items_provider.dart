@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
-import '../../../core/database/dao/tag_dao.dart';
+import '../../../core/database/dao/global_tag_dao.dart';
 import '../../../data/repositories/collection_repository.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
@@ -245,12 +245,12 @@ final Provider<Map<int, String>> collectionNamesProvider =
 
 // ==================== Tags ====================
 
-/// Map of tagId -> CollectionTag for display and tag search on All Items.
-final FutureProvider<Map<int, CollectionTag>> allTagsMapProvider =
-    FutureProvider<Map<int, CollectionTag>>((Ref ref) async {
-  final TagDao tagDao = ref.watch(tagDaoProvider);
-  final List<CollectionTag> tags = await tagDao.getAll();
-  return <int, CollectionTag>{
-    for (final CollectionTag tag in tags) tag.id: tag,
+/// Map of tagId -> Tag for display and tag search on All Items.
+final FutureProvider<Map<int, Tag>> allTagsMapProvider =
+    FutureProvider<Map<int, Tag>>((Ref ref) async {
+  final GlobalTagDao tagDao = ref.watch(globalTagDaoProvider);
+  final List<Tag> tags = await tagDao.getAll();
+  return <int, Tag>{
+    for (final Tag tag in tags) tag.id: tag,
   };
 });

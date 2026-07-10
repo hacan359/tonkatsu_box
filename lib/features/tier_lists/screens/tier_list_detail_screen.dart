@@ -24,14 +24,14 @@ class TierListDetailScreen extends ConsumerStatefulWidget {
 
   final int tierListId;
 
-  static const ShortcutGroup shortcutGroup = ShortcutGroup(
-    title: 'Тир-лист',
-    entries: <ShortcutEntry>[
-      ShortcutEntry(keys: 'Ctrl+E', description: 'Экспорт как изображение'),
-      ShortcutEntry(keys: 'Ctrl+Enter', description: 'Добавить тир'),
-      ShortcutEntry(keys: 'Ctrl+Shift+D', description: 'Очистить все'),
-    ],
-  );
+  static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
+        title: l.shortcutsGroupTierList,
+        entries: <ShortcutEntry>[
+          ShortcutEntry(keys: 'Ctrl+E', description: l.shortcutExportAsImage),
+          ShortcutEntry(keys: 'Ctrl+Enter', description: l.shortcutAddTier),
+          ShortcutEntry(keys: 'Ctrl+Shift+D', description: l.shortcutClearAll),
+        ],
+      );
 
   @override
   ConsumerState<TierListDetailScreen> createState() =>

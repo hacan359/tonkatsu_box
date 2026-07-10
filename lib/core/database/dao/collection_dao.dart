@@ -9,6 +9,7 @@ import '../../../shared/models/cover_info.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/item_status.dart';
+import '../../../shared/models/item_status_logic.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
@@ -329,6 +330,46 @@ class CollectionDao {
     return rows.map(CollectionItem.fromDb).toList();
   }
 
+  /// Resolves a content-based card link to hydrated items. Prefers the hinted
+  /// [collectionId] when it matches, else returns hits across all collections.
+  Future<List<CollectionItem>> resolveCardLink({
+    required MediaType mediaType,
+    required int externalId,
+    DataSource? source,
+    int? platformId,
+    int? collectionId,
+  }) async {
+    final Database db = await _getDatabase();
+    final StringBuffer where =
+        StringBuffer('media_type = ? AND external_id = ?');
+    final List<Object?> whereArgs = <Object?>[mediaType.value, externalId];
+
+    if (mediaType == MediaType.manga && source != null) {
+      where.write(" AND COALESCE(source, 'anilist') = ?");
+      whereArgs.add(source.name);
+    }
+    if (platformId != null) {
+      where.write(' AND platform_id = ?');
+      whereArgs.add(platformId);
+    }
+
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: where.toString(),
+      whereArgs: whereArgs,
+    );
+    if (rows.isEmpty) return <CollectionItem>[];
+
+    List<CollectionItem> items = rows.map(CollectionItem.fromDb).toList();
+    if (collectionId != null) {
+      final List<CollectionItem> inHinted = items
+          .where((CollectionItem i) => i.collectionId == collectionId)
+          .toList();
+      if (inHinted.isNotEmpty) items = inHinted;
+    }
+    return _loadJoinedData(items);
+  }
+
   /// [collectionId] == null adds as uncategorized.
   /// Returns null on UNIQUE constraint conflict.
   Future<int?> addItemToCollection({
@@ -482,6 +523,8 @@ class CollectionDao {
   /// - `last_activity_at` bumped every call.
   /// - `started_at` set on first transition to inProgress/completed.
   /// - `completed_at` set on transition to completed.
+  /// - `rewatch_count` recomputed via [computeRewatchCountForStatus] on
+  ///   transitions into completed.
   Future<void> updateItemStatus(
     int id,
     ItemStatus status, {
@@ -497,7 +540,7 @@ class CollectionDao {
 
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
-      columns: <String>['started_at'],
+      columns: <String>['started_at', 'status', 'rewatch_count'],
       where: 'id = ?',
       whereArgs: <Object?>[id],
       limit: 1,
@@ -505,6 +548,8 @@ class CollectionDao {
 
     final bool hasStartedAt =
         rows.isNotEmpty && rows.first['started_at'] != null;
+    final String? currentStatus =
+        rows.isNotEmpty ? rows.first['status'] as String? : null;
 
     if (status == ItemStatus.notStarted) {
       updateData['started_at'] = null;
@@ -519,11 +564,33 @@ class CollectionDao {
       if (!hasStartedAt) {
         updateData['started_at'] = now;
       }
+      final int? currentCount =
+          rows.isNotEmpty ? rows.first['rewatch_count'] as int? : null;
+      final int? newCount = computeRewatchCountForStatus(
+        oldStatus: ItemStatus.fromString(currentStatus ?? ''),
+        newStatus: status,
+        currentCount: currentCount,
+      );
+      if (newCount != currentCount) {
+        updateData['rewatch_count'] = newCount;
+      }
     }
 
     await db.update(
       'collection_items',
       updateData,
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  /// Sets `rewatch_count` verbatim (manual edit / import). `null` clears the
+  /// value back to "not tracked".
+  Future<void> updateItemRewatchCount(int id, int? count) async {
+    final Database db = await _getDatabase();
+    await db.update(
+      'collection_items',
+      <String, dynamic>{'rewatch_count': count},
       where: 'id = ?',
       whereArgs: <Object?>[id],
     );
@@ -780,6 +847,7 @@ class CollectionDao {
       'notStarted': 0,
       'dropped': 0,
       'planned': 0,
+      'replaying': 0,
       'gameCount': 0,
       'movieCount': 0,
       'tvShowCount': 0,
@@ -830,6 +898,8 @@ class CollectionDao {
           stats['dropped'] = (stats['dropped'] ?? 0) + count;
         case 'planned':
           stats['planned'] = (stats['planned'] ?? 0) + count;
+        case 'replaying':
+          stats['replaying'] = (stats['replaying'] ?? 0) + count;
       }
     }
 

@@ -8,7 +8,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
@@ -31,6 +31,7 @@ import '../../collections/widgets/selectable_poster_card.dart';
 import '../../collections/widgets/context_menu_item.dart';
 import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
+import '../../collections/providers/item_tags_provider.dart';
 
 /// Grid of all items across all collections (Home tab). The platforms
 /// filter row appears only while Games is selected.
@@ -58,8 +59,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ref.watch(allItemsNotifierProvider);
     final Map<int, String> collectionNames =
         ref.watch(collectionNamesProvider);
-    final Map<int, CollectionTag> tagsMap =
-        ref.watch(allTagsMapProvider).valueOrNull ?? <int, CollectionTag>{};
+    final Map<int, Tag> tagsMap =
+        ref.watch(allTagsMapProvider).valueOrNull ?? <int, Tag>{};
+    final Map<int, Set<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
@@ -98,7 +101,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               if (visibleItems.isEmpty) {
                 return _buildEmptyState(items.isEmpty);
               }
-              return _buildGridView(visibleItems, collectionNames, tagsMap);
+              return _buildGridView(
+                  visibleItems, collectionNames, tagsMap, itemTags);
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (Object error, StackTrace stack) =>
@@ -113,7 +117,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     List<CollectionItem> items,
     ItemStatus? filterStatus,
     bool favoriteOnly,
-    Map<int, CollectionTag> tagsMap,
+    Map<int, Tag> tagsMap,
     String searchQuery,
   ) {
     final String query = searchQuery.toLowerCase();
@@ -132,7 +136,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     CollectionItem item,
     ItemStatus? filterStatus,
     bool favoriteOnly,
-    Map<int, CollectionTag> tagsMap,
+    Map<int, Tag> tagsMap,
     String lowerQuery,
     String animeMangaTitleLanguage,
   ) {
@@ -155,9 +159,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               .displayName(animeMangaTitleLanguage)
               .toLowerCase()
               .contains(lowerQuery) ||
-          (item.tagId != null &&
-              (tagsMap[item.tagId]?.name.toLowerCase().contains(lowerQuery) ??
-                  false)) ||
+          _matchesTagName(item, tagsMap, lowerQuery) ||
           (item.userComment?.toLowerCase().contains(lowerQuery) ?? false) ||
           (item.authorComment?.toLowerCase().contains(lowerQuery) ?? false);
       if (!match) return false;
@@ -171,7 +173,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     AsyncValue<List<CollectionItem>> itemsAsync,
     ItemStatus? filterStatus,
     bool favoriteOnly,
-    Map<int, CollectionTag> tagsMap,
+    Map<int, Tag> tagsMap,
     String searchQuery,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
@@ -401,11 +403,23 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   /// Counts items per media type after applying every active filter except
   /// the media-type one — so each chevron shows how many would be visible if
   /// the user picked it.
+  /// True when any of the item's tags matches the search query.
+  bool _matchesTagName(
+    CollectionItem item,
+    Map<int, Tag> tagsMap,
+    String lowerQuery,
+  ) {
+    final Set<int>? ids = ref.read(itemTagsProvider).valueOrNull?[item.id];
+    if (ids == null) return false;
+    return ids.any((int id) =>
+        tagsMap[id]?.name.toLowerCase().contains(lowerQuery) ?? false);
+  }
+
   Map<MediaType, int> _countByMediaType(
     List<CollectionItem>? items,
     ItemStatus? filterStatus,
     bool favoriteOnly,
-    Map<int, CollectionTag> tagsMap,
+    Map<int, Tag> tagsMap,
     String searchQuery,
   ) {
     if (items == null) return <MediaType, int>{};
@@ -428,8 +442,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Widget _buildGridView(
     List<CollectionItem> items,
     Map<int, String> collectionNames,
-    Map<int, CollectionTag> tagsMap,
+    Map<int, Tag> tagsMap,
+    Map<int, Set<int>> itemTags,
   ) {
+    // getAll() returns display order, and the map preserves insertion order.
+    final List<Tag> orderedTags = tagsMap.values.toList();
     final double screenWidth = MediaQuery.sizeOf(context).width;
     final bool isLandscape = isLandscapeMobile(context);
     final bool isDesktop = screenWidth >= kDesktopContentBreakpoint && !kIsMobile;
@@ -474,8 +491,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           for (int i = 0; i < groups.length; i++) ...<Widget>[
             SliverToBoxAdapter(
               child: _buildCollectionDivider(
-                groups[i].name,
-                groups[i].items.length,
+                groups[i],
                 isFirst: i == 0,
               ),
             ),
@@ -484,17 +500,20 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 child: UncategorizedDeprecationBanner(),
               ),
             SliverPadding(
-              padding: EdgeInsets.symmetric(
-                horizontal: gridPadding,
+              padding: EdgeInsets.fromLTRB(
+                gridPadding,
+                AppSpacing.sm,
+                gridPadding,
+                0,
               ),
               sliver: SliverGrid(
                 gridDelegate: gridDelegate,
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final CollectionItem item = groups[i].items[index];
-                    final CollectionTag? tag = item.tagId != null
-                        ? tagsMap[item.tagId]
-                        : null;
+                    final Set<int>? tagIds = itemTags[item.id];
+                    final Tag? tag = orderedTags.primaryFor(tagIds);
+                    final int tagCount = tagIds?.length ?? 0;
                     final Set<int> selection =
                         ref.watch(allItemsSelectionProvider);
                     final bool isSelected = selection.contains(item.id);
@@ -533,6 +552,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                           : null,
                       tagName: tag?.name,
                       tagColor: tag?.color,
+                      tagTextColor: tag?.textColor,
+                      tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
                       onTap: selection.isEmpty
                           ? () => _showItemDetails(item, collectionNames)
                           : () => ref
@@ -602,46 +623,103 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     ];
   }
 
+  /// Section header for a collection group: the collection name with a thick
+  /// accent underline, its total count, then per-type tallies and a
+  /// favourites count.
   Widget _buildCollectionDivider(
-    String name,
-    int count, {
+    _CollectionGroup group, {
     required bool isFirst,
   }) {
+    final Color accent =
+        group.isUncategorized ? AppColors.textTertiary : AppColors.brand;
+
+    // Item count per media type, in enum order, for the per-type tallies.
+    final Map<MediaType, int> typeCounts = <MediaType, int>{};
+    for (final CollectionItem item in group.items) {
+      final MediaType t = item.displayMediaType;
+      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+    }
+    final Map<MediaType, int> orderedCounts = <MediaType, int>{
+      for (final MediaType t in MediaType.values)
+        if (typeCounts.containsKey(t)) t: typeCounts[t]!,
+    };
+    final int favorites =
+        group.items.where((CollectionItem i) => i.isFavorite).length;
+
     return Padding(
-      padding: EdgeInsets.only(
-        top: isFirst ? AppSpacing.xs : AppSpacing.md,
-        bottom: AppSpacing.sm,
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        isFirst ? AppSpacing.sm : AppSpacing.lg,
+        AppSpacing.md,
+        0,
       ),
       child: Row(
         children: <Widget>[
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: AppColors.surfaceBorder,
+          Container(
+            padding: const EdgeInsets.only(bottom: 4),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: accent, width: 3)),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
             child: Text(
-              '$name ($count)',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textTertiary,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.5,
-              ),
+              group.name,
+              style: AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: AppColors.surfaceBorder,
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            '${group.items.length}',
+            style: AppTypography.body.copyWith(
+              color: AppColors.textTertiary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(width: AppSpacing.md),
+          ..._headerInfo(orderedCounts, favorites),
         ],
       ),
     );
+  }
+
+  /// Shared info cluster: per-type icon with its item count, then a
+  /// favourites tally.
+  List<Widget> _headerInfo(Map<MediaType, int> typeCounts, int favorites) {
+    const double iconSize = 20;
+    return <Widget>[
+      for (final MapEntry<MediaType, int> e in typeCounts.entries.take(6))
+        Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.sm),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                MediaTypeTheme.iconFor(e.key),
+                size: iconSize,
+                color: MediaTypeTheme.colorFor(e.key).withAlpha(220),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                '${e.value}',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      if (favorites > 0) ...<Widget>[
+        const SizedBox(width: AppSpacing.sm),
+        const Icon(Icons.favorite, size: iconSize - 2, color: AppColors.favorite),
+        const SizedBox(width: 3),
+        Text(
+          '$favorites',
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ];
   }
 
   Widget _buildEmptyState(bool noItemsAtAll) {
@@ -739,6 +817,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           icon: Icons.copy_outlined,
           label: l.collectionCopyToCollection,
         ),
+        contextMenuItem<String>(
+          value: 'copyLink',
+          icon: Icons.link,
+          label: l.cardLinkCopy,
+        ),
         const PopupMenuDivider(),
         contextMenuItem<String>(
           value: 'remove',
@@ -777,6 +860,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           collectionId: item.collectionId,
           item: item,
         );
+      case 'copyLink':
+        if (mounted) CollectionActions.copyItemLink(context, item);
       case 'remove':
         await CollectionActions.removeItem(
           context: context,

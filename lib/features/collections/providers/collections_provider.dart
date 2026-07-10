@@ -12,7 +12,6 @@ import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/game.dart';
@@ -23,13 +22,13 @@ import '../../../shared/models/media_type.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../releases/providers/releases_provider.dart';
-import '../../../core/database/dao/tag_dao.dart';
+import '../../../core/database/dao/global_tag_dao.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'collection_covers_provider.dart';
-import 'collection_tags_provider.dart';
+import 'item_tags_provider.dart';
 import 'sort_utils.dart';
 
 final AsyncNotifierProvider<CollectionsNotifier, List<Collection>>
@@ -525,20 +524,6 @@ class CollectionItemsNotifier
     );
   }
 
-  void updateItemTag(int itemId, int? tagId) {
-    final List<CollectionItem>? items = state.valueOrNull;
-    if (items == null) return;
-
-    state = AsyncData<List<CollectionItem>>(
-      items.map((CollectionItem item) {
-        if (item.id == itemId) {
-          return item.copyWith(tagId: tagId, clearTagId: tagId == null);
-        }
-        return item;
-      }).toList(),
-    );
-  }
-
   Future<void> refresh() async {
     await _loadItems(_sortMode, isDescending: _isDescending);
     ref.invalidate(collectionStatsProvider(_collectionId));
@@ -668,7 +653,6 @@ class CollectionItemsNotifier
     int itemId, {
     required int targetCollectionId,
     required MediaType mediaType,
-    int? sourceTagId,
   }) async {
     final int? newId = await _repository.cloneItemToCollection(
       itemId,
@@ -676,42 +660,21 @@ class CollectionItemsNotifier
     );
     if (newId == null) return false;
 
-    final int? resolvedTagId = await _resolveTargetTagId(
-      sourceTagId: sourceTagId,
-      targetCollectionId: targetCollectionId,
-    );
-    if (resolvedTagId != null) {
-      await ref.read(tagDaoProvider).setItemTag(newId, resolvedTagId);
+    // Tags are global — the copy simply carries the same links.
+    final GlobalTagDao tagDao = ref.read(globalTagDaoProvider);
+    final Set<int> tagIds = await tagDao.getTagIdsByItem(itemId);
+    if (tagIds.isNotEmpty) {
+      await tagDao.setItemTags(newId, tagIds);
+      ref.invalidate(itemTagsProvider);
     }
-    final bool tagAssigned = resolvedTagId != null;
 
     ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(targetCollectionId));
     ref.invalidate(collectionCoversProvider(targetCollectionId));
-    if (tagAssigned) {
-      ref.invalidate(collectionTagsProvider(targetCollectionId));
-    }
     _invalidateCollectedIds(mediaType);
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
     return true;
-  }
-
-  /// Finds or creates a tag in the target collection by case-insensitive name.
-  /// Returns null if linking is not possible.
-  Future<int?> _resolveTargetTagId({
-    required int? sourceTagId,
-    required int? targetCollectionId,
-  }) async {
-    if (sourceTagId == null || targetCollectionId == null) return null;
-    final TagDao tagDao = ref.read(tagDaoProvider);
-    final CollectionTag? sourceTag = await tagDao.getTagById(sourceTagId);
-    if (sourceTag == null) return null;
-    return tagDao.resolveOrCreateInCollection(
-      targetCollectionId,
-      sourceTag.name,
-      color: sourceTag.color,
-    );
   }
 
   /// Returns `(success: false, sourceEmpty: false)` if target already has the item.
@@ -719,7 +682,6 @@ class CollectionItemsNotifier
     int itemId, {
     required int? targetCollectionId,
     required MediaType mediaType,
-    int? sourceTagId,
   }) async {
     // Remove from tier-lists of source collection before the move.
     final TierListDao tierDao = ref.read(tierListDaoProvider);
@@ -732,25 +694,13 @@ class CollectionItemsNotifier
       );
     }
 
-    // Resolve target tag_id up front (case-insensitive name match).
-    final int? resolvedTagId = await _resolveTargetTagId(
-      sourceTagId: sourceTagId,
-      targetCollectionId: targetCollectionId,
-    );
-
     final bool success = await _repository.moveItemToCollection(
       itemId,
       targetCollectionId,
     );
     if (!success) return (success: false, sourceEmpty: false);
 
-    // Single UPDATE: rebind to target tag or null out (old tag_id refers
-    // to a tag belonging to the source collection).
-    if (sourceTagId != null) {
-      await ref.read(tagDaoProvider).setItemTag(itemId, resolvedTagId);
-    }
-    final bool tagAssigned = resolvedTagId != null;
-
+    // Tags are global — they stay with the item across collections.
     await refresh();
 
     final bool sourceEmpty = _collectionId != null &&
@@ -761,9 +711,6 @@ class CollectionItemsNotifier
     ref.invalidate(collectionCoversProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(_collectionId));
     ref.invalidate(collectionCoversProvider(_collectionId));
-    if (tagAssigned && targetCollectionId != null) {
-      ref.invalidate(collectionTagsProvider(targetCollectionId));
-    }
     ref.invalidate(uncategorizedItemCountProvider);
     _invalidateCollectedIds(mediaType);
     ref.invalidate(allItemsNotifierProvider);
@@ -972,6 +919,11 @@ class CollectionItemsNotifier
           completedAt: completedAt ?? i.completedAt,
           lastActivityAt: lastActivityAt ?? i.lastActivityAt,
           status: newStatus ?? i.status,
+          rewatchCount: computeRewatchCountForStatus(
+            oldStatus: i.status,
+            newStatus: newStatus ?? i.status,
+            currentCount: i.rewatchCount,
+          ),
         ),
         affects: const <CollectionSortMode>{
           CollectionSortMode.status,
@@ -1223,6 +1175,23 @@ class CollectionItemsNotifier
       (CollectionItem i) =>
           i.copyWith(timeSpentMinutes: totalMinutes, lastActivityAt: now),
       affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
+    );
+    ref.invalidate(allItemsNotifierProvider);
+  }
+
+  /// Manual rewatch-count edit; [count] is >= 0, or null to clear back to
+  /// "not tracked". Transitions into `completed` bump the count automatically
+  /// (see [updateStatus]); this is the override for everything else.
+  Future<void> setRewatchCount(int id, int? count) async {
+    assert(count == null || count >= 0, 'Count must be >= 0 or null');
+    await _repository.updateItemRewatchCount(id, count);
+
+    _patchItem(
+      id,
+      (CollectionItem i) => count == null
+          ? i.copyWith(clearRewatchCount: true)
+          : i.copyWith(rewatchCount: count),
+      affects: const <CollectionSortMode>{},
     );
     ref.invalidate(allItemsNotifierProvider);
   }

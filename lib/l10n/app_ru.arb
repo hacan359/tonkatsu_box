@@ -46,6 +46,12 @@
   "statusCompleted": "Завершено",
   "statusDropped": "Брошено",
   "statusPlanned": "Запланировано",
+  "statusReplay": "Повтор",
+  "rewatchCountEdit": "Счётчик повторов",
+  "rewatchCountHint": "Пусто = не отслеживается",
+  "statusReplaying": "Перепрохожу",
+  "statusRewatching": "Пересматриваю",
+  "statusRereading": "Перечитываю",
   "homeFilterAll": "Все",
 
   "mediaTypeGame": "Игра",
@@ -671,6 +677,8 @@
   "tagManage": "Управление тегами",
   "tagAssign": "Назначить теги",
   "tagNone": "Нет тегов",
+  "tagPickerTitle": "Теги",
+  "tagTextColor": "Цвет текста",
   "tagCreated": "Тег создан",
   "tagRenamed": "Тег переименован",
   "tagDeleted": "Тег удалён",
@@ -890,6 +898,8 @@
   "copyErrorDetails": "Скопировать детали ошибки",
   "errorDetailsCopied": "Детали ошибки скопированы",
   "searchDescription": "Описание",
+  "showMore": "Ещё…",
+  "showLess": "Свернуть",
 
   "platformFilterTitle": "Выбор платформ",
   "platformFilterClearAll": "Очистить всё",
@@ -1731,6 +1741,15 @@
   "textExportCopy": "Копировать",
   "textExportEmptyTemplate": "Шаблон пустой",
   "filtersClear": "Сбросить",
+  "collectionTableColumns": "Колонки",
+  "tableFilterHint": "Все правила действуют одновременно (И).",
+  "tableFilterAddRule": "Добавить правило",
+  "tableFilterCondContains": "Содержит",
+  "tableFilterCondEquals": "Равно",
+  "tableFilterCondStartsWith": "Начинается с",
+  "tableFilterCondEndsWith": "Заканчивается на",
+  "tableFilterCondAtLeast": "Не меньше (≥)",
+  "tableFilterCondAtMost": "Не больше (≤)",
 
   "profiles": "Профили приложения",
   "currentProfile": "Текущий: {name}",
@@ -2002,6 +2021,95 @@
   "aniListImportEmptyUsername": "Введите имя пользователя AniList",
   "aniListImportSelectAtLeastOne": "Выберите хотя бы один тип: аниме или манга",
 
+  "settingsCustomCardsImport": "Кастомные карточки",
+  "settingsCustomCardsImportSubtitle": "Импорт карточек из JSON или CSV файла",
+  "customImportTitle": "Импорт кастомных карточек",
+  "customImportDescription": "Загрузите JSON или CSV файл, собранный вашим скриптом или парсером — каждая строка станет кастомной карточкой. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.",
+  "customImportSelectFile": "Выбрать JSON/CSV файл",
+  "customImportCsvTemplate": "Шаблон CSV",
+  "customImportJsonTemplate": "Шаблон JSON",
+  "customImportTemplateSaved": "Шаблон сохранён",
+  "customImportTargetCollection": "Целевая коллекция",
+  "customImportCreateNew": "Создать новую коллекцию",
+  "customImportUseExisting": "Добавить в существующую",
+  "customImportSelectCollection": "Выберите коллекцию",
+  "customImportNoCollections": "Коллекций пока нет",
+  "customImportErrorLoadingCollections": "Не удалось загрузить коллекции",
+  "customImportPreviewButton": "Предпросмотр и импорт",
+  "customImportPreviewTitle": "Предпросмотр импорта",
+  "customImportSummary": "Распознано {valid} · Ошибок {errors} · Дублей {duplicates}",
+  "@customImportSummary": {
+    "placeholders": {
+      "valid": {"type": "int"},
+      "errors": {"type": "int"},
+      "duplicates": {"type": "int"}
+    }
+  },
+  "customImportSelectAll": "Выбрать все",
+  "customImportSelectNone": "Снять все",
+  "customImportSelectedCount": "Выбрано {selected} из {total}",
+  "@customImportSelectedCount": {
+    "placeholders": {
+      "selected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "customImportDuplicate": "Дубль — уже есть в коллекции",
+  "customImportRowLabel": "Строка {index}",
+  "@customImportRowLabel": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "customImportStart": "Импортировать отмеченные",
+  "customImportImporting": "Импорт кастомных карточек...",
+  "customImportErrorEmptyFile": "Файл пуст",
+  "customImportErrorInvalidJson": "Битый JSON — файл не удалось разобрать",
+  "customImportErrorMissingColumns": "В CSV должны быть колонки \"title\" и \"type\"",
+  "customImportIssueNotAnObject": "Не JSON-объект",
+  "customImportIssueMissingTitle": "Нет \"title\"",
+  "customImportIssueMissingType": "Нет \"type\"",
+  "customImportIssueUnknownType": "Неизвестный тип: {value}",
+  "@customImportIssueUnknownType": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidNumber": "Неверное значение в \"{field}\": {value}",
+  "@customImportIssueInvalidNumber": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownStatus": "Неизвестный статус: {value}",
+  "@customImportIssueUnknownStatus": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownFormat": "Неизвестный формат: {value}",
+  "@customImportIssueUnknownFormat": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueFormatNotApplicable": "\"format\" только для манги и аниме",
+  "customImportIssueInvalidCover": "\"cover\" должен быть http(s) URL",
+  "customImportIssueInvalidDate": "Неверная дата в \"{field}\": {value} (нужен формат YYYY-MM-DD)",
+  "@customImportIssueInvalidDate": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidBool": "\"favorite\" должен быть true/false: {value}",
+  "@customImportIssueInvalidBool": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+
   "moodGridCreate": "Создать mood-сетку",
   "moodGridCreateTitle": "Новая mood-сетка",
   "moodGridName": "Название",
@@ -2134,5 +2242,58 @@
   "unitVolume": "Том",
   "unitPage": "Страница",
   "unitPart": "Часть",
-  "unitCustom": "Своё"
+  "unitCustom": "Своё",
+  "cardLinkCopy": "Скопировать ссылку на карточку",
+  "cardLinkCopied": "Ссылка на карточку скопирована",
+  "cardLinkNotFound": "Карточка не найдена",
+  "cardLinkPickCollection": "Открыть в коллекции",
+  "cardLinkSearchTitle": "Ссылка на карточку",
+  "cardLinkSearchHint": "Поиск карточек",
+  "shortcutsDialogTitle": "Клавиатурные сочетания",
+  "shortcutsGroupNavigation": "Навигация",
+  "shortcutSwitchTab": "Переключить таб",
+  "shortcutNextTab": "Следующий таб",
+  "shortcutPreviousTab": "Предыдущий таб",
+  "shortcutBack": "Назад",
+  "shortcutSearch": "Поиск",
+  "shortcutRefresh": "Обновить",
+  "shortcutThisHelp": "Эта справка",
+  "shortcutsGroupCollections": "Коллекции",
+  "shortcutCreateCollection": "Создать коллекцию",
+  "shortcutImportCollection": "Импорт коллекции",
+  "shortcutToggleView": "Переключить вид",
+  "shortcutDeleteCollection": "Удалить коллекцию",
+  "shortcutRenameCollection": "Переименовать коллекцию",
+  "shortcutOpenCollection": "Открыть коллекцию",
+  "shortcutsGroupCollection": "Коллекция",
+  "shortcutAddItems": "Добавить элементы",
+  "shortcutExportCollection": "Экспорт коллекции",
+  "shortcutImportIntoCollection": "Импорт в коллекцию",
+  "shortcutToggleBoard": "Переключить Board/Canvas",
+  "shortcutDeleteItem": "Удалить элемент",
+  "shortcutMoveItem": "Переместить элемент",
+  "shortcutsGroupItemDetail": "Деталь элемента",
+  "shortcutLockCanvas": "Lock/Unlock канвас",
+  "shortcutMoveToCollection": "Переместить в коллекцию",
+  "shortcutSetRating": "Установить рейтинг",
+  "shortcutResetRating": "Сбросить рейтинг",
+  "shortcutsGroupTierLists": "Тир-листы",
+  "shortcutCreateTierList": "Создать тир-лист",
+  "shortcutOpenTierList": "Открыть тир-лист",
+  "shortcutDeleteTierList": "Удалить тир-лист",
+  "shortcutRename": "Переименовать",
+  "shortcutsGroupTierList": "Тир-лист",
+  "shortcutExportAsImage": "Экспорт как изображение",
+  "shortcutAddTier": "Добавить тир",
+  "shortcutClearAll": "Очистить все",
+  "shortcutsGroupWishlist": "Вишлист",
+  "shortcutAddItem": "Добавить элемент",
+  "shortcutToggleCompleted": "Показать/скрыть выполненные",
+  "shortcutClearCompleted": "Очистить выполненные",
+  "shortcutsGroupSearch": "Поиск",
+  "shortcutFocusSearchField": "Фокус в поле поиска",
+  "shortcutClearOrBack": "Очистить / назад",
+  "shortcutRunSearch": "Выполнить поиск",
+  "debugKeyEvents": "Кнопки (key events)",
+  "settingsGamepadDebugSubtitle": "Снять коды кнопок контроллера"
 }

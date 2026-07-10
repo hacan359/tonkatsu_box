@@ -106,10 +106,23 @@ class _SubfilterBarState extends State<SubfilterBar> {
         child: ScrollableRowWithArrows(
           controller: _scrollController,
           height: _kSubfilterRowHeight,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            child: Row(children: children),
+          // Centre the chips when they fit, still scroll when they overflow:
+          // the ConstrainedBox forces the row to at least the strip width so
+          // MainAxisAlignment.center has room to work.
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return SingleChildScrollView(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: children,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

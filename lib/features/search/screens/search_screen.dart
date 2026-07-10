@@ -30,14 +30,14 @@ import '../widgets/filter_bar.dart';
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
-  static const ShortcutGroup shortcutGroup = ShortcutGroup(
-    title: 'Поиск',
-    entries: <ShortcutEntry>[
-      ShortcutEntry(keys: 'Ctrl+F', description: 'Фокус в поле поиска'),
-      ShortcutEntry(keys: 'Escape', description: 'Очистить / назад'),
-      ShortcutEntry(keys: 'Enter', description: 'Выполнить поиск'),
-    ],
-  );
+  static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
+        title: l.shortcutsGroupSearch,
+        entries: <ShortcutEntry>[
+          ShortcutEntry(keys: 'Ctrl+F', description: l.shortcutFocusSearchField),
+          ShortcutEntry(keys: 'Escape', description: l.shortcutClearOrBack),
+          ShortcutEntry(keys: 'Enter', description: l.shortcutRunSearch),
+        ],
+      );
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();

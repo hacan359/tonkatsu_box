@@ -6,7 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
@@ -71,7 +71,7 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   /// [filterStatus] when null.
   final ItemStatus? effectiveStatusForCounts;
 
-  final List<CollectionTag> tags;
+  final List<Tag> tags;
 
   /// Current search query (coming from the global top bar).
   final String searchQuery;

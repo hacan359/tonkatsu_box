@@ -1,6 +1,7 @@
 // Helper action methods for CollectionScreen.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/anilist_api.dart';
@@ -24,6 +25,7 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/card_link.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
@@ -59,6 +61,12 @@ class CollectionActions {
   }) {
     ref.read(searchTabRequestProvider.notifier).state =
         SearchTabRequest(collectionId: collectionId);
+  }
+
+  /// Copies a `[[card:…]]` cross-link for [item] to the clipboard.
+  static void copyItemLink(BuildContext context, CollectionItem item) {
+    Clipboard.setData(ClipboardData(text: buildCardLinkToken(item)));
+    context.showSnack(S.of(context).cardLinkCopied, type: SnackType.success);
   }
 
   /// Moves an item to another collection.
@@ -100,7 +108,6 @@ class CollectionActions {
           item.id,
           targetCollectionId: targetCollectionId,
           mediaType: item.mediaType,
-          sourceTagId: item.tagId,
         );
 
     if (!context.mounted) return false;
@@ -158,7 +165,6 @@ class CollectionActions {
           item.id,
           targetCollectionId: targetCollectionId,
           mediaType: item.mediaType,
-          sourceTagId: item.tagId,
         );
 
     if (!context.mounted) return;

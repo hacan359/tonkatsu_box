@@ -19,7 +19,7 @@ import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tier_definition.dart';
-import '../../shared/models/collection_tag.dart';
+import '../../shared/models/tag.dart';
 import '../../shared/models/tier_list.dart';
 import '../../shared/models/tier_list_entry.dart';
 import '../database/dao/tracker_dao.dart';
@@ -173,17 +173,18 @@ class ExportService {
       tierLists = await _collectTierListData(collectionId);
     }
 
-    // Collect tag data and enrich items with tag_name for import resolution
+    // Collect tag data and enrich items with tag names for import resolution
     List<Map<String, dynamic>>? tags;
     if (_database != null) {
       final _TagExportResult tagResult =
-          await _collectTagData(collectionId, items);
+          await _collectTagData(items);
       tags = tagResult.tags;
-      // Write tag_name into each item so import can restore the assignment.
       for (int i = 0; i < items.length; i++) {
-        final String? tagName = tagResult.itemTagNames[i];
-        if (tagName != null) {
-          exportItems[i]['tag_name'] = tagName;
+        final List<String> tagNames = tagResult.itemTagNames[i];
+        if (tagNames.isNotEmpty) {
+          exportItems[i]['tag_names'] = tagNames;
+          // Single-tag key kept so older app versions still restore one tag.
+          exportItems[i]['tag_name'] = tagNames.first;
         }
       }
     }
@@ -708,33 +709,43 @@ class ExportService {
     return result;
   }
 
-  /// Collects collection tag data plus an item index → tag name mapping.
+  /// Collects the global tags used by [items] plus an item index → tag
+  /// names mapping (display order).
   Future<_TagExportResult> _collectTagData(
-    int collectionId,
     List<CollectionItem> items,
   ) async {
     final DatabaseService db = _database!;
-    final List<CollectionTag> tags =
-        await db.tagDao.getTagsByCollection(collectionId);
+    final List<Tag> allTags = await db.globalTagDao.getAll();
+    final Map<int, Set<int>> links = await db.globalTagDao
+        .getTagIdsForItems(items.map((CollectionItem i) => i.id).toList());
 
-    if (tags.isEmpty) {
+    if (allTags.isEmpty || links.isEmpty) {
       return _TagExportResult(
         tags: null,
-        itemTagNames: List<String?>.filled(items.length, null),
+        itemTagNames: List<List<String>>.generate(
+          items.length,
+          (_) => const <String>[],
+        ),
       );
     }
 
-    final Map<int, String> tagNameById = <int, String>{
-      for (final CollectionTag tag in tags) tag.id: tag.name,
+    final Set<int> usedIds = <int>{
+      for (final Set<int> ids in links.values) ...ids,
     };
+    final List<Tag> usedTags =
+        allTags.where((Tag t) => usedIds.contains(t.id)).toList();
 
-    final List<String?> itemTagNames = items
-        .map((CollectionItem item) =>
-            item.tagId != null ? tagNameById[item.tagId] : null)
-        .toList();
+    final List<List<String>> itemTagNames = items.map((CollectionItem item) {
+      final Set<int>? ids = links[item.id];
+      if (ids == null || ids.isEmpty) return const <String>[];
+      return <String>[
+        for (final Tag tag in usedTags)
+          if (ids.contains(tag.id)) tag.name,
+      ];
+    }).toList();
 
     return _TagExportResult(
-      tags: tags.map((CollectionTag tag) => tag.toExport()).toList(),
+      tags: usedTags.map((Tag tag) => tag.toExport()).toList(),
       itemTagNames: itemTagNames,
     );
   }
@@ -767,9 +778,9 @@ class ExportService {
 class _TagExportResult {
   _TagExportResult({required this.tags, required this.itemTagNames});
 
-  /// Tag export data; null when the collection has no tags.
+  /// Tag export data; null when no item in the collection is tagged.
   final List<Map<String, dynamic>>? tags;
 
-  /// Tag name per item (by index); null for untagged items.
-  final List<String?> itemTagNames;
+  /// Tag names per item (by index, display order); empty when untagged.
+  final List<List<String>> itemTagNames;
 }

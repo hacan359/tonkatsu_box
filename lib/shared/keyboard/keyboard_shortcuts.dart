@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../constants/platform_features.dart';
 
 /// Описание одного хоткея для легенды (F1 диалог).
@@ -110,17 +111,17 @@ bool isTextFieldFocused() {
   return found;
 }
 
-/// Глобальная группа хоткеев «Навигация» для легенды F1.
-const ShortcutGroup globalShortcutGroup = ShortcutGroup(
-  title: 'Навигация',
-  entries: <ShortcutEntry>[
-    ShortcutEntry(keys: 'Ctrl+1..6', description: 'Переключить таб'),
-    ShortcutEntry(keys: 'Ctrl+Tab', description: 'Следующий таб'),
-    ShortcutEntry(keys: 'Ctrl+Shift+Tab', description: 'Предыдущий таб'),
-    ShortcutEntry(keys: 'Escape', description: 'Назад'),
-    ShortcutEntry(keys: 'Alt+←', description: 'Назад'),
-    ShortcutEntry(keys: 'Ctrl+F', description: 'Поиск'),
-    ShortcutEntry(keys: 'F5', description: 'Обновить'),
-    ShortcutEntry(keys: 'F1', description: 'Эта справка'),
-  ],
-);
+/// Global navigation shortcuts group for the F1 legend.
+ShortcutGroup globalShortcutGroup(S l) => ShortcutGroup(
+      title: l.shortcutsGroupNavigation,
+      entries: <ShortcutEntry>[
+        ShortcutEntry(keys: 'Ctrl+1..6', description: l.shortcutSwitchTab),
+        ShortcutEntry(keys: 'Ctrl+Tab', description: l.shortcutNextTab),
+        ShortcutEntry(keys: 'Ctrl+Shift+Tab', description: l.shortcutPreviousTab),
+        ShortcutEntry(keys: 'Escape', description: l.shortcutBack),
+        ShortcutEntry(keys: 'Alt+←', description: l.shortcutBack),
+        ShortcutEntry(keys: 'Ctrl+F', description: l.shortcutSearch),
+        ShortcutEntry(keys: 'F5', description: l.shortcutRefresh),
+        ShortcutEntry(keys: 'F1', description: l.shortcutThisHelp),
+      ],
+    );

@@ -313,6 +313,42 @@ abstract class S {
   /// **'Planned'**
   String get statusPlanned;
 
+  /// No description provided for @statusReplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay'**
+  String get statusReplay;
+
+  /// No description provided for @rewatchCountEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay count'**
+  String get rewatchCountEdit;
+
+  /// No description provided for @rewatchCountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty = not tracked'**
+  String get rewatchCountHint;
+
+  /// No description provided for @statusReplaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Replaying'**
+  String get statusReplaying;
+
+  /// No description provided for @statusRewatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewatching'**
+  String get statusRewatching;
+
+  /// No description provided for @statusRereading.
+  ///
+  /// In en, this message translates to:
+  /// **'Rereading'**
+  String get statusRereading;
+
   /// No description provided for @homeFilterAll.
   ///
   /// In en, this message translates to:
@@ -3198,6 +3234,18 @@ abstract class S {
   /// **'No tags'**
   String get tagNone;
 
+  /// No description provided for @tagPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select tags'**
+  String get tagPickerTitle;
+
+  /// No description provided for @tagTextColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Text color'**
+  String get tagTextColor;
+
   /// No description provided for @tagCreated.
   ///
   /// In en, this message translates to:
@@ -4367,6 +4415,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Description'**
   String get searchDescription;
+
+  /// No description provided for @showMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More…'**
+  String get showMore;
+
+  /// No description provided for @showLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get showLess;
 
   /// No description provided for @platformFilterTitle.
   ///
@@ -6414,12 +6474,6 @@ abstract class S {
   /// **'Has adaptation'**
   String get vndbHasAnimeAdaptation;
 
-  /// No description provided for @tagPickerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Select tags'**
-  String get tagPickerTitle;
-
   /// No description provided for @tagPickerSearchHint.
   ///
   /// In en, this message translates to:
@@ -8196,6 +8250,60 @@ abstract class S {
   /// **'Clear'**
   String get filtersClear;
 
+  /// No description provided for @collectionTableColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns'**
+  String get collectionTableColumns;
+
+  /// No description provided for @tableFilterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'All rules apply together (AND).'**
+  String get tableFilterHint;
+
+  /// No description provided for @tableFilterAddRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get tableFilterAddRule;
+
+  /// No description provided for @tableFilterCondContains.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains'**
+  String get tableFilterCondContains;
+
+  /// No description provided for @tableFilterCondEquals.
+  ///
+  /// In en, this message translates to:
+  /// **'Equals'**
+  String get tableFilterCondEquals;
+
+  /// No description provided for @tableFilterCondStartsWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts with'**
+  String get tableFilterCondStartsWith;
+
+  /// No description provided for @tableFilterCondEndsWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends with'**
+  String get tableFilterCondEndsWith;
+
+  /// No description provided for @tableFilterCondAtLeast.
+  ///
+  /// In en, this message translates to:
+  /// **'At least (≥)'**
+  String get tableFilterCondAtLeast;
+
+  /// No description provided for @tableFilterCondAtMost.
+  ///
+  /// In en, this message translates to:
+  /// **'At most (≤)'**
+  String get tableFilterCondAtMost;
+
   /// No description provided for @profiles.
   ///
   /// In en, this message translates to:
@@ -9042,6 +9150,234 @@ abstract class S {
   /// **'Select anime or manga to import'**
   String get aniListImportSelectAtLeastOne;
 
+  /// No description provided for @settingsCustomCardsImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom cards'**
+  String get settingsCustomCardsImport;
+
+  /// No description provided for @settingsCustomCardsImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import cards from a JSON or CSV file'**
+  String get settingsCustomCardsImportSubtitle;
+
+  /// No description provided for @customImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import custom cards'**
+  String get customImportTitle;
+
+  /// No description provided for @customImportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.'**
+  String get customImportDescription;
+
+  /// No description provided for @customImportSelectFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Select JSON/CSV file'**
+  String get customImportSelectFile;
+
+  /// No description provided for @customImportCsvTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV template'**
+  String get customImportCsvTemplate;
+
+  /// No description provided for @customImportJsonTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON template'**
+  String get customImportJsonTemplate;
+
+  /// No description provided for @customImportTemplateSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Template saved'**
+  String get customImportTemplateSaved;
+
+  /// No description provided for @customImportTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get customImportTargetCollection;
+
+  /// No description provided for @customImportCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get customImportCreateNew;
+
+  /// No description provided for @customImportUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to existing collection'**
+  String get customImportUseExisting;
+
+  /// No description provided for @customImportSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get customImportSelectCollection;
+
+  /// No description provided for @customImportNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet'**
+  String get customImportNoCollections;
+
+  /// No description provided for @customImportErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load collections'**
+  String get customImportErrorLoadingCollections;
+
+  /// No description provided for @customImportPreviewButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview and import'**
+  String get customImportPreviewButton;
+
+  /// No description provided for @customImportPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import preview'**
+  String get customImportPreviewTitle;
+
+  /// No description provided for @customImportSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognized {valid} · Errors {errors} · Duplicates {duplicates}'**
+  String customImportSummary(int valid, int errors, int duplicates);
+
+  /// No description provided for @customImportSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get customImportSelectAll;
+
+  /// No description provided for @customImportSelectNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get customImportSelectNone;
+
+  /// No description provided for @customImportSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{selected} of {total} selected'**
+  String customImportSelectedCount(int selected, int total);
+
+  /// No description provided for @customImportDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate — already in the collection'**
+  String get customImportDuplicate;
+
+  /// No description provided for @customImportRowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {index}'**
+  String customImportRowLabel(int index);
+
+  /// No description provided for @customImportStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Import selected'**
+  String get customImportStart;
+
+  /// No description provided for @customImportImporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing custom cards...'**
+  String get customImportImporting;
+
+  /// No description provided for @customImportErrorEmptyFile.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is empty'**
+  String get customImportErrorEmptyFile;
+
+  /// No description provided for @customImportErrorInvalidJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken JSON — the file could not be parsed'**
+  String get customImportErrorInvalidJson;
+
+  /// No description provided for @customImportErrorMissingColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV must have \"title\" and \"type\" columns'**
+  String get customImportErrorMissingColumns;
+
+  /// No description provided for @customImportIssueNotAnObject.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a JSON object'**
+  String get customImportIssueNotAnObject;
+
+  /// No description provided for @customImportIssueMissingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing \"title\"'**
+  String get customImportIssueMissingTitle;
+
+  /// No description provided for @customImportIssueMissingType.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing \"type\"'**
+  String get customImportIssueMissingType;
+
+  /// No description provided for @customImportIssueUnknownType.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown type: {value}'**
+  String customImportIssueUnknownType(String value);
+
+  /// No description provided for @customImportIssueInvalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid value in \"{field}\": {value}'**
+  String customImportIssueInvalidNumber(String field, String value);
+
+  /// No description provided for @customImportIssueUnknownStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown status: {value}'**
+  String customImportIssueUnknownStatus(String value);
+
+  /// No description provided for @customImportIssueUnknownFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown format: {value}'**
+  String customImportIssueUnknownFormat(String value);
+
+  /// No description provided for @customImportIssueFormatNotApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'\"format\" is only for manga and anime'**
+  String get customImportIssueFormatNotApplicable;
+
+  /// No description provided for @customImportIssueInvalidCover.
+  ///
+  /// In en, this message translates to:
+  /// **'\"cover\" must be an http(s) URL'**
+  String get customImportIssueInvalidCover;
+
+  /// No description provided for @customImportIssueInvalidDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid date in \"{field}\": {value} (expected YYYY-MM-DD)'**
+  String customImportIssueInvalidDate(String field, String value);
+
+  /// No description provided for @customImportIssueInvalidBool.
+  ///
+  /// In en, this message translates to:
+  /// **'\"favorite\" must be true/false: {value}'**
+  String customImportIssueInvalidBool(String value);
+
   /// No description provided for @moodGridCreate.
   ///
   /// In en, this message translates to:
@@ -9701,6 +10037,324 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Custom'**
   String get unitCustom;
+
+  /// No description provided for @cardLinkCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy card link'**
+  String get cardLinkCopy;
+
+  /// No description provided for @cardLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Card link copied'**
+  String get cardLinkCopied;
+
+  /// No description provided for @cardLinkNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Card not found'**
+  String get cardLinkNotFound;
+
+  /// No description provided for @cardLinkPickCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in collection'**
+  String get cardLinkPickCollection;
+
+  /// No description provided for @cardLinkSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link a card'**
+  String get cardLinkSearchTitle;
+
+  /// No description provided for @cardLinkSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search cards'**
+  String get cardLinkSearchHint;
+
+  /// No description provided for @shortcutsDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard shortcuts'**
+  String get shortcutsDialogTitle;
+
+  /// No description provided for @shortcutsGroupNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get shortcutsGroupNavigation;
+
+  /// No description provided for @shortcutSwitchTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch tab'**
+  String get shortcutSwitchTab;
+
+  /// No description provided for @shortcutNextTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Next tab'**
+  String get shortcutNextTab;
+
+  /// No description provided for @shortcutPreviousTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous tab'**
+  String get shortcutPreviousTab;
+
+  /// No description provided for @shortcutBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get shortcutBack;
+
+  /// No description provided for @shortcutSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get shortcutSearch;
+
+  /// No description provided for @shortcutRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get shortcutRefresh;
+
+  /// No description provided for @shortcutThisHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'This help'**
+  String get shortcutThisHelp;
+
+  /// No description provided for @shortcutsGroupCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get shortcutsGroupCollections;
+
+  /// No description provided for @shortcutCreateCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Create collection'**
+  String get shortcutCreateCollection;
+
+  /// No description provided for @shortcutImportCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Import collection'**
+  String get shortcutImportCollection;
+
+  /// No description provided for @shortcutToggleView.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle view'**
+  String get shortcutToggleView;
+
+  /// No description provided for @shortcutDeleteCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete collection'**
+  String get shortcutDeleteCollection;
+
+  /// No description provided for @shortcutRenameCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename collection'**
+  String get shortcutRenameCollection;
+
+  /// No description provided for @shortcutOpenCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open collection'**
+  String get shortcutOpenCollection;
+
+  /// No description provided for @shortcutsGroupCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get shortcutsGroupCollection;
+
+  /// No description provided for @shortcutAddItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items'**
+  String get shortcutAddItems;
+
+  /// No description provided for @shortcutExportCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Export collection'**
+  String get shortcutExportCollection;
+
+  /// No description provided for @shortcutImportIntoCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Import into collection'**
+  String get shortcutImportIntoCollection;
+
+  /// No description provided for @shortcutToggleBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle Board/Canvas'**
+  String get shortcutToggleBoard;
+
+  /// No description provided for @shortcutDeleteItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete item'**
+  String get shortcutDeleteItem;
+
+  /// No description provided for @shortcutMoveItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Move item'**
+  String get shortcutMoveItem;
+
+  /// No description provided for @shortcutsGroupItemDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Item detail'**
+  String get shortcutsGroupItemDetail;
+
+  /// No description provided for @shortcutLockCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock/Unlock canvas'**
+  String get shortcutLockCanvas;
+
+  /// No description provided for @shortcutMoveToCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to collection'**
+  String get shortcutMoveToCollection;
+
+  /// No description provided for @shortcutSetRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Set rating'**
+  String get shortcutSetRating;
+
+  /// No description provided for @shortcutResetRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset rating'**
+  String get shortcutResetRating;
+
+  /// No description provided for @shortcutsGroupTierLists.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier lists'**
+  String get shortcutsGroupTierLists;
+
+  /// No description provided for @shortcutCreateTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Create tier list'**
+  String get shortcutCreateTierList;
+
+  /// No description provided for @shortcutOpenTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Open tier list'**
+  String get shortcutOpenTierList;
+
+  /// No description provided for @shortcutDeleteTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tier list'**
+  String get shortcutDeleteTierList;
+
+  /// No description provided for @shortcutRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get shortcutRename;
+
+  /// No description provided for @shortcutsGroupTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier list'**
+  String get shortcutsGroupTierList;
+
+  /// No description provided for @shortcutExportAsImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as image'**
+  String get shortcutExportAsImage;
+
+  /// No description provided for @shortcutAddTier.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tier'**
+  String get shortcutAddTier;
+
+  /// No description provided for @shortcutClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get shortcutClearAll;
+
+  /// No description provided for @shortcutsGroupWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Wishlist'**
+  String get shortcutsGroupWishlist;
+
+  /// No description provided for @shortcutAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get shortcutAddItem;
+
+  /// No description provided for @shortcutToggleCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Show/hide completed'**
+  String get shortcutToggleCompleted;
+
+  /// No description provided for @shortcutClearCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear completed'**
+  String get shortcutClearCompleted;
+
+  /// No description provided for @shortcutsGroupSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get shortcutsGroupSearch;
+
+  /// No description provided for @shortcutFocusSearchField.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus search field'**
+  String get shortcutFocusSearchField;
+
+  /// No description provided for @shortcutClearOrBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear / back'**
+  String get shortcutClearOrBack;
+
+  /// No description provided for @shortcutRunSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Run search'**
+  String get shortcutRunSearch;
+
+  /// No description provided for @debugKeyEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Button key events'**
+  String get debugKeyEvents;
+
+  /// No description provided for @settingsGamepadDebugSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture controller button codes'**
+  String get settingsGamepadDebugSubtitle;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

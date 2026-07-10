@@ -140,6 +140,8 @@ class TextExportService {
         return 'Dropped';
       case ItemStatus.planned:
         return 'Planned';
+      case ItemStatus.replaying:
+        return 'Replay';
     }
   }
 

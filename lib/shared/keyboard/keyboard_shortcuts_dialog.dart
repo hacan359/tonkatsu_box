@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -35,13 +36,14 @@ class KeyboardShortcutsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return AlertDialog(
-      title: const Row(
+      title: Row(
         children: <Widget>[
-          Icon(Icons.keyboard, color: AppColors.textSecondary),
-          SizedBox(width: AppSpacing.sm),
+          const Icon(Icons.keyboard, color: AppColors.textSecondary),
+          const SizedBox(width: AppSpacing.sm),
           Text(
-            'Клавиатурные сочетания',
+            l.shortcutsDialogTitle,
             style: AppTypography.h2,
           ),
         ],
@@ -53,7 +55,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _buildGroup(globalShortcutGroup),
+              _buildGroup(globalShortcutGroup(l)),
               for (final ShortcutGroup group in screenGroups) ...<Widget>[
                 const SizedBox(height: AppSpacing.md),
                 _buildGroup(group),
@@ -65,7 +67,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Закрыть'),
+          child: Text(l.close),
         ),
       ],
     );

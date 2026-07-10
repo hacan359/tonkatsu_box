@@ -1,5 +1,3 @@
-// Тулбар для мини-markdown разметки (bold, italic, link).
-
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -13,11 +11,15 @@ class MarkdownToolbar extends StatelessWidget {
   /// Создаёт [MarkdownToolbar].
   const MarkdownToolbar({
     required this.controller,
+    this.onInsertCardLink,
     super.key,
   });
 
   /// Контроллер текстового поля, в которое вставляются маркеры.
   final TextEditingController controller;
+
+  /// When set, adds a button that inserts a `[[card:…]]` cross-link.
+  final VoidCallback? onInsertCardLink;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +40,12 @@ class MarkdownToolbar extends StatelessWidget {
           tooltip: S.of(context).insertLink,
           onPressed: () => insertLink(context, controller),
         ),
+        if (onInsertCardLink != null)
+          _MarkdownToolbarButton(
+            icon: Icons.add_link,
+            tooltip: S.of(context).cardLinkSearchTitle,
+            onPressed: onInsertCardLink!,
+          ),
       ],
     );
   }

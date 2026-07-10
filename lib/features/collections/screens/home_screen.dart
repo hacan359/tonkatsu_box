@@ -23,28 +23,31 @@ import '../providers/canvas_provider.dart';
 import '../providers/collection_covers_provider.dart';
 import '../widgets/collection_screen/collection_error_state.dart';
 import '../providers/collections_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../widgets/collection_card.dart';
 import '../widgets/collection_list_tile.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/edit_collection_dialog.dart';
 import '../widgets/import_progress_dialog.dart';
+import '../widgets/tag_management_dialog.dart';
 import 'collection_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
-  static const ShortcutGroup shortcutGroup = ShortcutGroup(
-    title: 'Коллекции',
-    entries: <ShortcutEntry>[
-      ShortcutEntry(keys: 'Ctrl+N', description: 'Создать коллекцию'),
-      ShortcutEntry(keys: 'Ctrl+I', description: 'Импорт коллекции'),
-      ShortcutEntry(keys: 'Ctrl+Shift+V', description: 'Переключить вид'),
-      ShortcutEntry(keys: 'Delete', description: 'Удалить коллекцию'),
-      ShortcutEntry(keys: 'F2', description: 'Переименовать коллекцию'),
-      ShortcutEntry(keys: 'Enter', description: 'Открыть коллекцию'),
-    ],
-  );
+  static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
+        title: l.shortcutsGroupCollections,
+        entries: <ShortcutEntry>[
+          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateCollection),
+          ShortcutEntry(keys: 'Ctrl+I', description: l.shortcutImportCollection),
+          ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
+          ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteCollection),
+          ShortcutEntry(keys: 'F2', description: l.shortcutRenameCollection),
+          ShortcutEntry(keys: 'Enter', description: l.shortcutOpenCollection),
+        ],
+      );
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -109,6 +112,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 icon: Icons.sort,
                 label: l.collectionFilterSort,
                 onTap: () => _showSortOptions(context, ref, sortMode, sortDesc),
+              ),
+              DraggableFabItem(
+                icon: Icons.label_outlined,
+                label: l.tagManage,
+                onTap: () => TagManagementDialog.show(context),
               ),
             ],
           ),
@@ -680,6 +688,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.invalidate(collectionItemsNotifierProvider(cid));
       ref.invalidate(canvasNotifierProvider(cid));
       ref.invalidate(allItemsNotifierProvider);
+      // Import writes tags straight through the DAO, so the in-memory tag
+      // state must be rebuilt.
+      ref.invalidate(globalTagsProvider);
+      ref.invalidate(itemTagsProvider);
 
       final StringBuffer message = StringBuffer(
         S.of(context).collectionsImported(

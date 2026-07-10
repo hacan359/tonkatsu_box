@@ -120,6 +120,24 @@ class SEn extends S {
   String get statusPlanned => 'Planned';
 
   @override
+  String get statusReplay => 'Replay';
+
+  @override
+  String get rewatchCountEdit => 'Replay count';
+
+  @override
+  String get rewatchCountHint => 'Empty = not tracked';
+
+  @override
+  String get statusReplaying => 'Replaying';
+
+  @override
+  String get statusRewatching => 'Rewatching';
+
+  @override
+  String get statusRereading => 'Rereading';
+
+  @override
   String get homeFilterAll => 'All';
 
   @override
@@ -1761,6 +1779,12 @@ class SEn extends S {
   String get tagNone => 'No tags';
 
   @override
+  String get tagPickerTitle => 'Select tags';
+
+  @override
+  String get tagTextColor => 'Text color';
+
+  @override
   String get tagCreated => 'Tag created';
 
   @override
@@ -2413,6 +2437,12 @@ class SEn extends S {
 
   @override
   String get searchDescription => 'Description';
+
+  @override
+  String get showMore => 'More…';
+
+  @override
+  String get showLess => 'Collapse';
 
   @override
   String get platformFilterTitle => 'Select Platforms';
@@ -3572,9 +3602,6 @@ class SEn extends S {
   String get vndbHasAnimeAdaptation => 'Has adaptation';
 
   @override
-  String get tagPickerTitle => 'Select tags';
-
-  @override
   String get tagPickerSearchHint => 'Search tags';
 
   @override
@@ -4541,6 +4568,33 @@ class SEn extends S {
   String get filtersClear => 'Clear';
 
   @override
+  String get collectionTableColumns => 'Columns';
+
+  @override
+  String get tableFilterHint => 'All rules apply together (AND).';
+
+  @override
+  String get tableFilterAddRule => 'Add rule';
+
+  @override
+  String get tableFilterCondContains => 'Contains';
+
+  @override
+  String get tableFilterCondEquals => 'Equals';
+
+  @override
+  String get tableFilterCondStartsWith => 'Starts with';
+
+  @override
+  String get tableFilterCondEndsWith => 'Ends with';
+
+  @override
+  String get tableFilterCondAtLeast => 'At least (≥)';
+
+  @override
+  String get tableFilterCondAtMost => 'At most (≤)';
+
+  @override
   String get profiles => 'App profiles';
 
   @override
@@ -5042,6 +5096,145 @@ class SEn extends S {
   String get aniListImportSelectAtLeastOne => 'Select anime or manga to import';
 
   @override
+  String get settingsCustomCardsImport => 'Custom cards';
+
+  @override
+  String get settingsCustomCardsImportSubtitle =>
+      'Import cards from a JSON or CSV file';
+
+  @override
+  String get customImportTitle => 'Import custom cards';
+
+  @override
+  String get customImportDescription =>
+      'Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.';
+
+  @override
+  String get customImportSelectFile => 'Select JSON/CSV file';
+
+  @override
+  String get customImportCsvTemplate => 'CSV template';
+
+  @override
+  String get customImportJsonTemplate => 'JSON template';
+
+  @override
+  String get customImportTemplateSaved => 'Template saved';
+
+  @override
+  String get customImportTargetCollection => 'Target collection';
+
+  @override
+  String get customImportCreateNew => 'Create new collection';
+
+  @override
+  String get customImportUseExisting => 'Add to existing collection';
+
+  @override
+  String get customImportSelectCollection => 'Select collection';
+
+  @override
+  String get customImportNoCollections => 'No collections yet';
+
+  @override
+  String get customImportErrorLoadingCollections =>
+      'Failed to load collections';
+
+  @override
+  String get customImportPreviewButton => 'Preview and import';
+
+  @override
+  String get customImportPreviewTitle => 'Import preview';
+
+  @override
+  String customImportSummary(int valid, int errors, int duplicates) {
+    return 'Recognized $valid · Errors $errors · Duplicates $duplicates';
+  }
+
+  @override
+  String get customImportSelectAll => 'Select all';
+
+  @override
+  String get customImportSelectNone => 'Deselect all';
+
+  @override
+  String customImportSelectedCount(int selected, int total) {
+    return '$selected of $total selected';
+  }
+
+  @override
+  String get customImportDuplicate => 'Duplicate — already in the collection';
+
+  @override
+  String customImportRowLabel(int index) {
+    return 'Row $index';
+  }
+
+  @override
+  String get customImportStart => 'Import selected';
+
+  @override
+  String get customImportImporting => 'Importing custom cards...';
+
+  @override
+  String get customImportErrorEmptyFile => 'The file is empty';
+
+  @override
+  String get customImportErrorInvalidJson =>
+      'Broken JSON — the file could not be parsed';
+
+  @override
+  String get customImportErrorMissingColumns =>
+      'CSV must have \"title\" and \"type\" columns';
+
+  @override
+  String get customImportIssueNotAnObject => 'Not a JSON object';
+
+  @override
+  String get customImportIssueMissingTitle => 'Missing \"title\"';
+
+  @override
+  String get customImportIssueMissingType => 'Missing \"type\"';
+
+  @override
+  String customImportIssueUnknownType(String value) {
+    return 'Unknown type: $value';
+  }
+
+  @override
+  String customImportIssueInvalidNumber(String field, String value) {
+    return 'Invalid value in \"$field\": $value';
+  }
+
+  @override
+  String customImportIssueUnknownStatus(String value) {
+    return 'Unknown status: $value';
+  }
+
+  @override
+  String customImportIssueUnknownFormat(String value) {
+    return 'Unknown format: $value';
+  }
+
+  @override
+  String get customImportIssueFormatNotApplicable =>
+      '\"format\" is only for manga and anime';
+
+  @override
+  String get customImportIssueInvalidCover =>
+      '\"cover\" must be an http(s) URL';
+
+  @override
+  String customImportIssueInvalidDate(String field, String value) {
+    return 'Invalid date in \"$field\": $value (expected YYYY-MM-DD)';
+  }
+
+  @override
+  String customImportIssueInvalidBool(String value) {
+    return '\"favorite\" must be true/false: $value';
+  }
+
+  @override
   String get moodGridCreate => 'Create Mood Grid';
 
   @override
@@ -5403,4 +5596,163 @@ class SEn extends S {
 
   @override
   String get unitCustom => 'Custom';
+
+  @override
+  String get cardLinkCopy => 'Copy card link';
+
+  @override
+  String get cardLinkCopied => 'Card link copied';
+
+  @override
+  String get cardLinkNotFound => 'Card not found';
+
+  @override
+  String get cardLinkPickCollection => 'Open in collection';
+
+  @override
+  String get cardLinkSearchTitle => 'Link a card';
+
+  @override
+  String get cardLinkSearchHint => 'Search cards';
+
+  @override
+  String get shortcutsDialogTitle => 'Keyboard shortcuts';
+
+  @override
+  String get shortcutsGroupNavigation => 'Navigation';
+
+  @override
+  String get shortcutSwitchTab => 'Switch tab';
+
+  @override
+  String get shortcutNextTab => 'Next tab';
+
+  @override
+  String get shortcutPreviousTab => 'Previous tab';
+
+  @override
+  String get shortcutBack => 'Back';
+
+  @override
+  String get shortcutSearch => 'Search';
+
+  @override
+  String get shortcutRefresh => 'Refresh';
+
+  @override
+  String get shortcutThisHelp => 'This help';
+
+  @override
+  String get shortcutsGroupCollections => 'Collections';
+
+  @override
+  String get shortcutCreateCollection => 'Create collection';
+
+  @override
+  String get shortcutImportCollection => 'Import collection';
+
+  @override
+  String get shortcutToggleView => 'Toggle view';
+
+  @override
+  String get shortcutDeleteCollection => 'Delete collection';
+
+  @override
+  String get shortcutRenameCollection => 'Rename collection';
+
+  @override
+  String get shortcutOpenCollection => 'Open collection';
+
+  @override
+  String get shortcutsGroupCollection => 'Collection';
+
+  @override
+  String get shortcutAddItems => 'Add items';
+
+  @override
+  String get shortcutExportCollection => 'Export collection';
+
+  @override
+  String get shortcutImportIntoCollection => 'Import into collection';
+
+  @override
+  String get shortcutToggleBoard => 'Toggle Board/Canvas';
+
+  @override
+  String get shortcutDeleteItem => 'Delete item';
+
+  @override
+  String get shortcutMoveItem => 'Move item';
+
+  @override
+  String get shortcutsGroupItemDetail => 'Item detail';
+
+  @override
+  String get shortcutLockCanvas => 'Lock/Unlock canvas';
+
+  @override
+  String get shortcutMoveToCollection => 'Move to collection';
+
+  @override
+  String get shortcutSetRating => 'Set rating';
+
+  @override
+  String get shortcutResetRating => 'Reset rating';
+
+  @override
+  String get shortcutsGroupTierLists => 'Tier lists';
+
+  @override
+  String get shortcutCreateTierList => 'Create tier list';
+
+  @override
+  String get shortcutOpenTierList => 'Open tier list';
+
+  @override
+  String get shortcutDeleteTierList => 'Delete tier list';
+
+  @override
+  String get shortcutRename => 'Rename';
+
+  @override
+  String get shortcutsGroupTierList => 'Tier list';
+
+  @override
+  String get shortcutExportAsImage => 'Export as image';
+
+  @override
+  String get shortcutAddTier => 'Add tier';
+
+  @override
+  String get shortcutClearAll => 'Clear all';
+
+  @override
+  String get shortcutsGroupWishlist => 'Wishlist';
+
+  @override
+  String get shortcutAddItem => 'Add item';
+
+  @override
+  String get shortcutToggleCompleted => 'Show/hide completed';
+
+  @override
+  String get shortcutClearCompleted => 'Clear completed';
+
+  @override
+  String get shortcutsGroupSearch => 'Search';
+
+  @override
+  String get shortcutFocusSearchField => 'Focus search field';
+
+  @override
+  String get shortcutClearOrBack => 'Clear / back';
+
+  @override
+  String get shortcutRunSearch => 'Run search';
+
+  @override
+  String get debugKeyEvents => 'Button key events';
+
+  @override
+  String get settingsGamepadDebugSubtitle => 'Capture controller button codes';
 }

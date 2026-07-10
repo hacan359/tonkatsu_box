@@ -34,11 +34,14 @@ import 'credits_screen.dart';
 import 'database_screen.dart';
 import '../../../core/services/backup_service.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../collections/providers/global_tags_provider.dart';
+import '../../collections/providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../releases/providers/releases_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'browse_collections_screen.dart';
 import 'anilist_import_screen.dart';
+import 'custom_cards_import_screen.dart';
 import 'igdb_list_import_screen.dart';
 import 'mal_import_screen.dart';
 import 'ra_import_screen.dart';
@@ -46,6 +49,7 @@ import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
+import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
 import 'profiles_screen.dart';
 import '../../../shared/models/profile.dart';
@@ -305,6 +309,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsAniListImport,
             subtitle: l.settingsAniListImportSubtitle,
             onTap: () => _pushScreen(const AniListImportScreen()),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.upload_file,
+            title: l.settingsCustomCardsImport,
+            subtitle: l.settingsCustomCardsImportSubtitle,
+            onTap: () => _pushScreen(const CustomCardsImportScreen()),
           ),
         ],
       ),
@@ -598,6 +608,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ? l.settingsDebugSubtitle
                   : l.settingsDebugSubtitleNoKey,
               onTap: () => _pushScreen(const DebugHubScreen()),
+            ),
+          ],
+        ),
+      ],
+
+      // Android-only gamepad button debug, available in release too so
+      // controller key codes can be captured on devices like the Odin 2.
+      if (!kDebugMode && defaultTargetPlatform == TargetPlatform.android) ...<Widget>[
+        gap,
+        SettingsGroup(
+          title: l.settingsGamepadDebug,
+          titleIcon: Icons.sports_esports_outlined,
+          children: <Widget>[
+            SettingsTile(
+              leadingIcon: Icons.sports_esports_outlined,
+              leadingColor: _kDebugColor,
+              title: l.settingsGamepadDebug,
+              value: l.settingsGamepadDebugSubtitle,
+              onTap: () => _pushScreen(const GamepadDebugScreen()),
             ),
           ],
         ),
@@ -1037,6 +1066,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
       ref.invalidate(releasesProvider);
+      ref.invalidate(globalTagsProvider);
+      ref.invalidate(itemTagsProvider);
 
       context.showSnack(
         l.restoreSuccess(result.collectionsRestored, result.itemsRestored),

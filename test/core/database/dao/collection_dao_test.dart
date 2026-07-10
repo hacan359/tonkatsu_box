@@ -863,7 +863,7 @@ void main() {
         when(
           () => mockDb.query(
             'collection_items',
-            columns: <String>['started_at'],
+            columns: <String>['started_at', 'status', 'rewatch_count'],
             where: 'id = ?',
             whereArgs: <Object?>[1],
             limit: 1,
@@ -909,7 +909,7 @@ void main() {
         when(
           () => mockDb.query(
             'collection_items',
-            columns: <String>['started_at'],
+            columns: <String>['started_at', 'status', 'rewatch_count'],
             where: 'id = ?',
             whereArgs: <Object?>[1],
             limit: 1,
@@ -954,7 +954,7 @@ void main() {
         when(
           () => mockDb.query(
             'collection_items',
-            columns: <String>['started_at'],
+            columns: <String>['started_at', 'status', 'rewatch_count'],
             where: 'id = ?',
             whereArgs: <Object?>[1],
             limit: 1,
@@ -999,7 +999,7 @@ void main() {
         when(
           () => mockDb.query(
             'collection_items',
-            columns: <String>['started_at'],
+            columns: <String>['started_at', 'status', 'rewatch_count'],
             where: 'id = ?',
             whereArgs: <Object?>[1],
             limit: 1,
@@ -1037,6 +1037,124 @@ void main() {
             captured.captured.first as Map<String, dynamic>;
         expect(data.containsKey('started_at'), false);
         expect(data['completed_at'], isA<int>());
+      });
+
+      Future<Map<String, dynamic>> runStatusUpdate({
+        required ItemStatus newStatus,
+        required String currentStatus,
+        required int? currentCount,
+      }) async {
+        when(
+          () => mockDb.query(
+            'collection_items',
+            columns: <String>['started_at', 'status', 'rewatch_count'],
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+            limit: 1,
+          ),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'started_at': 1705320000,
+              'status': currentStatus,
+              'rewatch_count': currentCount,
+            },
+          ],
+        );
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.updateItemStatus(1, newStatus, mediaType: MediaType.game);
+
+        final VerificationResult captured = verify(
+          () => mockDb.update(
+            'collection_items',
+            captureAny(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        );
+        return captured.captured.first as Map<String, dynamic>;
+      }
+
+      test('first transition to completed: rewatch_count null → 0', () async {
+        final Map<String, dynamic> data = await runStatusUpdate(
+          newStatus: ItemStatus.completed,
+          currentStatus: 'in_progress',
+          currentCount: null,
+        );
+        expect(data['rewatch_count'], 0);
+      });
+
+      test('replaying → completed bumps rewatch_count', () async {
+        final Map<String, dynamic> data = await runStatusUpdate(
+          newStatus: ItemStatus.completed,
+          currentStatus: 'replaying',
+          currentCount: 2,
+        );
+        expect(data['rewatch_count'], 3);
+      });
+
+      test('completed → completed keeps rewatch_count untouched', () async {
+        final Map<String, dynamic> data = await runStatusUpdate(
+          newStatus: ItemStatus.completed,
+          currentStatus: 'completed',
+          currentCount: 2,
+        );
+        expect(data.containsKey('rewatch_count'), isFalse);
+      });
+
+      test('sets replaying — bare status, no dates or counter', () async {
+        final Map<String, dynamic> data = await runStatusUpdate(
+          newStatus: ItemStatus.replaying,
+          currentStatus: 'completed',
+          currentCount: 1,
+        );
+        expect(data['status'], 'replaying');
+        expect(data['last_activity_at'], isA<int>());
+        expect(data.containsKey('started_at'), isFalse);
+        expect(data.containsKey('completed_at'), isFalse);
+        expect(data.containsKey('rewatch_count'), isFalse);
+      });
+    });
+
+    group('updateItemRewatchCount', () {
+      test('writes the value verbatim, null included', () async {
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.updateItemRewatchCount(1, 5);
+        await dao.updateItemRewatchCount(1, null);
+
+        final VerificationResult captured = verify(
+          () => mockDb.update(
+            'collection_items',
+            captureAny(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        );
+        captured.called(2);
+        expect(
+          captured.captured.first,
+          <String, dynamic>{'rewatch_count': 5},
+        );
+        expect(
+          captured.captured.last,
+          <String, dynamic>{'rewatch_count': null},
+        );
       });
     });
 
@@ -1616,6 +1734,70 @@ void main() {
             whereArgs: <Object?>[1],
           ),
         ).called(1);
+      });
+    });
+
+    group('resolveCardLink', () {
+      void stubGameHydration() {
+        when(() => mockGameDao.getGamesByIds(any()))
+            .thenAnswer((_) async => <Game>[const Game(id: 100, name: 'Zelda')]);
+        when(() => mockGameDao.getPlatformsByIds(any()))
+            .thenAnswer((_) async => <Platform>[]);
+      }
+
+      void stubQuery(List<Map<String, dynamic>> rows) {
+        when(
+          () => mockDb.query(
+            'collection_items',
+            where: 'media_type = ? AND external_id = ?',
+            whereArgs: <Object?>['game', 100],
+          ),
+        ).thenAnswer((_) async => rows);
+      }
+
+      test('returns empty when nothing matches', () async {
+        stubQuery(<Map<String, dynamic>>[]);
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.game,
+          externalId: 100,
+        );
+
+        expect(result, isEmpty);
+      });
+
+      test('prefers the hinted collection when it matches', () async {
+        stubQuery(<Map<String, dynamic>>[
+          _itemRow(id: 1, collectionId: 1, externalId: 100),
+          _itemRow(id: 2, collectionId: 2, externalId: 100),
+        ]);
+        stubGameHydration();
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.game,
+          externalId: 100,
+          collectionId: 2,
+        );
+
+        expect(result, hasLength(1));
+        expect(result.first.collectionId, 2);
+      });
+
+      test('falls back to all collections when the hint does not match',
+          () async {
+        stubQuery(<Map<String, dynamic>>[
+          _itemRow(id: 1, collectionId: 1, externalId: 100),
+          _itemRow(id: 2, collectionId: 2, externalId: 100),
+        ]);
+        stubGameHydration();
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.game,
+          externalId: 100,
+          collectionId: 99,
+        );
+
+        expect(result, hasLength(2));
       });
     });
   });

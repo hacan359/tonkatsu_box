@@ -7,6 +7,450 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **macOS support (experimental)**
+
+  Tonkatsu Box now builds and runs on macOS, joining Windows, Linux and
+  Android. The macOS target mirrors the Linux feature set: no VGMaps
+  browser and no screenshot capture (both Windows-only), while
+  collections, visual boards, import, Kodi sync, gamepads and Discord
+  Rich Presence are available. The App Sandbox is disabled so Discord RPC
+  can reach its IPC socket. The release pipeline now produces an unsigned
+  `.dmg`. macOS support is experimental and not yet tested by the
+  maintainers; the unsigned build triggers a Gatekeeper warning on first
+  launch. Contributed by @eugenekv (#341).
+
+  * macos/ (Runner Xcode project, Info.plist, AppInfo.xcconfig,
+    AppDelegate, MainFlutterWindow, app icons): New — macOS platform
+    scaffolding. App Sandbox disabled in DebugProfile.entitlements and
+    Release.entitlements so Discord RPC works.
+  * .github/workflows/release.yml (build-macos, create-release): New job
+    runs `flutter build macos`, packages a `.dmg` via hdiutil, and
+    uploads it as a release artifact.
+  * pubspec.yaml (flutter_launcher_icons): Enable macOS launcher-icon
+    generation.
+  * README.md, docs/index.html: List macOS across the platform table,
+    download links, badges and landing page; note the experimental and
+    untested status.
+
+- **Cross-links between cards in notes**
+
+  Notes can now link to another card with a `[[card:…|name]]` token. Typing
+  `[[` in a note opens a search-and-insert picker over every collection;
+  picking a card inserts the token. In view mode the token renders as an
+  inline chip (cover, source, release year and — for games — the platform),
+  and tapping it opens the target card; when several cards match, a small
+  sheet asks which collection to open, and an unresolved link stays as plain
+  inactive text. Item menus (detail screen, collection grid, All items) gain
+  a "Copy card link" action. Links are content-based (source + external id,
+  plus platform for games), so they survive export/import into another
+  database instead of breaking on reused row ids.
+
+  * lib/shared/models/card_link.dart (CardLinkRef, buildCardLinkToken,
+    parseCardLink, extractCardLinks, cardSubcategoryLabel,
+    sanitizeCardLinkDisplay, cardLinkTokenPattern): New — token model,
+    build/parse/extract, media subcategory label.
+  * lib/shared/widgets/card_link_chip.dart (CardLinkChip): New — inline chip
+    for a resolved link.
+  * lib/shared/widgets/card_link_picker.dart (showCardLinkPicker): New —
+    lazy search bottom sheet (results only while typing, capped at 50).
+  * lib/shared/widgets/mini_markdown_text.dart (MiniMarkdownText): Render
+    `[[card:…]]` tokens as chips via new `resolvedLinks` map and `onCardLink`
+    callback; unresolved tokens fall back to inactive text.
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView,
+    _MediaDetailViewState): Pre-resolve note tokens for synchronous chip
+    rendering, `[[` autocomplete in the notes editor, `onCardLinkTap`.
+  * lib/shared/widgets/markdown_toolbar.dart (MarkdownToolbar): Optional
+    insert-card-link button.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.resolveCardLink),
+    lib/core/database/database_service.dart (DatabaseService.resolveCardLink):
+    Content-based resolve, preferring the hinted collection then falling back
+    across all collections.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._openCardLink,
+    _ItemDetailScreenState._pickCardLinkTarget): Resolve a tapped link and
+    open the target, with a picker on multiple matches.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.copyItemLink): New shared copy-link action.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailMenuAction.copyLink),
+    lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/home/screens/all_items_screen.dart: "Copy card link" menu
+    entry.
+
+- **Custom-card import from JSON/CSV files**
+
+  A new import source (Settings → Import → Custom cards) for loading cards
+  produced by the user's own scripts or parsers. One file per run: JSON (an
+  array of objects, or a single object) or CSV (RFC 4180, header-addressed
+  columns). Only `title` and `type` are required; the schema covers every
+  card field (alt title, description, year, genres, link, cover URL,
+  platform, manga/anime format, unit totals) and every personal field
+  (status, rating, note, rewatch counter, start/finish dates, time spent,
+  favorite, episode/season progress, global tags — missing tags are created
+  automatically). The file is parsed and validated up front without touching
+  the database; a preview screen shows "Recognized N · Errors M ·
+  Duplicates K" with a lazy checkbox list — invalid rows float to the top
+  with their reasons, duplicates (same title already in the target
+  collection, or repeated in the file) are unchecked by default. Covers
+  (http/https only) are downloaded into the image cache only after
+  confirmation and only for the imported rows. Two downloadable templates
+  document the format: a header-only CSV and a self-describing JSON whose
+  `_`-prefixed hint keys the parser ignores, so the template itself imports
+  cleanly. Platform text is matched against the platform catalog
+  case-insensitively (abbreviation or full name); unmatched text is kept as
+  a free-form platform name.
+
+  * lib/core/import/sources/custom_file/custom_card_entry.dart
+    (CustomCardFields, CustomCardEntry, CustomCardRow, CustomCardIssue,
+    CustomCardIssueCode, CustomCardsParseException,
+    CustomCardsParseErrorCode): New — schema constants, parsed-entry model,
+    per-row validation issues, whole-file parse errors.
+  * lib/core/import/sources/custom_file/custom_cards_parser.dart
+    (CustomCardsParser.parseBytes, CustomCardsParser.parseJson,
+    CustomCardsParser.parseCsv): New — format sniffing, UTF-8 BOM handling,
+    quote-aware CSV splitting over code units, full field validation.
+  * lib/core/import/sources/custom_file/custom_cards_template.dart
+    (CustomCardsTemplate.csv, CustomCardsTemplate.json): New — downloadable
+    templates.
+  * lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService.parseFile,
+    CustomCardsImportService.duplicateRowIndexes,
+    CustomCardsImportService.importSelected,
+    customCardsImportServiceProvider): New — preview-driven two-phase
+    import: batch card creation, platform catalog matching, explicit dates
+    overriding status-derived ones, tag resolve-or-create and assignment,
+    post-import cover downloads with per-card failure notes.
+  * lib/core/database/dao/custom_media_dao.dart (CustomMediaDao.createAll):
+    New batch insert returning the new row ids in order.
+  * lib/features/settings/content/custom_cards_import_content.dart
+    (CustomCardsImportContent, localizedParseError): New — file pick,
+    template download buttons, target collection choice.
+  * lib/features/settings/screens/custom_cards_import_screen.dart
+    (CustomCardsImportScreen): New — title-bar wrapper.
+  * lib/features/settings/screens/custom_cards_preview_screen.dart
+    (CustomCardsPreviewScreen): New — summary, select all/none, lazy
+    checkbox list with problem rows first, import progress dialog.
+  * lib/features/settings/screens/settings_screen.dart: Custom cards tile
+    in the Import group.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb: customImport* /
+    settingsCustomCardsImport* keys.
+
+- **Replay status and a rewatch counter**
+
+  A sixth item status for going through a finished title again: Replaying
+  for games and visual novels, Rewatching for movies / TV / anime,
+  Rereading for manga and books («Повтор» in filters and tables). Switching
+  to it never touches the started/completed dates — the item stays
+  completed-once. Alongside it, every item gets a rewatch counter with
+  MAL/AniList semantics: empty = not tracked, 0 = completed once, N = number
+  of repeats. Any transition into Completed bumps it automatically (first
+  completion writes 0), and it is editable by hand from the item card chip
+  next to the time-spent timer. AniList imports map REPEATING to the new
+  status and store `repeat` in the counter; MAL imports store
+  `my_times_watched` / `my_times_read`; both keep the old comment line too.
+  The counter round-trips through .xcoll/.xcollx exports and backups; files
+  saved before this version import as "not tracked".
+
+  * lib/shared/models/item_status.dart (ItemStatus.replaying,
+    ItemStatus.localizedLabel, ItemStatus.genericLabel,
+    ItemStatus.statusSortPriority): New enum value; media-type labels;
+    sorts right after In Progress.
+  * lib/shared/models/item_status_logic.dart (computeDatesForStatus,
+    computeRewatchCountForStatus, _externalStatusPriority): Replaying keeps
+    both dates; new pure counter rule (null → 0, else +1, only on
+    transitions into completed); external-merge priority above completed.
+  * lib/shared/models/collection_item.dart (CollectionItem.rewatchCount,
+    CollectionItem.fromDbWithJoins, CollectionItem.fromExport,
+    CollectionItem.toDb, CollectionItem.toExport, CollectionItem.copyWith,
+    CollectionItem.withStatus): New nullable field with full round-trip;
+    withStatus applies the counter rule.
+  * lib/core/database/migrations/migration_v55.dart (MigrationV55): New —
+    nullable `collection_items.rewatch_count`.
+  * lib/core/database/migrations/migration_registry.dart
+    (MigrationRegistry.all), lib/core/database/database_service.dart
+    (DatabaseService._initDatabase, DatabaseService.updateItemRewatchCount):
+    Register v55, bump version to 55, DAO passthrough.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.updateItemStatus,
+    CollectionDao.updateItemRewatchCount, CollectionDao.getCollectionItemStats):
+    Status write bumps the counter via computeRewatchCountForStatus and
+    leaves dates alone for replaying; verbatim counter setter; replaying
+    bucket in stats.
+  * lib/data/repositories/collection_repository.dart (CollectionStats.replaying,
+    CollectionRepository.updateItemRewatchCount, CollectionRepository.getStats):
+    New stats bucket (not counted into completionPercent) and setter.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.setRewatchCount,
+    CollectionItemsNotifier.updateActivityDates): Manual counter editing;
+    date-picker completion patches the counter locally.
+  * lib/features/collections/widgets/dialogs/rewatch_count_dialog.dart
+    (RewatchCountDialog): New — numeric editor, empty field clears back to
+    "not tracked".
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView.rewatchCount,
+    MediaDetailView.onRewatchCountTap, _buildStatChip): Counter chip next to
+    the time-spent chip; both now share one chip builder.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_showRewatchCountDialog): Wires the chip to the dialog and provider.
+  * lib/core/import/import_columns.dart (repeatIsTracked): Shared rule for
+    when a source repeat value is worth storing.
+  * lib/core/import/sources/anilist/anilist_import_service.dart
+    (AniListImportService._mapStatus, AniListImportService._insertRow,
+    AniListImportService._changedFields): REPEATING → replaying; `repeat`
+    into `rewatch_count` on insert and overwrite re-import.
+  * lib/core/import/sources/mal/mal_import_service.dart
+    (MalImportService._insertRow, MalImportService._changedFields,
+    MalImportService._statusLabel): `timesWatched` into `rewatch_count`;
+    label for the new status.
+  * lib/core/services/import_service.dart (ImportService._restoreUserData,
+    ImportService._hasUserData): Restores the file's counter after the
+    status write so the file value wins; never wipes a local counter with
+    null.
+  * lib/core/services/text_export_service.dart (_statusLabel),
+    lib/shared/widgets/chevron_filter_bar.dart (_order): "Replay" label and
+    filter entry.
+  * lib/shared/theme/app_colors.dart (AppColors.statusReplaying): New color.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (statusReplay, statusReplaying,
+    statusRewatching, statusRereading, rewatchCountEdit, rewatchCountHint):
+    New keys.
+
+### Changed
+
+- **Localize the keyboard-shortcut help (F1)**
+
+  The F1 legend and its dialog now follow the interface language instead of
+  always showing Russian. Shortcut groups moved from `static const` fields to
+  builders that take the localizations object; key combos (Ctrl+N, F5, …) stay
+  literal.
+
+  * lib/shared/keyboard/keyboard_shortcuts.dart (globalShortcutGroup),
+    lib/shared/keyboard/keyboard_shortcuts_dialog.dart (KeyboardShortcutsDialog):
+    Resolve titles/descriptions and dialog chrome via `S`.
+  * lib/features/collections/screens/home_screen.dart (HomeScreen.shortcutGroup),
+    lib/features/collections/screens/collection_screen.dart (CollectionScreen.shortcutGroup),
+    lib/features/collections/screens/item_detail_screen.dart (ItemDetailScreen.shortcutGroup),
+    lib/features/tier_lists/screens/tier_lists_screen.dart (TierListsScreen.shortcutGroup),
+    lib/features/tier_lists/screens/tier_list_detail_screen.dart (TierListDetailScreen.shortcutGroup),
+    lib/features/wishlist/screens/wishlist_screen.dart (WishlistScreen.shortcutGroup),
+    lib/features/search/screens/search_screen.dart (SearchScreen.shortcutGroup):
+    `shortcutGroup` is now a builder taking `S`.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._currentScreenShortcutGroups):
+    Pass the localizations object when building the groups.
+
+- **Collection table view rebuilt on the trina_grid package**
+
+  The hand-rolled table is replaced with a grid that supports dragging and
+  resizing columns, hiding columns, per-column sorting and multi-rule
+  filtering, all styled to match the app's dark theme. Column order, widths
+  and hidden columns persist per collection. A single "Filters" button opens
+  a rule editor (column + condition + value, combined with AND; status picks
+  from a dropdown of real statuses, other columns use text conditions like
+  "contains"); a "Columns" button toggles visibility. Manual sort mode gets
+  a dedicated left-frozen drag-handle column so reordering rows works on
+  touch. Inline editing (rating stars, status, favorite, tags), row
+  selection with select-all, right-click context menu and manual reorder are
+  preserved; opening an item is now a single tap on its name or a double tap
+  on the row. On narrow screens the filter dialog stacks each rule
+  vertically so its controls stay readable.
+
+  * pubspec.yaml, pubspec.lock: Add `trina_grid` and its transitive
+    `shadcn_ui` (promoted to a direct dependency — the grid's popups need
+    `ShadTheme` in context).
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (CollectionTableView): Rewritten over `TrinaGrid` — column builders with
+    our cell renderers, row build/reload, sort/filter/selection/reorder
+    wiring, per-collection layout persistence, a scoped rounded checkbox
+    theme, and a `_skipNextReload` guard so a grid-initiated row drag isn't
+    torn down mid-gesture on touch.
+  * lib/features/collections/widgets/collection_table/table_filter.dart
+    (TableFilterCondition, TableFilterRule, TableFilterDialog): New — filter
+    model and the responsive rule-editor dialog.
+  * lib/features/collections/widgets/collection_table/table_style.dart
+    (collectionTableConfiguration): New — dark `TrinaGridConfiguration`.
+  * lib/features/collections/widgets/collection_table/table_layout_store.dart
+    (TableColumnLayout, TableLayoutStore): New — per-collection column layout
+    (order, widths, hidden) in SharedPreferences.
+  * lib/features/collections/widgets/collection_table/cells/name_cell.dart
+    (NameCell): New — name + genres cell extracted from the view.
+  * lib/features/collections/widgets/collection_table/table_column.dart,
+    table_header.dart, table_row.dart: Removed — superseded by the grid.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView): Pass `collectionId` to the table for layout
+    persistence.
+
+- **Item detail card regrouped, with an animated status switcher**
+
+  The detail card no longer crams everything beside the cover: the header
+  keeps only short identity facts, the description spans full width with an
+  "More…/Collapse" toggle, tags sit below it, and user-set progress (started
+  / completed dates, time spent, rewatch count) becomes a symmetric tile row
+  (2×2 on narrow widths). System metadata (added / last activity dates,
+  auto-computed completion time) moved behind an info button. The status
+  switcher's highlight now slides between segments while its color morphs
+  from the old status color to the new one. Long joined info chips (genres,
+  studios, tags) expand on tap to show the full text. The translucent
+  backing now stretches edge to edge so narrow screens don't lose width to a
+  doubled-up margin.
+
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView,
+    _InfoChip, _ExpandableDescription): Regrouped layout, expandable
+    description and info chips, progress tiles, system-metadata info button.
+  * lib/features/collections/widgets/status_chip_row.dart (StatusChipRow,
+    _StatusSegment): Sliding, color-morphing selection highlight built with
+    `AnimatedAlign` + `FractionallySizedBox` (keeps intrinsic sizes so popup
+    menus still measure it).
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (showMore, showLess): New keys
+    for the description toggle.
+
+- **Compacter, on-theme dialogs**
+
+  Dialog titles use the app's 18px heading instead of Material's 24px, and
+  action rows are tighter. The tag manager, tag picker and rename dialogs
+  lost their doubled padding and second-line usage counts; the date picker
+  no longer overflows when the window is squeezed narrow. The rename-tag
+  dialog owns its text controller so it no longer throws "used after
+  disposed" while the dialog animates closed.
+
+  * lib/shared/theme/app_theme.dart (AppTheme.darkTheme): `dialogTheme`
+    gains title/content text styles and tighter `actionsPadding`.
+  * lib/features/collections/widgets/tag_management_dialog.dart
+    (TagManagementDialog, _RenameTagDialog, _TagRow): Compact padding,
+    inline usage count, controller owned by a stateful rename dialog.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    Compact padding and dense rows.
+  * lib/shared/widgets/dual_date_picker_dialog.dart (DualDatePickerDialog):
+    Responsive side-by-side/stacked body via `LayoutBuilder`; use
+    `kIsMobile`.
+
+- **Collection section headers on the All Items screen**
+
+  Each collection group on the All Items (Home) grid is now headed by the
+  collection name with a thick accent underline, its total count, per-type
+  tallies (a media-type icon with the number of items of that type) and a
+  favourites count. Uncategorized uses a muted grey accent.
+
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildCollectionDivider,
+    _AllItemsScreenState._headerInfo): Replace the centered thin-line
+    divider with the underlined header and per-type info cluster.
+
+- **Centered subcategory filter chips**
+
+  Subcategory chips (game platforms, manga/anime formats) center within the
+  strip when they fit and still scroll when they overflow, instead of
+  hugging the left edge.
+
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar): Center the
+    chip row via a `ConstrainedBox` min-width so `MainAxisAlignment.center`
+    has room, keeping horizontal scroll on overflow.
+
+- **Tags are now global and an item can carry several of them**
+
+  Tags moved from per-collection lists to one app-wide set shared by all
+  collections; existing tags are merged by name (case-insensitive, Cyrillic
+  aware) with links preserved. An item can now hold any number of tags: the
+  detail card, grid badge (first tag plus a "+N" counter), table cell and a
+  new multi-select picker with inline quick-create all work over the shared
+  set. Tags gained an optional label text color for cases where the
+  auto-white text is unreadable on the background color. The tag filter is
+  include-only OR — selected tags show every item carrying any of them.
+  Moving an item between collections keeps its tags; copying duplicates the
+  links. Exports write a `tag_names` array per item (plus the legacy
+  `tag_name` so older app versions still restore one tag), imports accept
+  both formats, and full backups add a `tags.json` with the complete global
+  set. A global tag manager (create / rename / both colors / drag reorder /
+  usage counts / delete) opens from the collections screen menu and from a
+  collection.
+
+  * lib/core/database/migrations/migration_v54.dart (MigrationV54): New
+    `tags` (with `text_color`) + `item_tags` junction; merges
+    `collection_tags` case-insensitively, most-used tag donates name casing
+    and color, links copied into the junction; legacy structures untouched.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all),
+    lib/core/database/database_service.dart (DatabaseService._initDatabase,
+    DatabaseService.globalTagDao, globalTagDaoProvider,
+    DatabaseService.clearAllData): Register v54, bump version to 54, wire the
+    DAO, truncate `tags`/`item_tags` on clear; legacy `TagDao` wiring removed.
+  * lib/shared/models/tag.dart (Tag, Tag.findByNameCaseInsensitive,
+    TagListProjection.orderedFor, TagListProjection.primaryFor): New global
+    model with `textColor` and shared display-order projections.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao): New — CRUD,
+    resolveOrCreate, setItemTags, getTagIdsByItem, getTagIdsForItems
+    (chunked), getAllItemTags, setSortOrders, upsertAll.
+  * lib/features/collections/providers/global_tags_provider.dart
+    (globalTagsProvider, GlobalTagsNotifier),
+    lib/features/collections/providers/item_tags_provider.dart
+    (itemTagsProvider, ItemTagsNotifier): New state layer — tag list with
+    CRUD/reorder and the whole-DB item→tag-ids map.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    New multi-select picker with inline tag creation.
+  * lib/features/collections/widgets/tag_management_dialog.dart
+    (TagManagementDialog): Global manager — text color dot, drag reorder,
+    usage counts; no longer takes a collection id.
+  * lib/features/collections/widgets/item_tags_section.dart (ItemTagsSection):
+    Multi-chip section over the global set; opens the picker.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView): `itemTags` map prop, primary-tag grouping, "Tags"
+    context-menu entry, picker-based tag editing.
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (CollectionTableView), table_row.dart (TableRow), table_header.dart
+    (TableHeader), cells/tag_cell.dart (TagCell): Multi-tag chips in the tag
+    column, cycle filter understands multi-tags and "untagged", sort by
+    primary tag, `onTagsEdit` callback.
+  * lib/features/collections/widgets/tag_sidebar.dart (TagSidebar),
+    collection_filter_bar.dart (CollectionFilterBar),
+    collection_filter_sheet.dart (CollectionFilterSheet): Work over `Tag`.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply): Filters and text search read the item→tags
+    map; OR semantics over selected tag ids.
+  * lib/features/collections/helpers/bulk_operations.dart (BulkOperations),
+    lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.moveItem, CollectionActions.cloneItem),
+    lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.cloneItem, CollectionItemsNotifier.moveItem):
+    Move keeps tags implicitly, clone copies the links; per-collection tag
+    remap logic removed.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._visibleTags): Filters show only tags used by the
+    collection's items; single computation per build.
+  * lib/features/collections/screens/home_screen.dart (HomeScreen): Tag
+    manager entry in the collections FAB menu.
+  * lib/features/home/providers/all_items_provider.dart (allTagsMapProvider),
+    lib/features/home/screens/all_items_screen.dart (AllItemsScreen): Global
+    tag map, multi-tag search match, primary tag + "+N" on cards.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.tagTextColor,
+    MediaPosterCard.tagMoreCount, _TagBadge): Label text color and "+N".
+  * lib/core/services/export_service.dart (ExportService._collectTagData):
+    Exports the global tags used by the collection and per-item `tag_names`.
+  * lib/core/services/import_service.dart (ImportService._importTags):
+    Resolves names into the global set, accepts `tag_names` and legacy
+    `tag_name`, writes links via setItemTags.
+  * lib/core/services/backup_service.dart (BackupService.createBackup,
+    BackupService._restoreTags): `tags.json` in full backups, restored before
+    collections.
+  * lib/shared/models/collection_tag.dart (CollectionTag),
+    lib/core/database/dao/tag_dao.dart (TagDao),
+    lib/features/collections/providers/collection_tags_provider.dart
+    (collectionTagsProvider): Removed — superseded by the global stack.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (tagPickerTitle, tagTextColor):
+    New keys.
+
+### Fixed
+
+- **Windows crash in gamepads_windows_plugin.dll on USB connect/disconnect**
+
+  The gamepads plugin's native Windows DLL listens to device changes even
+  though the app never subscribes to gamepad input on Windows, and its
+  listener crashes the app (0xc0000005) when a non-gamepad USB device is
+  plugged or unplugged. The Windows implementation is now replaced with a
+  local Dart-only stub via `dependency_overrides`, so the DLL is not built or
+  shipped at all. Android keeps the real implementation.
+
+  * packages/gamepads_windows_stub/pubspec.yaml,
+    packages/gamepads_windows_stub/lib/gamepads_windows.dart: New stub
+    package named `gamepads_windows` with no native plugin declaration.
+  * pubspec.yaml (dependency_overrides): Point `gamepads_windows` at the stub.
+
 ## [0.37.0] - 2026-07-05
 
 ### Added

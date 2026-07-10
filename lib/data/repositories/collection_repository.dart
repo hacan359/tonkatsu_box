@@ -22,6 +22,7 @@ class CollectionStats {
     required this.notStarted,
     required this.dropped,
     required this.planned,
+    this.replaying = 0,
     this.gameCount = 0,
     this.movieCount = 0,
     this.tvShowCount = 0,
@@ -39,6 +40,7 @@ class CollectionStats {
   final int notStarted;
   final int dropped;
   final int planned;
+  final int replaying;
   final int gameCount;
   final int movieCount;
   final int tvShowCount;
@@ -230,6 +232,10 @@ class CollectionRepository {
     await _db.updateItemStatus(id, status, mediaType: mediaType);
   }
 
+  Future<void> updateItemRewatchCount(int id, int? count) async {
+    await _db.updateItemRewatchCount(id, count);
+  }
+
   Future<void> updateItemProgress(
     int id, {
     int? currentSeason,
@@ -290,6 +296,7 @@ class CollectionRepository {
       notStarted: raw['notStarted'] ?? 0,
       dropped: raw['dropped'] ?? 0,
       planned: raw['planned'] ?? 0,
+      replaying: raw['replaying'] ?? 0,
       gameCount: raw['gameCount'] ?? 0,
       movieCount: raw['movieCount'] ?? 0,
       tvShowCount: raw['tvShowCount'] ?? 0,

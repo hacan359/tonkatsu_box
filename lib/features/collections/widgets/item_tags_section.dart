@@ -2,90 +2,99 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../core/database/dao/tag_dao.dart';
-import '../../../core/database/database_service.dart';
-import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../providers/collection_tags_provider.dart';
-import '../providers/collections_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
+import 'tag_picker_dialog.dart';
 
-/// An item carries at most one tag; tapping the chip opens a popup menu
-/// to change it.
+/// The item's tag chips; tapping any of them (or the empty placeholder)
+/// opens the multi-select picker over the global tag set.
 class ItemTagsSection extends ConsumerWidget {
   const ItemTagsSection({
-    required this.collectionId,
     required this.itemId,
-    required this.currentTagId,
     required this.isEditable,
     super.key,
   });
 
-  final int collectionId;
-
   final int itemId;
-
-  final int? currentTagId;
 
   final bool isEditable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
-    final AsyncValue<List<CollectionTag>> tagsAsync =
-        ref.watch(collectionTagsProvider(collectionId));
-    final List<CollectionTag> tags =
-        tagsAsync.valueOrNull ?? <CollectionTag>[];
+    final List<Tag> allTags =
+        ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
+    final List<Tag> itemTags = allTags
+        .orderedFor(ref.watch(itemTagsProvider).valueOrNull?[itemId]);
 
-    if (tags.isEmpty) return const SizedBox.shrink();
+    if (itemTags.isEmpty && !isEditable) return const SizedBox.shrink();
 
-    CollectionTag? currentTag;
-    if (currentTagId != null) {
-      for (final CollectionTag t in tags) {
-        if (t.id == currentTagId) {
-          currentTag = t;
-          break;
-        }
-      }
-    }
+    final Widget content = Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
+      children: <Widget>[
+        if (itemTags.isEmpty)
+          _buildChip(
+            label: l.tagNone,
+            icon: Icons.label_outlined,
+          )
+        else
+          for (final Tag tag in itemTags)
+            _buildChip(
+              label: tag.name,
+              accent: tag.color != null ? Color(tag.color!) : AppColors.brand,
+              textColor:
+                  tag.textColor != null ? Color(tag.textColor!) : null,
+            ),
+      ],
+    );
 
-    final Color accentColor = currentTag?.color != null
-        ? Color(currentTag!.color!)
-        : AppColors.brand;
+    if (!isEditable) return content;
 
-    final Widget chip = Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 6,
-        vertical: 2,
+    return GestureDetector(
+      onTap: () => _editTags(context, ref),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: content,
       ),
+    );
+  }
+
+  Widget _buildChip({
+    required String label,
+    IconData? icon,
+    Color? accent,
+    Color? textColor,
+  }) {
+    final Color labelColor =
+        textColor ?? accent ?? AppColors.textTertiary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: currentTag != null
-            ? accentColor.withAlpha(30)
-            : AppColors.surface,
+        color: accent != null ? accent.withAlpha(30) : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
         border: Border.all(
-          color: currentTag != null
-              ? accentColor.withAlpha(80)
+          color: accent != null
+              ? accent.withAlpha(80)
               : AppColors.surfaceBorder,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(
-            Icons.label_outlined,
-            size: 12,
-            color: currentTag != null ? accentColor : AppColors.textTertiary,
-          ),
-          const SizedBox(width: 3),
+          if (icon != null) ...<Widget>[
+            Icon(icon, size: 12, color: labelColor),
+            const SizedBox(width: 3),
+          ],
           Flexible(
             child: Text(
-              currentTag?.name ?? l.tagNone,
+              label,
               style: AppTypography.caption.copyWith(
-                color: currentTag != null
-                    ? accentColor
-                    : AppColors.textTertiary,
+                color: labelColor,
                 fontWeight: FontWeight.w500,
               ),
               maxLines: 1,
@@ -95,94 +104,14 @@ class ItemTagsSection extends ConsumerWidget {
         ],
       ),
     );
-
-    if (!isEditable) return chip;
-
-    return GestureDetector(
-      onTapDown: (TapDownDetails details) {
-        _showTagPopup(context, ref, details.globalPosition, tags);
-      },
-      child: chip,
-    );
   }
 
-  /// Sentinel menu value meaning "no tag".
-  static const int _noTagSentinel = -1;
-
-  void _showTagPopup(
-    BuildContext context,
-    WidgetRef ref,
-    Offset position,
-    List<CollectionTag> tags,
-  ) {
-    final S l = S.of(context);
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject()! as RenderBox;
-
-    showMenu<int>(
-      context: context,
-      position: RelativeRect.fromRect(
-        position & const Size(1, 1),
-        Offset.zero & overlay.size,
-      ),
-      items: <PopupMenuEntry<int>>[
-        PopupMenuItem<int>(
-          value: _noTagSentinel,
-          child: Text(
-            l.tagNone,
-            style: AppTypography.bodySmall.copyWith(
-              color: currentTagId == null
-                  ? AppColors.brand
-                  : AppColors.textTertiary,
-            ),
-          ),
-        ),
-        const PopupMenuDivider(),
-        for (final CollectionTag tag in tags)
-          PopupMenuItem<int>(
-            value: tag.id,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: tag.color != null
-                        ? Color(tag.color!)
-                        : AppColors.brand,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  tag.name,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: currentTagId == tag.id
-                        ? AppColors.brand
-                        : null,
-                    fontWeight: currentTagId == tag.id
-                        ? FontWeight.w600
-                        : null,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    ).then((int? selected) {
-      if (selected == null || !context.mounted) return;
-      final int? newTagId = selected == _noTagSentinel ? null : selected;
-      if (newTagId == currentTagId) return;
-      _setTag(ref, newTagId);
-    });
-  }
-
-  Future<void> _setTag(WidgetRef ref, int? tagId) async {
-    final TagDao dao = ref.read(tagDaoProvider);
-    await dao.setItemTag(itemId, tagId);
-    ref
-        .read(collectionItemsNotifierProvider(collectionId).notifier)
-        .updateItemTag(itemId, tagId);
+  Future<void> _editTags(BuildContext context, WidgetRef ref) async {
+    final Set<int> current =
+        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? <int>{};
+    final Set<int>? selected =
+        await TagPickerDialog.show(context, initialSelection: current);
+    if (selected == null) return;
+    await ref.read(itemTagsProvider.notifier).setItemTags(itemId, selected);
   }
 }

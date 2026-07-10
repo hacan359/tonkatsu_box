@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/l10n/app_localizations_ru.dart';
 import 'package:tonkatsu_box/shared/keyboard/keyboard_shortcuts.dart';
 
 void main() {
@@ -234,12 +236,12 @@ void main() {
 
   group('globalShortcutGroup', () {
     test('should contain navigation entries', () {
-      expect(globalShortcutGroup.title, 'Навигация');
-      expect(globalShortcutGroup.entries, isNotEmpty);
+      final S l = SRu();
+      final ShortcutGroup group = globalShortcutGroup(l);
+      expect(group.title, 'Навигация');
+      expect(group.entries, isNotEmpty);
       expect(
-        globalShortcutGroup.entries.any(
-          (ShortcutEntry e) => e.keys == 'F1',
-        ),
+        group.entries.any((ShortcutEntry e) => e.keys == 'F1'),
         isTrue,
       );
     });
