@@ -15,6 +15,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../helpers/collection_actions.dart';
 import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/item_tags_provider.dart';
@@ -515,6 +516,11 @@ class CollectionItemsView extends ConsumerWidget {
             icon: Icons.copy_outlined,
             label: l.collectionCopyToCollection,
           ),
+        contextMenuItem<String>(
+          value: 'copyLink',
+          icon: Icons.link,
+          label: l.cardLinkCopy,
+        ),
         if ((onItemMove != null || onItemClone != null) &&
             onItemRemove != null)
           const PopupMenuDivider(),
@@ -558,6 +564,8 @@ class CollectionItemsView extends ConsumerWidget {
           onItemMove?.call(item);
         case 'clone':
           onItemClone?.call(item);
+        case 'copyLink':
+          if (context.mounted) CollectionActions.copyItemLink(context, item);
         case 'remove':
           onItemRemove?.call(item);
       }

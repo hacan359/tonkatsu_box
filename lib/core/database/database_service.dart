@@ -371,6 +371,21 @@ class DatabaseService {
   Future<CollectionItem?> getCollectionItemById(int id) =>
       collectionDao.getCollectionItemById(id);
 
+  Future<List<CollectionItem>> resolveCardLink({
+    required MediaType mediaType,
+    required int externalId,
+    DataSource? source,
+    int? platformId,
+    int? collectionId,
+  }) =>
+      collectionDao.resolveCardLink(
+        mediaType: mediaType,
+        externalId: externalId,
+        source: source,
+        platformId: platformId,
+        collectionId: collectionId,
+      );
+
   Future<CollectionItem?> findCollectionItem({
     required int? collectionId,
     required MediaType mediaType,

@@ -330,6 +330,46 @@ class CollectionDao {
     return rows.map(CollectionItem.fromDb).toList();
   }
 
+  /// Resolves a content-based card link to hydrated items. Prefers the hinted
+  /// [collectionId] when it matches, else returns hits across all collections.
+  Future<List<CollectionItem>> resolveCardLink({
+    required MediaType mediaType,
+    required int externalId,
+    DataSource? source,
+    int? platformId,
+    int? collectionId,
+  }) async {
+    final Database db = await _getDatabase();
+    final StringBuffer where =
+        StringBuffer('media_type = ? AND external_id = ?');
+    final List<Object?> whereArgs = <Object?>[mediaType.value, externalId];
+
+    if (mediaType == MediaType.manga && source != null) {
+      where.write(" AND COALESCE(source, 'anilist') = ?");
+      whereArgs.add(source.name);
+    }
+    if (platformId != null) {
+      where.write(' AND platform_id = ?');
+      whereArgs.add(platformId);
+    }
+
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: where.toString(),
+      whereArgs: whereArgs,
+    );
+    if (rows.isEmpty) return <CollectionItem>[];
+
+    List<CollectionItem> items = rows.map(CollectionItem.fromDb).toList();
+    if (collectionId != null) {
+      final List<CollectionItem> inHinted = items
+          .where((CollectionItem i) => i.collectionId == collectionId)
+          .toList();
+      if (inHinted.isNotEmpty) items = inHinted;
+    }
+    return _loadJoinedData(items);
+  }
+
   /// [collectionId] == null adds as uncategorized.
   /// Returns null on UNIQUE constraint conflict.
   Future<int?> addItemToCollection({

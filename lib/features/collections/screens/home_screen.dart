@@ -37,17 +37,17 @@ import 'collection_screen.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
-  static const ShortcutGroup shortcutGroup = ShortcutGroup(
-    title: 'Коллекции',
-    entries: <ShortcutEntry>[
-      ShortcutEntry(keys: 'Ctrl+N', description: 'Создать коллекцию'),
-      ShortcutEntry(keys: 'Ctrl+I', description: 'Импорт коллекции'),
-      ShortcutEntry(keys: 'Ctrl+Shift+V', description: 'Переключить вид'),
-      ShortcutEntry(keys: 'Delete', description: 'Удалить коллекцию'),
-      ShortcutEntry(keys: 'F2', description: 'Переименовать коллекцию'),
-      ShortcutEntry(keys: 'Enter', description: 'Открыть коллекцию'),
-    ],
-  );
+  static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
+        title: l.shortcutsGroupCollections,
+        entries: <ShortcutEntry>[
+          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateCollection),
+          ShortcutEntry(keys: 'Ctrl+I', description: l.shortcutImportCollection),
+          ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
+          ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteCollection),
+          ShortcutEntry(keys: 'F2', description: l.shortcutRenameCollection),
+          ShortcutEntry(keys: 'Enter', description: l.shortcutOpenCollection),
+        ],
+      );
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();

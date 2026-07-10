@@ -5596,4 +5596,163 @@ class SEn extends S {
 
   @override
   String get unitCustom => 'Custom';
+
+  @override
+  String get cardLinkCopy => 'Copy card link';
+
+  @override
+  String get cardLinkCopied => 'Card link copied';
+
+  @override
+  String get cardLinkNotFound => 'Card not found';
+
+  @override
+  String get cardLinkPickCollection => 'Open in collection';
+
+  @override
+  String get cardLinkSearchTitle => 'Link a card';
+
+  @override
+  String get cardLinkSearchHint => 'Search cards';
+
+  @override
+  String get shortcutsDialogTitle => 'Keyboard shortcuts';
+
+  @override
+  String get shortcutsGroupNavigation => 'Navigation';
+
+  @override
+  String get shortcutSwitchTab => 'Switch tab';
+
+  @override
+  String get shortcutNextTab => 'Next tab';
+
+  @override
+  String get shortcutPreviousTab => 'Previous tab';
+
+  @override
+  String get shortcutBack => 'Back';
+
+  @override
+  String get shortcutSearch => 'Search';
+
+  @override
+  String get shortcutRefresh => 'Refresh';
+
+  @override
+  String get shortcutThisHelp => 'This help';
+
+  @override
+  String get shortcutsGroupCollections => 'Collections';
+
+  @override
+  String get shortcutCreateCollection => 'Create collection';
+
+  @override
+  String get shortcutImportCollection => 'Import collection';
+
+  @override
+  String get shortcutToggleView => 'Toggle view';
+
+  @override
+  String get shortcutDeleteCollection => 'Delete collection';
+
+  @override
+  String get shortcutRenameCollection => 'Rename collection';
+
+  @override
+  String get shortcutOpenCollection => 'Open collection';
+
+  @override
+  String get shortcutsGroupCollection => 'Collection';
+
+  @override
+  String get shortcutAddItems => 'Add items';
+
+  @override
+  String get shortcutExportCollection => 'Export collection';
+
+  @override
+  String get shortcutImportIntoCollection => 'Import into collection';
+
+  @override
+  String get shortcutToggleBoard => 'Toggle Board/Canvas';
+
+  @override
+  String get shortcutDeleteItem => 'Delete item';
+
+  @override
+  String get shortcutMoveItem => 'Move item';
+
+  @override
+  String get shortcutsGroupItemDetail => 'Item detail';
+
+  @override
+  String get shortcutLockCanvas => 'Lock/Unlock canvas';
+
+  @override
+  String get shortcutMoveToCollection => 'Move to collection';
+
+  @override
+  String get shortcutSetRating => 'Set rating';
+
+  @override
+  String get shortcutResetRating => 'Reset rating';
+
+  @override
+  String get shortcutsGroupTierLists => 'Tier lists';
+
+  @override
+  String get shortcutCreateTierList => 'Create tier list';
+
+  @override
+  String get shortcutOpenTierList => 'Open tier list';
+
+  @override
+  String get shortcutDeleteTierList => 'Delete tier list';
+
+  @override
+  String get shortcutRename => 'Rename';
+
+  @override
+  String get shortcutsGroupTierList => 'Tier list';
+
+  @override
+  String get shortcutExportAsImage => 'Export as image';
+
+  @override
+  String get shortcutAddTier => 'Add tier';
+
+  @override
+  String get shortcutClearAll => 'Clear all';
+
+  @override
+  String get shortcutsGroupWishlist => 'Wishlist';
+
+  @override
+  String get shortcutAddItem => 'Add item';
+
+  @override
+  String get shortcutToggleCompleted => 'Show/hide completed';
+
+  @override
+  String get shortcutClearCompleted => 'Clear completed';
+
+  @override
+  String get shortcutsGroupSearch => 'Search';
+
+  @override
+  String get shortcutFocusSearchField => 'Focus search field';
+
+  @override
+  String get shortcutClearOrBack => 'Clear / back';
+
+  @override
+  String get shortcutRunSearch => 'Run search';
+
+  @override
+  String get debugKeyEvents => 'Button key events';
+
+  @override
+  String get settingsGamepadDebugSubtitle => 'Capture controller button codes';
 }

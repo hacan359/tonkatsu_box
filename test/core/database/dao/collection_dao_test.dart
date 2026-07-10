@@ -1736,5 +1736,69 @@ void main() {
         ).called(1);
       });
     });
+
+    group('resolveCardLink', () {
+      void stubGameHydration() {
+        when(() => mockGameDao.getGamesByIds(any()))
+            .thenAnswer((_) async => <Game>[const Game(id: 100, name: 'Zelda')]);
+        when(() => mockGameDao.getPlatformsByIds(any()))
+            .thenAnswer((_) async => <Platform>[]);
+      }
+
+      void stubQuery(List<Map<String, dynamic>> rows) {
+        when(
+          () => mockDb.query(
+            'collection_items',
+            where: 'media_type = ? AND external_id = ?',
+            whereArgs: <Object?>['game', 100],
+          ),
+        ).thenAnswer((_) async => rows);
+      }
+
+      test('returns empty when nothing matches', () async {
+        stubQuery(<Map<String, dynamic>>[]);
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.game,
+          externalId: 100,
+        );
+
+        expect(result, isEmpty);
+      });
+
+      test('prefers the hinted collection when it matches', () async {
+        stubQuery(<Map<String, dynamic>>[
+          _itemRow(id: 1, collectionId: 1, externalId: 100),
+          _itemRow(id: 2, collectionId: 2, externalId: 100),
+        ]);
+        stubGameHydration();
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.game,
+          externalId: 100,
+          collectionId: 2,
+        );
+
+        expect(result, hasLength(1));
+        expect(result.first.collectionId, 2);
+      });
+
+      test('falls back to all collections when the hint does not match',
+          () async {
+        stubQuery(<Map<String, dynamic>>[
+          _itemRow(id: 1, collectionId: 1, externalId: 100),
+          _itemRow(id: 2, collectionId: 2, externalId: 100),
+        ]);
+        stubGameHydration();
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.game,
+          externalId: 100,
+          collectionId: 99,
+        );
+
+        expect(result, hasLength(2));
+      });
+    });
   });
 }

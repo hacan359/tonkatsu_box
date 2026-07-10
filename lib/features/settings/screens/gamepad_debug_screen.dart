@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:logging/logging.dart';
@@ -33,8 +34,10 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
 
   final List<_EventEntry> _rawEvents = <_EventEntry>[];
   final List<_EventEntry> _serviceEvents = <_EventEntry>[];
+  final List<_EventEntry> _keyEvents = <_EventEntry>[];
   final ScrollController _rawScrollController = ScrollController();
   final ScrollController _serviceScrollController = ScrollController();
+  final ScrollController _keyScrollController = ScrollController();
   StreamSubscription<GamepadEvent>? _rawSub;
   StreamSubscription<GamepadServiceEvent>? _serviceSub;
 
@@ -85,13 +88,46 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
     _serviceSub?.cancel();
     _rawScrollController.dispose();
     _serviceScrollController.dispose();
+    _keyScrollController.dispose();
     super.dispose();
+  }
+
+  /// Captures Flutter hardware key events. On Android, gamepad buttons arrive
+  /// here (as `gameButton*` keys) even when the `gamepads` plugin stays silent.
+  /// Never consumed, so global shortcuts keep working.
+  KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
+    if (!Platform.isAndroid) return KeyEventResult.ignored;
+    final String kind = switch (event) {
+      KeyDownEvent() => 'down',
+      KeyUpEvent() => 'up',
+      KeyRepeatEvent() => 'repeat',
+      _ => 'other',
+    };
+    if (kind == 'up') return KeyEventResult.ignored;
+    final LogicalKeyboardKey lk = event.logicalKey;
+    final PhysicalKeyboardKey pk = event.physicalKey;
+    setState(() {
+      _keyEvents.insert(
+        0,
+        _EventEntry(
+          time: DateTime.now(),
+          text: 'logical=${lk.debugName ?? lk.keyLabel} '
+              '(0x${lk.keyId.toRadixString(16)})  '
+              'physical=${pk.debugName ?? "?"} '
+              '(0x${pk.usbHidUsage.toRadixString(16)})  $kind',
+        ),
+      );
+      if (_keyEvents.length > _maxEvents) {
+        _keyEvents.removeLast();
+      }
+    });
+    return KeyEventResult.ignored;
   }
 
   Future<void> _exportLog() async {
     final S l = S.of(context);
 
-    if (_rawEvents.isEmpty && _serviceEvents.isEmpty) {
+    if (_rawEvents.isEmpty && _serviceEvents.isEmpty && _keyEvents.isEmpty) {
       if (mounted) {
         context.showSnack(l.debugLogEmpty);
       }
@@ -111,6 +147,12 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
 
     buffer.writeln('--- Service Events (${_serviceEvents.length}) ---');
     for (final _EventEntry entry in _serviceEvents.reversed) {
+      buffer.writeln('${_formatTime(entry.time)}  ${entry.text}');
+    }
+    buffer.writeln();
+
+    buffer.writeln('--- Key Events (${_keyEvents.length}) ---');
+    for (final _EventEntry entry in _keyEvents.reversed) {
       buffer.writeln('${_formatTime(entry.time)}  ${entry.text}');
     }
 
@@ -158,8 +200,11 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Stack(
-      children: <Widget>[
+    return Focus(
+      autofocus: true,
+      onKeyEvent: _handleKey,
+      child: Stack(
+        children: <Widget>[
         Column(
           children: <Widget>[
             SubScreenTitleBar(title: l.settingsGamepadDebug),
@@ -182,10 +227,24 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
               scrollController: _serviceScrollController,
               color: AppColors.tvShowAccent,
             );
+            // Flutter key-event capture is Android-only (gamepad buttons arrive
+            // as key events there); elsewhere it stays hidden.
+            final Widget? keyColumn = Platform.isAndroid
+                ? _buildEventColumn(
+                    title: l.debugKeyEvents,
+                    events: _keyEvents,
+                    scrollController: _keyScrollController,
+                    color: AppColors.gameAccent,
+                  )
+                : null;
 
             if (isNarrow) {
               return Column(
                 children: <Widget>[
+                  if (keyColumn != null) ...<Widget>[
+                    Expanded(child: keyColumn),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   Expanded(child: rawColumn),
                   const SizedBox(height: AppSpacing.md),
                   Expanded(child: serviceColumn),
@@ -196,6 +255,10 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                if (keyColumn != null) ...<Widget>[
+                  Expanded(child: keyColumn),
+                  const SizedBox(width: AppSpacing.md),
+                ],
                 Expanded(child: rawColumn),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(child: serviceColumn),
@@ -222,12 +285,14 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
                 setState(() {
                   _rawEvents.clear();
                   _serviceEvents.clear();
+                  _keyEvents.clear();
                 });
               },
             ),
           ],
         ),
-      ],
+        ],
+      ),
     );
   }
 

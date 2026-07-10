@@ -5688,4 +5688,163 @@ class SRu extends S {
 
   @override
   String get unitCustom => 'Своё';
+
+  @override
+  String get cardLinkCopy => 'Скопировать ссылку на карточку';
+
+  @override
+  String get cardLinkCopied => 'Ссылка на карточку скопирована';
+
+  @override
+  String get cardLinkNotFound => 'Карточка не найдена';
+
+  @override
+  String get cardLinkPickCollection => 'Открыть в коллекции';
+
+  @override
+  String get cardLinkSearchTitle => 'Ссылка на карточку';
+
+  @override
+  String get cardLinkSearchHint => 'Поиск карточек';
+
+  @override
+  String get shortcutsDialogTitle => 'Клавиатурные сочетания';
+
+  @override
+  String get shortcutsGroupNavigation => 'Навигация';
+
+  @override
+  String get shortcutSwitchTab => 'Переключить таб';
+
+  @override
+  String get shortcutNextTab => 'Следующий таб';
+
+  @override
+  String get shortcutPreviousTab => 'Предыдущий таб';
+
+  @override
+  String get shortcutBack => 'Назад';
+
+  @override
+  String get shortcutSearch => 'Поиск';
+
+  @override
+  String get shortcutRefresh => 'Обновить';
+
+  @override
+  String get shortcutThisHelp => 'Эта справка';
+
+  @override
+  String get shortcutsGroupCollections => 'Коллекции';
+
+  @override
+  String get shortcutCreateCollection => 'Создать коллекцию';
+
+  @override
+  String get shortcutImportCollection => 'Импорт коллекции';
+
+  @override
+  String get shortcutToggleView => 'Переключить вид';
+
+  @override
+  String get shortcutDeleteCollection => 'Удалить коллекцию';
+
+  @override
+  String get shortcutRenameCollection => 'Переименовать коллекцию';
+
+  @override
+  String get shortcutOpenCollection => 'Открыть коллекцию';
+
+  @override
+  String get shortcutsGroupCollection => 'Коллекция';
+
+  @override
+  String get shortcutAddItems => 'Добавить элементы';
+
+  @override
+  String get shortcutExportCollection => 'Экспорт коллекции';
+
+  @override
+  String get shortcutImportIntoCollection => 'Импорт в коллекцию';
+
+  @override
+  String get shortcutToggleBoard => 'Переключить Board/Canvas';
+
+  @override
+  String get shortcutDeleteItem => 'Удалить элемент';
+
+  @override
+  String get shortcutMoveItem => 'Переместить элемент';
+
+  @override
+  String get shortcutsGroupItemDetail => 'Деталь элемента';
+
+  @override
+  String get shortcutLockCanvas => 'Lock/Unlock канвас';
+
+  @override
+  String get shortcutMoveToCollection => 'Переместить в коллекцию';
+
+  @override
+  String get shortcutSetRating => 'Установить рейтинг';
+
+  @override
+  String get shortcutResetRating => 'Сбросить рейтинг';
+
+  @override
+  String get shortcutsGroupTierLists => 'Тир-листы';
+
+  @override
+  String get shortcutCreateTierList => 'Создать тир-лист';
+
+  @override
+  String get shortcutOpenTierList => 'Открыть тир-лист';
+
+  @override
+  String get shortcutDeleteTierList => 'Удалить тир-лист';
+
+  @override
+  String get shortcutRename => 'Переименовать';
+
+  @override
+  String get shortcutsGroupTierList => 'Тир-лист';
+
+  @override
+  String get shortcutExportAsImage => 'Экспорт как изображение';
+
+  @override
+  String get shortcutAddTier => 'Добавить тир';
+
+  @override
+  String get shortcutClearAll => 'Очистить все';
+
+  @override
+  String get shortcutsGroupWishlist => 'Вишлист';
+
+  @override
+  String get shortcutAddItem => 'Добавить элемент';
+
+  @override
+  String get shortcutToggleCompleted => 'Показать/скрыть выполненные';
+
+  @override
+  String get shortcutClearCompleted => 'Очистить выполненные';
+
+  @override
+  String get shortcutsGroupSearch => 'Поиск';
+
+  @override
+  String get shortcutFocusSearchField => 'Фокус в поле поиска';
+
+  @override
+  String get shortcutClearOrBack => 'Очистить / назад';
+
+  @override
+  String get shortcutRunSearch => 'Выполнить поиск';
+
+  @override
+  String get debugKeyEvents => 'Кнопки (key events)';
+
+  @override
+  String get settingsGamepadDebugSubtitle => 'Снять коды кнопок контроллера';
 }
