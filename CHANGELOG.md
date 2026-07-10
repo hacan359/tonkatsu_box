@@ -9,6 +9,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **macOS support (experimental)**
+
+  Tonkatsu Box now builds and runs on macOS, joining Windows, Linux and
+  Android. The macOS target mirrors the Linux feature set: no VGMaps
+  browser and no screenshot capture (both Windows-only), while
+  collections, visual boards, import, Kodi sync, gamepads and Discord
+  Rich Presence are available. The App Sandbox is disabled so Discord RPC
+  can reach its IPC socket. The release pipeline now produces an unsigned
+  `.dmg`. macOS support is experimental and not yet tested by the
+  maintainers; the unsigned build triggers a Gatekeeper warning on first
+  launch. Contributed by @eugenekv (#341).
+
+  * macos/ (Runner Xcode project, Info.plist, AppInfo.xcconfig,
+    AppDelegate, MainFlutterWindow, app icons): New — macOS platform
+    scaffolding. App Sandbox disabled in DebugProfile.entitlements and
+    Release.entitlements so Discord RPC works.
+  * .github/workflows/release.yml (build-macos, create-release): New job
+    runs `flutter build macos`, packages a `.dmg` via hdiutil, and
+    uploads it as a release artifact.
+  * pubspec.yaml (flutter_launcher_icons): Enable macOS launcher-icon
+    generation.
+  * README.md, docs/index.html: List macOS across the platform table,
+    download links, badges and landing page; note the experimental and
+    untested status.
+
 - **Cross-links between cards in notes**
 
   Notes can now link to another card with a `[[card:…|name]]` token. Typing
