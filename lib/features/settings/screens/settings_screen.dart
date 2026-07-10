@@ -49,6 +49,7 @@ import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
+import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
 import 'profiles_screen.dart';
 import '../../../shared/models/profile.dart';
@@ -607,6 +608,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ? l.settingsDebugSubtitle
                   : l.settingsDebugSubtitleNoKey,
               onTap: () => _pushScreen(const DebugHubScreen()),
+            ),
+          ],
+        ),
+      ],
+
+      // Android-only gamepad button debug, available in release too so
+      // controller key codes can be captured on devices like the Odin 2.
+      if (!kDebugMode && defaultTargetPlatform == TargetPlatform.android) ...<Widget>[
+        gap,
+        SettingsGroup(
+          title: l.settingsGamepadDebug,
+          titleIcon: Icons.sports_esports_outlined,
+          children: <Widget>[
+            SettingsTile(
+              leadingIcon: Icons.sports_esports_outlined,
+              leadingColor: _kDebugColor,
+              title: l.settingsGamepadDebug,
+              value: l.settingsGamepadDebugSubtitle,
+              onTap: () => _pushScreen(const GamepadDebugScreen()),
             ),
           ],
         ),

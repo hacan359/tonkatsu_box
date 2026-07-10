@@ -817,6 +817,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           icon: Icons.copy_outlined,
           label: l.collectionCopyToCollection,
         ),
+        contextMenuItem<String>(
+          value: 'copyLink',
+          icon: Icons.link,
+          label: l.cardLinkCopy,
+        ),
         const PopupMenuDivider(),
         contextMenuItem<String>(
           value: 'remove',
@@ -855,6 +860,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           collectionId: item.collectionId,
           item: item,
         );
+      case 'copyLink':
+        if (mounted) CollectionActions.copyItemLink(context, item);
       case 'remove':
         await CollectionActions.removeItem(
           context: context,

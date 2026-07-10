@@ -1,32 +1,33 @@
-// Виджет для отображения текста с мини-markdown разметкой.
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../models/card_link.dart';
+import '../models/collection_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'card_link_chip.dart';
 
-/// Виджет для отображения текста с поддержкой мини-markdown.
-///
-/// Поддерживаемый синтаксис:
-/// - `**жирный**` → bold
-/// - `*курсив*` → italic
-/// - `[текст](url)` → кликабельная ссылка
-/// - `https://...` → auto-linkify
+/// Renders mini-markdown text: `**bold**`, `*italic*`, `[text](url)`, bare URLs
+/// and `[[card:…]]` cross-links (chip when resolved via [resolvedLinks]).
 class MiniMarkdownText extends StatefulWidget {
-  /// Создаёт [MiniMarkdownText].
   const MiniMarkdownText({
     required this.text,
     this.style,
+    this.resolvedLinks = const <CardLinkRef, CollectionItem>{},
+    this.onCardLink,
     super.key,
   });
 
-  /// Исходный текст с markdown-разметкой.
   final String text;
-
-  /// Базовый стиль текста.
   final TextStyle? style;
+
+  /// Pre-resolved card links; a missing key renders as an inactive link.
+  final Map<CardLinkRef, CollectionItem> resolvedLinks;
+
+  /// Card-link tap handler; `null` renders card links as inactive text.
+  final void Function(CardLinkRef ref)? onCardLink;
 
   @override
   State<MiniMarkdownText> createState() => _MiniMarkdownTextState();
@@ -61,16 +62,15 @@ class _MiniMarkdownTextState extends State<MiniMarkdownText> {
     );
   }
 
-  /// Регулярное выражение для поиска markdown-элементов.
   static final RegExp _pattern = RegExp(
     r'\*\*(.+?)\*\*'
     r'|\*(.+?)\*'
     r'|\[([^\]]+)\]\(([^\)]+)\)'
-    r'|(https?://\S+)',
+    r'|(https?://\S+)'
+    r'|\[\[card:([^\]|]*)(?:\|([^\]]*))?\]\]',
   );
 
   TextSpan _parse(String input, TextStyle baseStyle) {
-    // Очищаем старые recognizers при пересборке.
     for (final TapGestureRecognizer recognizer in _recognizers) {
       recognizer.dispose();
     }
@@ -106,6 +106,9 @@ class _MiniMarkdownTextState extends State<MiniMarkdownText> {
         // bare URL
         final String url = match.group(5)!;
         children.add(_buildLink(url, url, baseStyle));
+      } else if (match.group(6) != null) {
+        // [[card:payload|display]]
+        children.add(_buildCardLink(match.group(6)!, match.group(7), baseStyle));
       }
 
       lastEnd = match.end;
@@ -134,6 +137,39 @@ class _MiniMarkdownTextState extends State<MiniMarkdownText> {
         decorationColor: AppColors.brand,
       ),
       recognizer: recognizer,
+    );
+  }
+
+  InlineSpan _buildCardLink(
+    String payload,
+    String? display,
+    TextStyle baseStyle,
+  ) {
+    final CardLinkRef? ref = parseCardLink(payload, display);
+    final CollectionItem? target =
+        ref == null ? null : widget.resolvedLinks[ref];
+
+    if (ref == null || target == null || widget.onCardLink == null) {
+      final String label = ref?.display ?? (display ?? '').trim();
+      return WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Tooltip(
+          message: S.of(context).cardLinkNotFound,
+          child: Text(
+            label.isEmpty ? S.of(context).cardLinkNotFound : label,
+            style: baseStyle.copyWith(color: AppColors.textTertiary),
+          ),
+        ),
+      );
+    }
+
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: CardLinkChip(
+        item: target,
+        baseStyle: baseStyle,
+        onTap: () => widget.onCardLink!(ref),
+      ),
     );
   }
 

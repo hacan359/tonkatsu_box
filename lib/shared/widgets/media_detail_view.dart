@@ -7,14 +7,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'gyroscope_parallax_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/database/database_service.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../features/settings/providers/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../models/card_link.dart';
+import '../models/collection_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../utils/date_format_preset.dart';
 import 'cached_image.dart';
+import 'card_link_picker.dart';
 import 'dual_date_picker_dialog.dart';
 import 'markdown_toolbar.dart';
 import 'mini_markdown_text.dart';
@@ -92,6 +96,7 @@ class MediaDetailView extends ConsumerStatefulWidget {
     this.cacheImageId,
     this.accentColor = AppColors.brand,
     this.platformOverlayAsset,
+    this.onCardLinkTap,
     super.key,
   });
 
@@ -165,6 +170,9 @@ class MediaDetailView extends ConsumerStatefulWidget {
   final ValueChanged<String?> onAuthorCommentSave;
   final ValueChanged<String?> onUserCommentSave;
 
+  /// Opens a card cross-link tapped in note text; `null` = links inactive.
+  final void Function(CardLinkRef ref)? onCardLinkTap;
+
   @override
   ConsumerState<MediaDetailView> createState() => _MediaDetailViewState();
 }
@@ -176,6 +184,8 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
   late final TextEditingController _authorController;
   late final TextEditingController _userController;
   Timer? _autosaveTimer;
+  Map<CardLinkRef, CollectionItem> _resolvedCardLinks =
+      const <CardLinkRef, CollectionItem>{};
 
   @override
   void initState() {
@@ -184,6 +194,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     _userController = TextEditingController(text: widget.userComment);
     _authorController.addListener(_onAuthorChanged);
     _userController.addListener(_onUserChanged);
+    _resolveCardLinks();
   }
 
   @override
@@ -198,6 +209,40 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         _editingField != _EditingField.user) {
       _userController.text = widget.userComment ?? '';
     }
+    if (oldWidget.authorComment != widget.authorComment ||
+        oldWidget.userComment != widget.userComment) {
+      _resolveCardLinks();
+    }
+  }
+
+  /// Pre-resolves note `[[card:…]]` tokens so chips render synchronously.
+  Future<void> _resolveCardLinks() async {
+    if (widget.onCardLinkTap == null) return;
+    final Set<CardLinkRef> refs = <CardLinkRef>{
+      ...extractCardLinks(widget.authorComment ?? ''),
+      ...extractCardLinks(widget.userComment ?? ''),
+    };
+    if (refs.isEmpty) {
+      if (_resolvedCardLinks.isNotEmpty && mounted) {
+        setState(() => _resolvedCardLinks = const <CardLinkRef, CollectionItem>{});
+      }
+      return;
+    }
+
+    final DatabaseService db = ref.read(databaseServiceProvider);
+    final Map<CardLinkRef, CollectionItem> resolved =
+        <CardLinkRef, CollectionItem>{};
+    for (final CardLinkRef link in refs) {
+      final List<CollectionItem> matches = await db.resolveCardLink(
+        mediaType: link.mediaType,
+        externalId: link.externalId,
+        source: link.source,
+        platformId: link.platformId,
+        collectionId: link.collectionId,
+      );
+      if (matches.isNotEmpty) resolved[link] = matches.first;
+    }
+    if (mounted) setState(() => _resolvedCardLinks = resolved);
   }
 
   @override
@@ -218,7 +263,39 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
 
   void _onUserChanged() {
     if (_editingField != _EditingField.user) return;
+    _maybeTriggerCardLink();
     _scheduleAutosave();
+  }
+
+  bool _cardLinkPickerOpen = false;
+
+  /// Opens the picker when the user types `[[`, replacing it with a token.
+  void _maybeTriggerCardLink() {
+    if (_cardLinkPickerOpen || widget.onCardLinkTap == null) return;
+    final TextSelection sel = _userController.selection;
+    if (!sel.isValid || !sel.isCollapsed || sel.baseOffset < 2) return;
+    if (_userController.text.substring(sel.baseOffset - 2, sel.baseOffset) !=
+        '[[') {
+      return;
+    }
+    _cardLinkPickerOpen = true;
+    _insertCardLink(fromBracketTrigger: true)
+        .whenComplete(() => _cardLinkPickerOpen = false);
+  }
+
+  Future<void> _insertCardLink({bool fromBracketTrigger = false}) async {
+    final CollectionItem? item = await showCardLinkPicker(context, ref);
+    final TextEditingController c = _userController;
+    final TextSelection sel = c.selection;
+    int start = sel.isValid ? sel.start : c.text.length;
+    final int end = sel.isValid ? sel.end : c.text.length;
+    if (item == null) return;
+    if (fromBracketTrigger) {
+      start = (start - 2).clamp(0, c.text.length);
+    }
+    final String token = buildCardLinkToken(item);
+    c.text = '${c.text.substring(0, start)}$token${c.text.substring(end)}';
+    c.selection = TextSelection.collapsed(offset: start + token.length);
   }
 
   void _scheduleAutosave() {
@@ -861,6 +938,8 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
                     fontStyle: FontStyle.italic,
                     height: 1.5,
                   ),
+                  resolvedLinks: _resolvedCardLinks,
+                  onCardLink: widget.onCardLinkTap,
                 )
               : Text(
                   widget.isEditable
@@ -925,10 +1004,14 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
           hint: l.detailWriteNotesHint,
           hasContent: widget.hasUserComment,
           onTap: () => _startEditing(_EditingField.user),
+          onInsertCardLink:
+              widget.onCardLinkTap != null ? () => _insertCardLink() : null,
           displayWidget: widget.hasUserComment
               ? MiniMarkdownText(
                   text: widget.userComment!,
                   style: AppTypography.body.copyWith(height: 1.5),
+                  resolvedLinks: _resolvedCardLinks,
+                  onCardLink: widget.onCardLinkTap,
                 )
               : Text(
                   l.detailNoNotesYet,
@@ -952,6 +1035,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     required bool hasContent,
     required Widget displayWidget,
     VoidCallback? onTap,
+    VoidCallback? onInsertCardLink,
   }) {
     final BorderRadius radius = BorderRadius.circular(AppSpacing.radiusSm);
     final BoxDecoration decoration = BoxDecoration(
@@ -969,7 +1053,10 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            MarkdownToolbar(controller: controller),
+            MarkdownToolbar(
+              controller: controller,
+              onInsertCardLink: onInsertCardLink,
+            ),
             const SizedBox(height: 4),
             TextField(
               controller: controller,

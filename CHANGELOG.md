@@ -9,6 +9,51 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Cross-links between cards in notes**
+
+  Notes can now link to another card with a `[[card:…|name]]` token. Typing
+  `[[` in a note opens a search-and-insert picker over every collection;
+  picking a card inserts the token. In view mode the token renders as an
+  inline chip (cover, source, release year and — for games — the platform),
+  and tapping it opens the target card; when several cards match, a small
+  sheet asks which collection to open, and an unresolved link stays as plain
+  inactive text. Item menus (detail screen, collection grid, All items) gain
+  a "Copy card link" action. Links are content-based (source + external id,
+  plus platform for games), so they survive export/import into another
+  database instead of breaking on reused row ids.
+
+  * lib/shared/models/card_link.dart (CardLinkRef, buildCardLinkToken,
+    parseCardLink, extractCardLinks, cardSubcategoryLabel,
+    sanitizeCardLinkDisplay, cardLinkTokenPattern): New — token model,
+    build/parse/extract, media subcategory label.
+  * lib/shared/widgets/card_link_chip.dart (CardLinkChip): New — inline chip
+    for a resolved link.
+  * lib/shared/widgets/card_link_picker.dart (showCardLinkPicker): New —
+    lazy search bottom sheet (results only while typing, capped at 50).
+  * lib/shared/widgets/mini_markdown_text.dart (MiniMarkdownText): Render
+    `[[card:…]]` tokens as chips via new `resolvedLinks` map and `onCardLink`
+    callback; unresolved tokens fall back to inactive text.
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView,
+    _MediaDetailViewState): Pre-resolve note tokens for synchronous chip
+    rendering, `[[` autocomplete in the notes editor, `onCardLinkTap`.
+  * lib/shared/widgets/markdown_toolbar.dart (MarkdownToolbar): Optional
+    insert-card-link button.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.resolveCardLink),
+    lib/core/database/database_service.dart (DatabaseService.resolveCardLink):
+    Content-based resolve, preferring the hinted collection then falling back
+    across all collections.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._openCardLink,
+    _ItemDetailScreenState._pickCardLinkTarget): Resolve a tapped link and
+    open the target, with a picker on multiple matches.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.copyItemLink): New shared copy-link action.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailMenuAction.copyLink),
+    lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/home/screens/all_items_screen.dart: "Copy card link" menu
+    entry.
+
 - **Custom-card import from JSON/CSV files**
 
   A new import source (Settings → Import → Custom cards) for loading cards
@@ -145,6 +190,27 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     New keys.
 
 ### Changed
+
+- **Localize the keyboard-shortcut help (F1)**
+
+  The F1 legend and its dialog now follow the interface language instead of
+  always showing Russian. Shortcut groups moved from `static const` fields to
+  builders that take the localizations object; key combos (Ctrl+N, F5, …) stay
+  literal.
+
+  * lib/shared/keyboard/keyboard_shortcuts.dart (globalShortcutGroup),
+    lib/shared/keyboard/keyboard_shortcuts_dialog.dart (KeyboardShortcutsDialog):
+    Resolve titles/descriptions and dialog chrome via `S`.
+  * lib/features/collections/screens/home_screen.dart (HomeScreen.shortcutGroup),
+    lib/features/collections/screens/collection_screen.dart (CollectionScreen.shortcutGroup),
+    lib/features/collections/screens/item_detail_screen.dart (ItemDetailScreen.shortcutGroup),
+    lib/features/tier_lists/screens/tier_lists_screen.dart (TierListsScreen.shortcutGroup),
+    lib/features/tier_lists/screens/tier_list_detail_screen.dart (TierListDetailScreen.shortcutGroup),
+    lib/features/wishlist/screens/wishlist_screen.dart (WishlistScreen.shortcutGroup),
+    lib/features/search/screens/search_screen.dart (SearchScreen.shortcutGroup):
+    `shortcutGroup` is now a builder taking `S`.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._currentScreenShortcutGroups):
+    Pass the localizations object when building the groups.
 
 - **Collection table view rebuilt on the trina_grid package**
 

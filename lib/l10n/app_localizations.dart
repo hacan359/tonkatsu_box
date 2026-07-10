@@ -10037,6 +10037,324 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Custom'**
   String get unitCustom;
+
+  /// No description provided for @cardLinkCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy card link'**
+  String get cardLinkCopy;
+
+  /// No description provided for @cardLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Card link copied'**
+  String get cardLinkCopied;
+
+  /// No description provided for @cardLinkNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Card not found'**
+  String get cardLinkNotFound;
+
+  /// No description provided for @cardLinkPickCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in collection'**
+  String get cardLinkPickCollection;
+
+  /// No description provided for @cardLinkSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link a card'**
+  String get cardLinkSearchTitle;
+
+  /// No description provided for @cardLinkSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search cards'**
+  String get cardLinkSearchHint;
+
+  /// No description provided for @shortcutsDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard shortcuts'**
+  String get shortcutsDialogTitle;
+
+  /// No description provided for @shortcutsGroupNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get shortcutsGroupNavigation;
+
+  /// No description provided for @shortcutSwitchTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch tab'**
+  String get shortcutSwitchTab;
+
+  /// No description provided for @shortcutNextTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Next tab'**
+  String get shortcutNextTab;
+
+  /// No description provided for @shortcutPreviousTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous tab'**
+  String get shortcutPreviousTab;
+
+  /// No description provided for @shortcutBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get shortcutBack;
+
+  /// No description provided for @shortcutSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get shortcutSearch;
+
+  /// No description provided for @shortcutRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get shortcutRefresh;
+
+  /// No description provided for @shortcutThisHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'This help'**
+  String get shortcutThisHelp;
+
+  /// No description provided for @shortcutsGroupCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get shortcutsGroupCollections;
+
+  /// No description provided for @shortcutCreateCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Create collection'**
+  String get shortcutCreateCollection;
+
+  /// No description provided for @shortcutImportCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Import collection'**
+  String get shortcutImportCollection;
+
+  /// No description provided for @shortcutToggleView.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle view'**
+  String get shortcutToggleView;
+
+  /// No description provided for @shortcutDeleteCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete collection'**
+  String get shortcutDeleteCollection;
+
+  /// No description provided for @shortcutRenameCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename collection'**
+  String get shortcutRenameCollection;
+
+  /// No description provided for @shortcutOpenCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open collection'**
+  String get shortcutOpenCollection;
+
+  /// No description provided for @shortcutsGroupCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get shortcutsGroupCollection;
+
+  /// No description provided for @shortcutAddItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items'**
+  String get shortcutAddItems;
+
+  /// No description provided for @shortcutExportCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Export collection'**
+  String get shortcutExportCollection;
+
+  /// No description provided for @shortcutImportIntoCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Import into collection'**
+  String get shortcutImportIntoCollection;
+
+  /// No description provided for @shortcutToggleBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle Board/Canvas'**
+  String get shortcutToggleBoard;
+
+  /// No description provided for @shortcutDeleteItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete item'**
+  String get shortcutDeleteItem;
+
+  /// No description provided for @shortcutMoveItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Move item'**
+  String get shortcutMoveItem;
+
+  /// No description provided for @shortcutsGroupItemDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Item detail'**
+  String get shortcutsGroupItemDetail;
+
+  /// No description provided for @shortcutLockCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock/Unlock canvas'**
+  String get shortcutLockCanvas;
+
+  /// No description provided for @shortcutMoveToCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to collection'**
+  String get shortcutMoveToCollection;
+
+  /// No description provided for @shortcutSetRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Set rating'**
+  String get shortcutSetRating;
+
+  /// No description provided for @shortcutResetRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset rating'**
+  String get shortcutResetRating;
+
+  /// No description provided for @shortcutsGroupTierLists.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier lists'**
+  String get shortcutsGroupTierLists;
+
+  /// No description provided for @shortcutCreateTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Create tier list'**
+  String get shortcutCreateTierList;
+
+  /// No description provided for @shortcutOpenTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Open tier list'**
+  String get shortcutOpenTierList;
+
+  /// No description provided for @shortcutDeleteTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tier list'**
+  String get shortcutDeleteTierList;
+
+  /// No description provided for @shortcutRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get shortcutRename;
+
+  /// No description provided for @shortcutsGroupTierList.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier list'**
+  String get shortcutsGroupTierList;
+
+  /// No description provided for @shortcutExportAsImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as image'**
+  String get shortcutExportAsImage;
+
+  /// No description provided for @shortcutAddTier.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tier'**
+  String get shortcutAddTier;
+
+  /// No description provided for @shortcutClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get shortcutClearAll;
+
+  /// No description provided for @shortcutsGroupWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Wishlist'**
+  String get shortcutsGroupWishlist;
+
+  /// No description provided for @shortcutAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get shortcutAddItem;
+
+  /// No description provided for @shortcutToggleCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Show/hide completed'**
+  String get shortcutToggleCompleted;
+
+  /// No description provided for @shortcutClearCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear completed'**
+  String get shortcutClearCompleted;
+
+  /// No description provided for @shortcutsGroupSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get shortcutsGroupSearch;
+
+  /// No description provided for @shortcutFocusSearchField.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus search field'**
+  String get shortcutFocusSearchField;
+
+  /// No description provided for @shortcutClearOrBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear / back'**
+  String get shortcutClearOrBack;
+
+  /// No description provided for @shortcutRunSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Run search'**
+  String get shortcutRunSearch;
+
+  /// No description provided for @debugKeyEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Button key events'**
+  String get debugKeyEvents;
+
+  /// No description provided for @settingsGamepadDebugSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture controller button codes'**
+  String get settingsGamepadDebugSubtitle;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

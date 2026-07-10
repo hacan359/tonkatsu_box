@@ -1,9 +1,18 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/shared/models/card_link.dart';
+import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/theme/app_colors.dart';
 import 'package:tonkatsu_box/shared/theme/app_typography.dart';
+import 'package:tonkatsu_box/shared/widgets/card_link_chip.dart';
 import 'package:tonkatsu_box/shared/widgets/mini_markdown_text.dart';
+
+import '../../helpers/test_helpers.dart';
 
 void main() {
   Widget buildWidget({
@@ -265,6 +274,81 @@ void main() {
           FontStyle.italic,
         );
       });
+    });
+  });
+
+  group('MiniMarkdownText card links', () {
+    late MockImageCacheService cache;
+
+    setUpAll(registerAllFallbacks);
+
+    setUp(() {
+      cache = MockImageCacheService();
+      when(() => cache.getImageUri(
+            type: any(named: 'type'),
+            imageId: any(named: 'imageId'),
+            remoteUrl: any(named: 'remoteUrl'),
+          )).thenAnswer((_) async => const ImageResult(
+            uri: '',
+            isLocal: false,
+            isMissing: true,
+          ));
+    });
+
+    testWidgets('renders a chip and calls onCardLink on tap',
+        (WidgetTester tester) async {
+      final CollectionItem item = createTestCollectionItem(
+        mediaType: MediaType.game,
+        externalId: 100,
+        collectionId: 1,
+        overrideName: 'Chrono Trigger',
+      );
+      final CardLinkRef ref =
+          extractCardLinks(buildCardLinkToken(item)).single;
+      CardLinkRef? tapped;
+
+      await tester.pumpApp(
+        MiniMarkdownText(
+          text: 'play ${buildCardLinkToken(item)} now',
+          resolvedLinks: <CardLinkRef, CollectionItem>{ref: item},
+          onCardLink: (CardLinkRef r) => tapped = r,
+        ),
+        overrides: <Override>[
+          imageCacheServiceProvider.overrideWithValue(cache),
+        ],
+        wrapInScaffold: true,
+        settle: false,
+      );
+
+      expect(find.byType(CardLinkChip), findsOneWidget);
+
+      await tester.tap(find.byType(CardLinkChip));
+      expect(tapped, ref);
+    });
+
+    testWidgets('unresolved link renders inactive text without a chip',
+        (WidgetTester tester) async {
+      await tester.pumpApp(
+        MiniMarkdownText(
+          text: 'see [[card:mt=game;id=9|Ghost]]',
+          onCardLink: (_) {},
+        ),
+        wrapInScaffold: true,
+      );
+
+      expect(find.byType(CardLinkChip), findsNothing);
+      expect(find.text('Ghost'), findsOneWidget);
+    });
+
+    testWidgets('card link is inactive when onCardLink is null',
+        (WidgetTester tester) async {
+      await tester.pumpApp(
+        const MiniMarkdownText(text: 'see [[card:mt=game;id=9|Ghost]]'),
+        wrapInScaffold: true,
+      );
+
+      expect(find.byType(CardLinkChip), findsNothing);
+      expect(find.text('Ghost'), findsOneWidget);
     });
   });
 }

@@ -59,19 +59,21 @@ class CollectionScreen extends ConsumerStatefulWidget {
 
   final int? collectionId;
 
-  static const ShortcutGroup shortcutGroup = ShortcutGroup(
-    title: 'Коллекция',
-    entries: <ShortcutEntry>[
-      ShortcutEntry(keys: 'Ctrl+N', description: 'Добавить элементы'),
-      ShortcutEntry(keys: 'Ctrl+E', description: 'Экспорт коллекции'),
-      ShortcutEntry(keys: 'Ctrl+I', description: 'Импорт в коллекцию'),
-      ShortcutEntry(keys: 'Ctrl+Shift+V', description: 'Переключить вид'),
-      ShortcutEntry(keys: 'Ctrl+B', description: 'Переключить Board/Canvas'),
-      ShortcutEntry(keys: 'Delete', description: 'Удалить элемент'),
-      ShortcutEntry(keys: 'Ctrl+M', description: 'Переместить элемент'),
-      ShortcutEntry(keys: 'Ctrl+Delete', description: 'Удалить коллекцию'),
-    ],
-  );
+  static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
+        title: l.shortcutsGroupCollection,
+        entries: <ShortcutEntry>[
+          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItems),
+          ShortcutEntry(keys: 'Ctrl+E', description: l.shortcutExportCollection),
+          ShortcutEntry(
+              keys: 'Ctrl+I', description: l.shortcutImportIntoCollection),
+          ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
+          ShortcutEntry(keys: 'Ctrl+B', description: l.shortcutToggleBoard),
+          ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteItem),
+          ShortcutEntry(keys: 'Ctrl+M', description: l.shortcutMoveItem),
+          ShortcutEntry(
+              keys: 'Ctrl+Delete', description: l.shortcutDeleteCollection),
+        ],
+      );
 
   @override
   ConsumerState<CollectionScreen> createState() => _CollectionScreenState();
