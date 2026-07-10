@@ -89,7 +89,7 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | macOS | [**Download .dmg**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | Android | [**Download .apk**](https://github.com/hacan359/tonkatsu_box/releases/latest) or [**RuStore**](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox) |
 
-> Linux and macOS support is experimental.
+> Linux and macOS support is experimental. The macOS build has not been tested by the maintainers yet, so expect rough edges. It is also unsigned, so macOS will warn about an unidentified developer on first launch.
 
 > On Android you have three options: grab the APK from Releases, install from [RuStore](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox), or set up Obtainium for auto-updates (below). RuStore handles updates for you through its own store.
 
