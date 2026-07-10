@@ -235,12 +235,16 @@ class CustomCardsParser {
       }
     }
 
-    if (issues.isNotEmpty || title == null || type == null) {
+    final bool hasBlocking = title == null ||
+        type == null ||
+        issues.any((CustomCardIssue i) => i.code.isBlocking);
+    if (hasBlocking) {
       return CustomCardRow(index: index, issues: issues, sourceTitle: title);
     }
 
     return CustomCardRow(
       index: index,
+      issues: issues,
       sourceTitle: title,
       entry: CustomCardEntry(
         title: title,

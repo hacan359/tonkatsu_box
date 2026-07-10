@@ -185,19 +185,31 @@ class _CustomCardsPreviewScreenState
         }
       }),
       title: Text(entry.title, overflow: TextOverflow.ellipsis),
-      subtitle: isDuplicate
-          ? Text(
-              l.customImportDuplicate,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.statusPlanned,
-              ),
-            )
-          : Text(
-              entry.type.localizedLabel(l),
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
+      subtitle: _validRowSubtitle(l, row, entry, isDuplicate),
+    );
+  }
+
+  Widget _validRowSubtitle(
+    S l,
+    CustomCardRow row,
+    CustomCardEntry entry,
+    bool isDuplicate,
+  ) {
+    if (isDuplicate) {
+      return Text(
+        l.customImportDuplicate,
+        style: AppTypography.bodySmall.copyWith(color: AppColors.statusPlanned),
+      );
+    }
+    if (row.issues.isNotEmpty) {
+      return Text(
+        row.issues.map((CustomCardIssue issue) => _issueText(l, issue)).join(' · '),
+        style: AppTypography.bodySmall.copyWith(color: AppColors.warning),
+      );
+    }
+    return Text(
+      entry.type.localizedLabel(l),
+      style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
     );
   }
 
@@ -263,16 +275,18 @@ class _CustomCardsPreviewScreenState
       return result;
     });
 
-    await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) => _ImportProgressDialog(
-        progressNotifier: progressNotifier,
-        importFuture: importFuture,
-      ),
-    );
-
-    progressNotifier.dispose();
+    try {
+      await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) => _ImportProgressDialog(
+          progressNotifier: progressNotifier,
+          importFuture: importFuture,
+        ),
+      );
+    } finally {
+      progressNotifier.dispose();
+    }
     if (importResult == null || !mounted) return;
 
     final UniversalImportResult result = importResult!;

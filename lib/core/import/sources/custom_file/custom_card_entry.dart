@@ -105,6 +105,16 @@ enum CustomCardIssueCode {
   invalidBool,
 }
 
+extension CustomCardIssueCodeX on CustomCardIssueCode {
+  /// Blocking issues make the row unimportable; soft issues only drop the
+  /// offending field, so the row is still built without it.
+  bool get isBlocking =>
+      this == CustomCardIssueCode.notAnObject ||
+      this == CustomCardIssueCode.missingTitle ||
+      this == CustomCardIssueCode.missingType ||
+      this == CustomCardIssueCode.unknownType;
+}
+
 /// One validation problem of a parsed row: the [code] plus the offending
 /// [field]/[value] for the error message.
 class CustomCardIssue {

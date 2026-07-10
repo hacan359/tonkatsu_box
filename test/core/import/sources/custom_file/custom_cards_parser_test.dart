@@ -383,6 +383,36 @@ void main() {
             isTrue);
       });
 
+      test('a soft issue drops only the bad field, keeping the card importable',
+          () {
+        final CustomCardRow row = one(<String, Object?>{
+          'title': 'A',
+          'type': 'game',
+          'cover': 'file:///c/a.jpg',
+          'rating': 99,
+          'status': 'finished',
+        });
+        expect(row.isValid, isTrue);
+        expect(row.entry!.coverUrl, isNull);
+        expect(row.entry!.rating, isNull);
+        expect(row.entry!.status, isNull);
+        expect(hasIssue(row, CustomCardIssueCode.invalidCoverUrl), isTrue);
+        expect(hasIssue(row, CustomCardIssueCode.invalidNumber, field: 'rating'),
+            isTrue);
+        expect(hasIssue(row, CustomCardIssueCode.unknownStatus), isTrue);
+      });
+
+      test('a blocking issue keeps the card unimportable', () {
+        expect(
+          one(<String, Object?>{'type': 'game'}).isValid,
+          isFalse,
+        );
+        expect(
+          one(<String, Object?>{'title': 'A', 'type': 'podcast'}).isValid,
+          isFalse,
+        );
+      });
+
       test('parses ISO dates and flags non-ISO ones', () {
         final CustomCardEntry ok = one(<String, Object?>{
           'title': 'A',
