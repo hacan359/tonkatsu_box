@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://github.com/hacan359/tonkatsu_box/releases/latest"><img src="https://img.shields.io/badge/Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"></a>
   <a href="https://github.com/hacan359/tonkatsu_box/releases/latest"><img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux"></a>
+    <a href="https://github.com/hacan359/tonkatsu_box/releases/latest"><img src="https://img.shields.io/badge/macOS-979797?style=for-the-badge&logo=apple&logoColor=white" alt="macOS"></a>
   <a href="https://github.com/hacan359/tonkatsu_box/releases/latest"><img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
   <a href="https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox?utm_source=available_in_rustore&utm_medium=com.hacan359.tonkatsubox&rsm=1&mt_link_id=iios36&mt_sub1=com.hacan359.tonkatsubox"><img src="https://img.shields.io/badge/RuStore-0066FF?style=for-the-badge&logo=rustore&logoColor=white" alt="RuStore"></a>
 </p>
@@ -29,6 +30,7 @@
 > **This app is in active development.** Updates may include database migrations that change data format. Please **create a backup** before updating (Settings → Backup → Create Backup). Alternatively, you can manually copy the app data folder:
 > - **Windows:** `%APPDATA%\Roaming\Tonkatsu Box\Tonkatsu Box`
 > - **Linux:** `~/.local/share/tonkatsu_box` (or `$XDG_DATA_HOME/tonkatsu_box`)
+> - **macOS:** `~/Library/Application Support/com.hacan359.tonkatsuBox`
 > - **Android:** use the built-in backup feature (Settings → Backup)
 
 ---
@@ -84,9 +86,10 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 |----------|------|
 | Windows | [**Download .zip**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | Linux | [**Download .tar.gz**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
+| macOS | [**Download .dmg**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | Android | [**Download .apk**](https://github.com/hacan359/tonkatsu_box/releases/latest) or [**RuStore**](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox) |
 
-> Linux support is experimental.
+> Linux and macOS support is experimental.
 
 > On Android you have three options: grab the APK from Releases, install from [RuStore](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox), or set up Obtainium for auto-updates (below). RuStore handles updates for you through its own store.
 
@@ -190,17 +193,17 @@ When you pick an empty folder, the app copies your current data there. When you 
 
 ## Platform Support
 
-| Feature | Windows | Linux | Android |
-|---------|:-------:|:-----:|:-------:|
-| Collections & search | ✅ | ✅ | ✅ |
-| Progress tracking | ✅ | ✅ | ✅ |
-| Visual boards | ✅ | ✅ | ✅ |
-| Tier lists | ✅ | ✅ | ✅ |
-| Import (Steam/Trakt/RA) | ✅ | ✅ | ✅ |
-| Kodi sync | ✅ | ✅ | ✅ |
-| VGMaps browser | ✅ | — | — |
-| Gamepad | ✅ | ✅ | ✅ |
-| Discord Rich Presence | ✅ | ✅ | — |
+| Feature | Windows | Linux | macOS | Android |
+|---------|:-------:|:-----:|:-----:|:-------:|
+| Collections & search | ✅ | ✅ | ✅ | ✅ |
+| Progress tracking | ✅ | ✅ | ✅ | ✅ |
+| Visual boards | ✅ | ✅ | ✅ | ✅ |
+| Tier lists | ✅ | ✅ | ✅ | ✅ |
+| Import (Steam/Trakt/RA) | ✅ | ✅ | ✅ | ✅ |
+| Kodi sync | ✅ | ✅ | ✅ | ✅ |
+| VGMaps browser | ✅ | — | — | — |
+| Gamepad | ✅ | ✅ | ✅ | ✅ |
+| Discord Rich Presence | ✅ | ✅ | ✅ | — |
 
 ## Documentation
 
@@ -213,7 +216,7 @@ When you pick an empty folder, the app copies your current data there. When you 
 git clone https://github.com/hacan359/tonkatsu_box.git
 cd tonkatsu_box
 flutter pub get
-flutter run -d windows  # or linux / android
+flutter run -d windows  # or linux / macos / android
 ```
 
 Requires Flutter 3.44+. See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for details.
