@@ -28,6 +28,7 @@ class TmdbContentLanguage {
 const List<TmdbContentLanguage> kTmdbContentLanguages = <TmdbContentLanguage>[
   TmdbContentLanguage(code: 'en-US', nativeName: 'English'),
   TmdbContentLanguage(code: 'ru-RU', nativeName: 'Русский'),
+  TmdbContentLanguage(code: 'zh-CN', nativeName: '中文'),
 ];
 
 /// Маппинг кода UI-локали → код языка контента TMDB по умолчанию.
@@ -38,6 +39,7 @@ const List<TmdbContentLanguage> kTmdbContentLanguages = <TmdbContentLanguage>[
 const Map<String, String> _kUiToContentLanguage = <String, String>{
   'en': 'en-US',
   'ru': 'ru-RU',
+  'zh': 'zh-CN',
 };
 
 /// Возвращает дефолтный TMDB-код для UI-локали.

@@ -352,7 +352,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leadingColor: _kAppearanceColor,
             title: l.settingsAppLanguage,
             subtitle: l.settingsAppLanguageSubtitle,
-            value: settings.appLanguage == 'ru' ? 'Русский' : 'English',
+            value: settings.appLanguage == 'ru'
+                ? 'Русский'
+                : settings.appLanguage == 'zh'
+                    ? '中文'
+                    : 'English',
             onTap: () => _showLanguagePicker(settings),
           ),
           SettingsTile(
@@ -709,6 +713,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(width: 18),
                 const SizedBox(width: AppSpacing.sm),
                 const Text('Русский'),
+              ],
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              ref
+                  .read(settingsNotifierProvider.notifier)
+                  .setAppLanguage('zh');
+              Navigator.pop(dialogContext);
+            },
+            child: Row(
+              children: <Widget>[
+                if (settings.appLanguage == 'zh')
+                  const Icon(Icons.check, size: 18, color: AppColors.brand)
+                else
+                  const SizedBox(width: 18),
+                const SizedBox(width: AppSpacing.sm),
+                const Text('中文'),
               ],
             ),
           ),

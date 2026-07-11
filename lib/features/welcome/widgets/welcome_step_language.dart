@@ -90,9 +90,21 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                     ),
                   ),
                 ),
-                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sm),
                 WelcomeReveal(
                   index: 3,
+                  child: SizedBox(
+                    width: 300,
+                    child: _LanguageOption(
+                      label: '中文',
+                      isSelected: settings.appLanguage == 'zh',
+                      onTap: () => _onUiLanguageSelected('zh'),
+                    ),
+                  ),
+                ),
+                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                WelcomeReveal(
+                  index: 4,
                   child: SizedBox(
                     width: 300,
                     child: _ContentLanguageDropdown(
@@ -105,7 +117,7 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 WelcomeReveal(
-                  index: 4,
+                  index: 5,
                   child: Text(
                     l.welcomeLanguageHint,
                     style: AppTypography.bodySmall.copyWith(
