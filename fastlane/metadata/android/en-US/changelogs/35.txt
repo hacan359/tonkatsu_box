@@ -1,0 +1,4 @@
+v0.38.2
+
+* Smaller Android downloads: the app is now also published as
+  per-architecture APKs, about a third the size of the universal APK.

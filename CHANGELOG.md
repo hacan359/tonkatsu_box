@@ -7,6 +7,20 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.38.2] - 2026-07-12
+
+### Changed
+
+- **Smaller Android downloads**
+
+  The Android app is now also built as per-architecture (ABI) APKs, so each
+  download is roughly a third of the universal APK size. The universal APK
+  remains available for direct download.
+
+  * .github/workflows/release.yml (build-android, create-release): Run a
+    second `flutter build apk --split-per-abi` alongside the universal build
+    and publish the arm64-v8a, armeabi-v7a and x86_64 APKs to the release.
+
 ## [0.38.1] - 2026-07-12
 
 ### Added
