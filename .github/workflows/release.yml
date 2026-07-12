@@ -93,31 +93,40 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tonkatsu-box-release.jks"
 
-      - name: Build Android APK
+      # Two builds: a universal APK (single file for direct GitHub download)
+      # and smaller per-ABI splits. The split build keeps app-release.apk
+      # from the first build intact.
+      - name: Build Android APKs (universal + per-ABI)
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/tonkatsu-box-release.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        run: >
-          flutter build apk --release
-          --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
-          --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
-          --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
-          --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
-          --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
-          --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+        run: |
+          DEFINES=(
+            --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+            --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
+            --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
+            --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
+            --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
+            --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+          )
+          flutter build apk --release "${DEFINES[@]}"
+          flutter build apk --release --split-per-abi "${DEFINES[@]}"
 
-      - name: Rename APK
+      - name: Rename APKs
         run: |
           VERSION="${{ github.ref_name }}"
-          mv build/app/outputs/flutter-apk/app-release.apk \
-             "tonkatsu-box-${VERSION}-android.apk"
+          D=build/app/outputs/flutter-apk
+          mv "$D/app-release.apk"             "tonkatsu-box-${VERSION}-android.apk"
+          mv "$D/app-arm64-v8a-release.apk"   "tonkatsu-box-${VERSION}-android-arm64-v8a.apk"
+          mv "$D/app-armeabi-v7a-release.apk" "tonkatsu-box-${VERSION}-android-armeabi-v7a.apk"
+          mv "$D/app-x86_64-release.apk"      "tonkatsu-box-${VERSION}-android-x86_64.apk"
 
-      - name: Upload Android artifact
+      - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: android-build
-          path: tonkatsu-box-${{ github.ref_name }}-android.apk
+          path: tonkatsu-box-${{ github.ref_name }}-android*.apk
           retention-days: 1
 
   build-linux:
@@ -260,5 +269,8 @@ jobs:
             --notes-file release_notes.md \
             "tonkatsu-box-${VERSION}-windows.zip" \
             "tonkatsu-box-${VERSION}-android.apk" \
+            "tonkatsu-box-${VERSION}-android-arm64-v8a.apk" \
+            "tonkatsu-box-${VERSION}-android-armeabi-v7a.apk" \
+            "tonkatsu-box-${VERSION}-android-x86_64.apk" \
             "tonkatsu-box-${VERSION}-linux-experimental.tar.gz" \
             "tonkatsu-box-${VERSION}-macos-experimental.dmg"
