@@ -1,0 +1,19 @@
+Tonkatsu Box is a free, open-source app to organize your personal media collections — games, movies, TV shows, anime, visual novels, comics and manga, all in one place.
+
+Search millions of titles from online databases, track your progress, rate everything, and shape your library into visual boards and mood grids.
+
+Features:
+
+* Unified search across many sources: IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, ComicVine and Google Books.
+* Build collections and organize them your way — grids, sorting, filters and bulk editing.
+* Track progress and episodes, rate items, and keep detailed notes.
+* Visual boards and mood grids to arrange your collection the way you like.
+* Import your library from Steam, IGDB lists, Trakt.tv, Kinorium, RetroAchievements, MyAnimeList or AniList.
+* Local SQLite storage with backup and restore — your data stays on your device.
+* Fully localized interface with runtime language switching (English, Russian, Simplified Chinese).
+
+Privacy:
+
+Tonkatsu Box has no ads, no analytics and no tracking. Your collection is stored locally on your device. The app talks to third-party media databases (such as IGDB, TMDB and others) only to search for titles and fetch cover art and metadata.
+
+Some search sources are proprietary online services; you can optionally supply your own API keys in Settings.

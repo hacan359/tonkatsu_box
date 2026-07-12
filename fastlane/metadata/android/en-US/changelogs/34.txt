@@ -1,0 +1,5 @@
+v0.38.1
+
+* Added Simplified Chinese (中文) interface localization, alongside English and Russian. Selecting Chinese defaults TMDB content language to zh-CN.
+
+For the full history see CHANGELOG.md in the source repository.

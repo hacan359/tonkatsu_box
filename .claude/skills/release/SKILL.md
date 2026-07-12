@@ -187,11 +187,46 @@ Save the release notes text for use in Step 8.
 
 ---
 
+## Step 7.5: Create F-Droid / IzzyOnDroid Changelog
+
+IzzyOnDroid (and F-Droid) show a per-version "What's New" read from a
+plain-text file named after the **versionCode** — the build number `N`
+from Step 4, i.e. the same `N` as `pubspec.yaml` `X.Y.Z+N`.
+
+Create `fastlane/metadata/android/en-US/changelogs/N.txt`:
+
+- Plain text, **max 500 characters** (hard limit — Izzy skips longer files).
+- English only (this is the `en-US` locale file).
+- Condense the English user-facing notes from Step 7: a `vX.Y.Z` header
+  line, then 2-5 bullets of the most important changes.
+- No markdown headers, no file/class names, no Russian.
+- **Do NOT** touch or rename older `changelogs/*.txt` — one file per
+  release, they are immutable history.
+
+Example (`changelogs/35.txt`):
+
+```
+v0.39.0
+
+* Import your Steam library with automatic IGDB matching.
+* New mood-grid export with custom captions.
+* Fixed crash when opening an empty collection.
+```
+
+Use the Write tool, then verify the byte count is under 500:
+
+```bash
+wc -m < fastlane/metadata/android/en-US/changelogs/N.txt
+```
+
+---
+
 ## Step 8: Commit, Tag, Push
 
 ```bash
-# Stage the changed files
-git add pubspec.yaml CHANGELOG.md docs/index.html
+# Stage the changed files (N = build number from Step 4)
+git add pubspec.yaml CHANGELOG.md docs/index.html \
+  "fastlane/metadata/android/en-US/changelogs/${N}.txt"
 
 # Create commit
 git commit -m "release: vX.Y.Z"
@@ -229,3 +264,4 @@ Tell the user:
 - If the quality-gate fails in CI after push, the release artifacts won't be built — the user should fix issues and create a new patch release
 - The skill does NOT run `flutter analyze` or `flutter test` locally — CI handles that
 - Build number is sequential: count of existing `v*` tags + 1
+- **Every release must add** `fastlane/metadata/android/en-US/changelogs/N.txt` (Step 7.5) — IzzyOnDroid reads it as the version's "What's New"; a missing file means no changelog shown for that build
