@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.38.1] - 2026-07-12
+
 ### Added
 
 - **Simplified Chinese (zh) interface localization**
