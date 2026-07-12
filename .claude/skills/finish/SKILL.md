@@ -89,7 +89,7 @@ Fix actionable issues. Skip false positives — don't argue, just move on. Out-o
 
 **R3 — localisation**
 - Every UI string uses `S.of(context).key` or `final S l = S.of(context);`.
-- ARB: every key exists in both `lib/l10n/app_en.arb` and `lib/l10n/app_ru.arb`; placeholder names match; Russian plurals use ICU `=0` / `=1` / `few` / `other`.
+- ARB: every key exists in **every** `lib/l10n/app_*.arb` locale file (glob them — the set grows over time: en, ru, zh, …); placeholder names match across all of them; Russian plurals use ICU `=0` / `=1` / `few` / `other`. Languages without plural forms (e.g. Chinese) may render an ICU-plural key as a single flat string (`{count} 项`) as long as they keep the same placeholders.
 - Enum labels via `localizedLabel(S l)` extensions, not raw `.displayLabel`.
 - Status labels adapt to media type (Playing for games, Watching for movies/TV).
 - Allowed English: debug screens, `debugPrint`, model field names, enum `.name`, test assertions.
@@ -192,7 +192,7 @@ Follow the failure-recovery rules below. When green, STOP — report what change
 | **Test fails — a test I just wrote** | Fix the test (wrong mock stub, missing fallback, wrong assertion). Re-run tests only. |
 | **Test fails — existing test** | **Default: the test is right, the production code is wrong.** Do not edit the test yet. First, re-read the test and the code paths it covers. Ask: *"Was this specific behaviour something I deliberately changed as part of the task?"* Answer this honestly before touching anything. **→ If NO** (surprise failure, behaviour change you didn't plan): back to **Phase 1** — the code is wrong, fix the code, then Phase 3 for the affected area, then re-gate. **→ If YES** (the old assertion contradicts the intended new behaviour, and the new behaviour is in the spec/user request): update the test, rerun tests. Document the behaviour change in the final report so the user sees what shifted. **If unsure, default to NO.** |
 | **Review (Phase 1-2) needs a code change** | Fix inline. If the fix touches production code (not just comments/docstrings), add/update tests in Phase 3 before re-gating. |
-| **R3 reveals missing ARB keys** | Add keys to both `app_en.arb` and `app_ru.arb`, run `powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter gen-l10n"`, re-run analyzer. |
+| **R3 reveals missing ARB keys** | Add the key to **every** `lib/l10n/app_*.arb` locale file (glob them, don't assume a fixed set), run `powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter gen-l10n"`, re-run analyzer. |
 | **Flaky test** | Retry the affected test file once via `flutter test path/to/test.dart`. If it still fails, treat it as real. |
 
 **Anti-loop rule** — if the same error has been attempted twice with different fixes and still fails, STOP and report to the user. Do not keep hacking.

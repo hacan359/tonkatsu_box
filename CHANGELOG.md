@@ -7,6 +7,28 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Simplified Chinese (zh) interface localization**
+
+  The app interface is now available in Simplified Chinese alongside
+  English and Russian. The language and welcome pickers offer 中文, and
+  selecting it defaults TMDB content language to `zh-CN`. Contributed by
+  @sqliu07 (#350).
+
+  * lib/l10n/app_zh.arb, lib/l10n/app_localizations_zh.dart (SZh): New —
+    full zh translation (all 1709 keys) and its generated delegate.
+  * lib/l10n/app_localizations.dart (S.supportedLocales, _SDelegate.isSupported,
+    lookupS): Register the `zh` locale.
+  * lib/features/settings/screens/settings_screen.dart (_SettingsScreenState):
+    Add 中文 to the app-language picker and selected-value label.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (_WelcomeStepLanguageState): Add the 中文 option; reindex WelcomeReveal.
+  * lib/shared/constants/tmdb_content_languages.dart (kTmdbContentLanguages,
+    _kUiToContentLanguage): Add `zh-CN` and the `zh` → `zh-CN` mapping.
+  * test/features/welcome/widgets/welcome_step_language_test.dart: Cover the
+    three-language picker and Chinese selection.
+
 ## [0.38.0] - 2026-07-10
 
 ### Added

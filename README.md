@@ -41,6 +41,16 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
   <img src="docs/screenshots/mockup_main_all.jpg" width="800" alt="Main screen">
 </p>
 
+## Languages
+
+The whole interface is localized with runtime switching. Pick your language in **Settings → App Language**, no restart needed.
+
+| | Language | Status |
+|:-:|---|:-:|
+| 🇬🇧 | English | ✅ Complete |
+| 🇷🇺 | Русский (Russian) | ✅ Complete |
+| 🇨🇳 | 简体中文 (Simplified Chinese) | ✅ Complete |
+
 ## Screenshots
 
 | Collections | Collection Grid |
@@ -78,7 +88,6 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | **Kodi Sync** | Pull watched status and ratings for your movies from a Kodi media server over JSON-RPC |
 | **Export & Share** | .xcoll / .xcollx files with full offline support |
 | **Gamepad** | Navigate with Xbox controller (desktop and Android handhelds) |
-| **Languages** | English & Russian |
 
 ## Download
 
