@@ -51,7 +51,7 @@ class MangaProgressSection extends ConsumerWidget {
             Icon(Icons.auto_stories, size: 20, color: accentColor),
             const SizedBox(width: AppSpacing.sm),
             Text(
-              l.mangaProgress,
+              l.readingProgress,
               style: AppTypography.h3.copyWith(
                 fontWeight: FontWeight.w600,
               ),

@@ -114,7 +114,7 @@ class DiscoverFeed extends ConsumerWidget {
         _buildTvShowSection(
           context,
           ref,
-          title: l.discoverAnime,
+          title: l.mediaTypeAnime,
           icon: Icons.animation,
           provider: discoverAnimeProvider,
           ownedIds: ownedIds,

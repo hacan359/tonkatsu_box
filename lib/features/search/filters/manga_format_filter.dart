@@ -11,7 +11,7 @@ class MangaFormatFilter extends SearchFilter {
   String get key => 'format';
 
   @override
-  String placeholder(S l) => l.browseFilterFormat;
+  String placeholder(S l) => l.format;
 
   @override
   FilterOption get allOption => const FilterOption(
@@ -25,7 +25,7 @@ class MangaFormatFilter extends SearchFilter {
     return <FilterOption>[
       FilterOption(
         id: 'manga',
-        label: l.mangaFormatManga,
+        label: l.mediaTypeManga,
         value: 'MANGA',
       ),
       FilterOption(

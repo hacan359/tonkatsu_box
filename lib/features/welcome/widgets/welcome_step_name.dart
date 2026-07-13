@@ -71,7 +71,7 @@ class _WelcomeStepNameState extends ConsumerState<WelcomeStepName> {
                       textAlign: TextAlign.center,
                       style: AppTypography.h3,
                       decoration: InputDecoration(
-                        hintText: l.settingsAuthorPlaceholder,
+                        hintText: l.defaultAuthor,
                         prefixIcon: const Icon(
                           Icons.person_outline,
                           size: 18,
@@ -90,7 +90,7 @@ class _WelcomeStepNameState extends ConsumerState<WelcomeStepName> {
                 WelcomeReveal(
                   index: 2,
                   child: Text(
-                    l.welcomeNameHint,
+                    l.welcomeChangeLaterHint,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textTertiary,
                     ),

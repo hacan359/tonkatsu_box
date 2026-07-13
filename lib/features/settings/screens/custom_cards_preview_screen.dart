@@ -108,7 +108,7 @@ class _CustomCardsPreviewScreenState
                 children: <Widget>[
                   TextButton(
                     onPressed: _selectAll,
-                    child: Text(l.customImportSelectAll),
+                    child: Text(l.selectAll),
                   ),
                   TextButton(
                     onPressed:

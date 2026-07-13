@@ -46,7 +46,7 @@ class _BackupSectionState extends ConsumerState<BackupSection> {
     final S l10n = S.of(context);
 
     return SettingsGroup(
-      title: l10n.backupTitle,
+      title: l10n.settingsBackup,
       children: <Widget>[
         FutureBuilder<DateTime?>(
           future: _backupFuture,
@@ -76,7 +76,7 @@ class _BackupSectionState extends ConsumerState<BackupSection> {
       context,
       title: l10n.backupRestoreConfirmTitle,
       message: l10n.backupRestoreConfirmMessage(_formatDate(backupAt)),
-      confirmLabel: l10n.backupRestoreConfirm,
+      confirmLabel: l10n.restore,
     );
     if (!confirm || !context.mounted) return;
 

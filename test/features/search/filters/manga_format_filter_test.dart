@@ -13,7 +13,7 @@ void main() {
     setUp(() {
       filter = MangaFormatFilter();
       mockL = MockS();
-      when(() => mockL.mangaFormatManga).thenReturn('Manga');
+      when(() => mockL.mediaTypeManga).thenReturn('Manga');
       when(() => mockL.mangaFormatOneShot).thenReturn('One-shot');
       when(() => mockL.mangaFormatNovel).thenReturn('Novel');
     });

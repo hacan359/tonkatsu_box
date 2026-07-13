@@ -46,7 +46,7 @@ class WishlistScreen extends ConsumerStatefulWidget {
   const WishlistScreen({super.key});
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.shortcutsGroupWishlist,
+        title: l.navWishlist,
         entries: <ShortcutEntry>[
           ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItem),
           ShortcutEntry(keys: 'Ctrl+H', description: l.shortcutToggleCompleted),
@@ -170,7 +170,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     final S l = S.of(context);
     return DraggableFabItem(
       icon: Icons.add,
-      label: l.wishlistAddTitle,
+      label: l.add,
       onTap: () => _addItem(context),
     );
   }

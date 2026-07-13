@@ -307,7 +307,7 @@ class StatusDropdownSegment extends StatelessWidget {
     final Color accentColor = active ? status!.color : AppColors.surface;
     final Color contentColor =
         active ? AppColors.background : AppColors.textSecondary;
-    final String label = active ? status!.genericLabel(l) : l.homeFilterAll;
+    final String label = active ? status!.genericLabel(l) : l.all;
     final IconData icon = active ? status!.materialIcon : Icons.filter_list;
 
     return PopupMenuButton<String>(
@@ -320,7 +320,7 @@ class StatusDropdownSegment extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       itemBuilder: (BuildContext ctx) => <PopupMenuEntry<String>>[
-        _menuItem('all', Icons.filter_list_off, l.homeFilterAll,
+        _menuItem('all', Icons.filter_list_off, l.all,
             status == null, null),
         const PopupMenuDivider(height: 8),
         for (final ItemStatus s in _order)

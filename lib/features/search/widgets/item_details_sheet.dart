@@ -767,7 +767,7 @@ class ItemDetailsSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            S.of(context).searchDescription,
+            S.of(context).description,
             style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.sm),

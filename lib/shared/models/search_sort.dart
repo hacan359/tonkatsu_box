@@ -27,7 +27,7 @@ enum SearchSortField {
       case SearchSortField.relevance:
         return l.searchSortRelevanceShort;
       case SearchSortField.date:
-        return l.searchSortDateShort;
+        return l.date;
       case SearchSortField.rating:
         return l.searchSortRatingShort;
     }
@@ -37,9 +37,9 @@ enum SearchSortField {
   String localizedDisplayLabel(S l) {
     switch (this) {
       case SearchSortField.relevance:
-        return l.searchSortRelevanceDisplay;
+        return l.browseSortRelevance;
       case SearchSortField.date:
-        return l.searchSortDateDisplay;
+        return l.date;
       case SearchSortField.rating:
         return l.searchSortRatingDisplay;
     }

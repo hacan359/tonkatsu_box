@@ -574,7 +574,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
           icon: Icons.timer_outlined,
           label: l.timeSpentTitle,
           value: widget.timeSpentMinutes > 0
-              ? l.timeSpentValue(hours, minutes)
+              ? l.runtimeHoursMinutes(hours, minutes)
               : '—',
           hasValue: widget.timeSpentMinutes > 0,
           onTap: widget.onTimeSpentTap,
@@ -721,7 +721,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       if (widget.addedAt != null)
         '${l.activityDatesAdded}: ${fmt(widget.addedAt!)}',
       if (widget.lastActivityAt != null)
-        '${l.activityDatesLastActivity}: ${fmt(widget.lastActivityAt!)}',
+        '${l.sortLastActivityDisplay}: ${fmt(widget.lastActivityAt!)}',
       if (widget.completionTime != null)
         formatCompletionTime(widget.completionTime!, l),
     ];

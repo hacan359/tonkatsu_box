@@ -140,7 +140,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
               autofocus: true,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: l.wishlistTitleLabel,
+                labelText: l.title,
                 hintText: l.wishlistTitleHint,
                 border: const OutlineInputBorder(),
                 errorText: _titleError,
@@ -168,7 +168,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
               spacing: AppSpacing.xs,
               runSpacing: AppSpacing.xs,
               children: <Widget>[
-                _buildMediaTypeChip(null, l.wishlistTypeAny, Icons.bookmark_border),
+                _buildMediaTypeChip(null, l.any, Icons.bookmark_border),
                 ...MediaType.values.map(
                   (MediaType type) => _buildMediaTypeChip(
                     type,

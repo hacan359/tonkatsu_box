@@ -539,7 +539,7 @@ class _FilterDropdownChevronState
         value: kFilterResetSentinel,
         height: 36,
         child: Text(
-          l.browseFilterAll,
+          l.all,
           style: AppTypography.body.copyWith(
             color: widget.value == null
                 ? widget.accentColor
@@ -578,7 +578,7 @@ class _FilterDropdownChevronState
         options: _options,
         isLoading: _isLoading,
         currentValue: widget.value,
-        allLabel: l.browseFilterAll,
+        allLabel: l.all,
         multiSelect: widget.filter.multiSelect,
       ),
     );
@@ -612,7 +612,7 @@ class _SortDropdownChevron extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    String currentLabel = l.browseSort;
+    String currentLabel = l.sort;
     for (final BrowseSortOption opt in options) {
       if (opt.apiValue == current) {
         currentLabel = opt.label(l);
@@ -623,7 +623,7 @@ class _SortDropdownChevron extends StatelessWidget {
     if (!enabled) {
       return ChevronSegment(
         label: currentLabel,
-        subtitle: l.browseSort,
+        subtitle: l.sort,
         icon: Icons.sort,
         selected: false,
         accentColor: accentColor,
@@ -635,7 +635,7 @@ class _SortDropdownChevron extends StatelessWidget {
 
     return DropdownChevronSegment<Object>(
       label: currentLabel,
-      subtitle: l.browseSort,
+      subtitle: l.sort,
       icon: Icons.sort,
       selected: false,
       accentColor: accentColor,

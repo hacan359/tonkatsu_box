@@ -60,7 +60,7 @@ class CollectionScreen extends ConsumerStatefulWidget {
   final int? collectionId;
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.shortcutsGroupCollection,
+        title: l.collection,
         entries: <ShortcutEntry>[
           ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItems),
           ShortcutEntry(keys: 'Ctrl+E', description: l.shortcutExportCollection),

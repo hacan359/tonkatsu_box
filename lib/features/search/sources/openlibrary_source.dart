@@ -35,7 +35,7 @@ class OpenLibrarySource extends SearchSource {
   IconData get groupIcon => Icons.menu_book;
 
   @override
-  String label(S l) => l.searchSourceBooks;
+  String label(S l) => l.collectionFilterBooks;
 
   @override
   IconData get icon => Icons.menu_book;

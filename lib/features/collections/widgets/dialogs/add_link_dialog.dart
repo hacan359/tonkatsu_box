@@ -77,7 +77,7 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
     final S l = S.of(context);
     return AlertDialog(
       scrollable: true,
-      title: Text(_isEditing ? l.editLinkTitle : l.addLinkTitle),
+      title: Text(_isEditing ? l.editLinkTitle : l.canvasAddLink),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -87,8 +87,8 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
             TextField(
               controller: _urlController,
               decoration: InputDecoration(
-                labelText: l.linkUrlLabel,
-                hintText: l.linkUrlHint,
+                labelText: l.urlLabel,
+                hintText: l.urlHint,
                 border: const OutlineInputBorder(),
               ),
               autofocus: true,

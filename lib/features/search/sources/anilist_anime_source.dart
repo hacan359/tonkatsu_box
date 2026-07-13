@@ -34,7 +34,7 @@ class AniListAnimeSource extends SearchSource {
   IconData get groupIcon => Icons.auto_stories_outlined;
 
   @override
-  String label(S l) => l.searchSourceAnime;
+  String label(S l) => l.mediaTypeAnime;
 
   @override
   IconData get icon => Icons.play_circle_outline;

@@ -258,14 +258,14 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
   /// and the filter dialog can't drift apart. Thumbnail and drag columns are
   /// chrome and never appear here.
   Map<String, String> _columnLabels(S l) => <String, String>{
-    _fName: l.collectionTableName,
-    _fPlatform: l.collectionTablePlatform,
-    _fType: l.collectionTableType,
-    _fStatus: l.collectionTableStatus,
+    _fName: l.name,
+    _fPlatform: l.platform,
+    _fType: l.type,
+    _fStatus: l.status,
     _fFavorite: l.favorite,
-    _fRating: l.collectionTableRating,
+    _fRating: l.rating,
     _fExternalRating: l.collectionTableExternalRating,
-    _fYear: l.collectionTableYear,
+    _fYear: l.year,
     _fTags: l.tagLabel,
   };
 
@@ -466,7 +466,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         ),
       ),
       TrinaColumn(
-        title: l.collectionTableName.toUpperCase(),
+        title: l.name.toUpperCase(),
         field: _fName,
         type: TrinaColumnType.text(),
         width: 280,
@@ -485,7 +485,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         },
       ),
       TrinaColumn(
-        title: l.collectionTablePlatform.toUpperCase(),
+        title: l.platform.toUpperCase(),
         field: _fPlatform,
         type: TrinaColumnType.text(),
         width: 120,
@@ -508,7 +508,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         ),
       ),
       TrinaColumn(
-        title: l.collectionTableType.toUpperCase(),
+        title: l.type.toUpperCase(),
         field: _fType,
         type: TrinaColumnType.text(),
         width: 76,
@@ -542,7 +542,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         },
       ),
       TrinaColumn(
-        title: l.collectionTableStatus.toUpperCase(),
+        title: l.status.toUpperCase(),
         field: _fStatus,
         type: TrinaColumnType.text(),
         width: 150,
@@ -590,7 +590,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         },
       ),
       TrinaColumn(
-        title: l.collectionTableRating.toUpperCase(),
+        title: l.rating.toUpperCase(),
         field: _fRating,
         type: TrinaColumnType.number(),
         width: 84,
@@ -628,7 +628,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         ),
       ),
       TrinaColumn(
-        title: l.collectionTableYear.toUpperCase(),
+        title: l.year.toUpperCase(),
         field: _fYear,
         type: TrinaColumnType.number(),
         width: 72,

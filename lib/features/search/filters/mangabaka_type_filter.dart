@@ -14,7 +14,7 @@ class MangaBakaTypeFilter extends SearchFilter {
   String get cacheKey => 'type_mangabaka';
 
   @override
-  String placeholder(S l) => l.browseFilterType;
+  String placeholder(S l) => l.type;
 
   @override
   FilterOption get allOption => const FilterOption(
@@ -26,7 +26,7 @@ class MangaBakaTypeFilter extends SearchFilter {
   @override
   Future<List<FilterOption>> options(WidgetRef ref, S l) async {
     return <FilterOption>[
-      FilterOption(id: 'manga', label: l.mangaFormatManga, value: 'manga'),
+      FilterOption(id: 'manga', label: l.mediaTypeManga, value: 'manga'),
       FilterOption(id: 'manhwa', label: l.mangaFormatManhwa, value: 'manhwa'),
       FilterOption(id: 'manhua', label: l.mangaFormatManhua, value: 'manhua'),
       FilterOption(id: 'novel', label: l.mangaFormatNovel, value: 'novel'),

@@ -13,7 +13,7 @@ void main() {
     setUp(() {
       filter = TmdbLanguageFilter();
       mockL = MockS();
-      when(() => mockL.browseFilterLanguage).thenReturn('Language');
+      when(() => mockL.language).thenReturn('Language');
       when(() => mockL.languageEnglish).thenReturn('English');
       when(() => mockL.languageJapanese).thenReturn('Japanese');
       when(() => mockL.languageKorean).thenReturn('Korean');

@@ -137,7 +137,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 _menuItem(
                   ItemDetailMenuAction.rename,
                   Icons.drive_file_rename_outline,
-                  l.renameItem,
+                  l.rename,
                 ),
               _menuItem(
                 ItemDetailMenuAction.move,

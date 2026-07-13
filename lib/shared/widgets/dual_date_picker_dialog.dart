@@ -135,7 +135,7 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
       controller: _controller,
       keyboardType: TextInputType.datetime,
       decoration: InputDecoration(
-        labelText: l.dualDatePickerInputLabel,
+        labelText: l.date,
         hintText: _isoPattern,
         errorText: errorText,
       ),
@@ -204,14 +204,14 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
                 children: <Widget>[
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l.dualDatePickerCancel),
+                    child: Text(l.cancel),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   TextButton(
                     onPressed: _errorKey == null
                         ? () => Navigator.of(context).pop(_selected)
                         : null,
-                    child: Text(l.dualDatePickerOk),
+                    child: Text(l.confirm),
                   ),
                 ],
               ),

@@ -175,7 +175,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                l.browseEmptyResults,
+                l.searchNoResults,
                 style: AppTypography.body.copyWith(
                   color: AppColors.textSecondary,
                 ),

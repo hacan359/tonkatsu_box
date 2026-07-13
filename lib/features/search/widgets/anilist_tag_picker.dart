@@ -192,7 +192,7 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
                 runSpacing: AppSpacing.xs,
                 children: <Widget>[
                   Text(
-                    l.tagPickerSelectedCount(_selected.length),
+                    l.selectedCount(_selected.length),
                     style: AppTypography.bodySmall
                         .copyWith(color: AppColors.textSecondary),
                   ),

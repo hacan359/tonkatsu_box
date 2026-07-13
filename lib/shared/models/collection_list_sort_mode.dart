@@ -34,7 +34,7 @@ enum CollectionListSortMode {
       case CollectionListSortMode.createdDate:
         return l.collectionListSortCreatedDate;
       case CollectionListSortMode.alphabetical:
-        return l.collectionListSortAlphabetical;
+        return l.name;
     }
   }
 
@@ -43,8 +43,8 @@ enum CollectionListSortMode {
     switch (this) {
       case CollectionListSortMode.createdDate:
         return descending
-            ? l.collectionListSortCreatedDateOldest
-            : l.collectionListSortCreatedDateNewest;
+            ? l.sortDateOldest
+            : l.sortDateDesc;
       case CollectionListSortMode.alphabetical:
         return descending
             ? l.collectionListSortAlphabeticalZA

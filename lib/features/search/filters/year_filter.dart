@@ -14,7 +14,7 @@ class YearFilter extends SearchFilter {
   bool get searchable => true;
 
   @override
-  String placeholder(S l) => l.browseFilterYear;
+  String placeholder(S l) => l.year;
 
   @override
   FilterOption get allOption => const FilterOption(

@@ -181,7 +181,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
             value: kFilterResetSentinel,
             height: 36,
             child: Text(
-              l.browseFilterAll,
+              l.all,
               style: AppTypography.body.copyWith(
                 color: widget.value == null
                     ? AppColors.brand
@@ -224,7 +224,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
         options: _options,
         isLoading: _isLoadingOptions,
         currentValue: widget.value,
-        allLabel: l.browseFilterAll,
+        allLabel: l.all,
         multiSelect: widget.filter.multiSelect,
       ),
     );
@@ -417,7 +417,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
                 onPressed: () =>
                     Navigator.of(context).pop(kFilterResetSentinel),
                 child: Text(
-                  l.browseFilterAll,
+                  l.all,
                   style: AppTypography.body.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -588,7 +588,7 @@ class SortDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    String currentLabel = l.browseSort;
+    String currentLabel = l.sort;
     for (final BrowseSortOption option in options) {
       if (option.apiValue == current) {
         currentLabel = option.label(l);

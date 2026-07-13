@@ -159,7 +159,7 @@ class _MarkRowState extends ConsumerState<_MarkRow> {
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 18),
-                tooltip: l.itemMarkDelete,
+                tooltip: l.delete,
                 color: AppColors.textTertiary,
                 visualDensity: VisualDensity.compact,
                 constraints: const BoxConstraints(),
@@ -272,7 +272,7 @@ class _AddMarkDialogState extends ConsumerState<_AddMarkDialog> {
           children: <Widget>[
             DropdownButtonFormField<String>(
               initialValue: _customType ? _kCustomSentinel : _unitType,
-              decoration: InputDecoration(labelText: l.itemMarkType),
+              decoration: InputDecoration(labelText: l.type),
               items: <DropdownMenuItem<String>>[
                 for (final String type in widget.unitPresets)
                   DropdownMenuItem<String>(
@@ -281,7 +281,7 @@ class _AddMarkDialogState extends ConsumerState<_AddMarkDialog> {
                   ),
                 DropdownMenuItem<String>(
                   value: _kCustomSentinel,
-                  child: Text(l.unitCustom),
+                  child: Text(l.mediaTypeCustom),
                 ),
               ],
               onChanged: (String? value) {

@@ -100,7 +100,7 @@ class _BulkPosterExportDialogState
                   Row(
                     children: <Widget>[
                       Text(
-                        l.bulkExportPngColumns,
+                        l.columnsCount,
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -246,7 +246,7 @@ class _BulkPosterExportDialogState
     switch (result.status) {
       case BulkExportStatus.saved:
         Navigator.of(context).pop();
-        context.showSnack(l.bulkExportPngSaved, type: SnackType.success);
+        context.showSnack(l.imageSaved, type: SnackType.success);
       case BulkExportStatus.cancelled:
         break;
       case BulkExportStatus.failed:

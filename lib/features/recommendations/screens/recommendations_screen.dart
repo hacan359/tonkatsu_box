@@ -102,7 +102,7 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  l.personalizationTabRecommendations,
+                  l.recommendationsTitle,
                   style: AppTypography.body.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -119,7 +119,7 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
-            tooltip: l.recommendationsRefresh,
+            tooltip: l.refresh,
             color: AppColors.textSecondary,
             onPressed: () => ref.invalidate(recommendationsProvider),
           ),

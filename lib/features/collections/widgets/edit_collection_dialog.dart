@@ -238,7 +238,7 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
-                  labelText: l.collectionEditDescription,
+                  labelText: l.description,
                   hintText: l.collectionEditDescriptionHint,
                   border: const OutlineInputBorder(),
                 ),

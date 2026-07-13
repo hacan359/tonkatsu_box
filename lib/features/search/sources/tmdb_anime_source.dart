@@ -35,7 +35,7 @@ class TmdbAnimeSource extends SearchSource {
   IconData get groupIcon => Icons.movie_outlined;
 
   @override
-  String label(S l) => l.searchSourceAnimation;
+  String label(S l) => l.mediaTypeAnimation;
 
   @override
   IconData get icon => Icons.animation_outlined;

@@ -27,9 +27,9 @@ class TierListDetailScreen extends ConsumerStatefulWidget {
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
         title: l.shortcutsGroupTierList,
         entries: <ShortcutEntry>[
-          ShortcutEntry(keys: 'Ctrl+E', description: l.shortcutExportAsImage),
-          ShortcutEntry(keys: 'Ctrl+Enter', description: l.shortcutAddTier),
-          ShortcutEntry(keys: 'Ctrl+Shift+D', description: l.shortcutClearAll),
+          ShortcutEntry(keys: 'Ctrl+E', description: l.exportAsImage),
+          ShortcutEntry(keys: 'Ctrl+Enter', description: l.tierListAddTier),
+          ShortcutEntry(keys: 'Ctrl+Shift+D', description: l.clearAll),
         ],
       );
 
@@ -103,13 +103,13 @@ class _TierListDetailScreenState
               items: <DraggableFabItem>[
                 DraggableFabItem(
                   icon: Icons.image_outlined,
-                  label: l.tierListExportImage,
+                  label: l.exportAsImage,
                   onTap: () => _exportAsImage(context, state),
                 ),
                 const DraggableFabDivider(),
                 DraggableFabItem(
                   icon: Icons.clear_all,
-                  label: l.tierListClearAll,
+                  label: l.clearAll,
                   iconColor: AppColors.error,
                   onTap: () => _handleMenuAction('clear', state),
                 ),
@@ -186,9 +186,9 @@ class _TierListDetailScreenState
     final S l = S.of(context);
     final bool confirmed = await ConfirmDialog.show(
       context,
-      title: l.tierListClearAll,
+      title: l.clearAll,
       message: l.tierListClearConfirm,
-      confirmLabel: l.tierListClearAll,
+      confirmLabel: l.clearAll,
     );
     if (confirmed) {
       await ref
@@ -215,7 +215,7 @@ class _TierListDetailScreenState
     final BulkExportResult result = await saveBoundaryAsPng(
       repaintKey: _exportKey,
       suggestedFileName: fileName,
-      saveDialogTitle: l.tierListExportImage,
+      saveDialogTitle: l.exportAsImage,
     );
     if (!context.mounted) return;
 

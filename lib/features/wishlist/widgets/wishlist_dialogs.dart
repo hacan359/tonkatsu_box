@@ -31,7 +31,7 @@ class WishlistDialogs {
             TextField(
               controller: controller,
               autofocus: true,
-              decoration: InputDecoration(hintText: l.wishlistTagPlaceholder),
+              decoration: InputDecoration(hintText: l.tagLabel),
               onSubmitted: (String v) =>
                   Navigator.of(context).pop(v.trim()),
             ),
@@ -67,11 +67,11 @@ class WishlistDialogs {
     final String? newTag = await showDialog<String>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: Text(l.wishlistTagRename),
+        title: Text(l.tagRename),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(hintText: l.wishlistTagPlaceholder),
+          decoration: InputDecoration(hintText: l.tagLabel),
           onSubmitted: (String value) =>
               Navigator.of(context).pop(value.trim()),
         ),
@@ -117,7 +117,7 @@ class WishlistDialogs {
     final S l = S.of(context);
     return ConfirmDialog.show(
       context,
-      title: l.wishlistClearResolvedTitle,
+      title: l.wishlistClearResolved,
       message: l.wishlistClearResolvedMessage(resolvedCount),
       confirmLabel: l.clear,
     );

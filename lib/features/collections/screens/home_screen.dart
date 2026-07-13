@@ -38,14 +38,14 @@ class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.shortcutsGroupCollections,
+        title: l.navCollections,
         entries: <ShortcutEntry>[
           ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateCollection),
           ShortcutEntry(keys: 'Ctrl+I', description: l.shortcutImportCollection),
           ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
           ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteCollection),
           ShortcutEntry(keys: 'F2', description: l.shortcutRenameCollection),
-          ShortcutEntry(keys: 'Enter', description: l.shortcutOpenCollection),
+          ShortcutEntry(keys: 'Enter', description: l.openCollection),
         ],
       );
 
@@ -91,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           DraggableFab(
             mainAction: DraggableFabItem(
               icon: Icons.add,
-              label: l.collectionsNewCollection,
+              label: l.createCollectionTitle,
               onTap: () => _createCollection(context, ref),
             ),
             primaryItems: <DraggableFabItem>[
@@ -110,7 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               DraggableFabItem(
                 icon: Icons.sort,
-                label: l.collectionFilterSort,
+                label: l.sort,
                 onTap: () => _showSortOptions(context, ref, sortMode, sortDesc),
               ),
               DraggableFabItem(
@@ -399,7 +399,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           value: 'create',
           child: ListTile(
             leading: const Icon(Icons.add),
-            title: Text(l.collectionsNewCollection),
+            title: Text(l.createCollectionTitle),
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -742,7 +742,7 @@ class _SortDialogState extends State<_SortDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     return AlertDialog(
-      title: Text(l.collectionFilterSort),
+      title: Text(l.sort),
       scrollable: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,

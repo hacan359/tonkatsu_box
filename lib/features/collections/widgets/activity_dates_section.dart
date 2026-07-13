@@ -106,7 +106,7 @@ class ActivityDatesSection extends ConsumerWidget {
           const SizedBox(height: 6),
           _DateRow(
             icon: Icons.update,
-            label: S.of(context).activityDatesLastActivity,
+            label: S.of(context).sortLastActivityDisplay,
             date: lastActivityAt,
             formatter: fmt,
             editable: false,

@@ -230,7 +230,7 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
   String _facetLabel(S l, Facet facet) {
     switch (facet) {
       case Facet.genre:
-        return l.facetGenre;
+        return l.genres;
       case Facet.platform:
         return l.facetPlatform;
       case Facet.decade:
@@ -261,7 +261,7 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
 
     switch (result.status) {
       case BulkExportStatus.saved:
-        context.showSnack(l.genreCloudImageSaved, type: SnackType.success);
+        context.showSnack(l.imageSaved, type: SnackType.success);
       case BulkExportStatus.cancelled:
         break;
       case BulkExportStatus.failed:

@@ -310,7 +310,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
                 .copyWith(color: AppColors.textSecondary),
           ),
           const Spacer(),
-          _filterChip(Icons.list, l.itemMarkFilterAll,
+          _filterChip(Icons.list, l.all,
               _EpisodeMarkFilter.all),
           const SizedBox(width: 4),
           _filterChip(Icons.favorite, l.itemMarkFilterLiked,

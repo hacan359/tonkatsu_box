@@ -13,7 +13,7 @@ void main() {
     setUp(() {
       filter = FantlabWorkTypeFilter();
       mockL = MockS();
-      when(() => mockL.browseFilterType).thenReturn('Type');
+      when(() => mockL.type).thenReturn('Type');
       when(() => mockL.fantlabTypeNovel).thenReturn('Novel');
       when(() => mockL.fantlabTypeNovella).thenReturn('Novella');
       when(() => mockL.fantlabTypeShortStory).thenReturn('Short story');

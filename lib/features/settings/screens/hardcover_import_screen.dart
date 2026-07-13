@@ -17,7 +17,7 @@ class HardcoverImportScreen extends StatelessWidget {
 
     return Column(
       children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsHardcoverImport),
+        SubScreenTitleBar(title: S.of(context).hardcoverImportTitle),
         Expanded(
           child: Align(
             alignment: Alignment.topCenter,

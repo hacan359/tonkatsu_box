@@ -138,7 +138,7 @@ class _CreateTierListDialogState
                     data: (List<Collection> collections) {
                       if (collections.isEmpty) {
                         return Text(
-                          l.tierListNoCollections,
+                          l.importNoCollections,
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                           ),

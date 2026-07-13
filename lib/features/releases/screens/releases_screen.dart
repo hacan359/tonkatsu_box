@@ -241,7 +241,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
           ),
           const SizedBox(width: AppSpacing.xs),
           IconButton(
-            tooltip: l.releasesRefresh,
+            tooltip: l.refresh,
             onPressed: _refreshing ? null : _onRefreshPressed,
             icon: _refreshing
                 ? const SizedBox(

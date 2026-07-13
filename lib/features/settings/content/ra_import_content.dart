@@ -113,7 +113,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              l.raImportIgdbRequired,
+              l.importIgdbRequired,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textPrimary,
               ),
@@ -127,7 +127,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
   Widget _buildInputSection(S l) {
     return SettingsGroup(
       title: l.raImportTitle,
-      subtitle: l.raImportSubtitle,
+      subtitle: l.importIgdbMatchNote,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -141,7 +141,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
                 controller: _usernameController,
                 enabled: !_isImporting,
                 decoration: InputDecoration(
-                  labelText: l.raUsername,
+                  labelText: l.importUsername,
                 ),
                 onChanged: (_) => setState(() {}),
               ),
@@ -151,7 +151,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
                 enabled: !_isImporting,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: l.raApiKey,
+                  labelText: l.credentialsApiKey,
                 ),
                 onChanged: (_) => setState(() {}),
               ),
@@ -188,7 +188,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                l.raImportOptions,
+                l.importOptions,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -218,7 +218,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
           child: FilledButton.icon(
             onPressed: _canStart ? _startImport : null,
             icon: const Icon(Icons.download),
-            label: Text(l.raImportStart),
+            label: Text(l.importStart),
           ),
         ),
       ],
@@ -238,7 +238,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l.raImportTargetCollection,
+            l.importTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -256,12 +256,12 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
           child: Column(
             children: <Widget>[
               RadioListTile<bool>(
-                title: Text(l.raImportNewCollection),
+                title: Text(l.importCreateNew),
                 value: true,
                 dense: true,
               ),
               RadioListTile<bool>(
-                title: Text(l.raImportExistingCollection),
+                title: Text(l.importUseExistingCollection),
                 value: false,
                 dense: true,
               ),
@@ -275,7 +275,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l.raImportNoCollections,
+                    l.importNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -287,8 +287,8 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l.raImportSelectCollection,
-                  title: l.raImportSelectCollection,
+                  hint: l.importSelectCollection,
+                  title: l.importSelectCollection,
                   enabled: !_isImporting,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
@@ -297,7 +297,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l.raImportErrorLoadingCollections,
+                l.importErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -314,7 +314,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     final String stageText = switch (progress.stage) {
       ImportStage.reading => l.raImportFetchingLibrary,
       ImportStage.fetchingGames => l.raImportSearchingIgdb,
-      ImportStage.completed => l.raImportComplete,
+      ImportStage.completed => l.importComplete,
       _ => l.raImportMatching(progress.currentItem ?? ''),
     };
 
@@ -578,7 +578,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       if (!mounted) return;
       setState(() => _isImporting = false);
       context.showSnack(
-        S.of(context).raImportFailed('$e'),
+        S.of(context).importFailed('$e'),
         type: SnackType.error,
       );
     }

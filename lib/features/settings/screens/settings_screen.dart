@@ -210,7 +210,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: InlineTextField(
                       label: l.settingsAuthorName,
                       value: settings.authorName,
-                      placeholder: l.settingsAuthorPlaceholder,
+                      placeholder: l.defaultAuthor,
                       compact: true,
                       onChanged: (String value) {
                         ref
@@ -265,7 +265,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsTile(
             leadingAssetPath: AppAssets.iconTraktColor,
             leadingAssetColored: true,
-            title: l.settingsTraktImport,
+            title: l.traktTitle,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
           ),
@@ -314,7 +314,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsTile(
             leadingAssetPath: AppAssets.iconHardcoverColor,
             leadingAssetColored: true,
-            title: l.settingsHardcoverImport,
+            title: l.hardcoverImportTitle,
             subtitle: l.settingsHardcoverImportSubtitle,
             onTap: () => _pushScreen(const HardcoverImportScreen()),
           ),
@@ -335,14 +335,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsTile(
             leadingIcon: Icons.image_outlined,
             leadingColor: _kStorageColor,
-            title: l.settingsCache,
+            title: l.cacheTitle,
             subtitle: l.settingsCacheSubtitle,
             onTap: () => _pushScreen(const CacheScreen()),
           ),
           SettingsTile(
             leadingIcon: Icons.dataset_outlined,
             leadingColor: _kStorageColor,
-            title: l.settingsDatabase,
+            title: l.databaseTitle,
             subtitle: l.settingsDatabaseSubtitle,
             onTap: () => _pushScreen(const DatabaseScreen()),
           ),
@@ -394,7 +394,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsTile(
             leadingIcon: Icons.thumb_up_outlined,
             leadingColor: _kAppearanceColor,
-            title: l.settingsShowRecommendations,
+            title: l.recommendationsTitle,
             subtitle: l.settingsShowRecommendationsSubtitle,
             showChevron: false,
             trailing: Switch(

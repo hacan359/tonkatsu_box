@@ -21,7 +21,7 @@ class IgdbPlatformFilter extends SearchFilter {
   bool get multiSelect => true;
 
   @override
-  String placeholder(S l) => l.browseFilterPlatform;
+  String placeholder(S l) => l.platform;
 
   @override
   FilterOption get allOption => const FilterOption(

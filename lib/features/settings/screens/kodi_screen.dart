@@ -326,7 +326,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             vertical: AppSpacing.sm,
           ),
           child: InlineTextField(
-            label: l.kodiUsername,
+            label: l.importUsername,
             value: settings.username,
             placeholder: 'kodi',
             compact: true,
@@ -445,11 +445,11 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
         : null;
 
     return SettingsGroup(
-      title: l.kodiTargetCollection,
+      title: l.importTargetCollection,
       subtitle: l.kodiTargetCollectionSubtitle,
       children: <Widget>[
         SettingsTile(
-          title: l.kodiTargetCollection,
+          title: l.importTargetCollection,
           value: label ?? '',
           valueColor: valid ? null : AppColors.warning,
           statusDotColor: valid ? null : AppColors.warning,
@@ -546,7 +546,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     final Object? result = await showDialog<Object>(
       context: context,
       builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(S.of(context).kodiTargetCollection),
+        title: Text(S.of(context).importTargetCollection),
         children: <Widget>[
           // Create new.
           SimpleDialogOption(
@@ -555,7 +555,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
               children: <Widget>[
                 const Icon(Icons.add, size: 18, color: AppColors.brand),
                 const SizedBox(width: AppSpacing.sm),
-                Text(S.of(context).kodiCollectionPickerCreateNew),
+                Text(S.of(context).importCreateNew),
               ],
             ),
           ),
@@ -698,7 +698,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   Widget _buildDebugSection(KodiSettingsState settings) {
     final S l = S.of(context);
     return SettingsGroup(
-      title: l.kodiDebugTitle,
+      title: l.settingsDebug,
       children: <Widget>[
         // — Connection status —
         if (_connectionResult != null)
@@ -738,7 +738,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           showChevron: false,
         ),
         SettingsTile(
-          title: l.kodiLastSync,
+          title: l.credentialsLastSync,
           value: settings.lastSyncTimestamp ?? l.kodiLastSyncNever,
           showChevron: false,
         ),
