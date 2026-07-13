@@ -110,6 +110,13 @@ class CreditsContent extends StatelessWidget {
         linkLabel: 'books.google.com',
         url: 'https://books.google.com/',
       ),
+      (
+        source: DataSource.hardcover,
+        name: 'Hardcover',
+        description: l10n.creditsHardcoverAttribution,
+        linkLabel: 'hardcover.app',
+        url: 'https://hardcover.app/',
+      ),
     ];
 
     return Column(

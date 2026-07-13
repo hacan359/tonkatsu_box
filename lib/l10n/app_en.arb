@@ -328,6 +328,8 @@
   "credentialsEnterComicVineKey": "Enter your ComicVine API key",
   "credentialsGoogleBooksSection": "Google Books API (Books)",
   "credentialsEnterGoogleBooksKey": "Enter your Google Books API key (optional)",
+  "credentialsHardcoverSection": "Hardcover API (Books)",
+  "credentialsEnterHardcoverKey": "Enter your Hardcover API token",
   "credentialsContentLanguage": "Content Language",
   "credentialsOwnKeyHint": "For better rate limits we recommend using your own API key.",
   "credentialsConnected": "Connected",
@@ -357,6 +359,8 @@
   "credentialsComicVineKeyInvalid": "ComicVine API key is invalid",
   "credentialsGoogleBooksKeyValid": "Google Books API key is valid",
   "credentialsGoogleBooksKeyInvalid": "Google Books API key is invalid",
+  "credentialsHardcoverKeyValid": "Hardcover API token is valid",
+  "credentialsHardcoverKeyInvalid": "Hardcover API token is invalid or expired",
   "credentialsEnterSteamGridDbKeyError": "Please enter a SteamGridDB API key",
   "credentialsEnterTmdbKeyError": "Please enter a TMDB API key",
   "credentialsTmdbKeySaved": "TMDB API key saved",
@@ -631,6 +635,7 @@
   "creditsFantlabAttribution": "Book data from Fantlab.",
   "creditsComicVineAttribution": "Comic data from ComicVine (non-commercial use).",
   "creditsGoogleBooksAttribution": "Book data from Google Books.",
+  "creditsHardcoverAttribution": "Book data from Hardcover.",
   "creditsOpenSource": "Open Source",
   "creditsOpenSourceDesc": "Tonkatsu Box is free and open source software, released under the MIT License.",
   "creditsViewLicenses": "View Open Source Licenses",
@@ -691,6 +696,54 @@
   "importSelectCollection": "Select collection",
   "importErrorLoadingCollections": "Error loading collections",
   "importStartButton": "Import",
+  "importUsername": "Username",
+  "importUsernameHint": "e.g. yourname",
+  "importMode": "Mode",
+  "importModeNewOnly": "Add new only",
+  "importModeNewOnlySubtitle": "Skip items already in the collection",
+  "importModeOverwrite": "Overwrite existing",
+  "importModeOverwriteSubtitle": "Update progress, status and dates from the source",
+  "importNewCollectionName": "Collection name",
+  "importNewCollectionDefault": "{source} Import — {username}",
+  "@importNewCollectionDefault": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "username": {"type": "String"}
+    }
+  },
+  "importFetchingBooks": "Fetching book library...",
+  "importAddingItems": "Importing entries",
+  "importProcessingItem": "Processing: {title}",
+  "@importProcessingItem": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "importImportedCount": "{count} imported",
+  "@importImportedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUpdatedCount": "{count} updated",
+  "@importUpdatedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUserNotFound": "User \"{username}\" was not found",
+  "@importUserNotFound": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "importEmptyUsername": "Enter a username",
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
 
   "collectionNotFound": "Collection not found",
   "collectionAddItems": "Add Items",
@@ -1255,6 +1308,7 @@
   "welcomeApiTmdbDesc": "Movies, TV & Anime",
   "welcomeApiComicVineDesc": "Comics & graphic novels",
   "welcomeApiGoogleBooksDesc": "Google's global book catalog",
+  "welcomeApiHardcoverDesc": "Community book catalog, needs a personal token",
   "welcomeApiRecommended": "RECOMMENDED",
   "welcomeApiSgdbTag": "SGDB",
   "welcomeApiSgdbDesc": "Game artwork for boards",
@@ -1303,6 +1357,7 @@
   "welcomeSourcesKeySaved": "Key saved",
   "welcomeSourcesGetKey": "Get a key",
   "welcomeSourcesKeyOptionalHint": "Optional — your own key raises rate limits. Search works without it.",
+  "welcomeSourcesHardcoverTokenHint": "Required — search and import stay disabled without it. Tokens expire every January 1st.",
 
   "welcomeSourceDescTmdb": "Movies, TV shows and animation.",
   "welcomeSourceDescIgdb": "Video games across every platform.",
@@ -1313,6 +1368,7 @@
   "welcomeSourceDescFantlab": "A detailed book catalog with ratings, awards and series.",
   "welcomeSourceDescComicVine": "A vast catalog of comics and graphic novels.",
   "welcomeSourceDescGoogleBooks": "Millions of editions from Google's book catalog, searchable by title, author or ISBN.",
+  "welcomeSourceDescHardcover": "Community book catalog with series, genres, moods and ratings. Requires a free personal token.",
 
   "welcomeTourTitle": "Get to know the menu",
   "welcomeTourSubtitle": "A quick tour of the main navigation — tap Next to step through it.",
@@ -1679,6 +1735,7 @@
   "browseSortTopRated": "Top Rated",
   "browseSortNewest": "Newest",
   "browseSortMostVoted": "Most Voted",
+  "browseSortMostRead": "Most Read",
   "browseSortTrending": "Trending",
   "browseSortNameAsc": "Name (A–Z)",
   "browseSortNameDesc": "Name (Z–A)",
@@ -2286,6 +2343,11 @@
 
   "settingsAniListImport": "AniList",
   "settingsAniListImportSubtitle": "Import anime/manga lists by public username",
+  "settingsHardcoverImport": "Hardcover Import",
+  "settingsHardcoverImportSubtitle": "Import a book library from hardcover.app by username",
+  "hardcoverImportTitle": "Hardcover Import",
+  "hardcoverImportSubtitle": "Fetches a user's library from hardcover.app — public part for other users, everything for your own account",
+  "hardcoverImportTokenMissing": "Hardcover API token is not set. Add it in Settings → API Credentials.",
   "aniListImportTitle": "AniList Import",
   "aniListImportSubtitle": "Fetches public lists from anilist.co — no login required",
   "aniListImportUsername": "AniList username",

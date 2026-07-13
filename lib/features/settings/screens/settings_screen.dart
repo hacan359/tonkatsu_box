@@ -41,6 +41,7 @@ import '../../releases/providers/releases_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'browse_collections_screen.dart';
 import 'anilist_import_screen.dart';
+import 'hardcover_import_screen.dart';
 import 'custom_cards_import_screen.dart';
 import 'igdb_list_import_screen.dart';
 import 'mal_import_screen.dart';
@@ -309,6 +310,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsAniListImport,
             subtitle: l.settingsAniListImportSubtitle,
             onTap: () => _pushScreen(const AniListImportScreen()),
+          ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconHardcoverColor,
+            leadingAssetColored: true,
+            title: l.settingsHardcoverImport,
+            subtitle: l.settingsHardcoverImportSubtitle,
+            onTap: () => _pushScreen(const HardcoverImportScreen()),
           ),
           SettingsTile(
             leadingIcon: Icons.upload_file,
@@ -662,6 +670,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
+        settings.hasHardcoverKey,
         settings.hasScreenScraperCreds,
       ];
 

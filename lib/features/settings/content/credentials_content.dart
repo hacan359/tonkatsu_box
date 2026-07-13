@@ -42,6 +42,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   String _tmdbApiKey = '';
   String _comicVineApiKey = '';
   String _googleBooksApiKey = '';
+  String _hardcoverApiKey = '';
   String _ssSsid = '';
   String _ssSspassword = '';
   bool _ssQuotaLoading = false;
@@ -52,10 +53,12 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   StatusType? _tmdbValidated;
   StatusType? _comicVineValidated;
   StatusType? _googleBooksValidated;
+  StatusType? _hardcoverValidated;
   bool _sgdbValidating = false;
   bool _tmdbValidating = false;
   bool _comicVineValidating = false;
   bool _googleBooksValidating = false;
+  bool _hardcoverValidating = false;
 
   @override
   void initState() {
@@ -70,6 +73,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         settings.isTmdbKeyBuiltIn ? '' : (settings.tmdbApiKey ?? '');
     _comicVineApiKey = settings.comicVineApiKey ?? '';
     _googleBooksApiKey = settings.googleBooksApiKey ?? '';
+    _hardcoverApiKey = settings.hardcoverApiKey ?? '';
     _ssSsid = settings.screenScraperSsid ?? '';
     _ssSspassword = settings.screenScraperSspassword ?? '';
   }
@@ -95,6 +99,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildComicVineSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildGoogleBooksSection(settings, compact),
+        const SizedBox(height: AppSpacing.md),
+        _buildHardcoverSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildScreenScraperSection(settings, compact),
         if (settings.errorMessage != null) ...<Widget>[
@@ -497,6 +503,84 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       valid
           ? S.of(context).credentialsGoogleBooksKeyValid
           : S.of(context).credentialsGoogleBooksKeyInvalid,
+      type: valid ? SnackType.success : SnackType.error,
+    );
+  }
+
+  // ==================== Hardcover ====================
+
+  Widget _buildHardcoverSection(SettingsState settings, bool compact) {
+    return SettingsGroup(
+      title: S.of(context).credentialsHardcoverSection,
+      children: <Widget>[
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconHardcoverColor,
+          description: S.of(context).welcomeApiHardcoverDesc,
+          sourceName: 'Hardcover',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            children: <Widget>[
+              InlineTextField(
+                label: S.of(context).credentialsApiKey,
+                value: _hardcoverApiKey,
+                placeholder: S.of(context).credentialsEnterHardcoverKey,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() {
+                    _hardcoverApiKey = value;
+                    _hardcoverValidated = null;
+                  });
+                  ref
+                      .read(settingsNotifierProvider.notifier)
+                      .setHardcoverApiKey(value.trim());
+                },
+              ),
+              _buildOwnKeyHint(),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCredentialStatus(
+                compact: compact,
+                statusType: _keyStatusType(
+                  hasKey: settings.hasHardcoverKey,
+                  isBuiltIn: false,
+                  validated: _hardcoverValidated,
+                ),
+                statusLabel: _keyStatusLabel(
+                  hasKey: settings.hasHardcoverKey,
+                  isBuiltIn: false,
+                  validated: _hardcoverValidated,
+                ),
+                actionTooltip: S.of(context).test,
+                isLoading: _hardcoverValidating,
+                onAction:
+                    settings.hasHardcoverKey ? _validateHardcoverKey : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _validateHardcoverKey() async {
+    setState(() => _hardcoverValidating = true);
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    final bool valid = await notifier.validateHardcoverKey();
+    if (!mounted) return;
+    setState(() {
+      _hardcoverValidating = false;
+      _hardcoverValidated = valid ? StatusType.success : StatusType.error;
+    });
+    context.showSnack(
+      valid
+          ? S.of(context).credentialsHardcoverKeyValid
+          : S.of(context).credentialsHardcoverKeyInvalid,
       type: valid ? SnackType.success : SnackType.error,
     );
   }

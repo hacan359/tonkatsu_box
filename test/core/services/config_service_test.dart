@@ -101,6 +101,8 @@ void main() {
         await prefs.setString(SettingsKeys.steamApiKey, 'steam_key');
         await prefs.setString(SettingsKeys.steamId, 'steam_id');
         await prefs.setString(SettingsKeys.aniListUsername, 'anilist_user');
+        await prefs.setString(SettingsKeys.hardcoverApiKey, 'hc_key');
+        await prefs.setString(SettingsKeys.hardcoverUsername, 'hc_user');
 
         final Map<String, Object> config = sut.collectSettings();
 
@@ -113,6 +115,8 @@ void main() {
         expect(config[SettingsKeys.steamApiKey], equals('steam_key'));
         expect(config[SettingsKeys.steamId], equals('steam_id'));
         expect(config[SettingsKeys.aniListUsername], equals('anilist_user'));
+        expect(config[SettingsKeys.hardcoverApiKey], equals('hc_key'));
+        expect(config[SettingsKeys.hardcoverUsername], equals('hc_user'));
       });
 
       test('должен собрать bool ключи (галки)', () async {
@@ -258,9 +262,11 @@ void main() {
           SettingsKeys.steamApiKey: 'steam_key',
           SettingsKeys.steamId: 'steam_id',
           SettingsKeys.aniListUsername: 'anilist_user',
+          SettingsKeys.hardcoverApiKey: 'hc_key',
+          SettingsKeys.hardcoverUsername: 'hc_user',
         });
 
-        expect(applied, equals(9));
+        expect(applied, equals(11));
         expect(prefs.getString(SettingsKeys.comicVineApiKey), equals('cv_key'));
         expect(
           prefs.getString(SettingsKeys.screenScraperSspassword),
@@ -271,6 +277,11 @@ void main() {
         expect(
           prefs.getString(SettingsKeys.aniListUsername),
           equals('anilist_user'),
+        );
+        expect(prefs.getString(SettingsKeys.hardcoverApiKey), equals('hc_key'));
+        expect(
+          prefs.getString(SettingsKeys.hardcoverUsername),
+          equals('hc_user'),
         );
       });
 

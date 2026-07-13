@@ -10,14 +10,15 @@ import 'package:tonkatsu_box/features/search/sources/anilist_manga_source.dart';
 import 'package:tonkatsu_box/features/search/sources/comicvine_source.dart';
 import 'package:tonkatsu_box/features/search/sources/fantlab_source.dart';
 import 'package:tonkatsu_box/features/search/sources/google_books_source.dart';
+import 'package:tonkatsu_box/features/search/sources/hardcover_source.dart';
 import 'package:tonkatsu_box/features/search/sources/mangabaka_source.dart';
 import 'package:tonkatsu_box/features/search/sources/openlibrary_source.dart';
 import 'package:tonkatsu_box/features/search/sources/vndb_source.dart';
 
 void main() {
   group('searchSources', () {
-    test('contains 12 sources', () {
-      expect(searchSources, hasLength(12));
+    test('contains 13 sources', () {
+      expect(searchSources, hasLength(13));
     });
 
     test('first source is TmdbMoviesSource', () {
@@ -64,8 +65,12 @@ void main() {
       expect(searchSources[10], isA<GoogleBooksSource>());
     });
 
-    test('twelfth source is ComicVineSource', () {
-      expect(searchSources[11], isA<ComicVineSource>());
+    test('twelfth source is HardcoverSource', () {
+      expect(searchSources[11], isA<HardcoverSource>());
+    });
+
+    test('thirteenth source is ComicVineSource', () {
+      expect(searchSources[12], isA<ComicVineSource>());
     });
 
     test('all sources have unique ids', () {
@@ -89,6 +94,7 @@ void main() {
         'openlibrary',
         'fantlab',
         'googlebooks',
+        'hardcover',
         'comicvine',
       ]);
     });
@@ -123,6 +129,11 @@ void main() {
     test('returns correct source for "visual_novels"', () {
       final SearchSource source = getSearchSourceById('visual_novels');
       expect(source, isA<VndbSource>());
+    });
+
+    test('returns correct source for "hardcover"', () {
+      final SearchSource source = getSearchSourceById('hardcover');
+      expect(source, isA<HardcoverSource>());
     });
 
     test('returns correct source for "comicvine"', () {

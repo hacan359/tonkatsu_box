@@ -723,6 +723,12 @@ class SZh extends S {
   String get credentialsEnterGoogleBooksKey => '输入您的 Google Books API 密钥（可选）';
 
   @override
+  String get credentialsHardcoverSection => 'Hardcover API（书籍）';
+
+  @override
+  String get credentialsEnterHardcoverKey => '输入您的 Hardcover API 令牌';
+
+  @override
   String get credentialsContentLanguage => '内容语言';
 
   @override
@@ -795,6 +801,12 @@ class SZh extends S {
 
   @override
   String get credentialsGoogleBooksKeyInvalid => 'Google Books API 密钥无效';
+
+  @override
+  String get credentialsHardcoverKeyValid => 'Hardcover API 令牌有效';
+
+  @override
+  String get credentialsHardcoverKeyInvalid => 'Hardcover API 令牌无效或已过期';
 
   @override
   String get credentialsEnterSteamGridDbKeyError => '请输入 SteamGridDB API 密钥';
@@ -1373,6 +1385,9 @@ class SZh extends S {
   String get creditsGoogleBooksAttribution => '书籍数据来自 Google Books。';
 
   @override
+  String get creditsHardcoverAttribution => '书籍数据来自 Hardcover。';
+
+  @override
   String get creditsOpenSource => '开源';
 
   @override
@@ -1464,6 +1479,69 @@ class SZh extends S {
 
   @override
   String get importStartButton => '导入';
+
+  @override
+  String get importUsername => '用户名';
+
+  @override
+  String get importUsernameHint => '例如 yourname';
+
+  @override
+  String get importMode => '模式';
+
+  @override
+  String get importModeNewOnly => '仅添加新条目';
+
+  @override
+  String get importModeNewOnlySubtitle => '跳过合集中已有的条目';
+
+  @override
+  String get importModeOverwrite => '覆盖现有条目';
+
+  @override
+  String get importModeOverwriteSubtitle => '从数据源更新进度、状态和日期';
+
+  @override
+  String get importNewCollectionName => '合集名称';
+
+  @override
+  String importNewCollectionDefault(String source, String username) {
+    return '$source 导入 — $username';
+  }
+
+  @override
+  String get importFetchingBooks => '正在获取书库...';
+
+  @override
+  String get importAddingItems => '正在导入条目';
+
+  @override
+  String importProcessingItem(String title) {
+    return '正在处理：$title';
+  }
+
+  @override
+  String importImportedCount(int count) {
+    return '已导入：$count';
+  }
+
+  @override
+  String importUpdatedCount(int count) {
+    return '已更新：$count';
+  }
+
+  @override
+  String importUserNotFound(String username) {
+    return '未找到用户\"$username\"';
+  }
+
+  @override
+  String get importEmptyUsername => '请输入用户名';
+
+  @override
+  String importFailed(String error) {
+    return '导入失败：$error';
+  }
 
   @override
   String get collectionNotFound => '未找到收藏';
@@ -2611,6 +2689,9 @@ class SZh extends S {
   String get welcomeApiGoogleBooksDesc => 'Google 全球图书目录';
 
   @override
+  String get welcomeApiHardcoverDesc => '社区图书目录，需要个人令牌';
+
+  @override
   String get welcomeApiRecommended => '推荐';
 
   @override
@@ -2735,6 +2816,10 @@ class SZh extends S {
   String get welcomeSourcesKeyOptionalHint => '可选——使用自己的密钥可提高速率限制。无需密钥也可搜索。';
 
   @override
+  String get welcomeSourcesHardcoverTokenHint =>
+      '必填——没有令牌无法搜索和导入。令牌每年 1 月 1 日重置。';
+
+  @override
   String get welcomeSourceDescTmdb => '电影、电视剧和动画。';
 
   @override
@@ -2761,6 +2846,9 @@ class SZh extends S {
   @override
   String get welcomeSourceDescGoogleBooks =>
       '来自 Google 图书目录的数百万版本，可按标题、作者或 ISBN 搜索。';
+
+  @override
+  String get welcomeSourceDescHardcover => '社区图书目录：系列、类型、氛围和评分。需要免费的个人令牌。';
 
   @override
   String get welcomeTourTitle => '了解菜单';
@@ -3610,6 +3698,9 @@ class SZh extends S {
 
   @override
   String get browseSortMostVoted => '最多票数';
+
+  @override
+  String get browseSortMostRead => '最多阅读';
 
   @override
   String get browseSortTrending => '趋势';
@@ -4754,6 +4845,23 @@ class SZh extends S {
 
   @override
   String get settingsAniListImportSubtitle => '通过公开用户名导入动漫/漫画列表';
+
+  @override
+  String get settingsHardcoverImport => 'Hardcover 导入';
+
+  @override
+  String get settingsHardcoverImportSubtitle => '通过用户名从 hardcover.app 导入书库';
+
+  @override
+  String get hardcoverImportTitle => 'Hardcover 导入';
+
+  @override
+  String get hardcoverImportSubtitle =>
+      '从 hardcover.app 获取用户书库——他人仅公开部分，自己的账户则全部获取';
+
+  @override
+  String get hardcoverImportTokenMissing =>
+      '未设置 Hardcover API 令牌。请在设置 → API 凭据中添加。';
 
   @override
   String get aniListImportTitle => 'AniList 导入';

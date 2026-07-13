@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
+import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/fantlab_api.dart';
 import '../../../core/api/openlibrary_api.dart';
 import '../../../core/database/database_service.dart';
@@ -21,8 +22,10 @@ import '../../../shared/models/visual_novel.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../collections/widgets/fantlab_edition_picker.dart';
+import '../../collections/widgets/hardcover_edition_picker.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/fantlab_book_sheet.dart';
+import '../widgets/hardcover_book_sheet.dart';
 import '../widgets/google_books_more_by_author_section.dart';
 import '../widgets/item_details_sheet.dart';
 import 'game_handler.dart';
@@ -127,10 +130,11 @@ class MediaHandlers {
             ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
     );
-    // Edition the user picked in the Fantlab editions strip, tagged with its
-    // work id so it only applies to that book; consumed by `enrich`. Reset
-    // each time a book sheet opens.
+    // Edition the user picked in the Fantlab / Hardcover editions strip,
+    // tagged with its work id so it only applies to that book; consumed by
+    // `enrich`. Reset each time a book sheet opens.
     ({String workId, FantlabEdition edition})? pendingBookEdition;
+    ({String bookId, HardcoverEdition edition})? pendingHardcoverEdition;
     _byType[Book] = SimpleMediaHandler<Book>(
       ref: ref,
       adder: adder,
@@ -164,6 +168,16 @@ class MediaHandlers {
             overviewLoader: overviewLoader,
           );
         }
+        if (b.source == DataSource.hardcover) {
+          return HardcoverBookSheet(
+            book: b,
+            onAddToCollection: onAdd,
+            onEditionChanged: (String bookId, HardcoverEdition? ed) =>
+                pendingHardcoverEdition =
+                    ed == null ? null : (bookId: bookId, edition: ed),
+            overviewLoader: overviewLoader,
+          );
+        }
         return ItemDetailsSheet.book(
           b,
           onAddToCollection: onAdd,
@@ -185,12 +199,18 @@ class MediaHandlers {
       // carries the rich fields, then overlay the picked Fantlab edition (if
       // any). Runs on the deliberate add, not on open.
       enrich: (Book b) async {
-        final Book enriched = await _enrichBook(ref, b);
+        Book enriched = await _enrichBook(ref, b);
         final ({String workId, FantlabEdition edition})? pending =
             pendingBookEdition;
-        return pending != null && pending.workId == b.nativeId
-            ? applyFantlabEdition(enriched, pending.edition)
-            : enriched;
+        if (pending != null && pending.workId == b.nativeId) {
+          enriched = applyFantlabEdition(enriched, pending.edition);
+        }
+        final ({String bookId, HardcoverEdition edition})? pendingHc =
+            pendingHardcoverEdition;
+        if (pendingHc != null && pendingHc.bookId == b.nativeId) {
+          enriched = applyHardcoverEdition(enriched, pendingHc.edition);
+        }
+        return enriched;
       },
       // Fantlab search rows are sparse (no cover / genres / description), so
       // fetch the full work before opening the sheet. OpenLibrary rows are
@@ -282,6 +302,8 @@ Future<Book?> _fetchFullBook(WidgetRef ref, Book book) async {
       return ref.read(comicVineApiProvider).getVolume(book.nativeId);
     case DataSource.googleBooks:
       return ref.read(googleBooksApiProvider).getVolume(book.nativeId);
+    case DataSource.hardcover:
+      return ref.read(hardcoverApiProvider).getBook(book.nativeId);
     default:
       return null;
   }

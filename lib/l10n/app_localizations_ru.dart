@@ -772,6 +772,12 @@ class SRu extends S {
       'Введите ключ Google Books API (необязательно)';
 
   @override
+  String get credentialsHardcoverSection => 'Hardcover API (книги)';
+
+  @override
+  String get credentialsEnterHardcoverKey => 'Введите токен Hardcover API';
+
+  @override
   String get credentialsContentLanguage => 'Язык контента';
 
   @override
@@ -853,6 +859,13 @@ class SRu extends S {
   @override
   String get credentialsGoogleBooksKeyInvalid =>
       'Ключ Google Books API недействителен';
+
+  @override
+  String get credentialsHardcoverKeyValid => 'Токен Hardcover API действителен';
+
+  @override
+  String get credentialsHardcoverKeyInvalid =>
+      'Токен Hardcover API недействителен или истёк';
 
   @override
   String get credentialsEnterSteamGridDbKeyError =>
@@ -1483,6 +1496,9 @@ class SRu extends S {
       'Данные о книгах из Google Books.';
 
   @override
+  String get creditsHardcoverAttribution => 'Данные о книгах из Hardcover.';
+
+  @override
   String get creditsOpenSource => 'Открытый исходный код';
 
   @override
@@ -1583,6 +1599,71 @@ class SRu extends S {
 
   @override
   String get importStartButton => 'Импортировать';
+
+  @override
+  String get importUsername => 'Имя пользователя';
+
+  @override
+  String get importUsernameHint => 'например, yourname';
+
+  @override
+  String get importMode => 'Режим';
+
+  @override
+  String get importModeNewOnly => 'Только новые';
+
+  @override
+  String get importModeNewOnlySubtitle =>
+      'Пропускать элементы, уже добавленные в коллекцию';
+
+  @override
+  String get importModeOverwrite => 'Обновлять существующие';
+
+  @override
+  String get importModeOverwriteSubtitle =>
+      'Обновить прогресс, статус и даты из источника';
+
+  @override
+  String get importNewCollectionName => 'Название коллекции';
+
+  @override
+  String importNewCollectionDefault(String source, String username) {
+    return 'Импорт $source — $username';
+  }
+
+  @override
+  String get importFetchingBooks => 'Загрузка библиотеки книг...';
+
+  @override
+  String get importAddingItems => 'Импорт записей';
+
+  @override
+  String importProcessingItem(String title) {
+    return 'Обработка: $title';
+  }
+
+  @override
+  String importImportedCount(int count) {
+    return 'Импортировано: $count';
+  }
+
+  @override
+  String importUpdatedCount(int count) {
+    return 'Обновлено: $count';
+  }
+
+  @override
+  String importUserNotFound(String username) {
+    return 'Пользователь \"$username\" не найден';
+  }
+
+  @override
+  String get importEmptyUsername => 'Введите имя пользователя';
+
+  @override
+  String importFailed(String error) {
+    return 'Импорт не удался: $error';
+  }
 
   @override
   String get collectionNotFound => 'Коллекция не найдена';
@@ -2803,6 +2884,10 @@ class SRu extends S {
   String get welcomeApiGoogleBooksDesc => 'Глобальный каталог книг Google';
 
   @override
+  String get welcomeApiHardcoverDesc =>
+      'Книжный каталог сообщества, нужен персональный токен';
+
+  @override
   String get welcomeApiRecommended => 'РЕКОМЕНДУЕТСЯ';
 
   @override
@@ -2945,6 +3030,10 @@ class SRu extends S {
       'Необязательно — свой ключ повышает лимиты. Поиск работает и без него.';
 
   @override
+  String get welcomeSourcesHardcoverTokenHint =>
+      'Обязателен — без него поиск и импорт не работают. Токены сбрасываются каждое 1 января.';
+
+  @override
   String get welcomeSourceDescTmdb => 'Фильмы, сериалы и анимация.';
 
   @override
@@ -2974,6 +3063,10 @@ class SRu extends S {
   @override
   String get welcomeSourceDescGoogleBooks =>
       'Миллионы изданий из книжного каталога Google: поиск по названию, автору или ISBN.';
+
+  @override
+  String get welcomeSourceDescHardcover =>
+      'Книжный каталог сообщества: серии, жанры, настроения и оценки. Нужен бесплатный персональный токен.';
 
   @override
   String get welcomeTourTitle => 'Знакомство с меню';
@@ -3845,6 +3938,9 @@ class SRu extends S {
 
   @override
   String get browseSortMostVoted => 'По голосам';
+
+  @override
+  String get browseSortMostRead => 'По прочтениям';
 
   @override
   String get browseSortTrending => 'В тренде';
@@ -5051,6 +5147,24 @@ class SRu extends S {
   @override
   String get settingsAniListImportSubtitle =>
       'Импорт списков аниме и манги по публичному имени';
+
+  @override
+  String get settingsHardcoverImport => 'Импорт Hardcover';
+
+  @override
+  String get settingsHardcoverImportSubtitle =>
+      'Импорт библиотеки книг с hardcover.app по имени пользователя';
+
+  @override
+  String get hardcoverImportTitle => 'Импорт Hardcover';
+
+  @override
+  String get hardcoverImportSubtitle =>
+      'Загружает библиотеку пользователя с hardcover.app — публичную часть у других, свою целиком';
+
+  @override
+  String get hardcoverImportTokenMissing =>
+      'Токен Hardcover API не задан. Добавьте его в Настройки → API-ключи.';
 
   @override
   String get aniListImportTitle => 'Импорт из AniList';

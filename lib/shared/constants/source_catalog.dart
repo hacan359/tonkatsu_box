@@ -78,6 +78,13 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     keyRequirement: SourceKeyRequirement.recommended,
   ),
   SourceInfo(
+    source: DataSource.hardcover,
+    mediaTypes: <MediaType>[MediaType.book],
+    // "Get a key" link target: the account page with the personal token.
+    url: 'https://hardcover.app/account/api',
+    keyRequirement: SourceKeyRequirement.mandatory,
+  ),
+  SourceInfo(
     source: DataSource.comicVine,
     mediaTypes: <MediaType>[MediaType.book],
     url: 'https://comicvine.gamespot.com/api/',
@@ -97,5 +104,6 @@ const Map<String, List<DataSource>> kSearchGroupToSources =
   'openlibrary': <DataSource>[DataSource.openLibrary],
   'fantlab': <DataSource>[DataSource.fantlab],
   'googlebooks': <DataSource>[DataSource.googleBooks],
+  'hardcover': <DataSource>[DataSource.hardcover],
   'comicvine': <DataSource>[DataSource.comicVine],
 };

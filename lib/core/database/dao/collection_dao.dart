@@ -426,10 +426,12 @@ class CollectionDao {
 
   /// Bulk-inserts collection items in a single transaction. Each [rows] map
   /// holds the item's own columns (media_type, external_id, status,
-  /// user_rating, completed_at, …); collection_id, added_at and an
-  /// incrementing sort_order are filled here. Rows that violate the unique
-  /// (collection_id, media_type, external_id, platform_id) constraint are
-  /// ignored. Returns the number of rows actually inserted.
+  /// user_rating, completed_at, …); collection_id and an incrementing
+  /// sort_order are filled here, added_at only when the row doesn't carry
+  /// one (sources that import their own add date pass it in the row). Rows
+  /// that violate the unique (collection_id, media_type, external_id,
+  /// platform_id) constraint are ignored. Returns the number of rows
+  /// actually inserted.
   Future<int> addItemsBatch(
     int? collectionId,
     List<Map<String, dynamic>> rows,
@@ -448,7 +450,7 @@ class CollectionDao {
           <String, dynamic>{
             ...row,
             'collection_id': collectionId,
-            'added_at': now,
+            'added_at': (row['added_at'] as int?) ?? now,
             'sort_order': sortOrder++,
           },
           conflictAlgorithm: ConflictAlgorithm.ignore,

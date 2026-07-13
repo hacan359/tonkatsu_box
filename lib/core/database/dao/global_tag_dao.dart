@@ -174,6 +174,21 @@ class GlobalTagDao {
     });
   }
 
+  /// Links [tagId] to every item in [itemIds] in one batch. Additive —
+  /// existing links stay, unlike the replace-set [setItemTags].
+  Future<void> addTagToItems(List<int> itemIds, int tagId) async {
+    if (itemIds.isEmpty) return;
+    final Database db = await _getDatabase();
+    final Batch batch = db.batch();
+    for (final int itemId in itemIds) {
+      batch.rawInsert(
+        'INSERT OR IGNORE INTO item_tags (item_id, tag_id) VALUES (?, ?)',
+        <Object?>[itemId, tagId],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
   /// Persists a manual reorder: [orderedIds] in their new display order.
   Future<void> setSortOrders(List<int> orderedIds) async {
     if (orderedIds.isEmpty) return;

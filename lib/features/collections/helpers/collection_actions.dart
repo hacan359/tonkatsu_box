@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/anilist_api.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
+import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/fantlab_api.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/mangabaka_api.dart';
@@ -39,6 +40,8 @@ import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/copy_as_text_dialog.dart';
 import '../widgets/edit_collection_dialog.dart';
+import '../widgets/fantlab_edition_picker.dart';
+import '../widgets/hardcover_edition_picker.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../settings/providers/settings_provider.dart';
 
@@ -565,7 +568,37 @@ class CollectionActions {
   }) async {
     final S l = S.of(context);
 
-    final _RefreshOutcome outcome = await _refreshItemWork(ref, item);
+    // Books with an edition catalog first offer to switch the edition (e.g.
+    // added the RU printing, want the EN one). Picking refreshes with that
+    // edition; dismissing refreshes keeping the current one.
+    FantlabEdition? pickedFantlab;
+    HardcoverEdition? pickedHardcover;
+    final Book? cachedBook =
+        item.mediaType == MediaType.book ? item.book : null;
+    if (cachedBook != null && item.source == DataSource.fantlab) {
+      pickedFantlab = await showFantlabEditionPicker(
+        context,
+        workId: cachedBook.nativeId,
+        currentEditionId: editionIdFromCoverUrl(cachedBook.coverUrl),
+      );
+      if (!context.mounted) return false;
+    } else if (cachedBook != null && item.source == DataSource.hardcover) {
+      pickedHardcover = await showHardcoverEditionPicker(
+        context,
+        bookId: cachedBook.nativeId,
+        currentEditionId:
+            hardcoverEditionIdFromExternalUrl(cachedBook.externalUrl) ??
+                hardcoverEditionIdFromCoverUrl(cachedBook.coverUrl),
+      );
+      if (!context.mounted) return false;
+    }
+
+    final _RefreshOutcome outcome = await _refreshItemWork(
+      ref,
+      item,
+      pickedFantlabEdition: pickedFantlab,
+      pickedHardcoverEdition: pickedHardcover,
+    );
     if (!context.mounted) return outcome.success;
 
     switch (outcome.message) {
@@ -590,8 +623,10 @@ class CollectionActions {
   /// in the caller.
   static Future<_RefreshOutcome> _refreshItemWork(
     WidgetRef ref,
-    CollectionItem item,
-  ) async {
+    CollectionItem item, {
+    FantlabEdition? pickedFantlabEdition,
+    HardcoverEdition? pickedHardcoverEdition,
+  }) async {
     final DatabaseService db = ref.read(databaseServiceProvider);
     final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
@@ -650,10 +685,16 @@ class CollectionActions {
             // overlay rather than replace.
             await db.bookDao.upsertBook(cached.withWorkDetails(full));
           } else if (item.source == DataSource.fantlab) {
-            final Book? full =
-                await ref.read(fantlabApiProvider).getWork(cached.nativeId);
+            final FantlabApi api = ref.read(fantlabApiProvider);
+            final Book? full = await api.getWork(cached.nativeId);
             if (full == null) return _RefreshOutcome.notFound();
-            await db.bookDao.upsertBook(full);
+            // A freshly picked edition wins; otherwise keep the previously
+            // picked one (cover, year, ISBN, …) instead of resetting the book
+            // to the work's default first edition.
+            final Book updated = pickedFantlabEdition != null
+                ? applyFantlabEdition(full, pickedFantlabEdition)
+                : await reapplyFantlabEdition(api, cached: cached, fresh: full);
+            await db.bookDao.upsertBook(updated);
           } else if (item.source == DataSource.comicVine) {
             final Book? full = await ref
                 .read(comicVineApiProvider)
@@ -666,6 +707,21 @@ class CollectionActions {
                 .getVolume(cached.nativeId);
             if (full == null) return _RefreshOutcome.notFound();
             await db.bookDao.upsertBook(full);
+          } else if (item.source == DataSource.hardcover) {
+            final HardcoverApi api = ref.read(hardcoverApiProvider);
+            final Book? full = await api.getBook(cached.nativeId);
+            if (full == null) return _RefreshOutcome.notFound();
+            // A freshly picked edition wins; otherwise keep the previously
+            // picked one (localized title, cover, ISBN, …) instead of
+            // resetting to the book's canonical fields.
+            final Book updated = pickedHardcoverEdition != null
+                ? applyHardcoverEdition(full, pickedHardcoverEdition)
+                : await reapplyHardcoverEdition(
+                    api,
+                    cached: cached,
+                    fresh: full,
+                  );
+            await db.bookDao.upsertBook(updated);
           } else {
             return _RefreshOutcome.unsupported();
           }

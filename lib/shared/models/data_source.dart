@@ -1,27 +1,27 @@
-// Внешний источник данных (IGDB, TMDB, SteamGridDB, VGMaps).
+// External data provider (IGDB, TMDB, SteamGridDB, VGMaps, ...).
 
 import 'package:flutter/material.dart';
 
 import '../theme/app_assets.dart';
 
-/// Внешний источник данных.
+/// External data provider.
 enum DataSource {
-  /// IGDB — база данных игр.
+  /// IGDB — game database.
   igdb('IGDB', Color(0xFF9147FF), AppAssets.iconIgdbColor),
 
-  /// TMDB — база данных фильмов и сериалов.
+  /// TMDB — movie and TV database.
   tmdb('TMDB', Color(0xFF01D277), AppAssets.iconTmdbColor),
 
-  /// SteamGridDB — изображения из Steam.
+  /// SteamGridDB — Steam artwork.
   steamGridDb('SGDB', Color(0xFF3A9BDC), AppAssets.iconSteamGridDbColor),
 
-  /// VGMaps — карты из видеоигр.
+  /// VGMaps — video game maps.
   vgMaps('VGMaps', Color(0xFFE57C23), null),
 
-  /// VNDB — база данных визуальных новелл.
+  /// VNDB — visual novel database.
   vndb('VNDB', Color(0xFF2A5FC1), AppAssets.iconVndbColor),
 
-  /// AniList — база данных манги и аниме.
+  /// AniList — anime and manga database.
   anilist('AniList', Color(0xFF3DB4F2), AppAssets.iconAnilistColor),
 
   /// MangaBaka — open catalog of manga / manhwa / manhua / light novels.
@@ -45,18 +45,22 @@ enum DataSource {
     AppAssets.iconGoogleBooksColor,
   ),
 
-  /// Локальный источник (кастомные элементы).
+  /// Hardcover — community book catalog (books, series, moods, ratings).
+  /// Feeds the `book` media type; graphic novels map to `BookKind.comic`.
+  hardcover('Hardcover', Color(0xFF6366F1), AppAssets.iconHardcoverColor),
+
+  /// Local source (custom items).
   local('Custom', Color(0xFF26A69A), null);
 
   const DataSource(this.label, this.color, this.iconAsset);
 
-  /// Короткая метка для отображения.
+  /// Short display label.
   final String label;
 
-  /// Фирменный цвет источника.
+  /// Brand color of the source.
   final Color color;
 
-  /// Путь к цветному PNG-логотипу (null если нет брендового ассета).
+  /// Path to the color PNG logo (null when there is no brand asset).
   final String? iconAsset;
 
   /// Parses a [DataSource] from its stored name (the `source` column in DB /
