@@ -202,7 +202,7 @@ class FilterSheet extends ConsumerWidget {
                           AppSpacing.xs,
                         ),
                         child: Text(
-                          l.browseSort.toUpperCase(),
+                          l.sort.toUpperCase(),
                           style: AppTypography.caption.copyWith(
                             color: AppColors.textTertiary,
                             letterSpacing: 0.6,
@@ -331,10 +331,10 @@ class _FilterRowState extends ConsumerState<_FilterRow> {
   }
 
   String _valueLabel(S l) {
-    if (widget.value == null) return l.browseFilterAll;
+    if (widget.value == null) return l.all;
     if (widget.filter.multiSelect && widget.value is List<Object>) {
       final List<Object> sel = widget.value! as List<Object>;
-      if (sel.isEmpty) return l.browseFilterAll;
+      if (sel.isEmpty) return l.all;
       return l.platformFilterApply(sel.length);
     }
     if (_options == null) return '…';
@@ -365,7 +365,7 @@ class _FilterRowState extends ConsumerState<_FilterRow> {
               options: _options,
               isLoading: _isLoading,
               currentValue: widget.value,
-              allLabel: l.browseFilterAll,
+              allLabel: l.all,
               multiSelect: widget.filter.multiSelect,
             ),
           );

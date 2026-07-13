@@ -155,7 +155,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
     final S l10n = S.of(context);
 
     return SettingsGroup(
-      title: l10n.kinoriumOptions,
+      title: l10n.importOptions,
       children: <Widget>[
         CheckboxListTile(
           title: Text(l10n.kinoriumIsWatchlist),
@@ -181,7 +181,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l10n.kinoriumTargetCollection,
+            l10n.importTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -199,7 +199,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l10n.kinoriumCreateNew),
+                title: Text(l10n.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: () => setState(() {
@@ -208,7 +208,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
                 }),
               ),
               ListTile(
-                title: Text(l10n.kinoriumUseExisting),
+                title: Text(l10n.importUseExistingCollection),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: () => setState(() {
@@ -225,7 +225,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l10n.kinoriumNoCollections,
+                    l10n.importNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -237,8 +237,8 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l10n.kinoriumSelectCollection,
-                  title: l10n.kinoriumSelectCollection,
+                  hint: l10n.importSelectCollection,
+                  title: l10n.importSelectCollection,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
                 );
@@ -246,7 +246,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l10n.kinoriumErrorLoadingCollections,
+                l10n.importErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -266,7 +266,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
       child: FilledButton.icon(
         onPressed: hasTarget ? _startImport : null,
         icon: const Icon(Icons.download),
-        label: Text(S.of(context).kinoriumStartImport),
+        label: Text(S.of(context).importStart),
       ),
     );
   }

@@ -25,7 +25,7 @@ class OpenLibraryScopeFilter extends SearchFilter {
   @override
   Future<List<FilterOption>> options(WidgetRef ref, S l) async {
     return <FilterOption>[
-      FilterOption(id: 'title', label: l.bookSearchTitle, value: 'title'),
+      FilterOption(id: 'title', label: l.title, value: 'title'),
       FilterOption(id: 'author', label: l.bookSearchAuthor, value: 'author'),
       FilterOption(id: 'subject', label: l.bookSearchSubject, value: 'subject'),
     ];

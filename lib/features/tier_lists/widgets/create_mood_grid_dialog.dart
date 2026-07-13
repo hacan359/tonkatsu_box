@@ -44,10 +44,10 @@ class _CreateMoodGridDialogState extends ConsumerState<CreateMoodGridDialog> {
             TextField(
               controller: _nameController,
               autofocus: true,
-              decoration: InputDecoration(labelText: l.moodGridName),
+              decoration: InputDecoration(labelText: l.name),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text(l.moodGridPresetLabel),
+            Text(l.template),
             RadioGroup<MoodGridPreset>(
               groupValue: _preset,
               onChanged: (MoodGridPreset? v) {
@@ -93,7 +93,7 @@ class _CreateMoodGridDialogState extends ConsumerState<CreateMoodGridDialog> {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _StepInput(
-                      label: l.moodGridCols,
+                      label: l.columnsCount,
                       value: _cols,
                       min: 1,
                       max: 10,

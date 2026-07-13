@@ -102,7 +102,7 @@ void main() {
       await tester.pump();
       expect(importButton().onPressed, isNull);
 
-      await tester.tap(find.text(l.customImportSelectAll));
+      await tester.tap(find.text(l.selectAll));
       await tester.pump();
       expect(importButton().onPressed, isNotNull);
     });

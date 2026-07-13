@@ -107,7 +107,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              l.igdbImportIgdbRequired,
+              l.importIgdbRequired,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textPrimary,
               ),
@@ -185,7 +185,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
     final S l = S.of(context);
 
     return SettingsGroup(
-      title: l.igdbImportOptions,
+      title: l.importOptions,
       children: <Widget>[
         _buildStatusSelector(l),
         _buildPlatformSelector(l),
@@ -195,7 +195,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l.igdbImportTargetCollection,
+            l.importTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -213,7 +213,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l.igdbImportCreateNew),
+                title: Text(l.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: () => setState(() {
@@ -222,7 +222,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
                 }),
               ),
               ListTile(
-                title: Text(l.igdbImportUseExisting),
+                title: Text(l.importUseExistingCollection),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: () => setState(() {
@@ -244,7 +244,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l.igdbImportNoCollections,
+                    l.importNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -256,8 +256,8 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l.igdbImportSelectCollection,
-                  title: l.igdbImportSelectCollection,
+                  hint: l.importSelectCollection,
+                  title: l.importSelectCollection,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
                 );
@@ -265,7 +265,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l.igdbImportErrorLoadingCollections,
+                l.importErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -277,7 +277,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
           child: FilledButton.icon(
             onPressed: _canStart ? _startImport : null,
             icon: const Icon(Icons.download),
-            label: Text(l.igdbStartImport),
+            label: Text(l.importStart),
           ),
         ),
       ],
@@ -315,7 +315,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       dense: true,
-      title: Text(l.igdbImportPlatformLabel, style: AppTypography.body),
+      title: Text(l.platform, style: AppTypography.body),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -362,7 +362,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
     final Object? result = await showDialog<Object>(
       context: context,
       builder: (BuildContext context) => SearchableFilterDialog(
-        title: l.igdbImportPlatformLabel,
+        title: l.platform,
         options: options,
         isLoading: false,
         currentValue: _platformId,
@@ -494,7 +494,7 @@ class _IgdbImportProgressDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: Text(S.of(context).igdbImporting),
+      title: Text(S.of(context).importing),
       content: ValueListenableBuilder<ImportProgress?>(
         valueListenable: progressNotifier,
         builder:

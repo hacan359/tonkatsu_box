@@ -55,7 +55,7 @@ List<NavDestination> buildNavDestinations({
       tab: NavTab.search,
       icon: Icons.search_outlined,
       selectedIcon: Icons.search,
-      label: loc.navSearch,
+      label: loc.search,
     ),
   ];
 }

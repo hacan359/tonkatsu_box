@@ -119,7 +119,7 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                 WelcomeReveal(
                   index: 5,
                   child: Text(
-                    l.welcomeLanguageHint,
+                    l.welcomeChangeLaterHint,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textTertiary,
                     ),

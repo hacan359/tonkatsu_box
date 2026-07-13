@@ -103,7 +103,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
             enabled: !_isImporting,
             decoration: InputDecoration(
               labelText: l.aniListImportUsername,
-              hintText: l.aniListImportUsernameHint,
+              hintText: l.importUsernameHint,
               prefixIcon: const Icon(Icons.person_outline),
             ),
             onChanged: (_) => setState(() {}),
@@ -118,7 +118,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
           child: FilledButton.icon(
             onPressed: _canStart ? _startImport : null,
             icon: const Icon(Icons.download),
-            label: Text(l.aniListImportButton),
+            label: Text(l.importStart),
           ),
         ),
       ],
@@ -146,7 +146,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
           onChanged: _isImporting
               ? null
               : (bool? v) => setState(() => _includeAnime = v ?? false),
-          title: Text(l.aniListImportIncludeAnime),
+          title: Text(l.importAnimeList),
           dense: true,
           controlAffinity: ListTileControlAffinity.leading,
         ),
@@ -155,7 +155,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
           onChanged: _isImporting
               ? null
               : (bool? v) => setState(() => _includeManga = v ?? false),
-          title: Text(l.aniListImportIncludeManga),
+          title: Text(l.importMangaList),
           dense: true,
           controlAffinity: ListTileControlAffinity.leading,
         ),
@@ -173,7 +173,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l.aniListImportMode,
+            l.importMode,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -188,8 +188,8 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l.aniListImportModeNewOnly),
-                subtitle: Text(l.aniListImportModeNewOnlySubtitle),
+                title: Text(l.importModeNewOnly),
+                subtitle: Text(l.importModeNewOnlySubtitle),
                 leading: const Radio<ImportMode>(value: ImportMode.newOnly),
                 dense: true,
                 onTap: _isImporting
@@ -197,7 +197,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
                     : () => setState(() => _mode = ImportMode.newOnly),
               ),
               ListTile(
-                title: Text(l.aniListImportModeOverwrite),
+                title: Text(l.importModeOverwrite),
                 subtitle: Text(l.aniListImportModeOverwriteSubtitle),
                 leading: const Radio<ImportMode>(value: ImportMode.overwrite),
                 dense: true,
@@ -225,7 +225,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l.aniListImportTargetCollection,
+            l.importTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -243,7 +243,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l.aniListImportCreateNew),
+                title: Text(l.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: _isImporting
@@ -254,7 +254,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
                         }),
               ),
               ListTile(
-                title: Text(l.aniListImportUseExisting),
+                title: Text(l.importUseExistingCollection),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: _isImporting
@@ -273,7 +273,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
               controller: _newNameController,
               enabled: !_isImporting,
               decoration: InputDecoration(
-                labelText: l.aniListImportNewCollectionName,
+                labelText: l.importNewCollectionName,
                 hintText: _defaultCollectionName(l),
               ),
               onChanged: (_) => setState(() {}),
@@ -286,7 +286,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l.aniListImportNoCollections,
+                    l.importNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -298,8 +298,8 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l.aniListImportSelectCollection,
-                  title: l.aniListImportSelectCollection,
+                  hint: l.importSelectCollection,
+                  title: l.importSelectCollection,
                   enabled: !_isImporting,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
@@ -308,7 +308,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l.aniListImportErrorLoadingCollections,
+                l.importErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -325,8 +325,8 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
     final String stageText = switch (progress.stage) {
       ImportStage.fetchingAnime => l.aniListImportFetchingAnime,
       ImportStage.fetchingManga => l.aniListImportFetchingManga,
-      ImportStage.completed => l.aniListImportComplete,
-      _ => l.aniListImportMatching,
+      ImportStage.completed => l.importComplete,
+      _ => l.importAddingItems,
     };
 
     return SettingsGroup(
@@ -353,7 +353,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
               if (progress.currentItem != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l.aniListImportLookingUp(progress.currentItem!),
+                  l.importProcessingItem(progress.currentItem!),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -365,12 +365,12 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
               _buildStatRow(
                 Icons.check_circle,
                 AppColors.statusCompleted,
-                l.aniListImportImported(progress.imported),
+                l.importImportedCount(progress.imported),
               ),
               _buildStatRow(
                 Icons.sync,
                 AppColors.statusInProgress,
-                l.aniListImportUpdated(progress.updated),
+                l.importUpdatedCount(progress.updated),
               ),
             ],
           ),
@@ -506,7 +506,7 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
       if (!mounted) return;
       setState(() => _isImporting = false);
       context.showSnack(
-        l.aniListImportFailed(e.toString()),
+        l.importFailed(e.toString()),
         type: SnackType.error,
       );
     }

@@ -9,7 +9,7 @@ class AnimeTypeFilter extends SearchFilter {
   String get key => 'animeType';
 
   @override
-  String placeholder(S l) => l.browseFilterType;
+  String placeholder(S l) => l.type;
 
   @override
   FilterOption get allOption => const FilterOption(

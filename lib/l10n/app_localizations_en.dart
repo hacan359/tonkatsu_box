@@ -21,9 +21,6 @@ class SEn extends S {
   String get navWishlist => 'Wishlist';
 
   @override
-  String get navSearch => 'Search';
-
-  @override
   String get navSettings => 'Settings';
 
   @override
@@ -61,7 +58,7 @@ class SEn extends S {
   String get releasesToday => 'Today';
 
   @override
-  String get releasesRefresh => 'Refresh';
+  String get refresh => 'Refresh';
 
   @override
   String get releasesNoEpisodes => 'No episodes';
@@ -78,16 +75,10 @@ class SEn extends S {
   String get calendarRemove => 'Remove from calendar';
 
   @override
-  String get calendarAddTitle => 'Add to calendar';
-
-  @override
-  String get calendarDate => 'Date';
+  String get date => 'Date';
 
   @override
   String get calendarRepeat => 'Repeat';
-
-  @override
-  String get calendarAddAction => 'Add';
 
   @override
   String get recurrenceOnce => 'Once';
@@ -138,7 +129,7 @@ class SEn extends S {
   String get statusRereading => 'Rereading';
 
   @override
-  String get homeFilterAll => 'All';
+  String get all => 'All';
 
   @override
   String get mediaTypeGame => 'Game';
@@ -171,52 +162,31 @@ class SEn extends S {
   String get sortManualDisplay => 'Manual';
 
   @override
-  String get sortManualShort => 'Manual';
-
-  @override
   String get sortManualDesc => 'Custom order';
 
   @override
   String get sortDateDisplay => 'Date Added';
 
   @override
-  String get sortDateShort => 'Date';
-
-  @override
   String get sortDateDesc => 'Newest first';
 
   @override
-  String get sortStatusDisplay => 'Status';
-
-  @override
-  String get sortStatusShort => 'Status';
+  String get status => 'Status';
 
   @override
   String get sortStatusDesc => 'Active first';
 
   @override
-  String get sortNameDisplay => 'Name';
+  String get name => 'Name';
 
   @override
   String get sortNameShort => 'A-Z';
 
   @override
-  String get sortNameDesc => 'A to Z';
-
-  @override
-  String get sortRatingDisplay => 'My Rating';
-
-  @override
-  String get sortRatingShort => 'Rating';
+  String get rating => 'Rating';
 
   @override
   String get sortRatingDesc => 'Highest first';
-
-  @override
-  String get sortFavoriteDisplay => 'Favorite';
-
-  @override
-  String get sortFavoriteShort => 'Favorite';
 
   @override
   String get sortFavoriteDesc => 'Favorites first';
@@ -226,9 +196,6 @@ class SEn extends S {
 
   @override
   String get sortExternalRatingShort => 'IGDB/TMDB';
-
-  @override
-  String get sortExternalRatingDesc => 'Highest first';
 
   @override
   String get sortLastActivityDisplay => 'Last Activity';
@@ -246,31 +213,13 @@ class SEn extends S {
   String get sortStatusFinished => 'Finished first';
 
   @override
-  String get sortNameZa => 'Z to A';
-
-  @override
   String get sortRatingLowest => 'Lowest first';
 
   @override
   String get sortFavoriteLast => 'Favorites last';
 
   @override
-  String get sortExternalRatingLowest => 'Lowest first';
-
-  @override
-  String get sortLastActivityOldest => 'Oldest first';
-
-  @override
   String get searchSortRelevanceShort => 'Rel';
-
-  @override
-  String get searchSortRelevanceDisplay => 'Relevance';
-
-  @override
-  String get searchSortDateShort => 'Date';
-
-  @override
-  String get searchSortDateDisplay => 'Date';
 
   @override
   String get searchSortRatingShort => 'Rate';
@@ -356,7 +305,7 @@ class SEn extends S {
   String get bulkClearSelection => 'Clear selection';
 
   @override
-  String get bulkSelectAllVisible => 'Select all';
+  String get selectAll => 'Select all';
 
   @override
   String get bulkMove => 'Move selected to collection';
@@ -403,7 +352,7 @@ class SEn extends S {
   String get bulkExportPngTitle => 'Export as PNG';
 
   @override
-  String get bulkExportPngColumns => 'Columns';
+  String get columnsCount => 'Columns';
 
   @override
   String bulkExportPngItemsCount(int count) {
@@ -436,7 +385,7 @@ class SEn extends S {
   String get bulkExportPngSave => 'Save PNG';
 
   @override
-  String get bulkExportPngSaved => 'Image saved';
+  String get imageSaved => 'Image saved';
 
   @override
   String get bulkExportPngFailed => 'Failed to save image';
@@ -475,31 +424,13 @@ class SEn extends S {
   String get settingsAuthorName => 'Author name';
 
   @override
-  String get settingsAuthorPlaceholder => 'User';
-
-  @override
-  String get settingsSettings => 'Settings';
-
-  @override
-  String get settingsCredentials => 'Credentials';
-
-  @override
   String get settingsCredentialsSubtitle => 'IGDB, SteamGridDB, TMDB API keys';
-
-  @override
-  String get settingsCache => 'Cache';
 
   @override
   String get settingsCacheSubtitle => 'Offline mode and cover storage';
 
   @override
-  String get settingsDatabase => 'Database';
-
-  @override
   String get settingsDatabaseSubtitle => 'Export, import, reset';
-
-  @override
-  String get settingsTraktImport => 'Trakt Import';
 
   @override
   String get settingsTraktImportSubtitle => 'Watch history, ratings, watchlist';
@@ -767,9 +698,6 @@ class SEn extends S {
 
   @override
   String get credentialsEnterHardcoverKey => 'Enter your Hardcover API token';
-
-  @override
-  String get credentialsContentLanguage => 'Content Language';
 
   @override
   String get credentialsOwnKeyHint =>
@@ -1068,7 +996,7 @@ class SEn extends S {
       'The selected folder is empty. Your collections will be copied there; saved images will download again as needed. Data in the old folder stays untouched.';
 
   @override
-  String get storageLocationCopyConfirm => 'Copy';
+  String get copy => 'Copy';
 
   @override
   String get storageLocationCopyImages => 'Copy the image cache too';
@@ -1103,9 +1031,6 @@ class SEn extends S {
       'The change will take effect after restart';
 
   @override
-  String get backupTitle => 'Backup';
-
-  @override
   String get backupRestoreTile => 'Restore the previous database';
 
   @override
@@ -1118,9 +1043,6 @@ class SEn extends S {
   String backupRestoreConfirmMessage(String date) {
     return 'Current data will be replaced with the backup from $date. The replaced data becomes the new backup, so restoring again undoes this.';
   }
-
-  @override
-  String get backupRestoreConfirm => 'Restore';
 
   @override
   String get backupRestored => 'Database restored';
@@ -1278,7 +1200,7 @@ class SEn extends S {
   String get traktSelectZipExport => 'Select Trakt ZIP Export';
 
   @override
-  String get traktPreview => 'Preview';
+  String get preview => 'Preview';
 
   @override
   String traktUser(String username) {
@@ -1301,7 +1223,7 @@ class SEn extends S {
   String get traktWatchlist => 'Watchlist';
 
   @override
-  String get traktOptions => 'Options';
+  String get importOptions => 'Options';
 
   @override
   String get traktImportWatched => 'Import watched items';
@@ -1322,25 +1244,13 @@ class SEn extends S {
   String get traktImportWatchlistDesc => 'Add as planned or to wishlist';
 
   @override
-  String get traktTargetCollection => 'Target collection';
+  String get importTargetCollection => 'Target collection';
 
   @override
-  String get traktCreateNew => 'Create new collection';
+  String get importUseExistingCollection => 'Use existing collection';
 
   @override
-  String get traktUseExisting => 'Use existing collection';
-
-  @override
-  String get traktNoCollections => 'No collections available';
-
-  @override
-  String get traktSelectCollection => 'Select collection';
-
-  @override
-  String get traktErrorLoadingCollections => 'Error loading collections';
-
-  @override
-  String get traktStartImport => 'Start Import';
+  String get importStart => 'Start Import';
 
   @override
   String get traktRequiresOwnTmdbKey =>
@@ -1363,9 +1273,6 @@ class SEn extends S {
   String get kinoriumSelectCsvExport => 'Select Kinorium CSV Export';
 
   @override
-  String get kinoriumOptions => 'Options';
-
-  @override
   String get kinoriumIsWatchlist => 'This is a \"Watchlist\" file';
 
   @override
@@ -1378,27 +1285,6 @@ class SEn extends S {
   @override
   String get kinoriumImportNotesDesc =>
       'Add directors and actors to the item note';
-
-  @override
-  String get kinoriumTargetCollection => 'Target collection';
-
-  @override
-  String get kinoriumCreateNew => 'Create new collection';
-
-  @override
-  String get kinoriumUseExisting => 'Use existing collection';
-
-  @override
-  String get kinoriumNoCollections => 'No collections available';
-
-  @override
-  String get kinoriumSelectCollection => 'Select collection';
-
-  @override
-  String get kinoriumErrorLoadingCollections => 'Error loading collections';
-
-  @override
-  String get kinoriumStartImport => 'Start Import';
 
   @override
   String get kinoriumImporting => 'Importing from Kinorium...';
@@ -1487,9 +1373,6 @@ class SEn extends S {
 
   @override
   String get creditsDiscord => 'Join Discord';
-
-  @override
-  String get collectionsNewCollection => 'New Collection';
 
   @override
   String get collectionsImportCollection => 'Import Collection';
@@ -1719,7 +1602,7 @@ class SEn extends S {
   String get customItemCreate => 'Create Custom Item';
 
   @override
-  String get customItemTitle => 'Title';
+  String get title => 'Title';
 
   @override
   String get customItemTitleHint => 'e.g. My Homebrew Game';
@@ -1734,25 +1617,25 @@ class SEn extends S {
   String get customItemCoverUrl => 'Cover image URL';
 
   @override
-  String get customItemYear => 'Year';
+  String get year => 'Year';
 
   @override
-  String get customItemGenres => 'Genres';
+  String get genres => 'Genres';
 
   @override
   String get customItemGenresHint => 'e.g. RPG, Action, Puzzle';
 
   @override
-  String get customItemPlatform => 'Platform';
+  String get platform => 'Platform';
 
   @override
   String get customItemPlatformHint => 'e.g. PC, SNES, Custom';
 
   @override
-  String get customItemFormat => 'Format';
+  String get format => 'Format';
 
   @override
-  String get customProgress => 'Progress';
+  String get progress => 'Progress';
 
   @override
   String get customMarkCompleted => 'Mark as completed';
@@ -1776,16 +1659,13 @@ class SEn extends S {
   String get customUnitSeasons => 'Seasons';
 
   @override
-  String get customItemDescription => 'Description';
+  String get description => 'Description';
 
   @override
   String get customItemDescriptionHint => 'Brief description or notes';
 
   @override
   String get customItemOptionalFields => 'More fields';
-
-  @override
-  String get customItemCreateButton => 'Create';
 
   @override
   String get customItemEdit => 'Edit Custom Item';
@@ -1802,12 +1682,6 @@ class SEn extends S {
 
   @override
   String get customItemCoverFromFile => 'From file';
-
-  @override
-  String get customItemCoverFromUrl => 'From URL';
-
-  @override
-  String get customItemAddGenre => 'Add';
 
   @override
   String get customItemSearchHint => 'Search or type custom...';
@@ -1878,9 +1752,6 @@ class SEn extends S {
   String get tagUpdateFailed => 'Failed to update tag';
 
   @override
-  String get renameItem => 'Rename';
-
-  @override
   String get refreshItemFromApi => 'Refresh from source';
 
   @override
@@ -1922,9 +1793,6 @@ class SEn extends S {
   String get tagFilterAll => 'All tags';
 
   @override
-  String get tagSidebarAll => 'All';
-
-  @override
   String get tagSidebarGroup => 'Group';
 
   @override
@@ -1932,9 +1800,6 @@ class SEn extends S {
 
   @override
   String get colorPickerNoColor => 'No color';
-
-  @override
-  String get colorPickerApply => 'Apply';
 
   @override
   String get raLinkButton => 'Link RetroAchievements';
@@ -1972,9 +1837,6 @@ class SEn extends S {
       'Remove RetroAchievements link and achievement data for this game?';
 
   @override
-  String get collectionFilterAll => 'All';
-
-  @override
   String get collectionFilterByType => 'Filter by type';
 
   @override
@@ -1987,25 +1849,16 @@ class SEn extends S {
   String get collectionFilterTvShows => 'TV Shows';
 
   @override
-  String get collectionFilterAnimation => 'Animation';
-
-  @override
   String get collectionFilterVisualNovels => 'Visual Novels';
-
-  @override
-  String get collectionFilterManga => 'Manga';
 
   @override
   String get collectionFilterBooks => 'Books';
 
   @override
-  String get collectionFilterCustom => 'Custom';
+  String get searchHint => 'Search...';
 
   @override
-  String get collectionFilterSearchHint => 'Search...';
-
-  @override
-  String get collectionFilterSort => 'Sort';
+  String get sort => 'Sort';
 
   @override
   String get collectionFilterAscending => 'Ascending';
@@ -2018,9 +1871,6 @@ class SEn extends S {
 
   @override
   String get collectionFilterClearAll => 'Clear all';
-
-  @override
-  String get collectionFilterPlatform => 'Platform';
 
   @override
   String collectionItemMovedTo(String name, String collection) {
@@ -2068,7 +1918,7 @@ class SEn extends S {
   String get mangaNotFound => 'Manga not found';
 
   @override
-  String get mangaProgress => 'Reading Progress';
+  String get readingProgress => 'Reading Progress';
 
   @override
   String get mangaChapters => 'Chapters';
@@ -2087,9 +1937,6 @@ class SEn extends S {
 
   @override
   String get animeMarkCompleted => 'Mark as completed';
-
-  @override
-  String get bookProgress => 'Reading Progress';
 
   @override
   String get bookPages => 'Pages';
@@ -2253,9 +2100,6 @@ class SEn extends S {
   String get canvasAddToBoard => 'Add to Board';
 
   @override
-  String get addTextTitle => 'Add Text';
-
-  @override
   String get editTextTitle => 'Edit Text';
 
   @override
@@ -2275,9 +2119,6 @@ class SEn extends S {
 
   @override
   String get fontSizeTitle => 'Title';
-
-  @override
-  String get addImageTitle => 'Add Image';
 
   @override
   String get editImageTitle => 'Edit Image';
@@ -2301,25 +2142,13 @@ class SEn extends S {
   String get imageChooseAnother => 'Choose Another';
 
   @override
-  String get addLinkTitle => 'Add Link';
-
-  @override
   String get editLinkTitle => 'Edit Link';
-
-  @override
-  String get linkUrlLabel => 'URL';
-
-  @override
-  String get linkUrlHint => 'https://example.com';
 
   @override
   String get linkLabelOptional => 'Label (optional)';
 
   @override
   String get linkLabelHint => 'My Link';
-
-  @override
-  String get editConnectionTitle => 'Edit Connection';
 
   @override
   String get connectionLabelHint => 'e.g. depends on, related to...';
@@ -2340,9 +2169,6 @@ class SEn extends S {
   String get searchTabTv => 'TV';
 
   @override
-  String get searchTabGames => 'Games';
-
-  @override
   String get searchHintMovies => 'Search movies...';
 
   @override
@@ -2361,31 +2187,10 @@ class SEn extends S {
   String get searchSourceVisualNovels => 'V. Novels';
 
   @override
-  String get searchSourceManga => 'Manga';
-
-  @override
-  String get searchSourceAnime => 'Anime';
-
-  @override
-  String get searchSourceGames => 'Games';
-
-  @override
-  String get searchSourceMovies => 'Movies';
-
-  @override
-  String get searchSourceTvShows => 'TV Shows';
-
-  @override
-  String get searchSourceAnimation => 'Animation';
-
-  @override
   String get searchSourceOpenLibrary => 'OpenLibrary';
 
   @override
   String get searchSourceFantlab => 'Fantlab';
-
-  @override
-  String get searchSourceBooks => 'Books';
 
   @override
   String get searchSourceComics => 'Comics';
@@ -2400,16 +2205,13 @@ class SEn extends S {
   String get searchHintComics => 'Search comics...';
 
   @override
-  String get bookFilterLanguage => 'Language';
+  String get language => 'Language';
 
   @override
   String get bookFilterSearchBy => 'Search by';
 
   @override
-  String get bookFilterPrintType => 'Type';
-
-  @override
-  String get bookSearchTitle => 'Title';
+  String get type => 'Type';
 
   @override
   String get bookSearchAuthor => 'Author';
@@ -2487,7 +2289,7 @@ class SEn extends S {
   }
 
   @override
-  String get searchGoToSettings => 'Go to Settings';
+  String get goToSettings => 'Go to Settings';
 
   @override
   String get searchMinCharsHint => 'Type at least 2 characters and press Enter';
@@ -2517,9 +2319,6 @@ class SEn extends S {
   String get errorDetailsCopied => 'Error details copied';
 
   @override
-  String get searchDescription => 'Description';
-
-  @override
   String get showMore => 'More…';
 
   @override
@@ -2535,7 +2334,7 @@ class SEn extends S {
   String get platformFilterSearchHint => 'Search platforms...';
 
   @override
-  String platformFilterSelected(int count) {
+  String selectedCount(int count) {
     return '$count selected';
   }
 
@@ -2582,9 +2381,6 @@ class SEn extends S {
   }
 
   @override
-  String get wishlistClearResolvedTitle => 'Clear resolved';
-
-  @override
   String wishlistClearResolvedMessage(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2602,15 +2398,6 @@ class SEn extends S {
   String get wishlistUnresolve => 'Unresolve';
 
   @override
-  String get wishlistAddTitle => 'Add';
-
-  @override
-  String get wishlistEditTitle => 'Edit';
-
-  @override
-  String get wishlistTitleLabel => 'Title';
-
-  @override
   String get wishlistTitleHint => 'Game, movie, or TV show name...';
 
   @override
@@ -2620,7 +2407,7 @@ class SEn extends S {
   String get wishlistTypeOptional => 'Type (optional)';
 
   @override
-  String get wishlistTypeAny => 'Any';
+  String get any => 'Any';
 
   @override
   String get wishlistNoteOptional => 'Note (optional)';
@@ -2636,22 +2423,13 @@ class SEn extends S {
       'Group entries — e.g. an import batch or a source';
 
   @override
-  String get wishlistTagAll => 'All';
-
-  @override
   String get wishlistTagUntagged => 'Untagged';
 
   @override
   String get wishlistTagFilterLabel => 'List';
 
   @override
-  String get wishlistTagPlaceholder => 'Tag';
-
-  @override
   String get wishlistTagManage => 'Manage tag';
-
-  @override
-  String get wishlistTagRename => 'Rename tag';
 
   @override
   String get wishlistTagDelete => 'Delete tag and all entries';
@@ -2710,18 +2488,6 @@ class SEn extends S {
   String get welcomeStepWelcome => 'Welcome';
 
   @override
-  String get welcomeStepName => 'Name';
-
-  @override
-  String get welcomeStepLanguage => 'Language';
-
-  @override
-  String get welcomeStepApiKeys => 'API Keys';
-
-  @override
-  String get welcomeStepHowItWorks => 'How it works';
-
-  @override
   String get welcomeStepReady => 'Ready!';
 
   @override
@@ -2732,16 +2498,13 @@ class SEn extends S {
       'This name will appear as the author on collections you create';
 
   @override
-  String get welcomeNameHint => 'You can change this later in Settings';
+  String get welcomeChangeLaterHint => 'You can change this later in Settings';
 
   @override
   String get welcomeLanguageTitle => 'Choose your language';
 
   @override
   String get welcomeLanguageSubtitle => 'Select the app interface language';
-
-  @override
-  String get welcomeLanguageHint => 'You can change this later in Settings';
 
   @override
   String get welcomeTitle => 'Welcome to Tonkatsu Box';
@@ -2773,12 +2536,6 @@ class SEn extends S {
 
   @override
   String get welcomeWorksWithoutKeys => 'Works without API keys';
-
-  @override
-  String get welcomeChipCollections => 'Collections';
-
-  @override
-  String get welcomeChipWishlist => 'Wishlist';
 
   @override
   String get welcomeChipImport => 'Import .xcoll';
@@ -2944,9 +2701,6 @@ class SEn extends S {
       'Head to Settings → Credentials to enter your API keys, or start by importing a collection.';
 
   @override
-  String get welcomeReadyGoToSettings => 'Go to Settings';
-
-  @override
   String get welcomeReadySkip => 'Skip — explore on my own';
 
   @override
@@ -3063,9 +2817,6 @@ class SEn extends S {
   String get withoutCollection => 'Without Collection';
 
   @override
-  String get detailStatus => 'Status';
-
-  @override
   String get detailMyRating => 'My Rating';
 
   @override
@@ -3144,40 +2895,10 @@ class SEn extends S {
   }
 
   @override
-  String get allItemsAll => 'All';
-
-  @override
-  String get allItemsGames => 'Games';
-
-  @override
-  String get allItemsMovies => 'Movies';
-
-  @override
-  String get allItemsTvShows => 'TV Shows';
-
-  @override
-  String get allItemsAnimation => 'Animation';
-
-  @override
-  String get allItemsVisualNovels => 'Visual Novels';
-
-  @override
-  String get allItemsManga => 'Manga';
-
-  @override
-  String get allItemsBooks => 'Books';
-
-  @override
-  String get allItemsCustom => 'Custom';
-
-  @override
   String get allItemsRatingAsc => 'Rating ↑';
 
   @override
   String get allItemsRatingDesc => 'Rating ↓';
-
-  @override
-  String get allItemsRating => 'Rating';
 
   @override
   String get allItemsNoItems => 'No items yet';
@@ -3193,27 +2914,13 @@ class SEn extends S {
   String get allItemsFailedToLoad => 'Failed to load items';
 
   @override
-  String get allItemsFilterPlatformsAll => 'All Platforms';
-
-  @override
-  String allItemsFilterPlatformsSelected(int count) {
-    return '$count platforms';
-  }
+  String get allPlatforms => 'All Platforms';
 
   @override
   String get allItemsFilterPlatformsTitle => 'Filter by platform';
 
   @override
-  String get allItemsFilterPlatformsApply => 'Apply';
-
-  @override
-  String get allItemsFilterPlatformsClear => 'Clear';
-
-  @override
   String get debugIgdbMedia => 'IGDB Media';
-
-  @override
-  String get debugSteamGridDb => 'SteamGridDB';
 
   @override
   String get debugGamepad => 'Gamepad';
@@ -3278,21 +2985,6 @@ class SEn extends S {
   String get debugNoImagesFound => 'No images found';
 
   @override
-  String get debugSearchTab => 'Search';
-
-  @override
-  String get debugGridsTab => 'Grids';
-
-  @override
-  String get debugHeroesTab => 'Heroes';
-
-  @override
-  String get debugLogosTab => 'Logos';
-
-  @override
-  String get debugIconsTab => 'Icons';
-
-  @override
   String collectionTileStats(int count, String percent) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3317,9 +3009,6 @@ class SEn extends S {
 
   @override
   String get activityDatesCompleted => 'Completed';
-
-  @override
-  String get activityDatesLastActivity => 'Last Activity';
 
   @override
   String get activityDatesSelectStart => 'Select start date';
@@ -3350,15 +3039,6 @@ class SEn extends S {
   String get settingsAnimeMangaTitleLanguageNative => 'Native';
 
   @override
-  String get dualDatePickerInputLabel => 'Date';
-
-  @override
-  String get dualDatePickerOk => 'OK';
-
-  @override
-  String get dualDatePickerCancel => 'Cancel';
-
-  @override
   String get dualDatePickerErrorEmpty => 'Enter a date';
 
   @override
@@ -3374,11 +3054,6 @@ class SEn extends S {
 
   @override
   String get timeSpentTitle => 'Time Spent';
-
-  @override
-  String timeSpentValue(int hours, int minutes) {
-    return '${hours}h ${minutes}m';
-  }
 
   @override
   String get timeSpentAdd => 'Add time';
@@ -3443,7 +3118,7 @@ class SEn extends S {
   String get steamGridDbPanelTitle => 'SteamGridDB';
 
   @override
-  String get steamGridDbClosePanel => 'Close panel';
+  String get closePanel => 'Close panel';
 
   @override
   String get steamGridDbSearchHint => 'Search game...';
@@ -3468,13 +3143,7 @@ class SEn extends S {
   String get steamGridDbIcons => 'Icons';
 
   @override
-  String get steamGridDbNoResults => 'No results found';
-
-  @override
   String get steamGridDbSearchFirst => 'Search for a game first';
-
-  @override
-  String get vgmapsClosePanel => 'Close panel';
 
   @override
   String get vgmapsBack => 'Back';
@@ -3524,9 +3193,6 @@ class SEn extends S {
   String get discoverUpcoming => 'Upcoming';
 
   @override
-  String get discoverAnime => 'Anime';
-
-  @override
   String get discoverCustomizeTitle => 'Customize Discover';
 
   @override
@@ -3560,9 +3226,6 @@ class SEn extends S {
 
   @override
   String get reviewsInEnglish => 'Reviews in English';
-
-  @override
-  String get settingsShowRecommendations => 'Recommendations';
 
   @override
   String get settingsShowRecommendationsSubtitle =>
@@ -3621,14 +3284,8 @@ class SEn extends S {
   String get collectionEditHeroRemove => 'Remove image';
 
   @override
-  String get collectionEditDescription => 'Description';
-
-  @override
   String get collectionEditDescriptionHint =>
       'Short tagline shown over the cover';
-
-  @override
-  String get collectionEditMenu => 'Collection settings';
 
   @override
   String get collectionEditDialogTitle => 'Collection settings';
@@ -3652,9 +3309,6 @@ class SEn extends S {
       'Add to a collection to unlock Board and episode tracking';
 
   @override
-  String get uncategorizedBannerAction => 'Add to Collection';
-
-  @override
   String get uncategorizedDeprecationNotice =>
       'This system collection will be removed soon. Create your own collection and move all items here into it.';
 
@@ -3663,12 +3317,6 @@ class SEn extends S {
 
   @override
   String get browseFilterGenre => 'Genre';
-
-  @override
-  String get browseFilterTag => 'Tag';
-
-  @override
-  String get browseFilterYear => 'Year';
 
   @override
   String get browseFilterLength => 'Length';
@@ -3710,18 +3358,7 @@ class SEn extends S {
   String get tagPickerEmpty => 'No tags found';
 
   @override
-  String tagPickerSelectedCount(int count) {
-    return '$count selected';
-  }
-
-  @override
   String get clearAll => 'Clear all';
-
-  @override
-  String get browseFilterPlatform => 'Platform';
-
-  @override
-  String get browseFilterFormat => 'Format';
 
   @override
   String get browseFilterSeason => 'Season';
@@ -3734,9 +3371,6 @@ class SEn extends S {
 
   @override
   String get browseFilterMinVotes => 'Min votes';
-
-  @override
-  String get browseFilterLanguage => 'Language';
 
   @override
   String get seasonWinter => 'Winter';
@@ -3832,9 +3466,6 @@ class SEn extends S {
   String get languagePortuguese => 'Portuguese';
 
   @override
-  String get mangaFormatManga => 'Manga';
-
-  @override
   String get mangaFormatManhwa => 'Manhwa';
 
   @override
@@ -3850,9 +3481,6 @@ class SEn extends S {
   String get mangaFormatLightNovel => 'Light Novel';
 
   @override
-  String get browseFilterType => 'Type';
-
-  @override
   String get browseFilterContentRating => 'Content rating';
 
   @override
@@ -3866,15 +3494,6 @@ class SEn extends S {
 
   @override
   String get contentRatingPornographic => 'Pornographic';
-
-  @override
-  String get browseFilterAll => 'All';
-
-  @override
-  String get browseFilterAny => 'Any';
-
-  @override
-  String get browseSort => 'Sort';
 
   @override
   String get browseSortRelevance => 'Relevance';
@@ -3919,19 +3538,10 @@ class SEn extends S {
   String get browseEmptyFilters => 'Choose a filter or search';
 
   @override
-  String get browseEmptyResults => 'No results found';
-
-  @override
-  String get browseSearchHint => 'Search...';
-
-  @override
   String get browseBackToBrowse => 'Back to browse';
 
   @override
   String get browseSortDisabledHint => 'Sorting unavailable during text search';
-
-  @override
-  String get animeFilterStatus => 'Status';
 
   @override
   String get animeStatusAiring => 'Airing';
@@ -4010,7 +3620,7 @@ class SEn extends S {
   String get tierListUnranked => 'Unranked';
 
   @override
-  String get tierListExportImage => 'Export as image';
+  String get exportAsImage => 'Export as image';
 
   @override
   String get tierListImageSaved => 'Tier list saved as image';
@@ -4034,9 +3644,6 @@ class SEn extends S {
   String get tierListAddTier => 'Add tier';
 
   @override
-  String get tierListClearAll => 'Clear all';
-
-  @override
   String get tierListClearConfirm =>
       'Remove all items from tiers? They will return to Unranked.';
 
@@ -4052,9 +3659,6 @@ class SEn extends S {
 
   @override
   String get tierListAllRanked => 'All items ranked!';
-
-  @override
-  String get tierListNoCollections => 'No collections available';
 
   @override
   String get tierListErrorEmptyName => 'Enter a tier list name';
@@ -4106,44 +3710,17 @@ class SEn extends S {
   String get igdbImportSelectCsvExport => 'Select IGDB CSV export';
 
   @override
-  String get igdbImportOptions => 'Options';
-
-  @override
   String get igdbImportStatusLabel => 'Status for imported games';
-
-  @override
-  String get igdbImportPlatformLabel => 'Platform';
 
   @override
   String get igdbImportPlatformSelect => 'Select platform';
 
   @override
-  String get igdbImportTargetCollection => 'Target collection';
-
-  @override
-  String get igdbImportCreateNew => 'Create new collection';
-
-  @override
-  String get igdbImportUseExisting => 'Use existing collection';
-
-  @override
-  String get igdbImportNoCollections => 'No collections available';
-
-  @override
-  String get igdbImportSelectCollection => 'Select collection';
-
-  @override
-  String get igdbImportErrorLoadingCollections => 'Error loading collections';
-
-  @override
-  String get igdbImportIgdbRequired =>
+  String get importIgdbRequired =>
       'IGDB connection required. Set up API keys in Settings → Credentials first.';
 
   @override
-  String get igdbStartImport => 'Start Import';
-
-  @override
-  String get igdbImporting => 'Importing...';
+  String get importing => 'Importing...';
 
   @override
   String get igdbReasonNotFound => 'Not found on IGDB';
@@ -4152,7 +3729,7 @@ class SEn extends S {
   String get steamImportTitle => 'Import Steam Library';
 
   @override
-  String get steamImportSubtitle => 'Games will be matched to IGDB database';
+  String get importIgdbMatchNote => 'Games will be matched to IGDB database';
 
   @override
   String get steamImportApiKey => 'Steam API Key';
@@ -4200,7 +3777,7 @@ class SEn extends S {
   }
 
   @override
-  String get steamImportComplete => 'Import complete!';
+  String get importComplete => 'Import complete!';
 
   @override
   String steamImportGamesImported(int count) {
@@ -4225,44 +3802,13 @@ class SEn extends S {
   String get steamImportPlaytimeComment => 'Playtime saved in comments';
 
   @override
-  String get steamImportTargetCollection => 'Target collection';
-
-  @override
-  String get steamImportCreateNew => 'Create new collection';
-
-  @override
-  String get steamImportUseExisting => 'Use existing collection';
-
-  @override
-  String get steamImportNoCollections => 'No collections available';
-
-  @override
-  String get steamImportSelectCollection => 'Select collection';
-
-  @override
-  String get steamImportErrorLoadingCollections => 'Error loading collections';
-
-  @override
-  String get steamImportOpenCollection => 'Open collection';
-
-  @override
-  String get steamImportIgdbRequired =>
-      'IGDB connection required. Set up API keys in Settings → Credentials first.';
+  String get openCollection => 'Open collection';
 
   @override
   String get steamImportRememberCredentials => 'Remember credentials';
 
   @override
   String get collectionListSortCreatedDate => 'Date Created';
-
-  @override
-  String get collectionListSortAlphabetical => 'Name';
-
-  @override
-  String get collectionListSortCreatedDateNewest => 'Newest first';
-
-  @override
-  String get collectionListSortCreatedDateOldest => 'Oldest first';
 
   @override
   String get collectionListSortAlphabeticalAZ => 'A to Z';
@@ -4280,25 +3826,7 @@ class SEn extends S {
   String get collectionListViewTable => 'Table view';
 
   @override
-  String get collectionTableName => 'Name';
-
-  @override
-  String get collectionTableType => 'Type';
-
-  @override
-  String get collectionTablePlatform => 'Platform';
-
-  @override
-  String get collectionTableStatus => 'Status';
-
-  @override
-  String get collectionTableRating => 'Rating';
-
-  @override
   String get collectionTableExternalRating => 'External';
-
-  @override
-  String get collectionTableYear => 'Year';
 
   @override
   String get collectionCopyToCollection => 'Copy to collection';
@@ -4369,9 +3897,6 @@ class SEn extends S {
   String get browseCollectionsSearch => 'Search collections...';
 
   @override
-  String get browseCollectionsAllPlatforms => 'All Platforms';
-
-  @override
   String get browseCollectionsAllCategories => 'All Categories';
 
   @override
@@ -4389,18 +3914,12 @@ class SEn extends S {
   String get browseCollectionsDownloading => 'Downloading...';
 
   @override
-  String get browseCollectionsImporting => 'Importing...';
-
-  @override
   String browseCollectionsImportSuccess(String name) {
     return 'Collection imported: $name';
   }
 
   @override
   String get browseCollectionsEmpty => 'No collections found';
-
-  @override
-  String get browseCollectionsRetry => 'Retry';
 
   @override
   String get browseCollectionsLoadError => 'Failed to load collections';
@@ -4415,10 +3934,7 @@ class SEn extends S {
   String get browseCollectionsExistingCollection => 'Existing collection';
 
   @override
-  String get browseCollectionsSelectCollection => 'Select collection';
-
-  @override
-  String get browseCollectionsNoCollections => 'No collections yet';
+  String get noCollectionsYet => 'No collections yet';
 
   @override
   String get settingsRaImport => 'RetroAchievements';
@@ -4430,48 +3946,11 @@ class SEn extends S {
   String get raImportTitle => 'RetroAchievements Import';
 
   @override
-  String get raImportSubtitle => 'Games will be matched to IGDB database';
-
-  @override
-  String get raImportIgdbRequired =>
-      'IGDB connection required. Set up API keys in Settings → Credentials first.';
-
-  @override
-  String get raUsername => 'Username';
-
-  @override
-  String get raApiKey => 'API Key';
-
-  @override
   String get raGetApiKey =>
       'Get your API key at retroachievements.org/controlpanel.php';
 
   @override
-  String get raImportOptions => 'Options';
-
-  @override
   String get raImportOptionWishlist => 'Add unmatched games to Wishlist';
-
-  @override
-  String get raImportStart => 'Start Import';
-
-  @override
-  String get raImportTargetCollection => 'Target collection';
-
-  @override
-  String get raImportNewCollection => 'Create new collection';
-
-  @override
-  String get raImportExistingCollection => 'Use existing collection';
-
-  @override
-  String get raImportNoCollections => 'No collections available';
-
-  @override
-  String get raImportSelectCollection => 'Select collection';
-
-  @override
-  String get raImportErrorLoadingCollections => 'Error loading collections';
 
   @override
   String get raImportFetchingLibrary => 'Fetching RA library...';
@@ -4483,9 +3962,6 @@ class SEn extends S {
   String raImportMatching(String title) {
     return 'Matching: $title';
   }
-
-  @override
-  String get raImportComplete => 'Import complete!';
 
   @override
   String raImportAdded(int count) {
@@ -4508,11 +3984,6 @@ class SEn extends S {
   }
 
   @override
-  String raImportFailed(String error) {
-    return 'Import failed: $error';
-  }
-
-  @override
   String raProfilePoints(int points) {
     return '$points points';
   }
@@ -4527,9 +3998,6 @@ class SEn extends S {
 
   @override
   String get raOpenOnRa => 'Open on RA ↗';
-
-  @override
-  String get raProgress => 'Progress';
 
   @override
   String get raHardcore => 'Hardcore';
@@ -4549,9 +4017,6 @@ class SEn extends S {
   }
 
   @override
-  String get raCollapse => 'Collapse';
-
-  @override
   String get raMastered => 'Mastered';
 
   @override
@@ -4565,9 +4030,6 @@ class SEn extends S {
 
   @override
   String get raHardcoreBeaten => 'Hardcore Beaten';
-
-  @override
-  String get raToday => 'Today';
 
   @override
   String get raYesterday => 'Yesterday';
@@ -4585,9 +4047,6 @@ class SEn extends S {
 
   @override
   String get raMissable => 'MISSABLE';
-
-  @override
-  String get raFilterAll => 'All';
 
   @override
   String get raFilterEarned => 'Earned';
@@ -4628,13 +4087,10 @@ class SEn extends S {
   }
 
   @override
-  String get textExportTemplate => 'Template';
+  String get template => 'Template';
 
   @override
   String get textExportTokens => 'Tokens';
-
-  @override
-  String get textExportPreview => 'Preview';
 
   @override
   String get textExportSortBy => 'Sort by';
@@ -4646,16 +4102,10 @@ class SEn extends S {
   String get textExportSortName => 'Name A→Z';
 
   @override
-  String get textExportSortRating => 'Rating ↓';
-
-  @override
   String get textExportSortYear => 'Year ↓';
 
   @override
   String get textExportSortAdded => 'Date added ↓';
-
-  @override
-  String get textExportCopy => 'Copy';
 
   @override
   String get textExportEmptyTemplate => 'Template is empty';
@@ -4770,9 +4220,6 @@ class SEn extends S {
   String get kodiPort => 'Port';
 
   @override
-  String get kodiUsername => 'Username';
-
-  @override
   String get kodiPassword => 'Password';
 
   @override
@@ -4796,9 +4243,6 @@ class SEn extends S {
   String get kodiSyncTitle => 'Sync';
 
   @override
-  String get kodiTargetCollection => 'Target collection';
-
-  @override
   String get kodiTargetCollectionSubtitle => 'All Kodi movies sync here';
 
   @override
@@ -4808,9 +4252,6 @@ class SEn extends S {
   String kodiTargetDeletedLabel(int id) {
     return 'Deleted (#$id)';
   }
-
-  @override
-  String get kodiTargetError => 'Error';
 
   @override
   String get kodiEnableSync => 'Enable Kodi sync';
@@ -4840,9 +4281,6 @@ class SEn extends S {
   String get kodiImportRatingsSubtitle => 'Copy Kodi userrating (1–10)';
 
   @override
-  String get kodiCollectionPickerCreateNew => 'Create new collection';
-
-  @override
   String get kodiCollectionLibraryName => 'Kodi Library';
 
   @override
@@ -4855,9 +4293,6 @@ class SEn extends S {
       'Target collection deleted — sync stopped';
 
   @override
-  String get kodiDebugTitle => 'Debug';
-
-  @override
   String get kodiSyncStatus => 'Sync status';
 
   @override
@@ -4865,9 +4300,6 @@ class SEn extends S {
 
   @override
   String get kodiSyncStopped => 'Stopped';
-
-  @override
-  String get kodiLastSync => 'Last sync';
 
   @override
   String get kodiLastSyncNever => 'Never';
@@ -4951,13 +4383,10 @@ class SEn extends S {
       'Export XML from myanimelist.net/panel.php?go=export';
 
   @override
-  String get malImportAnimeFile => 'Anime list';
+  String get importAnimeList => 'Anime list';
 
   @override
-  String get malImportMangaFile => 'Manga list';
-
-  @override
-  String get malImportRemoveFile => 'Remove';
+  String get importMangaList => 'Manga list';
 
   @override
   String malImportEntriesCount(int count) {
@@ -4971,30 +4400,6 @@ class SEn extends S {
   }
 
   @override
-  String get malImportTargetCollection => 'Target collection';
-
-  @override
-  String get malImportCreateNew => 'Create new collection';
-
-  @override
-  String get malImportUseExisting => 'Use existing collection';
-
-  @override
-  String get malImportSelectCollection => 'Select collection';
-
-  @override
-  String get malImportNoCollections => 'No collections available';
-
-  @override
-  String get malImportErrorLoadingCollections => 'Error loading collections';
-
-  @override
-  String get malImportNewCollectionName => 'Collection name';
-
-  @override
-  String get malImportButton => 'Start Import';
-
-  @override
   String get malImportReadingFiles => 'Reading files...';
 
   @override
@@ -5004,29 +4409,8 @@ class SEn extends S {
   String get malImportResolvingManga => 'Resolving manga on AniList';
 
   @override
-  String get malImportMatching => 'Importing entries';
-
-  @override
-  String get malImportComplete => 'Import complete!';
-
-  @override
-  String malImportLookingUp(String title) {
-    return 'Processing: $title';
-  }
-
-  @override
-  String malImportImported(int count) {
-    return '$count imported';
-  }
-
-  @override
   String malImportWishlisted(int count) {
     return '$count to wishlist';
-  }
-
-  @override
-  String malImportUpdated(int count) {
-    return '$count updated';
   }
 
   @override
@@ -5044,11 +4428,6 @@ class SEn extends S {
   @override
   String malImportRateLimitWait(int seconds, int attempt, int max) {
     return 'AniList rate-limit reached — retrying in ${seconds}s (attempt $attempt/$max)';
-  }
-
-  @override
-  String malImportFailed(String error) {
-    return 'Import failed: $error';
   }
 
   @override
@@ -5073,9 +4452,6 @@ class SEn extends S {
   @override
   String get settingsAniListImportSubtitle =>
       'Import anime/manga lists by public username';
-
-  @override
-  String get settingsHardcoverImport => 'Hardcover Import';
 
   @override
   String get settingsHardcoverImportSubtitle =>
@@ -5103,55 +4479,11 @@ class SEn extends S {
   String get aniListImportUsername => 'AniList username';
 
   @override
-  String get aniListImportUsernameHint => 'e.g. yourname';
-
-  @override
   String get aniListImportInclude => 'What to import';
-
-  @override
-  String get aniListImportIncludeAnime => 'Anime list';
-
-  @override
-  String get aniListImportIncludeManga => 'Manga list';
-
-  @override
-  String get aniListImportMode => 'Mode';
-
-  @override
-  String get aniListImportModeNewOnly => 'Add new only';
-
-  @override
-  String get aniListImportModeNewOnlySubtitle =>
-      'Skip items already in the collection';
-
-  @override
-  String get aniListImportModeOverwrite => 'Overwrite existing';
 
   @override
   String get aniListImportModeOverwriteSubtitle =>
       'Update progress, status and dates from AniList';
-
-  @override
-  String get aniListImportTargetCollection => 'Target collection';
-
-  @override
-  String get aniListImportCreateNew => 'Create new collection';
-
-  @override
-  String get aniListImportUseExisting => 'Use existing collection';
-
-  @override
-  String get aniListImportSelectCollection => 'Select collection';
-
-  @override
-  String get aniListImportNoCollections => 'No collections available';
-
-  @override
-  String get aniListImportErrorLoadingCollections =>
-      'Error loading collections';
-
-  @override
-  String get aniListImportNewCollectionName => 'Collection name';
 
   @override
   String aniListImportNewCollectionDefault(String username) {
@@ -5159,39 +4491,10 @@ class SEn extends S {
   }
 
   @override
-  String get aniListImportButton => 'Start Import';
-
-  @override
   String get aniListImportFetchingAnime => 'Fetching anime list...';
 
   @override
   String get aniListImportFetchingManga => 'Fetching manga list...';
-
-  @override
-  String get aniListImportMatching => 'Importing entries';
-
-  @override
-  String get aniListImportComplete => 'Import complete!';
-
-  @override
-  String aniListImportLookingUp(String title) {
-    return 'Processing: $title';
-  }
-
-  @override
-  String aniListImportImported(int count) {
-    return '$count imported';
-  }
-
-  @override
-  String aniListImportUpdated(int count) {
-    return '$count updated';
-  }
-
-  @override
-  String aniListImportFailed(String error) {
-    return 'Import failed: $error';
-  }
 
   @override
   String aniListImportUserNotFound(String username) {
@@ -5236,25 +4539,6 @@ class SEn extends S {
   String get customImportTemplateSaved => 'Template saved';
 
   @override
-  String get customImportTargetCollection => 'Target collection';
-
-  @override
-  String get customImportCreateNew => 'Create new collection';
-
-  @override
-  String get customImportUseExisting => 'Add to existing collection';
-
-  @override
-  String get customImportSelectCollection => 'Select collection';
-
-  @override
-  String get customImportNoCollections => 'No collections yet';
-
-  @override
-  String get customImportErrorLoadingCollections =>
-      'Failed to load collections';
-
-  @override
   String get customImportPreviewButton => 'Preview and import';
 
   @override
@@ -5264,9 +4548,6 @@ class SEn extends S {
   String customImportSummary(int valid, int errors, int duplicates) {
     return 'Recognized $valid · Errors $errors · Duplicates $duplicates';
   }
-
-  @override
-  String get customImportSelectAll => 'Select all';
 
   @override
   String get customImportSelectNone => 'Deselect all';
@@ -5355,12 +4636,6 @@ class SEn extends S {
   String get moodGridCreateTitle => 'New Mood Grid';
 
   @override
-  String get moodGridName => 'Name';
-
-  @override
-  String get moodGridPresetLabel => 'Template';
-
-  @override
   String get moodGridPresetAboutMe => 'About Me: Tonkatsu Box';
 
   @override
@@ -5378,22 +4653,7 @@ class SEn extends S {
   String get moodGridRows => 'Rows';
 
   @override
-  String get moodGridCols => 'Columns';
-
-  @override
   String get moodGridBadge => 'Mood Grid';
-
-  @override
-  String get moodGridEdit => 'Edit';
-
-  @override
-  String get moodGridDoneEditing => 'Done';
-
-  @override
-  String get moodGridRename => 'Rename';
-
-  @override
-  String get moodGridDelete => 'Delete';
 
   @override
   String get moodGridDeleteTitle => 'Delete this grid?';
@@ -5401,12 +4661,6 @@ class SEn extends S {
   @override
   String get moodGridDeleteMessage =>
       'The grid will be removed. This cannot be undone.';
-
-  @override
-  String get moodGridExportImage => 'Export as image';
-
-  @override
-  String get moodGridImageSaved => 'Image saved';
 
   @override
   String get moodGridAddRow => 'Add row';
@@ -5453,13 +4707,7 @@ class SEn extends S {
       'Template applied per cell. Available tokens: name, year, genre, rating.';
 
   @override
-  String get moodGridCaptionTemplateClear => 'Clear';
-
-  @override
-  String get moodGridPickerTitle => 'Pick item';
-
-  @override
-  String get moodGridPickerCollection => 'Collection';
+  String get collection => 'Collection';
 
   @override
   String get moodGridPickerAllCollections => 'All collections';
@@ -5563,9 +4811,6 @@ class SEn extends S {
   String get genreCloudExportImage => 'Save as image';
 
   @override
-  String get genreCloudImageSaved => 'Image saved';
-
-  @override
   String get genreCloudExportFailed => 'Couldn\'t save the image';
 
   @override
@@ -5583,9 +4828,6 @@ class SEn extends S {
   }
 
   @override
-  String get facetGenre => 'Genres';
-
-  @override
   String get facetPlatform => 'Platforms';
 
   @override
@@ -5593,12 +4835,6 @@ class SEn extends S {
 
   @override
   String get personalizationTabCloud => 'Genre cloud';
-
-  @override
-  String get personalizationTabRecommendations => 'Recommendations';
-
-  @override
-  String get recommendationsRefresh => 'Refresh';
 
   @override
   String get recommendationsEmpty => 'No recommendations yet';
@@ -5654,12 +4890,6 @@ class SEn extends S {
   String get itemMarkEmpty => 'No marks yet';
 
   @override
-  String get itemMarkDelete => 'Delete';
-
-  @override
-  String get itemMarkType => 'Type';
-
-  @override
   String get itemMarkNumber => 'Number';
 
   @override
@@ -5670,9 +4900,6 @@ class SEn extends S {
 
   @override
   String get itemMarkCustomType => 'Custom type';
-
-  @override
-  String get itemMarkFilterAll => 'All';
 
   @override
   String get itemMarkFilterLiked => 'Liked';
@@ -5709,9 +4936,6 @@ class SEn extends S {
   String get unitPart => 'Part';
 
   @override
-  String get unitCustom => 'Custom';
-
-  @override
   String get cardLinkCopy => 'Copy card link';
 
   @override
@@ -5719,9 +4943,6 @@ class SEn extends S {
 
   @override
   String get cardLinkNotFound => 'Card not found';
-
-  @override
-  String get cardLinkPickCollection => 'Open in collection';
 
   @override
   String get cardLinkSearchTitle => 'Link a card';
@@ -5745,19 +4966,7 @@ class SEn extends S {
   String get shortcutPreviousTab => 'Previous tab';
 
   @override
-  String get shortcutBack => 'Back';
-
-  @override
-  String get shortcutSearch => 'Search';
-
-  @override
-  String get shortcutRefresh => 'Refresh';
-
-  @override
   String get shortcutThisHelp => 'This help';
-
-  @override
-  String get shortcutsGroupCollections => 'Collections';
 
   @override
   String get shortcutCreateCollection => 'Create collection';
@@ -5773,12 +4982,6 @@ class SEn extends S {
 
   @override
   String get shortcutRenameCollection => 'Rename collection';
-
-  @override
-  String get shortcutOpenCollection => 'Open collection';
-
-  @override
-  String get shortcutsGroupCollection => 'Collection';
 
   @override
   String get shortcutAddItems => 'Add items';
@@ -5826,22 +5029,7 @@ class SEn extends S {
   String get shortcutDeleteTierList => 'Delete tier list';
 
   @override
-  String get shortcutRename => 'Rename';
-
-  @override
   String get shortcutsGroupTierList => 'Tier list';
-
-  @override
-  String get shortcutExportAsImage => 'Export as image';
-
-  @override
-  String get shortcutAddTier => 'Add tier';
-
-  @override
-  String get shortcutClearAll => 'Clear all';
-
-  @override
-  String get shortcutsGroupWishlist => 'Wishlist';
 
   @override
   String get shortcutAddItem => 'Add item';
@@ -5851,9 +5039,6 @@ class SEn extends S {
 
   @override
   String get shortcutClearCompleted => 'Clear completed';
-
-  @override
-  String get shortcutsGroupSearch => 'Search';
 
   @override
   String get shortcutFocusSearchField => 'Focus search field';

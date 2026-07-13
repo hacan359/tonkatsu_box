@@ -844,7 +844,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Text(
-                S.of(context).cardLinkPickCollection,
+                S.of(context).openInCollection,
                 style: AppTypography.h3,
               ),
             ),

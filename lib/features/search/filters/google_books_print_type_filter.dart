@@ -16,7 +16,7 @@ class GoogleBooksPrintTypeFilter extends SearchFilter {
   String get cacheKey => 'print_type_googlebooks';
 
   @override
-  String placeholder(S l) => l.bookFilterPrintType;
+  String placeholder(S l) => l.type;
 
   @override
   FilterOption get allOption =>

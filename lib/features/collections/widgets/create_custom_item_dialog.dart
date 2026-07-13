@@ -225,7 +225,7 @@ class _CreateCustomItemDialogState
                 textStyle: const TextStyle(fontWeight: FontWeight.w600),
               ),
               child: Text(
-                _isEditing ? l.save : l.customItemCreateButton,
+                _isEditing ? l.save : l.create,
               ),
             ),
           ),
@@ -362,7 +362,7 @@ class _CreateCustomItemDialogState
   Widget _buildYearChip(S l) {
     return ActionChip(
       avatar: const Icon(Icons.calendar_today, size: 14),
-      label: Text(_selectedYear?.toString() ?? l.customItemYear),
+      label: Text(_selectedYear?.toString() ?? l.year),
       labelStyle: AppTypography.caption.copyWith(
         color: _selectedYear != null
             ? AppColors.textPrimary
@@ -392,7 +392,7 @@ class _CreateCustomItemDialogState
         _refsLoaded && _platforms.isNotEmpty ? _pickPlatform : null;
     return ActionChip(
       avatar: const Icon(Icons.sports_esports, size: 14),
-      label: Text(hasValue ? _platformController.text : l.customItemPlatform),
+      label: Text(hasValue ? _platformController.text : l.platform),
       labelStyle: AppTypography.caption.copyWith(
         color: hasValue ? AppColors.textPrimary : AppColors.textTertiary,
       ),
@@ -403,7 +403,7 @@ class _CreateCustomItemDialogState
   Future<void> _pickPlatform() async {
     final String? result = await SearchableListDialog.show(
       context,
-      title: S.of(context).customItemPlatform,
+      title: S.of(context).platform,
       items: _platforms
           .map((model.Platform p) => p.displayName)
           .toList(),
@@ -435,7 +435,7 @@ class _CreateCustomItemDialogState
       label: Text(
         hasValue
             ? MediaFormat.label(_selectedType, _selectedFormat!)
-            : l.customItemFormat,
+            : l.format,
       ),
       labelStyle: AppTypography.caption.copyWith(
         color: hasValue ? AppColors.textPrimary : AppColors.textTertiary,
@@ -457,7 +457,7 @@ class _CreateCustomItemDialogState
         : null;
     final String? result = await SearchableListDialog.show(
       context,
-      title: S.of(context).customItemFormat,
+      title: S.of(context).format,
       items: labelToCode.keys.toList(),
       allowCustom: false,
       currentValue: current,
@@ -474,7 +474,7 @@ class _CreateCustomItemDialogState
         Row(
           children: <Widget>[
             Text(
-              l.customItemGenres,
+              l.genres,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
@@ -485,7 +485,7 @@ class _CreateCustomItemDialogState
               TextButton.icon(
                 onPressed: _pickGenres,
                 icon: const Icon(Icons.add, size: 16),
-                label: Text(l.customItemAddGenre),
+                label: Text(l.add),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   visualDensity: VisualDensity.compact,
@@ -520,7 +520,7 @@ class _CreateCustomItemDialogState
 
     final Set<String>? result = await MultiSelectGenreDialog.show(
       context,
-      title: S.of(context).customItemGenres,
+      title: S.of(context).genres,
       items: _allGenres,
       selected: current,
     );
@@ -602,7 +602,7 @@ class _CreateCustomItemDialogState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          l.customProgress,
+          l.progress,
           style: AppTypography.bodySmall.copyWith(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
@@ -661,7 +661,7 @@ class _CreateCustomItemDialogState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          l.customItemDescription,
+          l.description,
           style: AppTypography.bodySmall.copyWith(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,

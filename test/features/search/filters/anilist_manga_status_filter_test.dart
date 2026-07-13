@@ -13,7 +13,7 @@ void main() {
     setUp(() {
       filter = AniListMangaStatusFilter();
       mockL = MockS();
-      when(() => mockL.animeFilterStatus).thenReturn('Status');
+      when(() => mockL.status).thenReturn('Status');
       when(() => mockL.mangaStatusPublishing).thenReturn('Publishing');
       when(() => mockL.mangaStatusFinished).thenReturn('Finished');
       when(() => mockL.mangaStatusNotYetPublished)

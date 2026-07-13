@@ -88,7 +88,7 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    l.moodGridPickerTitle,
+                    l.moodGridPickItem,
                     style: AppTypography.h3,
                   ),
                 ),
@@ -102,8 +102,8 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
             collectionsAsync.when(
               data: (List<Collection> collections) => CollectionPickerField(
                 value: _filterCollectionId,
-                hint: l.moodGridPickerCollection,
-                title: l.moodGridPickerCollection,
+                hint: l.collection,
+                title: l.collection,
                 nullLabel: l.moodGridPickerAllCollections,
                 leadingIcon: Icons.folder_open_outlined,
                 onChanged: (int? id) {

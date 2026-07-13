@@ -31,7 +31,7 @@ class AniListTagFilter extends SearchFilter {
   bool get searchable => true;
 
   @override
-  String placeholder(S l) => l.browseFilterTag;
+  String placeholder(S l) => l.tagLabel;
 
   @override
   FilterOption get allOption => const FilterOption(

@@ -34,7 +34,7 @@ class TierListsScreen extends ConsumerStatefulWidget {
           ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateTierList),
           ShortcutEntry(keys: 'Enter', description: l.shortcutOpenTierList),
           ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteTierList),
-          ShortcutEntry(keys: 'F2', description: l.shortcutRename),
+          ShortcutEntry(keys: 'F2', description: l.rename),
         ],
       );
 

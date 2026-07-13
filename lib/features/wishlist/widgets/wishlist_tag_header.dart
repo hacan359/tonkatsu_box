@@ -130,7 +130,7 @@ class _TagPickerSegment extends StatelessWidget {
 
   String _currentLabel(S l) {
     return switch (selected) {
-      WishlistTagFilterAll() => l.wishlistTagAll,
+      WishlistTagFilterAll() => l.all,
       WishlistTagFilterUntagged() => l.wishlistTagUntagged,
       WishlistTagFilterNamed(:final String tag) => _humanLabel(tag),
     };
@@ -163,7 +163,7 @@ class _TagPickerSegment extends StatelessWidget {
     return <PopupMenuEntry<_TagMenuChoice>>[
       _tagMenuItem(
         value: const _TagMenuChoice.filter(WishlistTagFilter.all()),
-        label: l.wishlistTagAll,
+        label: l.all,
         count: totalActive,
         total: totalAll,
         isSelected: selected is WishlistTagFilterAll,
@@ -185,7 +185,7 @@ class _TagPickerSegment extends StatelessWidget {
             value: const _TagMenuChoice.rename(),
             child: ListTile(
               leading: const Icon(Icons.edit),
-              title: Text(l.wishlistTagRename),
+              title: Text(l.tagRename),
               contentPadding: EdgeInsets.zero,
               dense: true,
             ),

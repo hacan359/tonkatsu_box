@@ -19,7 +19,7 @@ class VndbLanguageFilter extends SearchFilter {
   bool get searchable => true;
 
   @override
-  String placeholder(S l) => l.browseFilterLanguage;
+  String placeholder(S l) => l.language;
 
   @override
   FilterOption get allOption =>

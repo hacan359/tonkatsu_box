@@ -174,7 +174,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
               child: Row(
                 children: <Widget>[
                   Text(
-                    l.platformFilterSelected(_selectedIds.length),
+                    l.selectedCount(_selectedIds.length),
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),

@@ -9,7 +9,7 @@ class AniListAnimeStatusFilter extends SearchFilter {
   String get key => 'status';
 
   @override
-  String placeholder(S l) => l.animeFilterStatus;
+  String placeholder(S l) => l.status;
 
   @override
   FilterOption get allOption => const FilterOption(

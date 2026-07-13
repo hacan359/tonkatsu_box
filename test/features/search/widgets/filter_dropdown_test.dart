@@ -72,7 +72,7 @@ void main() {
       await tester.pumpWidget(buildFilterDropdown(value: null));
       await tester.pumpAndSettle();
 
-      // AnimeTypeFilter placeholder is l.browseFilterType
+      // AnimeTypeFilter placeholder is l.type
       // The exact text depends on localization but should be visible
       expect(find.byType(FilterDropdown), findsOneWidget);
     });

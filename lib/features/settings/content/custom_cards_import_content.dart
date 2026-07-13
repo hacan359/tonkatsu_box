@@ -159,7 +159,7 @@ class _CustomCardsImportContentState
     final S l = S.of(context);
 
     return SettingsGroup(
-      title: l.customImportTargetCollection,
+      title: l.importTargetCollection,
       children: <Widget>[
         RadioGroup<bool>(
           groupValue: _useNewCollection,
@@ -173,7 +173,7 @@ class _CustomCardsImportContentState
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l.customImportCreateNew),
+                title: Text(l.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: () => setState(() {
@@ -182,7 +182,7 @@ class _CustomCardsImportContentState
                 }),
               ),
               ListTile(
-                title: Text(l.customImportUseExisting),
+                title: Text(l.importUseExisting),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: () => setState(() {
@@ -204,7 +204,7 @@ class _CustomCardsImportContentState
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l.customImportNoCollections,
+                    l.noCollectionsYet,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -216,15 +216,15 @@ class _CustomCardsImportContentState
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l.customImportSelectCollection,
-                  title: l.customImportSelectCollection,
+                  hint: l.importSelectCollection,
+                  title: l.importSelectCollection,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l.customImportErrorLoadingCollections,
+                l.collectionsFailedToLoad,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),

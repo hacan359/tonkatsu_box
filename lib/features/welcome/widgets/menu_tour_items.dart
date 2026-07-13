@@ -89,7 +89,7 @@ String _label(S l, NavTab tab) => switch (tab) {
       NavTab.tierLists => l.navTierLists,
       NavTab.releases => l.navReleases,
       NavTab.wishlist => l.navWishlist,
-      NavTab.search => l.navSearch,
+      NavTab.search => l.search,
       NavTab.settings => l.navSettings,
     };
 

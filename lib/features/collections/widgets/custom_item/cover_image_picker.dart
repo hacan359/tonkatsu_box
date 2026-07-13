@@ -53,7 +53,7 @@ Future<CoverPickResult?> pickCustomCoverImage(
           onPressed: () => Navigator.of(ctx).pop('url'),
           child: ListTile(
             leading: const Icon(Icons.link),
-            title: Text(l.customItemCoverFromUrl),
+            title: Text(l.imageFromUrl),
             contentPadding: EdgeInsets.zero,
           ),
         ),

@@ -17,7 +17,7 @@ class FantlabWorkTypeFilter extends SearchFilter {
   String get cacheKey => 'work_type_fantlab';
 
   @override
-  String placeholder(S l) => l.browseFilterType;
+  String placeholder(S l) => l.type;
 
   @override
   FilterOption get allOption =>

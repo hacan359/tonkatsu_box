@@ -267,7 +267,7 @@ class _StorageLocationSectionState
                 FilledButton(
                   onPressed: () => Navigator.of(context)
                       .pop((includeImages: includeImages)),
-                  child: Text(l10n.storageLocationCopyConfirm),
+                  child: Text(l10n.copy),
                 ),
               ],
             );

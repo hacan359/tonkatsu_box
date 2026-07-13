@@ -129,6 +129,35 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Localization strings deduplicated: 262 duplicate keys collapsed**
+
+  Of ~1740 keys in `app_en.arb`, 452 were value-duplicates across 161
+  groups — mostly per-import-source copies of "Select collection",
+  "Target collection", "Create new collection" and the like. They are
+  now shared keys (generic `import*` family plus bare vocabulary keys:
+  `all`, `name`, `title`, `status`, `date`, `rating`, `sort`, …), so
+  every new language translates each string once. 26 groups (55 keys)
+  are kept apart on purpose — same English, different translation by
+  context (grammatical gender in statuses, anime formats in Chinese,
+  "Title" as heading vs. ScreenScraper media type, unit vs. label
+  wordings).
+
+  Deliberate translation unifications along the way: the wishlist is
+  «Желаемое» everywhere (was also «Вишлист»/«Список желаний»), AniList
+  import shares the common import wording, `{count} imported/updated`
+  use proper Russian plurals everywhere, and the IGDB-required hint
+  points at the section's real Russian name («Учётные данные»).
+
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb:
+    262 keys removed, ~40 shared keys added; en/ru/zh key sets are now
+    identical.
+  * lib/l10n/app_localizations.dart, app_localizations_en.dart,
+    app_localizations_ru.dart, app_localizations_zh.dart: Regenerated.
+  * 121 files across lib/ and test/: references rewritten to the shared
+    keys.
+  * test/l10n/arb_parity_test.dart: New — guards that every locale file
+    keeps exactly the template key set with matching placeholders.
+
 - **MyAnimeList "On-Hold" now imports as Dropped**
 
   The local Dropped status doubles as "paused" (pause icon), which is how

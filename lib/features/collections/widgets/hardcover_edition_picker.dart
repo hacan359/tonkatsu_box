@@ -226,7 +226,7 @@ class _HardcoverEditionsSectionState
                     runSpacing: AppSpacing.xs,
                     children: <Widget>[
                       _languageChip(
-                        label: l.homeFilterAll,
+                        label: l.all,
                         selected: _language == null,
                         onTap: () => setState(() => _language = null),
                       ),

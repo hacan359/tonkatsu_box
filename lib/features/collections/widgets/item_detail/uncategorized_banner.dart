@@ -44,7 +44,7 @@ class UncategorizedBanner extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             TextButton(
               onPressed: onMove,
-              child: Text(l.uncategorizedBannerAction),
+              child: Text(l.searchAddToCollection),
             ),
           ],
         ),

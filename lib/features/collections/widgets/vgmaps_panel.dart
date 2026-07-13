@@ -379,7 +379,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 20),
-            tooltip: S.of(context).vgmapsClosePanel,
+            tooltip: S.of(context).closePanel,
             onPressed: () => ref
                 .read(vgMapsPanelProvider(widget.collectionId).notifier)
                 .closePanel(),

@@ -32,7 +32,7 @@ class TmdbMoviesSource extends SearchSource {
   IconData get groupIcon => Icons.movie_outlined;
 
   @override
-  String label(S l) => l.searchSourceMovies;
+  String label(S l) => l.collectionFilterMovies;
 
   @override
   IconData get icon => Icons.movie_outlined;

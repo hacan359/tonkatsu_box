@@ -105,7 +105,7 @@ class _AddTextDialogState extends State<AddTextDialog> {
     final S l = S.of(context);
     return AlertDialog(
       scrollable: true,
-      title: Text(_isEditing ? l.editTextTitle : l.addTextTitle),
+      title: Text(_isEditing ? l.editTextTitle : l.canvasAddText),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(

@@ -61,7 +61,7 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                   ),
                   SegmentedPillOption<_PersonalizationView>(
                     value: _PersonalizationView.recommendations,
-                    label: l.personalizationTabRecommendations,
+                    label: l.recommendationsTitle,
                   ),
                 ],
               ),

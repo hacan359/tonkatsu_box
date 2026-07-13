@@ -22,7 +22,7 @@ class DatabaseScreen extends StatelessWidget {
 
     return Column(
       children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsDatabase),
+        SubScreenTitleBar(title: S.of(context).databaseTitle),
         Expanded(
           child: Align(
             alignment: Alignment.topCenter,

@@ -13,7 +13,7 @@ void main() {
     setUp(() {
       filter = AniListAnimeFormatFilter();
       mockL = MockS();
-      when(() => mockL.browseFilterFormat).thenReturn('Format');
+      when(() => mockL.format).thenReturn('Format');
       when(() => mockL.animeFormatTv).thenReturn('TV');
       when(() => mockL.animeFormatMovie).thenReturn('Movie');
       when(() => mockL.animeFormatOva).thenReturn('OVA');

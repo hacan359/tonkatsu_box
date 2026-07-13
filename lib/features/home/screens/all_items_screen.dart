@@ -185,32 +185,32 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final List<_MediaTypeEntry> entries = <_MediaTypeEntry>[
       _MediaTypeEntry(
         type: MediaType.game,
-        label: l.allItemsGames,
+        label: l.collectionFilterGames,
         count: counts[MediaType.game] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.movie,
-        label: l.allItemsMovies,
+        label: l.collectionFilterMovies,
         count: counts[MediaType.movie] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.tvShow,
-        label: l.allItemsTvShows,
+        label: l.collectionFilterTvShows,
         count: counts[MediaType.tvShow] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.animation,
-        label: l.allItemsAnimation,
+        label: l.mediaTypeAnimation,
         count: counts[MediaType.animation] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.visualNovel,
-        label: l.allItemsVisualNovels,
+        label: l.collectionFilterVisualNovels,
         count: counts[MediaType.visualNovel] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.manga,
-        label: l.allItemsManga,
+        label: l.mediaTypeManga,
         count: counts[MediaType.manga] ?? 0,
       ),
       _MediaTypeEntry(
@@ -220,12 +220,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       ),
       _MediaTypeEntry(
         type: MediaType.book,
-        label: l.allItemsBooks,
+        label: l.collectionFilterBooks,
         count: counts[MediaType.book] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.custom,
-        label: l.allItemsCustom,
+        label: l.mediaTypeCustom,
         count: counts[MediaType.custom] ?? 0,
       ),
     ];
@@ -271,7 +271,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               child: StatusDropdownSegment(
                 status: filterStatus,
                 compact: compact,
-                subtitle: l.detailStatus,
+                subtitle: l.status,
                 isLast: false,
                 onChanged: (ItemStatus? s) =>
                     ref.read(homeStatusFilterProvider.notifier).setFilter(s),

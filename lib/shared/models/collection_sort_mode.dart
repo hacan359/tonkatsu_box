@@ -67,13 +67,13 @@ enum CollectionSortMode {
       case CollectionSortMode.addedDate:
         return l.sortDateDisplay;
       case CollectionSortMode.status:
-        return l.sortStatusDisplay;
+        return l.status;
       case CollectionSortMode.name:
-        return l.sortNameDisplay;
+        return l.name;
       case CollectionSortMode.rating:
-        return l.sortRatingDisplay;
+        return l.detailMyRating;
       case CollectionSortMode.favorite:
-        return l.sortFavoriteDisplay;
+        return l.favorite;
       case CollectionSortMode.externalRating:
         return l.sortExternalRatingDisplay;
       case CollectionSortMode.lastActivity:
@@ -85,17 +85,17 @@ enum CollectionSortMode {
   String localizedShortLabel(S l) {
     switch (this) {
       case CollectionSortMode.manual:
-        return l.sortManualShort;
+        return l.sortManualDisplay;
       case CollectionSortMode.addedDate:
-        return l.sortDateShort;
+        return l.date;
       case CollectionSortMode.status:
-        return l.sortStatusShort;
+        return l.status;
       case CollectionSortMode.name:
         return l.sortNameShort;
       case CollectionSortMode.rating:
-        return l.sortRatingShort;
+        return l.rating;
       case CollectionSortMode.favorite:
-        return l.sortFavoriteShort;
+        return l.favorite;
       case CollectionSortMode.externalRating:
         return l.sortExternalRatingShort;
       case CollectionSortMode.lastActivity:
@@ -116,15 +116,15 @@ enum CollectionSortMode {
       case CollectionSortMode.status:
         return l.sortStatusFinished;
       case CollectionSortMode.name:
-        return l.sortNameZa;
+        return l.collectionListSortAlphabeticalZA;
       case CollectionSortMode.rating:
         return l.sortRatingLowest;
       case CollectionSortMode.favorite:
         return l.sortFavoriteLast;
       case CollectionSortMode.externalRating:
-        return l.sortExternalRatingLowest;
+        return l.sortRatingLowest;
       case CollectionSortMode.lastActivity:
-        return l.sortLastActivityOldest;
+        return l.sortDateOldest;
     }
   }
 
@@ -138,13 +138,13 @@ enum CollectionSortMode {
       case CollectionSortMode.status:
         return l.sortStatusDesc;
       case CollectionSortMode.name:
-        return l.sortNameDesc;
+        return l.collectionListSortAlphabeticalAZ;
       case CollectionSortMode.rating:
         return l.sortRatingDesc;
       case CollectionSortMode.favorite:
         return l.sortFavoriteDesc;
       case CollectionSortMode.externalRating:
-        return l.sortExternalRatingDesc;
+        return l.sortRatingDesc;
       case CollectionSortMode.lastActivity:
         return l.sortLastActivityDesc;
     }

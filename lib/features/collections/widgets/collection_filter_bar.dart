@@ -243,7 +243,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
               child: StatusDropdownSegment(
                 status: widget.filterStatus,
                 compact: compact,
-                subtitle: l.detailStatus,
+                subtitle: l.status,
                 onChanged: widget.onStatusChanged,
               ),
             ),
@@ -303,7 +303,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         ref.watch(collectionSortDescProvider(widget.collectionId));
 
     return PopupMenuButton<String>(
-      tooltip: S.of(context).collectionFilterSort,
+      tooltip: S.of(context).sort,
       onSelected: (String value) {
         if (value == 'toggle_direction') {
           ref
@@ -418,12 +418,12 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       _TypeEntry(MediaType.game, l.collectionFilterGames, counts[MediaType.game]),
       _TypeEntry(MediaType.movie, l.collectionFilterMovies, counts[MediaType.movie]),
       _TypeEntry(MediaType.tvShow, l.collectionFilterTvShows, counts[MediaType.tvShow]),
-      _TypeEntry(MediaType.animation, l.collectionFilterAnimation, counts[MediaType.animation]),
+      _TypeEntry(MediaType.animation, l.mediaTypeAnimation, counts[MediaType.animation]),
       _TypeEntry(MediaType.visualNovel, l.collectionFilterVisualNovels, counts[MediaType.visualNovel]),
-      _TypeEntry(MediaType.manga, l.collectionFilterManga, counts[MediaType.manga]),
+      _TypeEntry(MediaType.manga, l.mediaTypeManga, counts[MediaType.manga]),
       _TypeEntry(MediaType.anime, l.mediaTypeAnime, counts[MediaType.anime]),
       _TypeEntry(MediaType.book, l.collectionFilterBooks, counts[MediaType.book]),
-      _TypeEntry(MediaType.custom, l.collectionFilterCustom, counts[MediaType.custom]),
+      _TypeEntry(MediaType.custom, l.mediaTypeCustom, counts[MediaType.custom]),
     ];
   }
 

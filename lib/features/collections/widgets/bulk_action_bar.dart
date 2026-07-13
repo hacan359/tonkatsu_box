@@ -98,7 +98,7 @@ class BulkActionBar extends ConsumerWidget {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: Text(l.bulkSelectAllVisible),
+                child: Text(l.selectAll),
               ),
             ],
             Expanded(

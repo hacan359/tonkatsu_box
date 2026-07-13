@@ -172,7 +172,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
       case TextExportSortMode.name:
         return l.textExportSortName;
       case TextExportSortMode.rating:
-        return l.textExportSortRating;
+        return l.allItemsRatingDesc;
       case TextExportSortMode.year:
         return l.textExportSortYear;
       case TextExportSortMode.addedDate:
@@ -194,7 +194,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             // Template
-            Text(l.textExportTemplate, style: AppTypography.body),
+            Text(l.template, style: AppTypography.body),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _templateController,
@@ -263,7 +263,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
                     ),
                     PopupMenuItem<TextExportSortMode>(
                       value: TextExportSortMode.rating,
-                      child: Text(l.textExportSortRating),
+                      child: Text(l.allItemsRatingDesc),
                     ),
                     PopupMenuItem<TextExportSortMode>(
                       value: TextExportSortMode.year,
@@ -307,7 +307,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
             const SizedBox(height: AppSpacing.md),
 
             // Preview
-            Text(l.textExportPreview, style: AppTypography.body),
+            Text(l.preview, style: AppTypography.body),
             const SizedBox(height: AppSpacing.sm),
             Container(
               width: double.infinity,
@@ -349,7 +349,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
               ? _copy
               : null,
           icon: const Icon(Icons.copy, size: 16),
-          label: Text(l.textExportCopy),
+          label: Text(l.copy),
         ),
       ],
     );

@@ -96,14 +96,14 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
         ),
         _buildFileTile(
           l: l,
-          label: l.malImportAnimeFile,
+          label: l.importAnimeList,
           picked: _animePicked,
           onPick: () => _pickFile(MalFileKind.anime),
           onRemove: () => setState(() => _animePicked = null),
         ),
         _buildFileTile(
           l: l,
-          label: l.malImportMangaFile,
+          label: l.importMangaList,
           picked: _mangaPicked,
           onPick: () => _pickFile(MalFileKind.manga),
           onRemove: () => setState(() => _mangaPicked = null),
@@ -132,7 +132,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
           child: FilledButton.icon(
             onPressed: _canStart ? _startImport : null,
             icon: const Icon(Icons.download),
-            label: Text(l.malImportButton),
+            label: Text(l.importStart),
           ),
         ),
       ],
@@ -180,7 +180,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
             IconButton(
               onPressed: _isImporting ? null : onRemove,
               icon: const Icon(Icons.close),
-              tooltip: l.malImportRemoveFile,
+              tooltip: l.remove,
             ),
         ],
       ),
@@ -200,7 +200,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l.malImportTargetCollection,
+            l.importTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -218,7 +218,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l.malImportCreateNew),
+                title: Text(l.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: _isImporting
@@ -229,7 +229,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
                         }),
               ),
               ListTile(
-                title: Text(l.malImportUseExisting),
+                title: Text(l.importUseExistingCollection),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: _isImporting
@@ -248,7 +248,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
               controller: _newNameController,
               enabled: !_isImporting,
               decoration: InputDecoration(
-                labelText: l.malImportNewCollectionName,
+                labelText: l.importNewCollectionName,
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -260,7 +260,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l.malImportNoCollections,
+                    l.importNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -272,8 +272,8 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l.malImportSelectCollection,
-                  title: l.malImportSelectCollection,
+                  hint: l.importSelectCollection,
+                  title: l.importSelectCollection,
                   enabled: !_isImporting,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
@@ -282,7 +282,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l.malImportErrorLoadingCollections,
+                l.importErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -307,8 +307,8 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
             ImportStage.reading => l.malImportReadingFiles,
             ImportStage.fetchingAnime => l.malImportResolvingAnime,
             ImportStage.fetchingManga => l.malImportResolvingManga,
-            ImportStage.completed => l.malImportComplete,
-            _ => l.malImportMatching,
+            ImportStage.completed => l.importComplete,
+            _ => l.importAddingItems,
           };
 
     return SettingsGroup(
@@ -337,7 +337,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
               if (progress.currentItem != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l.malImportLookingUp(progress.currentItem!),
+                  l.importProcessingItem(progress.currentItem!),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -349,7 +349,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
               _buildStatRow(
                 Icons.check_circle,
                 AppColors.statusCompleted,
-                l.malImportImported(progress.imported),
+                l.importImportedCount(progress.imported),
               ),
               _buildStatRow(
                 Icons.bookmark_add,
@@ -359,7 +359,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
               _buildStatRow(
                 Icons.sync,
                 AppColors.statusInProgress,
-                l.malImportUpdated(progress.updated),
+                l.importUpdatedCount(progress.updated),
               ),
             ],
           ),
@@ -406,8 +406,8 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
         if (!mounted) return;
         context.showSnack(
           parsed.kind == MalFileKind.anime
-              ? l.malImportAnimeFile
-              : l.malImportMangaFile,
+              ? l.importAnimeList
+              : l.importMangaList,
           type: SnackType.info,
         );
       }
@@ -497,7 +497,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
       if (!mounted) return;
       setState(() => _isImporting = false);
       context.showSnack(
-        l.malImportFailed(e.toString()),
+        l.importFailed(e.toString()),
         type: SnackType.error,
       );
     }

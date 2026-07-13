@@ -62,7 +62,7 @@ class CustomProgressSection extends ConsumerWidget {
             Icon(Icons.timeline, size: 20, color: accentColor),
             const SizedBox(width: AppSpacing.sm),
             Text(
-              l.customProgress,
+              l.progress,
               style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
@@ -144,7 +144,7 @@ class CustomProgressSection extends ConsumerWidget {
     final int current = isGroup ? currentGroup : currentUnit;
     final int? total = isGroup ? unitGroupTotal : unitTotal;
     final String label = isGroup
-        ? (CustomProgressUnits.groupLabel(displayType, l) ?? l.customProgress)
+        ? (CustomProgressUnits.groupLabel(displayType, l) ?? l.progress)
         : CustomProgressUnits.fineLabel(displayType, l);
     final TextEditingController controller =
         TextEditingController(text: current > 0 ? current.toString() : '');

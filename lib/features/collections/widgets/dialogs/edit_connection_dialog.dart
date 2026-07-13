@@ -99,7 +99,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
     final S l = S.of(context);
     return AlertDialog(
       scrollable: true,
-      title: Text(l.editConnectionTitle),
+      title: Text(l.canvasEditConnection),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(

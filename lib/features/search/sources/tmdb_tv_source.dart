@@ -33,7 +33,7 @@ class TmdbTvSource extends SearchSource {
   IconData get groupIcon => Icons.movie_outlined;
 
   @override
-  String label(S l) => l.searchSourceTvShows;
+  String label(S l) => l.collectionFilterTvShows;
 
   @override
   IconData get icon => Icons.tv_outlined;

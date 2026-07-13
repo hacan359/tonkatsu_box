@@ -132,7 +132,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 20),
-            tooltip: S.of(context).steamGridDbClosePanel,
+            tooltip: S.of(context).closePanel,
             onPressed: () => ref
                 .read(steamGridDbPanelProvider(widget.collectionId).notifier)
                 .closePanel(),
@@ -346,7 +346,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
-            S.of(context).steamGridDbNoResults,
+            S.of(context).searchNoResults,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
