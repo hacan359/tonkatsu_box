@@ -83,6 +83,107 @@ void main() {
     });
   });
 
+  group('reapplyFantlabEdition', () {
+    late MockFantlabApi api;
+
+    setUp(() => api = MockFantlabApi());
+
+    Book cachedBook({String? coverUrl}) => createTestBook(
+          id: '3104',
+          source: DataSource.fantlab,
+          nativeId: '3104',
+          coverUrl: coverUrl,
+        );
+
+    test('returns fresh as-is when nothing was picked', () async {
+      final Book fresh = cachedBook(
+        coverUrl: 'https://fantlab.ru/images/editions/big/1',
+      );
+
+      final Book result = await reapplyFantlabEdition(
+        api,
+        cached: cachedBook(),
+        fresh: fresh,
+      );
+
+      expect(result, same(fresh));
+      verifyNever(() => api.getEditions(any()));
+    });
+
+    test('treats a cover matching the fresh default as no pick', () async {
+      final Book fresh = cachedBook(
+        coverUrl: 'https://fantlab.ru/images/editions/big/1',
+      );
+
+      final Book result = await reapplyFantlabEdition(
+        api,
+        cached:
+            cachedBook(coverUrl: 'https://fantlab.ru/images/editions/big/1'),
+        fresh: fresh,
+      );
+
+      expect(result, same(fresh));
+      verifyNever(() => api.getEditions(any()));
+    });
+
+    test('re-applies the picked edition onto the fresh work', () async {
+      when(() => api.getEditions('3104')).thenAnswer(
+        (_) async => <FantlabEditionBlock>[
+          const FantlabEditionBlock(
+            title: 'Издания',
+            editions: <FantlabEdition>[
+              FantlabEdition(
+                editionId: 24724,
+                name: 'Солярис',
+                hasCover: true,
+                year: 1992,
+                langCode: 'ru',
+                publisher: 'Мир',
+                pages: 480,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      final Book result = await reapplyFantlabEdition(
+        api,
+        cached: cachedBook(
+          coverUrl: 'https://fantlab.ru/images/editions/big/24724',
+        ),
+        fresh: cachedBook(
+          coverUrl: 'https://fantlab.ru/images/editions/big/1',
+        ),
+      );
+
+      expect(
+        result.coverUrl,
+        'https://fantlab.ru/images/editions/big/24724',
+      );
+      expect(result.publishYear, 1992);
+      expect(result.pageCount, 480);
+      expect(result.publishers, <String>['Мир']);
+    });
+
+    test('falls back to fresh when the picked edition is gone', () async {
+      when(() => api.getEditions('3104'))
+          .thenAnswer((_) async => const <FantlabEditionBlock>[]);
+      final Book fresh = cachedBook(
+        coverUrl: 'https://fantlab.ru/images/editions/big/1',
+      );
+
+      final Book result = await reapplyFantlabEdition(
+        api,
+        cached: cachedBook(
+          coverUrl: 'https://fantlab.ru/images/editions/big/24724',
+        ),
+        fresh: fresh,
+      );
+
+      expect(result, same(fresh));
+    });
+  });
+
   group('showFantlabEditionPicker', () {
     late MockFantlabApi mockApi;
 

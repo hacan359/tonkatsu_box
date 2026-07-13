@@ -7,6 +7,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
+import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/ra_api.dart';
 import '../../../core/api/screenscraper_api.dart';
@@ -29,6 +30,9 @@ abstract class SettingsKeys {
   static const String comicVineApiKey = 'comicvine_api_key';
 
   static const String googleBooksApiKey = 'google_books_api_key';
+
+  /// Personal Bearer token from hardcover.app/account/api.
+  static const String hardcoverApiKey = 'hardcover_api_key';
 
   static const String screenScraperSsid = 'screenscraper_ssid';
 
@@ -78,6 +82,9 @@ abstract class SettingsKeys {
   /// Last AniList username used in import dialog. Persisted on successful import.
   static const String aniListUsername = 'anilist_username';
 
+  /// Last Hardcover username used in import dialog. Persisted on successful import.
+  static const String hardcoverUsername = 'hardcover_username';
+
   static const String richCollectionsEnabled = 'rich_collections_enabled';
 
   static const String hideEmptyMediaTypeChevrons =
@@ -112,6 +119,7 @@ class SettingsState {
     this.tmdbApiKey,
     this.comicVineApiKey,
     this.googleBooksApiKey,
+    this.hardcoverApiKey,
     this.screenScraperSsid,
     this.screenScraperSspassword,
     this.defaultAuthor,
@@ -154,6 +162,8 @@ class SettingsState {
   final String? comicVineApiKey;
 
   final String? googleBooksApiKey;
+
+  final String? hardcoverApiKey;
 
   final String? screenScraperSsid;
 
@@ -225,6 +235,9 @@ class SettingsState {
   bool get hasGoogleBooksKey =>
       googleBooksApiKey != null && googleBooksApiKey!.isNotEmpty;
 
+  bool get hasHardcoverKey =>
+      hardcoverApiKey != null && hardcoverApiKey!.isNotEmpty;
+
   bool get hasSteamGridDbKey =>
       steamGridDbApiKey != null && steamGridDbApiKey!.isNotEmpty;
 
@@ -272,6 +285,7 @@ class SettingsState {
     String? tmdbApiKey,
     String? comicVineApiKey,
     String? googleBooksApiKey,
+    String? hardcoverApiKey,
     String? screenScraperSsid,
     String? screenScraperSspassword,
     String? defaultAuthor,
@@ -301,6 +315,7 @@ class SettingsState {
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
       comicVineApiKey: comicVineApiKey ?? this.comicVineApiKey,
       googleBooksApiKey: googleBooksApiKey ?? this.googleBooksApiKey,
+      hardcoverApiKey: hardcoverApiKey ?? this.hardcoverApiKey,
       screenScraperSsid: screenScraperSsid ?? this.screenScraperSsid,
       screenScraperSspassword:
           screenScraperSspassword ?? this.screenScraperSspassword,
@@ -361,6 +376,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   late TmdbApi _tmdbApi;
   late ComicVineApi _comicVineApi;
   late GoogleBooksApi _googleBooksApi;
+  late HardcoverApi _hardcoverApi;
   late ScreenScraperApi _screenScraperApi;
   late DatabaseService _dbService;
 
@@ -372,6 +388,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi = ref.watch(tmdbApiProvider);
     _comicVineApi = ref.watch(comicVineApiProvider);
     _googleBooksApi = ref.watch(googleBooksApiProvider);
+    _hardcoverApi = ref.watch(hardcoverApiProvider);
     _screenScraperApi = ref.watch(screenScraperApiProvider);
     _dbService = ref.watch(databaseServiceProvider);
 
@@ -426,6 +443,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Google Books: optional user key from prefs only, no built-in.
     final String? googleBooksApiKey =
         _prefs.getString(SettingsKeys.googleBooksApiKey);
+    // Hardcover: personal token from prefs only, no built-in.
+    final String? hardcoverApiKey =
+        _prefs.getString(SettingsKeys.hardcoverApiKey);
     final String? screenScraperSsid =
         _prefs.getString(SettingsKeys.screenScraperSsid);
     final String? screenScraperSspassword =
@@ -480,6 +500,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       tmdbApiKey: tmdbApiKey,
       comicVineApiKey: comicVineApiKey,
       googleBooksApiKey: googleBooksApiKey,
+      hardcoverApiKey: hardcoverApiKey,
       screenScraperSsid: screenScraperSsid,
       screenScraperSspassword: screenScraperSspassword,
       defaultAuthor: defaultAuthor,
@@ -552,6 +573,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (state.googleBooksApiKey != null &&
         state.googleBooksApiKey!.isNotEmpty) {
       _googleBooksApi.setApiKey(state.googleBooksApiKey!);
+    }
+    if (state.hardcoverApiKey != null && state.hardcoverApiKey!.isNotEmpty) {
+      _hardcoverApi.setApiKey(state.hardcoverApiKey!);
     }
   }
 
@@ -717,6 +741,23 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(googleBooksApiKey: apiKey);
   }
 
+  /// The account page shows the token with a `Bearer ` prefix — strip it so
+  /// a full copy-paste still works.
+  Future<void> setHardcoverApiKey(String apiKey) async {
+    final String token = apiKey
+        .replaceFirst(RegExp(r'^\s*Bearer\s+', caseSensitive: false), '')
+        .trim();
+    if (token.isNotEmpty) {
+      await _prefs.setString(SettingsKeys.hardcoverApiKey, token);
+      _hardcoverApi.setApiKey(token);
+    } else {
+      await _prefs.remove(SettingsKeys.hardcoverApiKey);
+      _hardcoverApi.clearApiKey();
+    }
+
+    state = state.copyWith(hardcoverApiKey: token);
+  }
+
   /// Genres are pre-seeded for both EN + RU — no cache clear needed on switch.
   Future<void> setTmdbLanguage(String language) async {
     await _prefs.setString(SettingsKeys.tmdbLanguage, language);
@@ -856,6 +897,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     return _googleBooksApi.validateApiKey(state.googleBooksApiKey!);
   }
 
+  Future<bool> validateHardcoverKey() async {
+    if (!state.hasHardcoverKey) return false;
+    return _hardcoverApi.validateApiKey(state.hardcoverApiKey!);
+  }
+
   Future<ConfigResult> exportConfig() async {
     final ConfigService configService = ref.read(configServiceProvider);
     return configService.exportToFile();
@@ -891,6 +937,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.tmdbApiKey);
     await _prefs.remove(SettingsKeys.comicVineApiKey);
     await _prefs.remove(SettingsKeys.googleBooksApiKey);
+    await _prefs.remove(SettingsKeys.hardcoverApiKey);
     await _prefs.remove(SettingsKeys.screenScraperSsid);
     await _prefs.remove(SettingsKeys.screenScraperSspassword);
     await _prefs.remove(SettingsKeys.defaultAuthor);
@@ -912,6 +959,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi.clearApiKey();
     _comicVineApi.clearApiKey();
     _googleBooksApi.clearApiKey();
+    _hardcoverApi.clearApiKey();
 
     state = const SettingsState();
   }

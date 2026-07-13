@@ -763,6 +763,12 @@ class SEn extends S {
       'Enter your Google Books API key (optional)';
 
   @override
+  String get credentialsHardcoverSection => 'Hardcover API (Books)';
+
+  @override
+  String get credentialsEnterHardcoverKey => 'Enter your Hardcover API token';
+
+  @override
   String get credentialsContentLanguage => 'Content Language';
 
   @override
@@ -840,6 +846,13 @@ class SEn extends S {
   @override
   String get credentialsGoogleBooksKeyInvalid =>
       'Google Books API key is invalid';
+
+  @override
+  String get credentialsHardcoverKeyValid => 'Hardcover API token is valid';
+
+  @override
+  String get credentialsHardcoverKeyInvalid =>
+      'Hardcover API token is invalid or expired';
 
   @override
   String get credentialsEnterSteamGridDbKeyError =>
@@ -1460,6 +1473,9 @@ class SEn extends S {
   String get creditsGoogleBooksAttribution => 'Book data from Google Books.';
 
   @override
+  String get creditsHardcoverAttribution => 'Book data from Hardcover.';
+
+  @override
   String get creditsOpenSource => 'Open Source';
 
   @override
@@ -1559,6 +1575,71 @@ class SEn extends S {
 
   @override
   String get importStartButton => 'Import';
+
+  @override
+  String get importUsername => 'Username';
+
+  @override
+  String get importUsernameHint => 'e.g. yourname';
+
+  @override
+  String get importMode => 'Mode';
+
+  @override
+  String get importModeNewOnly => 'Add new only';
+
+  @override
+  String get importModeNewOnlySubtitle =>
+      'Skip items already in the collection';
+
+  @override
+  String get importModeOverwrite => 'Overwrite existing';
+
+  @override
+  String get importModeOverwriteSubtitle =>
+      'Update progress, status and dates from the source';
+
+  @override
+  String get importNewCollectionName => 'Collection name';
+
+  @override
+  String importNewCollectionDefault(String source, String username) {
+    return '$source Import — $username';
+  }
+
+  @override
+  String get importFetchingBooks => 'Fetching book library...';
+
+  @override
+  String get importAddingItems => 'Importing entries';
+
+  @override
+  String importProcessingItem(String title) {
+    return 'Processing: $title';
+  }
+
+  @override
+  String importImportedCount(int count) {
+    return '$count imported';
+  }
+
+  @override
+  String importUpdatedCount(int count) {
+    return '$count updated';
+  }
+
+  @override
+  String importUserNotFound(String username) {
+    return 'User \"$username\" was not found';
+  }
+
+  @override
+  String get importEmptyUsername => 'Enter a username';
+
+  @override
+  String importFailed(String error) {
+    return 'Import failed: $error';
+  }
 
   @override
   String get collectionNotFound => 'Collection not found';
@@ -2758,6 +2839,10 @@ class SEn extends S {
   String get welcomeApiGoogleBooksDesc => 'Google\'s global book catalog';
 
   @override
+  String get welcomeApiHardcoverDesc =>
+      'Community book catalog, needs a personal token';
+
+  @override
   String get welcomeApiRecommended => 'RECOMMENDED';
 
   @override
@@ -2898,6 +2983,10 @@ class SEn extends S {
       'Optional — your own key raises rate limits. Search works without it.';
 
   @override
+  String get welcomeSourcesHardcoverTokenHint =>
+      'Required — search and import stay disabled without it. Tokens expire every January 1st.';
+
+  @override
   String get welcomeSourceDescTmdb => 'Movies, TV shows and animation.';
 
   @override
@@ -2928,6 +3017,10 @@ class SEn extends S {
   @override
   String get welcomeSourceDescGoogleBooks =>
       'Millions of editions from Google\'s book catalog, searchable by title, author or ISBN.';
+
+  @override
+  String get welcomeSourceDescHardcover =>
+      'Community book catalog with series, genres, moods and ratings. Requires a free personal token.';
 
   @override
   String get welcomeTourTitle => 'Get to know the menu';
@@ -3797,6 +3890,9 @@ class SEn extends S {
 
   @override
   String get browseSortMostVoted => 'Most Voted';
+
+  @override
+  String get browseSortMostRead => 'Most Read';
 
   @override
   String get browseSortTrending => 'Trending';
@@ -4977,6 +5073,24 @@ class SEn extends S {
   @override
   String get settingsAniListImportSubtitle =>
       'Import anime/manga lists by public username';
+
+  @override
+  String get settingsHardcoverImport => 'Hardcover Import';
+
+  @override
+  String get settingsHardcoverImportSubtitle =>
+      'Import a book library from hardcover.app by username';
+
+  @override
+  String get hardcoverImportTitle => 'Hardcover Import';
+
+  @override
+  String get hardcoverImportSubtitle =>
+      'Fetches a user\'s library from hardcover.app — public part for other users, everything for your own account';
+
+  @override
+  String get hardcoverImportTokenMissing =>
+      'Hardcover API token is not set. Add it in Settings → API Credentials.';
 
   @override
   String get aniListImportTitle => 'AniList Import';

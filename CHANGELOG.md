@@ -7,6 +7,160 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Hardcover book source: search and library import**
+
+  Hardcover (hardcover.app) joins the book providers. Search returns the
+  full card (authors, genres, moods, series, ratings, ISBNs) in one
+  request with six sort options; the importer pulls a user's library by
+  username — statuses, ratings, reading dates, re-read counts, reviews
+  and the Hardcover add date — with "add new only" / "overwrite" modes.
+  Books flagged as owned get the global "Owned" tag. Requires a free
+  personal API token (Settings → API Credentials); tokens reset every
+  January 1st and the app says so when one expires.
+
+  * lib/core/api/hardcover_api.dart (HardcoverApi, hardcoverApiProvider): New —
+    facade over the GraphQL layer, token wiring, validateApiKey.
+  * lib/core/api/hardcover/hardcover_graphql_client.dart (HardcoverGraphQLClient):
+    New — single-endpoint POST transport, Bearer auth, 401/429 mapping.
+  * lib/core/api/hardcover/hardcover_queries.dart (HardcoverQueries),
+    lib/core/api/hardcover/hardcover_types.dart (HardcoverApiException,
+    HardcoverAuthException, HardcoverRateLimitException,
+    HardcoverUserNotFoundException, HardcoverUserBookEntry): New.
+  * lib/core/api/hardcover/hardcover_search_api.dart (HardcoverSearchApi):
+    New — paginated search, book-by-id refetch.
+  * lib/core/api/hardcover/hardcover_user_library_api.dart
+    (HardcoverUserLibraryApi): New — user lookup, library count, 500-row pages.
+  * lib/core/import/sources/hardcover/hardcover_import_service.dart
+    (HardcoverImportService, HardcoverImportOptions,
+    hardcoverImportServiceProvider): New — status/rating/date mapping,
+    Owned tag, date_added → added_at.
+  * lib/features/search/sources/hardcover_source.dart (HardcoverSource): New —
+    search source with relevance/popular/top-rated/most-voted/most-read/newest
+    sorts.
+  * lib/features/settings/screens/hardcover_import_screen.dart
+    (HardcoverImportScreen), lib/features/settings/content/hardcover_import_content.dart
+    (HardcoverImportContent): New — import form and progress UI.
+  * lib/shared/models/book.dart (Book.fromHardcoverDocument, Book.fromHardcoverBook):
+    New factories for the search document and graph book shapes.
+  * lib/shared/models/data_source.dart (DataSource.hardcover): New enum value.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.hardcoverApiKey, SettingsKeys.hardcoverUsername,
+    SettingsState.hardcoverApiKey, SettingsNotifier.setHardcoverApiKey,
+    SettingsNotifier.validateHardcoverKey): Token storage and validation;
+    the setter strips a pasted "Bearer " prefix.
+  * lib/core/services/api_key_initializer.dart (ApiKeys.hardcoverApiKey): Load
+    the token at startup.
+  * lib/features/settings/content/credentials_content.dart
+    (_buildHardcoverSection), lib/features/welcome/widgets/welcome_step_sources.dart
+    (_KeyEditorState, _KeyBadge): Token entry in Credentials and the welcome
+    wizard.
+  * lib/features/settings/content/credits_content.dart,
+    lib/shared/constants/source_catalog.dart (kDataSourceCatalog,
+    kSearchGroupToSources): Catalog and attribution entries.
+  * lib/features/search/handlers/media_handlers.dart (_fetchFullBook),
+    lib/features/collections/helpers/collection_actions.dart: Refetch stored
+    Hardcover items.
+  * lib/features/search/models/search_source.dart (BrowseSortOption.label):
+    Add the `most_read` sort label.
+  * lib/features/search/sources/search_sources.dart (searchSources): Register
+    the source.
+  * lib/core/services/import_service.dart (ImportStage.fetchingBooks): New stage.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.addTagToItems):
+    New — additive batch tag link used by the Owned tag.
+  * lib/shared/theme/app_assets.dart (AppAssets.iconHardcoverColor),
+    assets/images/icon_hardcover_color.png: Brand icon.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb: Hardcover
+    strings plus shared import keys (importUsername, importMode,
+    importModeNewOnly, importModeOverwrite, importNewCollectionName,
+    importNewCollectionDefault, importFetchingBooks, importAddingItems,
+    importProcessingItem, importImportedCount, importUpdatedCount,
+    importUserNotFound, importEmptyUsername, importFailed, browseSortMostRead).
+  * README.md, docs/index.html: List the new source.
+
+- **Hardcover edition picker with a language filter**
+
+  A Hardcover book's detail sheet in search shows an editions strip
+  (most-owned first) with language chips — Hardcover's canonical title can
+  be in any language, so picking e.g. the EN printing swaps in its
+  localized title (the old one is kept as the original title), cover,
+  ISBN, publisher, language and year. The picked edition is recorded as a
+  `#edition-{id}` fragment on the item's external URL — fragments never
+  reach the server, so the link keeps resolving while the pick survives
+  "Refresh from source" without a schema migration.
+
+  * lib/core/api/hardcover/hardcover_queries.dart
+    (HardcoverQueries.editionsByBook, HardcoverQueries.editionById): New
+    queries.
+  * lib/core/api/hardcover/hardcover_types.dart (HardcoverEdition): New.
+  * lib/core/api/hardcover/hardcover_search_api.dart
+    (HardcoverSearchApi.getEditions, HardcoverSearchApi.getEdition),
+    lib/core/api/hardcover_api.dart (HardcoverApi.getEditions,
+    HardcoverApi.getEdition): New endpoints.
+  * lib/features/collections/widgets/hardcover_edition_picker.dart
+    (HardcoverEditionsSection, showHardcoverEditionPicker,
+    applyHardcoverEdition, reapplyHardcoverEdition,
+    hardcoverEditionIdFromExternalUrl, hardcoverEditionIdFromCoverUrl):
+    New — inline strip with language chips, modal picker grouped by
+    language, edition overlay and recovery helpers.
+  * lib/features/search/widgets/hardcover_book_sheet.dart
+    (HardcoverBookSheet): New — detail sheet host with the editions strip.
+  * lib/features/search/handlers/media_handlers.dart: Route Hardcover books
+    to the sheet and apply the picked edition on add.
+
+- **"Refresh from source" lets a book switch editions**
+
+  For Fantlab and Hardcover books the refresh action first opens the
+  edition picker (current edition highlighted) — added the RU printing by
+  mistake, pick the EN one and refresh with it. Dismissing the sheet
+  refreshes keeping the current edition; previously a refresh silently
+  reset the book to the source's default edition, discarding the picked
+  cover and metadata.
+
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.refreshItemFromApi, _refreshItemWork): Show the
+    picker for Fantlab / Hardcover books; apply the fresh pick or re-apply
+    the stored one.
+  * lib/features/collections/widgets/fantlab_edition_picker.dart
+    (reapplyFantlabEdition): New — recovers the picked edition from the
+    cached cover URL onto the refetched work; showFantlabEditionPicker is
+    now actually wired up.
+
+### Changed
+
+- **MyAnimeList "On-Hold" now imports as Dropped**
+
+  The local Dropped status doubles as "paused" (pause icon), which is how
+  AniList Paused and Hardcover Paused already import. MAL On-Hold used to
+  land in Planned; it now aligns with the other importers.
+
+  * lib/core/import/sources/mal/mal_import_service.dart (MalImportService._mapStatus):
+    `on-hold` → dropped.
+
+- **Batch item insert keeps a source-provided add date**
+
+  Import sources can now carry the original "added" date of an item
+  (Hardcover uses this for its date_added); rows without one still get
+  the current time.
+
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.addItemsBatch):
+    Use the row's `added_at` when present instead of always stamping now.
+
+### Fixed
+
+- **Hardcover token now syncs between devices and counts in Settings**
+
+  The config export / LAN sync / backup key list and the Settings "API
+  Keys" counter both predate the Hardcover source: the token (and the
+  remembered import username) stayed on one device, and the counter said
+  6/6 with Hardcover configured. Both now include it (counter is N/7).
+
+  * lib/core/services/config_service.dart (ConfigService._settingsKeys):
+    Add hardcoverApiKey and hardcoverUsername.
+  * lib/features/settings/screens/settings_screen.dart (_apiKeyStates):
+    Count the Hardcover key.
+
 ## [0.38.2] - 2026-07-12
 
 ### Changed

@@ -207,9 +207,9 @@ void main() {
             ItemStatus.completed);
       });
 
-      test('On-Hold → planned', () {
+      test('On-Hold → dropped (local dropped doubles as paused)', () {
         expect(sut.parseString(wrap('On-Hold')).entries.first.status,
-            ItemStatus.planned);
+            ItemStatus.dropped);
       });
 
       test('Dropped → dropped', () {

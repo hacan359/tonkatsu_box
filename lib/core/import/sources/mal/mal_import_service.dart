@@ -842,8 +842,9 @@ class MalImportService implements ImportSource {
         return ItemStatus.completed;
       case 'on-hold':
       case 'on hold':
-        // MAL "on hold" has no direct equivalent; map to planned as closest intent.
-        return ItemStatus.planned;
+        // Local dropped doubles as "paused" (pause icon), the shared mapping
+        // across importers (AniList PAUSED, Hardcover Paused map the same).
+        return ItemStatus.dropped;
       case 'dropped':
         return ItemStatus.dropped;
       case 'plan to watch':

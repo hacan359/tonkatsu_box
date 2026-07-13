@@ -130,6 +130,7 @@ class _SourceCard extends ConsumerWidget {
         DataSource.fantlab => l.welcomeSourceDescFantlab,
         DataSource.comicVine => l.welcomeSourceDescComicVine,
         DataSource.googleBooks => l.welcomeSourceDescGoogleBooks,
+        DataSource.hardcover => l.welcomeSourceDescHardcover,
         _ => '',
       };
 }
@@ -151,6 +152,7 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
   String _tmdbKey = '';
   String _comicVineKey = '';
   String _googleBooksKey = '';
+  String _hardcoverKey = '';
 
   // IGDB needs both halves together, so only persist once both are present.
   void _saveIgdb() {
@@ -302,6 +304,34 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
             ),
           ],
         );
+      case DataSource.hardcover:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            InlineTextField(
+              label: l.credentialsApiKey,
+              value: _hardcoverKey,
+              placeholder: l.credentialsEnterHardcoverKey,
+              obscureText: true,
+              compact: compact,
+              onChanged: (String v) {
+                setState(() => _hardcoverKey = v);
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setHardcoverApiKey(v.trim());
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _GetKeyLink(url: widget.info.url),
+            const SizedBox(height: 6),
+            Text(
+              l.welcomeSourcesHardcoverTokenHint,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ],
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -342,6 +372,11 @@ class _KeyBadge extends StatelessWidget {
       case SourceKeyRequirement.none:
         return (l.welcomeSourcesNoKeyNeeded, AppColors.success);
       case SourceKeyRequirement.mandatory:
+        if (info.source == DataSource.hardcover) {
+          return settings.hasHardcoverKey
+              ? (l.welcomeSourcesKeySaved, AppColors.success)
+              : (l.welcomeApiRequired, AppColors.brand);
+        }
         if (settings.isIgdbKeyBuiltIn) {
           return (l.welcomeApiBuiltInKey, AppColors.success);
         }

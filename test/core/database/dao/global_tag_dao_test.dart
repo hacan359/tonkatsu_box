@@ -167,6 +167,32 @@ void main() {
       test('getTagIdsForItems handles an empty id list', () async {
         expect(await dao.getTagIdsForItems(<int>[]), isEmpty);
       });
+
+      test('addTagToItems links additively, keeping existing tags', () async {
+        final Tag a = await dao.create('a');
+        final Tag owned = await dao.create('Owned');
+        await dao.setItemTags(1, <int>{a.id});
+
+        await dao.addTagToItems(<int>[1, 2], owned.id);
+
+        expect(await dao.getTagIdsByItem(1), <int>{a.id, owned.id});
+        expect(await dao.getTagIdsByItem(2), <int>{owned.id});
+      });
+
+      test('addTagToItems is idempotent for an already linked tag', () async {
+        final Tag owned = await dao.create('Owned');
+        await dao.addTagToItems(<int>[1], owned.id);
+        await dao.addTagToItems(<int>[1], owned.id);
+
+        expect(await dao.getTagIdsByItem(1), <int>{owned.id});
+      });
+
+      test('addTagToItems with no items is a no-op', () async {
+        final Tag owned = await dao.create('Owned');
+        await dao.addTagToItems(<int>[], owned.id);
+
+        expect(await dao.getTagIdsByItem(1), isEmpty);
+      });
     });
 
     group('upsertAll', () {

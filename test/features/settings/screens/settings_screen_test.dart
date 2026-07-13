@@ -178,19 +178,20 @@ void main() {
     group('Data Sources section', () {
       testWidgets('API Keys value counts every configured source out of total',
           (WidgetTester tester) async {
-        // 4 of 6 sources set, including ComicVine and Google Books which the
-        // counter previously ignored (it capped at the original 3).
+        // 5 of 7 sources set, including ComicVine, Google Books and Hardcover
+        // which the counter previously ignored.
         await prefs.setString(SettingsKeys.clientId, 'cid');
         await prefs.setString(SettingsKeys.clientSecret, 'secret');
         await prefs.setString(SettingsKeys.tmdbApiKey, 'tmdb');
         await prefs.setString(SettingsKeys.comicVineApiKey, 'cv');
         await prefs.setString(SettingsKeys.googleBooksApiKey, 'gb');
+        await prefs.setString(SettingsKeys.hardcoverApiKey, 'hc');
 
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await scrollTo(tester, '4/6');
-        expect(find.text('4/6'), findsOneWidget);
+        await scrollTo(tester, '5/7');
+        expect(find.text('5/7'), findsOneWidget);
       });
     });
   });

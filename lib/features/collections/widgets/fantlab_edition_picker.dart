@@ -71,6 +71,33 @@ int? editionIdFromCoverUrl(String? coverUrl) {
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
+/// Refresh helper: re-applies the edition the user picked (recovered from the
+/// cached cover URL) onto the freshly fetched [fresh] work. The fresh work's
+/// own cover is the first edition's, so an equal id means nothing was
+/// explicitly picked. Returns [fresh] as-is when there is no pick or the
+/// picked edition no longer exists on the work.
+Future<Book> reapplyFantlabEdition(
+  FantlabApi api, {
+  required Book cached,
+  required Book fresh,
+}) async {
+  final int? pickedId = editionIdFromCoverUrl(cached.coverUrl);
+  if (pickedId == null || pickedId == editionIdFromCoverUrl(fresh.coverUrl)) {
+    return fresh;
+  }
+
+  final List<FantlabEditionBlock> blocks =
+      await api.getEditions(cached.nativeId);
+  for (final FantlabEditionBlock block in blocks) {
+    for (final FantlabEdition edition in block.editions) {
+      if (edition.editionId == pickedId) {
+        return applyFantlabEdition(fresh, edition);
+      }
+    }
+  }
+  return fresh;
+}
+
 /// Inline editions strip for a book's detail sheet — mirrors the games'
 /// ScreenScraper gallery. Horizontal covers (covers first); tapping one calls
 /// [onSelected]. Hidden while loading / on error / when the work has none.

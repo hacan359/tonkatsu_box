@@ -156,6 +156,8 @@ enum ImportStage {
 
   fetchingAnime('Fetching anime data...'),
 
+  fetchingBooks('Fetching book data...'),
+
   cachingMedia('Caching media...'),
 
   creatingCollection('Creating collection...'),

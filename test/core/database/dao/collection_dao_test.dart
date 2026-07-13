@@ -800,6 +800,39 @@ void main() {
         expect((rows[1] as Map<String, dynamic>)['sort_order'], 6);
         expect((rows[2] as Map<String, dynamic>)['sort_order'], 7);
       });
+
+      test('keeps added_at from the row, fills it only when absent', () async {
+        final MockBatch mockBatch = MockBatch();
+        when(() => mockDb.rawQuery(any(), any())).thenAnswer(
+          (_) async =>
+              <Map<String, dynamic>>[<String, dynamic>{'max_sort': 0}],
+        );
+        mockDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
+        when(() => mockBatch.insert(any(), any(),
+                conflictAlgorithm: any(named: 'conflictAlgorithm')))
+            .thenReturn(null);
+        when(() => mockBatch.commit())
+            .thenAnswer((_) async => <Object?>[10, 11]);
+
+        await dao.addItemsBatch(7, <Map<String, dynamic>>[
+          <String, dynamic>{
+            'media_type': 'book',
+            'external_id': 1,
+            'added_at': 1600000000,
+          },
+          <String, dynamic>{'media_type': 'book', 'external_id': 2},
+        ]);
+
+        final List<dynamic> rows = verify(
+          () => mockBatch.insert('collection_items', captureAny(),
+              conflictAlgorithm: any(named: 'conflictAlgorithm')),
+        ).captured;
+        expect((rows[0] as Map<String, dynamic>)['added_at'], 1600000000);
+        final Object? filled = (rows[1] as Map<String, dynamic>)['added_at'];
+        expect(filled, isA<int>());
+        expect(filled, isNot(1600000000));
+      });
     });
 
     group('updateItemFieldsBatch', () {

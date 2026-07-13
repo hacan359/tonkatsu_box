@@ -1461,6 +1461,18 @@ abstract class S {
   /// **'Enter your Google Books API key (optional)'**
   String get credentialsEnterGoogleBooksKey;
 
+  /// No description provided for @credentialsHardcoverSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover API (Books)'**
+  String get credentialsHardcoverSection;
+
+  /// No description provided for @credentialsEnterHardcoverKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your Hardcover API token'**
+  String get credentialsEnterHardcoverKey;
+
   /// No description provided for @credentialsContentLanguage.
   ///
   /// In en, this message translates to:
@@ -1604,6 +1616,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Google Books API key is invalid'**
   String get credentialsGoogleBooksKeyInvalid;
+
+  /// No description provided for @credentialsHardcoverKeyValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover API token is valid'**
+  String get credentialsHardcoverKeyValid;
+
+  /// No description provided for @credentialsHardcoverKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover API token is invalid or expired'**
+  String get credentialsHardcoverKeyInvalid;
 
   /// No description provided for @credentialsEnterSteamGridDbKeyError.
   ///
@@ -2654,6 +2678,12 @@ abstract class S {
   /// **'Book data from Google Books.'**
   String get creditsGoogleBooksAttribution;
 
+  /// No description provided for @creditsHardcoverAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Book data from Hardcover.'**
+  String get creditsHardcoverAttribution;
+
   /// No description provided for @creditsOpenSource.
   ///
   /// In en, this message translates to:
@@ -2815,6 +2845,108 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Import'**
   String get importStartButton;
+
+  /// No description provided for @importUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get importUsername;
+
+  /// No description provided for @importUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. yourname'**
+  String get importUsernameHint;
+
+  /// No description provided for @importMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get importMode;
+
+  /// No description provided for @importModeNewOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new only'**
+  String get importModeNewOnly;
+
+  /// No description provided for @importModeNewOnlySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip items already in the collection'**
+  String get importModeNewOnlySubtitle;
+
+  /// No description provided for @importModeOverwrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite existing'**
+  String get importModeOverwrite;
+
+  /// No description provided for @importModeOverwriteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update progress, status and dates from the source'**
+  String get importModeOverwriteSubtitle;
+
+  /// No description provided for @importNewCollectionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection name'**
+  String get importNewCollectionName;
+
+  /// No description provided for @importNewCollectionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} Import — {username}'**
+  String importNewCollectionDefault(String source, String username);
+
+  /// No description provided for @importFetchingBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching book library...'**
+  String get importFetchingBooks;
+
+  /// No description provided for @importAddingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing entries'**
+  String get importAddingItems;
+
+  /// No description provided for @importProcessingItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing: {title}'**
+  String importProcessingItem(String title);
+
+  /// No description provided for @importImportedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} imported'**
+  String importImportedCount(int count);
+
+  /// No description provided for @importUpdatedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} updated'**
+  String importUpdatedCount(int count);
+
+  /// No description provided for @importUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User \"{username}\" was not found'**
+  String importUserNotFound(String username);
+
+  /// No description provided for @importEmptyUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a username'**
+  String get importEmptyUsername;
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String importFailed(String error);
 
   /// No description provided for @collectionNotFound.
   ///
@@ -4958,6 +5090,12 @@ abstract class S {
   /// **'Google\'s global book catalog'**
   String get welcomeApiGoogleBooksDesc;
 
+  /// No description provided for @welcomeApiHardcoverDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Community book catalog, needs a personal token'**
+  String get welcomeApiHardcoverDesc;
+
   /// No description provided for @welcomeApiRecommended.
   ///
   /// In en, this message translates to:
@@ -5204,6 +5342,12 @@ abstract class S {
   /// **'Optional — your own key raises rate limits. Search works without it.'**
   String get welcomeSourcesKeyOptionalHint;
 
+  /// No description provided for @welcomeSourcesHardcoverTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Required — search and import stay disabled without it. Tokens expire every January 1st.'**
+  String get welcomeSourcesHardcoverTokenHint;
+
   /// No description provided for @welcomeSourceDescTmdb.
   ///
   /// In en, this message translates to:
@@ -5257,6 +5401,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Millions of editions from Google\'s book catalog, searchable by title, author or ISBN.'**
   String get welcomeSourceDescGoogleBooks;
+
+  /// No description provided for @welcomeSourceDescHardcover.
+  ///
+  /// In en, this message translates to:
+  /// **'Community book catalog with series, genres, moods and ratings. Requires a free personal token.'**
+  String get welcomeSourceDescHardcover;
 
   /// No description provided for @welcomeTourTitle.
   ///
@@ -6865,6 +7015,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Most Voted'**
   String get browseSortMostVoted;
+
+  /// No description provided for @browseSortMostRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Read'**
+  String get browseSortMostRead;
 
   /// No description provided for @browseSortTrending.
   ///
@@ -8953,6 +9109,36 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Import anime/manga lists by public username'**
   String get settingsAniListImportSubtitle;
+
+  /// No description provided for @settingsHardcoverImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover Import'**
+  String get settingsHardcoverImport;
+
+  /// No description provided for @settingsHardcoverImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a book library from hardcover.app by username'**
+  String get settingsHardcoverImportSubtitle;
+
+  /// No description provided for @hardcoverImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover Import'**
+  String get hardcoverImportTitle;
+
+  /// No description provided for @hardcoverImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetches a user\'s library from hardcover.app — public part for other users, everything for your own account'**
+  String get hardcoverImportSubtitle;
+
+  /// No description provided for @hardcoverImportTokenMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover API token is not set. Add it in Settings → API Credentials.'**
+  String get hardcoverImportTokenMissing;
 
   /// No description provided for @aniListImportTitle.
   ///
