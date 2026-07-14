@@ -20,7 +20,6 @@ import '../../shared/models/tier_definition.dart';
 import '../../shared/models/tier_list.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/media_type.dart';
-import '../../shared/models/tag.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
@@ -35,6 +34,7 @@ import '../api/anilist_api.dart';
 import '../api/igdb_api.dart';
 import '../api/tmdb_api.dart';
 import '../api/vndb_api.dart';
+import '../database/dao/global_tag_dao.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'collection_hero_service.dart';
@@ -1399,23 +1399,15 @@ class ImportService {
     List<Map<String, dynamic>> exportedItems,
     Map<String, int> itemIdMapping,
   ) async {
-    // One snapshot of the global set; per-tag resolveOrCreate would rescan
-    // the table for every entry.
-    final List<Tag> existing = await _database.globalTagDao.getAll();
-    final Map<String, int> tagNameToId = <String, int>{
-      for (final Tag tag in existing) tag.name.toLowerCase(): tag.id,
-    };
-    for (final Map<String, dynamic> tagData in tagsData) {
-      final String name = tagData['name'] as String? ?? 'Imported Tag';
-      final String key = name.toLowerCase();
-      if (tagNameToId.containsKey(key)) continue;
-      final Tag created = await _database.globalTagDao.create(
-        name,
-        color: tagData['color'] as int?,
-        textColor: tagData['text_color'] as int?,
-      );
-      tagNameToId[key] = created.id;
-    }
+    final Map<String, int> tagNameToId =
+        await _database.globalTagDao.resolveOrCreateAll(<TagSeed>[
+      for (final Map<String, dynamic> tagData in tagsData)
+        (
+          name: tagData['name'] as String? ?? 'Imported Tag',
+          color: tagData['color'] as int?,
+          textColor: tagData['text_color'] as int?,
+        ),
+    ]);
 
     for (final Map<String, dynamic> itemData in exportedItems) {
       final List<String> tagNames = switch (itemData['tag_names']) {
@@ -1429,8 +1421,7 @@ class ImportService {
 
       final Set<int> tagIds = <int>{
         for (final String name in tagNames)
-          if (tagNameToId[name.toLowerCase()] != null)
-            tagNameToId[name.toLowerCase()]!,
+          if (tagNameToId[GlobalTagDao.nameKey(name)] case final int id) id,
       };
       if (tagIds.isEmpty) continue;
 

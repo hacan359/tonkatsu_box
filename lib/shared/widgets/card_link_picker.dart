@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -33,14 +35,22 @@ class _CardLinkPickerSheet extends StatefulWidget {
 }
 
 class _CardLinkPickerSheetState extends State<_CardLinkPickerSheet> {
+  static const int _maxResults = 50;
+  static const Duration _debounceDelay = Duration(milliseconds: 250);
+
   final TextEditingController _query = TextEditingController();
   List<CollectionItem> _all = <CollectionItem>[];
+  // Lowercased names aligned with [_all], computed once instead of on
+  // every keystroke over the whole library.
+  List<String> _namesLower = <String>[];
+  List<CollectionItem> _results = <CollectionItem>[];
   bool _loading = true;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _query.addListener(() => setState(() {}));
+    _query.addListener(_onQueryChanged);
     _load();
   }
 
@@ -50,33 +60,46 @@ class _CardLinkPickerSheetState extends State<_CardLinkPickerSheet> {
     if (mounted) {
       setState(() {
         _all = items;
+        _namesLower = <String>[
+          for (final CollectionItem item in items) item.itemName.toLowerCase(),
+        ];
         _loading = false;
       });
+      _applyFilter();
     }
+  }
+
+  void _onQueryChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(_debounceDelay, _applyFilter);
+  }
+
+  void _applyFilter() {
+    if (!mounted) return;
+    final String q = _query.text.trim().toLowerCase();
+    final List<CollectionItem> results = <CollectionItem>[];
+    if (q.isNotEmpty) {
+      for (int i = 0;
+          i < _all.length && results.length < _maxResults;
+          i++) {
+        if (_namesLower[i].contains(q)) results.add(_all[i]);
+      }
+    }
+    setState(() => _results = results);
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _query.dispose();
     super.dispose();
-  }
-
-  static const int _maxResults = 50;
-
-  List<CollectionItem> get _filtered {
-    final String q = _query.text.trim().toLowerCase();
-    if (q.isEmpty) return const <CollectionItem>[];
-    return _all
-        .where((CollectionItem i) => i.itemName.toLowerCase().contains(q))
-        .take(_maxResults)
-        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final List<CollectionItem> items = _filtered;
+    final List<CollectionItem> items = _results;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),

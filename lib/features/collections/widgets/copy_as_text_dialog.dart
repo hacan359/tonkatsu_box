@@ -6,10 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/text_export_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 
 /// Returns `true` when the collection text was copied to the clipboard.
 Future<bool?> showCopyAsTextDialog({
@@ -104,6 +107,22 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
     return sorted;
   }
 
+  /// Item id → joined tag names for [items], resolved from the global tag
+  /// providers in the tags' display order.
+  Map<int, String> _tagsByItemId(List<CollectionItem> items) {
+    final Map<int, Set<int>> itemTags =
+        ref.read(itemTagsProvider).valueOrNull ?? const <int, Set<int>>{};
+    if (itemTags.isEmpty) return const <int, String>{};
+    final List<Tag> tags =
+        ref.read(globalTagsProvider).valueOrNull ?? const <Tag>[];
+    return <int, String>{
+      for (final CollectionItem item in items)
+        if (itemTags[item.id] case final Set<int> ids when ids.isNotEmpty)
+          item.id:
+              tags.orderedFor(ids).map((Tag t) => t.name).join(', '),
+    };
+  }
+
   String get _preview {
     final String template = _templateController.text;
     if (template.isEmpty) return '';
@@ -116,6 +135,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
       previewItems,
       animeMangaTitleLanguage:
           ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+      tagsByItemId: _tagsByItemId(previewItems),
     );
     if (items.length > _previewMaxLines) {
       return '$result\n…';
@@ -157,6 +177,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
       items,
       animeMangaTitleLanguage:
           ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+      tagsByItemId: _tagsByItemId(items),
     );
     await Clipboard.setData(ClipboardData(text: text));
     await _saveTemplate(template);
@@ -183,6 +204,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
+    final String preview = _preview;
 
     return AlertDialog(
       scrollable: true,
@@ -324,12 +346,10 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
               ),
               child: SingleChildScrollView(
                 child: Text(
-                  _preview.isNotEmpty
-                      ? _preview
-                      : l.textExportEmptyTemplate,
+                  preview.isNotEmpty ? preview : l.textExportEmptyTemplate,
                   style: AppTypography.bodySmall.copyWith(
                     fontFamily: 'monospace',
-                    color: _preview.isNotEmpty
+                    color: preview.isNotEmpty
                         ? AppColors.textPrimary
                         : AppColors.textTertiary,
                   ),

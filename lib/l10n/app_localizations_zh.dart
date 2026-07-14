@@ -1039,6 +1039,9 @@ class SZh extends S {
   String get lanSyncManifestError => '设备未响应';
 
   @override
+  String get lanSyncStartError => '无法启动网络共享。请检查网络连接后重新打开此屏幕。';
+
+  @override
   String get lanSyncReceiveError => '获取数据失败';
 
   @override

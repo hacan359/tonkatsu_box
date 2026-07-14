@@ -500,6 +500,7 @@
   "lanSyncAllow": "Allow",
   "lanSyncDenied": "The other device declined the request",
   "lanSyncManifestError": "The device did not respond",
+  "lanSyncStartError": "Could not start network sharing. Check the network connection and reopen this screen.",
   "lanSyncReceiveError": "Failed to get the data",
   "lanSyncTooNew": "The data on that device was made by a newer app version. Update the app on this device first.",
   "lanSyncCorrupted": "The transfer came through damaged. Try again.",

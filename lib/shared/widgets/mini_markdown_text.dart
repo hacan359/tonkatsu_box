@@ -1,12 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../models/card_link.dart';
 import '../models/collection_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../utils/url_launch.dart';
 import 'card_link_chip.dart';
 
 /// Renders mini-markdown text: `**bold**`, `*italic*`, `[text](url)`, bare URLs
@@ -126,7 +126,7 @@ class _MiniMarkdownTextState extends State<MiniMarkdownText> {
 
   TextSpan _buildLink(String text, String url, TextStyle baseStyle) {
     final TapGestureRecognizer recognizer = TapGestureRecognizer()
-      ..onTap = () => _launchUrl(url);
+      ..onTap = () => launchExternalUrl(url);
     _recognizers.add(recognizer);
 
     return TextSpan(
@@ -171,12 +171,5 @@ class _MiniMarkdownTextState extends State<MiniMarkdownText> {
         onTap: () => widget.onCardLink!(ref),
       ),
     );
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
   }
 }

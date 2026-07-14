@@ -1132,6 +1132,10 @@ class SRu extends S {
   String get lanSyncManifestError => 'Устройство не ответило';
 
   @override
+  String get lanSyncStartError =>
+      'Не удалось запустить обмен по сети. Проверьте подключение и откройте экран заново.';
+
+  @override
   String get lanSyncReceiveError => 'Не удалось получить данные';
 
   @override

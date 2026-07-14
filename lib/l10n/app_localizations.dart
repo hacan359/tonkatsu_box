@@ -2012,6 +2012,12 @@ abstract class S {
   /// **'The device did not respond'**
   String get lanSyncManifestError;
 
+  /// No description provided for @lanSyncStartError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start network sharing. Check the network connection and reopen this screen.'**
+  String get lanSyncStartError;
+
   /// No description provided for @lanSyncReceiveError.
   ///
   /// In en, this message translates to:

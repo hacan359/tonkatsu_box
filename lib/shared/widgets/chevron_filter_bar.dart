@@ -1,9 +1,8 @@
-// Переиспользуемые chevron-сегменты для filter-баров.
-//
-// Используются на AllItemsScreen и CollectionScreen для фильтрации
-// по типу медиа и статусу.
+// Reusable chevron segments for the filter bars on AllItemsScreen and
+// CollectionScreen (media type / status filtering).
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsRole;
 
 import '../../l10n/app_localizations.dart';
 import '../constants/platform_features.dart';
@@ -12,15 +11,11 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Универсальный chevron-сегмент для filter-баров.
-///
-/// V-вырез слева (кроме первого) и V-конец справа (кроме последнего).
-/// В режиме [compact] показывает [Tooltip] + иконку вместо текста.
-/// Если задан [subtitle] — рендерится двухстрочно (subtitle сверху мелким,
-/// label снизу). [compact] и [subtitle] взаимоисключающие: при `compact: true`
-/// subtitle игнорируется.
+/// Filter-bar segment: a V-notch on the left (except the first) and a
+/// V-point on the right (except the last). [compact] shows a tooltip'd icon
+/// instead of text; [subtitle] renders two lines (subtitle above the label)
+/// and is ignored when `compact: true`.
 class ChevronSegment extends StatelessWidget {
-  /// Создаёт [ChevronSegment].
   const ChevronSegment({
     required this.label,
     required this.icon,
@@ -35,44 +30,41 @@ class ChevronSegment extends StatelessWidget {
     super.key,
   });
 
-  /// Текстовая метка сегмента.
   final String label;
 
-  /// Иконка для compact-режима.
+  /// Icon for the compact mode.
   final IconData icon;
 
-  /// Выбран ли сегмент.
   final bool selected;
 
-  /// Цвет заливки при выборе.
+  /// Fill color when selected.
   final Color accentColor;
 
-  /// Первый сегмент (прямой левый край).
+  /// First segment (straight left edge).
   final bool isFirst;
 
-  /// Последний сегмент (прямой правый край).
+  /// Last segment (straight right edge).
   final bool isLast;
 
-  /// Обработчик нажатия.
   final VoidCallback onTap;
 
-  /// Показывать иконку вместо текста.
+  /// Show the icon instead of the text.
   final bool compact;
 
-  /// Опциональный двухстрочный режим: subtitle сверху, label снизу.
+  /// Optional two-line mode: subtitle above, label below.
   final String? subtitle;
 
-  /// В неактивном состоянии тонировать фон/контент в [accentColor]
-  /// приглушённо вместо нейтрального серого.
+  /// When inactive, tint the background/content with a muted [accentColor]
+  /// instead of neutral grey.
   final bool tintWhenInactive;
 
-  /// Ширина chevron-скоса.
+  /// Width of the chevron bevel.
   static const double chevronWidth = 6;
 
-  /// Альфа фона для неактивного тонированного сегмента (~15%).
+  /// Background alpha of an inactive tinted segment (~15%).
   static const int inactiveTintBgAlpha = 38;
 
-  /// Альфа контента (текст/иконка) для неактивного тонированного сегмента.
+  /// Content (text/icon) alpha of an inactive tinted segment.
   static const int inactiveTintContentAlpha = 220;
 
   @override
@@ -128,15 +120,10 @@ class ChevronSegment extends StatelessWidget {
   }
 }
 
-/// Контент chevron-сегмента (используется и в [ChevronSegment], и в
-/// [DropdownChevronSegment]).
-///
-/// - `compact: true` → только иконка с [Tooltip].
-/// - `subtitle != null` → двухстрочный текст.
-/// - иначе — однострочный label.
-///
-/// На узких экранах ([isCompactScreen]) шрифты сжимаются ~до 83% — по
-/// аналогии с MediaPosterCard / RatingBadge.
+/// Segment content shared by [ChevronSegment] and [DropdownChevronSegment]:
+/// icon with a tooltip when compact, two-line text when [subtitle] is set,
+/// a single-line label otherwise. On narrow screens ([isCompactScreen])
+/// fonts shrink to ~83%, matching MediaPosterCard / RatingBadge.
 Widget buildChevronContent({
   required BuildContext context,
   required String label,
@@ -154,7 +141,7 @@ Widget buildChevronContent({
   }
 
   final bool dense = isCompactScreen(context);
-  // 12 → 10, 9 → 8 — пропорция как у MediaPosterCard.tagName / RatingBadge.
+  // 12 → 10, 9 → 8 — same ratio as MediaPosterCard.tagName / RatingBadge.
   final double labelSize = dense ? 10 : 12;
   final double subtitleSize = dense ? 8 : 9;
 
@@ -204,22 +191,21 @@ Widget buildChevronContent({
   );
 }
 
-/// CustomClipper, вырезающий из прямоугольника форму стрелочки.
+/// Clips a rectangle into the chevron (arrow segment) shape.
 class ChevronClipper extends CustomClipper<Path> {
-  /// Создаёт [ChevronClipper].
   const ChevronClipper({
     required this.chevronWidth,
     required this.hasLeftNotch,
     required this.hasRightPoint,
   });
 
-  /// Ширина V-скоса.
+  /// Width of the V bevel.
   final double chevronWidth;
 
-  /// V-вырез слева.
+  /// V notch on the left edge.
   final bool hasLeftNotch;
 
-  /// V-остриё справа.
+  /// V point on the right edge.
   final bool hasRightPoint;
 
   @override
@@ -257,14 +243,10 @@ class ChevronClipper extends CustomClipper<Path> {
   }
 }
 
-/// Chevron-сегмент в виде dropdown для выбора статуса.
-///
-/// Визуально идентичен [ChevronSegment] (всегда `isLast: true`), но при
-/// нажатии открывает [PopupMenuButton] со списком статусов.
-/// Опциональный [subtitle] рендерится двухстрочно (subtitle сверху мелким,
-/// label снизу) — игнорируется в `compact` режиме.
+/// Status-picker chevron segment: looks like [ChevronSegment] but opens a
+/// [PopupMenuButton] with the status list. Optional [subtitle] renders two
+/// lines and is ignored in `compact` mode.
 class StatusDropdownSegment extends StatelessWidget {
-  /// Создаёт [StatusDropdownSegment].
   const StatusDropdownSegment({
     required this.status,
     required this.compact,
@@ -274,16 +256,15 @@ class StatusDropdownSegment extends StatelessWidget {
     super.key,
   });
 
-  /// Текущий выбранный статус (null = все).
+  /// Currently selected status (null = all).
   final ItemStatus? status;
 
-  /// Показывать иконку вместо текста.
+  /// Show the icon instead of the text.
   final bool compact;
 
-  /// Callback при изменении статуса.
   final ValueChanged<ItemStatus?> onChanged;
 
-  /// Опциональный двухстрочный режим: подпись сверху, выбранный статус снизу.
+  /// Optional two-line mode: caption above, selected status below.
   final String? subtitle;
 
   /// `false` draws a right-pointing chevron edge so another segment can follow.
@@ -410,13 +391,10 @@ class StatusDropdownSegment extends StatelessWidget {
   }
 }
 
-/// Универсальный chevron-сегмент с [PopupMenuButton] внутри.
-///
-/// Аналог [ChevronSegment], но при нажатии открывает меню. Элементы меню
-/// строит [menuBuilder]. Поддерживает опциональный [subtitle] (двухстрочный
-/// режим) и индикатор выпадания справа от label.
+/// Chevron segment that opens a dropdown menu built by [menuBuilder];
+/// long menus get scroll-arrow hints (see [showArrowedMenu]). Supports the
+/// optional two-line [subtitle] and a drop-down indicator next to the label.
 class DropdownChevronSegment<T extends Object> extends StatelessWidget {
-  /// Создаёт [DropdownChevronSegment].
   const DropdownChevronSegment({
     required this.label,
     required this.icon,
@@ -431,34 +409,30 @@ class DropdownChevronSegment<T extends Object> extends StatelessWidget {
     super.key,
   });
 
-  /// Текстовая метка сегмента.
   final String label;
 
-  /// Иконка для compact-режима.
+  /// Icon for the compact mode.
   final IconData icon;
 
-  /// Подсветка как «выбранный».
   final bool selected;
 
-  /// Цвет заливки при выборе.
+  /// Fill color when selected.
   final Color accentColor;
 
-  /// Первый сегмент (прямой левый край).
+  /// First segment (straight left edge).
   final bool isFirst;
 
-  /// Последний сегмент (прямой правый край).
+  /// Last segment (straight right edge).
   final bool isLast;
 
-  /// Построитель пунктов меню.
   final List<PopupMenuEntry<T>> Function(BuildContext) menuBuilder;
 
-  /// Callback при выборе пункта.
   final ValueChanged<T?> onSelected;
 
-  /// Опциональный двухстрочный режим.
+  /// Optional two-line mode: subtitle above, label below.
   final String? subtitle;
 
-  /// Показывать только иконку.
+  /// Show only the icon.
   final bool compact;
 
   @override
@@ -477,40 +451,278 @@ class DropdownChevronSegment<T extends Object> extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
         color: bg,
-        child: PopupMenuButton<T>(
-          onSelected: onSelected,
-          offset: const Offset(0, 40),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _openMenu(context),
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: isFirst ? 4 : ChevronSegment.chevronWidth + 1,
+                right: isLast ? 4 : ChevronSegment.chevronWidth + 1,
+              ),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Flexible(
+                      child: buildChevronContent(
+                        context: context,
+                        label: label,
+                        icon: icon,
+                        subtitle: subtitle,
+                        contentColor: contentColor,
+                        selected: selected,
+                        compact: compact,
+                      ),
+                    ),
+                    Icon(Icons.arrow_drop_down, size: 14, color: contentColor),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMenu(BuildContext context) async {
+    final T? value = await showArrowedMenu<T>(
+      context: context,
+      entries: menuBuilder(context),
+    );
+    // null = dismissed without choosing, same as PopupMenuButton's cancel.
+    if (value != null) onSelected(value);
+  }
+}
+
+/// Shows [entries] in a popup anchored below [context]'s widget, like
+/// [PopupMenuButton], but with carousel-style up/down arrow hints that are
+/// visible from the moment the menu opens when part of the list is cut off
+/// (the stock popup scrolls silently until the pointer hovers it).
+Future<T?> showArrowedMenu<T extends Object>({
+  required BuildContext context,
+  required List<PopupMenuEntry<T>> entries,
+}) {
+  final NavigatorState navigator = Navigator.of(context);
+  final RenderBox button = context.findRenderObject()! as RenderBox;
+  final RenderBox overlay =
+      navigator.overlay!.context.findRenderObject()! as RenderBox;
+  final Rect buttonRect = Rect.fromPoints(
+    button.localToGlobal(Offset.zero, ancestor: overlay),
+    button.localToGlobal(
+      button.size.bottomRight(Offset.zero),
+      ancestor: overlay,
+    ),
+  );
+  return navigator.push(_ArrowedMenuRoute<T>(
+    buttonRect: buttonRect,
+    entries: entries,
+    capturedThemes:
+        InheritedTheme.capture(from: context, to: navigator.context),
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+  ));
+}
+
+class _ArrowedMenuRoute<T extends Object> extends PopupRoute<T> {
+  _ArrowedMenuRoute({
+    required this.buttonRect,
+    required this.entries,
+    required this.capturedThemes,
+    required this.barrierLabel,
+  });
+
+  final Rect buttonRect;
+  final List<PopupMenuEntry<T>> entries;
+  final CapturedThemes capturedThemes;
+
+  @override
+  final String barrierLabel;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  bool get barrierDismissible => true;
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 150);
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+      child: child,
+    );
+  }
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return CustomSingleChildLayout(
+      delegate: _ArrowedMenuLayout(buttonRect: buttonRect),
+      child: capturedThemes.wrap(_ArrowedMenu<T>(entries: entries)),
+    );
+  }
+}
+
+/// Positions the menu under the button and keeps it inside the screen with
+/// an 8px margin; height is capped at 75% of the available space so long
+/// menus scroll instead of overflowing.
+class _ArrowedMenuLayout extends SingleChildLayoutDelegate {
+  const _ArrowedMenuLayout({required this.buttonRect});
+
+  final Rect buttonRect;
+
+  static const double _margin = 8;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return BoxConstraints(
+      minWidth: 180,
+      maxWidth: constraints.maxWidth - _margin * 2,
+      maxHeight: constraints.maxHeight * 0.75,
+    );
+  }
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final double maxX = size.width - childSize.width - _margin;
+    final double maxY = size.height - childSize.height - _margin;
+    final double x = buttonRect.left
+        .clamp(_margin, maxX < _margin ? _margin : maxX)
+        .toDouble();
+    final double y = buttonRect.bottom
+        .clamp(_margin, maxY < _margin ? _margin : maxY)
+        .toDouble();
+    return Offset(x, y);
+  }
+
+  @override
+  bool shouldRelayout(_ArrowedMenuLayout oldDelegate) =>
+      buttonRect != oldDelegate.buttonRect;
+}
+
+class _ArrowedMenu<T extends Object> extends StatefulWidget {
+  const _ArrowedMenu({required this.entries});
+
+  final List<PopupMenuEntry<T>> entries;
+
+  @override
+  State<_ArrowedMenu<T>> createState() => _ArrowedMenuState<T>();
+}
+
+class _ArrowedMenuState<T extends Object> extends State<_ArrowedMenu<T>> {
+  final ScrollController _controller = ScrollController();
+
+  bool _scrollable = false;
+  bool _canScrollUp = false;
+  bool _canScrollDown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_updateArrows);
+    // maxScrollExtent is only known after the first layout.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateArrows());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _updateArrows() {
+    if (!mounted || !_controller.hasClients) return;
+    final ScrollPosition pos = _controller.position;
+    final bool scrollable = pos.maxScrollExtent > 0;
+    final bool up = pos.pixels > pos.minScrollExtent + 1;
+    final bool down = pos.pixels < pos.maxScrollExtent - 1;
+    if (scrollable != _scrollable ||
+        up != _canScrollUp ||
+        down != _canScrollDown) {
+      setState(() {
+        _scrollable = scrollable;
+        _canScrollUp = up;
+        _canScrollDown = down;
+      });
+    }
+  }
+
+  void _scrollBy(double direction) {
+    final ScrollPosition pos = _controller.position;
+    final double target =
+        (pos.pixels + direction * pos.viewportDimension * 0.8)
+            .clamp(pos.minScrollExtent, pos.maxScrollExtent)
+            .toDouble();
+    _controller.animateTo(
+      target,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
+
+  Widget _arrow({required bool up, required bool enabled}) {
+    return InkWell(
+      onTap: enabled ? () => _scrollBy(up ? -1 : 1) : null,
+      child: SizedBox(
+        height: 22,
+        child: Center(
+          child: Icon(
+            up ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+            size: 18,
+            color: enabled
+                ? AppColors.textSecondary
+                : AppColors.textTertiary.withAlpha(60),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // PopupMenuItem announces the menuItem semantics role, which requires a
+    // menu-role ancestor (the stock popup route provides one).
+    return Semantics(
+      scopesRoute: true,
+      namesRoute: true,
+      explicitChildNodes: true,
+      role: SemanticsRole.menu,
+      child: IntrinsicWidth(
+        child: Material(
+          color: AppColors.surface,
+          elevation: 8,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           ),
-          color: AppColors.surface,
-          constraints: const BoxConstraints(minWidth: 180, maxHeight: 400),
-          itemBuilder: menuBuilder,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: isFirst ? 4 : ChevronSegment.chevronWidth + 1,
-              right: isLast ? 4 : ChevronSegment.chevronWidth + 1,
-            ),
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Flexible(
-                    child: buildChevronContent(
-                      context: context,
-                      label: label,
-                      icon: icon,
-                      subtitle: subtitle,
-                      contentColor: contentColor,
-                      selected: selected,
-                      compact: compact,
-                    ),
-                  ),
-                  Icon(Icons.arrow_drop_down, size: 14, color: contentColor),
-                ],
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              if (_scrollable) _arrow(up: true, enabled: _canScrollUp),
+              Flexible(
+                child: SingleChildScrollView(
+                  controller: _controller,
+                  padding: _scrollable
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  child: ListBody(children: widget.entries),
+                ),
               ),
-            ),
+              if (_scrollable) _arrow(up: false, enabled: _canScrollDown),
+            ],
           ),
         ),
       ),

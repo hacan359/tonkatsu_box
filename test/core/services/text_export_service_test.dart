@@ -4,7 +4,6 @@ import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/manga.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/movie.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart';
@@ -149,9 +148,20 @@ void main() {
         expect(result, equals('Elden Ring — RPG, Action'));
       });
 
-      test('should replace {tags} token for anime', () {
+      test('should replace {tags} with user tags for any media type', () {
+        final CollectionItem item = _gameItem();
+        final String result = _service().formatItem(
+          '{name} — {tags}',
+          item,
+          1,
+          tagsByItemId: <int, String>{item.id: 'Backlog, Favorites'},
+        );
+        expect(result, equals('Elden Ring — Backlog, Favorites'));
+      });
+
+      test('should ignore anime source tags — {tags} is user tags only', () {
         final CollectionItem item = CollectionItem(
-          id: 1,
+          id: 7,
           collectionId: 1,
           mediaType: MediaType.anime,
           externalId: 1,
@@ -168,56 +178,16 @@ void main() {
           item,
           1,
         );
-        expect(result, equals('Steins;Gate — Time Loop, Conspiracy'));
+        expect(result, equals('Steins;Gate'));
       });
 
-      test('should replace {tags} token for manga', () {
-        final CollectionItem item = CollectionItem(
-          id: 1,
-          collectionId: 1,
-          mediaType: MediaType.manga,
-          externalId: 1,
-          status: ItemStatus.completed,
-          addedAt: DateTime(2024),
-          manga: const Manga(
-            id: 1,
-            title: 'Berserk',
-            tags: <String>['Dark Fantasy', 'Medieval'],
-          ),
-        );
-        final String result = _service().formatItem(
-          '{name} — {tags}',
-          item,
-          1,
-        );
-        expect(result, equals('Berserk — Dark Fantasy, Medieval'));
-      });
-
-      test('should remove {tags} token for non anime/manga', () {
+      test('should remove {tags} token when the item has no user tags', () {
         final String result = _service().formatItem(
           '{name}{tags}',
           _gameItem(),
           1,
         );
         expect(result, equals('Elden Ring'));
-      });
-
-      test('should remove {tags} token when tags are null', () {
-        final CollectionItem item = CollectionItem(
-          id: 1,
-          collectionId: 1,
-          mediaType: MediaType.anime,
-          externalId: 1,
-          status: ItemStatus.completed,
-          addedAt: DateTime(2024),
-          anime: const Anime(id: 1, title: 'Untagged'),
-        );
-        final String result = _service().formatItem(
-          '{name} — {tags}',
-          item,
-          1,
-        );
-        expect(result, equals('Untagged'));
       });
 
       test('should replace {notes} token', () {

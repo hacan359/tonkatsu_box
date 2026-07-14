@@ -436,7 +436,18 @@ class CollectionDao {
     int? collectionId,
     List<Map<String, dynamic>> rows,
   ) async {
-    if (rows.isEmpty) return 0;
+    final List<int?> ids = await addItemsBatchReturningIds(collectionId, rows);
+    return ids.whereType<int>().length;
+  }
+
+  /// Same bulk insert as [addItemsBatch], but returns the new row id for
+  /// each input row, aligned with [rows]; `null` marks rows skipped by the
+  /// unique constraint.
+  Future<List<int?>> addItemsBatchReturningIds(
+    int? collectionId,
+    List<Map<String, dynamic>> rows,
+  ) async {
+    if (rows.isEmpty) return const <int?>[];
     final Database db = await _getDatabase();
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int sortOrder = await getNextSortOrder(collectionId);
@@ -459,11 +470,9 @@ class CollectionDao {
       return batch.commit();
     });
 
-    int inserted = 0;
-    for (final Object? r in results) {
-      if (r is int && r > 0) inserted++;
-    }
-    return inserted;
+    return <int?>[
+      for (final Object? r in results) r is int && r > 0 ? r : null,
+    ];
   }
 
   /// Batch-updates selected columns of existing items in one transaction. Each
