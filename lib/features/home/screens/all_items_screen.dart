@@ -59,8 +59,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ref.watch(allItemsNotifierProvider);
     final Map<int, String> collectionNames =
         ref.watch(collectionNamesProvider);
-    final Map<int, Tag> tagsMap =
-        ref.watch(allTagsMapProvider).valueOrNull ?? <int, Tag>{};
+    final Map<int, Tag> tagsMap = ref.watch(allTagsMapProvider);
     final Map<int, Set<int>> itemTags =
         ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
@@ -646,6 +645,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final int favorites =
         group.items.where((CollectionItem i) => i.isFavorite).length;
 
+    // Wrap instead of Row: a long collection name plus up to 7 tallies
+    // overflows a phone-width header, so the name ellipsizes and the tally
+    // chips flow to the next line.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -653,27 +655,40 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         AppSpacing.md,
         0,
       ),
-      child: Row(
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runSpacing: AppSpacing.xs,
         children: <Widget>[
-          Container(
-            padding: const EdgeInsets.only(bottom: 4),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: accent, width: 3)),
-            ),
-            child: Text(
-              group.name,
-              style: AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  decoration: BoxDecoration(
+                    border:
+                        Border(bottom: BorderSide(color: accent, width: 3)),
+                  ),
+                  child: Text(
+                    group.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                '${group.items.length}',
+                style: AppTypography.body.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+            ],
           ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            '${group.items.length}',
-            style: AppTypography.body.copyWith(
-              color: AppColors.textTertiary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
           ..._headerInfo(orderedCounts, favorites),
         ],
       ),
@@ -681,44 +696,46 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   }
 
   /// Shared info cluster: per-type icon with its item count, then a
-  /// favourites tally.
+  /// favourites tally. Each tally is one self-contained chip so it never
+  /// splits when the header wraps.
   List<Widget> _headerInfo(Map<MediaType, int> typeCounts, int favorites) {
     const double iconSize = 20;
+
+    Widget tally(IconData icon, Color color, String text, double size) {
+      return Padding(
+        padding: const EdgeInsets.only(left: AppSpacing.sm),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: size, color: color),
+            const SizedBox(width: 3),
+            Text(
+              text,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return <Widget>[
       for (final MapEntry<MediaType, int> e in typeCounts.entries.take(6))
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.sm),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(
-                MediaTypeTheme.iconFor(e.key),
-                size: iconSize,
-                color: MediaTypeTheme.colorFor(e.key).withAlpha(220),
-              ),
-              const SizedBox(width: 3),
-              Text(
-                '${e.value}',
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+        tally(
+          MediaTypeTheme.iconFor(e.key),
+          MediaTypeTheme.colorFor(e.key).withAlpha(220),
+          '${e.value}',
+          iconSize,
         ),
-      if (favorites > 0) ...<Widget>[
-        const SizedBox(width: AppSpacing.sm),
-        const Icon(Icons.favorite, size: iconSize - 2, color: AppColors.favorite),
-        const SizedBox(width: 3),
-        Text(
+      if (favorites > 0)
+        tally(
+          Icons.favorite,
+          AppColors.favorite,
           '$favorites',
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
+          iconSize - 2,
         ),
-      ],
     ];
   }
 

@@ -765,7 +765,7 @@ void main() {
         verifyNever(() => mockTxn.batch());
       });
 
-      test('fills collection id and incrementing sort order, counts inserts',
+      test('counts inserts, treating zero results as ignored conflicts',
           () async {
         final MockBatch mockBatch = MockBatch();
         when(() => mockDb.rawQuery(any(), any())).thenAnswer(
@@ -788,6 +788,32 @@ void main() {
 
         expect(inserted, 2,
             reason: 'two ids > 0; the 0 is an ignored unique conflict');
+      });
+
+      test(
+          'addItemsBatchReturningIds fills collection id and sort order, '
+          'aligns ids with rows (null for ignored)', () async {
+        final MockBatch mockBatch = MockBatch();
+        when(() => mockDb.rawQuery(any(), any())).thenAnswer(
+          (_) async =>
+              <Map<String, dynamic>>[<String, dynamic>{'max_sort': 4}],
+        );
+        mockDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
+        when(() => mockBatch.insert(any(), any(),
+                conflictAlgorithm: any(named: 'conflictAlgorithm')))
+            .thenReturn(null);
+        when(() => mockBatch.commit())
+            .thenAnswer((_) async => <Object?>[10, 0, 11]);
+
+        final List<int?> ids =
+            await dao.addItemsBatchReturningIds(7, <Map<String, dynamic>>[
+          <String, dynamic>{'media_type': 'movie', 'external_id': 1},
+          <String, dynamic>{'media_type': 'movie', 'external_id': 2},
+          <String, dynamic>{'media_type': 'movie', 'external_id': 3},
+        ]);
+
+        expect(ids, <int?>[10, null, 11]);
         final List<dynamic> rows = verify(
           () => mockBatch.insert('collection_items', captureAny(),
               conflictAlgorithm: any(named: 'conflictAlgorithm')),

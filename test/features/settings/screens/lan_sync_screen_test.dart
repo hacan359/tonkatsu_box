@@ -17,12 +17,16 @@ class _FakeLanSyncService extends LanSyncService {
   _FakeLanSyncService({required super.sync, required super.config});
 
   bool started = false;
+  bool throwOnStart = false;
 
   @override
   Future<void> start({
     required String deviceName,
     required Future<bool> Function(String requesterName) onSnapshotRequest,
   }) async {
+    if (throwOnStart) {
+      throw const SocketException('no network');
+    }
     started = true;
   }
 
@@ -104,6 +108,18 @@ void main() {
       await tester.pump();
 
       expect(find.text('DESKTOP-REMOTE'), findsOneWidget);
+    });
+
+    testWidgets('should show an error snack when start throws (no network)',
+        (WidgetTester tester) async {
+      fakeLan.throwOnStart = true;
+
+      await pumpScreen(tester);
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(fakeLan.started, isFalse);
+      expect(find.byType(SnackBar), findsOneWidget);
     });
 
     testWidgets('stops the service when the screen is disposed',

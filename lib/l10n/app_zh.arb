@@ -500,6 +500,7 @@
   "lanSyncAllow": "允许",
   "lanSyncDenied": "对方设备拒绝了请求",
   "lanSyncManifestError": "设备未响应",
+  "lanSyncStartError": "无法启动网络共享。请检查网络连接后重新打开此屏幕。",
   "lanSyncReceiveError": "获取数据失败",
   "lanSyncTooNew": "该设备上的数据由更新版本的应用创建。请先在此设备上更新应用。",
   "lanSyncCorrupted": "传输数据已损坏。请重试。",

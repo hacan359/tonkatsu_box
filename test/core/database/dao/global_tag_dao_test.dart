@@ -133,6 +133,31 @@ void main() {
       });
     });
 
+    group('resolveOrCreateAll', () {
+      test('reuses existing tags and creates the missing ones', () async {
+        final Tag existing = await dao.create('RPG');
+
+        final Map<String, int> ids = await dao.resolveOrCreateAll(<TagSeed>[
+          (name: 'rpg', color: 1, textColor: null),
+          (name: 'Инди', color: 5, textColor: 7),
+        ]);
+
+        expect(ids['rpg'], existing.id);
+        expect((await dao.getById(ids['инди']!))?.color, 5);
+        expect(await dao.getAll(), hasLength(2));
+      });
+
+      test('creates duplicate seed names only once', () async {
+        final Map<String, int> ids = await dao.resolveOrCreateAll(<TagSeed>[
+          (name: 'Horror', color: null, textColor: null),
+          (name: 'hOrRoR', color: null, textColor: null),
+        ]);
+
+        expect(ids, hasLength(1));
+        expect(await dao.getAll(), hasLength(1));
+      });
+    });
+
     group('item links', () {
       test('setItemTags replaces the whole set', () async {
         final Tag a = await dao.create('a');

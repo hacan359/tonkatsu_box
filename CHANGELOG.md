@@ -176,6 +176,80 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/database/dao/collection_dao.dart (CollectionDao.addItemsBatch):
     Use the row's `added_at` when present instead of always stamping now.
 
+- **Search source menu no longer cuts off the lower groups**
+
+  The source dropdown capped at 400px, hiding Books, VNDB and ComicVine
+  behind an invisible scroll. It now grows up to 75% of the screen, and
+  when the list still doesn't fit, carousel-style up/down arrows appear at
+  the menu edges from the moment it opens (the stock popup gave no scroll
+  hint until the pointer hovered it); the arrows page-scroll on click.
+
+  * lib/shared/widgets/chevron_filter_bar.dart (DropdownChevronSegment,
+    showArrowedMenu): Replace the stock PopupMenuButton popup with a custom
+    anchored menu route that shows scroll-arrow indicators.
+
+- **Tag resolve-or-create consolidated into one DAO batch method**
+
+  Four copies of the "find tag by name or create it" logic (DAO, backup
+  restore, two import services) now share a single snapshot-based batch
+  resolver; backup restore no longer rescans the tag table per tag (was
+  O(n²)).
+
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.resolveOrCreateAll,
+    GlobalTagDao.nameKey, TagSeed): New batch resolver over one getAll snapshot;
+    resolveOrCreate delegates to it.
+  * lib/core/services/backup_service.dart (BackupService._restoreTags),
+    lib/core/services/import_service.dart (ImportService._importTags),
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService._applyTags): Use resolveOrCreateAll.
+
+- **Performance: fewer redundant queries and rescans on hot paths**
+
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.addItemsBatchReturningIds),
+    lib/data/repositories/collection_repository.dart
+    (CollectionRepository.addItemsBatchReturningIds): New — bulk insert that
+    returns per-row ids, so custom-cards import tags freshly written rows
+    directly instead of rescanning the whole collection.
+  * lib/features/home/providers/all_items_provider.dart (allTagsMapProvider):
+    Derived from globalTagsProvider instead of a second tag-table query on
+    the All Items screen.
+  * lib/shared/widgets/media_detail_view.dart
+    (_MediaDetailViewState._resolveCardLinks): Card-link lookups run in
+    parallel via Future.wait instead of sequential awaits.
+  * lib/shared/widgets/card_link_picker.dart (_CardLinkPickerSheetState):
+    250ms input debounce, precomputed lowercase names and an early exit at
+    50 matches instead of a full library rescan per keystroke.
+  * lib/features/collections/widgets/copy_as_text_dialog.dart
+    (_CopyAsTextDialogState._preview, _CopyAsTextDialogState.build): Preview
+    computed once per build and tag names resolved only for the 5 preview
+    rows while typing.
+
+- **God-file split: collection table and media detail view**
+
+  Pure refactor, no behaviour change: collection_table_view.dart went from
+  834 to ~400 lines, media_detail_view.dart from 1344 to ~640.
+
+  * lib/features/collections/widgets/collection_table/table_fields.dart
+    (TableFields, tableColumnLabels), table_columns.dart
+    (buildCollectionTableColumns), table_rows.dart (buildCollectionTableRows),
+    table_toolbar.dart (TableToolbar): New — extracted from
+    collection_table_view.dart (CollectionTableView keeps its public API).
+  * lib/shared/widgets/media_detail/ (MediaDetailBackdrop, MediaCoverImage,
+    IdentityHeader, ExpandableDescription, ProgressTile, ProgressTileGrid,
+    SystemMetaInfoButton, UserRatingSection, CommentSectionHeader,
+    CommentContainer, TrackerCommentsLayout, MediaDetailChip): New —
+    extracted from media_detail_view.dart (MediaDetailView keeps its
+    public API; MediaDetailChip is re-exported).
+  * lib/shared/utils/url_launch.dart (launchExternalUrl): New shared
+    best-effort launcher.
+  * lib/shared/widgets/mini_markdown_text.dart (_MiniMarkdownTextState),
+    lib/features/settings/content/credits_content.dart,
+    lib/features/search/widgets/item_details_sheet.dart,
+    lib/features/collections/widgets/canvas_link_item.dart
+    (CanvasLinkItem._openUrl): Replace private URL-launcher copies with
+    launchExternalUrl.
+
 ### Fixed
 
 - **Hardcover token now syncs between devices and counts in Settings**
@@ -189,6 +263,80 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     Add hardcoverApiKey and hardcoverUsername.
   * lib/features/settings/screens/settings_screen.dart (_apiKeyStates):
     Count the Hardcover key.
+
+- **Device-to-device sync no longer crashes when the network is down**
+
+  Opening the LAN sync screen with no usable network (airplane mode,
+  Wi-Fi off) threw an unhandled SocketException from the HTTP server
+  bind; the screen now shows an error message instead.
+
+  * lib/features/settings/screens/lan_sync_screen.dart
+    (_LanSyncScreenState._start): Wrap LanSyncService.start in try/catch
+    and surface the failure as a snack.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
+    (lanSyncStartError): New key.
+
+- **"Copy as text" fills {tags} with the user's tags for every media type**
+
+  The {tags} token only ever emitted AniList/MangaBaka source tags for
+  anime and manga; user-assigned global tags were ignored entirely. It now
+  means exactly the user's own tags (in tag display order) for all types;
+  source-provided tag lists are no longer used.
+
+  * lib/core/services/text_export_service.dart (TextExportService.applyTemplate,
+    TextExportService.formatItem): Accept a caller-resolved item-id →
+    tag-names map; drop the anime/manga source-tag fallback.
+  * lib/features/collections/widgets/copy_as_text_dialog.dart
+    (_CopyAsTextDialogState._tagsByItemId): Resolve the map from
+    itemTagsProvider + globalTagsProvider.
+
+- **All Items group headers no longer overflow on narrow screens**
+
+  A collection header (underlined name + per-type tallies) wider than the
+  screen threw a RenderFlex overflow on phones; the name now ellipsizes
+  and the tallies wrap to the next line.
+
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildCollectionDivider,
+    _AllItemsScreenState._headerInfo): Row → Wrap; each tally is one
+    self-contained chip so it never splits across lines.
+
+- **Row drag-to-reorder in the table view now works on touch screens**
+
+  trina_grid's built-in drag handle starts the drag on the first pointer
+  move, which on a phone loses the gesture to the grid's vertical scroll —
+  the list scrolled and the row never moved. The handle is now a custom
+  widget: on touch platforms the drag starts after a short hold (like
+  ReorderableListView), on desktop the immediate mouse drag stays.
+
+  * lib/features/collections/widgets/collection_table/row_drag_handle.dart
+    (RowDragHandle): New — LongPressDraggable on touch platforms, Draggable
+    on desktop; drives trina_grid's drag state and auto-scroll.
+  * lib/features/collections/widgets/collection_table/table_columns.dart
+    (buildCollectionTableColumns): Drag column renders RowDragHandle
+    instead of enableRowDrag.
+
+- **Table filter dialog no longer crashes the table view**
+
+  Opening the Filters dialog in the collection table view threw a render
+  error (a LayoutBuilder inside the dialog cannot answer the intrinsic
+  width AlertDialog asks for) and left the whole screen broken until it
+  was rebuilt.
+
+  * lib/features/collections/widgets/collection_table/table_filter.dart
+    (_TableFilterDialogState.build): Compute the content width from
+    MediaQuery directly instead of a LayoutBuilder.
+
+- **Broken card-link tokens no longer point at the wrong item**
+
+  A `[[card:mt=bogus;id=5]]` token silently parsed as a game link (unknown
+  media type fell back to game) and could resolve to an unrelated card;
+  unknown types now make the token unparseable, so it renders as plain text.
+
+  * lib/shared/models/media_type.dart (MediaType.tryFromString): New —
+    null on unrecognised input; fromString delegates to it.
+  * lib/shared/models/card_link.dart (parseCardLink): Return null for an
+    unknown `mt` instead of defaulting to game.
 
 ## [0.38.2] - 2026-07-12
 

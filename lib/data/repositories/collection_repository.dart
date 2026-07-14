@@ -195,6 +195,15 @@ class CollectionRepository {
     return _db.collectionDao.addItemsBatch(collectionId, rows);
   }
 
+  /// Same bulk insert as [addItemsBatch], but returns the new row id for
+  /// each input row (aligned with [rows], `null` for ignored duplicates).
+  Future<List<int?>> addItemsBatchReturningIds(
+    int? collectionId,
+    List<Map<String, dynamic>> rows,
+  ) {
+    return _db.collectionDao.addItemsBatchReturningIds(collectionId, rows);
+  }
+
   /// Batch-updates selected columns of existing items in one transaction.
   /// Delegates to `CollectionDao`.
   Future<void> updateItemFieldsBatch(

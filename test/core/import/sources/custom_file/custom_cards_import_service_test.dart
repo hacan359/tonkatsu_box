@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_card_entry.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_cards_import_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
@@ -11,7 +12,6 @@ import 'package:tonkatsu_box/shared/models/custom_media.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart' as model;
-import 'package:tonkatsu_box/shared/models/tag.dart';
 import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
 
 import '../../../../helpers/test_helpers.dart';
@@ -32,6 +32,7 @@ void main() {
     registerFallbackValue(<CustomMedia>[]);
     registerFallbackValue(<Map<String, dynamic>>[]);
     registerFallbackValue(<int>{});
+    registerFallbackValue(<TagSeed>[]);
   });
 
   setUp(() {
@@ -44,7 +45,8 @@ void main() {
     when(() => mockDb.customMediaDao).thenReturn(mockCustomDao);
     when(() => mockDb.gameDao).thenReturn(mockGameDao);
     when(() => mockDb.globalTagDao).thenReturn(mockTagDao);
-    when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
+    when(() => mockTagDao.resolveOrCreateAll(any()))
+        .thenAnswer((_) async => <String, int>{});
     when(() => mockTagDao.setItemTags(any(), any())).thenAnswer((_) async {});
 
     sut = CustomCardsImportService(
@@ -75,9 +77,10 @@ void main() {
         (Invocation inv) async => List<int>.generate(
             (inv.positionalArguments[0] as List<CustomMedia>).length,
             (int i) => 100 + i));
-    when(() => mockRepo.addItemsBatch(any(), any())).thenAnswer(
-        (Invocation inv) async =>
-            (inv.positionalArguments[1] as List<dynamic>).length);
+    when(() => mockRepo.addItemsBatchReturningIds(any(), any())).thenAnswer(
+        (Invocation inv) async => List<int?>.generate(
+            (inv.positionalArguments[1] as List<dynamic>).length,
+            (int i) => 200 + i));
     when(() => mockImageCache.downloadImage(
           type: any(named: 'type'),
           imageId: any(named: 'imageId'),
@@ -287,7 +290,7 @@ void main() {
         );
 
         final List<Map<String, dynamic>> rows = (verify(
-                () => mockRepo.addItemsBatch(1, captureAny()))
+                () => mockRepo.addItemsBatchReturningIds(1, captureAny()))
             .captured
             .single as List<dynamic>)
             .cast<Map<String, dynamic>>();
@@ -329,7 +332,7 @@ void main() {
         );
 
         final Map<String, dynamic> row = (verify(
-                () => mockRepo.addItemsBatch(1, captureAny()))
+                () => mockRepo.addItemsBatchReturningIds(1, captureAny()))
             .captured
             .single as List<dynamic>)
             .cast<Map<String, dynamic>>()
@@ -345,24 +348,10 @@ void main() {
         expect(row['current_season'], 2);
       });
 
-      test('resolves existing tags, creates missing ones and assigns them',
+      test('resolves tags through the DAO and assigns them to written items',
           () async {
-        when(() => mockTagDao.getAll()).thenAnswer(
-          (_) async => <Tag>[
-            const Tag(id: 5, name: 'JRPG', createdAt: 0),
-          ],
-        );
-        when(() => mockTagDao.create(any())).thenAnswer(
-          (_) async => const Tag(id: 9, name: 'new tag', createdAt: 0),
-        );
-        when(() => mockRepo.getItemsWithData(any())).thenAnswer(
-          (_) async => <CollectionItem>[
-            createTestCollectionItem(
-              id: 71,
-              mediaType: MediaType.custom,
-              externalId: 100,
-            ),
-          ],
+        when(() => mockTagDao.resolveOrCreateAll(any())).thenAnswer(
+          (_) async => <String, int>{'jrpg': 5, 'new tag': 9},
         );
 
         await sut.importSelected(
@@ -373,8 +362,32 @@ void main() {
           ],
         );
 
-        verify(() => mockTagDao.create('new tag')).called(1);
-        verify(() => mockTagDao.setItemTags(71, <int>{5, 9})).called(1);
+        final List<TagSeed> seeds = verify(
+                () => mockTagDao.resolveOrCreateAll(captureAny()))
+            .captured
+            .single as List<TagSeed>;
+        expect(seeds.map((TagSeed s) => s.name), <String>['jrpg', 'new tag']);
+        verify(() => mockTagDao.setItemTags(200, <int>{5, 9})).called(1);
+      });
+
+      test('skips tagging rows the insert ignored as duplicates', () async {
+        when(() => mockRepo.addItemsBatchReturningIds(any(), any()))
+            .thenAnswer((_) async => <int?>[null, 201]);
+        when(() => mockTagDao.resolveOrCreateAll(any())).thenAnswer(
+          (_) async => <String, int>{'jrpg': 5},
+        );
+
+        await sut.importSelected(
+          collectionId: 1,
+          author: 'me',
+          entries: <CustomCardEntry>[
+            entry(tags: <String>['jrpg']),
+            entry(title: 'Second', tags: <String>['jrpg']),
+          ],
+        );
+
+        verify(() => mockTagDao.setItemTags(201, <int>{5})).called(1);
+        verifyNever(() => mockTagDao.setItemTags(200, any()));
       });
 
       test('skips the tag machinery entirely when no entry has tags',
@@ -385,7 +398,7 @@ void main() {
           entries: <CustomCardEntry>[entry()],
         );
 
-        verifyNever(() => mockTagDao.getAll());
+        verifyNever(() => mockTagDao.resolveOrCreateAll(any()));
         verifyNever(() => mockTagDao.setItemTags(any(), any()));
       });
 
@@ -430,8 +443,8 @@ void main() {
       });
 
       test('counts inserted vs skipped and reports progress stages', () async {
-        when(() => mockRepo.addItemsBatch(any(), any()))
-            .thenAnswer((_) async => 1);
+        when(() => mockRepo.addItemsBatchReturningIds(any(), any()))
+            .thenAnswer((_) async => <int?>[200, null]);
         final List<ImportStage> stages = <ImportStage>[];
 
         final UniversalImportResult result = await sut.importSelected(

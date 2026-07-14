@@ -1115,6 +1115,10 @@ class SEn extends S {
   String get lanSyncManifestError => 'The device did not respond';
 
   @override
+  String get lanSyncStartError =>
+      'Could not start network sharing. Check the network connection and reopen this screen.';
+
+  @override
   String get lanSyncReceiveError => 'Failed to get the data';
 
   @override

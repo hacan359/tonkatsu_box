@@ -22,6 +22,7 @@ import '../../shared/models/tracked_release.dart';
 import '../../shared/models/wishlist_item.dart';
 import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/tracker_profile.dart';
+import '../database/dao/global_tag_dao.dart';
 import '../database/dao/mood_grid_dao.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
@@ -728,16 +729,18 @@ class BackupService {
   Future<void> _restoreTags(String jsonContent) async {
     try {
       final List<dynamic> tags = jsonDecode(jsonContent) as List<dynamic>;
+      final List<TagSeed> seeds = <TagSeed>[];
       for (final dynamic raw in tags) {
         final Map<String, dynamic> data = raw as Map<String, dynamic>;
         final String? name = data['name'] as String?;
         if (name == null || name.isEmpty) continue;
-        await _database.globalTagDao.resolveOrCreate(
-          name,
+        seeds.add((
+          name: name,
           color: data['color'] as int?,
           textColor: data['text_color'] as int?,
-        );
+        ));
       }
+      await _database.globalTagDao.resolveOrCreateAll(seeds);
     } catch (e) {
       _log.warning('Failed to restore tags.json', e);
     }

@@ -62,10 +62,18 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
         await ref.read(dbSyncServiceProvider).deviceMeta();
     if (!mounted) return;
     setState(() => _deviceName = meta.deviceName);
-    await _lan.start(
-      deviceName: meta.deviceName,
-      onSnapshotRequest: _onIncomingRequest,
-    );
+    try {
+      await _lan.start(
+        deviceName: meta.deviceName,
+        onSnapshotRequest: _onIncomingRequest,
+      );
+    } on Exception catch (e) {
+      // No usable network interface (airplane mode, Wi-Fi off) makes
+      // HttpServer.bind throw; surface it instead of crashing the app.
+      _log.warning('LAN sync start failed', e);
+      if (!mounted) return;
+      context.showSnack(S.of(context).lanSyncStartError, type: SnackType.error);
+    }
   }
 
   Future<bool> _onIncomingRequest(String requesterName) async {

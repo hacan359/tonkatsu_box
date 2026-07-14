@@ -129,6 +129,20 @@ void main() {
       });
     });
 
+    group('tryFromString', () {
+      test('should return the type for every known value', () {
+        for (final MediaType type in MediaType.values) {
+          expect(MediaType.tryFromString(type.value), type);
+        }
+      });
+
+      test('should return null for an unknown value', () {
+        expect(MediaType.tryFromString('unknown'), isNull);
+        expect(MediaType.tryFromString(''), isNull);
+        expect(MediaType.tryFromString('Game'), isNull);
+      });
+    });
+
     group('displayLabel', () {
       test('game должен отображаться как "Game"', () {
         expect(MediaType.game.displayLabel, 'Game');

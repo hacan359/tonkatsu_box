@@ -3,6 +3,10 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../../shared/models/tag.dart';
 import '../query_chunk.dart';
 
+/// Name + colors for a tag to resolve or create in
+/// [GlobalTagDao.resolveOrCreateAll].
+typedef TagSeed = ({String name, int? color, int? textColor});
+
 /// DAO for the global `tags` table and the `item_tags` junction.
 ///
 /// Deletions clean `item_tags` explicitly instead of leaning on the
@@ -102,13 +106,33 @@ class GlobalTagDao {
     });
   }
 
+  /// Canonical case-insensitive key for matching tag names.
+  static String nameKey(String name) => name.trim().toLowerCase();
+
   /// Finds a tag by name (case-insensitive) and returns its id,
   /// creating a new tag with the given colors when none exists.
   Future<int> resolveOrCreate(String name, {int? color, int? textColor}) async {
-    final Tag? existing = Tag.findByNameCaseInsensitive(await getAll(), name);
-    if (existing != null) return existing.id;
-    final Tag created = await create(name, color: color, textColor: textColor);
-    return created.id;
+    final Map<String, int> ids = await resolveOrCreateAll(
+      <TagSeed>[(name: name, color: color, textColor: textColor)],
+    );
+    return ids[nameKey(name)]!;
+  }
+
+  /// Batch resolve-or-create against one snapshot of the table: existing
+  /// names keep their local settings, missing seeds are created with their
+  /// colors. Returns a [nameKey] → id map covering every seed.
+  Future<Map<String, int>> resolveOrCreateAll(Iterable<TagSeed> seeds) async {
+    final Map<String, int> byKey = <String, int>{
+      for (final Tag tag in await getAll()) nameKey(tag.name): tag.id,
+    };
+    for (final TagSeed seed in seeds) {
+      final String key = nameKey(seed.name);
+      if (byKey.containsKey(key)) continue;
+      final Tag created =
+          await create(seed.name, color: seed.color, textColor: seed.textColor);
+      byKey[key] = created.id;
+    }
+    return byKey;
   }
 
   Future<Set<int>> getTagIdsByItem(int itemId) async {

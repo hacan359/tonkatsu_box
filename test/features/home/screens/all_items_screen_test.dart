@@ -190,6 +190,31 @@ void main() {
       expect(find.text('Animation'), findsOneWidget);
     });
 
+    testWidgets(
+        'заголовок группы с длинным именем не переполняется на узком экране',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      when(() => mockRepo.getAll()).thenAnswer(
+        (_) async => <Collection>[
+          Collection(
+            id: 10,
+            name: 'Очень длинное название коллекции, которое никак не влезает',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime(2025),
+          ),
+          testCollections[1],
+        ],
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('показывает chevron-dropdown статуса с текстом "All"',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
