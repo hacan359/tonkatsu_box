@@ -15,8 +15,9 @@ List<TrinaRow<dynamic>> buildCollectionTableRows({
   required String anilistTitleLanguage,
   required S l,
   required List<Tag> tags,
-  required Map<int, Set<int>> itemTags,
+  required Map<int, List<int>> itemTags,
 }) {
+  final Map<int, Tag> tagById = tags.byId;
   return items.map((CollectionItem item) {
     return TrinaRow<dynamic>(
       data: item,
@@ -39,7 +40,7 @@ List<TrinaRow<dynamic>> buildCollectionTableRows({
         // All tag names joined so a "contains" filter matches any tag; sort
         // still keys off the leading (primary) tag.
         TableFields.tags: TrinaCell(
-          value: tags
+          value: tagById
               .orderedFor(itemTags[item.id])
               .map((Tag t) => t.name)
               .join(', '),

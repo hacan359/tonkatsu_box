@@ -1626,6 +1626,11 @@ class SZh extends S {
   String get tagCreateHint => '标签名称';
 
   @override
+  String tagCreateNamed(String name) {
+    return '创建“$name”';
+  }
+
+  @override
   String get tagRename => '重命名标签';
 
   @override

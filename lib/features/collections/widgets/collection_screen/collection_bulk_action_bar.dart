@@ -46,8 +46,8 @@ class CollectionBulkActionBar extends ConsumerWidget {
 
     final String anilistLang =
         ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
-    final Map<int, Set<int>> itemTags =
-        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
+    final Map<int, List<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
     final List<CollectionItem> visible = filters?.apply(
           all,
           tags,

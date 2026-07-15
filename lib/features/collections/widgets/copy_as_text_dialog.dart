@@ -110,14 +110,14 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
   /// Item id → joined tag names for [items], resolved from the global tag
   /// providers in the tags' display order.
   Map<int, String> _tagsByItemId(List<CollectionItem> items) {
-    final Map<int, Set<int>> itemTags =
-        ref.read(itemTagsProvider).valueOrNull ?? const <int, Set<int>>{};
+    final Map<int, List<int>> itemTags =
+        ref.read(itemTagsProvider).valueOrNull ?? const <int, List<int>>{};
     if (itemTags.isEmpty) return const <int, String>{};
     final List<Tag> tags =
         ref.read(globalTagsProvider).valueOrNull ?? const <Tag>[];
     return <int, String>{
       for (final CollectionItem item in items)
-        if (itemTags[item.id] case final Set<int> ids when ids.isNotEmpty)
+        if (itemTags[item.id] case final List<int> ids when ids.isNotEmpty)
           item.id:
               tags.orderedFor(ids).map((Tag t) => t.name).join(', '),
     };

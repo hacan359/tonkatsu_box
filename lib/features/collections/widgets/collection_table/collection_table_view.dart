@@ -37,7 +37,7 @@ class CollectionTableView extends ConsumerStatefulWidget {
     this.heroHeader,
     this.onItemSecondaryTap,
     this.tags = const <Tag>[],
-    this.itemTags = const <int, Set<int>>{},
+    this.itemTags = const <int, List<int>>{},
     this.onRatingChanged,
     this.onStatusChanged,
     this.onTagsEdit,
@@ -61,7 +61,7 @@ class CollectionTableView extends ConsumerStatefulWidget {
   final List<Tag> tags;
 
   /// Item id → global tag ids (from `itemTagsProvider`).
-  final Map<int, Set<int>> itemTags;
+  final Map<int, List<int>> itemTags;
   final void Function(int itemId, double? rating)? onRatingChanged;
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
   onStatusChanged;

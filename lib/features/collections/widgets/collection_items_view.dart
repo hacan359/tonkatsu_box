@@ -42,7 +42,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemRemove,
     this.onItemFocusChanged,
     this.tags = const <Tag>[],
-    this.itemTags = const <int, Set<int>>{},
+    this.itemTags = const <int, List<int>>{},
     this.filterTagIds = const <int>{},
     this.groupByTags = false,
     this.header,
@@ -64,7 +64,7 @@ class CollectionItemsView extends ConsumerWidget {
   final List<Tag> tags;
 
   /// Item id → global tag ids (from `itemTagsProvider`).
-  final Map<int, Set<int>> itemTags;
+  final Map<int, List<int>> itemTags;
   final Set<int> filterTagIds;
   final bool groupByTags;
 
@@ -178,8 +178,9 @@ class CollectionItemsView extends ConsumerWidget {
     };
     final List<CollectionItem> untagged = <CollectionItem>[];
 
+    final Map<int, Tag> tagById = tags.byId;
     for (final CollectionItem item in items) {
-      final Tag? primary = tags.primaryFor(itemTags[item.id]);
+      final Tag? primary = tagById.primaryFor(itemTags[item.id]);
       if (primary != null) {
         grouped[primary.id]!.add(item);
       } else {
@@ -438,8 +439,8 @@ class CollectionItemsView extends ConsumerWidget {
 
   /// Opens the multi-select tag picker for the item and persists the result.
   void _editItemTags(BuildContext context, WidgetRef ref, int itemId) {
-    final Set<int> current =
-        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? <int>{};
+    final Set<int> current = Set<int>.of(
+        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? const <int>[]);
     TagPickerDialog.show(context, initialSelection: current)
         .then((Set<int>? selected) {
       if (selected == null || !context.mounted) return;

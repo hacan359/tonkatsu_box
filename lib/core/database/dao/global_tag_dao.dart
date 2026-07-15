@@ -135,59 +135,84 @@ class GlobalTagDao {
     return byKey;
   }
 
-  Future<Set<int>> getTagIdsByItem(int itemId) async {
+  /// Per-item display order: manual positions first (`NULL` = no manual
+  /// order → after the positioned ones, in global tag order).
+  static const String _linkOrderBy =
+      'it.position IS NULL, it.position, t.sort_order, t.name';
+
+  Future<List<int>> getTagIdsByItem(int itemId) async {
     final Database db = await _getDatabase();
-    final List<Map<String, Object?>> rows = await db.query(
-      'item_tags',
-      columns: <String>['tag_id'],
-      where: 'item_id = ?',
-      whereArgs: <Object?>[itemId],
+    final List<Map<String, Object?>> rows = await db.rawQuery(
+      'SELECT it.tag_id FROM item_tags it '
+      'JOIN tags t ON t.id = it.tag_id '
+      'WHERE it.item_id = ? '
+      'ORDER BY $_linkOrderBy',
+      <Object?>[itemId],
     );
-    return rows.map((Map<String, Object?> r) => r['tag_id']! as int).toSet();
+    return rows
+        .map((Map<String, Object?> r) => r['tag_id']! as int)
+        .toList();
   }
 
-  /// Tag ids for many items at once (list rendering / filtering).
-  /// Items without tags are absent from the map.
-  Future<Map<int, Set<int>>> getTagIdsForItems(List<int> itemIds) async {
+  /// Tag ids for many items at once (list rendering / filtering), each list
+  /// in the item's display order. Items without tags are absent from the map.
+  Future<Map<int, List<int>>> getTagIdsForItems(List<int> itemIds) async {
     final Database db = await _getDatabase();
     final List<Map<String, Object?>> rows = await queryByIdsInChunks(
       itemIds,
-      (List<int> chunk) => db.query(
-        'item_tags',
-        where: 'item_id IN (${List<String>.filled(chunk.length, '?').join(', ')})',
-        whereArgs: chunk,
+      (List<int> chunk) => db.rawQuery(
+        'SELECT it.item_id, it.tag_id FROM item_tags it '
+        'JOIN tags t ON t.id = it.tag_id '
+        'WHERE it.item_id IN '
+        '(${List<String>.filled(chunk.length, '?').join(', ')}) '
+        'ORDER BY it.item_id, $_linkOrderBy',
+        chunk,
       ),
     );
-    final Map<int, Set<int>> result = <int, Set<int>>{};
-    for (final Map<String, Object?> row in rows) {
-      result
-          .putIfAbsent(row['item_id']! as int, () => <int>{})
-          .add(row['tag_id']! as int);
-    }
-    return result;
+    return _groupByItem(rows);
   }
 
-  /// The whole junction as a map — items without tags are absent.
-  Future<Map<int, Set<int>>> getAllItemTags() async {
+  /// The whole junction as a map — items without tags are absent; each list
+  /// is in the item's display order.
+  Future<Map<int, List<int>>> getAllItemTags() async {
     final Database db = await _getDatabase();
-    final List<Map<String, Object?>> rows = await db.query('item_tags');
-    final Map<int, Set<int>> result = <int, Set<int>>{};
+    final List<Map<String, Object?>> rows = await db.rawQuery(
+      'SELECT it.item_id, it.tag_id FROM item_tags it '
+      'JOIN tags t ON t.id = it.tag_id '
+      'ORDER BY it.item_id, $_linkOrderBy',
+    );
+    return _groupByItem(rows);
+  }
+
+  static Map<int, List<int>> _groupByItem(List<Map<String, Object?>> rows) {
+    final Map<int, List<int>> result = <int, List<int>>{};
     for (final Map<String, Object?> row in rows) {
       result
-          .putIfAbsent(row['item_id']! as int, () => <int>{})
+          .putIfAbsent(row['item_id']! as int, () => <int>[])
           .add(row['tag_id']! as int);
     }
     return result;
   }
 
-  /// Replaces the item's tag set with [tagIds].
+  /// Replaces the item's tag set with [tagIds]. Links that survive keep
+  /// their manual position; new links get `NULL` (global-order fallback,
+  /// displayed after the positioned ones).
   Future<void> setItemTags(int itemId, Set<int> tagIds) async {
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {
+      if (tagIds.isEmpty) {
+        await txn.delete(
+          'item_tags',
+          where: 'item_id = ?',
+          whereArgs: <Object?>[itemId],
+        );
+        return;
+      }
       await txn.delete(
         'item_tags',
-        where: 'item_id = ?',
-        whereArgs: <Object?>[itemId],
+        where: 'item_id = ? AND tag_id NOT IN '
+            '(${List<String>.filled(tagIds.length, '?').join(', ')})',
+        whereArgs: <Object?>[itemId, ...tagIds],
       );
       for (final int tagId in tagIds) {
         await txn.rawInsert(
@@ -196,6 +221,39 @@ class GlobalTagDao {
         );
       }
     });
+  }
+
+  /// Persists a manual per-item reorder: [orderedTagIds] in their new
+  /// display order. Only existing links are touched.
+  Future<void> setItemTagPositions(int itemId, List<int> orderedTagIds) async {
+    if (orderedTagIds.isEmpty) return;
+    final Database db = await _getDatabase();
+    final Batch batch = db.batch();
+    for (int i = 0; i < orderedTagIds.length; i++) {
+      batch.update(
+        'item_tags',
+        <String, Object?>{'position': i},
+        where: 'item_id = ? AND tag_id = ?',
+        whereArgs: <Object?>[itemId, orderedTagIds[i]],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// Copies every tag link (with its manual position) from one item to
+  /// another. Returns the number of links on the copy.
+  Future<int> copyItemTags(int fromItemId, int toItemId) async {
+    final Database db = await _getDatabase();
+    await db.rawInsert(
+      'INSERT OR IGNORE INTO item_tags (item_id, tag_id, position) '
+      'SELECT ?, tag_id, position FROM item_tags WHERE item_id = ?',
+      <Object?>[toItemId, fromItemId],
+    );
+    final List<Map<String, Object?>> count = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM item_tags WHERE item_id = ?',
+      <Object?>[toItemId],
+    );
+    return count.first['c'] as int? ?? 0;
   }
 
   /// Links [tagId] to every item in [itemIds] in one batch. Additive —

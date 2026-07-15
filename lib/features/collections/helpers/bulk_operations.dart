@@ -136,12 +136,9 @@ class BulkOperations {
         skipped++;
         continue;
       }
-      // Tags are global — the copy simply carries the same links.
-      final Set<int> tagIds = await tagDao.getTagIdsByItem(item.id);
-      if (tagIds.isNotEmpty) {
-        await tagDao.setItemTags(newId, tagIds);
-        tagsCopiedAny = true;
-      }
+      // Tags are global — the copy carries the links with their manual order.
+      final int copiedTags = await tagDao.copyItemTags(item.id, newId);
+      if (copiedTags > 0) tagsCopiedAny = true;
       affectedTypes.add(item.mediaType);
       cloned++;
     }

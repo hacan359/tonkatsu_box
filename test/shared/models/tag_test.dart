@@ -103,23 +103,28 @@ void main() {
         Tag(id: 3, name: 'ccc', createdAt: 0),
       ];
 
-      test('orderedFor keeps display order regardless of set order', () {
+      test('orderedFor follows the ids order, not the list order', () {
         expect(
-          tags.orderedFor(<int>{3, 1}).map((Tag t) => t.id).toList(),
-          <int>[1, 3],
+          tags.orderedFor(<int>[3, 1]).map((Tag t) => t.id).toList(),
+          <int>[3, 1],
         );
       });
 
       test('orderedFor skips unknown ids and handles null/empty', () {
-        expect(tags.orderedFor(<int>{99}), isEmpty);
+        expect(tags.orderedFor(<int>[99]), isEmpty);
+        expect(
+          tags.orderedFor(<int>[99, 2]).map((Tag t) => t.id).toList(),
+          <int>[2],
+        );
         expect(tags.orderedFor(null), isEmpty);
-        expect(tags.orderedFor(<int>{}), isEmpty);
+        expect(tags.orderedFor(<int>[]), isEmpty);
       });
 
-      test('primaryFor returns the first tag in display order', () {
-        expect(tags.primaryFor(<int>{3, 2})?.id, 2);
+      test('primaryFor returns the first resolvable id', () {
+        expect(tags.primaryFor(<int>[3, 2])?.id, 3);
+        expect(tags.primaryFor(<int>[99, 2])?.id, 2);
         expect(tags.primaryFor(null), isNull);
-        expect(tags.primaryFor(<int>{99}), isNull);
+        expect(tags.primaryFor(<int>[99]), isNull);
       });
     });
 

@@ -72,6 +72,9 @@ class GlobalTagsNotifier extends AsyncNotifier<List<Tag>> {
   Future<void> reorder(List<int> orderedIds) async {
     final GlobalTagDao dao = ref.read(globalTagDaoProvider);
     await dao.setSortOrders(orderedIds);
+    // Items without a manual per-item order follow the global sort, and
+    // itemTagsProvider caches resolved per-item lists — refresh them.
+    await ref.read(itemTagsProvider.notifier).refreshFromDb();
     final Map<int, Tag> byId = <int, Tag>{
       for (final Tag t in state.valueOrNull ?? <Tag>[]) t.id: t,
     };

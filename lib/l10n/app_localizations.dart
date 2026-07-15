@@ -3104,6 +3104,12 @@ abstract class S {
   /// **'Tag name'**
   String get tagCreateHint;
 
+  /// No description provided for @tagCreateNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Create \"{name}\"'**
+  String tagCreateNamed(String name);
+
   /// No description provided for @tagRename.
   ///
   /// In en, this message translates to:

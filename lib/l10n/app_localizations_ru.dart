@@ -1768,6 +1768,11 @@ class SRu extends S {
   String get tagCreateHint => 'Название тега';
 
   @override
+  String tagCreateNamed(String name) {
+    return 'Создать «$name»';
+  }
+
+  @override
   String get tagRename => 'Переименовать тег';
 
   @override

@@ -781,6 +781,12 @@
   "tagsLabel": "标签",
   "tagCreate": "新建标签",
   "tagCreateHint": "标签名称",
+  "tagCreateNamed": "创建“{name}”",
+  "@tagCreateNamed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "tagRename": "重命名标签",
   "tagDelete": "删除标签",
   "tagDeleteConfirm": "删除标签「{name}」？项目将被取消标签。",

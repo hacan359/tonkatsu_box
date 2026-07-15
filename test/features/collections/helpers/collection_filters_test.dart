@@ -33,7 +33,7 @@ void main() {
       createTestTag(id: 10, name: 'Favorites'),
       createTestTag(id: 20, name: 'Backlog'),
     ];
-    const Map<int, Set<int>> noLinks = <int, Set<int>>{};
+    const Map<int, List<int>> noLinks = <int, List<int>>{};
 
     test('no filters returns the list unchanged', () {
       final List<CollectionItem> items = <CollectionItem>[make(id: 1), make(id: 2)];
@@ -70,9 +70,9 @@ void main() {
         make(id: 2),
         make(id: 3),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{10},
-        2: <int>{20},
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[10],
+        2: <int>[20],
       };
       final List<CollectionItem> r = const CollectionFilters(
         tagIds: <int>{10},
@@ -86,10 +86,10 @@ void main() {
         make(id: 2),
         make(id: 3),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{10},
-        2: <int>{20},
-        3: <int>{10, 20},
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[10],
+        2: <int>[20],
+        3: <int>[10, 20],
       };
       final List<CollectionItem> r = const CollectionFilters(
         tagIds: <int>{10, 20},
@@ -102,8 +102,8 @@ void main() {
         make(id: 1),
         make(id: 2),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{10},
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[10],
       };
       final List<CollectionItem> r = const CollectionFilters(
         tagIds: <int>{10, 20},
@@ -138,9 +138,9 @@ void main() {
         make(id: 1, name: 'A'),
         make(id: 2, name: 'B'),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{20, 10}, // Backlog + Favorites
-        2: <int>{20}, // Backlog
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[20, 10], // Backlog + Favorites
+        2: <int>[20], // Backlog
       };
       final List<CollectionItem> r = const CollectionFilters(
         searchQuery: 'favor',
