@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -7,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:logging/logging.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../core/services/gamepad_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -159,40 +159,30 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
     final String content = buffer.toString();
 
     try {
-      if (Platform.isAndroid) {
-        final Directory dir = await getApplicationDocumentsDirectory();
-        final String timestamp = DateTime.now()
-            .toIso8601String()
-            .replaceAll(':', '-')
-            .split('.')
-            .first;
-        final String filePath = '${dir.path}/gamepad_log_$timestamp.txt';
-        await File(filePath).writeAsString(content);
-        if (mounted) {
-          context.showSnack(
-            l.debugLogExported(filePath),
-            type: SnackType.success,
-          );
-        }
-      } else {
-        final String? outputPath = await FilePicker.platform.saveFile(
-          dialogTitle: l.debugExportLog,
-          fileName: 'gamepad_log.txt',
-          type: FileType.custom,
-          allowedExtensions: <String>['txt'],
-        );
-        if (outputPath == null) return;
+      // On Android FileType.custom doesn't support custom extensions.
+      final bool useAny = Platform.isAndroid || Platform.isIOS;
+      final String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: l.debugExportLog,
+        fileName: 'gamepad_log.txt',
+        type: useAny ? FileType.any : FileType.custom,
+        allowedExtensions: useAny ? null : <String>['txt'],
+        bytes: utf8.encode(content),
+      );
+      if (outputPath == null) return;
+      // On Android/iOS file_picker writes the bytes via SAF;
+      // on desktop the file must be written manually.
+      if (!Platform.isAndroid && !Platform.isIOS) {
         await File(outputPath).writeAsString(content);
-        if (mounted) {
-          context.showSnack(
-            l.debugLogExported(outputPath),
-            type: SnackType.success,
-          );
-        }
+      }
+      if (mounted) {
+        context.showSnack(
+          l.debugLogExported(outputPath),
+          type: SnackType.success,
+        );
       }
     } on Exception catch (e) {
       if (mounted) {
-        context.showSnack(e.toString(), type: SnackType.error);
+        context.showErrorSnack(e.toString());
       }
     }
   }

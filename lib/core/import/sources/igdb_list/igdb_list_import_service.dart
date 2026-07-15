@@ -14,6 +14,7 @@ import '../../../../shared/models/item_status_logic.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/models/universal_import_result.dart';
 import '../../../../shared/models/wishlist_tag.dart';
+import '../../../api/api_error_extract.dart';
 import '../../../api/igdb_api.dart';
 import '../../../database/database_service.dart';
 import '../../../services/import_service.dart';
@@ -206,6 +207,7 @@ class IgdbListImportService implements ImportSource {
       return UniversalImportResult.failure(
         sourceName: 'IGDB',
         error: e.message,
+        detail: e.detail,
       );
     } on IgdbListParseException catch (e) {
       return UniversalImportResult.failure(
@@ -213,9 +215,11 @@ class IgdbListImportService implements ImportSource {
         error: e.message,
       );
     } on Exception catch (e) {
+      final ApiError err = extractApiError(e);
       return UniversalImportResult.failure(
         sourceName: 'IGDB',
-        error: 'Import failed: $e',
+        error: 'Import failed: ${err.message}',
+        detail: err.detail,
       );
     }
   }

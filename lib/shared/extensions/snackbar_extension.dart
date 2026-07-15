@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../constants/platform_features.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../widgets/error_details_dialog.dart';
 
 enum SnackType {
   success,
@@ -94,5 +96,23 @@ extension SnackBarExtension on BuildContext {
 
   void hideSnack() {
     ScaffoldMessenger.of(this).hideCurrentSnackBar();
+  }
+
+  /// Error snack with a «Details» action opening a copyable dialog with the
+  /// full [message] and optional debug [detail].
+  void showErrorSnack(String message, {String? detail}) {
+    showSnack(
+      message,
+      type: SnackType.error,
+      duration: const Duration(seconds: 6),
+      action: SnackBarAction(
+        label: S.of(this).errorDetailsShow,
+        textColor: AppColors.brand,
+        onPressed: () {
+          if (!mounted) return;
+          showErrorDetailsDialog(this, message: message, detail: detail);
+        },
+      ),
+    );
   }
 }

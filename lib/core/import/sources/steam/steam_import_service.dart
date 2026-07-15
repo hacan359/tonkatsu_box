@@ -11,6 +11,7 @@ import '../../../../shared/models/item_status_logic.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/models/universal_import_result.dart';
 import '../../../../shared/models/wishlist_tag.dart';
+import '../../../api/api_error_extract.dart';
 import '../../../api/igdb_api.dart';
 import '../../../api/steam_api.dart';
 import '../../../database/database_service.dart';
@@ -201,11 +202,14 @@ class SteamImportService implements ImportSource {
       return UniversalImportResult.failure(
         sourceName: 'Steam',
         error: e.message,
+        detail: e.detail,
       );
     } on Exception catch (e) {
+      final ApiError err = extractApiError(e);
       return UniversalImportResult.failure(
         sourceName: 'Steam',
-        error: 'Import failed: $e',
+        error: 'Import failed: ${err.message}',
+        detail: err.detail,
       );
     }
   }

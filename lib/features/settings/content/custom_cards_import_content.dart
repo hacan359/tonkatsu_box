@@ -14,6 +14,7 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/custom_cards_parse_error_l10n.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/settings_provider.dart';
@@ -272,10 +273,7 @@ class _CustomCardsImportContentState
       });
     } on CustomCardsParseException catch (e) {
       if (!mounted) return;
-      context.showSnack(
-        localizedParseError(S.of(context), e.code),
-        type: SnackType.error,
-      );
+      context.showErrorSnack(localizedParseError(S.of(context), e.code));
     }
   }
 
@@ -325,17 +323,5 @@ class _CustomCardsImportContentState
         ),
       ),
     );
-  }
-}
-
-/// Localized message for a whole-file parse failure.
-String localizedParseError(S l, CustomCardsParseErrorCode code) {
-  switch (code) {
-    case CustomCardsParseErrorCode.emptyFile:
-      return l.customImportErrorEmptyFile;
-    case CustomCardsParseErrorCode.invalidJson:
-      return l.customImportErrorInvalidJson;
-    case CustomCardsParseErrorCode.missingRequiredColumns:
-      return l.customImportErrorMissingColumns;
   }
 }

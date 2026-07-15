@@ -103,6 +103,15 @@ abstract class SettingsKeys {
   static const String animeMangaTitleLanguage = 'anime_manga_title_language';
 
   static const String animeMangaTitleLanguageDefault = 'romaji';
+
+  /// Grid card size multiplier.
+  static const String cardScale = 'card_scale';
+
+  static const double cardScaleDefault = 1.0;
+
+  static const double cardScaleMin = 0.7;
+
+  static const double cardScaleMax = 1.6;
 }
 
 class SettingsState {
@@ -135,6 +144,7 @@ class SettingsState {
     this.alwaysShowSubcategories = false,
     this.dateFormat = SettingsKeys.dateFormatDefault,
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
+    this.cardScale = SettingsKeys.cardScaleDefault,
   });
 
   final String? clientId;
@@ -206,6 +216,9 @@ class SettingsState {
 
   /// AniList title language preference.
   final String animeMangaTitleLanguage;
+
+  /// Grid card size multiplier (1.0 = default size).
+  final double cardScale;
 
   String? resolveOverlay({
     String? platformOverlay,
@@ -301,6 +314,7 @@ class SettingsState {
     bool? alwaysShowSubcategories,
     String? dateFormat,
     String? animeMangaTitleLanguage,
+    double? cardScale,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -336,6 +350,7 @@ class SettingsState {
       dateFormat: dateFormat ?? this.dateFormat,
       animeMangaTitleLanguage:
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
+      cardScale: cardScale ?? this.cardScale,
     );
   }
 }
@@ -480,6 +495,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String animeMangaTitleLanguage =
         _prefs.getString(SettingsKeys.animeMangaTitleLanguage) ??
             SettingsKeys.animeMangaTitleLanguageDefault;
+    final double cardScale = (_prefs.getDouble(SettingsKeys.cardScale) ??
+            SettingsKeys.cardScaleDefault)
+        .clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
 
     // Valid token → connected immediately (skip verify);
     // expired with credentials → trigger auto-verify below.
@@ -516,6 +534,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       alwaysShowSubcategories: alwaysShowSubcategories,
       dateFormat: dateFormat,
       animeMangaTitleLanguage: animeMangaTitleLanguage,
+      cardScale: cardScale,
     );
 
     // API keys already wired by apiKeysProvider; only the request-time language param is set here.
@@ -820,6 +839,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(animeMangaTitleLanguage: lang);
   }
 
+  /// Set [persist] to false for live slider preview; the final value must be
+  /// saved with a persisting call.
+  Future<void> setCardScale(double scale, {bool persist = true}) async {
+    final double clamped =
+        scale.clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
+    state = state.copyWith(cardScale: clamped);
+    if (persist) {
+      await _prefs.setDouble(SettingsKeys.cardScale, clamped);
+    }
+  }
+
   /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetTmdbApiKeyToDefault() async {
     await _prefs.remove(SettingsKeys.tmdbApiKey);
@@ -951,6 +981,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.alwaysShowSubcategories);
     await _prefs.remove(SettingsKeys.dateFormat);
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
+    await _prefs.remove(SettingsKeys.cardScale);
     await _prefs.remove(SettingsKeys.raUsername);
     await _prefs.remove(SettingsKeys.raApiKey);
 

@@ -63,5 +63,30 @@ void main() {
         expect(AppSpacing.gridColumnsMobile, equals(3));
       });
     });
+
+    group('scaledColumns', () {
+      test('масштаб 1.0 возвращает базовое число колонок', () {
+        expect(AppSpacing.scaledColumns(3, 1.0), equals(3));
+        expect(AppSpacing.scaledColumns(4, 1.0), equals(4));
+        expect(AppSpacing.scaledColumns(6, 1.0), equals(6));
+      });
+
+      test('крупные карточки уменьшают число колонок', () {
+        expect(AppSpacing.scaledColumns(3, 1.5), equals(2));
+        expect(AppSpacing.scaledColumns(4, 1.3), equals(3));
+        expect(AppSpacing.scaledColumns(6, 1.6), equals(4));
+      });
+
+      test('мелкие карточки увеличивают число колонок', () {
+        expect(AppSpacing.scaledColumns(3, 0.7), equals(4));
+        expect(AppSpacing.scaledColumns(4, 0.8), equals(5));
+        expect(AppSpacing.scaledColumns(6, 0.7), equals(8));
+      });
+
+      test('результат ограничен диапазоном 2..8', () {
+        expect(AppSpacing.scaledColumns(3, 10.0), equals(2));
+        expect(AppSpacing.scaledColumns(8, 0.1), equals(8));
+      });
+    });
   });
 }

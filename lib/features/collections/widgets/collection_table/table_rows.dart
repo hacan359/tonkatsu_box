@@ -4,6 +4,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/models/tag.dart';
+import '../../../../shared/utils/item_card_progress.dart';
 import 'table_fields.dart';
 
 /// Builds grid rows for the collection table. Cell values are the plain
@@ -29,6 +30,8 @@ List<TrinaRow<dynamic>> buildCollectionTableRows({
         TableFields.platform: TrinaCell(value: _platformLabel(item)),
         TableFields.type: TrinaCell(value: item.mediaType.localizedLabel(l)),
         TableFields.status: TrinaCell(value: item.status.genericLabel(l)),
+        TableFields.progress:
+            TrinaCell(value: itemCardProgress(item)?.label ?? ''),
         TableFields.favorite: TrinaCell(value: item.isFavorite ? 1 : 0),
         TableFields.rating: TrinaCell(value: item.userRating ?? 0),
         TableFields.externalRating: TrinaCell(value: item.apiRating ?? 0),

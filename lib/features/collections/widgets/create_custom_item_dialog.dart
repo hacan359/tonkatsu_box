@@ -1,19 +1,24 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../core/import/sources/custom_file/custom_card_entry.dart';
+import '../../../core/import/sources/custom_file/custom_cards_import_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart' as model;
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/custom_cards_parse_error_l10n.dart';
 import '../../../shared/utils/custom_progress_units.dart';
 import '../../../shared/utils/media_format.dart';
 import 'custom_item/cover_image_picker.dart';
@@ -199,6 +204,125 @@ class _CreateCustomItemDialogState
     ));
   }
 
+  /// Prefills the form from a JSON/CSV file via the bulk-import parser;
+  /// with several entries the first valid one is used.
+  Future<void> _fillFromFile() async {
+    final S l = S.of(context);
+    // Mobile pickers don't reliably filter custom extensions (SAF/UTI).
+    final bool useAny = Platform.isAndroid || Platform.isIOS;
+    final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+      dialogTitle: l.customItemFillFromFile,
+      type: useAny ? FileType.any : FileType.custom,
+      allowedExtensions: useAny ? null : <String>['json', 'csv'],
+      allowMultiple: false,
+    );
+    if (picked == null || picked.files.isEmpty) return;
+    final String? path = picked.files.single.path;
+    if (path == null || !mounted) return;
+
+    final List<CustomCardRow> rows;
+    try {
+      rows = await ref
+          .read(customCardsImportServiceProvider)
+          .parseFile(path);
+    } on CustomCardsParseException catch (e) {
+      if (!mounted) return;
+      context.showErrorSnack(localizedParseError(S.of(context), e.code));
+      return;
+    }
+    if (!mounted) return;
+
+    CustomCardEntry? entry;
+    for (final CustomCardRow row in rows) {
+      if (row.entry != null) {
+        entry = row.entry;
+        break;
+      }
+    }
+    if (entry == null) {
+      context.showErrorSnack(S.of(context).customItemFileNoValidRows);
+      return;
+    }
+
+    _applyEntry(entry);
+    if (rows.length > 1) {
+      context.showSnack(
+        S.of(context).customItemFileMultipleRows(rows.length),
+        type: SnackType.info,
+      );
+    }
+  }
+
+  /// Only fields present in the file overwrite current values; personal
+  /// fields (status, rating, dates…) are ignored — they belong to the item.
+  void _applyEntry(CustomCardEntry entry) {
+    setState(() {
+      _selectedType = entry.type;
+      _titleController.text = entry.title;
+      _titleError = null;
+      if (entry.altTitle != null) {
+        _altTitleController.text = entry.altTitle!;
+      }
+      if (entry.description != null) {
+        _descriptionController.text = entry.description!;
+      }
+      if (entry.year != null) {
+        _selectedYear = entry.year;
+      }
+      if (entry.genres != null) {
+        _genresController.text = entry.genres!;
+      }
+      if (entry.coverUrl != null) {
+        _coverUrlController.text = entry.coverUrl!;
+        _localCoverPath = null;
+      }
+      if (entry.link != null) {
+        _externalUrlController.text = entry.link!;
+      }
+      if (entry.unitTotal != null) {
+        _unitTotalController.text = entry.unitTotal!.toString();
+      }
+      if (entry.unitGroupTotal != null) {
+        _unitGroupTotalController.text = entry.unitGroupTotal!.toString();
+      }
+
+      if (entry.type == MediaType.game) {
+        if (entry.platform != null) {
+          _platformController.text = entry.platform!;
+          _selectedPlatformId = _resolvePlatformId(entry.platform!);
+        }
+      } else {
+        _selectedPlatformId = null;
+        _platformController.clear();
+      }
+
+      final List<String>? formatCodes = switch (entry.type) {
+        MediaType.manga => MediaFormat.mangaOrder,
+        MediaType.anime => MediaFormat.animeOrder,
+        _ => null,
+      };
+      if (formatCodes == null) {
+        _selectedFormat = null;
+      } else if (entry.format != null && formatCodes.contains(entry.format)) {
+        _selectedFormat = entry.format;
+      } else if (!formatCodes.contains(_selectedFormat)) {
+        _selectedFormat = null;
+      }
+    });
+  }
+
+  // Same rule as the bulk importer: name or abbreviation, case-insensitive.
+  int? _resolvePlatformId(String name) {
+    final String needle = name.trim().toLowerCase();
+    for (final model.Platform p in _platforms) {
+      if (p.name.trim().toLowerCase() == needle ||
+          p.abbreviation?.trim().toLowerCase() == needle) {
+        return p.id;
+      }
+    }
+    return null;
+  }
+
   Color get _accentColor => MediaTypeTheme.colorFor(_selectedType);
 
   @override
@@ -216,6 +340,11 @@ class _CreateCustomItemDialogState
           style: AppTypography.h2,
         ),
         actions: <Widget>[
+          IconButton(
+            onPressed: _fillFromFile,
+            icon: const Icon(Icons.upload_file),
+            tooltip: l.customItemFillFromFile,
+          ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: TextButton(

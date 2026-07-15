@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../constants/media_type_theme.dart';
 import '../models/item_status.dart';
 import '../models/media_type.dart';
+import '../utils/item_card_progress.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
@@ -50,6 +51,7 @@ class MediaPosterCard extends StatefulWidget {
     this.platformColor,
     this.platformOverlayAsset,
     this.timeToBeatHours,
+    this.progress,
     this.isFavorite = false,
     this.showFavorite = false,
     this.onToggleFavorite,
@@ -111,6 +113,10 @@ class MediaPosterCard extends StatefulWidget {
   /// Average time-to-beat in whole hours (IGDB). When set, a small clock
   /// badge is drawn over the poster. Grid/compact only; used on search cards.
   final int? timeToBeatHours;
+
+  /// Progress pill next to the status dot (`12/24`) plus the bottom-edge
+  /// bar when the fraction is known. Grid/compact only.
+  final ItemCardProgress? progress;
 
   /// Whether this item is marked favorite. Grid/compact only; drives the
   /// heart toggle's filled/broken state.
@@ -314,6 +320,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
     final bool showFavoriteBadge =
         widget.onToggleFavorite != null || widget.showFavorite;
+    final bool showStatusDot =
+        widget.status != null && widget.status != ItemStatus.notStarted;
     final bool showPlatformBadge = widget.platformOverlayAsset == null &&
         widget.platformLabel != null &&
         widget.platformColor != null;
@@ -466,29 +474,54 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               ),
             ),
 
-            if (widget.status != null &&
-                widget.status != ItemStatus.notStarted)
+            if (showStatusDot || widget.progress != null)
               Positioned(
                 bottom: _isCompact ? 2 : AppSpacing.xs,
                 left: _isCompact ? 2 : AppSpacing.xs,
-                child: Container(
-                  padding: EdgeInsets.all(_isCompact ? 2 : 4),
-                  decoration: BoxDecoration(
-                    color: widget.status!.color,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    widget.status!.materialIcon,
-                    size: _isCompact ? 8 : 12,
-                    color: Colors.white,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (showStatusDot)
+                      Container(
+                        padding: EdgeInsets.all(_isCompact ? 2 : 4),
+                        decoration: BoxDecoration(
+                          color: widget.status!.color,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          widget.status!.materialIcon,
+                          size: _isCompact ? 8 : 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                    if (widget.progress != null) ...<Widget>[
+                      if (showStatusDot) SizedBox(width: _isCompact ? 2 : 4),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: _isCompact ? 3 : 5,
+                          vertical: _isCompact ? 1 : 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(170),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusXs),
+                        ),
+                        child: Text(
+                          widget.progress!.label,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: _isCompact ? 7 : 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
 
             // Average time-to-beat (bottom-left) — search cards only.
-            if (widget.timeToBeatHours != null &&
-                !(widget.status != null &&
-                    widget.status != ItemStatus.notStarted))
+            if (widget.timeToBeatHours != null && !showStatusDot)
               Positioned(
                 bottom: _isCompact ? 2 : AppSpacing.xs,
                 left: _isCompact ? 2 : AppSpacing.xs,
@@ -535,6 +568,27 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   moreCount: widget.tagMoreCount,
                   compact: _isCompact,
                   onTap: widget.onTagTap,
+                ),
+              ),
+
+            // Watch/read progress bar along the poster's bottom edge.
+            if (widget.progress?.fraction != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: _isCompact ? 2 : 3,
+                child: ColoredBox(
+                  color: Colors.black.withAlpha(120),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: widget.progress!.fraction,
+                    child: ColoredBox(
+                      color: widget.mediaType != null
+                          ? MediaTypeTheme.colorFor(widget.mediaType!)
+                          : AppColors.brand,
+                    ),
+                  ),
                 ),
               ),
           ],

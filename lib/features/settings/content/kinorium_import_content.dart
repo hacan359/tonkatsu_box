@@ -357,7 +357,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
         ),
       );
     } else if (result.fatalError != null) {
-      context.showSnack(result.fatalError!, type: SnackType.error);
+      context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
     }
   }
 }

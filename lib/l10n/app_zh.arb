@@ -211,7 +211,7 @@
   "settingsAppearance": "外观",
   "settingsAppearanceSubtitle": "语言、显示和内容",
   "settingsAppLanguageSubtitle": "界面语言",
-  "settingsContentLanguageSubtitle": "电影和电视剧简介的语言",
+  "settingsContentLanguageSubtitle": "目前仅适用于 TMDB（电影和剧集）",
   "settingsDataSources": "数据源",
   "settingsDataSourcesSubtitle": "IGDB、TMDB、SteamGridDB",
   "settingsApiKeysSubtitle": "配置数据库连接",
@@ -759,6 +759,14 @@
   "customItemDescriptionHint": "简要描述或备注",
   "customItemOptionalFields": "更多字段",
   "customItemEdit": "编辑自定义项目",
+  "customItemFillFromFile": "从文件填充",
+  "customItemFileMultipleRows": "文件中有 {count} 条记录，已使用第一条",
+  "@customItemFileMultipleRows": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customItemFileNoValidRows": "文件中没有有效记录",
   "customItemAddCover": "添加封面",
   "customItemCoverSource": "封面来源",
   "customItemCoverRatio": "推荐宽高比：2:3（例如 600×900）",
@@ -1098,6 +1106,8 @@
   "searchCheckConnection": "请检查网络连接后重试。",
   "copyErrorDetails": "复制错误详情",
   "errorDetailsCopied": "错误详情已复制",
+  "errorDetailsTitle": "错误详情",
+  "errorDetailsShow": "详情",
   "showMore": "更多…",
   "showLess": "收起",
 
@@ -1507,6 +1517,8 @@
   "settingsShowBlurayOverlaySubtitle": "在电影和电视剧海报上显示蓝光标识",
   "settingsRichCollections": "富文本收藏视图",
   "settingsRichCollectionsSubtitle": "使用封面图片和描述个性化收藏",
+  "settingsCardScale": "封面大小",
+  "settingsCardScaleSubtitle": "收藏网格中卡片的大小",
   "collectionEditHeroImage": "封面图片",
   "collectionEditHeroImageHint": "推荐 2560×1080（21:9）。主体靠右——左侧被标题覆盖，底部融入背景",
   "collectionEditHeroPick": "选择图片",
@@ -1769,6 +1781,13 @@
   "importResultImported": "已导入",
   "importResultWishlisted": "已加入愿望单",
   "importResultUpdated": "已更新",
+  "importResultErrors": "错误（{count}）",
+  "@importResultErrors": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultErrorsCopied": "错误已复制",
   "importResultSkipped": "跳过 {count} 个",
   "@importResultSkipped": {
     "placeholders": {

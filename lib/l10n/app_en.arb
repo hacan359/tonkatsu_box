@@ -211,7 +211,7 @@
   "settingsAppearance": "Appearance",
   "settingsAppearanceSubtitle": "Language, display and content",
   "settingsAppLanguageSubtitle": "Interface language",
-  "settingsContentLanguageSubtitle": "Language for movie and TV show descriptions",
+  "settingsContentLanguageSubtitle": "For now TMDB only (movies and TV shows)",
   "settingsDataSources": "Data Sources",
   "settingsDataSourcesSubtitle": "IGDB, TMDB, SteamGridDB",
   "settingsApiKeysSubtitle": "Configure connections to databases",
@@ -759,6 +759,14 @@
   "customItemDescriptionHint": "Brief description or notes",
   "customItemOptionalFields": "More fields",
   "customItemEdit": "Edit Custom Item",
+  "customItemFillFromFile": "Fill from file",
+  "customItemFileMultipleRows": "{count} entries in the file — the first one was used",
+  "@customItemFileMultipleRows": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customItemFileNoValidRows": "No valid entries in this file",
   "customItemAddCover": "Add cover",
   "customItemCoverSource": "Cover source",
   "customItemCoverRatio": "Recommended aspect ratio: 2:3 (e.g. 600×900)",
@@ -1098,6 +1106,8 @@
   "searchCheckConnection": "Check your internet connection and try again.",
   "copyErrorDetails": "Copy error details",
   "errorDetailsCopied": "Error details copied",
+  "errorDetailsTitle": "Error details",
+  "errorDetailsShow": "Details",
   "showMore": "More…",
   "showLess": "Collapse",
 
@@ -1512,6 +1522,8 @@
   "settingsShowBlurayOverlaySubtitle": "Show Blu-ray overlay on movie and TV show posters",
   "settingsRichCollections": "Rich collection view",
   "settingsRichCollectionsSubtitle": "Personalize collections with a cover image and description",
+  "settingsCardScale": "Cover size",
+  "settingsCardScaleSubtitle": "Card size in collection grids",
   "collectionEditHeroImage": "Cover image",
   "collectionEditHeroImageHint": "Recommended 2560×1080 (21:9). Main subject on the right — the left side is covered by the title, the bottom fades into the background",
   "collectionEditHeroPick": "Choose image",
@@ -1774,6 +1786,13 @@
   "importResultImported": "Imported",
   "importResultWishlisted": "Added to Wishlist",
   "importResultUpdated": "Updated",
+  "importResultErrors": "Errors ({count})",
+  "@importResultErrors": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultErrorsCopied": "Errors copied",
   "importResultSkipped": "{count} skipped",
   "@importResultSkipped": {
     "placeholders": {

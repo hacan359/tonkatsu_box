@@ -182,6 +182,31 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     ref.invalidate(collectionItemsNotifierProvider(target.collectionId));
   }
 
+  /// Patches an item's progress locally without re-querying the DB.
+  ///
+  /// Called from `CollectionItemsNotifier.updateProgress` so the progress
+  /// pill on All Items cards stays in sync without a full reload.
+  void updateProgressLocally(
+    int id, {
+    int? currentSeason,
+    int? currentEpisode,
+    DateTime? lastActivityAt,
+  }) {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+    state = AsyncData<List<CollectionItem>>(
+      items
+          .map((CollectionItem i) => i.id == id
+              ? i.copyWith(
+                  currentSeason: currentSeason ?? i.currentSeason,
+                  currentEpisode: currentEpisode ?? i.currentEpisode,
+                  lastActivityAt: lastActivityAt ?? i.lastActivityAt,
+                )
+              : i)
+          .toList(),
+    );
+  }
+
   /// Patches an item's favorite flag locally without re-querying the DB.
   void updateFavoriteLocally(int id, {required bool isFavorite}) {
     final List<CollectionItem>? items = state.valueOrNull;

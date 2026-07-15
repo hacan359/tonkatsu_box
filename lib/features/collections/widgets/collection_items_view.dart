@@ -13,6 +13,7 @@ import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../helpers/collection_actions.dart';
@@ -74,8 +75,6 @@ class CollectionItemsView extends ConsumerWidget {
   /// Mirrors the table's status column filter outward so chevron counts in
   /// the outer filter bar can react to in-table cycling.
   final ValueChanged<ItemStatus?>? onTableFilterStatusChanged;
-
-  static const double _desktopMaxCardWidth = 170;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -229,32 +228,32 @@ class CollectionItemsView extends ConsumerWidget {
     final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
     final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
 
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
+
     final SliverGridDelegate gridDelegate;
     if (isDesktop) {
       gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: _desktopMaxCardWidth,
+        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * settings.cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
         childAspectRatio: 0.55,
       );
     } else {
-      final int crossAxisCount;
+      final int baseCount;
       if (isLandscape) {
-        crossAxisCount = AppSpacing.gridColumnsDesktop;
+        baseCount = AppSpacing.gridColumnsDesktop;
       } else if (screenWidth >= 500) {
-        crossAxisCount = AppSpacing.gridColumnsTablet;
+        baseCount = AppSpacing.gridColumnsTablet;
       } else {
-        crossAxisCount = AppSpacing.gridColumnsMobile;
+        baseCount = AppSpacing.gridColumnsMobile;
       }
       gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
+        crossAxisCount: AppSpacing.scaledColumns(baseCount, settings.cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
         childAspectRatio: 0.55,
       );
     }
-
-    final SettingsState settings = ref.watch(settingsNotifierProvider);
 
     if (!_hasTagGroups) {
       return _buildFlatGridView(
@@ -371,6 +370,7 @@ class CollectionItemsView extends ConsumerWidget {
         : const <int>{};
     final bool selectionActive = selection.isNotEmpty;
     final bool isSelected = selection.contains(item.id);
+    final ItemCardProgress? progress = itemCardProgress(item);
 
     final Widget card = MediaPosterCard(
       key: ValueKey<int>(item.id),
@@ -391,6 +391,7 @@ class CollectionItemsView extends ConsumerWidget {
       mediaType: item.displayMediaType,
       typeLabelOverride: item.formatLabel,
       status: item.status,
+      progress: progress,
       isFavorite: item.isFavorite,
       showFavorite: canEdit,
       enableHoverScale: !isSelected,

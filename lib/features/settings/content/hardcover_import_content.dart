@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/api/api_error_extract.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/import/sources/anilist/anilist_import_service.dart'
     show ImportMode;
@@ -440,7 +441,7 @@ class _HardcoverImportContentState
       if (!result.success) {
         setState(() => _isImporting = false);
         if (result.fatalError != null) {
-          context.showSnack(result.fatalError!, type: SnackType.error);
+          context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
         }
         return;
       }
@@ -480,10 +481,8 @@ class _HardcoverImportContentState
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isImporting = false);
-      context.showSnack(
-        l.importFailed(e.toString()),
-        type: SnackType.error,
-      );
+      final ApiError err = extractApiError(e);
+      context.showErrorSnack(l.importFailed(err.message), detail: err.detail);
     }
   }
 }

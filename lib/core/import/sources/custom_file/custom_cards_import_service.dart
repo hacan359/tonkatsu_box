@@ -173,6 +173,7 @@ class CustomCardsImportService {
       return UniversalImportResult.failure(
         sourceName: sourceName,
         error: 'Import failed: $e',
+        detail: stack.toString(),
       );
     }
   }

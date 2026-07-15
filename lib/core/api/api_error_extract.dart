@@ -1,9 +1,14 @@
 import 'anilist_api.dart';
 import 'comicvine_api.dart';
+import 'fantlab_api.dart';
+import 'google_books_api.dart';
+import 'hardcover_api.dart';
 import 'igdb_api.dart';
+import 'kodi_api.dart';
 import 'mangabaka_api.dart';
 import 'openlibrary_api.dart';
 import 'ra_api.dart';
+import 'screenscraper_api.dart';
 import 'steam_api.dart';
 import 'steamgriddb_api.dart';
 import 'tmdb_api.dart';
@@ -36,6 +41,16 @@ ApiError extractApiError(Exception e) {
       (message: message, detail: detail),
     RaApiException(:final String message, :final String? detail) =>
       (message: message, detail: detail),
+    GoogleBooksApiException(:final String message, :final String? detail) =>
+      (message: message, detail: detail),
+    HardcoverApiException(:final String message, :final String? detail) =>
+      (message: message, detail: detail),
+    FantlabApiException(:final String message, :final String? detail) =>
+      (message: message, detail: detail),
+    KodiApiException(:final String message, :final String? detail) =>
+      (message: message, detail: detail),
+    ScreenScraperApiException(:final String message) =>
+      (message: message, detail: null),
     _ => (message: e.toString(), detail: null),
   };
 }
