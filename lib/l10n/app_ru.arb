@@ -77,6 +77,10 @@
   "sortLastActivityDisplay": "Последняя активность",
   "sortLastActivityShort": "Активность",
   "sortLastActivityDesc": "Сначала недавние",
+  "sortStartDateDisplay": "Дата начала",
+  "sortStartDateShort": "Начато",
+  "sortCompletionDateDisplay": "Дата завершения",
+  "sortCompletionDateShort": "Завершено",
 
   "sortDateOldest": "Сначала старые",
   "sortStatusFinished": "Сначала завершённые",

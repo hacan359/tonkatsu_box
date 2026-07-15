@@ -77,6 +77,10 @@
   "sortLastActivityDisplay": "Last Activity",
   "sortLastActivityShort": "Activity",
   "sortLastActivityDesc": "Recent first",
+  "sortStartDateDisplay": "Start Date",
+  "sortStartDateShort": "Started",
+  "sortCompletionDateDisplay": "Completion Date",
+  "sortCompletionDateShort": "Finished",
 
   "sortDateOldest": "Oldest first",
   "sortStatusFinished": "Finished first",

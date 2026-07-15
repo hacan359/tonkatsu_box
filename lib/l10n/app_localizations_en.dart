@@ -207,6 +207,18 @@ class SEn extends S {
   String get sortLastActivityDesc => 'Recent first';
 
   @override
+  String get sortStartDateDisplay => 'Start Date';
+
+  @override
+  String get sortStartDateShort => 'Started';
+
+  @override
+  String get sortCompletionDateDisplay => 'Completion Date';
+
+  @override
+  String get sortCompletionDateShort => 'Finished';
+
+  @override
   String get sortDateOldest => 'Oldest first';
 
   @override

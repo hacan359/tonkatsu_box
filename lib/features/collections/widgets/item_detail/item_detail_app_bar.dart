@@ -5,6 +5,7 @@ import '../../../../shared/constants/platform_features.dart';
 import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/screen_app_bar.dart';
 
 enum ItemDetailMenuAction { refresh, rename, move, clone, copyLink, remove }
@@ -122,7 +123,8 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         if (isEditable)
           PopupMenuButton<ItemDetailMenuAction>(
-            iconSize: kScreenAppBarIconSize,
+            iconSize: kScreenAppBarIconSize - 2,
+            padding: const EdgeInsets.all(AppSpacing.xs),
             icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
             onSelected: onMenuSelected,
             itemBuilder: (BuildContext context) =>
@@ -167,8 +169,8 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  /// An app-bar action whose icon matches the compact bar — the Material
-  /// default (24) reads oversized next to the 20px back button.
+  /// Smaller and tighter than Material defaults: with up to six actions the
+  /// default 48px tap boxes read sparse next to the 20px back button.
   Widget _action({
     required IconData iconData,
     required Color color,
@@ -179,7 +181,9 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
       icon: Icon(iconData),
       color: color,
       tooltip: tooltip,
-      iconSize: kScreenAppBarIconSize,
+      iconSize: kScreenAppBarIconSize - 2,
+      visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.all(AppSpacing.xs),
       onPressed: onPressed,
     );
   }

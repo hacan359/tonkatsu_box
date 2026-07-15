@@ -489,6 +489,30 @@ abstract class S {
   /// **'Recent first'**
   String get sortLastActivityDesc;
 
+  /// No description provided for @sortStartDateDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Date'**
+  String get sortStartDateDisplay;
+
+  /// No description provided for @sortStartDateShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
+  String get sortStartDateShort;
+
+  /// No description provided for @sortCompletionDateDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion Date'**
+  String get sortCompletionDateDisplay;
+
+  /// No description provided for @sortCompletionDateShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get sortCompletionDateShort;
+
   /// No description provided for @sortDateOldest.
   ///
   /// In en, this message translates to:
