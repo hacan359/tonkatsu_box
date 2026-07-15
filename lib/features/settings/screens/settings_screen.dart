@@ -481,6 +481,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
           ),
+          SettingsTile(
+            leadingIcon: Icons.photo_size_select_large_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsCardScale,
+            subtitle: l.settingsCardScaleSubtitle,
+            showChevron: false,
+            trailing: _CardScaleSlider(scale: settings.cardScale),
+          ),
         ],
       ),
       gap,
@@ -1193,4 +1201,51 @@ class _RestoreOptions {
 
   final bool restoreWishlist;
   final bool restoreSettings;
+}
+
+/// Compact slider for the grid card scale; previews live, persists on release.
+class _CardScaleSlider extends ConsumerWidget {
+  const _CardScaleSlider({required this.scale});
+
+  final double scale;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool compact = isCompactScreen(context);
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        SizedBox(
+          width: compact ? 120 : 170,
+          child: Slider(
+            value: scale.clamp(
+              SettingsKeys.cardScaleMin,
+              SettingsKeys.cardScaleMax,
+            ),
+            min: SettingsKeys.cardScaleMin,
+            max: SettingsKeys.cardScaleMax,
+            divisions:
+                ((SettingsKeys.cardScaleMax - SettingsKeys.cardScaleMin) / 0.1)
+                    .round(),
+            onChanged: (double value) =>
+                notifier.setCardScale(value, persist: false),
+            onChangeEnd: notifier.setCardScale,
+          ),
+        ),
+        SizedBox(
+          width: 38,
+          child: Text(
+            '${(scale * 100).round()}%',
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              fontSize: compact ? 11 : 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

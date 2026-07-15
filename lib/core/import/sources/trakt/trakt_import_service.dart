@@ -16,6 +16,7 @@ import '../../../../shared/models/movie.dart';
 import '../../../../shared/models/tv_show.dart';
 import '../../../../shared/models/universal_import_result.dart';
 import '../../../../shared/models/wishlist_tag.dart';
+import '../../../api/api_error_extract.dart';
 import '../../../api/tmdb_api.dart';
 import '../../../database/database_service.dart';
 import '../../../services/import_service.dart';
@@ -615,9 +616,11 @@ class TraktImportService implements ImportSource {
         skipped: skipped,
       );
     } on Exception catch (e) {
+      final ApiError err = extractApiError(e);
       return UniversalImportResult.failure(
         sourceName: 'Trakt',
-        error: 'Import failed: $e',
+        error: 'Import failed: ${err.message}',
+        detail: err.detail,
       );
     }
   }

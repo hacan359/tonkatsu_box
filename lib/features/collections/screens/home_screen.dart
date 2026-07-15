@@ -626,10 +626,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       xcoll = await importService.pickAndParseFile();
     } on FormatException catch (e) {
       if (!context.mounted) return;
-      context.showSnack(
-        '${S.of(context).settingsError}: ${e.message}',
-        type: SnackType.error,
-      );
+      context.showErrorSnack('${S.of(context).settingsError}: ${e.message}');
       return;
     }
     if (xcoll == null) return;
@@ -706,7 +703,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context.showSnack(message.toString(), type: SnackType.success);
       _navigateToCollection(context, result.collection!);
     } else if (!result.isCancelled && result.error != null) {
-      context.showSnack(result.error!, type: SnackType.error);
+      context.showErrorSnack(result.error!);
     }
   }
 }

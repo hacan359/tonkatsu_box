@@ -127,7 +127,136 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     cached cover URL onto the refetched work; showFantlabEditionPicker is
     now actually wired up.
 
+- **Cover size slider in Settings → Appearance**
+
+  A 70–160% slider scales the item cards in every grid: the collection
+  grid, "All items" and Browse. Desktop scales the max card width;
+  phones and tablets recalculate the column count (2–8). The grid
+  updates live while dragging; the value is saved on release.
+
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.cardScale, SettingsState.cardScale,
+    SettingsNotifier.setCardScale): New setting, clamped to 0.7–1.6,
+    persisted in SharedPreferences; reset by clearSettings.
+  * lib/features/settings/screens/settings_screen.dart (_CardScaleSlider):
+    New — slider tile with live preview (persist: false while dragging).
+  * lib/shared/theme/app_spacing.dart (AppSpacing.desktopMaxCardWidth,
+    AppSpacing.scaledColumns): New — the 170px desktop card width moved
+    here from three copies; column-count helper for fixed-count grids.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._buildGridView),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildGridView),
+    lib/features/search/widgets/browse_grid.dart
+    (_BrowseGridState._buildGridDelegate): Apply the scale to grid
+    delegates.
+
+- **Readable import errors with copyable details**
+
+  A failed import no longer shows a raw exception dump. Error snacks
+  grow a "Details" action opening a dialog with the full message and a
+  copyable debug block (request, status code, cause). The import result
+  screen lists per-item errors in an expandable card with copy-all and
+  adds a copy button for the fatal error.
+
+  * lib/shared/widgets/error_details_dialog.dart (showErrorDetailsDialog,
+    copyErrorDetails): New — copyable error dialog and clipboard helper.
+  * lib/shared/extensions/snackbar_extension.dart
+    (SnackBarExtension.showErrorSnack): New — error snack with the
+    "Details" action.
+  * lib/shared/models/universal_import_result.dart
+    (UniversalImportResult.fatalDetail): New — debug detail carried next
+    to fatalError.
+  * lib/core/api/api_error_extract.dart (extractApiError): Also unwraps
+    GoogleBooksApiException, HardcoverApiException, FantlabApiException,
+    KodiApiException, ScreenScraperApiException.
+  * lib/core/import/sources/steam/steam_import_service.dart,
+    lib/core/import/sources/trakt/trakt_import_service.dart,
+    lib/core/import/sources/igdb_list/igdb_list_import_service.dart,
+    lib/core/import/sources/kinorium/kinorium_import_service.dart:
+    Route unexpected exceptions through extractApiError and attach the
+    detail to the failure result.
+  * lib/core/import/sources/custom_file/custom_cards_import_service.dart:
+    Attach the stack trace as the failure detail.
+  * lib/features/settings/content/anilist_import_content.dart,
+    hardcover_import_content.dart, mal_import_content.dart,
+    ra_import_content.dart, steam_import_content.dart,
+    trakt_import_content.dart, igdb_list_import_content.dart,
+    kinorium_import_content.dart, custom_cards_import_content.dart,
+    lib/features/settings/screens/custom_cards_preview_screen.dart,
+    lib/features/collections/screens/home_screen.dart: Show failures via
+    showErrorSnack with the detail attached.
+  * lib/features/settings/screens/import_result_screen.dart (_ErrorsCard):
+    New — expandable per-item error list with copy-all; copy button for
+    the fatal error.
+  * lib/shared/utils/custom_cards_parse_error_l10n.dart
+    (localizedParseError): Moved out of custom_cards_import_content.dart
+    so the create-item dialog can reuse it.
+
+- **Reading/watching progress on item cards and in the table**
+
+  Anime, manga, books and custom items show their progress right on the
+  poster: a pill next to the status dot (`12/24`, `V2 · 45/120`) and a
+  thin bar along the bottom edge when the total is known. The collection
+  table gains a read-only Progress column. The All Items list is patched
+  in place on every progress change, so the pill stays fresh without a
+  full reload.
+
+  * lib/shared/utils/item_card_progress.dart (ItemCardProgress,
+    itemCardProgress): New — builds the label and 0..1 fraction per
+    media type.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.progress):
+    New — progress pill and bottom-edge bar on grid/compact cards.
+  * lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/home/screens/all_items_screen.dart: Pass the item's
+    progress to the card.
+  * lib/features/collections/widgets/collection_table/table_fields.dart,
+    table_columns.dart, table_rows.dart (TableFields.progress): New
+    read-only Progress column.
+  * lib/features/home/providers/all_items_provider.dart
+    (AllItemsNotifier.updateProgressLocally): New — in-place patch,
+    mirrors updateStatusLocally.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateProgress): Sync the All Items copy
+    via the local patch.
+
+- **Prefill the custom item form from a JSON/CSV file**
+
+  The create-item dialog gets an upload button that runs the bulk-import
+  parser on a picked file and fills the form from the first valid row.
+  Only fields present in the file overwrite current values; personal
+  fields (status, rating, dates) are ignored.
+
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._fillFromFile, _applyEntry,
+    _resolvePlatformId): New.
+
 ### Changed
+
+- **TMDB content language list expanded from 3 to 45 locales**
+
+  The content language picker now covers TMDB's primary translations
+  (sorted by code, named in their own language), with Chinese split into
+  Simplified and Traditional. On first run the welcome wizard also
+  derives the AniList title mode from the chosen content language
+  (English → english, Japanese → native, otherwise romaji).
+
+  * lib/shared/constants/tmdb_content_languages.dart
+    (kTmdbContentLanguages, anilistTitleLanguageForContent): Expanded
+    list; new content-to-AniList mapping.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (_WelcomeStepLanguageState._applyContentLanguage): Apply both TMDB
+    and AniList title language on first-run selection.
+
+- **Gamepad debug log export goes through the system save dialog**
+
+  On Android the log was silently written into the app documents folder;
+  now every platform shows a save dialog (SAF on Android) so the user
+  picks the destination.
+
+  * lib/features/settings/screens/gamepad_debug_screen.dart
+    (_GamepadDebugScreenState._exportLog): Unified FilePicker.saveFile
+    path with bytes payload; manual write kept for desktop.
 
 - **Localization strings deduplicated: 262 duplicate keys collapsed**
 

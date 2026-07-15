@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/api_error_extract.dart';
 import '../../../core/import/sources/mal/mal_import_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -467,7 +468,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
       if (!result.success) {
         setState(() => _isImporting = false);
         if (result.fatalError != null) {
-          context.showSnack(result.fatalError!, type: SnackType.error);
+          context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
         }
         return;
       }
@@ -496,10 +497,8 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isImporting = false);
-      context.showSnack(
-        l.importFailed(e.toString()),
-        type: SnackType.error,
-      );
+      final ApiError err = extractApiError(e);
+      context.showErrorSnack(l.importFailed(err.message), detail: err.detail);
     }
   }
 }

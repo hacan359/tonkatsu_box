@@ -467,7 +467,7 @@ class SZh extends S {
   String get settingsAppLanguageSubtitle => '界面语言';
 
   @override
-  String get settingsContentLanguageSubtitle => '电影和电视剧简介的语言';
+  String get settingsContentLanguageSubtitle => '目前仅适用于 TMDB（电影和剧集）';
 
   @override
   String get settingsDataSources => '数据源';
@@ -1573,6 +1573,17 @@ class SZh extends S {
   String get customItemEdit => '编辑自定义项目';
 
   @override
+  String get customItemFillFromFile => '从文件填充';
+
+  @override
+  String customItemFileMultipleRows(int count) {
+    return '文件中有 $count 条记录，已使用第一条';
+  }
+
+  @override
+  String get customItemFileNoValidRows => '文件中没有有效记录';
+
+  @override
   String get customItemAddCover => '添加封面';
 
   @override
@@ -2201,6 +2212,12 @@ class SZh extends S {
 
   @override
   String get errorDetailsCopied => '错误详情已复制';
+
+  @override
+  String get errorDetailsTitle => '错误详情';
+
+  @override
+  String get errorDetailsShow => '详情';
 
   @override
   String get showMore => '更多…';
@@ -3083,6 +3100,12 @@ class SZh extends S {
   String get settingsRichCollectionsSubtitle => '使用封面图片和描述个性化收藏';
 
   @override
+  String get settingsCardScale => '封面大小';
+
+  @override
+  String get settingsCardScaleSubtitle => '收藏网格中卡片的大小';
+
+  @override
   String get collectionEditHeroImage => '封面图片';
 
   @override
@@ -3664,6 +3687,14 @@ class SZh extends S {
 
   @override
   String get importResultUpdated => '已更新';
+
+  @override
+  String importResultErrors(int count) {
+    return '错误（$count）';
+  }
+
+  @override
+  String get importResultErrorsCopied => '错误已复制';
 
   @override
   String importResultSkipped(int count) {

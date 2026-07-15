@@ -441,6 +441,62 @@ void main() {
       );
     });
 
+    test('updateProgressLocally патчит прогресс только у нужного элемента',
+        () async {
+      final List<CollectionItem> items = <CollectionItem>[
+        _makeItem(id: 1),
+        _makeItem(id: 2),
+      ];
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => items);
+
+      final ProviderContainer container = createContainer();
+      container.read(allItemsNotifierProvider);
+      await _pump();
+
+      final DateTime now = DateTime(2026, 7, 15);
+      container.read(allItemsNotifierProvider.notifier).updateProgressLocally(
+            1,
+            currentEpisode: 12,
+            currentSeason: 2,
+            lastActivityAt: now,
+          );
+
+      final List<CollectionItem>? state =
+          container.read(allItemsNotifierProvider).valueOrNull;
+      final CollectionItem patched =
+          state!.firstWhere((CollectionItem i) => i.id == 1);
+      expect(patched.currentEpisode, equals(12));
+      expect(patched.currentSeason, equals(2));
+      expect(patched.lastActivityAt, equals(now));
+      final CollectionItem untouched =
+          state.firstWhere((CollectionItem i) => i.id == 2);
+      expect(untouched.currentEpisode, equals(0));
+      expect(untouched.currentSeason, equals(0));
+    });
+
+    test('updateProgressLocally с null-полями сохраняет текущие значения',
+        () async {
+      when(() => mockRepo.getAllItemsWithData()).thenAnswer(
+          (_) async => <CollectionItem>[_makeItem(id: 1)]);
+
+      final ProviderContainer container = createContainer();
+      container.read(allItemsNotifierProvider);
+      await _pump();
+
+      final AllItemsNotifier notifier =
+          container.read(allItemsNotifierProvider.notifier);
+      notifier.updateProgressLocally(1, currentEpisode: 5);
+      notifier.updateProgressLocally(1, currentSeason: 3);
+
+      final CollectionItem patched = container
+          .read(allItemsNotifierProvider)
+          .valueOrNull!
+          .firstWhere((CollectionItem i) => i.id == 1);
+      expect(patched.currentEpisode, equals(5));
+      expect(patched.currentSeason, equals(3));
+    });
+
     test('toggleFavorite пишет в БД и обновляет состояние', () async {
       final List<CollectionItem> items = <CollectionItem>[
         _makeItem(id: 1, collectionId: 1),

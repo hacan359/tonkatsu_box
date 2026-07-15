@@ -978,7 +978,7 @@ abstract class S {
   /// No description provided for @settingsContentLanguageSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Language for movie and TV show descriptions'**
+  /// **'For now TMDB only (movies and TV shows)'**
   String get settingsContentLanguageSubtitle;
 
   /// No description provided for @settingsDataSources.
@@ -3002,6 +3002,24 @@ abstract class S {
   /// **'Edit Custom Item'**
   String get customItemEdit;
 
+  /// No description provided for @customItemFillFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill from file'**
+  String get customItemFillFromFile;
+
+  /// No description provided for @customItemFileMultipleRows.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} entries in the file — the first one was used'**
+  String customItemFileMultipleRows(int count);
+
+  /// No description provided for @customItemFileNoValidRows.
+  ///
+  /// In en, this message translates to:
+  /// **'No valid entries in this file'**
+  String get customItemFileNoValidRows;
+
   /// No description provided for @customItemAddCover.
   ///
   /// In en, this message translates to:
@@ -4153,6 +4171,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Error details copied'**
   String get errorDetailsCopied;
+
+  /// No description provided for @errorDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Error details'**
+  String get errorDetailsTitle;
+
+  /// No description provided for @errorDetailsShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get errorDetailsShow;
 
   /// No description provided for @showMore.
   ///
@@ -5798,6 +5828,18 @@ abstract class S {
   /// **'Personalize collections with a cover image and description'**
   String get settingsRichCollectionsSubtitle;
 
+  /// No description provided for @settingsCardScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover size'**
+  String get settingsCardScale;
+
+  /// No description provided for @settingsCardScaleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Card size in collection grids'**
+  String get settingsCardScaleSubtitle;
+
   /// No description provided for @collectionEditHeroImage.
   ///
   /// In en, this message translates to:
@@ -6901,6 +6943,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Updated'**
   String get importResultUpdated;
+
+  /// No description provided for @importResultErrors.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors ({count})'**
+  String importResultErrors(int count);
+
+  /// No description provided for @importResultErrorsCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors copied'**
+  String get importResultErrorsCopied;
 
   /// No description provided for @importResultSkipped.
   ///

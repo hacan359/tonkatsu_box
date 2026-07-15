@@ -211,7 +211,7 @@
   "settingsAppearance": "Оформление",
   "settingsAppearanceSubtitle": "Язык, отображение и контент",
   "settingsAppLanguageSubtitle": "Язык интерфейса",
-  "settingsContentLanguageSubtitle": "Язык описаний фильмов и сериалов",
+  "settingsContentLanguageSubtitle": "Пока только для TMDB (фильмы и сериалы)",
   "settingsDataSources": "Источники данных",
   "settingsDataSourcesSubtitle": "IGDB, TMDB, SteamGridDB",
   "settingsApiKeysSubtitle": "Настройка подключений к базам данных",
@@ -664,6 +664,14 @@
   "customItemDescriptionHint": "Краткое описание или заметки",
   "customItemOptionalFields": "Дополнительные поля",
   "customItemEdit": "Редактировать тайтл",
+  "customItemFillFromFile": "Заполнить из файла",
+  "customItemFileMultipleRows": "Записей в файле: {count} — взята первая",
+  "@customItemFileMultipleRows": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customItemFileNoValidRows": "В файле нет корректных записей",
   "customItemAddCover": "Добавить обложку",
   "customItemCoverSource": "Источник обложки",
   "customItemCoverRatio": "Рекомендуемое соотношение: 2:3 (напр. 600×900)",
@@ -885,6 +893,8 @@
   "searchCheckConnection": "Проверьте подключение к интернету и попробуйте снова.",
   "copyErrorDetails": "Скопировать детали ошибки",
   "errorDetailsCopied": "Детали ошибки скопированы",
+  "errorDetailsTitle": "Детали ошибки",
+  "errorDetailsShow": "Подробнее",
   "showMore": "Ещё…",
   "showLess": "Свернуть",
 
@@ -1236,6 +1246,8 @@
   "settingsShowBlurayOverlaySubtitle": "Оверлей Blu-ray на постерах фильмов и сериалов",
   "settingsRichCollections": "Персонализация коллекций",
   "settingsRichCollectionsSubtitle": "Обложка и описание вместо мозаики",
+  "settingsCardScale": "Размер обложек",
+  "settingsCardScaleSubtitle": "Размер карточек в сетках коллекций",
   "collectionEditHeroImage": "Обложка",
   "collectionEditHeroImageHint": "Рекомендуется 2560×1080 (21:9). Главный объект справа — слева его закроет заголовок, снизу края растворятся в фоне",
   "collectionEditHeroPick": "Выбрать картинку",
@@ -1487,6 +1499,13 @@
   "importResultImported": "Импортировано",
   "importResultWishlisted": "В список желаний",
   "importResultUpdated": "Обновлено",
+  "importResultErrors": "Ошибки ({count})",
+  "@importResultErrors": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultErrorsCopied": "Ошибки скопированы",
   "importResultSkipped": "{count} пропущено",
   "@importResultSkipped": {
     "placeholders": {

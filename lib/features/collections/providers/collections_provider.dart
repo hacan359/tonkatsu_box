@@ -966,6 +966,14 @@ class CollectionItemsNotifier
         ),
         affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
       );
+      // The all-items screen renders progress on cards from its own copy;
+      // patch it in place — invalidating would reload every item per tick.
+      ref.read(allItemsNotifierProvider.notifier).updateProgressLocally(
+            id,
+            currentSeason: currentSeason,
+            currentEpisode: currentEpisode,
+            lastActivityAt: now,
+          );
 
       await _autoUpdateMangaStatus(id, currentEpisode, currentSeason);
       await _autoUpdateAnimeStatus(id, currentEpisode);

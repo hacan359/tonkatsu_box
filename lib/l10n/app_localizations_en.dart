@@ -503,7 +503,7 @@ class SEn extends S {
 
   @override
   String get settingsContentLanguageSubtitle =>
-      'Language for movie and TV show descriptions';
+      'For now TMDB only (movies and TV shows)';
 
   @override
   String get settingsDataSources => 'Data Sources';
@@ -1675,6 +1675,17 @@ class SEn extends S {
   String get customItemEdit => 'Edit Custom Item';
 
   @override
+  String get customItemFillFromFile => 'Fill from file';
+
+  @override
+  String customItemFileMultipleRows(int count) {
+    return '$count entries in the file — the first one was used';
+  }
+
+  @override
+  String get customItemFileNoValidRows => 'No valid entries in this file';
+
+  @override
   String get customItemAddCover => 'Add cover';
 
   @override
@@ -2321,6 +2332,12 @@ class SEn extends S {
 
   @override
   String get errorDetailsCopied => 'Error details copied';
+
+  @override
+  String get errorDetailsTitle => 'Error details';
+
+  @override
+  String get errorDetailsShow => 'Details';
 
   @override
   String get showMore => 'More…';
@@ -3272,6 +3289,12 @@ class SEn extends S {
       'Personalize collections with a cover image and description';
 
   @override
+  String get settingsCardScale => 'Cover size';
+
+  @override
+  String get settingsCardScaleSubtitle => 'Card size in collection grids';
+
+  @override
   String get collectionEditHeroImage => 'Cover image';
 
   @override
@@ -3869,6 +3892,14 @@ class SEn extends S {
 
   @override
   String get importResultUpdated => 'Updated';
+
+  @override
+  String importResultErrors(int count) {
+    return 'Errors ($count)';
+  }
+
+  @override
+  String get importResultErrorsCopied => 'Errors copied';
 
   @override
   String importResultSkipped(int count) {

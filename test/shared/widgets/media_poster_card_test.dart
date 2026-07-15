@@ -4,6 +4,7 @@ import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/utils/item_card_progress.dart';
 import 'package:tonkatsu_box/shared/widgets/dual_rating_badge.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
@@ -23,6 +24,7 @@ void main() {
     MediaType? mediaType,
     IconData? placeholderIcon,
     int? timeToBeatHours,
+    ItemCardProgress? progress,
     bool isFavorite = false,
     bool showFavorite = false,
     VoidCallback? onTap,
@@ -52,6 +54,7 @@ void main() {
             mediaType: mediaType,
             placeholderIcon: placeholderIcon,
             timeToBeatHours: timeToBeatHours,
+            progress: progress,
             isFavorite: isFavorite,
             showFavorite: showFavorite,
             onTap: onTap,
@@ -185,6 +188,37 @@ void main() {
           matching: find.byType(Focus),
         );
         expect(focusWidgets, findsOneWidget);
+      });
+    });
+
+    group('progress', () {
+      testWidgets('should show метку прогресса когда progress задан',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          status: ItemStatus.inProgress,
+          progress: const ItemCardProgress(label: '12/24', fraction: 0.5),
+        ));
+
+        expect(find.text('12/24'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('should show метку без бара когда fraction == null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          progress: const ItemCardProgress(label: 'V2 · 12'),
+        ));
+
+        expect(find.text('V2 · 12'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('не should show метку без progress',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(status: ItemStatus.inProgress));
+
+        expect(find.text('12/24'), findsNothing);
+        expect(tester.takeException(), isNull);
       });
     });
 

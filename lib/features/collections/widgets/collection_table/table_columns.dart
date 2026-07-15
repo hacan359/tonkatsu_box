@@ -179,6 +179,28 @@ List<TrinaColumn> buildCollectionTableColumns({
       },
     ),
     TrinaColumn(
+      title: l.progress.toUpperCase(),
+      field: TableFields.progress,
+      type: TrinaColumnType.text(),
+      width: 96,
+      minWidth: 64,
+      readOnly: true,
+      enableEditingMode: false,
+      enableContextMenu: false,
+      enableSorting: sortable,
+      titleTextAlign: TrinaColumnTextAlign.center,
+      renderer: (TrinaColumnRendererContext ctx) => Center(
+        child: Text(
+          ctx.cell.value as String,
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textSecondary,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    ),
+    TrinaColumn(
       title: l.favorite.toUpperCase(),
       field: TableFields.favorite,
       type: TrinaColumnType.number(),

@@ -513,7 +513,7 @@ class SRu extends S {
 
   @override
   String get settingsContentLanguageSubtitle =>
-      'Язык описаний фильмов и сериалов';
+      'Пока только для TMDB (фильмы и сериалы)';
 
   @override
   String get settingsDataSources => 'Источники данных';
@@ -1714,6 +1714,17 @@ class SRu extends S {
   String get customItemEdit => 'Редактировать тайтл';
 
   @override
+  String get customItemFillFromFile => 'Заполнить из файла';
+
+  @override
+  String customItemFileMultipleRows(int count) {
+    return 'Записей в файле: $count — взята первая';
+  }
+
+  @override
+  String get customItemFileNoValidRows => 'В файле нет корректных записей';
+
+  @override
   String get customItemAddCover => 'Добавить обложку';
 
   @override
@@ -2363,6 +2374,12 @@ class SRu extends S {
 
   @override
   String get errorDetailsCopied => 'Детали ошибки скопированы';
+
+  @override
+  String get errorDetailsTitle => 'Детали ошибки';
+
+  @override
+  String get errorDetailsShow => 'Подробнее';
 
   @override
   String get showMore => 'Ещё…';
@@ -3335,6 +3352,12 @@ class SRu extends S {
       'Обложка и описание вместо мозаики';
 
   @override
+  String get settingsCardScale => 'Размер обложек';
+
+  @override
+  String get settingsCardScaleSubtitle => 'Размер карточек в сетках коллекций';
+
+  @override
   String get collectionEditHeroImage => 'Обложка';
 
   @override
@@ -3933,6 +3956,14 @@ class SRu extends S {
 
   @override
   String get importResultUpdated => 'Обновлено';
+
+  @override
+  String importResultErrors(int count) {
+    return 'Ошибки ($count)';
+  }
+
+  @override
+  String get importResultErrorsCopied => 'Ошибки скопированы';
 
   @override
   String importResultSkipped(int count) {

@@ -476,7 +476,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     if (!result.success) {
       setState(() => _isImporting = false);
       if (result.fatalError != null) {
-        context.showSnack(result.fatalError!, type: SnackType.error);
+        context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
       }
       return;
     }

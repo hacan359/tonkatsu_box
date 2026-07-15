@@ -16,6 +16,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
@@ -47,8 +48,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   final Set<int> _selectedPlatformIds = <int>{};
   final Set<String> _selectedMangaFormats = <String>{};
   final Set<String> _selectedAnimeFormats = <String>{};
-
-  static const double _desktopMaxCardWidth = 170;
 
   /// Below this width the segments show icons instead of text.
   static const double _compactBreakpoint = 700;
@@ -454,25 +453,29 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
     final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
 
+    final double cardScale = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.cardScale),
+    );
+
     final SliverGridDelegate gridDelegate;
     if (isDesktop) {
       gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: _desktopMaxCardWidth,
+        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
         childAspectRatio: 0.55,
       );
     } else {
-      final int crossAxisCount;
+      final int baseCount;
       if (isLandscape) {
-        crossAxisCount = AppSpacing.gridColumnsDesktop;
+        baseCount = AppSpacing.gridColumnsDesktop;
       } else if (screenWidth >= 500) {
-        crossAxisCount = AppSpacing.gridColumnsTablet;
+        baseCount = AppSpacing.gridColumnsTablet;
       } else {
-        crossAxisCount = AppSpacing.gridColumnsMobile;
+        baseCount = AppSpacing.gridColumnsMobile;
       }
       gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
+        crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
         childAspectRatio: 0.55,
@@ -516,6 +519,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                     final Set<int> selection =
                         ref.watch(allItemsSelectionProvider);
                     final bool isSelected = selection.contains(item.id);
+                    final ItemCardProgress? progress = itemCardProgress(item);
                     final MediaPosterCard card = MediaPosterCard(
                       key: ValueKey<int>(item.id),
                       variant: isLandscape ||
@@ -541,6 +545,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       mediaType: item.displayMediaType,
                       typeLabelOverride: item.formatLabel,
                       status: item.status,
+                      progress: progress,
                       isFavorite: item.isFavorite,
                       showFavorite: true,
                       enableHoverScale: !isSelected,

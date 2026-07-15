@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/api/api_error_extract.dart';
 import '../../../core/api/ra_api.dart';
 import '../../../core/import/sources/ra/ra_import_service.dart';
 import '../../../core/services/import_service.dart';
@@ -434,9 +435,10 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isCheckingProfile = false);
-      context.showSnack(
-        S.of(context).raConnectionFailed('$e'),
-        type: SnackType.error,
+      final ApiError err = extractApiError(e);
+      context.showErrorSnack(
+        S.of(context).raConnectionFailed(err.message),
+        detail: err.detail,
       );
     }
   }
@@ -548,7 +550,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       if (!result.success) {
         setState(() => _isImporting = false);
         if (result.fatalError != null) {
-          context.showSnack(result.fatalError!, type: SnackType.error);
+          context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
         }
         return;
       }
@@ -577,9 +579,10 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isImporting = false);
-      context.showSnack(
-        S.of(context).importFailed('$e'),
-        type: SnackType.error,
+      final ApiError err = extractApiError(e);
+      context.showErrorSnack(
+        S.of(context).importFailed(err.message),
+        detail: err.detail,
       );
     }
   }

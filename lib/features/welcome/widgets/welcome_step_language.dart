@@ -30,13 +30,22 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
         ref.read(settingsNotifierProvider.notifier);
     notifier.setAppLanguage(uiCode);
     if (!_contentLangTouched) {
-      notifier.setTmdbLanguage(defaultContentLanguageForUi(uiCode));
+      _applyContentLanguage(defaultContentLanguageForUi(uiCode));
     }
   }
 
   void _onContentLanguageSelected(String code) {
     setState(() => _contentLangTouched = true);
-    ref.read(settingsNotifierProvider.notifier).setTmdbLanguage(code);
+    _applyContentLanguage(code);
+  }
+
+  /// First-run only: besides TMDB, derive the AniList title mode from the
+  /// content language (en → english, ja → native, otherwise romaji).
+  void _applyContentLanguage(String code) {
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    notifier.setTmdbLanguage(code);
+    notifier.setAnimeMangaTitleLanguage(anilistTitleLanguageForContent(code));
   }
 
   @override

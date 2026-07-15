@@ -168,6 +168,41 @@ void main() {
         expect(find.text('Connection timeout'), findsOneWidget);
       });
 
+      testWidgets('shows copy button for fatal error', (
+        WidgetTester tester,
+      ) async {
+        const UniversalImportResult result = UniversalImportResult.failure(
+          sourceName: 'Trakt',
+          error: 'Connection timeout',
+          detail: 'GET /sync/watched → 504',
+        );
+
+        await tester.pumpApp(
+          const ImportResultScreen(result: result),
+        );
+
+        expect(find.byIcon(Icons.copy), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('shows per-item errors card with error texts', (
+        WidgetTester tester,
+      ) async {
+        const UniversalImportResult result = UniversalImportResult(
+          success: true,
+          sourceName: 'Steam',
+          errors: <String>['Game A: not found', 'Game B: rate limited'],
+        );
+
+        await tester.pumpApp(
+          const ImportResultScreen(result: result),
+        );
+
+        expect(find.text('Game A: not found'), findsOneWidget);
+        expect(find.text('Game B: rate limited'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+
       testWidgets('does not show Open Collection button on failure', (
         WidgetTester tester,
       ) async {
