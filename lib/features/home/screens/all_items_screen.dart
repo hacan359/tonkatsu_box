@@ -59,8 +59,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<int, String> collectionNames =
         ref.watch(collectionNamesProvider);
     final Map<int, Tag> tagsMap = ref.watch(allTagsMapProvider);
-    final Map<int, Set<int>> itemTags =
-        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
+    final Map<int, List<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
@@ -407,7 +407,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     Map<int, Tag> tagsMap,
     String lowerQuery,
   ) {
-    final Set<int>? ids = ref.read(itemTagsProvider).valueOrNull?[item.id];
+    final List<int>? ids = ref.read(itemTagsProvider).valueOrNull?[item.id];
     if (ids == null) return false;
     return ids.any((int id) =>
         tagsMap[id]?.name.toLowerCase().contains(lowerQuery) ?? false);
@@ -441,7 +441,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     List<CollectionItem> items,
     Map<int, String> collectionNames,
     Map<int, Tag> tagsMap,
-    Map<int, Set<int>> itemTags,
+    Map<int, List<int>> itemTags,
   ) {
     // getAll() returns display order, and the map preserves insertion order.
     final List<Tag> orderedTags = tagsMap.values.toList();
@@ -513,7 +513,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final CollectionItem item = groups[i].items[index];
-                    final Set<int>? tagIds = itemTags[item.id];
+                    final List<int>? tagIds = itemTags[item.id];
                     final Tag? tag = orderedTags.primaryFor(tagIds);
                     final int tagCount = tagIds?.length ?? 0;
                     final Set<int> selection =

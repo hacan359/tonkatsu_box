@@ -520,10 +520,8 @@ void main() {
       mockTagDao = MockGlobalTagDao();
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
-      when(() => mockTagDao.getTagIdsByItem(any()))
-          .thenAnswer((_) async => <int>{});
-      when(() => mockTagDao.setItemTags(any(), any()))
-          .thenAnswer((_) async {});
+      when(() => mockTagDao.copyItemTags(any(), any()))
+          .thenAnswer((_) async => 0);
     });
 
     ProviderContainer createMoveContainer({
@@ -661,10 +659,8 @@ void main() {
           )).thenAnswer((_) async {});
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
-      when(() => mockTagDao.getTagIdsByItem(any()))
-          .thenAnswer((_) async => <int>{});
-      when(() => mockTagDao.setItemTags(any(), any()))
-          .thenAnswer((_) async {});
+      when(() => mockTagDao.copyItemTags(any(), any()))
+          .thenAnswer((_) async => 0);
     });
 
     ProviderContainer createRemapContainer({
@@ -705,13 +701,12 @@ void main() {
         mediaType: MediaType.game,
       );
 
-      verifyNever(() => mockTagDao.getTagIdsByItem(any()));
-      verifyNever(() => mockTagDao.setItemTags(any(), any()));
+      verifyNever(() => mockTagDao.copyItemTags(any(), any()));
     });
 
     test('cloneItem carries the source tag links onto the copy', () async {
-      when(() => mockTagDao.getTagIdsByItem(1))
-          .thenAnswer((_) async => <int>{7, 8});
+      when(() => mockTagDao.copyItemTags(1, 777))
+          .thenAnswer((_) async => 2);
 
       final ProviderContainer container = createRemapContainer(
         initialItems: <CollectionItem>[_makeItem()],
@@ -727,10 +722,10 @@ void main() {
       );
 
       expect(success, isTrue);
-      verify(() => mockTagDao.setItemTags(777, <int>{7, 8})).called(1);
+      verify(() => mockTagDao.copyItemTags(1, 777)).called(1);
     });
 
-    test('cloneItem skips the tag write when the source has no tags',
+    test('cloneItem still copies links when the source has no tags',
         () async {
       final ProviderContainer container = createRemapContainer(
         initialItems: <CollectionItem>[_makeItem()],
@@ -745,8 +740,7 @@ void main() {
         mediaType: MediaType.game,
       );
 
-      verify(() => mockTagDao.getTagIdsByItem(1)).called(1);
-      verifyNever(() => mockTagDao.setItemTags(any(), any()));
+      verify(() => mockTagDao.copyItemTags(1, 777)).called(1);
     });
 
     test('cloneItem returns false when repo reports duplicate', () async {
@@ -766,7 +760,7 @@ void main() {
       );
 
       expect(success, isFalse);
-      verifyNever(() => mockTagDao.getTagIdsByItem(any()));
+      verifyNever(() => mockTagDao.copyItemTags(any(), any()));
     });
   });
 

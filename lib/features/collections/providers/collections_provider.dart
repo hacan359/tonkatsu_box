@@ -660,11 +660,10 @@ class CollectionItemsNotifier
     );
     if (newId == null) return false;
 
-    // Tags are global — the copy simply carries the same links.
+    // Tags are global — the copy carries the links with their manual order.
     final GlobalTagDao tagDao = ref.read(globalTagDaoProvider);
-    final Set<int> tagIds = await tagDao.getTagIdsByItem(itemId);
-    if (tagIds.isNotEmpty) {
-      await tagDao.setItemTags(newId, tagIds);
+    final int copiedTags = await tagDao.copyItemTags(itemId, newId);
+    if (copiedTags > 0) {
       ref.invalidate(itemTagsProvider);
     }
 

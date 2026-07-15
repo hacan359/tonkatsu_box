@@ -686,6 +686,12 @@
   "tagsLabel": "Теги",
   "tagCreate": "Новый тег",
   "tagCreateHint": "Название тега",
+  "tagCreateNamed": "Создать «{name}»",
+  "@tagCreateNamed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "tagRename": "Переименовать тег",
   "tagDelete": "Удалить тег",
   "tagDeleteConfirm": "Удалить тег «{name}»? Тайтлы останутся без тега.",

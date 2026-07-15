@@ -1729,6 +1729,11 @@ class SEn extends S {
   String get tagCreateHint => 'Tag name';
 
   @override
+  String tagCreateNamed(String name) {
+    return 'Create \"$name\"';
+  }
+
+  @override
   String get tagRename => 'Rename tag';
 
   @override

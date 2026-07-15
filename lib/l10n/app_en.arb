@@ -781,6 +781,12 @@
   "tagsLabel": "Tags",
   "tagCreate": "New tag",
   "tagCreateHint": "Tag name",
+  "tagCreateNamed": "Create \"{name}\"",
+  "@tagCreateNamed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "tagRename": "Rename tag",
   "tagDelete": "Delete tag",
   "tagDeleteConfirm": "Delete tag \"{name}\"? Items will be untagged.",

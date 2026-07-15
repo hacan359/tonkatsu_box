@@ -231,6 +231,83 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (_CreateCustomItemDialogState._fillFromFile, _applyEntry,
     _resolvePlatformId): New.
 
+- **Drag tag chips into a manual per-item order in the item card**
+
+  Tag chips in the item detail card can be dragged into a custom order —
+  immediate drag on desktop, long-press drag on Android. The order is
+  per item: until a chip is dragged, the item keeps following the global
+  tag order from the tag manager, and newly attached tags go to the end
+  of a manually ordered item. The first tag by that order is what item
+  cards and the table's primary-tag sort show. The arrangement survives
+  export/import (`tag_names` is written in display order and restored as
+  explicit positions only when it differs from the global order) and is
+  carried along when an item is cloned to another collection.
+
+  * lib/core/database/migrations/migration_v56.dart (MigrationV56): New —
+    nullable `item_tags.position` column via addColumnIfAbsent.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all),
+    lib/core/database/database_service.dart (_initDatabase): Register v56,
+    bump version to 56.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.getTagIdsByItem,
+    GlobalTagDao.getTagIdsForItems, GlobalTagDao.getAllItemTags): Return
+    ordered lists via a JOIN — manual positions first, NULLs after in
+    global order (shared _linkOrderBy clause).
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.setItemTags):
+    No longer deletes-and-reinserts every link; surviving links keep their
+    manual position, new links get NULL.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.setItemTagPositions,
+    GlobalTagDao.copyItemTags): New — persist a per-item reorder; copy links
+    with positions when cloning an item.
+  * lib/features/collections/providers/item_tags_provider.dart
+    (ItemTagsNotifier): State is now Map<int, List<int>> in display order;
+    new reorderItemTags and refreshFromDb; setItemTags re-reads the item's
+    order from the DAO.
+  * lib/features/collections/providers/global_tags_provider.dart
+    (GlobalTagsNotifier.reorder): Refresh the cached per-item lists after a
+    global reorder so fallback-ordered items follow it.
+  * lib/shared/models/tag.dart (TagListProjection.orderedFor,
+    TagListProjection.primaryFor, TagListProjection.byId, TagMapProjection):
+    Projections follow the ids order (the item's display order); map-based
+    overloads let eager loops hoist the id → tag map.
+  * lib/features/collections/widgets/item_tags_section.dart (ItemTagsSection,
+    _TagDragData): Chips are Draggable/LongPressDraggable drop targets with a
+    hover highlight; the drag payload is scoped to the owning item.
+  * lib/core/services/export_service.dart (ExportService._collectTagData):
+    Write `tag_names` in the item's display order.
+  * lib/core/services/import_service.dart (ImportService._importTags): Restore
+    explicit positions when the imported order differs from the global one.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.cloneItem),
+    lib/features/collections/helpers/bulk_operations.dart (cloneItemsToCollection):
+    Clone tags via copyItemTags so the manual order travels with the copy.
+  * lib/features/collections/screens/collection_screen.dart,
+    lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/collections/widgets/collection_table/collection_table_view.dart,
+    lib/features/collections/widgets/collection_table/table_rows.dart,
+    lib/features/collections/widgets/collection_screen/collection_bulk_action_bar.dart,
+    lib/features/collections/widgets/copy_as_text_dialog.dart,
+    lib/features/collections/widgets/tag_management_dialog.dart,
+    lib/features/collections/helpers/collection_filters.dart,
+    lib/features/home/screens/all_items_screen.dart: Consume the ordered
+    Map<int, List<int>> item-tag map.
+  * docs/RCOLL_FORMAT.md: Document the `tag_names` order semantics.
+
+- **Tag picker: search field and an explicit "Create" row**
+
+  The tag picker's text field now searches: typing filters the tag list
+  as you type, with a clear button. When the query matches no existing
+  tag exactly, a highlighted "Create «query»" row with a plus icon
+  appears at the top of the list — tapping it (or pressing Enter)
+  creates the tag and selects it; Enter on an exact match just selects
+  it. Replaces the old bare name field whose plus button users didn't
+  recognise as "add new tag".
+
+  * lib/features/collections/widgets/tag_picker_dialog.dart
+    (_TagPickerDialogState._submitQuery, _buildCreateTile): Search-driven
+    list, create row, Enter handling.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
+    (tagCreateNamed): New key.
+
 ### Changed
 
 - **TMDB content language list expanded from 3 to 45 locales**
