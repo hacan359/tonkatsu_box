@@ -308,7 +308,35 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
     (tagCreateNamed): New key.
 
+- **Sort by start date and completion date**
+
+  Two new sort modes in the collection sort menu, alongside the existing
+  ones: "Start Date" and "Completion Date" (the dates filled in on the
+  item card). Recent first by default, direction toggle flips to oldest
+  first; items without the date go last, ordered by name.
+
+  * lib/shared/models/collection_sort_mode.dart (CollectionSortMode.startDate,
+    CollectionSortMode.completionDate): New enum values + localized labels;
+    comments translated to English.
+  * lib/features/collections/providers/sort_utils.dart (applySortMode,
+    _compareNullableDatesDesc): New comparators, shared null-last helper.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
+    (sortStartDateDisplay, sortStartDateShort, sortCompletionDateDisplay,
+    sortCompletionDateShort): New keys.
+
 ### Changed
+
+- **Tighter item card action bar and subfilter row spacing**
+
+  Icons in the item detail top bar are slightly smaller (18px) with
+  compact tap boxes, so the six actions no longer read sparse. The gap
+  under the sub-filter chip row is halved.
+
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailAppBar._action): iconSize 20 → 18, VisualDensity.compact,
+    padding 8 → 4; same for the overflow PopupMenuButton.
+  * lib/shared/widgets/filter_subfilter_bar.dart (_SubfilterBarState.build):
+    Bottom padding 8 → 4.
 
 - **TMDB content language list expanded from 3 to 45 locales**
 
@@ -457,6 +485,23 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     launchExternalUrl.
 
 ### Fixed
+
+- **Platform and format sub-filters now combine instead of hiding everything**
+
+  Selecting a game platform together with an anime/manga format (e.g. NES
+  + OVA) used to intersect the two groups and return an empty list. Active
+  sub-filter groups now unite, each scoped to its own kind of item: NES
+  games and OVA anime show side by side. Applies to both the collection
+  screen and All Items.
+
+  * lib/shared/utils/media_format.dart (MediaFormat.matchesSubfilters):
+    Replaces matchesFormatFilter — single OR predicate over platform +
+    format groups.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply), lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState): One combined subfilter pass instead of two
+    intersecting ones.
+
 
 - **Hardcover token now syncs between devices and counts in Settings**
 

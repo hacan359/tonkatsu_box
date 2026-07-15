@@ -46,18 +46,13 @@ class CollectionFilters {
           .toList();
     }
 
-    if (platformIds.isNotEmpty) {
+    if (platformIds.isNotEmpty ||
+        mangaFormats.isNotEmpty ||
+        animeFormats.isNotEmpty) {
       result = result
-          .where((CollectionItem item) =>
-              item.effectivePlatformId != null &&
-              platformIds.contains(item.effectivePlatformId))
-          .toList();
-    }
-
-    if (mangaFormats.isNotEmpty || animeFormats.isNotEmpty) {
-      result = result
-          .where((CollectionItem item) => MediaFormat.matchesFormatFilter(
+          .where((CollectionItem item) => MediaFormat.matchesSubfilters(
                 item,
+                platformIds: platformIds,
                 mangaFormats: mangaFormats,
                 animeFormats: animeFormats,
               ))

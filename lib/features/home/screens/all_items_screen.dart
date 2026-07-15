@@ -140,13 +140,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) {
     if (favoriteOnly && !item.isFavorite) return false;
     if (filterStatus != null && item.status != filterStatus) return false;
-    if (_selectedPlatformIds.isNotEmpty &&
-        (item.effectivePlatformId == null ||
-            !_selectedPlatformIds.contains(item.effectivePlatformId))) {
-      return false;
-    }
-    if (!MediaFormat.matchesFormatFilter(
+    if (!MediaFormat.matchesSubfilters(
       item,
+      platformIds: _selectedPlatformIds,
       mangaFormats: _selectedMangaFormats,
       animeFormats: _selectedAnimeFormats,
     )) {

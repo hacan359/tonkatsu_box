@@ -207,6 +207,18 @@ class SRu extends S {
   String get sortLastActivityDesc => 'Сначала недавние';
 
   @override
+  String get sortStartDateDisplay => 'Дата начала';
+
+  @override
+  String get sortStartDateShort => 'Начато';
+
+  @override
+  String get sortCompletionDateDisplay => 'Дата завершения';
+
+  @override
+  String get sortCompletionDateShort => 'Завершено';
+
+  @override
   String get sortDateOldest => 'Сначала старые';
 
   @override

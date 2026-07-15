@@ -206,6 +206,18 @@ class SZh extends S {
   String get sortLastActivityDesc => '最近优先';
 
   @override
+  String get sortStartDateDisplay => '开始日期';
+
+  @override
+  String get sortStartDateShort => '开始';
+
+  @override
+  String get sortCompletionDateDisplay => '完成日期';
+
+  @override
+  String get sortCompletionDateShort => '完成';
+
+  @override
   String get sortDateOldest => '最早优先';
 
   @override

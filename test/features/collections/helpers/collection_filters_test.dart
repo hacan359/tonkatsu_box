@@ -214,6 +214,28 @@ void main() {
       expect(r.map((CollectionItem i) => i.id), <int>[1, 2]);
     });
 
+    test('platform and format subfilters keep either kind (OR)', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1, platformId: 18),
+        make(id: 2, platformId: 6),
+        createTestCollectionItem(
+          id: 3,
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'OVA'),
+        ),
+        createTestCollectionItem(
+          id: 4,
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'TV'),
+        ),
+      ];
+      final List<CollectionItem> r = const CollectionFilters(
+        platformIds: <int>{18},
+        animeFormats: <String>{'OVA'},
+      ).apply(items, tags, noLinks);
+      expect(r.map((CollectionItem i) => i.id), <int>[1, 3]);
+    });
+
     test('combines filters with AND semantics', () {
       final List<CollectionItem> items = <CollectionItem>[
         make(id: 1, mediaType: MediaType.game, status: ItemStatus.completed),

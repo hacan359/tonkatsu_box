@@ -1,32 +1,36 @@
-// Режим сортировки элементов коллекции.
-
 import '../../l10n/app_localizations.dart';
 
-/// Режим сортировки элементов в коллекции.
 enum CollectionSortMode {
-  /// Ручной порядок (drag-and-drop, sort_order ASC).
+  /// Manual order (drag-and-drop, sort_order ASC).
   manual('manual', 'Manual', 'Manual', 'Custom order'),
 
-  /// По дате добавления (added_at DESC, новые первыми).
+  /// By added date (added_at DESC, newest first).
   addedDate('added_date', 'Date Added', 'Date', 'Newest first'),
 
-  /// По статусу (активные первыми, завершённые последними).
+  /// By status (active first, finished last).
   status('status', 'Status', 'Status', 'Active first'),
 
-  /// По алфавиту (itemName ASC).
+  /// Alphabetical (itemName ASC).
   name('name', 'Name', 'A-Z', 'A to Z'),
 
-  /// По пользовательскому рейтингу (userRating DESC, высшие первыми).
+  /// By user rating (userRating DESC, highest first).
   rating('rating', 'My Rating', 'Rating', 'Highest first'),
 
   /// Favorites first (isFavorite DESC, then by name).
   favorite('favorite', 'Favorite', 'Favorite', 'Favorites first'),
 
-  /// По внешнему API-рейтингу (apiRating DESC, IGDB/TMDB).
+  /// By external API rating (apiRating DESC, IGDB/TMDB).
   externalRating('external_rating', 'External Rating', 'IGDB/TMDB', 'Highest first'),
 
-  /// По дате последней активности (lastActivityAt DESC, недавние первыми).
-  lastActivity('last_activity', 'Last Activity', 'Activity', 'Recent first');
+  /// By last activity (lastActivityAt DESC, recent first).
+  lastActivity('last_activity', 'Last Activity', 'Activity', 'Recent first'),
+
+  /// By start date (startedAt DESC, recent first, undated last).
+  startDate('start_date', 'Start Date', 'Started', 'Recent first'),
+
+  /// By completion date (completedAt DESC, recent first, undated last).
+  completionDate('completion_date', 'Completion Date', 'Finished',
+      'Recent first');
 
   const CollectionSortMode(
     this.value,
@@ -35,21 +39,17 @@ enum CollectionSortMode {
     this.description,
   );
 
-  /// Строковое значение для хранения в SharedPreferences.
+  /// Stored value for SharedPreferences.
   final String value;
 
-  /// Отображаемое название.
   final String displayLabel;
 
-  /// Короткий лейбл для компактного UI (2-6 символов).
+  /// Short label for compact UI (2-6 chars).
   final String shortLabel;
 
-  /// Краткое описание порядка сортировки.
   final String description;
 
-  /// Создаёт [CollectionSortMode] из строки.
-  ///
-  /// Возвращает [addedDate] для неизвестных значений.
+  /// Returns [addedDate] for unknown stored values.
   static CollectionSortMode fromString(String value) {
     for (final CollectionSortMode mode in CollectionSortMode.values) {
       if (mode.value == value) {
@@ -59,7 +59,6 @@ enum CollectionSortMode {
     return CollectionSortMode.addedDate;
   }
 
-  /// Локализованное отображаемое название.
   String localizedDisplayLabel(S l) {
     switch (this) {
       case CollectionSortMode.manual:
@@ -78,10 +77,13 @@ enum CollectionSortMode {
         return l.sortExternalRatingDisplay;
       case CollectionSortMode.lastActivity:
         return l.sortLastActivityDisplay;
+      case CollectionSortMode.startDate:
+        return l.sortStartDateDisplay;
+      case CollectionSortMode.completionDate:
+        return l.sortCompletionDateDisplay;
     }
   }
 
-  /// Локализованный короткий лейбл.
   String localizedShortLabel(S l) {
     switch (this) {
       case CollectionSortMode.manual:
@@ -100,6 +102,10 @@ enum CollectionSortMode {
         return l.sortExternalRatingShort;
       case CollectionSortMode.lastActivity:
         return l.sortLastActivityShort;
+      case CollectionSortMode.startDate:
+        return l.sortStartDateShort;
+      case CollectionSortMode.completionDate:
+        return l.sortCompletionDateShort;
     }
   }
 
@@ -125,10 +131,12 @@ enum CollectionSortMode {
         return l.sortRatingLowest;
       case CollectionSortMode.lastActivity:
         return l.sortDateOldest;
+      case CollectionSortMode.startDate:
+      case CollectionSortMode.completionDate:
+        return l.sortDateOldest;
     }
   }
 
-  /// Локализованное описание порядка сортировки.
   String localizedDescription(S l) {
     switch (this) {
       case CollectionSortMode.manual:
@@ -146,6 +154,9 @@ enum CollectionSortMode {
       case CollectionSortMode.externalRating:
         return l.sortRatingDesc;
       case CollectionSortMode.lastActivity:
+        return l.sortLastActivityDesc;
+      case CollectionSortMode.startDate:
+      case CollectionSortMode.completionDate:
         return l.sortLastActivityDesc;
     }
   }

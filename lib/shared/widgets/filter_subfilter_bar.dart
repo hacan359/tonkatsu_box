@@ -86,7 +86,7 @@ class _SubfilterBarState extends State<SubfilterBar> {
       // the horizontal inset lives inside it (below) instead.
       padding: const EdgeInsets.only(
         top: AppSpacing.xs,
-        bottom: AppSpacing.sm,
+        bottom: AppSpacing.xs,
       ),
       // Full-bleed band with no border or radius so the highlight reads as one
       // even row with no seams; the inner padding keeps the chips inset. Geometry

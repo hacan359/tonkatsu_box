@@ -77,6 +77,10 @@
   "sortLastActivityDisplay": "最近活动",
   "sortLastActivityShort": "活动",
   "sortLastActivityDesc": "最近优先",
+  "sortStartDateDisplay": "开始日期",
+  "sortStartDateShort": "开始",
+  "sortCompletionDateDisplay": "完成日期",
+  "sortCompletionDateShort": "完成",
 
   "sortDateOldest": "最早优先",
   "sortStatusFinished": "已完成优先",

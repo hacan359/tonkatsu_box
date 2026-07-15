@@ -6,6 +6,19 @@ int _compareByDisplayName(CollectionItem a, CollectionItem b, String lang) =>
           b.displayName(lang).toLowerCase(),
         );
 
+/// Recent first; undated items sink last, kept stable by [tieBreaker].
+int _compareNullableDatesDesc(
+  DateTime? a,
+  DateTime? b,
+  int Function() tieBreaker,
+) {
+  if (a == null && b == null) return tieBreaker();
+  if (a == null) return 1;
+  if (b == null) return -1;
+  final int byDate = b.compareTo(a);
+  return byDate != 0 ? byDate : tieBreaker();
+}
+
 /// [CollectionSortMode.manual] returns the user-defined `sortOrder` as is;
 /// [isDescending] inverts every other mode but never manual.
 List<CollectionItem> applySortMode(
@@ -80,6 +93,22 @@ List<CollectionItem> applySortMode(
         final DateTime bAt = b.lastActivityAt ?? b.addedAt;
         return bAt.compareTo(aAt);
       });
+    case CollectionSortMode.startDate:
+      sorted.sort(
+        (CollectionItem a, CollectionItem b) => _compareNullableDatesDesc(
+          a.startedAt,
+          b.startedAt,
+          () => _compareByDisplayName(a, b, animeMangaTitleLanguage),
+        ),
+      );
+    case CollectionSortMode.completionDate:
+      sorted.sort(
+        (CollectionItem a, CollectionItem b) => _compareNullableDatesDesc(
+          a.completedAt,
+          b.completedAt,
+          () => _compareByDisplayName(a, b, animeMangaTitleLanguage),
+        ),
+      );
   }
   if (isDescending) {
     return sorted.reversed.toList();
