@@ -50,6 +50,7 @@ The whole interface is localized with runtime switching. Pick your language in *
 | 🇬🇧 | English | ✅ Complete |
 | 🇷🇺 | Русский (Russian) | ✅ Complete |
 | 🇨🇳 | 简体中文 (Simplified Chinese) | ✅ Complete |
+| 🇪🇸 | Español (Spanish) | ✅ Complete |
 
 ## Screenshots
 

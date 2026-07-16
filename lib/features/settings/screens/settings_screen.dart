@@ -64,6 +64,14 @@ const Color _kProfileColor = Color(0xFF4A90E2);
 const Color _kBackupColor = Color(0xFF42A5F5);
 const Color _kStorageColor = Color(0xFF8E8E93);
 const Color _kAppearanceColor = Color(0xFFA86ED4);
+
+/// UI locale code → its native display name.
+const Map<String, String> _kAppLanguageNames = <String, String>{
+  'en': 'English',
+  'ru': 'Русский',
+  'zh': '中文',
+  'es': 'Español',
+};
 const Color _kApiKeysColor = Color(0xFFEF5350);
 const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple (used for RA-sync Icons.sync tile)
 const Color _kAboutColor = Color(0xFF8E8E93);
@@ -360,11 +368,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leadingColor: _kAppearanceColor,
             title: l.settingsAppLanguage,
             subtitle: l.settingsAppLanguageSubtitle,
-            value: settings.appLanguage == 'ru'
-                ? 'Русский'
-                : settings.appLanguage == 'zh'
-                    ? '中文'
-                    : 'English',
+            value: _kAppLanguageNames[settings.appLanguage] ?? 'English',
             onTap: () => _showLanguagePicker(settings),
           ),
           SettingsTile(
@@ -697,60 +701,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (BuildContext dialogContext) => SimpleDialog(
         title: Text(S.of(context).settingsAppLanguage),
         children: <Widget>[
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setAppLanguage('en');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.appLanguage == 'en')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('English'),
-              ],
+          for (final MapEntry<String, String> lang
+              in _kAppLanguageNames.entries)
+            SimpleDialogOption(
+              onPressed: () {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setAppLanguage(lang.key);
+                Navigator.pop(dialogContext);
+              },
+              child: Row(
+                children: <Widget>[
+                  if (settings.appLanguage == lang.key)
+                    const Icon(Icons.check, size: 18, color: AppColors.brand)
+                  else
+                    const SizedBox(width: 18),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(lang.value),
+                ],
+              ),
             ),
-          ),
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setAppLanguage('ru');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.appLanguage == 'ru')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('Русский'),
-              ],
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setAppLanguage('zh');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.appLanguage == 'zh')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('中文'),
-              ],
-            ),
-          ),
         ],
       ),
     );

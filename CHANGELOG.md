@@ -9,6 +9,33 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Spanish (es) localization**
+
+  Fourth interface language. Selectable in Settings → App Language and in
+  the welcome wizard, where picking Spanish also defaults the TMDB content
+  language to es-ES and the AniList title mode to romaji (unless the user
+  already picked a content language by hand). All 1493 strings translated.
+
+  * lib/l10n/app_es.arb, lib/l10n/app_localizations_es.dart (SEs): New.
+  * lib/l10n/app_localizations.dart (S.supportedLocales, lookupS): Register es.
+  * lib/features/settings/screens/settings_screen.dart (_kAppLanguageNames,
+    _SettingsScreenState._showLanguagePicker): Add Español; replace the
+    hardcoded per-language tile value and four copy-pasted dialog options
+    with a single locale→name map driving both.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (_WelcomeStepLanguageState.build): Add the Español option, shift
+    WelcomeReveal indices.
+  * lib/shared/constants/tmdb_content_languages.dart (_kUiToContentLanguage):
+    Map es → es-ES.
+  * README.md, docs/index.html,
+    fastlane/metadata/android/en-US/full_description.txt: List Spanish
+    among supported languages.
+  * test/features/welcome/widgets/welcome_step_language_test.dart: Cover the
+    Spanish option (appLanguage=es, tmdbLanguage=es-ES); ensureVisible before
+    tapping the content dropdown pushed off-screen by the fourth option.
+  * test/features/settings/screens/settings_screen_test.dart: New test —
+    picking a language in the dialog persists it to SharedPreferences.
+
 - **Hardcover book source: search and library import**
 
   Hardcover (hardcover.app) joins the book providers. Search returns the

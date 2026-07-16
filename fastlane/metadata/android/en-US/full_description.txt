@@ -10,7 +10,7 @@ Features:
 * Visual boards and mood grids to arrange your collection the way you like.
 * Import your library from Steam, IGDB lists, Trakt.tv, Kinorium, RetroAchievements, MyAnimeList or AniList.
 * Local SQLite storage with backup and restore — your data stays on your device.
-* Fully localized interface with runtime language switching (English, Russian, Simplified Chinese).
+* Fully localized interface with runtime language switching (English, Russian, Simplified Chinese, Spanish).
 
 Privacy:
 

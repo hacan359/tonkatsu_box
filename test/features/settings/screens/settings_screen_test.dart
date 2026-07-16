@@ -99,6 +99,28 @@ void main() {
         expect(find.byType(SimpleDialog), findsOneWidget);
       });
 
+      testWidgets('picking a language in the dialog saves it to prefs',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('App Language'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('App Language'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Español').last);
+        await tester.pumpAndSettle();
+
+        expect(prefs.getString(SettingsKeys.appLanguage), 'es');
+        expect(find.byType(SimpleDialog), findsNothing);
+      });
+
       testWidgets('tapping Content Language opens picker dialog',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
