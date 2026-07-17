@@ -909,6 +909,24 @@ abstract class S {
   /// **'Set SteamGridDB key first for some tools'**
   String get settingsDebugSubtitleNoKey;
 
+  /// No description provided for @settingsLaboratory.
+  ///
+  /// In en, this message translates to:
+  /// **'Laboratory'**
+  String get settingsLaboratory;
+
+  /// No description provided for @settingsLaboratoryCardDesigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Card banner designs'**
+  String get settingsLaboratoryCardDesigns;
+
+  /// No description provided for @settingsLaboratoryCardDesignsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Experimental poster card layouts'**
+  String get settingsLaboratoryCardDesignsSubtitle;
+
   /// No description provided for @settingsHelp.
   ///
   /// In en, this message translates to:

@@ -459,7 +459,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: 0.55,
+        childAspectRatio: AppSpacing.posterAspectRatio,
       );
     } else {
       final int baseCount;
@@ -474,7 +474,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: 0.55,
+        childAspectRatio: AppSpacing.posterAspectRatio,
       );
     }
 

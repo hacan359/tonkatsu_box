@@ -476,6 +476,16 @@ class SRu extends S {
   String get settingsDebugSubtitleNoKey => 'Сначала укажите ключ SteamGridDB';
 
   @override
+  String get settingsLaboratory => 'Лаборатория';
+
+  @override
+  String get settingsLaboratoryCardDesigns => 'Дизайны шапок карточек';
+
+  @override
+  String get settingsLaboratoryCardDesignsSubtitle =>
+      'Экспериментальные раскладки карточки-постера';
+
+  @override
   String get settingsHelp => 'Справка';
 
   @override

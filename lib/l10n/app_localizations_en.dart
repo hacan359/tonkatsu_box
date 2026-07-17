@@ -465,6 +465,16 @@ class SEn extends S {
       'Set SteamGridDB key first for some tools';
 
   @override
+  String get settingsLaboratory => 'Laboratory';
+
+  @override
+  String get settingsLaboratoryCardDesigns => 'Card banner designs';
+
+  @override
+  String get settingsLaboratoryCardDesignsSubtitle =>
+      'Experimental poster card layouts';
+
+  @override
   String get settingsHelp => 'Help';
 
   @override

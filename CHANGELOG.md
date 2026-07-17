@@ -9,6 +9,52 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Poster cards: bottom banner with title, meta and progress on the poster**
+
+  Grid and compact cards no longer reserve a text block below the poster:
+  the poster fills the whole cell and a translucent panel at its bottom
+  carries the title (two lines, expanding on hover/focus), a meta line
+  (API rating, platform, year, media type, genre) and an always-visible
+  row with the status dot, watch/read progress and the tag chip. TMDB
+  shows now display live episode-tracker counts on collection cards.
+  Grids and horizontal rows switched to the true 2:3 poster ratio.
+
+  * lib/shared/widgets/media_poster_card.dart (_MediaPosterCardState._buildBottomBanner):
+    New — solid translucent banner; title/subtitle block below the poster
+    removed; status dot and progress pill moved into the banner row;
+    time-to-beat badge moved to the top-left corner; non-split ratings
+    render in the subtitle line instead of the top-left badge.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (_trackerProgress): New — episode progress for tvShow/animation items
+    from episodeTrackerNotifierProvider (watched/totalEpisodes).
+  * lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/home/screens/all_items_screen.dart,
+    lib/features/search/widgets/browse_grid.dart: childAspectRatio
+    0.55 → AppSpacing.posterAspectRatio.
+  * lib/features/search/widgets/discover_row.dart,
+    lib/features/search/widgets/discover_feed.dart,
+    lib/features/recommendations/widgets/recommendation_row.dart,
+    lib/shared/widgets/book_carousel.dart,
+    lib/features/collections/widgets/recommendations_section.dart:
+    row height derived from posterWidth / AppSpacing.posterAspectRatio.
+
+- **Laboratory section in Settings with card banner design lab**
+
+  New "Laboratory" settings group (visible in release builds too) hosts
+  the experimental card-banner gallery: eight banner layout variants
+  rendered on real posters from a chosen collection, with hover
+  behaviour, for side-by-side comparison and voting.
+
+  * lib/features/settings/screens/card_banner_debug_screen.dart
+    (CardBannerDebugScreen): New — variant gallery (solid panel,
+    gradient, frosted glass, stats strip, one-line meta, status stripe,
+    split meta, label-in-progress-bar).
+  * lib/features/settings/screens/settings_screen.dart: Laboratory
+    group with the card designs tile.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
+    (settingsLaboratory, settingsLaboratoryCardDesigns,
+    settingsLaboratoryCardDesignsSubtitle): New keys.
+
 - **Hardcover book source: search and library import**
 
   Hardcover (hardcover.app) joins the book providers. Search returns the

@@ -213,7 +213,7 @@ void main() {
 
         await tester.pumpWidget(buildWidget(items: items));
 
-        expect(find.text('8.5'), findsOneWidget);
+        expect(find.textContaining('★8.5'), findsOneWidget);
       });
 
       testWidgets('shows placeholder when no poster URL',

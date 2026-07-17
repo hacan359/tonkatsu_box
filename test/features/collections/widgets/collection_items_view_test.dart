@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_items_view.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
@@ -10,6 +11,7 @@ import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/tv_show.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 
@@ -34,6 +36,13 @@ CollectionItem _makeItem({
     addedAt: DateTime(2024),
     game: mediaType == MediaType.game
         ? Game(id: externalId, name: gameName)
+        : null,
+    tvShow: mediaType == MediaType.tvShow
+        ? TvShow(
+            tmdbId: externalId,
+            title: 'Test Show',
+            totalEpisodes: 24,
+          )
         : null,
   );
 }
@@ -395,7 +404,74 @@ void main() {
         },
       );
     });
+
+    group('прогресс из трекера эпизодов', () {
+      Future<void> pumpTvGrid(
+        WidgetTester tester,
+        Map<(int, int), DateTime?> watched,
+      ) async {
+        await tester.pumpWidget(_buildTestApp(
+          overrides: <Override>[
+            ..._defaultOverrides(),
+            episodeTrackerNotifierProvider.overrideWith(
+              () => _FakeEpisodeTrackerNotifier(watched),
+            ),
+          ],
+          child: CollectionItemsView(
+            collectionId: 1,
+            items: <CollectionItem>[
+              _makeItem(mediaType: MediaType.tvShow),
+            ],
+            canEdit: true,
+            onItemTap: (_) {},
+          ),
+        ));
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets(
+        'should show watched/total label when episodes are marked',
+        (WidgetTester tester) async {
+          await pumpTvGrid(tester, <(int, int), DateTime?>{
+            for (int e = 1; e <= 12; e++) (1, e): null,
+          });
+
+          expect(find.text('12/24'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'should not show a tracker label when nothing is watched',
+        (WidgetTester tester) async {
+          await pumpTvGrid(tester, const <(int, int), DateTime?>{});
+
+          expect(find.textContaining('/24'), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'should exclude specials (season 0) from the watched count',
+        (WidgetTester tester) async {
+          await pumpTvGrid(tester, <(int, int), DateTime?>{
+            (0, 1): null,
+            (1, 1): null,
+          });
+
+          expect(find.text('1/24'), findsOneWidget);
+        },
+      );
+    });
   });
+}
+
+class _FakeEpisodeTrackerNotifier extends EpisodeTrackerNotifier {
+  _FakeEpisodeTrackerNotifier(this._watched);
+
+  final Map<(int, int), DateTime?> _watched;
+
+  @override
+  EpisodeTrackerState build(({int? collectionId, int showId}) arg) =>
+      EpisodeTrackerState(watchedEpisodes: _watched);
 }
 
 class _FakeSortNotifier extends CollectionSortNotifier {
