@@ -457,7 +457,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   }
 
   /// Card aspect ratio; kept in sync with collection_screen.
-  static const double _cardAspectRatio = 0.55;
+  static const double _cardAspectRatio = AppSpacing.posterAspectRatio;
 
   SliverGridDelegate _buildGridDelegate(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;

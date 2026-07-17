@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
@@ -17,6 +18,7 @@ void main() {
     String cacheImageId = '123',
     double? userRating,
     double? apiRating,
+    bool splitRatings = false,
     bool isInCollection = false,
     ItemStatus? status,
     int? year,
@@ -47,6 +49,7 @@ void main() {
             cacheImageId: cacheImageId,
             userRating: userRating,
             apiRating: apiRating,
+            splitRatings: splitRatings,
             isInCollection: isInCollection,
             status: status,
             year: year,
@@ -110,13 +113,28 @@ void main() {
         expect(find.text('Action'), findsOneWidget);
       });
 
-      testWidgets('should show DualRatingBadge с рейтингами',
+      testWidgets(
+          'should show both ratings in the subtitle line when not split',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(userRating: 8, apiRating: 7.5));
         await tester.pumpAndSettle();
 
+        expect(find.byType(DualRatingBadge), findsNothing);
+        expect(find.text('★8.0 / 7.5'), findsOneWidget);
+      });
+
+      testWidgets(
+          'should keep the personal rating in the badge when split',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          userRating: 8,
+          apiRating: 7.5,
+          splitRatings: true,
+        ));
+        await tester.pumpAndSettle();
+
         expect(find.byType(DualRatingBadge), findsOneWidget);
-        expect(find.text('8.0 / 7.5'), findsOneWidget);
+        expect(find.text('★7.5'), findsOneWidget);
       });
 
       testWidgets('не should show DualRatingBadge без рейтингов',
@@ -272,6 +290,7 @@ void main() {
         await tester.pumpWidget(buildCard(
           variant: CardVariant.compact,
           userRating: 7,
+          splitRatings: true,
         ));
         await tester.pumpAndSettle();
 
@@ -377,17 +396,22 @@ void main() {
         expect(text.overflow, TextOverflow.ellipsis);
       });
 
-      testWidgets('should show Tooltip с полным названием',
+      testWidgets('должен раскрывать название при hover',
           (WidgetTester tester) async {
-        await tester.pumpWidget(buildCard(
-          title: 'Wolfenstein II: The New Colossus',
-        ));
+        final String title = 'A' * 200;
+        await tester.pumpWidget(buildCard(title: title));
         await tester.pumpAndSettle();
 
-        final Finder tooltipFinder = find.byType(Tooltip);
-        expect(tooltipFinder, findsOneWidget);
-        final Tooltip tooltip = tester.widget<Tooltip>(tooltipFinder);
-        expect(tooltip.message, 'Wolfenstein II: The New Colossus');
+        final TestGesture gesture =
+            await tester.createGesture(kind: PointerDeviceKind.mouse);
+        await gesture.addPointer(location: Offset.zero);
+        addTearDown(gesture.removePointer);
+        await gesture.moveTo(tester.getCenter(find.byType(MediaPosterCard)));
+        await tester.pumpAndSettle();
+
+        final Text text = tester.widget<Text>(find.text(title));
+        expect(text.maxLines, greaterThan(2));
+        expect(tester.takeException(), isNull);
       });
     });
 

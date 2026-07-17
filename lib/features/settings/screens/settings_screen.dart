@@ -49,6 +49,7 @@ import 'ra_import_screen.dart';
 import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
+import 'card_banner_debug_screen.dart';
 import 'debug_hub_screen.dart';
 import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
@@ -636,6 +637,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ],
         ),
       ],
+
+      // Experimental designs live here, reachable in release builds too.
+      gap,
+      SettingsGroup(
+        title: l.settingsLaboratory,
+        titleIcon: Icons.science_outlined,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.style_outlined,
+            leadingColor: _kDebugColor,
+            title: l.settingsLaboratoryCardDesigns,
+            value: l.settingsLaboratoryCardDesignsSubtitle,
+            onTap: () => _pushScreen(const CardBannerDebugScreen()),
+          ),
+        ],
+      ),
 
       // Android-only gamepad button debug, available in release too so
       // controller key codes can be captured on devices like the Odin 2.

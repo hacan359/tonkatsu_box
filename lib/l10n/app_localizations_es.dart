@@ -468,6 +468,16 @@ class SEs extends S {
       'Configura primero la clave de SteamGridDB para algunas herramientas';
 
   @override
+  String get settingsLaboratory => 'Laboratorio';
+
+  @override
+  String get settingsLaboratoryCardDesigns => 'Diseños del banner de tarjetas';
+
+  @override
+  String get settingsLaboratoryCardDesignsSubtitle =>
+      'Diseños experimentales para las tarjetas de póster';
+
+  @override
   String get settingsHelp => 'Ayuda';
 
   @override
