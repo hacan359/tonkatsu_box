@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../constants/platform_features.dart';
 import 'app_colors.dart';
 
 /// Типографика приложения.
@@ -12,10 +13,14 @@ abstract final class AppTypography {
   /// Семейство шрифтов по умолчанию.
   static const String fontFamily = 'Inter';
 
+  /// Базовая шкала плотная, под desktop; на мобильных экранах она мелкая,
+  /// поэтому все стили получают +1px.
+  static final double _bump = kIsMobile ? 1 : 0;
+
   /// Крупный заголовок (название приложения, заголовок экрана).
-  static const TextStyle h1 = TextStyle(
+  static final TextStyle h1 = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 26,
+    fontSize: 26 + _bump,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
     height: 1.2,
@@ -23,9 +28,9 @@ abstract final class AppTypography {
   );
 
   /// Заголовок секции.
-  static const TextStyle h2 = TextStyle(
+  static final TextStyle h2 = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 18,
+    fontSize: 18 + _bump,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
@@ -33,72 +38,72 @@ abstract final class AppTypography {
   );
 
   /// Подзаголовок (название карточки, элемент списка).
-  static const TextStyle h3 = TextStyle(
+  static final TextStyle h3 = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 14 + _bump,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
   );
 
   /// Основной текст.
-  static const TextStyle body = TextStyle(
+  static final TextStyle body = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 13,
+    fontSize: 13 + _bump,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
     height: 1.4,
   );
 
   /// Мелкий текст (даты, мета-информация).
-  static const TextStyle bodySmall = TextStyle(
+  static final TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 12,
+    fontSize: 12 + _bump,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
     height: 1.4,
   );
 
   /// Подпись (badge, chip, label).
-  static const TextStyle caption = TextStyle(
+  static final TextStyle caption = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 11,
+    fontSize: 11 + _bump,
     fontWeight: FontWeight.w500,
     color: AppColors.textTertiary,
     height: 1.2,
   );
 
   /// Название на постерной карточке.
-  static const TextStyle posterTitle = TextStyle(
+  static final TextStyle posterTitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 13,
+    fontSize: 13 + _bump,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
   );
 
   /// Подпись на постерной карточке (год, жанр).
-  static const TextStyle posterSubtitle = TextStyle(
+  static final TextStyle posterSubtitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 11,
+    fontSize: 11 + _bump,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
     height: 1.3,
   );
 
   /// Название на карточке (grid).
-  static const TextStyle cardTitle = TextStyle(
+  static final TextStyle cardTitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 13,
+    fontSize: 13 + _bump,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
   );
 
   /// Подпись на карточке (grid).
-  static const TextStyle cardSubtitle = TextStyle(
+  static final TextStyle cardSubtitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 11,
+    fontSize: 11 + _bump,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
     height: 1.3,
