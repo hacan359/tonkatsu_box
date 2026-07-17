@@ -82,10 +82,10 @@ class MediaPosterCard extends StatefulWidget {
   /// API rating (0.0–10.0). Grid/compact only.
   final double? apiRating;
 
-  /// When true, splits the two ratings: the personal rating stays in the
-  /// top-left badge (number only, no slash) and the API rating moves down to
-  /// the subtitle row next to the year. When false (search), both ratings
-  /// share one badge. Grid/compact only.
+  /// When true (collection), only the API rating goes to the banner's
+  /// subtitle line — the personal rating stays in the top-left badge. When
+  /// false (search), both ratings render in the subtitle line. Grid/compact
+  /// only.
   final bool splitRatings;
 
   /// Grid/compact only.
@@ -269,42 +269,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   ? (TapUpDetails details) =>
                       widget.onSecondaryTap!(details.globalPosition)
                   : null,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _buildGridPoster(),
-                  // Fixed height keeps grid rows aligned.
-                  Tooltip(
-                    message: widget.title,
-                    waitDuration: AppDurations.tooltipDelay,
-                    child: SizedBox(
-                      height: _isCompact ? 38 : 52,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          top: _isCompact ? 2 : AppSpacing.xs,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                widget.title,
-                                style: _isCompact
-                                    ? AppTypography.posterTitle
-                                        .copyWith(fontSize: 9)
-                                    : AppTypography.posterTitle,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            _buildSubtitleRow(context),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              child: _buildGridPoster(),
             ),
           ),
         ),
@@ -330,11 +295,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         ? Color(widget.tagColor!)
         : null;
 
-    return Expanded(
-      child: _TagGlowWrapper(
-        color: glowColor,
-        borderRadius: borderRadius,
-        child: ClipRRect(
+    return _TagGlowWrapper(
+      color: glowColor,
+      borderRadius: borderRadius,
+      child: ClipRRect(
           borderRadius: BorderRadius.circular(borderRadius),
           child: Stack(
             fit: StackFit.expand,
@@ -388,26 +352,56 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               },
             ),
 
-            // Rating badge (top-left). In split mode it holds only the personal
-            // rating (the API rating lives in the subtitle); otherwise it shows
-            // both. Hidden under an overlay — moved to the subtitle.
-            if (widget.splitRatings && widget.userRating != null)
+            // Top-left row: personal rating badge (split mode only — in
+            // non-split mode both ratings render in the banner's subtitle
+            // line) and the time-to-beat clock.
+            if ((widget.splitRatings && widget.userRating != null) ||
+                widget.timeToBeatHours != null)
               Positioned(
                 top: _isCompact ? 2 : AppSpacing.xs,
                 left: _isCompact ? 2 : AppSpacing.xs,
-                child: DualRatingBadge(
-                  userRating: widget.userRating,
-                  compact: _isCompact,
-                ),
-              )
-            else if (!widget.splitRatings && _hasAnyRating && !hasOverlay)
-              Positioned(
-                top: _isCompact ? 2 : AppSpacing.xs,
-                left: _isCompact ? 2 : AppSpacing.xs,
-                child: DualRatingBadge(
-                  userRating: widget.userRating,
-                  apiRating: widget.apiRating,
-                  compact: _isCompact,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (widget.splitRatings && widget.userRating != null)
+                      DualRatingBadge(
+                        userRating: widget.userRating,
+                        compact: _isCompact,
+                      ),
+                    // Average time-to-beat — search game cards only.
+                    if (widget.timeToBeatHours != null && !showStatusDot)
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: _isCompact ? 3 : 5,
+                          vertical: _isCompact ? 1 : 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(170),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusXs),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(
+                              Icons.schedule,
+                              size: _isCompact ? 8 : 11,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: _isCompact ? 1 : 2),
+                            Text(
+                              S.of(context).runtimeHours(
+                                  widget.timeToBeatHours!),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: _isCompact ? 7 : 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
 
@@ -474,127 +468,136 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               ),
             ),
 
-            if (showStatusDot || widget.progress != null)
-              Positioned(
-                bottom: _isCompact ? 2 : AppSpacing.xs,
-                left: _isCompact ? 2 : AppSpacing.xs,
-                child: Row(
+            // Bottom banner: solid translucent panel with title, subtitle
+            // line and the always-visible progress + tag row.
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomBanner(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Solid translucent panel pinned to the poster's bottom edge: title,
+  /// subtitle line, then the always-visible progress + tag row and the
+  /// progress bar. The panel darkens and the title expands on hover/focus.
+  Widget _buildBottomBanner(BuildContext context) {
+    final double hPad = _isCompact ? 4 : 6;
+    final double vPad = _isCompact ? 3 : 5;
+    final bool showStatusDot =
+        widget.status != null && widget.status != ItemStatus.notStarted;
+    final bool hasBottomRow = showStatusDot ||
+        widget.progress != null ||
+        widget.onTagTap != null ||
+        widget.tagName != null;
+
+    return AnimatedBuilder(
+      animation: _hoverController!,
+      builder: (BuildContext context, Widget? child) {
+        final double t = _hoverController!.value;
+        final bool expanded = t > 0.3;
+        return ColoredBox(
+          color: Colors.black.withValues(alpha: 0.6 + 0.25 * t),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.fromLTRB(hPad, vPad, hPad, vPad),
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    if (showStatusDot)
-                      Container(
-                        padding: EdgeInsets.all(_isCompact ? 2 : 4),
-                        decoration: BoxDecoration(
-                          color: widget.status!.color,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          widget.status!.materialIcon,
-                          size: _isCompact ? 8 : 12,
-                          color: Colors.white,
-                        ),
+                    AnimatedSize(
+                      duration: AppDurations.fast,
+                      alignment: Alignment.bottomLeft,
+                      child: Text(
+                        widget.title,
+                        style: (_isCompact
+                                ? AppTypography.posterTitle
+                                    .copyWith(fontSize: 9)
+                                : AppTypography.posterTitle)
+                            .copyWith(height: 1.2),
+                        maxLines: expanded ? 6 : 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    if (widget.progress != null) ...<Widget>[
-                      if (showStatusDot) SizedBox(width: _isCompact ? 2 : 4),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: _isCompact ? 3 : 5,
-                          vertical: _isCompact ? 1 : 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(170),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusXs),
-                        ),
-                        child: Text(
-                          widget.progress!.label,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: _isCompact ? 7 : 9,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    _buildSubtitleRow(context),
+                    if (hasBottomRow) ...<Widget>[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: <Widget>[
+                          if (showStatusDot) ...<Widget>[
+                            Container(
+                              padding: EdgeInsets.all(_isCompact ? 2 : 3),
+                              decoration: BoxDecoration(
+                                color: widget.status!.color,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                widget.status!.materialIcon,
+                                size: _isCompact ? 7 : 10,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: _isCompact ? 2 : 4),
+                          ],
+                          if (widget.progress != null)
+                            Expanded(
+                              child: Text(
+                                widget.progress!.label,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: _isCompact ? 7 : 9,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          else
+                            const Spacer(),
+                          if (widget.onTagTap != null ||
+                              widget.tagName != null)
+                            _TagBadge(
+                              tagName: widget.tagName,
+                              tagColor: widget.tagColor,
+                              tagTextColor: widget.tagTextColor,
+                              moreCount: widget.tagMoreCount,
+                              compact: _isCompact,
+                              onTap: widget.onTagTap,
+                            ),
+                        ],
                       ),
                     ],
                   ],
                 ),
               ),
-
-            // Average time-to-beat (bottom-left) — search cards only.
-            if (widget.timeToBeatHours != null && !showStatusDot)
-              Positioned(
-                bottom: _isCompact ? 2 : AppSpacing.xs,
-                left: _isCompact ? 2 : AppSpacing.xs,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _isCompact ? 3 : 5,
-                    vertical: _isCompact ? 1 : 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(170),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(
-                        Icons.schedule,
-                        size: _isCompact ? 8 : 11,
-                        color: Colors.white,
+              if (widget.progress?.fraction != null)
+                SizedBox(
+                  height: _isCompact ? 2 : 3,
+                  child: ColoredBox(
+                    color: Colors.black.withAlpha(120),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: widget.progress!.fraction,
+                      child: ColoredBox(
+                        color: widget.mediaType != null
+                            ? MediaTypeTheme.colorFor(widget.mediaType!)
+                            : AppColors.brand,
                       ),
-                      SizedBox(width: _isCompact ? 1 : 2),
-                      Text(
-                        S.of(context).runtimeHours(widget.timeToBeatHours!),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: _isCompact ? 7 : 9,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-            // Tag badge (bottom-right) — tappable to pick a tag.
-            if (widget.onTagTap != null || widget.tagName != null)
-              Positioned(
-                bottom: _isCompact ? 2 : AppSpacing.xs,
-                right: _isCompact ? 2 : AppSpacing.xs,
-                child: _TagBadge(
-                  tagName: widget.tagName,
-                  tagColor: widget.tagColor,
-                  tagTextColor: widget.tagTextColor,
-                  moreCount: widget.tagMoreCount,
-                  compact: _isCompact,
-                  onTap: widget.onTagTap,
-                ),
-              ),
-
-            // Watch/read progress bar along the poster's bottom edge.
-            if (widget.progress?.fraction != null)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: _isCompact ? 2 : 3,
-                child: ColoredBox(
-                  color: Colors.black.withAlpha(120),
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: widget.progress!.fraction,
-                    child: ColoredBox(
-                      color: widget.mediaType != null
-                          ? MediaTypeTheme.colorFor(widget.mediaType!)
-                          : AppColors.brand,
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
-      ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -613,8 +616,6 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
   /// Subtitle row: [rating ·] platform · year · MediaType (colored) · genre.
   Widget _buildSubtitleRow(BuildContext context) {
-    final bool hasOverlay =
-        widget.platformOverlayAsset != null && !widget.isInCollection;
     final TextStyle baseStyle = _isCompact
         ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
         : AppTypography.posterSubtitle;
@@ -628,7 +629,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       if (hasApi) {
         leadingRating = '★${widget.apiRating!.toStringAsFixed(1)}';
       }
-    } else if (hasOverlay && _hasAnyRating) {
+    } else if (_hasAnyRating) {
       final bool hasUser = widget.userRating != null;
       if (hasUser && hasApi) {
         leadingRating =

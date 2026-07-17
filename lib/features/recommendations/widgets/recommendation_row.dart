@@ -67,7 +67,8 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
 
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    final double rowHeight = compact ? 185 : 230;
+    // Poster fills the card (2:3) + the list rows' vertical padding.
+    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
 
     return DecoratedBox(
       decoration: BoxDecoration(
