@@ -124,8 +124,8 @@ flutter:
     - assets/images/
     - assets/images/platform_overlays/
     - assets/images/collection_hero_defaults/
-    # Bundled for the "What's new" dialog shown after an app update.
-    - CHANGELOG.md
+    # Hand-written release notes for the "What's new" dialog.
+    - assets/whats_new.md
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

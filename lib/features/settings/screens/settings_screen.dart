@@ -11,11 +11,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/api/ra_api.dart';
 import '../../../core/services/discord_rpc_service.dart';
+import '../../../core/services/whats_new_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/navigation/search_providers.dart';
+import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -615,6 +617,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsCreditsLicenses,
             onTap: () => _pushScreen(const CreditsScreen()),
           ),
+          SettingsTile(
+            leadingIcon: Icons.celebration_outlined,
+            leadingColor: _kAboutColor,
+            title: l.settingsChangelog,
+            onTap: _showChangelog,
+          ),
           _buildVersionTile(l),
         ],
       ),
@@ -685,6 +693,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         builder: (BuildContext context) => screen,
       ),
     );
+  }
+
+  Future<void> _showChangelog() async {
+    final WhatsNewContent? content =
+        await ref.read(whatsNewServiceProvider).previewLatest();
+    if (!mounted) return;
+    if (content == null) {
+      context.showSnack(S.of(context).settingsChangelogEmpty);
+      return;
+    }
+    await showWhatsNewDialog(context, content);
   }
 
   /// Key-source states in the same order as the credentials screen sections.

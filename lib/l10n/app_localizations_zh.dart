@@ -459,6 +459,12 @@ class SZh extends S {
   String get settingsCreditsLicenses => '致谢与许可';
 
   @override
+  String get settingsChangelog => '新功能';
+
+  @override
+  String get settingsChangelogEmpty => '暂无更新说明';
+
+  @override
   String get settingsCreditsLicensesSubtitle => 'TMDB、IGDB、SteamGridDB、开源许可';
 
   @override

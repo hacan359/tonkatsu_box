@@ -2,36 +2,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/services/whats_new_service.dart';
 
-const String _changelog = '''
-# Changelog
+const String _notes = '''
+# 0.40.0
 
-## [Unreleased]
+**Big highlight.** Poster cards got a bottom banner.
 
-### Added
+- Bullet one
+- Bullet two
 
-- **Unreleased topic**
+## Details
 
-## [0.40.0] - 2026-07-20
+Some prose line.
 
-### Added
+# 0.39.0
 
-- **New banner cards**
-
-  Poster cards got a bottom banner with title and progress.
-
-  * lib/shared/widgets/media_poster_card.dart (Foo.bar): details that
-    span a second indented line.
-  * lib/other.dart: more details.
-
-### Fixed
-
-- **Crash on import**
-
-## [0.39.0] - 2026-07-01
-
-### Added
-
-- **Old topic**
+- Old bullet
 ''';
 
 void main() {
@@ -49,7 +34,7 @@ void main() {
     return WhatsNewService(
       prefs: prefs,
       currentVersionOverride: version,
-      changelogLoader: loader ?? () async => _changelog,
+      notesLoader: loader ?? () async => _notes,
     );
   }
 
@@ -57,51 +42,37 @@ void main() {
     group('extractSection', () {
       test('should return only the requested version section', () {
         final String? section =
-            WhatsNewService.extractSection(_changelog, '0.40.0');
+            WhatsNewService.extractSection(_notes, '0.40.0');
 
         expect(section, isNotNull);
-        expect(section, contains('New banner cards'));
-        expect(section, contains('Crash on import'));
-        expect(section, isNot(contains('Unreleased topic')));
-        expect(section, isNot(contains('Old topic')));
+        expect(section, contains('Big highlight'));
+        expect(section, contains('Bullet two'));
+        expect(section, isNot(contains('Old bullet')));
       });
 
       test('should handle the last section running to EOF', () {
         final String? section =
-            WhatsNewService.extractSection(_changelog, '0.39.0');
+            WhatsNewService.extractSection(_notes, '0.39.0');
 
-        expect(section, contains('Old topic'));
+        expect(section, contains('Old bullet'));
       });
 
       test('should return null when the version has no section', () {
-        expect(
-          WhatsNewService.extractSection(_changelog, '9.9.9'),
-          isNull,
-        );
+        expect(WhatsNewService.extractSection(_notes, '9.9.9'), isNull);
       });
     });
 
-    group('simplifyForDisplay', () {
-      test('should strip file bullets with their continuation lines', () {
+    group('formatForDisplay', () {
+      test('should convert bullets and sub-headings, keep prose', () {
         final String section =
-            WhatsNewService.extractSection(_changelog, '0.40.0')!;
-        final String body = WhatsNewService.simplifyForDisplay(section);
+            WhatsNewService.extractSection(_notes, '0.40.0')!;
+        final String body = WhatsNewService.formatForDisplay(section);
 
-        expect(body, isNot(contains('media_poster_card.dart')));
-        expect(body, isNot(contains('span a second indented line')));
-        expect(body, isNot(contains('lib/other.dart')));
-      });
-
-      test('should keep topics and prose, convert headers and bullets', () {
-        final String section =
-            WhatsNewService.extractSection(_changelog, '0.40.0')!;
-        final String body = WhatsNewService.simplifyForDisplay(section);
-
-        expect(body, contains('**Added**'));
-        expect(body, contains('**Fixed**'));
-        expect(body, contains('• **New banner cards**'));
-        expect(body, contains('bottom banner with title and progress'));
-        expect(body, isNot(contains('\n\n\n')));
+        expect(body, contains('• Bullet one'));
+        expect(body, contains('**Details**'));
+        expect(body, contains('Some prose line.'));
+        expect(body, contains('**Big highlight.**'));
+        expect(body, isNot(contains('## ')));
       });
     });
 
@@ -122,7 +93,7 @@ void main() {
         final WhatsNewContent? content = await buildService(
           loader: () async {
             loaderCalled = true;
-            return _changelog;
+            return _notes;
           },
         ).pendingWhatsNew();
 
@@ -138,7 +109,7 @@ void main() {
 
         expect(content, isNotNull);
         expect(content!.version, '0.40.0');
-        expect(content.body, contains('New banner cards'));
+        expect(content.body, contains('Big highlight'));
         // Not marked seen until the dialog is actually closed.
         expect(prefs.getString('changelog_seen_version'), '0.39.0');
       });
@@ -154,7 +125,7 @@ void main() {
         expect(prefs.getString('changelog_seen_version'), '9.9.9');
       });
 
-      test('should return null and keep state when the changelog fails to load',
+      test('should return null and keep state when the notes fail to load',
           () async {
         await prefs.setString('changelog_seen_version', '0.39.0');
 
@@ -164,6 +135,31 @@ void main() {
 
         expect(content, isNull);
         expect(prefs.getString('changelog_seen_version'), '0.39.0');
+      });
+    });
+
+    group('previewLatest', () {
+      test('should return the first section regardless of app version',
+          () async {
+        await prefs.setString('changelog_seen_version', '0.40.0');
+
+        final WhatsNewContent? content =
+            await buildService(version: '0.38.0').previewLatest();
+
+        expect(content, isNotNull);
+        expect(content!.version, '0.40.0');
+        expect(content.body, contains('Big highlight'));
+        // Preview never touches the seen marker.
+        expect(prefs.getString('changelog_seen_version'), '0.40.0');
+      });
+
+      test('should return null when the file has no version headings',
+          () async {
+        final WhatsNewContent? content = await buildService(
+          loader: () async => 'just prose, no headings',
+        ).previewLatest();
+
+        expect(content, isNull);
       });
     });
 

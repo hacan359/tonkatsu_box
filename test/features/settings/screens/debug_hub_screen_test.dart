@@ -37,11 +37,11 @@ void main() {
       expect(find.byType(SettingsGroup), findsOneWidget);
     });
 
-    testWidgets('shows 4 SettingsTile widgets', (WidgetTester tester) async {
+    testWidgets('shows 5 SettingsTile widgets', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byType(SettingsTile), findsNWidgets(4));
+      expect(find.byType(SettingsTile), findsNWidgets(5));
     });
 
     testWidgets('shows SteamGridDB Debug Panel tile',

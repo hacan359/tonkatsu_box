@@ -11,21 +11,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **"What's new" dialog after an app update**
 
-  On the first launch with a new version the app shows that version's
-  release notes (topics and descriptions from the bundled changelog,
-  developer file lists stripped) in a dialog; closing it remembers the
-  version so the notes appear only once. English only for now. A fresh
-  install shows nothing.
+  On the first launch with a new version the app shows hand-written
+  release notes from the bundled assets/whats_new.md (a small file the
+  release process overwrites each release — not the full changelog) in
+  a dialog; closing it remembers the version so the notes appear only
+  once. English only for now. A fresh install shows nothing. Settings →
+  About → "What's New" reopens the current notes any time; a debug
+  preview also lives in Developer Tools → "What's New Preview".
 
   * lib/core/services/whats_new_service.dart (WhatsNewService,
     WhatsNewContent, whatsNewServiceProvider, whatsNewProvider): New —
     version gate in SharedPreferences (changelog_seen_version),
-    CHANGELOG.md section extraction and display cleanup.
+    `# X.Y.Z` section extraction, display formatting, previewLatest.
   * lib/shared/widgets/whats_new_dialog.dart (WhatsNewDialog,
     showWhatsNewDialog): New.
   * lib/shared/navigation/app_shell.dart (_AppShellState.build): Listen
     to whatsNewProvider, show the dialog post-frame, mark seen on close.
-  * pubspec.yaml: bundle CHANGELOG.md as an asset.
+  * lib/features/settings/screens/debug_hub_screen.dart
+    (DebugHubScreen._previewWhatsNew): Debug preview tile.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._showChangelog): About → "What's New" tile
+    (settingsChangelog, settingsChangelogEmpty l10n keys).
+  * assets/whats_new.md: New — current release's notes; pubspec.yaml
+    bundles it.
+  * .claude/skills/release/SKILL.md: Step 7.6 — every release overwrites
+    assets/whats_new.md with condensed user-facing notes.
 
 - **Spanish (es) localization**
 

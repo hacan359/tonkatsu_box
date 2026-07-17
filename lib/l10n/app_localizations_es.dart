@@ -496,6 +496,12 @@ class SEs extends S {
   String get settingsCreditsLicenses => 'Créditos y licencias';
 
   @override
+  String get settingsChangelog => 'Novedades';
+
+  @override
+  String get settingsChangelogEmpty => 'No hay notas de la versión';
+
+  @override
   String get settingsCreditsLicensesSubtitle =>
       'TMDB, IGDB, SteamGridDB, licencias de código abierto';
 

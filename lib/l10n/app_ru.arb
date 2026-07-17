@@ -203,6 +203,8 @@
   "settingsAbout": "О приложении",
   "settingsVersion": "Версия",
   "settingsCreditsLicenses": "Благодарности и лицензии",
+  "settingsChangelog": "Что нового",
+  "settingsChangelogEmpty": "Нет заметок о выпуске",
   "settingsCreditsLicensesSubtitle": "TMDB, IGDB, SteamGridDB, open-source лицензии",
   "settingsError": "Ошибка",
   "settingsAppLanguage": "Язык приложения",

@@ -494,6 +494,12 @@ class SEn extends S {
   String get settingsCreditsLicenses => 'Credits & Licenses';
 
   @override
+  String get settingsChangelog => 'What\'s New';
+
+  @override
+  String get settingsChangelogEmpty => 'No release notes available';
+
+  @override
   String get settingsCreditsLicensesSubtitle =>
       'TMDB, IGDB, SteamGridDB, open-source licenses';
 

@@ -221,11 +221,29 @@ wc -m < fastlane/metadata/android/en-US/changelogs/N.txt
 
 ---
 
+## Step 7.6: Overwrite assets/whats_new.md (in-app "What's new" dialog)
+
+The app shows `assets/whats_new.md` in a dialog on the first launch after
+an update (`lib/core/services/whats_new_service.dart`). The file always
+holds ONLY the current release's notes — **overwrite it completely** with
+the Write tool (not Edit):
+
+- First line: `# X.Y.Z` — must match the pubspec version **exactly**; the
+  app only shows the section whose heading equals its own version.
+- Then the condensed English user-facing notes from Step 7: optionally a
+  short `**bold**`-led intro paragraph for the headline feature, followed
+  by `- ` bullets.
+- Mini-markdown only (`**bold**`, `*italic*`, `- ` bullets). No `##`
+  headers, no file/class names, no links, no Russian.
+- Keep it one dialog tall: an intro + ~5-10 bullets max.
+
+---
+
 ## Step 8: Commit, Tag, Push
 
 ```bash
 # Stage the changed files (N = build number from Step 4)
-git add pubspec.yaml CHANGELOG.md docs/index.html \
+git add pubspec.yaml CHANGELOG.md docs/index.html assets/whats_new.md \
   "fastlane/metadata/android/en-US/changelogs/${N}.txt"
 
 # Create commit
@@ -265,3 +283,4 @@ Tell the user:
 - The skill does NOT run `flutter analyze` or `flutter test` locally — CI handles that
 - Build number is sequential: count of existing `v*` tags + 1
 - **Every release must add** `fastlane/metadata/android/en-US/changelogs/N.txt` (Step 7.5) — IzzyOnDroid reads it as the version's "What's New"; a missing file means no changelog shown for that build
+- **Every release must overwrite** `assets/whats_new.md` (Step 7.6) — the in-app "What's new" dialog shows it after the update; a stale version heading means the dialog silently never appears for the new version

@@ -1,5 +1,11 @@
-// "What's new" on version change: shows the current version's CHANGELOG
-// section once, then remembers the version (mirrors UpdateService's shape).
+// "What's new" on version change: shows hand-written release notes from
+// assets/whats_new.md once per version (mirrors UpdateService's shape).
+//
+// Notes format — one `# X.Y.Z` heading per release, newest on top:
+//   # 0.40.0
+//   **Highlight.** Prose and `- bullets` in mini-markdown.
+// Only the section matching the running app version is ever shown; if the
+// file has no section for it, the dialog is skipped for that version.
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,40 +14,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
 
-/// Changelog section for one released version.
+/// Release notes for one version.
 class WhatsNewContent {
   const WhatsNewContent({required this.version, required this.body});
 
   final String version;
 
-  /// Mini-markdown body (topics + prose, file lists stripped). EN only.
+  /// Mini-markdown body. EN only.
   final String body;
 }
 
 /// Decides whether the "What's new" dialog is due after an app update.
 class WhatsNewService {
   /// [currentVersionOverride] replaces `PackageInfo.fromPlatform()` and
-  /// [changelogLoader] replaces the bundled-asset read in tests.
+  /// [notesLoader] replaces the bundled-asset read in tests.
   WhatsNewService({
     required SharedPreferences prefs,
     String? currentVersionOverride,
-    Future<String> Function()? changelogLoader,
+    Future<String> Function()? notesLoader,
   })  : _prefs = prefs,
         _currentVersionOverride = currentVersionOverride,
-        _changelogLoader = changelogLoader;
+        _notesLoader = notesLoader;
 
   final SharedPreferences _prefs;
   final String? _currentVersionOverride;
-  final Future<String> Function()? _changelogLoader;
+  final Future<String> Function()? _notesLoader;
 
   static const String _seenVersionKey = 'changelog_seen_version';
 
-  /// Returns the changelog for the current version when it has not been
+  /// Returns the notes for the current version when they have not been
   /// shown yet, `null` otherwise.
   ///
   /// The first launch ever (no stored version) is treated as already seen:
   /// a fresh install starts with the welcome wizard, not release notes.
-  /// A version without a CHANGELOG section is marked seen silently.
+  /// A version without a notes section is marked seen silently.
   Future<WhatsNewContent?> pendingWhatsNew() async {
     final String currentVersion = await _resolveVersion();
     final String? seenVersion = _prefs.getString(_seenVersionKey);
@@ -53,15 +59,15 @@ class WhatsNewService {
       return null;
     }
 
-    final String changelog;
+    final String notes;
     try {
-      changelog = await (_changelogLoader?.call() ??
-          rootBundle.loadString('CHANGELOG.md'));
+      notes = await (_notesLoader?.call() ??
+          rootBundle.loadString('assets/whats_new.md'));
     } on Exception {
       return null;
     }
 
-    final String? section = extractSection(changelog, currentVersion);
+    final String? section = extractSection(notes, currentVersion);
     if (section == null) {
       await markSeen(currentVersion);
       return null;
@@ -69,7 +75,7 @@ class WhatsNewService {
 
     return WhatsNewContent(
       version: currentVersion,
-      body: simplifyForDisplay(section),
+      body: formatForDisplay(section),
     );
   }
 
@@ -78,23 +84,47 @@ class WhatsNewService {
     await _prefs.setString(_seenVersionKey, version);
   }
 
+  /// Debug preview: the newest (first) section in the notes file, ignoring
+  /// the running version and the seen marker. Never marks anything seen.
+  Future<WhatsNewContent?> previewLatest() async {
+    final String notes;
+    try {
+      notes = await (_notesLoader?.call() ??
+          rootBundle.loadString('assets/whats_new.md'));
+    } on Exception {
+      return null;
+    }
+
+    final RegExpMatch? heading =
+        RegExp(r'^# (\S+)', multiLine: true).firstMatch(notes);
+    if (heading == null) return null;
+    final String version = heading.group(1)!;
+    final String? section = extractSection(notes, version);
+    if (section == null) return null;
+
+    return WhatsNewContent(
+      version: version,
+      body: formatForDisplay(section),
+    );
+  }
+
   Future<String> _resolveVersion() async {
     if (_currentVersionOverride != null) return _currentVersionOverride;
     final PackageInfo info = await PackageInfo.fromPlatform();
     return info.version;
   }
 
-  /// Cuts the `## [version]` section out of a Keep-a-Changelog document.
-  static String? extractSection(String changelog, String version) {
-    final List<String> lines = changelog.split('\n');
+  /// Cuts the `# <version>` section out of the notes file.
+  static String? extractSection(String notes, String version) {
+    final List<String> lines = notes.split('\n');
     final int start = lines.indexWhere(
-      (String line) => line.startsWith('## [$version]'),
+      (String line) => line.trimRight() == '# $version',
     );
     if (start == -1) return null;
 
     int end = lines.length;
     for (int i = start + 1; i < lines.length; i++) {
-      if (lines[i].startsWith('## [')) {
+      if (lines[i].startsWith('# ')) {
         end = i;
         break;
       }
@@ -102,40 +132,21 @@ class WhatsNewService {
     return lines.sublist(start + 1, end).join('\n').trim();
   }
 
-  /// Strips developer noise from a changelog section for end users: the
-  /// per-file `* path (Symbol): ...` lists with their indented continuation
-  /// lines. Topic bullets become `•`, `### Added` headers become bold.
-  static String simplifyForDisplay(String section) {
+  /// Adapts hand-written markdown to MiniMarkdownText's subset: list
+  /// markers become `•`, sub-headings become bold lines.
+  static String formatForDisplay(String section) {
     final StringBuffer out = StringBuffer();
-    bool inFileList = false;
-
     for (final String line in section.split('\n')) {
       final String trimmed = line.trimLeft();
-
-      if (trimmed.startsWith('* ')) {
-        inFileList = true;
-        continue;
-      }
-      // Continuations of a file bullet are indented deeper than the bullet.
-      if (inFileList && line.startsWith('    ') && trimmed.isNotEmpty) {
-        continue;
-      }
-      inFileList = false;
-
-      if (trimmed.startsWith('### ')) {
-        out.writeln('**${trimmed.substring(4)}**');
-      } else if (trimmed.startsWith('- ')) {
+      if (trimmed.startsWith('- ')) {
         out.writeln('• ${trimmed.substring(2)}');
+      } else if (trimmed.startsWith('#')) {
+        out.writeln('**${trimmed.replaceFirst(RegExp(r'^#+\s*'), '')}**');
       } else {
         out.writeln(line.trimRight());
       }
     }
-
-    // Collapse the blank runs left behind by removed file lists.
-    return out
-        .toString()
-        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
-        .trim();
+    return out.toString().trim();
   }
 }
 

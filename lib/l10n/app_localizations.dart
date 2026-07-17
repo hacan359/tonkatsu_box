@@ -965,6 +965,18 @@ abstract class S {
   /// **'Credits & Licenses'**
   String get settingsCreditsLicenses;
 
+  /// No description provided for @settingsChangelog.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New'**
+  String get settingsChangelog;
+
+  /// No description provided for @settingsChangelogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes available'**
+  String get settingsChangelogEmpty;
+
   /// No description provided for @settingsCreditsLicensesSubtitle.
   ///
   /// In en, this message translates to:

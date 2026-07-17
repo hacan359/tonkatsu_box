@@ -203,6 +203,8 @@
   "settingsAbout": "关于",
   "settingsVersion": "版本",
   "settingsCreditsLicenses": "致谢与许可",
+  "settingsChangelog": "新功能",
+  "settingsChangelogEmpty": "暂无更新说明",
   "settingsCreditsLicensesSubtitle": "TMDB、IGDB、SteamGridDB、开源许可",
   "settingsError": "错误",
   "settingsAppLanguage": "应用语言",

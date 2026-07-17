@@ -203,6 +203,8 @@
   "settingsAbout": "Acerca de",
   "settingsVersion": "Versión",
   "settingsCreditsLicenses": "Créditos y licencias",
+  "settingsChangelog": "Novedades",
+  "settingsChangelogEmpty": "No hay notas de la versión",
   "settingsCreditsLicensesSubtitle": "TMDB, IGDB, SteamGridDB, licencias de código abierto",
   "settingsError": "Error",
   "settingsAppLanguage": "Idioma de la aplicación",

@@ -3,9 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/whats_new_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/whats_new_dialog.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
@@ -66,6 +68,11 @@ class DebugHubScreen extends ConsumerWidget {
                         onTap: () => _push(context, const GamepadDebugScreen()),
                       ),
                       SettingsTile(
+                        title: "What's New Preview",
+                        value: 'Show the release-notes dialog',
+                        onTap: () => _previewWhatsNew(context, ref),
+                      ),
+                      SettingsTile(
                         title: 'Demo Collections Generator',
                         value: settings.hasCredentials && settings.hasTmdbKey
                             ? 'Generate .xcollx files'
@@ -83,6 +90,13 @@ class DebugHubScreen extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _previewWhatsNew(BuildContext context, WidgetRef ref) async {
+    final WhatsNewContent? content =
+        await ref.read(whatsNewServiceProvider).previewLatest();
+    if (content == null || !context.mounted) return;
+    await showWhatsNewDialog(context, content);
   }
 
   void _push(BuildContext context, Widget screen) {

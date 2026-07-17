@@ -780,84 +780,80 @@ class _StatusStripeBanner extends StatelessWidget {
       if (demo.statsLabel != null) demo.statsLabel!,
     ];
 
+    // A left border (not a stretched sibling) gives the full-height stripe
+    // without an IntrinsicHeight — IntrinsicHeight fights the AnimatedSize
+    // title and overflows while it animates.
     return AnimatedContainer(
       duration: AppDurations.fast,
-      color: Colors.black.withValues(alpha: hovered ? 0.85 : 0.6),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Container(
-              width: 3,
-              color: demo.statusColor ?? Colors.transparent,
-            ),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(6, 5, 8, 5),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        AnimatedSize(
-                          duration: AppDurations.fast,
-                          alignment: Alignment.bottomLeft,
-                          child: Text(
-                            demo.title,
-                            style: AppTypography.posterTitle
-                                .copyWith(height: 1.2),
-                            maxLines: hovered ? 6 : 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text.rich(
-                                TextSpan(
-                                  children: <InlineSpan>[
-                                    if (demo.apiRating != null)
-                                      TextSpan(
-                                        text:
-                                            '★${demo.apiRating!.toStringAsFixed(1)}'
-                                            '${parts.isNotEmpty ? ' · ' : ''}',
-                                        style: base.copyWith(
-                                          color: const Color(0xFFFFD700),
-                                        ),
-                                      ),
-                                    TextSpan(
-                                      text: parts.join(' · '),
-                                      style: base,
-                                    ),
-                                  ],
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: hovered ? 0.85 : 0.6),
+        border: Border(
+          left: BorderSide(
+            color: demo.statusColor ?? Colors.transparent,
+            width: 3,
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 5, 8, 5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                AnimatedSize(
+                  duration: AppDurations.fast,
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    demo.title,
+                    style: AppTypography.posterTitle.copyWith(height: 1.2),
+                    maxLines: hovered ? 6 : 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          children: <InlineSpan>[
+                            if (demo.apiRating != null)
+                              TextSpan(
+                                text:
+                                    '★${demo.apiRating!.toStringAsFixed(1)}'
+                                    '${parts.isNotEmpty ? ' · ' : ''}',
+                                style: base.copyWith(
+                                  color: const Color(0xFFFFD700),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
+                            TextSpan(
+                              text: parts.join(' · '),
+                              style: base,
                             ),
-                            if (demo.tagName != null) ...<Widget>[
-                              const SizedBox(width: 4),
-                              _TagChip(
-                                name: demo.tagName!,
-                                color: demo.tagColor,
-                              ),
-                            ],
                           ],
                         ),
-                      ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  if (demo.fraction != null)
-                    _ProgressEdge(fraction: demo.fraction!),
-                ],
-              ),
+                    if (demo.tagName != null) ...<Widget>[
+                      const SizedBox(width: 4),
+                      _TagChip(
+                        name: demo.tagName!,
+                        color: demo.tagColor,
+                      ),
+                    ],
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          if (demo.fraction != null) _ProgressEdge(fraction: demo.fraction!),
+        ],
       ),
     );
   }

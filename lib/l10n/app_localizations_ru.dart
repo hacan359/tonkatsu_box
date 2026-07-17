@@ -504,6 +504,12 @@ class SRu extends S {
   String get settingsCreditsLicenses => 'Благодарности и лицензии';
 
   @override
+  String get settingsChangelog => 'Что нового';
+
+  @override
+  String get settingsChangelogEmpty => 'Нет заметок о выпуске';
+
+  @override
   String get settingsCreditsLicensesSubtitle =>
       'TMDB, IGDB, SteamGridDB, open-source лицензии';
 
