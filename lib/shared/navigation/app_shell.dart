@@ -1,10 +1,13 @@
 // Main app shell: side rail + nested per-tab navigation.
 
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/services/whats_new_service.dart';
 import '../../features/collections/screens/collection_screen.dart';
 import '../../features/collections/screens/home_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
@@ -25,6 +28,7 @@ import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
 import '../keyboard/keyboard_shortcuts.dart';
 import '../keyboard/keyboard_shortcuts_dialog.dart';
+import '../widgets/whats_new_dialog.dart';
 import 'app_bottom_bar.dart';
 import 'app_sidebar.dart';
 import 'app_top_bar.dart';
@@ -116,6 +120,27 @@ class _AppShellState extends ConsumerState<AppShell> {
         if (request == null) return;
         _openSearchTab(request);
         ref.read(searchTabRequestProvider.notifier).state = null;
+      },
+    );
+    // Release notes after an app update, once per version. The version is
+    // remembered on close, so a launch killed mid-dialog shows it again.
+    ref.listen<AsyncValue<WhatsNewContent?>>(
+      whatsNewProvider,
+      (AsyncValue<WhatsNewContent?>? previous,
+          AsyncValue<WhatsNewContent?> next) {
+        final WhatsNewContent? content = next.valueOrNull;
+        if (content == null) return;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          unawaited(
+            showWhatsNewDialog(context, content).then((_) {
+              if (!mounted) return;
+              unawaited(
+                ref.read(whatsNewServiceProvider).markSeen(content.version),
+              );
+            }),
+          );
+        });
       },
     );
     return PopScope(

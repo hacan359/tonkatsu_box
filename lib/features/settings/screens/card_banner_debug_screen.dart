@@ -96,7 +96,7 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
           ),
           child: Row(
             children: <Widget>[
-              Text('Posters from: ', style: AppTypography.bodySmall),
+              const Text('Posters from: ', style: AppTypography.bodySmall),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: DropdownButton<int>(
