@@ -399,6 +399,30 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Specials (season 0) listed in the episode tracker, excluded from progress**
+
+  The Specials season is no longer hidden: it appears last in the season
+  list and can be tracked, but its episodes do not count toward the
+  show's watched/total progress or the automatic status — TMDB's episode
+  totals exclude specials, so counting them skewed completion.
+
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerState.totalWatchedCount,
+    EpisodeTrackerState.totalEpisodeCount,
+    EpisodeTrackerNotifier._updateAutoStatus): Skip season 0; the
+    all-seasons-loaded fallback counts only regular seasons.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonsListWidgetState.build): Show specials last instead of
+    skipping them.
+
+- **All font sizes bumped by 1px on mobile**
+
+  The desktop-tuned type scale read small on phones; every text style
+  now gains one pixel on mobile.
+
+  * lib/shared/theme/app_typography.dart (AppTypography): Styles are
+    computed with a kIsMobile-driven bump (const → final).
+
 - **Tighter item card action bar and subfilter row spacing**
 
   Icons in the item detail top bar are slightly smaller (18px) with
