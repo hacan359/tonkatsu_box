@@ -262,22 +262,29 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     final ItemMarksState marks =
         ref.watch(itemMarksProvider(widget.itemId));
 
+    // Specials (season 0) go last; they are excluded from overall progress.
+    final List<TvSeason> orderedSeasons = <TvSeason>[
+      for (final TvSeason s in _seasons)
+        if (s.seasonNumber > 0) s,
+      for (final TvSeason s in _seasons)
+        if (s.seasonNumber == 0) s,
+    ];
+
     return Column(
       children: <Widget>[
         _buildMarksBar(marks),
         if (_filter != _EpisodeMarkFilter.all)
           _buildFilteredList(marks, trackerState)
         else ...<Widget>[
-          for (final TvSeason season in _seasons)
-            if (season.seasonNumber > 0) // skip Specials (season 0)
-              SeasonExpansionTile(
-                key: ValueKey<int>(season.seasonNumber),
-                season: season,
-                trackerState: trackerState,
-                trackerArg: _trackerArg,
-                itemId: widget.itemId,
-                accentColor: widget.accentColor,
-              ),
+          for (final TvSeason season in orderedSeasons)
+            SeasonExpansionTile(
+              key: ValueKey<int>(season.seasonNumber),
+              season: season,
+              trackerState: trackerState,
+              trackerArg: _trackerArg,
+              itemId: widget.itemId,
+              accentColor: widget.accentColor,
+            ),
         ],
       ],
     );

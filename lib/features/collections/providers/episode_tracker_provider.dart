@@ -72,13 +72,24 @@ class EpisodeTrackerState {
   }
 
   /// Returns the total number of watched episodes.
-  int get totalWatchedCount => watchedEpisodes.length;
+  ///
+  /// Specials (season 0) are excluded: TMDB's `number_of_episodes` does not
+  /// count them, so they must not count toward overall progress either.
+  int get totalWatchedCount {
+    int count = 0;
+    for (final (int s, int _) in watchedEpisodes.keys) {
+      if (s > 0) count++;
+    }
+    return count;
+  }
 
-  /// Returns the total number of loaded episodes.
+  /// Returns the total number of loaded episodes, excluding specials
+  /// (season 0) — see [totalWatchedCount].
   int get totalEpisodeCount {
     int count = 0;
-    for (final List<TvEpisode> episodes in episodesBySeason.values) {
-      count += episodes.length;
+    for (final MapEntry<int, List<TvEpisode>> entry
+        in episodesBySeason.entries) {
+      if (entry.key > 0) count += entry.value.length;
     }
     return count;
   }
@@ -359,10 +370,13 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     }
 
     // Fallback: if the TMDB API also returned no totalEpisodes but every
-    // season is loaded, use the sum of loaded episodes
+    // regular season is loaded, use the sum of loaded episodes. Season 0
+    // (specials) is excluded — TMDB's totalSeasons doesn't count it.
+    final int loadedRegularSeasons =
+        state.episodesBySeason.keys.where((int s) => s > 0).length;
     if (totalInShow == 0 &&
         totalSeasons > 0 &&
-        state.episodesBySeason.length >= totalSeasons) {
+        loadedRegularSeasons >= totalSeasons) {
       totalInShow = state.totalEpisodeCount;
     }
 

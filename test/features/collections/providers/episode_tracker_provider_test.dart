@@ -133,6 +133,17 @@ const TvEpisode testEpisode2s2 = TvEpisode(
   runtime: 45,
 );
 
+const TvEpisode testEpisodeSpecial = TvEpisode(
+  tmdbShowId: testShowId,
+  seasonNumber: 0,
+  episodeNumber: 1,
+  name: 'Special 1',
+  overview: 'OVA special',
+  airDate: '2023-03-01',
+  stillUrl: 'https://example.com/s0e1.jpg',
+  runtime: 24,
+);
+
 void main() {
   late MockDatabaseService mockDb;
   late MockTvShowDao mockTvShowDao;
@@ -290,6 +301,26 @@ void main() {
 
         expect(state.totalWatchedCount, 0);
       });
+
+      test('не должен считать спецвыпуски (season 0)', () {
+        const EpisodeTrackerState state = EpisodeTrackerState(
+          watchedEpisodes: <(int, int), DateTime?>{
+            (0, 1): null,
+            (0, 2): null,
+            (1, 1): null,
+          },
+        );
+
+        expect(state.totalWatchedCount, 1);
+      });
+
+      test('should return 0 если просмотрены только спецвыпуски', () {
+        const EpisodeTrackerState state = EpisodeTrackerState(
+          watchedEpisodes: <(int, int), DateTime?>{(0, 1): null},
+        );
+
+        expect(state.totalWatchedCount, 0);
+      });
     });
 
     group('totalEpisodeCount', () {
@@ -308,6 +339,17 @@ void main() {
         const EpisodeTrackerState state = EpisodeTrackerState();
 
         expect(state.totalEpisodeCount, 0);
+      });
+
+      test('не должен считать эпизоды спецвыпусков (season 0)', () {
+        const EpisodeTrackerState state = EpisodeTrackerState(
+          episodesBySeason: <int, List<TvEpisode>>{
+            0: <TvEpisode>[testEpisode2s1, testEpisode2s2],
+            1: <TvEpisode>[testEpisode1, testEpisode2, testEpisode3],
+          },
+        );
+
+        expect(state.totalEpisodeCount, 3);
       });
     });
   });
@@ -1123,6 +1165,93 @@ void main() {
           (CollectionItem ci) => ci.externalId == testShowId,
         );
         expect(updatedItem.completedAt, isNotNull);
+      });
+
+      test(
+          'просмотренные спецвыпуски не должны давать досрочный completed',
+          () async {
+        final CollectionItem item =
+            createTvItem(totalEpisodes: 2, status: ItemStatus.notStarted);
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (0, 1): DateTime(2024),
+                });
+        when(() =>
+                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
+
+        // 1 обычная из 2 + спецвыпуск: inProgress, а не completed.
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
+      });
+
+      test('отметка только спецвыпуска не должна включать inProgress',
+          () async {
+        final CollectionItem item = createTvItem();
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() =>
+                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 0, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(0, 1);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(lastTracking.updateStatusCalls, isEmpty);
+      });
+
+      test('fallback не должен считать season 0 загруженным сезоном',
+          () async {
+        final CollectionItem item = createTvItem(
+          totalEpisodes: 0,
+          totalSeasons: 2,
+          status: ItemStatus.notStarted,
+        );
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 0))
+            .thenAnswer((_) async => <TvEpisode>[testEpisodeSpecial]);
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+            .thenAnswer((_) async =>
+                <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
+        when(() => mockTvShowDao.markSeasonWatched(
+              testCollectionId,
+              testShowId,
+              1,
+              <int>[1, 2, 3],
+            )).thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+
+        // Загружены season 0 и season 1 из двух обычных сезонов — season 0
+        // не должен «добить» условие «все сезоны загружены».
+        await notifier.loadSeason(0);
+        await notifier.loadSeason(1);
+        await notifier.toggleSeason(1);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
       });
 
       test('должен сбрасывать в notStarted при снятии всех отметок',
