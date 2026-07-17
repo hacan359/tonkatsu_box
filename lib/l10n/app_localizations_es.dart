@@ -18,13 +18,13 @@ class SEs extends S {
   String get navCollections => 'Colecciones';
 
   @override
-  String get navWishlist => 'Deseos';
+  String get navWishlist => 'Deseados';
 
   @override
   String get navSettings => 'Ajustes';
 
   @override
-  String get navReleases => 'Estrenos';
+  String get navReleases => 'Lanzamientos';
 
   @override
   String get releasesEmpty => 'Aún no hay series seguidas';
@@ -132,7 +132,7 @@ class SEs extends S {
   String get all => 'Todo';
 
   @override
-  String get mediaTypeGame => 'Juego';
+  String get mediaTypeGame => 'Videojuego';
 
   @override
   String get mediaTypeMovie => 'Película';
@@ -144,7 +144,7 @@ class SEs extends S {
   String get mediaTypeAnimation => 'Animación';
 
   @override
-  String get mediaTypeVisualNovel => 'Novela visual';
+  String get mediaTypeVisualNovel => 'Novela Visual';
 
   @override
   String get mediaTypeManga => 'Manga';
@@ -231,7 +231,7 @@ class SEs extends S {
   String get sortFavoriteLast => 'Favoritos al final';
 
   @override
-  String get searchSortRelevanceShort => 'Rel';
+  String get searchSortRelevanceShort => 'Rel.';
 
   @override
   String get searchSortRatingShort => 'Val';
@@ -320,7 +320,7 @@ class SEs extends S {
   String get selectAll => 'Seleccionar todo';
 
   @override
-  String get bulkMove => 'Mover selección a una colección';
+  String get bulkMove => 'Mover seleccionados a colección';
 
   @override
   String get bulkCopy => 'Copiar selección a una colección';
@@ -427,7 +427,7 @@ class SEs extends S {
   String get change => 'Cambiar';
 
   @override
-  String get settingsProfile => 'Autor de las colecciones';
+  String get settingsProfile => 'Perfil de autor';
 
   @override
   String get settingsProfileSubtitle => 'Nombre del autor para tus colecciones';
@@ -437,7 +437,7 @@ class SEs extends S {
 
   @override
   String get settingsCredentialsSubtitle =>
-      'Claves API de IGDB, SteamGridDB, TMDB';
+      'Claves de API (IGDB, SteamGridDB, TMDB)';
 
   @override
   String get settingsCacheSubtitle =>

@@ -5,9 +5,9 @@
 
   "navMain": "Inicio",
   "navCollections": "Colecciones",
-  "navWishlist": "Deseos",
+  "navWishlist": "Deseados",
   "navSettings": "Ajustes",
-  "navReleases": "Estrenos",
+  "navReleases": "Lanzamientos",
 
   "releasesEmpty": "Aún no hay series seguidas",
   "releasesEmptyHint": "Toca la campana en una serie o anime para seguir los nuevos episodios.",
@@ -51,11 +51,11 @@
   "statusRereading": "Releyendo",
   "all": "Todo",
 
-  "mediaTypeGame": "Juego",
+  "mediaTypeGame": "Videojuego",
   "mediaTypeMovie": "Película",
   "mediaTypeTvShow": "Serie",
   "mediaTypeAnimation": "Animación",
-  "mediaTypeVisualNovel": "Novela visual",
+  "mediaTypeVisualNovel": "Novela Visual",
   "mediaTypeManga": "Manga",
   "mediaTypeAnime": "Anime",
   "mediaTypeBook": "Libro",
@@ -87,7 +87,7 @@
   "sortRatingLowest": "Menor primero",
   "sortFavoriteLast": "Favoritos al final",
 
-  "searchSortRelevanceShort": "Rel",
+  "searchSortRelevanceShort": "Rel.",
   "searchSortRatingShort": "Val",
   "searchSortRatingDisplay": "Valoración",
 
@@ -120,7 +120,7 @@
   },
   "bulkClearSelection": "Quitar selección",
   "selectAll": "Seleccionar todo",
-  "bulkMove": "Mover selección a una colección",
+  "bulkMove": "Mover seleccionados a colección",
   "bulkCopy": "Copiar selección a una colección",
   "bulkChangeStatus": "Cambiar estado",
   "bulkRemoveConfirm": "¿Quitar {count, plural, =1{1 elemento} other{{count} elementos}} de esta colección?",
@@ -182,10 +182,10 @@
   "keep": "Mantener",
   "change": "Cambiar",
 
-  "settingsProfile": "Autor de las colecciones",
+  "settingsProfile": "Perfil de autor",
   "settingsProfileSubtitle": "Nombre del autor para tus colecciones",
   "settingsAuthorName": "Nombre del autor",
-  "settingsCredentialsSubtitle": "Claves API de IGDB, SteamGridDB, TMDB",
+  "settingsCredentialsSubtitle": "Claves de API (IGDB, SteamGridDB, TMDB)",
   "settingsCacheSubtitle": "Modo sin conexión y almacenamiento de portadas",
   "settingsDatabaseSubtitle": "Exportar, importar, restablecer",
   "settingsTraktImportSubtitle": "Historial, valoraciones, lista de seguimiento",
