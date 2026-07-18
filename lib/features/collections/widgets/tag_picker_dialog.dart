@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -112,7 +113,9 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
             children: <Widget>[
               TextField(
                 controller: _searchController,
-                autofocus: true,
+                // Desktop opens straight into typing; on mobile that pops the
+                // keyboard the moment the dialog appears, so wait for a tap.
+                autofocus: !kIsMobile,
                 decoration: InputDecoration(
                   hintText: l.tagPickerSearchHint,
                   prefixIcon: const Icon(Icons.search, size: 20),

@@ -213,6 +213,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       ),
       child: AppTopBar(
         activeTab: activeTab,
+        suppressSearch: _personalizationOpen,
         onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
       ),
     );
@@ -256,6 +257,9 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// hides it instead of leaving it on a tab's navigator stack.
   void _openPreferenceCloud() {
     if (_personalizationOpen) return;
+    // Drop any focus the top-bar search field holds so the mobile keyboard
+    // doesn't stay up over a view that has no search of its own.
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _personalizationOpen = true);
   }
 

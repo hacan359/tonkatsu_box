@@ -15,6 +15,7 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/features/welcome/screens/welcome_screen.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/navigation/app_top_bar.dart';
 import 'package:tonkatsu_box/shared/navigation/nav_center_button.dart';
 import 'package:tonkatsu_box/shared/navigation/nav_icon_button.dart';
 
@@ -140,6 +141,30 @@ void main() {
       await tester.tap(find.byType(NavIconButton).at(0));
       await tester.pumpAndSettle();
       expect(TickerMode.valuesOf(homeTab).enabled, isTrue);
+    });
+
+    testWidgets('should disable the top-bar search field while open', (
+      WidgetTester tester,
+    ) async {
+      await pumpShell(tester);
+
+      final Finder searchField = find.descendant(
+        of: find.byType(AppTopBar),
+        matching: find.byType(TextField),
+      );
+      expect(tester.widget<TextField>(searchField).enabled, isTrue);
+
+      // Personalization has no search of its own, so the shared search field
+      // is disabled while it is open (which also drops focus / hides the
+      // mobile keyboard).
+      await tester.tap(find.byType(NavCenterButton));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(searchField).enabled, isFalse);
+
+      // Leaving personalization restores the search field.
+      await tester.tap(find.byType(NavIconButton).at(0));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(searchField).enabled, isTrue);
     });
 
     testWidgets('should reopen the cloud from the centre button', (
