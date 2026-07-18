@@ -611,6 +611,27 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Mobile keyboard no longer pops up unprompted**
+
+  On phones the on-screen keyboard used to appear the moment the tag
+  picker, rename-tag dialog, or the Personalization view opened, covering
+  half the screen before any tap. The two tag dialogs now autofocus only
+  on desktop, and opening Personalization drops focus from and disables
+  the shared top-bar search field (which has no meaning there). Desktop
+  keeps its type-immediately behaviour.
+
+  * lib/features/collections/widgets/tag_picker_dialog.dart
+    (_TagPickerDialogState.build),
+    lib/features/collections/widgets/tag_management_dialog.dart
+    (_RenameTagDialogState.build): Gate the search / rename field
+    `autofocus` behind `!kIsMobile`.
+  * lib/shared/navigation/app_top_bar.dart (AppTopBar.suppressSearch,
+    _AppTopBarState.build): New flag; when set, the search context is
+    null so the field renders disabled.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._buildScaffold,
+    _AppShellState._openPreferenceCloud): Pass suppressSearch while
+    Personalization is open and unfocus the primary focus on open.
+
 - **Platform and format sub-filters now combine instead of hiding everything**
 
   Selecting a game platform together with an anime/manga format (e.g. NES

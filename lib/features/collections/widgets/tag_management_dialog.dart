@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -283,7 +284,8 @@ class _RenameTagDialogState extends State<_RenameTagDialog> {
       title: Text(l.tagRename),
       content: TextField(
         controller: _controller,
-        autofocus: true,
+        // Mobile: no autofocus so the keyboard waits for a tap on the field.
+        autofocus: !kIsMobile,
         decoration: const InputDecoration(isDense: true),
         onSubmitted: (String value) => Navigator.of(context).pop(value.trim()),
       ),

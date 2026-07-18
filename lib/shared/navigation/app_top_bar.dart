@@ -35,11 +35,17 @@ class AppTopBar extends ConsumerStatefulWidget {
   const AppTopBar({
     required this.activeTab,
     required this.onSettingsTap,
+    this.suppressSearch = false,
     super.key,
   });
 
   /// Активный таб (определяет контекст поиска).
   final NavTab activeTab;
+
+  /// Disables the search field (e.g. in personalization mode, which has no
+  /// search of its own). A disabled field drops focus — on mobile this hides
+  /// the keyboard that would otherwise pop up when personalization opens.
+  final bool suppressSearch;
 
   /// Колбэк при тапе по шестерёнке — переход в Settings.
   final VoidCallback onSettingsTap;
@@ -118,7 +124,9 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    final SearchContext? ctx = searchContextFor(widget.activeTab, context);
+    final SearchContext? ctx = widget.suppressSearch
+        ? null
+        : searchContextFor(widget.activeTab, context);
     _syncSubscription(ctx);
 
     final FocusNode focusNode = ref.watch(appTopBarFocusProvider);
