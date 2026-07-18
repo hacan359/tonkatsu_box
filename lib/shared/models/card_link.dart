@@ -121,7 +121,9 @@ CardLinkRef? parseCardLink(String payload, String? display) {
   final int? externalId = int.tryParse(rawId);
   if (externalId == null) return null;
 
-  final MediaType mediaType = MediaType.fromString(mt);
+  final MediaType? mediaType = MediaType.tryFromString(mt);
+  if (mediaType == null) return null;
+
   final String? rawSrc = fields['src'];
   final String? rawPf = fields['pf'];
   final String? rawCol = fields['col'];

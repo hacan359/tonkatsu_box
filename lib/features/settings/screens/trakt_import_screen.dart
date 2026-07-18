@@ -22,7 +22,7 @@ class TraktImportScreen extends StatelessWidget {
 
     return Column(
       children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsTraktImport),
+        SubScreenTitleBar(title: S.of(context).traktTitle),
         Expanded(
           child: Align(
             alignment: Alignment.topCenter,

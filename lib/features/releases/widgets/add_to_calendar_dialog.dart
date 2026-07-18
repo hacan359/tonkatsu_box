@@ -54,7 +54,7 @@ class _AddToCalendarDialogState extends State<_AddToCalendarDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     return AlertDialog(
-      title: Text(l.calendarAddTitle),
+      title: Text(l.calendarAdd),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +62,7 @@ class _AddToCalendarDialogState extends State<_AddToCalendarDialog> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event),
-            title: Text(l.calendarDate),
+            title: Text(l.date),
             subtitle: Text(
               MaterialLocalizations.of(context).formatMediumDate(_date),
             ),
@@ -98,7 +98,7 @@ class _AddToCalendarDialogState extends State<_AddToCalendarDialog> {
           onPressed: () => Navigator.of(context).pop(
             AddToCalendarResult(_date, _recurrence),
           ),
-          child: Text(l.calendarAddAction),
+          child: Text(l.add),
         ),
       ],
     );

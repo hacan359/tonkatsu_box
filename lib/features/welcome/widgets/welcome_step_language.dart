@@ -30,13 +30,22 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
         ref.read(settingsNotifierProvider.notifier);
     notifier.setAppLanguage(uiCode);
     if (!_contentLangTouched) {
-      notifier.setTmdbLanguage(defaultContentLanguageForUi(uiCode));
+      _applyContentLanguage(defaultContentLanguageForUi(uiCode));
     }
   }
 
   void _onContentLanguageSelected(String code) {
     setState(() => _contentLangTouched = true);
-    ref.read(settingsNotifierProvider.notifier).setTmdbLanguage(code);
+    _applyContentLanguage(code);
+  }
+
+  /// First-run only: besides TMDB, derive the AniList title mode from the
+  /// content language (en → english, ja → native, otherwise romaji).
+  void _applyContentLanguage(String code) {
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    notifier.setTmdbLanguage(code);
+    notifier.setAnimeMangaTitleLanguage(anilistTitleLanguageForContent(code));
   }
 
   @override
@@ -102,9 +111,21 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                     ),
                   ),
                 ),
-                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sm),
                 WelcomeReveal(
                   index: 4,
+                  child: SizedBox(
+                    width: 300,
+                    child: _LanguageOption(
+                      label: 'Español',
+                      isSelected: settings.appLanguage == 'es',
+                      onTap: () => _onUiLanguageSelected('es'),
+                    ),
+                  ),
+                ),
+                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                WelcomeReveal(
+                  index: 5,
                   child: SizedBox(
                     width: 300,
                     child: _ContentLanguageDropdown(
@@ -117,9 +138,9 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 WelcomeReveal(
-                  index: 5,
+                  index: 6,
                   child: Text(
-                    l.welcomeLanguageHint,
+                    l.welcomeChangeLaterHint,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textTertiary,
                     ),

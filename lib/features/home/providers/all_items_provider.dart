@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
-import '../../../core/database/dao/global_tag_dao.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/tag.dart';
 import '../../../shared/models/collection.dart';
@@ -14,6 +13,7 @@ import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../collections/providers/global_tags_provider.dart';
 import '../../collections/providers/sort_utils.dart';
 import '../../settings/providers/settings_provider.dart';
 
@@ -182,6 +182,31 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     ref.invalidate(collectionItemsNotifierProvider(target.collectionId));
   }
 
+  /// Patches an item's progress locally without re-querying the DB.
+  ///
+  /// Called from `CollectionItemsNotifier.updateProgress` so the progress
+  /// pill on All Items cards stays in sync without a full reload.
+  void updateProgressLocally(
+    int id, {
+    int? currentSeason,
+    int? currentEpisode,
+    DateTime? lastActivityAt,
+  }) {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+    state = AsyncData<List<CollectionItem>>(
+      items
+          .map((CollectionItem i) => i.id == id
+              ? i.copyWith(
+                  currentSeason: currentSeason ?? i.currentSeason,
+                  currentEpisode: currentEpisode ?? i.currentEpisode,
+                  lastActivityAt: lastActivityAt ?? i.lastActivityAt,
+                )
+              : i)
+          .toList(),
+    );
+  }
+
   /// Patches an item's favorite flag locally without re-querying the DB.
   void updateFavoriteLocally(int id, {required bool isFavorite}) {
     final List<CollectionItem>? items = state.valueOrNull;
@@ -246,10 +271,11 @@ final Provider<Map<int, String>> collectionNamesProvider =
 // ==================== Tags ====================
 
 /// Map of tagId -> Tag for display and tag search on All Items.
-final FutureProvider<Map<int, Tag>> allTagsMapProvider =
-    FutureProvider<Map<int, Tag>>((Ref ref) async {
-  final GlobalTagDao tagDao = ref.watch(globalTagDaoProvider);
-  final List<Tag> tags = await tagDao.getAll();
+/// Derived from [globalTagsProvider] so the tags table is loaded once.
+final Provider<Map<int, Tag>> allTagsMapProvider =
+    Provider<Map<int, Tag>>((Ref ref) {
+  final List<Tag> tags =
+      ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
   return <int, Tag>{
     for (final Tag tag in tags) tag.id: tag,
   };

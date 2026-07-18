@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
@@ -95,6 +96,7 @@ abstract class S {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('es'),
     Locale('ru'),
     Locale('zh'),
   ];
@@ -122,12 +124,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Wishlist'**
   String get navWishlist;
-
-  /// No description provided for @navSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get navSearch;
 
   /// No description provided for @navSettings.
   ///
@@ -201,11 +197,11 @@ abstract class S {
   /// **'Today'**
   String get releasesToday;
 
-  /// No description provided for @releasesRefresh.
+  /// No description provided for @refresh.
   ///
   /// In en, this message translates to:
   /// **'Refresh'**
-  String get releasesRefresh;
+  String get refresh;
 
   /// No description provided for @releasesNoEpisodes.
   ///
@@ -231,29 +227,17 @@ abstract class S {
   /// **'Remove from calendar'**
   String get calendarRemove;
 
-  /// No description provided for @calendarAddTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to calendar'**
-  String get calendarAddTitle;
-
-  /// No description provided for @calendarDate.
+  /// No description provided for @date.
   ///
   /// In en, this message translates to:
   /// **'Date'**
-  String get calendarDate;
+  String get date;
 
   /// No description provided for @calendarRepeat.
   ///
   /// In en, this message translates to:
   /// **'Repeat'**
   String get calendarRepeat;
-
-  /// No description provided for @calendarAddAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get calendarAddAction;
 
   /// No description provided for @recurrenceOnce.
   ///
@@ -351,11 +335,11 @@ abstract class S {
   /// **'Rereading'**
   String get statusRereading;
 
-  /// No description provided for @homeFilterAll.
+  /// No description provided for @all.
   ///
   /// In en, this message translates to:
   /// **'All'**
-  String get homeFilterAll;
+  String get all;
 
   /// No description provided for @mediaTypeGame.
   ///
@@ -417,12 +401,6 @@ abstract class S {
   /// **'Manual'**
   String get sortManualDisplay;
 
-  /// No description provided for @sortManualShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Manual'**
-  String get sortManualShort;
-
   /// No description provided for @sortManualDesc.
   ///
   /// In en, this message translates to:
@@ -435,29 +413,17 @@ abstract class S {
   /// **'Date Added'**
   String get sortDateDisplay;
 
-  /// No description provided for @sortDateShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get sortDateShort;
-
   /// No description provided for @sortDateDesc.
   ///
   /// In en, this message translates to:
   /// **'Newest first'**
   String get sortDateDesc;
 
-  /// No description provided for @sortStatusDisplay.
+  /// No description provided for @status.
   ///
   /// In en, this message translates to:
   /// **'Status'**
-  String get sortStatusDisplay;
-
-  /// No description provided for @sortStatusShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get sortStatusShort;
+  String get status;
 
   /// No description provided for @sortStatusDesc.
   ///
@@ -465,11 +431,11 @@ abstract class S {
   /// **'Active first'**
   String get sortStatusDesc;
 
-  /// No description provided for @sortNameDisplay.
+  /// No description provided for @name.
   ///
   /// In en, this message translates to:
   /// **'Name'**
-  String get sortNameDisplay;
+  String get name;
 
   /// No description provided for @sortNameShort.
   ///
@@ -477,41 +443,17 @@ abstract class S {
   /// **'A-Z'**
   String get sortNameShort;
 
-  /// No description provided for @sortNameDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'A to Z'**
-  String get sortNameDesc;
-
-  /// No description provided for @sortRatingDisplay.
-  ///
-  /// In en, this message translates to:
-  /// **'My Rating'**
-  String get sortRatingDisplay;
-
-  /// No description provided for @sortRatingShort.
+  /// No description provided for @rating.
   ///
   /// In en, this message translates to:
   /// **'Rating'**
-  String get sortRatingShort;
+  String get rating;
 
   /// No description provided for @sortRatingDesc.
   ///
   /// In en, this message translates to:
   /// **'Highest first'**
   String get sortRatingDesc;
-
-  /// No description provided for @sortFavoriteDisplay.
-  ///
-  /// In en, this message translates to:
-  /// **'Favorite'**
-  String get sortFavoriteDisplay;
-
-  /// No description provided for @sortFavoriteShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Favorite'**
-  String get sortFavoriteShort;
 
   /// No description provided for @sortFavoriteDesc.
   ///
@@ -531,12 +473,6 @@ abstract class S {
   /// **'IGDB/TMDB'**
   String get sortExternalRatingShort;
 
-  /// No description provided for @sortExternalRatingDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Highest first'**
-  String get sortExternalRatingDesc;
-
   /// No description provided for @sortLastActivityDisplay.
   ///
   /// In en, this message translates to:
@@ -555,6 +491,30 @@ abstract class S {
   /// **'Recent first'**
   String get sortLastActivityDesc;
 
+  /// No description provided for @sortStartDateDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Date'**
+  String get sortStartDateDisplay;
+
+  /// No description provided for @sortStartDateShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
+  String get sortStartDateShort;
+
+  /// No description provided for @sortCompletionDateDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion Date'**
+  String get sortCompletionDateDisplay;
+
+  /// No description provided for @sortCompletionDateShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get sortCompletionDateShort;
+
   /// No description provided for @sortDateOldest.
   ///
   /// In en, this message translates to:
@@ -566,12 +526,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Finished first'**
   String get sortStatusFinished;
-
-  /// No description provided for @sortNameZa.
-  ///
-  /// In en, this message translates to:
-  /// **'Z to A'**
-  String get sortNameZa;
 
   /// No description provided for @sortRatingLowest.
   ///
@@ -585,41 +539,11 @@ abstract class S {
   /// **'Favorites last'**
   String get sortFavoriteLast;
 
-  /// No description provided for @sortExternalRatingLowest.
-  ///
-  /// In en, this message translates to:
-  /// **'Lowest first'**
-  String get sortExternalRatingLowest;
-
-  /// No description provided for @sortLastActivityOldest.
-  ///
-  /// In en, this message translates to:
-  /// **'Oldest first'**
-  String get sortLastActivityOldest;
-
   /// No description provided for @searchSortRelevanceShort.
   ///
   /// In en, this message translates to:
   /// **'Rel'**
   String get searchSortRelevanceShort;
-
-  /// No description provided for @searchSortRelevanceDisplay.
-  ///
-  /// In en, this message translates to:
-  /// **'Relevance'**
-  String get searchSortRelevanceDisplay;
-
-  /// No description provided for @searchSortDateShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get searchSortDateShort;
-
-  /// No description provided for @searchSortDateDisplay.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get searchSortDateDisplay;
 
   /// No description provided for @searchSortRatingShort.
   ///
@@ -771,11 +695,11 @@ abstract class S {
   /// **'Clear selection'**
   String get bulkClearSelection;
 
-  /// No description provided for @bulkSelectAllVisible.
+  /// No description provided for @selectAll.
   ///
   /// In en, this message translates to:
   /// **'Select all'**
-  String get bulkSelectAllVisible;
+  String get selectAll;
 
   /// No description provided for @bulkMove.
   ///
@@ -825,11 +749,11 @@ abstract class S {
   /// **'Export as PNG'**
   String get bulkExportPngTitle;
 
-  /// No description provided for @bulkExportPngColumns.
+  /// No description provided for @columnsCount.
   ///
   /// In en, this message translates to:
   /// **'Columns'**
-  String get bulkExportPngColumns;
+  String get columnsCount;
 
   /// No description provided for @bulkExportPngItemsCount.
   ///
@@ -855,11 +779,11 @@ abstract class S {
   /// **'Save PNG'**
   String get bulkExportPngSave;
 
-  /// No description provided for @bulkExportPngSaved.
+  /// No description provided for @imageSaved.
   ///
   /// In en, this message translates to:
   /// **'Image saved'**
-  String get bulkExportPngSaved;
+  String get imageSaved;
 
   /// No description provided for @bulkExportPngFailed.
   ///
@@ -933,35 +857,11 @@ abstract class S {
   /// **'Author name'**
   String get settingsAuthorName;
 
-  /// No description provided for @settingsAuthorPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'User'**
-  String get settingsAuthorPlaceholder;
-
-  /// No description provided for @settingsSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings'**
-  String get settingsSettings;
-
-  /// No description provided for @settingsCredentials.
-  ///
-  /// In en, this message translates to:
-  /// **'Credentials'**
-  String get settingsCredentials;
-
   /// No description provided for @settingsCredentialsSubtitle.
   ///
   /// In en, this message translates to:
   /// **'IGDB, SteamGridDB, TMDB API keys'**
   String get settingsCredentialsSubtitle;
-
-  /// No description provided for @settingsCache.
-  ///
-  /// In en, this message translates to:
-  /// **'Cache'**
-  String get settingsCache;
 
   /// No description provided for @settingsCacheSubtitle.
   ///
@@ -969,23 +869,11 @@ abstract class S {
   /// **'Offline mode and cover storage'**
   String get settingsCacheSubtitle;
 
-  /// No description provided for @settingsDatabase.
-  ///
-  /// In en, this message translates to:
-  /// **'Database'**
-  String get settingsDatabase;
-
   /// No description provided for @settingsDatabaseSubtitle.
   ///
   /// In en, this message translates to:
   /// **'Export, import, reset'**
   String get settingsDatabaseSubtitle;
-
-  /// No description provided for @settingsTraktImport.
-  ///
-  /// In en, this message translates to:
-  /// **'Trakt Import'**
-  String get settingsTraktImport;
 
   /// No description provided for @settingsTraktImportSubtitle.
   ///
@@ -1023,6 +911,24 @@ abstract class S {
   /// **'Set SteamGridDB key first for some tools'**
   String get settingsDebugSubtitleNoKey;
 
+  /// No description provided for @settingsLaboratory.
+  ///
+  /// In en, this message translates to:
+  /// **'Laboratory'**
+  String get settingsLaboratory;
+
+  /// No description provided for @settingsLaboratoryCardDesigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Card banner designs'**
+  String get settingsLaboratoryCardDesigns;
+
+  /// No description provided for @settingsLaboratoryCardDesignsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Experimental poster card layouts'**
+  String get settingsLaboratoryCardDesignsSubtitle;
+
   /// No description provided for @settingsHelp.
   ///
   /// In en, this message translates to:
@@ -1058,6 +964,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Credits & Licenses'**
   String get settingsCreditsLicenses;
+
+  /// No description provided for @settingsChangelog.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New'**
+  String get settingsChangelog;
+
+  /// No description provided for @settingsChangelogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes available'**
+  String get settingsChangelogEmpty;
 
   /// No description provided for @settingsCreditsLicensesSubtitle.
   ///
@@ -1116,7 +1034,7 @@ abstract class S {
   /// No description provided for @settingsContentLanguageSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Language for movie and TV show descriptions'**
+  /// **'For now TMDB only (movies and TV shows)'**
   String get settingsContentLanguageSubtitle;
 
   /// No description provided for @settingsDataSources.
@@ -1461,11 +1379,17 @@ abstract class S {
   /// **'Enter your Google Books API key (optional)'**
   String get credentialsEnterGoogleBooksKey;
 
-  /// No description provided for @credentialsContentLanguage.
+  /// No description provided for @credentialsHardcoverSection.
   ///
   /// In en, this message translates to:
-  /// **'Content Language'**
-  String get credentialsContentLanguage;
+  /// **'Hardcover API (Books)'**
+  String get credentialsHardcoverSection;
+
+  /// No description provided for @credentialsEnterHardcoverKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your Hardcover API token'**
+  String get credentialsEnterHardcoverKey;
 
   /// No description provided for @credentialsOwnKeyHint.
   ///
@@ -1604,6 +1528,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Google Books API key is invalid'**
   String get credentialsGoogleBooksKeyInvalid;
+
+  /// No description provided for @credentialsHardcoverKeyValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover API token is valid'**
+  String get credentialsHardcoverKeyValid;
+
+  /// No description provided for @credentialsHardcoverKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover API token is invalid or expired'**
+  String get credentialsHardcoverKeyInvalid;
 
   /// No description provided for @credentialsEnterSteamGridDbKeyError.
   ///
@@ -1935,11 +1871,11 @@ abstract class S {
   /// **'The selected folder is empty. Your collections will be copied there; saved images will download again as needed. Data in the old folder stays untouched.'**
   String get storageLocationCopyMessage;
 
-  /// No description provided for @storageLocationCopyConfirm.
+  /// No description provided for @copy.
   ///
   /// In en, this message translates to:
   /// **'Copy'**
-  String get storageLocationCopyConfirm;
+  String get copy;
 
   /// No description provided for @storageLocationCopyImages.
   ///
@@ -1995,12 +1931,6 @@ abstract class S {
   /// **'The change will take effect after restart'**
   String get storageLocationRestartLater;
 
-  /// No description provided for @backupTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup'**
-  String get backupTitle;
-
   /// No description provided for @backupRestoreTile.
   ///
   /// In en, this message translates to:
@@ -2024,12 +1954,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Current data will be replaced with the backup from {date}. The replaced data becomes the new backup, so restoring again undoes this.'**
   String backupRestoreConfirmMessage(String date);
-
-  /// No description provided for @backupRestoreConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore'**
-  String get backupRestoreConfirm;
 
   /// No description provided for @backupRestored.
   ///
@@ -2143,6 +2067,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'The device did not respond'**
   String get lanSyncManifestError;
+
+  /// No description provided for @lanSyncStartError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start network sharing. Check the network connection and reopen this screen.'**
+  String get lanSyncStartError;
 
   /// No description provided for @lanSyncReceiveError.
   ///
@@ -2300,11 +2230,11 @@ abstract class S {
   /// **'Select Trakt ZIP Export'**
   String get traktSelectZipExport;
 
-  /// No description provided for @traktPreview.
+  /// No description provided for @preview.
   ///
   /// In en, this message translates to:
   /// **'Preview'**
-  String get traktPreview;
+  String get preview;
 
   /// No description provided for @traktUser.
   ///
@@ -2342,11 +2272,11 @@ abstract class S {
   /// **'Watchlist'**
   String get traktWatchlist;
 
-  /// No description provided for @traktOptions.
+  /// No description provided for @importOptions.
   ///
   /// In en, this message translates to:
   /// **'Options'**
-  String get traktOptions;
+  String get importOptions;
 
   /// No description provided for @traktImportWatched.
   ///
@@ -2384,47 +2314,23 @@ abstract class S {
   /// **'Add as planned or to wishlist'**
   String get traktImportWatchlistDesc;
 
-  /// No description provided for @traktTargetCollection.
+  /// No description provided for @importTargetCollection.
   ///
   /// In en, this message translates to:
   /// **'Target collection'**
-  String get traktTargetCollection;
+  String get importTargetCollection;
 
-  /// No description provided for @traktCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get traktCreateNew;
-
-  /// No description provided for @traktUseExisting.
+  /// No description provided for @importUseExistingCollection.
   ///
   /// In en, this message translates to:
   /// **'Use existing collection'**
-  String get traktUseExisting;
+  String get importUseExistingCollection;
 
-  /// No description provided for @traktNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get traktNoCollections;
-
-  /// No description provided for @traktSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get traktSelectCollection;
-
-  /// No description provided for @traktErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading collections'**
-  String get traktErrorLoadingCollections;
-
-  /// No description provided for @traktStartImport.
+  /// No description provided for @importStart.
   ///
   /// In en, this message translates to:
   /// **'Start Import'**
-  String get traktStartImport;
+  String get importStart;
 
   /// No description provided for @traktRequiresOwnTmdbKey.
   ///
@@ -2462,12 +2368,6 @@ abstract class S {
   /// **'Select Kinorium CSV Export'**
   String get kinoriumSelectCsvExport;
 
-  /// No description provided for @kinoriumOptions.
-  ///
-  /// In en, this message translates to:
-  /// **'Options'**
-  String get kinoriumOptions;
-
   /// No description provided for @kinoriumIsWatchlist.
   ///
   /// In en, this message translates to:
@@ -2491,48 +2391,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Add directors and actors to the item note'**
   String get kinoriumImportNotesDesc;
-
-  /// No description provided for @kinoriumTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get kinoriumTargetCollection;
-
-  /// No description provided for @kinoriumCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get kinoriumCreateNew;
-
-  /// No description provided for @kinoriumUseExisting.
-  ///
-  /// In en, this message translates to:
-  /// **'Use existing collection'**
-  String get kinoriumUseExisting;
-
-  /// No description provided for @kinoriumNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get kinoriumNoCollections;
-
-  /// No description provided for @kinoriumSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get kinoriumSelectCollection;
-
-  /// No description provided for @kinoriumErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading collections'**
-  String get kinoriumErrorLoadingCollections;
-
-  /// No description provided for @kinoriumStartImport.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Import'**
-  String get kinoriumStartImport;
 
   /// No description provided for @kinoriumImporting.
   ///
@@ -2654,6 +2512,12 @@ abstract class S {
   /// **'Book data from Google Books.'**
   String get creditsGoogleBooksAttribution;
 
+  /// No description provided for @creditsHardcoverAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Book data from Hardcover.'**
+  String get creditsHardcoverAttribution;
+
   /// No description provided for @creditsOpenSource.
   ///
   /// In en, this message translates to:
@@ -2677,12 +2541,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Join Discord'**
   String get creditsDiscord;
-
-  /// No description provided for @collectionsNewCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'New Collection'**
-  String get collectionsNewCollection;
 
   /// No description provided for @collectionsImportCollection.
   ///
@@ -2815,6 +2673,108 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Import'**
   String get importStartButton;
+
+  /// No description provided for @importUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get importUsername;
+
+  /// No description provided for @importUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. yourname'**
+  String get importUsernameHint;
+
+  /// No description provided for @importMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get importMode;
+
+  /// No description provided for @importModeNewOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new only'**
+  String get importModeNewOnly;
+
+  /// No description provided for @importModeNewOnlySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip items already in the collection'**
+  String get importModeNewOnlySubtitle;
+
+  /// No description provided for @importModeOverwrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite existing'**
+  String get importModeOverwrite;
+
+  /// No description provided for @importModeOverwriteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update progress, status and dates from the source'**
+  String get importModeOverwriteSubtitle;
+
+  /// No description provided for @importNewCollectionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection name'**
+  String get importNewCollectionName;
+
+  /// No description provided for @importNewCollectionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} Import — {username}'**
+  String importNewCollectionDefault(String source, String username);
+
+  /// No description provided for @importFetchingBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching book library...'**
+  String get importFetchingBooks;
+
+  /// No description provided for @importAddingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing entries'**
+  String get importAddingItems;
+
+  /// No description provided for @importProcessingItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing: {title}'**
+  String importProcessingItem(String title);
+
+  /// No description provided for @importImportedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} imported'**
+  String importImportedCount(int count);
+
+  /// No description provided for @importUpdatedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} updated'**
+  String importUpdatedCount(int count);
+
+  /// No description provided for @importUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User \"{username}\" was not found'**
+  String importUserNotFound(String username);
+
+  /// No description provided for @importEmptyUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a username'**
+  String get importEmptyUsername;
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String importFailed(String error);
 
   /// No description provided for @collectionNotFound.
   ///
@@ -2960,11 +2920,11 @@ abstract class S {
   /// **'Create Custom Item'**
   String get customItemCreate;
 
-  /// No description provided for @customItemTitle.
+  /// No description provided for @title.
   ///
   /// In en, this message translates to:
   /// **'Title'**
-  String get customItemTitle;
+  String get title;
 
   /// No description provided for @customItemTitleHint.
   ///
@@ -2990,17 +2950,17 @@ abstract class S {
   /// **'Cover image URL'**
   String get customItemCoverUrl;
 
-  /// No description provided for @customItemYear.
+  /// No description provided for @year.
   ///
   /// In en, this message translates to:
   /// **'Year'**
-  String get customItemYear;
+  String get year;
 
-  /// No description provided for @customItemGenres.
+  /// No description provided for @genres.
   ///
   /// In en, this message translates to:
   /// **'Genres'**
-  String get customItemGenres;
+  String get genres;
 
   /// No description provided for @customItemGenresHint.
   ///
@@ -3008,11 +2968,11 @@ abstract class S {
   /// **'e.g. RPG, Action, Puzzle'**
   String get customItemGenresHint;
 
-  /// No description provided for @customItemPlatform.
+  /// No description provided for @platform.
   ///
   /// In en, this message translates to:
   /// **'Platform'**
-  String get customItemPlatform;
+  String get platform;
 
   /// No description provided for @customItemPlatformHint.
   ///
@@ -3020,17 +2980,17 @@ abstract class S {
   /// **'e.g. PC, SNES, Custom'**
   String get customItemPlatformHint;
 
-  /// No description provided for @customItemFormat.
+  /// No description provided for @format.
   ///
   /// In en, this message translates to:
   /// **'Format'**
-  String get customItemFormat;
+  String get format;
 
-  /// No description provided for @customProgress.
+  /// No description provided for @progress.
   ///
   /// In en, this message translates to:
   /// **'Progress'**
-  String get customProgress;
+  String get progress;
 
   /// No description provided for @customMarkCompleted.
   ///
@@ -3074,11 +3034,11 @@ abstract class S {
   /// **'Seasons'**
   String get customUnitSeasons;
 
-  /// No description provided for @customItemDescription.
+  /// No description provided for @description.
   ///
   /// In en, this message translates to:
   /// **'Description'**
-  String get customItemDescription;
+  String get description;
 
   /// No description provided for @customItemDescriptionHint.
   ///
@@ -3092,17 +3052,29 @@ abstract class S {
   /// **'More fields'**
   String get customItemOptionalFields;
 
-  /// No description provided for @customItemCreateButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Create'**
-  String get customItemCreateButton;
-
   /// No description provided for @customItemEdit.
   ///
   /// In en, this message translates to:
   /// **'Edit Custom Item'**
   String get customItemEdit;
+
+  /// No description provided for @customItemFillFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill from file'**
+  String get customItemFillFromFile;
+
+  /// No description provided for @customItemFileMultipleRows.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} entries in the file — the first one was used'**
+  String customItemFileMultipleRows(int count);
+
+  /// No description provided for @customItemFileNoValidRows.
+  ///
+  /// In en, this message translates to:
+  /// **'No valid entries in this file'**
+  String get customItemFileNoValidRows;
 
   /// No description provided for @customItemAddCover.
   ///
@@ -3127,18 +3099,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'From file'**
   String get customItemCoverFromFile;
-
-  /// No description provided for @customItemCoverFromUrl.
-  ///
-  /// In en, this message translates to:
-  /// **'From URL'**
-  String get customItemCoverFromUrl;
-
-  /// No description provided for @customItemAddGenre.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get customItemAddGenre;
 
   /// No description provided for @customItemSearchHint.
   ///
@@ -3199,6 +3159,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Tag name'**
   String get tagCreateHint;
+
+  /// No description provided for @tagCreateNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Create \"{name}\"'**
+  String tagCreateNamed(String name);
 
   /// No description provided for @tagRename.
   ///
@@ -3272,12 +3238,6 @@ abstract class S {
   /// **'Failed to update tag'**
   String get tagUpdateFailed;
 
-  /// No description provided for @renameItem.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename'**
-  String get renameItem;
-
   /// No description provided for @refreshItemFromApi.
   ///
   /// In en, this message translates to:
@@ -3350,12 +3310,6 @@ abstract class S {
   /// **'All tags'**
   String get tagFilterAll;
 
-  /// No description provided for @tagSidebarAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get tagSidebarAll;
-
   /// No description provided for @tagSidebarGroup.
   ///
   /// In en, this message translates to:
@@ -3373,12 +3327,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No color'**
   String get colorPickerNoColor;
-
-  /// No description provided for @colorPickerApply.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply'**
-  String get colorPickerApply;
 
   /// No description provided for @raLinkButton.
   ///
@@ -3440,12 +3388,6 @@ abstract class S {
   /// **'Remove RetroAchievements link and achievement data for this game?'**
   String get raUnlinkConfirm;
 
-  /// No description provided for @collectionFilterAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get collectionFilterAll;
-
   /// No description provided for @collectionFilterByType.
   ///
   /// In en, this message translates to:
@@ -3470,23 +3412,11 @@ abstract class S {
   /// **'TV Shows'**
   String get collectionFilterTvShows;
 
-  /// No description provided for @collectionFilterAnimation.
-  ///
-  /// In en, this message translates to:
-  /// **'Animation'**
-  String get collectionFilterAnimation;
-
   /// No description provided for @collectionFilterVisualNovels.
   ///
   /// In en, this message translates to:
   /// **'Visual Novels'**
   String get collectionFilterVisualNovels;
-
-  /// No description provided for @collectionFilterManga.
-  ///
-  /// In en, this message translates to:
-  /// **'Manga'**
-  String get collectionFilterManga;
 
   /// No description provided for @collectionFilterBooks.
   ///
@@ -3494,23 +3424,17 @@ abstract class S {
   /// **'Books'**
   String get collectionFilterBooks;
 
-  /// No description provided for @collectionFilterCustom.
-  ///
-  /// In en, this message translates to:
-  /// **'Custom'**
-  String get collectionFilterCustom;
-
-  /// No description provided for @collectionFilterSearchHint.
+  /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
   /// **'Search...'**
-  String get collectionFilterSearchHint;
+  String get searchHint;
 
-  /// No description provided for @collectionFilterSort.
+  /// No description provided for @sort.
   ///
   /// In en, this message translates to:
   /// **'Sort'**
-  String get collectionFilterSort;
+  String get sort;
 
   /// No description provided for @collectionFilterAscending.
   ///
@@ -3535,12 +3459,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Clear all'**
   String get collectionFilterClearAll;
-
-  /// No description provided for @collectionFilterPlatform.
-  ///
-  /// In en, this message translates to:
-  /// **'Platform'**
-  String get collectionFilterPlatform;
 
   /// No description provided for @collectionItemMovedTo.
   ///
@@ -3620,11 +3538,11 @@ abstract class S {
   /// **'Manga not found'**
   String get mangaNotFound;
 
-  /// No description provided for @mangaProgress.
+  /// No description provided for @readingProgress.
   ///
   /// In en, this message translates to:
   /// **'Reading Progress'**
-  String get mangaProgress;
+  String get readingProgress;
 
   /// No description provided for @mangaChapters.
   ///
@@ -3661,12 +3579,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Mark as completed'**
   String get animeMarkCompleted;
-
-  /// No description provided for @bookProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Reading Progress'**
-  String get bookProgress;
 
   /// No description provided for @bookPages.
   ///
@@ -3926,12 +3838,6 @@ abstract class S {
   /// **'Add to Board'**
   String get canvasAddToBoard;
 
-  /// No description provided for @addTextTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Text'**
-  String get addTextTitle;
-
   /// No description provided for @editTextTitle.
   ///
   /// In en, this message translates to:
@@ -3973,12 +3879,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Title'**
   String get fontSizeTitle;
-
-  /// No description provided for @addImageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Image'**
-  String get addImageTitle;
 
   /// No description provided for @editImageTitle.
   ///
@@ -4022,29 +3922,11 @@ abstract class S {
   /// **'Choose Another'**
   String get imageChooseAnother;
 
-  /// No description provided for @addLinkTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Link'**
-  String get addLinkTitle;
-
   /// No description provided for @editLinkTitle.
   ///
   /// In en, this message translates to:
   /// **'Edit Link'**
   String get editLinkTitle;
-
-  /// No description provided for @linkUrlLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'URL'**
-  String get linkUrlLabel;
-
-  /// No description provided for @linkUrlHint.
-  ///
-  /// In en, this message translates to:
-  /// **'https://example.com'**
-  String get linkUrlHint;
 
   /// No description provided for @linkLabelOptional.
   ///
@@ -4057,12 +3939,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'My Link'**
   String get linkLabelHint;
-
-  /// No description provided for @editConnectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Connection'**
-  String get editConnectionTitle;
 
   /// No description provided for @connectionLabelHint.
   ///
@@ -4100,12 +3976,6 @@ abstract class S {
   /// **'TV'**
   String get searchTabTv;
 
-  /// No description provided for @searchTabGames.
-  ///
-  /// In en, this message translates to:
-  /// **'Games'**
-  String get searchTabGames;
-
   /// No description provided for @searchHintMovies.
   ///
   /// In en, this message translates to:
@@ -4142,42 +4012,6 @@ abstract class S {
   /// **'V. Novels'**
   String get searchSourceVisualNovels;
 
-  /// No description provided for @searchSourceManga.
-  ///
-  /// In en, this message translates to:
-  /// **'Manga'**
-  String get searchSourceManga;
-
-  /// No description provided for @searchSourceAnime.
-  ///
-  /// In en, this message translates to:
-  /// **'Anime'**
-  String get searchSourceAnime;
-
-  /// No description provided for @searchSourceGames.
-  ///
-  /// In en, this message translates to:
-  /// **'Games'**
-  String get searchSourceGames;
-
-  /// No description provided for @searchSourceMovies.
-  ///
-  /// In en, this message translates to:
-  /// **'Movies'**
-  String get searchSourceMovies;
-
-  /// No description provided for @searchSourceTvShows.
-  ///
-  /// In en, this message translates to:
-  /// **'TV Shows'**
-  String get searchSourceTvShows;
-
-  /// No description provided for @searchSourceAnimation.
-  ///
-  /// In en, this message translates to:
-  /// **'Animation'**
-  String get searchSourceAnimation;
-
   /// No description provided for @searchSourceOpenLibrary.
   ///
   /// In en, this message translates to:
@@ -4189,12 +4023,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Fantlab'**
   String get searchSourceFantlab;
-
-  /// No description provided for @searchSourceBooks.
-  ///
-  /// In en, this message translates to:
-  /// **'Books'**
-  String get searchSourceBooks;
 
   /// No description provided for @searchSourceComics.
   ///
@@ -4220,11 +4048,11 @@ abstract class S {
   /// **'Search comics...'**
   String get searchHintComics;
 
-  /// No description provided for @bookFilterLanguage.
+  /// No description provided for @language.
   ///
   /// In en, this message translates to:
   /// **'Language'**
-  String get bookFilterLanguage;
+  String get language;
 
   /// No description provided for @bookFilterSearchBy.
   ///
@@ -4232,17 +4060,11 @@ abstract class S {
   /// **'Search by'**
   String get bookFilterSearchBy;
 
-  /// No description provided for @bookFilterPrintType.
+  /// No description provided for @type.
   ///
   /// In en, this message translates to:
   /// **'Type'**
-  String get bookFilterPrintType;
-
-  /// No description provided for @bookSearchTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get bookSearchTitle;
+  String get type;
 
   /// No description provided for @bookSearchAuthor.
   ///
@@ -4358,11 +4180,11 @@ abstract class S {
   /// **'{name} already in the selected collections'**
   String searchAlreadyInCollections(String name);
 
-  /// No description provided for @searchGoToSettings.
+  /// No description provided for @goToSettings.
   ///
   /// In en, this message translates to:
   /// **'Go to Settings'**
-  String get searchGoToSettings;
+  String get goToSettings;
 
   /// No description provided for @searchMinCharsHint.
   ///
@@ -4412,11 +4234,17 @@ abstract class S {
   /// **'Error details copied'**
   String get errorDetailsCopied;
 
-  /// No description provided for @searchDescription.
+  /// No description provided for @errorDetailsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Description'**
-  String get searchDescription;
+  /// **'Error details'**
+  String get errorDetailsTitle;
+
+  /// No description provided for @errorDetailsShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get errorDetailsShow;
 
   /// No description provided for @showMore.
   ///
@@ -4448,11 +4276,11 @@ abstract class S {
   /// **'Search platforms...'**
   String get platformFilterSearchHint;
 
-  /// No description provided for @platformFilterSelected.
+  /// No description provided for @selectedCount.
   ///
   /// In en, this message translates to:
   /// **'{count} selected'**
-  String platformFilterSelected(int count);
+  String selectedCount(int count);
 
   /// No description provided for @platformFilterCount.
   ///
@@ -4526,12 +4354,6 @@ abstract class S {
   /// **'Delete \"{name}\" from wishlist?'**
   String wishlistDeletePrompt(String name);
 
-  /// No description provided for @wishlistClearResolvedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear resolved'**
-  String get wishlistClearResolvedTitle;
-
   /// No description provided for @wishlistClearResolvedMessage.
   ///
   /// In en, this message translates to:
@@ -4549,24 +4371,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Unresolve'**
   String get wishlistUnresolve;
-
-  /// No description provided for @wishlistAddTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get wishlistAddTitle;
-
-  /// No description provided for @wishlistEditTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit'**
-  String get wishlistEditTitle;
-
-  /// No description provided for @wishlistTitleLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get wishlistTitleLabel;
 
   /// No description provided for @wishlistTitleHint.
   ///
@@ -4586,11 +4390,11 @@ abstract class S {
   /// **'Type (optional)'**
   String get wishlistTypeOptional;
 
-  /// No description provided for @wishlistTypeAny.
+  /// No description provided for @any.
   ///
   /// In en, this message translates to:
   /// **'Any'**
-  String get wishlistTypeAny;
+  String get any;
 
   /// No description provided for @wishlistNoteOptional.
   ///
@@ -4616,12 +4420,6 @@ abstract class S {
   /// **'Group entries — e.g. an import batch or a source'**
   String get wishlistTagHint;
 
-  /// No description provided for @wishlistTagAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get wishlistTagAll;
-
   /// No description provided for @wishlistTagUntagged.
   ///
   /// In en, this message translates to:
@@ -4634,23 +4432,11 @@ abstract class S {
   /// **'List'**
   String get wishlistTagFilterLabel;
 
-  /// No description provided for @wishlistTagPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Tag'**
-  String get wishlistTagPlaceholder;
-
   /// No description provided for @wishlistTagManage.
   ///
   /// In en, this message translates to:
   /// **'Manage tag'**
   String get wishlistTagManage;
-
-  /// No description provided for @wishlistTagRename.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename tag'**
-  String get wishlistTagRename;
 
   /// No description provided for @wishlistTagDelete.
   ///
@@ -4712,30 +4498,6 @@ abstract class S {
   /// **'Welcome'**
   String get welcomeStepWelcome;
 
-  /// No description provided for @welcomeStepName.
-  ///
-  /// In en, this message translates to:
-  /// **'Name'**
-  String get welcomeStepName;
-
-  /// No description provided for @welcomeStepLanguage.
-  ///
-  /// In en, this message translates to:
-  /// **'Language'**
-  String get welcomeStepLanguage;
-
-  /// No description provided for @welcomeStepApiKeys.
-  ///
-  /// In en, this message translates to:
-  /// **'API Keys'**
-  String get welcomeStepApiKeys;
-
-  /// No description provided for @welcomeStepHowItWorks.
-  ///
-  /// In en, this message translates to:
-  /// **'How it works'**
-  String get welcomeStepHowItWorks;
-
   /// No description provided for @welcomeStepReady.
   ///
   /// In en, this message translates to:
@@ -4754,11 +4516,11 @@ abstract class S {
   /// **'This name will appear as the author on collections you create'**
   String get welcomeNameSubtitle;
 
-  /// No description provided for @welcomeNameHint.
+  /// No description provided for @welcomeChangeLaterHint.
   ///
   /// In en, this message translates to:
   /// **'You can change this later in Settings'**
-  String get welcomeNameHint;
+  String get welcomeChangeLaterHint;
 
   /// No description provided for @welcomeLanguageTitle.
   ///
@@ -4771,12 +4533,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Select the app interface language'**
   String get welcomeLanguageSubtitle;
-
-  /// No description provided for @welcomeLanguageHint.
-  ///
-  /// In en, this message translates to:
-  /// **'You can change this later in Settings'**
-  String get welcomeLanguageHint;
 
   /// No description provided for @welcomeTitle.
   ///
@@ -4831,18 +4587,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Works without API keys'**
   String get welcomeWorksWithoutKeys;
-
-  /// No description provided for @welcomeChipCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Collections'**
-  String get welcomeChipCollections;
-
-  /// No description provided for @welcomeChipWishlist.
-  ///
-  /// In en, this message translates to:
-  /// **'Wishlist'**
-  String get welcomeChipWishlist;
 
   /// No description provided for @welcomeChipImport.
   ///
@@ -4957,6 +4701,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Google\'s global book catalog'**
   String get welcomeApiGoogleBooksDesc;
+
+  /// No description provided for @welcomeApiHardcoverDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Community book catalog, needs a personal token'**
+  String get welcomeApiHardcoverDesc;
 
   /// No description provided for @welcomeApiRecommended.
   ///
@@ -5132,12 +4882,6 @@ abstract class S {
   /// **'Head to Settings → Credentials to enter your API keys, or start by importing a collection.'**
   String get welcomeReadyMessage;
 
-  /// No description provided for @welcomeReadyGoToSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to Settings'**
-  String get welcomeReadyGoToSettings;
-
   /// No description provided for @welcomeReadySkip.
   ///
   /// In en, this message translates to:
@@ -5204,6 +4948,12 @@ abstract class S {
   /// **'Optional — your own key raises rate limits. Search works without it.'**
   String get welcomeSourcesKeyOptionalHint;
 
+  /// No description provided for @welcomeSourcesHardcoverTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Required — search and import stay disabled without it. Tokens expire every January 1st.'**
+  String get welcomeSourcesHardcoverTokenHint;
+
   /// No description provided for @welcomeSourceDescTmdb.
   ///
   /// In en, this message translates to:
@@ -5257,6 +5007,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Millions of editions from Google\'s book catalog, searchable by title, author or ISBN.'**
   String get welcomeSourceDescGoogleBooks;
+
+  /// No description provided for @welcomeSourceDescHardcover.
+  ///
+  /// In en, this message translates to:
+  /// **'Community book catalog with series, genres, moods and ratings. Requires a free personal token.'**
+  String get welcomeSourceDescHardcover;
 
   /// No description provided for @welcomeTourTitle.
   ///
@@ -5323,12 +5079,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Without Collection'**
   String get withoutCollection;
-
-  /// No description provided for @detailStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get detailStatus;
 
   /// No description provided for @detailMyRating.
   ///
@@ -5474,60 +5224,6 @@ abstract class S {
   /// **'Error: {error}'**
   String errorPrefix(String error);
 
-  /// No description provided for @allItemsAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get allItemsAll;
-
-  /// No description provided for @allItemsGames.
-  ///
-  /// In en, this message translates to:
-  /// **'Games'**
-  String get allItemsGames;
-
-  /// No description provided for @allItemsMovies.
-  ///
-  /// In en, this message translates to:
-  /// **'Movies'**
-  String get allItemsMovies;
-
-  /// No description provided for @allItemsTvShows.
-  ///
-  /// In en, this message translates to:
-  /// **'TV Shows'**
-  String get allItemsTvShows;
-
-  /// No description provided for @allItemsAnimation.
-  ///
-  /// In en, this message translates to:
-  /// **'Animation'**
-  String get allItemsAnimation;
-
-  /// No description provided for @allItemsVisualNovels.
-  ///
-  /// In en, this message translates to:
-  /// **'Visual Novels'**
-  String get allItemsVisualNovels;
-
-  /// No description provided for @allItemsManga.
-  ///
-  /// In en, this message translates to:
-  /// **'Manga'**
-  String get allItemsManga;
-
-  /// No description provided for @allItemsBooks.
-  ///
-  /// In en, this message translates to:
-  /// **'Books'**
-  String get allItemsBooks;
-
-  /// No description provided for @allItemsCustom.
-  ///
-  /// In en, this message translates to:
-  /// **'Custom'**
-  String get allItemsCustom;
-
   /// No description provided for @allItemsRatingAsc.
   ///
   /// In en, this message translates to:
@@ -5539,12 +5235,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Rating ↓'**
   String get allItemsRatingDesc;
-
-  /// No description provided for @allItemsRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Rating'**
-  String get allItemsRating;
 
   /// No description provided for @allItemsNoItems.
   ///
@@ -5570,17 +5260,11 @@ abstract class S {
   /// **'Failed to load items'**
   String get allItemsFailedToLoad;
 
-  /// No description provided for @allItemsFilterPlatformsAll.
+  /// No description provided for @allPlatforms.
   ///
   /// In en, this message translates to:
   /// **'All Platforms'**
-  String get allItemsFilterPlatformsAll;
-
-  /// No description provided for @allItemsFilterPlatformsSelected.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} platforms'**
-  String allItemsFilterPlatformsSelected(int count);
+  String get allPlatforms;
 
   /// No description provided for @allItemsFilterPlatformsTitle.
   ///
@@ -5588,29 +5272,11 @@ abstract class S {
   /// **'Filter by platform'**
   String get allItemsFilterPlatformsTitle;
 
-  /// No description provided for @allItemsFilterPlatformsApply.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply'**
-  String get allItemsFilterPlatformsApply;
-
-  /// No description provided for @allItemsFilterPlatformsClear.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear'**
-  String get allItemsFilterPlatformsClear;
-
   /// No description provided for @debugIgdbMedia.
   ///
   /// In en, this message translates to:
   /// **'IGDB Media'**
   String get debugIgdbMedia;
-
-  /// No description provided for @debugSteamGridDb.
-  ///
-  /// In en, this message translates to:
-  /// **'SteamGridDB'**
-  String get debugSteamGridDb;
 
   /// No description provided for @debugGamepad.
   ///
@@ -5720,36 +5386,6 @@ abstract class S {
   /// **'No images found'**
   String get debugNoImagesFound;
 
-  /// No description provided for @debugSearchTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get debugSearchTab;
-
-  /// No description provided for @debugGridsTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Grids'**
-  String get debugGridsTab;
-
-  /// No description provided for @debugHeroesTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Heroes'**
-  String get debugHeroesTab;
-
-  /// No description provided for @debugLogosTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Logos'**
-  String get debugLogosTab;
-
-  /// No description provided for @debugIconsTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Icons'**
-  String get debugIconsTab;
-
   /// No description provided for @collectionTileStats.
   ///
   /// In en, this message translates to:
@@ -5785,12 +5421,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Completed'**
   String get activityDatesCompleted;
-
-  /// No description provided for @activityDatesLastActivity.
-  ///
-  /// In en, this message translates to:
-  /// **'Last Activity'**
-  String get activityDatesLastActivity;
 
   /// No description provided for @activityDatesSelectStart.
   ///
@@ -5846,24 +5476,6 @@ abstract class S {
   /// **'Native'**
   String get settingsAnimeMangaTitleLanguageNative;
 
-  /// No description provided for @dualDatePickerInputLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get dualDatePickerInputLabel;
-
-  /// No description provided for @dualDatePickerOk.
-  ///
-  /// In en, this message translates to:
-  /// **'OK'**
-  String get dualDatePickerOk;
-
-  /// No description provided for @dualDatePickerCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get dualDatePickerCancel;
-
   /// No description provided for @dualDatePickerErrorEmpty.
   ///
   /// In en, this message translates to:
@@ -5893,12 +5505,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Time Spent'**
   String get timeSpentTitle;
-
-  /// No description provided for @timeSpentValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{hours}h {minutes}m'**
-  String timeSpentValue(int hours, int minutes);
 
   /// No description provided for @timeSpentAdd.
   ///
@@ -6008,11 +5614,11 @@ abstract class S {
   /// **'SteamGridDB'**
   String get steamGridDbPanelTitle;
 
-  /// No description provided for @steamGridDbClosePanel.
+  /// No description provided for @closePanel.
   ///
   /// In en, this message translates to:
   /// **'Close panel'**
-  String get steamGridDbClosePanel;
+  String get closePanel;
 
   /// No description provided for @steamGridDbSearchHint.
   ///
@@ -6056,23 +5662,11 @@ abstract class S {
   /// **'Icons'**
   String get steamGridDbIcons;
 
-  /// No description provided for @steamGridDbNoResults.
-  ///
-  /// In en, this message translates to:
-  /// **'No results found'**
-  String get steamGridDbNoResults;
-
   /// No description provided for @steamGridDbSearchFirst.
   ///
   /// In en, this message translates to:
   /// **'Search for a game first'**
   String get steamGridDbSearchFirst;
-
-  /// No description provided for @vgmapsClosePanel.
-  ///
-  /// In en, this message translates to:
-  /// **'Close panel'**
-  String get vgmapsClosePanel;
 
   /// No description provided for @vgmapsBack.
   ///
@@ -6164,12 +5758,6 @@ abstract class S {
   /// **'Upcoming'**
   String get discoverUpcoming;
 
-  /// No description provided for @discoverAnime.
-  ///
-  /// In en, this message translates to:
-  /// **'Anime'**
-  String get discoverAnime;
-
   /// No description provided for @discoverCustomizeTitle.
   ///
   /// In en, this message translates to:
@@ -6235,12 +5823,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Reviews in English'**
   String get reviewsInEnglish;
-
-  /// No description provided for @settingsShowRecommendations.
-  ///
-  /// In en, this message translates to:
-  /// **'Recommendations'**
-  String get settingsShowRecommendations;
 
   /// No description provided for @settingsShowRecommendationsSubtitle.
   ///
@@ -6308,6 +5890,18 @@ abstract class S {
   /// **'Personalize collections with a cover image and description'**
   String get settingsRichCollectionsSubtitle;
 
+  /// No description provided for @settingsCardScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover size'**
+  String get settingsCardScale;
+
+  /// No description provided for @settingsCardScaleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Card size in collection grids'**
+  String get settingsCardScaleSubtitle;
+
   /// No description provided for @collectionEditHeroImage.
   ///
   /// In en, this message translates to:
@@ -6338,23 +5932,11 @@ abstract class S {
   /// **'Remove image'**
   String get collectionEditHeroRemove;
 
-  /// No description provided for @collectionEditDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Description'**
-  String get collectionEditDescription;
-
   /// No description provided for @collectionEditDescriptionHint.
   ///
   /// In en, this message translates to:
   /// **'Short tagline shown over the cover'**
   String get collectionEditDescriptionHint;
-
-  /// No description provided for @collectionEditMenu.
-  ///
-  /// In en, this message translates to:
-  /// **'Collection settings'**
-  String get collectionEditMenu;
 
   /// No description provided for @collectionEditDialogTitle.
   ///
@@ -6392,12 +5974,6 @@ abstract class S {
   /// **'Add to a collection to unlock Board and episode tracking'**
   String get uncategorizedBanner;
 
-  /// No description provided for @uncategorizedBannerAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to Collection'**
-  String get uncategorizedBannerAction;
-
   /// Warns that the Uncategorized system collection is deprecated and will be removed.
   ///
   /// In en, this message translates to:
@@ -6415,18 +5991,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Genre'**
   String get browseFilterGenre;
-
-  /// No description provided for @browseFilterTag.
-  ///
-  /// In en, this message translates to:
-  /// **'Tag'**
-  String get browseFilterTag;
-
-  /// No description provided for @browseFilterYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get browseFilterYear;
 
   /// No description provided for @browseFilterLength.
   ///
@@ -6506,29 +6070,11 @@ abstract class S {
   /// **'No tags found'**
   String get tagPickerEmpty;
 
-  /// No description provided for @tagPickerSelectedCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} selected'**
-  String tagPickerSelectedCount(int count);
-
   /// No description provided for @clearAll.
   ///
   /// In en, this message translates to:
   /// **'Clear all'**
   String get clearAll;
-
-  /// No description provided for @browseFilterPlatform.
-  ///
-  /// In en, this message translates to:
-  /// **'Platform'**
-  String get browseFilterPlatform;
-
-  /// No description provided for @browseFilterFormat.
-  ///
-  /// In en, this message translates to:
-  /// **'Format'**
-  String get browseFilterFormat;
 
   /// No description provided for @browseFilterSeason.
   ///
@@ -6553,12 +6099,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Min votes'**
   String get browseFilterMinVotes;
-
-  /// No description provided for @browseFilterLanguage.
-  ///
-  /// In en, this message translates to:
-  /// **'Language'**
-  String get browseFilterLanguage;
 
   /// No description provided for @seasonWinter.
   ///
@@ -6746,12 +6286,6 @@ abstract class S {
   /// **'Portuguese'**
   String get languagePortuguese;
 
-  /// No description provided for @mangaFormatManga.
-  ///
-  /// In en, this message translates to:
-  /// **'Manga'**
-  String get mangaFormatManga;
-
   /// No description provided for @mangaFormatManhwa.
   ///
   /// In en, this message translates to:
@@ -6781,12 +6315,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Light Novel'**
   String get mangaFormatLightNovel;
-
-  /// No description provided for @browseFilterType.
-  ///
-  /// In en, this message translates to:
-  /// **'Type'**
-  String get browseFilterType;
 
   /// No description provided for @browseFilterContentRating.
   ///
@@ -6818,24 +6346,6 @@ abstract class S {
   /// **'Pornographic'**
   String get contentRatingPornographic;
 
-  /// No description provided for @browseFilterAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get browseFilterAll;
-
-  /// No description provided for @browseFilterAny.
-  ///
-  /// In en, this message translates to:
-  /// **'Any'**
-  String get browseFilterAny;
-
-  /// No description provided for @browseSort.
-  ///
-  /// In en, this message translates to:
-  /// **'Sort'**
-  String get browseSort;
-
   /// No description provided for @browseSortRelevance.
   ///
   /// In en, this message translates to:
@@ -6865,6 +6375,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Most Voted'**
   String get browseSortMostVoted;
+
+  /// No description provided for @browseSortMostRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Read'**
+  String get browseSortMostRead;
 
   /// No description provided for @browseSortTrending.
   ///
@@ -6914,18 +6430,6 @@ abstract class S {
   /// **'Choose a filter or search'**
   String get browseEmptyFilters;
 
-  /// No description provided for @browseEmptyResults.
-  ///
-  /// In en, this message translates to:
-  /// **'No results found'**
-  String get browseEmptyResults;
-
-  /// No description provided for @browseSearchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search...'**
-  String get browseSearchHint;
-
   /// No description provided for @browseBackToBrowse.
   ///
   /// In en, this message translates to:
@@ -6937,12 +6441,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Sorting unavailable during text search'**
   String get browseSortDisabledHint;
-
-  /// No description provided for @animeFilterStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get animeFilterStatus;
 
   /// No description provided for @animeStatusAiring.
   ///
@@ -7088,11 +6586,11 @@ abstract class S {
   /// **'Unranked'**
   String get tierListUnranked;
 
-  /// No description provided for @tierListExportImage.
+  /// No description provided for @exportAsImage.
   ///
   /// In en, this message translates to:
   /// **'Export as image'**
-  String get tierListExportImage;
+  String get exportAsImage;
 
   /// No description provided for @tierListImageSaved.
   ///
@@ -7136,12 +6634,6 @@ abstract class S {
   /// **'Add tier'**
   String get tierListAddTier;
 
-  /// No description provided for @tierListClearAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear all'**
-  String get tierListClearAll;
-
   /// No description provided for @tierListClearConfirm.
   ///
   /// In en, this message translates to:
@@ -7171,12 +6663,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'All items ranked!'**
   String get tierListAllRanked;
-
-  /// No description provided for @tierListNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get tierListNoCollections;
 
   /// No description provided for @tierListErrorEmptyName.
   ///
@@ -7256,23 +6742,11 @@ abstract class S {
   /// **'Select IGDB CSV export'**
   String get igdbImportSelectCsvExport;
 
-  /// No description provided for @igdbImportOptions.
-  ///
-  /// In en, this message translates to:
-  /// **'Options'**
-  String get igdbImportOptions;
-
   /// No description provided for @igdbImportStatusLabel.
   ///
   /// In en, this message translates to:
   /// **'Status for imported games'**
   String get igdbImportStatusLabel;
-
-  /// No description provided for @igdbImportPlatformLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Platform'**
-  String get igdbImportPlatformLabel;
 
   /// No description provided for @igdbImportPlatformSelect.
   ///
@@ -7280,59 +6754,17 @@ abstract class S {
   /// **'Select platform'**
   String get igdbImportPlatformSelect;
 
-  /// No description provided for @igdbImportTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get igdbImportTargetCollection;
-
-  /// No description provided for @igdbImportCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get igdbImportCreateNew;
-
-  /// No description provided for @igdbImportUseExisting.
-  ///
-  /// In en, this message translates to:
-  /// **'Use existing collection'**
-  String get igdbImportUseExisting;
-
-  /// No description provided for @igdbImportNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get igdbImportNoCollections;
-
-  /// No description provided for @igdbImportSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get igdbImportSelectCollection;
-
-  /// No description provided for @igdbImportErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading collections'**
-  String get igdbImportErrorLoadingCollections;
-
-  /// No description provided for @igdbImportIgdbRequired.
+  /// No description provided for @importIgdbRequired.
   ///
   /// In en, this message translates to:
   /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
-  String get igdbImportIgdbRequired;
+  String get importIgdbRequired;
 
-  /// No description provided for @igdbStartImport.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Import'**
-  String get igdbStartImport;
-
-  /// No description provided for @igdbImporting.
+  /// No description provided for @importing.
   ///
   /// In en, this message translates to:
   /// **'Importing...'**
-  String get igdbImporting;
+  String get importing;
 
   /// No description provided for @igdbReasonNotFound.
   ///
@@ -7346,11 +6778,11 @@ abstract class S {
   /// **'Import Steam Library'**
   String get steamImportTitle;
 
-  /// No description provided for @steamImportSubtitle.
+  /// No description provided for @importIgdbMatchNote.
   ///
   /// In en, this message translates to:
   /// **'Games will be matched to IGDB database'**
-  String get steamImportSubtitle;
+  String get importIgdbMatchNote;
 
   /// No description provided for @steamImportApiKey.
   ///
@@ -7424,11 +6856,11 @@ abstract class S {
   /// **'Updated: {count}'**
   String steamImportUpdated(int count);
 
-  /// No description provided for @steamImportComplete.
+  /// No description provided for @importComplete.
   ///
   /// In en, this message translates to:
   /// **'Import complete!'**
-  String get steamImportComplete;
+  String get importComplete;
 
   /// No description provided for @steamImportGamesImported.
   ///
@@ -7460,53 +6892,11 @@ abstract class S {
   /// **'Playtime saved in comments'**
   String get steamImportPlaytimeComment;
 
-  /// No description provided for @steamImportTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get steamImportTargetCollection;
-
-  /// No description provided for @steamImportCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get steamImportCreateNew;
-
-  /// No description provided for @steamImportUseExisting.
-  ///
-  /// In en, this message translates to:
-  /// **'Use existing collection'**
-  String get steamImportUseExisting;
-
-  /// No description provided for @steamImportNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get steamImportNoCollections;
-
-  /// No description provided for @steamImportSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get steamImportSelectCollection;
-
-  /// No description provided for @steamImportErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading collections'**
-  String get steamImportErrorLoadingCollections;
-
-  /// No description provided for @steamImportOpenCollection.
+  /// No description provided for @openCollection.
   ///
   /// In en, this message translates to:
   /// **'Open collection'**
-  String get steamImportOpenCollection;
-
-  /// No description provided for @steamImportIgdbRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
-  String get steamImportIgdbRequired;
+  String get openCollection;
 
   /// No description provided for @steamImportRememberCredentials.
   ///
@@ -7519,24 +6909,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Date Created'**
   String get collectionListSortCreatedDate;
-
-  /// No description provided for @collectionListSortAlphabetical.
-  ///
-  /// In en, this message translates to:
-  /// **'Name'**
-  String get collectionListSortAlphabetical;
-
-  /// No description provided for @collectionListSortCreatedDateNewest.
-  ///
-  /// In en, this message translates to:
-  /// **'Newest first'**
-  String get collectionListSortCreatedDateNewest;
-
-  /// No description provided for @collectionListSortCreatedDateOldest.
-  ///
-  /// In en, this message translates to:
-  /// **'Oldest first'**
-  String get collectionListSortCreatedDateOldest;
 
   /// No description provided for @collectionListSortAlphabeticalAZ.
   ///
@@ -7568,47 +6940,11 @@ abstract class S {
   /// **'Table view'**
   String get collectionListViewTable;
 
-  /// No description provided for @collectionTableName.
-  ///
-  /// In en, this message translates to:
-  /// **'Name'**
-  String get collectionTableName;
-
-  /// No description provided for @collectionTableType.
-  ///
-  /// In en, this message translates to:
-  /// **'Type'**
-  String get collectionTableType;
-
-  /// No description provided for @collectionTablePlatform.
-  ///
-  /// In en, this message translates to:
-  /// **'Platform'**
-  String get collectionTablePlatform;
-
-  /// No description provided for @collectionTableStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get collectionTableStatus;
-
-  /// No description provided for @collectionTableRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Rating'**
-  String get collectionTableRating;
-
   /// No description provided for @collectionTableExternalRating.
   ///
   /// In en, this message translates to:
   /// **'External'**
   String get collectionTableExternalRating;
-
-  /// No description provided for @collectionTableYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get collectionTableYear;
 
   /// No description provided for @collectionCopyToCollection.
   ///
@@ -7670,6 +7006,18 @@ abstract class S {
   /// **'Updated'**
   String get importResultUpdated;
 
+  /// No description provided for @importResultErrors.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors ({count})'**
+  String importResultErrors(int count);
+
+  /// No description provided for @importResultErrorsCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors copied'**
+  String get importResultErrorsCopied;
+
   /// No description provided for @importResultSkipped.
   ///
   /// In en, this message translates to:
@@ -7718,12 +7066,6 @@ abstract class S {
   /// **'Search collections...'**
   String get browseCollectionsSearch;
 
-  /// No description provided for @browseCollectionsAllPlatforms.
-  ///
-  /// In en, this message translates to:
-  /// **'All Platforms'**
-  String get browseCollectionsAllPlatforms;
-
   /// No description provided for @browseCollectionsAllCategories.
   ///
   /// In en, this message translates to:
@@ -7754,12 +7096,6 @@ abstract class S {
   /// **'Downloading...'**
   String get browseCollectionsDownloading;
 
-  /// No description provided for @browseCollectionsImporting.
-  ///
-  /// In en, this message translates to:
-  /// **'Importing...'**
-  String get browseCollectionsImporting;
-
   /// No description provided for @browseCollectionsImportSuccess.
   ///
   /// In en, this message translates to:
@@ -7771,12 +7107,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No collections found'**
   String get browseCollectionsEmpty;
-
-  /// No description provided for @browseCollectionsRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get browseCollectionsRetry;
 
   /// No description provided for @browseCollectionsLoadError.
   ///
@@ -7802,17 +7132,11 @@ abstract class S {
   /// **'Existing collection'**
   String get browseCollectionsExistingCollection;
 
-  /// No description provided for @browseCollectionsSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get browseCollectionsSelectCollection;
-
-  /// No description provided for @browseCollectionsNoCollections.
+  /// No description provided for @noCollectionsYet.
   ///
   /// In en, this message translates to:
   /// **'No collections yet'**
-  String get browseCollectionsNoCollections;
+  String get noCollectionsYet;
 
   /// No description provided for @settingsRaImport.
   ///
@@ -7832,89 +7156,17 @@ abstract class S {
   /// **'RetroAchievements Import'**
   String get raImportTitle;
 
-  /// No description provided for @raImportSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Games will be matched to IGDB database'**
-  String get raImportSubtitle;
-
-  /// No description provided for @raImportIgdbRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
-  String get raImportIgdbRequired;
-
-  /// No description provided for @raUsername.
-  ///
-  /// In en, this message translates to:
-  /// **'Username'**
-  String get raUsername;
-
-  /// No description provided for @raApiKey.
-  ///
-  /// In en, this message translates to:
-  /// **'API Key'**
-  String get raApiKey;
-
   /// No description provided for @raGetApiKey.
   ///
   /// In en, this message translates to:
   /// **'Get your API key at retroachievements.org/controlpanel.php'**
   String get raGetApiKey;
 
-  /// No description provided for @raImportOptions.
-  ///
-  /// In en, this message translates to:
-  /// **'Options'**
-  String get raImportOptions;
-
   /// No description provided for @raImportOptionWishlist.
   ///
   /// In en, this message translates to:
   /// **'Add unmatched games to Wishlist'**
   String get raImportOptionWishlist;
-
-  /// No description provided for @raImportStart.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Import'**
-  String get raImportStart;
-
-  /// No description provided for @raImportTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get raImportTargetCollection;
-
-  /// No description provided for @raImportNewCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get raImportNewCollection;
-
-  /// No description provided for @raImportExistingCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Use existing collection'**
-  String get raImportExistingCollection;
-
-  /// No description provided for @raImportNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get raImportNoCollections;
-
-  /// No description provided for @raImportSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get raImportSelectCollection;
-
-  /// No description provided for @raImportErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading collections'**
-  String get raImportErrorLoadingCollections;
 
   /// No description provided for @raImportFetchingLibrary.
   ///
@@ -7933,12 +7185,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Matching: {title}'**
   String raImportMatching(String title);
-
-  /// No description provided for @raImportComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Import complete!'**
-  String get raImportComplete;
 
   /// No description provided for @raImportAdded.
   ///
@@ -7964,12 +7210,6 @@ abstract class S {
   /// **'Connection failed: {error}'**
   String raConnectionFailed(String error);
 
-  /// No description provided for @raImportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Import failed: {error}'**
-  String raImportFailed(String error);
-
   /// No description provided for @raProfilePoints.
   ///
   /// In en, this message translates to:
@@ -7993,12 +7233,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Open on RA ↗'**
   String get raOpenOnRa;
-
-  /// No description provided for @raProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Progress'**
-  String get raProgress;
 
   /// No description provided for @raHardcore.
   ///
@@ -8030,12 +7264,6 @@ abstract class S {
   /// **'View All {count} Achievements →'**
   String raViewAll(int count);
 
-  /// No description provided for @raCollapse.
-  ///
-  /// In en, this message translates to:
-  /// **'Collapse'**
-  String get raCollapse;
-
   /// No description provided for @raMastered.
   ///
   /// In en, this message translates to:
@@ -8066,12 +7294,6 @@ abstract class S {
   /// **'Hardcore Beaten'**
   String get raHardcoreBeaten;
 
-  /// No description provided for @raToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get raToday;
-
   /// No description provided for @raYesterday.
   ///
   /// In en, this message translates to:
@@ -8101,12 +7323,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'MISSABLE'**
   String get raMissable;
-
-  /// No description provided for @raFilterAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get raFilterAll;
 
   /// No description provided for @raFilterEarned.
   ///
@@ -8180,23 +7396,17 @@ abstract class S {
   /// **'Copied {count} items to clipboard'**
   String copiedToClipboard(int count);
 
-  /// No description provided for @textExportTemplate.
+  /// No description provided for @template.
   ///
   /// In en, this message translates to:
   /// **'Template'**
-  String get textExportTemplate;
+  String get template;
 
   /// No description provided for @textExportTokens.
   ///
   /// In en, this message translates to:
   /// **'Tokens'**
   String get textExportTokens;
-
-  /// No description provided for @textExportPreview.
-  ///
-  /// In en, this message translates to:
-  /// **'Preview'**
-  String get textExportPreview;
 
   /// No description provided for @textExportSortBy.
   ///
@@ -8216,12 +7426,6 @@ abstract class S {
   /// **'Name A→Z'**
   String get textExportSortName;
 
-  /// No description provided for @textExportSortRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Rating ↓'**
-  String get textExportSortRating;
-
   /// No description provided for @textExportSortYear.
   ///
   /// In en, this message translates to:
@@ -8233,12 +7437,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Date added ↓'**
   String get textExportSortAdded;
-
-  /// No description provided for @textExportCopy.
-  ///
-  /// In en, this message translates to:
-  /// **'Copy'**
-  String get textExportCopy;
 
   /// No description provided for @textExportEmptyTemplate.
   ///
@@ -8450,12 +7648,6 @@ abstract class S {
   /// **'Port'**
   String get kodiPort;
 
-  /// No description provided for @kodiUsername.
-  ///
-  /// In en, this message translates to:
-  /// **'Username'**
-  String get kodiUsername;
-
   /// No description provided for @kodiPassword.
   ///
   /// In en, this message translates to:
@@ -8498,12 +7690,6 @@ abstract class S {
   /// **'Sync'**
   String get kodiSyncTitle;
 
-  /// No description provided for @kodiTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get kodiTargetCollection;
-
   /// No description provided for @kodiTargetCollectionSubtitle.
   ///
   /// In en, this message translates to:
@@ -8521,12 +7707,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Deleted (#{id})'**
   String kodiTargetDeletedLabel(int id);
-
-  /// No description provided for @kodiTargetError.
-  ///
-  /// In en, this message translates to:
-  /// **'Error'**
-  String get kodiTargetError;
 
   /// No description provided for @kodiEnableSync.
   ///
@@ -8576,12 +7756,6 @@ abstract class S {
   /// **'Copy Kodi userrating (1–10)'**
   String get kodiImportRatingsSubtitle;
 
-  /// No description provided for @kodiCollectionPickerCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get kodiCollectionPickerCreateNew;
-
   /// No description provided for @kodiCollectionLibraryName.
   ///
   /// In en, this message translates to:
@@ -8600,12 +7774,6 @@ abstract class S {
   /// **'Target collection deleted — sync stopped'**
   String get kodiTargetDeletedSnack;
 
-  /// No description provided for @kodiDebugTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Debug'**
-  String get kodiDebugTitle;
-
   /// No description provided for @kodiSyncStatus.
   ///
   /// In en, this message translates to:
@@ -8623,12 +7791,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Stopped'**
   String get kodiSyncStopped;
-
-  /// No description provided for @kodiLastSync.
-  ///
-  /// In en, this message translates to:
-  /// **'Last sync'**
-  String get kodiLastSync;
 
   /// No description provided for @kodiLastSyncNever.
   ///
@@ -8774,77 +7936,23 @@ abstract class S {
   /// **'Export XML from myanimelist.net/panel.php?go=export'**
   String get malImportFilesHint;
 
-  /// No description provided for @malImportAnimeFile.
+  /// No description provided for @importAnimeList.
   ///
   /// In en, this message translates to:
   /// **'Anime list'**
-  String get malImportAnimeFile;
+  String get importAnimeList;
 
-  /// No description provided for @malImportMangaFile.
+  /// No description provided for @importMangaList.
   ///
   /// In en, this message translates to:
   /// **'Manga list'**
-  String get malImportMangaFile;
-
-  /// No description provided for @malImportRemoveFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get malImportRemoveFile;
+  String get importMangaList;
 
   /// No description provided for @malImportEntriesCount.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
   String malImportEntriesCount(int count);
-
-  /// No description provided for @malImportTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get malImportTargetCollection;
-
-  /// No description provided for @malImportCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get malImportCreateNew;
-
-  /// No description provided for @malImportUseExisting.
-  ///
-  /// In en, this message translates to:
-  /// **'Use existing collection'**
-  String get malImportUseExisting;
-
-  /// No description provided for @malImportSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get malImportSelectCollection;
-
-  /// No description provided for @malImportNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get malImportNoCollections;
-
-  /// No description provided for @malImportErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading collections'**
-  String get malImportErrorLoadingCollections;
-
-  /// No description provided for @malImportNewCollectionName.
-  ///
-  /// In en, this message translates to:
-  /// **'Collection name'**
-  String get malImportNewCollectionName;
-
-  /// No description provided for @malImportButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Import'**
-  String get malImportButton;
 
   /// No description provided for @malImportReadingFiles.
   ///
@@ -8864,41 +7972,11 @@ abstract class S {
   /// **'Resolving manga on AniList'**
   String get malImportResolvingManga;
 
-  /// No description provided for @malImportMatching.
-  ///
-  /// In en, this message translates to:
-  /// **'Importing entries'**
-  String get malImportMatching;
-
-  /// No description provided for @malImportComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Import complete!'**
-  String get malImportComplete;
-
-  /// No description provided for @malImportLookingUp.
-  ///
-  /// In en, this message translates to:
-  /// **'Processing: {title}'**
-  String malImportLookingUp(String title);
-
-  /// No description provided for @malImportImported.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} imported'**
-  String malImportImported(int count);
-
   /// No description provided for @malImportWishlisted.
   ///
   /// In en, this message translates to:
   /// **'{count} to wishlist'**
   String malImportWishlisted(int count);
-
-  /// No description provided for @malImportUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} updated'**
-  String malImportUpdated(int count);
 
   /// No description provided for @malImportOverwriteExisting.
   ///
@@ -8924,12 +8002,6 @@ abstract class S {
   /// **'AniList rate-limit reached — retrying in {seconds}s (attempt {attempt}/{max})'**
   String malImportRateLimitWait(int seconds, int attempt, int max);
 
-  /// No description provided for @malImportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Import failed: {error}'**
-  String malImportFailed(String error);
-
   /// No description provided for @malImportInvalidFile.
   ///
   /// In en, this message translates to:
@@ -8954,6 +8026,30 @@ abstract class S {
   /// **'Import anime/manga lists by public username'**
   String get settingsAniListImportSubtitle;
 
+  /// No description provided for @settingsHardcoverImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a book library from hardcover.app by username'**
+  String get settingsHardcoverImportSubtitle;
+
+  /// No description provided for @hardcoverImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover Import'**
+  String get hardcoverImportTitle;
+
+  /// No description provided for @hardcoverImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetches a user\'s library from hardcover.app — public part for other users, everything for your own account'**
+  String get hardcoverImportSubtitle;
+
+  /// No description provided for @hardcoverImportTokenMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcover API token is not set. Add it in Settings → API Credentials.'**
+  String get hardcoverImportTokenMissing;
+
   /// No description provided for @aniListImportTitle.
   ///
   /// In en, this message translates to:
@@ -8972,53 +8068,11 @@ abstract class S {
   /// **'AniList username'**
   String get aniListImportUsername;
 
-  /// No description provided for @aniListImportUsernameHint.
-  ///
-  /// In en, this message translates to:
-  /// **'e.g. yourname'**
-  String get aniListImportUsernameHint;
-
   /// No description provided for @aniListImportInclude.
   ///
   /// In en, this message translates to:
   /// **'What to import'**
   String get aniListImportInclude;
-
-  /// No description provided for @aniListImportIncludeAnime.
-  ///
-  /// In en, this message translates to:
-  /// **'Anime list'**
-  String get aniListImportIncludeAnime;
-
-  /// No description provided for @aniListImportIncludeManga.
-  ///
-  /// In en, this message translates to:
-  /// **'Manga list'**
-  String get aniListImportIncludeManga;
-
-  /// No description provided for @aniListImportMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Mode'**
-  String get aniListImportMode;
-
-  /// No description provided for @aniListImportModeNewOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Add new only'**
-  String get aniListImportModeNewOnly;
-
-  /// No description provided for @aniListImportModeNewOnlySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Skip items already in the collection'**
-  String get aniListImportModeNewOnlySubtitle;
-
-  /// No description provided for @aniListImportModeOverwrite.
-  ///
-  /// In en, this message translates to:
-  /// **'Overwrite existing'**
-  String get aniListImportModeOverwrite;
 
   /// No description provided for @aniListImportModeOverwriteSubtitle.
   ///
@@ -9026,59 +8080,11 @@ abstract class S {
   /// **'Update progress, status and dates from AniList'**
   String get aniListImportModeOverwriteSubtitle;
 
-  /// No description provided for @aniListImportTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get aniListImportTargetCollection;
-
-  /// No description provided for @aniListImportCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get aniListImportCreateNew;
-
-  /// No description provided for @aniListImportUseExisting.
-  ///
-  /// In en, this message translates to:
-  /// **'Use existing collection'**
-  String get aniListImportUseExisting;
-
-  /// No description provided for @aniListImportSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get aniListImportSelectCollection;
-
-  /// No description provided for @aniListImportNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections available'**
-  String get aniListImportNoCollections;
-
-  /// No description provided for @aniListImportErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading collections'**
-  String get aniListImportErrorLoadingCollections;
-
-  /// No description provided for @aniListImportNewCollectionName.
-  ///
-  /// In en, this message translates to:
-  /// **'Collection name'**
-  String get aniListImportNewCollectionName;
-
   /// No description provided for @aniListImportNewCollectionDefault.
   ///
   /// In en, this message translates to:
   /// **'AniList Import — {username}'**
   String aniListImportNewCollectionDefault(String username);
-
-  /// No description provided for @aniListImportButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Import'**
-  String get aniListImportButton;
 
   /// No description provided for @aniListImportFetchingAnime.
   ///
@@ -9091,42 +8097,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Fetching manga list...'**
   String get aniListImportFetchingManga;
-
-  /// No description provided for @aniListImportMatching.
-  ///
-  /// In en, this message translates to:
-  /// **'Importing entries'**
-  String get aniListImportMatching;
-
-  /// No description provided for @aniListImportComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Import complete!'**
-  String get aniListImportComplete;
-
-  /// No description provided for @aniListImportLookingUp.
-  ///
-  /// In en, this message translates to:
-  /// **'Processing: {title}'**
-  String aniListImportLookingUp(String title);
-
-  /// No description provided for @aniListImportImported.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} imported'**
-  String aniListImportImported(int count);
-
-  /// No description provided for @aniListImportUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} updated'**
-  String aniListImportUpdated(int count);
-
-  /// No description provided for @aniListImportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Import failed: {error}'**
-  String aniListImportFailed(String error);
 
   /// No description provided for @aniListImportUserNotFound.
   ///
@@ -9200,42 +8170,6 @@ abstract class S {
   /// **'Template saved'**
   String get customImportTemplateSaved;
 
-  /// No description provided for @customImportTargetCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Target collection'**
-  String get customImportTargetCollection;
-
-  /// No description provided for @customImportCreateNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new collection'**
-  String get customImportCreateNew;
-
-  /// No description provided for @customImportUseExisting.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to existing collection'**
-  String get customImportUseExisting;
-
-  /// No description provided for @customImportSelectCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Select collection'**
-  String get customImportSelectCollection;
-
-  /// No description provided for @customImportNoCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'No collections yet'**
-  String get customImportNoCollections;
-
-  /// No description provided for @customImportErrorLoadingCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to load collections'**
-  String get customImportErrorLoadingCollections;
-
   /// No description provided for @customImportPreviewButton.
   ///
   /// In en, this message translates to:
@@ -9253,12 +8187,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Recognized {valid} · Errors {errors} · Duplicates {duplicates}'**
   String customImportSummary(int valid, int errors, int duplicates);
-
-  /// No description provided for @customImportSelectAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Select all'**
-  String get customImportSelectAll;
 
   /// No description provided for @customImportSelectNone.
   ///
@@ -9392,18 +8320,6 @@ abstract class S {
   /// **'New Mood Grid'**
   String get moodGridCreateTitle;
 
-  /// No description provided for @moodGridName.
-  ///
-  /// In en, this message translates to:
-  /// **'Name'**
-  String get moodGridName;
-
-  /// No description provided for @moodGridPresetLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Template'**
-  String get moodGridPresetLabel;
-
   /// No description provided for @moodGridPresetAboutMe.
   ///
   /// In en, this message translates to:
@@ -9434,41 +8350,11 @@ abstract class S {
   /// **'Rows'**
   String get moodGridRows;
 
-  /// No description provided for @moodGridCols.
-  ///
-  /// In en, this message translates to:
-  /// **'Columns'**
-  String get moodGridCols;
-
   /// No description provided for @moodGridBadge.
   ///
   /// In en, this message translates to:
   /// **'Mood Grid'**
   String get moodGridBadge;
-
-  /// No description provided for @moodGridEdit.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit'**
-  String get moodGridEdit;
-
-  /// No description provided for @moodGridDoneEditing.
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get moodGridDoneEditing;
-
-  /// No description provided for @moodGridRename.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename'**
-  String get moodGridRename;
-
-  /// No description provided for @moodGridDelete.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get moodGridDelete;
 
   /// No description provided for @moodGridDeleteTitle.
   ///
@@ -9481,18 +8367,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'The grid will be removed. This cannot be undone.'**
   String get moodGridDeleteMessage;
-
-  /// No description provided for @moodGridExportImage.
-  ///
-  /// In en, this message translates to:
-  /// **'Export as image'**
-  String get moodGridExportImage;
-
-  /// No description provided for @moodGridImageSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Image saved'**
-  String get moodGridImageSaved;
 
   /// No description provided for @moodGridAddRow.
   ///
@@ -9578,23 +8452,11 @@ abstract class S {
   /// **'Template applied per cell. Available tokens: name, year, genre, rating.'**
   String get moodGridCaptionTemplateHint;
 
-  /// No description provided for @moodGridCaptionTemplateClear.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear'**
-  String get moodGridCaptionTemplateClear;
-
-  /// No description provided for @moodGridPickerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick item'**
-  String get moodGridPickerTitle;
-
-  /// No description provided for @moodGridPickerCollection.
+  /// No description provided for @collection.
   ///
   /// In en, this message translates to:
   /// **'Collection'**
-  String get moodGridPickerCollection;
+  String get collection;
 
   /// No description provided for @moodGridPickerAllCollections.
   ///
@@ -9788,12 +8650,6 @@ abstract class S {
   /// **'Save as image'**
   String get genreCloudExportImage;
 
-  /// No description provided for @genreCloudImageSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Image saved'**
-  String get genreCloudImageSaved;
-
   /// No description provided for @genreCloudExportFailed.
   ///
   /// In en, this message translates to:
@@ -9812,12 +8668,6 @@ abstract class S {
   /// **'{count, plural, =1{1 hidden (didn\'t fit)} other{{count} hidden (didn\'t fit)}}'**
   String genreCloudHidden(int count);
 
-  /// No description provided for @facetGenre.
-  ///
-  /// In en, this message translates to:
-  /// **'Genres'**
-  String get facetGenre;
-
   /// No description provided for @facetPlatform.
   ///
   /// In en, this message translates to:
@@ -9835,18 +8685,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Genre cloud'**
   String get personalizationTabCloud;
-
-  /// No description provided for @personalizationTabRecommendations.
-  ///
-  /// In en, this message translates to:
-  /// **'Recommendations'**
-  String get personalizationTabRecommendations;
-
-  /// No description provided for @recommendationsRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh'**
-  String get recommendationsRefresh;
 
   /// No description provided for @recommendationsEmpty.
   ///
@@ -9932,18 +8770,6 @@ abstract class S {
   /// **'No marks yet'**
   String get itemMarkEmpty;
 
-  /// No description provided for @itemMarkDelete.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get itemMarkDelete;
-
-  /// No description provided for @itemMarkType.
-  ///
-  /// In en, this message translates to:
-  /// **'Type'**
-  String get itemMarkType;
-
   /// No description provided for @itemMarkNumber.
   ///
   /// In en, this message translates to:
@@ -9967,12 +8793,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Custom type'**
   String get itemMarkCustomType;
-
-  /// No description provided for @itemMarkFilterAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get itemMarkFilterAll;
 
   /// No description provided for @itemMarkFilterLiked.
   ///
@@ -10034,12 +8854,6 @@ abstract class S {
   /// **'Part'**
   String get unitPart;
 
-  /// No description provided for @unitCustom.
-  ///
-  /// In en, this message translates to:
-  /// **'Custom'**
-  String get unitCustom;
-
   /// No description provided for @cardLinkCopy.
   ///
   /// In en, this message translates to:
@@ -10057,12 +8871,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Card not found'**
   String get cardLinkNotFound;
-
-  /// No description provided for @cardLinkPickCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Open in collection'**
-  String get cardLinkPickCollection;
 
   /// No description provided for @cardLinkSearchTitle.
   ///
@@ -10106,35 +8914,11 @@ abstract class S {
   /// **'Previous tab'**
   String get shortcutPreviousTab;
 
-  /// No description provided for @shortcutBack.
-  ///
-  /// In en, this message translates to:
-  /// **'Back'**
-  String get shortcutBack;
-
-  /// No description provided for @shortcutSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get shortcutSearch;
-
-  /// No description provided for @shortcutRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh'**
-  String get shortcutRefresh;
-
   /// No description provided for @shortcutThisHelp.
   ///
   /// In en, this message translates to:
   /// **'This help'**
   String get shortcutThisHelp;
-
-  /// No description provided for @shortcutsGroupCollections.
-  ///
-  /// In en, this message translates to:
-  /// **'Collections'**
-  String get shortcutsGroupCollections;
 
   /// No description provided for @shortcutCreateCollection.
   ///
@@ -10165,18 +8949,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Rename collection'**
   String get shortcutRenameCollection;
-
-  /// No description provided for @shortcutOpenCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Open collection'**
-  String get shortcutOpenCollection;
-
-  /// No description provided for @shortcutsGroupCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Collection'**
-  String get shortcutsGroupCollection;
 
   /// No description provided for @shortcutAddItems.
   ///
@@ -10268,41 +9040,11 @@ abstract class S {
   /// **'Delete tier list'**
   String get shortcutDeleteTierList;
 
-  /// No description provided for @shortcutRename.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename'**
-  String get shortcutRename;
-
   /// No description provided for @shortcutsGroupTierList.
   ///
   /// In en, this message translates to:
   /// **'Tier list'**
   String get shortcutsGroupTierList;
-
-  /// No description provided for @shortcutExportAsImage.
-  ///
-  /// In en, this message translates to:
-  /// **'Export as image'**
-  String get shortcutExportAsImage;
-
-  /// No description provided for @shortcutAddTier.
-  ///
-  /// In en, this message translates to:
-  /// **'Add tier'**
-  String get shortcutAddTier;
-
-  /// No description provided for @shortcutClearAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear all'**
-  String get shortcutClearAll;
-
-  /// No description provided for @shortcutsGroupWishlist.
-  ///
-  /// In en, this message translates to:
-  /// **'Wishlist'**
-  String get shortcutsGroupWishlist;
 
   /// No description provided for @shortcutAddItem.
   ///
@@ -10321,12 +9063,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Clear completed'**
   String get shortcutClearCompleted;
-
-  /// No description provided for @shortcutsGroupSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get shortcutsGroupSearch;
 
   /// No description provided for @shortcutFocusSearchField.
   ///
@@ -10369,7 +9105,7 @@ class _SDelegate extends LocalizationsDelegate<S> {
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ru', 'zh'].contains(locale.languageCode);
+      <String>['en', 'es', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_SDelegate old) => false;
@@ -10380,6 +9116,8 @@ S lookupS(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return SEn();
+    case 'es':
+      return SEs();
     case 'ru':
       return SRu();
     case 'zh':

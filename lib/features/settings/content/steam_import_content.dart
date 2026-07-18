@@ -85,7 +85,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       // Result is shown on ImportResultScreen — this should not happen
       // but keep as fallback.
       return Center(
-        child: Text(l.steamImportComplete, style: AppTypography.h3),
+        child: Text(l.importComplete, style: AppTypography.h3),
       );
     }
 
@@ -119,7 +119,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              l.steamImportIgdbRequired,
+              l.importIgdbRequired,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textPrimary,
               ),
@@ -133,7 +133,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
   Widget _buildInputSection(S l) {
     return SettingsGroup(
       title: l.steamImportTitle,
-      subtitle: l.steamImportSubtitle,
+      subtitle: l.importIgdbMatchNote,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -253,7 +253,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l.steamImportTargetCollection,
+            l.importTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -271,7 +271,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l.steamImportCreateNew),
+                title: Text(l.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: _isImporting
@@ -282,7 +282,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
                         }),
               ),
               ListTile(
-                title: Text(l.steamImportUseExisting),
+                title: Text(l.importUseExistingCollection),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: _isImporting
@@ -301,7 +301,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l.steamImportNoCollections,
+                    l.importNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -313,8 +313,8 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l.steamImportSelectCollection,
-                  title: l.steamImportSelectCollection,
+                  hint: l.importSelectCollection,
+                  title: l.importSelectCollection,
                   enabled: !_isImporting,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
@@ -323,7 +323,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l.steamImportErrorLoadingCollections,
+                l.importErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -339,7 +339,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
 
     final String stageText = switch (progress.stage) {
       ImportStage.fetchingGames => l.steamImportFetchingLibrary,
-      ImportStage.completed => l.steamImportComplete,
+      ImportStage.completed => l.importComplete,
       _ => l.steamImportMatching,
     };
 
@@ -476,7 +476,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     if (!result.success) {
       setState(() => _isImporting = false);
       if (result.fatalError != null) {
-        context.showSnack(result.fatalError!, type: SnackType.error);
+        context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
       }
       return;
     }

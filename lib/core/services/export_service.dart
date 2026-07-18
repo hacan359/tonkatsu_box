@@ -716,7 +716,7 @@ class ExportService {
   ) async {
     final DatabaseService db = _database!;
     final List<Tag> allTags = await db.globalTagDao.getAll();
-    final Map<int, Set<int>> links = await db.globalTagDao
+    final Map<int, List<int>> links = await db.globalTagDao
         .getTagIdsForItems(items.map((CollectionItem i) => i.id).toList());
 
     if (allTags.isEmpty || links.isEmpty) {
@@ -730,17 +730,22 @@ class ExportService {
     }
 
     final Set<int> usedIds = <int>{
-      for (final Set<int> ids in links.values) ...ids,
+      for (final List<int> ids in links.values) ...ids,
     };
     final List<Tag> usedTags =
         allTags.where((Tag t) => usedIds.contains(t.id)).toList();
 
+    // tag_names keeps the item's display order — that's how the manual
+    // per-item order survives export/import.
+    final Map<int, String> nameById = <int, String>{
+      for (final Tag tag in usedTags) tag.id: tag.name,
+    };
     final List<List<String>> itemTagNames = items.map((CollectionItem item) {
-      final Set<int>? ids = links[item.id];
+      final List<int>? ids = links[item.id];
       if (ids == null || ids.isEmpty) return const <String>[];
       return <String>[
-        for (final Tag tag in usedTags)
-          if (ids.contains(tag.id)) tag.name,
+        for (final int id in ids)
+          if (nameById[id] case final String name) name,
       ];
     }).toList();
 

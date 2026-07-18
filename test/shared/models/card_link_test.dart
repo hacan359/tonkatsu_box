@@ -74,6 +74,11 @@ void main() {
         expect(parseCardLink('id=1', null), isNull);
         expect(parseCardLink('mt=game;id=abc', null), isNull);
       });
+
+      test('returns null for unknown media type', () {
+        expect(parseCardLink('mt=bogus;id=5', null), isNull);
+        expect(parseCardLink('mt=;id=5', null), isNull);
+      });
     });
 
     test('build then parse preserves identity', () {

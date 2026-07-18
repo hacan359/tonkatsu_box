@@ -7,6 +7,734 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **"What's new" dialog after an app update**
+
+  On the first launch with a new version the app shows hand-written
+  release notes from the bundled assets/whats_new.md (a small file the
+  release process overwrites each release — not the full changelog) in
+  a dialog; closing it remembers the version so the notes appear only
+  once. English only for now. A fresh install shows nothing. Settings →
+  About → "What's New" reopens the current notes any time; a debug
+  preview also lives in Developer Tools → "What's New Preview".
+
+  * lib/core/services/whats_new_service.dart (WhatsNewService,
+    WhatsNewContent, whatsNewServiceProvider, whatsNewProvider): New —
+    version gate in SharedPreferences (changelog_seen_version),
+    `# X.Y.Z` section extraction, display formatting, previewLatest.
+  * lib/shared/widgets/whats_new_dialog.dart (WhatsNewDialog,
+    showWhatsNewDialog): New.
+  * lib/shared/navigation/app_shell.dart (_AppShellState.build): Listen
+    to whatsNewProvider, show the dialog post-frame, mark seen on close.
+  * lib/features/settings/screens/debug_hub_screen.dart
+    (DebugHubScreen._previewWhatsNew): Debug preview tile.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._showChangelog): About → "What's New" tile
+    (settingsChangelog, settingsChangelogEmpty l10n keys).
+  * assets/whats_new.md: New — current release's notes; pubspec.yaml
+    bundles it.
+  * .claude/skills/release/SKILL.md: Step 7.6 — every release overwrites
+    assets/whats_new.md with condensed user-facing notes.
+
+- **Spanish (es) localization**
+
+  Fourth interface language. Selectable in Settings → App Language and in
+  the welcome wizard, where picking Spanish also defaults the TMDB content
+  language to es-ES and the AniList title mode to romaji (unless the user
+  already picked a content language by hand). All 1493 strings translated.
+
+  * lib/l10n/app_es.arb, lib/l10n/app_localizations_es.dart (SEs): New.
+  * lib/l10n/app_localizations.dart (S.supportedLocales, lookupS): Register es.
+  * lib/features/settings/screens/settings_screen.dart (_kAppLanguageNames,
+    _SettingsScreenState._showLanguagePicker): Add Español; replace the
+    hardcoded per-language tile value and four copy-pasted dialog options
+    with a single locale→name map driving both.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (_WelcomeStepLanguageState.build): Add the Español option, shift
+    WelcomeReveal indices.
+  * lib/shared/constants/tmdb_content_languages.dart (_kUiToContentLanguage):
+    Map es → es-ES.
+  * README.md, docs/index.html,
+    fastlane/metadata/android/en-US/full_description.txt: List Spanish
+    among supported languages.
+  * test/features/welcome/widgets/welcome_step_language_test.dart: Cover the
+    Spanish option (appLanguage=es, tmdbLanguage=es-ES); ensureVisible before
+    tapping the content dropdown pushed off-screen by the fourth option.
+  * test/features/settings/screens/settings_screen_test.dart: New test —
+    picking a language in the dialog persists it to SharedPreferences.
+
+- **Poster cards: bottom banner with title, meta and progress on the poster**
+
+  Grid and compact cards no longer reserve a text block below the poster:
+  the poster fills the whole cell and a translucent panel at its bottom
+  carries the title (two lines, expanding on hover/focus), a meta line
+  (API rating, platform, year, media type, genre) and an always-visible
+  row with the status dot, watch/read progress and the tag chip. TMDB
+  shows now display live episode-tracker counts on collection cards.
+  Grids and horizontal rows switched to the true 2:3 poster ratio.
+
+  * lib/shared/widgets/media_poster_card.dart (_MediaPosterCardState._buildBottomBanner):
+    New — solid translucent banner; title/subtitle block below the poster
+    removed; status dot and progress pill moved into the banner row;
+    time-to-beat badge moved to the top-left corner; non-split ratings
+    render in the subtitle line instead of the top-left badge.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (_trackerProgress): New — episode progress for tvShow/animation items
+    from episodeTrackerNotifierProvider (watched/totalEpisodes).
+  * lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/home/screens/all_items_screen.dart,
+    lib/features/search/widgets/browse_grid.dart: childAspectRatio
+    0.55 → AppSpacing.posterAspectRatio.
+  * lib/features/search/widgets/discover_row.dart,
+    lib/features/search/widgets/discover_feed.dart,
+    lib/features/recommendations/widgets/recommendation_row.dart,
+    lib/shared/widgets/book_carousel.dart,
+    lib/features/collections/widgets/recommendations_section.dart:
+    row height derived from posterWidth / AppSpacing.posterAspectRatio.
+
+- **Laboratory section in Settings with card banner design lab**
+
+  New "Laboratory" settings group (visible in release builds too) hosts
+  the experimental card-banner gallery: eight banner layout variants
+  rendered on real posters from a chosen collection, with hover
+  behaviour, for side-by-side comparison and voting.
+
+  * lib/features/settings/screens/card_banner_debug_screen.dart
+    (CardBannerDebugScreen): New — variant gallery (solid panel,
+    gradient, frosted glass, stats strip, one-line meta, status stripe,
+    split meta, label-in-progress-bar).
+  * lib/features/settings/screens/settings_screen.dart: Laboratory
+    group with the card designs tile.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb,
+    lib/l10n/app_es.arb (settingsLaboratory, settingsLaboratoryCardDesigns,
+    settingsLaboratoryCardDesignsSubtitle): New keys.
+
+- **Hardcover book source: search and library import**
+
+  Hardcover (hardcover.app) joins the book providers. Search returns the
+  full card (authors, genres, moods, series, ratings, ISBNs) in one
+  request with six sort options; the importer pulls a user's library by
+  username — statuses, ratings, reading dates, re-read counts, reviews
+  and the Hardcover add date — with "add new only" / "overwrite" modes.
+  Books flagged as owned get the global "Owned" tag. Requires a free
+  personal API token (Settings → API Credentials); tokens reset every
+  January 1st and the app says so when one expires.
+
+  * lib/core/api/hardcover_api.dart (HardcoverApi, hardcoverApiProvider): New —
+    facade over the GraphQL layer, token wiring, validateApiKey.
+  * lib/core/api/hardcover/hardcover_graphql_client.dart (HardcoverGraphQLClient):
+    New — single-endpoint POST transport, Bearer auth, 401/429 mapping.
+  * lib/core/api/hardcover/hardcover_queries.dart (HardcoverQueries),
+    lib/core/api/hardcover/hardcover_types.dart (HardcoverApiException,
+    HardcoverAuthException, HardcoverRateLimitException,
+    HardcoverUserNotFoundException, HardcoverUserBookEntry): New.
+  * lib/core/api/hardcover/hardcover_search_api.dart (HardcoverSearchApi):
+    New — paginated search, book-by-id refetch.
+  * lib/core/api/hardcover/hardcover_user_library_api.dart
+    (HardcoverUserLibraryApi): New — user lookup, library count, 500-row pages.
+  * lib/core/import/sources/hardcover/hardcover_import_service.dart
+    (HardcoverImportService, HardcoverImportOptions,
+    hardcoverImportServiceProvider): New — status/rating/date mapping,
+    Owned tag, date_added → added_at.
+  * lib/features/search/sources/hardcover_source.dart (HardcoverSource): New —
+    search source with relevance/popular/top-rated/most-voted/most-read/newest
+    sorts.
+  * lib/features/settings/screens/hardcover_import_screen.dart
+    (HardcoverImportScreen), lib/features/settings/content/hardcover_import_content.dart
+    (HardcoverImportContent): New — import form and progress UI.
+  * lib/shared/models/book.dart (Book.fromHardcoverDocument, Book.fromHardcoverBook):
+    New factories for the search document and graph book shapes.
+  * lib/shared/models/data_source.dart (DataSource.hardcover): New enum value.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.hardcoverApiKey, SettingsKeys.hardcoverUsername,
+    SettingsState.hardcoverApiKey, SettingsNotifier.setHardcoverApiKey,
+    SettingsNotifier.validateHardcoverKey): Token storage and validation;
+    the setter strips a pasted "Bearer " prefix.
+  * lib/core/services/api_key_initializer.dart (ApiKeys.hardcoverApiKey): Load
+    the token at startup.
+  * lib/features/settings/content/credentials_content.dart
+    (_buildHardcoverSection), lib/features/welcome/widgets/welcome_step_sources.dart
+    (_KeyEditorState, _KeyBadge): Token entry in Credentials and the welcome
+    wizard.
+  * lib/features/settings/content/credits_content.dart,
+    lib/shared/constants/source_catalog.dart (kDataSourceCatalog,
+    kSearchGroupToSources): Catalog and attribution entries.
+  * lib/features/search/handlers/media_handlers.dart (_fetchFullBook),
+    lib/features/collections/helpers/collection_actions.dart: Refetch stored
+    Hardcover items.
+  * lib/features/search/models/search_source.dart (BrowseSortOption.label):
+    Add the `most_read` sort label.
+  * lib/features/search/sources/search_sources.dart (searchSources): Register
+    the source.
+  * lib/core/services/import_service.dart (ImportStage.fetchingBooks): New stage.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.addTagToItems):
+    New — additive batch tag link used by the Owned tag.
+  * lib/shared/theme/app_assets.dart (AppAssets.iconHardcoverColor),
+    assets/images/icon_hardcover_color.png: Brand icon.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb: Hardcover
+    strings plus shared import keys (importUsername, importMode,
+    importModeNewOnly, importModeOverwrite, importNewCollectionName,
+    importNewCollectionDefault, importFetchingBooks, importAddingItems,
+    importProcessingItem, importImportedCount, importUpdatedCount,
+    importUserNotFound, importEmptyUsername, importFailed, browseSortMostRead).
+  * README.md, docs/index.html: List the new source.
+
+- **Hardcover edition picker with a language filter**
+
+  A Hardcover book's detail sheet in search shows an editions strip
+  (most-owned first) with language chips — Hardcover's canonical title can
+  be in any language, so picking e.g. the EN printing swaps in its
+  localized title (the old one is kept as the original title), cover,
+  ISBN, publisher, language and year. The picked edition is recorded as a
+  `#edition-{id}` fragment on the item's external URL — fragments never
+  reach the server, so the link keeps resolving while the pick survives
+  "Refresh from source" without a schema migration.
+
+  * lib/core/api/hardcover/hardcover_queries.dart
+    (HardcoverQueries.editionsByBook, HardcoverQueries.editionById): New
+    queries.
+  * lib/core/api/hardcover/hardcover_types.dart (HardcoverEdition): New.
+  * lib/core/api/hardcover/hardcover_search_api.dart
+    (HardcoverSearchApi.getEditions, HardcoverSearchApi.getEdition),
+    lib/core/api/hardcover_api.dart (HardcoverApi.getEditions,
+    HardcoverApi.getEdition): New endpoints.
+  * lib/features/collections/widgets/hardcover_edition_picker.dart
+    (HardcoverEditionsSection, showHardcoverEditionPicker,
+    applyHardcoverEdition, reapplyHardcoverEdition,
+    hardcoverEditionIdFromExternalUrl, hardcoverEditionIdFromCoverUrl):
+    New — inline strip with language chips, modal picker grouped by
+    language, edition overlay and recovery helpers.
+  * lib/features/search/widgets/hardcover_book_sheet.dart
+    (HardcoverBookSheet): New — detail sheet host with the editions strip.
+  * lib/features/search/handlers/media_handlers.dart: Route Hardcover books
+    to the sheet and apply the picked edition on add.
+
+- **"Refresh from source" lets a book switch editions**
+
+  For Fantlab and Hardcover books the refresh action first opens the
+  edition picker (current edition highlighted) — added the RU printing by
+  mistake, pick the EN one and refresh with it. Dismissing the sheet
+  refreshes keeping the current edition; previously a refresh silently
+  reset the book to the source's default edition, discarding the picked
+  cover and metadata.
+
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.refreshItemFromApi, _refreshItemWork): Show the
+    picker for Fantlab / Hardcover books; apply the fresh pick or re-apply
+    the stored one.
+  * lib/features/collections/widgets/fantlab_edition_picker.dart
+    (reapplyFantlabEdition): New — recovers the picked edition from the
+    cached cover URL onto the refetched work; showFantlabEditionPicker is
+    now actually wired up.
+
+- **Cover size slider in Settings → Appearance**
+
+  A 70–160% slider scales the item cards in every grid: the collection
+  grid, "All items" and Browse. Desktop scales the max card width;
+  phones and tablets recalculate the column count (2–8). The grid
+  updates live while dragging; the value is saved on release.
+
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.cardScale, SettingsState.cardScale,
+    SettingsNotifier.setCardScale): New setting, clamped to 0.7–1.6,
+    persisted in SharedPreferences; reset by clearSettings.
+  * lib/features/settings/screens/settings_screen.dart (_CardScaleSlider):
+    New — slider tile with live preview (persist: false while dragging).
+  * lib/shared/theme/app_spacing.dart (AppSpacing.desktopMaxCardWidth,
+    AppSpacing.scaledColumns): New — the 170px desktop card width moved
+    here from three copies; column-count helper for fixed-count grids.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._buildGridView),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildGridView),
+    lib/features/search/widgets/browse_grid.dart
+    (_BrowseGridState._buildGridDelegate): Apply the scale to grid
+    delegates.
+
+- **Readable import errors with copyable details**
+
+  A failed import no longer shows a raw exception dump. Error snacks
+  grow a "Details" action opening a dialog with the full message and a
+  copyable debug block (request, status code, cause). The import result
+  screen lists per-item errors in an expandable card with copy-all and
+  adds a copy button for the fatal error.
+
+  * lib/shared/widgets/error_details_dialog.dart (showErrorDetailsDialog,
+    copyErrorDetails): New — copyable error dialog and clipboard helper.
+  * lib/shared/extensions/snackbar_extension.dart
+    (SnackBarExtension.showErrorSnack): New — error snack with the
+    "Details" action.
+  * lib/shared/models/universal_import_result.dart
+    (UniversalImportResult.fatalDetail): New — debug detail carried next
+    to fatalError.
+  * lib/core/api/api_error_extract.dart (extractApiError): Also unwraps
+    GoogleBooksApiException, HardcoverApiException, FantlabApiException,
+    KodiApiException, ScreenScraperApiException.
+  * lib/core/import/sources/steam/steam_import_service.dart,
+    lib/core/import/sources/trakt/trakt_import_service.dart,
+    lib/core/import/sources/igdb_list/igdb_list_import_service.dart,
+    lib/core/import/sources/kinorium/kinorium_import_service.dart:
+    Route unexpected exceptions through extractApiError and attach the
+    detail to the failure result.
+  * lib/core/import/sources/custom_file/custom_cards_import_service.dart:
+    Attach the stack trace as the failure detail.
+  * lib/features/settings/content/anilist_import_content.dart,
+    hardcover_import_content.dart, mal_import_content.dart,
+    ra_import_content.dart, steam_import_content.dart,
+    trakt_import_content.dart, igdb_list_import_content.dart,
+    kinorium_import_content.dart, custom_cards_import_content.dart,
+    lib/features/settings/screens/custom_cards_preview_screen.dart,
+    lib/features/collections/screens/home_screen.dart: Show failures via
+    showErrorSnack with the detail attached.
+  * lib/features/settings/screens/import_result_screen.dart (_ErrorsCard):
+    New — expandable per-item error list with copy-all; copy button for
+    the fatal error.
+  * lib/shared/utils/custom_cards_parse_error_l10n.dart
+    (localizedParseError): Moved out of custom_cards_import_content.dart
+    so the create-item dialog can reuse it.
+
+- **Reading/watching progress on item cards and in the table**
+
+  Anime, manga, books and custom items show their progress right on the
+  poster: a pill next to the status dot (`12/24`, `V2 · 45/120`) and a
+  thin bar along the bottom edge when the total is known. The collection
+  table gains a read-only Progress column. The All Items list is patched
+  in place on every progress change, so the pill stays fresh without a
+  full reload.
+
+  * lib/shared/utils/item_card_progress.dart (ItemCardProgress,
+    itemCardProgress): New — builds the label and 0..1 fraction per
+    media type.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.progress):
+    New — progress pill and bottom-edge bar on grid/compact cards.
+  * lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/home/screens/all_items_screen.dart: Pass the item's
+    progress to the card.
+  * lib/features/collections/widgets/collection_table/table_fields.dart,
+    table_columns.dart, table_rows.dart (TableFields.progress): New
+    read-only Progress column.
+  * lib/features/home/providers/all_items_provider.dart
+    (AllItemsNotifier.updateProgressLocally): New — in-place patch,
+    mirrors updateStatusLocally.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateProgress): Sync the All Items copy
+    via the local patch.
+
+- **Prefill the custom item form from a JSON/CSV file**
+
+  The create-item dialog gets an upload button that runs the bulk-import
+  parser on a picked file and fills the form from the first valid row.
+  Only fields present in the file overwrite current values; personal
+  fields (status, rating, dates) are ignored.
+
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._fillFromFile, _applyEntry,
+    _resolvePlatformId): New.
+
+- **Drag tag chips into a manual per-item order in the item card**
+
+  Tag chips in the item detail card can be dragged into a custom order —
+  immediate drag on desktop, long-press drag on Android. The order is
+  per item: until a chip is dragged, the item keeps following the global
+  tag order from the tag manager, and newly attached tags go to the end
+  of a manually ordered item. The first tag by that order is what item
+  cards and the table's primary-tag sort show. The arrangement survives
+  export/import (`tag_names` is written in display order and restored as
+  explicit positions only when it differs from the global order) and is
+  carried along when an item is cloned to another collection.
+
+  * lib/core/database/migrations/migration_v56.dart (MigrationV56): New —
+    nullable `item_tags.position` column via addColumnIfAbsent.
+  * lib/core/database/migrations/migration_registry.dart (MigrationRegistry.all),
+    lib/core/database/database_service.dart (_initDatabase): Register v56,
+    bump version to 56.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.getTagIdsByItem,
+    GlobalTagDao.getTagIdsForItems, GlobalTagDao.getAllItemTags): Return
+    ordered lists via a JOIN — manual positions first, NULLs after in
+    global order (shared _linkOrderBy clause).
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.setItemTags):
+    No longer deletes-and-reinserts every link; surviving links keep their
+    manual position, new links get NULL.
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.setItemTagPositions,
+    GlobalTagDao.copyItemTags): New — persist a per-item reorder; copy links
+    with positions when cloning an item.
+  * lib/features/collections/providers/item_tags_provider.dart
+    (ItemTagsNotifier): State is now Map<int, List<int>> in display order;
+    new reorderItemTags and refreshFromDb; setItemTags re-reads the item's
+    order from the DAO.
+  * lib/features/collections/providers/global_tags_provider.dart
+    (GlobalTagsNotifier.reorder): Refresh the cached per-item lists after a
+    global reorder so fallback-ordered items follow it.
+  * lib/shared/models/tag.dart (TagListProjection.orderedFor,
+    TagListProjection.primaryFor, TagListProjection.byId, TagMapProjection):
+    Projections follow the ids order (the item's display order); map-based
+    overloads let eager loops hoist the id → tag map.
+  * lib/features/collections/widgets/item_tags_section.dart (ItemTagsSection,
+    _TagDragData): Chips are Draggable/LongPressDraggable drop targets with a
+    hover highlight; the drag payload is scoped to the owning item.
+  * lib/core/services/export_service.dart (ExportService._collectTagData):
+    Write `tag_names` in the item's display order.
+  * lib/core/services/import_service.dart (ImportService._importTags): Restore
+    explicit positions when the imported order differs from the global one.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.cloneItem),
+    lib/features/collections/helpers/bulk_operations.dart (cloneItemsToCollection):
+    Clone tags via copyItemTags so the manual order travels with the copy.
+  * lib/features/collections/screens/collection_screen.dart,
+    lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/collections/widgets/collection_table/collection_table_view.dart,
+    lib/features/collections/widgets/collection_table/table_rows.dart,
+    lib/features/collections/widgets/collection_screen/collection_bulk_action_bar.dart,
+    lib/features/collections/widgets/copy_as_text_dialog.dart,
+    lib/features/collections/widgets/tag_management_dialog.dart,
+    lib/features/collections/helpers/collection_filters.dart,
+    lib/features/home/screens/all_items_screen.dart: Consume the ordered
+    Map<int, List<int>> item-tag map.
+  * docs/RCOLL_FORMAT.md: Document the `tag_names` order semantics.
+
+- **Tag picker: search field and an explicit "Create" row**
+
+  The tag picker's text field now searches: typing filters the tag list
+  as you type, with a clear button. When the query matches no existing
+  tag exactly, a highlighted "Create «query»" row with a plus icon
+  appears at the top of the list — tapping it (or pressing Enter)
+  creates the tag and selects it; Enter on an exact match just selects
+  it. Replaces the old bare name field whose plus button users didn't
+  recognise as "add new tag".
+
+  * lib/features/collections/widgets/tag_picker_dialog.dart
+    (_TagPickerDialogState._submitQuery, _buildCreateTile): Search-driven
+    list, create row, Enter handling.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
+    (tagCreateNamed): New key.
+
+- **Sort by start date and completion date**
+
+  Two new sort modes in the collection sort menu, alongside the existing
+  ones: "Start Date" and "Completion Date" (the dates filled in on the
+  item card). Recent first by default, direction toggle flips to oldest
+  first; items without the date go last, ordered by name.
+
+  * lib/shared/models/collection_sort_mode.dart (CollectionSortMode.startDate,
+    CollectionSortMode.completionDate): New enum values + localized labels;
+    comments translated to English.
+  * lib/features/collections/providers/sort_utils.dart (applySortMode,
+    _compareNullableDatesDesc): New comparators, shared null-last helper.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
+    (sortStartDateDisplay, sortStartDateShort, sortCompletionDateDisplay,
+    sortCompletionDateShort): New keys.
+
+### Changed
+
+- **Specials (season 0) listed in the episode tracker, excluded from progress**
+
+  The Specials season is no longer hidden: it appears last in the season
+  list and can be tracked, but its episodes do not count toward the
+  show's watched/total progress or the automatic status — TMDB's episode
+  totals exclude specials, so counting them skewed completion.
+
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerState.totalWatchedCount,
+    EpisodeTrackerState.totalEpisodeCount,
+    EpisodeTrackerNotifier._updateAutoStatus): Skip season 0; the
+    all-seasons-loaded fallback counts only regular seasons.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonsListWidgetState.build): Show specials last instead of
+    skipping them.
+
+- **All font sizes bumped by 1px on mobile**
+
+  The desktop-tuned type scale read small on phones; every text style
+  now gains one pixel on mobile.
+
+  * lib/shared/theme/app_typography.dart (AppTypography): Styles are
+    computed with a kIsMobile-driven bump (const → final).
+
+- **Tighter item card action bar and subfilter row spacing**
+
+  Icons in the item detail top bar are slightly smaller (18px) with
+  compact tap boxes, so the six actions no longer read sparse. The gap
+  under the sub-filter chip row is halved.
+
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailAppBar._action): iconSize 20 → 18, VisualDensity.compact,
+    padding 8 → 4; same for the overflow PopupMenuButton.
+  * lib/shared/widgets/filter_subfilter_bar.dart (_SubfilterBarState.build):
+    Bottom padding 8 → 4.
+
+- **TMDB content language list expanded from 3 to 45 locales**
+
+  The content language picker now covers TMDB's primary translations
+  (sorted by code, named in their own language), with Chinese split into
+  Simplified and Traditional. On first run the welcome wizard also
+  derives the AniList title mode from the chosen content language
+  (English → english, Japanese → native, otherwise romaji).
+
+  * lib/shared/constants/tmdb_content_languages.dart
+    (kTmdbContentLanguages, anilistTitleLanguageForContent): Expanded
+    list; new content-to-AniList mapping.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (_WelcomeStepLanguageState._applyContentLanguage): Apply both TMDB
+    and AniList title language on first-run selection.
+
+- **Gamepad debug log export goes through the system save dialog**
+
+  On Android the log was silently written into the app documents folder;
+  now every platform shows a save dialog (SAF on Android) so the user
+  picks the destination.
+
+  * lib/features/settings/screens/gamepad_debug_screen.dart
+    (_GamepadDebugScreenState._exportLog): Unified FilePicker.saveFile
+    path with bytes payload; manual write kept for desktop.
+
+- **Localization strings deduplicated: 262 duplicate keys collapsed**
+
+  Of ~1740 keys in `app_en.arb`, 452 were value-duplicates across 161
+  groups — mostly per-import-source copies of "Select collection",
+  "Target collection", "Create new collection" and the like. They are
+  now shared keys (generic `import*` family plus bare vocabulary keys:
+  `all`, `name`, `title`, `status`, `date`, `rating`, `sort`, …), so
+  every new language translates each string once. 26 groups (55 keys)
+  are kept apart on purpose — same English, different translation by
+  context (grammatical gender in statuses, anime formats in Chinese,
+  "Title" as heading vs. ScreenScraper media type, unit vs. label
+  wordings).
+
+  Deliberate translation unifications along the way: the wishlist is
+  «Желаемое» everywhere (was also «Вишлист»/«Список желаний»), AniList
+  import shares the common import wording, `{count} imported/updated`
+  use proper Russian plurals everywhere, and the IGDB-required hint
+  points at the section's real Russian name («Учётные данные»).
+
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb:
+    262 keys removed, ~40 shared keys added; en/ru/zh key sets are now
+    identical.
+  * lib/l10n/app_localizations.dart, app_localizations_en.dart,
+    app_localizations_ru.dart, app_localizations_zh.dart: Regenerated.
+  * 121 files across lib/ and test/: references rewritten to the shared
+    keys.
+  * test/l10n/arb_parity_test.dart: New — guards that every locale file
+    keeps exactly the template key set with matching placeholders.
+
+- **MyAnimeList "On-Hold" now imports as Dropped**
+
+  The local Dropped status doubles as "paused" (pause icon), which is how
+  AniList Paused and Hardcover Paused already import. MAL On-Hold used to
+  land in Planned; it now aligns with the other importers.
+
+  * lib/core/import/sources/mal/mal_import_service.dart (MalImportService._mapStatus):
+    `on-hold` → dropped.
+
+- **Batch item insert keeps a source-provided add date**
+
+  Import sources can now carry the original "added" date of an item
+  (Hardcover uses this for its date_added); rows without one still get
+  the current time.
+
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.addItemsBatch):
+    Use the row's `added_at` when present instead of always stamping now.
+
+- **Search source menu no longer cuts off the lower groups**
+
+  The source dropdown capped at 400px, hiding Books, VNDB and ComicVine
+  behind an invisible scroll. It now grows up to 75% of the screen, and
+  when the list still doesn't fit, carousel-style up/down arrows appear at
+  the menu edges from the moment it opens (the stock popup gave no scroll
+  hint until the pointer hovered it); the arrows page-scroll on click.
+
+  * lib/shared/widgets/chevron_filter_bar.dart (DropdownChevronSegment,
+    showArrowedMenu): Replace the stock PopupMenuButton popup with a custom
+    anchored menu route that shows scroll-arrow indicators.
+
+- **Tag resolve-or-create consolidated into one DAO batch method**
+
+  Four copies of the "find tag by name or create it" logic (DAO, backup
+  restore, two import services) now share a single snapshot-based batch
+  resolver; backup restore no longer rescans the tag table per tag (was
+  O(n²)).
+
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.resolveOrCreateAll,
+    GlobalTagDao.nameKey, TagSeed): New batch resolver over one getAll snapshot;
+    resolveOrCreate delegates to it.
+  * lib/core/services/backup_service.dart (BackupService._restoreTags),
+    lib/core/services/import_service.dart (ImportService._importTags),
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService._applyTags): Use resolveOrCreateAll.
+
+- **Performance: fewer redundant queries and rescans on hot paths**
+
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.addItemsBatchReturningIds),
+    lib/data/repositories/collection_repository.dart
+    (CollectionRepository.addItemsBatchReturningIds): New — bulk insert that
+    returns per-row ids, so custom-cards import tags freshly written rows
+    directly instead of rescanning the whole collection.
+  * lib/features/home/providers/all_items_provider.dart (allTagsMapProvider):
+    Derived from globalTagsProvider instead of a second tag-table query on
+    the All Items screen.
+  * lib/shared/widgets/media_detail_view.dart
+    (_MediaDetailViewState._resolveCardLinks): Card-link lookups run in
+    parallel via Future.wait instead of sequential awaits.
+  * lib/shared/widgets/card_link_picker.dart (_CardLinkPickerSheetState):
+    250ms input debounce, precomputed lowercase names and an early exit at
+    50 matches instead of a full library rescan per keystroke.
+  * lib/features/collections/widgets/copy_as_text_dialog.dart
+    (_CopyAsTextDialogState._preview, _CopyAsTextDialogState.build): Preview
+    computed once per build and tag names resolved only for the 5 preview
+    rows while typing.
+
+- **God-file split: collection table and media detail view**
+
+  Pure refactor, no behaviour change: collection_table_view.dart went from
+  834 to ~400 lines, media_detail_view.dart from 1344 to ~640.
+
+  * lib/features/collections/widgets/collection_table/table_fields.dart
+    (TableFields, tableColumnLabels), table_columns.dart
+    (buildCollectionTableColumns), table_rows.dart (buildCollectionTableRows),
+    table_toolbar.dart (TableToolbar): New — extracted from
+    collection_table_view.dart (CollectionTableView keeps its public API).
+  * lib/shared/widgets/media_detail/ (MediaDetailBackdrop, MediaCoverImage,
+    IdentityHeader, ExpandableDescription, ProgressTile, ProgressTileGrid,
+    SystemMetaInfoButton, UserRatingSection, CommentSectionHeader,
+    CommentContainer, TrackerCommentsLayout, MediaDetailChip): New —
+    extracted from media_detail_view.dart (MediaDetailView keeps its
+    public API; MediaDetailChip is re-exported).
+  * lib/shared/utils/url_launch.dart (launchExternalUrl): New shared
+    best-effort launcher.
+  * lib/shared/widgets/mini_markdown_text.dart (_MiniMarkdownTextState),
+    lib/features/settings/content/credits_content.dart,
+    lib/features/search/widgets/item_details_sheet.dart,
+    lib/features/collections/widgets/canvas_link_item.dart
+    (CanvasLinkItem._openUrl): Replace private URL-launcher copies with
+    launchExternalUrl.
+
+### Fixed
+
+- **Mobile keyboard no longer pops up unprompted**
+
+  On phones the on-screen keyboard used to appear the moment the tag
+  picker, rename-tag dialog, or the Personalization view opened, covering
+  half the screen before any tap. The two tag dialogs now autofocus only
+  on desktop, and opening Personalization drops focus from and disables
+  the shared top-bar search field (which has no meaning there). Desktop
+  keeps its type-immediately behaviour.
+
+  * lib/features/collections/widgets/tag_picker_dialog.dart
+    (_TagPickerDialogState.build),
+    lib/features/collections/widgets/tag_management_dialog.dart
+    (_RenameTagDialogState.build): Gate the search / rename field
+    `autofocus` behind `!kIsMobile`.
+  * lib/shared/navigation/app_top_bar.dart (AppTopBar.suppressSearch,
+    _AppTopBarState.build): New flag; when set, the search context is
+    null so the field renders disabled.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._buildScaffold,
+    _AppShellState._openPreferenceCloud): Pass suppressSearch while
+    Personalization is open and unfocus the primary focus on open.
+
+- **Platform and format sub-filters now combine instead of hiding everything**
+
+  Selecting a game platform together with an anime/manga format (e.g. NES
+  + OVA) used to intersect the two groups and return an empty list. Active
+  sub-filter groups now unite, each scoped to its own kind of item: NES
+  games and OVA anime show side by side. Applies to both the collection
+  screen and All Items.
+
+  * lib/shared/utils/media_format.dart (MediaFormat.matchesSubfilters):
+    Replaces matchesFormatFilter — single OR predicate over platform +
+    format groups.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply), lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState): One combined subfilter pass instead of two
+    intersecting ones.
+
+
+- **Hardcover token now syncs between devices and counts in Settings**
+
+  The config export / LAN sync / backup key list and the Settings "API
+  Keys" counter both predate the Hardcover source: the token (and the
+  remembered import username) stayed on one device, and the counter said
+  6/6 with Hardcover configured. Both now include it (counter is N/7).
+
+  * lib/core/services/config_service.dart (ConfigService._settingsKeys):
+    Add hardcoverApiKey and hardcoverUsername.
+  * lib/features/settings/screens/settings_screen.dart (_apiKeyStates):
+    Count the Hardcover key.
+
+- **Device-to-device sync no longer crashes when the network is down**
+
+  Opening the LAN sync screen with no usable network (airplane mode,
+  Wi-Fi off) threw an unhandled SocketException from the HTTP server
+  bind; the screen now shows an error message instead.
+
+  * lib/features/settings/screens/lan_sync_screen.dart
+    (_LanSyncScreenState._start): Wrap LanSyncService.start in try/catch
+    and surface the failure as a snack.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb
+    (lanSyncStartError): New key.
+
+- **"Copy as text" fills {tags} with the user's tags for every media type**
+
+  The {tags} token only ever emitted AniList/MangaBaka source tags for
+  anime and manga; user-assigned global tags were ignored entirely. It now
+  means exactly the user's own tags (in tag display order) for all types;
+  source-provided tag lists are no longer used.
+
+  * lib/core/services/text_export_service.dart (TextExportService.applyTemplate,
+    TextExportService.formatItem): Accept a caller-resolved item-id →
+    tag-names map; drop the anime/manga source-tag fallback.
+  * lib/features/collections/widgets/copy_as_text_dialog.dart
+    (_CopyAsTextDialogState._tagsByItemId): Resolve the map from
+    itemTagsProvider + globalTagsProvider.
+
+- **All Items group headers no longer overflow on narrow screens**
+
+  A collection header (underlined name + per-type tallies) wider than the
+  screen threw a RenderFlex overflow on phones; the name now ellipsizes
+  and the tallies wrap to the next line.
+
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildCollectionDivider,
+    _AllItemsScreenState._headerInfo): Row → Wrap; each tally is one
+    self-contained chip so it never splits across lines.
+
+- **Row drag-to-reorder in the table view now works on touch screens**
+
+  trina_grid's built-in drag handle starts the drag on the first pointer
+  move, which on a phone loses the gesture to the grid's vertical scroll —
+  the list scrolled and the row never moved. The handle is now a custom
+  widget: on touch platforms the drag starts after a short hold (like
+  ReorderableListView), on desktop the immediate mouse drag stays.
+
+  * lib/features/collections/widgets/collection_table/row_drag_handle.dart
+    (RowDragHandle): New — LongPressDraggable on touch platforms, Draggable
+    on desktop; drives trina_grid's drag state and auto-scroll.
+  * lib/features/collections/widgets/collection_table/table_columns.dart
+    (buildCollectionTableColumns): Drag column renders RowDragHandle
+    instead of enableRowDrag.
+
+- **Table filter dialog no longer crashes the table view**
+
+  Opening the Filters dialog in the collection table view threw a render
+  error (a LayoutBuilder inside the dialog cannot answer the intrinsic
+  width AlertDialog asks for) and left the whole screen broken until it
+  was rebuilt.
+
+  * lib/features/collections/widgets/collection_table/table_filter.dart
+    (_TableFilterDialogState.build): Compute the content width from
+    MediaQuery directly instead of a LayoutBuilder.
+
+- **Broken card-link tokens no longer point at the wrong item**
+
+  A `[[card:mt=bogus;id=5]]` token silently parsed as a game link (unknown
+  media type fell back to game) and could resolve to an unrelated card;
+  unknown types now make the token unparseable, so it renders as plain text.
+
+  * lib/shared/models/media_type.dart (MediaType.tryFromString): New —
+    null on unrecognised input; fromString delegates to it.
+  * lib/shared/models/card_link.dart (parseCardLink): Return null for an
+    unknown `mt` instead of defaulting to game.
+
 ## [0.38.2] - 2026-07-12
 
 ### Changed

@@ -6,7 +6,6 @@
   "navMain": "Main",
   "navCollections": "Collections",
   "navWishlist": "Wishlist",
-  "navSearch": "Search",
   "navSettings": "Settings",
   "navReleases": "Releases",
 
@@ -20,7 +19,7 @@
   "releasesTabCalendar": "Calendar",
   "releasesTabAll": "All releases",
   "releasesToday": "Today",
-  "releasesRefresh": "Refresh",
+  "refresh": "Refresh",
   "releasesNoEpisodes": "No episodes",
   "releasesEpisode": "Season {season} · Episode {episode}",
   "@releasesEpisode": {
@@ -31,10 +30,8 @@
   },
   "calendarAdd": "Add to calendar",
   "calendarRemove": "Remove from calendar",
-  "calendarAddTitle": "Add to calendar",
-  "calendarDate": "Date",
+  "date": "Date",
   "calendarRepeat": "Repeat",
-  "calendarAddAction": "Add",
   "recurrenceOnce": "Once",
   "recurrenceWeekly": "Weekly",
   "recurrenceMonthly": "Monthly",
@@ -52,7 +49,7 @@
   "statusReplaying": "Replaying",
   "statusRewatching": "Rewatching",
   "statusRereading": "Rereading",
-  "homeFilterAll": "All",
+  "all": "All",
 
   "mediaTypeGame": "Game",
   "mediaTypeMovie": "Movie",
@@ -65,42 +62,32 @@
   "mediaTypeCustom": "Custom",
 
   "sortManualDisplay": "Manual",
-  "sortManualShort": "Manual",
   "sortManualDesc": "Custom order",
   "sortDateDisplay": "Date Added",
-  "sortDateShort": "Date",
   "sortDateDesc": "Newest first",
-  "sortStatusDisplay": "Status",
-  "sortStatusShort": "Status",
+  "status": "Status",
   "sortStatusDesc": "Active first",
-  "sortNameDisplay": "Name",
+  "name": "Name",
   "sortNameShort": "A-Z",
-  "sortNameDesc": "A to Z",
-  "sortRatingDisplay": "My Rating",
-  "sortRatingShort": "Rating",
+  "rating": "Rating",
   "sortRatingDesc": "Highest first",
-  "sortFavoriteDisplay": "Favorite",
-  "sortFavoriteShort": "Favorite",
   "sortFavoriteDesc": "Favorites first",
   "sortExternalRatingDisplay": "External Rating",
   "sortExternalRatingShort": "IGDB/TMDB",
-  "sortExternalRatingDesc": "Highest first",
   "sortLastActivityDisplay": "Last Activity",
   "sortLastActivityShort": "Activity",
   "sortLastActivityDesc": "Recent first",
+  "sortStartDateDisplay": "Start Date",
+  "sortStartDateShort": "Started",
+  "sortCompletionDateDisplay": "Completion Date",
+  "sortCompletionDateShort": "Finished",
 
   "sortDateOldest": "Oldest first",
   "sortStatusFinished": "Finished first",
-  "sortNameZa": "Z to A",
   "sortRatingLowest": "Lowest first",
   "sortFavoriteLast": "Favorites last",
-  "sortExternalRatingLowest": "Lowest first",
-  "sortLastActivityOldest": "Oldest first",
 
   "searchSortRelevanceShort": "Rel",
-  "searchSortRelevanceDisplay": "Relevance",
-  "searchSortDateShort": "Date",
-  "searchSortDateDisplay": "Date",
   "searchSortRatingShort": "Rate",
   "searchSortRatingDisplay": "Rating",
 
@@ -132,7 +119,7 @@
     }
   },
   "bulkClearSelection": "Clear selection",
-  "bulkSelectAllVisible": "Select all",
+  "selectAll": "Select all",
   "bulkMove": "Move selected to collection",
   "bulkCopy": "Copy selected to collection",
   "bulkChangeStatus": "Change status",
@@ -162,7 +149,7 @@
     }
   },
   "bulkExportPngTitle": "Export as PNG",
-  "bulkExportPngColumns": "Columns",
+  "columnsCount": "Columns",
   "bulkExportPngItemsCount": "{count, plural, =1{1 item} other{{count} items}}",
   "@bulkExportPngItemsCount": {
     "placeholders": {
@@ -184,7 +171,7 @@
     }
   },
   "bulkExportPngSave": "Save PNG",
-  "bulkExportPngSaved": "Image saved",
+  "imageSaved": "Image saved",
   "bulkExportPngFailed": "Failed to save image",
   "back": "Back",
   "next": "Next",
@@ -198,27 +185,26 @@
   "settingsProfile": "Collection author",
   "settingsProfileSubtitle": "Author name for your collections",
   "settingsAuthorName": "Author name",
-  "settingsAuthorPlaceholder": "User",
-  "settingsSettings": "Settings",
-  "settingsCredentials": "Credentials",
   "settingsCredentialsSubtitle": "IGDB, SteamGridDB, TMDB API keys",
-  "settingsCache": "Cache",
   "settingsCacheSubtitle": "Offline mode and cover storage",
-  "settingsDatabase": "Database",
   "settingsDatabaseSubtitle": "Export, import, reset",
-  "settingsTraktImport": "Trakt Import",
   "settingsTraktImportSubtitle": "Watch history, ratings, watchlist",
   "settingsKinoriumImport": "Kinorium Import",
   "settingsKinoriumImportSubtitle": "Movies & shows from a CSV export",
   "settingsDebug": "Debug",
   "settingsDebugSubtitle": "Developer tools",
   "settingsDebugSubtitleNoKey": "Set SteamGridDB key first for some tools",
+  "settingsLaboratory": "Laboratory",
+  "settingsLaboratoryCardDesigns": "Card banner designs",
+  "settingsLaboratoryCardDesignsSubtitle": "Experimental poster card layouts",
   "settingsHelp": "Help",
   "settingsWelcomeGuide": "Welcome Guide",
   "settingsWelcomeGuideSubtitle": "Getting started with Tonkatsu Box",
   "settingsAbout": "About",
   "settingsVersion": "Version",
   "settingsCreditsLicenses": "Credits & Licenses",
+  "settingsChangelog": "What's New",
+  "settingsChangelogEmpty": "No release notes available",
   "settingsCreditsLicensesSubtitle": "TMDB, IGDB, SteamGridDB, open-source licenses",
   "settingsError": "Error",
   "settingsAppLanguage": "App Language",
@@ -234,7 +220,7 @@
   "settingsAppearance": "Appearance",
   "settingsAppearanceSubtitle": "Language, display and content",
   "settingsAppLanguageSubtitle": "Interface language",
-  "settingsContentLanguageSubtitle": "Language for movie and TV show descriptions",
+  "settingsContentLanguageSubtitle": "For now TMDB only (movies and TV shows)",
   "settingsDataSources": "Data Sources",
   "settingsDataSourcesSubtitle": "IGDB, TMDB, SteamGridDB",
   "settingsApiKeysSubtitle": "Configure connections to databases",
@@ -328,7 +314,8 @@
   "credentialsEnterComicVineKey": "Enter your ComicVine API key",
   "credentialsGoogleBooksSection": "Google Books API (Books)",
   "credentialsEnterGoogleBooksKey": "Enter your Google Books API key (optional)",
-  "credentialsContentLanguage": "Content Language",
+  "credentialsHardcoverSection": "Hardcover API (Books)",
+  "credentialsEnterHardcoverKey": "Enter your Hardcover API token",
   "credentialsOwnKeyHint": "For better rate limits we recommend using your own API key.",
   "credentialsConnected": "Connected",
   "credentialsConnectionError": "Connection Error",
@@ -357,6 +344,8 @@
   "credentialsComicVineKeyInvalid": "ComicVine API key is invalid",
   "credentialsGoogleBooksKeyValid": "Google Books API key is valid",
   "credentialsGoogleBooksKeyInvalid": "Google Books API key is invalid",
+  "credentialsHardcoverKeyValid": "Hardcover API token is valid",
+  "credentialsHardcoverKeyInvalid": "Hardcover API token is invalid or expired",
   "credentialsEnterSteamGridDbKeyError": "Please enter a SteamGridDB API key",
   "credentialsEnterTmdbKeyError": "Please enter a TMDB API key",
   "credentialsTmdbKeySaved": "TMDB API key saved",
@@ -458,7 +447,7 @@
   "storageLocationUseExistingConfirm": "Use It",
   "storageLocationCopyTitle": "Copy Current Data?",
   "storageLocationCopyMessage": "The selected folder is empty. Your collections will be copied there; saved images will download again as needed. Data in the old folder stays untouched.",
-  "storageLocationCopyConfirm": "Copy",
+  "copy": "Copy",
   "storageLocationCopyImages": "Copy the image cache too",
   "storageLocationCopyImagesHint": "Hero banners and saved covers — larger, but the new folder works offline without re-downloading",
   "storageLocationCopyError": "Failed to copy data to the selected folder",
@@ -469,7 +458,6 @@
   "storageLocationRestartNow": "Restart",
   "storageLocationRestartLater": "The change will take effect after restart",
 
-  "backupTitle": "Backup",
   "backupRestoreTile": "Restore the previous database",
   "backupNone": "No backup yet",
   "backupRestoreConfirmTitle": "Restore Previous Database?",
@@ -479,7 +467,6 @@
       "date": {"type": "String"}
     }
   },
-  "backupRestoreConfirm": "Restore",
   "backupRestored": "Database restored",
   "backupRestoreError": "Failed to restore the backup",
   "backupRestartMessage": "The restored data will be used after restart. Restart now?",
@@ -522,6 +509,7 @@
   "lanSyncAllow": "Allow",
   "lanSyncDenied": "The other device declined the request",
   "lanSyncManifestError": "The device did not respond",
+  "lanSyncStartError": "Could not start network sharing. Check the network connection and reopen this screen.",
   "lanSyncReceiveError": "Failed to get the data",
   "lanSyncTooNew": "The data on that device was made by a newer app version. Update the app on this device first.",
   "lanSyncCorrupted": "The transfer came through damaged. Try again.",
@@ -550,7 +538,7 @@
   "traktZipFile": "ZIP File",
   "traktSelectZipFile": "Select ZIP File",
   "traktSelectZipExport": "Select Trakt ZIP Export",
-  "traktPreview": "Preview",
+  "preview": "Preview",
   "traktUser": "Trakt user: {username}",
   "@traktUser": {
     "placeholders": {
@@ -562,20 +550,16 @@
   "traktRatedMovies": "Rated movies",
   "traktRatedShows": "Rated shows",
   "traktWatchlist": "Watchlist",
-  "traktOptions": "Options",
+  "importOptions": "Options",
   "traktImportWatched": "Import watched items",
   "traktImportWatchedDesc": "Movies and TV shows as completed",
   "traktImportRatings": "Import ratings",
   "traktImportRatingsDesc": "Apply user ratings (1-10)",
   "traktImportWatchlist": "Import watchlist",
   "traktImportWatchlistDesc": "Add as planned or to wishlist",
-  "traktTargetCollection": "Target collection",
-  "traktCreateNew": "Create new collection",
-  "traktUseExisting": "Use existing collection",
-  "traktNoCollections": "No collections available",
-  "traktSelectCollection": "Select collection",
-  "traktErrorLoadingCollections": "Error loading collections",
-  "traktStartImport": "Start Import",
+  "importTargetCollection": "Target collection",
+  "importUseExistingCollection": "Use existing collection",
+  "importStart": "Start Import",
   "traktRequiresOwnTmdbKey": "Trakt import requires your own TMDB API key. Add it in Settings → Credentials.",
   "traktInvalidExport": "Invalid Trakt export",
 
@@ -583,18 +567,10 @@
   "kinoriumImportDescription": "Export your list from Kinorium (it arrives by email as a CSV) and select the file below.",
   "kinoriumSelectCsvFile": "Select CSV File",
   "kinoriumSelectCsvExport": "Select Kinorium CSV Export",
-  "kinoriumOptions": "Options",
   "kinoriumIsWatchlist": "This is a \"Watchlist\" file",
   "kinoriumIsWatchlistDesc": "Import every title as planned instead of watched",
   "kinoriumImportNotes": "Import cast & crew",
   "kinoriumImportNotesDesc": "Add directors and actors to the item note",
-  "kinoriumTargetCollection": "Target collection",
-  "kinoriumCreateNew": "Create new collection",
-  "kinoriumUseExisting": "Use existing collection",
-  "kinoriumNoCollections": "No collections available",
-  "kinoriumSelectCollection": "Select collection",
-  "kinoriumErrorLoadingCollections": "Error loading collections",
-  "kinoriumStartImport": "Start Import",
   "kinoriumImporting": "Importing from Kinorium...",
   "kinoriumRecommendOwnTmdbKey": "Tip: a personal TMDB API key is recommended for large imports (Settings → API Keys), but it's optional — the built-in key works too.",
   "kinoriumReasonNotFound": "Not found on TMDB",
@@ -631,12 +607,12 @@
   "creditsFantlabAttribution": "Book data from Fantlab.",
   "creditsComicVineAttribution": "Comic data from ComicVine (non-commercial use).",
   "creditsGoogleBooksAttribution": "Book data from Google Books.",
+  "creditsHardcoverAttribution": "Book data from Hardcover.",
   "creditsOpenSource": "Open Source",
   "creditsOpenSourceDesc": "Tonkatsu Box is free and open source software, released under the MIT License.",
   "creditsViewLicenses": "View Open Source Licenses",
   "creditsDiscord": "Join Discord",
 
-  "collectionsNewCollection": "New Collection",
   "collectionsImportCollection": "Import Collection",
   "collectionsNoCollectionsYet": "No Collections Yet",
   "collectionsNoCollectionsHint": "Tap + to create your first collection and start\norganizing your media library.",
@@ -691,6 +667,54 @@
   "importSelectCollection": "Select collection",
   "importErrorLoadingCollections": "Error loading collections",
   "importStartButton": "Import",
+  "importUsername": "Username",
+  "importUsernameHint": "e.g. yourname",
+  "importMode": "Mode",
+  "importModeNewOnly": "Add new only",
+  "importModeNewOnlySubtitle": "Skip items already in the collection",
+  "importModeOverwrite": "Overwrite existing",
+  "importModeOverwriteSubtitle": "Update progress, status and dates from the source",
+  "importNewCollectionName": "Collection name",
+  "importNewCollectionDefault": "{source} Import — {username}",
+  "@importNewCollectionDefault": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "username": {"type": "String"}
+    }
+  },
+  "importFetchingBooks": "Fetching book library...",
+  "importAddingItems": "Importing entries",
+  "importProcessingItem": "Processing: {title}",
+  "@importProcessingItem": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "importImportedCount": "{count} imported",
+  "@importImportedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUpdatedCount": "{count} updated",
+  "@importUpdatedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUserNotFound": "User \"{username}\" was not found",
+  "@importUserNotFound": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "importEmptyUsername": "Enter a username",
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
 
   "collectionNotFound": "Collection not found",
   "collectionAddItems": "Add Items",
@@ -721,18 +745,18 @@
   "collectionExportIncludeUserData": "Include personal data",
   "collectionExportIncludeUserDataDesc": "Status, dates, notes, episode progress",
   "customItemCreate": "Create Custom Item",
-  "customItemTitle": "Title",
+  "title": "Title",
   "customItemTitleHint": "e.g. My Homebrew Game",
   "customItemAltTitle": "Alternative title",
   "customItemAltTitleHint": "Original language name",
   "customItemCoverUrl": "Cover image URL",
-  "customItemYear": "Year",
-  "customItemGenres": "Genres",
+  "year": "Year",
+  "genres": "Genres",
   "customItemGenresHint": "e.g. RPG, Action, Puzzle",
-  "customItemPlatform": "Platform",
+  "platform": "Platform",
   "customItemPlatformHint": "e.g. PC, SNES, Custom",
-  "customItemFormat": "Format",
-  "customProgress": "Progress",
+  "format": "Format",
+  "progress": "Progress",
   "customMarkCompleted": "Mark as completed",
   "customUnitParts": "Parts",
   "customUnitEpisodes": "Episodes",
@@ -740,17 +764,22 @@
   "customUnitPages": "Pages",
   "customUnitVolumes": "Volumes",
   "customUnitSeasons": "Seasons",
-  "customItemDescription": "Description",
+  "description": "Description",
   "customItemDescriptionHint": "Brief description or notes",
   "customItemOptionalFields": "More fields",
-  "customItemCreateButton": "Create",
   "customItemEdit": "Edit Custom Item",
+  "customItemFillFromFile": "Fill from file",
+  "customItemFileMultipleRows": "{count} entries in the file — the first one was used",
+  "@customItemFileMultipleRows": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customItemFileNoValidRows": "No valid entries in this file",
   "customItemAddCover": "Add cover",
   "customItemCoverSource": "Cover source",
   "customItemCoverRatio": "Recommended aspect ratio: 2:3 (e.g. 600×900)",
   "customItemCoverFromFile": "From file",
-  "customItemCoverFromUrl": "From URL",
-  "customItemAddGenre": "Add",
   "customItemSearchHint": "Search or type custom...",
   "customItemUseCustom": "Use custom value",
   "customItemExternalUrl": "External URL",
@@ -761,6 +790,12 @@
   "tagsLabel": "Tags",
   "tagCreate": "New tag",
   "tagCreateHint": "Tag name",
+  "tagCreateNamed": "Create \"{name}\"",
+  "@tagCreateNamed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "tagRename": "Rename tag",
   "tagDelete": "Delete tag",
   "tagDeleteConfirm": "Delete tag \"{name}\"? Items will be untagged.",
@@ -778,7 +813,6 @@
   "tagRenamed": "Tag renamed",
   "tagDeleted": "Tag deleted",
   "tagUpdateFailed": "Failed to update tag",
-  "renameItem": "Rename",
   "refreshItemFromApi": "Refresh from source",
   "refreshItemSuccess": "Item updated from source",
   "refreshItemNotFound": "Source no longer has this item",
@@ -801,11 +835,9 @@
   "tierListExportFailed": "Failed to export image",
   "browseCollectionsDownloadFailedGeneric": "Failed to download collection",
   "tagFilterAll": "All tags",
-  "tagSidebarAll": "All",
   "tagSidebarGroup": "Group",
   "colorPickerTitle": "Color",
   "colorPickerNoColor": "No color",
-  "colorPickerApply": "Apply",
   "raLinkButton": "Link RetroAchievements",
   "raLinkTitle": "Find game on RetroAchievements",
   "raLinkSearchHint": "Search by name...",
@@ -818,23 +850,18 @@
   "raUnlinkButton": "Unlink",
   "raUnlinkTitle": "Unlink RetroAchievements",
   "raUnlinkConfirm": "Remove RetroAchievements link and achievement data for this game?",
-  "collectionFilterAll": "All",
   "collectionFilterByType": "Filter by type",
   "collectionFilterGames": "Games",
   "collectionFilterMovies": "Movies",
   "collectionFilterTvShows": "TV Shows",
-  "collectionFilterAnimation": "Animation",
   "collectionFilterVisualNovels": "Visual Novels",
-  "collectionFilterManga": "Manga",
   "collectionFilterBooks": "Books",
-  "collectionFilterCustom": "Custom",
-  "collectionFilterSearchHint": "Search...",
-  "collectionFilterSort": "Sort",
+  "searchHint": "Search...",
+  "sort": "Sort",
   "collectionFilterAscending": "Ascending",
   "collectionFilterDescending": "Descending",
   "collectionFilterFilters": "Filters",
   "collectionFilterClearAll": "Clear all",
-  "collectionFilterPlatform": "Platform",
 
   "collectionItemMovedTo": "{name} moved to {collection}",
   "@collectionItemMovedTo": {
@@ -868,14 +895,13 @@
   "animationNotFound": "Animation not found",
   "visualNovelNotFound": "Visual novel not found",
   "mangaNotFound": "Manga not found",
-  "mangaProgress": "Reading Progress",
+  "readingProgress": "Reading Progress",
   "mangaChapters": "Chapters",
   "mangaVolumes": "Volumes",
   "mangaMarkCompleted": "Mark as completed",
   "animeProgress": "Watch Progress",
   "animeEpisodes": "Episodes",
   "animeMarkCompleted": "Mark as completed",
-  "bookProgress": "Reading Progress",
   "bookPages": "Pages",
   "bookIssues": "Issues",
   "bookMarkCompleted": "Mark as completed",
@@ -987,7 +1013,6 @@
   "canvasDeleteElementMessage": "Are you sure you want to delete this element?",
   "canvasAddToBoard": "Add to Board",
 
-  "addTextTitle": "Add Text",
   "editTextTitle": "Edit Text",
   "textContentLabel": "Text content",
   "fontSizeLabel": "Font size",
@@ -996,7 +1021,6 @@
   "fontSizeLarge": "Large",
   "fontSizeTitle": "Title",
 
-  "addImageTitle": "Add Image",
   "editImageTitle": "Edit Image",
   "imageFromUrl": "From URL",
   "imageFromFile": "From File",
@@ -1005,14 +1029,10 @@
   "imageChooseFile": "Choose File",
   "imageChooseAnother": "Choose Another",
 
-  "addLinkTitle": "Add Link",
   "editLinkTitle": "Edit Link",
-  "linkUrlLabel": "URL",
-  "linkUrlHint": "https://example.com",
   "linkLabelOptional": "Label (optional)",
   "linkLabelHint": "My Link",
 
-  "editConnectionTitle": "Edit Connection",
   "connectionLabelHint": "e.g. depends on, related to...",
   "connectionStyleLabel": "Style",
   "connectionStyleSolid": "Solid",
@@ -1020,30 +1040,21 @@
   "connectionStyleArrow": "Arrow",
 
   "searchTabTv": "TV",
-  "searchTabGames": "Games",
   "searchHintMovies": "Search movies...",
   "searchHintTv": "Search TV...",
   "searchHintAnime": "Search anime...",
   "searchHintGames": "Search games...",
   "searchHintVisualNovels": "Search visual novels...",
   "searchSourceVisualNovels": "V. Novels",
-  "searchSourceManga": "Manga",
-  "searchSourceAnime": "Anime",
-  "searchSourceGames": "Games",
-  "searchSourceMovies": "Movies",
-  "searchSourceTvShows": "TV Shows",
-  "searchSourceAnimation": "Animation",
   "searchSourceOpenLibrary": "OpenLibrary",
   "searchSourceFantlab": "Fantlab",
-  "searchSourceBooks": "Books",
   "searchSourceComics": "Comics",
   "searchHintManga": "Search manga...",
   "searchHintBooks": "Search books...",
   "searchHintComics": "Search comics...",
-  "bookFilterLanguage": "Language",
+  "language": "Language",
   "bookFilterSearchBy": "Search by",
-  "bookFilterPrintType": "Type",
-  "bookSearchTitle": "Title",
+  "type": "Type",
   "bookSearchAuthor": "Author",
   "bookSearchSubject": "Subject",
   "bookSimilarTitle": "Similar books",
@@ -1096,7 +1107,7 @@
       "name": {"type": "String"}
     }
   },
-  "searchGoToSettings": "Go to Settings",
+  "goToSettings": "Go to Settings",
   "searchMinCharsHint": "Type at least 2 characters and press Enter",
   "searchNoResults": "No results found",
   "searchNothingFoundFor": "Nothing found for \"{query}\"",
@@ -1110,15 +1121,16 @@
   "searchCheckConnection": "Check your internet connection and try again.",
   "copyErrorDetails": "Copy error details",
   "errorDetailsCopied": "Error details copied",
-  "searchDescription": "Description",
+  "errorDetailsTitle": "Error details",
+  "errorDetailsShow": "Details",
   "showMore": "More…",
   "showLess": "Collapse",
 
   "platformFilterTitle": "Select Platforms",
   "platformFilterClearAll": "Clear All",
   "platformFilterSearchHint": "Search platforms...",
-  "platformFilterSelected": "{count} selected",
-  "@platformFilterSelected": {
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
     "placeholders": {
       "count": {"type": "int"}
     }
@@ -1151,7 +1163,6 @@
       "name": {"type": "String"}
     }
   },
-  "wishlistClearResolvedTitle": "Clear resolved",
   "wishlistClearResolvedMessage": "{count, plural, =1{Delete 1 resolved item?} other{Delete {count} resolved items?}}",
   "@wishlistClearResolvedMessage": {
     "placeholders": {
@@ -1161,24 +1172,18 @@
   "wishlistMarkResolved": "Mark resolved",
   "wishlistUnresolve": "Unresolve",
 
-  "wishlistAddTitle": "Add",
-  "wishlistEditTitle": "Edit",
-  "wishlistTitleLabel": "Title",
   "wishlistTitleHint": "Game, movie, or TV show name...",
   "wishlistTitleMinChars": "At least 2 characters",
   "wishlistTypeOptional": "Type (optional)",
-  "wishlistTypeAny": "Any",
+  "any": "Any",
   "wishlistNoteOptional": "Note (optional)",
   "wishlistNoteHint": "Platform, year, who recommended...",
 
   "wishlistTagOptional": "Tag (optional)",
   "wishlistTagHint": "Group entries — e.g. an import batch or a source",
-  "wishlistTagAll": "All",
   "wishlistTagUntagged": "Untagged",
   "wishlistTagFilterLabel": "List",
-  "wishlistTagPlaceholder": "Tag",
   "wishlistTagManage": "Manage tag",
-  "wishlistTagRename": "Rename tag",
   "wishlistTagDelete": "Delete tag and all entries",
   "wishlistTagDeleteConfirm": "Delete tag \"{tag}\" and {count, plural, =1{1 entry} other{{count} entries}}?",
   "@wishlistTagDeleteConfirm": {
@@ -1211,18 +1216,13 @@
   "apply": "Apply",
 
   "welcomeStepWelcome": "Welcome",
-  "welcomeStepName": "Name",
-  "welcomeStepLanguage": "Language",
-  "welcomeStepApiKeys": "API Keys",
-  "welcomeStepHowItWorks": "How it works",
   "welcomeStepReady": "Ready!",
 
   "welcomeNameTitle": "What's your name?",
   "welcomeNameSubtitle": "This name will appear as the author on collections you create",
-  "welcomeNameHint": "You can change this later in Settings",
+  "welcomeChangeLaterHint": "You can change this later in Settings",
   "welcomeLanguageTitle": "Choose your language",
   "welcomeLanguageSubtitle": "Select the app interface language",
-  "welcomeLanguageHint": "You can change this later in Settings",
 
   "welcomeTitle": "Welcome to Tonkatsu Box",
   "welcomeSubtitle": "Organize your collections of games, movies,\nTV shows, anime, visual novels, manga & books",
@@ -1233,8 +1233,6 @@
   "welcomeFeatureBoards": "Visual canvas boards with artwork",
   "welcomeFeatureExport": "Export & import — share collections with friends",
   "welcomeWorksWithoutKeys": "Works without API keys",
-  "welcomeChipCollections": "Collections",
-  "welcomeChipWishlist": "Wishlist",
   "welcomeChipImport": "Import .xcoll",
   "welcomeChipCanvas": "Canvas boards",
   "welcomeChipRatings": "Ratings & notes",
@@ -1255,6 +1253,7 @@
   "welcomeApiTmdbDesc": "Movies, TV & Anime",
   "welcomeApiComicVineDesc": "Comics & graphic novels",
   "welcomeApiGoogleBooksDesc": "Google's global book catalog",
+  "welcomeApiHardcoverDesc": "Community book catalog, needs a personal token",
   "welcomeApiRecommended": "RECOMMENDED",
   "welcomeApiSgdbTag": "SGDB",
   "welcomeApiSgdbDesc": "Game artwork for boards",
@@ -1289,7 +1288,6 @@
 
   "welcomeReadyTitle": "You're all set!",
   "welcomeReadyMessage": "Head to Settings → Credentials to enter your API keys, or start by importing a collection.",
-  "welcomeReadyGoToSettings": "Go to Settings",
   "welcomeReadySkip": "Skip — explore on my own",
   "welcomeReadyReturnHint": "You can always return here from Settings",
 
@@ -1303,6 +1301,7 @@
   "welcomeSourcesKeySaved": "Key saved",
   "welcomeSourcesGetKey": "Get a key",
   "welcomeSourcesKeyOptionalHint": "Optional — your own key raises rate limits. Search works without it.",
+  "welcomeSourcesHardcoverTokenHint": "Required — search and import stay disabled without it. Tokens expire every January 1st.",
 
   "welcomeSourceDescTmdb": "Movies, TV shows and animation.",
   "welcomeSourceDescIgdb": "Video games across every platform.",
@@ -1313,6 +1312,7 @@
   "welcomeSourceDescFantlab": "A detailed book catalog with ratings, awards and series.",
   "welcomeSourceDescComicVine": "A vast catalog of comics and graphic novels.",
   "welcomeSourceDescGoogleBooks": "Millions of editions from Google's book catalog, searchable by title, author or ISBN.",
+  "welcomeSourceDescHardcover": "Community book catalog with series, genres, moods and ratings. Requires a free personal token.",
 
   "welcomeTourTitle": "Get to know the menu",
   "welcomeTourSubtitle": "A quick tour of the main navigation — tap Next to step through it.",
@@ -1338,7 +1338,6 @@
   "chooseCollection": "Choose Collection",
   "withoutCollection": "Without Collection",
 
-  "detailStatus": "Status",
   "detailMyRating": "My Rating",
   "detailRatingValue": "{rating}/10",
   "@detailRatingValue": {
@@ -1376,35 +1375,16 @@
     }
   },
 
-  "allItemsAll": "All",
-  "allItemsGames": "Games",
-  "allItemsMovies": "Movies",
-  "allItemsTvShows": "TV Shows",
-  "allItemsAnimation": "Animation",
-  "allItemsVisualNovels": "Visual Novels",
-  "allItemsManga": "Manga",
-  "allItemsBooks": "Books",
-  "allItemsCustom": "Custom",
   "allItemsRatingAsc": "Rating ↑",
   "allItemsRatingDesc": "Rating ↓",
-  "allItemsRating": "Rating",
   "allItemsNoItems": "No items yet",
   "allItemsNoMatch": "No items match filter",
   "allItemsAddViaCollections": "Go to Collections → create a collection → add items\nvia Search. They will appear here automatically.",
   "allItemsFailedToLoad": "Failed to load items",
-  "allItemsFilterPlatformsAll": "All Platforms",
-  "allItemsFilterPlatformsSelected": "{count} platforms",
-  "@allItemsFilterPlatformsSelected": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
+  "allPlatforms": "All Platforms",
   "allItemsFilterPlatformsTitle": "Filter by platform",
-  "allItemsFilterPlatformsApply": "Apply",
-  "allItemsFilterPlatformsClear": "Clear",
 
   "debugIgdbMedia": "IGDB Media",
-  "debugSteamGridDb": "SteamGridDB",
   "debugGamepad": "Gamepad",
   "debugClearLogs": "Clear logs",
   "debugRawEvents": "Raw Events (Gamepads.events)",
@@ -1443,11 +1423,6 @@
     }
   },
   "debugNoImagesFound": "No images found",
-  "debugSearchTab": "Search",
-  "debugGridsTab": "Grids",
-  "debugHeroesTab": "Heroes",
-  "debugLogosTab": "Logos",
-  "debugIconsTab": "Icons",
 
   "collectionTileStats": "{count, plural, =1{1 item} other{{count} items}} · {percent} completed",
   "@collectionTileStats": {
@@ -1462,7 +1437,6 @@
   "activityDatesAdded": "Added",
   "activityDatesStarted": "Started",
   "activityDatesCompleted": "Completed",
-  "activityDatesLastActivity": "Last Activity",
   "activityDatesSelectStart": "Select start date",
   "activityDatesSelectCompletion": "Select completion date",
   "settingsDateFormat": "Date format",
@@ -1472,17 +1446,12 @@
   "settingsAnimeMangaTitleLanguageRomaji": "Romaji",
   "settingsAnimeMangaTitleLanguageEnglish": "English",
   "settingsAnimeMangaTitleLanguageNative": "Native",
-  "dualDatePickerInputLabel": "Date",
-  "dualDatePickerOk": "OK",
-  "dualDatePickerCancel": "Cancel",
   "dualDatePickerErrorEmpty": "Enter a date",
   "dualDatePickerErrorFormat": "Use format yyyy-MM-dd",
   "dualDatePickerErrorRange": "Date is out of range",
   "activityDatesCompletionTime": "Completed in {duration}",
   "@activityDatesCompletionTime": { "placeholders": { "duration": { "type": "String" } } },
   "timeSpentTitle": "Time Spent",
-  "timeSpentValue": "{hours}h {minutes}m",
-  "@timeSpentValue": { "placeholders": { "hours": { "type": "int" }, "minutes": { "type": "int" } } },
   "timeSpentAdd": "Add time",
   "timeSpentEdit": "Edit time",
   "timeSpentHours": "Hours",
@@ -1507,7 +1476,7 @@
   "canvasSteamGridDbImages": "SteamGridDB Images",
 
   "steamGridDbPanelTitle": "SteamGridDB",
-  "steamGridDbClosePanel": "Close panel",
+  "closePanel": "Close panel",
   "steamGridDbSearchHint": "Search game...",
   "steamGridDbNoApiKey": "SteamGridDB API key not set. Configure it in Settings.",
   "steamGridDbBackToSearch": "Back to search",
@@ -1515,10 +1484,8 @@
   "steamGridDbHeroes": "Heroes",
   "steamGridDbLogos": "Logos",
   "steamGridDbIcons": "Icons",
-  "steamGridDbNoResults": "No results found",
   "steamGridDbSearchFirst": "Search for a game first",
 
-  "vgmapsClosePanel": "Close panel",
   "vgmapsBack": "Back",
   "vgmapsForward": "Forward",
   "vgmapsHome": "Home",
@@ -1540,7 +1507,6 @@
   "discoverTopRatedTvShows": "Top Rated TV Shows",
   "discoverPopularTvShows": "Popular TV Shows",
   "discoverUpcoming": "Upcoming",
-  "discoverAnime": "Anime",
   "discoverCustomizeTitle": "Customize Discover",
   "discoverCustomizeHint": "Choose which sections to show",
   "discoverResetDefault": "Reset to default",
@@ -1560,7 +1526,6 @@
   "reviewsReadMore": "Read more",
   "reviewsInEnglish": "Reviews in English",
 
-  "settingsShowRecommendations": "Recommendations",
   "settingsShowRecommendationsSubtitle": "Similar movies and TV shows on detail pages",
   "settingsHideEmptyMediaTypeChevrons": "Hide empty media type filters",
   "settingsHideEmptyMediaTypeChevronsSubtitle": "Hide media type chevrons (Games, Movies, etc.) when there are no items of that type",
@@ -1572,14 +1537,14 @@
   "settingsShowBlurayOverlaySubtitle": "Show Blu-ray overlay on movie and TV show posters",
   "settingsRichCollections": "Rich collection view",
   "settingsRichCollectionsSubtitle": "Personalize collections with a cover image and description",
+  "settingsCardScale": "Cover size",
+  "settingsCardScaleSubtitle": "Card size in collection grids",
   "collectionEditHeroImage": "Cover image",
   "collectionEditHeroImageHint": "Recommended 2560×1080 (21:9). Main subject on the right — the left side is covered by the title, the bottom fades into the background",
   "collectionEditHeroPick": "Choose image",
   "collectionEditHeroReplace": "Replace image",
   "collectionEditHeroRemove": "Remove image",
-  "collectionEditDescription": "Description",
   "collectionEditDescriptionHint": "Short tagline shown over the cover",
-  "collectionEditMenu": "Collection settings",
   "collectionEditDialogTitle": "Collection settings",
   "settingsDiscordRpc": "Discord Rich Presence",
   "settingsDiscordRpcSubtitle": "Show currently viewed item in your Discord status",
@@ -1587,7 +1552,6 @@
   "settingsDiscordRaSyncSubtitle": "Show your RetroAchievements activity in Discord instead",
 
   "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
-  "uncategorizedBannerAction": "Add to Collection",
   "uncategorizedDeprecationNotice": "This system collection will be removed soon. Create your own collection and move all items here into it.",
   "@uncategorizedDeprecationNotice": {
     "description": "Warns that the Uncategorized system collection is deprecated and will be removed."
@@ -1598,8 +1562,6 @@
   },
 
   "browseFilterGenre": "Genre",
-  "browseFilterTag": "Tag",
-  "browseFilterYear": "Year",
   "browseFilterLength": "Length",
   "vndbLengthVeryShort": "Very short",
   "vndbLengthShort": "Short",
@@ -1614,20 +1576,11 @@
   "tagPickerShowAdult": "Show 18+ tags",
   "tagPickerRefresh": "Refresh catalog",
   "tagPickerEmpty": "No tags found",
-  "tagPickerSelectedCount": "{count} selected",
-  "@tagPickerSelectedCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
   "clearAll": "Clear all",
-  "browseFilterPlatform": "Platform",
-  "browseFilterFormat": "Format",
   "browseFilterSeason": "Season",
   "browseFilterGameMode": "Game mode",
   "browseFilterMinRating": "Min rating",
   "browseFilterMinVotes": "Min votes",
-  "browseFilterLanguage": "Language",
   "seasonWinter": "Winter",
   "seasonSpring": "Spring",
   "seasonSummer": "Summer",
@@ -1659,26 +1612,22 @@
   "languageRussian": "Russian",
   "languageItalian": "Italian",
   "languagePortuguese": "Portuguese",
-  "mangaFormatManga": "Manga",
   "mangaFormatManhwa": "Manhwa",
   "mangaFormatManhua": "Manhua",
   "mangaFormatOneShot": "One Shot",
   "mangaFormatNovel": "Novel",
   "mangaFormatLightNovel": "Light Novel",
-  "browseFilterType": "Type",
   "browseFilterContentRating": "Content rating",
   "contentRatingSafe": "Safe",
   "contentRatingSuggestive": "Suggestive",
   "contentRatingErotica": "Erotica",
   "contentRatingPornographic": "Pornographic",
-  "browseFilterAll": "All",
-  "browseFilterAny": "Any",
-  "browseSort": "Sort",
   "browseSortRelevance": "Relevance",
   "browseSortPopular": "Popular",
   "browseSortTopRated": "Top Rated",
   "browseSortNewest": "Newest",
   "browseSortMostVoted": "Most Voted",
+  "browseSortMostRead": "Most Read",
   "browseSortTrending": "Trending",
   "browseSortNameAsc": "Name (A–Z)",
   "browseSortNameDesc": "Name (Z–A)",
@@ -1687,12 +1636,9 @@
   "browseAnimeTypeSeries": "Series",
   "browseAnimeTypeMovies": "Movies",
   "browseEmptyFilters": "Choose a filter or search",
-  "browseEmptyResults": "No results found",
-  "browseSearchHint": "Search...",
   "browseBackToBrowse": "Back to browse",
   "browseSortDisabledHint": "Sorting unavailable during text search",
 
-  "animeFilterStatus": "Status",
   "animeStatusAiring": "Airing",
   "animeStatusFinished": "Finished",
   "animeStatusNotYetAired": "Not Yet Aired",
@@ -1730,7 +1676,7 @@
   },
   "tierListTitle": "Tier List",
   "tierListUnranked": "Unranked",
-  "tierListExportImage": "Export as image",
+  "exportAsImage": "Export as image",
   "tierListImageSaved": "Tier list saved as image",
   "tierListRename": "Rename tier",
   "tierListChangeColor": "Change color",
@@ -1738,13 +1684,11 @@
   "tierListMoveDown": "Move down",
   "tierListDeleteTier": "Delete tier",
   "tierListAddTier": "Add tier",
-  "tierListClearAll": "Clear all",
   "tierListClearConfirm": "Remove all items from tiers? They will return to Unranked.",
   "tierListDeleteConfirm": "Delete this tier list?",
   "tierListEmpty": "No Tier Lists Yet",
   "tierListEmptyHint": "Tap + to create a tier list and rank items\nfrom your collections.",
   "tierListAllRanked": "All items ranked!",
-  "tierListNoCollections": "No collections available",
   "tierListErrorEmptyName": "Enter a tier list name",
   "tierListErrorNoCollection": "Select a collection",
   "collectionPickerFilter": "Filter collections...",
@@ -1764,22 +1708,13 @@
   "igdbImportDescription": "Pick a CSV list exported from IGDB. Games are matched by their IGDB id; anything IGDB no longer has goes to the wishlist.",
   "igdbImportSelectCsvFile": "Select CSV file",
   "igdbImportSelectCsvExport": "Select IGDB CSV export",
-  "igdbImportOptions": "Options",
   "igdbImportStatusLabel": "Status for imported games",
-  "igdbImportPlatformLabel": "Platform",
   "igdbImportPlatformSelect": "Select platform",
-  "igdbImportTargetCollection": "Target collection",
-  "igdbImportCreateNew": "Create new collection",
-  "igdbImportUseExisting": "Use existing collection",
-  "igdbImportNoCollections": "No collections available",
-  "igdbImportSelectCollection": "Select collection",
-  "igdbImportErrorLoadingCollections": "Error loading collections",
-  "igdbImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
-  "igdbStartImport": "Start Import",
-  "igdbImporting": "Importing...",
+  "importIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
+  "importing": "Importing...",
   "igdbReasonNotFound": "Not found on IGDB",
   "steamImportTitle": "Import Steam Library",
-  "steamImportSubtitle": "Games will be matched to IGDB database",
+  "importIgdbMatchNote": "Games will be matched to IGDB database",
   "steamImportApiKey": "Steam API Key",
   "steamImportApiKeyHint": "Get free key at steamcommunity.com/dev/apikey",
   "steamImportSteamId": "Steam ID (64-bit)",
@@ -1812,7 +1747,7 @@
       "count": {"type": "int"}
     }
   },
-  "steamImportComplete": "Import complete!",
+  "importComplete": "Import complete!",
   "steamImportGamesImported": "{count} games imported",
   "@steamImportGamesImported": {
     "placeholders": {
@@ -1833,32 +1768,16 @@
   },
   "steamImportPlayedStatus": "Played games marked as \"In Progress\"",
   "steamImportPlaytimeComment": "Playtime saved in comments",
-  "steamImportTargetCollection": "Target collection",
-  "steamImportCreateNew": "Create new collection",
-  "steamImportUseExisting": "Use existing collection",
-  "steamImportNoCollections": "No collections available",
-  "steamImportSelectCollection": "Select collection",
-  "steamImportErrorLoadingCollections": "Error loading collections",
-  "steamImportOpenCollection": "Open collection",
-  "steamImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
+  "openCollection": "Open collection",
   "steamImportRememberCredentials": "Remember credentials",
 
   "collectionListSortCreatedDate": "Date Created",
-  "collectionListSortAlphabetical": "Name",
-  "collectionListSortCreatedDateNewest": "Newest first",
-  "collectionListSortCreatedDateOldest": "Oldest first",
   "collectionListSortAlphabeticalAZ": "A to Z",
   "collectionListSortAlphabeticalZA": "Z to A",
   "collectionListViewGrid": "Grid view",
   "collectionListViewList": "List view",
   "collectionListViewTable": "Table view",
-  "collectionTableName": "Name",
-  "collectionTableType": "Type",
-  "collectionTablePlatform": "Platform",
-  "collectionTableStatus": "Status",
-  "collectionTableRating": "Rating",
   "collectionTableExternalRating": "External",
-  "collectionTableYear": "Year",
 
   "collectionCopyToCollection": "Copy to collection",
   "collectionItemCopiedTo": "{name} copied to {collection}",
@@ -1882,6 +1801,13 @@
   "importResultImported": "Imported",
   "importResultWishlisted": "Added to Wishlist",
   "importResultUpdated": "Updated",
+  "importResultErrors": "Errors ({count})",
+  "@importResultErrors": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultErrorsCopied": "Errors copied",
   "importResultSkipped": "{count} skipped",
   "@importResultSkipped": {
     "placeholders": {
@@ -1902,7 +1828,6 @@
     }
   },
   "browseCollectionsSearch": "Search collections...",
-  "browseCollectionsAllPlatforms": "All Platforms",
   "browseCollectionsAllCategories": "All Categories",
   "browseCollectionsItems": "{count} items",
   "@browseCollectionsItems": {
@@ -1913,7 +1838,6 @@
   "browseCollectionsFormatLight": "Light (needs API keys)",
   "browseCollectionsFormatFull": "Full (offline)",
   "browseCollectionsDownloading": "Downloading...",
-  "browseCollectionsImporting": "Importing...",
   "browseCollectionsImportSuccess": "Collection imported: {name}",
   "@browseCollectionsImportSuccess": {
     "placeholders": {
@@ -1921,31 +1845,17 @@
     }
   },
   "browseCollectionsEmpty": "No collections found",
-  "browseCollectionsRetry": "Retry",
   "browseCollectionsLoadError": "Failed to load collections",
   "browseCollectionsImportTarget": "Import to",
   "browseCollectionsNewCollection": "New collection",
   "browseCollectionsExistingCollection": "Existing collection",
-  "browseCollectionsSelectCollection": "Select collection",
-  "browseCollectionsNoCollections": "No collections yet",
+  "noCollectionsYet": "No collections yet",
 
   "settingsRaImport": "RetroAchievements",
   "settingsRaImportSubtitle": "Import games from RetroAchievements",
   "raImportTitle": "RetroAchievements Import",
-  "raImportSubtitle": "Games will be matched to IGDB database",
-  "raImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
-  "raUsername": "Username",
-  "raApiKey": "API Key",
   "raGetApiKey": "Get your API key at retroachievements.org/controlpanel.php",
-  "raImportOptions": "Options",
   "raImportOptionWishlist": "Add unmatched games to Wishlist",
-  "raImportStart": "Start Import",
-  "raImportTargetCollection": "Target collection",
-  "raImportNewCollection": "Create new collection",
-  "raImportExistingCollection": "Use existing collection",
-  "raImportNoCollections": "No collections available",
-  "raImportSelectCollection": "Select collection",
-  "raImportErrorLoadingCollections": "Error loading collections",
   "raImportFetchingLibrary": "Fetching RA library...",
   "raImportSearchingIgdb": "Searching games on IGDB...",
   "raImportMatching": "Matching: {title}",
@@ -1954,7 +1864,6 @@
       "title": {"type": "String"}
     }
   },
-  "raImportComplete": "Import complete!",
   "raImportAdded": "{count} games added",
   "@raImportAdded": {
     "placeholders": {
@@ -1979,12 +1888,6 @@
       "error": {"type": "String"}
     }
   },
-  "raImportFailed": "Import failed: {error}",
-  "@raImportFailed": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
   "raProfilePoints": "{points} points",
   "@raProfilePoints": {
     "placeholders": {
@@ -2000,7 +1903,6 @@
 
   "raRefresh": "Refresh achievements",
   "raOpenOnRa": "Open on RA ↗",
-  "raProgress": "Progress",
   "raHardcore": "Hardcore",
   "raCompletion": "Completion",
   "raRecentUnlocks": "Recent Unlocks",
@@ -2011,13 +1913,11 @@
       "count": {"type": "int"}
     }
   },
-  "raCollapse": "Collapse",
   "raMastered": "Mastered",
   "raHardcoreMastered": "Hardcore Mastered",
   "raBeaten": "Beaten",
   "raBeatenSoftcore": "Beaten Softcore",
   "raHardcoreBeaten": "Hardcore Beaten",
-  "raToday": "Today",
   "raYesterday": "Yesterday",
   "raDaysAgo": "{days}d ago",
   "@raDaysAgo": {
@@ -2028,7 +1928,6 @@
   "raPoints": "pts",
   "raAchievements": "ach",
   "raMissable": "MISSABLE",
-  "raFilterAll": "All",
   "raFilterEarned": "Earned",
   "raFilterLocked": "Locked",
   "raFilterMissable": "Missable",
@@ -2047,16 +1946,13 @@
       "count": {"type": "int"}
     }
   },
-  "textExportTemplate": "Template",
+  "template": "Template",
   "textExportTokens": "Tokens",
-  "textExportPreview": "Preview",
   "textExportSortBy": "Sort by",
   "textExportSortCurrent": "Current order",
   "textExportSortName": "Name A→Z",
-  "textExportSortRating": "Rating ↓",
   "textExportSortYear": "Year ↓",
   "textExportSortAdded": "Date added ↓",
-  "textExportCopy": "Copy",
   "textExportEmptyTemplate": "Template is empty",
   "filtersClear": "Clear",
   "collectionTableColumns": "Columns",
@@ -2111,7 +2007,6 @@
   "kodiConnectionSubtitle": "Kodi HTTP JSON-RPC (Settings → Services → Control)",
   "kodiHost": "Host",
   "kodiPort": "Port",
-  "kodiUsername": "Username",
   "kodiPassword": "Password",
   "kodiPasswordHint": "Enter password",
   "kodiTestConnection": "Test connection",
@@ -2126,7 +2021,6 @@
   },
 
   "kodiSyncTitle": "Sync",
-  "kodiTargetCollection": "Target collection",
   "kodiTargetCollectionSubtitle": "All Kodi movies sync here",
   "kodiTargetNotSelected": "Not selected",
   "kodiTargetDeletedLabel": "Deleted (#{id})",
@@ -2135,7 +2029,6 @@
       "id": {"type": "int"}
     }
   },
-  "kodiTargetError": "Error",
   "kodiEnableSync": "Enable Kodi sync",
   "kodiEnableSyncActiveSubtitle": "Active while Tonkatsu is running",
   "kodiEnableSyncDisabledSubtitle": "Select a target collection first",
@@ -2145,7 +2038,6 @@
   "kodiImportRatings": "Import ratings from Kodi",
   "kodiImportRatingsSubtitle": "Copy Kodi userrating (1–10)",
 
-  "kodiCollectionPickerCreateNew": "Create new collection",
   "kodiCollectionLibraryName": "Kodi Library",
   "kodiCollectionCreated": "Created \"{name}\"",
   "@kodiCollectionCreated": {
@@ -2155,11 +2047,9 @@
   },
   "kodiTargetDeletedSnack": "Target collection deleted — sync stopped",
 
-  "kodiDebugTitle": "Debug",
   "kodiSyncStatus": "Sync status",
   "kodiSyncRunning": "Running",
   "kodiSyncStopped": "Stopped",
-  "kodiLastSync": "Last sync",
   "kodiLastSyncNever": "Never",
   "kodiClearLastSync": "Clear last sync timestamp",
   "kodiClearLastSyncSubtitle": "Next sync will fetch all watched items",
@@ -2202,48 +2092,19 @@
   "malImportSubtitle": "Anime and manga will be matched to AniList",
   "malImportPickFiles": "Add XML file",
   "malImportFilesHint": "Export XML from myanimelist.net/panel.php?go=export",
-  "malImportAnimeFile": "Anime list",
-  "malImportMangaFile": "Manga list",
-  "malImportRemoveFile": "Remove",
+  "importAnimeList": "Anime list",
+  "importMangaList": "Manga list",
   "malImportEntriesCount": "{count, plural, =1{1 entry} other{{count} entries}}",
   "@malImportEntriesCount": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "malImportTargetCollection": "Target collection",
-  "malImportCreateNew": "Create new collection",
-  "malImportUseExisting": "Use existing collection",
-  "malImportSelectCollection": "Select collection",
-  "malImportNoCollections": "No collections available",
-  "malImportErrorLoadingCollections": "Error loading collections",
-  "malImportNewCollectionName": "Collection name",
-  "malImportButton": "Start Import",
   "malImportReadingFiles": "Reading files...",
   "malImportResolvingAnime": "Resolving anime on AniList",
   "malImportResolvingManga": "Resolving manga on AniList",
-  "malImportMatching": "Importing entries",
-  "malImportComplete": "Import complete!",
-  "malImportLookingUp": "Processing: {title}",
-  "@malImportLookingUp": {
-    "placeholders": {
-      "title": {"type": "String"}
-    }
-  },
-  "malImportImported": "{count} imported",
-  "@malImportImported": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
   "malImportWishlisted": "{count} to wishlist",
   "@malImportWishlisted": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "malImportUpdated": "{count} updated",
-  "@malImportUpdated": {
     "placeholders": {
       "count": {"type": "int"}
     }
@@ -2264,12 +2125,6 @@
       "max": {"type": "int"}
     }
   },
-  "malImportFailed": "Import failed: {error}",
-  "@malImportFailed": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
   "malImportInvalidFile": "Could not parse XML: {error}",
   "@malImportInvalidFile": {
     "placeholders": {
@@ -2286,60 +2141,23 @@
 
   "settingsAniListImport": "AniList",
   "settingsAniListImportSubtitle": "Import anime/manga lists by public username",
+  "settingsHardcoverImportSubtitle": "Import a book library from hardcover.app by username",
+  "hardcoverImportTitle": "Hardcover Import",
+  "hardcoverImportSubtitle": "Fetches a user's library from hardcover.app — public part for other users, everything for your own account",
+  "hardcoverImportTokenMissing": "Hardcover API token is not set. Add it in Settings → API Credentials.",
   "aniListImportTitle": "AniList Import",
   "aniListImportSubtitle": "Fetches public lists from anilist.co — no login required",
   "aniListImportUsername": "AniList username",
-  "aniListImportUsernameHint": "e.g. yourname",
   "aniListImportInclude": "What to import",
-  "aniListImportIncludeAnime": "Anime list",
-  "aniListImportIncludeManga": "Manga list",
-  "aniListImportMode": "Mode",
-  "aniListImportModeNewOnly": "Add new only",
-  "aniListImportModeNewOnlySubtitle": "Skip items already in the collection",
-  "aniListImportModeOverwrite": "Overwrite existing",
   "aniListImportModeOverwriteSubtitle": "Update progress, status and dates from AniList",
-  "aniListImportTargetCollection": "Target collection",
-  "aniListImportCreateNew": "Create new collection",
-  "aniListImportUseExisting": "Use existing collection",
-  "aniListImportSelectCollection": "Select collection",
-  "aniListImportNoCollections": "No collections available",
-  "aniListImportErrorLoadingCollections": "Error loading collections",
-  "aniListImportNewCollectionName": "Collection name",
   "aniListImportNewCollectionDefault": "AniList Import — {username}",
   "@aniListImportNewCollectionDefault": {
     "placeholders": {
       "username": {"type": "String"}
     }
   },
-  "aniListImportButton": "Start Import",
   "aniListImportFetchingAnime": "Fetching anime list...",
   "aniListImportFetchingManga": "Fetching manga list...",
-  "aniListImportMatching": "Importing entries",
-  "aniListImportComplete": "Import complete!",
-  "aniListImportLookingUp": "Processing: {title}",
-  "@aniListImportLookingUp": {
-    "placeholders": {
-      "title": {"type": "String"}
-    }
-  },
-  "aniListImportImported": "{count} imported",
-  "@aniListImportImported": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "aniListImportUpdated": "{count} updated",
-  "@aniListImportUpdated": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "aniListImportFailed": "Import failed: {error}",
-  "@aniListImportFailed": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
   "aniListImportUserNotFound": "AniList user \"{username}\" was not found",
   "@aniListImportUserNotFound": {
     "placeholders": {
@@ -2363,12 +2181,6 @@
   "customImportCsvTemplate": "CSV template",
   "customImportJsonTemplate": "JSON template",
   "customImportTemplateSaved": "Template saved",
-  "customImportTargetCollection": "Target collection",
-  "customImportCreateNew": "Create new collection",
-  "customImportUseExisting": "Add to existing collection",
-  "customImportSelectCollection": "Select collection",
-  "customImportNoCollections": "No collections yet",
-  "customImportErrorLoadingCollections": "Failed to load collections",
   "customImportPreviewButton": "Preview and import",
   "customImportPreviewTitle": "Import preview",
   "customImportSummary": "Recognized {valid} · Errors {errors} · Duplicates {duplicates}",
@@ -2379,7 +2191,6 @@
       "duplicates": {"type": "int"}
     }
   },
-  "customImportSelectAll": "Select all",
   "customImportSelectNone": "Deselect all",
   "customImportSelectedCount": "{selected} of {total} selected",
   "@customImportSelectedCount": {
@@ -2446,23 +2257,14 @@
 
   "moodGridCreate": "Create Mood Grid",
   "moodGridCreateTitle": "New Mood Grid",
-  "moodGridName": "Name",
-  "moodGridPresetLabel": "Template",
   "moodGridPresetAboutMe": "About Me: Tonkatsu Box",
   "moodGridPresetAboutMeSubtitle": "1×5 — favorite game, movie, TV show, anime, manga",
   "moodGridPresetBlank": "Blank",
   "moodGridPresetBlankSubtitle": "Empty grid with the size you choose",
   "moodGridRows": "Rows",
-  "moodGridCols": "Columns",
   "moodGridBadge": "Mood Grid",
-  "moodGridEdit": "Edit",
-  "moodGridDoneEditing": "Done",
-  "moodGridRename": "Rename",
-  "moodGridDelete": "Delete",
   "moodGridDeleteTitle": "Delete this grid?",
   "moodGridDeleteMessage": "The grid will be removed. This cannot be undone.",
-  "moodGridExportImage": "Export as image",
-  "moodGridImageSaved": "Image saved",
   "moodGridAddRow": "Add row",
   "moodGridRemoveRow": "Remove row",
   "moodGridAddCol": "Add column",
@@ -2477,9 +2279,7 @@
   "moodGridClearItem": "Clear item",
   "moodGridCaptionTemplate": "Row captions",
   "moodGridCaptionTemplateHint": "Template applied per cell. Available tokens: name, year, genre, rating.",
-  "moodGridCaptionTemplateClear": "Clear",
-  "moodGridPickerTitle": "Pick item",
-  "moodGridPickerCollection": "Collection",
+  "collection": "Collection",
   "moodGridPickerAllCollections": "All collections",
   "moodGridPickerSearchHint": "Search by name",
   "moodGridPickerEmpty": "Nothing to pick",
@@ -2517,7 +2317,6 @@
   "genreCloudEmpty": "No genres yet",
   "genreCloudEmptyHint": "Add items with genres to build the cloud",
   "genreCloudExportImage": "Save as image",
-  "genreCloudImageSaved": "Image saved",
   "genreCloudExportFailed": "Couldn't save the image",
   "genreCloudResetView": "Reset view",
   "genreCloudHidden": "{count, plural, =1{1 hidden (didn't fit)} other{{count} hidden (didn't fit)}}",
@@ -2526,12 +2325,9 @@
       "count": {"type": "int"}
     }
   },
-  "facetGenre": "Genres",
   "facetPlatform": "Platforms",
   "facetDecade": "Decades",
   "personalizationTabCloud": "Genre cloud",
-  "personalizationTabRecommendations": "Recommendations",
-  "recommendationsRefresh": "Refresh",
   "recommendationsEmpty": "No recommendations yet",
   "recommendationsEmptyHint": "Complete and rate some movies or shows to get personalized picks",
   "recommendationsNoCandidates": "Nothing new to suggest",
@@ -2552,13 +2348,10 @@
   "itemMarkSectionTitle": "Notes & likes",
   "itemMarkAdd": "Add mark",
   "itemMarkEmpty": "No marks yet",
-  "itemMarkDelete": "Delete",
-  "itemMarkType": "Type",
   "itemMarkNumber": "Number",
   "itemMarkNumberHint": "e.g. 12",
   "itemMarkNumberHelper": "Required to save",
   "itemMarkCustomType": "Custom type",
-  "itemMarkFilterAll": "All",
   "itemMarkFilterLiked": "Liked",
   "itemMarkFilterCommented": "With notes",
   "itemMarkUnitLabel": "{type} {number}",
@@ -2581,11 +2374,9 @@
   "unitVolume": "Volume",
   "unitPage": "Page",
   "unitPart": "Part",
-  "unitCustom": "Custom",
   "cardLinkCopy": "Copy card link",
   "cardLinkCopied": "Card link copied",
   "cardLinkNotFound": "Card not found",
-  "cardLinkPickCollection": "Open in collection",
   "cardLinkSearchTitle": "Link a card",
   "cardLinkSearchHint": "Search cards",
   "shortcutsDialogTitle": "Keyboard shortcuts",
@@ -2593,18 +2384,12 @@
   "shortcutSwitchTab": "Switch tab",
   "shortcutNextTab": "Next tab",
   "shortcutPreviousTab": "Previous tab",
-  "shortcutBack": "Back",
-  "shortcutSearch": "Search",
-  "shortcutRefresh": "Refresh",
   "shortcutThisHelp": "This help",
-  "shortcutsGroupCollections": "Collections",
   "shortcutCreateCollection": "Create collection",
   "shortcutImportCollection": "Import collection",
   "shortcutToggleView": "Toggle view",
   "shortcutDeleteCollection": "Delete collection",
   "shortcutRenameCollection": "Rename collection",
-  "shortcutOpenCollection": "Open collection",
-  "shortcutsGroupCollection": "Collection",
   "shortcutAddItems": "Add items",
   "shortcutExportCollection": "Export collection",
   "shortcutImportIntoCollection": "Import into collection",
@@ -2620,16 +2405,10 @@
   "shortcutCreateTierList": "Create tier list",
   "shortcutOpenTierList": "Open tier list",
   "shortcutDeleteTierList": "Delete tier list",
-  "shortcutRename": "Rename",
   "shortcutsGroupTierList": "Tier list",
-  "shortcutExportAsImage": "Export as image",
-  "shortcutAddTier": "Add tier",
-  "shortcutClearAll": "Clear all",
-  "shortcutsGroupWishlist": "Wishlist",
   "shortcutAddItem": "Add item",
   "shortcutToggleCompleted": "Show/hide completed",
   "shortcutClearCompleted": "Clear completed",
-  "shortcutsGroupSearch": "Search",
   "shortcutFocusSearchField": "Focus search field",
   "shortcutClearOrBack": "Clear / back",
   "shortcutRunSearch": "Run search",

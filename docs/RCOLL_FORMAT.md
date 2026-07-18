@@ -163,7 +163,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1.0–10.0, one decimal). Integers from v2 files load as doubles |
 | _canvas | object | no | Per-item canvas data (full only) |
-| tag_names | array | no | Names of all assigned tags in display order (full only, resolved into the global tag set on import) |
+| tag_names | array | no | Names of all assigned tags in the item's display order — manual per-item order when set, global tag order otherwise (full only, resolved into the global tag set on import) |
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
 
@@ -268,7 +268,7 @@ Contains the global tag definitions used by the exported collection's items. Onl
 | text_color | int? | Tag label text color (0xAARRGGBB int), null for default |
 | sort_order | int | Display order |
 
-Item-tag assignments are stored per-item via the `tag_names` array (see Item Object); the legacy single `tag_name` field is still written and accepted. On import, names are resolved case-insensitively into the global tag set (missing tags are created with the exported colors), then item links are written into the `item_tags` junction.
+Item-tag assignments are stored per-item via the `tag_names` array (see Item Object); the legacy single `tag_name` field is still written and accepted. On import, names are resolved case-insensitively into the global tag set (missing tags are created with the exported colors), then item links are written into the `item_tags` junction. The `tag_names` order carries the item's manual tag arrangement: when it differs from the global tag order, explicit per-item positions are written on import, otherwise the item keeps following the global sort.
 
 ### Tracker Data Object
 

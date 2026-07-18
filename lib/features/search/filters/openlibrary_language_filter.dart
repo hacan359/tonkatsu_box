@@ -15,7 +15,7 @@ class OpenLibraryLanguageFilter extends SearchFilter {
   String get cacheKey => 'language_openlibrary';
 
   @override
-  String placeholder(S l) => l.bookFilterLanguage;
+  String placeholder(S l) => l.language;
 
   @override
   FilterOption get allOption =>

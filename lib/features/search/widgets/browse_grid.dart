@@ -175,7 +175,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                l.browseEmptyResults,
+                l.searchNoResults,
                 style: AppTypography.body.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -456,27 +456,27 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     return '';
   }
 
-  /// Max card width on desktop; kept in sync with collection_screen.
-  static const double _desktopMaxCardWidth = 170;
-
   /// Card aspect ratio; kept in sync with collection_screen.
-  static const double _cardAspectRatio = 0.55;
+  static const double _cardAspectRatio = AppSpacing.posterAspectRatio;
 
   SliverGridDelegate _buildGridDelegate(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
+    final double cardScale = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.cardScale),
+    );
     if (width >= 800) {
-      return const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: _desktopMaxCardWidth,
+      return SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
         childAspectRatio: _cardAspectRatio,
         crossAxisSpacing: AppSpacing.sm,
         mainAxisSpacing: AppSpacing.sm,
       );
     }
-    final int crossAxisCount = width >= 500
+    final int baseCount = width >= 500
         ? AppSpacing.gridColumnsTablet
         : AppSpacing.gridColumnsMobile;
     return SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: crossAxisCount,
+      crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
       childAspectRatio: _cardAspectRatio,
       crossAxisSpacing: AppSpacing.sm,
       mainAxisSpacing: AppSpacing.sm,

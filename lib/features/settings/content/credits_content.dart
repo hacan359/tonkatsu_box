@@ -1,8 +1,6 @@
 // API-provider attribution and license screen content (no Scaffold/AppBar).
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/source_catalog.dart';
@@ -11,6 +9,7 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/source_logo.dart';
 import '../widgets/settings_group.dart';
 
@@ -110,6 +109,13 @@ class CreditsContent extends StatelessWidget {
         linkLabel: 'books.google.com',
         url: 'https://books.google.com/',
       ),
+      (
+        source: DataSource.hardcover,
+        name: 'Hardcover',
+        description: l10n.creditsHardcoverAttribution,
+        linkLabel: 'hardcover.app',
+        url: 'https://hardcover.app/',
+      ),
     ];
 
     return Column(
@@ -197,7 +203,7 @@ class CreditsContent extends StatelessWidget {
     required String url,
   }) {
     return InkWell(
-      onTap: () => _launchUrl(url),
+      onTap: () => launchExternalUrl(url),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -244,7 +250,7 @@ class _ProviderCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: radius,
-        onTap: () => _launchUrl(provider.url),
+        onTap: () => launchExternalUrl(provider.url),
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -340,16 +346,5 @@ class _MediaTag extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-Future<void> _launchUrl(String url) async {
-  try {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  } on Exception {
-    // Silently ignore — the link isn't critical to app function.
   }
 }

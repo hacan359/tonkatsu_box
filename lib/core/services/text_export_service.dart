@@ -29,6 +29,7 @@ class TextExportService {
     String template,
     List<CollectionItem> items, {
     String animeMangaTitleLanguage = 'romaji',
+    Map<int, String> tagsByItemId = const <int, String>{},
   }) {
     final StringBuffer buffer = StringBuffer();
     for (int i = 0; i < items.length; i++) {
@@ -38,16 +39,20 @@ class TextExportService {
         items[i],
         i + 1,
         animeMangaTitleLanguage: animeMangaTitleLanguage,
+        tagsByItemId: tagsByItemId,
       ));
     }
     return buffer.toString();
   }
 
+  /// [tagsByItemId] carries the user's global tags (item id → joined names),
+  /// resolved by the caller since tag state lives in Riverpod providers.
   String formatItem(
     String template,
     CollectionItem item,
     int index, {
     String animeMangaTitleLanguage = 'romaji',
+    Map<int, String> tagsByItemId = const <int, String>{},
   }) {
     String line = template;
     final Map<String, String?> values = <String, String?>{
@@ -58,7 +63,7 @@ class TextExportService {
       'platform': _platformOrNull(item),
       'status': _statusLabel(item.status),
       'genres': item.genresString,
-      'tags': _animeMangaTags(item),
+      'tags': tagsByItemId[item.id],
       'notes': item.userComment,
       'type': _mediaTypeLabel(item.mediaType),
       '#': index.toString(),
@@ -168,13 +173,6 @@ class TextExportService {
     }
   }
 
-  String? _animeMangaTags(CollectionItem item) {
-    return switch (item.mediaType) {
-      MediaType.anime => item.anime?.tagsString,
-      MediaType.manga => item.manga?.tagsString,
-      _ => null,
-    };
-  }
 }
 
 /// Sort mode for the text exporter.

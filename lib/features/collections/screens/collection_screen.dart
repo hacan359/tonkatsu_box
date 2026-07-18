@@ -60,7 +60,7 @@ class CollectionScreen extends ConsumerStatefulWidget {
   final int? collectionId;
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.shortcutsGroupCollection,
+        title: l.collection,
         entries: <ShortcutEntry>[
           ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItems),
           ShortcutEntry(keys: 'Ctrl+E', description: l.shortcutExportCollection),
@@ -175,8 +175,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     final String searchQuery = ref.watch(collectionsSearchQueryProvider);
     final List<Tag> tags = _visibleTags(itemsAsync);
-    final Map<int, Set<int>> itemTags =
-        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
+    final Map<int, List<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
     final CollectionFilters activeFilters = CollectionFilters(
       mediaTypes: _filterTypes,
       platformIds: _filterPlatformIds,
@@ -307,8 +307,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   /// Global tags actually used by this collection's items, in display order.
   List<Tag> _visibleTags(AsyncValue<List<CollectionItem>> itemsAsync) {
     final List<Tag> all = ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
-    final Map<int, Set<int>> itemTags =
-        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
+    final Map<int, List<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
     final List<CollectionItem> items =
         itemsAsync.valueOrNull ?? <CollectionItem>[];
     final Set<int> used = <int>{
@@ -426,7 +426,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     AsyncValue<CollectionStats> statsAsync,
     String searchQuery,
     List<Tag> tags,
-    Map<int, Set<int>> itemTags,
+    Map<int, List<int>> itemTags,
   ) {
     final Set<int> validTagIds = <int>{
       for (final Tag tag in tags) tag.id,

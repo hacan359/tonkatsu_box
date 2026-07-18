@@ -33,7 +33,7 @@ void main() {
       createTestTag(id: 10, name: 'Favorites'),
       createTestTag(id: 20, name: 'Backlog'),
     ];
-    const Map<int, Set<int>> noLinks = <int, Set<int>>{};
+    const Map<int, List<int>> noLinks = <int, List<int>>{};
 
     test('no filters returns the list unchanged', () {
       final List<CollectionItem> items = <CollectionItem>[make(id: 1), make(id: 2)];
@@ -70,9 +70,9 @@ void main() {
         make(id: 2),
         make(id: 3),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{10},
-        2: <int>{20},
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[10],
+        2: <int>[20],
       };
       final List<CollectionItem> r = const CollectionFilters(
         tagIds: <int>{10},
@@ -86,10 +86,10 @@ void main() {
         make(id: 2),
         make(id: 3),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{10},
-        2: <int>{20},
-        3: <int>{10, 20},
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[10],
+        2: <int>[20],
+        3: <int>[10, 20],
       };
       final List<CollectionItem> r = const CollectionFilters(
         tagIds: <int>{10, 20},
@@ -102,8 +102,8 @@ void main() {
         make(id: 1),
         make(id: 2),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{10},
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[10],
       };
       final List<CollectionItem> r = const CollectionFilters(
         tagIds: <int>{10, 20},
@@ -138,9 +138,9 @@ void main() {
         make(id: 1, name: 'A'),
         make(id: 2, name: 'B'),
       ];
-      final Map<int, Set<int>> links = <int, Set<int>>{
-        1: <int>{20, 10}, // Backlog + Favorites
-        2: <int>{20}, // Backlog
+      final Map<int, List<int>> links = <int, List<int>>{
+        1: <int>[20, 10], // Backlog + Favorites
+        2: <int>[20], // Backlog
       };
       final List<CollectionItem> r = const CollectionFilters(
         searchQuery: 'favor',
@@ -212,6 +212,28 @@ void main() {
         animeFormats: <String>{'TV'},
       ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1, 2]);
+    });
+
+    test('platform and format subfilters keep either kind (OR)', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1, platformId: 18),
+        make(id: 2, platformId: 6),
+        createTestCollectionItem(
+          id: 3,
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'OVA'),
+        ),
+        createTestCollectionItem(
+          id: 4,
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'TV'),
+        ),
+      ];
+      final List<CollectionItem> r = const CollectionFilters(
+        platformIds: <int>{18},
+        animeFormats: <String>{'OVA'},
+      ).apply(items, tags, noLinks);
+      expect(r.map((CollectionItem i) => i.id), <int>[1, 3]);
     });
 
     test('combines filters with AND semantics', () {

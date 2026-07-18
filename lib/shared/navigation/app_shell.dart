@@ -1,10 +1,13 @@
 // Main app shell: side rail + nested per-tab navigation.
 
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/services/whats_new_service.dart';
 import '../../features/collections/screens/collection_screen.dart';
 import '../../features/collections/screens/home_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
@@ -25,6 +28,7 @@ import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
 import '../keyboard/keyboard_shortcuts.dart';
 import '../keyboard/keyboard_shortcuts_dialog.dart';
+import '../widgets/whats_new_dialog.dart';
 import 'app_bottom_bar.dart';
 import 'app_sidebar.dart';
 import 'app_top_bar.dart';
@@ -118,6 +122,27 @@ class _AppShellState extends ConsumerState<AppShell> {
         ref.read(searchTabRequestProvider.notifier).state = null;
       },
     );
+    // Release notes after an app update, once per version. The version is
+    // remembered on close, so a launch killed mid-dialog shows it again.
+    ref.listen<AsyncValue<WhatsNewContent?>>(
+      whatsNewProvider,
+      (AsyncValue<WhatsNewContent?>? previous,
+          AsyncValue<WhatsNewContent?> next) {
+        final WhatsNewContent? content = next.valueOrNull;
+        if (content == null) return;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          unawaited(
+            showWhatsNewDialog(context, content).then((_) {
+              if (!mounted) return;
+              unawaited(
+                ref.read(whatsNewServiceProvider).markSeen(content.version),
+              );
+            }),
+          );
+        });
+      },
+    );
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
@@ -188,6 +213,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       ),
       child: AppTopBar(
         activeTab: activeTab,
+        suppressSearch: _personalizationOpen,
         onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
       ),
     );
@@ -231,6 +257,9 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// hides it instead of leaving it on a tab's navigator stack.
   void _openPreferenceCloud() {
     if (_personalizationOpen) return;
+    // Drop any focus the top-bar search field holds so the mobile keyboard
+    // doesn't stay up over a view that has no search of its own.
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _personalizationOpen = true);
   }
 

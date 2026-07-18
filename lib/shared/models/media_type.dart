@@ -1,60 +1,61 @@
-// Тип медиа-контента в коллекции.
-
 import '../../l10n/app_localizations.dart';
 
-/// Тип медиа-контента.
+/// Media content type of a collection item.
 enum MediaType {
-  /// Игра (IGDB).
+  /// Game (IGDB).
   game('game'),
 
-  /// Фильм (TMDB).
+  /// Movie (TMDB).
   movie('movie'),
 
-  /// Сериал (TMDB).
+  /// TV show (TMDB).
   tvShow('tv_show'),
 
-  /// Анимация (TMDB) — анимационные фильмы и сериалы (Pixar, Disney и т.д.).
+  /// Animation (TMDB) — animated movies and series (Pixar, Disney, etc.).
   ///
-  /// Использует модели [Movie]/[TvShow] с [AnimationSource] platformId.
-  /// Не путать с [anime] — японское аниме из AniList.
+  /// Uses the [Movie]/[TvShow] models with an [AnimationSource] platformId.
+  /// Not to be confused with [anime] — Japanese anime from AniList.
   animation('animation'),
 
-  /// Визуальная новелла (VNDB).
+  /// Visual novel (VNDB).
   visualNovel('visual_novel'),
 
-  /// Манга (AniList).
+  /// Manga (AniList).
   manga('manga'),
 
-  /// Аниме (AniList) — японское аниме с полной метадатой.
+  /// Anime (AniList) — Japanese anime with full metadata.
   ///
-  /// Использует собственную модель [Anime] с данными из AniList API.
-  /// Не путать с [animation] — TMDB анимация (мультфильмы).
+  /// Uses its own [Anime] model backed by the AniList API.
+  /// Not to be confused with [animation] — TMDB animation (cartoons).
   anime('anime'),
 
-  /// Книга (OpenLibrary / Fantlab).
+  /// Book (OpenLibrary / Fantlab).
   book('book'),
 
-  /// Кастомный элемент (созданный пользователем).
+  /// Custom user-created item.
   custom('custom');
 
   const MediaType(this.value);
 
-  /// Строковое значение для хранения в БД.
+  /// String value stored in the database.
   final String value;
 
-  /// Создаёт [MediaType] из строки.
-  ///
-  /// Возвращает [game] если значение не распознано.
-  static MediaType fromString(String value) {
+  /// Creates a [MediaType] from a string; falls back to [game] when
+  /// unrecognised.
+  static MediaType fromString(String value) =>
+      tryFromString(value) ?? MediaType.game;
+
+  /// Creates a [MediaType] from a string; `null` when unrecognised.
+  static MediaType? tryFromString(String value) {
     for (final MediaType type in MediaType.values) {
       if (type.value == value) {
         return type;
       }
     }
-    return MediaType.game;
+    return null;
   }
 
-  /// Отображаемое название на английском.
+  /// English display name.
   String get displayLabel {
     switch (this) {
       case MediaType.game:
@@ -78,7 +79,7 @@ enum MediaType {
     }
   }
 
-  /// Локализованное отображаемое название.
+  /// Localised display name.
   String localizedLabel(S l) {
     switch (this) {
       case MediaType.game:
@@ -102,10 +103,10 @@ enum MediaType {
     }
   }
 
-  /// Путь к ассету оверлея для данного типа медиа, или `null`.
+  /// Overlay asset path for this media type, or `null`.
   ///
-  /// Используется для фильмов и сериалов (Blu-ray шаблон).
-  /// Для игр оверлей определяется через [Platform.overlayAsset].
+  /// Used for movies and TV shows (Blu-ray template); game overlays come
+  /// from [Platform.overlayAsset] instead.
   String? get overlayAsset => switch (this) {
         MediaType.movie || MediaType.tvShow =>
           'assets/images/platform_overlays/blu-ray.png',
@@ -113,15 +114,15 @@ enum MediaType {
       };
 }
 
-/// Тип источника анимации (фильм или сериал).
+/// Animation source kind (movie or series).
 ///
-/// Хранится в `collection_items.platform_id`:
-/// - [movie] = 0 → анимационный фильм
-/// - [tvShow] = 1 → анимационный сериал
+/// Stored in `collection_items.platform_id`:
+/// - [movie] = 0 → animated movie
+/// - [tvShow] = 1 → animated series
 abstract final class AnimationSource {
-  /// Анимационный фильм.
+  /// Animated movie.
   static const int movie = 0;
 
-  /// Анимационный сериал.
+  /// Animated series.
   static const int tvShow = 1;
 }

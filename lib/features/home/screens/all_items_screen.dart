@@ -16,6 +16,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
@@ -48,8 +49,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   final Set<String> _selectedMangaFormats = <String>{};
   final Set<String> _selectedAnimeFormats = <String>{};
 
-  static const double _desktopMaxCardWidth = 170;
-
   /// Below this width the segments show icons instead of text.
   static const double _compactBreakpoint = 700;
 
@@ -59,10 +58,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ref.watch(allItemsNotifierProvider);
     final Map<int, String> collectionNames =
         ref.watch(collectionNamesProvider);
-    final Map<int, Tag> tagsMap =
-        ref.watch(allTagsMapProvider).valueOrNull ?? <int, Tag>{};
-    final Map<int, Set<int>> itemTags =
-        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
+    final Map<int, Tag> tagsMap = ref.watch(allTagsMapProvider);
+    final Map<int, List<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
@@ -142,13 +140,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) {
     if (favoriteOnly && !item.isFavorite) return false;
     if (filterStatus != null && item.status != filterStatus) return false;
-    if (_selectedPlatformIds.isNotEmpty &&
-        (item.effectivePlatformId == null ||
-            !_selectedPlatformIds.contains(item.effectivePlatformId))) {
-      return false;
-    }
-    if (!MediaFormat.matchesFormatFilter(
+    if (!MediaFormat.matchesSubfilters(
       item,
+      platformIds: _selectedPlatformIds,
       mangaFormats: _selectedMangaFormats,
       animeFormats: _selectedAnimeFormats,
     )) {
@@ -185,32 +179,32 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final List<_MediaTypeEntry> entries = <_MediaTypeEntry>[
       _MediaTypeEntry(
         type: MediaType.game,
-        label: l.allItemsGames,
+        label: l.collectionFilterGames,
         count: counts[MediaType.game] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.movie,
-        label: l.allItemsMovies,
+        label: l.collectionFilterMovies,
         count: counts[MediaType.movie] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.tvShow,
-        label: l.allItemsTvShows,
+        label: l.collectionFilterTvShows,
         count: counts[MediaType.tvShow] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.animation,
-        label: l.allItemsAnimation,
+        label: l.mediaTypeAnimation,
         count: counts[MediaType.animation] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.visualNovel,
-        label: l.allItemsVisualNovels,
+        label: l.collectionFilterVisualNovels,
         count: counts[MediaType.visualNovel] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.manga,
-        label: l.allItemsManga,
+        label: l.mediaTypeManga,
         count: counts[MediaType.manga] ?? 0,
       ),
       _MediaTypeEntry(
@@ -220,12 +214,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       ),
       _MediaTypeEntry(
         type: MediaType.book,
-        label: l.allItemsBooks,
+        label: l.collectionFilterBooks,
         count: counts[MediaType.book] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.custom,
-        label: l.allItemsCustom,
+        label: l.mediaTypeCustom,
         count: counts[MediaType.custom] ?? 0,
       ),
     ];
@@ -271,7 +265,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               child: StatusDropdownSegment(
                 status: filterStatus,
                 compact: compact,
-                subtitle: l.detailStatus,
+                subtitle: l.status,
                 isLast: false,
                 onChanged: (ItemStatus? s) =>
                     ref.read(homeStatusFilterProvider.notifier).setFilter(s),
@@ -409,7 +403,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     Map<int, Tag> tagsMap,
     String lowerQuery,
   ) {
-    final Set<int>? ids = ref.read(itemTagsProvider).valueOrNull?[item.id];
+    final List<int>? ids = ref.read(itemTagsProvider).valueOrNull?[item.id];
     if (ids == null) return false;
     return ids.any((int id) =>
         tagsMap[id]?.name.toLowerCase().contains(lowerQuery) ?? false);
@@ -443,7 +437,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     List<CollectionItem> items,
     Map<int, String> collectionNames,
     Map<int, Tag> tagsMap,
-    Map<int, Set<int>> itemTags,
+    Map<int, List<int>> itemTags,
   ) {
     // getAll() returns display order, and the map preserves insertion order.
     final List<Tag> orderedTags = tagsMap.values.toList();
@@ -455,28 +449,32 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
     final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
 
+    final double cardScale = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.cardScale),
+    );
+
     final SliverGridDelegate gridDelegate;
     if (isDesktop) {
       gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: _desktopMaxCardWidth,
+        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: 0.55,
+        childAspectRatio: AppSpacing.posterAspectRatio,
       );
     } else {
-      final int crossAxisCount;
+      final int baseCount;
       if (isLandscape) {
-        crossAxisCount = AppSpacing.gridColumnsDesktop;
+        baseCount = AppSpacing.gridColumnsDesktop;
       } else if (screenWidth >= 500) {
-        crossAxisCount = AppSpacing.gridColumnsTablet;
+        baseCount = AppSpacing.gridColumnsTablet;
       } else {
-        crossAxisCount = AppSpacing.gridColumnsMobile;
+        baseCount = AppSpacing.gridColumnsMobile;
       }
       gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
+        crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: 0.55,
+        childAspectRatio: AppSpacing.posterAspectRatio,
       );
     }
 
@@ -511,12 +509,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final CollectionItem item = groups[i].items[index];
-                    final Set<int>? tagIds = itemTags[item.id];
+                    final List<int>? tagIds = itemTags[item.id];
                     final Tag? tag = orderedTags.primaryFor(tagIds);
                     final int tagCount = tagIds?.length ?? 0;
                     final Set<int> selection =
                         ref.watch(allItemsSelectionProvider);
                     final bool isSelected = selection.contains(item.id);
+                    final ItemCardProgress? progress = itemCardProgress(item);
                     final MediaPosterCard card = MediaPosterCard(
                       key: ValueKey<int>(item.id),
                       variant: isLandscape ||
@@ -542,6 +541,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       mediaType: item.displayMediaType,
                       typeLabelOverride: item.formatLabel,
                       status: item.status,
+                      progress: progress,
                       isFavorite: item.isFavorite,
                       showFavorite: true,
                       enableHoverScale: !isSelected,
@@ -646,6 +646,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final int favorites =
         group.items.where((CollectionItem i) => i.isFavorite).length;
 
+    // Wrap instead of Row: a long collection name plus up to 7 tallies
+    // overflows a phone-width header, so the name ellipsizes and the tally
+    // chips flow to the next line.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -653,27 +656,40 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         AppSpacing.md,
         0,
       ),
-      child: Row(
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runSpacing: AppSpacing.xs,
         children: <Widget>[
-          Container(
-            padding: const EdgeInsets.only(bottom: 4),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: accent, width: 3)),
-            ),
-            child: Text(
-              group.name,
-              style: AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  decoration: BoxDecoration(
+                    border:
+                        Border(bottom: BorderSide(color: accent, width: 3)),
+                  ),
+                  child: Text(
+                    group.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                '${group.items.length}',
+                style: AppTypography.body.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+            ],
           ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            '${group.items.length}',
-            style: AppTypography.body.copyWith(
-              color: AppColors.textTertiary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
           ..._headerInfo(orderedCounts, favorites),
         ],
       ),
@@ -681,44 +697,46 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   }
 
   /// Shared info cluster: per-type icon with its item count, then a
-  /// favourites tally.
+  /// favourites tally. Each tally is one self-contained chip so it never
+  /// splits when the header wraps.
   List<Widget> _headerInfo(Map<MediaType, int> typeCounts, int favorites) {
     const double iconSize = 20;
+
+    Widget tally(IconData icon, Color color, String text, double size) {
+      return Padding(
+        padding: const EdgeInsets.only(left: AppSpacing.sm),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: size, color: color),
+            const SizedBox(width: 3),
+            Text(
+              text,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return <Widget>[
       for (final MapEntry<MediaType, int> e in typeCounts.entries.take(6))
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.sm),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(
-                MediaTypeTheme.iconFor(e.key),
-                size: iconSize,
-                color: MediaTypeTheme.colorFor(e.key).withAlpha(220),
-              ),
-              const SizedBox(width: 3),
-              Text(
-                '${e.value}',
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+        tally(
+          MediaTypeTheme.iconFor(e.key),
+          MediaTypeTheme.colorFor(e.key).withAlpha(220),
+          '${e.value}',
+          iconSize,
         ),
-      if (favorites > 0) ...<Widget>[
-        const SizedBox(width: AppSpacing.sm),
-        const Icon(Icons.favorite, size: iconSize - 2, color: AppColors.favorite),
-        const SizedBox(width: 3),
-        Text(
+      if (favorites > 0)
+        tally(
+          Icons.favorite,
+          AppColors.favorite,
           '$favorites',
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
+          iconSize - 2,
         ),
-      ],
     ];
   }
 

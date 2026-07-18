@@ -22,7 +22,7 @@ class CacheScreen extends StatelessWidget {
 
     return Column(
       children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsCache),
+        SubScreenTitleBar(title: S.of(context).cacheTitle),
         Expanded(
           child: Align(
             alignment: Alignment.topCenter,

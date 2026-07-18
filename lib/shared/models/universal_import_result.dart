@@ -15,11 +15,13 @@ class UniversalImportResult {
     this.skipped = 0,
     this.errors = const <String>[],
     this.fatalError,
+    this.fatalDetail,
   });
 
   const UniversalImportResult.failure({
     required this.sourceName,
     required String error,
+    String? detail,
   })  : success = false,
         collection = null,
         collectionId = null,
@@ -30,7 +32,8 @@ class UniversalImportResult {
         untypedUpdated = 0,
         skipped = 0,
         errors = const <String>[],
-        fatalError = error;
+        fatalError = error,
+        fatalDetail = detail;
 
   /// Import source name: 'Steam', 'Trakt', 'Collection File'.
   final String sourceName;
@@ -60,6 +63,9 @@ class UniversalImportResult {
   final List<String> errors;
 
   final String? fatalError;
+
+  /// Copyable debug detail for [fatalError] (request, status code, cause).
+  final String? fatalDetail;
 
   int get totalImported => _sumValues(importedByType) + untypedImported;
 

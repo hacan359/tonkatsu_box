@@ -134,7 +134,7 @@ class _AddImageDialogState extends State<AddImageDialog> {
 
     return AlertDialog(
       scrollable: true,
-      title: Text(_isEditing ? l.editImageTitle : l.addImageTitle),
+      title: Text(_isEditing ? l.editImageTitle : l.canvasAddImage),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(

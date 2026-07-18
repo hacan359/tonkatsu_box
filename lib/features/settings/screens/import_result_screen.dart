@@ -1,14 +1,15 @@
-// Экран результатов импорта — единый для всех импортёров.
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/error_details_dialog.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/screens/collection_screen.dart';
 
@@ -87,6 +88,10 @@ class ImportResultScreen extends StatelessWidget {
                     color: AppColors.textTertiary,
                     text: l.importResultSkipped(result.skipped),
                   ),
+                if (result.errors.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: AppSpacing.md),
+                  _ErrorsCard(errors: result.errors),
+                ],
                 const SizedBox(height: AppSpacing.xl),
                 _buildActions(context, l),
               ],
@@ -115,10 +120,23 @@ class ImportResultScreen extends StatelessWidget {
         ),
         if (result.fatalError != null) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
-          Text(
+          SelectableText(
             result.fatalError!,
             style: AppTypography.body.copyWith(color: AppColors.error),
             textAlign: TextAlign.center,
+          ),
+          TextButton.icon(
+            onPressed: () => copyErrorDetails(
+              context,
+              message: result.fatalError!,
+              detail: result.fatalDetail,
+            ),
+            icon: const Icon(Icons.copy, size: 16),
+            label: Text(l.copyErrorDetails),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
+              textStyle: AppTypography.bodySmall,
+            ),
           ),
         ],
       ],
@@ -250,7 +268,93 @@ class _ResultCard extends StatelessWidget {
   }
 }
 
-/// Одиночная строка статистики.
+/// Per-item import errors: expandable list with a copy-all button.
+class _ErrorsCard extends StatefulWidget {
+  const _ErrorsCard({required this.errors});
+
+  final List<String> errors;
+
+  @override
+  State<_ErrorsCard> createState() => _ErrorsCardState();
+}
+
+class _ErrorsCardState extends State<_ErrorsCard> {
+  static const int _collapsedCount = 5;
+
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    final List<String> visible = _expanded
+        ? widget.errors
+        : widget.errors.take(_collapsedCount).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: AppColors.error.withAlpha(128)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              const Icon(Icons.error_outline, size: 20, color: AppColors.error),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  l.importResultErrors(widget.errors.length),
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  Clipboard.setData(
+                    ClipboardData(text: widget.errors.join('\n')),
+                  );
+                  context.showSnack(
+                    l.importResultErrorsCopied,
+                    type: SnackType.info,
+                  );
+                },
+                icon: const Icon(Icons.copy, size: 16),
+                tooltip: l.copyErrorDetails,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const Divider(height: 1),
+          const SizedBox(height: AppSpacing.sm),
+          for (final String error in visible)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: SelectableText(
+                error,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          if (widget.errors.length > _collapsedCount)
+            TextButton(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              style: TextButton.styleFrom(
+                textStyle: AppTypography.bodySmall,
+              ),
+              child: Text(_expanded ? l.showLess : l.showMore),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Single stat row.
 class _StatRow extends StatelessWidget {
   const _StatRow({
     required this.icon,

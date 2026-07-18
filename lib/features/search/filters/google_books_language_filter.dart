@@ -15,7 +15,7 @@ class GoogleBooksLanguageFilter extends SearchFilter {
   String get cacheKey => 'language_googlebooks';
 
   @override
-  String placeholder(S l) => l.bookFilterLanguage;
+  String placeholder(S l) => l.language;
 
   @override
   FilterOption get allOption =>

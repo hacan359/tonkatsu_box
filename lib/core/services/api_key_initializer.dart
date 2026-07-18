@@ -18,6 +18,7 @@ class ApiKeys {
     this.raApiKey,
     this.comicVineApiKey,
     this.googleBooksApiKey,
+    this.hardcoverApiKey,
   });
 
   /// Key precedence: user key → built-in (ApiDefaults) → null.
@@ -66,6 +67,10 @@ class ApiKeys {
     final String? googleBooksApiKey =
         prefs.getString(SettingsKeys.googleBooksApiKey);
 
+    // Hardcover: personal token from prefs only, no built-in.
+    final String? hardcoverApiKey =
+        prefs.getString(SettingsKeys.hardcoverApiKey);
+
     return ApiKeys(
       tmdbApiKey: tmdbApiKey,
       steamGridDbApiKey: steamGridDbApiKey,
@@ -85,6 +90,10 @@ class ApiKeys {
       googleBooksApiKey:
           (googleBooksApiKey != null && googleBooksApiKey.isNotEmpty)
               ? googleBooksApiKey
+              : null,
+      hardcoverApiKey:
+          (hardcoverApiKey != null && hardcoverApiKey.isNotEmpty)
+              ? hardcoverApiKey
               : null,
     );
   }
@@ -106,6 +115,8 @@ class ApiKeys {
   final String? comicVineApiKey;
 
   final String? googleBooksApiKey;
+
+  final String? hardcoverApiKey;
 }
 
 /// Overridden in main() via `apiKeysProvider.overrideWithValue(...)`.

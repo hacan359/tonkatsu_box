@@ -308,7 +308,7 @@ class _CollectionFilterSheetState
                         children: <Widget>[
                           Expanded(
                             child: Text(
-                              l.collectionFilterSort.toUpperCase(),
+                              l.sort.toUpperCase(),
                               style: AppTypography.caption.copyWith(
                                 color: AppColors.textTertiary,
                                 letterSpacing: 0.6,

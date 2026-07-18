@@ -1,11 +1,7 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'gyroscope_parallax_image.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/database/database_service.dart';
 import '../../core/services/image_cache_service.dart';
@@ -13,43 +9,31 @@ import '../../features/settings/providers/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/card_link.dart';
 import '../models/collection_item.dart';
+import '../models/data_source.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../utils/date_format_preset.dart';
-import 'cached_image.dart';
+import '../utils/duration_formatter.dart';
 import 'card_link_picker.dart';
 import 'dual_date_picker_dialog.dart';
-import 'markdown_toolbar.dart';
+import 'media_detail/comment_container.dart';
+import 'media_detail/expandable_description.dart';
+import 'media_detail/identity_header.dart';
+import 'media_detail/media_cover_image.dart';
+import 'media_detail/media_detail_backdrop.dart';
+import 'media_detail/media_detail_chip.dart';
+import 'media_detail/progress_tiles.dart';
+import 'media_detail/system_meta_info_button.dart';
+import 'media_detail/tracker_comments_layout.dart';
+import 'media_detail/user_rating_section.dart';
 import 'mini_markdown_text.dart';
-import 'source_badge.dart';
-import 'fractional_star_rating.dart';
-import '../utils/duration_formatter.dart';
+
+export 'media_detail/media_detail_chip.dart' show MediaDetailChip;
 
 /// `type` is either 'started' or 'completed'.
 typedef OnActivityDateChanged =
     Future<void> Function(String type, DateTime date);
-
-String _formatActivityDate(
-  DateTime date,
-  DateFormatPreset preset,
-  String localeName,
-) =>
-    preset.format(date, locale: localeName);
-
-class MediaDetailChip {
-  const MediaDetailChip({
-    required this.icon,
-    required this.text,
-    this.iconColor,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final String text;
-  final VoidCallback? onTap;
-  final Color? iconColor;
-}
 
 /// Shared layout for game / movie / TV detail screens. Type-specific blocks
 /// are injected via [extraSections].
@@ -159,8 +143,8 @@ class MediaDetailView extends ConsumerStatefulWidget {
   /// When true, render only the content without a wrapping Scaffold.
   final bool embedded;
 
-  /// When set together with [cacheImageId], uses [CachedImage] instead of
-  /// [CachedNetworkImage] for offline support.
+  /// When set together with [cacheImageId], uses a locally cached image
+  /// instead of a plain network one for offline support.
   final ImageType? cacheImageType;
   final String? cacheImageId;
   final Color accentColor;
@@ -230,18 +214,21 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     }
 
     final DatabaseService db = ref.read(databaseServiceProvider);
+    final List<CardLinkRef> links = refs.toList();
+    final List<List<CollectionItem>> matchLists = await Future.wait(
+      links.map((CardLinkRef link) => db.resolveCardLink(
+            mediaType: link.mediaType,
+            externalId: link.externalId,
+            source: link.source,
+            platformId: link.platformId,
+            collectionId: link.collectionId,
+          )),
+    );
     final Map<CardLinkRef, CollectionItem> resolved =
-        <CardLinkRef, CollectionItem>{};
-    for (final CardLinkRef link in refs) {
-      final List<CollectionItem> matches = await db.resolveCardLink(
-        mediaType: link.mediaType,
-        externalId: link.externalId,
-        source: link.source,
-        platformId: link.platformId,
-        collectionId: link.collectionId,
-      );
-      if (matches.isNotEmpty) resolved[link] = matches.first;
-    }
+        <CardLinkRef, CollectionItem>{
+      for (int i = 0; i < links.length; i++)
+        if (matchLists[i].isNotEmpty) links[i]: matchLists[i].first,
+    };
     if (mounted) setState(() => _resolvedCardLinks = resolved);
   }
 
@@ -350,34 +337,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     );
 
     final Widget withBackdrop = widget.backdropUrl != null
-        ? Stack(
-            children: <Widget>[
-              Positioned.fill(
-                child: GyroscopeParallaxImage(
-                  imageUrl: widget.backdropUrl!,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                ),
-              ),
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[
-                        AppColors.background.withAlpha(120),
-                        AppColors.background.withAlpha(200),
-                        AppColors.background,
-                      ],
-                      stops: const <double>[0.0, 0.35, 0.6],
-                    ),
-                  ),
-                ),
-              ),
-              content,
-            ],
-          )
+        ? MediaDetailBackdrop(imageUrl: widget.backdropUrl!, child: content)
         : content;
 
     if (widget.embedded) return withBackdrop;
@@ -407,7 +367,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         _buildIdentityHeader(),
         if (hasDescription) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
-          _ExpandableDescription(text: widget.description!),
+          ExpandableDescription(text: widget.description!),
         ],
         if (widget.tagWidget != null) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
@@ -415,18 +375,21 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         ],
         if (widget.statusWidget != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
-          _buildStatusSection(context),
+          widget.statusWidget!,
         ],
         if (widget.onUserRatingChanged != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
-          _buildUserRatingSection(context),
+          UserRatingSection(
+            value: widget.userRating,
+            onChanged: widget.onUserRatingChanged!,
+          ),
         ],
         if (widget.addedAt != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildProgressTiles(context),
         ],
         const SizedBox(height: AppSpacing.md),
-        _TrackerCommentsLayout(
+        TrackerCommentsLayout(
           trackerSection: widget.trackerSection,
           notesSection: _buildUserNotesSection(context),
           authorSection: _buildAuthorCommentSection(context),
@@ -451,90 +414,22 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     );
   }
 
-  /// Cover + short identity facts only: source, type, RA badge, info chips.
-  /// Description, tags, time and rewatch counters live elsewhere in the
-  /// grouped layout.
   Widget _buildIdentityHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            widget.platformOverlayAsset != null ? 0 : AppSpacing.radiusSm,
-          ),
-          child: SizedBox(
-            width: 100,
-            height: 150,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                _buildCoverImage(),
-                if (widget.platformOverlayAsset != null)
-                  Image.asset(widget.platformOverlayAsset!, fit: BoxFit.fill),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: <Widget>[
-                  SourceBadge(
-                    source: widget.source,
-                    size: SourceBadgeSize.medium,
-                    onTap: widget.externalUrl != null
-                        ? () => _launchExternalUrl(widget.externalUrl!)
-                        : null,
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(
-                        widget.typeIcon,
-                        size: 16,
-                        color: widget.accentColor,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        widget.typeLabel,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: widget.accentColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                  if (widget.raBadge != null) widget.raBadge!,
-                ],
-              ),
-              if (widget.infoChips.isNotEmpty) ...<Widget>[
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: <Widget>[
-                    for (final MediaDetailChip chip in widget.infoChips)
-                      _InfoChip(
-                        icon: chip.icon,
-                        text: chip.text,
-                        iconColor: chip.iconColor,
-                        onTap: chip.onTap,
-                      ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
+    return IdentityHeader(
+      cover: MediaCoverImage(
+        coverUrl: widget.coverUrl,
+        placeholderIcon: widget.placeholderIcon,
+        cacheImageType: widget.cacheImageType,
+        cacheImageId: widget.cacheImageId,
+      ),
+      source: widget.source,
+      typeIcon: widget.typeIcon,
+      typeLabel: widget.typeLabel,
+      accentColor: widget.accentColor,
+      infoChips: widget.infoChips,
+      externalUrl: widget.externalUrl,
+      raBadge: widget.raBadge,
+      platformOverlayAsset: widget.platformOverlayAsset,
     );
   }
 
@@ -548,7 +443,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     final int minutes = widget.timeSpentMinutes % 60;
 
     final List<Widget> tiles = <Widget>[
-      _buildProgressTile(
+      ProgressTile(
         icon: Icons.play_circle_outline,
         label: l.activityDatesStarted,
         value: widget.startedAt != null ? fmt(widget.startedAt!) : '—',
@@ -557,7 +452,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
             ? () => _pickActivityDate(context, 'started', widget.startedAt)
             : null,
       ),
-      _buildProgressTile(
+      ProgressTile(
         icon: Icons.check_circle_outline,
         label: l.activityDatesCompleted,
         value: widget.completedAt != null ? fmt(widget.completedAt!) : '—',
@@ -570,17 +465,17 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
             : null,
       ),
       if (widget.onTimeSpentTap != null)
-        _buildProgressTile(
+        ProgressTile(
           icon: Icons.timer_outlined,
           label: l.timeSpentTitle,
           value: widget.timeSpentMinutes > 0
-              ? l.timeSpentValue(hours, minutes)
+              ? l.runtimeHoursMinutes(hours, minutes)
               : '—',
           hasValue: widget.timeSpentMinutes > 0,
           onTap: widget.onTimeSpentTap,
         ),
       if (widget.onRewatchCountTap != null)
-        _buildProgressTile(
+        ProgressTile(
           icon: Icons.replay,
           label: l.rewatchCountEdit,
           value: widget.rewatchCount?.toString() ?? '—',
@@ -589,117 +484,12 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         ),
     ];
 
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final int perRow =
-            constraints.maxWidth < 480 ? 2 : tiles.length;
-        final List<Widget> rows = <Widget>[];
-        for (int i = 0; i < tiles.length; i += perRow) {
-          final int end =
-              (i + perRow > tiles.length) ? tiles.length : i + perRow;
-          final List<Widget> chunk = tiles.sublist(i, end);
-          if (rows.isNotEmpty) rows.add(const SizedBox(height: AppSpacing.sm));
-          rows.add(
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                for (int j = 0; j < perRow; j++) ...<Widget>[
-                  if (j > 0) const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: j < chunk.length ? chunk[j] : const SizedBox(),
-                  ),
-                ],
-              ],
-            ),
-          );
-        }
-        final Widget grid = Column(children: rows);
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Expanded(child: grid),
-            const SizedBox(width: AppSpacing.xs),
-            _buildSystemMetaInfoButton(context),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildProgressTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    required bool hasValue,
-    String? tooltip,
-    VoidCallback? onTap,
-  }) {
-    final Widget body = Padding(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Icon(icon, size: 12, color: AppColors.textTertiary),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  label,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: <Widget>[
-              Flexible(
-                child: Text(
-                  value,
-                  style: AppTypography.bodySmall.copyWith(
-                    fontWeight: hasValue ? FontWeight.w500 : FontWeight.w400,
-                    color: hasValue
-                        ? AppColors.textPrimary
-                        : AppColors.textTertiary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (onTap != null) ...<Widget>[
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.edit_outlined,
-                  size: 12,
-                  color: AppColors.brand,
-                ),
-              ],
-            ],
-          ),
-        ],
+    return ProgressTileGrid(
+      tiles: tiles,
+      trailing: SystemMetaInfoButton(
+        text: _systemMetaParts(context).join('\n'),
       ),
     );
-
-    Widget tile = Material(
-      color: AppColors.surfaceLight.withAlpha(120),
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      child: onTap != null
-          ? InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              child: body,
-            )
-          : body,
-    );
-    if (tooltip != null) {
-      tile = Tooltip(message: tooltip, child: tile);
-    }
-    return tile;
   }
 
   String Function(DateTime) _dateFormatter(BuildContext context) {
@@ -709,7 +499,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       ),
     );
     final String localeName = Localizations.localeOf(context).toLanguageTag();
-    return (DateTime d) => _formatActivityDate(d, preset, localeName);
+    return (DateTime d) => preset.format(d, locale: localeName);
   }
 
   /// System metadata the user never sets directly: added / last activity
@@ -721,7 +511,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       if (widget.addedAt != null)
         '${l.activityDatesAdded}: ${fmt(widget.addedAt!)}',
       if (widget.lastActivityAt != null)
-        '${l.activityDatesLastActivity}: ${fmt(widget.lastActivityAt!)}',
+        '${l.sortLastActivityDisplay}: ${fmt(widget.lastActivityAt!)}',
       if (widget.completionTime != null)
         formatCompletionTime(widget.completionTime!, l),
     ];
@@ -751,170 +541,22 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     }
   }
 
-  Widget _buildSystemMetaInfoButton(BuildContext context) {
-    final String text = _systemMetaParts(context).join('\n');
-    return IconButton(
-      icon: const Icon(
-        Icons.info_outline,
-        size: 16,
-        color: AppColors.textTertiary,
-      ),
-      visualDensity: VisualDensity.compact,
-      tooltip: text,
-      onPressed: () => showDialog<void>(
-        context: context,
-        builder: (BuildContext ctx) => AlertDialog(
-          title: Text(S.of(ctx).activityDatesTitle),
-          content: SingleChildScrollView(
-            child: Text(
-              text,
-              style: AppTypography.body.copyWith(height: 1.6),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(S.of(ctx).done),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCoverImage() {
-    if (widget.coverUrl == null || widget.coverUrl!.isEmpty) {
-      return _buildPlaceholder();
-    }
-
-    final bool useLocalCache =
-        widget.cacheImageType != null && widget.cacheImageId != null;
-
-    if (useLocalCache) {
-      return CachedImage(
-        imageType: widget.cacheImageType!,
-        imageId: widget.cacheImageId!,
-        remoteUrl: widget.coverUrl!,
-        fit: BoxFit.cover,
-        memCacheWidth: 200,
-        placeholder: _buildLoadingPlaceholder(),
-        errorWidget: _buildPlaceholder(),
-      );
-    }
-
-    return CachedNetworkImage(
-      imageUrl: widget.coverUrl!,
-      fit: BoxFit.cover,
-      memCacheWidth: 200,
-      placeholder: (BuildContext ctx, String url) => _buildLoadingPlaceholder(),
-      errorWidget: (BuildContext ctx, String url, Object error) =>
-          _buildPlaceholder(),
-    );
-  }
-
-  Widget _buildLoadingPlaceholder() {
-    return Container(
-      color: AppColors.surfaceLight,
-      child: const Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: AppColors.surfaceLight,
-      child: Icon(
-        widget.placeholderIcon,
-        size: 32,
-        color: AppColors.textTertiary,
-      ),
-    );
-  }
-
-  Widget _buildStatusSection(BuildContext context) {
-    return widget.statusWidget!;
-  }
-
-  Widget _buildUserRatingSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            const Icon(Icons.star, size: 18, color: AppColors.ratingStar),
-            const SizedBox(width: 6),
-            Text(
-              S.of(context).detailMyRating,
-              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
-            ),
-            if (widget.userRating != null) ...<Widget>[
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                S.of(context).detailRatingValue(
-                      widget.userRating!.toStringAsFixed(1),
-                    ),
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: 6),
-        FractionalStarRating(
-          value: widget.userRating,
-          onChanged: widget.onUserRatingChanged!,
-        ),
-      ],
-    );
-  }
-
   Widget _buildAuthorCommentSection(BuildContext context) {
     final S l = S.of(context);
     final bool isEditing = _editingField == _EditingField.author;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Row(
-                children: <Widget>[
-                  const Icon(
-                    Icons.format_quote,
-                    size: 18,
-                    color: AppColors.movieAccent,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      l.detailAuthorReview,
-                      style: AppTypography.h3.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (widget.isEditable)
-              IconButton(
-                onPressed: isEditing
-                    ? _finishEditing
-                    : () => _startEditing(_EditingField.author),
-                icon: Icon(isEditing ? Icons.check : Icons.edit, size: 18),
-                iconSize: 18,
-                visualDensity: VisualDensity.compact,
-                tooltip: isEditing ? l.done : l.edit,
-              ),
-          ],
+        CommentSectionHeader(
+          icon: Icons.format_quote,
+          iconColor: AppColors.movieAccent,
+          title: l.detailAuthorReview,
+          isEditing: isEditing,
+          onToggleEdit: widget.isEditable
+              ? (isEditing
+                  ? _finishEditing
+                  : () => _startEditing(_EditingField.author))
+              : null,
         ),
         const SizedBox(height: 2),
         Text(
@@ -922,12 +564,11 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
           style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
         ),
         const SizedBox(height: 6),
-        _buildCommentContainer(
+        CommentContainer(
           accentColor: AppColors.movieAccent,
           isEditing: isEditing,
           controller: _authorController,
           hint: l.detailWriteReviewHint,
-          hasContent: widget.hasAuthorComment,
           onTap: widget.isEditable
               ? () => _startEditing(_EditingField.author)
               : null,
@@ -961,48 +602,21 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Row(
-                children: <Widget>[
-                  Icon(
-                    Icons.note_alt_outlined,
-                    size: 18,
-                    color: widget.accentColor,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      l.detailMyNotes,
-                      style: AppTypography.h3.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              onPressed: isEditing
-                  ? _finishEditing
-                  : () => _startEditing(_EditingField.user),
-              icon: Icon(isEditing ? Icons.check : Icons.edit, size: 18),
-              iconSize: 18,
-              visualDensity: VisualDensity.compact,
-              tooltip: isEditing ? l.done : l.edit,
-            ),
-          ],
+        CommentSectionHeader(
+          icon: Icons.note_alt_outlined,
+          iconColor: widget.accentColor,
+          title: l.detailMyNotes,
+          isEditing: isEditing,
+          onToggleEdit: isEditing
+              ? _finishEditing
+              : () => _startEditing(_EditingField.user),
         ),
         const SizedBox(height: 6),
-        _buildCommentContainer(
+        CommentContainer(
           accentColor: widget.accentColor,
           isEditing: isEditing,
           controller: _userController,
           hint: l.detailWriteNotesHint,
-          hasContent: widget.hasUserComment,
           onTap: () => _startEditing(_EditingField.user),
           onInsertCardLink:
               widget.onCardLinkTap != null ? () => _insertCardLink() : null,
@@ -1022,320 +636,6 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
                 ),
         ),
       ],
-    );
-  }
-
-  /// When [onTap] is set, tapping the view-mode container enters editing
-  /// directly. Markdown link taps still work via span recognizers.
-  Widget _buildCommentContainer({
-    required Color accentColor,
-    required bool isEditing,
-    required TextEditingController controller,
-    required String hint,
-    required bool hasContent,
-    required Widget displayWidget,
-    VoidCallback? onTap,
-    VoidCallback? onInsertCardLink,
-  }) {
-    final BorderRadius radius = BorderRadius.circular(AppSpacing.radiusSm);
-    final BoxDecoration decoration = BoxDecoration(
-      color: accentColor.withAlpha(20),
-      borderRadius: radius,
-      border: Border.all(color: accentColor.withAlpha(isEditing ? 80 : 40)),
-    );
-    const EdgeInsets padding = EdgeInsets.all(AppSpacing.md - 4);
-
-    if (isEditing) {
-      return Container(
-        width: double.infinity,
-        padding: padding,
-        decoration: decoration,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            MarkdownToolbar(
-              controller: controller,
-              onInsertCardLink: onInsertCardLink,
-            ),
-            const SizedBox(height: 4),
-            TextField(
-              controller: controller,
-              maxLines: 5,
-              minLines: 2,
-              autofocus: true,
-              style: AppTypography.body.copyWith(height: 1.5),
-              decoration: InputDecoration(
-                hintText: hint,
-                border: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                filled: false,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final Widget content = Container(
-      width: double.infinity,
-      padding: padding,
-      decoration: decoration,
-      child: displayWidget,
-    );
-
-    if (onTap != null) {
-      return Material(
-        color: Colors.transparent,
-        borderRadius: radius,
-        child: InkWell(onTap: onTap, borderRadius: radius, child: content),
-      );
-    }
-    return content;
-  }
-}
-
-/// Info chip whose long joined text (genres, studios, tags) truncates to one
-/// line; when truncated, tapping expands it to the full multi-line text and
-/// back. Chips with an external [onTap] keep their original tap action.
-class _InfoChip extends StatefulWidget {
-  const _InfoChip({
-    required this.icon,
-    required this.text,
-    this.iconColor,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final String text;
-  final Color? iconColor;
-  final VoidCallback? onTap;
-
-  @override
-  State<_InfoChip> createState() => _InfoChipState();
-}
-
-class _InfoChipState extends State<_InfoChip> {
-  /// Horizontal chrome around the text: padding 8+8, icon 12, icon gap 4.
-  static const double _chrome = 32;
-
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final TextStyle style = AppTypography.caption.copyWith(
-      color: AppColors.textSecondary,
-    );
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        bool overflows = false;
-        if (constraints.maxWidth.isFinite) {
-          final TextPainter painter = TextPainter(
-            text: TextSpan(text: widget.text, style: style),
-            maxLines: 1,
-            textDirection: Directionality.of(context),
-          )..layout(
-              maxWidth: (constraints.maxWidth - _chrome)
-                  .clamp(0.0, double.infinity),
-            );
-          overflows = painter.didExceedMaxLines;
-          painter.dispose();
-        }
-        final bool expandable =
-            widget.onTap == null && (overflows || _expanded);
-
-        final ShapeBorder shape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          side: widget.onTap != null
-              ? BorderSide(
-                  color: (widget.iconColor ?? AppColors.textSecondary)
-                      .withAlpha(60),
-                )
-              : BorderSide.none,
-        );
-
-        final Widget inner = Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: _expanded
-                ? CrossAxisAlignment.start
-                : CrossAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(top: _expanded ? 1 : 0),
-                child: Icon(
-                  widget.icon,
-                  size: 12,
-                  color: widget.iconColor ?? AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  widget.text,
-                  style: style,
-                  overflow:
-                      _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
-                  maxLines: _expanded ? null : 1,
-                ),
-              ),
-            ],
-          ),
-        );
-
-        return Material(
-          color: AppColors.surfaceLight,
-          shape: shape,
-          child: widget.onTap != null || expandable
-              ? InkWell(
-                  customBorder: shape,
-                  onTap: widget.onTap ??
-                      () => setState(() => _expanded = !_expanded),
-                  child: inner,
-                )
-              : inner,
-        );
-      },
-    );
-  }
-}
-
-/// Full-width description collapsed to a few lines with an expand toggle,
-/// shown only when the text actually overflows.
-class _ExpandableDescription extends StatefulWidget {
-  const _ExpandableDescription({required this.text});
-
-  final String text;
-
-  @override
-  State<_ExpandableDescription> createState() =>
-      _ExpandableDescriptionState();
-}
-
-class _ExpandableDescriptionState extends State<_ExpandableDescription> {
-  static const int _collapsedLines = 3;
-
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final TextStyle style = AppTypography.bodySmall.copyWith(
-      color: AppColors.textSecondary,
-      height: 1.4,
-    );
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final TextPainter painter = TextPainter(
-          text: TextSpan(text: widget.text, style: style),
-          maxLines: _collapsedLines,
-          textDirection: Directionality.of(context),
-        )..layout(maxWidth: constraints.maxWidth);
-        final bool overflows = painter.didExceedMaxLines;
-        painter.dispose();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              widget.text,
-              style: style,
-              maxLines: _expanded ? null : _collapsedLines,
-              overflow:
-                  _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
-            ),
-            if (overflows)
-              InkWell(
-                onTap: () => setState(() => _expanded = !_expanded),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(
-                    _expanded
-                        ? S.of(context).showLess
-                        : S.of(context).showMore,
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.brand,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-Future<void> _launchExternalUrl(String url) async {
-  try {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  } on Exception {
-    // External link is best-effort; failure is non-critical.
-  }
-}
-
-/// Splits tracker + notes + author comment into a two-column layout (50/50)
-/// on screens ≥600px when [trackerSection] is set, stacks otherwise.
-class _TrackerCommentsLayout extends StatelessWidget {
-  const _TrackerCommentsLayout({
-    required this.trackerSection,
-    required this.notesSection,
-    required this.authorSection,
-  });
-
-  final Widget? trackerSection;
-  final Widget notesSection;
-  final Widget authorSection;
-
-  @override
-  Widget build(BuildContext context) {
-    final Widget commentsColumn = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        notesSection,
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          child: Divider(
-            color: AppColors.surfaceBorder.withAlpha(80),
-            height: 1,
-          ),
-        ),
-        authorSection,
-      ],
-    );
-
-    if (trackerSection == null) return commentsColumn;
-
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        if (constraints.maxWidth >= 600) {
-          return IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(child: trackerSection!),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: commentsColumn),
-              ],
-            ),
-          );
-        }
-        // Narrow window — stack vertically.
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            trackerSection!,
-            const SizedBox(height: AppSpacing.md),
-            commentsColumn,
-          ],
-        );
-      },
     );
   }
 }

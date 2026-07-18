@@ -197,7 +197,7 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
                 runSpacing: AppSpacing.xs,
                 children: <Widget>[
                   Text(
-                    l.tagPickerSelectedCount(_selected.length),
+                    l.selectedCount(_selected.length),
                     style: AppTypography.bodySmall
                         .copyWith(color: AppColors.textSecondary),
                   ),

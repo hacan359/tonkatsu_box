@@ -11,11 +11,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/api/ra_api.dart';
 import '../../../core/services/discord_rpc_service.dart';
+import '../../../core/services/whats_new_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/navigation/search_providers.dart';
+import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -41,6 +43,7 @@ import '../../releases/providers/releases_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'browse_collections_screen.dart';
 import 'anilist_import_screen.dart';
+import 'hardcover_import_screen.dart';
 import 'custom_cards_import_screen.dart';
 import 'igdb_list_import_screen.dart';
 import 'mal_import_screen.dart';
@@ -48,6 +51,7 @@ import 'ra_import_screen.dart';
 import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
+import 'card_banner_debug_screen.dart';
 import 'debug_hub_screen.dart';
 import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
@@ -63,6 +67,14 @@ const Color _kProfileColor = Color(0xFF4A90E2);
 const Color _kBackupColor = Color(0xFF42A5F5);
 const Color _kStorageColor = Color(0xFF8E8E93);
 const Color _kAppearanceColor = Color(0xFFA86ED4);
+
+/// UI locale code → its native display name.
+const Map<String, String> _kAppLanguageNames = <String, String>{
+  'en': 'English',
+  'ru': 'Русский',
+  'zh': '中文',
+  'es': 'Español',
+};
 const Color _kApiKeysColor = Color(0xFFEF5350);
 const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple (used for RA-sync Icons.sync tile)
 const Color _kAboutColor = Color(0xFF8E8E93);
@@ -209,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: InlineTextField(
                       label: l.settingsAuthorName,
                       value: settings.authorName,
-                      placeholder: l.settingsAuthorPlaceholder,
+                      placeholder: l.defaultAuthor,
                       compact: true,
                       onChanged: (String value) {
                         ref
@@ -264,7 +276,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsTile(
             leadingAssetPath: AppAssets.iconTraktColor,
             leadingAssetColored: true,
-            title: l.settingsTraktImport,
+            title: l.traktTitle,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
           ),
@@ -311,6 +323,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _pushScreen(const AniListImportScreen()),
           ),
           SettingsTile(
+            leadingAssetPath: AppAssets.iconHardcoverColor,
+            leadingAssetColored: true,
+            title: l.hardcoverImportTitle,
+            subtitle: l.settingsHardcoverImportSubtitle,
+            onTap: () => _pushScreen(const HardcoverImportScreen()),
+          ),
+          SettingsTile(
             leadingIcon: Icons.upload_file,
             title: l.settingsCustomCardsImport,
             subtitle: l.settingsCustomCardsImportSubtitle,
@@ -327,14 +346,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsTile(
             leadingIcon: Icons.image_outlined,
             leadingColor: _kStorageColor,
-            title: l.settingsCache,
+            title: l.cacheTitle,
             subtitle: l.settingsCacheSubtitle,
             onTap: () => _pushScreen(const CacheScreen()),
           ),
           SettingsTile(
             leadingIcon: Icons.dataset_outlined,
             leadingColor: _kStorageColor,
-            title: l.settingsDatabase,
+            title: l.databaseTitle,
             subtitle: l.settingsDatabaseSubtitle,
             onTap: () => _pushScreen(const DatabaseScreen()),
           ),
@@ -352,11 +371,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leadingColor: _kAppearanceColor,
             title: l.settingsAppLanguage,
             subtitle: l.settingsAppLanguageSubtitle,
-            value: settings.appLanguage == 'ru'
-                ? 'Русский'
-                : settings.appLanguage == 'zh'
-                    ? '中文'
-                    : 'English',
+            value: _kAppLanguageNames[settings.appLanguage] ?? 'English',
             onTap: () => _showLanguagePicker(settings),
           ),
           SettingsTile(
@@ -386,7 +401,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsTile(
             leadingIcon: Icons.thumb_up_outlined,
             leadingColor: _kAppearanceColor,
-            title: l.settingsShowRecommendations,
+            title: l.recommendationsTitle,
             subtitle: l.settingsShowRecommendationsSubtitle,
             showChevron: false,
             trailing: Switch(
@@ -472,6 +487,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     .setRichCollectionsEnabled(enabled: value);
               },
             ),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.photo_size_select_large_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsCardScale,
+            subtitle: l.settingsCardScaleSubtitle,
+            showChevron: false,
+            trailing: _CardScaleSlider(scale: settings.cardScale),
           ),
         ],
       ),
@@ -594,6 +617,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsCreditsLicenses,
             onTap: () => _pushScreen(const CreditsScreen()),
           ),
+          SettingsTile(
+            leadingIcon: Icons.celebration_outlined,
+            leadingColor: _kAboutColor,
+            title: l.settingsChangelog,
+            onTap: _showChangelog,
+          ),
           _buildVersionTile(l),
         ],
       ),
@@ -616,6 +645,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ],
         ),
       ],
+
+      // Experimental designs live here, reachable in release builds too.
+      gap,
+      SettingsGroup(
+        title: l.settingsLaboratory,
+        titleIcon: Icons.science_outlined,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.style_outlined,
+            leadingColor: _kDebugColor,
+            title: l.settingsLaboratoryCardDesigns,
+            value: l.settingsLaboratoryCardDesignsSubtitle,
+            onTap: () => _pushScreen(const CardBannerDebugScreen()),
+          ),
+        ],
+      ),
 
       // Android-only gamepad button debug, available in release too so
       // controller key codes can be captured on devices like the Odin 2.
@@ -650,6 +695,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<void> _showChangelog() async {
+    final WhatsNewContent? content =
+        await ref.read(whatsNewServiceProvider).previewLatest();
+    if (!mounted) return;
+    if (content == null) {
+      context.showSnack(S.of(context).settingsChangelogEmpty);
+      return;
+    }
+    await showWhatsNewDialog(context, content);
+  }
+
   /// Key-source states in the same order as the credentials screen sections.
   ///
   /// Built-in default keys (IGDB / SteamGridDB / TMDB, baked in at build time)
@@ -662,6 +718,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
+        settings.hasHardcoverKey,
         settings.hasScreenScraperCreds,
       ];
 
@@ -680,60 +737,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (BuildContext dialogContext) => SimpleDialog(
         title: Text(S.of(context).settingsAppLanguage),
         children: <Widget>[
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setAppLanguage('en');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.appLanguage == 'en')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('English'),
-              ],
+          for (final MapEntry<String, String> lang
+              in _kAppLanguageNames.entries)
+            SimpleDialogOption(
+              onPressed: () {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setAppLanguage(lang.key);
+                Navigator.pop(dialogContext);
+              },
+              child: Row(
+                children: <Widget>[
+                  if (settings.appLanguage == lang.key)
+                    const Icon(Icons.check, size: 18, color: AppColors.brand)
+                  else
+                    const SizedBox(width: 18),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(lang.value),
+                ],
+              ),
             ),
-          ),
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setAppLanguage('ru');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.appLanguage == 'ru')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('Русский'),
-              ],
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setAppLanguage('zh');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.appLanguage == 'zh')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('中文'),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -1184,4 +1207,51 @@ class _RestoreOptions {
 
   final bool restoreWishlist;
   final bool restoreSettings;
+}
+
+/// Compact slider for the grid card scale; previews live, persists on release.
+class _CardScaleSlider extends ConsumerWidget {
+  const _CardScaleSlider({required this.scale});
+
+  final double scale;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool compact = isCompactScreen(context);
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        SizedBox(
+          width: compact ? 120 : 170,
+          child: Slider(
+            value: scale.clamp(
+              SettingsKeys.cardScaleMin,
+              SettingsKeys.cardScaleMax,
+            ),
+            min: SettingsKeys.cardScaleMin,
+            max: SettingsKeys.cardScaleMax,
+            divisions:
+                ((SettingsKeys.cardScaleMax - SettingsKeys.cardScaleMin) / 0.1)
+                    .round(),
+            onChanged: (double value) =>
+                notifier.setCardScale(value, persist: false),
+            onChangeEnd: notifier.setCardScale,
+          ),
+        ),
+        SizedBox(
+          width: 38,
+          child: Text(
+            '${(scale * 100).round()}%',
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              fontSize: compact ? 11 : 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -20,7 +20,6 @@ import '../../shared/models/tier_definition.dart';
 import '../../shared/models/tier_list.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/media_type.dart';
-import '../../shared/models/tag.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
@@ -29,12 +28,14 @@ import '../../shared/models/tv_show.dart';
 import '../../shared/models/anime.dart';
 import '../../shared/models/book.dart';
 import '../../shared/models/manga.dart';
+import '../../shared/models/tag.dart';
 import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/visual_novel.dart';
 import '../api/anilist_api.dart';
 import '../api/igdb_api.dart';
 import '../api/tmdb_api.dart';
 import '../api/vndb_api.dart';
+import '../database/dao/global_tag_dao.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'collection_hero_service.dart';
@@ -155,6 +156,8 @@ enum ImportStage {
   fetchingManga('Fetching manga data...'),
 
   fetchingAnime('Fetching anime data...'),
+
+  fetchingBooks('Fetching book data...'),
 
   cachingMedia('Caching media...'),
 
@@ -1397,23 +1400,17 @@ class ImportService {
     List<Map<String, dynamic>> exportedItems,
     Map<String, int> itemIdMapping,
   ) async {
-    // One snapshot of the global set; per-tag resolveOrCreate would rescan
-    // the table for every entry.
-    final List<Tag> existing = await _database.globalTagDao.getAll();
-    final Map<String, int> tagNameToId = <String, int>{
-      for (final Tag tag in existing) tag.name.toLowerCase(): tag.id,
-    };
-    for (final Map<String, dynamic> tagData in tagsData) {
-      final String name = tagData['name'] as String? ?? 'Imported Tag';
-      final String key = name.toLowerCase();
-      if (tagNameToId.containsKey(key)) continue;
-      final Tag created = await _database.globalTagDao.create(
-        name,
-        color: tagData['color'] as int?,
-        textColor: tagData['text_color'] as int?,
-      );
-      tagNameToId[key] = created.id;
-    }
+    final Map<String, int> tagNameToId =
+        await _database.globalTagDao.resolveOrCreateAll(<TagSeed>[
+      for (final Map<String, dynamic> tagData in tagsData)
+        (
+          name: tagData['name'] as String? ?? 'Imported Tag',
+          color: tagData['color'] as int?,
+          textColor: tagData['text_color'] as int?,
+        ),
+    ]);
+
+    final List<Tag> allTags = await _database.globalTagDao.getAll();
 
     for (final Map<String, dynamic> itemData in exportedItems) {
       final List<String> tagNames = switch (itemData['tag_names']) {
@@ -1425,12 +1422,13 @@ class ImportService {
       };
       if (tagNames.isEmpty) continue;
 
+      // tag_names comes in the item's display order; keep it.
       final Set<int> tagIds = <int>{
         for (final String name in tagNames)
-          if (tagNameToId[name.toLowerCase()] != null)
-            tagNameToId[name.toLowerCase()]!,
+          if (tagNameToId[GlobalTagDao.nameKey(name)] case final int id) id,
       };
       if (tagIds.isEmpty) continue;
+      final List<int> orderedIds = tagIds.toList();
 
       final String? mediaType = itemData['media_type'] as String?;
       final int? externalId = itemData['external_id'] as int?;
@@ -1447,6 +1445,17 @@ class ImportService {
       // Imported items are freshly created, so a replace-set write is safe
       // and avoids one INSERT round-trip per link.
       await _database.globalTagDao.setItemTags(itemId, tagIds);
+
+      // Explicit positions only when the exported order differs from the
+      // global fallback — otherwise the item keeps following the global sort.
+      final List<int> globalOrder = <int>[
+        for (final Tag tag in allTags)
+          if (tagIds.contains(tag.id)) tag.id,
+      ];
+      if (!listEquals(orderedIds, globalOrder)) {
+        await _database.globalTagDao
+            .setItemTagPositions(itemId, orderedIds);
+      }
     }
   }
 

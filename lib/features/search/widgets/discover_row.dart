@@ -74,7 +74,8 @@ class _DiscoverRowState extends State<DiscoverRow> {
 
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    final double rowHeight = compact ? 185 : 230;
+    // Poster fills the card (2:3) + the list rows' vertical padding.
+    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

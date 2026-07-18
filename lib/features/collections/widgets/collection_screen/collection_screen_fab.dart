@@ -98,7 +98,7 @@ class CollectionScreenFab extends StatelessWidget {
       if (isCollectionEditable)
         DraggableFabItem(
           icon: Icons.tune,
-          label: l.collectionEditMenu,
+          label: l.collectionEditDialogTitle,
           onTap: () => onMenuAction(CollectionMenuAction.rename),
         ),
       DraggableFabItem(

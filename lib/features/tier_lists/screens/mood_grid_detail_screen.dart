@@ -82,13 +82,13 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
             DraggableFab(
               mainAction: DraggableFabItem(
                 icon: Icons.image_outlined,
-                label: l.moodGridExportImage,
+                label: l.exportAsImage,
                 onTap: () => _exportAsImage(state.grid.name, l),
               ),
               items: <DraggableFabItem>[
                 DraggableFabItem(
                   icon: Icons.text_fields,
-                  label: l.moodGridRename,
+                  label: l.rename,
                   onTap: () => _renameGrid(state.grid.name, l),
                 ),
                 DraggableFabItem(
@@ -100,7 +100,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
                 const DraggableFabDivider(),
                 DraggableFabItem(
                   icon: Icons.delete_outline,
-                  label: l.moodGridDelete,
+                  label: l.delete,
                   iconColor: AppColors.error,
                   onTap: () => _confirmDelete(l),
                 ),
@@ -142,7 +142,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
               ),
             ),
             _Stepper(
-              label: l.moodGridCols,
+              label: l.columnsCount,
               value: state.grid.cols,
               onDecrement: state.grid.cols <= 1
                   ? null
@@ -304,7 +304,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
     final String? newName = await showDialog<String>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        title: Text(l.moodGridRename),
+        title: Text(l.rename),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -333,7 +333,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
       context,
       title: l.moodGridDeleteTitle,
       message: l.moodGridDeleteMessage,
-      confirmLabel: l.moodGridDelete,
+      confirmLabel: l.delete,
     );
     if (!ok) return;
     await ref.read(moodGridsProvider.notifier).delete(widget.gridId);
@@ -364,13 +364,13 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
     final BulkExportResult result = await saveBoundaryAsPng(
       repaintKey: _exportKey,
       suggestedFileName: fileName,
-      saveDialogTitle: l.moodGridExportImage,
+      saveDialogTitle: l.exportAsImage,
     );
     if (!mounted) return;
 
     switch (result.status) {
       case BulkExportStatus.saved:
-        context.showSnack(l.moodGridImageSaved, type: SnackType.success);
+        context.showSnack(l.imageSaved, type: SnackType.success);
       case BulkExportStatus.cancelled:
         break;
       case BulkExportStatus.failed:
@@ -537,7 +537,7 @@ class _CaptionTemplateDialogState extends State<_CaptionTemplateDialog> {
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(''),
-          child: Text(l.moodGridCaptionTemplateClear),
+          child: Text(l.clear),
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(_controller.text),

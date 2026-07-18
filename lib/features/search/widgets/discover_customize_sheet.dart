@@ -163,7 +163,7 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
         icon: Icons.star_border,
       ),
       DiscoverSectionId.anime: (
-        label: l.discoverAnime,
+        label: l.mediaTypeAnime,
         icon: Icons.animation,
       ),
     };

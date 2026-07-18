@@ -13,11 +13,13 @@ import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../helpers/collection_actions.dart';
 import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
+import '../providers/episode_tracker_provider.dart';
 import '../providers/item_tags_provider.dart';
 import '../extensions/item_display_name.dart';
 import 'collection_table/collection_table_view.dart';
@@ -41,7 +43,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemRemove,
     this.onItemFocusChanged,
     this.tags = const <Tag>[],
-    this.itemTags = const <int, Set<int>>{},
+    this.itemTags = const <int, List<int>>{},
     this.filterTagIds = const <int>{},
     this.groupByTags = false,
     this.header,
@@ -63,7 +65,7 @@ class CollectionItemsView extends ConsumerWidget {
   final List<Tag> tags;
 
   /// Item id → global tag ids (from `itemTagsProvider`).
-  final Map<int, Set<int>> itemTags;
+  final Map<int, List<int>> itemTags;
   final Set<int> filterTagIds;
   final bool groupByTags;
 
@@ -74,8 +76,6 @@ class CollectionItemsView extends ConsumerWidget {
   /// Mirrors the table's status column filter outward so chevron counts in
   /// the outer filter bar can react to in-table cycling.
   final ValueChanged<ItemStatus?>? onTableFilterStatusChanged;
-
-  static const double _desktopMaxCardWidth = 170;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -179,8 +179,9 @@ class CollectionItemsView extends ConsumerWidget {
     };
     final List<CollectionItem> untagged = <CollectionItem>[];
 
+    final Map<int, Tag> tagById = tags.byId;
     for (final CollectionItem item in items) {
-      final Tag? primary = tags.primaryFor(itemTags[item.id]);
+      final Tag? primary = tagById.primaryFor(itemTags[item.id]);
       if (primary != null) {
         grouped[primary.id]!.add(item);
       } else {
@@ -229,32 +230,32 @@ class CollectionItemsView extends ConsumerWidget {
     final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
     final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
 
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
+
     final SliverGridDelegate gridDelegate;
     if (isDesktop) {
       gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: _desktopMaxCardWidth,
+        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * settings.cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: 0.55,
+        childAspectRatio: AppSpacing.posterAspectRatio,
       );
     } else {
-      final int crossAxisCount;
+      final int baseCount;
       if (isLandscape) {
-        crossAxisCount = AppSpacing.gridColumnsDesktop;
+        baseCount = AppSpacing.gridColumnsDesktop;
       } else if (screenWidth >= 500) {
-        crossAxisCount = AppSpacing.gridColumnsTablet;
+        baseCount = AppSpacing.gridColumnsTablet;
       } else {
-        crossAxisCount = AppSpacing.gridColumnsMobile;
+        baseCount = AppSpacing.gridColumnsMobile;
       }
       gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
+        crossAxisCount: AppSpacing.scaledColumns(baseCount, settings.cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: 0.55,
+        childAspectRatio: AppSpacing.posterAspectRatio,
       );
     }
-
-    final SettingsState settings = ref.watch(settingsNotifierProvider);
 
     if (!_hasTagGroups) {
       return _buildFlatGridView(
@@ -371,6 +372,8 @@ class CollectionItemsView extends ConsumerWidget {
         : const <int>{};
     final bool selectionActive = selection.isNotEmpty;
     final bool isSelected = selection.contains(item.id);
+    final ItemCardProgress? progress =
+        itemCardProgress(item) ?? _trackerProgress(ref, item);
 
     final Widget card = MediaPosterCard(
       key: ValueKey<int>(item.id),
@@ -391,6 +394,7 @@ class CollectionItemsView extends ConsumerWidget {
       mediaType: item.displayMediaType,
       typeLabelOverride: item.formatLabel,
       status: item.status,
+      progress: progress,
       isFavorite: item.isFavorite,
       showFavorite: canEdit,
       enableHoverScale: !isSelected,
@@ -435,10 +439,31 @@ class CollectionItemsView extends ConsumerWidget {
     );
   }
 
+  /// Card progress for TMDB shows, whose marks live in the episode tracker
+  /// rather than on the item (itemCardProgress returns null for them).
+  ItemCardProgress? _trackerProgress(WidgetRef ref, CollectionItem item) {
+    if (collectionId == null) return null;
+    if (item.mediaType != MediaType.tvShow &&
+        item.mediaType != MediaType.animation) {
+      return null;
+    }
+    final int watched = ref
+        .watch(episodeTrackerNotifierProvider(
+            (collectionId: collectionId, showId: item.externalId)))
+        .totalWatchedCount;
+    if (watched == 0) return null;
+    final int total = item.tvShow?.totalEpisodes ?? 0;
+    return ItemCardProgress(
+      label: total > 0 ? '$watched/$total' : '$watched',
+      fraction:
+          total > 0 ? (watched / total).clamp(0.0, 1.0) : null,
+    );
+  }
+
   /// Opens the multi-select tag picker for the item and persists the result.
   void _editItemTags(BuildContext context, WidgetRef ref, int itemId) {
-    final Set<int> current =
-        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? <int>{};
+    final Set<int> current = Set<int>.of(
+        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? const <int>[]);
     TagPickerDialog.show(context, initialSelection: current)
         .then((Set<int>? selected) {
       if (selected == null || !context.mounted) return;

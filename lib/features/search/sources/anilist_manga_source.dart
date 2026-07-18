@@ -34,7 +34,7 @@ class AniListMangaSource extends SearchSource {
   IconData get groupIcon => Icons.auto_stories_outlined;
 
   @override
-  String label(S l) => l.searchSourceManga;
+  String label(S l) => l.mediaTypeManga;
 
   @override
   IconData get icon => Icons.auto_stories_outlined;

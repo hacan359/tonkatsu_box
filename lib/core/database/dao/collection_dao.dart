@@ -426,15 +426,28 @@ class CollectionDao {
 
   /// Bulk-inserts collection items in a single transaction. Each [rows] map
   /// holds the item's own columns (media_type, external_id, status,
-  /// user_rating, completed_at, …); collection_id, added_at and an
-  /// incrementing sort_order are filled here. Rows that violate the unique
-  /// (collection_id, media_type, external_id, platform_id) constraint are
-  /// ignored. Returns the number of rows actually inserted.
+  /// user_rating, completed_at, …); collection_id and an incrementing
+  /// sort_order are filled here, added_at only when the row doesn't carry
+  /// one (sources that import their own add date pass it in the row). Rows
+  /// that violate the unique (collection_id, media_type, external_id,
+  /// platform_id) constraint are ignored. Returns the number of rows
+  /// actually inserted.
   Future<int> addItemsBatch(
     int? collectionId,
     List<Map<String, dynamic>> rows,
   ) async {
-    if (rows.isEmpty) return 0;
+    final List<int?> ids = await addItemsBatchReturningIds(collectionId, rows);
+    return ids.whereType<int>().length;
+  }
+
+  /// Same bulk insert as [addItemsBatch], but returns the new row id for
+  /// each input row, aligned with [rows]; `null` marks rows skipped by the
+  /// unique constraint.
+  Future<List<int?>> addItemsBatchReturningIds(
+    int? collectionId,
+    List<Map<String, dynamic>> rows,
+  ) async {
+    if (rows.isEmpty) return const <int?>[];
     final Database db = await _getDatabase();
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int sortOrder = await getNextSortOrder(collectionId);
@@ -448,7 +461,7 @@ class CollectionDao {
           <String, dynamic>{
             ...row,
             'collection_id': collectionId,
-            'added_at': now,
+            'added_at': (row['added_at'] as int?) ?? now,
             'sort_order': sortOrder++,
           },
           conflictAlgorithm: ConflictAlgorithm.ignore,
@@ -457,11 +470,9 @@ class CollectionDao {
       return batch.commit();
     });
 
-    int inserted = 0;
-    for (final Object? r in results) {
-      if (r is int && r > 0) inserted++;
-    }
-    return inserted;
+    return <int?>[
+      for (final Object? r in results) r is int && r > 0 ? r : null,
+    ];
   }
 
   /// Batch-updates selected columns of existing items in one transaction. Each

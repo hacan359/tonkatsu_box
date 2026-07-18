@@ -180,7 +180,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     final S l10n = S.of(context);
 
     return SettingsGroup(
-      title: l10n.traktPreview,
+      title: l10n.preview,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -253,7 +253,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     final S l10n = S.of(context);
 
     return SettingsGroup(
-      title: l10n.traktOptions,
+      title: l10n.importOptions,
       children: <Widget>[
         CheckboxListTile(
           title: Text(l10n.traktImportWatched),
@@ -288,7 +288,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            l10n.traktTargetCollection,
+            l10n.importTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -306,7 +306,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l10n.traktCreateNew),
+                title: Text(l10n.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: () => setState(() {
@@ -315,7 +315,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
                 }),
               ),
               ListTile(
-                title: Text(l10n.traktUseExisting),
+                title: Text(l10n.importUseExistingCollection),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: () => setState(() {
@@ -332,7 +332,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l10n.traktNoCollections,
+                    l10n.importNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -344,8 +344,8 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l10n.traktSelectCollection,
-                  title: l10n.traktSelectCollection,
+                  hint: l10n.importSelectCollection,
+                  title: l10n.importSelectCollection,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
                 );
@@ -353,7 +353,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l10n.traktErrorLoadingCollections,
+                l10n.importErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -379,7 +379,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
         onPressed:
             canImport && hasTarget && hasOwnTmdbKey ? _startImport : null,
         icon: const Icon(Icons.download),
-        label: Text(S.of(context).traktStartImport),
+        label: Text(S.of(context).importStart),
       ),
     );
   }
@@ -490,7 +490,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
         ),
       );
     } else if (result.fatalError != null) {
-      context.showSnack(result.fatalError!, type: SnackType.error);
+      context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
     }
   }
 }

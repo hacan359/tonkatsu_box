@@ -1,7 +1,6 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/widgets/copyable_text.dart';
 import '../../../shared/widgets/gyroscope_parallax_image.dart';
@@ -14,6 +13,7 @@ import '../../../shared/models/book.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/utils/cover_image_id.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/models/visual_novel.dart';
@@ -629,7 +629,7 @@ class ItemDetailsSheet extends StatelessWidget {
             SourceBadge(
               source: dataSource ?? DataSource.tmdb,
               onTap: externalUrl != null
-                  ? () => _launchUrl(externalUrl!)
+                  ? () => launchExternalUrl(externalUrl!)
                   : null,
             ),
             if (rating != null) ...<Widget>[
@@ -751,11 +751,6 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-
   /// Shared "Description" section frame — a title plus an arbitrary [body]
   /// (the text, or a loading spinner while [overviewLoader] resolves).
   static Widget _overviewSection(BuildContext context, Widget body) {
@@ -767,7 +762,7 @@ class ItemDetailsSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            S.of(context).searchDescription,
+            S.of(context).description,
             style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.sm),

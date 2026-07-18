@@ -53,6 +53,7 @@ class BrowseSortOption {
         'top_rated' || 'rating' || 'score' => l.browseSortTopRated,
         'newest' => l.browseSortNewest,
         'most_voted' => l.browseSortMostVoted,
+        'most_read' => l.browseSortMostRead,
         'trending' => l.browseSortTrending,
         'name_asc' => l.browseSortNameAsc,
         'name_desc' => l.browseSortNameDesc,

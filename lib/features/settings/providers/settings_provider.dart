@@ -7,6 +7,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
+import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/ra_api.dart';
 import '../../../core/api/screenscraper_api.dart';
@@ -29,6 +30,9 @@ abstract class SettingsKeys {
   static const String comicVineApiKey = 'comicvine_api_key';
 
   static const String googleBooksApiKey = 'google_books_api_key';
+
+  /// Personal Bearer token from hardcover.app/account/api.
+  static const String hardcoverApiKey = 'hardcover_api_key';
 
   static const String screenScraperSsid = 'screenscraper_ssid';
 
@@ -78,6 +82,9 @@ abstract class SettingsKeys {
   /// Last AniList username used in import dialog. Persisted on successful import.
   static const String aniListUsername = 'anilist_username';
 
+  /// Last Hardcover username used in import dialog. Persisted on successful import.
+  static const String hardcoverUsername = 'hardcover_username';
+
   static const String richCollectionsEnabled = 'rich_collections_enabled';
 
   static const String hideEmptyMediaTypeChevrons =
@@ -96,6 +103,15 @@ abstract class SettingsKeys {
   static const String animeMangaTitleLanguage = 'anime_manga_title_language';
 
   static const String animeMangaTitleLanguageDefault = 'romaji';
+
+  /// Grid card size multiplier.
+  static const String cardScale = 'card_scale';
+
+  static const double cardScaleDefault = 1.0;
+
+  static const double cardScaleMin = 0.7;
+
+  static const double cardScaleMax = 1.6;
 }
 
 class SettingsState {
@@ -112,6 +128,7 @@ class SettingsState {
     this.tmdbApiKey,
     this.comicVineApiKey,
     this.googleBooksApiKey,
+    this.hardcoverApiKey,
     this.screenScraperSsid,
     this.screenScraperSspassword,
     this.defaultAuthor,
@@ -127,6 +144,7 @@ class SettingsState {
     this.alwaysShowSubcategories = false,
     this.dateFormat = SettingsKeys.dateFormatDefault,
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
+    this.cardScale = SettingsKeys.cardScaleDefault,
   });
 
   final String? clientId;
@@ -154,6 +172,8 @@ class SettingsState {
   final String? comicVineApiKey;
 
   final String? googleBooksApiKey;
+
+  final String? hardcoverApiKey;
 
   final String? screenScraperSsid;
 
@@ -197,6 +217,9 @@ class SettingsState {
   /// AniList title language preference.
   final String animeMangaTitleLanguage;
 
+  /// Grid card size multiplier (1.0 = default size).
+  final double cardScale;
+
   String? resolveOverlay({
     String? platformOverlay,
     String? mediaTypeOverlay,
@@ -224,6 +247,9 @@ class SettingsState {
 
   bool get hasGoogleBooksKey =>
       googleBooksApiKey != null && googleBooksApiKey!.isNotEmpty;
+
+  bool get hasHardcoverKey =>
+      hardcoverApiKey != null && hardcoverApiKey!.isNotEmpty;
 
   bool get hasSteamGridDbKey =>
       steamGridDbApiKey != null && steamGridDbApiKey!.isNotEmpty;
@@ -272,6 +298,7 @@ class SettingsState {
     String? tmdbApiKey,
     String? comicVineApiKey,
     String? googleBooksApiKey,
+    String? hardcoverApiKey,
     String? screenScraperSsid,
     String? screenScraperSspassword,
     String? defaultAuthor,
@@ -287,6 +314,7 @@ class SettingsState {
     bool? alwaysShowSubcategories,
     String? dateFormat,
     String? animeMangaTitleLanguage,
+    double? cardScale,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -301,6 +329,7 @@ class SettingsState {
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
       comicVineApiKey: comicVineApiKey ?? this.comicVineApiKey,
       googleBooksApiKey: googleBooksApiKey ?? this.googleBooksApiKey,
+      hardcoverApiKey: hardcoverApiKey ?? this.hardcoverApiKey,
       screenScraperSsid: screenScraperSsid ?? this.screenScraperSsid,
       screenScraperSspassword:
           screenScraperSspassword ?? this.screenScraperSspassword,
@@ -321,6 +350,7 @@ class SettingsState {
       dateFormat: dateFormat ?? this.dateFormat,
       animeMangaTitleLanguage:
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
+      cardScale: cardScale ?? this.cardScale,
     );
   }
 }
@@ -361,6 +391,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   late TmdbApi _tmdbApi;
   late ComicVineApi _comicVineApi;
   late GoogleBooksApi _googleBooksApi;
+  late HardcoverApi _hardcoverApi;
   late ScreenScraperApi _screenScraperApi;
   late DatabaseService _dbService;
 
@@ -372,6 +403,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi = ref.watch(tmdbApiProvider);
     _comicVineApi = ref.watch(comicVineApiProvider);
     _googleBooksApi = ref.watch(googleBooksApiProvider);
+    _hardcoverApi = ref.watch(hardcoverApiProvider);
     _screenScraperApi = ref.watch(screenScraperApiProvider);
     _dbService = ref.watch(databaseServiceProvider);
 
@@ -426,6 +458,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Google Books: optional user key from prefs only, no built-in.
     final String? googleBooksApiKey =
         _prefs.getString(SettingsKeys.googleBooksApiKey);
+    // Hardcover: personal token from prefs only, no built-in.
+    final String? hardcoverApiKey =
+        _prefs.getString(SettingsKeys.hardcoverApiKey);
     final String? screenScraperSsid =
         _prefs.getString(SettingsKeys.screenScraperSsid);
     final String? screenScraperSspassword =
@@ -460,6 +495,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String animeMangaTitleLanguage =
         _prefs.getString(SettingsKeys.animeMangaTitleLanguage) ??
             SettingsKeys.animeMangaTitleLanguageDefault;
+    final double cardScale = (_prefs.getDouble(SettingsKeys.cardScale) ??
+            SettingsKeys.cardScaleDefault)
+        .clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
 
     // Valid token → connected immediately (skip verify);
     // expired with credentials → trigger auto-verify below.
@@ -480,6 +518,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       tmdbApiKey: tmdbApiKey,
       comicVineApiKey: comicVineApiKey,
       googleBooksApiKey: googleBooksApiKey,
+      hardcoverApiKey: hardcoverApiKey,
       screenScraperSsid: screenScraperSsid,
       screenScraperSspassword: screenScraperSspassword,
       defaultAuthor: defaultAuthor,
@@ -495,6 +534,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       alwaysShowSubcategories: alwaysShowSubcategories,
       dateFormat: dateFormat,
       animeMangaTitleLanguage: animeMangaTitleLanguage,
+      cardScale: cardScale,
     );
 
     // API keys already wired by apiKeysProvider; only the request-time language param is set here.
@@ -552,6 +592,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (state.googleBooksApiKey != null &&
         state.googleBooksApiKey!.isNotEmpty) {
       _googleBooksApi.setApiKey(state.googleBooksApiKey!);
+    }
+    if (state.hardcoverApiKey != null && state.hardcoverApiKey!.isNotEmpty) {
+      _hardcoverApi.setApiKey(state.hardcoverApiKey!);
     }
   }
 
@@ -717,6 +760,23 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(googleBooksApiKey: apiKey);
   }
 
+  /// The account page shows the token with a `Bearer ` prefix — strip it so
+  /// a full copy-paste still works.
+  Future<void> setHardcoverApiKey(String apiKey) async {
+    final String token = apiKey
+        .replaceFirst(RegExp(r'^\s*Bearer\s+', caseSensitive: false), '')
+        .trim();
+    if (token.isNotEmpty) {
+      await _prefs.setString(SettingsKeys.hardcoverApiKey, token);
+      _hardcoverApi.setApiKey(token);
+    } else {
+      await _prefs.remove(SettingsKeys.hardcoverApiKey);
+      _hardcoverApi.clearApiKey();
+    }
+
+    state = state.copyWith(hardcoverApiKey: token);
+  }
+
   /// Genres are pre-seeded for both EN + RU — no cache clear needed on switch.
   Future<void> setTmdbLanguage(String language) async {
     await _prefs.setString(SettingsKeys.tmdbLanguage, language);
@@ -777,6 +837,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> setAnimeMangaTitleLanguage(String lang) async {
     await _prefs.setString(SettingsKeys.animeMangaTitleLanguage, lang);
     state = state.copyWith(animeMangaTitleLanguage: lang);
+  }
+
+  /// Set [persist] to false for live slider preview; the final value must be
+  /// saved with a persisting call.
+  Future<void> setCardScale(double scale, {bool persist = true}) async {
+    final double clamped =
+        scale.clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
+    state = state.copyWith(cardScale: clamped);
+    if (persist) {
+      await _prefs.setDouble(SettingsKeys.cardScale, clamped);
+    }
   }
 
   /// Falls back to built-in key if available, otherwise clears.
@@ -856,6 +927,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     return _googleBooksApi.validateApiKey(state.googleBooksApiKey!);
   }
 
+  Future<bool> validateHardcoverKey() async {
+    if (!state.hasHardcoverKey) return false;
+    return _hardcoverApi.validateApiKey(state.hardcoverApiKey!);
+  }
+
   Future<ConfigResult> exportConfig() async {
     final ConfigService configService = ref.read(configServiceProvider);
     return configService.exportToFile();
@@ -891,6 +967,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.tmdbApiKey);
     await _prefs.remove(SettingsKeys.comicVineApiKey);
     await _prefs.remove(SettingsKeys.googleBooksApiKey);
+    await _prefs.remove(SettingsKeys.hardcoverApiKey);
     await _prefs.remove(SettingsKeys.screenScraperSsid);
     await _prefs.remove(SettingsKeys.screenScraperSspassword);
     await _prefs.remove(SettingsKeys.defaultAuthor);
@@ -904,6 +981,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.alwaysShowSubcategories);
     await _prefs.remove(SettingsKeys.dateFormat);
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
+    await _prefs.remove(SettingsKeys.cardScale);
     await _prefs.remove(SettingsKeys.raUsername);
     await _prefs.remove(SettingsKeys.raApiKey);
 
@@ -912,6 +990,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi.clearApiKey();
     _comicVineApi.clearApiKey();
     _googleBooksApi.clearApiKey();
+    _hardcoverApi.clearApiKey();
 
     state = const SettingsState();
   }

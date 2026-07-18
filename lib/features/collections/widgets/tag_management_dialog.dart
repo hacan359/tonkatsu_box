@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -106,9 +107,9 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
     final S l = S.of(context);
     final AsyncValue<List<Tag>> tagsAsync = ref.watch(globalTagsProvider);
     final Map<int, int> usage = <int, int>{};
-    final Map<int, Set<int>> itemTags =
-        ref.watch(itemTagsProvider).valueOrNull ?? <int, Set<int>>{};
-    for (final Set<int> ids in itemTags.values) {
+    final Map<int, List<int>> itemTags =
+        ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
+    for (final List<int> ids in itemTags.values) {
       for (final int id in ids) {
         usage[id] = (usage[id] ?? 0) + 1;
       }
@@ -283,7 +284,8 @@ class _RenameTagDialogState extends State<_RenameTagDialog> {
       title: Text(l.tagRename),
       content: TextField(
         controller: _controller,
-        autofocus: true,
+        // Mobile: no autofocus so the keyboard waits for a tap on the field.
+        autofocus: !kIsMobile,
         decoration: const InputDecoration(isDense: true),
         onSubmitted: (String value) => Navigator.of(context).pop(value.trim()),
       ),

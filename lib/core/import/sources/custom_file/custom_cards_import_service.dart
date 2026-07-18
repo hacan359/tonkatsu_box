@@ -12,8 +12,8 @@ import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/item_status_logic.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/models/platform.dart';
-import '../../../../shared/models/tag.dart';
 import '../../../../shared/models/universal_import_result.dart';
+import '../../../database/dao/global_tag_dao.dart';
 import '../../../database/database_service.dart';
 import '../../../services/image_cache_service.dart';
 import '../../../services/import_service.dart';
@@ -138,9 +138,10 @@ class CustomCardsImportService {
       for (int i = 0; i < entries.length; i++) {
         rows.add(_insertRow(entries[i], customIds[i]));
       }
-      final int inserted =
-          await _repository.addItemsBatch(collection.id, rows);
-      await _applyTags(collection.id, entries, customIds);
+      final List<int?> itemIds =
+          await _repository.addItemsBatchReturningIds(collection.id, rows);
+      final int inserted = itemIds.whereType<int>().length;
+      await _applyTags(entries, itemIds);
 
       onProgress?.call(ImportProgress(
         stage: ImportStage.addingItems,
@@ -172,6 +173,7 @@ class CustomCardsImportService {
       return UniversalImportResult.failure(
         sourceName: sourceName,
         error: 'Import failed: $e',
+        detail: stack.toString(),
       );
     }
   }
@@ -263,41 +265,27 @@ class CustomCardsImportService {
   }
 
   /// Assigns global tags to the written items, creating tags that don't exist
-  /// yet (matched by name, case-insensitively).
+  /// yet (matched by name, case-insensitively). [itemIds] is aligned with
+  /// [entries]; `null` marks rows the insert skipped as duplicates.
   Future<void> _applyTags(
-    int collectionId,
     List<CustomCardEntry> entries,
-    List<int> customIds,
+    List<int?> itemIds,
   ) async {
     if (!entries.any((CustomCardEntry e) => e.tags.isNotEmpty)) return;
 
-    final List<Tag> existing = await _db.globalTagDao.getAll();
-    final Map<String, int> tagIdByName = <String, int>{
-      for (final Tag tag in existing) tag.name.trim().toLowerCase(): tag.id,
-    };
-    for (final CustomCardEntry entry in entries) {
-      for (final String name in entry.tags) {
-        final String key = name.toLowerCase();
-        if (tagIdByName.containsKey(key)) continue;
-        final Tag created = await _db.globalTagDao.create(name);
-        tagIdByName[key] = created.id;
-      }
-    }
+    final Map<String, int> tagIdByName =
+        await _db.globalTagDao.resolveOrCreateAll(<TagSeed>[
+      for (final CustomCardEntry entry in entries)
+        for (final String name in entry.tags)
+          (name: name, color: null, textColor: null),
+    ]);
 
-    // Batch insert reports no row ids, so map items back via the unique
-    // (custom) external_id.
-    final Map<int, int> itemIdByExternal = <int, int>{
-      for (final CollectionItem item
-          in await _repository.getItemsWithData(collectionId))
-        if (item.mediaType == MediaType.custom) item.externalId: item.id,
-    };
     for (int i = 0; i < entries.length; i++) {
-      if (entries[i].tags.isEmpty) continue;
-      final int? itemId = itemIdByExternal[customIds[i]];
-      if (itemId == null) continue;
+      final int? itemId = itemIds[i];
+      if (itemId == null || entries[i].tags.isEmpty) continue;
       await _db.globalTagDao.setItemTags(itemId, <int>{
         for (final String name in entries[i].tags)
-          tagIdByName[name.toLowerCase()]!,
+          tagIdByName[GlobalTagDao.nameKey(name)]!,
       });
     }
   }

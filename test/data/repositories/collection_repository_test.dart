@@ -182,6 +182,24 @@ void main() {
         expect(inserted, 3);
         verify(() => dao.addItemsBatch(1, any())).called(1);
       });
+
+      test('addItemsBatchReturningIds delegates to CollectionDao', () async {
+        final MockCollectionDao dao = MockCollectionDao();
+        when(() => mockDb.collectionDao).thenReturn(dao);
+        when(() => dao.addItemsBatchReturningIds(any(), any()))
+            .thenAnswer((_) async => <int?>[7, null]);
+
+        final List<int?> ids = await repository.addItemsBatchReturningIds(
+          1,
+          <Map<String, dynamic>>[
+            <String, dynamic>{'external_id': 1},
+            <String, dynamic>{'external_id': 2},
+          ],
+        );
+
+        expect(ids, <int?>[7, null]);
+        verify(() => dao.addItemsBatchReturningIds(1, any())).called(1);
+      });
     });
 
     group('updateItemFieldsBatch', () {

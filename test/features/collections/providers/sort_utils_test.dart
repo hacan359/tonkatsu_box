@@ -14,6 +14,8 @@ CollectionItem _makeItem({
   double? userRating,
   DateTime? addedAt,
   DateTime? lastActivityAt,
+  DateTime? startedAt,
+  DateTime? completedAt,
   double? apiRating,
   bool isFavorite = false,
 }) {
@@ -27,6 +29,8 @@ CollectionItem _makeItem({
     userRating: userRating,
     addedAt: addedAt ?? DateTime(2024, 1, id),
     lastActivityAt: lastActivityAt,
+    startedAt: startedAt,
+    completedAt: completedAt,
     isFavorite: isFavorite,
     game: Game(id: id * 100, name: name, rating: apiRating),
   );
@@ -592,6 +596,85 @@ void main() {
         );
 
         expect(result.first.id, 1);
+      });
+    });
+
+    group('CollectionSortMode.startDate', () {
+      test('по умолчанию недавно начатые первыми, без даты — последними', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Old', startedAt: DateTime(2024, 1, 1)),
+          _makeItem(id: 2, name: 'No date'),
+          _makeItem(id: 3, name: 'Recent', startedAt: DateTime(2024, 6, 1)),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.startDate,
+        );
+
+        expect(result.map((CollectionItem i) => i.id).toList(), <int>[3, 1, 2]);
+      });
+
+      test('без даты сортируются по имени между собой', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Zelda'),
+          _makeItem(id: 2, name: 'Ape Escape'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.startDate,
+        );
+
+        expect(result.map((CollectionItem i) => i.id).toList(), <int>[2, 1]);
+      });
+
+      test('isDescending=true инвертирует порядок', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Old', startedAt: DateTime(2024, 1, 1)),
+          _makeItem(id: 2, name: 'Recent', startedAt: DateTime(2024, 6, 1)),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.startDate,
+          isDescending: true,
+        );
+
+        expect(result.first.id, 1);
+      });
+    });
+
+    group('CollectionSortMode.completionDate', () {
+      test('по умолчанию недавно завершённые первыми, без даты — последними',
+          () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'No date'),
+          _makeItem(id: 2, name: 'Recent', completedAt: DateTime(2024, 6, 1)),
+          _makeItem(id: 3, name: 'Old', completedAt: DateTime(2024, 1, 1)),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.completionDate,
+        );
+
+        expect(result.map((CollectionItem i) => i.id).toList(), <int>[2, 3, 1]);
+      });
+
+      test('одинаковые даты разрешаются по имени', () {
+        final DateTime same = DateTime(2024, 3, 1);
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Zelda', completedAt: same),
+          _makeItem(id: 2, name: 'Ape Escape', completedAt: same),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.completionDate,
+        );
+
+        expect(result.map((CollectionItem i) => i.id).toList(), <int>[2, 1]);
       });
     });
 

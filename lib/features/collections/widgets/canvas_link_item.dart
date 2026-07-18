@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/models/canvas_item.dart';
+import '../../../shared/utils/url_launch.dart';
 
 /// Data lives in CanvasItem.data: {url: String, label: String}.
 class CanvasLinkItem extends StatelessWidget {
@@ -12,11 +12,7 @@ class CanvasLinkItem extends StatelessWidget {
   Future<void> _openUrl() async {
     final String? url = item.data?['url'] as String?;
     if (url == null || url.isEmpty) return;
-
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await launchExternalUrl(url);
   }
 
   @override

@@ -68,7 +68,7 @@ void main() {
 
     test('WishlistScreen should define shortcut group', () {
       final ShortcutGroup group = WishlistScreen.shortcutGroup(l);
-      expect(group.title, 'Вишлист');
+      expect(group.title, 'Желаемое');
       expect(group.entries, isNotEmpty);
       expect(hasKey(group, 'Ctrl+N'), isTrue);
       expect(hasKey(group, 'Ctrl+H'), isTrue);

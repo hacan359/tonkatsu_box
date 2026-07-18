@@ -114,7 +114,7 @@ class DiscoverFeed extends ConsumerWidget {
         _buildTvShowSection(
           context,
           ref,
-          title: l.discoverAnime,
+          title: l.mediaTypeAnime,
           icon: Icons.animation,
           provider: discoverAnimeProvider,
           ownedIds: ownedIds,
@@ -331,7 +331,8 @@ class DiscoverFeed extends ConsumerWidget {
   Widget _buildShimmerRow(BuildContext context, String title) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    final double rowHeight = compact ? 175 : 220;
+    // Poster fills the card (2:3) + the list rows' vertical padding.
+    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

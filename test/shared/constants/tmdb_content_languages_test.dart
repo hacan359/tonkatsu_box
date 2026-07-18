@@ -37,6 +37,22 @@ void main() {
     });
   });
 
+  group('anilistTitleLanguageForContent', () {
+    test('en-* → english', () {
+      expect(anilistTitleLanguageForContent('en-US'), 'english');
+    });
+
+    test('ja-JP → native', () {
+      expect(anilistTitleLanguageForContent('ja-JP'), 'native');
+    });
+
+    test('остальные деградируют в romaji', () {
+      expect(anilistTitleLanguageForContent('ru-RU'), 'romaji');
+      expect(anilistTitleLanguageForContent('zh-TW'), 'romaji');
+      expect(anilistTitleLanguageForContent(''), 'romaji');
+    });
+  });
+
   group('defaultContentLanguageForUi', () {
     test('en → en-US', () {
       expect(defaultContentLanguageForUi('en'), 'en-US');

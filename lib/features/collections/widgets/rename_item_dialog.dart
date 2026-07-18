@@ -79,7 +79,7 @@ class _RenameItemDialogState extends State<RenameItemDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     return AlertDialog(
-      title: Text(l.renameItem),
+      title: Text(l.rename),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

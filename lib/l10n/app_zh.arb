@@ -6,7 +6,6 @@
   "navMain": "主页",
   "navCollections": "收藏",
   "navWishlist": "愿望单",
-  "navSearch": "搜索",
   "navSettings": "设置",
   "navReleases": "新番",
 
@@ -20,7 +19,7 @@
   "releasesTabCalendar": "日历",
   "releasesTabAll": "全部更新",
   "releasesToday": "今天",
-  "releasesRefresh": "刷新",
+  "refresh": "刷新",
   "releasesNoEpisodes": "暂无剧集",
   "releasesEpisode": "第 {season} 季 · 第 {episode} 集",
   "@releasesEpisode": {
@@ -31,10 +30,8 @@
   },
   "calendarAdd": "添加到日历",
   "calendarRemove": "从日历移除",
-  "calendarAddTitle": "添加到日历",
-  "calendarDate": "日期",
+  "date": "日期",
   "calendarRepeat": "重复",
-  "calendarAddAction": "添加",
   "recurrenceOnce": "仅一次",
   "recurrenceWeekly": "每周",
   "recurrenceMonthly": "每月",
@@ -52,7 +49,7 @@
   "statusReplaying": "重玩中",
   "statusRewatching": "重看中",
   "statusRereading": "重读中",
-  "homeFilterAll": "全部",
+  "all": "全部",
 
   "mediaTypeGame": "游戏",
   "mediaTypeMovie": "电影",
@@ -65,42 +62,32 @@
   "mediaTypeCustom": "自定义",
 
   "sortManualDisplay": "手动",
-  "sortManualShort": "手动",
   "sortManualDesc": "自定义排序",
   "sortDateDisplay": "添加日期",
-  "sortDateShort": "日期",
   "sortDateDesc": "最新优先",
-  "sortStatusDisplay": "状态",
-  "sortStatusShort": "状态",
+  "status": "状态",
   "sortStatusDesc": "活跃优先",
-  "sortNameDisplay": "名称",
+  "name": "名称",
   "sortNameShort": "A-Z",
-  "sortNameDesc": "A 到 Z",
-  "sortRatingDisplay": "我的评分",
-  "sortRatingShort": "评分",
+  "rating": "评分",
   "sortRatingDesc": "最高优先",
-  "sortFavoriteDisplay": "收藏",
-  "sortFavoriteShort": "收藏",
   "sortFavoriteDesc": "收藏优先",
   "sortExternalRatingDisplay": "外部评分",
   "sortExternalRatingShort": "IGDB/TMDB",
-  "sortExternalRatingDesc": "最高优先",
   "sortLastActivityDisplay": "最近活动",
   "sortLastActivityShort": "活动",
   "sortLastActivityDesc": "最近优先",
+  "sortStartDateDisplay": "开始日期",
+  "sortStartDateShort": "开始",
+  "sortCompletionDateDisplay": "完成日期",
+  "sortCompletionDateShort": "完成",
 
   "sortDateOldest": "最早优先",
   "sortStatusFinished": "已完成优先",
-  "sortNameZa": "Z 到 A",
   "sortRatingLowest": "最低优先",
   "sortFavoriteLast": "收藏最后",
-  "sortExternalRatingLowest": "最低优先",
-  "sortLastActivityOldest": "最早优先",
 
   "searchSortRelevanceShort": "相关",
-  "searchSortRelevanceDisplay": "相关度",
-  "searchSortDateShort": "日期",
-  "searchSortDateDisplay": "日期",
   "searchSortRatingShort": "评分",
   "searchSortRatingDisplay": "评分",
 
@@ -132,7 +119,7 @@
     }
   },
   "bulkClearSelection": "清除选择",
-  "bulkSelectAllVisible": "全选",
+  "selectAll": "全选",
   "bulkMove": "移动到收藏",
   "bulkCopy": "复制到收藏",
   "bulkChangeStatus": "更改状态",
@@ -162,7 +149,7 @@
     }
   },
   "bulkExportPngTitle": "导出为 PNG",
-  "bulkExportPngColumns": "列数",
+  "columnsCount": "列数",
   "bulkExportPngItemsCount": "{count} 个项目",
   "@bulkExportPngItemsCount": {
     "placeholders": {
@@ -184,7 +171,7 @@
     }
   },
   "bulkExportPngSave": "保存 PNG",
-  "bulkExportPngSaved": "图片已保存",
+  "imageSaved": "图片已保存",
   "bulkExportPngFailed": "保存图片失败",
   "back": "返回",
   "next": "下一步",
@@ -198,27 +185,26 @@
   "settingsProfile": "收藏作者",
   "settingsProfileSubtitle": "您的收藏的作者名称",
   "settingsAuthorName": "作者名称",
-  "settingsAuthorPlaceholder": "用户",
-  "settingsSettings": "设置",
-  "settingsCredentials": "凭证",
   "settingsCredentialsSubtitle": "IGDB、SteamGridDB、TMDB API 密钥",
-  "settingsCache": "缓存",
   "settingsCacheSubtitle": "离线模式和封面存储",
-  "settingsDatabase": "数据库",
   "settingsDatabaseSubtitle": "导出、导入、重置",
-  "settingsTraktImport": "Trakt 导入",
   "settingsTraktImportSubtitle": "观看历史、评分、观看列表",
   "settingsKinoriumImport": "Kinorium 导入",
   "settingsKinoriumImportSubtitle": "从 CSV 导出中导入电影和节目",
   "settingsDebug": "调试",
   "settingsDebugSubtitle": "开发者工具",
   "settingsDebugSubtitleNoKey": "部分工具需先设置 SteamGridDB 密钥",
+  "settingsLaboratory": "实验室",
+  "settingsLaboratoryCardDesigns": "卡片横幅设计",
+  "settingsLaboratoryCardDesignsSubtitle": "海报卡片的实验性布局",
   "settingsHelp": "帮助",
   "settingsWelcomeGuide": "欢迎指南",
   "settingsWelcomeGuideSubtitle": "开始使用 Tonkatsu Box",
   "settingsAbout": "关于",
   "settingsVersion": "版本",
   "settingsCreditsLicenses": "致谢与许可",
+  "settingsChangelog": "新功能",
+  "settingsChangelogEmpty": "暂无更新说明",
   "settingsCreditsLicensesSubtitle": "TMDB、IGDB、SteamGridDB、开源许可",
   "settingsError": "错误",
   "settingsAppLanguage": "应用语言",
@@ -234,7 +220,7 @@
   "settingsAppearance": "外观",
   "settingsAppearanceSubtitle": "语言、显示和内容",
   "settingsAppLanguageSubtitle": "界面语言",
-  "settingsContentLanguageSubtitle": "电影和电视剧简介的语言",
+  "settingsContentLanguageSubtitle": "目前仅适用于 TMDB（电影和剧集）",
   "settingsDataSources": "数据源",
   "settingsDataSourcesSubtitle": "IGDB、TMDB、SteamGridDB",
   "settingsApiKeysSubtitle": "配置数据库连接",
@@ -328,7 +314,8 @@
   "credentialsEnterComicVineKey": "输入您的 ComicVine API 密钥",
   "credentialsGoogleBooksSection": "Google Books API（书籍）",
   "credentialsEnterGoogleBooksKey": "输入您的 Google Books API 密钥（可选）",
-  "credentialsContentLanguage": "内容语言",
+  "credentialsHardcoverSection": "Hardcover API（书籍）",
+  "credentialsEnterHardcoverKey": "输入您的 Hardcover API 令牌",
   "credentialsOwnKeyHint": "为了更好的速率限制，建议使用自己的 API 密钥。",
   "credentialsConnected": "已连接",
   "credentialsConnectionError": "连接错误",
@@ -357,6 +344,8 @@
   "credentialsComicVineKeyInvalid": "ComicVine API 密钥无效",
   "credentialsGoogleBooksKeyValid": "Google Books API 密钥有效",
   "credentialsGoogleBooksKeyInvalid": "Google Books API 密钥无效",
+  "credentialsHardcoverKeyValid": "Hardcover API 令牌有效",
+  "credentialsHardcoverKeyInvalid": "Hardcover API 令牌无效或已过期",
   "credentialsEnterSteamGridDbKeyError": "请输入 SteamGridDB API 密钥",
   "credentialsEnterTmdbKeyError": "请输入 TMDB API 密钥",
   "credentialsTmdbKeySaved": "TMDB API 密钥已保存",
@@ -458,7 +447,7 @@
   "storageLocationUseExistingConfirm": "使用",
   "storageLocationCopyTitle": "复制当前数据？",
   "storageLocationCopyMessage": "所选文件夹为空。您的收藏将被复制到该处；保存的图片将在需要时重新下载。旧文件夹中的数据不会被修改。",
-  "storageLocationCopyConfirm": "复制",
+  "copy": "复制",
   "storageLocationCopyImages": "同时复制图片缓存",
   "storageLocationCopyImagesHint": "横幅和已保存的封面——文件较大，但新文件夹可离线使用无需重新下载",
   "storageLocationCopyError": "复制数据到所选文件夹失败",
@@ -469,7 +458,6 @@
   "storageLocationRestartNow": "重启",
   "storageLocationRestartLater": "更改将在重启后生效",
 
-  "backupTitle": "备份",
   "backupRestoreTile": "恢复之前的数据库",
   "backupNone": "暂无备份",
   "backupRestoreConfirmTitle": "恢复之前的数据库？",
@@ -479,7 +467,6 @@
       "date": {"type": "String"}
     }
   },
-  "backupRestoreConfirm": "恢复",
   "backupRestored": "数据库已恢复",
   "backupRestoreError": "恢复备份失败",
   "backupRestartMessage": "恢复的数据将在重启后生效。立即重启吗？",
@@ -522,6 +509,7 @@
   "lanSyncAllow": "允许",
   "lanSyncDenied": "对方设备拒绝了请求",
   "lanSyncManifestError": "设备未响应",
+  "lanSyncStartError": "无法启动网络共享。请检查网络连接后重新打开此屏幕。",
   "lanSyncReceiveError": "获取数据失败",
   "lanSyncTooNew": "该设备上的数据由更新版本的应用创建。请先在此设备上更新应用。",
   "lanSyncCorrupted": "传输数据已损坏。请重试。",
@@ -550,7 +538,7 @@
   "traktZipFile": "ZIP 文件",
   "traktSelectZipFile": "选择 ZIP 文件",
   "traktSelectZipExport": "选择 Trakt ZIP 导出",
-  "traktPreview": "预览",
+  "preview": "预览",
   "traktUser": "Trakt 用户：{username}",
   "@traktUser": {
     "placeholders": {
@@ -562,20 +550,16 @@
   "traktRatedMovies": "已评电影",
   "traktRatedShows": "已评节目",
   "traktWatchlist": "观看列表",
-  "traktOptions": "选项",
+  "importOptions": "选项",
   "traktImportWatched": "导入已看项目",
   "traktImportWatchedDesc": "电影和电视剧标记为已完成",
   "traktImportRatings": "导入评分",
   "traktImportRatingsDesc": "应用用户评分（1-10）",
   "traktImportWatchlist": "导入观看列表",
   "traktImportWatchlistDesc": "添加为计划中或加入愿望单",
-  "traktTargetCollection": "目标收藏",
-  "traktCreateNew": "创建新收藏",
-  "traktUseExisting": "使用现有收藏",
-  "traktNoCollections": "暂无可用收藏",
-  "traktSelectCollection": "选择收藏",
-  "traktErrorLoadingCollections": "加载收藏出错",
-  "traktStartImport": "开始导入",
+  "importTargetCollection": "目标收藏",
+  "importUseExistingCollection": "使用现有收藏",
+  "importStart": "开始导入",
   "traktRequiresOwnTmdbKey": "Trakt 导入需要您自己的 TMDB API 密钥。请在设置 → 凭证中添加。",
   "traktInvalidExport": "无效的 Trakt 导出",
 
@@ -583,18 +567,10 @@
   "kinoriumImportDescription": "从 Kinorium 导出您的列表（通过邮件收到 CSV 文件），然后选择下方的文件。",
   "kinoriumSelectCsvFile": "选择 CSV 文件",
   "kinoriumSelectCsvExport": "选择 Kinorium CSV 导出",
-  "kinoriumOptions": "选项",
   "kinoriumIsWatchlist": "这是「观看列表」文件",
   "kinoriumIsWatchlistDesc": "将所有标题导入为计划中而非已看",
   "kinoriumImportNotes": "导入演员和工作人员",
   "kinoriumImportNotesDesc": "将导演和演员添加到项目备注中",
-  "kinoriumTargetCollection": "目标收藏",
-  "kinoriumCreateNew": "创建新收藏",
-  "kinoriumUseExisting": "使用现有收藏",
-  "kinoriumNoCollections": "暂无可用收藏",
-  "kinoriumSelectCollection": "选择收藏",
-  "kinoriumErrorLoadingCollections": "加载收藏出错",
-  "kinoriumStartImport": "开始导入",
   "kinoriumImporting": "正在从 Kinorium 导入...",
   "kinoriumRecommendOwnTmdbKey": "提示：大型导入建议使用个人 TMDB API 密钥（设置 → API 密钥），但这不是必须的——内置密钥也可以使用。",
   "kinoriumReasonNotFound": "在 TMDB 上未找到",
@@ -631,12 +607,12 @@
   "creditsFantlabAttribution": "书籍数据来自 Fantlab。",
   "creditsComicVineAttribution": "漫画数据来自 ComicVine（非商业用途）。",
   "creditsGoogleBooksAttribution": "书籍数据来自 Google Books。",
+  "creditsHardcoverAttribution": "书籍数据来自 Hardcover。",
   "creditsOpenSource": "开源",
   "creditsOpenSourceDesc": "Tonkatsu Box 是免费的开源软件，基于 MIT 许可证发布。",
   "creditsViewLicenses": "查看开源许可",
   "creditsDiscord": "加入 Discord",
 
-  "collectionsNewCollection": "新建收藏",
   "collectionsImportCollection": "导入收藏",
   "collectionsNoCollectionsYet": "暂无收藏",
   "collectionsNoCollectionsHint": "点击 + 创建您的第一个收藏，\n开始整理您的媒体库。",
@@ -691,6 +667,54 @@
   "importSelectCollection": "选择收藏",
   "importErrorLoadingCollections": "加载收藏出错",
   "importStartButton": "导入",
+  "importUsername": "用户名",
+  "importUsernameHint": "例如 yourname",
+  "importMode": "模式",
+  "importModeNewOnly": "仅添加新条目",
+  "importModeNewOnlySubtitle": "跳过合集中已有的条目",
+  "importModeOverwrite": "覆盖现有条目",
+  "importModeOverwriteSubtitle": "从数据源更新进度、状态和日期",
+  "importNewCollectionName": "收藏名称",
+  "importNewCollectionDefault": "{source} 导入 — {username}",
+  "@importNewCollectionDefault": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "username": {"type": "String"}
+    }
+  },
+  "importFetchingBooks": "正在获取书库...",
+  "importAddingItems": "正在导入条目",
+  "importProcessingItem": "正在处理：{title}",
+  "@importProcessingItem": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "importImportedCount": "已导入 {count} 个",
+  "@importImportedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUpdatedCount": "已更新 {count} 个",
+  "@importUpdatedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUserNotFound": "未找到用户\"{username}\"",
+  "@importUserNotFound": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "importEmptyUsername": "请输入用户名",
+  "importFailed": "导入失败：{error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
 
   "collectionNotFound": "未找到收藏",
   "collectionAddItems": "添加项目",
@@ -721,18 +745,18 @@
   "collectionExportIncludeUserData": "包含个人数据",
   "collectionExportIncludeUserDataDesc": "状态、日期、备注、剧集进度",
   "customItemCreate": "创建自定义项目",
-  "customItemTitle": "标题",
+  "title": "标题",
   "customItemTitleHint": "例如：我的自制游戏",
   "customItemAltTitle": "副标题",
   "customItemAltTitleHint": "原始语言名称",
   "customItemCoverUrl": "封面图片链接",
-  "customItemYear": "年份",
-  "customItemGenres": "类型",
+  "year": "年份",
+  "genres": "类型",
   "customItemGenresHint": "例如：RPG、动作、益智",
-  "customItemPlatform": "平台",
+  "platform": "平台",
   "customItemPlatformHint": "例如：PC、SNES、自定义",
-  "customItemFormat": "格式",
-  "customProgress": "进度",
+  "format": "格式",
+  "progress": "进度",
   "customMarkCompleted": "标记为已完成",
   "customUnitParts": "部分",
   "customUnitEpisodes": "集",
@@ -740,17 +764,22 @@
   "customUnitPages": "页",
   "customUnitVolumes": "卷",
   "customUnitSeasons": "季",
-  "customItemDescription": "描述",
+  "description": "描述",
   "customItemDescriptionHint": "简要描述或备注",
   "customItemOptionalFields": "更多字段",
-  "customItemCreateButton": "创建",
   "customItemEdit": "编辑自定义项目",
+  "customItemFillFromFile": "从文件填充",
+  "customItemFileMultipleRows": "文件中有 {count} 条记录，已使用第一条",
+  "@customItemFileMultipleRows": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customItemFileNoValidRows": "文件中没有有效记录",
   "customItemAddCover": "添加封面",
   "customItemCoverSource": "封面来源",
   "customItemCoverRatio": "推荐宽高比：2:3（例如 600×900）",
   "customItemCoverFromFile": "从文件",
-  "customItemCoverFromUrl": "从链接",
-  "customItemAddGenre": "添加",
   "customItemSearchHint": "搜索或输入自定义...",
   "customItemUseCustom": "使用自定义值",
   "customItemExternalUrl": "外部链接",
@@ -761,6 +790,12 @@
   "tagsLabel": "标签",
   "tagCreate": "新建标签",
   "tagCreateHint": "标签名称",
+  "tagCreateNamed": "创建“{name}”",
+  "@tagCreateNamed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "tagRename": "重命名标签",
   "tagDelete": "删除标签",
   "tagDeleteConfirm": "删除标签「{name}」？项目将被取消标签。",
@@ -778,7 +813,6 @@
   "tagRenamed": "标签已重命名",
   "tagDeleted": "标签已删除",
   "tagUpdateFailed": "更新标签失败",
-  "renameItem": "重命名",
   "refreshItemFromApi": "从源刷新",
   "refreshItemSuccess": "项目已从源更新",
   "refreshItemNotFound": "源已不再包含此项目",
@@ -801,11 +835,9 @@
   "tierListExportFailed": "导出图片失败",
   "browseCollectionsDownloadFailedGeneric": "下载收藏失败",
   "tagFilterAll": "所有标签",
-  "tagSidebarAll": "全部",
   "tagSidebarGroup": "分组",
   "colorPickerTitle": "颜色",
   "colorPickerNoColor": "无颜色",
-  "colorPickerApply": "应用",
   "raLinkButton": "关联 RetroAchievements",
   "raLinkTitle": "在 RetroAchievements 上查找游戏",
   "raLinkSearchHint": "按名称搜索...",
@@ -818,23 +850,18 @@
   "raUnlinkButton": "取消关联",
   "raUnlinkTitle": "取消 RetroAchievements 关联",
   "raUnlinkConfirm": "移除此游戏的 RetroAchievements 关联和成就数据？",
-  "collectionFilterAll": "全部",
   "collectionFilterByType": "按类型筛选",
   "collectionFilterGames": "游戏",
   "collectionFilterMovies": "电影",
   "collectionFilterTvShows": "电视剧",
-  "collectionFilterAnimation": "动画",
   "collectionFilterVisualNovels": "视觉小说",
-  "collectionFilterManga": "漫画",
   "collectionFilterBooks": "书籍",
-  "collectionFilterCustom": "自定义",
-  "collectionFilterSearchHint": "搜索...",
-  "collectionFilterSort": "排序",
+  "searchHint": "搜索...",
+  "sort": "排序",
   "collectionFilterAscending": "升序",
   "collectionFilterDescending": "降序",
   "collectionFilterFilters": "筛选",
   "collectionFilterClearAll": "清除全部",
-  "collectionFilterPlatform": "平台",
 
   "collectionItemMovedTo": "{name} 已移动到 {collection}",
   "@collectionItemMovedTo": {
@@ -868,14 +895,13 @@
   "animationNotFound": "未找到动画",
   "visualNovelNotFound": "未找到视觉小说",
   "mangaNotFound": "未找到漫画",
-  "mangaProgress": "阅读进度",
+  "readingProgress": "阅读进度",
   "mangaChapters": "章节",
   "mangaVolumes": "卷数",
   "mangaMarkCompleted": "标记为已完成",
   "animeProgress": "观看进度",
   "animeEpisodes": "集数",
   "animeMarkCompleted": "标记为已完成",
-  "bookProgress": "阅读进度",
   "bookPages": "页数",
   "bookIssues": "期数",
   "bookMarkCompleted": "标记为已完成",
@@ -987,7 +1013,6 @@
   "canvasDeleteElementMessage": "确定要删除此元素吗？",
   "canvasAddToBoard": "添加到看板",
 
-  "addTextTitle": "添加文字",
   "editTextTitle": "编辑文字",
   "textContentLabel": "文字内容",
   "fontSizeLabel": "字号",
@@ -996,7 +1021,6 @@
   "fontSizeLarge": "大",
   "fontSizeTitle": "标题",
 
-  "addImageTitle": "添加图片",
   "editImageTitle": "编辑图片",
   "imageFromUrl": "从链接",
   "imageFromFile": "从文件",
@@ -1005,14 +1029,10 @@
   "imageChooseFile": "选择文件",
   "imageChooseAnother": "重新选择",
 
-  "addLinkTitle": "添加链接",
   "editLinkTitle": "编辑链接",
-  "linkUrlLabel": "链接",
-  "linkUrlHint": "https://example.com",
   "linkLabelOptional": "标签（可选）",
   "linkLabelHint": "我的链接",
 
-  "editConnectionTitle": "编辑连接",
   "connectionLabelHint": "例如：依赖于、相关于...",
   "connectionStyleLabel": "样式",
   "connectionStyleSolid": "实线",
@@ -1020,30 +1040,21 @@
   "connectionStyleArrow": "箭头",
 
   "searchTabTv": "电视剧",
-  "searchTabGames": "游戏",
   "searchHintMovies": "搜索电影...",
   "searchHintTv": "搜索电视剧...",
   "searchHintAnime": "搜索动漫...",
   "searchHintGames": "搜索游戏...",
   "searchHintVisualNovels": "搜索视觉小说...",
   "searchSourceVisualNovels": "视觉小说",
-  "searchSourceManga": "漫画",
-  "searchSourceAnime": "动漫",
-  "searchSourceGames": "游戏",
-  "searchSourceMovies": "电影",
-  "searchSourceTvShows": "电视剧",
-  "searchSourceAnimation": "动画",
   "searchSourceOpenLibrary": "OpenLibrary",
   "searchSourceFantlab": "Fantlab",
-  "searchSourceBooks": "书籍",
   "searchSourceComics": "漫画",
   "searchHintManga": "搜索漫画...",
   "searchHintBooks": "搜索书籍...",
   "searchHintComics": "搜索漫画...",
-  "bookFilterLanguage": "语言",
+  "language": "语言",
   "bookFilterSearchBy": "搜索方式",
-  "bookFilterPrintType": "类型",
-  "bookSearchTitle": "标题",
+  "type": "类型",
   "bookSearchAuthor": "作者",
   "bookSearchSubject": "主题",
   "bookSimilarTitle": "相似书籍",
@@ -1096,7 +1107,7 @@
       "name": {"type": "String"}
     }
   },
-  "searchGoToSettings": "前往设置",
+  "goToSettings": "前往设置",
   "searchMinCharsHint": "输入至少 2 个字符并按回车",
   "searchNoResults": "未找到结果",
   "searchNothingFoundFor": "未找到「{query}」的相关结果",
@@ -1110,19 +1121,15 @@
   "searchCheckConnection": "请检查网络连接后重试。",
   "copyErrorDetails": "复制错误详情",
   "errorDetailsCopied": "错误详情已复制",
-  "searchDescription": "描述",
+  "errorDetailsTitle": "错误详情",
+  "errorDetailsShow": "详情",
   "showMore": "更多…",
   "showLess": "收起",
 
   "platformFilterTitle": "选择平台",
   "platformFilterClearAll": "清除全部",
   "platformFilterSearchHint": "搜索平台...",
-  "platformFilterSelected": "已选 {count} 个",
-  "@platformFilterSelected": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
+  "selectedCount": "已选 {count} 个",
   "platformFilterCount": "{count} 个平台",
   "@platformFilterCount": {
     "placeholders": {
@@ -1151,7 +1158,6 @@
       "name": {"type": "String"}
     }
   },
-  "wishlistClearResolvedTitle": "清除已解决",
   "wishlistClearResolvedMessage": "删除 {count} 个已解决的项目？",
   "@wishlistClearResolvedMessage": {
     "placeholders": {
@@ -1161,24 +1167,18 @@
   "wishlistMarkResolved": "标记为已解决",
   "wishlistUnresolve": "取消解决",
 
-  "wishlistAddTitle": "添加",
-  "wishlistEditTitle": "编辑",
-  "wishlistTitleLabel": "标题",
   "wishlistTitleHint": "游戏、电影或电视剧名称...",
   "wishlistTitleMinChars": "至少 2 个字符",
   "wishlistTypeOptional": "类型（可选）",
-  "wishlistTypeAny": "任意",
+  "any": "任意",
   "wishlistNoteOptional": "备注（可选）",
   "wishlistNoteHint": "平台、年份、推荐人...",
 
   "wishlistTagOptional": "标签（可选）",
   "wishlistTagHint": "分组条目——例如导入批次或来源",
-  "wishlistTagAll": "全部",
   "wishlistTagUntagged": "未标记",
   "wishlistTagFilterLabel": "列表",
-  "wishlistTagPlaceholder": "标签",
   "wishlistTagManage": "管理标签",
-  "wishlistTagRename": "重命名标签",
   "wishlistTagDelete": "删除标签及所有条目",
   "wishlistTagDeleteConfirm": "删除标签「{tag}」及 {count} 个条目？",
   "@wishlistTagDeleteConfirm": {
@@ -1211,18 +1211,13 @@
   "apply": "应用",
 
   "welcomeStepWelcome": "欢迎",
-  "welcomeStepName": "名称",
-  "welcomeStepLanguage": "语言",
-  "welcomeStepApiKeys": "API 密钥",
-  "welcomeStepHowItWorks": "工作原理",
   "welcomeStepReady": "准备就绪！",
 
   "welcomeNameTitle": "您的名字是？",
   "welcomeNameSubtitle": "此名称将作为您创建的收藏的作者显示",
-  "welcomeNameHint": "您可以稍后在设置中更改",
+  "welcomeChangeLaterHint": "您可以稍后在设置中更改",
   "welcomeLanguageTitle": "选择语言",
   "welcomeLanguageSubtitle": "选择应用界面语言",
-  "welcomeLanguageHint": "您可以稍后在设置中更改",
 
   "welcomeTitle": "欢迎使用 Tonkatsu Box",
   "welcomeSubtitle": "整理您的游戏、电影、电视剧、\n动漫、视觉小说、漫画和书籍收藏",
@@ -1233,8 +1228,6 @@
   "welcomeFeatureBoards": "带有美术素材的可视化看板",
   "welcomeFeatureExport": "导出和导入——与朋友分享收藏",
   "welcomeWorksWithoutKeys": "无需 API 密钥即可使用",
-  "welcomeChipCollections": "收藏",
-  "welcomeChipWishlist": "愿望单",
   "welcomeChipImport": "导入 .xcoll",
   "welcomeChipCanvas": "看板",
   "welcomeChipRatings": "评分和备注",
@@ -1255,6 +1248,7 @@
   "welcomeApiTmdbDesc": "电影、电视剧和动漫",
   "welcomeApiComicVineDesc": "漫画和图像小说",
   "welcomeApiGoogleBooksDesc": "Google 全球图书目录",
+  "welcomeApiHardcoverDesc": "社区图书目录，需要个人令牌",
   "welcomeApiRecommended": "推荐",
   "welcomeApiSgdbTag": "SGDB",
   "welcomeApiSgdbDesc": "看板游戏美术素材",
@@ -1289,7 +1283,6 @@
 
   "welcomeReadyTitle": "一切就绪！",
   "welcomeReadyMessage": "前往设置 → 凭证输入您的 API 密钥，或从导入收藏开始。",
-  "welcomeReadyGoToSettings": "前往设置",
   "welcomeReadySkip": "跳过——自行探索",
   "welcomeReadyReturnHint": "您可以随时从设置返回此处",
 
@@ -1303,6 +1296,7 @@
   "welcomeSourcesKeySaved": "密钥已保存",
   "welcomeSourcesGetKey": "获取密钥",
   "welcomeSourcesKeyOptionalHint": "可选——使用自己的密钥可提高速率限制。无需密钥也可搜索。",
+  "welcomeSourcesHardcoverTokenHint": "必填——没有令牌无法搜索和导入。令牌每年 1 月 1 日重置。",
 
   "welcomeSourceDescTmdb": "电影、电视剧和动画。",
   "welcomeSourceDescIgdb": "涵盖所有平台的电子游戏。",
@@ -1313,6 +1307,7 @@
   "welcomeSourceDescFantlab": "带有评分、奖项和系列的详细图书目录。",
   "welcomeSourceDescComicVine": "庞大的漫画和图像小说目录。",
   "welcomeSourceDescGoogleBooks": "来自 Google 图书目录的数百万版本，可按标题、作者或 ISBN 搜索。",
+  "welcomeSourceDescHardcover": "社区图书目录：系列、类型、氛围和评分。需要免费的个人令牌。",
 
   "welcomeTourTitle": "了解菜单",
   "welcomeTourSubtitle": "快速导览主要导航——点击下一步逐步查看。",
@@ -1338,7 +1333,6 @@
   "chooseCollection": "选择收藏",
   "withoutCollection": "未分类",
 
-  "detailStatus": "状态",
   "detailMyRating": "我的评分",
   "detailRatingValue": "{rating}/10",
   "@detailRatingValue": {
@@ -1376,35 +1370,16 @@
     }
   },
 
-  "allItemsAll": "全部",
-  "allItemsGames": "游戏",
-  "allItemsMovies": "电影",
-  "allItemsTvShows": "电视剧",
-  "allItemsAnimation": "动画",
-  "allItemsVisualNovels": "视觉小说",
-  "allItemsManga": "漫画",
-  "allItemsBooks": "书籍",
-  "allItemsCustom": "自定义",
   "allItemsRatingAsc": "评分 ↑",
   "allItemsRatingDesc": "评分 ↓",
-  "allItemsRating": "评分",
   "allItemsNoItems": "暂无项目",
   "allItemsNoMatch": "没有匹配筛选的项目",
   "allItemsAddViaCollections": "前往收藏 → 新建收藏 → 通过搜索添加项目。\n它们将自动出现在此处。",
   "allItemsFailedToLoad": "加载项目失败",
-  "allItemsFilterPlatformsAll": "所有平台",
-  "allItemsFilterPlatformsSelected": "{count} 个平台",
-  "@allItemsFilterPlatformsSelected": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
+  "allPlatforms": "所有平台",
   "allItemsFilterPlatformsTitle": "按平台筛选",
-  "allItemsFilterPlatformsApply": "应用",
-  "allItemsFilterPlatformsClear": "清除",
 
   "debugIgdbMedia": "IGDB 媒体",
-  "debugSteamGridDb": "SteamGridDB",
   "debugGamepad": "手柄",
   "debugClearLogs": "清除日志",
   "debugRawEvents": "原始事件（Gamepads.events）",
@@ -1443,11 +1418,6 @@
     }
   },
   "debugNoImagesFound": "未找到图片",
-  "debugSearchTab": "搜索",
-  "debugGridsTab": "网格",
-  "debugHeroesTab": "横幅",
-  "debugLogosTab": "标志",
-  "debugIconsTab": "图标",
 
   "collectionTileStats": "{count} 个项目 · {percent}% 已完成",
   "@collectionTileStats": {
@@ -1462,7 +1432,6 @@
   "activityDatesAdded": "添加日期",
   "activityDatesStarted": "开始日期",
   "activityDatesCompleted": "完成日期",
-  "activityDatesLastActivity": "最近活动",
   "activityDatesSelectStart": "选择开始日期",
   "activityDatesSelectCompletion": "选择完成日期",
   "settingsDateFormat": "日期格式",
@@ -1472,17 +1441,12 @@
   "settingsAnimeMangaTitleLanguageRomaji": "罗马字",
   "settingsAnimeMangaTitleLanguageEnglish": "英文",
   "settingsAnimeMangaTitleLanguageNative": "原生语言",
-  "dualDatePickerInputLabel": "日期",
-  "dualDatePickerOk": "确定",
-  "dualDatePickerCancel": "取消",
   "dualDatePickerErrorEmpty": "请输入日期",
   "dualDatePickerErrorFormat": "请使用 yyyy-MM-dd 格式",
   "dualDatePickerErrorRange": "日期超出范围",
   "activityDatesCompletionTime": "完成用时 {duration}",
   "@activityDatesCompletionTime": { "placeholders": { "duration": { "type": "String" } } },
   "timeSpentTitle": "用时",
-  "timeSpentValue": "{hours}小时{minutes}分钟",
-  "@timeSpentValue": { "placeholders": { "hours": { "type": "int" }, "minutes": { "type": "int" } } },
   "timeSpentAdd": "添加时间",
   "timeSpentEdit": "编辑时间",
   "timeSpentHours": "小时",
@@ -1507,7 +1471,7 @@
   "canvasSteamGridDbImages": "SteamGridDB 图片",
 
   "steamGridDbPanelTitle": "SteamGridDB",
-  "steamGridDbClosePanel": "关闭面板",
+  "closePanel": "关闭面板",
   "steamGridDbSearchHint": "搜索游戏...",
   "steamGridDbNoApiKey": "未设置 SteamGridDB API 密钥。请在设置中配置。",
   "steamGridDbBackToSearch": "返回搜索",
@@ -1515,10 +1479,8 @@
   "steamGridDbHeroes": "横幅",
   "steamGridDbLogos": "标志",
   "steamGridDbIcons": "图标",
-  "steamGridDbNoResults": "未找到结果",
   "steamGridDbSearchFirst": "请先搜索游戏",
 
-  "vgmapsClosePanel": "关闭面板",
   "vgmapsBack": "后退",
   "vgmapsForward": "前进",
   "vgmapsHome": "主页",
@@ -1540,7 +1502,6 @@
   "discoverTopRatedTvShows": "高分电视剧",
   "discoverPopularTvShows": "热门电视剧",
   "discoverUpcoming": "即将上映",
-  "discoverAnime": "动漫",
   "discoverCustomizeTitle": "自定义发现",
   "discoverCustomizeHint": "选择要显示的板块",
   "discoverResetDefault": "重置为默认",
@@ -1560,7 +1521,6 @@
   "reviewsReadMore": "阅读更多",
   "reviewsInEnglish": "英文评论",
 
-  "settingsShowRecommendations": "推荐",
   "settingsShowRecommendationsSubtitle": "详情页上相似的电影和电视剧",
   "settingsHideEmptyMediaTypeChevrons": "隐藏空的媒体类型筛选",
   "settingsHideEmptyMediaTypeChevronsSubtitle": "当没有该类型的项目时，隐藏媒体类型筛选（游戏、电影等）",
@@ -1572,14 +1532,14 @@
   "settingsShowBlurayOverlaySubtitle": "在电影和电视剧海报上显示蓝光标识",
   "settingsRichCollections": "富文本收藏视图",
   "settingsRichCollectionsSubtitle": "使用封面图片和描述个性化收藏",
+  "settingsCardScale": "封面大小",
+  "settingsCardScaleSubtitle": "收藏网格中卡片的大小",
   "collectionEditHeroImage": "封面图片",
   "collectionEditHeroImageHint": "推荐 2560×1080（21:9）。主体靠右——左侧被标题覆盖，底部融入背景",
   "collectionEditHeroPick": "选择图片",
   "collectionEditHeroReplace": "替换图片",
   "collectionEditHeroRemove": "移除图片",
-  "collectionEditDescription": "描述",
   "collectionEditDescriptionHint": "显示在封面上的简短标语",
-  "collectionEditMenu": "收藏设置",
   "collectionEditDialogTitle": "收藏设置",
   "settingsDiscordRpc": "Discord 丰富状态",
   "settingsDiscordRpcSubtitle": "在 Discord 状态中显示当前查看的项目",
@@ -1587,7 +1547,6 @@
   "settingsDiscordRaSyncSubtitle": "在 Discord 中显示您的 RetroAchievements 活动",
 
   "uncategorizedBanner": "添加到收藏以解锁看板和剧集追踪",
-  "uncategorizedBannerAction": "添加到收藏",
   "uncategorizedDeprecationNotice": "此系统收藏即将被移除。请创建自己的收藏并将此处所有项目移入。",
   "@uncategorizedDeprecationNotice": {
     "description": "警告未分类系统收藏已弃用，将被移除。"
@@ -1598,8 +1557,6 @@
   },
 
   "browseFilterGenre": "类型",
-  "browseFilterTag": "标签",
-  "browseFilterYear": "年份",
   "browseFilterLength": "篇幅",
   "vndbLengthVeryShort": "极短",
   "vndbLengthShort": "短篇",
@@ -1614,20 +1571,11 @@
   "tagPickerShowAdult": "显示 18+ 标签",
   "tagPickerRefresh": "刷新目录",
   "tagPickerEmpty": "未找到标签",
-  "tagPickerSelectedCount": "已选 {count} 个",
-  "@tagPickerSelectedCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
   "clearAll": "清除全部",
-  "browseFilterPlatform": "平台",
-  "browseFilterFormat": "格式",
   "browseFilterSeason": "季度",
   "browseFilterGameMode": "游戏模式",
   "browseFilterMinRating": "最低评分",
   "browseFilterMinVotes": "最低票数",
-  "browseFilterLanguage": "语言",
   "seasonWinter": "冬季",
   "seasonSpring": "春季",
   "seasonSummer": "夏季",
@@ -1659,26 +1607,22 @@
   "languageRussian": "俄语",
   "languageItalian": "意大利语",
   "languagePortuguese": "葡萄牙语",
-  "mangaFormatManga": "漫画",
   "mangaFormatManhwa": "韩漫",
   "mangaFormatManhua": "国漫",
   "mangaFormatOneShot": "单行本",
   "mangaFormatNovel": "小说",
   "mangaFormatLightNovel": "轻小说",
-  "browseFilterType": "类型",
   "browseFilterContentRating": "内容分级",
   "contentRatingSafe": "全年龄",
   "contentRatingSuggestive": "暗示性",
   "contentRatingErotica": "情色",
   "contentRatingPornographic": "色情",
-  "browseFilterAll": "全部",
-  "browseFilterAny": "任意",
-  "browseSort": "排序",
   "browseSortRelevance": "相关度",
   "browseSortPopular": "热门",
   "browseSortTopRated": "高分",
   "browseSortNewest": "最新",
   "browseSortMostVoted": "最多票数",
+  "browseSortMostRead": "最多阅读",
   "browseSortTrending": "趋势",
   "browseSortNameAsc": "名称（A–Z）",
   "browseSortNameDesc": "名称（Z–A）",
@@ -1687,12 +1631,9 @@
   "browseAnimeTypeSeries": "系列",
   "browseAnimeTypeMovies": "剧场版",
   "browseEmptyFilters": "选择筛选条件或搜索",
-  "browseEmptyResults": "未找到结果",
-  "browseSearchHint": "搜索...",
   "browseBackToBrowse": "返回浏览",
   "browseSortDisabledHint": "文本搜索时无法排序",
 
-  "animeFilterStatus": "状态",
   "animeStatusAiring": "播出中",
   "animeStatusFinished": "已完结",
   "animeStatusNotYetAired": "未播出",
@@ -1730,7 +1671,7 @@
   },
   "tierListTitle": "等级列表",
   "tierListUnranked": "未排名",
-  "tierListExportImage": "导出为图片",
+  "exportAsImage": "导出为图片",
   "tierListImageSaved": "等级列表已保存为图片",
   "tierListRename": "重命名等级",
   "tierListChangeColor": "更改颜色",
@@ -1738,13 +1679,11 @@
   "tierListMoveDown": "下移",
   "tierListDeleteTier": "删除等级",
   "tierListAddTier": "添加等级",
-  "tierListClearAll": "清除全部",
   "tierListClearConfirm": "移除所有等级中的项目？它们将返回未排名。",
   "tierListDeleteConfirm": "删除此等级列表？",
   "tierListEmpty": "暂无等级列表",
   "tierListEmptyHint": "点击 + 创建等级列表并对收藏中的项目进行排名。",
   "tierListAllRanked": "所有项目已排名！",
-  "tierListNoCollections": "暂无可用收藏",
   "tierListErrorEmptyName": "请输入等级列表名称",
   "tierListErrorNoCollection": "请选择收藏",
   "collectionPickerFilter": "筛选收藏...",
@@ -1764,22 +1703,13 @@
   "igdbImportDescription": "选择从 IGDB 导出的 CSV 列表。游戏通过 IGDB ID 匹配；IGDB 上不再存在的将加入愿望单。",
   "igdbImportSelectCsvFile": "选择 CSV 文件",
   "igdbImportSelectCsvExport": "选择 IGDB CSV 导出",
-  "igdbImportOptions": "选项",
   "igdbImportStatusLabel": "导入游戏的状态",
-  "igdbImportPlatformLabel": "平台",
   "igdbImportPlatformSelect": "选择平台",
-  "igdbImportTargetCollection": "目标收藏",
-  "igdbImportCreateNew": "创建新收藏",
-  "igdbImportUseExisting": "使用现有收藏",
-  "igdbImportNoCollections": "暂无可用收藏",
-  "igdbImportSelectCollection": "选择收藏",
-  "igdbImportErrorLoadingCollections": "加载收藏出错",
-  "igdbImportIgdbRequired": "需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。",
-  "igdbStartImport": "开始导入",
-  "igdbImporting": "导入中...",
+  "importIgdbRequired": "需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。",
+  "importing": "导入中...",
   "igdbReasonNotFound": "在 IGDB 上未找到",
   "steamImportTitle": "导入 Steam 库",
-  "steamImportSubtitle": "游戏将匹配到 IGDB 数据库",
+  "importIgdbMatchNote": "游戏将匹配到 IGDB 数据库",
   "steamImportApiKey": "Steam API 密钥",
   "steamImportApiKeyHint": "在 steamcommunity.com/dev/apikey 获取免费密钥",
   "steamImportSteamId": "Steam ID（64 位）",
@@ -1812,7 +1742,7 @@
       "count": {"type": "int"}
     }
   },
-  "steamImportComplete": "导入完成！",
+  "importComplete": "导入完成！",
   "steamImportGamesImported": "已导入 {count} 款游戏",
   "@steamImportGamesImported": {
     "placeholders": {
@@ -1833,32 +1763,16 @@
   },
   "steamImportPlayedStatus": "已玩游戏标记为「进行中」",
   "steamImportPlaytimeComment": "游戏时间保存在评论中",
-  "steamImportTargetCollection": "目标收藏",
-  "steamImportCreateNew": "创建新收藏",
-  "steamImportUseExisting": "使用现有收藏",
-  "steamImportNoCollections": "暂无可用收藏",
-  "steamImportSelectCollection": "选择收藏",
-  "steamImportErrorLoadingCollections": "加载收藏出错",
-  "steamImportOpenCollection": "打开收藏",
-  "steamImportIgdbRequired": "需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。",
+  "openCollection": "打开收藏",
   "steamImportRememberCredentials": "记住凭证",
 
   "collectionListSortCreatedDate": "创建日期",
-  "collectionListSortAlphabetical": "名称",
-  "collectionListSortCreatedDateNewest": "最新优先",
-  "collectionListSortCreatedDateOldest": "最早优先",
   "collectionListSortAlphabeticalAZ": "A 到 Z",
   "collectionListSortAlphabeticalZA": "Z 到 A",
   "collectionListViewGrid": "网格视图",
   "collectionListViewList": "列表视图",
   "collectionListViewTable": "表格视图",
-  "collectionTableName": "名称",
-  "collectionTableType": "类型",
-  "collectionTablePlatform": "平台",
-  "collectionTableStatus": "状态",
-  "collectionTableRating": "评分",
   "collectionTableExternalRating": "外部",
-  "collectionTableYear": "年份",
 
   "collectionCopyToCollection": "复制到收藏",
   "collectionItemCopiedTo": "{name} 已复制到 {collection}",
@@ -1882,6 +1796,13 @@
   "importResultImported": "已导入",
   "importResultWishlisted": "已加入愿望单",
   "importResultUpdated": "已更新",
+  "importResultErrors": "错误（{count}）",
+  "@importResultErrors": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultErrorsCopied": "错误已复制",
   "importResultSkipped": "跳过 {count} 个",
   "@importResultSkipped": {
     "placeholders": {
@@ -1902,7 +1823,6 @@
     }
   },
   "browseCollectionsSearch": "搜索收藏...",
-  "browseCollectionsAllPlatforms": "所有平台",
   "browseCollectionsAllCategories": "所有分类",
   "browseCollectionsItems": "{count} 个项目",
   "@browseCollectionsItems": {
@@ -1913,7 +1833,6 @@
   "browseCollectionsFormatLight": "轻量（需要 API 密钥）",
   "browseCollectionsFormatFull": "完整（离线）",
   "browseCollectionsDownloading": "下载中...",
-  "browseCollectionsImporting": "导入中...",
   "browseCollectionsImportSuccess": "收藏已导入：{name}",
   "@browseCollectionsImportSuccess": {
     "placeholders": {
@@ -1921,31 +1840,17 @@
     }
   },
   "browseCollectionsEmpty": "未找到收藏",
-  "browseCollectionsRetry": "重试",
   "browseCollectionsLoadError": "加载收藏失败",
   "browseCollectionsImportTarget": "导入到",
   "browseCollectionsNewCollection": "新建收藏",
   "browseCollectionsExistingCollection": "现有收藏",
-  "browseCollectionsSelectCollection": "选择收藏",
-  "browseCollectionsNoCollections": "暂无收藏",
+  "noCollectionsYet": "暂无收藏",
 
   "settingsRaImport": "RetroAchievements",
   "settingsRaImportSubtitle": "从 RetroAchievements 导入游戏",
   "raImportTitle": "RetroAchievements 导入",
-  "raImportSubtitle": "游戏将匹配到 IGDB 数据库",
-  "raImportIgdbRequired": "需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。",
-  "raUsername": "用户名",
-  "raApiKey": "API 密钥",
   "raGetApiKey": "在 retroachievements.org/controlpanel.php 获取您的 API 密钥",
-  "raImportOptions": "选项",
   "raImportOptionWishlist": "将未匹配的游戏加入愿望单",
-  "raImportStart": "开始导入",
-  "raImportTargetCollection": "目标收藏",
-  "raImportNewCollection": "创建新收藏",
-  "raImportExistingCollection": "使用现有收藏",
-  "raImportNoCollections": "暂无可用收藏",
-  "raImportSelectCollection": "选择收藏",
-  "raImportErrorLoadingCollections": "加载收藏出错",
   "raImportFetchingLibrary": "正在获取 RA 库...",
   "raImportSearchingIgdb": "正在 IGDB 上搜索游戏...",
   "raImportMatching": "正在匹配：{title}",
@@ -1954,7 +1859,6 @@
       "title": {"type": "String"}
     }
   },
-  "raImportComplete": "导入完成！",
   "raImportAdded": "已添加 {count} 款游戏",
   "@raImportAdded": {
     "placeholders": {
@@ -1979,12 +1883,6 @@
       "error": {"type": "String"}
     }
   },
-  "raImportFailed": "导入失败：{error}",
-  "@raImportFailed": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
   "raProfilePoints": "{points} 分",
   "@raProfilePoints": {
     "placeholders": {
@@ -2000,7 +1898,6 @@
 
   "raRefresh": "刷新成就",
   "raOpenOnRa": "在 RA 上打开 ↗",
-  "raProgress": "进度",
   "raHardcore": "硬核",
   "raCompletion": "完成度",
   "raRecentUnlocks": "最近解锁",
@@ -2011,13 +1908,11 @@
       "count": {"type": "int"}
     }
   },
-  "raCollapse": "收起",
   "raMastered": "精通",
   "raHardcoreMastered": "硬核精通",
   "raBeaten": "通关",
   "raBeatenSoftcore": "软核通关",
   "raHardcoreBeaten": "硬核通关",
-  "raToday": "今天",
   "raYesterday": "昨天",
   "raDaysAgo": "{days} 天前",
   "@raDaysAgo": {
@@ -2028,7 +1923,6 @@
   "raPoints": "分",
   "raAchievements": "成就",
   "raMissable": "可错过",
-  "raFilterAll": "全部",
   "raFilterEarned": "已获得",
   "raFilterLocked": "未解锁",
   "raFilterMissable": "可错过",
@@ -2047,16 +1941,13 @@
       "count": {"type": "int"}
     }
   },
-  "textExportTemplate": "模板",
+  "template": "模板",
   "textExportTokens": "占位符",
-  "textExportPreview": "预览",
   "textExportSortBy": "排序方式",
   "textExportSortCurrent": "当前顺序",
   "textExportSortName": "名称 A→Z",
-  "textExportSortRating": "评分 ↓",
   "textExportSortYear": "年份 ↓",
   "textExportSortAdded": "添加日期 ↓",
-  "textExportCopy": "复制",
   "textExportEmptyTemplate": "模板为空",
   "filtersClear": "清除",
   "collectionTableColumns": "列",
@@ -2111,7 +2002,6 @@
   "kodiConnectionSubtitle": "Kodi HTTP JSON-RPC（设置 → 服务 → 控制）",
   "kodiHost": "主机",
   "kodiPort": "端口",
-  "kodiUsername": "用户名",
   "kodiPassword": "密码",
   "kodiPasswordHint": "输入密码",
   "kodiTestConnection": "测试连接",
@@ -2126,7 +2016,6 @@
   },
 
   "kodiSyncTitle": "同步",
-  "kodiTargetCollection": "目标收藏",
   "kodiTargetCollectionSubtitle": "所有 Kodi 电影同步到此处",
   "kodiTargetNotSelected": "未选择",
   "kodiTargetDeletedLabel": "已删除（#{id}）",
@@ -2135,7 +2024,6 @@
       "id": {"type": "int"}
     }
   },
-  "kodiTargetError": "错误",
   "kodiEnableSync": "启用 Kodi 同步",
   "kodiEnableSyncActiveSubtitle": "Tonkatsu 运行时活跃",
   "kodiEnableSyncDisabledSubtitle": "请先选择目标收藏",
@@ -2145,7 +2033,6 @@
   "kodiImportRatings": "从 Kodi 导入评分",
   "kodiImportRatingsSubtitle": "复制 Kodi 用户评分（1–10）",
 
-  "kodiCollectionPickerCreateNew": "创建新收藏",
   "kodiCollectionLibraryName": "Kodi 库",
   "kodiCollectionCreated": "已创建「{name}」",
   "@kodiCollectionCreated": {
@@ -2155,11 +2042,9 @@
   },
   "kodiTargetDeletedSnack": "目标收藏已删除——同步已停止",
 
-  "kodiDebugTitle": "调试",
   "kodiSyncStatus": "同步状态",
   "kodiSyncRunning": "运行中",
   "kodiSyncStopped": "已停止",
-  "kodiLastSync": "上次同步",
   "kodiLastSyncNever": "从未",
   "kodiClearLastSync": "清除上次同步时间戳",
   "kodiClearLastSyncSubtitle": "下次同步将获取所有已看项目",
@@ -2202,48 +2087,19 @@
   "malImportSubtitle": "动漫和漫画将匹配到 AniList",
   "malImportPickFiles": "添加 XML 文件",
   "malImportFilesHint": "从 myanimelist.net/panel.php?go=export 导出 XML",
-  "malImportAnimeFile": "动漫列表",
-  "malImportMangaFile": "漫画列表",
-  "malImportRemoveFile": "移除",
+  "importAnimeList": "动漫列表",
+  "importMangaList": "漫画列表",
   "malImportEntriesCount": "{count} 个条目",
   "@malImportEntriesCount": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "malImportTargetCollection": "目标收藏",
-  "malImportCreateNew": "创建新收藏",
-  "malImportUseExisting": "使用现有收藏",
-  "malImportSelectCollection": "选择收藏",
-  "malImportNoCollections": "暂无可用收藏",
-  "malImportErrorLoadingCollections": "加载收藏出错",
-  "malImportNewCollectionName": "收藏名称",
-  "malImportButton": "开始导入",
   "malImportReadingFiles": "正在读取文件...",
   "malImportResolvingAnime": "正在 AniList 上解析动漫",
   "malImportResolvingManga": "正在 AniList 上解析漫画",
-  "malImportMatching": "正在导入条目",
-  "malImportComplete": "导入完成！",
-  "malImportLookingUp": "正在处理：{title}",
-  "@malImportLookingUp": {
-    "placeholders": {
-      "title": {"type": "String"}
-    }
-  },
-  "malImportImported": "已导入 {count} 个",
-  "@malImportImported": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
   "malImportWishlisted": "已将 {count} 个加入愿望单",
   "@malImportWishlisted": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "malImportUpdated": "已更新 {count} 个",
-  "@malImportUpdated": {
     "placeholders": {
       "count": {"type": "int"}
     }
@@ -2264,12 +2120,6 @@
       "max": {"type": "int"}
     }
   },
-  "malImportFailed": "导入失败：{error}",
-  "@malImportFailed": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
   "malImportInvalidFile": "无法解析 XML：{error}",
   "@malImportInvalidFile": {
     "placeholders": {
@@ -2286,60 +2136,23 @@
 
   "settingsAniListImport": "AniList",
   "settingsAniListImportSubtitle": "通过公开用户名导入动漫/漫画列表",
+  "settingsHardcoverImportSubtitle": "通过用户名从 hardcover.app 导入书库",
+  "hardcoverImportTitle": "Hardcover 导入",
+  "hardcoverImportSubtitle": "从 hardcover.app 获取用户书库——他人仅公开部分，自己的账户则全部获取",
+  "hardcoverImportTokenMissing": "未设置 Hardcover API 令牌。请在设置 → API 凭据中添加。",
   "aniListImportTitle": "AniList 导入",
   "aniListImportSubtitle": "从 anilist.co 获取公开列表——无需登录",
   "aniListImportUsername": "AniList 用户名",
-  "aniListImportUsernameHint": "例如 yourname",
   "aniListImportInclude": "导入内容",
-  "aniListImportIncludeAnime": "动漫列表",
-  "aniListImportIncludeManga": "漫画列表",
-  "aniListImportMode": "模式",
-  "aniListImportModeNewOnly": "仅添加新项目",
-  "aniListImportModeNewOnlySubtitle": "跳过收藏中已有的项目",
-  "aniListImportModeOverwrite": "覆盖现有",
   "aniListImportModeOverwriteSubtitle": "从 AniList 更新进度、状态和日期",
-  "aniListImportTargetCollection": "目标收藏",
-  "aniListImportCreateNew": "创建新收藏",
-  "aniListImportUseExisting": "使用现有收藏",
-  "aniListImportSelectCollection": "选择收藏",
-  "aniListImportNoCollections": "暂无可用收藏",
-  "aniListImportErrorLoadingCollections": "加载收藏出错",
-  "aniListImportNewCollectionName": "收藏名称",
   "aniListImportNewCollectionDefault": "AniList 导入 — {username}",
   "@aniListImportNewCollectionDefault": {
     "placeholders": {
       "username": {"type": "String"}
     }
   },
-  "aniListImportButton": "开始导入",
   "aniListImportFetchingAnime": "正在获取动漫列表...",
   "aniListImportFetchingManga": "正在获取漫画列表...",
-  "aniListImportMatching": "正在导入条目",
-  "aniListImportComplete": "导入完成！",
-  "aniListImportLookingUp": "正在处理：{title}",
-  "@aniListImportLookingUp": {
-    "placeholders": {
-      "title": {"type": "String"}
-    }
-  },
-  "aniListImportImported": "已导入 {count} 个",
-  "@aniListImportImported": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "aniListImportUpdated": "已更新 {count} 个",
-  "@aniListImportUpdated": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "aniListImportFailed": "导入失败：{error}",
-  "@aniListImportFailed": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
   "aniListImportUserNotFound": "未找到 AniList 用户「{username}」",
   "@aniListImportUserNotFound": {
     "placeholders": {
@@ -2363,12 +2176,6 @@
   "customImportCsvTemplate": "CSV 模板",
   "customImportJsonTemplate": "JSON 模板",
   "customImportTemplateSaved": "模板已保存",
-  "customImportTargetCollection": "目标收藏",
-  "customImportCreateNew": "创建新收藏",
-  "customImportUseExisting": "添加到现有收藏",
-  "customImportSelectCollection": "选择收藏",
-  "customImportNoCollections": "暂无收藏",
-  "customImportErrorLoadingCollections": "加载收藏失败",
   "customImportPreviewButton": "预览并导入",
   "customImportPreviewTitle": "导入预览",
   "customImportSummary": "已识别 {valid} · 错误 {errors} · 重复 {duplicates}",
@@ -2379,7 +2186,6 @@
       "duplicates": {"type": "int"}
     }
   },
-  "customImportSelectAll": "全选",
   "customImportSelectNone": "取消全选",
   "customImportSelectedCount": "已选 {selected}/{total}",
   "@customImportSelectedCount": {
@@ -2446,23 +2252,14 @@
 
   "moodGridCreate": "创建心情格",
   "moodGridCreateTitle": "新建心情格",
-  "moodGridName": "名称",
-  "moodGridPresetLabel": "模板",
   "moodGridPresetAboutMe": "关于我：Tonkatsu Box",
   "moodGridPresetAboutMeSubtitle": "1×5 — 最喜欢的游戏、电影、电视剧、动漫、漫画",
   "moodGridPresetBlank": "空白",
   "moodGridPresetBlankSubtitle": "您选择大小的空白格",
   "moodGridRows": "行数",
-  "moodGridCols": "列数",
   "moodGridBadge": "心情格",
-  "moodGridEdit": "编辑",
-  "moodGridDoneEditing": "完成",
-  "moodGridRename": "重命名",
-  "moodGridDelete": "删除",
   "moodGridDeleteTitle": "删除此格？",
   "moodGridDeleteMessage": "此格将被移除。此操作无法撤销。",
-  "moodGridExportImage": "导出为图片",
-  "moodGridImageSaved": "图片已保存",
   "moodGridAddRow": "添加行",
   "moodGridRemoveRow": "删除行",
   "moodGridAddCol": "添加列",
@@ -2477,9 +2274,7 @@
   "moodGridClearItem": "清除项目",
   "moodGridCaptionTemplate": "行标题",
   "moodGridCaptionTemplateHint": "应用于每个单元格的模板。可用占位符：name、year、genre、rating。",
-  "moodGridCaptionTemplateClear": "清除",
-  "moodGridPickerTitle": "选择项目",
-  "moodGridPickerCollection": "收藏",
+  "collection": "收藏",
   "moodGridPickerAllCollections": "所有收藏",
   "moodGridPickerSearchHint": "按名称搜索",
   "moodGridPickerEmpty": "无可选内容",
@@ -2517,7 +2312,6 @@
   "genreCloudEmpty": "暂无类型",
   "genreCloudEmptyHint": "添加带有类型的项目以构建词云",
   "genreCloudExportImage": "保存为图片",
-  "genreCloudImageSaved": "图片已保存",
   "genreCloudExportFailed": "无法保存图片",
   "genreCloudResetView": "重置视图",
   "genreCloudHidden": "{count} 个已隐藏（未容纳下）",
@@ -2526,12 +2320,9 @@
       "count": {"type": "int"}
     }
   },
-  "facetGenre": "类型",
   "facetPlatform": "平台",
   "facetDecade": "年代",
   "personalizationTabCloud": "类型词云",
-  "personalizationTabRecommendations": "推荐",
-  "recommendationsRefresh": "刷新",
   "recommendationsEmpty": "暂无推荐",
   "recommendationsEmptyHint": "完成并评分一些电影或节目以获取个性化推荐",
   "recommendationsNoCandidates": "没有新内容可推荐",
@@ -2552,13 +2343,10 @@
   "itemMarkSectionTitle": "备注和喜欢",
   "itemMarkAdd": "添加标记",
   "itemMarkEmpty": "暂无标记",
-  "itemMarkDelete": "删除",
-  "itemMarkType": "类型",
   "itemMarkNumber": "编号",
   "itemMarkNumberHint": "例如 12",
   "itemMarkNumberHelper": "保存必填",
   "itemMarkCustomType": "自定义类型",
-  "itemMarkFilterAll": "全部",
   "itemMarkFilterLiked": "已喜欢",
   "itemMarkFilterCommented": "有备注",
   "itemMarkUnitLabel": "{type} {number}",
@@ -2581,11 +2369,9 @@
   "unitVolume": "卷",
   "unitPage": "页",
   "unitPart": "部分",
-  "unitCustom": "自定义",
   "cardLinkCopy": "复制卡片链接",
   "cardLinkCopied": "卡片链接已复制",
   "cardLinkNotFound": "未找到卡片",
-  "cardLinkPickCollection": "在收藏中打开",
   "cardLinkSearchTitle": "链接卡片",
   "cardLinkSearchHint": "搜索卡片",
   "shortcutsDialogTitle": "键盘快捷键",
@@ -2593,18 +2379,12 @@
   "shortcutSwitchTab": "切换标签页",
   "shortcutNextTab": "下一个标签页",
   "shortcutPreviousTab": "上一个标签页",
-  "shortcutBack": "返回",
-  "shortcutSearch": "搜索",
-  "shortcutRefresh": "刷新",
   "shortcutThisHelp": "此帮助",
-  "shortcutsGroupCollections": "收藏",
   "shortcutCreateCollection": "创建收藏",
   "shortcutImportCollection": "导入收藏",
   "shortcutToggleView": "切换视图",
   "shortcutDeleteCollection": "删除收藏",
   "shortcutRenameCollection": "重命名收藏",
-  "shortcutOpenCollection": "打开收藏",
-  "shortcutsGroupCollection": "收藏",
   "shortcutAddItems": "添加项目",
   "shortcutExportCollection": "导出收藏",
   "shortcutImportIntoCollection": "导入到收藏",
@@ -2620,16 +2400,10 @@
   "shortcutCreateTierList": "创建等级列表",
   "shortcutOpenTierList": "打开等级列表",
   "shortcutDeleteTierList": "删除等级列表",
-  "shortcutRename": "重命名",
   "shortcutsGroupTierList": "等级列表",
-  "shortcutExportAsImage": "导出为图片",
-  "shortcutAddTier": "添加等级",
-  "shortcutClearAll": "清除全部",
-  "shortcutsGroupWishlist": "愿望单",
   "shortcutAddItem": "添加项目",
   "shortcutToggleCompleted": "显示/隐藏已完成",
   "shortcutClearCompleted": "清除已完成",
-  "shortcutsGroupSearch": "搜索",
   "shortcutFocusSearchField": "聚焦搜索框",
   "shortcutClearOrBack": "清除/返回",
   "shortcutRunSearch": "执行搜索",

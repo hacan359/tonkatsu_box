@@ -1420,7 +1420,7 @@ void main() {
         when(() => mockDatabase.globalTagDao).thenReturn(mockTagDao);
         when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
         when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
-            .thenAnswer((_) async => <int, Set<int>>{});
+            .thenAnswer((_) async => <int, List<int>>{});
       });
 
       test('должен включить tv_seasons для tvShow элементов', () async {
@@ -1683,7 +1683,7 @@ void main() {
         when(() => mockDatabase.globalTagDao).thenReturn(mockTagDao);
         when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
         when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
-            .thenAnswer((_) async => <int, Set<int>>{});
+            .thenAnswer((_) async => <int, List<int>>{});
       });
 
       test('должен включить tv_episodes для tvShow элементов', () async {
@@ -1849,7 +1849,7 @@ void main() {
         when(() => mockDatabase.globalTagDao).thenReturn(mockTagDao);
         when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
         when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
-            .thenAnswer((_) async => <int, Set<int>>{});
+            .thenAnswer((_) async => <int, List<int>>{});
       });
 
       test('должен включить platforms для game элементов', () async {
@@ -2044,7 +2044,7 @@ void main() {
             .thenAnswer((_) async => <TierList>[]);
         when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
         when(() => mockTagDao.getTagIdsForItems(any<List<int>>()))
-            .thenAnswer((_) async => <int, Set<int>>{});
+            .thenAnswer((_) async => <int, List<int>>{});
 
         sutMarks = ExportService(
           canvasRepository: mockCanvasRepo,

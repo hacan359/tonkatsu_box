@@ -21,9 +21,6 @@ class SRu extends S {
   String get navWishlist => 'Желаемое';
 
   @override
-  String get navSearch => 'Поиск';
-
-  @override
   String get navSettings => 'Настройки';
 
   @override
@@ -61,7 +58,7 @@ class SRu extends S {
   String get releasesToday => 'Сегодня';
 
   @override
-  String get releasesRefresh => 'Обновить';
+  String get refresh => 'Обновить';
 
   @override
   String get releasesNoEpisodes => 'Серий нет';
@@ -78,16 +75,10 @@ class SRu extends S {
   String get calendarRemove => 'Убрать из календаря';
 
   @override
-  String get calendarAddTitle => 'Добавить в календарь';
-
-  @override
-  String get calendarDate => 'Дата';
+  String get date => 'Дата';
 
   @override
   String get calendarRepeat => 'Повтор';
-
-  @override
-  String get calendarAddAction => 'Добавить';
 
   @override
   String get recurrenceOnce => 'Один раз';
@@ -138,7 +129,7 @@ class SRu extends S {
   String get statusRereading => 'Перечитываю';
 
   @override
-  String get homeFilterAll => 'Все';
+  String get all => 'Все';
 
   @override
   String get mediaTypeGame => 'Игра';
@@ -171,52 +162,31 @@ class SRu extends S {
   String get sortManualDisplay => 'Вручную';
 
   @override
-  String get sortManualShort => 'Вручную';
-
-  @override
   String get sortManualDesc => 'Свой порядок';
 
   @override
   String get sortDateDisplay => 'Дата добавления';
 
   @override
-  String get sortDateShort => 'Дата';
-
-  @override
   String get sortDateDesc => 'Сначала новые';
 
   @override
-  String get sortStatusDisplay => 'Статус';
-
-  @override
-  String get sortStatusShort => 'Статус';
+  String get status => 'Статус';
 
   @override
   String get sortStatusDesc => 'Сначала активные';
 
   @override
-  String get sortNameDisplay => 'Название';
+  String get name => 'Название';
 
   @override
   String get sortNameShort => 'А-Я';
 
   @override
-  String get sortNameDesc => 'По алфавиту';
-
-  @override
-  String get sortRatingDisplay => 'Мой рейтинг';
-
-  @override
-  String get sortRatingShort => 'Оценка';
+  String get rating => 'Оценка';
 
   @override
   String get sortRatingDesc => 'Сначала лучшие';
-
-  @override
-  String get sortFavoriteDisplay => 'Избранное';
-
-  @override
-  String get sortFavoriteShort => 'Избранное';
 
   @override
   String get sortFavoriteDesc => 'Сначала избранные';
@@ -228,9 +198,6 @@ class SRu extends S {
   String get sortExternalRatingShort => 'IGDB/TMDB';
 
   @override
-  String get sortExternalRatingDesc => 'Сначала лучшие';
-
-  @override
   String get sortLastActivityDisplay => 'Последняя активность';
 
   @override
@@ -240,13 +207,22 @@ class SRu extends S {
   String get sortLastActivityDesc => 'Сначала недавние';
 
   @override
+  String get sortStartDateDisplay => 'Дата начала';
+
+  @override
+  String get sortStartDateShort => 'Начато';
+
+  @override
+  String get sortCompletionDateDisplay => 'Дата завершения';
+
+  @override
+  String get sortCompletionDateShort => 'Завершено';
+
+  @override
   String get sortDateOldest => 'Сначала старые';
 
   @override
   String get sortStatusFinished => 'Сначала завершённые';
-
-  @override
-  String get sortNameZa => 'Я – А';
 
   @override
   String get sortRatingLowest => 'Сначала худшие';
@@ -255,22 +231,7 @@ class SRu extends S {
   String get sortFavoriteLast => 'Избранные последними';
 
   @override
-  String get sortExternalRatingLowest => 'Сначала худшие';
-
-  @override
-  String get sortLastActivityOldest => 'Сначала старые';
-
-  @override
   String get searchSortRelevanceShort => 'Рел';
-
-  @override
-  String get searchSortRelevanceDisplay => 'Релевантность';
-
-  @override
-  String get searchSortDateShort => 'Дата';
-
-  @override
-  String get searchSortDateDisplay => 'Дата';
 
   @override
   String get searchSortRatingShort => 'Оценка';
@@ -358,7 +319,7 @@ class SRu extends S {
   String get bulkClearSelection => 'Снять выделение';
 
   @override
-  String get bulkSelectAllVisible => 'Выделить всё';
+  String get selectAll => 'Выделить всё';
 
   @override
   String get bulkMove => 'Переместить выделенные в коллекцию';
@@ -409,7 +370,7 @@ class SRu extends S {
   String get bulkExportPngTitle => 'Экспорт в PNG';
 
   @override
-  String get bulkExportPngColumns => 'Колонок';
+  String get columnsCount => 'Колонок';
 
   @override
   String bulkExportPngItemsCount(int count) {
@@ -446,7 +407,7 @@ class SRu extends S {
   String get bulkExportPngSave => 'Сохранить PNG';
 
   @override
-  String get bulkExportPngSaved => 'Изображение сохранено';
+  String get imageSaved => 'Изображение сохранено';
 
   @override
   String get bulkExportPngFailed => 'Не удалось сохранить изображение';
@@ -485,32 +446,14 @@ class SRu extends S {
   String get settingsAuthorName => 'Имя автора';
 
   @override
-  String get settingsAuthorPlaceholder => 'Пользователь';
-
-  @override
-  String get settingsSettings => 'Настройки';
-
-  @override
-  String get settingsCredentials => 'Учётные данные';
-
-  @override
   String get settingsCredentialsSubtitle =>
       'Ключи API: IGDB, SteamGridDB, TMDB';
-
-  @override
-  String get settingsCache => 'Кэш';
 
   @override
   String get settingsCacheSubtitle => 'Офлайн-режим и хранение обложек';
 
   @override
-  String get settingsDatabase => 'База данных';
-
-  @override
   String get settingsDatabaseSubtitle => 'Экспорт, импорт, сброс';
-
-  @override
-  String get settingsTraktImport => 'Импорт Trakt';
 
   @override
   String get settingsTraktImportSubtitle =>
@@ -533,6 +476,16 @@ class SRu extends S {
   String get settingsDebugSubtitleNoKey => 'Сначала укажите ключ SteamGridDB';
 
   @override
+  String get settingsLaboratory => 'Лаборатория';
+
+  @override
+  String get settingsLaboratoryCardDesigns => 'Дизайны шапок карточек';
+
+  @override
+  String get settingsLaboratoryCardDesignsSubtitle =>
+      'Экспериментальные раскладки карточки-постера';
+
+  @override
   String get settingsHelp => 'Справка';
 
   @override
@@ -549,6 +502,12 @@ class SRu extends S {
 
   @override
   String get settingsCreditsLicenses => 'Благодарности и лицензии';
+
+  @override
+  String get settingsChangelog => 'Что нового';
+
+  @override
+  String get settingsChangelogEmpty => 'Нет заметок о выпуске';
 
   @override
   String get settingsCreditsLicensesSubtitle =>
@@ -582,7 +541,7 @@ class SRu extends S {
 
   @override
   String get settingsContentLanguageSubtitle =>
-      'Язык описаний фильмов и сериалов';
+      'Пока только для TMDB (фильмы и сериалы)';
 
   @override
   String get settingsDataSources => 'Источники данных';
@@ -772,7 +731,10 @@ class SRu extends S {
       'Введите ключ Google Books API (необязательно)';
 
   @override
-  String get credentialsContentLanguage => 'Язык контента';
+  String get credentialsHardcoverSection => 'Hardcover API (книги)';
+
+  @override
+  String get credentialsEnterHardcoverKey => 'Введите токен Hardcover API';
 
   @override
   String get credentialsOwnKeyHint =>
@@ -853,6 +815,13 @@ class SRu extends S {
   @override
   String get credentialsGoogleBooksKeyInvalid =>
       'Ключ Google Books API недействителен';
+
+  @override
+  String get credentialsHardcoverKeyValid => 'Токен Hardcover API действителен';
+
+  @override
+  String get credentialsHardcoverKeyInvalid =>
+      'Токен Hardcover API недействителен или истёк';
 
   @override
   String get credentialsEnterSteamGridDbKeyError =>
@@ -1072,7 +1041,7 @@ class SRu extends S {
       'Выбранная папка пуста. Коллекции будут скопированы туда; сохранённые картинки загрузятся заново по мере надобности. Данные в старой папке останутся на месте.';
 
   @override
-  String get storageLocationCopyConfirm => 'Копировать';
+  String get copy => 'Копировать';
 
   @override
   String get storageLocationCopyImages => 'Перенести и кэш картинок';
@@ -1107,9 +1076,6 @@ class SRu extends S {
       'Изменение вступит в силу после перезапуска';
 
   @override
-  String get backupTitle => 'Резервная копия';
-
-  @override
   String get backupRestoreTile => 'Восстановить предыдущую базу';
 
   @override
@@ -1122,9 +1088,6 @@ class SRu extends S {
   String backupRestoreConfirmMessage(String date) {
     return 'Текущие данные будут заменены резервной копией от $date. Заменённые данные сами станут копией, так что повторное восстановление отменит это действие.';
   }
-
-  @override
-  String get backupRestoreConfirm => 'Восстановить';
 
   @override
   String get backupRestored => 'База данных восстановлена';
@@ -1195,6 +1158,10 @@ class SRu extends S {
 
   @override
   String get lanSyncManifestError => 'Устройство не ответило';
+
+  @override
+  String get lanSyncStartError =>
+      'Не удалось запустить обмен по сети. Проверьте подключение и откройте экран заново.';
 
   @override
   String get lanSyncReceiveError => 'Не удалось получить данные';
@@ -1282,7 +1249,7 @@ class SRu extends S {
   String get traktSelectZipExport => 'Выберите ZIP-экспорт Trakt';
 
   @override
-  String get traktPreview => 'Предпросмотр';
+  String get preview => 'Предпросмотр';
 
   @override
   String traktUser(String username) {
@@ -1305,7 +1272,7 @@ class SRu extends S {
   String get traktWatchlist => 'Список просмотра';
 
   @override
-  String get traktOptions => 'Параметры';
+  String get importOptions => 'Параметры';
 
   @override
   String get traktImportWatched => 'Импортировать просмотренное';
@@ -1328,25 +1295,13 @@ class SRu extends S {
       'Добавить как запланированные или в вишлист';
 
   @override
-  String get traktTargetCollection => 'Целевая коллекция';
+  String get importTargetCollection => 'Целевая коллекция';
 
   @override
-  String get traktCreateNew => 'Создать новую коллекцию';
+  String get importUseExistingCollection => 'Использовать существующую';
 
   @override
-  String get traktUseExisting => 'Использовать существующую';
-
-  @override
-  String get traktNoCollections => 'Нет доступных коллекций';
-
-  @override
-  String get traktSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get traktErrorLoadingCollections => 'Ошибка загрузки коллекций';
-
-  @override
-  String get traktStartImport => 'Начать импорт';
+  String get importStart => 'Начать импорт';
 
   @override
   String get traktRequiresOwnTmdbKey =>
@@ -1369,9 +1324,6 @@ class SRu extends S {
   String get kinoriumSelectCsvExport => 'Выберите CSV-выгрузку Kinorium';
 
   @override
-  String get kinoriumOptions => 'Параметры';
-
-  @override
   String get kinoriumIsWatchlist => 'Это список «Буду смотреть»';
 
   @override
@@ -1384,27 +1336,6 @@ class SRu extends S {
   @override
   String get kinoriumImportNotesDesc =>
       'Добавить режиссёров и актёров в заметку элемента';
-
-  @override
-  String get kinoriumTargetCollection => 'Целевая коллекция';
-
-  @override
-  String get kinoriumCreateNew => 'Создать новую коллекцию';
-
-  @override
-  String get kinoriumUseExisting => 'Использовать существующую';
-
-  @override
-  String get kinoriumNoCollections => 'Нет доступных коллекций';
-
-  @override
-  String get kinoriumSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get kinoriumErrorLoadingCollections => 'Ошибка загрузки коллекций';
-
-  @override
-  String get kinoriumStartImport => 'Начать импорт';
 
   @override
   String get kinoriumImporting => 'Импорт из Kinorium...';
@@ -1483,6 +1414,9 @@ class SRu extends S {
       'Данные о книгах из Google Books.';
 
   @override
+  String get creditsHardcoverAttribution => 'Данные о книгах из Hardcover.';
+
+  @override
   String get creditsOpenSource => 'Открытый исходный код';
 
   @override
@@ -1494,9 +1428,6 @@ class SRu extends S {
 
   @override
   String get creditsDiscord => 'Discord сервер';
-
-  @override
-  String get collectionsNewCollection => 'Новая коллекция';
 
   @override
   String get collectionsImportCollection => 'Импорт коллекции';
@@ -1585,6 +1516,85 @@ class SRu extends S {
   String get importStartButton => 'Импортировать';
 
   @override
+  String get importUsername => 'Имя пользователя';
+
+  @override
+  String get importUsernameHint => 'например, yourname';
+
+  @override
+  String get importMode => 'Режим';
+
+  @override
+  String get importModeNewOnly => 'Только новые';
+
+  @override
+  String get importModeNewOnlySubtitle =>
+      'Пропускать элементы, уже добавленные в коллекцию';
+
+  @override
+  String get importModeOverwrite => 'Обновлять существующие';
+
+  @override
+  String get importModeOverwriteSubtitle =>
+      'Обновить прогресс, статус и даты из источника';
+
+  @override
+  String get importNewCollectionName => 'Название коллекции';
+
+  @override
+  String importNewCollectionDefault(String source, String username) {
+    return 'Импорт $source — $username';
+  }
+
+  @override
+  String get importFetchingBooks => 'Загрузка библиотеки книг...';
+
+  @override
+  String get importAddingItems => 'Импорт записей';
+
+  @override
+  String importProcessingItem(String title) {
+    return 'Обработка: $title';
+  }
+
+  @override
+  String importImportedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count импортировано',
+      few: '$count импортировано',
+      one: '1 импортирован',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importUpdatedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count обновлено',
+      few: '$count обновлено',
+      one: '1 обновлён',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importUserNotFound(String username) {
+    return 'Пользователь \"$username\" не найден';
+  }
+
+  @override
+  String get importEmptyUsername => 'Введите имя пользователя';
+
+  @override
+  String importFailed(String error) {
+    return 'Импорт не удался: $error';
+  }
+
+  @override
   String get collectionNotFound => 'Коллекция не найдена';
 
   @override
@@ -1663,7 +1673,7 @@ class SRu extends S {
   String get customItemCreate => 'Создать свой тайтл';
 
   @override
-  String get customItemTitle => 'Название';
+  String get title => 'Название';
 
   @override
   String get customItemTitleHint => 'напр. Моя самодельная игра';
@@ -1678,25 +1688,25 @@ class SRu extends S {
   String get customItemCoverUrl => 'URL обложки';
 
   @override
-  String get customItemYear => 'Год';
+  String get year => 'Год';
 
   @override
-  String get customItemGenres => 'Жанры';
+  String get genres => 'Жанры';
 
   @override
   String get customItemGenresHint => 'напр. RPG, Экшен, Головоломка';
 
   @override
-  String get customItemPlatform => 'Платформа';
+  String get platform => 'Платформа';
 
   @override
   String get customItemPlatformHint => 'напр. PC, SNES, Custom';
 
   @override
-  String get customItemFormat => 'Формат';
+  String get format => 'Формат';
 
   @override
-  String get customProgress => 'Прогресс';
+  String get progress => 'Прогресс';
 
   @override
   String get customMarkCompleted => 'Отметить пройденным';
@@ -1720,7 +1730,7 @@ class SRu extends S {
   String get customUnitSeasons => 'Сезоны';
 
   @override
-  String get customItemDescription => 'Описание';
+  String get description => 'Описание';
 
   @override
   String get customItemDescriptionHint => 'Краткое описание или заметки';
@@ -1729,10 +1739,18 @@ class SRu extends S {
   String get customItemOptionalFields => 'Дополнительные поля';
 
   @override
-  String get customItemCreateButton => 'Создать';
+  String get customItemEdit => 'Редактировать тайтл';
 
   @override
-  String get customItemEdit => 'Редактировать тайтл';
+  String get customItemFillFromFile => 'Заполнить из файла';
+
+  @override
+  String customItemFileMultipleRows(int count) {
+    return 'Записей в файле: $count — взята первая';
+  }
+
+  @override
+  String get customItemFileNoValidRows => 'В файле нет корректных записей';
 
   @override
   String get customItemAddCover => 'Добавить обложку';
@@ -1746,12 +1764,6 @@ class SRu extends S {
 
   @override
   String get customItemCoverFromFile => 'Из файла';
-
-  @override
-  String get customItemCoverFromUrl => 'По URL';
-
-  @override
-  String get customItemAddGenre => 'Добавить';
 
   @override
   String get customItemSearchHint => 'Поиск или свой вариант...';
@@ -1782,6 +1794,11 @@ class SRu extends S {
 
   @override
   String get tagCreateHint => 'Название тега';
+
+  @override
+  String tagCreateNamed(String name) {
+    return 'Создать «$name»';
+  }
 
   @override
   String get tagRename => 'Переименовать тег';
@@ -1820,9 +1837,6 @@ class SRu extends S {
 
   @override
   String get tagUpdateFailed => 'Не удалось обновить тег';
-
-  @override
-  String get renameItem => 'Переименовать';
 
   @override
   String get refreshItemFromApi => 'Обновить из источника';
@@ -1867,9 +1881,6 @@ class SRu extends S {
   String get tagFilterAll => 'Все теги';
 
   @override
-  String get tagSidebarAll => 'Все';
-
-  @override
   String get tagSidebarGroup => 'Группа';
 
   @override
@@ -1877,9 +1888,6 @@ class SRu extends S {
 
   @override
   String get colorPickerNoColor => 'Без цвета';
-
-  @override
-  String get colorPickerApply => 'Применить';
 
   @override
   String get raLinkButton => 'Привязать RetroAchievements';
@@ -1917,9 +1925,6 @@ class SRu extends S {
       'Удалить привязку к RetroAchievements и данные достижений для этой игры?';
 
   @override
-  String get collectionFilterAll => 'Все';
-
-  @override
   String get collectionFilterByType => 'Фильтр по типу';
 
   @override
@@ -1932,25 +1937,16 @@ class SRu extends S {
   String get collectionFilterTvShows => 'Сериалы';
 
   @override
-  String get collectionFilterAnimation => 'Анимация';
-
-  @override
   String get collectionFilterVisualNovels => 'Визуальные новеллы';
-
-  @override
-  String get collectionFilterManga => 'Манга';
 
   @override
   String get collectionFilterBooks => 'Книги';
 
   @override
-  String get collectionFilterCustom => 'Своё';
+  String get searchHint => 'Поиск...';
 
   @override
-  String get collectionFilterSearchHint => 'Поиск...';
-
-  @override
-  String get collectionFilterSort => 'Сортировка';
+  String get sort => 'Сортировка';
 
   @override
   String get collectionFilterAscending => 'По возрастанию';
@@ -1963,9 +1959,6 @@ class SRu extends S {
 
   @override
   String get collectionFilterClearAll => 'Сбросить все';
-
-  @override
-  String get collectionFilterPlatform => 'Платформа';
 
   @override
   String collectionItemMovedTo(String name, String collection) {
@@ -2013,7 +2006,7 @@ class SRu extends S {
   String get mangaNotFound => 'Манга не найдена';
 
   @override
-  String get mangaProgress => 'Прогресс чтения';
+  String get readingProgress => 'Прогресс чтения';
 
   @override
   String get mangaChapters => 'Главы';
@@ -2032,9 +2025,6 @@ class SRu extends S {
 
   @override
   String get animeMarkCompleted => 'Отметить как просмотрено';
-
-  @override
-  String get bookProgress => 'Прогресс чтения';
 
   @override
   String get bookPages => 'Страницы';
@@ -2199,9 +2189,6 @@ class SRu extends S {
   String get canvasAddToBoard => 'Добавить на доску';
 
   @override
-  String get addTextTitle => 'Добавить текст';
-
-  @override
   String get editTextTitle => 'Редактировать текст';
 
   @override
@@ -2221,9 +2208,6 @@ class SRu extends S {
 
   @override
   String get fontSizeTitle => 'Заголовок';
-
-  @override
-  String get addImageTitle => 'Добавить изображение';
 
   @override
   String get editImageTitle => 'Редактировать изображение';
@@ -2247,25 +2231,13 @@ class SRu extends S {
   String get imageChooseAnother => 'Выбрать другой';
 
   @override
-  String get addLinkTitle => 'Добавить ссылку';
-
-  @override
   String get editLinkTitle => 'Редактировать ссылку';
-
-  @override
-  String get linkUrlLabel => 'URL';
-
-  @override
-  String get linkUrlHint => 'https://example.com';
 
   @override
   String get linkLabelOptional => 'Подпись (необязательно)';
 
   @override
   String get linkLabelHint => 'Моя ссылка';
-
-  @override
-  String get editConnectionTitle => 'Редактировать соединение';
 
   @override
   String get connectionLabelHint => 'напр. зависит от, связано с...';
@@ -2286,9 +2258,6 @@ class SRu extends S {
   String get searchTabTv => 'ТВ';
 
   @override
-  String get searchTabGames => 'Игры';
-
-  @override
   String get searchHintMovies => 'Поиск фильмов...';
 
   @override
@@ -2307,31 +2276,10 @@ class SRu extends S {
   String get searchSourceVisualNovels => 'В. Новеллы';
 
   @override
-  String get searchSourceManga => 'Манга';
-
-  @override
-  String get searchSourceAnime => 'Аниме';
-
-  @override
-  String get searchSourceGames => 'Игры';
-
-  @override
-  String get searchSourceMovies => 'Фильмы';
-
-  @override
-  String get searchSourceTvShows => 'Сериалы';
-
-  @override
-  String get searchSourceAnimation => 'Анимация';
-
-  @override
   String get searchSourceOpenLibrary => 'OpenLibrary';
 
   @override
   String get searchSourceFantlab => 'Fantlab';
-
-  @override
-  String get searchSourceBooks => 'Книги';
 
   @override
   String get searchSourceComics => 'Комиксы';
@@ -2346,16 +2294,13 @@ class SRu extends S {
   String get searchHintComics => 'Поиск комиксов...';
 
   @override
-  String get bookFilterLanguage => 'Язык';
+  String get language => 'Язык';
 
   @override
   String get bookFilterSearchBy => 'Искать по';
 
   @override
-  String get bookFilterPrintType => 'Тип';
-
-  @override
-  String get bookSearchTitle => 'Название';
+  String get type => 'Тип';
 
   @override
   String get bookSearchAuthor => 'Автор';
@@ -2434,7 +2379,7 @@ class SRu extends S {
   }
 
   @override
-  String get searchGoToSettings => 'Перейти в настройки';
+  String get goToSettings => 'Перейти в настройки';
 
   @override
   String get searchMinCharsHint => 'Введите минимум 2 символа и нажмите Enter';
@@ -2464,7 +2409,10 @@ class SRu extends S {
   String get errorDetailsCopied => 'Детали ошибки скопированы';
 
   @override
-  String get searchDescription => 'Описание';
+  String get errorDetailsTitle => 'Детали ошибки';
+
+  @override
+  String get errorDetailsShow => 'Подробнее';
 
   @override
   String get showMore => 'Ещё…';
@@ -2482,7 +2430,7 @@ class SRu extends S {
   String get platformFilterSearchHint => 'Поиск платформ...';
 
   @override
-  String platformFilterSelected(int count) {
+  String selectedCount(int count) {
     return 'Выбрано: $count';
   }
 
@@ -2530,9 +2478,6 @@ class SRu extends S {
   }
 
   @override
-  String get wishlistClearResolvedTitle => 'Удалить выполненные';
-
-  @override
   String wishlistClearResolvedMessage(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2551,15 +2496,6 @@ class SRu extends S {
   String get wishlistUnresolve => 'Вернуть';
 
   @override
-  String get wishlistAddTitle => 'Добавить';
-
-  @override
-  String get wishlistEditTitle => 'Редактировать';
-
-  @override
-  String get wishlistTitleLabel => 'Название';
-
-  @override
   String get wishlistTitleHint => 'Игра, фильм или сериал...';
 
   @override
@@ -2569,7 +2505,7 @@ class SRu extends S {
   String get wishlistTypeOptional => 'Тип (необязательно)';
 
   @override
-  String get wishlistTypeAny => 'Любой';
+  String get any => 'Любой';
 
   @override
   String get wishlistNoteOptional => 'Заметка (необязательно)';
@@ -2585,22 +2521,13 @@ class SRu extends S {
       'Группировка записей — например, по импорту или источнику';
 
   @override
-  String get wishlistTagAll => 'Все';
-
-  @override
   String get wishlistTagUntagged => 'Без тега';
 
   @override
   String get wishlistTagFilterLabel => 'Список';
 
   @override
-  String get wishlistTagPlaceholder => 'Тег';
-
-  @override
   String get wishlistTagManage => 'Управление тегом';
-
-  @override
-  String get wishlistTagRename => 'Переименовать тег';
 
   @override
   String get wishlistTagDelete => 'Удалить тег и все записи';
@@ -2673,18 +2600,6 @@ class SRu extends S {
   String get welcomeStepWelcome => 'Добро пожаловать';
 
   @override
-  String get welcomeStepName => 'Имя';
-
-  @override
-  String get welcomeStepLanguage => 'Язык';
-
-  @override
-  String get welcomeStepApiKeys => 'Ключи API';
-
-  @override
-  String get welcomeStepHowItWorks => 'Как это работает';
-
-  @override
   String get welcomeStepReady => 'Готово!';
 
   @override
@@ -2695,16 +2610,13 @@ class SRu extends S {
       'Это имя будет указано как автор ваших коллекций';
 
   @override
-  String get welcomeNameHint => 'Можно изменить позже в Настройках';
+  String get welcomeChangeLaterHint => 'Можно изменить позже в Настройках';
 
   @override
   String get welcomeLanguageTitle => 'Выберите язык';
 
   @override
   String get welcomeLanguageSubtitle => 'Язык интерфейса приложения';
-
-  @override
-  String get welcomeLanguageHint => 'Можно изменить позже в Настройках';
 
   @override
   String get welcomeTitle => 'Добро пожаловать в Tonkatsu Box';
@@ -2737,12 +2649,6 @@ class SRu extends S {
 
   @override
   String get welcomeWorksWithoutKeys => 'Работает без ключей API';
-
-  @override
-  String get welcomeChipCollections => 'Коллекции';
-
-  @override
-  String get welcomeChipWishlist => 'Список желаний';
 
   @override
   String get welcomeChipImport => 'Импорт .xcoll';
@@ -2801,6 +2707,10 @@ class SRu extends S {
 
   @override
   String get welcomeApiGoogleBooksDesc => 'Глобальный каталог книг Google';
+
+  @override
+  String get welcomeApiHardcoverDesc =>
+      'Книжный каталог сообщества, нужен персональный токен';
 
   @override
   String get welcomeApiRecommended => 'РЕКОМЕНДУЕТСЯ';
@@ -2906,9 +2816,6 @@ class SRu extends S {
       'Перейдите в Настройки → Учётные данные, чтобы ввести ключи API, или начните с импорта коллекции.';
 
   @override
-  String get welcomeReadyGoToSettings => 'Перейти в настройки';
-
-  @override
   String get welcomeReadySkip => 'Пропустить — разберусь сам';
 
   @override
@@ -2945,6 +2852,10 @@ class SRu extends S {
       'Необязательно — свой ключ повышает лимиты. Поиск работает и без него.';
 
   @override
+  String get welcomeSourcesHardcoverTokenHint =>
+      'Обязателен — без него поиск и импорт не работают. Токены сбрасываются каждое 1 января.';
+
+  @override
   String get welcomeSourceDescTmdb => 'Фильмы, сериалы и анимация.';
 
   @override
@@ -2974,6 +2885,10 @@ class SRu extends S {
   @override
   String get welcomeSourceDescGoogleBooks =>
       'Миллионы изданий из книжного каталога Google: поиск по названию, автору или ISBN.';
+
+  @override
+  String get welcomeSourceDescHardcover =>
+      'Книжный каталог сообщества: серии, жанры, настроения и оценки. Нужен бесплатный персональный токен.';
 
   @override
   String get welcomeTourTitle => 'Знакомство с меню';
@@ -3014,9 +2929,6 @@ class SRu extends S {
 
   @override
   String get withoutCollection => 'Без коллекции';
-
-  @override
-  String get detailStatus => 'Статус';
 
   @override
   String get detailMyRating => 'Мой рейтинг';
@@ -3098,40 +3010,10 @@ class SRu extends S {
   }
 
   @override
-  String get allItemsAll => 'Все';
-
-  @override
-  String get allItemsGames => 'Игры';
-
-  @override
-  String get allItemsMovies => 'Фильмы';
-
-  @override
-  String get allItemsTvShows => 'Сериалы';
-
-  @override
-  String get allItemsAnimation => 'Анимация';
-
-  @override
-  String get allItemsVisualNovels => 'Визуальные новеллы';
-
-  @override
-  String get allItemsManga => 'Манга';
-
-  @override
-  String get allItemsBooks => 'Книги';
-
-  @override
-  String get allItemsCustom => 'Своё';
-
-  @override
   String get allItemsRatingAsc => 'Оценка ↑';
 
   @override
   String get allItemsRatingDesc => 'Оценка ↓';
-
-  @override
-  String get allItemsRating => 'Оценка';
 
   @override
   String get allItemsNoItems => 'Пока нет тайтлов';
@@ -3147,27 +3029,13 @@ class SRu extends S {
   String get allItemsFailedToLoad => 'Не удалось загрузить тайтлы';
 
   @override
-  String get allItemsFilterPlatformsAll => 'Все платформы';
-
-  @override
-  String allItemsFilterPlatformsSelected(int count) {
-    return '$count платформ';
-  }
+  String get allPlatforms => 'Все платформы';
 
   @override
   String get allItemsFilterPlatformsTitle => 'Фильтр по платформе';
 
   @override
-  String get allItemsFilterPlatformsApply => 'Применить';
-
-  @override
-  String get allItemsFilterPlatformsClear => 'Сбросить';
-
-  @override
   String get debugIgdbMedia => 'IGDB Медиа';
-
-  @override
-  String get debugSteamGridDb => 'SteamGridDB';
 
   @override
   String get debugGamepad => 'Геймпад';
@@ -3232,21 +3100,6 @@ class SRu extends S {
   String get debugNoImagesFound => 'Изображения не найдены';
 
   @override
-  String get debugSearchTab => 'Поиск';
-
-  @override
-  String get debugGridsTab => 'Обложки';
-
-  @override
-  String get debugHeroesTab => 'Баннеры';
-
-  @override
-  String get debugLogosTab => 'Логотипы';
-
-  @override
-  String get debugIconsTab => 'Иконки';
-
-  @override
   String collectionTileStats(int count, String percent) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3272,9 +3125,6 @@ class SRu extends S {
 
   @override
   String get activityDatesCompleted => 'Завершено';
-
-  @override
-  String get activityDatesLastActivity => 'Последняя активность';
 
   @override
   String get activityDatesSelectStart => 'Выберите дату начала';
@@ -3305,15 +3155,6 @@ class SRu extends S {
   String get settingsAnimeMangaTitleLanguageNative => 'Native';
 
   @override
-  String get dualDatePickerInputLabel => 'Дата';
-
-  @override
-  String get dualDatePickerOk => 'OK';
-
-  @override
-  String get dualDatePickerCancel => 'Отмена';
-
-  @override
   String get dualDatePickerErrorEmpty => 'Введите дату';
 
   @override
@@ -3329,11 +3170,6 @@ class SRu extends S {
 
   @override
   String get timeSpentTitle => 'Потрачено времени';
-
-  @override
-  String timeSpentValue(int hours, int minutes) {
-    return '$hoursч $minutesм';
-  }
 
   @override
   String get timeSpentAdd => 'Добавить время';
@@ -3398,7 +3234,7 @@ class SRu extends S {
   String get steamGridDbPanelTitle => 'SteamGridDB';
 
   @override
-  String get steamGridDbClosePanel => 'Закрыть панель';
+  String get closePanel => 'Закрыть панель';
 
   @override
   String get steamGridDbSearchHint => 'Поиск игры...';
@@ -3423,13 +3259,7 @@ class SRu extends S {
   String get steamGridDbIcons => 'Иконки';
 
   @override
-  String get steamGridDbNoResults => 'Ничего не найдено';
-
-  @override
   String get steamGridDbSearchFirst => 'Сначала найдите игру';
-
-  @override
-  String get vgmapsClosePanel => 'Закрыть панель';
 
   @override
   String get vgmapsBack => 'Назад';
@@ -3479,9 +3309,6 @@ class SRu extends S {
   String get discoverUpcoming => 'Скоро в кино';
 
   @override
-  String get discoverAnime => 'Аниме';
-
-  @override
   String get discoverCustomizeTitle => 'Настроить подборки';
 
   @override
@@ -3515,9 +3342,6 @@ class SRu extends S {
 
   @override
   String get reviewsInEnglish => 'Отзывы на английском';
-
-  @override
-  String get settingsShowRecommendations => 'Рекомендации';
 
   @override
   String get settingsShowRecommendationsSubtitle =>
@@ -3561,6 +3385,12 @@ class SRu extends S {
       'Обложка и описание вместо мозаики';
 
   @override
+  String get settingsCardScale => 'Размер обложек';
+
+  @override
+  String get settingsCardScaleSubtitle => 'Размер карточек в сетках коллекций';
+
+  @override
   String get collectionEditHeroImage => 'Обложка';
 
   @override
@@ -3577,13 +3407,7 @@ class SRu extends S {
   String get collectionEditHeroRemove => 'Убрать';
 
   @override
-  String get collectionEditDescription => 'Описание';
-
-  @override
   String get collectionEditDescriptionHint => 'Короткий текст поверх обложки';
-
-  @override
-  String get collectionEditMenu => 'Настройки коллекции';
 
   @override
   String get collectionEditDialogTitle => 'Настройки коллекции';
@@ -3607,9 +3431,6 @@ class SRu extends S {
       'Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий';
 
   @override
-  String get uncategorizedBannerAction => 'Добавить в коллекцию';
-
-  @override
   String get uncategorizedDeprecationNotice =>
       'Эта системная коллекция скоро будет удалена. Создайте свою коллекцию и перенесите в неё все элементы отсюда.';
 
@@ -3618,12 +3439,6 @@ class SRu extends S {
 
   @override
   String get browseFilterGenre => 'Жанр';
-
-  @override
-  String get browseFilterTag => 'Тэг';
-
-  @override
-  String get browseFilterYear => 'Год';
 
   @override
   String get browseFilterLength => 'Длительность';
@@ -3665,18 +3480,7 @@ class SRu extends S {
   String get tagPickerEmpty => 'Тэги не найдены';
 
   @override
-  String tagPickerSelectedCount(int count) {
-    return 'Выбрано: $count';
-  }
-
-  @override
-  String get clearAll => 'Очистить';
-
-  @override
-  String get browseFilterPlatform => 'Платформа';
-
-  @override
-  String get browseFilterFormat => 'Формат';
+  String get clearAll => 'Очистить всё';
 
   @override
   String get browseFilterSeason => 'Сезон';
@@ -3689,9 +3493,6 @@ class SRu extends S {
 
   @override
   String get browseFilterMinVotes => 'Мин. голосов';
-
-  @override
-  String get browseFilterLanguage => 'Язык';
 
   @override
   String get seasonWinter => 'Зима';
@@ -3787,9 +3588,6 @@ class SRu extends S {
   String get languagePortuguese => 'Португальский';
 
   @override
-  String get mangaFormatManga => 'Манга';
-
-  @override
   String get mangaFormatManhwa => 'Манхва';
 
   @override
@@ -3803,9 +3601,6 @@ class SRu extends S {
 
   @override
   String get mangaFormatLightNovel => 'Ранобэ';
-
-  @override
-  String get browseFilterType => 'Тип';
 
   @override
   String get browseFilterContentRating => 'Рейтинг контента';
@@ -3823,15 +3618,6 @@ class SRu extends S {
   String get contentRatingPornographic => 'Порнография';
 
   @override
-  String get browseFilterAll => 'Все';
-
-  @override
-  String get browseFilterAny => 'Любой';
-
-  @override
-  String get browseSort => 'Сортировка';
-
-  @override
   String get browseSortRelevance => 'Релевантность';
 
   @override
@@ -3845,6 +3631,9 @@ class SRu extends S {
 
   @override
   String get browseSortMostVoted => 'По голосам';
+
+  @override
+  String get browseSortMostRead => 'По прочтениям';
 
   @override
   String get browseSortTrending => 'В тренде';
@@ -3871,20 +3660,11 @@ class SRu extends S {
   String get browseEmptyFilters => 'Выберите фильтр или выполните поиск';
 
   @override
-  String get browseEmptyResults => 'Ничего не найдено';
-
-  @override
-  String get browseSearchHint => 'Поиск...';
-
-  @override
   String get browseBackToBrowse => 'Назад к обзору';
 
   @override
   String get browseSortDisabledHint =>
       'Сортировка недоступна при текстовом поиске';
-
-  @override
-  String get animeFilterStatus => 'Статус';
 
   @override
   String get animeStatusAiring => 'Выходит';
@@ -3963,7 +3743,7 @@ class SRu extends S {
   String get tierListUnranked => 'Без тира';
 
   @override
-  String get tierListExportImage => 'Экспорт как картинку';
+  String get exportAsImage => 'Экспорт как изображение';
 
   @override
   String get tierListImageSaved => 'Тир-лист сохранён как изображение';
@@ -3987,9 +3767,6 @@ class SRu extends S {
   String get tierListAddTier => 'Добавить тир';
 
   @override
-  String get tierListClearAll => 'Очистить всё';
-
-  @override
   String get tierListClearConfirm =>
       'Убрать все тайтлы из тиров? Они вернутся в «Без тира».';
 
@@ -4005,9 +3782,6 @@ class SRu extends S {
 
   @override
   String get tierListAllRanked => 'Все тайтлы распределены!';
-
-  @override
-  String get tierListNoCollections => 'Нет доступных коллекций';
 
   @override
   String get tierListErrorEmptyName => 'Введите название тир-листа';
@@ -4060,44 +3834,17 @@ class SRu extends S {
   String get igdbImportSelectCsvExport => 'Выберите CSV-выгрузку IGDB';
 
   @override
-  String get igdbImportOptions => 'Параметры';
-
-  @override
   String get igdbImportStatusLabel => 'Статус для импортируемых игр';
-
-  @override
-  String get igdbImportPlatformLabel => 'Платформа';
 
   @override
   String get igdbImportPlatformSelect => 'Выберите платформу';
 
   @override
-  String get igdbImportTargetCollection => 'Целевая коллекция';
+  String get importIgdbRequired =>
+      'Требуется подключение к IGDB. Сначала настройте API-ключи в Настройки → Учётные данные.';
 
   @override
-  String get igdbImportCreateNew => 'Создать новую коллекцию';
-
-  @override
-  String get igdbImportUseExisting => 'Использовать существующую';
-
-  @override
-  String get igdbImportNoCollections => 'Нет доступных коллекций';
-
-  @override
-  String get igdbImportSelectCollection => 'Выбрать коллекцию';
-
-  @override
-  String get igdbImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
-
-  @override
-  String get igdbImportIgdbRequired =>
-      'Требуется подключение к IGDB. Сначала настройте API-ключи в Настройки → Credentials.';
-
-  @override
-  String get igdbStartImport => 'Начать импорт';
-
-  @override
-  String get igdbImporting => 'Импорт…';
+  String get importing => 'Импорт…';
 
   @override
   String get igdbReasonNotFound => 'Не найдено в IGDB';
@@ -4106,7 +3853,7 @@ class SRu extends S {
   String get steamImportTitle => 'Импорт библиотеки Steam';
 
   @override
-  String get steamImportSubtitle => 'Игры будут найдены в базе IGDB';
+  String get importIgdbMatchNote => 'Игры будут найдены в базе IGDB';
 
   @override
   String get steamImportApiKey => 'API ключ Steam';
@@ -4154,7 +3901,7 @@ class SRu extends S {
   }
 
   @override
-  String get steamImportComplete => 'Импорт завершён!';
+  String get importComplete => 'Импорт завершён!';
 
   @override
   String steamImportGamesImported(int count) {
@@ -4179,44 +3926,13 @@ class SRu extends S {
       'Время в игре сохранено в комментариях';
 
   @override
-  String get steamImportTargetCollection => 'Целевая коллекция';
-
-  @override
-  String get steamImportCreateNew => 'Создать новую коллекцию';
-
-  @override
-  String get steamImportUseExisting => 'Использовать существующую';
-
-  @override
-  String get steamImportNoCollections => 'Нет доступных коллекций';
-
-  @override
-  String get steamImportSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get steamImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
-
-  @override
-  String get steamImportOpenCollection => 'Открыть коллекцию';
-
-  @override
-  String get steamImportIgdbRequired =>
-      'Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.';
+  String get openCollection => 'Открыть коллекцию';
 
   @override
   String get steamImportRememberCredentials => 'Запомнить данные';
 
   @override
   String get collectionListSortCreatedDate => 'Дата создания';
-
-  @override
-  String get collectionListSortAlphabetical => 'Название';
-
-  @override
-  String get collectionListSortCreatedDateNewest => 'Сначала новые';
-
-  @override
-  String get collectionListSortCreatedDateOldest => 'Сначала старые';
 
   @override
   String get collectionListSortAlphabeticalAZ => 'А → Я';
@@ -4234,25 +3950,7 @@ class SRu extends S {
   String get collectionListViewTable => 'Таблица';
 
   @override
-  String get collectionTableName => 'Название';
-
-  @override
-  String get collectionTableType => 'Тип';
-
-  @override
-  String get collectionTablePlatform => 'Платформа';
-
-  @override
-  String get collectionTableStatus => 'Статус';
-
-  @override
-  String get collectionTableRating => 'Оценка';
-
-  @override
   String get collectionTableExternalRating => 'Внешний';
-
-  @override
-  String get collectionTableYear => 'Год';
 
   @override
   String get collectionCopyToCollection => 'Копировать в коллекцию';
@@ -4293,6 +3991,14 @@ class SRu extends S {
   String get importResultUpdated => 'Обновлено';
 
   @override
+  String importResultErrors(int count) {
+    return 'Ошибки ($count)';
+  }
+
+  @override
+  String get importResultErrorsCopied => 'Ошибки скопированы';
+
+  @override
   String importResultSkipped(int count) {
     return '$count пропущено';
   }
@@ -4322,9 +4028,6 @@ class SRu extends S {
   String get browseCollectionsSearch => 'Поиск коллекций...';
 
   @override
-  String get browseCollectionsAllPlatforms => 'Все платформы';
-
-  @override
   String get browseCollectionsAllCategories => 'Все категории';
 
   @override
@@ -4342,18 +4045,12 @@ class SRu extends S {
   String get browseCollectionsDownloading => 'Загрузка...';
 
   @override
-  String get browseCollectionsImporting => 'Импорт...';
-
-  @override
   String browseCollectionsImportSuccess(String name) {
     return 'Коллекция импортирована: $name';
   }
 
   @override
   String get browseCollectionsEmpty => 'Коллекции не найдены';
-
-  @override
-  String get browseCollectionsRetry => 'Повторить';
 
   @override
   String get browseCollectionsLoadError => 'Не удалось загрузить каталог';
@@ -4368,10 +4065,7 @@ class SRu extends S {
   String get browseCollectionsExistingCollection => 'Существующую коллекцию';
 
   @override
-  String get browseCollectionsSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get browseCollectionsNoCollections => 'Нет коллекций';
+  String get noCollectionsYet => 'Коллекций пока нет';
 
   @override
   String get settingsRaImport => 'RetroAchievements';
@@ -4383,48 +4077,11 @@ class SRu extends S {
   String get raImportTitle => 'Импорт RetroAchievements';
 
   @override
-  String get raImportSubtitle => 'Игры будут найдены в базе IGDB';
-
-  @override
-  String get raImportIgdbRequired =>
-      'Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.';
-
-  @override
-  String get raUsername => 'Имя пользователя';
-
-  @override
-  String get raApiKey => 'Ключ API';
-
-  @override
   String get raGetApiKey =>
       'Получите ключ на retroachievements.org/controlpanel.php';
 
   @override
-  String get raImportOptions => 'Параметры';
-
-  @override
   String get raImportOptionWishlist => 'Добавить ненайденные в Список желаний';
-
-  @override
-  String get raImportStart => 'Начать импорт';
-
-  @override
-  String get raImportTargetCollection => 'Целевая коллекция';
-
-  @override
-  String get raImportNewCollection => 'Создать новую коллекцию';
-
-  @override
-  String get raImportExistingCollection => 'Использовать существующую';
-
-  @override
-  String get raImportNoCollections => 'Нет доступных коллекций';
-
-  @override
-  String get raImportSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get raImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
 
   @override
   String get raImportFetchingLibrary => 'Загрузка библиотеки RA...';
@@ -4436,9 +4093,6 @@ class SRu extends S {
   String raImportMatching(String title) {
     return 'Сопоставление: $title';
   }
-
-  @override
-  String get raImportComplete => 'Импорт завершён!';
 
   @override
   String raImportAdded(int count) {
@@ -4461,11 +4115,6 @@ class SRu extends S {
   }
 
   @override
-  String raImportFailed(String error) {
-    return 'Ошибка импорта: $error';
-  }
-
-  @override
   String raProfilePoints(int points) {
     return '$points очков';
   }
@@ -4480,9 +4129,6 @@ class SRu extends S {
 
   @override
   String get raOpenOnRa => 'Открыть на RA ↗';
-
-  @override
-  String get raProgress => 'Прогресс';
 
   @override
   String get raHardcore => 'Хардкор';
@@ -4502,9 +4148,6 @@ class SRu extends S {
   }
 
   @override
-  String get raCollapse => 'Свернуть';
-
-  @override
   String get raMastered => 'Mastered';
 
   @override
@@ -4518,9 +4161,6 @@ class SRu extends S {
 
   @override
   String get raHardcoreBeaten => 'Hardcore Beaten';
-
-  @override
-  String get raToday => 'Сегодня';
 
   @override
   String get raYesterday => 'Вчера';
@@ -4538,9 +4178,6 @@ class SRu extends S {
 
   @override
   String get raMissable => 'MISSABLE';
-
-  @override
-  String get raFilterAll => 'Все';
 
   @override
   String get raFilterEarned => 'Получено';
@@ -4588,13 +4225,10 @@ class SRu extends S {
   }
 
   @override
-  String get textExportTemplate => 'Шаблон';
+  String get template => 'Шаблон';
 
   @override
   String get textExportTokens => 'Токены';
-
-  @override
-  String get textExportPreview => 'Предпросмотр';
 
   @override
   String get textExportSortBy => 'Сортировка';
@@ -4606,16 +4240,10 @@ class SRu extends S {
   String get textExportSortName => 'Название А→Я';
 
   @override
-  String get textExportSortRating => 'Рейтинг ↓';
-
-  @override
   String get textExportSortYear => 'Год ↓';
 
   @override
   String get textExportSortAdded => 'Дата добавления ↓';
-
-  @override
-  String get textExportCopy => 'Копировать';
 
   @override
   String get textExportEmptyTemplate => 'Шаблон пустой';
@@ -4745,9 +4373,6 @@ class SRu extends S {
   String get kodiPort => 'Порт';
 
   @override
-  String get kodiUsername => 'Имя пользователя';
-
-  @override
   String get kodiPassword => 'Пароль';
 
   @override
@@ -4771,9 +4396,6 @@ class SRu extends S {
   String get kodiSyncTitle => 'Синхронизация';
 
   @override
-  String get kodiTargetCollection => 'Целевая коллекция';
-
-  @override
   String get kodiTargetCollectionSubtitle => 'Все фильмы из Kodi попадут сюда';
 
   @override
@@ -4783,9 +4405,6 @@ class SRu extends S {
   String kodiTargetDeletedLabel(int id) {
     return 'Удалена (#$id)';
   }
-
-  @override
-  String get kodiTargetError => 'Ошибка';
 
   @override
   String get kodiEnableSync => 'Включить синхронизацию Kodi';
@@ -4816,9 +4435,6 @@ class SRu extends S {
   String get kodiImportRatingsSubtitle => 'Переносить userrating Kodi (1–10)';
 
   @override
-  String get kodiCollectionPickerCreateNew => 'Создать новую коллекцию';
-
-  @override
   String get kodiCollectionLibraryName => 'Библиотека Kodi';
 
   @override
@@ -4831,9 +4447,6 @@ class SRu extends S {
       'Целевая коллекция удалена — синхронизация остановлена';
 
   @override
-  String get kodiDebugTitle => 'Отладка';
-
-  @override
   String get kodiSyncStatus => 'Статус синхронизации';
 
   @override
@@ -4841,9 +4454,6 @@ class SRu extends S {
 
   @override
   String get kodiSyncStopped => 'Остановлена';
-
-  @override
-  String get kodiLastSync => 'Последняя синхронизация';
 
   @override
   String get kodiLastSyncNever => 'Никогда';
@@ -4927,13 +4537,10 @@ class SRu extends S {
       'Выгрузите XML на myanimelist.net/panel.php?go=export';
 
   @override
-  String get malImportAnimeFile => 'Список аниме';
+  String get importAnimeList => 'Список аниме';
 
   @override
-  String get malImportMangaFile => 'Список манги';
-
-  @override
-  String get malImportRemoveFile => 'Удалить';
+  String get importMangaList => 'Список манги';
 
   @override
   String malImportEntriesCount(int count) {
@@ -4948,30 +4555,6 @@ class SRu extends S {
   }
 
   @override
-  String get malImportTargetCollection => 'Целевая коллекция';
-
-  @override
-  String get malImportCreateNew => 'Создать новую коллекцию';
-
-  @override
-  String get malImportUseExisting => 'Использовать существующую';
-
-  @override
-  String get malImportSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get malImportNoCollections => 'Нет доступных коллекций';
-
-  @override
-  String get malImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
-
-  @override
-  String get malImportNewCollectionName => 'Название коллекции';
-
-  @override
-  String get malImportButton => 'Начать импорт';
-
-  @override
   String get malImportReadingFiles => 'Чтение файлов...';
 
   @override
@@ -4981,29 +4564,8 @@ class SRu extends S {
   String get malImportResolvingManga => 'Резолвинг манги на AniList';
 
   @override
-  String get malImportMatching => 'Импорт записей';
-
-  @override
-  String get malImportComplete => 'Импорт завершён!';
-
-  @override
-  String malImportLookingUp(String title) {
-    return 'Обработка: $title';
-  }
-
-  @override
-  String malImportImported(int count) {
-    return 'Импортировано: $count';
-  }
-
-  @override
   String malImportWishlisted(int count) {
     return 'В вишлист: $count';
-  }
-
-  @override
-  String malImportUpdated(int count) {
-    return 'Обновлено: $count';
   }
 
   @override
@@ -5021,11 +4583,6 @@ class SRu extends S {
   @override
   String malImportRateLimitWait(int seconds, int attempt, int max) {
     return 'Лимит AniList достигнут — ждём $seconds сек (попытка $attempt/$max)';
-  }
-
-  @override
-  String malImportFailed(String error) {
-    return 'Импорт не удался: $error';
   }
 
   @override
@@ -5053,6 +4610,21 @@ class SRu extends S {
       'Импорт списков аниме и манги по публичному имени';
 
   @override
+  String get settingsHardcoverImportSubtitle =>
+      'Импорт библиотеки книг с hardcover.app по имени пользователя';
+
+  @override
+  String get hardcoverImportTitle => 'Импорт Hardcover';
+
+  @override
+  String get hardcoverImportSubtitle =>
+      'Загружает библиотеку пользователя с hardcover.app — публичную часть у других, свою целиком';
+
+  @override
+  String get hardcoverImportTokenMissing =>
+      'Токен Hardcover API не задан. Добавьте его в Настройки → API-ключи.';
+
+  @override
   String get aniListImportTitle => 'Импорт из AniList';
 
   @override
@@ -5063,55 +4635,11 @@ class SRu extends S {
   String get aniListImportUsername => 'Имя пользователя AniList';
 
   @override
-  String get aniListImportUsernameHint => 'например, yourname';
-
-  @override
   String get aniListImportInclude => 'Что импортировать';
-
-  @override
-  String get aniListImportIncludeAnime => 'Список аниме';
-
-  @override
-  String get aniListImportIncludeManga => 'Список манги';
-
-  @override
-  String get aniListImportMode => 'Режим';
-
-  @override
-  String get aniListImportModeNewOnly => 'Только новые';
-
-  @override
-  String get aniListImportModeNewOnlySubtitle =>
-      'Пропустить элементы, уже добавленные в коллекцию';
-
-  @override
-  String get aniListImportModeOverwrite => 'Перезаписать существующие';
 
   @override
   String get aniListImportModeOverwriteSubtitle =>
       'Обновить прогресс, статус и даты из AniList';
-
-  @override
-  String get aniListImportTargetCollection => 'Целевая коллекция';
-
-  @override
-  String get aniListImportCreateNew => 'Создать новую коллекцию';
-
-  @override
-  String get aniListImportUseExisting => 'Добавить в существующую';
-
-  @override
-  String get aniListImportSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get aniListImportNoCollections => 'Нет коллекций';
-
-  @override
-  String get aniListImportErrorLoadingCollections =>
-      'Ошибка загрузки коллекций';
-
-  @override
-  String get aniListImportNewCollectionName => 'Название коллекции';
 
   @override
   String aniListImportNewCollectionDefault(String username) {
@@ -5119,53 +4647,10 @@ class SRu extends S {
   }
 
   @override
-  String get aniListImportButton => 'Запустить импорт';
-
-  @override
   String get aniListImportFetchingAnime => 'Получаем список аниме...';
 
   @override
   String get aniListImportFetchingManga => 'Получаем список манги...';
-
-  @override
-  String get aniListImportMatching => 'Импортируем записи';
-
-  @override
-  String get aniListImportComplete => 'Импорт завершён!';
-
-  @override
-  String aniListImportLookingUp(String title) {
-    return 'Обработка: $title';
-  }
-
-  @override
-  String aniListImportImported(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count импортировано',
-      few: '$count импортировано',
-      one: '1 импортирован',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String aniListImportUpdated(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count обновлено',
-      few: '$count обновлено',
-      one: '1 обновлён',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String aniListImportFailed(String error) {
-    return 'Ошибка импорта: $error';
-  }
 
   @override
   String aniListImportUserNotFound(String username) {
@@ -5211,25 +4696,6 @@ class SRu extends S {
   String get customImportTemplateSaved => 'Шаблон сохранён';
 
   @override
-  String get customImportTargetCollection => 'Целевая коллекция';
-
-  @override
-  String get customImportCreateNew => 'Создать новую коллекцию';
-
-  @override
-  String get customImportUseExisting => 'Добавить в существующую';
-
-  @override
-  String get customImportSelectCollection => 'Выберите коллекцию';
-
-  @override
-  String get customImportNoCollections => 'Коллекций пока нет';
-
-  @override
-  String get customImportErrorLoadingCollections =>
-      'Не удалось загрузить коллекции';
-
-  @override
   String get customImportPreviewButton => 'Предпросмотр и импорт';
 
   @override
@@ -5239,9 +4705,6 @@ class SRu extends S {
   String customImportSummary(int valid, int errors, int duplicates) {
     return 'Распознано $valid · Ошибок $errors · Дублей $duplicates';
   }
-
-  @override
-  String get customImportSelectAll => 'Выбрать все';
 
   @override
   String get customImportSelectNone => 'Снять все';
@@ -5330,12 +4793,6 @@ class SRu extends S {
   String get moodGridCreateTitle => 'Новая mood-сетка';
 
   @override
-  String get moodGridName => 'Название';
-
-  @override
-  String get moodGridPresetLabel => 'Шаблон';
-
-  @override
   String get moodGridPresetAboutMe => 'About Me: Tonkatsu Box';
 
   @override
@@ -5352,22 +4809,7 @@ class SRu extends S {
   String get moodGridRows => 'Строк';
 
   @override
-  String get moodGridCols => 'Колонок';
-
-  @override
   String get moodGridBadge => 'Mood-сетка';
-
-  @override
-  String get moodGridEdit => 'Редактировать';
-
-  @override
-  String get moodGridDoneEditing => 'Готово';
-
-  @override
-  String get moodGridRename => 'Переименовать';
-
-  @override
-  String get moodGridDelete => 'Удалить';
 
   @override
   String get moodGridDeleteTitle => 'Удалить сетку?';
@@ -5375,12 +4817,6 @@ class SRu extends S {
   @override
   String get moodGridDeleteMessage =>
       'Сетка будет удалена. Действие нельзя отменить.';
-
-  @override
-  String get moodGridExportImage => 'Экспорт как изображение';
-
-  @override
-  String get moodGridImageSaved => 'Изображение сохранено';
 
   @override
   String get moodGridAddRow => 'Добавить строку';
@@ -5427,13 +4863,7 @@ class SRu extends S {
       'Шаблон применяется к каждой ячейке. Доступные токены: name, year, genre, rating.';
 
   @override
-  String get moodGridCaptionTemplateClear => 'Очистить';
-
-  @override
-  String get moodGridPickerTitle => 'Выбор элемента';
-
-  @override
-  String get moodGridPickerCollection => 'Коллекция';
+  String get collection => 'Коллекция';
 
   @override
   String get moodGridPickerAllCollections => 'Все коллекции';
@@ -5537,9 +4967,6 @@ class SRu extends S {
   String get genreCloudExportImage => 'Сохранить картинкой';
 
   @override
-  String get genreCloudImageSaved => 'Картинка сохранена';
-
-  @override
   String get genreCloudExportFailed => 'Не удалось сохранить картинку';
 
   @override
@@ -5559,9 +4986,6 @@ class SRu extends S {
   }
 
   @override
-  String get facetGenre => 'Жанры';
-
-  @override
   String get facetPlatform => 'Платформы';
 
   @override
@@ -5569,12 +4993,6 @@ class SRu extends S {
 
   @override
   String get personalizationTabCloud => 'Облако жанров';
-
-  @override
-  String get personalizationTabRecommendations => 'Рекомендации';
-
-  @override
-  String get recommendationsRefresh => 'Обновить';
 
   @override
   String get recommendationsEmpty => 'Пока нет рекомендаций';
@@ -5632,12 +5050,6 @@ class SRu extends S {
   String get itemMarkEmpty => 'Пометок пока нет';
 
   @override
-  String get itemMarkDelete => 'Удалить';
-
-  @override
-  String get itemMarkType => 'Тип';
-
-  @override
   String get itemMarkNumber => 'Номер';
 
   @override
@@ -5648,9 +5060,6 @@ class SRu extends S {
 
   @override
   String get itemMarkCustomType => 'Свой тип';
-
-  @override
-  String get itemMarkFilterAll => 'Все';
 
   @override
   String get itemMarkFilterLiked => 'Лайкнутые';
@@ -5687,9 +5096,6 @@ class SRu extends S {
   String get unitPart => 'Часть';
 
   @override
-  String get unitCustom => 'Своё';
-
-  @override
   String get cardLinkCopy => 'Скопировать ссылку на карточку';
 
   @override
@@ -5697,9 +5103,6 @@ class SRu extends S {
 
   @override
   String get cardLinkNotFound => 'Карточка не найдена';
-
-  @override
-  String get cardLinkPickCollection => 'Открыть в коллекции';
 
   @override
   String get cardLinkSearchTitle => 'Ссылка на карточку';
@@ -5723,19 +5126,7 @@ class SRu extends S {
   String get shortcutPreviousTab => 'Предыдущий таб';
 
   @override
-  String get shortcutBack => 'Назад';
-
-  @override
-  String get shortcutSearch => 'Поиск';
-
-  @override
-  String get shortcutRefresh => 'Обновить';
-
-  @override
   String get shortcutThisHelp => 'Эта справка';
-
-  @override
-  String get shortcutsGroupCollections => 'Коллекции';
 
   @override
   String get shortcutCreateCollection => 'Создать коллекцию';
@@ -5751,12 +5142,6 @@ class SRu extends S {
 
   @override
   String get shortcutRenameCollection => 'Переименовать коллекцию';
-
-  @override
-  String get shortcutOpenCollection => 'Открыть коллекцию';
-
-  @override
-  String get shortcutsGroupCollection => 'Коллекция';
 
   @override
   String get shortcutAddItems => 'Добавить элементы';
@@ -5804,22 +5189,7 @@ class SRu extends S {
   String get shortcutDeleteTierList => 'Удалить тир-лист';
 
   @override
-  String get shortcutRename => 'Переименовать';
-
-  @override
   String get shortcutsGroupTierList => 'Тир-лист';
-
-  @override
-  String get shortcutExportAsImage => 'Экспорт как изображение';
-
-  @override
-  String get shortcutAddTier => 'Добавить тир';
-
-  @override
-  String get shortcutClearAll => 'Очистить все';
-
-  @override
-  String get shortcutsGroupWishlist => 'Вишлист';
 
   @override
   String get shortcutAddItem => 'Добавить элемент';
@@ -5829,9 +5199,6 @@ class SRu extends S {
 
   @override
   String get shortcutClearCompleted => 'Очистить выполненные';
-
-  @override
-  String get shortcutsGroupSearch => 'Поиск';
 
   @override
   String get shortcutFocusSearchField => 'Фокус в поле поиска';

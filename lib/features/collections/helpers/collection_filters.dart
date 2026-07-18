@@ -33,7 +33,7 @@ class CollectionFilters {
   List<CollectionItem> apply(
     List<CollectionItem> items,
     List<Tag> tags,
-    Map<int, Set<int>> itemTags, {
+    Map<int, List<int>> itemTags, {
     String animeMangaTitleLanguage = 'romaji',
   }) {
     List<CollectionItem> result = items;
@@ -46,18 +46,13 @@ class CollectionFilters {
           .toList();
     }
 
-    if (platformIds.isNotEmpty) {
+    if (platformIds.isNotEmpty ||
+        mangaFormats.isNotEmpty ||
+        animeFormats.isNotEmpty) {
       result = result
-          .where((CollectionItem item) =>
-              item.effectivePlatformId != null &&
-              platformIds.contains(item.effectivePlatformId))
-          .toList();
-    }
-
-    if (mangaFormats.isNotEmpty || animeFormats.isNotEmpty) {
-      result = result
-          .where((CollectionItem item) => MediaFormat.matchesFormatFilter(
+          .where((CollectionItem item) => MediaFormat.matchesSubfilters(
                 item,
+                platformIds: platformIds,
                 mangaFormats: mangaFormats,
                 animeFormats: animeFormats,
               ))
@@ -84,7 +79,7 @@ class CollectionFilters {
       for (final Tag tag in tags) tag.id: tag.name.toLowerCase(),
     };
     bool matchesTagName(CollectionItem item) {
-      final Set<int>? ids = itemTags[item.id];
+      final List<int>? ids = itemTags[item.id];
       if (ids == null) return false;
       return ids.any((int id) => tagNames[id]?.contains(query) ?? false);
     }

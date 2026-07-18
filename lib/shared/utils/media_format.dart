@@ -61,28 +61,24 @@ abstract final class MediaFormat {
     return result;
   }
 
-  /// Whether [item] survives the combined manga + anime format filter.
-  ///
-  /// With neither set active everything passes. Once any format is selected the
-  /// filter narrows globally like the games platform filter: only a manga whose
-  /// format is in [mangaFormats], or an anime whose format is in [animeFormats],
-  /// survives — every other item (games, other media types, unselected formats)
-  /// is hidden. Selecting formats in both sets keeps either (OR).
-  static bool matchesFormatFilter(
+  /// Active groups unite (OR), each scoped to its own kind of item — e.g.
+  /// NES + OVA keeps both NES games and OVA anime. No active groups = pass.
+  static bool matchesSubfilters(
     CollectionItem item, {
+    required Set<int> platformIds,
     required Set<String> mangaFormats,
     required Set<String> animeFormats,
   }) {
-    if (mangaFormats.isEmpty && animeFormats.isEmpty) return true;
-    switch (item.displayMediaType) {
-      case MediaType.manga:
-        final String? code = item.formatCode;
-        return code != null && mangaFormats.contains(code);
-      case MediaType.anime:
-        final String? code = item.formatCode;
-        return code != null && animeFormats.contains(code);
-      default:
-        return false;
+    if (platformIds.isEmpty && mangaFormats.isEmpty && animeFormats.isEmpty) {
+      return true;
     }
+    if (platformIds.contains(item.effectivePlatformId)) return true;
+    final String? code = item.formatCode;
+    if (code == null) return false;
+    return switch (item.displayMediaType) {
+      MediaType.manga => mangaFormats.contains(code),
+      MediaType.anime => animeFormats.contains(code),
+      _ => false,
+    };
   }
 }

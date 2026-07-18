@@ -74,4 +74,12 @@ abstract final class AppSpacing {
 
   /// Grid column count on mobile (< 500px).
   static const int gridColumnsMobile = 3;
+
+  /// Max card width on desktop grids at 100% card scale.
+  static const double desktopMaxCardWidth = 170;
+
+  /// Column count for fixed-count grids adjusted by the card scale setting:
+  /// larger cards → fewer columns.
+  static int scaledColumns(int base, double scale) =>
+      (base / scale).round().clamp(2, 8);
 }

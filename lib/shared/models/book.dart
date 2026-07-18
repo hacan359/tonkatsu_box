@@ -20,7 +20,8 @@ int fnv1a64(String input) {
   return hash & 0x7fffffffffffffff; // mask to 63 bits → non-negative
 }
 
-/// Book metadata from OpenLibrary, Fantlab, ComicVine or Google Books.
+/// Book metadata from OpenLibrary, Fantlab, ComicVine, Google Books or
+/// Hardcover.
 ///
 /// Identity mirrors [Manga]: the cache key is the pair `(id, source)`. [id] is
 /// the provider numeric id stored as a string (`"27448"` / `"3104"`) and maps
@@ -365,6 +366,94 @@ class Book {
       ratingCount: _intOrNull(info['ratingsCount']),
       externalUrl: _nonEmpty(info['infoLink']) ??
           _nonEmpty(info['canonicalVolumeLink']),
+    );
+  }
+
+  /// [Book] from a Hardcover search `document` (Typesense). The document
+  /// already carries the whole card — authors, genres, moods, ISBNs, image,
+  /// rating — so search results need no detail follow-up. Ids are numeric
+  /// (arriving as a string); `rating` (0–5) is doubled to the app's 0–10
+  /// scale. Graphic novels (`book_category_id` 4) map to [BookKind.comic].
+  factory Book.fromHardcoverDocument(Map<String, dynamic> doc) {
+    final String id = _hardcoverId(doc['id']);
+    final String title = _nonEmpty(doc['title']) ?? 'Unknown';
+    final String? subtitle = _nonEmpty(doc['subtitle']);
+    final (String? isbn10, String? isbn13) = _hardcoverIsbns(doc['isbns']);
+    final int? pages = _intOrNull(doc['pages']);
+    final Object? image = doc['image'];
+
+    return Book(
+      id: id,
+      source: DataSource.hardcover,
+      nativeId: id,
+      title: subtitle != null ? '$title: $subtitle' : title,
+      authors: _stringList(doc['author_names']),
+      description: _stripHtmlText(doc['description']),
+      coverUrl:
+          image is Map<String, dynamic> ? _nonEmpty(image['url']) : null,
+      pageCount: (pages != null && pages > 0) ? pages : null,
+      publishYear: _intOrNull(doc['release_year']),
+      isbn10: isbn10,
+      isbn13: isbn13,
+      subjects: _cleanSubjects(<String>[
+        ..._stringList(doc['genres']),
+        ..._stringList(doc['moods']),
+      ]),
+      series: _hardcoverDocumentSeries(doc),
+      rating: _hardcoverRating(doc['rating']),
+      ratingCount: _intOrNull(doc['ratings_count']),
+      externalUrl: _hardcoverBookUrl(id),
+      kind: _hardcoverKind(doc['book_category_id']),
+    );
+  }
+
+  /// [Book] from a Hardcover graph `book` object — shared by the
+  /// `books_by_pk` detail payload and the `book` nested in `user_books`
+  /// import rows (the import shape simply lacks `default_physical_edition`).
+  /// Genres and moods come from the `cached_tags` dictionary.
+  factory Book.fromHardcoverBook(Map<String, dynamic> json) {
+    final String id = _hardcoverId(json['id']);
+    final String title = _nonEmpty(json['title']) ?? 'Unknown';
+    final String? subtitle = _nonEmpty(json['subtitle']);
+    final int? pages = _intOrNull(json['pages']);
+    final Object? image = json['image'];
+
+    final Object? editionObj = json['default_physical_edition'];
+    final Map<String, dynamic> edition = editionObj is Map<String, dynamic>
+        ? editionObj
+        : const <String, dynamic>{};
+    final Object? publisher = edition['publisher'];
+    final String? publisherName = publisher is Map<String, dynamic>
+        ? _nonEmpty(publisher['name'])
+        : null;
+    final Object? language = edition['language'];
+    final String? languageCode = language is Map<String, dynamic>
+        ? _nonEmpty(language['code2'])
+        : null;
+
+    return Book(
+      id: id,
+      source: DataSource.hardcover,
+      nativeId: id,
+      title: subtitle != null ? '$title: $subtitle' : title,
+      authors: _hardcoverAuthors(json['contributions']),
+      description: _stripHtmlText(json['description']),
+      coverUrl:
+          image is Map<String, dynamic> ? _nonEmpty(image['url']) : null,
+      pageCount: (pages != null && pages > 0) ? pages : null,
+      publishYear: _intOrNull(json['release_year']),
+      publishers:
+          publisherName != null ? <String>[publisherName] : const <String>[],
+      isbn10: _nonEmpty(edition['isbn_10']),
+      isbn13: _nonEmpty(edition['isbn_13']),
+      languages:
+          languageCode != null ? <String>[languageCode] : const <String>[],
+      subjects: _hardcoverCachedTags(json['cached_tags']),
+      series: _hardcoverSeries(json['book_series']),
+      rating: _hardcoverRating(json['rating']),
+      ratingCount: _intOrNull(json['ratings_count']),
+      externalUrl: _hardcoverBookUrl(id),
+      kind: _hardcoverKind(json['book_category_id']),
     );
   }
 
@@ -747,6 +836,119 @@ class Book {
       }
     }
     return null;
+  }
+
+  // --- Hardcover helpers -------------------------------------------------------
+
+  /// `https://hardcover.app/id/book/{id}` — permanent id URL (302 to the
+  /// current slug), immune to slug renames.
+  static String _hardcoverBookUrl(String id) =>
+      'https://hardcover.app/id/book/$id';
+
+  /// Id normalizer — the search document carries `id` as a string, graph
+  /// objects as an int. A non-numeric id (future headroom) folds through
+  /// [fnv1a64] to keep the numeric `external_id` contract.
+  static String _hardcoverId(Object? raw) {
+    if (raw is num) return raw.toInt().toString();
+    if (raw is String && raw.isNotEmpty) {
+      return int.tryParse(raw.trim())?.toString() ?? fnv1a64(raw).toString();
+    }
+    return '0';
+  }
+
+  /// `book_category_id`: 1 Book, 2 Novella, 3 Short Story, 4 Graphic Novel,
+  /// … 10 Light Novel. Only graphic novels flip to [BookKind.comic].
+  static BookKind _hardcoverKind(Object? categoryId) =>
+      _intOrNull(categoryId) == 4 ? BookKind.comic : BookKind.book;
+
+  /// Hardcover ratings are 0–5 floats; the app's scale is 1–10. Zero means
+  /// unrated.
+  static double? _hardcoverRating(Object? raw) {
+    final double? rating = (raw as num?)?.toDouble();
+    return (rating != null && rating > 0) ? rating * 2 : null;
+  }
+
+  /// Splits the mixed `isbns` array into the first ISBN-10 / ISBN-13.
+  static (String? isbn10, String? isbn13) _hardcoverIsbns(Object? raw) {
+    if (raw is! List<dynamic>) return (null, null);
+    String? isbn10;
+    String? isbn13;
+    for (final String value in raw.whereType<String>()) {
+      final String digits = value.replaceAll('-', '').trim();
+      if (digits.length == 10) isbn10 ??= digits;
+      if (digits.length == 13) isbn13 ??= digits;
+      if (isbn10 != null && isbn13 != null) break;
+    }
+    return (isbn10, isbn13);
+  }
+
+  /// Distinct author names from graph `contributions` (`[{author: {name}}]`),
+  /// in API order.
+  static List<String> _hardcoverAuthors(Object? raw) {
+    if (raw is! List<dynamic>) return const <String>[];
+    final List<String> names = <String>[];
+    for (final Object? item in raw) {
+      if (item is! Map<String, dynamic>) continue;
+      final Object? author = item['author'];
+      if (author is Map<String, dynamic>) {
+        final String? name = _nonEmpty(author['name']);
+        if (name != null && !names.contains(name)) names.add(name);
+      }
+    }
+    return names;
+  }
+
+  /// Genres + moods from the `cached_tags` dictionary
+  /// (`{Genre: [{tag}], Mood: [{tag}], …}`, top-10 per category).
+  static List<String> _hardcoverCachedTags(Object? raw) {
+    if (raw is! Map<String, dynamic>) return const <String>[];
+    final List<String> values = <String>[];
+    for (final String category in const <String>['Genre', 'Mood']) {
+      final Object? tags = raw[category];
+      if (tags is! List<dynamic>) continue;
+      for (final Object? entry in tags) {
+        if (entry is Map<String, dynamic>) {
+          final String? tag = _nonEmpty(entry['tag']);
+          if (tag != null) values.add(tag);
+        }
+      }
+    }
+    return _cleanSubjects(values);
+  }
+
+  /// Series name from a search document: the featured series, falling back
+  /// to the first of `series_names`.
+  static String? _hardcoverDocumentSeries(Map<String, dynamic> doc) {
+    final Object? featured = doc['featured_series'];
+    final Object? series =
+        featured is Map<String, dynamic> ? featured['series'] : null;
+    final String? name =
+        series is Map<String, dynamic> ? _nonEmpty(series['name']) : null;
+    return name ?? _firstString(doc['series_names']);
+  }
+
+  /// Series name from graph `book_series`: the entry with the lowest
+  /// position — the primary series lists the book early, derived universe
+  /// orderings much later.
+  static String? _hardcoverSeries(Object? raw) {
+    if (raw is! List<dynamic>) return null;
+    String? best;
+    double bestPosition = double.infinity;
+    for (final Object? item in raw) {
+      if (item is! Map<String, dynamic>) continue;
+      final Object? series = item['series'];
+      final String? name = series is Map<String, dynamic>
+          ? _nonEmpty(series['name'])
+          : null;
+      if (name == null) continue;
+      final double position =
+          (item['position'] as num?)?.toDouble() ?? double.infinity;
+      if (best == null || position < bestPosition) {
+        best = name;
+        bestPosition = position;
+      }
+    }
+    return best;
   }
 
   // --- Fantlab helpers -------------------------------------------------------

@@ -108,7 +108,7 @@ class _CustomCardsPreviewScreenState
                 children: <Widget>[
                   TextButton(
                     onPressed: _selectAll,
-                    child: Text(l.customImportSelectAll),
+                    child: Text(l.selectAll),
                   ),
                   TextButton(
                     onPressed:
@@ -311,7 +311,7 @@ class _CustomCardsPreviewScreenState
         ),
       );
     } else if (result.fatalError != null) {
-      context.showSnack(result.fatalError!, type: SnackType.error);
+      context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
     }
   }
 }

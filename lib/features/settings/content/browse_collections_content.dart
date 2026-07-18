@@ -89,7 +89,7 @@ class _BrowseCollectionsContentState
               onPressed: () =>
                   ref.read(collectionsIndexProvider.notifier).refresh(),
               icon: const Icon(Icons.refresh),
-              label: Text(l.browseCollectionsRetry),
+              label: Text(l.retry),
             ),
           ],
         ),
@@ -195,7 +195,7 @@ class _BrowseCollectionsContentState
 
   String _platformLabel(S l, CollectionsIndex index) {
     final String? selected = ref.watch(browserPlatformFilterProvider);
-    if (selected == null) return l.browseCollectionsAllPlatforms;
+    if (selected == null) return l.allPlatforms;
     for (final RemotePlatform p in index.platforms) {
       if (p.id == selected) return p.shortName;
     }
@@ -228,7 +228,7 @@ class _BrowseCollectionsContentState
     ];
 
     final String? result = await _showSearchablePicker(
-      title: l.browseCollectionsAllPlatforms,
+      title: l.allPlatforms,
       items: items,
       current: ref.read(browserPlatformFilterProvider),
     );
@@ -454,7 +454,7 @@ class _ImportTargetDialogState extends ConsumerState<_ImportTargetDialog> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                         child: Text(
-                          l.browseCollectionsNoCollections,
+                          l.noCollectionsYet,
                           style: AppTypography.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -467,8 +467,8 @@ class _ImportTargetDialogState extends ConsumerState<_ImportTargetDialog> {
                         );
                     return CollectionPickerField(
                       value: selectedExists ? _selectedId : null,
-                      hint: l.browseCollectionsSelectCollection,
-                      title: l.browseCollectionsSelectCollection,
+                      hint: l.importSelectCollection,
+                      title: l.importSelectCollection,
                       onChanged: (int? id) =>
                           setState(() => _selectedId = id),
                     );

@@ -108,7 +108,7 @@ void main() {
       });
     });
 
-    group('matchesFormatFilter', () {
+    group('matchesSubfilters', () {
       test('passes everything when no format is selected', () {
         final CollectionItem item = createTestCollectionItem(
           mediaType: MediaType.manga,
@@ -116,8 +116,9 @@ void main() {
         );
 
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             item,
+            platformIds: const <int>{},
             mangaFormats: const <String>{},
             animeFormats: const <String>{},
           ),
@@ -129,8 +130,9 @@ void main() {
         final CollectionItem game = createTestCollectionItem();
 
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             game,
+            platformIds: const <int>{},
             mangaFormats: const <String>{'MANGA'},
             animeFormats: const <String>{},
           ),
@@ -145,8 +147,9 @@ void main() {
         );
 
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             item,
+            platformIds: const <int>{},
             mangaFormats: const <String>{'MANGA'},
             animeFormats: const <String>{},
           ),
@@ -161,8 +164,9 @@ void main() {
         );
 
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             item,
+            platformIds: const <int>{},
             mangaFormats: const <String>{'MANGA'},
             animeFormats: const <String>{},
           ),
@@ -177,8 +181,9 @@ void main() {
         );
 
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             item,
+            platformIds: const <int>{},
             mangaFormats: const <String>{'MANGA'},
             animeFormats: const <String>{},
           ),
@@ -197,20 +202,87 @@ void main() {
         );
 
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             manga,
+            platformIds: const <int>{},
             mangaFormats: const <String>{'MANGA'},
             animeFormats: const <String>{'TV'},
           ),
           isTrue,
         );
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             anime,
+            platformIds: const <int>{},
             mangaFormats: const <String>{'MANGA'},
             animeFormats: const <String>{'TV'},
           ),
           isTrue,
+        );
+      });
+
+      test('platform and format groups unite: NES game and OVA anime both '
+          'pass', () {
+        final CollectionItem nesGame =
+            createTestCollectionItem(platformId: 18);
+        final CollectionItem ovaAnime = createTestCollectionItem(
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'OVA'),
+        );
+
+        for (final CollectionItem item in <CollectionItem>[nesGame, ovaAnime]) {
+          expect(
+            MediaFormat.matchesSubfilters(
+              item,
+              platformIds: const <int>{18},
+              mangaFormats: const <String>{},
+              animeFormats: const <String>{'OVA'},
+            ),
+            isTrue,
+          );
+        }
+      });
+
+      test('a game on another platform fails even with formats active', () {
+        final CollectionItem game = createTestCollectionItem(platformId: 6);
+
+        expect(
+          MediaFormat.matchesSubfilters(
+            game,
+            platformIds: const <int>{18},
+            mangaFormats: const <String>{},
+            animeFormats: const <String>{'OVA'},
+          ),
+          isFalse,
+        );
+      });
+
+      test('platform-only selection keeps matching games and hides the rest',
+          () {
+        final CollectionItem nesGame =
+            createTestCollectionItem(platformId: 18);
+        final CollectionItem anime = createTestCollectionItem(
+          mediaType: MediaType.anime,
+          anime: createTestAnime(format: 'TV'),
+        );
+
+        expect(
+          MediaFormat.matchesSubfilters(
+            nesGame,
+            platformIds: const <int>{18},
+            mangaFormats: const <String>{},
+            animeFormats: const <String>{},
+          ),
+          isTrue,
+        );
+        expect(
+          MediaFormat.matchesSubfilters(
+            anime,
+            platformIds: const <int>{18},
+            mangaFormats: const <String>{},
+            animeFormats: const <String>{},
+          ),
+          isFalse,
         );
       });
 
@@ -221,8 +293,9 @@ void main() {
         );
 
         expect(
-          MediaFormat.matchesFormatFilter(
+          MediaFormat.matchesSubfilters(
             item,
+            platformIds: const <int>{},
             mangaFormats: const <String>{'MANGA'},
             animeFormats: const <String>{},
           ),

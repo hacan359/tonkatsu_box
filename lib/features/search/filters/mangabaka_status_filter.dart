@@ -14,7 +14,7 @@ class MangaBakaStatusFilter extends SearchFilter {
   String get cacheKey => 'status_mangabaka';
 
   @override
-  String placeholder(S l) => l.animeFilterStatus;
+  String placeholder(S l) => l.status;
 
   @override
   FilterOption get allOption => const FilterOption(

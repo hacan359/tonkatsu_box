@@ -21,9 +21,6 @@ class SZh extends S {
   String get navWishlist => '愿望单';
 
   @override
-  String get navSearch => '搜索';
-
-  @override
   String get navSettings => '设置';
 
   @override
@@ -60,7 +57,7 @@ class SZh extends S {
   String get releasesToday => '今天';
 
   @override
-  String get releasesRefresh => '刷新';
+  String get refresh => '刷新';
 
   @override
   String get releasesNoEpisodes => '暂无剧集';
@@ -77,16 +74,10 @@ class SZh extends S {
   String get calendarRemove => '从日历移除';
 
   @override
-  String get calendarAddTitle => '添加到日历';
-
-  @override
-  String get calendarDate => '日期';
+  String get date => '日期';
 
   @override
   String get calendarRepeat => '重复';
-
-  @override
-  String get calendarAddAction => '添加';
 
   @override
   String get recurrenceOnce => '仅一次';
@@ -137,7 +128,7 @@ class SZh extends S {
   String get statusRereading => '重读中';
 
   @override
-  String get homeFilterAll => '全部';
+  String get all => '全部';
 
   @override
   String get mediaTypeGame => '游戏';
@@ -170,52 +161,31 @@ class SZh extends S {
   String get sortManualDisplay => '手动';
 
   @override
-  String get sortManualShort => '手动';
-
-  @override
   String get sortManualDesc => '自定义排序';
 
   @override
   String get sortDateDisplay => '添加日期';
 
   @override
-  String get sortDateShort => '日期';
-
-  @override
   String get sortDateDesc => '最新优先';
 
   @override
-  String get sortStatusDisplay => '状态';
-
-  @override
-  String get sortStatusShort => '状态';
+  String get status => '状态';
 
   @override
   String get sortStatusDesc => '活跃优先';
 
   @override
-  String get sortNameDisplay => '名称';
+  String get name => '名称';
 
   @override
   String get sortNameShort => 'A-Z';
 
   @override
-  String get sortNameDesc => 'A 到 Z';
-
-  @override
-  String get sortRatingDisplay => '我的评分';
-
-  @override
-  String get sortRatingShort => '评分';
+  String get rating => '评分';
 
   @override
   String get sortRatingDesc => '最高优先';
-
-  @override
-  String get sortFavoriteDisplay => '收藏';
-
-  @override
-  String get sortFavoriteShort => '收藏';
 
   @override
   String get sortFavoriteDesc => '收藏优先';
@@ -227,9 +197,6 @@ class SZh extends S {
   String get sortExternalRatingShort => 'IGDB/TMDB';
 
   @override
-  String get sortExternalRatingDesc => '最高优先';
-
-  @override
   String get sortLastActivityDisplay => '最近活动';
 
   @override
@@ -239,13 +206,22 @@ class SZh extends S {
   String get sortLastActivityDesc => '最近优先';
 
   @override
+  String get sortStartDateDisplay => '开始日期';
+
+  @override
+  String get sortStartDateShort => '开始';
+
+  @override
+  String get sortCompletionDateDisplay => '完成日期';
+
+  @override
+  String get sortCompletionDateShort => '完成';
+
+  @override
   String get sortDateOldest => '最早优先';
 
   @override
   String get sortStatusFinished => '已完成优先';
-
-  @override
-  String get sortNameZa => 'Z 到 A';
 
   @override
   String get sortRatingLowest => '最低优先';
@@ -254,22 +230,7 @@ class SZh extends S {
   String get sortFavoriteLast => '收藏最后';
 
   @override
-  String get sortExternalRatingLowest => '最低优先';
-
-  @override
-  String get sortLastActivityOldest => '最早优先';
-
-  @override
   String get searchSortRelevanceShort => '相关';
-
-  @override
-  String get searchSortRelevanceDisplay => '相关度';
-
-  @override
-  String get searchSortDateShort => '日期';
-
-  @override
-  String get searchSortDateDisplay => '日期';
 
   @override
   String get searchSortRatingShort => '评分';
@@ -349,7 +310,7 @@ class SZh extends S {
   String get bulkClearSelection => '清除选择';
 
   @override
-  String get bulkSelectAllVisible => '全选';
+  String get selectAll => '全选';
 
   @override
   String get bulkMove => '移动到收藏';
@@ -384,7 +345,7 @@ class SZh extends S {
   String get bulkExportPngTitle => '导出为 PNG';
 
   @override
-  String get bulkExportPngColumns => '列数';
+  String get columnsCount => '列数';
 
   @override
   String bulkExportPngItemsCount(int count) {
@@ -405,7 +366,7 @@ class SZh extends S {
   String get bulkExportPngSave => '保存 PNG';
 
   @override
-  String get bulkExportPngSaved => '图片已保存';
+  String get imageSaved => '图片已保存';
 
   @override
   String get bulkExportPngFailed => '保存图片失败';
@@ -444,31 +405,13 @@ class SZh extends S {
   String get settingsAuthorName => '作者名称';
 
   @override
-  String get settingsAuthorPlaceholder => '用户';
-
-  @override
-  String get settingsSettings => '设置';
-
-  @override
-  String get settingsCredentials => '凭证';
-
-  @override
   String get settingsCredentialsSubtitle => 'IGDB、SteamGridDB、TMDB API 密钥';
-
-  @override
-  String get settingsCache => '缓存';
 
   @override
   String get settingsCacheSubtitle => '离线模式和封面存储';
 
   @override
-  String get settingsDatabase => '数据库';
-
-  @override
   String get settingsDatabaseSubtitle => '导出、导入、重置';
-
-  @override
-  String get settingsTraktImport => 'Trakt 导入';
 
   @override
   String get settingsTraktImportSubtitle => '观看历史、评分、观看列表';
@@ -489,6 +432,15 @@ class SZh extends S {
   String get settingsDebugSubtitleNoKey => '部分工具需先设置 SteamGridDB 密钥';
 
   @override
+  String get settingsLaboratory => '实验室';
+
+  @override
+  String get settingsLaboratoryCardDesigns => '卡片横幅设计';
+
+  @override
+  String get settingsLaboratoryCardDesignsSubtitle => '海报卡片的实验性布局';
+
+  @override
   String get settingsHelp => '帮助';
 
   @override
@@ -505,6 +457,12 @@ class SZh extends S {
 
   @override
   String get settingsCreditsLicenses => '致谢与许可';
+
+  @override
+  String get settingsChangelog => '新功能';
+
+  @override
+  String get settingsChangelogEmpty => '暂无更新说明';
 
   @override
   String get settingsCreditsLicensesSubtitle => 'TMDB、IGDB、SteamGridDB、开源许可';
@@ -536,7 +494,7 @@ class SZh extends S {
   String get settingsAppLanguageSubtitle => '界面语言';
 
   @override
-  String get settingsContentLanguageSubtitle => '电影和电视剧简介的语言';
+  String get settingsContentLanguageSubtitle => '目前仅适用于 TMDB（电影和剧集）';
 
   @override
   String get settingsDataSources => '数据源';
@@ -723,7 +681,10 @@ class SZh extends S {
   String get credentialsEnterGoogleBooksKey => '输入您的 Google Books API 密钥（可选）';
 
   @override
-  String get credentialsContentLanguage => '内容语言';
+  String get credentialsHardcoverSection => 'Hardcover API（书籍）';
+
+  @override
+  String get credentialsEnterHardcoverKey => '输入您的 Hardcover API 令牌';
 
   @override
   String get credentialsOwnKeyHint => '为了更好的速率限制，建议使用自己的 API 密钥。';
@@ -795,6 +756,12 @@ class SZh extends S {
 
   @override
   String get credentialsGoogleBooksKeyInvalid => 'Google Books API 密钥无效';
+
+  @override
+  String get credentialsHardcoverKeyValid => 'Hardcover API 令牌有效';
+
+  @override
+  String get credentialsHardcoverKeyInvalid => 'Hardcover API 令牌无效或已过期';
 
   @override
   String get credentialsEnterSteamGridDbKeyError => '请输入 SteamGridDB API 密钥';
@@ -985,7 +952,7 @@ class SZh extends S {
       '所选文件夹为空。您的收藏将被复制到该处；保存的图片将在需要时重新下载。旧文件夹中的数据不会被修改。';
 
   @override
-  String get storageLocationCopyConfirm => '复制';
+  String get copy => '复制';
 
   @override
   String get storageLocationCopyImages => '同时复制图片缓存';
@@ -1017,9 +984,6 @@ class SZh extends S {
   String get storageLocationRestartLater => '更改将在重启后生效';
 
   @override
-  String get backupTitle => '备份';
-
-  @override
   String get backupRestoreTile => '恢复之前的数据库';
 
   @override
@@ -1032,9 +996,6 @@ class SZh extends S {
   String backupRestoreConfirmMessage(String date) {
     return '当前数据将被替换为 $date 的备份。被替换的数据将成为新备份，因此再次恢复可撤销此操作。';
   }
-
-  @override
-  String get backupRestoreConfirm => '恢复';
 
   @override
   String get backupRestored => '数据库已恢复';
@@ -1103,6 +1064,9 @@ class SZh extends S {
 
   @override
   String get lanSyncManifestError => '设备未响应';
+
+  @override
+  String get lanSyncStartError => '无法启动网络共享。请检查网络连接后重新打开此屏幕。';
 
   @override
   String get lanSyncReceiveError => '获取数据失败';
@@ -1184,7 +1148,7 @@ class SZh extends S {
   String get traktSelectZipExport => '选择 Trakt ZIP 导出';
 
   @override
-  String get traktPreview => '预览';
+  String get preview => '预览';
 
   @override
   String traktUser(String username) {
@@ -1207,7 +1171,7 @@ class SZh extends S {
   String get traktWatchlist => '观看列表';
 
   @override
-  String get traktOptions => '选项';
+  String get importOptions => '选项';
 
   @override
   String get traktImportWatched => '导入已看项目';
@@ -1228,25 +1192,13 @@ class SZh extends S {
   String get traktImportWatchlistDesc => '添加为计划中或加入愿望单';
 
   @override
-  String get traktTargetCollection => '目标收藏';
+  String get importTargetCollection => '目标收藏';
 
   @override
-  String get traktCreateNew => '创建新收藏';
+  String get importUseExistingCollection => '使用现有收藏';
 
   @override
-  String get traktUseExisting => '使用现有收藏';
-
-  @override
-  String get traktNoCollections => '暂无可用收藏';
-
-  @override
-  String get traktSelectCollection => '选择收藏';
-
-  @override
-  String get traktErrorLoadingCollections => '加载收藏出错';
-
-  @override
-  String get traktStartImport => '开始导入';
+  String get importStart => '开始导入';
 
   @override
   String get traktRequiresOwnTmdbKey =>
@@ -1269,9 +1221,6 @@ class SZh extends S {
   String get kinoriumSelectCsvExport => '选择 Kinorium CSV 导出';
 
   @override
-  String get kinoriumOptions => '选项';
-
-  @override
   String get kinoriumIsWatchlist => '这是「观看列表」文件';
 
   @override
@@ -1282,27 +1231,6 @@ class SZh extends S {
 
   @override
   String get kinoriumImportNotesDesc => '将导演和演员添加到项目备注中';
-
-  @override
-  String get kinoriumTargetCollection => '目标收藏';
-
-  @override
-  String get kinoriumCreateNew => '创建新收藏';
-
-  @override
-  String get kinoriumUseExisting => '使用现有收藏';
-
-  @override
-  String get kinoriumNoCollections => '暂无可用收藏';
-
-  @override
-  String get kinoriumSelectCollection => '选择收藏';
-
-  @override
-  String get kinoriumErrorLoadingCollections => '加载收藏出错';
-
-  @override
-  String get kinoriumStartImport => '开始导入';
 
   @override
   String get kinoriumImporting => '正在从 Kinorium 导入...';
@@ -1373,6 +1301,9 @@ class SZh extends S {
   String get creditsGoogleBooksAttribution => '书籍数据来自 Google Books。';
 
   @override
+  String get creditsHardcoverAttribution => '书籍数据来自 Hardcover。';
+
+  @override
   String get creditsOpenSource => '开源';
 
   @override
@@ -1383,9 +1314,6 @@ class SZh extends S {
 
   @override
   String get creditsDiscord => '加入 Discord';
-
-  @override
-  String get collectionsNewCollection => '新建收藏';
 
   @override
   String get collectionsImportCollection => '导入收藏';
@@ -1466,6 +1394,69 @@ class SZh extends S {
   String get importStartButton => '导入';
 
   @override
+  String get importUsername => '用户名';
+
+  @override
+  String get importUsernameHint => '例如 yourname';
+
+  @override
+  String get importMode => '模式';
+
+  @override
+  String get importModeNewOnly => '仅添加新条目';
+
+  @override
+  String get importModeNewOnlySubtitle => '跳过合集中已有的条目';
+
+  @override
+  String get importModeOverwrite => '覆盖现有条目';
+
+  @override
+  String get importModeOverwriteSubtitle => '从数据源更新进度、状态和日期';
+
+  @override
+  String get importNewCollectionName => '收藏名称';
+
+  @override
+  String importNewCollectionDefault(String source, String username) {
+    return '$source 导入 — $username';
+  }
+
+  @override
+  String get importFetchingBooks => '正在获取书库...';
+
+  @override
+  String get importAddingItems => '正在导入条目';
+
+  @override
+  String importProcessingItem(String title) {
+    return '正在处理：$title';
+  }
+
+  @override
+  String importImportedCount(int count) {
+    return '已导入 $count 个';
+  }
+
+  @override
+  String importUpdatedCount(int count) {
+    return '已更新 $count 个';
+  }
+
+  @override
+  String importUserNotFound(String username) {
+    return '未找到用户\"$username\"';
+  }
+
+  @override
+  String get importEmptyUsername => '请输入用户名';
+
+  @override
+  String importFailed(String error) {
+    return '导入失败：$error';
+  }
+
+  @override
   String get collectionNotFound => '未找到收藏';
 
   @override
@@ -1540,7 +1531,7 @@ class SZh extends S {
   String get customItemCreate => '创建自定义项目';
 
   @override
-  String get customItemTitle => '标题';
+  String get title => '标题';
 
   @override
   String get customItemTitleHint => '例如：我的自制游戏';
@@ -1555,25 +1546,25 @@ class SZh extends S {
   String get customItemCoverUrl => '封面图片链接';
 
   @override
-  String get customItemYear => '年份';
+  String get year => '年份';
 
   @override
-  String get customItemGenres => '类型';
+  String get genres => '类型';
 
   @override
   String get customItemGenresHint => '例如：RPG、动作、益智';
 
   @override
-  String get customItemPlatform => '平台';
+  String get platform => '平台';
 
   @override
   String get customItemPlatformHint => '例如：PC、SNES、自定义';
 
   @override
-  String get customItemFormat => '格式';
+  String get format => '格式';
 
   @override
-  String get customProgress => '进度';
+  String get progress => '进度';
 
   @override
   String get customMarkCompleted => '标记为已完成';
@@ -1597,7 +1588,7 @@ class SZh extends S {
   String get customUnitSeasons => '季';
 
   @override
-  String get customItemDescription => '描述';
+  String get description => '描述';
 
   @override
   String get customItemDescriptionHint => '简要描述或备注';
@@ -1606,10 +1597,18 @@ class SZh extends S {
   String get customItemOptionalFields => '更多字段';
 
   @override
-  String get customItemCreateButton => '创建';
+  String get customItemEdit => '编辑自定义项目';
 
   @override
-  String get customItemEdit => '编辑自定义项目';
+  String get customItemFillFromFile => '从文件填充';
+
+  @override
+  String customItemFileMultipleRows(int count) {
+    return '文件中有 $count 条记录，已使用第一条';
+  }
+
+  @override
+  String get customItemFileNoValidRows => '文件中没有有效记录';
 
   @override
   String get customItemAddCover => '添加封面';
@@ -1622,12 +1621,6 @@ class SZh extends S {
 
   @override
   String get customItemCoverFromFile => '从文件';
-
-  @override
-  String get customItemCoverFromUrl => '从链接';
-
-  @override
-  String get customItemAddGenre => '添加';
 
   @override
   String get customItemSearchHint => '搜索或输入自定义...';
@@ -1658,6 +1651,11 @@ class SZh extends S {
 
   @override
   String get tagCreateHint => '标签名称';
+
+  @override
+  String tagCreateNamed(String name) {
+    return '创建“$name”';
+  }
 
   @override
   String get tagRename => '重命名标签';
@@ -1696,9 +1694,6 @@ class SZh extends S {
 
   @override
   String get tagUpdateFailed => '更新标签失败';
-
-  @override
-  String get renameItem => '重命名';
 
   @override
   String get refreshItemFromApi => '从源刷新';
@@ -1741,9 +1736,6 @@ class SZh extends S {
   String get tagFilterAll => '所有标签';
 
   @override
-  String get tagSidebarAll => '全部';
-
-  @override
   String get tagSidebarGroup => '分组';
 
   @override
@@ -1751,9 +1743,6 @@ class SZh extends S {
 
   @override
   String get colorPickerNoColor => '无颜色';
-
-  @override
-  String get colorPickerApply => '应用';
 
   @override
   String get raLinkButton => '关联 RetroAchievements';
@@ -1790,9 +1779,6 @@ class SZh extends S {
   String get raUnlinkConfirm => '移除此游戏的 RetroAchievements 关联和成就数据？';
 
   @override
-  String get collectionFilterAll => '全部';
-
-  @override
   String get collectionFilterByType => '按类型筛选';
 
   @override
@@ -1805,25 +1791,16 @@ class SZh extends S {
   String get collectionFilterTvShows => '电视剧';
 
   @override
-  String get collectionFilterAnimation => '动画';
-
-  @override
   String get collectionFilterVisualNovels => '视觉小说';
-
-  @override
-  String get collectionFilterManga => '漫画';
 
   @override
   String get collectionFilterBooks => '书籍';
 
   @override
-  String get collectionFilterCustom => '自定义';
+  String get searchHint => '搜索...';
 
   @override
-  String get collectionFilterSearchHint => '搜索...';
-
-  @override
-  String get collectionFilterSort => '排序';
+  String get sort => '排序';
 
   @override
   String get collectionFilterAscending => '升序';
@@ -1836,9 +1813,6 @@ class SZh extends S {
 
   @override
   String get collectionFilterClearAll => '清除全部';
-
-  @override
-  String get collectionFilterPlatform => '平台';
 
   @override
   String collectionItemMovedTo(String name, String collection) {
@@ -1886,7 +1860,7 @@ class SZh extends S {
   String get mangaNotFound => '未找到漫画';
 
   @override
-  String get mangaProgress => '阅读进度';
+  String get readingProgress => '阅读进度';
 
   @override
   String get mangaChapters => '章节';
@@ -1905,9 +1879,6 @@ class SZh extends S {
 
   @override
   String get animeMarkCompleted => '标记为已完成';
-
-  @override
-  String get bookProgress => '阅读进度';
 
   @override
   String get bookPages => '页数';
@@ -2063,9 +2034,6 @@ class SZh extends S {
   String get canvasAddToBoard => '添加到看板';
 
   @override
-  String get addTextTitle => '添加文字';
-
-  @override
   String get editTextTitle => '编辑文字';
 
   @override
@@ -2085,9 +2053,6 @@ class SZh extends S {
 
   @override
   String get fontSizeTitle => '标题';
-
-  @override
-  String get addImageTitle => '添加图片';
 
   @override
   String get editImageTitle => '编辑图片';
@@ -2111,25 +2076,13 @@ class SZh extends S {
   String get imageChooseAnother => '重新选择';
 
   @override
-  String get addLinkTitle => '添加链接';
-
-  @override
   String get editLinkTitle => '编辑链接';
-
-  @override
-  String get linkUrlLabel => '链接';
-
-  @override
-  String get linkUrlHint => 'https://example.com';
 
   @override
   String get linkLabelOptional => '标签（可选）';
 
   @override
   String get linkLabelHint => '我的链接';
-
-  @override
-  String get editConnectionTitle => '编辑连接';
 
   @override
   String get connectionLabelHint => '例如：依赖于、相关于...';
@@ -2150,9 +2103,6 @@ class SZh extends S {
   String get searchTabTv => '电视剧';
 
   @override
-  String get searchTabGames => '游戏';
-
-  @override
   String get searchHintMovies => '搜索电影...';
 
   @override
@@ -2171,31 +2121,10 @@ class SZh extends S {
   String get searchSourceVisualNovels => '视觉小说';
 
   @override
-  String get searchSourceManga => '漫画';
-
-  @override
-  String get searchSourceAnime => '动漫';
-
-  @override
-  String get searchSourceGames => '游戏';
-
-  @override
-  String get searchSourceMovies => '电影';
-
-  @override
-  String get searchSourceTvShows => '电视剧';
-
-  @override
-  String get searchSourceAnimation => '动画';
-
-  @override
   String get searchSourceOpenLibrary => 'OpenLibrary';
 
   @override
   String get searchSourceFantlab => 'Fantlab';
-
-  @override
-  String get searchSourceBooks => '书籍';
 
   @override
   String get searchSourceComics => '漫画';
@@ -2210,16 +2139,13 @@ class SZh extends S {
   String get searchHintComics => '搜索漫画...';
 
   @override
-  String get bookFilterLanguage => '语言';
+  String get language => '语言';
 
   @override
   String get bookFilterSearchBy => '搜索方式';
 
   @override
-  String get bookFilterPrintType => '类型';
-
-  @override
-  String get bookSearchTitle => '标题';
+  String get type => '类型';
 
   @override
   String get bookSearchAuthor => '作者';
@@ -2291,7 +2217,7 @@ class SZh extends S {
   }
 
   @override
-  String get searchGoToSettings => '前往设置';
+  String get goToSettings => '前往设置';
 
   @override
   String get searchMinCharsHint => '输入至少 2 个字符并按回车';
@@ -2320,7 +2246,10 @@ class SZh extends S {
   String get errorDetailsCopied => '错误详情已复制';
 
   @override
-  String get searchDescription => '描述';
+  String get errorDetailsTitle => '错误详情';
+
+  @override
+  String get errorDetailsShow => '详情';
 
   @override
   String get showMore => '更多…';
@@ -2338,7 +2267,7 @@ class SZh extends S {
   String get platformFilterSearchHint => '搜索平台...';
 
   @override
-  String platformFilterSelected(int count) {
+  String selectedCount(int count) {
     return '已选 $count 个';
   }
 
@@ -2385,9 +2314,6 @@ class SZh extends S {
   }
 
   @override
-  String get wishlistClearResolvedTitle => '清除已解决';
-
-  @override
   String wishlistClearResolvedMessage(int count) {
     return '删除 $count 个已解决的项目？';
   }
@@ -2399,15 +2325,6 @@ class SZh extends S {
   String get wishlistUnresolve => '取消解决';
 
   @override
-  String get wishlistAddTitle => '添加';
-
-  @override
-  String get wishlistEditTitle => '编辑';
-
-  @override
-  String get wishlistTitleLabel => '标题';
-
-  @override
   String get wishlistTitleHint => '游戏、电影或电视剧名称...';
 
   @override
@@ -2417,7 +2334,7 @@ class SZh extends S {
   String get wishlistTypeOptional => '类型（可选）';
 
   @override
-  String get wishlistTypeAny => '任意';
+  String get any => '任意';
 
   @override
   String get wishlistNoteOptional => '备注（可选）';
@@ -2432,22 +2349,13 @@ class SZh extends S {
   String get wishlistTagHint => '分组条目——例如导入批次或来源';
 
   @override
-  String get wishlistTagAll => '全部';
-
-  @override
   String get wishlistTagUntagged => '未标记';
 
   @override
   String get wishlistTagFilterLabel => '列表';
 
   @override
-  String get wishlistTagPlaceholder => '标签';
-
-  @override
   String get wishlistTagManage => '管理标签';
-
-  @override
-  String get wishlistTagRename => '重命名标签';
 
   @override
   String get wishlistTagDelete => '删除标签及所有条目';
@@ -2488,18 +2396,6 @@ class SZh extends S {
   String get welcomeStepWelcome => '欢迎';
 
   @override
-  String get welcomeStepName => '名称';
-
-  @override
-  String get welcomeStepLanguage => '语言';
-
-  @override
-  String get welcomeStepApiKeys => 'API 密钥';
-
-  @override
-  String get welcomeStepHowItWorks => '工作原理';
-
-  @override
   String get welcomeStepReady => '准备就绪！';
 
   @override
@@ -2509,16 +2405,13 @@ class SZh extends S {
   String get welcomeNameSubtitle => '此名称将作为您创建的收藏的作者显示';
 
   @override
-  String get welcomeNameHint => '您可以稍后在设置中更改';
+  String get welcomeChangeLaterHint => '您可以稍后在设置中更改';
 
   @override
   String get welcomeLanguageTitle => '选择语言';
 
   @override
   String get welcomeLanguageSubtitle => '选择应用界面语言';
-
-  @override
-  String get welcomeLanguageHint => '您可以稍后在设置中更改';
 
   @override
   String get welcomeTitle => '欢迎使用 Tonkatsu Box';
@@ -2546,12 +2439,6 @@ class SZh extends S {
 
   @override
   String get welcomeWorksWithoutKeys => '无需 API 密钥即可使用';
-
-  @override
-  String get welcomeChipCollections => '收藏';
-
-  @override
-  String get welcomeChipWishlist => '愿望单';
 
   @override
   String get welcomeChipImport => '导入 .xcoll';
@@ -2609,6 +2496,9 @@ class SZh extends S {
 
   @override
   String get welcomeApiGoogleBooksDesc => 'Google 全球图书目录';
+
+  @override
+  String get welcomeApiHardcoverDesc => '社区图书目录，需要个人令牌';
 
   @override
   String get welcomeApiRecommended => '推荐';
@@ -2699,9 +2589,6 @@ class SZh extends S {
   String get welcomeReadyMessage => '前往设置 → 凭证输入您的 API 密钥，或从导入收藏开始。';
 
   @override
-  String get welcomeReadyGoToSettings => '前往设置';
-
-  @override
   String get welcomeReadySkip => '跳过——自行探索';
 
   @override
@@ -2735,6 +2622,10 @@ class SZh extends S {
   String get welcomeSourcesKeyOptionalHint => '可选——使用自己的密钥可提高速率限制。无需密钥也可搜索。';
 
   @override
+  String get welcomeSourcesHardcoverTokenHint =>
+      '必填——没有令牌无法搜索和导入。令牌每年 1 月 1 日重置。';
+
+  @override
   String get welcomeSourceDescTmdb => '电影、电视剧和动画。';
 
   @override
@@ -2761,6 +2652,9 @@ class SZh extends S {
   @override
   String get welcomeSourceDescGoogleBooks =>
       '来自 Google 图书目录的数百万版本，可按标题、作者或 ISBN 搜索。';
+
+  @override
+  String get welcomeSourceDescHardcover => '社区图书目录：系列、类型、氛围和评分。需要免费的个人令牌。';
 
   @override
   String get welcomeTourTitle => '了解菜单';
@@ -2799,9 +2693,6 @@ class SZh extends S {
 
   @override
   String get withoutCollection => '未分类';
-
-  @override
-  String get detailStatus => '状态';
 
   @override
   String get detailMyRating => '我的评分';
@@ -2880,40 +2771,10 @@ class SZh extends S {
   }
 
   @override
-  String get allItemsAll => '全部';
-
-  @override
-  String get allItemsGames => '游戏';
-
-  @override
-  String get allItemsMovies => '电影';
-
-  @override
-  String get allItemsTvShows => '电视剧';
-
-  @override
-  String get allItemsAnimation => '动画';
-
-  @override
-  String get allItemsVisualNovels => '视觉小说';
-
-  @override
-  String get allItemsManga => '漫画';
-
-  @override
-  String get allItemsBooks => '书籍';
-
-  @override
-  String get allItemsCustom => '自定义';
-
-  @override
   String get allItemsRatingAsc => '评分 ↑';
 
   @override
   String get allItemsRatingDesc => '评分 ↓';
-
-  @override
-  String get allItemsRating => '评分';
 
   @override
   String get allItemsNoItems => '暂无项目';
@@ -2929,27 +2790,13 @@ class SZh extends S {
   String get allItemsFailedToLoad => '加载项目失败';
 
   @override
-  String get allItemsFilterPlatformsAll => '所有平台';
-
-  @override
-  String allItemsFilterPlatformsSelected(int count) {
-    return '$count 个平台';
-  }
+  String get allPlatforms => '所有平台';
 
   @override
   String get allItemsFilterPlatformsTitle => '按平台筛选';
 
   @override
-  String get allItemsFilterPlatformsApply => '应用';
-
-  @override
-  String get allItemsFilterPlatformsClear => '清除';
-
-  @override
   String get debugIgdbMedia => 'IGDB 媒体';
-
-  @override
-  String get debugSteamGridDb => 'SteamGridDB';
 
   @override
   String get debugGamepad => '手柄';
@@ -3014,21 +2861,6 @@ class SZh extends S {
   String get debugNoImagesFound => '未找到图片';
 
   @override
-  String get debugSearchTab => '搜索';
-
-  @override
-  String get debugGridsTab => '网格';
-
-  @override
-  String get debugHeroesTab => '横幅';
-
-  @override
-  String get debugLogosTab => '标志';
-
-  @override
-  String get debugIconsTab => '图标';
-
-  @override
   String collectionTileStats(int count, String percent) {
     return '$count 个项目 · $percent% 已完成';
   }
@@ -3047,9 +2879,6 @@ class SZh extends S {
 
   @override
   String get activityDatesCompleted => '完成日期';
-
-  @override
-  String get activityDatesLastActivity => '最近活动';
 
   @override
   String get activityDatesSelectStart => '选择开始日期';
@@ -3079,15 +2908,6 @@ class SZh extends S {
   String get settingsAnimeMangaTitleLanguageNative => '原生语言';
 
   @override
-  String get dualDatePickerInputLabel => '日期';
-
-  @override
-  String get dualDatePickerOk => '确定';
-
-  @override
-  String get dualDatePickerCancel => '取消';
-
-  @override
   String get dualDatePickerErrorEmpty => '请输入日期';
 
   @override
@@ -3103,11 +2923,6 @@ class SZh extends S {
 
   @override
   String get timeSpentTitle => '用时';
-
-  @override
-  String timeSpentValue(int hours, int minutes) {
-    return '$hours小时$minutes分钟';
-  }
 
   @override
   String get timeSpentAdd => '添加时间';
@@ -3172,7 +2987,7 @@ class SZh extends S {
   String get steamGridDbPanelTitle => 'SteamGridDB';
 
   @override
-  String get steamGridDbClosePanel => '关闭面板';
+  String get closePanel => '关闭面板';
 
   @override
   String get steamGridDbSearchHint => '搜索游戏...';
@@ -3196,13 +3011,7 @@ class SZh extends S {
   String get steamGridDbIcons => '图标';
 
   @override
-  String get steamGridDbNoResults => '未找到结果';
-
-  @override
   String get steamGridDbSearchFirst => '请先搜索游戏';
-
-  @override
-  String get vgmapsClosePanel => '关闭面板';
 
   @override
   String get vgmapsBack => '后退';
@@ -3252,9 +3061,6 @@ class SZh extends S {
   String get discoverUpcoming => '即将上映';
 
   @override
-  String get discoverAnime => '动漫';
-
-  @override
   String get discoverCustomizeTitle => '自定义发现';
 
   @override
@@ -3288,9 +3094,6 @@ class SZh extends S {
 
   @override
   String get reviewsInEnglish => '英文评论';
-
-  @override
-  String get settingsShowRecommendations => '推荐';
 
   @override
   String get settingsShowRecommendationsSubtitle => '详情页上相似的电影和电视剧';
@@ -3329,6 +3132,12 @@ class SZh extends S {
   String get settingsRichCollectionsSubtitle => '使用封面图片和描述个性化收藏';
 
   @override
+  String get settingsCardScale => '封面大小';
+
+  @override
+  String get settingsCardScaleSubtitle => '收藏网格中卡片的大小';
+
+  @override
   String get collectionEditHeroImage => '封面图片';
 
   @override
@@ -3345,13 +3154,7 @@ class SZh extends S {
   String get collectionEditHeroRemove => '移除图片';
 
   @override
-  String get collectionEditDescription => '描述';
-
-  @override
   String get collectionEditDescriptionHint => '显示在封面上的简短标语';
-
-  @override
-  String get collectionEditMenu => '收藏设置';
 
   @override
   String get collectionEditDialogTitle => '收藏设置';
@@ -3373,9 +3176,6 @@ class SZh extends S {
   String get uncategorizedBanner => '添加到收藏以解锁看板和剧集追踪';
 
   @override
-  String get uncategorizedBannerAction => '添加到收藏';
-
-  @override
   String get uncategorizedDeprecationNotice => '此系统收藏即将被移除。请创建自己的收藏并将此处所有项目移入。';
 
   @override
@@ -3383,12 +3183,6 @@ class SZh extends S {
 
   @override
   String get browseFilterGenre => '类型';
-
-  @override
-  String get browseFilterTag => '标签';
-
-  @override
-  String get browseFilterYear => '年份';
 
   @override
   String get browseFilterLength => '篇幅';
@@ -3430,18 +3224,7 @@ class SZh extends S {
   String get tagPickerEmpty => '未找到标签';
 
   @override
-  String tagPickerSelectedCount(int count) {
-    return '已选 $count 个';
-  }
-
-  @override
   String get clearAll => '清除全部';
-
-  @override
-  String get browseFilterPlatform => '平台';
-
-  @override
-  String get browseFilterFormat => '格式';
 
   @override
   String get browseFilterSeason => '季度';
@@ -3454,9 +3237,6 @@ class SZh extends S {
 
   @override
   String get browseFilterMinVotes => '最低票数';
-
-  @override
-  String get browseFilterLanguage => '语言';
 
   @override
   String get seasonWinter => '冬季';
@@ -3552,9 +3332,6 @@ class SZh extends S {
   String get languagePortuguese => '葡萄牙语';
 
   @override
-  String get mangaFormatManga => '漫画';
-
-  @override
   String get mangaFormatManhwa => '韩漫';
 
   @override
@@ -3568,9 +3345,6 @@ class SZh extends S {
 
   @override
   String get mangaFormatLightNovel => '轻小说';
-
-  @override
-  String get browseFilterType => '类型';
 
   @override
   String get browseFilterContentRating => '内容分级';
@@ -3588,15 +3362,6 @@ class SZh extends S {
   String get contentRatingPornographic => '色情';
 
   @override
-  String get browseFilterAll => '全部';
-
-  @override
-  String get browseFilterAny => '任意';
-
-  @override
-  String get browseSort => '排序';
-
-  @override
   String get browseSortRelevance => '相关度';
 
   @override
@@ -3610,6 +3375,9 @@ class SZh extends S {
 
   @override
   String get browseSortMostVoted => '最多票数';
+
+  @override
+  String get browseSortMostRead => '最多阅读';
 
   @override
   String get browseSortTrending => '趋势';
@@ -3636,19 +3404,10 @@ class SZh extends S {
   String get browseEmptyFilters => '选择筛选条件或搜索';
 
   @override
-  String get browseEmptyResults => '未找到结果';
-
-  @override
-  String get browseSearchHint => '搜索...';
-
-  @override
   String get browseBackToBrowse => '返回浏览';
 
   @override
   String get browseSortDisabledHint => '文本搜索时无法排序';
-
-  @override
-  String get animeFilterStatus => '状态';
 
   @override
   String get animeStatusAiring => '播出中';
@@ -3727,7 +3486,7 @@ class SZh extends S {
   String get tierListUnranked => '未排名';
 
   @override
-  String get tierListExportImage => '导出为图片';
+  String get exportAsImage => '导出为图片';
 
   @override
   String get tierListImageSaved => '等级列表已保存为图片';
@@ -3751,9 +3510,6 @@ class SZh extends S {
   String get tierListAddTier => '添加等级';
 
   @override
-  String get tierListClearAll => '清除全部';
-
-  @override
   String get tierListClearConfirm => '移除所有等级中的项目？它们将返回未排名。';
 
   @override
@@ -3767,9 +3523,6 @@ class SZh extends S {
 
   @override
   String get tierListAllRanked => '所有项目已排名！';
-
-  @override
-  String get tierListNoCollections => '暂无可用收藏';
 
   @override
   String get tierListErrorEmptyName => '请输入等级列表名称';
@@ -3814,43 +3567,16 @@ class SZh extends S {
   String get igdbImportSelectCsvExport => '选择 IGDB CSV 导出';
 
   @override
-  String get igdbImportOptions => '选项';
-
-  @override
   String get igdbImportStatusLabel => '导入游戏的状态';
-
-  @override
-  String get igdbImportPlatformLabel => '平台';
 
   @override
   String get igdbImportPlatformSelect => '选择平台';
 
   @override
-  String get igdbImportTargetCollection => '目标收藏';
+  String get importIgdbRequired => '需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。';
 
   @override
-  String get igdbImportCreateNew => '创建新收藏';
-
-  @override
-  String get igdbImportUseExisting => '使用现有收藏';
-
-  @override
-  String get igdbImportNoCollections => '暂无可用收藏';
-
-  @override
-  String get igdbImportSelectCollection => '选择收藏';
-
-  @override
-  String get igdbImportErrorLoadingCollections => '加载收藏出错';
-
-  @override
-  String get igdbImportIgdbRequired => '需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。';
-
-  @override
-  String get igdbStartImport => '开始导入';
-
-  @override
-  String get igdbImporting => '导入中...';
+  String get importing => '导入中...';
 
   @override
   String get igdbReasonNotFound => '在 IGDB 上未找到';
@@ -3859,7 +3585,7 @@ class SZh extends S {
   String get steamImportTitle => '导入 Steam 库';
 
   @override
-  String get steamImportSubtitle => '游戏将匹配到 IGDB 数据库';
+  String get importIgdbMatchNote => '游戏将匹配到 IGDB 数据库';
 
   @override
   String get steamImportApiKey => 'Steam API 密钥';
@@ -3906,7 +3632,7 @@ class SZh extends S {
   }
 
   @override
-  String get steamImportComplete => '导入完成！';
+  String get importComplete => '导入完成！';
 
   @override
   String steamImportGamesImported(int count) {
@@ -3930,43 +3656,13 @@ class SZh extends S {
   String get steamImportPlaytimeComment => '游戏时间保存在评论中';
 
   @override
-  String get steamImportTargetCollection => '目标收藏';
-
-  @override
-  String get steamImportCreateNew => '创建新收藏';
-
-  @override
-  String get steamImportUseExisting => '使用现有收藏';
-
-  @override
-  String get steamImportNoCollections => '暂无可用收藏';
-
-  @override
-  String get steamImportSelectCollection => '选择收藏';
-
-  @override
-  String get steamImportErrorLoadingCollections => '加载收藏出错';
-
-  @override
-  String get steamImportOpenCollection => '打开收藏';
-
-  @override
-  String get steamImportIgdbRequired => '需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。';
+  String get openCollection => '打开收藏';
 
   @override
   String get steamImportRememberCredentials => '记住凭证';
 
   @override
   String get collectionListSortCreatedDate => '创建日期';
-
-  @override
-  String get collectionListSortAlphabetical => '名称';
-
-  @override
-  String get collectionListSortCreatedDateNewest => '最新优先';
-
-  @override
-  String get collectionListSortCreatedDateOldest => '最早优先';
 
   @override
   String get collectionListSortAlphabeticalAZ => 'A 到 Z';
@@ -3984,25 +3680,7 @@ class SZh extends S {
   String get collectionListViewTable => '表格视图';
 
   @override
-  String get collectionTableName => '名称';
-
-  @override
-  String get collectionTableType => '类型';
-
-  @override
-  String get collectionTablePlatform => '平台';
-
-  @override
-  String get collectionTableStatus => '状态';
-
-  @override
-  String get collectionTableRating => '评分';
-
-  @override
   String get collectionTableExternalRating => '外部';
-
-  @override
-  String get collectionTableYear => '年份';
 
   @override
   String get collectionCopyToCollection => '复制到收藏';
@@ -4043,6 +3721,14 @@ class SZh extends S {
   String get importResultUpdated => '已更新';
 
   @override
+  String importResultErrors(int count) {
+    return '错误（$count）';
+  }
+
+  @override
+  String get importResultErrorsCopied => '错误已复制';
+
+  @override
   String importResultSkipped(int count) {
     return '跳过 $count 个';
   }
@@ -4071,9 +3757,6 @@ class SZh extends S {
   String get browseCollectionsSearch => '搜索收藏...';
 
   @override
-  String get browseCollectionsAllPlatforms => '所有平台';
-
-  @override
   String get browseCollectionsAllCategories => '所有分类';
 
   @override
@@ -4091,18 +3774,12 @@ class SZh extends S {
   String get browseCollectionsDownloading => '下载中...';
 
   @override
-  String get browseCollectionsImporting => '导入中...';
-
-  @override
   String browseCollectionsImportSuccess(String name) {
     return '收藏已导入：$name';
   }
 
   @override
   String get browseCollectionsEmpty => '未找到收藏';
-
-  @override
-  String get browseCollectionsRetry => '重试';
 
   @override
   String get browseCollectionsLoadError => '加载收藏失败';
@@ -4117,10 +3794,7 @@ class SZh extends S {
   String get browseCollectionsExistingCollection => '现有收藏';
 
   @override
-  String get browseCollectionsSelectCollection => '选择收藏';
-
-  @override
-  String get browseCollectionsNoCollections => '暂无收藏';
+  String get noCollectionsYet => '暂无收藏';
 
   @override
   String get settingsRaImport => 'RetroAchievements';
@@ -4132,47 +3806,11 @@ class SZh extends S {
   String get raImportTitle => 'RetroAchievements 导入';
 
   @override
-  String get raImportSubtitle => '游戏将匹配到 IGDB 数据库';
-
-  @override
-  String get raImportIgdbRequired => '需要 IGDB 连接。请先在设置 → 凭证中设置 API 密钥。';
-
-  @override
-  String get raUsername => '用户名';
-
-  @override
-  String get raApiKey => 'API 密钥';
-
-  @override
   String get raGetApiKey =>
       '在 retroachievements.org/controlpanel.php 获取您的 API 密钥';
 
   @override
-  String get raImportOptions => '选项';
-
-  @override
   String get raImportOptionWishlist => '将未匹配的游戏加入愿望单';
-
-  @override
-  String get raImportStart => '开始导入';
-
-  @override
-  String get raImportTargetCollection => '目标收藏';
-
-  @override
-  String get raImportNewCollection => '创建新收藏';
-
-  @override
-  String get raImportExistingCollection => '使用现有收藏';
-
-  @override
-  String get raImportNoCollections => '暂无可用收藏';
-
-  @override
-  String get raImportSelectCollection => '选择收藏';
-
-  @override
-  String get raImportErrorLoadingCollections => '加载收藏出错';
 
   @override
   String get raImportFetchingLibrary => '正在获取 RA 库...';
@@ -4184,9 +3822,6 @@ class SZh extends S {
   String raImportMatching(String title) {
     return '正在匹配：$title';
   }
-
-  @override
-  String get raImportComplete => '导入完成！';
 
   @override
   String raImportAdded(int count) {
@@ -4209,11 +3844,6 @@ class SZh extends S {
   }
 
   @override
-  String raImportFailed(String error) {
-    return '导入失败：$error';
-  }
-
-  @override
   String raProfilePoints(int points) {
     return '$points 分';
   }
@@ -4228,9 +3858,6 @@ class SZh extends S {
 
   @override
   String get raOpenOnRa => '在 RA 上打开 ↗';
-
-  @override
-  String get raProgress => '进度';
 
   @override
   String get raHardcore => '硬核';
@@ -4250,9 +3877,6 @@ class SZh extends S {
   }
 
   @override
-  String get raCollapse => '收起';
-
-  @override
   String get raMastered => '精通';
 
   @override
@@ -4266,9 +3890,6 @@ class SZh extends S {
 
   @override
   String get raHardcoreBeaten => '硬核通关';
-
-  @override
-  String get raToday => '今天';
 
   @override
   String get raYesterday => '昨天';
@@ -4286,9 +3907,6 @@ class SZh extends S {
 
   @override
   String get raMissable => '可错过';
-
-  @override
-  String get raFilterAll => '全部';
 
   @override
   String get raFilterEarned => '已获得';
@@ -4329,13 +3947,10 @@ class SZh extends S {
   }
 
   @override
-  String get textExportTemplate => '模板';
+  String get template => '模板';
 
   @override
   String get textExportTokens => '占位符';
-
-  @override
-  String get textExportPreview => '预览';
 
   @override
   String get textExportSortBy => '排序方式';
@@ -4347,16 +3962,10 @@ class SZh extends S {
   String get textExportSortName => '名称 A→Z';
 
   @override
-  String get textExportSortRating => '评分 ↓';
-
-  @override
   String get textExportSortYear => '年份 ↓';
 
   @override
   String get textExportSortAdded => '添加日期 ↓';
-
-  @override
-  String get textExportCopy => '复制';
 
   @override
   String get textExportEmptyTemplate => '模板为空';
@@ -4470,9 +4079,6 @@ class SZh extends S {
   String get kodiPort => '端口';
 
   @override
-  String get kodiUsername => '用户名';
-
-  @override
   String get kodiPassword => '密码';
 
   @override
@@ -4496,9 +4102,6 @@ class SZh extends S {
   String get kodiSyncTitle => '同步';
 
   @override
-  String get kodiTargetCollection => '目标收藏';
-
-  @override
   String get kodiTargetCollectionSubtitle => '所有 Kodi 电影同步到此处';
 
   @override
@@ -4508,9 +4111,6 @@ class SZh extends S {
   String kodiTargetDeletedLabel(int id) {
     return '已删除（#$id）';
   }
-
-  @override
-  String get kodiTargetError => '错误';
 
   @override
   String get kodiEnableSync => '启用 Kodi 同步';
@@ -4537,9 +4137,6 @@ class SZh extends S {
   String get kodiImportRatingsSubtitle => '复制 Kodi 用户评分（1–10）';
 
   @override
-  String get kodiCollectionPickerCreateNew => '创建新收藏';
-
-  @override
   String get kodiCollectionLibraryName => 'Kodi 库';
 
   @override
@@ -4551,9 +4148,6 @@ class SZh extends S {
   String get kodiTargetDeletedSnack => '目标收藏已删除——同步已停止';
 
   @override
-  String get kodiDebugTitle => '调试';
-
-  @override
   String get kodiSyncStatus => '同步状态';
 
   @override
@@ -4561,9 +4155,6 @@ class SZh extends S {
 
   @override
   String get kodiSyncStopped => '已停止';
-
-  @override
-  String get kodiLastSync => '上次同步';
 
   @override
   String get kodiLastSyncNever => '从未';
@@ -4645,42 +4236,15 @@ class SZh extends S {
       '从 myanimelist.net/panel.php?go=export 导出 XML';
 
   @override
-  String get malImportAnimeFile => '动漫列表';
+  String get importAnimeList => '动漫列表';
 
   @override
-  String get malImportMangaFile => '漫画列表';
-
-  @override
-  String get malImportRemoveFile => '移除';
+  String get importMangaList => '漫画列表';
 
   @override
   String malImportEntriesCount(int count) {
     return '$count 个条目';
   }
-
-  @override
-  String get malImportTargetCollection => '目标收藏';
-
-  @override
-  String get malImportCreateNew => '创建新收藏';
-
-  @override
-  String get malImportUseExisting => '使用现有收藏';
-
-  @override
-  String get malImportSelectCollection => '选择收藏';
-
-  @override
-  String get malImportNoCollections => '暂无可用收藏';
-
-  @override
-  String get malImportErrorLoadingCollections => '加载收藏出错';
-
-  @override
-  String get malImportNewCollectionName => '收藏名称';
-
-  @override
-  String get malImportButton => '开始导入';
 
   @override
   String get malImportReadingFiles => '正在读取文件...';
@@ -4692,29 +4256,8 @@ class SZh extends S {
   String get malImportResolvingManga => '正在 AniList 上解析漫画';
 
   @override
-  String get malImportMatching => '正在导入条目';
-
-  @override
-  String get malImportComplete => '导入完成！';
-
-  @override
-  String malImportLookingUp(String title) {
-    return '正在处理：$title';
-  }
-
-  @override
-  String malImportImported(int count) {
-    return '已导入 $count 个';
-  }
-
-  @override
   String malImportWishlisted(int count) {
     return '已将 $count 个加入愿望单';
-  }
-
-  @override
-  String malImportUpdated(int count) {
-    return '已更新 $count 个';
   }
 
   @override
@@ -4735,11 +4278,6 @@ class SZh extends S {
   }
 
   @override
-  String malImportFailed(String error) {
-    return '导入失败：$error';
-  }
-
-  @override
   String malImportInvalidFile(String error) {
     return '无法解析 XML：$error';
   }
@@ -4756,6 +4294,20 @@ class SZh extends S {
   String get settingsAniListImportSubtitle => '通过公开用户名导入动漫/漫画列表';
 
   @override
+  String get settingsHardcoverImportSubtitle => '通过用户名从 hardcover.app 导入书库';
+
+  @override
+  String get hardcoverImportTitle => 'Hardcover 导入';
+
+  @override
+  String get hardcoverImportSubtitle =>
+      '从 hardcover.app 获取用户书库——他人仅公开部分，自己的账户则全部获取';
+
+  @override
+  String get hardcoverImportTokenMissing =>
+      '未设置 Hardcover API 令牌。请在设置 → API 凭据中添加。';
+
+  @override
   String get aniListImportTitle => 'AniList 导入';
 
   @override
@@ -4765,52 +4317,10 @@ class SZh extends S {
   String get aniListImportUsername => 'AniList 用户名';
 
   @override
-  String get aniListImportUsernameHint => '例如 yourname';
-
-  @override
   String get aniListImportInclude => '导入内容';
 
   @override
-  String get aniListImportIncludeAnime => '动漫列表';
-
-  @override
-  String get aniListImportIncludeManga => '漫画列表';
-
-  @override
-  String get aniListImportMode => '模式';
-
-  @override
-  String get aniListImportModeNewOnly => '仅添加新项目';
-
-  @override
-  String get aniListImportModeNewOnlySubtitle => '跳过收藏中已有的项目';
-
-  @override
-  String get aniListImportModeOverwrite => '覆盖现有';
-
-  @override
   String get aniListImportModeOverwriteSubtitle => '从 AniList 更新进度、状态和日期';
-
-  @override
-  String get aniListImportTargetCollection => '目标收藏';
-
-  @override
-  String get aniListImportCreateNew => '创建新收藏';
-
-  @override
-  String get aniListImportUseExisting => '使用现有收藏';
-
-  @override
-  String get aniListImportSelectCollection => '选择收藏';
-
-  @override
-  String get aniListImportNoCollections => '暂无可用收藏';
-
-  @override
-  String get aniListImportErrorLoadingCollections => '加载收藏出错';
-
-  @override
-  String get aniListImportNewCollectionName => '收藏名称';
 
   @override
   String aniListImportNewCollectionDefault(String username) {
@@ -4818,39 +4328,10 @@ class SZh extends S {
   }
 
   @override
-  String get aniListImportButton => '开始导入';
-
-  @override
   String get aniListImportFetchingAnime => '正在获取动漫列表...';
 
   @override
   String get aniListImportFetchingManga => '正在获取漫画列表...';
-
-  @override
-  String get aniListImportMatching => '正在导入条目';
-
-  @override
-  String get aniListImportComplete => '导入完成！';
-
-  @override
-  String aniListImportLookingUp(String title) {
-    return '正在处理：$title';
-  }
-
-  @override
-  String aniListImportImported(int count) {
-    return '已导入 $count 个';
-  }
-
-  @override
-  String aniListImportUpdated(int count) {
-    return '已更新 $count 个';
-  }
-
-  @override
-  String aniListImportFailed(String error) {
-    return '导入失败：$error';
-  }
 
   @override
   String aniListImportUserNotFound(String username) {
@@ -4894,24 +4375,6 @@ class SZh extends S {
   String get customImportTemplateSaved => '模板已保存';
 
   @override
-  String get customImportTargetCollection => '目标收藏';
-
-  @override
-  String get customImportCreateNew => '创建新收藏';
-
-  @override
-  String get customImportUseExisting => '添加到现有收藏';
-
-  @override
-  String get customImportSelectCollection => '选择收藏';
-
-  @override
-  String get customImportNoCollections => '暂无收藏';
-
-  @override
-  String get customImportErrorLoadingCollections => '加载收藏失败';
-
-  @override
   String get customImportPreviewButton => '预览并导入';
 
   @override
@@ -4921,9 +4384,6 @@ class SZh extends S {
   String customImportSummary(int valid, int errors, int duplicates) {
     return '已识别 $valid · 错误 $errors · 重复 $duplicates';
   }
-
-  @override
-  String get customImportSelectAll => '全选';
 
   @override
   String get customImportSelectNone => '取消全选';
@@ -5008,12 +4468,6 @@ class SZh extends S {
   String get moodGridCreateTitle => '新建心情格';
 
   @override
-  String get moodGridName => '名称';
-
-  @override
-  String get moodGridPresetLabel => '模板';
-
-  @override
   String get moodGridPresetAboutMe => '关于我：Tonkatsu Box';
 
   @override
@@ -5029,34 +4483,13 @@ class SZh extends S {
   String get moodGridRows => '行数';
 
   @override
-  String get moodGridCols => '列数';
-
-  @override
   String get moodGridBadge => '心情格';
-
-  @override
-  String get moodGridEdit => '编辑';
-
-  @override
-  String get moodGridDoneEditing => '完成';
-
-  @override
-  String get moodGridRename => '重命名';
-
-  @override
-  String get moodGridDelete => '删除';
 
   @override
   String get moodGridDeleteTitle => '删除此格？';
 
   @override
   String get moodGridDeleteMessage => '此格将被移除。此操作无法撤销。';
-
-  @override
-  String get moodGridExportImage => '导出为图片';
-
-  @override
-  String get moodGridImageSaved => '图片已保存';
 
   @override
   String get moodGridAddRow => '添加行';
@@ -5102,13 +4535,7 @@ class SZh extends S {
       '应用于每个单元格的模板。可用占位符：name、year、genre、rating。';
 
   @override
-  String get moodGridCaptionTemplateClear => '清除';
-
-  @override
-  String get moodGridPickerTitle => '选择项目';
-
-  @override
-  String get moodGridPickerCollection => '收藏';
+  String get collection => '收藏';
 
   @override
   String get moodGridPickerAllCollections => '所有收藏';
@@ -5209,9 +4636,6 @@ class SZh extends S {
   String get genreCloudExportImage => '保存为图片';
 
   @override
-  String get genreCloudImageSaved => '图片已保存';
-
-  @override
   String get genreCloudExportFailed => '无法保存图片';
 
   @override
@@ -5223,9 +4647,6 @@ class SZh extends S {
   }
 
   @override
-  String get facetGenre => '类型';
-
-  @override
   String get facetPlatform => '平台';
 
   @override
@@ -5233,12 +4654,6 @@ class SZh extends S {
 
   @override
   String get personalizationTabCloud => '类型词云';
-
-  @override
-  String get personalizationTabRecommendations => '推荐';
-
-  @override
-  String get recommendationsRefresh => '刷新';
 
   @override
   String get recommendationsEmpty => '暂无推荐';
@@ -5285,12 +4700,6 @@ class SZh extends S {
   String get itemMarkEmpty => '暂无标记';
 
   @override
-  String get itemMarkDelete => '删除';
-
-  @override
-  String get itemMarkType => '类型';
-
-  @override
   String get itemMarkNumber => '编号';
 
   @override
@@ -5301,9 +4710,6 @@ class SZh extends S {
 
   @override
   String get itemMarkCustomType => '自定义类型';
-
-  @override
-  String get itemMarkFilterAll => '全部';
 
   @override
   String get itemMarkFilterLiked => '已喜欢';
@@ -5340,9 +4746,6 @@ class SZh extends S {
   String get unitPart => '部分';
 
   @override
-  String get unitCustom => '自定义';
-
-  @override
   String get cardLinkCopy => '复制卡片链接';
 
   @override
@@ -5350,9 +4753,6 @@ class SZh extends S {
 
   @override
   String get cardLinkNotFound => '未找到卡片';
-
-  @override
-  String get cardLinkPickCollection => '在收藏中打开';
 
   @override
   String get cardLinkSearchTitle => '链接卡片';
@@ -5376,19 +4776,7 @@ class SZh extends S {
   String get shortcutPreviousTab => '上一个标签页';
 
   @override
-  String get shortcutBack => '返回';
-
-  @override
-  String get shortcutSearch => '搜索';
-
-  @override
-  String get shortcutRefresh => '刷新';
-
-  @override
   String get shortcutThisHelp => '此帮助';
-
-  @override
-  String get shortcutsGroupCollections => '收藏';
 
   @override
   String get shortcutCreateCollection => '创建收藏';
@@ -5404,12 +4792,6 @@ class SZh extends S {
 
   @override
   String get shortcutRenameCollection => '重命名收藏';
-
-  @override
-  String get shortcutOpenCollection => '打开收藏';
-
-  @override
-  String get shortcutsGroupCollection => '收藏';
 
   @override
   String get shortcutAddItems => '添加项目';
@@ -5457,22 +4839,7 @@ class SZh extends S {
   String get shortcutDeleteTierList => '删除等级列表';
 
   @override
-  String get shortcutRename => '重命名';
-
-  @override
   String get shortcutsGroupTierList => '等级列表';
-
-  @override
-  String get shortcutExportAsImage => '导出为图片';
-
-  @override
-  String get shortcutAddTier => '添加等级';
-
-  @override
-  String get shortcutClearAll => '清除全部';
-
-  @override
-  String get shortcutsGroupWishlist => '愿望单';
 
   @override
   String get shortcutAddItem => '添加项目';
@@ -5482,9 +4849,6 @@ class SZh extends S {
 
   @override
   String get shortcutClearCompleted => '清除已完成';
-
-  @override
-  String get shortcutsGroupSearch => '搜索';
 
   @override
   String get shortcutFocusSearchField => '聚焦搜索框';

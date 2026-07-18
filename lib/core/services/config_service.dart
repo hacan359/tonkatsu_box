@@ -73,6 +73,8 @@ class ConfigService {
     SettingsKeys.tmdbApiKey,
     SettingsKeys.comicVineApiKey,
     SettingsKeys.googleBooksApiKey,
+    SettingsKeys.hardcoverApiKey,
+    SettingsKeys.hardcoverUsername,
     SettingsKeys.screenScraperSsid,
     SettingsKeys.screenScraperSspassword,
     SettingsKeys.raApiKey,

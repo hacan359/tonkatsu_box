@@ -306,7 +306,7 @@ class _RaAchievementsSectionState
     return Row(
       children: <Widget>[
         _filterChip(
-          icon: Icons.list, tooltip: l.raFilterAll,
+          icon: Icons.list, tooltip: l.all,
           filter: _AchievementFilter.all,
         ),
         const SizedBox(width: 4),
@@ -702,7 +702,7 @@ class _RaAchievementsSectionState
         alignment: Alignment.center,
         child: Text(
           _expanded
-              ? S.of(context).raCollapse
+              ? S.of(context).showLess
               : S.of(context).raViewAll(total),
           style: const TextStyle(
             fontSize: 12, fontWeight: FontWeight.w500, color: _raBlue),
@@ -798,7 +798,7 @@ class _RaAchievementsSectionState
 
   String _formatDate(DateTime date) {
     final Duration diff = DateTime.now().difference(date);
-    if (diff.inDays == 0) return S.of(context).raToday;
+    if (diff.inDays == 0) return S.of(context).releasesToday;
     if (diff.inDays == 1) return S.of(context).raYesterday;
     if (diff.inDays < 7) return S.of(context).raDaysAgo(diff.inDays);
     final DateFormatPreset preset = DateFormatPreset.fromId(

@@ -660,11 +660,10 @@ class CollectionItemsNotifier
     );
     if (newId == null) return false;
 
-    // Tags are global — the copy simply carries the same links.
+    // Tags are global — the copy carries the links with their manual order.
     final GlobalTagDao tagDao = ref.read(globalTagDaoProvider);
-    final Set<int> tagIds = await tagDao.getTagIdsByItem(itemId);
-    if (tagIds.isNotEmpty) {
-      await tagDao.setItemTags(newId, tagIds);
+    final int copiedTags = await tagDao.copyItemTags(itemId, newId);
+    if (copiedTags > 0) {
       ref.invalidate(itemTagsProvider);
     }
 
@@ -966,6 +965,14 @@ class CollectionItemsNotifier
         ),
         affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
       );
+      // The all-items screen renders progress on cards from its own copy;
+      // patch it in place — invalidating would reload every item per tick.
+      ref.read(allItemsNotifierProvider.notifier).updateProgressLocally(
+            id,
+            currentSeason: currentSeason,
+            currentEpisode: currentEpisode,
+            lastActivityAt: now,
+          );
 
       await _autoUpdateMangaStatus(id, currentEpisode, currentSeason);
       await _autoUpdateAnimeStatus(id, currentEpisode);

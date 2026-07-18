@@ -62,7 +62,7 @@ void main() {
       );
     });
 
-    testWidgets('shows English, Russian and Chinese options',
+    testWidgets('shows English, Russian, Chinese and Spanish options',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
@@ -70,6 +70,7 @@ void main() {
       expect(find.text('English'), findsWidgets);
       expect(find.text('Русский'), findsWidgets);
       expect(find.text('中文'), findsWidgets);
+      expect(find.text('Español'), findsWidgets);
     });
 
     testWidgets('English is selected by default in UI radio',
@@ -78,7 +79,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
-      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(2));
+      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(3));
     });
 
     testWidgets('shows content language dropdown', (WidgetTester tester) async {
@@ -93,6 +94,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
+      await tester.ensureVisible(find.byType(DropdownButton<String>));
       await tester.tap(find.byType(DropdownButton<String>));
       await tester.pumpAndSettle();
 
@@ -123,6 +125,18 @@ void main() {
 
       expect(prefs.getString(SettingsKeys.appLanguage), 'zh');
       expect(prefs.getString(SettingsKeys.tmdbLanguage), 'zh-CN');
+    });
+
+    testWidgets('tapping Spanish selects it and sets tmdbLanguage to es-ES',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      await tester.tap(find.text('Español').first);
+      await tester.pump();
+
+      expect(prefs.getString(SettingsKeys.appLanguage), 'es');
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'es-ES');
     });
 
     testWidgets('tapping English selects it back',
@@ -170,6 +184,7 @@ void main() {
       await tester.pump();
 
       // User explicitly picks English as content language (default was ru-RU).
+      await tester.ensureVisible(find.byType(DropdownButton<String>));
       await tester.tap(find.byType(DropdownButton<String>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('English').last);
@@ -193,7 +208,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
-      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(2));
+      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(3));
     });
   });
 }

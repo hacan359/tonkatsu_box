@@ -31,7 +31,7 @@ class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.shortcutsGroupSearch,
+        title: l.search,
         entries: <ShortcutEntry>[
           ShortcutEntry(keys: 'Ctrl+F', description: l.shortcutFocusSearchField),
           ShortcutEntry(keys: 'Escape', description: l.shortcutClearOrBack),

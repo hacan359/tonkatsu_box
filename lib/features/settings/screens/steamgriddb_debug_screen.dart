@@ -131,17 +131,17 @@ class _SteamGridDbDebugScreenState
       length: 5,
       child: Column(
         children: <Widget>[
-          SubScreenTitleBar(title: l.debugSteamGridDb),
+          SubScreenTitleBar(title: l.steamGridDbPanelTitle),
           Material(
             color: AppColors.surface,
             child: TabBar(
               isScrollable: true,
               tabs: <Widget>[
-                Tab(text: l.debugSearchTab),
-                Tab(text: l.debugGridsTab),
-                Tab(text: l.debugHeroesTab),
-                Tab(text: l.debugLogosTab),
-                Tab(text: l.debugIconsTab),
+                Tab(text: l.search),
+                Tab(text: l.steamGridDbGrids),
+                Tab(text: l.steamGridDbHeroes),
+                Tab(text: l.steamGridDbLogos),
+                Tab(text: l.steamGridDbIcons),
               ],
             ),
           ),
@@ -239,10 +239,10 @@ class _SteamGridDbDebugScreenState
   Widget _buildImageTab(int tabIndex) {
     final S l = S.of(context);
     final String tabName = switch (tabIndex) {
-      1 => l.debugGridsTab,
-      2 => l.debugHeroesTab,
-      3 => l.debugLogosTab,
-      4 => l.debugIconsTab,
+      1 => l.steamGridDbGrids,
+      2 => l.steamGridDbHeroes,
+      3 => l.steamGridDbLogos,
+      4 => l.steamGridDbIcons,
       _ => '',
     };
 

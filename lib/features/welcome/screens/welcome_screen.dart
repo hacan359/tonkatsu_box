@@ -48,8 +48,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
   List<String> _stepLabels(S l) => <String>[
         l.welcomeStepWelcome,
-        l.welcomeStepLanguage,
-        l.welcomeStepName,
+        l.language,
+        l.profileName,
         l.welcomeStepSources,
         l.welcomeStepTour,
       ];

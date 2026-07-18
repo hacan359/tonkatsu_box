@@ -14,6 +14,7 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/custom_cards_parse_error_l10n.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/settings_provider.dart';
@@ -159,7 +160,7 @@ class _CustomCardsImportContentState
     final S l = S.of(context);
 
     return SettingsGroup(
-      title: l.customImportTargetCollection,
+      title: l.importTargetCollection,
       children: <Widget>[
         RadioGroup<bool>(
           groupValue: _useNewCollection,
@@ -173,7 +174,7 @@ class _CustomCardsImportContentState
           child: Column(
             children: <Widget>[
               ListTile(
-                title: Text(l.customImportCreateNew),
+                title: Text(l.importCreateNew),
                 leading: const Radio<bool>(value: true),
                 dense: true,
                 onTap: () => setState(() {
@@ -182,7 +183,7 @@ class _CustomCardsImportContentState
                 }),
               ),
               ListTile(
-                title: Text(l.customImportUseExisting),
+                title: Text(l.importUseExisting),
                 leading: const Radio<bool>(value: false),
                 dense: true,
                 onTap: () => setState(() {
@@ -204,7 +205,7 @@ class _CustomCardsImportContentState
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    l.customImportNoCollections,
+                    l.noCollectionsYet,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -216,15 +217,15 @@ class _CustomCardsImportContentState
                     );
                 return CollectionPickerField(
                   value: selectedExists ? _selectedCollectionId : null,
-                  hint: l.customImportSelectCollection,
-                  title: l.customImportSelectCollection,
+                  hint: l.importSelectCollection,
+                  title: l.importSelectCollection,
                   onChanged: (int? id) =>
                       setState(() => _selectedCollectionId = id),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                l.customImportErrorLoadingCollections,
+                l.collectionsFailedToLoad,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -272,10 +273,7 @@ class _CustomCardsImportContentState
       });
     } on CustomCardsParseException catch (e) {
       if (!mounted) return;
-      context.showSnack(
-        localizedParseError(S.of(context), e.code),
-        type: SnackType.error,
-      );
+      context.showErrorSnack(localizedParseError(S.of(context), e.code));
     }
   }
 
@@ -325,17 +323,5 @@ class _CustomCardsImportContentState
         ),
       ),
     );
-  }
-}
-
-/// Localized message for a whole-file parse failure.
-String localizedParseError(S l, CustomCardsParseErrorCode code) {
-  switch (code) {
-    case CustomCardsParseErrorCode.emptyFile:
-      return l.customImportErrorEmptyFile;
-    case CustomCardsParseErrorCode.invalidJson:
-      return l.customImportErrorInvalidJson;
-    case CustomCardsParseErrorCode.missingRequiredColumns:
-      return l.customImportErrorMissingColumns;
   }
 }

@@ -112,23 +112,39 @@ class Tag {
   }
 }
 
-/// Shared "item's tags" projections over a display-ordered tag list, so every
-/// surface (grid, table, detail card) derives the same order and primary tag.
+/// Shared "item's tags" projections, so every surface (grid, table, detail
+/// card) derives the same order and primary tag.
+///
+/// [ids] come from `itemTagsProvider` already in the item's display order
+/// (manual positions, then global-order fallback — the DAO bakes that in),
+/// so both helpers follow the [ids] order, not this list's.
 extension TagListProjection on List<Tag> {
-  /// The subset of this list whose ids are in [ids], keeping display order.
-  List<Tag> orderedFor(Set<int>? ids) {
+  Map<int, Tag> get byId => <int, Tag>{for (final Tag t in this) t.id: t};
+
+  /// The tags of [ids] resolved against this list, keeping [ids] order.
+  List<Tag> orderedFor(List<int>? ids) => byId.orderedFor(ids);
+
+  /// The first tag of [ids] resolvable in this list, or `null` when untagged.
+  Tag? primaryFor(List<int>? ids) => byId.primaryFor(ids);
+}
+
+/// Same projections over a prebuilt id → tag map. Hoist
+/// [TagListProjection.byId] out of loops that project many items — the
+/// list-based helpers rebuild the map on every call.
+extension TagMapProjection on Map<int, Tag> {
+  List<Tag> orderedFor(List<int>? ids) {
     if (ids == null || ids.isEmpty) return const <Tag>[];
     return <Tag>[
-      for (final Tag tag in this)
-        if (ids.contains(tag.id)) tag,
+      for (final int id in ids)
+        if (this[id] case final Tag tag) tag,
     ];
   }
 
-  /// The first tag of [ids] in display order, or `null` when untagged.
-  Tag? primaryFor(Set<int>? ids) {
+  Tag? primaryFor(List<int>? ids) {
     if (ids == null || ids.isEmpty) return null;
-    for (final Tag tag in this) {
-      if (ids.contains(tag.id)) return tag;
+    for (final int id in ids) {
+      final Tag? tag = this[id];
+      if (tag != null) return tag;
     }
     return null;
   }

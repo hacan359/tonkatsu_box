@@ -47,7 +47,7 @@ class BookProgressSection extends ConsumerWidget {
             Icon(Icons.menu_book_outlined, size: 20, color: accentColor),
             const SizedBox(width: AppSpacing.sm),
             Text(
-              l.bookProgress,
+              l.readingProgress,
               style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
