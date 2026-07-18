@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -119,6 +120,7 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
             children: <Widget>[
+              const _VotePrompt(),
               _VariantSection(
                 title: 'B — Solid panel',
                 note: 'Hard-edged translucent panel hugging the content. '
@@ -245,6 +247,65 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
 // ---------------------------------------------------------------------------
 // Section + card scaffolding
 // ---------------------------------------------------------------------------
+
+/// Tappable banner inviting the user to vote for their favourite design on the
+/// project Discord channel.
+class _VotePrompt extends StatelessWidget {
+  const _VotePrompt();
+
+  static final Uri _discordUri = Uri.parse(
+    'https://discord.com/channels/1483101784351313994/1483105825835716658',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+      child: Material(
+        color: AppColors.brand.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          onTap: () =>
+              launchUrl(_discordUri, mode: LaunchMode.externalApplication),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: <Widget>[
+                const Icon(Icons.how_to_vote, color: AppColors.brand),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Vote for your favourite design',
+                        style: AppTypography.h3,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Pick the banner variant you like best and cast your '
+                        'vote on our Discord channel.',
+                        style: AppTypography.bodySmall
+                            .copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                const Icon(
+                  Icons.open_in_new,
+                  size: 16,
+                  color: AppColors.brand,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _VariantSection extends StatelessWidget {
   const _VariantSection({
