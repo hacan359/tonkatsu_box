@@ -98,12 +98,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   New "Laboratory" settings group (visible in release builds too) hosts
   the experimental card-banner gallery: eight banner layout variants
   rendered on real posters from a chosen collection, with hover
-  behaviour, for side-by-side comparison and voting.
+  behaviour, for side-by-side comparison. A banner at the top links to
+  the project Discord channel to vote for the favourite design.
 
   * lib/features/settings/screens/card_banner_debug_screen.dart
-    (CardBannerDebugScreen): New — variant gallery (solid panel,
-    gradient, frosted glass, stats strip, one-line meta, status stripe,
-    split meta, label-in-progress-bar).
+    (CardBannerDebugScreen, _VotePrompt): New — variant gallery (solid
+    panel, gradient, frosted glass, stats strip, one-line meta, status
+    stripe, split meta, label-in-progress-bar) plus a Discord vote link.
   * lib/features/settings/screens/settings_screen.dart: Laboratory
     group with the card designs tile.
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb, lib/l10n/app_zh.arb,
