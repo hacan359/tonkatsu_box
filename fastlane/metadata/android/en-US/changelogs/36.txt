@@ -1,0 +1,8 @@
+v0.39.0
+
+* New Hardcover book source: search, import your library, pick editions by language.
+* Spanish interface language.
+* Poster cards gain a bottom banner with title, meta and reading/watching progress.
+* New Laboratory settings section with a card-banner design lab.
+* Manual per-item tag order, tag picker search, and custom-item form prefill from JSON/CSV.
+* Fixes: mobile keyboard popping up, offline sync crash, touch row drag, and more.

@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-07-18
+
 ### Added
 
 - **"What's new" dialog after an app update**
@@ -611,6 +613,16 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     launchExternalUrl.
 
 ### Fixed
+
+- **External links restricted to http/https schemes**
+
+  `launchExternalUrl`, the shared entry point for opening links from
+  notes, imports and API data, now refuses non-web schemes so a
+  malformed or malicious link can't launch `file://` or a custom-scheme
+  handler.
+
+  * lib/shared/utils/url_launch.dart (launchExternalUrl): Allowlist
+    http/https before launching.
 
 - **Mobile keyboard no longer pops up unprompted**
 
