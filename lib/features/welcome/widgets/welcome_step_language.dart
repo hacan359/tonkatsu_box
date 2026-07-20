@@ -123,9 +123,21 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                     ),
                   ),
                 ),
-                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sm),
                 WelcomeReveal(
                   index: 5,
+                  child: SizedBox(
+                    width: 300,
+                    child: _LanguageOption(
+                      label: 'Português (Brasil)',
+                      isSelected: settings.appLanguage == 'pt',
+                      onTap: () => _onUiLanguageSelected('pt'),
+                    ),
+                  ),
+                ),
+                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                WelcomeReveal(
+                  index: 6,
                   child: SizedBox(
                     width: 300,
                     child: _ContentLanguageDropdown(
@@ -138,7 +150,7 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 WelcomeReveal(
-                  index: 6,
+                  index: 7,
                   child: Text(
                     l.welcomeChangeLaterHint,
                     style: AppTypography.bodySmall.copyWith(
@@ -277,14 +289,17 @@ class _LanguageOption extends StatelessWidget {
               color: isSelected ? AppColors.brand : AppColors.textTertiary,
             ),
             const SizedBox(width: AppSpacing.sm),
-            Text(
-              label,
-              style: AppTypography.body.copyWith(
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.body.copyWith(
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
