@@ -1,10 +1,10 @@
-// Модель эпизода сериала из TMDB.
+// TV episode model shared by all episode sources.
 
-/// Модель эпизода сериала из TMDB API.
-///
-/// Представляет один эпизод конкретного сезона сериала.
+import 'data_source.dart';
+
+/// One episode of a TV show season.
 class TvEpisode {
-  /// Создаёт экземпляр [TvEpisode].
+  /// Creates a [TvEpisode].
   const TvEpisode({
     required this.tmdbShowId,
     required this.seasonNumber,
@@ -14,9 +14,10 @@ class TvEpisode {
     this.airDate,
     this.stillUrl,
     this.runtime,
+    this.source = DataSource.tmdb,
   });
 
-  /// Создаёт [TvEpisode] из JSON ответа TMDB API.
+  /// Creates a [TvEpisode] from a TMDB API JSON response.
   factory TvEpisode.fromJson(
     Map<String, dynamic> json, {
     required int showId,
@@ -40,7 +41,8 @@ class TvEpisode {
     );
   }
 
-  /// Создаёт [TvEpisode] из записи базы данных.
+  /// Creates a [TvEpisode] from a database row. A missing or unknown
+  /// `source` reads as [DataSource.tmdb].
   factory TvEpisode.fromDb(Map<String, dynamic> row) {
     return TvEpisode(
       tmdbShowId: row['tmdb_show_id'] as int,
@@ -51,34 +53,38 @@ class TvEpisode {
       airDate: row['air_date'] as String?,
       stillUrl: row['still_url'] as String?,
       runtime: row['runtime'] as int?,
+      source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
     );
   }
 
-  /// ID сериала в TMDB.
+  /// Show id in the [source] provider's namespace.
   final int tmdbShowId;
 
-  /// Номер сезона.
+  /// Season number.
   final int seasonNumber;
 
-  /// Номер эпизода.
+  /// Episode number within the season.
   final int episodeNumber;
 
-  /// Название эпизода.
+  /// Episode title.
   final String name;
 
-  /// Описание эпизода.
+  /// Episode overview.
   final String? overview;
 
-  /// Дата выхода (формат: "YYYY-MM-DD").
+  /// Air date ("YYYY-MM-DD").
   final String? airDate;
 
-  /// URL кадра из эпизода (still image).
+  /// Still image URL.
   final String? stillUrl;
 
-  /// Длительность эпизода в минутах.
+  /// Runtime in minutes.
   final int? runtime;
 
-  /// Преобразует в Map для сохранения в базу данных.
+  /// Provider this episode came from.
+  final DataSource source;
+
+  /// Converts to a map for database storage.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'tmdb_show_id': tmdbShowId,
@@ -89,11 +95,12 @@ class TvEpisode {
       'air_date': airDate,
       'still_url': stillUrl,
       'runtime': runtime,
+      'source': source.name,
       'cached_at': DateTime.now().millisecondsSinceEpoch,
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
+  /// Returns a copy with the given fields replaced.
   TvEpisode copyWith({
     int? tmdbShowId,
     int? seasonNumber,
@@ -103,6 +110,7 @@ class TvEpisode {
     String? airDate,
     String? stillUrl,
     int? runtime,
+    DataSource? source,
   }) {
     return TvEpisode(
       tmdbShowId: tmdbShowId ?? this.tmdbShowId,
@@ -113,6 +121,7 @@ class TvEpisode {
       airDate: airDate ?? this.airDate,
       stillUrl: stillUrl ?? this.stillUrl,
       runtime: runtime ?? this.runtime,
+      source: source ?? this.source,
     );
   }
 
@@ -120,6 +129,7 @@ class TvEpisode {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is TvEpisode &&
+        other.source == source &&
         other.tmdbShowId == tmdbShowId &&
         other.seasonNumber == seasonNumber &&
         other.episodeNumber == episodeNumber;
@@ -127,7 +137,7 @@ class TvEpisode {
 
   @override
   int get hashCode =>
-      Object.hash(tmdbShowId, seasonNumber, episodeNumber);
+      Object.hash(source, tmdbShowId, seasonNumber, episodeNumber);
 
   @override
   String toString() =>

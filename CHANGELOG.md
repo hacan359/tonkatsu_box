@@ -7,6 +7,81 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Decouple the episode tracker and release calendar from TMDB**
+
+  Seasons, episodes and watch progress are now keyed by `(source, show id)`
+  instead of a bare TMDB id, so a future provider (e.g. TVmaze) can feed
+  the episode tracker without id collisions. Season/episode fetching goes
+  through a provider-agnostic `TvEpisodeSource` interface; TMDB is the
+  first and only implementation, and existing data is migrated as TMDB.
+  No user-visible behaviour changes yet.
+
+  * lib/core/api/episode_source/tv_episode_source.dart (TvEpisodeSource,
+    tvEpisodeSourceResolverProvider): New — season/episode source
+    interface and per-DataSource resolver (unknown sources fall back to
+    TMDB).
+  * lib/core/api/episode_source/tmdb_episode_source.dart
+    (TmdbEpisodeSource): New — TMDB implementation over TmdbApi.
+  * lib/core/database/migrations/migration_v57.dart (MigrationV57): New —
+    rebuilds tv_shows_cache with a (tmdb_id, source) primary key, adds
+    `source` to the UNIQUE keys of tv_seasons_cache, tv_episodes_cache
+    and watched_episodes, backfills existing rows as 'tmdb', re-scopes
+    the collection_items unique indexes so tv_show includes source
+    (idx_ci_coll_tv, idx_ci_uncat_tv), backfills
+    collection_items.source and mood_grid_cells.source for tv shows.
+  * lib/core/database/database_service.dart (DatabaseService._initDatabase),
+    lib/core/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Version 57.
+  * lib/shared/models/tv_show.dart (TvShow), tv_season.dart (TvSeason),
+    tv_episode.dart (TvEpisode): New `source` field (default tmdb) in
+    fromDb/toDb/copyWith/==/hashCode.
+  * lib/shared/models/data_source.dart (DataSource.fromNameOr): New —
+    parse with an explicit fallback.
+  * lib/shared/models/media_type.dart (MediaType.defaultSource): New —
+    fallback source for rows with a NULL source column.
+  * lib/core/database/dao/tv_show_dao.dart (TvShowDao.getTvShowByTmdbId,
+    TvShowDao.getTvSeasonsByShowId, TvShowDao.getEpisodesByShowId,
+    TvShowDao.getEpisodesByShowAndSeason, TvShowDao.clearEpisodesByShow,
+    TvShowDao.getWatchedEpisodes, TvShowDao.getWatchedEpisodesForShow,
+    TvShowDao.getAllWatchedEpisodes, TvShowDao.markEpisodeWatched,
+    TvShowDao.markEpisodeWatchedAt, TvShowDao.markEpisodeUnwatched,
+    TvShowDao.getWatchedEpisodeCount, TvShowDao.markSeasonWatched,
+    TvShowDao.unmarkSeasonWatched): All season/episode/watched queries
+    take a DataSource.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.findCollectionItem, CollectionDao.findAllCollectionItems):
+    Optional source filter; (CollectionDao._loadJoinedData): tv shows
+    matched by (source, id); (CollectionDao.getCollectionCovers): tv
+    joins constrained by source to avoid cross-source row fan-out.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerArg, EpisodeTrackerNotifier): Family arg carries the
+    source; fetches go through the resolved TvEpisodeSource.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (EpisodeTrackerSection, SeasonsListWidget): Source-aware season
+    loading.
+  * lib/features/releases/providers/releases_provider.dart
+    (ReleasesNotifier.refreshFromApi, ReleasesNotifier._eventsForShow,
+    isReleaseTrackedProvider): Tracked shows refresh via their own
+    source's TvEpisodeSource; the tracked-bell key includes the source.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._toggleTracked): Subscribe/unsubscribe with
+    the item's data source.
+  * lib/features/search/handlers/tv_show_handler.dart (TvShowHandler):
+    Stamp the source on added items.
+  * lib/core/services/export_service.dart (ExportService.createFullExport):
+    TV shows deduped by source:id like manga.
+  * lib/core/services/backup_service.dart
+    (BackupService._restoreWatchedEpisodes): Watched rows restore into
+    their source namespace; legacy rows restore as TMDB.
+  * lib/core/import/sources/trakt/trakt_import_service.dart
+    (TraktImportService): Watched marks written as TMDB.
+  * lib/features/tier_lists/widgets/mood_grid_cell_media.dart
+    (resolveMoodGridCellMedia), lib/data/repositories/canvas_repository.dart
+    (CanvasRepository), lib/shared/models/collection_item.dart
+    (CollectionItem._resolvedMedia): Source-aware show lookups.
+
 ## [0.39.0] - 2026-07-18
 
 ### Added

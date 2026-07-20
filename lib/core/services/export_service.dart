@@ -12,6 +12,7 @@ import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/data_source.dart';
 import '../../shared/models/item_mark.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/tracker_game_data.dart';
@@ -413,8 +414,10 @@ class ExportService {
     final Map<int, Map<String, dynamic>> games = <int, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> movies =
         <int, Map<String, dynamic>>{};
-    final Map<int, Map<String, dynamic>> tvShows =
-        <int, Map<String, dynamic>>{};
+    // Keyed by `source:externalId` — show ids from different providers can
+    // share a numeric id, like manga.
+    final Map<String, Map<String, dynamic>> tvShows =
+        <String, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> vns = <int, Map<String, dynamic>>{};
     // Keyed by `source:externalId` — AniList and MangaBaka can share a numeric
     // id, so an int key would drop one of them from the export.
@@ -428,7 +431,7 @@ class ExportService {
         <int, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> customItems =
         <int, Map<String, dynamic>>{};
-    final Set<int> tvShowIds = <int>{};
+    final Set<(DataSource, int)> tvShowKeys = <(DataSource, int)>{};
     final Set<int> platformIds = <int>{};
 
     for (final CollectionItem item in items) {
@@ -449,20 +452,24 @@ class ExportService {
             movies[item.externalId] = data;
           }
         case MediaType.tvShow:
-          if (item.tvShow != null && !tvShows.containsKey(item.externalId)) {
+          final String tvKey =
+              '${(item.source ?? DataSource.tmdb).name}:${item.externalId}';
+          if (item.tvShow != null && !tvShows.containsKey(tvKey)) {
             final Map<String, dynamic> data = item.tvShow!.toDb();
             data.remove('cached_at');
-            tvShows[item.externalId] = data;
+            tvShows[tvKey] = data;
           }
-          tvShowIds.add(item.externalId);
+          tvShowKeys.add((item.source ?? DataSource.tmdb, item.externalId));
         case MediaType.animation:
           if (item.platformId == AnimationSource.tvShow) {
-            if (item.tvShow != null && !tvShows.containsKey(item.externalId)) {
+            final String animKey =
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}';
+            if (item.tvShow != null && !tvShows.containsKey(animKey)) {
               final Map<String, dynamic> data = item.tvShow!.toDb();
               data.remove('cached_at');
-              tvShows[item.externalId] = data;
+              tvShows[animKey] = data;
             }
-            tvShowIds.add(item.externalId);
+            tvShowKeys.add((item.source ?? DataSource.tmdb, item.externalId));
           } else {
             if (item.movie != null && !movies.containsKey(item.externalId)) {
               final Map<String, dynamic> data = item.movie!.toDb();
@@ -508,11 +515,11 @@ class ExportService {
     // Seasons and episodes from the DB cache, fetched in parallel per showId.
     final List<Map<String, dynamic>> allSeasons = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> allEpisodes = <Map<String, dynamic>>[];
-    if (_database != null && tvShowIds.isNotEmpty) {
-      for (final int showId in tvShowIds) {
+    if (_database != null && tvShowKeys.isNotEmpty) {
+      for (final (DataSource source, int showId) in tvShowKeys) {
         final List<Object> results = await Future.wait(<Future<Object>>[
-          _database.tvShowDao.getTvSeasonsByShowId(showId),
-          _database.tvShowDao.getEpisodesByShowId(showId),
+          _database.tvShowDao.getTvSeasonsByShowId(source, showId),
+          _database.tvShowDao.getEpisodesByShowId(source, showId),
         ]);
         final List<TvSeason> seasons = results[0] as List<TvSeason>;
         final List<TvEpisode> episodes = results[1] as List<TvEpisode>;

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/tv_season.dart';
 
 void main() {
@@ -390,6 +391,54 @@ void main() {
       );
 
       expect(season.toString(), 'TvSeason(showId: 1396, season: 0)');
+    });
+
+    group('source', () {
+      test('defaults to tmdb', () {
+        const TvSeason season = TvSeason(tmdbShowId: 1396, seasonNumber: 1);
+
+        expect(season.source, DataSource.tmdb);
+        expect(season.toDb()['source'], 'tmdb');
+      });
+
+      test('fromDb reads a missing source as tmdb', () {
+        final TvSeason season = TvSeason.fromDb(<String, dynamic>{
+          'tmdb_show_id': 1396,
+          'season_number': 1,
+        });
+
+        expect(season.source, DataSource.tmdb);
+      });
+
+      test('source survives a toDb/fromDb round-trip', () {
+        const TvSeason original = TvSeason(
+          tmdbShowId: 1396,
+          seasonNumber: 1,
+          source: DataSource.anilist,
+        );
+
+        expect(TvSeason.fromDb(original.toDb()).source, DataSource.anilist);
+      });
+
+      test('seasons differing only by source are not equal', () {
+        const TvSeason tmdb = TvSeason(tmdbShowId: 1396, seasonNumber: 1);
+        const TvSeason other = TvSeason(
+          tmdbShowId: 1396,
+          seasonNumber: 1,
+          source: DataSource.anilist,
+        );
+
+        expect(tmdb, isNot(equals(other)));
+      });
+
+      test('copyWith replaces source', () {
+        const TvSeason season = TvSeason(tmdbShowId: 1396, seasonNumber: 1);
+
+        expect(
+          season.copyWith(source: DataSource.anilist).source,
+          DataSource.anilist,
+        );
+      });
     });
   });
 }

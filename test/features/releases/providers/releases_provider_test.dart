@@ -104,14 +104,17 @@ void main() {
           collectionId: any(named: 'collectionId'),
           mediaType: any(named: 'mediaType'),
           externalId: any(named: 'externalId'),
+          source: any(named: 'source'),
         )).thenAnswer((_) async => createTestCollectionItem());
     when(() => collDao.findCollectionItemWithData(
           collectionId: any(named: 'collectionId'),
           mediaType: any(named: 'mediaType'),
           externalId: any(named: 'externalId'),
+          source: any(named: 'source'),
         )).thenAnswer((_) async => createTestCollectionItem());
-    when(() => tvDao.getTvShowByTmdbId(any())).thenAnswer((_) async => null);
-    when(() => tvDao.getEpisodesByShowId(any()))
+    when(() => tvDao.getTvShowByTmdbId(any(), source: any(named: 'source')))
+        .thenAnswer((_) async => null);
+    when(() => tvDao.getEpisodesByShowId(any(), any()))
         .thenAnswer((_) async => <TvEpisode>[]);
   });
 
@@ -137,13 +140,13 @@ void main() {
       expect(data.events, isEmpty);
     });
 
-    test('should keep only TMDB TV and anime subscriptions', () async {
+    test('should keep only TV and anime subscriptions', () async {
       when(() => trackedDao.getAll()).thenAnswer((_) async => <TrackedRelease>[
             tracked(1, DataSource.tmdb, MediaType.tvShow),
             tracked(2, DataSource.anilist, MediaType.manga),
             tracked(3, DataSource.tmdb, MediaType.movie),
           ]);
-      when(() => tvDao.getEpisodesByShowId(1))
+      when(() => tvDao.getEpisodesByShowId(DataSource.tmdb, 1))
           .thenAnswer((_) async => <TvEpisode>[episode(1, 1, 1, future)]);
 
       final ReleasesCalendarData data =
@@ -156,7 +159,7 @@ void main() {
     test('should list upcoming episodes only and drop past ones', () async {
       when(() => trackedDao.getAll()).thenAnswer((_) async =>
           <TrackedRelease>[tracked(1, DataSource.tmdb, MediaType.tvShow)]);
-      when(() => tvDao.getEpisodesByShowId(1)).thenAnswer(
+      when(() => tvDao.getEpisodesByShowId(DataSource.tmdb, 1)).thenAnswer(
         (_) async => <TvEpisode>[
           episode(1, 1, 1, past),
           episode(1, 1, 2, future),
@@ -175,12 +178,13 @@ void main() {
     test('should drop a show no longer in any collection', () async {
       when(() => trackedDao.getAll()).thenAnswer((_) async =>
           <TrackedRelease>[tracked(1, DataSource.tmdb, MediaType.tvShow)]);
-      when(() => tvDao.getEpisodesByShowId(1))
+      when(() => tvDao.getEpisodesByShowId(DataSource.tmdb, 1))
           .thenAnswer((_) async => <TvEpisode>[episode(1, 1, 1, future)]);
       when(() => collDao.findCollectionItem(
             collectionId: any(named: 'collectionId'),
             mediaType: any(named: 'mediaType'),
             externalId: any(named: 'externalId'),
+            source: any(named: 'source'),
           )).thenAnswer((_) async => null);
 
       final ReleasesCalendarData data =
@@ -282,6 +286,7 @@ void main() {
             collectionId: any(named: 'collectionId'),
             mediaType: any(named: 'mediaType'),
             externalId: any(named: 'externalId'),
+            source: any(named: 'source'),
           )).thenAnswer((_) async => null);
 
       final ReleasesCalendarData data =
@@ -294,7 +299,7 @@ void main() {
     test('should skip episodes without a parseable air date', () async {
       when(() => trackedDao.getAll()).thenAnswer((_) async =>
           <TrackedRelease>[tracked(1, DataSource.tmdb, MediaType.tvShow)]);
-      when(() => tvDao.getEpisodesByShowId(1)).thenAnswer(
+      when(() => tvDao.getEpisodesByShowId(DataSource.tmdb, 1)).thenAnswer(
         (_) async => <TvEpisode>[
           episode(1, 1, 1, null),
           episode(1, 1, 2, future),

@@ -13,6 +13,7 @@ import '../../data/repositories/collection_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/data_source.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/tag.dart';
 import '../../shared/models/calendar_entry.dart';
@@ -871,28 +872,32 @@ class BackupService {
 
   /// Restores watch progress. Backed up by show id (collection-agnostic), so
   /// each watched episode is re-applied to every restored collection holding
-  /// that TV show or anime.
+  /// that TV show or anime. Rows without a `source` restore as TMDB.
   Future<void> _restoreWatchedEpisodes(String jsonContent) async {
     final List<dynamic> list = jsonDecode(jsonContent) as List<dynamic>;
-    // Episodes of the same show repeat; memoize the lookup per show id.
-    final Map<int, List<CollectionItem>> itemsByShow =
-        <int, List<CollectionItem>>{};
+    // Episodes of the same show repeat; memoize the lookup per show key.
+    final Map<(DataSource, int), List<CollectionItem>> itemsByShow =
+        <(DataSource, int), List<CollectionItem>>{};
     for (final dynamic raw in list) {
       final Map<String, dynamic> m = raw as Map<String, dynamic>;
       final int showId = m['show_id'] as int;
+      final DataSource source =
+          DataSource.fromNameOr(m['source'] as String?, DataSource.tmdb);
       final int season = m['season_number'] as int;
       final int episode = m['episode_number'] as int;
       final int? watchedAt = m['watched_at'] as int?;
 
-      final List<CollectionItem> items = itemsByShow[showId] ??=
+      final List<CollectionItem> items = itemsByShow[(source, showId)] ??=
           <CollectionItem>[
         ...await _database.collectionDao.findAllCollectionItems(
           mediaType: MediaType.tvShow,
           externalId: showId,
+          source: source,
         ),
         ...await _database.collectionDao.findAllCollectionItems(
           mediaType: MediaType.animation,
           externalId: showId,
+          source: source,
         ),
       ];
       for (final CollectionItem item in items) {
@@ -900,6 +905,7 @@ class BackupService {
         if (collectionId == null) continue;
         await _database.tvShowDao.markEpisodeWatchedAt(
           collectionId,
+          source,
           showId,
           season,
           episode,

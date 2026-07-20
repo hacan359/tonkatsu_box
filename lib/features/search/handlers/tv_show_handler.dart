@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
@@ -76,6 +77,7 @@ class TvShowHandler implements MediaActionHandler {
       platformId: mediaType == MediaType.animation
           ? AnimationSource.tvShow
           : null,
+      source: tvShow.source,
       title: tvShow.title,
       upsert: () => _ref.read(tvShowDaoProvider).upsertTvShow(tvShow),
       imageType: ImageType.tvShowPoster,
@@ -114,6 +116,7 @@ class TvShowHandler implements MediaActionHandler {
       platformId: mediaType == MediaType.animation
           ? AnimationSource.tvShow
           : null,
+      source: tvShow.source,
       title: tvShow.title,
       upsert: () => _ref.read(tvShowDaoProvider).upsertTvShow(tvShow),
       imageType: ImageType.tvShowPoster,
@@ -128,14 +131,15 @@ class TvShowHandler implements MediaActionHandler {
       final DatabaseService db = _ref.read(databaseServiceProvider);
       final TmdbApi tmdb = _ref.read(tmdbApiProvider);
 
-      List<TvSeason> seasons = await db.tvShowDao.getTvSeasonsByShowId(tmdbId);
+      List<TvSeason> seasons =
+          await db.tvShowDao.getTvSeasonsByShowId(DataSource.tmdb, tmdbId);
       if (seasons.isEmpty) {
         seasons = await tmdb.getTvSeasons(tmdbId);
         if (seasons.isNotEmpty) await db.tvShowDao.upsertTvSeasons(seasons);
       }
       for (final TvSeason season in seasons) {
-        final List<TvEpisode> cached =
-            await db.tvShowDao.getEpisodesByShowAndSeason(tmdbId, season.seasonNumber);
+        final List<TvEpisode> cached = await db.tvShowDao
+            .getEpisodesByShowAndSeason(DataSource.tmdb, tmdbId, season.seasonNumber);
         if (cached.isEmpty) {
           final List<TvEpisode> episodes =
               await tmdb.getSeasonEpisodes(tmdbId, season.seasonNumber);

@@ -6,6 +6,7 @@ import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
@@ -73,9 +74,10 @@ class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
 const int testCollectionId = 1;
 const int testShowId = 100;
 
-const ({int collectionId, int showId}) testArg = (
+const ({int collectionId, int showId, DataSource source}) testArg = (
   collectionId: testCollectionId,
   showId: testShowId,
+  source: DataSource.tmdb,
 );
 
 const TvEpisode testEpisode1 = TvEpisode(
@@ -149,13 +151,15 @@ void main() {
   late MockTvShowDao mockTvShowDao;
   late MockTmdbApi mockTmdbApi;
 
+  setUpAll(registerAllFallbacks);
+
   setUp(() {
     mockDb = MockDatabaseService();
     mockTvShowDao = MockTvShowDao();
     when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
     // Eager cache load on build; default to no cached episodes so tests that
     // don't care about it are unaffected.
-    when(() => mockTvShowDao.getEpisodesByShowId(any()))
+    when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
         .thenAnswer((_) async => <TvEpisode>[]);
     mockTmdbApi = MockTmdbApi();
     when(() => mockTmdbApi.getTvShow(any()))
@@ -357,7 +361,7 @@ void main() {
   group('EpisodeTrackerNotifier', () {
     group('build', () {
       test('должен инициализироваться с пустым состоянием', () {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
 
         final ProviderContainer container = createContainer();
@@ -376,7 +380,7 @@ void main() {
           (1, 2): null,
           (2, 1): null,
         };
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
 
         final ProviderContainer container = createContainer();
@@ -388,15 +392,15 @@ void main() {
             container.read(episodeTrackerNotifierProvider(testArg));
 
         expect(state.watchedEpisodes, watchedEpisodes);
-        verify(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        verify(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .called(1);
       });
 
       test('should eagerly load cached episodes grouped by season on build',
           () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowId(testShowId)).thenAnswer(
+        when(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, testShowId)).thenAnswer(
           (_) async => <TvEpisode>[
             testEpisode1,
             testEpisode2,
@@ -414,12 +418,12 @@ void main() {
 
         expect(state.episodesBySeason[1], hasLength(2));
         expect(state.episodesBySeason[2], hasLength(1));
-        verify(() => mockTvShowDao.getEpisodesByShowId(testShowId)).called(1);
+        verify(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, testShowId)).called(1);
       });
 
       test('should handle ошибку загрузки просмотренных эпизодов',
           () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenThrow(Exception('Database error'));
 
         final ProviderContainer container = createContainer();
@@ -437,14 +441,15 @@ void main() {
 
     group('loadSeason', () {
       test('должен загружать эпизоды из кеша БД', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> cachedEpisodes = <TvEpisode>[
           testEpisode1,
           testEpisode2,
           testEpisode3,
         ];
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => cachedEpisodes);
 
         final ProviderContainer container = createContainer();
@@ -461,15 +466,17 @@ void main() {
         expect(state.episodesBySeason[1], cachedEpisodes);
         expect(state.loadingSeasons[1], false);
         expect(state.error, isNull);
-        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .called(1);
         verifyNever(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1));
       });
 
       test('должен загружать эпизоды из API если кеш пуст', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         final List<TvEpisode> apiEpisodes = <TvEpisode>[
           testEpisode1,
@@ -495,16 +502,18 @@ void main() {
         expect(state.episodesBySeason[1], apiEpisodes);
         expect(state.loadingSeasons[1], false);
         expect(state.error, isNull);
-        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .called(1);
         verify(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1)).called(1);
         verify(() => mockTvShowDao.upsertEpisodes(apiEpisodes)).called(1);
       });
 
       test('должен кешировать результаты API в БД', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         final List<TvEpisode> apiEpisodes = <TvEpisode>[
           testEpisode1,
@@ -527,9 +536,10 @@ void main() {
       });
 
       test('не должен кешировать пустой список из API', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
@@ -550,9 +560,10 @@ void main() {
       });
 
       test('should handle ошибку загрузки из API', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenThrow(Exception('API error'));
@@ -575,10 +586,11 @@ void main() {
       });
 
       test('не должен загружать уже загруженный сезон', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> cachedEpisodes = <TvEpisode>[testEpisode1];
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => cachedEpisodes);
 
         final ProviderContainer container = createContainer();
@@ -590,14 +602,16 @@ void main() {
         await notifier.loadSeason(1);
         await notifier.loadSeason(1);
 
-        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .called(1);
       });
 
       test('не должен загружать сезон, который уже загружается', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async {
           // Simulate slow load to exercise the in-flight guard.
           await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -615,14 +629,16 @@ void main() {
 
         await Future.wait(<Future<void>>[load1, load2]);
 
-        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        verify(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .called(1);
       });
 
       test('should set loading flag во время загрузки', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 50));
           return <TvEpisode>[testEpisode1];
@@ -650,10 +666,10 @@ void main() {
 
     group('toggleEpisode', () {
       test('должен отмечать эпизод как просмотренный', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container = createContainer();
@@ -669,16 +685,16 @@ void main() {
 
         expect(state.isEpisodeWatched(1, 1), true);
         verify(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .called(1);
       });
 
       test('должен снимать отметку просмотра с эпизода', () async {
         final Map<(int, int), DateTime?> watchedEpisodes = <(int, int), DateTime?>{(1, 1): null};
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
         when(
-          () => mockTvShowDao.markEpisodeUnwatched(testCollectionId, testShowId, 1, 1),
+          () => mockTvShowDao.markEpisodeUnwatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1),
         ).thenAnswer((_) async {});
 
         final ProviderContainer container = createContainer();
@@ -694,18 +710,18 @@ void main() {
 
         expect(state.isEpisodeWatched(1, 1), false);
         verify(
-          () => mockTvShowDao.markEpisodeUnwatched(testCollectionId, testShowId, 1, 1),
+          () => mockTvShowDao.markEpisodeUnwatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1),
         ).called(1);
       });
 
       test('should update состояние после отметки просмотра', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 2))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 2))
             .thenAnswer((_) async {});
 
         final ProviderContainer container = createContainer();
@@ -728,10 +744,11 @@ void main() {
 
     group('refreshSeason', () {
       test('должен принудительно загружать эпизоды из API', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> cachedEpisodes = <TvEpisode>[testEpisode1];
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => cachedEpisodes);
         final List<TvEpisode> apiEpisodes = <TvEpisode>[
           testEpisode1,
@@ -763,7 +780,7 @@ void main() {
 
       test('should update эпизоды даже если сезон ещё не загружен',
           () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> apiEpisodes = <TvEpisode>[testEpisode1];
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
@@ -786,7 +803,7 @@ void main() {
       });
 
       test('should handle ошибку API при обновлении', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenThrow(Exception('API unavailable'));
@@ -806,7 +823,7 @@ void main() {
       });
 
       test('не должен кешировать пустой результат API', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
@@ -825,15 +842,17 @@ void main() {
 
     group('toggleSeason', () {
       test('должен отмечать все эпизоды сезона как просмотренные', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer(
           (_) async => <TvEpisode>[testEpisode1, testEpisode2, testEpisode3],
         );
         when(
           () => mockTvShowDao.markSeasonWatched(
             testCollectionId,
+            DataSource.tmdb,
             testShowId,
             1,
             <int>[1, 2, 3],
@@ -859,6 +878,7 @@ void main() {
         verify(
           () => mockTvShowDao.markSeasonWatched(
             testCollectionId,
+            DataSource.tmdb,
             testShowId,
             1,
             <int>[1, 2, 3],
@@ -873,13 +893,14 @@ void main() {
           (1, 2): null,
           (1, 3): null,
         };
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer(
           (_) async => <TvEpisode>[testEpisode1, testEpisode2, testEpisode3],
         );
-        when(() => mockTvShowDao.unmarkSeasonWatched(testCollectionId, testShowId, 1))
+        when(() => mockTvShowDao.unmarkSeasonWatched(testCollectionId, DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container = createContainer();
@@ -898,22 +919,24 @@ void main() {
         expect(state.isEpisodeWatched(1, 2), false);
         expect(state.isEpisodeWatched(1, 3), false);
         expect(state.watchedCountForSeason(1), 0);
-        verify(() => mockTvShowDao.unmarkSeasonWatched(testCollectionId, testShowId, 1))
+        verify(() => mockTvShowDao.unmarkSeasonWatched(testCollectionId, DataSource.tmdb, testShowId, 1))
             .called(1);
       });
 
       test('должен отмечать частично просмотренный сезон как полностью просмотренный',
           () async {
         final Map<(int, int), DateTime?> watchedEpisodes = <(int, int), DateTime?>{(1, 1): null};
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer(
           (_) async => <TvEpisode>[testEpisode1, testEpisode2, testEpisode3],
         );
         when(
           () => mockTvShowDao.markSeasonWatched(
             testCollectionId,
+            DataSource.tmdb,
             testShowId,
             1,
             <int>[1, 2, 3],
@@ -936,6 +959,7 @@ void main() {
         verify(
           () => mockTvShowDao.markSeasonWatched(
             testCollectionId,
+            DataSource.tmdb,
             testShowId,
             1,
             <int>[1, 2, 3],
@@ -944,7 +968,7 @@ void main() {
       });
 
       test('не должен делать ничего если сезон не загружен', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
 
         final ProviderContainer container = createContainer();
@@ -956,15 +980,16 @@ void main() {
         await notifier.toggleSeason(1);
 
         verifyNever(
-          () => mockTvShowDao.markSeasonWatched(any(), any(), any(), any()),
+          () => mockTvShowDao.markSeasonWatched(any(), any(), any(), any(), any()),
         );
-        verifyNever(() => mockTvShowDao.unmarkSeasonWatched(any(), any(), any()));
+        verifyNever(() => mockTvShowDao.unmarkSeasonWatched(any(), any(), any(), any()));
       });
 
       test('не должен делать ничего если сезон пустой', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
@@ -979,9 +1004,9 @@ void main() {
         await notifier.toggleSeason(1);
 
         verifyNever(
-          () => mockTvShowDao.markSeasonWatched(any(), any(), any(), any()),
+          () => mockTvShowDao.markSeasonWatched(any(), any(), any(), any(), any()),
         );
-        verifyNever(() => mockTvShowDao.unmarkSeasonWatched(any(), any(), any()));
+        verifyNever(() => mockTvShowDao.unmarkSeasonWatched(any(), any(), any(), any()));
       });
     });
 
@@ -1033,10 +1058,10 @@ void main() {
       test('должен перевести в inProgress при первом отмеченном эпизоде',
           () async {
         final CollectionItem item = createTvItem();
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1057,10 +1082,10 @@ void main() {
       test('должен перевести в inProgress при статусе planned', () async {
         final CollectionItem item =
             createTvItem(status: ItemStatus.planned);
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1080,12 +1105,12 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(totalEpisodes: 2, status: ItemStatus.notStarted);
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
                 });
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 2))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 2))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1105,10 +1130,10 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(totalEpisodes: 0, status: ItemStatus.notStarted);
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1132,13 +1157,15 @@ void main() {
           totalSeasons: 1,
           status: ItemStatus.notStarted,
         );
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async =>
                 <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
         when(() => mockTvShowDao.markSeasonWatched(
               testCollectionId,
+              DataSource.tmdb,
               testShowId,
               1,
               <int>[1, 2, 3],
@@ -1172,12 +1199,12 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(totalEpisodes: 2, status: ItemStatus.notStarted);
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (0, 1): DateTime(2024),
                 });
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1197,10 +1224,10 @@ void main() {
       test('отметка только спецвыпуска не должна включать inProgress',
           () async {
         final CollectionItem item = createTvItem();
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 0, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 0, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1222,15 +1249,18 @@ void main() {
           totalSeasons: 2,
           status: ItemStatus.notStarted,
         );
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 0))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 0))
             .thenAnswer((_) async => <TvEpisode>[testEpisodeSpecial]);
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async =>
                 <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
         when(() => mockTvShowDao.markSeasonWatched(
               testCollectionId,
+              DataSource.tmdb,
               testShowId,
               1,
               <int>[1, 2, 3],
@@ -1258,12 +1288,12 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(status: ItemStatus.inProgress);
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
                 });
         when(() => mockTvShowDao.markEpisodeUnwatched(
-                testCollectionId, testShowId, 1, 1))
+                testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1283,14 +1313,14 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(totalEpisodes: 3, status: ItemStatus.completed);
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
                   (1, 2): DateTime(2024),
                   (1, 3): DateTime(2024),
                 });
         when(() => mockTvShowDao.markEpisodeUnwatched(
-                testCollectionId, testShowId, 1, 3))
+                testCollectionId, DataSource.tmdb, testShowId, 1, 3))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1310,10 +1340,10 @@ void main() {
         final CollectionItem item = createTvItem(
           mediaType: MediaType.animation,
         );
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1332,12 +1362,12 @@ void main() {
       test('не должен менять статус dropped при отметке эпизода', () async {
         final CollectionItem item =
             createTvItem(status: ItemStatus.dropped);
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
                 });
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 2))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 2))
             .thenAnswer((_) async {});
 
         final ProviderContainer container =
@@ -1353,12 +1383,14 @@ void main() {
       });
 
       test('не должен менять статус если collectionId == null', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(any(), testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
 
-        const ({int? collectionId, int showId}) uncatArg = (
+        const ({int? collectionId, int showId, DataSource source}) uncatArg =
+            (
           collectionId: null,
           showId: testShowId,
+          source: DataSource.tmdb,
         );
         final ProviderContainer container =
             createTrackingContainer(<CollectionItem>[]);
@@ -1375,24 +1407,28 @@ void main() {
         final CollectionItem item =
             createTvItem(totalEpisodes: 5, status: ItemStatus.notStarted);
 
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
 
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async =>
                 <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 2))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 2))
             .thenAnswer(
                 (_) async => <TvEpisode>[testEpisode2s1, testEpisode2s2]);
 
         when(() => mockTvShowDao.markSeasonWatched(
               testCollectionId,
+              DataSource.tmdb,
               testShowId,
               1,
               <int>[1, 2, 3],
             )).thenAnswer((_) async {});
         when(() => mockTvShowDao.markSeasonWatched(
               testCollectionId,
+              DataSource.tmdb,
               testShowId,
               2,
               <int>[1, 2],
@@ -1439,13 +1475,15 @@ void main() {
         final CollectionItem item =
             createTvItem(totalEpisodes: 3, status: ItemStatus.notStarted);
 
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
-        when(() => mockTvShowDao.getEpisodesByShowAndSeason(testShowId, 1))
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
             .thenAnswer((_) async =>
                 <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
         when(() => mockTvShowDao.markSeasonWatched(
               testCollectionId,
+              DataSource.tmdb,
               testShowId,
               1,
               <int>[1, 2, 3],
@@ -1479,10 +1517,10 @@ void main() {
       });
 
       test('не должен менять статус если items == null', () async {
-        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+        when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
-                mockTvShowDao.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+                mockTvShowDao.markEpisodeWatched(testCollectionId, DataSource.tmdb, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
         final ProviderContainer container = createContainer();

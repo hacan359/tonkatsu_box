@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
 import 'package:tonkatsu_box/core/import/sources/trakt/trakt_import_service.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
@@ -472,7 +473,7 @@ void main() {
 
         when(() => mockMovieDao.upsertMovie(any())).thenAnswer((_) async {});
         when(() => mockTvShowDao.upsertTvShow(any())).thenAnswer((_) async {});
-        when(() => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any()))
+        when(() => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any(), any()))
             .thenAnswer((_) async {});
 
         when(() => mockWishlist.getAll(
@@ -1030,7 +1031,7 @@ void main() {
         await sut.import(TraktImportOptions(zipPath: zipPath));
 
         verify(() =>
-                mockTvShowDao.markEpisodeWatched(any(), 200, any(), any()))
+                mockTvShowDao.markEpisodeWatched(any(), any(), 200, any(), any()))
             .called(4);
       });
 
@@ -1532,7 +1533,7 @@ void main() {
         await sut.import(TraktImportOptions(zipPath: zipPath));
 
         verifyNever(
-            () => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any()));
+            () => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any(), any()));
       });
 
       test('should skip rating без TMDB ID', () async {
@@ -1792,7 +1793,7 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        verify(() => mockTvShowDao.markEpisodeWatched(1, 200, 1, 1)).called(1);
+        verify(() => mockTvShowDao.markEpisodeWatched(1, DataSource.tmdb, 200, 1, 1)).called(1);
       });
 
       test('должен считать completedAt для show status == completed',

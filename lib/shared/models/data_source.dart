@@ -66,11 +66,16 @@ enum DataSource {
   /// Parses a [DataSource] from its stored name (the `source` column in DB /
   /// export). Returns [DataSource.anilist] for null and unknown values — the
   /// safe manga default, since the manga cache was AniList-only before v44.
-  static DataSource fromName(String? name) {
-    if (name == null) return DataSource.anilist;
+  static DataSource fromName(String? name) =>
+      fromNameOr(name, DataSource.anilist);
+
+  /// Parses a stored name with an explicit [fallback] for null and unknown
+  /// values.
+  static DataSource fromNameOr(String? name, DataSource fallback) {
+    if (name == null) return fallback;
     for (final DataSource s in DataSource.values) {
       if (s.name == name) return s;
     }
-    return DataSource.anilist;
+    return fallback;
   }
 }

@@ -1,4 +1,5 @@
 import '../../l10n/app_localizations.dart';
+import 'data_source.dart';
 
 /// Media content type of a collection item.
 enum MediaType {
@@ -36,6 +37,19 @@ enum MediaType {
   custom('custom');
 
   const MediaType(this.value);
+
+  /// Fallback source for rows whose `source` column is NULL.
+  DataSource get defaultSource => switch (this) {
+        MediaType.game => DataSource.igdb,
+        MediaType.movie => DataSource.tmdb,
+        MediaType.tvShow => DataSource.tmdb,
+        MediaType.animation => DataSource.tmdb,
+        MediaType.visualNovel => DataSource.vndb,
+        MediaType.manga => DataSource.anilist,
+        MediaType.anime => DataSource.anilist,
+        MediaType.book => DataSource.openLibrary,
+        MediaType.custom => DataSource.local,
+      };
 
   /// String value stored in the database.
   final String value;

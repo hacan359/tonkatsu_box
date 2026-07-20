@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/widgets/episode_tracker_section.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/item_mark.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
 import 'package:tonkatsu_box/shared/models/tv_season.dart';
@@ -42,9 +43,10 @@ void main() {
     mockTmdbApi = MockTmdbApi();
     when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
     when(() => mockDb.itemMarkDao).thenReturn(mockItemMarkDao);
-    when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, testShowId))
+    when(() => mockTvShowDao.getWatchedEpisodes(
+            testCollectionId, DataSource.tmdb, testShowId))
         .thenAnswer((_) async => <(int, int), DateTime?>{});
-    when(() => mockTvShowDao.getEpisodesByShowId(testShowId))
+    when(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, testShowId))
         .thenAnswer((_) async => <TvEpisode>[]);
     when(() => mockItemMarkDao.getMarksForItem(testItemId))
         .thenAnswer((_) async => <ItemMark>[]);
@@ -54,13 +56,15 @@ void main() {
     WidgetTester tester,
     List<TvSeason> seasons,
   ) async {
-    when(() => mockTvShowDao.getTvSeasonsByShowId(testShowId))
+    when(() =>
+            mockTvShowDao.getTvSeasonsByShowId(DataSource.tmdb, testShowId))
         .thenAnswer((_) async => seasons);
 
     await tester.pumpApp(
       const SingleChildScrollView(
         child: SeasonsListWidget(
-          tmdbShowId: testShowId,
+          showId: testShowId,
+          source: DataSource.tmdb,
           collectionId: testCollectionId,
           itemId: testItemId,
           accentColor: Colors.blue,

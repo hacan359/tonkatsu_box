@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
 import 'package:tonkatsu_box/shared/models/item_mark.dart';
@@ -26,6 +27,7 @@ import 'mocks.dart';
 
 void registerAllFallbacks() {
   registerFallbackValue(MediaType.game);
+  registerFallbackValue(DataSource.tmdb);
   registerFallbackValue(ItemStatus.notStarted);
   registerFallbackValue(CollectionType.own);
   registerFallbackValue(ImageType.gameCover);

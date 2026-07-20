@@ -7,6 +7,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tag.dart';
@@ -448,8 +449,11 @@ class CollectionItemsView extends ConsumerWidget {
       return null;
     }
     final int watched = ref
-        .watch(episodeTrackerNotifierProvider(
-            (collectionId: collectionId, showId: item.externalId)))
+        .watch(episodeTrackerNotifierProvider((
+          collectionId: collectionId,
+          showId: item.externalId,
+          source: item.source ?? DataSource.tmdb,
+        )))
         .totalWatchedCount;
     if (watched == 0) return null;
     final int total = item.tvShow?.totalEpisodes ?? 0;
