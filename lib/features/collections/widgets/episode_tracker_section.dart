@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/tmdb_api.dart';
+import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -29,6 +30,7 @@ class EpisodeTrackerSection extends ConsumerWidget {
     required this.collectionId,
     required this.itemId,
     required this.externalId,
+    required this.source,
     required this.tvShow,
     required this.accentColor,
     super.key,
@@ -40,8 +42,11 @@ class EpisodeTrackerSection extends ConsumerWidget {
   /// Owning `collection_items.id` — anchor for per-episode marks.
   final int itemId;
 
-  /// TMDB show id.
+  /// Show id in the [source] provider's namespace.
   final int externalId;
+
+  /// Episode data source of the item.
+  final DataSource source;
 
   /// Show data.
   final TvShow? tvShow;
@@ -52,9 +57,8 @@ class EpisodeTrackerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final int tmdbShowId = externalId;
-    final ({int? collectionId, int showId}) trackerArg =
-        (collectionId: collectionId, showId: tmdbShowId);
+    final EpisodeTrackerArg trackerArg =
+        (collectionId: collectionId, showId: externalId, source: source);
 
     final EpisodeTrackerState trackerState =
         ref.watch(episodeTrackerNotifierProvider(trackerArg));
@@ -100,7 +104,8 @@ class EpisodeTrackerSection extends ConsumerWidget {
         ],
         const SizedBox(height: 12),
         SeasonsListWidget(
-          tmdbShowId: tmdbShowId,
+          showId: externalId,
+          source: source,
           collectionId: collectionId,
           itemId: itemId,
           accentColor: accentColor,
@@ -114,15 +119,19 @@ class EpisodeTrackerSection extends ConsumerWidget {
 class SeasonsListWidget extends ConsumerStatefulWidget {
   /// Creates a [SeasonsListWidget].
   const SeasonsListWidget({
-    required this.tmdbShowId,
+    required this.showId,
+    required this.source,
     required this.collectionId,
     required this.itemId,
     required this.accentColor,
     super.key,
   });
 
-  /// TMDB show id.
-  final int tmdbShowId;
+  /// Show id in the [source] provider's namespace.
+  final int showId;
+
+  /// Episode data source of the item.
+  final DataSource source;
 
   /// Collection id (null for uncategorized).
   final int? collectionId;
@@ -152,18 +161,19 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   Future<void> _loadSeasons() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
     List<TvSeason> seasons =
-        await db.tvShowDao.getTvSeasonsByShowId(widget.tmdbShowId);
+        await db.tvShowDao.getTvSeasonsByShowId(widget.source, widget.showId);
 
-    // Cache miss: fetch from the TMDB API and cache the result
+    // Cache miss: fetch from the source API and cache the result
     if (seasons.isEmpty) {
       try {
-        final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
-        seasons = await tmdbApi.getTvSeasons(widget.tmdbShowId);
+        final TvEpisodeSource episodeSource =
+            ref.read(tvEpisodeSourceResolverProvider)(widget.source);
+        seasons = await episodeSource.getSeasons(widget.showId);
         if (seasons.isNotEmpty) {
           await db.tvShowDao.upsertTvSeasons(seasons);
         }
       } on Exception catch (_) {
-        // TMDB API unavailable — show empty season list, not critical.
+        // Source API unavailable — show empty season list, not critical.
         // User can retry via pull-to-refresh.
       }
     }
@@ -185,10 +195,11 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
 
     try {
       final DatabaseService db = ref.read(databaseServiceProvider);
-      final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
+      final TvEpisodeSource episodeSource =
+          ref.read(tvEpisodeSourceResolverProvider)(widget.source);
 
       final List<TvSeason> seasons =
-          await tmdbApi.getTvSeasons(widget.tmdbShowId);
+          await episodeSource.getSeasons(widget.showId);
       if (seasons.isNotEmpty) {
         await db.tvShowDao.upsertTvSeasons(seasons);
       }
@@ -218,9 +229,10 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     }
   }
 
-  ({int? collectionId, int showId}) get _trackerArg => (
+  EpisodeTrackerArg get _trackerArg => (
         collectionId: widget.collectionId,
-        showId: widget.tmdbShowId,
+        showId: widget.showId,
+        source: widget.source,
       );
 
   @override
@@ -551,7 +563,7 @@ class SeasonExpansionTile extends ConsumerStatefulWidget {
   final EpisodeTrackerState trackerState;
 
   /// Argument for the tracker provider.
-  final ({int? collectionId, int showId}) trackerArg;
+  final EpisodeTrackerArg trackerArg;
 
   /// Owning `collection_items.id` — anchor for per-episode/season marks.
   final int itemId;
@@ -571,7 +583,7 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
   Widget build(BuildContext context) {
     final TvSeason season = widget.season;
     final EpisodeTrackerState trackerState = widget.trackerState;
-    final ({int? collectionId, int showId}) trackerArg = widget.trackerArg;
+    final EpisodeTrackerArg trackerArg = widget.trackerArg;
     final int itemId = widget.itemId;
     final Color accentColor = widget.accentColor;
     final S l = S.of(context);
@@ -747,7 +759,7 @@ class EpisodeTile extends ConsumerStatefulWidget {
   final DateTime? watchedAt;
 
   /// Argument for the tracker provider.
-  final ({int? collectionId, int showId}) trackerArg;
+  final EpisodeTrackerArg trackerArg;
 
   /// Owning `collection_items.id` — anchor for per-episode marks.
   final int itemId;

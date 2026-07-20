@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
 
 void main() {
@@ -773,6 +774,87 @@ void main() {
       );
 
       expect(episode.toString(), 'TvEpisode(showId: 99999, S15E23: Finale)');
+    });
+
+    group('source', () {
+      test('defaults to tmdb', () {
+        const TvEpisode episode = TvEpisode(
+          tmdbShowId: 1396,
+          seasonNumber: 1,
+          episodeNumber: 1,
+          name: 'Pilot',
+        );
+
+        expect(episode.source, DataSource.tmdb);
+        expect(episode.toDb()['source'], 'tmdb');
+      });
+
+      test('fromDb reads a missing source as tmdb', () {
+        final TvEpisode episode = TvEpisode.fromDb(<String, dynamic>{
+          'tmdb_show_id': 1396,
+          'season_number': 1,
+          'episode_number': 1,
+          'name': 'Pilot',
+        });
+
+        expect(episode.source, DataSource.tmdb);
+      });
+
+      test('fromDb reads an unknown source as tmdb', () {
+        final TvEpisode episode = TvEpisode.fromDb(<String, dynamic>{
+          'tmdb_show_id': 1396,
+          'season_number': 1,
+          'episode_number': 1,
+          'name': 'Pilot',
+          'source': 'not-a-source',
+        });
+
+        expect(episode.source, DataSource.tmdb);
+      });
+
+      test('source survives a toDb/fromDb round-trip', () {
+        const TvEpisode original = TvEpisode(
+          tmdbShowId: 1396,
+          seasonNumber: 1,
+          episodeNumber: 1,
+          name: 'Pilot',
+          source: DataSource.anilist,
+        );
+
+        expect(TvEpisode.fromDb(original.toDb()).source, DataSource.anilist);
+      });
+
+      test('episodes differing only by source are not equal', () {
+        const TvEpisode tmdb = TvEpisode(
+          tmdbShowId: 1396,
+          seasonNumber: 1,
+          episodeNumber: 1,
+          name: 'Pilot',
+        );
+        const TvEpisode other = TvEpisode(
+          tmdbShowId: 1396,
+          seasonNumber: 1,
+          episodeNumber: 1,
+          name: 'Pilot',
+          source: DataSource.anilist,
+        );
+
+        expect(tmdb, isNot(equals(other)));
+      });
+
+      test('copyWith replaces source', () {
+        const TvEpisode episode = TvEpisode(
+          tmdbShowId: 1396,
+          seasonNumber: 1,
+          episodeNumber: 1,
+          name: 'Pilot',
+        );
+
+        expect(
+          episode.copyWith(source: DataSource.anilist).source,
+          DataSource.anilist,
+        );
+      });
     });
   });
 }

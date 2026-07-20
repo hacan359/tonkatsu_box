@@ -300,6 +300,7 @@ void main() {
       when(() => collDao.findAllCollectionItems(
             mediaType: MediaType.tvShow,
             externalId: 200,
+            source: DataSource.tmdb,
           )).thenAnswer((_) async => <CollectionItem>[
             createTestCollectionItem(
               id: 1,
@@ -311,8 +312,10 @@ void main() {
       when(() => collDao.findAllCollectionItems(
             mediaType: MediaType.animation,
             externalId: 200,
+            source: DataSource.tmdb,
           )).thenAnswer((_) async => <CollectionItem>[]);
       when(() => tvDao.markEpisodeWatchedAt(
+            any(),
             any(),
             any(),
             any(),
@@ -329,7 +332,8 @@ void main() {
 
       await makeService().restoreFromBackup(zipPath: path);
 
-      verify(() => tvDao.markEpisodeWatchedAt(7, 200, 1, 4, 1705320000000))
+      verify(() => tvDao.markEpisodeWatchedAt(
+              7, DataSource.tmdb, 200, 1, 4, 1705320000000))
           .called(1);
     });
 
@@ -342,6 +346,7 @@ void main() {
       when(() => collDao.findAllCollectionItems(
             mediaType: MediaType.tvShow,
             externalId: 200,
+            source: DataSource.tmdb,
           )).thenAnswer((_) async => <CollectionItem>[
             createTestCollectionItem(
               id: 1,
@@ -353,8 +358,10 @@ void main() {
       when(() => collDao.findAllCollectionItems(
             mediaType: MediaType.animation,
             externalId: 200,
+            source: DataSource.tmdb,
           )).thenAnswer((_) async => <CollectionItem>[]);
       when(() => tvDao.markEpisodeWatchedAt(
+            any(),
             any(),
             any(),
             any(),
@@ -376,8 +383,10 @@ void main() {
       verify(() => collDao.findAllCollectionItems(
             mediaType: MediaType.tvShow,
             externalId: 200,
+            source: DataSource.tmdb,
           )).called(1);
-      verify(() => tvDao.markEpisodeWatchedAt(any(), any(), any(), any(), any()))
+      verify(() => tvDao.markEpisodeWatchedAt(
+              any(), any(), any(), any(), any(), any()))
           .called(2);
     });
   });

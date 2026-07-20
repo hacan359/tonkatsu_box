@@ -5,9 +5,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../../core/api/tmdb_api.dart';
+import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/item_status_logic.dart';
 import '../../../shared/models/media_type.dart';
@@ -95,40 +96,50 @@ class EpisodeTrackerState {
   }
 }
 
+/// Family argument of the episode tracker. `source` selects the
+/// season/episode provider ([TvEpisodeSource]) and namespaces DB rows.
+typedef EpisodeTrackerArg = ({
+  int? collectionId,
+  int showId,
+  DataSource source,
+});
+
 /// Episode tracking provider.
 ///
 /// When collectionId == null (uncategorized), tracking is disabled.
 final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
-        ({int? collectionId, int showId})>
+        EpisodeTrackerArg>
     episodeTrackerNotifierProvider = NotifierProvider.family<
         EpisodeTrackerNotifier,
         EpisodeTrackerState,
-        ({int? collectionId, int showId})>(
+        EpisodeTrackerArg>(
   EpisodeTrackerNotifier.new,
 );
 
 /// Notifier that manages watched episodes.
-class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
-    ({int? collectionId, int showId})> {
+class EpisodeTrackerNotifier
+    extends FamilyNotifier<EpisodeTrackerState, EpisodeTrackerArg> {
   static final Logger _log = Logger('EpisodeTrackerNotifier');
 
   late DatabaseService _db;
-  late TmdbApi _tmdbApi;
+  late TvEpisodeSource _episodeSource;
   late int? _collectionId;
   late int _showId;
+  late DataSource _source;
 
-  // Show totals fetched from the TMDB API, cached so we don't re-query on
+  // Show totals fetched from the source API, cached so we don't re-query on
   // every toggleEpisode/toggleSeason.
   int? _cachedTotalEpisodes;
   int? _cachedTotalSeasons;
   bool _hasFetchedTotals = false;
 
   @override
-  EpisodeTrackerState build(({int? collectionId, int showId}) arg) {
+  EpisodeTrackerState build(EpisodeTrackerArg arg) {
     _collectionId = arg.collectionId;
     _showId = arg.showId;
+    _source = arg.source;
     _db = ref.watch(databaseServiceProvider);
-    _tmdbApi = ref.watch(tmdbApiProvider);
+    _episodeSource = ref.watch(tvEpisodeSourceResolverProvider)(arg.source);
 
     // Episode tracking is not supported for uncategorized items
     if (_collectionId == null) return const EpisodeTrackerState();
@@ -144,7 +155,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     if (collId == null) return;
     try {
       final Map<(int, int), DateTime?> watched =
-          await _db.tvShowDao.getWatchedEpisodes(collId, _showId);
+          await _db.tvShowDao.getWatchedEpisodes(collId, _source, _showId);
       state = state.copyWith(watchedEpisodes: watched);
     } on Exception catch (e) {
       state = state.copyWith(error: 'Failed to load watched episodes: $e');
@@ -157,7 +168,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
   Future<void> _loadCachedEpisodes() async {
     try {
       final List<TvEpisode> episodes =
-          await _db.tvShowDao.getEpisodesByShowId(_showId);
+          await _db.tvShowDao.getEpisodesByShowId(_source, _showId);
       if (episodes.isEmpty) return;
       final Map<int, List<TvEpisode>> bySeason = <int, List<TvEpisode>>{};
       for (final TvEpisode ep in episodes) {
@@ -190,11 +201,12 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
     try {
       List<TvEpisode> episodes =
-          await _db.tvShowDao.getEpisodesByShowAndSeason(_showId, seasonNumber);
+          await _db.tvShowDao
+              .getEpisodesByShowAndSeason(_source, _showId, seasonNumber);
 
       if (episodes.isEmpty) {
         episodes =
-            await _tmdbApi.getSeasonEpisodes(_showId, seasonNumber);
+            await _episodeSource.getSeasonEpisodes(_showId, seasonNumber);
         if (episodes.isNotEmpty) {
           await _db.tvShowDao.upsertEpisodes(episodes);
         }
@@ -236,7 +248,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
     try {
       final List<TvEpisode> episodes =
-          await _tmdbApi.getSeasonEpisodes(_showId, seasonNumber);
+          await _episodeSource.getSeasonEpisodes(_showId, seasonNumber);
       if (episodes.isNotEmpty) {
         await _db.tvShowDao.upsertEpisodes(episodes);
       }
@@ -271,14 +283,14 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
     if (isWatched) {
       await _db.tvShowDao.markEpisodeUnwatched(
-          collId, _showId, season, episode);
+          collId, _source, _showId, season, episode);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes)
             ..remove((season, episode));
       state = state.copyWith(watchedEpisodes: updated);
     } else {
       await _db.tvShowDao.markEpisodeWatched(
-          collId, _showId, season, episode);
+          collId, _source, _showId, season, episode);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes)
             ..[(season, episode)] = DateTime.now();
@@ -299,7 +311,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     final bool allWatched = watchedCount == episodes.length;
 
     if (allWatched) {
-      await _db.tvShowDao.unmarkSeasonWatched(collId, _showId, season);
+      await _db.tvShowDao.unmarkSeasonWatched(
+          collId, _source, _showId, season);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes);
       for (final TvEpisode ep in episodes) {
@@ -310,7 +323,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       final List<int> episodeNumbers =
           episodes.map((TvEpisode ep) => ep.episodeNumber).toList();
       await _db.tvShowDao.markSeasonWatched(
-          collId, _showId, season, episodeNumbers);
+          collId, _source, _showId, season, episodeNumbers);
       final DateTime now = DateTime.now();
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes);
@@ -338,6 +351,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     CollectionItem? targetItem;
     for (final CollectionItem ci in items) {
       if (ci.externalId == _showId &&
+          (ci.source ?? DataSource.tmdb) == _source &&
           (ci.mediaType == MediaType.tvShow ||
            ci.mediaType == MediaType.animation)) {
         targetItem = ci;
@@ -351,12 +365,12 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     int totalSeasons = _cachedTotalSeasons ??
         targetItem.tvShow?.totalSeasons ?? 0;
 
-    // If totals are missing from the cache, fetch them from the TMDB API
+    // If totals are missing from the cache, fetch them from the source API
     // (once per session, so we don't query on every toggle)
     if ((totalInShow == 0 || totalSeasons == 0) && !_hasFetchedTotals) {
       _hasFetchedTotals = true;
       try {
-        final TvShow? freshShow = await _tmdbApi.getTvShow(_showId);
+        final TvShow? freshShow = await _episodeSource.getShow(_showId);
         if (freshShow != null) {
           await _db.tvShowDao.upsertTvShow(freshShow);
           totalInShow = freshShow.totalEpisodes ?? 0;
@@ -365,7 +379,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
           _cachedTotalSeasons = totalSeasons;
         }
       } on Exception catch (e) {
-        _log.warning('TMDB API unavailable, using cached episode data', e);
+        _log.warning('Source API unavailable, using cached episode data', e);
       }
     }
 

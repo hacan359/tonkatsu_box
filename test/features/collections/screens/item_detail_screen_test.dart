@@ -45,11 +45,11 @@ void main() {
 
     final MockTvShowDao mockTvShowDao = MockTvShowDao();
     when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
-    when(() => mockTvShowDao.getTvSeasonsByShowId(any()))
+    when(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()))
         .thenAnswer((_) async => <TvSeason>[]);
-    when(() => mockTvShowDao.getWatchedEpisodes(any(), any()))
+    when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
         .thenAnswer((_) async => <(int, int), DateTime?>{});
-    when(() => mockTvShowDao.getEpisodesByShowId(any()))
+    when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
         .thenAnswer((_) async => <TvEpisode>[]);
     final MockItemMarkDao mockItemMarkDao = MockItemMarkDao();
     when(() => mockDb.itemMarkDao).thenReturn(mockItemMarkDao);

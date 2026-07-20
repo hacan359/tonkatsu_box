@@ -1,12 +1,12 @@
-// Модель сериала из TMDB.
+// TV show model shared by all show sources.
 
 import 'dart:convert';
 
-/// Модель сериала из TMDB API.
-///
-/// Представляет сериал с метаданными из TheMovieDB.
+import 'data_source.dart';
+
+/// A TV show with catalog metadata.
 class TvShow {
-  /// Создаёт экземпляр [TvShow].
+  /// Creates a [TvShow].
   const TvShow({
     required this.tmdbId,
     required this.title,
@@ -22,6 +22,7 @@ class TvShow {
     this.status,
     this.externalUrl,
     this.cachedAt,
+    this.source = DataSource.tmdb,
   });
 
   /// Создаёт [TvShow] из JSON ответа TMDB API.
@@ -81,7 +82,8 @@ class TvShow {
     );
   }
 
-  /// Создаёт [TvShow] из записи базы данных.
+  /// Creates a [TvShow] from a database row. A missing or unknown `source`
+  /// reads as [DataSource.tmdb].
   factory TvShow.fromDb(Map<String, dynamic> row) {
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
@@ -105,10 +107,11 @@ class TvShow {
       status: row['status'] as String?,
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
+      source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
     );
   }
 
-  /// Уникальный идентификатор сериала в TMDB.
+  /// Show id in the [source] provider's namespace.
   final int tmdbId;
 
   /// Название сериала (локализованное).
@@ -150,6 +153,9 @@ class TvShow {
   /// Время кеширования (Unix timestamp).
   final int? cachedAt;
 
+  /// Provider this show came from.
+  final DataSource source;
+
   /// URL маленького постера (w154) для thumbnail-ов.
   String? get posterThumbUrl {
     if (posterUrl == null) return null;
@@ -188,6 +194,7 @@ class TvShow {
       'status': status,
       'external_url': externalUrl,
       'cached_at': cachedAt,
+      'source': source.name,
     };
   }
 
@@ -207,6 +214,7 @@ class TvShow {
     String? status,
     String? externalUrl,
     int? cachedAt,
+    DataSource? source,
   }) {
     return TvShow(
       tmdbId: tmdbId ?? this.tmdbId,
@@ -223,17 +231,20 @@ class TvShow {
       status: status ?? this.status,
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
+      source: source ?? this.source,
     );
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is TvShow && other.tmdbId == tmdbId;
+    return other is TvShow &&
+        other.source == source &&
+        other.tmdbId == tmdbId;
   }
 
   @override
-  int get hashCode => tmdbId.hashCode;
+  int get hashCode => Object.hash(source, tmdbId);
 
   @override
   String toString() => 'TvShow(tmdbId: $tmdbId, title: $title)';

@@ -266,6 +266,7 @@ class CollectionDao {
     required MediaType mediaType,
     required int externalId,
     int? platformId,
+    DataSource? source,
   }) async {
     final Database db = await _getDatabase();
     final StringBuffer where = StringBuffer();
@@ -288,6 +289,13 @@ class CollectionDao {
       whereArgs.add(platformId);
     }
 
+    if (source != null) {
+      where.write(' AND COALESCE(source, ?) = ?');
+      whereArgs
+        ..add(mediaType.defaultSource.name)
+        ..add(source.name);
+    }
+
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
       where: where.toString(),
@@ -306,12 +314,14 @@ class CollectionDao {
     required MediaType mediaType,
     required int externalId,
     int? platformId,
+    DataSource? source,
   }) async {
     final CollectionItem? item = await findCollectionItem(
       collectionId: collectionId,
       mediaType: mediaType,
       externalId: externalId,
       platformId: platformId,
+      source: source,
     );
     if (item == null) return null;
     return (await _loadJoinedData(<CollectionItem>[item])).first;
@@ -320,12 +330,22 @@ class CollectionDao {
   Future<List<CollectionItem>> findAllCollectionItems({
     required MediaType mediaType,
     required int externalId,
+    DataSource? source,
   }) async {
     final Database db = await _getDatabase();
+    final StringBuffer where =
+        StringBuffer('media_type = ? AND external_id = ?');
+    final List<Object?> whereArgs = <Object?>[mediaType.value, externalId];
+    if (source != null) {
+      where.write(' AND COALESCE(source, ?) = ?');
+      whereArgs
+        ..add(mediaType.defaultSource.name)
+        ..add(source.name);
+    }
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
-      where: 'media_type = ? AND external_id = ?',
-      whereArgs: <Object?>[mediaType.value, externalId],
+      where: where.toString(),
+      whereArgs: whereArgs,
     );
     return rows.map(CollectionItem.fromDb).toList();
   }
@@ -1011,9 +1031,11 @@ class CollectionDao {
           ON ci.media_type = 'movie' AND ci.external_id = m.tmdb_id
         LEFT JOIN tv_shows_cache t
           ON ci.media_type = 'tv_show' AND ci.external_id = t.tmdb_id
+          AND t.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN tv_shows_cache t2
           ON ci.media_type = 'animation' AND ci.platform_id = 1
           AND ci.external_id = t2.tmdb_id
+          AND t2.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN movies_cache m2
           ON ci.media_type = 'animation' AND ci.platform_id != 1
           AND ci.external_id = m2.tmdb_id
@@ -1170,8 +1192,10 @@ class CollectionDao {
     final Map<int, Movie> moviesMap = <int, Movie>{
       for (final Movie m in resolvedMovies) m.tmdbId: m,
     };
-    final Map<int, TvShow> tvShowsMap = <int, TvShow>{
-      for (final TvShow t in resolvedTvShows) t.tmdbId: t,
+    // TV shows are keyed by `(source, id)` — ids from different providers
+    // can collide numerically.
+    final Map<String, TvShow> tvShowsMap = <String, TvShow>{
+      for (final TvShow t in resolvedTvShows) '${t.source.name}:${t.tmdbId}': t,
     };
     final Map<int, VisualNovel> vnMap = <int, VisualNovel>{
       for (final VisualNovel vn in visualNovels) vn.numericId: vn,
@@ -1206,10 +1230,16 @@ class CollectionDao {
         case MediaType.movie:
           return item.copyWith(movie: moviesMap[item.externalId]);
         case MediaType.tvShow:
-          return item.copyWith(tvShow: tvShowsMap[item.externalId]);
+          return item.copyWith(
+            tvShow: tvShowsMap[
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+          );
         case MediaType.animation:
           if (item.platformId == AnimationSource.tvShow) {
-            return item.copyWith(tvShow: tvShowsMap[item.externalId]);
+            return item.copyWith(
+              tvShow: tvShowsMap[
+                  '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+            );
           }
           return item.copyWith(movie: moviesMap[item.externalId]);
         case MediaType.visualNovel:

@@ -164,4 +164,76 @@ void main() {
       );
     });
   });
+
+  group('CollectionDao.getCollectionCovers — tv show source', () {
+    Future<void> insertTvShow({
+      required int tmdbId,
+      required String source,
+      required String posterUrl,
+    }) async {
+      await db.insert('tv_shows_cache', <String, Object?>{
+        'tmdb_id': tmdbId,
+        'source': source,
+        'title': 'Show $source',
+        'poster_url': posterUrl,
+        'cached_at': 1700000000,
+      });
+    }
+
+    test('should not duplicate a cover when two sources share a show id',
+        () async {
+      await insertTvShow(
+        tmdbId: 700,
+        source: 'tmdb',
+        posterUrl: 'https://x.test/tmdb.jpg',
+      );
+      await insertTvShow(
+        tmdbId: 700,
+        source: 'anilist',
+        posterUrl: 'https://x.test/anilist.jpg',
+      );
+      await db.insert('collection_items', <String, Object?>{
+        'id': 10,
+        'collection_id': 1,
+        'media_type': 'tv_show',
+        'external_id': 700,
+        'source': 'tmdb',
+        'status': 'not_started',
+        'sort_order': 0,
+        'added_at': 1700000000,
+      });
+
+      final List<CoverInfo> covers = await dao.getCollectionCovers(1);
+
+      expect(covers, hasLength(1));
+      expect(covers.first.thumbnailUrl, 'https://x.test/tmdb.jpg');
+    });
+
+    test('should match a NULL item source to the tmdb row', () async {
+      await insertTvShow(
+        tmdbId: 701,
+        source: 'anilist',
+        posterUrl: 'https://x.test/anilist.jpg',
+      );
+      await insertTvShow(
+        tmdbId: 701,
+        source: 'tmdb',
+        posterUrl: 'https://x.test/tmdb.jpg',
+      );
+      await db.insert('collection_items', <String, Object?>{
+        'id': 11,
+        'collection_id': 1,
+        'media_type': 'tv_show',
+        'external_id': 701,
+        'status': 'not_started',
+        'sort_order': 0,
+        'added_at': 1700000000,
+      });
+
+      final List<CoverInfo> covers = await dao.getCollectionCovers(1);
+
+      expect(covers, hasLength(1));
+      expect(covers.first.thumbnailUrl, 'https://x.test/tmdb.jpg');
+    });
+  });
 }

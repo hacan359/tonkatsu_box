@@ -332,7 +332,7 @@ class CollectionItem with Exportable {
           genresString: tvShow?.genresString,
           genres: tvShow?.genres,
           mediaStatus: tvShow?.status,
-          source: DataSource.tmdb,
+          source: tvShow?.source ?? source ?? DataSource.tmdb,
           imageType: ImageType.tvShowPoster,
           placeholderIcon: Icons.tv_outlined,
         );
@@ -353,7 +353,7 @@ class CollectionItem with Exportable {
             genresString: tvShow?.genresString,
             genres: tvShow?.genres,
             mediaStatus: tvShow?.status,
-            source: DataSource.tmdb,
+            source: tvShow?.source ?? source ?? DataSource.tmdb,
             imageType: ImageType.tvShowPoster,
             placeholderIcon: Icons.animation,
           );

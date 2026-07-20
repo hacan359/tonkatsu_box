@@ -205,15 +205,20 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   Future<void> _toggleTracked(CollectionItem item) async {
     final TrackedReleaseDao dao = ref.read(trackedReleaseDaoProvider);
+    final DataSource source = item.dataSource;
     final bool tracked =
-        await dao.isTracked(item.externalId, DataSource.tmdb, item.mediaType);
+        await dao.isTracked(item.externalId, source, item.mediaType);
     if (tracked) {
-      await dao.unsubscribe(item.externalId, DataSource.tmdb, item.mediaType);
+      await dao.unsubscribe(item.externalId, source, item.mediaType);
     } else {
-      await dao.subscribe(item.externalId, DataSource.tmdb, item.mediaType);
+      await dao.subscribe(item.externalId, source, item.mediaType);
     }
     ref.invalidate(isReleaseTrackedProvider(
-      (externalId: item.externalId, mediaType: item.mediaType),
+      (
+        externalId: item.externalId,
+        source: source,
+        mediaType: item.mediaType,
+      ),
     ));
     ref.invalidate(releasesProvider);
   }
@@ -599,6 +604,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               ? ref
                       .watch(isReleaseTrackedProvider((
                         externalId: item.externalId,
+                        source: item.dataSource,
                         mediaType: item.mediaType,
                       )))
                       .valueOrNull ??
@@ -700,6 +706,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             collectionId: widget.collectionId,
             itemId: item.id,
             externalId: item.externalId,
+            source: item.source ?? DataSource.tmdb,
             tvShow: config.tvShow,
             accentColor: config.accentColor,
           ),
