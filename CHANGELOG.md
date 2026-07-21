@@ -9,6 +9,24 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Brazilian Portuguese (pt) interface localization**
+
+  The app interface is now available in Brazilian Portuguese alongside
+  English, Russian, Simplified Chinese and Spanish. The language and
+  welcome pickers offer Português (Brasil), and selecting it defaults
+  TMDB content language to `pt-BR`. Contributed by @bonbj (#370).
+
+  * lib/l10n/app_pt.arb, lib/l10n/app_localizations_pt.dart (SPt): New —
+    full pt translation (all 1498 keys) and its generated delegate.
+  * lib/l10n/app_localizations.dart (S.supportedLocales,
+    _SDelegate.isSupported, lookupS): Register the `pt` locale.
+  * lib/features/settings/screens/settings_screen.dart: Add Português
+    (Brasil) to the app-language picker.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (_WelcomeStepLanguageState, _LanguageOption): Add the option; reindex
+    WelcomeReveal; ellipsize long labels.
+  * lib/shared/constants/tmdb_content_languages.dart: Map `pt` → `pt-BR`.
+
 - **Full export (.xcollx) with user data now carries watched-episode marks
   and restores them on import**
 

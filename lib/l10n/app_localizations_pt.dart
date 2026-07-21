@@ -111,7 +111,7 @@ class SPt extends S {
   String get statusPlanned => 'Planejado';
 
   @override
-  String get statusReplay => 'Reassistindo';
+  String get statusReplay => 'Repetindo';
 
   @override
   String get rewatchCountEdit => 'Contagem de reassistências';
@@ -1768,10 +1768,10 @@ class SPt extends S {
   String get customItemUpdated => 'Item personalizado atualizado';
 
   @override
-  String get tagLabel => 'Etiqueta';
+  String get tagLabel => 'Tag';
 
   @override
-  String get tagsLabel => 'Etiquetas';
+  String get tagsLabel => 'Tags';
 
   @override
   String get tagCreate => 'Nova tag';
