@@ -1,12 +1,9 @@
-// TV show model shared by all show sources.
-
 import 'dart:convert';
 
 import 'data_source.dart';
 
 /// A TV show with catalog metadata.
 class TvShow {
-  /// Creates a [TvShow].
   const TvShow({
     required this.tmdbId,
     required this.title,
@@ -25,30 +22,26 @@ class TvShow {
     this.source = DataSource.tmdb,
   });
 
-  /// Создаёт [TvShow] из JSON ответа TMDB API.
   factory TvShow.fromJson(Map<String, dynamic> json) {
-    // Извлекаем URL постера
     String? posterUrl;
     final String? posterPath = json['poster_path'] as String?;
     if (posterPath != null) {
       posterUrl = 'https://image.tmdb.org/t/p/w342$posterPath';
     }
 
-    // Извлекаем URL бэкдропа
     String? backdropUrl;
     final String? backdropPath = json['backdrop_path'] as String?;
     if (backdropPath != null) {
       backdropUrl = 'https://image.tmdb.org/t/p/w780$backdropPath';
     }
 
-    // Извлекаем год из first_air_date (формат: "2008-01-20")
+    // first_air_date is "YYYY-MM-DD".
     int? firstAirYear;
     final String? firstAirDate = json['first_air_date'] as String?;
     if (firstAirDate != null && firstAirDate.length >= 4) {
       firstAirYear = int.tryParse(firstAirDate.substring(0, 4));
     }
 
-    // Извлекаем жанры
     List<String>? genres;
     if (json['genres'] != null) {
       final List<dynamic> genresList = json['genres'] as List<dynamic>;
@@ -60,7 +53,6 @@ class TvShow {
       genres = genreIds.map((dynamic id) => id.toString()).toList();
     }
 
-    // Конструируем URL страницы сериала на TMDB
     final int tmdbId = json['id'] as int;
 
     return TvShow(
@@ -82,8 +74,7 @@ class TvShow {
     );
   }
 
-  /// Creates a [TvShow] from a database row. A missing or unknown `source`
-  /// reads as [DataSource.tmdb].
+  /// A missing or unknown `source` column reads as [DataSource.tmdb].
   factory TvShow.fromDb(Map<String, dynamic> row) {
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
@@ -114,70 +105,56 @@ class TvShow {
   /// Show id in the [source] provider's namespace.
   final int tmdbId;
 
-  /// Название сериала (локализованное).
   final String title;
 
-  /// Оригинальное название сериала.
   final String? originalTitle;
 
-  /// URL постера сериала.
   final String? posterUrl;
 
-  /// URL бэкдропа сериала.
   final String? backdropUrl;
 
-  /// Описание сериала.
   final String? overview;
 
-  /// Список жанров.
   final List<String>? genres;
 
-  /// Год начала показа.
   final int? firstAirYear;
 
-  /// Общее количество сезонов.
   final int? totalSeasons;
 
-  /// Общее количество эпизодов.
   final int? totalEpisodes;
 
-  /// Рейтинг TMDB (0-10).
+  /// 0-10.
   final double? rating;
 
-  /// Статус сериала (Returning Series, Ended, Canceled).
+  /// TMDB value: "Returning Series", "Ended", "Canceled".
   final String? status;
 
-  /// URL страницы сериала на TMDB.
   final String? externalUrl;
 
-  /// Время кеширования (Unix timestamp).
+  /// Unix millis.
   final int? cachedAt;
 
-  /// Provider this show came from.
   final DataSource source;
 
-  /// URL маленького постера (w154) для thumbnail-ов.
+  /// w154 variant for thumbnails.
   String? get posterThumbUrl {
     if (posterUrl == null) return null;
     return posterUrl!.replaceFirst(RegExp(r'/w\d+'), '/w154');
   }
 
-  /// URL среднего бэкдропа (w300) для экранов деталей.
+  /// w300 variant for detail screens.
   String? get backdropSmallUrl {
     if (backdropUrl == null) return null;
     return backdropUrl!.replaceFirst('/w780', '/w300');
   }
 
-  /// Возвращает отформатированный рейтинг.
   String? get formattedRating {
     if (rating == null) return null;
     return rating!.toStringAsFixed(1);
   }
 
-  /// Возвращает жанры в виде строки через запятую.
   String? get genresString => genres?.join(', ');
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'tmdb_id': tmdbId,
@@ -198,7 +175,6 @@ class TvShow {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TvShow copyWith({
     int? tmdbId,
     String? title,

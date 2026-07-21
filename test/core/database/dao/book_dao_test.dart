@@ -61,6 +61,28 @@ void main() {
             await dao.getBook('27448', source: DataSource.openLibrary);
         expect(loaded!.title, 'New');
       });
+
+      test('sparse row keeps the cached page count', () async {
+        // Similars/search-list rows carry no page count and must not wipe it.
+        await dao.upsertBook(
+          createTestBook(id: '27448', title: 'Full', pageCount: 350),
+        );
+        await dao.upsertBook(createTestBook(id: '27448', title: 'Similar'));
+
+        final Book? loaded =
+            await dao.getBook('27448', source: DataSource.openLibrary);
+        expect(loaded!.pageCount, 350);
+        expect(loaded.title, 'Similar');
+      });
+
+      test('full row updates the page count', () async {
+        await dao.upsertBook(createTestBook(id: '27448', pageCount: 350));
+        await dao.upsertBook(createTestBook(id: '27448', pageCount: 420));
+
+        final Book? loaded =
+            await dao.getBook('27448', source: DataSource.openLibrary);
+        expect(loaded!.pageCount, 420);
+      });
     });
 
     group('(id, source) primary key', () {

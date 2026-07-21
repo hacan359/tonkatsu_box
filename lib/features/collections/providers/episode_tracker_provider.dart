@@ -11,8 +11,8 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/item_status_logic.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tv_episode.dart';
+import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import 'collections_provider.dart';
 
@@ -23,6 +23,7 @@ class EpisodeTrackerState {
     this.episodesBySeason = const <int, List<TvEpisode>>{},
     this.watchedEpisodes = const <(int, int), DateTime?>{},
     this.loadingSeasons = const <int, bool>{},
+    this.totalEpisodes,
     this.error,
   });
 
@@ -35,6 +36,10 @@ class EpisodeTrackerState {
   /// Per-season loading flags.
   final Map<int, bool> loadingSeasons;
 
+  /// Show's official episode count resolved by the tracker (specials
+  /// excluded). Fallback for cards whose cached [TvShow] has no totals.
+  final int? totalEpisodes;
+
   /// Load error, if any.
   final String? error;
 
@@ -43,12 +48,14 @@ class EpisodeTrackerState {
     Map<int, List<TvEpisode>>? episodesBySeason,
     Map<(int, int), DateTime?>? watchedEpisodes,
     Map<int, bool>? loadingSeasons,
+    int? totalEpisodes,
     String? error,
   }) {
     return EpisodeTrackerState(
       episodesBySeason: episodesBySeason ?? this.episodesBySeason,
       watchedEpisodes: watchedEpisodes ?? this.watchedEpisodes,
       loadingSeasons: loadingSeasons ?? this.loadingSeasons,
+      totalEpisodes: totalEpisodes ?? this.totalEpisodes,
       error: error,
     );
   }
@@ -144,10 +151,49 @@ class EpisodeTrackerNotifier
     // Episode tracking is not supported for uncategorized items
     if (_collectionId == null) return const EpisodeTrackerState();
 
+    // Only the cheap queries run eagerly: grid cards watch this provider
+    // per TV item and need just watched counts and totals. The full episode
+    // cache loads lazily via [ensureCachedEpisodesLoaded].
     Future<void>.microtask(_loadWatchedEpisodes);
-    Future<void>.microtask(_loadCachedEpisodes);
+    Future<void>.microtask(_resolveCachedTotals);
 
     return const EpisodeTrackerState();
+  }
+
+  bool _cachedEpisodesLoaded = false;
+
+  /// Loads the cached episode metadata once; the detail screen calls this —
+  /// cards don't need it.
+  Future<void> ensureCachedEpisodesLoaded() async {
+    if (_cachedEpisodesLoaded) return;
+    _cachedEpisodesLoaded = true;
+    await _loadCachedEpisodes();
+  }
+
+  /// Resolves the show's episode total from the local cache so progress
+  /// badges render "x/y" even when the cached show row has no totals
+  /// (rows written from list endpoints before the cache warmer existed).
+  /// Specials (season 0) are excluded, matching [totalWatchedCount].
+  Future<void> _resolveCachedTotals() async {
+    try {
+      final TvShow? show =
+          await _db.tvShowDao.getTvShowByTmdbId(_showId, source: _source);
+      int total = show?.totalEpisodes ?? 0;
+      if (total == 0) {
+        final List<TvSeason> seasons =
+            await _db.tvShowDao.getTvSeasonsByShowId(_source, _showId);
+        for (final TvSeason season in seasons) {
+          if (season.seasonNumber > 0) {
+            total += season.episodeCount ?? 0;
+          }
+        }
+      }
+      if (total > 0 && state.totalEpisodes == null) {
+        state = state.copyWith(totalEpisodes: total);
+      }
+    } on Exception catch (_) {
+      // Cache read failed — totals stay unknown, badges show bare counts.
+    }
   }
 
   Future<void> _loadWatchedEpisodes() async {
@@ -347,13 +393,11 @@ class EpisodeTrackerNotifier
         .valueOrNull;
     if (items == null) return;
 
-    // Find the show item (either tvShow or animation)
     CollectionItem? targetItem;
     for (final CollectionItem ci in items) {
       if (ci.externalId == _showId &&
-          (ci.source ?? DataSource.tmdb) == _source &&
-          (ci.mediaType == MediaType.tvShow ||
-           ci.mediaType == MediaType.animation)) {
+          ci.dataSource == _source &&
+          ci.mediaType.isTvBacked) {
         targetItem = ci;
         break;
       }
@@ -365,8 +409,8 @@ class EpisodeTrackerNotifier
     int totalSeasons = _cachedTotalSeasons ??
         targetItem.tvShow?.totalSeasons ?? 0;
 
-    // If totals are missing from the cache, fetch them from the source API
-    // (once per session, so we don't query on every toggle)
+    // Fetch missing totals from the source API once per session, so a
+    // toggle doesn't turn into a network call every time.
     if ((totalInShow == 0 || totalSeasons == 0) && !_hasFetchedTotals) {
       _hasFetchedTotals = true;
       try {
@@ -392,6 +436,12 @@ class EpisodeTrackerNotifier
         totalSeasons > 0 &&
         loadedRegularSeasons >= totalSeasons) {
       totalInShow = state.totalEpisodeCount;
+    }
+
+    // Publish resolved totals so progress badges can render "x/y" even when
+    // the cached show row (e.g. from search results) has no totals.
+    if (totalInShow > 0 && totalInShow != state.totalEpisodes) {
+      state = state.copyWith(totalEpisodes: totalInShow);
     }
 
     final ItemStatus? targetStatus = computeStatusFromProgress(

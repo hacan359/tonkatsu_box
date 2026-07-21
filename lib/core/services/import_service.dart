@@ -400,6 +400,7 @@ class ImportService {
 
           if (xcoll.includesUserData) {
             await _importItemMarks(itemData, itemId);
+            await _importWatchedEpisodes(itemData, collection.id, parsed);
           }
         } else if (collectionId != null) {
           // Item already exists — update from file.
@@ -433,6 +434,7 @@ class ImportService {
             // so re-importing onto an existing item merges, not duplicates.
             if (xcoll.includesUserData) {
               await _importItemMarks(itemData, existing.id);
+              await _importWatchedEpisodes(itemData, collection.id, parsed);
             }
           }
         }
@@ -1331,6 +1333,35 @@ class ImportService {
           ItemMark.fromExport(raw, itemId: collectionItemId),
     ];
     await _database.itemMarkDao.insertMarks(marks);
+  }
+
+  /// Restores watch marks nested under the item's `_watched_episodes` key,
+  /// re-scoped to the target collection. Older exports lack the key; rows
+  /// already marked stay untouched (insert is conflict-ignoring).
+  Future<void> _importWatchedEpisodes(
+    Map<String, dynamic> itemData,
+    int collectionId,
+    CollectionItem parsed,
+  ) async {
+    if (!parsed.mediaType.isTvBacked) return;
+    final List<dynamic>? raw =
+        itemData['_watched_episodes'] as List<dynamic>?;
+    if (raw == null || raw.isEmpty) return;
+    for (final dynamic entry in raw) {
+      if (entry is! Map<String, dynamic>) continue;
+      final Object? season = entry['season'];
+      final Object? episode = entry['episode'];
+      if (season is! int || episode is! int) continue;
+      final Object? watchedAtSec = entry['watched_at'];
+      await _database.tvShowDao.markEpisodeWatchedAt(
+        collectionId,
+        parsed.dataSource,
+        parsed.externalId,
+        season,
+        episode,
+        watchedAtSec is int ? watchedAtSec * 1000 : null,
+      );
+    }
   }
 
   /// [itemIdMapping]: 'media_type:external_id[:platform_id]' -> new collection_item_id.

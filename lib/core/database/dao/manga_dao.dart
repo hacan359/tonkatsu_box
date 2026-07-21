@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/manga.dart';
 import '../query_chunk.dart';
+import '../sparse_upsert.dart';
 
 /// DAO for `manga_cache`. Row identity is the pair `(id, source)`, so the same
 /// numeric `id` from AniList and MangaBaka can coexist.
@@ -13,13 +14,20 @@ class MangaDao {
 
   final Future<Database> Function() _getDatabase;
 
+  // MangaBaka list rows may lack chapter/volume totals; those columns keep
+  // the cached detail-endpoint value instead of being wiped by a sparse row.
+  static ({String sql, List<Object?> args}) _mangaUpsert(Manga manga) =>
+      buildPreservingUpsert(
+        table: 'manga_cache',
+        row: manga.toDb(),
+        conflictKey: const <String>['id', 'source'],
+        preserveWhenNull: const <String>{'chapters', 'volumes'},
+      );
+
   Future<void> upsertManga(Manga manga) async {
     final Database db = await _getDatabase();
-    await db.insert(
-      'manga_cache',
-      manga.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final ({String sql, List<Object?> args}) upsert = _mangaUpsert(manga);
+    await db.rawInsert(upsert.sql, upsert.args);
   }
 
   Future<void> upsertMangas(List<Manga> mangas) async {
@@ -27,11 +35,8 @@ class MangaDao {
     final Database db = await _getDatabase();
     final Batch batch = db.batch();
     for (final Manga manga in mangas) {
-      batch.insert(
-        'manga_cache',
-        manga.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      final ({String sql, List<Object?> args}) upsert = _mangaUpsert(manga);
+      batch.rawInsert(upsert.sql, upsert.args);
     }
     await batch.commit(noResult: true);
   }

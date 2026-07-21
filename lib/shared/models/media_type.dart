@@ -38,6 +38,10 @@ enum MediaType {
 
   const MediaType(this.value);
 
+  /// Whether episode tracking applies (tv show or tv-based animation).
+  bool get isTvBacked =>
+      this == MediaType.tvShow || this == MediaType.animation;
+
   /// Fallback source for rows whose `source` column is NULL.
   DataSource get defaultSource => switch (this) {
         MediaType.game => DataSource.igdb,

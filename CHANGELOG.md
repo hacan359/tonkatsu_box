@@ -7,7 +7,89 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Full export (.xcollx) with user data now carries watched-episode marks
+  and restores them on import**
+
+  Previously watch progress silently stayed behind: an exported collection
+  imported elsewhere arrived with statuses but zero episode checkmarks.
+  Episode likes/notes already travelled inside `_marks`. Older files
+  without the new section import as before; the format version stays 3.
+
+  * lib/core/services/export_service.dart
+    (ExportService._attachWatchedEpisodes): Nest the item's watch marks
+    under `_watched_episodes` (full export, user data only).
+  * lib/core/services/import_service.dart
+    (ImportService._importWatchedEpisodes): Restore the marks re-scoped
+    to the target collection; conflict-ignoring, so re-import merges.
+  * docs/RCOLL_FORMAT.md: Document the `_watched_episodes` item field.
+
+### Fixed
+
+- **Sparse cache rows no longer wipe episode/chapter/page totals**
+
+  Rows parsed from list endpoints (search, recommendations, similars)
+  carry no totals and used to erase the cached ones on upsert, degrading
+  progress badges from `38/38` to a bare `38`. Cache upserts for TV shows,
+  manga and books now keep the cached value when the incoming one is NULL;
+  adding a TV show from recommendations warms the cache like the search
+  flow does, and the episode tracker recovers missing totals from the
+  seasons cache for already-affected databases.
+
+- **Moving a TV show between collections takes its watch progress along**
+
+  Removing a show (or moving it to "uncategorized") keeps the marks, so
+  adding it back restores the progress.
+
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.updateItemCollectionId,
+    CollectionDao._transferWatchedEpisodes): Move watched_episodes rows
+    with the item; copy when a sibling animation/TV entry stays behind.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.moveItem),
+    lib/features/collections/helpers/bulk_operations.dart
+    (BulkOperations._invalidateAfterMutation): Refresh live episode
+    trackers after a move.
+
+- **Re-adding a just-removed show to the same collection works again**
+
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.removeItem): Invalidate the collected-ids cache on
+    removal.
+
+- **Episode progress badge shows "12/22" instead of a bare "12" and now
+  also appears on the All Items screen**
+
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerState.totalEpisodes): Expose the resolved episode
+    totals to the badge.
+  * lib/features/collections/helpers/tracker_card_progress.dart
+    (trackerCardProgress): New shared badge helper used by
+    lib/features/collections/widgets/collection_items_view.dart and
+    lib/features/home/screens/all_items_screen.dart.
+  * lib/features/search/handlers/tv_show_handler.dart
+    (TvShowHandler._preloadSeasons), lib/core/api/tmdb/tmdb_tv_api.dart
+    (TmdbTvApi.getTvShowWithSeasons): Cache full show details on add with
+    a single /tv/{id} request.
+
+- **Fixed row overflows on narrow layouts**
+
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (EpisodeTrackerSection.build): The header title ellipsizes instead of
+    overflowing next to the watched counter.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard): The tag
+    badge shrinks on very narrow cards instead of overflowing.
+
 ### Changed
+
+- **Episode tracker got season posters, episode stills and overviews**
+
+  Season rows show the season poster with an all-watched badge and the air
+  year; episode rows show the episode still (dimmed with a check badge once
+  watched) and a two-line overview that expands on tap. The episode
+  checkbox is gone — tapping the row toggles watched, same as before.
+  Season posters and episode stills are cached on disk for offline use.
 
 - **Decouple the episode tracker and release calendar from TMDB**
 

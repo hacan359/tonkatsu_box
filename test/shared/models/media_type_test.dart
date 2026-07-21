@@ -37,6 +37,17 @@ void main() {
       });
     });
 
+    group('isTvBacked', () {
+      test('true только для tvShow и animation', () {
+        for (final MediaType type in MediaType.values) {
+          expect(
+            type.isTvBacked,
+            type == MediaType.tvShow || type == MediaType.animation,
+          );
+        }
+      });
+    });
+
     group('value', () {
       test('game должен иметь значение "game"', () {
         expect(MediaType.game.value, 'game');

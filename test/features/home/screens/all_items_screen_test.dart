@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/features/home/screens/all_items_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
@@ -18,12 +19,16 @@ import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart' as model;
+import 'package:tonkatsu_box/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/models/tv_season.dart';
 import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 
 import '../../../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(registerAllFallbacks);
+
   late MockCollectionRepository mockRepo;
   late MockDatabaseService mockDb;
   late SharedPreferences prefs;
@@ -122,6 +127,17 @@ void main() {
 
     mockDb = MockDatabaseService();
     when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
+    // TV cards spin up a real episode tracker for the progress badge.
+    final MockTvShowDao mockTvShowDao = MockTvShowDao();
+    when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
+    when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
+        .thenAnswer((_) async => <(int, int), DateTime?>{});
+    when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
+        .thenAnswer((_) async => <TvEpisode>[]);
+    when(() => mockTvShowDao.getTvShowByTmdbId(any(),
+        source: any(named: 'source'))).thenAnswer((_) async => null);
+    when(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()))
+        .thenAnswer((_) async => <TvSeason>[]);
     final MockGameDao mockGameDao = MockGameDao();
     when(() => mockDb.gameDao).thenReturn(mockGameDao);
     when(() => mockGameDao.getPlatformById(19)).thenAnswer(
@@ -140,7 +156,10 @@ void main() {
     );
   });
 
-  Widget buildTestWidget({bool alwaysShowSubcategories = false}) {
+  Widget buildTestWidget({
+    bool alwaysShowSubcategories = false,
+    List<Override> extraOverrides = const <Override>[],
+  }) {
     return ProviderScope(
       overrides: <Override>[
         collectionRepositoryProvider.overrideWithValue(mockRepo),
@@ -157,6 +176,7 @@ void main() {
           color: '#FF0000',
           createdAt: DateTime(2025),
         )),
+        ...extraOverrides,
       ],
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -533,6 +553,62 @@ void main() {
       });
     });
   });
+
+  group('AllItemsScreen прогресс трекера эпизодов', () {
+    const EpisodeTrackerState trackedState = EpisodeTrackerState(
+      watchedEpisodes: <(int, int), DateTime?>{(1, 1): null, (1, 2): null},
+      totalEpisodes: 24,
+    );
+
+    CollectionItem makeTvItem({int? collectionId = 20}) {
+      return CollectionItem(
+        id: 3,
+        collectionId: collectionId,
+        mediaType: MediaType.tvShow,
+        externalId: 300,
+        sortOrder: 0,
+        status: ItemStatus.notStarted,
+        addedAt: DateTime(2025, 3, 1),
+      );
+    }
+
+    Future<void> pumpWithTvItem(
+      WidgetTester tester,
+      CollectionItem item,
+    ) async {
+      when(() =>
+              mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')))
+          .thenAnswer((_) async => <CollectionItem>[item]);
+      await tester.pumpWidget(buildTestWidget(extraOverrides: <Override>[
+        episodeTrackerNotifierProvider
+            .overrideWith(() => _FakeEpisodeTrackerNotifier(trackedState)),
+      ]));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('показывает счётчик просмотренных серий для сериала',
+        (WidgetTester tester) async {
+      await pumpWithTvItem(tester, makeTvItem());
+
+      expect(find.text('2/24'), findsOneWidget);
+    });
+
+    testWidgets('не показывает счётчик для сериала без коллекции',
+        (WidgetTester tester) async {
+      await pumpWithTvItem(tester, makeTvItem(collectionId: null));
+
+      expect(find.text('2/24'), findsNothing);
+    });
+  });
+}
+
+class _FakeEpisodeTrackerNotifier extends EpisodeTrackerNotifier {
+  _FakeEpisodeTrackerNotifier(this._state);
+
+  final EpisodeTrackerState _state;
+
+  @override
+  EpisodeTrackerState build(EpisodeTrackerArg arg) => _state;
 }
 
 class _FakeSettingsNotifier extends SettingsNotifier {

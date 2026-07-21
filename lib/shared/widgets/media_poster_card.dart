@@ -564,13 +564,22 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                             const Spacer(),
                           if (widget.onTagTap != null ||
                               widget.tagName != null)
-                            _TagBadge(
-                              tagName: widget.tagName,
-                              tagColor: widget.tagColor,
-                              tagTextColor: widget.tagTextColor,
-                              moreCount: widget.tagMoreCount,
-                              compact: _isCompact,
-                              onTap: widget.onTagTap,
+                            // Align keeps the badge flush right inside its
+                            // flex share; bare Flexible would leave the
+                            // share's leftover trailing and pull the badge
+                            // toward the middle.
+                            Flexible(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: _TagBadge(
+                                  tagName: widget.tagName,
+                                  tagColor: widget.tagColor,
+                                  tagTextColor: widget.tagTextColor,
+                                  moreCount: widget.tagMoreCount,
+                                  compact: _isCompact,
+                                  onTap: widget.onTagTap,
+                                ),
+                              ),
                             ),
                         ],
                       ),

@@ -23,6 +23,10 @@ enum ImageType {
 
   tvShowPoster('tv_show_posters'),
 
+  tvSeasonPoster('tv_season_posters'),
+
+  tvEpisodeStill('tv_episode_stills'),
+
   canvasImage('canvas_images'),
 
   mangaCover('manga_covers'),

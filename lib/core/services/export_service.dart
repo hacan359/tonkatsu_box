@@ -160,9 +160,10 @@ class ExportService {
     // Collect hero image (if set)
     await _collectHeroImage(collection, images);
 
-    // Per-item marks (likes/notes) — user data only
+    // Per-item marks (likes/notes) and watch progress — user data only
     if (includeUserData) {
       await _attachItemMarks(items, exportItems);
+      await _attachWatchedEpisodes(collectionId, items, exportItems);
     }
 
     // Collect full media data for offline import (includes tv_seasons)
@@ -321,6 +322,37 @@ class ExportService {
       if (marks == null || marks.isEmpty) continue;
       exportItems[i]['_marks'] =
           marks.map((ItemMark m) => m.toExport()).toList();
+    }
+  }
+
+  /// Watch marks live in `watched_episodes`, not on the item — nest them
+  /// under `_watched_episodes` so progress survives export/import.
+  Future<void> _attachWatchedEpisodes(
+    int collectionId,
+    List<CollectionItem> items,
+    List<Map<String, dynamic>> exportItems,
+  ) async {
+    final DatabaseService? db = _database;
+    if (db == null) return;
+    for (int i = 0; i < items.length; i++) {
+      final CollectionItem item = items[i];
+      if (!item.mediaType.isTvBacked) continue;
+      // Resolve the source exactly like import will: parsed items carry no
+      // joined show, so their dataSource collapses to the raw column.
+      final DataSource source = item.source ?? DataSource.tmdb;
+      final Map<(int, int), DateTime?> watched = await db.tvShowDao
+          .getWatchedEpisodes(collectionId, source, item.externalId);
+      if (watched.isEmpty) continue;
+      exportItems[i]['_watched_episodes'] = <Map<String, dynamic>>[
+        for (final MapEntry<(int, int), DateTime?> e in watched.entries)
+          <String, dynamic>{
+            'season': e.key.$1,
+            'episode': e.key.$2,
+            'watched_at': e.value != null
+                ? e.value!.millisecondsSinceEpoch ~/ 1000
+                : null,
+          },
+      ];
     }
   }
 

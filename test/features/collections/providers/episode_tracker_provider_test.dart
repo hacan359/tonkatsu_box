@@ -10,6 +10,7 @@ import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/models/tv_season.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -161,6 +162,10 @@ void main() {
     // don't care about it are unaffected.
     when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
         .thenAnswer((_) async => <TvEpisode>[]);
+    when(() => mockTvShowDao.getTvShowByTmdbId(any(),
+        source: any(named: 'source'))).thenAnswer((_) async => null);
+    when(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()))
+        .thenAnswer((_) async => <TvSeason>[]);
     mockTmdbApi = MockTmdbApi();
     when(() => mockTmdbApi.getTvShow(any()))
         .thenAnswer((_) async => null);
@@ -396,8 +401,9 @@ void main() {
             .called(1);
       });
 
-      test('should eagerly load cached episodes grouped by season on build',
-          () async {
+      test(
+          'should load cached episodes once via ensureCachedEpisodesLoaded, '
+          'not on build', () async {
         when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, testShowId)).thenAnswer(
@@ -409,9 +415,17 @@ void main() {
         );
 
         final ProviderContainer container = createContainer();
-        container.read(episodeTrackerNotifierProvider(testArg));
+        final EpisodeTrackerNotifier notifier = container
+            .read(episodeTrackerNotifierProvider(testArg).notifier);
 
         await Future<void>.delayed(Duration.zero);
+
+        // Grid cards watch this provider; building it must not pull the
+        // full episode cache.
+        verifyNever(() => mockTvShowDao.getEpisodesByShowId(any(), any()));
+
+        await notifier.ensureCachedEpisodesLoaded();
+        await notifier.ensureCachedEpisodesLoaded();
 
         final EpisodeTrackerState state =
             container.read(episodeTrackerNotifierProvider(testArg));
@@ -436,6 +450,86 @@ void main() {
 
         expect(state.error, contains('Failed to load watched episodes'));
         expect(state.error, contains('Database error'));
+      });
+
+      test('должен публиковать totals из кэшированной карточки шоу',
+          () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.getTvShowByTmdbId(testShowId,
+                source: any(named: 'source')))
+            .thenAnswer((_) async => const TvShow(
+                  tmdbId: testShowId,
+                  title: 'Show',
+                  totalEpisodes: 38,
+                ));
+
+        final ProviderContainer container = createContainer();
+        container.read(episodeTrackerNotifierProvider(testArg));
+
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .totalEpisodes,
+          38,
+        );
+      });
+
+      test(
+          'должен считать totals по кэшу сезонов без спецвыпусков, '
+          'когда карточка шоу без totals', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.getTvSeasonsByShowId(
+                DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => const <TvSeason>[
+                  TvSeason(
+                    tmdbShowId: testShowId,
+                    seasonNumber: 0,
+                    episodeCount: 5,
+                  ),
+                  TvSeason(
+                    tmdbShowId: testShowId,
+                    seasonNumber: 1,
+                    episodeCount: 10,
+                  ),
+                  TvSeason(
+                    tmdbShowId: testShowId,
+                    seasonNumber: 2,
+                    episodeCount: 8,
+                  ),
+                ]);
+
+        final ProviderContainer container = createContainer();
+        container.read(episodeTrackerNotifierProvider(testArg));
+
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .totalEpisodes,
+          18,
+        );
+      });
+
+      test('totals остаются null, когда в кэше ничего нет', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+
+        final ProviderContainer container = createContainer();
+        container.read(episodeTrackerNotifierProvider(testArg));
+
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .totalEpisodes,
+          isNull,
+        );
       });
     });
 
@@ -1530,6 +1624,66 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         await notifier.toggleEpisode(1, 1);
         await Future<void>.delayed(Duration.zero);
+      });
+
+      test('should publish totals from the cached show into state', () async {
+        final CollectionItem item = createTvItem(totalEpisodes: 22);
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.markEpisodeWatched(
+                testCollectionId, DataSource.tmdb, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg)).totalEpisodes,
+          22,
+        );
+      });
+
+      test('should publish totals fetched from the API when the cache has none',
+          () async {
+        final CollectionItem item =
+            createTvItem(totalEpisodes: 0, totalSeasons: 0);
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.markEpisodeWatched(
+                testCollectionId, DataSource.tmdb, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertTvShow(any())).thenAnswer((_) async {});
+        when(() => mockTmdbApi.getTvShow(testShowId)).thenAnswer(
+          (_) async => const TvShow(
+            tmdbId: testShowId,
+            title: 'Test Show',
+            totalEpisodes: 22,
+            totalSeasons: 2,
+          ),
+        );
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg)).totalEpisodes,
+          22,
+        );
+        verify(() => mockTvShowDao.upsertTvShow(any())).called(1);
       });
     });
   });

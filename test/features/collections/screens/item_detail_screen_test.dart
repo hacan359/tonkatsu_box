@@ -51,6 +51,8 @@ void main() {
         .thenAnswer((_) async => <(int, int), DateTime?>{});
     when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
         .thenAnswer((_) async => <TvEpisode>[]);
+    when(() => mockTvShowDao.getTvShowByTmdbId(any(),
+        source: any(named: 'source'))).thenAnswer((_) async => null);
     final MockItemMarkDao mockItemMarkDao = MockItemMarkDao();
     when(() => mockDb.itemMarkDao).thenReturn(mockItemMarkDao);
     when(() => mockItemMarkDao.getMarksForItem(any()))

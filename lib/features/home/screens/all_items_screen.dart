@@ -23,6 +23,7 @@ import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
+import '../../collections/helpers/tracker_card_progress.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
@@ -515,7 +516,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                     final Set<int> selection =
                         ref.watch(allItemsSelectionProvider);
                     final bool isSelected = selection.contains(item.id);
-                    final ItemCardProgress? progress = itemCardProgress(item);
+                    final ItemCardProgress? progress =
+                        itemCardProgress(item) ?? trackerCardProgress(ref, item);
                     final MediaPosterCard card = MediaPosterCard(
                       key: ValueKey<int>(item.id),
                       variant: isLandscape ||

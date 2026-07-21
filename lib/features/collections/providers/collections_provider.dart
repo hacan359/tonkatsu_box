@@ -28,6 +28,7 @@ import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'collection_covers_provider.dart';
+import 'episode_tracker_provider.dart';
 import 'item_tags_provider.dart';
 import 'sort_utils.dart';
 
@@ -712,6 +713,7 @@ class CollectionItemsNotifier
     ref.invalidate(collectionCoversProvider(_collectionId));
     ref.invalidate(uncategorizedItemCountProvider);
     _invalidateCollectedIds(mediaType);
+    _invalidateEpisodeTrackers(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
     for (final int tierListId in affectedTierListIds) {
@@ -738,6 +740,15 @@ class CollectionItemsNotifier
 
     for (final int tierListId in affectedTierListIds) {
       ref.invalidate(tierListDetailProvider(tierListId));
+    }
+  }
+
+  /// In-memory tracker state survives the DAO-side mark transfer on move,
+  /// so the show would keep showing zero progress in the target collection
+  /// until restart. Invalidating the family reloads every live tracker.
+  void _invalidateEpisodeTrackers(MediaType mediaType) {
+    if (mediaType.isTvBacked) {
+      ref.invalidate(episodeTrackerNotifierProvider);
     }
   }
 

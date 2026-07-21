@@ -5,14 +5,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 
 const int testCollectionId = 1;
+
+/// Counts family rebuilds so tests can assert tracker invalidation without
+/// wiring the real tracker's DB/API dependencies.
+class _ProbeEpisodeTrackerNotifier extends EpisodeTrackerNotifier {
+  static int buildCount = 0;
+
+  @override
+  EpisodeTrackerState build(EpisodeTrackerArg arg) {
+    buildCount++;
+    return const EpisodeTrackerState();
+  }
+}
 
 CollectionItem _makeItem({
   int id = 1,
@@ -539,11 +553,51 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(sharedPrefs),
           tierListDaoProvider.overrideWithValue(mockTierListDao),
           globalTagDaoProvider.overrideWithValue(mockTagDao),
+          episodeTrackerNotifierProvider
+              .overrideWith(_ProbeEpisodeTrackerNotifier.new),
         ],
       );
       addTearDown(container.dispose);
       return container;
     }
+
+    Future<int> trackerBuildsAfterMove(MediaType mediaType) async {
+      _ProbeEpisodeTrackerNotifier.buildCount = 0;
+      when(() => mockTierListDao.getTierListIdsForItem(1))
+          .thenAnswer((_) async => <int>[]);
+      when(() => mockTierListDao.removeItemFromCollectionTierLists(
+          1, testCollectionId)).thenAnswer((_) async {});
+
+      final ProviderContainer container = createMoveContainer(
+        initialItems: <CollectionItem>[_makeItem(mediaType: mediaType)],
+      );
+      await waitForLoad(container, testCollectionId);
+
+      const EpisodeTrackerArg trackerArg = (
+        collectionId: testCollectionId,
+        showId: 500,
+        source: DataSource.tmdb,
+      );
+      container.read(episodeTrackerNotifierProvider(trackerArg));
+      expect(_ProbeEpisodeTrackerNotifier.buildCount, 1);
+
+      when(() => mockRepository.getItemsWithData(testCollectionId))
+          .thenAnswer((_) async => <CollectionItem>[]);
+      await container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier)
+          .moveItem(1, targetCollectionId: 99, mediaType: mediaType);
+
+      container.read(episodeTrackerNotifierProvider(trackerArg));
+      return _ProbeEpisodeTrackerNotifier.buildCount;
+    }
+
+    test('инвалидирует трекеры эпизодов при перемещении сериала', () async {
+      expect(await trackerBuildsAfterMove(MediaType.tvShow), 2);
+    });
+
+    test('не трогает трекеры эпизодов при перемещении игры', () async {
+      expect(await trackerBuildsAfterMove(MediaType.game), 1);
+    });
 
     test('удаляет entries из тир-листов исходной коллекции при перемещении',
         () async {
