@@ -1389,7 +1389,26 @@ void main() {
     });
 
     group('updateItemCollectionId', () {
+      void stubItemLookup() {
+        mockDb.stubTransaction(mockTxn);
+        when(
+          () => mockTxn.query(
+            'collection_items',
+            columns: <String>[
+              'collection_id',
+              'media_type',
+              'external_id',
+              'source',
+            ],
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+            limit: 1,
+          ),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
+      }
+
       test('moves item and returns true', () async {
+        stubItemLookup();
         when(
           () => mockDb.rawQuery(
             'SELECT MAX(sort_order) AS max_sort FROM collection_items '
@@ -1402,7 +1421,7 @@ void main() {
           ],
         );
         when(
-          () => mockDb.update(
+          () => mockTxn.update(
             'collection_items',
             any(),
             where: 'id = ?',
@@ -1416,6 +1435,7 @@ void main() {
       });
 
       test('returns false on unique constraint violation', () async {
+        stubItemLookup();
         when(
           () => mockDb.rawQuery(
             'SELECT MAX(sort_order) AS max_sort FROM collection_items '
@@ -1428,7 +1448,7 @@ void main() {
           ],
         );
         when(
-          () => mockDb.update(
+          () => mockTxn.update(
             'collection_items',
             any(),
             where: 'id = ?',

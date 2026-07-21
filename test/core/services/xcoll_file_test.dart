@@ -481,6 +481,44 @@ void main() {
 
         expect(restored.includesUserData, isTrue);
       });
+
+      test('round-trip _watched_episodes внутри item через JSON', () {
+        final XcollFile original = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Watched RT',
+          author: 'Author',
+          created: testDate,
+          includesUserData: true,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+              '_watched_episodes': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'season': 1,
+                  'episode': 2,
+                  'watched_at': 1700000000,
+                },
+                <String, dynamic>{
+                  'season': 1,
+                  'episode': 3,
+                  'watched_at': null,
+                },
+              ],
+            },
+          ],
+        );
+
+        final XcollFile restored =
+            XcollFile.fromJsonString(original.toJsonString());
+
+        final List<dynamic> watched =
+            restored.items[0]['_watched_episodes'] as List<dynamic>;
+        expect(watched, hasLength(2));
+        expect((watched[0] as Map<String, dynamic>)['watched_at'], 1700000000);
+        expect((watched[1] as Map<String, dynamic>)['watched_at'], isNull);
+      });
     });
 
     test('fromJsonString/toJsonString round-trip', () {

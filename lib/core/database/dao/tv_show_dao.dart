@@ -7,6 +7,7 @@ import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../query_chunk.dart';
+import '../sparse_upsert.dart';
 
 /// DAO for the `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache` and
 /// `watched_episodes` tables.
@@ -18,9 +19,6 @@ class TvShowDao {
 
   final Future<Database> Function() _getDatabase;
 
-  // ==================== TV Shows ====================
-
-  /// Returns the show by id within [source], or null if not cached.
   Future<TvShow?> getTvShowByTmdbId(
     int tmdbId, {
     DataSource source = DataSource.tmdb,
@@ -36,14 +34,26 @@ class TvShowDao {
     return TvShow.fromDb(rows.first);
   }
 
+  // Shows parsed from list endpoints (search, recommendations, imports)
+  // carry no totals/status; those columns keep the cached detail-endpoint
+  // value instead of being wiped by the sparse row.
+  static ({String sql, List<Object?> args}) _showUpsert(TvShow tvShow) =>
+      buildPreservingUpsert(
+        table: 'tv_shows_cache',
+        row: tvShow.toDb(),
+        conflictKey: const <String>['tmdb_id', 'source'],
+        preserveWhenNull: const <String>{
+          'total_seasons',
+          'total_episodes',
+          'status',
+        },
+      );
+
   /// Inserts or updates a show in the cache.
   Future<void> upsertTvShow(TvShow tvShow) async {
     final Database db = await _getDatabase();
-    await db.insert(
-      'tv_shows_cache',
-      tvShow.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final ({String sql, List<Object?> args}) upsert = _showUpsert(tvShow);
+    await db.rawInsert(upsert.sql, upsert.args);
   }
 
   /// Saves a list of shows in a batch.
@@ -54,11 +64,8 @@ class TvShowDao {
     await db.transaction((Transaction txn) async {
       final Batch batch = txn.batch();
       for (final TvShow tvShow in tvShows) {
-        batch.insert(
-          'tv_shows_cache',
-          tvShow.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        final ({String sql, List<Object?> args}) upsert = _showUpsert(tvShow);
+        batch.rawInsert(upsert.sql, upsert.args);
       }
       await batch.commit(noResult: true);
     });
@@ -85,8 +92,6 @@ class TvShowDao {
     final Database db = await _getDatabase();
     await db.delete('tv_shows_cache');
   }
-
-  // ==================== TV Seasons ====================
 
   /// Returns the show's seasons.
   Future<List<TvSeason>> getTvSeasonsByShowId(
@@ -126,8 +131,6 @@ class TvShowDao {
     final Database db = await _getDatabase();
     await db.delete('tv_seasons_cache');
   }
-
-  // ==================== TV Episodes ====================
 
   /// Returns all cached episodes of a show.
   Future<List<TvEpisode>> getEpisodesByShowId(
@@ -187,8 +190,6 @@ class TvShowDao {
       whereArgs: <Object?>[source.name, showId],
     );
   }
-
-  // ==================== Watched Episodes ====================
 
   /// Watched episodes of a show within a collection.
   ///

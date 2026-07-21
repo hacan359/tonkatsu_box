@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../../shared/models/book.dart';
 import '../../../shared/models/data_source.dart';
 import '../query_chunk.dart';
+import '../sparse_upsert.dart';
 
 /// DAO for `books_cache`. Row identity is the pair `(id, source)`, so the same
 /// numeric `id` from OpenLibrary and Fantlab can coexist. `id` is stored as
@@ -15,13 +16,20 @@ class BookDao {
 
   final Future<Database> Function() _getDatabase;
 
+  // Fantlab/Google Books similars and search-list rows carry no page count;
+  // the column keeps the cached detail-endpoint value instead of being wiped.
+  static ({String sql, List<Object?> args}) _bookUpsert(Book book) =>
+      buildPreservingUpsert(
+        table: 'books_cache',
+        row: book.toDb(),
+        conflictKey: const <String>['id', 'source'],
+        preserveWhenNull: const <String>{'page_count'},
+      );
+
   Future<void> upsertBook(Book book) async {
     final Database db = await _getDatabase();
-    await db.insert(
-      'books_cache',
-      book.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final ({String sql, List<Object?> args}) upsert = _bookUpsert(book);
+    await db.rawInsert(upsert.sql, upsert.args);
   }
 
   Future<void> upsertBooks(List<Book> books) async {
@@ -29,11 +37,8 @@ class BookDao {
     final Database db = await _getDatabase();
     final Batch batch = db.batch();
     for (final Book book in books) {
-      batch.insert(
-        'books_cache',
-        book.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      final ({String sql, List<Object?> args}) upsert = _bookUpsert(book);
+      batch.rawInsert(upsert.sql, upsert.args);
     }
     await batch.commit(noResult: true);
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../core/services/tv_show_cache_warmer.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -706,7 +708,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             collectionId: widget.collectionId,
             itemId: item.id,
             externalId: item.externalId,
-            source: item.source ?? DataSource.tmdb,
+            source: item.dataSource,
             tvShow: config.tvShow,
             accentColor: config.accentColor,
           ),
@@ -957,6 +959,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         mediaType: MediaType.tvShow,
         ownMapProvider: collectedTvShowIdsProvider,
         upsert: (DatabaseService db) => db.tvShowDao.upsertTvShow(tvShow),
+        // Recommendation rows carry no season/episode totals — warm the
+        // cache with full details like the search add flow does.
+        afterAdd: () =>
+            ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId),
       );
 
   Future<void> _addRecommendation({
@@ -965,6 +971,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     required MediaType mediaType,
     required FutureProvider<Map<int, List<CollectedItemInfo>>> ownMapProvider,
     required Future<void> Function(DatabaseService db) upsert,
+    Future<void> Function()? afterAdd,
   }) async {
     final Map<int, List<CollectedItemInfo>> ownMap =
         await ref.read(ownMapProvider.future);
@@ -1002,6 +1009,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(mediaType: mediaType, externalId: tmdbId);
+
+    if (success && afterAdd != null) {
+      unawaited(afterAdd());
+    }
 
     if (!mounted) return;
 

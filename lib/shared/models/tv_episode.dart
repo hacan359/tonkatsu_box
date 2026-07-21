@@ -1,10 +1,7 @@
-// TV episode model shared by all episode sources.
-
 import 'data_source.dart';
 
 /// One episode of a TV show season.
 class TvEpisode {
-  /// Creates a [TvEpisode].
   const TvEpisode({
     required this.tmdbShowId,
     required this.seasonNumber,
@@ -17,7 +14,6 @@ class TvEpisode {
     this.source = DataSource.tmdb,
   });
 
-  /// Creates a [TvEpisode] from a TMDB API JSON response.
   factory TvEpisode.fromJson(
     Map<String, dynamic> json, {
     required int showId,
@@ -41,8 +37,7 @@ class TvEpisode {
     );
   }
 
-  /// Creates a [TvEpisode] from a database row. A missing or unknown
-  /// `source` reads as [DataSource.tmdb].
+  /// A missing or unknown `source` column reads as [DataSource.tmdb].
   factory TvEpisode.fromDb(Map<String, dynamic> row) {
     return TvEpisode(
       tmdbShowId: row['tmdb_show_id'] as int,
@@ -60,31 +55,21 @@ class TvEpisode {
   /// Show id in the [source] provider's namespace.
   final int tmdbShowId;
 
-  /// Season number.
   final int seasonNumber;
-
-  /// Episode number within the season.
   final int episodeNumber;
-
-  /// Episode title.
   final String name;
-
-  /// Episode overview.
   final String? overview;
 
-  /// Air date ("YYYY-MM-DD").
+  /// "YYYY-MM-DD".
   final String? airDate;
 
-  /// Still image URL.
   final String? stillUrl;
 
   /// Runtime in minutes.
   final int? runtime;
 
-  /// Provider this episode came from.
   final DataSource source;
 
-  /// Converts to a map for database storage.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'tmdb_show_id': tmdbShowId,
@@ -100,7 +85,6 @@ class TvEpisode {
     };
   }
 
-  /// Returns a copy with the given fields replaced.
   TvEpisode copyWith({
     int? tmdbShowId,
     int? seasonNumber,

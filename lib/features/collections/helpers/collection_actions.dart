@@ -241,7 +241,7 @@ class CollectionActions {
 
     await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
-        .removeItem(item.id);
+        .removeItem(item.id, mediaType: item.mediaType);
 
     // Keep the canvas in sync: drop the removed item
     ref

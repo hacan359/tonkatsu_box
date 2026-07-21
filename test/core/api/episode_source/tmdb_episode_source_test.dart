@@ -21,10 +21,6 @@ void main() {
   });
 
   group('TmdbEpisodeSource', () {
-    test('source is tmdb', () {
-      expect(source.source, DataSource.tmdb);
-    });
-
     test('getShow delegates to TmdbApi.getTvShow', () async {
       const TvShow show = TvShow(tmdbId: 100, title: 'Show');
       when(() => mockApi.getTvShow(100)).thenAnswer((_) async => show);
@@ -69,7 +65,6 @@ void main() {
       final TvEpisodeSource Function(DataSource) resolve =
           container.read(tvEpisodeSourceResolverProvider);
 
-      expect(resolve(DataSource.tmdb).source, DataSource.tmdb);
       for (final DataSource s in DataSource.values) {
         expect(resolve(s), isA<TvEpisodeSource>());
       }

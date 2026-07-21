@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/data_source.dart';
+import '../../../core/services/tv_show_cache_warmer.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../services/search_collection_adder.dart';
@@ -83,7 +80,7 @@ class TvShowHandler implements MediaActionHandler {
       imageType: ImageType.tvShowPoster,
       imageId: tvShow.tmdbId.toString(),
       imageUrl: tvShow.posterUrl,
-      afterAdd: () => _preloadSeasons(tvShow.tmdbId),
+      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId),
     );
   }
 
@@ -122,32 +119,7 @@ class TvShowHandler implements MediaActionHandler {
       imageType: ImageType.tvShowPoster,
       imageId: tvShow.tmdbId.toString(),
       imageUrl: tvShow.posterUrl,
-      afterAdd: () => _preloadSeasons(tvShow.tmdbId),
+      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId),
     );
-  }
-
-  Future<void> _preloadSeasons(int tmdbId) async {
-    try {
-      final DatabaseService db = _ref.read(databaseServiceProvider);
-      final TmdbApi tmdb = _ref.read(tmdbApiProvider);
-
-      List<TvSeason> seasons =
-          await db.tvShowDao.getTvSeasonsByShowId(DataSource.tmdb, tmdbId);
-      if (seasons.isEmpty) {
-        seasons = await tmdb.getTvSeasons(tmdbId);
-        if (seasons.isNotEmpty) await db.tvShowDao.upsertTvSeasons(seasons);
-      }
-      for (final TvSeason season in seasons) {
-        final List<TvEpisode> cached = await db.tvShowDao
-            .getEpisodesByShowAndSeason(DataSource.tmdb, tmdbId, season.seasonNumber);
-        if (cached.isEmpty) {
-          final List<TvEpisode> episodes =
-              await tmdb.getSeasonEpisodes(tmdbId, season.seasonNumber);
-          if (episodes.isNotEmpty) await db.tvShowDao.upsertEpisodes(episodes);
-        }
-      }
-    } catch (_) {
-      // Network/API failure — episodes load on-demand later.
-    }
   }
 }

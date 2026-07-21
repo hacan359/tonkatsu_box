@@ -32,6 +32,7 @@ void main() {
         conflictAlgorithm: any(named: 'conflictAlgorithm'),
       ),
     ).thenReturn(null);
+    when(() => mockBatch.rawInsert(any(), any())).thenReturn(null);
     when(() => mockBatch.commit(noResult: true))
         .thenAnswer((_) async => <Object?>[]);
   }
@@ -88,25 +89,23 @@ void main() {
     });
 
     group('upsertTvShow', () {
-      test('inserts with replace', () async {
+      test('upserts preserving totals and status for sparse rows', () async {
         const TvShow show = TvShow(tmdbId: 1, title: 'Test');
-        when(
-          () => mockDb.insert(
-            'tv_shows_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).thenAnswer((_) async => 1);
+        when(() => mockDb.rawInsert(any(), any()))
+            .thenAnswer((_) async => 1);
 
         await dao.upsertTvShow(show);
 
-        verify(
-          () => mockDb.insert(
-            'tv_shows_cache',
-            show.toDb(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(1);
+        final VerificationResult captured =
+            verify(() => mockDb.rawInsert(captureAny(), captureAny()));
+        captured.called(1);
+        final String sql = captured.captured.first as String;
+        expect(sql, startsWith('INSERT OR REPLACE INTO tv_shows_cache'));
+        expect(sql, contains('COALESCE(?, (SELECT total_seasons'));
+        expect(sql, contains('COALESCE(?, (SELECT total_episodes'));
+        expect(sql, contains('COALESCE(?, (SELECT status'));
+        final List<Object?> args = captured.captured[1] as List<Object?>;
+        expect(args, containsAllInOrder(<Object?>[1, 'Test']));
       });
     });
 
@@ -125,13 +124,7 @@ void main() {
           TvShow(tmdbId: 2, title: 'S2'),
         ]);
 
-        verify(
-          () => mockBatch.insert(
-            'tv_shows_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(2);
+        verify(() => mockBatch.rawInsert(any(), any())).called(2);
       });
     });
 

@@ -163,6 +163,9 @@ class TmdbApi {
 
   Future<TvShow?> getTvShow(int tmdbId) => _tv.getTvShow(tmdbId);
 
+  Future<(TvShow, List<TvSeason>)?> getTvShowWithSeasons(int tmdbId) =>
+      _tv.getTvShowWithSeasons(tmdbId);
+
   Future<List<TvSeason>> getTvSeasons(int tmdbId) =>
       _tv.getTvSeasons(tmdbId);
 

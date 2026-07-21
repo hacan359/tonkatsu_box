@@ -472,5 +472,66 @@ void main() {
         expect(opened, isTrue);
       });
     });
+
+    group('narrow compact layout', () {
+      testWidgets(
+          'should not overflow with status, progress and tag at 60px width',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 60,
+              height: 250,
+              child: MediaPosterCard(
+                variant: CardVariant.compact,
+                title: 'Test Show',
+                imageUrl: '',
+                cacheImageType: ImageType.tvShowPoster,
+                cacheImageId: '1',
+                status: ItemStatus.inProgress,
+                progress: ItemCardProgress(label: '12/22', fraction: 0.5),
+                tagName: 'Very Long Tag Name',
+                tagColor: 0xFF4CAF50,
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('should keep the tag badge anchored to the right edge',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 150,
+              height: 250,
+              child: MediaPosterCard(
+                variant: CardVariant.grid,
+                title: 'Test Show',
+                imageUrl: '',
+                cacheImageType: ImageType.tvShowPoster,
+                cacheImageId: '1',
+                progress: ItemCardProgress(label: '12/22', fraction: 0.5),
+                tagName: 'Tag',
+                tagColor: 0xFF4CAF50,
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        final double cardRight =
+            tester.getTopRight(find.byType(MediaPosterCard)).dx;
+        final double badgeRight = tester.getTopRight(find.text('Tag')).dx;
+        expect(cardRight - badgeRight, lessThan(20));
+      });
+    });
   });
 }

@@ -1,5 +1,3 @@
-// Provider-agnostic source of TV show seasons and episodes.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/models/data_source.dart';
@@ -14,16 +12,10 @@ import 'tmdb_episode_source.dart';
 /// Implementations wrap one provider's API and return the shared
 /// [TvShow]/[TvSeason]/[TvEpisode] models with [source] stamped.
 abstract class TvEpisodeSource {
-  /// Provider this implementation serves.
-  DataSource get source;
-
-  /// Show details — used for total season/episode counts.
   Future<TvShow?> getShow(int showId);
 
-  /// The show's season list.
   Future<List<TvSeason>> getSeasons(int showId);
 
-  /// Episodes of one season.
   Future<List<TvEpisode>> getSeasonEpisodes(int showId, int seasonNumber);
 }
 

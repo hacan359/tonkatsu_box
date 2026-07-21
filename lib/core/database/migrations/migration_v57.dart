@@ -2,17 +2,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Adds an episode/show source discriminator. TV show identity becomes
-/// `(source, show id)`:
-/// - `tv_shows_cache` is rebuilt with a composite primary key
-///   `(tmdb_id, source)`;
-/// - `tv_seasons_cache`, `tv_episodes_cache` and `watched_episodes` gain a
-///   `source` column inside their UNIQUE keys;
-/// - `collection_items.source` is backfilled for tv shows and the tv-show
-///   unique indexes include it (like manga in v44).
-///
-/// SQLite can't alter constraints in place — the four tables are rebuilt and
-/// existing rows backfilled as `'tmdb'`.
+/// TV show identity becomes `(source, show id)`. SQLite can't alter
+/// constraints in place, so the four tv tables are rebuilt with a `source`
+/// discriminator in their keys and existing rows backfilled as `'tmdb'`.
 class MigrationV57 extends Migration {
   @override
   int get version => 57;

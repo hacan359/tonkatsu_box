@@ -541,12 +541,113 @@ class CollectionDao {
     });
   }
 
+  /// Watch marks are keyed by (collection, source, show), not by item id,
+  /// so they deliberately survive the removal: re-adding the show to the
+  /// same collection restores its progress.
   Future<void> removeItemFromCollection(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
       'collection_items',
       where: 'id = ?',
       whereArgs: <Object?>[id],
+    );
+  }
+
+  /// The columns the watched-episodes helpers need, or null when the item
+  /// row is gone.
+  Future<Map<String, dynamic>?> _loadItemMeta(
+    DatabaseExecutor db,
+    int id,
+  ) async {
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      columns: <String>['collection_id', 'media_type', 'external_id', 'source'],
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  /// Whether another tv/animation item for the same show remains in the
+  /// collection — it shares the watch marks, so they must not be
+  /// moved/deleted.
+  Future<bool> _hasTvSibling(
+    DatabaseExecutor db,
+    int collectionId,
+    int externalId,
+    String source,
+  ) async {
+    final List<Map<String, dynamic>> siblings = await db.query(
+      'collection_items',
+      columns: <String>['id'],
+      where: 'collection_id = ? AND external_id = ? '
+          "AND media_type IN ('tv_show', 'animation') "
+          "AND COALESCE(source, 'tmdb') = ?",
+      whereArgs: <Object?>[
+        collectionId,
+        externalId,
+        source,
+      ],
+      limit: 1,
+    );
+    return siblings.isNotEmpty;
+  }
+
+  Future<void> _deleteWatchedEpisodesUnlessShared(
+    DatabaseExecutor db,
+    int collectionId,
+    int externalId,
+    String source,
+  ) async {
+    if (await _hasTvSibling(db, collectionId, externalId, source)) return;
+    await db.delete(
+      'watched_episodes',
+      where: 'collection_id = ? AND source = ? AND show_id = ?',
+      whereArgs: <Object?>[
+        collectionId,
+        source,
+        externalId,
+      ],
+    );
+  }
+
+  /// Sibling items keep the source rows (copy instead of move); moves
+  /// to/from uncategorized leave the marks behind, like removal does.
+  Future<void> _transferWatchedEpisodes(
+    DatabaseExecutor db,
+    Map<String, dynamic> movedItem,
+    int? targetCollectionId,
+  ) async {
+    if (!MediaType.fromString(movedItem['media_type'] as String).isTvBacked) {
+      return;
+    }
+    final int? oldCollectionId = movedItem['collection_id'] as int?;
+    if (oldCollectionId == targetCollectionId) return;
+    if (oldCollectionId == null || targetCollectionId == null) return;
+    final int externalId = movedItem['external_id'] as int;
+    final String source = (movedItem['source'] as String?) ?? 'tmdb';
+
+    await db.rawInsert(
+      'INSERT OR REPLACE INTO watched_episodes '
+      '(collection_id, source, show_id, season_number, episode_number, '
+      'watched_at) '
+      'SELECT ?, source, show_id, season_number, episode_number, watched_at '
+      'FROM watched_episodes '
+      'WHERE collection_id = ? AND source = ? AND show_id = ?',
+      <Object?>[
+        targetCollectionId,
+        oldCollectionId,
+        source,
+        externalId,
+      ],
+    );
+
+    await _deleteWatchedEpisodesUnlessShared(
+      db,
+      oldCollectionId,
+      externalId,
+      source,
     );
   }
 
@@ -742,27 +843,34 @@ class CollectionDao {
   }
 
   /// Moves item to another collection (null = uncategorized) and appends to its
-  /// sort order. Returns false on UNIQUE conflict (already present in target).
+  /// sort order. Watch progress of tv-backed items moves along with the item.
+  /// Returns false on UNIQUE conflict (already present in target).
   Future<bool> updateItemCollectionId(int id, int? collectionId) async {
     final Database db = await _getDatabase();
     final int newSortOrder = await getNextSortOrder(collectionId);
-    try {
-      await db.update(
-        'collection_items',
-        <String, dynamic>{
-          'collection_id': collectionId,
-          'sort_order': newSortOrder,
-        },
-        where: 'id = ?',
-        whereArgs: <Object?>[id],
-      );
-      return true;
-    } on DatabaseException catch (e) {
-      if (e.isUniqueConstraintError()) {
-        return false;
+    return db.transaction((Transaction txn) async {
+      final Map<String, dynamic>? item = await _loadItemMeta(txn, id);
+      try {
+        await txn.update(
+          'collection_items',
+          <String, dynamic>{
+            'collection_id': collectionId,
+            'sort_order': newSortOrder,
+          },
+          where: 'id = ?',
+          whereArgs: <Object?>[id],
+        );
+      } on DatabaseException catch (e) {
+        if (e.isUniqueConstraintError()) {
+          return false;
+        }
+        rethrow;
       }
-      rethrow;
-    }
+      if (item != null) {
+        await _transferWatchedEpisodes(txn, item, collectionId);
+      }
+      return true;
+    });
   }
 
   /// Full-row copy resilient to new columns: overrides only id, collection_id,

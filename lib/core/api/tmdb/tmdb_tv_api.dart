@@ -109,7 +109,12 @@ class TmdbTvApi {
     }
   }
 
-  Future<TvShow?> getTvShow(int tmdbId) async {
+  Future<TvShow?> getTvShow(int tmdbId) async =>
+      (await getTvShowWithSeasons(tmdbId))?.$1;
+
+  /// One /tv/{id} fetch parsed as both the show and its seasons — callers
+  /// needing both must use this instead of hitting the endpoint twice.
+  Future<(TvShow, List<TvSeason>)?> getTvShowWithSeasons(int tmdbId) async {
     _client.ensureApiKey();
 
     try {
@@ -122,7 +127,18 @@ class TmdbTvApi {
         );
       }
 
-      return TvShow.fromJson(response.data as Map<String, dynamic>);
+      final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+      final List<dynamic> seasons =
+          data['seasons'] as List<dynamic>? ?? <dynamic>[];
+      return (
+        TvShow.fromJson(data),
+        seasons
+            .map((dynamic item) => TvSeason.fromJson(
+                  item as Map<String, dynamic>,
+                  showId: tmdbId,
+                ))
+            .toList(),
+      );
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         return null;

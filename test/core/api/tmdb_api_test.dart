@@ -1034,6 +1034,80 @@ void main() {
       });
     });
 
+    group('getTvShowWithSeasons', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('should parse show and seasons from a single request', () async {
+        final Map<String, dynamic> tvShowJson = createTvShowJson();
+        tvShowJson['seasons'] = <Map<String, dynamic>>[
+          createSeasonJson(),
+          createSeasonJson(
+            seasonNumber: 2,
+            name: 'Сезон 2',
+            episodeCount: 13,
+            airDate: '2009-03-08',
+          ),
+        ];
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: tvShowJson,
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final (TvShow, List<TvSeason>)? result =
+            await sut.getTvShowWithSeasons(1396);
+
+        expect(result, isNotNull);
+        expect(result!.$1.tmdbId, equals(1396));
+        expect(result.$1.totalEpisodes, equals(62));
+        expect(result.$2, hasLength(2));
+        expect(result.$2[0].tmdbShowId, equals(1396));
+        expect(result.$2[1].seasonNumber, equals(2));
+        verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).called(1);
+      });
+
+      test('should return empty seasons when the payload has none', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: createTvShowJson(),
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final (TvShow, List<TvSeason>)? result =
+            await sut.getTvShowWithSeasons(1396);
+
+        expect(result, isNotNull);
+        expect(result!.$2, isEmpty);
+      });
+
+      test('should return null при 404', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 404,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(await sut.getTvShowWithSeasons(999999), isNull);
+      });
+    });
+
     group('getTvSeasons', () {
       setUp(() {
         sut.setApiKey(testApiKey);

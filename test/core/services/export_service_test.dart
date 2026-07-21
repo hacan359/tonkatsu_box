@@ -2041,6 +2041,8 @@ void main() {
             .thenAnswer((_) async => <TvSeason>[]);
         when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
             .thenAnswer((_) async => <TvEpisode>[]);
+        when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
         when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
@@ -2121,6 +2123,73 @@ void main() {
 
         expect(xcoll.items[0].containsKey('_marks'), isFalse);
         verifyNever(() => mockItemMarkDao.getMarksForItems(any()));
+      });
+
+      test('should attach _watched_episodes scoped to the export collection',
+          () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+        when(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.tmdb, 1399))
+            .thenAnswer(
+          (_) async => <(int, int), DateTime?>{
+            (1, 1): DateTime.fromMillisecondsSinceEpoch(1700000000000),
+            (1, 2): null,
+          },
+        );
+
+        final XcollFile xcoll = await sutMarks.createFullExport(
+          createTestCollection(),
+          twoTvItems(),
+          1,
+          includeUserData: true,
+        );
+
+        verify(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.tmdb, 1399))
+            .called(1);
+        verify(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.tmdb, 1400))
+            .called(1);
+
+        final List<dynamic> watched =
+            xcoll.items[0]['_watched_episodes'] as List<dynamic>;
+        expect(watched, hasLength(2));
+        final Map<String, dynamic> first = watched[0] as Map<String, dynamic>;
+        expect(first['season'], 1);
+        expect(first['episode'], 1);
+        expect(first['watched_at'], 1700000000);
+        final Map<String, dynamic> second = watched[1] as Map<String, dynamic>;
+        expect(second['episode'], 2);
+        expect(second['watched_at'], isNull);
+        // The show with no marks must not carry the key at all.
+        expect(xcoll.items[1].containsKey('_watched_episodes'), isFalse);
+      });
+
+      test('should not query watched episodes for non-tv items', () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+
+        await sutMarks.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(id: 1, mediaType: MediaType.game),
+          ],
+          1,
+          includeUserData: true,
+        );
+
+        verifyNever(
+            () => mockTvShowDao.getWatchedEpisodes(any(), any(), any()));
+      });
+
+      test('should skip watched episodes when includeUserData is false',
+          () async {
+        await sutMarks.createFullExport(
+          createTestCollection(),
+          twoTvItems(),
+          1,
+        );
+
+        verifyNever(
+            () => mockTvShowDao.getWatchedEpisodes(any(), any(), any()));
       });
     });
   });

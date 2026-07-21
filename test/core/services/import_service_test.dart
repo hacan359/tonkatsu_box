@@ -14,6 +14,7 @@ import 'package:tonkatsu_box/shared/models/canvas_item.dart';
 import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_mark.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
@@ -2865,6 +2866,202 @@ void main() {
         ).captured.single as List<ItemMark>;
         expect(inserted, hasLength(2));
         expect(inserted.every((ItemMark m) => m.itemId == 77), isTrue);
+      });
+    });
+
+    group('import watched episodes (_watched_episodes)', () {
+      late ImportService sutV2;
+      late MockTvShowDao mockTvShowDao;
+
+      const List<Map<String, dynamic>> itemsWithWatched =
+          <Map<String, dynamic>>[
+        <String, dynamic>{
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          '_watched_episodes': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'season': 1,
+              'episode': 1,
+              'watched_at': 1700000000,
+            },
+            <String, dynamic>{
+              'season': 1,
+              'episode': 2,
+              'watched_at': null,
+            },
+          ],
+        },
+      ];
+
+      setUp(() {
+        mockTvShowDao = MockTvShowDao();
+        when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
+        when(() => mockTvShowDao.upsertTvShows(any()))
+            .thenAnswer((_) async {});
+        when(() => mockTvShowDao.markEpisodeWatchedAt(
+                any(), any(), any(), any(), any(), any()))
+            .thenAnswer((_) async {});
+
+        when(() => mockTmdb.getTvShow(1399)).thenAnswer(
+            (_) async => const TvShow(tmdbId: 1399, title: 'GoT'));
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+
+        sutV2 = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+        );
+      });
+
+      XcollFile xcollWith({
+        required bool userData,
+        List<Map<String, dynamic>> items = itemsWithWatched,
+      }) =>
+          XcollFile(
+            version: 2,
+            format: ExportFormat.light,
+            name: 'Import',
+            author: 'Author',
+            created: testDate,
+            includesUserData: userData,
+            items: items,
+          );
+
+      test('should restore marks re-scoped to the target collection',
+          () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.tmdb, 1399, 1, 1, 1700000000 * 1000)).called(1);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.tmdb, 1399, 1, 2, null)).called(1);
+      });
+
+      test('should skip watched marks when the file has no user data',
+          () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: false),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
+      test('should ignore _watched_episodes on a non-tv item', () async {
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        final MockGameDao gameDao = MockGameDao();
+        when(() => mockDb.gameDao).thenReturn(gameDao);
+        when(() => gameDao.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              '_watched_episodes': <Map<String, dynamic>>[
+                <String, dynamic>{'season': 1, 'episode': 1},
+              ],
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
+      test('should tolerate files without the _watched_episodes key',
+          () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{'media_type': 'tv_show', 'external_id': 1399},
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
+      test('should restore marks onto an existing duplicate item', () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => null);
+        when(() => mockRepo.findItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+            )).thenAnswer((_) async => createTestCollectionItem(
+              id: 77,
+              mediaType: MediaType.tvShow,
+              externalId: 1399,
+            ));
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.tmdb, 1399, 1, 1, 1700000000 * 1000)).called(1);
       });
     });
   });

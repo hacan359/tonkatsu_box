@@ -166,6 +166,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | tag_names | array | no | Names of all assigned tags in the item's display order — manual per-item order when set, global tag order otherwise (full only, resolved into the global tag set on import) |
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
+| _watched_episodes | array | no | Watched-episode marks of a TV/animation item (full + `user_data` only). Each entry: `{season, episode, watched_at}` with `watched_at` in Unix seconds or `null`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 
 **User data fields** (present only when top-level `user_data` is `true`):
 
@@ -309,6 +310,8 @@ When `media` is present during import, data is restored directly from the file v
 3. Creates collection and inserts items with metadata
 4. Restores collection-level canvas (viewport, items, connections)
 5. Restores per-item canvases (embedded in `_canvas` field of each item)
+   and watched-episode marks (embedded in `_watched_episodes`, when
+   `user_data` is present)
 6. Restores cover images and canvas images from base64 to local disk cache
 7. Restores tier lists — creates tier list, saves definitions, resolves entries via `itemIdMapping` (`media_type:external_id` → new item ID)
 8. Restores tracker data (RA progress) if present — upserts into `tracker_game_data`
