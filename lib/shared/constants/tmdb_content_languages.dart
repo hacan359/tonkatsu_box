@@ -69,6 +69,7 @@ const Map<String, String> _kUiToContentLanguage = <String, String>{
   'ru': 'ru-RU',
   'zh': 'zh-CN',
   'es': 'es-ES',
+  'pt': 'pt-BR',
 };
 
 /// Default TMDB code for a UI locale; unknown locales fall back to `en-US`.

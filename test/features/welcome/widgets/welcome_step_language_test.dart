@@ -62,7 +62,7 @@ void main() {
       );
     });
 
-    testWidgets('shows English, Russian, Chinese and Spanish options',
+    testWidgets('shows English, Russian, Chinese, Spanish and Portuguese options',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
@@ -71,6 +71,7 @@ void main() {
       expect(find.text('Русский'), findsWidgets);
       expect(find.text('中文'), findsWidgets);
       expect(find.text('Español'), findsWidgets);
+      expect(find.text('Português (Brasil)'), findsWidgets);
     });
 
     testWidgets('English is selected by default in UI radio',
@@ -79,7 +80,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
-      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(3));
+      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(4));
     });
 
     testWidgets('shows content language dropdown', (WidgetTester tester) async {
@@ -137,6 +138,18 @@ void main() {
 
       expect(prefs.getString(SettingsKeys.appLanguage), 'es');
       expect(prefs.getString(SettingsKeys.tmdbLanguage), 'es-ES');
+    });
+
+    testWidgets('tapping Portuguese selects it and sets tmdbLanguage to pt-BR',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      await tester.tap(find.text('Português (Brasil)').first);
+      await tester.pump();
+
+      expect(prefs.getString(SettingsKeys.appLanguage), 'pt');
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'pt-BR');
     });
 
     testWidgets('tapping English selects it back',
@@ -208,7 +221,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
-      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(3));
+      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(4));
     });
   });
 }
