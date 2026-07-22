@@ -1,14 +1,9 @@
 import 'data_source.dart';
 import 'media_type.dart';
 
-/// Single cell inside a [MoodGrid].
-///
-/// Holds an optional category [label] and an optional media reference. The
-/// reference is denormalised to `(mediaType, externalId, platformId)` and
-/// has **no** foreign key on `collection_items` — the cell survives removal
-/// of the item from any collection, with metadata rendered from `*_cache`.
+/// Cell of a [MoodGrid]: optional [label] plus a denormalised media reference
+/// with no FK — survives item removal, renders from `*_cache`.
 class MoodGridCell {
-  /// Creates a [MoodGridCell].
   const MoodGridCell({
     required this.id,
     required this.gridId,
@@ -20,7 +15,6 @@ class MoodGridCell {
     this.source,
   });
 
-  /// Reconstructs from a `mood_grid_cells` row.
   factory MoodGridCell.fromDb(Map<String, dynamic> row) {
     final String? rawType = row['media_type'] as String?;
     return MoodGridCell(
@@ -37,7 +31,6 @@ class MoodGridCell {
     );
   }
 
-  /// Reconstructs from a backup export entry.
   factory MoodGridCell.fromExport(Map<String, dynamic> json) {
     final String? rawType = json['media_type'] as String?;
     return MoodGridCell(
@@ -54,10 +47,8 @@ class MoodGridCell {
     );
   }
 
-  /// Primary key.
   final int id;
 
-  /// Owning grid id.
   final int gridId;
 
   /// Zero-based row-major index: `row * cols + col`.
@@ -79,10 +70,8 @@ class MoodGridCell {
   /// `null` for other media types. Disambiguates a shared manga `externalId`.
   final DataSource? source;
 
-  /// True when no media item is selected.
   bool get isEmpty => mediaType == null || externalId == null;
 
-  /// Maps to the `mood_grid_cells` row representation.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -108,7 +97,6 @@ class MoodGridCell {
     };
   }
 
-  /// Returns a copy with the listed fields replaced.
   MoodGridCell copyWith({
     int? id,
     int? gridId,

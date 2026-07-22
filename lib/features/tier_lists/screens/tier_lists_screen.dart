@@ -13,12 +13,12 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/draggable_fab.dart';
-import '../providers/mood_grids_provider.dart';
-import '../providers/tier_lists_provider.dart';
-import '../widgets/create_mood_grid_dialog.dart';
-import '../widgets/create_tier_list_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import 'mood_grid_detail_screen.dart';
+import '../../mood_grids/providers/mood_grids_provider.dart';
+import '../../mood_grids/screens/mood_grid_detail_screen.dart';
+import '../../mood_grids/widgets/create_mood_grid_dialog.dart';
+import '../providers/tier_lists_provider.dart';
+import '../widgets/create_tier_list_dialog.dart';
 import 'tier_list_detail_screen.dart';
 
 /// When [collectionId] is set, shows only that collection's tier lists;

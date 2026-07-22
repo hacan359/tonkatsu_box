@@ -12,6 +12,8 @@ import 'package:tonkatsu_box/shared/models/calendar_recurrence.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/models/mood_grid.dart';
+import 'package:tonkatsu_box/shared/models/mood_grid_cell.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -388,6 +390,75 @@ void main() {
       verify(() => tvDao.markEpisodeWatchedAt(
               any(), any(), any(), any(), any(), any()))
           .called(2);
+    });
+
+    test('restores mood grids with both templates and cell data', () async {
+      final MockMoodGridDao moodDao = MockMoodGridDao();
+      final MoodGrid created = MoodGrid(
+        id: 5,
+        name: 'Mood',
+        rows: 1,
+        cols: 2,
+        createdAt: DateTime(2025),
+        updatedAt: DateTime(2025),
+      );
+      when(() => moodDao.createMoodGrid(
+            name: any(named: 'name'),
+            rows: any(named: 'rows'),
+            cols: any(named: 'cols'),
+          )).thenAnswer((_) async => created);
+      when(() => moodDao.getCells(5)).thenAnswer(
+        (_) async => const <MoodGridCell>[
+          MoodGridCell(id: 100, gridId: 5, position: 0),
+          MoodGridCell(id: 101, gridId: 5, position: 1),
+        ],
+      );
+      when(() => moodDao.setCaptionTemplate(any(), any()))
+          .thenAnswer((_) async {});
+      when(() => moodDao.setCellLabelTemplate(any(), any()))
+          .thenAnswer((_) async {});
+      when(() => moodDao.setCellLabel(any(), any())).thenAnswer((_) async {});
+      when(() => moodDao.setCellItem(
+            cellId: any(named: 'cellId'),
+            mediaType: any(named: 'mediaType'),
+            externalId: any(named: 'externalId'),
+            platformId: any(named: 'platformId'),
+            source: any(named: 'source'),
+          )).thenAnswer((_) async {});
+
+      const String moodGridsJson = '[{"name":"Mood","rows":1,"cols":2,'
+          '"caption_template":"{{name}}",'
+          '"cell_label_template":"{{name}} {{year}}",'
+          '"created_at":1700000000,"updated_at":1700000000,'
+          '"cells":['
+          '{"position":0,"label":"Fav","media_type":"game","external_id":7},'
+          '{"position":1}'
+          ']}]';
+      final String path =
+          writeZip(<String, String>{'mood_grids.json': moodGridsJson});
+
+      final BackupService service = BackupService(
+        database: database,
+        exportService: exportService,
+        importService: importService,
+        configService: configService,
+        collectionRepo: collectionRepo,
+        wishlistRepo: wishlistRepo,
+        moodGridDao: moodDao,
+      );
+      await service.restoreFromBackup(zipPath: path);
+
+      verify(() => moodDao.setCaptionTemplate(5, '{{name}}')).called(1);
+      verify(() => moodDao.setCellLabelTemplate(5, '{{name}} {{year}}'))
+          .called(1);
+      verify(() => moodDao.setCellLabel(100, 'Fav')).called(1);
+      verify(() => moodDao.setCellItem(
+            cellId: 100,
+            mediaType: MediaType.game,
+            externalId: 7,
+            platformId: null,
+            source: null,
+          )).called(1);
     });
   });
 }

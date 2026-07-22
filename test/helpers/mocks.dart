@@ -32,6 +32,7 @@ import 'package:tonkatsu_box/core/database/dao/book_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/mood_grid_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tier_list_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tracker_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/wishlist_dao.dart';
@@ -125,6 +126,8 @@ class MockCollectionDao extends Mock implements CollectionDao {}
 class MockCanvasDao extends Mock implements CanvasDao {}
 
 class MockTierListDao extends Mock implements TierListDao {}
+
+class MockMoodGridDao extends Mock implements MoodGridDao {}
 
 class MockWishlistDao extends Mock implements WishlistDao {}
 

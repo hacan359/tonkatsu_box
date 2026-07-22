@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/database/dao/mood_grid_dao.dart';
-import 'package:tonkatsu_box/features/tier_lists/providers/mood_grids_provider.dart';
+import 'package:tonkatsu_box/features/mood_grids/providers/mood_grids_provider.dart';
 
 void main() {
   group('aboutMeTonkatsuBoxCells', () {

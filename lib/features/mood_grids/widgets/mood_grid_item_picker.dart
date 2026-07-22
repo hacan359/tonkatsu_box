@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/database_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -12,19 +11,17 @@ import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
-import '../../settings/providers/settings_provider.dart';
+import '../providers/mood_grid_picker_session_provider.dart';
 
 /// Result of [showMoodGridItemPicker].
 class MoodGridItemPickerResult {
-  /// Creates a [MoodGridItemPickerResult].
   const MoodGridItemPickerResult({required this.item});
 
-  /// The picked collection item.
   final CollectionItem item;
 }
 
-/// Opens a modal picker that lists all items across all collections with
-/// optional collection / search filtering. Returns null if cancelled.
+/// Modal picker over all collection items with filter/search; null when
+/// cancelled. State and item cache live in [moodGridPickerSessionProvider].
 Future<MoodGridItemPickerResult?> showMoodGridItemPicker(
   BuildContext context,
 ) {
@@ -45,13 +42,20 @@ class _MoodGridItemPicker extends ConsumerStatefulWidget {
 }
 
 class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
-  final TextEditingController _queryController = TextEditingController();
-  int? _filterCollectionId; // null = all collections
+  /// Grid grows in windows of this size as the user scrolls, so a large
+  /// library doesn't build (and fetch covers for) thousands of cards at once.
+  static const int _pageSize = 60;
+
+  late final TextEditingController _queryController;
   Future<List<CollectionItem>>? _itemsFuture;
+  int _visibleCount = _pageSize;
 
   @override
   void initState() {
     super.initState();
+    final MoodGridPickerSession session =
+        ref.read(moodGridPickerSessionProvider);
+    _queryController = TextEditingController(text: session.query);
     _refreshItems();
   }
 
@@ -61,18 +65,28 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
     super.dispose();
   }
 
-  void _refreshItems() {
-    final DatabaseService db = ref.read(databaseServiceProvider);
+  void _refreshItems({bool resetWindow = true, bool refresh = true}) {
     setState(() {
-      _itemsFuture = _filterCollectionId == null
-          ? db.getAllCollectionItemsWithData()
-          : db.getCollectionItemsWithData(_filterCollectionId);
+      if (resetWindow) _visibleCount = _pageSize;
+      _itemsFuture = ref
+          .read(moodGridPickerSessionProvider.notifier)
+          .itemsForCurrentFilter(refresh: refresh);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
+    // A landed background refresh re-reads the cache without resetting the
+    // scroll window; refresh: false breaks the reload→revision cycle.
+    ref.listen(moodGridPickerSessionProvider,
+        (MoodGridPickerSession? prev, MoodGridPickerSession next) {
+      if (prev != null && prev.revision != next.revision) {
+        _refreshItems(resetWindow: false, refresh: false);
+      }
+    });
+    final MoodGridPickerSession session =
+        ref.watch(moodGridPickerSessionProvider);
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
     final double maxHeight = MediaQuery.sizeOf(context).height * 0.8;
@@ -101,13 +115,15 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
             const SizedBox(height: AppSpacing.sm),
             collectionsAsync.when(
               data: (List<Collection> collections) => CollectionPickerField(
-                value: _filterCollectionId,
+                value: session.collectionId,
                 hint: l.collection,
                 title: l.collection,
                 nullLabel: l.moodGridPickerAllCollections,
                 leadingIcon: Icons.folder_open_outlined,
                 onChanged: (int? id) {
-                  _filterCollectionId = id;
+                  ref
+                      .read(moodGridPickerSessionProvider.notifier)
+                      .setCollection(id);
                   _refreshItems();
                 },
               ),
@@ -122,7 +138,12 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
                 prefixIcon: const Icon(Icons.search),
                 hintText: l.moodGridPickerSearchHint,
               ),
-              onChanged: (_) => setState(() {}),
+              onChanged: (String value) {
+                ref
+                    .read(moodGridPickerSessionProvider.notifier)
+                    .setQuery(value);
+                setState(() => _visibleCount = _pageSize);
+              },
             ),
             const SizedBox(height: AppSpacing.sm),
             Expanded(
@@ -135,29 +156,43 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
                   }
                   final List<CollectionItem> items = _filterItems(
                     snap.data ?? <CollectionItem>[],
-                    _queryController.text.trim(),
+                    session.query.trim(),
                   );
                   if (items.isEmpty) {
                     return Center(child: Text(l.moodGridPickerEmpty));
                   }
-                  return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 120,
-                      mainAxisSpacing: AppSpacing.sm,
-                      crossAxisSpacing: AppSpacing.sm,
-                      childAspectRatio: 0.62,
-                    ),
-                    itemCount: items.length,
-                    itemBuilder: (BuildContext c, int i) {
-                      final CollectionItem item = items[i];
-                      return _PickerItemCard(
-                        item: item,
-                        onTap: () => Navigator.of(context).pop(
-                          MoodGridItemPickerResult(item: item),
-                        ),
-                      );
+                  final int visible = _visibleCount < items.length
+                      ? _visibleCount
+                      : items.length;
+                  return NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification n) {
+                      if (n.metrics.extentAfter < 400 &&
+                          _visibleCount < items.length) {
+                        setState(() => _visibleCount += _pageSize);
+                      }
+                      return false;
                     },
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 120,
+                        mainAxisSpacing: AppSpacing.sm,
+                        crossAxisSpacing: AppSpacing.sm,
+                        // 2:3 poster + two bodySmall lines: 0.62 left ~10px
+                        // for text and clipped it to half a line.
+                        childAspectRatio: 0.51,
+                      ),
+                      itemCount: visible,
+                      itemBuilder: (BuildContext c, int i) {
+                        final CollectionItem item = items[i];
+                        return _PickerItemCard(
+                          item: item,
+                          onTap: () => Navigator.of(context).pop(
+                            MoodGridItemPickerResult(item: item),
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
@@ -171,11 +206,9 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
   List<CollectionItem> _filterItems(List<CollectionItem> all, String query) {
     if (query.isEmpty) return all;
     final String lowered = query.toLowerCase();
-    final String lang =
-        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     return all
         .where((CollectionItem it) =>
-            it.displayName(lang).toLowerCase().contains(lowered))
+            ref.currentDisplayNameOf(it).toLowerCase().contains(lowered))
         .toList();
   }
 }
