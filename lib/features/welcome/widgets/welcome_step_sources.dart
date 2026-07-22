@@ -125,6 +125,8 @@ class _SourceCard extends ConsumerWidget {
         DataSource.igdb => l.welcomeSourceDescIgdb,
         DataSource.anilist => l.welcomeSourceDescAniList,
         DataSource.mangabaka => l.welcomeSourceDescMangaBaka,
+        DataSource.mangadex => l.welcomeSourceDescMangaDex,
+        DataSource.kitsu => l.welcomeSourceDescKitsu,
         DataSource.vndb => l.welcomeSourceDescVndb,
         DataSource.openLibrary => l.welcomeSourceDescOpenLibrary,
         DataSource.fantlab => l.welcomeSourceDescFantlab,

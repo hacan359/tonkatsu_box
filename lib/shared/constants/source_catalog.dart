@@ -56,6 +56,16 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     url: 'https://mangabaka.org/',
   ),
   SourceInfo(
+    source: DataSource.mangadex,
+    mediaTypes: <MediaType>[MediaType.manga],
+    url: 'https://mangadex.org/',
+  ),
+  SourceInfo(
+    source: DataSource.kitsu,
+    mediaTypes: <MediaType>[MediaType.manga],
+    url: 'https://kitsu.io/',
+  ),
+  SourceInfo(
     source: DataSource.vndb,
     mediaTypes: <MediaType>[MediaType.visualNovel],
     url: 'https://vndb.org/',
@@ -100,6 +110,8 @@ const Map<String, List<DataSource>> kSearchGroupToSources =
   'igdb': <DataSource>[DataSource.igdb],
   'anilist': <DataSource>[DataSource.anilist],
   'mangabaka': <DataSource>[DataSource.mangabaka],
+  'mangadex': <DataSource>[DataSource.mangadex],
+  'kitsu': <DataSource>[DataSource.kitsu],
   'vndb': <DataSource>[DataSource.vndb],
   'openlibrary': <DataSource>[DataSource.openLibrary],
   'fantlab': <DataSource>[DataSource.fantlab],

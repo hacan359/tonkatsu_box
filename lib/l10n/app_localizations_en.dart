@@ -1377,6 +1377,12 @@ class SEn extends S {
   String get creditsMangaBakaAttribution => 'Manga data provided by MangaBaka.';
 
   @override
+  String get creditsMangaDexAttribution => 'Manga data provided by MangaDex.';
+
+  @override
+  String get creditsKitsuAttribution => 'Manga data provided by Kitsu.';
+
+  @override
   String get creditsOpenLibraryAttribution =>
       'Book data from Open Library (CC0 / ODbL).';
 
@@ -2814,6 +2820,14 @@ class SEn extends S {
       'Manga, manhwa, manhua and light novels.';
 
   @override
+  String get welcomeSourceDescMangaDex =>
+      'A large manga catalog with localized titles and chapter counts.';
+
+  @override
+  String get welcomeSourceDescKitsu =>
+      'An independent manga catalog with ratings and covers.';
+
+  @override
   String get welcomeSourceDescVndb => 'The visual novel database.';
 
   @override
@@ -3548,6 +3562,9 @@ class SEn extends S {
 
   @override
   String get browseFilterContentRating => 'Content rating';
+
+  @override
+  String get browseFilterDemographic => 'Demographic';
 
   @override
   String get contentRatingSafe => 'Safe';

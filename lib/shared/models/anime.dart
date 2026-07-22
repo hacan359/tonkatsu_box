@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../utils/anime_manga_title_language.dart';
+import '../utils/kitsu_status.dart';
 
 /// Anime metadata from the AniList GraphQL API.
 class Anime {
@@ -111,6 +112,66 @@ class Anime {
           (json['nextAiringEpisode'] as Map<String, dynamic>?)?['episode']
               as int?,
       externalUrl: 'https://anilist.co/anime/$id',
+      updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+  }
+
+  /// Builds an [Anime] from a Kitsu `/anime` JSON:API resource
+  /// ({id, attributes}). Groundwork for the Kitsu-anime search source — the
+  /// anime cache is single-source until the multi-source migration lands, so
+  /// this is not wired into search yet.
+  factory Anime.fromKitsu(Map<String, dynamic> json) {
+    final int id = int.parse(json['id'] as String);
+    final Map<String, dynamic> attrs =
+        (json['attributes'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+
+    final Map<String, dynamic> titles =
+        (attrs['titles'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+    final String? canonical = _nonEmpty(attrs['canonicalTitle']);
+    final String? english = _nonEmpty(titles['en']);
+    final String? romaji = _nonEmpty(titles['en_jp']) ?? canonical;
+    final String? native = _nonEmpty(titles['ja_jp']);
+    final String title =
+        _firstNonEmpty(<String?>[romaji, english, native, canonical]) ??
+            'Unknown';
+
+    final Map<String, dynamic>? poster =
+        attrs['posterImage'] as Map<String, dynamic>?;
+    final Map<String, dynamic>? banner =
+        attrs['coverImage'] as Map<String, dynamic>?;
+
+    int? startYear;
+    final String? startDate = attrs['startDate'] as String?;
+    if (startDate != null && startDate.length >= 4) {
+      startYear = int.tryParse(startDate.substring(0, 4));
+    }
+
+    final String? rating = attrs['averageRating'] as String?;
+    final double? ratingValue = rating != null ? double.tryParse(rating) : null;
+
+    final Object? slug = attrs['slug'];
+    final String path = slug is String && slug.isNotEmpty ? slug : '$id';
+
+    return Anime(
+      id: id,
+      title: title,
+      titleEnglish: english,
+      titleNative: native,
+      description: _stripHtml(attrs['synopsis'] as String?),
+      coverUrl: (poster?['original'] ?? poster?['large']) as String?,
+      coverUrlMedium: poster?['medium'] as String?,
+      // Kitsu's `coverImage` is the wide banner (its `posterImage` is the
+      // cover) — mapped to bannerUrl like AniList's bannerImage.
+      bannerUrl: (banner?['original'] ?? banner?['large']) as String?,
+      averageScore: ratingValue?.round(),
+      status: kitsuStatusVocab(attrs['status'] as String?),
+      startYear: startYear,
+      episodes: (attrs['episodeCount'] as num?)?.toInt(),
+      duration: (attrs['episodeLength'] as num?)?.toInt(),
+      format: _kitsuFormat(attrs['subtype'] as String?),
+      externalUrl: 'https://kitsu.io/anime/$path',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -427,6 +488,27 @@ class Anime {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  static String? _nonEmpty(Object? value) =>
+      (value is String && value.isNotEmpty) ? value : null;
+
+  static String? _firstNonEmpty(List<String?> values) {
+    for (final String? v in values) {
+      if (v != null && v.isNotEmpty) return v;
+    }
+    return null;
+  }
+
+  /// Maps Kitsu anime `subtype` onto the AniList-style format vocabulary.
+  static String? _kitsuFormat(String? subtype) => switch (subtype) {
+        'TV' => 'TV',
+        'movie' => 'MOVIE',
+        'special' => 'SPECIAL',
+        'OVA' => 'OVA',
+        'ONA' => 'ONA',
+        'music' => 'MUSIC',
+        _ => null,
+      };
 
   static final RegExp _htmlTagPattern = RegExp('<[^>]*>');
 

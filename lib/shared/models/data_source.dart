@@ -27,6 +27,12 @@ enum DataSource {
   /// MangaBaka — open catalog of manga / manhwa / manhua / light novels.
   mangabaka('MangaBaka', Color(0xFFE5484D), AppAssets.iconMangaBakaColor),
 
+  /// MangaDex — large manga catalog with localized titles and chapter counts.
+  mangadex('MangaDex', Color(0xFFFF6740), AppAssets.iconMangaDexColor),
+
+  /// Kitsu — independent anime and manga catalog.
+  kitsu('Kitsu', Color(0xFFF75239), AppAssets.iconKitsuColor),
+
   /// OpenLibrary — global open book catalog (~40M works, CC0/ODbL).
   openLibrary('OpenLibrary', Color(0xFF9B6A4F), AppAssets.iconOpenLibraryColor),
 

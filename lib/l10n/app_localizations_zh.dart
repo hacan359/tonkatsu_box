@@ -1288,6 +1288,12 @@ class SZh extends S {
   String get creditsMangaBakaAttribution => '漫画数据由 MangaBaka 提供。';
 
   @override
+  String get creditsMangaDexAttribution => '漫画数据由 MangaDex 提供。';
+
+  @override
+  String get creditsKitsuAttribution => '漫画数据由 Kitsu 提供。';
+
+  @override
   String get creditsOpenLibraryAttribution =>
       '书籍数据来自 Open Library（CC0 / ODbL）。';
 
@@ -2644,6 +2650,12 @@ class SZh extends S {
   String get welcomeSourceDescMangaBaka => '漫画、韩漫、国漫和轻小说。';
 
   @override
+  String get welcomeSourceDescMangaDex => '大型漫画目录，带本地化标题和章节数。';
+
+  @override
+  String get welcomeSourceDescKitsu => '独立的漫画目录，带评分和封面。';
+
+  @override
   String get welcomeSourceDescVndb => '视觉小说数据库。';
 
   @override
@@ -3354,6 +3366,9 @@ class SZh extends S {
 
   @override
   String get browseFilterContentRating => '内容分级';
+
+  @override
+  String get browseFilterDemographic => '受众';
 
   @override
   String get contentRatingSafe => '全年龄';

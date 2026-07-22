@@ -2490,6 +2490,18 @@ abstract class S {
   /// **'Manga data provided by MangaBaka.'**
   String get creditsMangaBakaAttribution;
 
+  /// No description provided for @creditsMangaDexAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga data provided by MangaDex.'**
+  String get creditsMangaDexAttribution;
+
+  /// No description provided for @creditsKitsuAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga data provided by Kitsu.'**
+  String get creditsKitsuAttribution;
+
   /// No description provided for @creditsOpenLibraryAttribution.
   ///
   /// In en, this message translates to:
@@ -4992,6 +5004,18 @@ abstract class S {
   /// **'Manga, manhwa, manhua and light novels.'**
   String get welcomeSourceDescMangaBaka;
 
+  /// No description provided for @welcomeSourceDescMangaDex.
+  ///
+  /// In en, this message translates to:
+  /// **'A large manga catalog with localized titles and chapter counts.'**
+  String get welcomeSourceDescMangaDex;
+
+  /// No description provided for @welcomeSourceDescKitsu.
+  ///
+  /// In en, this message translates to:
+  /// **'An independent manga catalog with ratings and covers.'**
+  String get welcomeSourceDescKitsu;
+
   /// No description provided for @welcomeSourceDescVndb.
   ///
   /// In en, this message translates to:
@@ -6335,6 +6359,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Content rating'**
   String get browseFilterContentRating;
+
+  /// No description provided for @browseFilterDemographic.
+  ///
+  /// In en, this message translates to:
+  /// **'Demographic'**
+  String get browseFilterDemographic;
 
   /// No description provided for @contentRatingSafe.
   ///

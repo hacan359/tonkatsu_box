@@ -30,6 +30,7 @@ import 'dao/tv_show_dao.dart';
 import 'dao/manga_dao.dart';
 import 'dao/mangabaka_genre_dao.dart';
 import 'dao/mangabaka_tag_dao.dart';
+import 'dao/mangadex_tag_dao.dart';
 import 'dao/visual_novel_dao.dart';
 import 'dao/mood_grid_dao.dart';
 import 'dao/tier_list_dao.dart';
@@ -128,6 +129,11 @@ final Provider<MangaBakaTagDao> mangaBakaTagDaoProvider =
   return ref.watch(databaseServiceProvider).mangaBakaTagDao;
 });
 
+final Provider<MangaDexTagDao> mangaDexTagDaoProvider =
+    Provider<MangaDexTagDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).mangaDexTagDao;
+});
+
 final Provider<TrackedReleaseDao> trackedReleaseDaoProvider =
     Provider<TrackedReleaseDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).trackedReleaseDao;
@@ -205,6 +211,8 @@ class DatabaseService {
 
   late final MangaBakaTagDao mangaBakaTagDao = MangaBakaTagDao(() => database);
 
+  late final MangaDexTagDao mangaDexTagDao = MangaDexTagDao(() => database);
+
   late final WishlistDao wishlistDao = WishlistDao(() => database);
 
   late final TrackedReleaseDao trackedReleaseDao =
@@ -248,7 +256,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 58,
+        version: 59,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {

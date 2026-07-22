@@ -1,24 +1,11 @@
 import 'dart:convert';
 
 import '../utils/bbcode.dart';
+import '../utils/stable_id.dart';
 import 'book_kind.dart';
 import 'data_source.dart';
 
-/// Deterministic 64-bit FNV-1a hash of [input], masked to 63 bits so the result
-/// is always a non-negative [int] that fits both SQLite's signed INTEGER and a
-/// native Dart int. Used to fold a provider's non-numeric id (Google Books
-/// `volumeId`) into the numeric [Book.id] contract. Unlike [String.hashCode] it
-/// is stable across runs and platforms, so cached / persisted ids stay valid.
-int fnv1a64(String input) {
-  // 64-bit FNV-1a. Dart ints are 64-bit two's-complement on the VM/AOT, so the
-  // multiply wraps mod 2^64 exactly as the algorithm requires.
-  int hash = 0xcbf29ce484222325; // offset basis
-  for (final int unit in input.codeUnits) {
-    hash ^= unit;
-    hash = hash * 0x100000001b3; // FNV prime
-  }
-  return hash & 0x7fffffffffffffff; // mask to 63 bits → non-negative
-}
+export '../utils/stable_id.dart' show fnv1a64;
 
 /// Book metadata from OpenLibrary, Fantlab, ComicVine, Google Books or
 /// Hardcover.
