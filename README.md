@@ -51,6 +51,7 @@ The whole interface is localized with runtime switching. Pick your language in *
 | 🇷🇺 | Русский (Russian) | ✅ Complete |
 | 🇨🇳 | 简体中文 (Simplified Chinese) | ✅ Complete |
 | 🇪🇸 | Español (Spanish) | ✅ Complete |
+| 🇧🇷 | Português (Brazilian Portuguese) | ✅ Complete |
 
 ## Screenshots
 
