@@ -11,14 +11,16 @@ import 'package:tonkatsu_box/features/search/sources/comicvine_source.dart';
 import 'package:tonkatsu_box/features/search/sources/fantlab_source.dart';
 import 'package:tonkatsu_box/features/search/sources/google_books_source.dart';
 import 'package:tonkatsu_box/features/search/sources/hardcover_source.dart';
+import 'package:tonkatsu_box/features/search/sources/kitsu_manga_source.dart';
 import 'package:tonkatsu_box/features/search/sources/mangabaka_source.dart';
+import 'package:tonkatsu_box/features/search/sources/mangadex_source.dart';
 import 'package:tonkatsu_box/features/search/sources/openlibrary_source.dart';
 import 'package:tonkatsu_box/features/search/sources/vndb_source.dart';
 
 void main() {
   group('searchSources', () {
-    test('contains 13 sources', () {
-      expect(searchSources, hasLength(13));
+    test('contains 15 sources', () {
+      expect(searchSources, hasLength(15));
     });
 
     test('first source is TmdbMoviesSource', () {
@@ -49,28 +51,36 @@ void main() {
       expect(searchSources[6], isA<MangaBakaSource>());
     });
 
-    test('eighth source is VndbSource', () {
-      expect(searchSources[7], isA<VndbSource>());
+    test('eighth source is MangaDexSource', () {
+      expect(searchSources[7], isA<MangaDexSource>());
     });
 
-    test('ninth source is OpenLibrarySource', () {
-      expect(searchSources[8], isA<OpenLibrarySource>());
+    test('ninth source is KitsuMangaSource', () {
+      expect(searchSources[8], isA<KitsuMangaSource>());
     });
 
-    test('tenth source is FantlabSource', () {
-      expect(searchSources[9], isA<FantlabSource>());
+    test('tenth source is VndbSource', () {
+      expect(searchSources[9], isA<VndbSource>());
     });
 
-    test('eleventh source is GoogleBooksSource', () {
-      expect(searchSources[10], isA<GoogleBooksSource>());
+    test('eleventh source is OpenLibrarySource', () {
+      expect(searchSources[10], isA<OpenLibrarySource>());
     });
 
-    test('twelfth source is HardcoverSource', () {
-      expect(searchSources[11], isA<HardcoverSource>());
+    test('twelfth source is FantlabSource', () {
+      expect(searchSources[11], isA<FantlabSource>());
     });
 
-    test('thirteenth source is ComicVineSource', () {
-      expect(searchSources[12], isA<ComicVineSource>());
+    test('thirteenth source is GoogleBooksSource', () {
+      expect(searchSources[12], isA<GoogleBooksSource>());
+    });
+
+    test('fourteenth source is HardcoverSource', () {
+      expect(searchSources[13], isA<HardcoverSource>());
+    });
+
+    test('fifteenth source is ComicVineSource', () {
+      expect(searchSources[14], isA<ComicVineSource>());
     });
 
     test('all sources have unique ids', () {
@@ -90,6 +100,8 @@ void main() {
         'anilist_anime',
         'manga',
         'mangabaka',
+        'mangadex',
+        'kitsu_manga',
         'visual_novels',
         'openlibrary',
         'fantlab',

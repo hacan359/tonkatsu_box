@@ -1407,6 +1407,14 @@ class SEs extends S {
       'Datos de manga proporcionados por MangaBaka.';
 
   @override
+  String get creditsMangaDexAttribution =>
+      'Datos de manga proporcionados por MangaDex.';
+
+  @override
+  String get creditsKitsuAttribution =>
+      'Datos de manga proporcionados por Kitsu.';
+
+  @override
   String get creditsOpenLibraryAttribution =>
       'Datos de libros de Open Library (CC0 / ODbL).';
 
@@ -2856,6 +2864,14 @@ class SEs extends S {
       'Manga, manhwa, manhua y novelas ligeras.';
 
   @override
+  String get welcomeSourceDescMangaDex =>
+      'Un amplio catálogo de manga con títulos localizados y recuento de capítulos.';
+
+  @override
+  String get welcomeSourceDescKitsu =>
+      'Un catálogo independiente de manga con valoraciones y portadas.';
+
+  @override
   String get welcomeSourceDescVndb => 'La base de datos de novelas visuales.';
 
   @override
@@ -3597,6 +3613,9 @@ class SEs extends S {
 
   @override
   String get browseFilterContentRating => 'Clasificación de contenido';
+
+  @override
+  String get browseFilterDemographic => 'Demografía';
 
   @override
   String get contentRatingSafe => 'Seguro';

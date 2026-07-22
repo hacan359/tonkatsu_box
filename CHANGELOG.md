@@ -9,6 +9,65 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **MangaDex and Kitsu as manga search sources**
+
+  Two more keyless manga providers alongside AniList and MangaBaka, for
+  redundancy when the primary source is down. Both search by title, map
+  covers, ratings, year, status and chapter/volume counts, and carry their
+  own `DataSource` so they never collide with other providers in the cache
+  or collection. MangaDex adds Genre and Tags filters (the Tags picker
+  mirrors MangaBaka's, backed by a SQLite-cached `/manga/tag` catalog),
+  plus status, demographic, content-rating and sort; Kitsu adds subtype,
+  status and sort, and surfaces its wide `coverImage` as the card
+  backdrop. Kitsu's anime API is scaffolded but not yet wired into search
+  (pending the anime multi-source migration).
+
+  * lib/core/api/mangadex_api.dart (MangaDexApi), lib/core/api/mangadex/
+    (MangaDexHttpClient, MangaDexMangaApi, MangaDexTagsApi,
+    MangaDexApiException): New MangaDex REST client.
+  * lib/core/api/kitsu_api.dart (KitsuApi), lib/core/api/kitsu/
+    (KitsuHttpClient, KitsuMangaApi, KitsuAnimeApi, KitsuApiException): New
+    Kitsu JSON:API client; KitsuHttpClient.totalCount / KitsuHttpClient.hasNext
+    hold the shared pagination parsing.
+  * lib/shared/models/manga.dart (Manga.fromMangaDex, Manga.fromKitsu),
+    lib/shared/models/anime.dart (Anime.fromKitsu): New source factories.
+  * lib/shared/models/mangadex_tag.dart (MangaDexTag): New tag model.
+  * lib/shared/utils/stable_id.dart (fnv1a64): Lifted out of
+    lib/shared/models/book.dart so MangaDex can fold its UUID into the
+    numeric external-id contract; book.dart re-exports it.
+  * lib/shared/utils/kitsu_status.dart (kitsuStatusVocab): Shared Kitsu
+    status → vocabulary mapping used by both models.
+  * lib/shared/models/data_source.dart (DataSource.mangadex, DataSource.kitsu),
+    lib/shared/theme/app_assets.dart (AppAssets.iconMangaDexColor,
+    AppAssets.iconKitsuColor): New sources and brand logos.
+  * lib/features/search/sources/mangadex_source.dart (MangaDexSource),
+    kitsu_manga_source.dart (KitsuMangaSource),
+    search_sources.dart (searchSources): New sources, registered.
+  * lib/features/search/filters/mangadex_genre_filter.dart,
+    mangadex_tag_filter.dart, mangadex_status_filter.dart,
+    mangadex_demographic_filter.dart, mangadex_content_rating_filter.dart,
+    kitsu_manga_subtype_filter.dart, kitsu_manga_status_filter.dart: New
+    filters.
+  * lib/features/search/widgets/mangadex_tag_picker.dart
+    (showMangaDexTagPicker): New MangaBaka-style tag picker.
+  * lib/data/repositories/mangadex_tags_repository.dart
+    (MangaDexTagsRepository), lib/core/database/dao/mangadex_tag_dao.dart
+    (MangaDexTagDao): SQLite-cached tag catalog.
+  * lib/core/database/migrations/migration_v59.dart (MigrationV59): New
+    `mangadex_tags` table; registered in migration_registry.dart and
+    database_service.dart (version 59, MangaDexTagDao wiring).
+  * lib/features/collections/helpers/collection_actions.dart
+    (_refreshItemWork): Route manga refresh to the new APIs by source
+    (MangaDex recovers its UUID from the cached externalUrl).
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog,
+    kSearchGroupToSources): Catalog entries.
+  * lib/features/settings/content/credits_content.dart,
+    lib/features/welcome/widgets/welcome_step_sources.dart: Credits and
+    onboarding entries.
+  * lib/l10n/app_*.arb (welcomeSourceDescMangaDex, welcomeSourceDescKitsu,
+    creditsMangaDexAttribution, creditsKitsuAttribution,
+    browseFilterDemographic): New keys.
+
 - **Custom card form: personal note and tags**
 
   The create form gained "My Notes" and "Tags" fields (tags as

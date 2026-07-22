@@ -1397,6 +1397,13 @@ class SPt extends S {
       'Dados de mangá fornecidos pelo MangaBaka.';
 
   @override
+  String get creditsMangaDexAttribution =>
+      'Dados de mangá fornecidos pelo MangaDex.';
+
+  @override
+  String get creditsKitsuAttribution => 'Dados de mangá fornecidos pelo Kitsu.';
+
+  @override
   String get creditsOpenLibraryAttribution =>
       'Dados de livros da Open Library (CC0 / ODbL).';
 
@@ -2847,6 +2854,14 @@ class SPt extends S {
       'Manga, manhwa, manhua e light novels.';
 
   @override
+  String get welcomeSourceDescMangaDex =>
+      'Um grande catálogo de mangá com títulos localizados e contagem de capítulos.';
+
+  @override
+  String get welcomeSourceDescKitsu =>
+      'Um catálogo independente de mangá com avaliações e capas.';
+
+  @override
   String get welcomeSourceDescVndb => 'O banco de dados de visual novels.';
 
   @override
@@ -3584,6 +3599,9 @@ class SPt extends S {
 
   @override
   String get browseFilterContentRating => 'Classificação de conteúdo';
+
+  @override
+  String get browseFilterDemographic => 'Demografia';
 
   @override
   String get contentRatingSafe => 'Seguro';

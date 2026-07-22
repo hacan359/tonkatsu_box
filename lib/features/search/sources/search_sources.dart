@@ -8,7 +8,9 @@ import 'fantlab_source.dart';
 import 'google_books_source.dart';
 import 'hardcover_source.dart';
 import 'igdb_games_source.dart';
+import 'kitsu_manga_source.dart';
 import 'mangabaka_source.dart';
+import 'mangadex_source.dart';
 import 'openlibrary_source.dart';
 import 'tmdb_anime_source.dart';
 import 'tmdb_movies_source.dart';
@@ -32,6 +34,10 @@ final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
     AniListMangaSource(),
     // MangaBaka
     MangaBakaSource(),
+    // MangaDex
+    MangaDexSource(),
+    // Kitsu
+    KitsuMangaSource(),
     // VNDB
     VndbSource(),
     // Books

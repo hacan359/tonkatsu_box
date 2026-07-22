@@ -9,7 +9,10 @@ import 'package:tonkatsu_box/core/api/fantlab_api.dart';
 import 'package:tonkatsu_box/core/api/google_books_api.dart';
 import 'package:tonkatsu_box/core/api/hardcover_api.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
+import 'package:tonkatsu_box/core/api/kitsu_api.dart';
 import 'package:tonkatsu_box/core/api/kodi_api.dart';
+import 'package:tonkatsu_box/core/api/mangadex_api.dart';
+import 'package:tonkatsu_box/core/database/dao/mangadex_tag_dao.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
 import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
@@ -159,6 +162,12 @@ class MockFantlabApi extends Mock implements FantlabApi {}
 class MockGoogleBooksApi extends Mock implements GoogleBooksApi {}
 
 class MockHardcoverApi extends Mock implements HardcoverApi {}
+
+class MockMangaDexApi extends Mock implements MangaDexApi {}
+
+class MockMangaDexTagDao extends Mock implements MangaDexTagDao {}
+
+class MockKitsuApi extends Mock implements KitsuApi {}
 
 class MockKodiApi extends Mock implements KodiApi {}
 

@@ -1399,6 +1399,13 @@ class SRu extends S {
       'Данные о манге предоставлены MangaBaka.';
 
   @override
+  String get creditsMangaDexAttribution =>
+      'Данные о манге предоставлены MangaDex.';
+
+  @override
+  String get creditsKitsuAttribution => 'Данные о манге предоставлены Kitsu.';
+
+  @override
   String get creditsOpenLibraryAttribution =>
       'Данные о книгах из Open Library (CC0 / ODbL).';
 
@@ -2874,6 +2881,14 @@ class SRu extends S {
   String get welcomeSourceDescMangaBaka => 'Манга, манхва, маньхуа и ранобэ.';
 
   @override
+  String get welcomeSourceDescMangaDex =>
+      'Крупный каталог манги с локализованными названиями и счётчиком глав.';
+
+  @override
+  String get welcomeSourceDescKitsu =>
+      'Независимый каталог манги с рейтингами и обложками.';
+
+  @override
   String get welcomeSourceDescVndb => 'База данных визуальных новелл.';
 
   @override
@@ -3610,6 +3625,9 @@ class SRu extends S {
 
   @override
   String get browseFilterContentRating => 'Рейтинг контента';
+
+  @override
+  String get browseFilterDemographic => 'Демография';
 
   @override
   String get contentRatingSafe => 'Безопасный';

@@ -75,6 +75,20 @@ class CreditsContent extends StatelessWidget {
         url: 'https://mangabaka.org/',
       ),
       (
+        source: DataSource.mangadex,
+        name: 'MangaDex',
+        description: l10n.creditsMangaDexAttribution,
+        linkLabel: 'mangadex.org',
+        url: 'https://mangadex.org/',
+      ),
+      (
+        source: DataSource.kitsu,
+        name: 'Kitsu',
+        description: l10n.creditsKitsuAttribution,
+        linkLabel: 'kitsu.io',
+        url: 'https://kitsu.io/',
+      ),
+      (
         source: DataSource.vndb,
         name: 'VNDB',
         description: l10n.creditsVndbAttribution,

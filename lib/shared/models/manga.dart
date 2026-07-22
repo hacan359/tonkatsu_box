@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import '../utils/anime_manga_title_language.dart';
+import '../utils/kitsu_status.dart';
+import '../utils/stable_id.dart';
 import 'data_source.dart';
 
 /// Manga metadata from AniList or MangaBaka.
@@ -204,6 +206,169 @@ class Manga {
       tags: tags,
       authors: authors.isEmpty ? null : authors,
       externalUrl: 'https://mangabaka.org/$id',
+      updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+  }
+
+  /// Builds a [Manga] from a MangaDex `/manga` resource ({id (UUID),
+  /// attributes, relationships}). MangaDex ids are UUIDs, so [id] is a stable
+  /// [fnv1a64] hash (keeping the numeric cache / external-id contract) and the
+  /// UUID is preserved in [externalUrl] (`.../title/{uuid}`) for later refresh.
+  /// Chapter / volume counts come from a separate `/aggregate` call, so they
+  /// are absent on search rows.
+  factory Manga.fromMangaDex(Map<String, dynamic> json) {
+    final String uuid = json['id'] as String;
+    final Map<String, dynamic> attrs =
+        (json['attributes'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+
+    final Map<String, dynamic> titleMap =
+        (attrs['title'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+    final List<Map<String, dynamic>> altTitles =
+        (attrs['altTitles'] as List<dynamic>?)
+                ?.whereType<Map<String, dynamic>>()
+                .toList() ??
+            const <Map<String, dynamic>>[];
+
+    String? pickTitle(String lang) {
+      final Object? primary = titleMap[lang];
+      if (primary is String && primary.isNotEmpty) return primary;
+      for (final Map<String, dynamic> alt in altTitles) {
+        final Object? v = alt[lang];
+        if (v is String && v.isNotEmpty) return v;
+      }
+      return null;
+    }
+
+    final String? english = pickTitle('en');
+    final String? romaji = pickTitle('ja-ro') ?? english;
+    final String? native =
+        pickTitle('ja') ?? pickTitle('ko') ?? pickTitle('zh');
+    final String title =
+        _firstNonEmpty(<String?>[romaji, english, native]) ?? 'Unknown';
+
+    final List<dynamic> relationships =
+        (json['relationships'] as List<dynamic>?) ?? const <dynamic>[];
+    String? coverUrl;
+    final List<String> authors = <String>[];
+    for (final Map<String, dynamic> rel
+        in relationships.whereType<Map<String, dynamic>>()) {
+      final Map<String, dynamic>? relAttrs =
+          rel['attributes'] as Map<String, dynamic>?;
+      switch (rel['type']) {
+        case 'cover_art':
+          final Object? file = relAttrs?['fileName'];
+          if (file is String && file.isNotEmpty) {
+            coverUrl =
+                'https://uploads.mangadex.org/covers/$uuid/$file.512.jpg';
+          }
+        case 'author':
+        case 'artist':
+          final Object? name = relAttrs?['name'];
+          if (name is String && name.isNotEmpty && !authors.contains(name)) {
+            authors.add(name);
+          }
+      }
+    }
+
+    final List<String> genres = <String>[];
+    final List<String> tags = <String>[];
+    for (final Map<String, dynamic> tag
+        in (attrs['tags'] as List<dynamic>?)
+                ?.whereType<Map<String, dynamic>>() ??
+            const <Map<String, dynamic>>[]) {
+      final Map<String, dynamic>? tagAttrs =
+          tag['attributes'] as Map<String, dynamic>?;
+      final String? name = _localized(tagAttrs?['name']);
+      if (name == null) continue;
+      if (tagAttrs?['group'] == 'genre') {
+        genres.add(name);
+      } else if (tagAttrs?['group'] == 'theme') {
+        tags.add(name);
+      }
+    }
+
+    return Manga(
+      id: fnv1a64(uuid),
+      source: DataSource.mangadex,
+      title: title,
+      titleEnglish: english,
+      titleNative: native,
+      description: _stripHtml(_localized(attrs['description'])),
+      coverUrl: coverUrl,
+      status: _mangaDexStatus(attrs['status'] as String?),
+      startYear: (attrs['year'] as num?)?.toInt(),
+      // `lastChapter` / `lastVolume` are the final numbers on the manga object
+      // itself (populated for completed series) — an inline counter without the
+      // per-title `/aggregate` call. getByUuid refines these when available.
+      chapters: _parseCount(attrs['lastChapter']),
+      volumes: _parseCount(attrs['lastVolume']),
+      format: _mangaDexFormat(attrs['originalLanguage'] as String?),
+      genres: genres.isEmpty ? null : genres,
+      tags: tags.isEmpty ? null : tags,
+      authors: authors.isEmpty ? null : authors,
+      externalUrl: 'https://mangadex.org/title/$uuid',
+      updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+  }
+
+  /// Builds a [Manga] from a Kitsu `/manga` JSON:API resource
+  /// ({id, attributes}). Genres are related resources not requested here, so
+  /// they stay null.
+  factory Manga.fromKitsu(Map<String, dynamic> json) {
+    final int id = int.parse(json['id'] as String);
+    final Map<String, dynamic> attrs =
+        (json['attributes'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+
+    final Map<String, dynamic> titles =
+        (attrs['titles'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+    final String? canonical = _nonEmpty(attrs['canonicalTitle']);
+    final String? english = _nonEmpty(titles['en']);
+    final String? romaji = _nonEmpty(titles['en_jp']) ?? canonical;
+    final String? native = _nonEmpty(titles['ja_jp']);
+    final String title =
+        _firstNonEmpty(<String?>[romaji, english, native, canonical]) ??
+            'Unknown';
+
+    final Map<String, dynamic>? poster =
+        attrs['posterImage'] as Map<String, dynamic>?;
+    final Map<String, dynamic>? banner =
+        attrs['coverImage'] as Map<String, dynamic>?;
+
+    int? startYear;
+    final String? startDate = attrs['startDate'] as String?;
+    if (startDate != null && startDate.length >= 4) {
+      startYear = int.tryParse(startDate.substring(0, 4));
+    }
+
+    final String? rating = attrs['averageRating'] as String?;
+    final double? ratingValue = rating != null ? double.tryParse(rating) : null;
+
+    final Object? slug = attrs['slug'];
+    final String path = slug is String && slug.isNotEmpty ? slug : '$id';
+
+    return Manga(
+      id: id,
+      source: DataSource.kitsu,
+      title: title,
+      titleEnglish: english,
+      titleNative: native,
+      description: _stripHtml(attrs['synopsis'] as String?),
+      coverUrl: (poster?['original'] ?? poster?['large']) as String?,
+      coverUrlMedium: poster?['medium'] as String?,
+      // Kitsu's `coverImage` is the wide banner (its `posterImage` is the cover)
+      // — mapped to bannerUrl like AniList's bannerImage.
+      bannerUrl: (banner?['original'] ?? banner?['large']) as String?,
+      averageScore: ratingValue?.round(),
+      status: kitsuStatusVocab(attrs['status'] as String?),
+      startYear: startYear,
+      chapters: (attrs['chapterCount'] as num?)?.toInt(),
+      volumes: (attrs['volumeCount'] as num?)?.toInt(),
+      format: _kitsuFormat(attrs['subtype'] as String?),
+      externalUrl: 'https://kitsu.io/manga/$path',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -551,6 +716,57 @@ class Manga {
         'manhua' => 'MANHUA',
         'novel' => 'LIGHT_NOVEL',
         'other' => 'ONE_SHOT',
+        _ => null,
+      };
+
+  /// Picks the English (or first non-empty) value from a MangaDex localized
+  /// map (`{en: ..., ja: ...}`).
+  static String? _localized(Object? map) {
+    if (map is! Map<String, dynamic>) {
+      return map is String ? _nonEmpty(map) : null;
+    }
+    final Object? en = map['en'];
+    if (en is String && en.isNotEmpty) return en;
+    for (final Object? v in map.values) {
+      if (v is String && v.isNotEmpty) return v;
+    }
+    return null;
+  }
+
+  static String? _nonEmpty(Object? value) =>
+      (value is String && value.isNotEmpty) ? value : null;
+
+  /// Parses a MangaDex `lastChapter` / `lastVolume` number (a possibly-decimal
+  /// string like `"700"` or `"215.5"`); empty / unparseable → null.
+  static int? _parseCount(Object? value) {
+    if (value is! String || value.isEmpty) return null;
+    return int.tryParse(value) ?? double.tryParse(value)?.floor();
+  }
+
+  /// Maps MangaDex `status` onto the AniList-style vocabulary.
+  static String? _mangaDexStatus(String? status) => switch (status) {
+        'ongoing' => 'RELEASING',
+        'completed' => 'FINISHED',
+        'hiatus' => 'HIATUS',
+        'cancelled' => 'CANCELLED',
+        _ => null,
+      };
+
+  /// Infers a format code from the MangaDex `originalLanguage`.
+  static String? _mangaDexFormat(String? language) => switch (language) {
+        'ja' => 'MANGA',
+        'ko' => 'MANHWA',
+        'zh' || 'zh-hk' => 'MANHUA',
+        _ => null,
+      };
+
+  /// Maps Kitsu manga `subtype` onto the AniList-style format vocabulary.
+  static String? _kitsuFormat(String? subtype) => switch (subtype) {
+        'manga' => 'MANGA',
+        'novel' => 'LIGHT_NOVEL',
+        'manhwa' => 'MANHWA',
+        'manhua' => 'MANHUA',
+        'oneshot' => 'ONE_SHOT',
         _ => null,
       };
 
