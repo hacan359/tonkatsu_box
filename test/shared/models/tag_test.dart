@@ -96,6 +96,26 @@ void main() {
       });
     });
 
+    group('dedupeNames', () {
+      test('trims, drops empties and keeps the first spelling of a dupe', () {
+        expect(
+          Tag.dedupeNames(' JRPG , classics ,, jrpg , '.split(',')),
+          <String>['JRPG', 'classics'],
+        );
+      });
+
+      test('dedupes Cyrillic names ignoring case', () {
+        expect(
+          Tag.dedupeNames(<String>['Хоррор', 'хоррор', 'нуар']),
+          <String>['Хоррор', 'нуар'],
+        );
+      });
+
+      test('returns empty list for blank input', () {
+        expect(Tag.dedupeNames(' , , '.split(',')), isEmpty);
+      });
+    });
+
     group('TagListProjection', () {
       const List<Tag> tags = <Tag>[
         Tag(id: 1, name: 'aaa', createdAt: 0),

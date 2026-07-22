@@ -1736,6 +1736,12 @@ class SRu extends S {
   String get customItemDescriptionHint => 'Краткое описание или заметки';
 
   @override
+  String get customItemMyNoteHint => 'Ваша заметка об этом элементе';
+
+  @override
+  String get customItemTagsHint => 'Через запятую, напр. Бэклог, Избранное';
+
+  @override
   String get customItemOptionalFields => 'Дополнительные поля';
 
   @override
@@ -4861,6 +4867,12 @@ class SRu extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       'Шаблон применяется к каждой ячейке. Доступные токены: name, year, genre, rating.';
+
+  @override
+  String get moodGridCellLabelTemplate => 'Подписи ячеек';
+
+  @override
+  String get moodGridCellSize => 'Размер';
 
   @override
   String get collection => 'Коллекция';

@@ -9,6 +9,101 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Custom card form: personal note and tags**
+
+  The create form gained "My Notes" and "Tags" fields (tags as
+  comma-separated input). Loading a JSON/CSV file prefills them from the
+  `comment` and `tags` columns, which used to be silently dropped. On
+  Create the note is saved as the item's personal comment and the tags go
+  through the global tag system, creating missing tags automatically —
+  the same rules as the bulk importer. The edit form does not show the
+  fields: they belong to the collection item, not the card.
+
+  * lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.comment, CustomItemData.tags): New fields.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._buildCommentSection,
+    _CreateCustomItemDialogState._buildTagsSection,
+    _CreateCustomItemDialogState._applyEntry): Fields, prefill, submit.
+  * lib/shared/models/tag.dart (Tag.dedupeNames): New shared tag-name
+    parser, reused by lib/core/import/sources/custom_file/custom_cards_parser.dart
+    (CustomCardsParser._tags) and the form.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.addCustomItem,
+    CollectionItemsNotifier._applyItemTags): Write the comment and tags
+    onto the created item.
+  * lib/features/collections/screens/collection_screen.dart
+    (_handleCreateCustomItem): Pass the new fields through.
+  * lib/l10n/app_*.arb (customItemMyNoteHint, customItemTagsHint): New
+    hints.
+
+- **Text export: `{link}` token**
+
+  The template exporter can now output the item's external page URL —
+  IGDB for games, TMDB for movies and shows, AniList for anime and manga,
+  the user's own link for custom items. An empty link is stripped together
+  with its separator like the other tokens.
+
+  * lib/shared/models/collection_item.dart (CollectionItem.externalUrl):
+    New getter resolving the active media's URL.
+  * lib/core/services/text_export_service.dart
+    (TextExportService.availableTokens, TextExportService.formatItem):
+    Register and fill the token.
+
+- **Mood grid: separate tap zones, auto-filled cell labels, sticky picker,
+  cleaner export, cell size control**
+
+  Tapping the cover picks an item while tapping the label below edits the
+  text (right-click menu unchanged). A new per-grid "Cell labels" template
+  (same tokens as row captions) fills an empty label automatically when an
+  item is picked. The item picker remembers its collection filter and
+  search text while the grid stays open, reuses the loaded item list,
+  hides duplicates of the same title held in several collections, and
+  builds its grid in windows of 60 cards as the user scrolls.
+  Exported PNGs no longer draw the `+` placeholder for empty slots. A size
+  stepper (80–240) scales cells on screen and in the export; the value is
+  session-only and resets to the default on reopen. On desktop the grid
+  shows draggable scrollbars for both axes and pans with a mouse drag —
+  wide grids were unreachable horizontally with a mouse. On narrow screens
+  the stepper toolbar reflows into two tidy rows of equal-width controls
+  instead of a ragged wrap.
+
+  * lib/core/database/migrations/migration_v58.dart (MigrationV58): New —
+    `cell_label_template` column on `mood_grids`.
+  * lib/core/database/migrations/migration_registry.dart
+    (MigrationRegistry.all), lib/core/database/database_service.dart:
+    Register v58, bump version to 58.
+  * lib/shared/models/mood_grid.dart (MoodGrid.cellLabelTemplate): New
+    field in fromDb/toDb/fromExport/toExport/copyWith.
+  * lib/core/database/dao/mood_grid_dao.dart
+    (MoodGridDao.setCellLabelTemplate): New setter.
+  * lib/features/mood_grids/providers/mood_grid_detail_provider.dart
+    (MoodGridDetailNotifier.setCellItem,
+    MoodGridDetailNotifier._autoFillLabel,
+    MoodGridDetailNotifier.setCellLabelTemplate): Auto-fill only on item
+    pick and only into an empty label.
+  * lib/features/mood_grids/providers/mood_grid_picker_session_provider.dart
+    (MoodGridPickerSession, MoodGridPickerSessionNotifier): New — filter,
+    query and per-filter item cache pinned to the grid screen's lifetime;
+    the cache collapses duplicates by media identity.
+  * lib/features/mood_grids/widgets/mood_grid_cell_widget.dart
+    (MoodGridCellWidget.onLabelTap): Split tap targets; label renders up
+    to two lines without clipping glyphs.
+  * lib/features/mood_grids/widgets/mood_grid_item_picker.dart
+    (_MoodGridItemPickerState): Read/write the session instead of local
+    state; incremental 60-card grid windows; card tile leaves room for a
+    two-line title.
+  * lib/features/mood_grids/widgets/mood_grid_export_view.dart
+    (MoodGridExportView._buildCell, MoodGridExportView.cellWidth): Blank
+    empty slots; cell width as a parameter.
+  * lib/features/mood_grids/widgets/mood_grid_view.dart (_MoodGridViewState):
+    Interactive scrollbars on both axes, mouse-drag panning.
+  * lib/features/mood_grids/screens/mood_grid_detail_screen.dart
+    (_MoodGridDetailScreenState._buildResizeControls,
+    _MoodGridDetailScreenState._editCellLabelTemplate): Size stepper,
+    template dialog reused for both templates, dialog controllers
+    disposed.
+
 - **Full export (.xcollx) with user data now carries watched-episode marks
   and restores them on import**
 
@@ -26,6 +121,41 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * docs/RCOLL_FORMAT.md: Document the `_watched_episodes` item field.
 
 ### Fixed
+
+- **Text export: `{type}` shows the displayed type of a custom item**
+
+  A custom item masquerading as a game / anime / … exported as "Custom";
+  now `{type}` uses the display type the user picked. Plain customs still
+  say "Custom".
+
+  * lib/core/services/text_export_service.dart
+    (TextExportService.formatItem): Label from `displayMediaType`.
+
+- **Mood grid resize no longer drops the cells' data source**
+
+  Shrinking or growing a grid recreated cells without the `source`
+  column, so MangaBaka manga and non-TMDB shows resolved against the
+  wrong provider afterwards (wrong or missing cover).
+
+  * lib/core/database/dao/mood_grid_dao.dart (MoodGridDao.resizeMoodGrid):
+    Carry `source` when re-inserting cells.
+
+- **Backup restore keeps mood-grid templates**
+
+  Restoring a full backup silently lost the row-caption template (and
+  would have lost the new cell-label template).
+
+  * lib/core/services/backup_service.dart
+    (BackupService._restoreMoodGrids): Apply `caption_template` and
+    `cell_label_template` after recreating the grid.
+
+- **Narrow mood-grid exports no longer overflow the footer**
+
+  A one-column grid at a small cell size produced a canvas narrower than
+  the footer credit line.
+
+  * lib/features/mood_grids/widgets/mood_grid_export_view.dart
+    (MoodGridExportView._minWidth): Floor the canvas width at 320.
 
 - **Sparse cache rows no longer wipe episode/chapter/page totals**
 
@@ -82,6 +212,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     badge shrinks on very narrow cards instead of overflowing.
 
 ### Changed
+
+- **Mood grid became its own feature module and got a lighter screen**
+
+  Files moved from `lib/features/tier_lists/` to `lib/features/mood_grids/`
+  (models, DAO and migrations stay where they were). The detail screen
+  resolves cell media in one query per media type instead of one per cell,
+  mounts the offscreen export tree only while exporting, and stops
+  re-reading the grid list on every cell edit.
+
+  * lib/features/mood_grids/: New home for mood-grid providers, screens,
+    services and widgets; imports updated in
+    lib/features/tier_lists/screens/tier_lists_screen.dart and
+    lib/features/settings/content/database_content.dart.
+  * lib/features/mood_grids/widgets/mood_grid_cell_media.dart
+    (resolveMoodGridCellMediaBatch): New batched resolver.
+  * lib/features/mood_grids/providers/mood_grid_detail_provider.dart
+    (MoodGridDetailNotifier.build, MoodGridDetailNotifier.resize): Use the
+    batched resolver; cell-level edits no longer invalidate
+    moodGridsProvider.
+  * lib/features/mood_grids/screens/mood_grid_detail_screen.dart
+    (_MoodGridDetailScreenState._exportAsImage): Export view mounted on
+    demand.
+  * lib/features/mood_grids/widgets/mood_grid_view.dart,
+    lib/features/mood_grids/widgets/mood_grid_export_view.dart: Cell
+    lookup via a position map instead of a per-cell linear search.
 
 - **Episode tracker got season posters, episode stills and overviews**
 

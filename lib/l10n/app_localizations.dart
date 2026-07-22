@@ -3046,6 +3046,18 @@ abstract class S {
   /// **'Brief description or notes'**
   String get customItemDescriptionHint;
 
+  /// No description provided for @customItemMyNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your note about this item'**
+  String get customItemMyNoteHint;
+
+  /// No description provided for @customItemTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Comma-separated, e.g. Backlog, Favorites'**
+  String get customItemTagsHint;
+
   /// No description provided for @customItemOptionalFields.
   ///
   /// In en, this message translates to:
@@ -8451,6 +8463,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Template applied per cell. Available tokens: name, year, genre, rating.'**
   String get moodGridCaptionTemplateHint;
+
+  /// No description provided for @moodGridCellLabelTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Cell labels'**
+  String get moodGridCellLabelTemplate;
+
+  /// No description provided for @moodGridCellSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get moodGridCellSize;
 
   /// No description provided for @collection.
   ///

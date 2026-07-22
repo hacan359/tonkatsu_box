@@ -1729,6 +1729,13 @@ class SEs extends S {
   String get customItemDescriptionHint => 'Breve descripción o notas';
 
   @override
+  String get customItemMyNoteHint => 'Tu nota sobre este elemento';
+
+  @override
+  String get customItemTagsHint =>
+      'Separadas por comas, p. ej. Pendientes, Favoritos';
+
+  @override
   String get customItemOptionalFields => 'Más campos';
 
   @override
@@ -4834,6 +4841,12 @@ class SEs extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       'Plantilla aplicada por celda. Tokens disponibles: name, year, genre, rating.';
+
+  @override
+  String get moodGridCellLabelTemplate => 'Etiquetas de celda';
+
+  @override
+  String get moodGridCellSize => 'Tamaño';
 
   @override
   String get collection => 'Colección';

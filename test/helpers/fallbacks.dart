@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/custom_media.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
@@ -34,6 +35,7 @@ void registerAllFallbacks() {
 
   registerFallbackValue(<int>{});
   registerFallbackValue(const Game(id: 0, name: 'fallback'));
+  registerFallbackValue(const CustomMedia(id: 0, title: 'fallback'));
   registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
   registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
 

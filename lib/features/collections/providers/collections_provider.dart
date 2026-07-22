@@ -29,6 +29,7 @@ import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'collection_covers_provider.dart';
 import 'episode_tracker_provider.dart';
+import 'global_tags_provider.dart';
 import 'item_tags_provider.dart';
 import 'sort_utils.dart';
 
@@ -597,9 +598,13 @@ class CollectionItemsNotifier
   }
 
   /// When [localCoverPath] != null, copies the file into image cache.
+  /// [userComment] and [tags] are personal fields written onto the created
+  /// collection item; missing tags are created automatically.
   Future<bool> addCustomItem(
     CustomMedia customMedia, {
     String? localCoverPath,
+    String? userComment,
+    List<String> tags = const <String>[],
   }) async {
     try {
       final int customId = await _db.customMediaDao.create(customMedia);
@@ -639,6 +644,13 @@ class CollectionItemsNotifier
 
       if (itemId == null) return false;
 
+      if (userComment != null) {
+        await _db.collectionDao.updateItemUserComment(itemId, userComment);
+      }
+      if (tags.isNotEmpty) {
+        await _applyItemTags(itemId, tags);
+      }
+
       await refresh();
       ref.invalidate(uncategorizedItemCountProvider);
       ref.invalidate(allItemsNotifierProvider);
@@ -647,6 +659,23 @@ class CollectionItemsNotifier
       debugPrint('addCustomItem error: $e\n$stack'); // TODO: remove after stabilization
       return false;
     }
+  }
+
+  /// Assigns global tags to [itemId], creating tags that don't exist yet
+  /// (matched by name, case-insensitively) — same rule as the bulk importer.
+  Future<void> _applyItemTags(int itemId, List<String> tags) async {
+    final GlobalTagDao tagDao = ref.read(globalTagDaoProvider);
+    final Map<String, int> tagIdByName =
+        await tagDao.resolveOrCreateAll(<TagSeed>[
+      for (final String name in tags)
+        (name: name, color: null, textColor: null),
+    ]);
+    await tagDao.setItemTags(itemId, <int>{
+      for (final String name in tags)
+        tagIdByName[GlobalTagDao.nameKey(name)]!,
+    });
+    ref.invalidate(globalTagsProvider);
+    ref.invalidate(itemTagsProvider);
   }
 
   /// Returns false if the item is already in the target collection.
