@@ -15,6 +15,7 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart' as model;
+import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -70,6 +71,8 @@ class _CreateCustomItemDialogState
   late final TextEditingController _unitTotalController;
   late final TextEditingController _unitGroupTotalController;
   late final TextEditingController _externalUrlController;
+  late final TextEditingController _commentController;
+  late final TextEditingController _tagsController;
 
   late MediaType _selectedType;
   String? _titleError;
@@ -103,6 +106,8 @@ class _CreateCustomItemDialogState
         TextEditingController(text: e?.unitGroupTotal?.toString() ?? '');
     _externalUrlController =
         TextEditingController(text: e?.externalUrl ?? '');
+    _commentController = TextEditingController();
+    _tagsController = TextEditingController();
     _selectedYear = e?.year;
     _selectedPlatformId = e?.platformId;
     _selectedFormat = e?.format;
@@ -157,6 +162,8 @@ class _CreateCustomItemDialogState
     _unitTotalController.dispose();
     _unitGroupTotalController.dispose();
     _externalUrlController.dispose();
+    _commentController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
@@ -201,6 +208,10 @@ class _CreateCustomItemDialogState
       externalUrl: _externalUrlController.text.trim().isNotEmpty
           ? _externalUrlController.text.trim()
           : null,
+      comment: _commentController.text.trim().isNotEmpty
+          ? _commentController.text.trim()
+          : null,
+      tags: Tag.dedupeNames(_tagsController.text.split(',')),
     ));
   }
 
@@ -253,8 +264,9 @@ class _CreateCustomItemDialogState
     }
   }
 
-  /// Only fields present in the file overwrite current values; personal
-  /// fields (status, rating, dates…) are ignored — they belong to the item.
+  /// Only fields present in the file overwrite current values. Of the
+  /// personal fields the form carries note and tags; the rest (status,
+  /// rating, dates…) are ignored — they belong to the item detail screen.
   void _applyEntry(CustomCardEntry entry) {
     setState(() {
       _selectedType = entry.type;
@@ -265,6 +277,12 @@ class _CreateCustomItemDialogState
       }
       if (entry.description != null) {
         _descriptionController.text = entry.description!;
+      }
+      if (entry.comment != null) {
+        _commentController.text = entry.comment!;
+      }
+      if (entry.tags.isNotEmpty) {
+        _tagsController.text = entry.tags.join(', ');
       }
       if (entry.year != null) {
         _selectedYear = entry.year;
@@ -374,6 +392,14 @@ class _CreateCustomItemDialogState
           _buildDescriptionSection(l),
           const SizedBox(height: AppSpacing.md),
           _buildExternalUrlSection(l),
+          // Note and tags live on the collection item, not the card — the
+          // edit flow manages them on the item detail screen instead.
+          if (!_isEditing) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            _buildCommentSection(l),
+            const SizedBox(height: AppSpacing.md),
+            _buildTagsSection(l),
+          ],
           const SizedBox(height: AppSpacing.lg),
         ],
       ),
@@ -808,6 +834,66 @@ class _CreateCustomItemDialogState
             ),
             filled: true,
             fillColor: AppColors.surfaceLight,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommentSection(S l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          l.detailMyNotes,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        TextField(
+          key: const ValueKey<String>('customItemNoteField'),
+          controller: _commentController,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: l.customItemMyNoteHint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              borderSide: const BorderSide(color: AppColors.surfaceBorder),
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceLight,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTagsSection(S l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          l.tagsLabel,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        TextField(
+          key: const ValueKey<String>('customItemTagsField'),
+          controller: _tagsController,
+          decoration: InputDecoration(
+            hintText: l.customItemTagsHint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              borderSide: const BorderSide(color: AppColors.surfaceBorder),
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceLight,
+            isDense: true,
           ),
         ),
       ],

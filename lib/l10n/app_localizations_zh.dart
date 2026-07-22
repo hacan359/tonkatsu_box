@@ -1594,6 +1594,12 @@ class SZh extends S {
   String get customItemDescriptionHint => '简要描述或备注';
 
   @override
+  String get customItemMyNoteHint => '你对此条目的备注';
+
+  @override
+  String get customItemTagsHint => '用逗号分隔，例如：待玩、收藏';
+
+  @override
   String get customItemOptionalFields => '更多字段';
 
   @override
@@ -4533,6 +4539,12 @@ class SZh extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       '应用于每个单元格的模板。可用占位符：name、year、genre、rating。';
+
+  @override
+  String get moodGridCellLabelTemplate => '单元格标题';
+
+  @override
+  String get moodGridCellSize => '大小';
 
   @override
   String get collection => '收藏';

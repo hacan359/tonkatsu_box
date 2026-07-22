@@ -41,7 +41,6 @@ class MoodGridsNotifier extends AsyncNotifier<List<MoodGrid>> {
     state = await AsyncValue.guard(() => _dao.getAllMoodGrids());
   }
 
-  /// Creates a grid from a preset.
   Future<MoodGrid> create({
     required String name,
     required MoodGridPreset preset,

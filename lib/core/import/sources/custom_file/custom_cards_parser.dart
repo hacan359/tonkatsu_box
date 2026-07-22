@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/media_type.dart';
+import '../../../../shared/models/tag.dart';
 import '../../../../shared/utils/media_format.dart';
 import 'custom_card_entry.dart';
 
@@ -329,8 +330,7 @@ class CustomCardsParser {
     return null;
   }
 
-  /// Comma-separated tag names, trimmed and deduped case-insensitively
-  /// (first spelling wins). JSON may also pass a native string array.
+  /// Comma-separated tag names; JSON may also pass a native string array.
   List<String> _tags(Map<String, dynamic> raw) {
     final Object? value = raw[CustomCardFields.tags];
     final List<String> parts;
@@ -341,14 +341,7 @@ class CustomCardsParser {
       if (text == null) return const <String>[];
       parts = text.split(',');
     }
-    final Set<String> seen = <String>{};
-    final List<String> tags = <String>[];
-    for (final String part in parts) {
-      final String name = part.trim();
-      if (name.isEmpty) continue;
-      if (seen.add(name.toLowerCase())) tags.add(name);
-    }
-    return tags;
+    return Tag.dedupeNames(parts);
   }
 
   /// Trimmed string value of [key]; empty and null collapse to null. Non-string

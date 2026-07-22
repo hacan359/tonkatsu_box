@@ -630,7 +630,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .addCustomItem(customMedia, localCoverPath: data.localCoverPath);
+        .addCustomItem(
+          customMedia,
+          localCoverPath: data.localCoverPath,
+          userComment: data.comment,
+          tags: data.tags,
+        );
 
     if (!mounted) return;
 

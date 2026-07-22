@@ -1,13 +1,12 @@
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/item_status.dart';
-import '../../shared/models/media_type.dart';
 
 /// Template-based text exporter for a collection.
 ///
 /// Supports `{name}`, `{year}`, `{rating}`, `{myRating}`, `{platform}`,
-/// `{status}`, `{genres}`, `{tags}`, `{notes}`, `{type}`, `{#}`. Empty tokens
-/// and the surrounding separators are stripped automatically — see
-/// [_removeTokenWithContext].
+/// `{status}`, `{genres}`, `{tags}`, `{notes}`, `{type}`, `{link}`, `{#}`.
+/// Empty tokens and the surrounding separators are stripped automatically —
+/// see [_removeTokenWithContext].
 class TextExportService {
   static const String defaultTemplate = '{name} ({year})';
 
@@ -22,6 +21,7 @@ class TextExportService {
     'tags',
     'notes',
     'type',
+    'link',
     '#',
   ];
 
@@ -65,7 +65,8 @@ class TextExportService {
       'genres': item.genresString,
       'tags': tagsByItemId[item.id],
       'notes': item.userComment,
-      'type': _mediaTypeLabel(item.mediaType),
+      'type': item.displayMediaType.displayLabel,
+      'link': item.externalUrl,
       '#': index.toString(),
     };
 
@@ -147,29 +148,6 @@ class TextExportService {
         return 'Planned';
       case ItemStatus.replaying:
         return 'Replay';
-    }
-  }
-
-  String _mediaTypeLabel(MediaType type) {
-    switch (type) {
-      case MediaType.game:
-        return 'Game';
-      case MediaType.movie:
-        return 'Movie';
-      case MediaType.tvShow:
-        return 'TV Show';
-      case MediaType.animation:
-        return 'Animation';
-      case MediaType.visualNovel:
-        return 'Visual Novel';
-      case MediaType.manga:
-        return 'Manga';
-      case MediaType.anime:
-        return 'Anime';
-      case MediaType.book:
-        return 'Book';
-      case MediaType.custom:
-        return 'Custom';
     }
   }
 

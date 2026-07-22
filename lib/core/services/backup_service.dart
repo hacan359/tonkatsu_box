@@ -818,6 +818,16 @@ class BackupService {
         rows: base.rows,
         cols: base.cols,
       );
+      // createMoodGrid only takes name/rows/cols; templates go separately.
+      if (base.captionTemplate != null) {
+        await _moodGridDao.setCaptionTemplate(created.id, base.captionTemplate);
+      }
+      if (base.cellLabelTemplate != null) {
+        await _moodGridDao.setCellLabelTemplate(
+          created.id,
+          base.cellLabelTemplate,
+        );
+      }
       final List<MoodGridCell> existingCells =
           await _moodGridDao.getCells(created.id);
       final Map<int, MoodGridCell> byPosition = <int, MoodGridCell>{

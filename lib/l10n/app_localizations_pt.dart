@@ -1719,6 +1719,13 @@ class SPt extends S {
   String get customItemDescriptionHint => 'Breve descrição ou notas';
 
   @override
+  String get customItemMyNoteHint => 'Sua anotação sobre este item';
+
+  @override
+  String get customItemTagsHint =>
+      'Separadas por vírgula, ex.: Backlog, Favoritos';
+
+  @override
   String get customItemOptionalFields => 'Mais campos';
 
   @override
@@ -4818,6 +4825,12 @@ class SPt extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       'Modelo aplicado por célula. Tokens disponíveis: name, year, genre, rating.';
+
+  @override
+  String get moodGridCellLabelTemplate => 'Legendas das células';
+
+  @override
+  String get moodGridCellSize => 'Tamanho';
 
   @override
   String get collection => 'Coleção';

@@ -521,6 +521,22 @@ class CollectionItem with Exportable {
           ? customMedia!.displayType!
           : mediaType;
 
+  /// External page URL of the active media (IGDB / TMDB / AniList / …).
+  /// Custom items carry their own user-entered link.
+  String? get externalUrl => switch (mediaType) {
+        MediaType.game => game?.externalUrl,
+        MediaType.movie => movie?.externalUrl,
+        MediaType.tvShow => tvShow?.externalUrl,
+        MediaType.animation => platformId == AnimationSource.tvShow
+            ? tvShow?.externalUrl
+            : movie?.externalUrl,
+        MediaType.visualNovel => visualNovel?.externalUrl,
+        MediaType.manga => manga?.externalUrl,
+        MediaType.anime => anime?.externalUrl,
+        MediaType.book => book?.externalUrl,
+        MediaType.custom => customMedia?.externalUrl,
+      };
+
   /// Type-filter chevrons this item belongs to. A masquerading custom item
   /// shows under both its display type (e.g. Anime) and Custom — it is a custom
   /// element regardless of what it imitates, so the Custom filter still finds

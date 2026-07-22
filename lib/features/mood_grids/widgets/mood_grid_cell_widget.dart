@@ -8,14 +8,14 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
 import 'mood_grid_cell_media.dart';
 
-/// Renders one cell of a MoodGrid. Layout: 2:3 cover on top, optional label
-/// underneath. Empty cells show a `+` placeholder. Media is resolved by the
-/// parent (typically the provider) and passed in via [media].
+/// One mood-grid cell: 2:3 cover over a label, each its own tap target
+/// ([onTap] / [onLabelTap]). Empty cells show a `+` placeholder.
 class MoodGridCellWidget extends StatelessWidget {
   const MoodGridCellWidget({
     required this.cell,
     required this.media,
     this.onTap,
+    this.onLabelTap,
     this.onContextMenu,
     this.width = 120,
     super.key,
@@ -27,14 +27,20 @@ class MoodGridCellWidget extends StatelessWidget {
   /// when no media is selected.
   final MoodGridCellMedia media;
 
-  /// Primary tap — usually opens the item picker.
+  /// Cover tap — usually opens the item picker.
   final VoidCallback? onTap;
+
+  /// Label-zone tap — usually opens the label editor.
+  final VoidCallback? onLabelTap;
 
   /// Secondary action — right-click on desktop, long-press on mobile. The
   /// [Offset] is the global position used to anchor a popup menu.
   final void Function(Offset)? onContextMenu;
 
   final double width;
+
+  /// Minimum label-zone height; keeps an empty label tappable.
+  static const double _labelMinHeight = 32;
 
   @override
   Widget build(BuildContext context) {
@@ -43,36 +49,44 @@ class MoodGridCellWidget extends StatelessWidget {
           ? null
           : (LongPressStartDetails details) =>
               onContextMenu!(details.globalPosition),
-      child: InkWell(
-        onTap: onTap,
-        onSecondaryTapUp: onContextMenu == null
-            ? null
-            : (TapUpDetails details) => onContextMenu!(details.globalPosition),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        child: SizedBox(
-          width: width,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              AspectRatio(
+      onSecondaryTapUp: onContextMenu == null
+          ? null
+          : (TapUpDetails details) => onContextMenu!(details.globalPosition),
+      child: SizedBox(
+        width: width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              child: AspectRatio(
                 aspectRatio: 2 / 3,
                 child: cell.isEmpty ? _buildEmptyCover() : _buildItemCover(),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              SizedBox(
-                height: 32,
-                child: Center(
-                  child: Text(
-                    cell.label ?? '',
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.bodySmall,
-                  ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            InkWell(
+              onTap: onLabelTap,
+              // Keeps D-pad traversal at one stop per cell; the label zone
+              // was never reachable by gamepad before the split either.
+              canRequestFocus: false,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              child: Container(
+                width: double.infinity,
+                constraints:
+                    const BoxConstraints(minHeight: _labelMinHeight),
+                alignment: Alignment.center,
+                child: Text(
+                  cell.label ?? '',
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -131,6 +131,55 @@ void main() {
       expect(cleared.captionTemplate, isNull);
     });
 
+    test('round-trips cellLabelTemplate through toDb / fromDb', () {
+      final MoodGrid grid = MoodGrid(
+        id: 1,
+        name: 'Labelled',
+        rows: 1,
+        cols: 1,
+        cellLabelTemplate: '{{name}} — {{rating}}',
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+      final MoodGrid restored = MoodGrid.fromDb(grid.toDb());
+      expect(restored.cellLabelTemplate, '{{name}} — {{rating}}');
+    });
+
+    test('round-trips cellLabelTemplate through toExport / fromExport', () {
+      final MoodGrid grid = MoodGrid(
+        id: 1,
+        name: 'Labelled',
+        rows: 1,
+        cols: 1,
+        cellLabelTemplate: '{{name}}',
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+      final MoodGrid restored = MoodGrid.fromExport(grid.toExport());
+      expect(restored.cellLabelTemplate, '{{name}}');
+    });
+
+    test('copyWith updates and clears cellLabelTemplate independently', () {
+      final MoodGrid grid = MoodGrid(
+        id: 1,
+        name: 'a',
+        rows: 1,
+        cols: 1,
+        captionTemplate: '{{year}}',
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+      final MoodGrid withTemplate =
+          grid.copyWith(cellLabelTemplate: '{{name}}');
+      expect(withTemplate.cellLabelTemplate, '{{name}}');
+      expect(withTemplate.captionTemplate, '{{year}}');
+
+      final MoodGrid cleared =
+          withTemplate.copyWith(clearCellLabelTemplate: true);
+      expect(cleared.cellLabelTemplate, isNull);
+      expect(cleared.captionTemplate, '{{year}}');
+    });
+
     test('equality is based on id', () {
       final MoodGrid a = MoodGrid(
         id: 1,

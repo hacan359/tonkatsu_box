@@ -1367,6 +1367,105 @@ void main() {
         });
       });
 
+      group('externalUrl', () {
+        test('should return url активной медиа', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 1942,
+              name: 'The Witcher 3: Wild Hunt',
+              externalUrl: 'https://www.igdb.com/games/the-witcher-3',
+            ),
+          );
+
+          expect(
+            item.externalUrl,
+            'https://www.igdb.com/games/the-witcher-3',
+          );
+        });
+
+        test('should выбрать tvShow для animation с AnimationSource.tvShow',
+            () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            platformId: AnimationSource.tvShow,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Arcane',
+              externalUrl: 'https://www.themoviedb.org/tv/1399',
+            ),
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Wrong',
+              externalUrl: 'https://www.themoviedb.org/movie/550',
+            ),
+          );
+
+          expect(item.externalUrl, 'https://www.themoviedb.org/tv/1399');
+        });
+
+        test('should выбрать movie для animation с AnimationSource.movie',
+            () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            platformId: AnimationSource.movie,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Spirited Away',
+              externalUrl: 'https://www.themoviedb.org/movie/550',
+            ),
+          );
+
+          expect(item.externalUrl, 'https://www.themoviedb.org/movie/550');
+        });
+
+        test('should return собственную ссылку кастома', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.custom,
+            externalId: 1,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            customMedia: const CustomMedia(
+              id: 1,
+              title: 'My Item',
+              externalUrl: 'https://example.com/my-item',
+            ),
+          );
+
+          expect(item.externalUrl, 'https://example.com/my-item');
+        });
+
+        test('should return null когда медиа отсутствует', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.externalUrl, isNull);
+        });
+      });
+
       group('itemName', () {
         test('should return имя игры когда game присутствует', () {
           final CollectionItem item = CollectionItem(

@@ -6,9 +6,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../services/mood_grid_caption.dart';
 import 'mood_grid_cell_media.dart';
 
-/// Multi-line caption column shown to the right of a mood-grid row.
-/// Lines are tight-packed using natural text height — the column aligns
-/// to the top of the row, not stretched to match cell heights.
+/// Caption column to the right of a mood-grid row: tight natural-height
+/// lines, aligned to the top of the row.
 class MoodGridRowCaptions extends StatelessWidget {
   const MoodGridRowCaptions({
     required this.template,

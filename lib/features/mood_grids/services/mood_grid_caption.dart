@@ -9,9 +9,8 @@ const List<String> kMoodGridCaptionTokens = <String>[
   'rating',
 ];
 
-/// Substitutes `{{token}}` placeholders in [template] using values from
-/// [media]. Missing or null values render as an empty string. Multiple
-/// spaces collapse to one and the result is trimmed.
+/// Substitutes `{{token}}` placeholders in [template] from [media]. Missing
+/// values render empty; spaces collapse and the result is trimmed.
 String renderRowCaption(String template, MoodGridCellMedia media) {
   final String name = media.title ?? '';
   final String year = media.year?.toString() ?? '';

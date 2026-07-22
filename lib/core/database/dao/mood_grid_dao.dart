@@ -7,7 +7,6 @@ import '../../../shared/models/mood_grid_cell.dart';
 
 /// Spec for a cell created at grid initialisation time (template / blank).
 class MoodGridCellSpec {
-  /// Creates a [MoodGridCellSpec].
   const MoodGridCellSpec({this.label});
 
   /// Optional category label (e.g. "Favorite Game"). `null` for blank cells.
@@ -16,7 +15,6 @@ class MoodGridCellSpec {
 
 /// DAO for `mood_grids` and `mood_grid_cells`.
 class MoodGridDao {
-  /// Creates a DAO with a database accessor.
   const MoodGridDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
@@ -31,7 +29,6 @@ class MoodGridDao {
     return rows.map(MoodGrid.fromDb).toList();
   }
 
-  /// Returns a grid by id, or null if missing.
   Future<MoodGrid?> getMoodGridById(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -44,10 +41,8 @@ class MoodGridDao {
     return MoodGrid.fromDb(rows.first);
   }
 
-  /// Creates a grid plus `rows*cols` empty cells in one transaction.
-  ///
-  /// When [cellSpecs] is supplied, its labels are applied to the first
-  /// `cellSpecs.length` cells in row-major order; remaining cells stay blank.
+  /// Creates a grid plus `rows*cols` empty cells in one transaction;
+  /// [cellSpecs] labels apply to the leading cells in row-major order.
   Future<MoodGrid> createMoodGrid({
     required String name,
     int rows = 1,
@@ -116,6 +111,21 @@ class MoodGridDao {
     );
   }
 
+  /// Sets the cell auto-label template. Pass null/empty to disable.
+  Future<void> setCellLabelTemplate(int id, String? template) async {
+    final Database db = await _getDatabase();
+    await db.update(
+      'mood_grids',
+      <String, dynamic>{
+        'cell_label_template':
+            (template == null || template.isEmpty) ? null : template,
+        'updated_at': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      },
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
   /// Renames a grid and bumps `updated_at`.
   Future<void> renameMoodGrid(int id, String name) async {
     final Database db = await _getDatabase();
@@ -152,14 +162,8 @@ class MoodGridDao {
     return rows.map(MoodGridCell.fromDb).toList();
   }
 
-  /// Resizes a grid to `newRows × newCols`.
-  ///
-  /// Growth: appends empty cells to the end of each row and/or new rows.
-  /// Shrink: drops cells whose `position >= newRows * newCols`. Positions
-  /// are remapped so the remaining cells keep their (row, col) coordinates
-  /// even when `cols` shrinks — i.e. cell at old `(r, c)` with old `cols=5`
-  /// moves to new position `r * newCols + c`. Cells that end up out of bounds
-  /// (`c >= newCols` or `r >= newRows`) are deleted.
+  /// Resizes to `newRows × newCols`. Cells keep their (row, col): old `(r, c)`
+  /// moves to `r * newCols + c`; out-of-bounds cells drop, gaps become blanks.
   Future<void> resizeMoodGrid(
     int id, {
     required int newRows,
@@ -194,9 +198,8 @@ class MoodGridDao {
         return;
       }
 
-      // Read all existing cells, normalise position to (row, col) under
-      // the OLD column count, then write back at new positions under the
-      // NEW column count.
+      // Normalise position to (row, col) under the OLD column count, then
+      // re-insert at positions computed under the NEW one.
       final List<Map<String, dynamic>> oldCells = await txn.query(
         'mood_grid_cells',
         where: 'grid_id = ?',
@@ -232,6 +235,7 @@ class MoodGridDao {
             'media_type': cell['media_type'],
             'external_id': cell['external_id'],
             'platform_id': cell['platform_id'],
+            'source': cell['source'],
           },
         );
       }

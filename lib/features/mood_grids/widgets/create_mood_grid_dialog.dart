@@ -8,7 +8,6 @@ import '../providers/mood_grids_provider.dart';
 
 /// Dialog to create a new mood grid. Returns the created grid via `Navigator.pop`.
 class CreateMoodGridDialog extends ConsumerStatefulWidget {
-  /// Creates a [CreateMoodGridDialog].
   const CreateMoodGridDialog({super.key});
 
   @override

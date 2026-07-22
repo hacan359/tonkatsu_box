@@ -1697,6 +1697,12 @@ class SEn extends S {
   String get customItemDescriptionHint => 'Brief description or notes';
 
   @override
+  String get customItemMyNoteHint => 'Your note about this item';
+
+  @override
+  String get customItemTagsHint => 'Comma-separated, e.g. Backlog, Favorites';
+
+  @override
   String get customItemOptionalFields => 'More fields';
 
   @override
@@ -4773,6 +4779,12 @@ class SEn extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       'Template applied per cell. Available tokens: name, year, genre, rating.';
+
+  @override
+  String get moodGridCellLabelTemplate => 'Cell labels';
+
+  @override
+  String get moodGridCellSize => 'Size';
 
   @override
   String get collection => 'Collection';
