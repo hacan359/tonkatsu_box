@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 
 void main() {
   group('Anime', () {
@@ -212,6 +213,30 @@ void main() {
         expect(restored.genres, original.genres);
         expect(restored.studios, original.studios);
         expect(restored.episodes, original.episodes);
+      });
+
+      test('round-trips provider source and source material', () {
+        const Anime original = Anime(
+          id: 42,
+          source: DataSource.kitsu,
+          title: 'Test',
+          sourceMaterial: 'MANGA',
+        );
+
+        final Anime restored = Anime.fromDb(original.toDb());
+
+        expect(restored.source, DataSource.kitsu);
+        expect(restored.sourceMaterial, 'MANGA');
+        expect(restored.sourceLabel, 'Based on Manga');
+      });
+
+      test('defaults provider source to anilist for a legacy row', () {
+        final Anime anime = Anime.fromDb(<String, dynamic>{
+          'id': 1,
+          'title': 'Test',
+          'updated_at': 1000,
+        });
+        expect(anime.source, DataSource.anilist);
       });
     });
 

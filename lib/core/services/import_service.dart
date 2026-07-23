@@ -1175,11 +1175,13 @@ class ImportService {
       final ImageType? imageType = _imageTypeFromFolder(folder);
       if (imageType == null) continue;
 
-      // Backward-compat: pre-v44 backups stored manga covers under the bare
-      // numeric id. Manga covers are now namespaced by source — legacy manga
-      // was always AniList, so remap to keep the cover instead of forcing a
-      // network re-download. New backups already carry `anilist_`/`mangabaka_`.
-      if (imageType == ImageType.mangaCover && int.tryParse(imageId) != null) {
+      // Backward-compat: legacy backups stored manga / anime covers under the
+      // bare numeric id before those media went source-namespaced. Legacy rows
+      // were always AniList, so remap to keep the cover instead of forcing a
+      // network re-download. New backups already carry the source prefix.
+      if ((imageType == ImageType.mangaCover ||
+              imageType == ImageType.animeCover) &&
+          int.tryParse(imageId) != null) {
         imageId = 'anilist_$imageId';
       }
 

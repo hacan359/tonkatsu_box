@@ -31,6 +31,21 @@ void main() {
       );
     });
 
+    test('namespaces anime by source', () {
+      expect(
+        coverImageId(
+          mediaType: MediaType.anime,
+          externalId: 7442,
+          source: DataSource.kitsu,
+        ),
+        'kitsu_7442',
+      );
+      expect(
+        coverImageId(mediaType: MediaType.anime, externalId: 7442),
+        'anilist_7442',
+      );
+    });
+
     test('manga key contains exactly one separator usable for import split', () {
       final String id = coverImageId(
         mediaType: MediaType.manga,
@@ -96,7 +111,6 @@ void main() {
         MediaType.game,
         MediaType.movie,
         MediaType.tvShow,
-        MediaType.anime,
         MediaType.visualNovel,
       ]) {
         expect(

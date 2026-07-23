@@ -459,8 +459,9 @@ class ExportService {
     // numeric id, like manga.
     final Map<String, Map<String, dynamic>> books =
         <String, Map<String, dynamic>>{};
-    final Map<int, Map<String, dynamic>> animes =
-        <int, Map<String, dynamic>>{};
+    // Keyed by `source:externalId` — ids from different providers can collide.
+    final Map<String, Map<String, dynamic>> animes =
+        <String, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> customItems =
         <int, Map<String, dynamic>>{};
     final Set<(DataSource, int)> tvShowKeys = <(DataSource, int)>{};
@@ -527,8 +528,10 @@ class ExportService {
             books[bookKey] = item.book!.toExport();
           }
         case MediaType.anime:
-          if (item.anime != null && !animes.containsKey(item.externalId)) {
-            animes[item.externalId] = item.anime!.toExport();
+          final String animeKey =
+              '${item.anime?.source.name ?? 'anilist'}:${item.externalId}';
+          if (item.anime != null && !animes.containsKey(animeKey)) {
+            animes[animeKey] = item.anime!.toExport();
           }
         case MediaType.custom:
           if (item.customMedia != null &&

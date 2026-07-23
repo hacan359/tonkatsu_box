@@ -448,7 +448,7 @@ class CollectionItem with Exportable {
           genresString: anime?.genresString,
           genres: anime?.genres,
           mediaStatus: anime?.statusLabel,
-          source: DataSource.anilist,
+          source: anime?.source ?? source ?? DataSource.anilist,
           imageType: ImageType.animeCover,
           placeholderIcon: Icons.play_circle_outline,
         );
@@ -637,8 +637,8 @@ class CollectionItem with Exportable {
   ImageType get imageType => _resolvedMedia.imageType;
   IconData get placeholderIcon => _resolvedMedia.placeholderIcon;
 
-  /// Source-aware image-cache id (manga is namespaced by provider). Use this
-  /// everywhere a cover is read from / written to the image cache.
+  /// Source-aware image-cache id (anime / manga are namespaced by provider).
+  /// Use this everywhere a cover is read from / written to the image cache.
   String get coverImageId => cover_id.coverImageId(
         mediaType: mediaType,
         externalId: externalId,

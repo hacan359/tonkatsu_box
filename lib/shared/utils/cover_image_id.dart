@@ -3,11 +3,10 @@ import '../models/media_type.dart';
 
 /// Canonical image-cache id for a media cover.
 ///
-/// Manga and books are the multi-provider media types: their providers can
-/// share a numeric `externalId`, so covers are namespaced by source
-/// (`anilist_1995` / `mangabaka_1995`, `openLibrary_27448` / `fantlab_3104`)
-/// to avoid one overwriting the other. Every other media type keeps the bare
-/// external id.
+/// Anime, manga and books are multi-provider: their providers can share a
+/// numeric `externalId`, so covers are namespaced by source (`anilist_1995` /
+/// `mangabaka_1995`) to avoid one overwriting the other. Every other media type
+/// keeps the bare external id.
 ///
 /// MUST be used by both the write side (download/save) and the read side
 /// (display) so the keys line up.
@@ -17,7 +16,7 @@ String coverImageId({
   DataSource? source,
   String? coverUrl,
 }) {
-  if (mediaType == MediaType.manga) {
+  if (mediaType == MediaType.manga || mediaType == MediaType.anime) {
     return '${(source ?? DataSource.anilist).name}_$externalId';
   }
   if (mediaType == MediaType.book) {

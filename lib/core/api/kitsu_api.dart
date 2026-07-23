@@ -11,10 +11,7 @@ export 'kitsu/kitsu_types.dart';
 
 /// Kitsu JSON:API facade (`https://kitsu.io/api/edge`, no auth).
 ///
-/// An independent anime + manga catalog. Manga items carry `DataSource.kitsu`
-/// (set inside `Manga.fromKitsu`) and are wired into search now; the anime side
-/// ([browseAnime] / [getAnimeById]) is groundwork pending the anime
-/// multi-source migration (see [KitsuAnimeApi]).
+/// An anime + manga catalog; both carry `DataSource.kitsu`.
 class KitsuApi {
   KitsuApi({Dio? dio}) : _client = KitsuHttpClient(dio: dio) {
     _manga = KitsuMangaApi(_client);

@@ -653,9 +653,17 @@ class CollectionActions {
           if (show == null) return _RefreshOutcome.notFound();
           await db.tvShowDao.upsertTvShow(show);
         case MediaType.anime:
-          final Anime? anime = await ref
-              .read(aniListApiProvider)
-              .getAnimeById(item.externalId);
+          final Anime? anime;
+          switch (item.source) {
+            case DataSource.kitsu:
+              anime = await ref
+                  .read(kitsuApiProvider)
+                  .getAnimeById(item.externalId);
+            default:
+              anime = await ref
+                  .read(aniListApiProvider)
+                  .getAnimeById(item.externalId);
+          }
           if (anime == null) return _RefreshOutcome.notFound();
           await db.animeDao.upsertAnime(anime);
         case MediaType.manga:

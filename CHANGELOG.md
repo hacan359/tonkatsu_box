@@ -79,8 +79,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   mirrors MangaBaka's, backed by a SQLite-cached `/manga/tag` catalog),
   plus status, demographic, content-rating and sort; Kitsu adds subtype,
   status and sort, and surfaces its wide `coverImage` as the card
-  backdrop. Kitsu's anime API is scaffolded but not yet wired into search
-  (pending the anime multi-source migration).
+  backdrop.
 
   * lib/core/api/mangadex_api.dart (MangaDexApi), lib/core/api/mangadex/
     (MangaDexHttpClient, MangaDexMangaApi, MangaDexTagsApi,
@@ -257,7 +256,65 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     to the target collection; conflict-ignoring, so re-import merges.
   * docs/RCOLL_FORMAT.md: Document the `_watched_episodes` item field.
 
+- **Kitsu as an anime search source**
+
+  Kitsu joins AniList as a keyless anime source, searchable by title with
+  subtype, status and sort filters. Anime identity moved to `(id, source)`,
+  so an AniList and a Kitsu title sharing a numeric id coexist in the cache,
+  collections, mood grids and canvas, and covers are namespaced by provider.
+
+  * lib/core/database/migrations/migration_v60.dart (MigrationV60): Rebuild
+    `anime_cache` with a composite `(id, source)` primary key, rename the old
+    source-material column to `source_material`, and add source-aware
+    `collection_items` anime indexes (also restoring `book` to the generic
+    index exclusion list); registered in migration_registry.dart and
+    database_service.dart (version 60).
+  * lib/shared/models/anime.dart (Anime.source, Anime.sourceMaterial,
+    Anime.fromKitsu, Anime.fromDb, Anime.toDb, Anime.copyWith): Add the
+    provider `source` field; the former source-material `source` becomes
+    `sourceMaterial`.
+  * lib/core/database/dao/anime_dao.dart (AnimeDao.getAnime): Take an optional
+    `source` for the composite key.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao._loadJoinedData,
+    CollectionDao.getCollectionCovers), lib/data/repositories/canvas_repository.dart,
+    lib/features/mood_grids/widgets/mood_grid_cell_media.dart: Key anime by
+    `(id, source)` when hydrating.
+  * lib/shared/models/collection_item.dart: Resolve an anime item's source
+    from its record instead of hard-coding AniList.
+  * lib/shared/utils/cover_image_id.dart (coverImageId): Namespace anime
+    covers by source, like manga.
+  * lib/core/services/export_service.dart (ExportService._collectMediaData):
+    Key exported anime by `source:externalId`.
+  * lib/features/collections/helpers/collection_actions.dart: Route anime
+    refresh to Kitsu or AniList by the item's source.
+  * lib/core/services/import_service.dart: Remap legacy bare-id anime covers
+    to `anilist_` on restore, like manga.
+  * lib/features/search/sources/kitsu_anime_source.dart (KitsuAnimeSource),
+    search_sources.dart (searchSources): New source, registered.
+  * lib/features/search/filters/kitsu_anime_subtype_filter.dart
+    (KitsuAnimeSubtypeFilter), kitsu_anime_status_filter.dart
+    (KitsuAnimeStatusFilter): New filters.
+  * lib/features/search/handlers/media_handlers.dart: Stamp the anime item's
+    source and namespace its cover.
+  * lib/features/search/widgets/item_details_sheet.dart (ItemDetailsSheet.anime):
+    Use the anime's own source for the badge and cached cover.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog): Kitsu now
+    lists anime and manga.
+
 ### Fixed
+
+- **Search filter accent follows the source's media type**
+
+  The filter bar coloured its accent from a hard-coded provider list, so
+  sources missing from it (Hardcover, and the newer TVmaze / MangaDex /
+  Kitsu) fell back to the generic brand orange instead of their media-type
+  colour. The accent now derives from the source's media type, so book
+  sources read brown and manga and anime read their own distinct colours.
+
+  * lib/features/search/utils/filter_ui.dart (filterAccentForType): Replaces
+    `filterAccentForGroup`; maps via `MediaTypeTheme.colorFor`.
+  * lib/features/search/widgets/filter_bar.dart, filter_sheet.dart: Colour by
+    `source.outputMediaType`.
 
 - **Text export: `{type}` shows the displayed type of a custom item**
 
