@@ -1378,6 +1378,10 @@ class SPt extends S {
       'Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.';
 
   @override
+  String get creditsTvMazeAttribution =>
+      'Dados de séries fornecidos pelo TVmaze.';
+
+  @override
   String get creditsIgdbAttribution => 'Dados de jogos fornecidos pelo IGDB.';
 
   @override
@@ -2106,6 +2110,9 @@ class SPt extends S {
 
   @override
   String get markAllWatched => 'Marcar tudo como assistido';
+
+  @override
+  String get markNextWatched => 'Marcar próximo episódio';
 
   @override
   String get unmarkAll => 'Desmarcar tudo';
@@ -2841,6 +2848,9 @@ class SPt extends S {
 
   @override
   String get welcomeSourceDescTmdb => 'Filmes, séries e animação.';
+
+  @override
+  String get welcomeSourceDescTvMaze => 'Séries de TV.';
 
   @override
   String get welcomeSourceDescIgdb => 'Jogos de todas as plataformas.';

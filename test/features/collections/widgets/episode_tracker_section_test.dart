@@ -151,7 +151,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      // The overall bar (from tracker totals) plus the per-season bar on the
+      // single loaded season.
+      expect(find.byType(LinearProgressIndicator), findsNWidgets(2));
     });
   });
 

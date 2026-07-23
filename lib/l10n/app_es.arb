@@ -598,6 +598,7 @@
   "creditsTitle": "Créditos",
   "creditsDataProviders": "Proveedores de datos",
   "creditsTmdbAttribution": "Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.",
+  "creditsTvMazeAttribution": "Datos de series proporcionados por TVmaze.",
   "creditsIgdbAttribution": "Datos de juegos proporcionados por IGDB.",
   "creditsSteamGridDbAttribution": "Ilustraciones proporcionadas por SteamGridDB.",
   "creditsVndbAttribution": "Datos de novelas visuales proporcionados por VNDB.",
@@ -980,6 +981,7 @@
   "noSeasonData": "No hay datos de temporadas",
   "refreshFromTmdb": "Actualizar desde TMDB",
   "markAllWatched": "Marcar todo como visto",
+  "markNextWatched": "Marcar siguiente episodio",
   "unmarkAll": "Desmarcar todo",
   "noEpisodesFound": "No se encontraron episodios",
   "episodeWatchedDate": "visto el {date}",
@@ -1308,6 +1310,7 @@
   "welcomeSourcesHardcoverTokenHint": "Obligatorio — sin él la búsqueda y la importación quedan deshabilitadas. Los tokens caducan cada 1 de enero.",
 
   "welcomeSourceDescTmdb": "Películas, series y animación.",
+  "welcomeSourceDescTvMaze": "Series de TV.",
   "welcomeSourceDescIgdb": "Videojuegos de todas las plataformas.",
   "welcomeSourceDescAniList": "Anime y manga con metadatos completos.",
   "welcomeSourceDescMangaBaka": "Manga, manhwa, manhua y novelas ligeras.",

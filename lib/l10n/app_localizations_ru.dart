@@ -1380,6 +1380,10 @@ class SRu extends S {
       'Приложение использует TMDB API, но не одобрено и не сертифицировано TMDB.';
 
   @override
+  String get creditsTvMazeAttribution =>
+      'Данные о сериалах предоставлены TVmaze.';
+
+  @override
   String get creditsIgdbAttribution => 'Данные об играх предоставлены IGDB.';
 
   @override
@@ -2122,6 +2126,9 @@ class SRu extends S {
 
   @override
   String get markAllWatched => 'Отметить все';
+
+  @override
+  String get markNextWatched => 'Отметить следующий эпизод';
 
   @override
   String get unmarkAll => 'Снять отметки';
@@ -2870,6 +2877,9 @@ class SRu extends S {
 
   @override
   String get welcomeSourceDescTmdb => 'Фильмы, сериалы и анимация.';
+
+  @override
+  String get welcomeSourceDescTvMaze => 'Сериалы.';
 
   @override
   String get welcomeSourceDescIgdb => 'Видеоигры на любой платформе.';

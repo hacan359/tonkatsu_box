@@ -590,6 +590,36 @@ class SeasonExpansionTile extends ConsumerStatefulWidget {
 class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
   bool _editingNote = false;
 
+  /// Marks the season's first not-yet-watched episode, loading the season
+  /// from the source first if its episodes aren't in memory.
+  Future<void> _markNextWatched() async {
+    final int seasonNum = widget.season.seasonNumber;
+    final EpisodeTrackerNotifier notifier =
+        ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
+
+    EpisodeTrackerState state =
+        ref.read(episodeTrackerNotifierProvider(widget.trackerArg));
+    if (state.episodesBySeason[seasonNum]?.isEmpty ?? true) {
+      await notifier.loadSeason(seasonNum);
+      if (!mounted) return;
+      state = ref.read(episodeTrackerNotifierProvider(widget.trackerArg));
+    }
+
+    final List<TvEpisode> episodes =
+        state.episodesBySeason[seasonNum] ?? const <TvEpisode>[];
+    if (episodes.isEmpty) return;
+
+    final List<TvEpisode> ordered = <TvEpisode>[...episodes]
+      ..sort((TvEpisode a, TvEpisode b) =>
+          a.episodeNumber.compareTo(b.episodeNumber));
+    for (final TvEpisode ep in ordered) {
+      if (!state.isEpisodeWatched(seasonNum, ep.episodeNumber)) {
+        await notifier.toggleEpisode(seasonNum, ep.episodeNumber);
+        return;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final TvSeason season = widget.season;
@@ -663,6 +693,18 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
               color: AppColors.textSecondary,
             ),
           ),
+          if (episodeCount > 0) ...<Widget>[
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: (watchedCount / episodeCount).clamp(0.0, 1.0),
+                minHeight: 4,
+                backgroundColor: AppColors.surfaceLight,
+                valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+              ),
+            ),
+          ],
           if (_editingNote)
             ItemMarkNoteEditor(
               itemId: itemId,
@@ -679,6 +721,12 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          if (!allWatched && episodeCount > 0)
+            IconButton(
+              icon: const Icon(Icons.playlist_add_check, size: 20),
+              tooltip: l.markNextWatched,
+              onPressed: _markNextWatched,
+            ),
           IconButton(
             icon: Icon(
               allWatched

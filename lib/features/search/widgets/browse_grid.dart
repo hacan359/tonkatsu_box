@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/anime.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
@@ -26,24 +27,18 @@ import '../../settings/providers/settings_provider.dart';
 import '../providers/browse_provider.dart';
 
 /// Sets of external IDs that already exist in the user's collections.
-final FutureProvider<
-        ({
-          Set<int> tmdbIds,
-          Set<int> gameIds,
-          Set<int> vnIds,
-          Set<int> mangaIds,
-          Set<int> animeIds,
-          Set<int> bookIds,
-        })>
-    _collectedIdsProvider = FutureProvider<
-        ({
-          Set<int> tmdbIds,
-          Set<int> gameIds,
-          Set<int> vnIds,
-          Set<int> mangaIds,
-          Set<int> animeIds,
-          Set<int> bookIds,
-        })>((Ref ref) async {
+typedef _CollectedIds = ({
+  Set<int> tmdbIds,
+  Set<(DataSource, int)> tvKeys,
+  Set<int> gameIds,
+  Set<int> vnIds,
+  Set<int> mangaIds,
+  Set<int> animeIds,
+  Set<int> bookIds,
+});
+
+final FutureProvider<_CollectedIds> _collectedIdsProvider =
+    FutureProvider<_CollectedIds>((Ref ref) async {
   final Map<int, List<CollectedItemInfo>> movies =
       await ref.watch(collectedMovieIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> tvShows =
@@ -60,8 +55,22 @@ final FutureProvider<
       await ref.watch(collectedAnimeIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> books =
       await ref.watch(collectedBookIdsProvider.future);
+
+  // Collected TV check is keyed by (source, id), not id alone.
+  final Set<(DataSource, int)> tvKeys = <(DataSource, int)>{};
+  for (final MapEntry<int, List<CollectedItemInfo>> e
+      in <MapEntry<int, List<CollectedItemInfo>>>[
+    ...tvShows.entries,
+    ...animations.entries,
+  ]) {
+    for (final CollectedItemInfo info in e.value) {
+      tvKeys.add((info.source, e.key));
+    }
+  }
+
   return (
     tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
+    tvKeys: tvKeys,
     gameIds: games.keys.toSet(),
     vnIds: visualNovels.keys.toSet(),
     mangaIds: mangas.keys.toSet(),
@@ -213,18 +222,12 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     // Collected IDs used to mark items already in a collection.
-    final AsyncValue<
-            ({
-              Set<int> tmdbIds,
-              Set<int> gameIds,
-              Set<int> vnIds,
-              Set<int> mangaIds,
-              Set<int> animeIds,
-              Set<int> bookIds,
-            })> collectedIds =
+    final AsyncValue<_CollectedIds> collectedIds =
         ref.watch(_collectedIdsProvider);
     final Set<int> tmdbIds =
         collectedIds.valueOrNull?.tmdbIds ?? const <int>{};
+    final Set<(DataSource, int)> tvKeys =
+        collectedIds.valueOrNull?.tvKeys ?? const <(DataSource, int)>{};
     final Set<int> gameIds =
         collectedIds.valueOrNull?.gameIds ?? const <int>{};
     final Set<int> vnIds =
@@ -271,8 +274,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         }
 
         final Object item = displayItems[index];
-        return _buildCard(item, state.source.outputMediaType, tmdbIds, gameIds,
-            vnIds, mangaIds, animeIds, bookIds, variant,
+        return _buildCard(item, state.source.outputMediaType, tmdbIds, tvKeys,
+            gameIds, vnIds, mangaIds, animeIds, bookIds, variant,
             animeMangaTitleLanguage);
       },
     );
@@ -282,6 +285,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Object item,
     MediaType mediaType,
     Set<int> tmdbIds,
+    Set<(DataSource, int)> tvKeys,
     Set<int> gameIds,
     Set<int> vnIds,
     Set<int> mangaIds,
@@ -313,7 +317,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     if (item is TvShow) {
-      final bool inColl = tmdbIds.contains(item.tmdbId);
+      final bool inColl = tvKeys.contains((item.source, item.tmdbId));
       return MediaPosterCard(
         variant: variant,
         title: item.title,

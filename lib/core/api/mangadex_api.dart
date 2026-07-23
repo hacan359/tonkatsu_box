@@ -48,6 +48,11 @@ class MangaDexApi {
   /// Detail by MangaDex UUID (recovered from the cached `externalUrl`).
   Future<Manga?> getByUuid(String uuid) => _manga.getByUuid(uuid);
 
+  /// Manga similar to [seedUuid] via `/manga/{id}/recommendation`, hydrated
+  /// with covers. Ordered by relevance, seed excluded.
+  Future<List<Manga>> getRecommendations(String seedUuid, {int limit = 20}) =>
+      _manga.getRecommendations(seedUuid, limit: limit);
+
   /// The tag catalog (genre / theme / format / content), for filter options.
   Future<List<MangaDexTag>> fetchTags() => _tags.fetchTags();
 

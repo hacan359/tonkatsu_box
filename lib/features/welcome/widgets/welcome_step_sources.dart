@@ -122,6 +122,7 @@ class _SourceCard extends ConsumerWidget {
 
   String _description(S l, DataSource source) => switch (source) {
         DataSource.tmdb => l.welcomeSourceDescTmdb,
+        DataSource.tvmaze => l.welcomeSourceDescTvMaze,
         DataSource.igdb => l.welcomeSourceDescIgdb,
         DataSource.anilist => l.welcomeSourceDescAniList,
         DataSource.mangabaka => l.welcomeSourceDescMangaBaka,

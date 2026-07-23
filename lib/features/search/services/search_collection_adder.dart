@@ -171,8 +171,9 @@ class SearchCollectionAdder {
   Future<Set<int?>> collectedCollectionIdsAcross(
     int externalId,
     FutureProvider<Map<int, List<CollectedItemInfo>>> a,
-    FutureProvider<Map<int, List<CollectedItemInfo>>> b,
-  ) async {
+    FutureProvider<Map<int, List<CollectedItemInfo>>> b, {
+    DataSource? source,
+  }) async {
     final List<Map<int, List<CollectedItemInfo>>> both = await Future.wait(
       <Future<Map<int, List<CollectedItemInfo>>>>[
         _ref.read(a.future),
@@ -182,7 +183,10 @@ class SearchCollectionAdder {
     return <CollectedItemInfo>[
       ...both[0][externalId] ?? <CollectedItemInfo>[],
       ...both[1][externalId] ?? <CollectedItemInfo>[],
-    ].map((CollectedItemInfo i) => i.collectionId).toSet();
+    ]
+        .where((CollectedItemInfo i) => source == null || i.source == source)
+        .map((CollectedItemInfo i) => i.collectionId)
+        .toSet();
   }
 
   void _cacheImage(ImageType type, String imageId, String? imageUrl) {

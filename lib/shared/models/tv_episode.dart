@@ -1,3 +1,5 @@
+import '../utils/html_text.dart';
+import '../utils/tvmaze_json.dart';
 import 'data_source.dart';
 
 /// One episode of a TV show season.
@@ -49,6 +51,29 @@ class TvEpisode {
       stillUrl: row['still_url'] as String?,
       runtime: row['runtime'] as int?,
       source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
+    );
+  }
+
+  /// From a TVmaze `episode` object; null when season/episode number is missing.
+  static TvEpisode? tryFromTvMaze(
+    Map<String, dynamic> json, {
+    required int showId,
+  }) {
+    final int? season = json['season'] as int?;
+    final int? number = json['number'] as int?;
+    if (season == null || number == null) return null;
+
+    final String? airdate = json['airdate'] as String?;
+    return TvEpisode(
+      tmdbShowId: showId,
+      seasonNumber: season,
+      episodeNumber: number,
+      name: json['name'] as String? ?? '',
+      overview: stripHtmlText(json['summary'] as String?),
+      airDate: (airdate == null || airdate.isEmpty) ? null : airdate,
+      stillUrl: tvMazeImageUrl(json['image']),
+      runtime: json['runtime'] as int?,
+      source: DataSource.tvmaze,
     );
   }
 

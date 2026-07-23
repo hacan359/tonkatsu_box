@@ -598,6 +598,7 @@
   "creditsTitle": "致谢",
   "creditsDataProviders": "数据提供商",
   "creditsTmdbAttribution": "本产品使用 TMDB API，但未经 TMDB 认可或认证。",
+  "creditsTvMazeAttribution": "电视剧数据由 TVmaze 提供。",
   "creditsIgdbAttribution": "游戏数据由 IGDB 提供。",
   "creditsSteamGridDbAttribution": "美术素材由 SteamGridDB 提供。",
   "creditsVndbAttribution": "视觉小说数据由 VNDB 提供。",
@@ -980,6 +981,7 @@
   "noSeasonData": "暂无季度数据",
   "refreshFromTmdb": "从 TMDB 刷新",
   "markAllWatched": "全部标记为已看",
+  "markNextWatched": "标记下一集",
   "unmarkAll": "全部取消标记",
   "noEpisodesFound": "未找到剧集",
   "episodeWatchedDate": "观看于 {date}",
@@ -1303,6 +1305,7 @@
   "welcomeSourcesHardcoverTokenHint": "必填——没有令牌无法搜索和导入。令牌每年 1 月 1 日重置。",
 
   "welcomeSourceDescTmdb": "电影、电视剧和动画。",
+  "welcomeSourceDescTvMaze": "电视剧。",
   "welcomeSourceDescIgdb": "涵盖所有平台的电子游戏。",
   "welcomeSourceDescAniList": "带有丰富元数据的动漫和漫画。",
   "welcomeSourceDescMangaBaka": "漫画、韩漫、国漫和轻小说。",

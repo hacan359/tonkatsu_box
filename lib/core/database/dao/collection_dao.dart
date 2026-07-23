@@ -1067,7 +1067,8 @@ class CollectionDao {
   ) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.rawQuery('''
-      SELECT ci.id, ci.external_id, ci.collection_id, ci.platform_id, c.name
+      SELECT ci.id, ci.external_id, ci.source, ci.collection_id,
+             ci.platform_id, c.name
       FROM collection_items ci
       LEFT JOIN collections c ON c.id = ci.collection_id
       WHERE ci.media_type = ?
@@ -1083,6 +1084,8 @@ class CollectionDao {
         collectionId: row['collection_id'] as int?,
         collectionName: row['name'] as String?,
         platformId: row['platform_id'] as int?,
+        source: DataSource.fromNameOr(
+            row['source'] as String?, DataSource.tmdb),
       );
       result.putIfAbsent(externalId, () => <CollectedItemInfo>[]).add(info);
     }

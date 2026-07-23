@@ -40,6 +40,11 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     keyRequirement: SourceKeyRequirement.recommended,
   ),
   SourceInfo(
+    source: DataSource.tvmaze,
+    mediaTypes: <MediaType>[MediaType.tvShow],
+    url: 'https://www.tvmaze.com/',
+  ),
+  SourceInfo(
     source: DataSource.igdb,
     mediaTypes: <MediaType>[MediaType.game],
     url: 'https://www.igdb.com/',
@@ -107,6 +112,7 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
 const Map<String, List<DataSource>> kSearchGroupToSources =
     <String, List<DataSource>>{
   'tmdb': <DataSource>[DataSource.tmdb],
+  'tvmaze': <DataSource>[DataSource.tvmaze],
   'igdb': <DataSource>[DataSource.igdb],
   'anilist': <DataSource>[DataSource.anilist],
   'mangabaka': <DataSource>[DataSource.mangabaka],

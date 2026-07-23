@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../utils/html_text.dart';
+import '../utils/tvmaze_json.dart';
 import 'data_source.dart';
 
 /// A TV show with catalog metadata.
@@ -71,6 +73,59 @@ class TvShow {
       status: json['status'] as String?,
       externalUrl: 'https://www.themoviedb.org/tv/$tmdbId',
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+  }
+
+  /// From a TVmaze `show` object (search result or `/shows/{id}`).
+  factory TvShow.fromTvMaze(Map<String, dynamic> json) {
+    final int id = json['id'] as int;
+
+    List<String>? genres;
+    final Object? rawGenres = json['genres'];
+    if (rawGenres is List<dynamic>) {
+      genres = rawGenres.whereType<String>().toList();
+      if (genres.isEmpty) genres = null;
+    }
+
+    int? firstAirYear;
+    final String? premiered = json['premiered'] as String?;
+    if (premiered != null && premiered.length >= 4) {
+      firstAirYear = int.tryParse(premiered.substring(0, 4));
+    }
+
+    int? totalSeasons;
+    int? totalEpisodes;
+    final Object? embedded = json['_embedded'];
+    if (embedded is Map<String, dynamic>) {
+      final Object? seasons = embedded['seasons'];
+      if (seasons is List<dynamic>) {
+        totalSeasons = seasons.length;
+        int episodes = 0;
+        for (final dynamic s in seasons) {
+          if (s is Map<String, dynamic>) {
+            // `episodeOrder` is null for a currently-airing season, so the
+            // total undercounts until the season finishes.
+            episodes += (s['episodeOrder'] as int?) ?? 0;
+          }
+        }
+        if (episodes > 0) totalEpisodes = episodes;
+      }
+    }
+
+    return TvShow(
+      tmdbId: id,
+      title: json['name'] as String,
+      posterUrl: tvMazeImageUrl(json['image']),
+      overview: stripHtmlText(json['summary'] as String?),
+      genres: genres,
+      firstAirYear: firstAirYear,
+      totalSeasons: totalSeasons,
+      totalEpisodes: totalEpisodes,
+      rating: tvMazeRating(json['rating']),
+      status: json['status'] as String?,
+      externalUrl: json['url'] as String?,
+      cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      source: DataSource.tvmaze,
     );
   }
 

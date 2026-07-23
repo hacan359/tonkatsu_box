@@ -1,3 +1,4 @@
+import '../utils/tvmaze_json.dart';
 import 'data_source.dart';
 
 /// One season of a TV show.
@@ -26,6 +27,20 @@ class TvSeason {
       episodeCount: json['episode_count'] as int?,
       posterUrl: posterUrl,
       airDate: json['air_date'] as String?,
+    );
+  }
+
+  /// From a TVmaze `season` object (`/shows/{id}/seasons`).
+  factory TvSeason.fromTvMaze(Map<String, dynamic> json, {required int showId}) {
+    final String? rawName = json['name'] as String?;
+    return TvSeason(
+      tmdbShowId: showId,
+      seasonNumber: json['number'] as int,
+      name: (rawName == null || rawName.isEmpty) ? null : rawName,
+      episodeCount: json['episodeOrder'] as int?,
+      posterUrl: tvMazeImageUrl(json['image']),
+      airDate: json['premiereDate'] as String?,
+      source: DataSource.tvmaze,
     );
   }
 

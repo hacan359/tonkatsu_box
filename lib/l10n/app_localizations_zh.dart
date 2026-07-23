@@ -1273,6 +1273,9 @@ class SZh extends S {
   String get creditsTmdbAttribution => '本产品使用 TMDB API，但未经 TMDB 认可或认证。';
 
   @override
+  String get creditsTvMazeAttribution => '电视剧数据由 TVmaze 提供。';
+
+  @override
   String get creditsIgdbAttribution => '游戏数据由 IGDB 提供。';
 
   @override
@@ -1970,6 +1973,9 @@ class SZh extends S {
   String get markAllWatched => '全部标记为已看';
 
   @override
+  String get markNextWatched => '标记下一集';
+
+  @override
   String get unmarkAll => '全部取消标记';
 
   @override
@@ -2639,6 +2645,9 @@ class SZh extends S {
 
   @override
   String get welcomeSourceDescTmdb => '电影、电视剧和动画。';
+
+  @override
+  String get welcomeSourceDescTvMaze => '电视剧。';
 
   @override
   String get welcomeSourceDescIgdb => '涵盖所有平台的电子游戏。';

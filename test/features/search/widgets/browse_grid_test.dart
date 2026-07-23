@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/shared/models/collected_item_info.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
 import 'package:tonkatsu_box/features/search/widgets/browse_grid.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
@@ -324,6 +325,74 @@ void main() {
             tvShows: <int, List<CollectedItemInfo>>{
               55: const <CollectedItemInfo>[
                 CollectedItemInfo(recordId: 1, collectionId: 1, collectionName: 'Coll'),
+              ],
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+
+    testWidgets(
+        'does not mark a TVmaze show when only a TMDB show shares the id',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'tvmaze_tv',
+            searchQuery: 'dark',
+            items: <Object>[
+              TvShow(
+                tmdbId: 55,
+                title: 'Dark',
+                source: DataSource.tvmaze,
+                posterUrl: 'https://example.com/tv.jpg',
+              ),
+            ],
+          ),
+          extraOverrides: collectedOverrides(
+            tvShows: <int, List<CollectedItemInfo>>{
+              55: const <CollectedItemInfo>[
+                // Defaults to DataSource.tmdb — a different provider.
+                CollectedItemInfo(
+                    recordId: 1, collectionId: 1, collectionName: 'Coll'),
+              ],
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.check), findsNothing);
+    });
+
+    testWidgets('marks a TVmaze show collected from the same source',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'tvmaze_tv',
+            searchQuery: 'dark',
+            items: <Object>[
+              TvShow(
+                tmdbId: 55,
+                title: 'Dark',
+                source: DataSource.tvmaze,
+                posterUrl: 'https://example.com/tv.jpg',
+              ),
+            ],
+          ),
+          extraOverrides: collectedOverrides(
+            tvShows: <int, List<CollectedItemInfo>>{
+              55: const <CollectedItemInfo>[
+                CollectedItemInfo(
+                  recordId: 1,
+                  collectionId: 1,
+                  collectionName: 'Coll',
+                  source: DataSource.tvmaze,
+                ),
               ],
             },
           ),
