@@ -1387,6 +1387,10 @@ class SEs extends S {
       'Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.';
 
   @override
+  String get creditsTvMazeAttribution =>
+      'Datos de series proporcionados por TVmaze.';
+
+  @override
   String get creditsIgdbAttribution =>
       'Datos de juegos proporcionados por IGDB.';
 
@@ -2117,6 +2121,9 @@ class SEs extends S {
 
   @override
   String get markAllWatched => 'Marcar todo como visto';
+
+  @override
+  String get markNextWatched => 'Marcar siguiente episodio';
 
   @override
   String get unmarkAll => 'Desmarcar todo';
@@ -2851,6 +2858,9 @@ class SEs extends S {
 
   @override
   String get welcomeSourceDescTmdb => 'Películas, series y animación.';
+
+  @override
+  String get welcomeSourceDescTvMaze => 'Series de TV.';
 
   @override
   String get welcomeSourceDescIgdb => 'Videojuegos de todas las plataformas.';

@@ -1,29 +1,29 @@
-// Информация о принадлежности элемента к коллекции.
+import 'data_source.dart';
 
-/// Данные о нахождении элемента в коллекции.
-///
-/// Используется для маркировки результатов поиска и удаления элементов.
-/// Если [collectionId] == null, элемент является «без коллекции».
+/// Where a collected item lives; used to mark and remove search results.
 class CollectedItemInfo {
-  /// Создаёт [CollectedItemInfo].
   const CollectedItemInfo({
     required this.recordId,
     required this.collectionId,
     required this.collectionName,
     this.platformId,
+    this.source = DataSource.tmdb,
   });
 
-  /// ID записи в таблице collection_items.
+  /// Row id in the collection_items table.
   final int recordId;
 
-  /// ID коллекции (null для элементов без коллекции).
+  /// Collection id (null for uncollected items).
   final int? collectionId;
 
-  /// Название коллекции (null для элементов без коллекции).
+  /// Collection name (null for uncollected items).
   final String? collectionName;
 
-  /// ID платформы (для игр). Позволяет различать версии на разных платформах.
+  /// Platform id (for games). Distinguishes versions on different platforms.
   final int? platformId;
+
+  /// Provider the item came from (disambiguates a shared external_id).
+  final DataSource source;
 
   @override
   String toString() =>

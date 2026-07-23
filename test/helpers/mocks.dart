@@ -6,6 +6,7 @@ import 'package:gamepads/gamepads.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/api/fantlab_api.dart';
+import 'package:tonkatsu_box/core/api/mangabaka_api.dart';
 import 'package:tonkatsu_box/core/api/google_books_api.dart';
 import 'package:tonkatsu_box/core/api/hardcover_api.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
@@ -16,6 +17,7 @@ import 'package:tonkatsu_box/core/database/dao/mangadex_tag_dao.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
 import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
 import 'package:tonkatsu_box/core/api/anilist/anilist_graphql_client.dart';
 import 'package:tonkatsu_box/core/api/anilist_api.dart';
 import 'package:tonkatsu_box/core/database/dao/anilist_tag_dao.dart';
@@ -142,6 +144,8 @@ class MockIgdbApi extends Mock implements IgdbApi {}
 
 class MockTmdbApi extends Mock implements TmdbApi {}
 
+class MockTvMazeApi extends Mock implements TvMazeApi {}
+
 class MockSteamGridDbApi extends Mock implements SteamGridDbApi {}
 
 class MockVndbApi extends Mock implements VndbApi {}
@@ -158,6 +162,8 @@ class MockSteamApi extends Mock implements SteamApi {}
 class MockRaApi extends Mock implements RaApi {}
 
 class MockFantlabApi extends Mock implements FantlabApi {}
+
+class MockMangaBakaApi extends Mock implements MangaBakaApi {}
 
 class MockGoogleBooksApi extends Mock implements GoogleBooksApi {}
 

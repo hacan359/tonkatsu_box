@@ -162,4 +162,90 @@ void main() {
       expect(tags, hasLength(1));
     });
   });
+
+  group('getRecommendations', () {
+    const String seed = 'seed-uuid';
+    const String a = 'aaaa';
+    const String b = 'bbbb';
+
+    Map<String, dynamic> recRow(String rec, double score) => <String, dynamic>{
+          'id': '${seed}_$rec',
+          'type': 'manga_recommendation',
+          'attributes': <String, dynamic>{'score': score},
+          'relationships': <Map<String, dynamic>>[
+            <String, dynamic>{'id': seed, 'type': 'manga'},
+            <String, dynamic>{'id': rec, 'type': 'manga'},
+          ],
+        };
+
+    Map<String, dynamic> mangaDoc(String id, String title) => <String, dynamic>{
+          'id': id,
+          'type': 'manga',
+          'attributes': <String, dynamic>{
+            'title': <String, dynamic>{'en': title},
+          },
+        };
+
+    // Routes the recommendation call and the batch-hydration call by path.
+    void stubFlow(
+      List<Map<String, dynamic>> rows,
+      List<Map<String, dynamic>> hydrated,
+    ) {
+      when(() => mockDio.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+          )).thenAnswer((Invocation inv) async {
+        final String path = inv.positionalArguments.first as String;
+        final List<Map<String, dynamic>> data =
+            path.contains('recommendation') ? rows : hydrated;
+        return makeResponse(<String, dynamic>{'data': data});
+      });
+    }
+
+    test('returns recommendations in score order, hydrated with details',
+        () async {
+      stubFlow(
+        <Map<String, dynamic>>[recRow(a, 0.9), recRow(b, 0.8)],
+        // Hydration returns them reversed to prove the score order is restored.
+        <Map<String, dynamic>>[
+          mangaDoc(b, 'Vinland Saga'),
+          mangaDoc(a, 'Berserk'),
+        ],
+      );
+
+      final List<Manga> recs = await api.getRecommendations(seed);
+
+      expect(recs.map((Manga m) => m.title),
+          <String>['Berserk', 'Vinland Saga']);
+    });
+
+    test('returns empty when the endpoint yields no rows', () async {
+      stubFlow(<Map<String, dynamic>>[], <Map<String, dynamic>>[]);
+      expect(await api.getRecommendations(seed), isEmpty);
+    });
+
+    test('drops a recommendation that hydration does not return', () async {
+      stubFlow(
+        <Map<String, dynamic>>[recRow(a, 0.9), recRow(b, 0.8)],
+        <Map<String, dynamic>>[mangaDoc(a, 'Berserk')],
+      );
+
+      final List<Manga> recs = await api.getRecommendations(seed);
+      expect(recs.map((Manga m) => m.title), <String>['Berserk']);
+    });
+
+    test('throws MangaDexApiException on a Dio error', () async {
+      when(() => mockDio.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+          )).thenThrow(dioError(type: DioExceptionType.connectionError));
+
+      await expectLater(
+        api.getRecommendations(seed),
+        throwsA(isA<MangaDexApiException>()),
+      );
+    });
+  });
 }

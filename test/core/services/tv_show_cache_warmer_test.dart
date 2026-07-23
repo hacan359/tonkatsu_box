@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:tonkatsu_box/core/api/episode_source/tv_episode_source.dart';
 import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
 import 'package:tonkatsu_box/core/database/migrations/migration.dart';
 import 'package:tonkatsu_box/core/database/migrations/migration_registry.dart';
@@ -49,7 +50,7 @@ void main() {
 
   late Database db;
   late TvShowDao dao;
-  late MockTmdbApi tmdb;
+  late _MockTvEpisodeSource episodeSource;
   late MockDatabaseService dbService;
   late TvShowCacheWarmer warmer;
 
@@ -66,10 +67,13 @@ void main() {
       ),
     );
     dao = TvShowDao(() async => db);
-    tmdb = MockTmdbApi();
+    episodeSource = _MockTvEpisodeSource();
     dbService = MockDatabaseService();
     when(() => dbService.tvShowDao).thenReturn(dao);
-    warmer = TvShowCacheWarmer(tmdb: tmdb, db: dbService);
+    warmer = TvShowCacheWarmer(
+      resolveSource: (DataSource _) => episodeSource,
+      db: dbService,
+    );
   });
 
   tearDown(() async {
@@ -81,12 +85,14 @@ void main() {
         () async {
       // The row as written from a search/recommendation list: no totals.
       await dao.upsertTvShow(const TvShow(tmdbId: showId, title: 'Sparse'));
-      when(() => tmdb.getTvShowWithSeasons(showId))
-          .thenAnswer((_) async => (fullShow, apiSeasons));
-      when(() => tmdb.getSeasonEpisodes(showId, 1))
+      when(() => episodeSource.getShow(showId))
+          .thenAnswer((_) async => fullShow);
+      when(() => episodeSource.getSeasons(showId))
+          .thenAnswer((_) async => apiSeasons);
+      when(() => episodeSource.getSeasonEpisodes(showId, 1))
           .thenAnswer((_) async => apiEpisodes);
 
-      await warmer.warm(showId);
+      await warmer.warm(showId, DataSource.tmdb);
 
       final TvShow? show = await dao.getTvShowByTmdbId(showId);
       expect(show!.totalEpisodes, 2);
@@ -99,23 +105,52 @@ void main() {
       expect(episodes, hasLength(2));
     });
 
+    test('warms a TVmaze show from the resolved TVmaze source', () async {
+      const TvShow tvmazeShow = TvShow(
+        tmdbId: showId,
+        title: 'The Bridge',
+        totalSeasons: 1,
+        source: DataSource.tvmaze,
+      );
+      when(() => episodeSource.getShow(showId))
+          .thenAnswer((_) async => tvmazeShow);
+      when(() => episodeSource.getSeasons(showId))
+          .thenAnswer((_) async => const <TvSeason>[
+                TvSeason(
+                  tmdbShowId: showId,
+                  seasonNumber: 1,
+                  source: DataSource.tvmaze,
+                ),
+              ]);
+      when(() => episodeSource.getSeasonEpisodes(showId, 1))
+          .thenAnswer((_) async => const <TvEpisode>[]);
+
+      await warmer.warm(showId, DataSource.tvmaze);
+
+      final TvShow? show =
+          await dao.getTvShowByTmdbId(showId, source: DataSource.tvmaze);
+      expect(show, isNotNull);
+      expect(show!.source, DataSource.tvmaze);
+    });
+
     test('skips episode fetch for seasons already cached', () async {
       await dao.upsertTvSeasons(apiSeasons);
       await dao.upsertEpisodes(apiEpisodes);
-      when(() => tmdb.getTvShowWithSeasons(showId))
-          .thenAnswer((_) async => (fullShow, apiSeasons));
+      when(() => episodeSource.getShow(showId))
+          .thenAnswer((_) async => fullShow);
 
-      await warmer.warm(showId);
+      await warmer.warm(showId, DataSource.tmdb);
 
-      verifyNever(() => tmdb.getSeasonEpisodes(any(), any()));
+      verifyNever(() => episodeSource.getSeasonEpisodes(any(), any()));
+      verifyNever(() => episodeSource.getSeasons(any()));
     });
 
     test('swallows API failures and leaves the cache untouched', () async {
       await dao.upsertTvShow(const TvShow(tmdbId: showId, title: 'Sparse'));
-      when(() => tmdb.getTvShowWithSeasons(showId))
+      when(() => episodeSource.getShow(showId))
           .thenThrow(Exception('network down'));
 
-      await warmer.warm(showId);
+      await warmer.warm(showId, DataSource.tmdb);
 
       final TvShow? show = await dao.getTvShowByTmdbId(showId);
       expect(show!.totalEpisodes, isNull);
@@ -123,3 +158,5 @@ void main() {
     });
   });
 }
+
+class _MockTvEpisodeSource extends Mock implements TvEpisodeSource {}

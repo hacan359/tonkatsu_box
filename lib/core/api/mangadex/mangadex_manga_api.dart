@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../shared/models/manga.dart';
 import 'mangadex_http_client.dart';
+import 'mangadex_types.dart';
 
 /// Manga search / detail on MangaDex (`/manga`).
 ///
@@ -113,6 +114,85 @@ class MangaDexMangaApi {
       if (e.response?.statusCode == 404) return null;
       throw _client.handleDioException(e, 'Failed to load manga from MangaDex');
     }
+  }
+
+  /// Manga similar to [seedUuid] via `/manga/{id}/recommendation` (results
+  /// ordered by score, seed excluded). That endpoint returns only ids and
+  /// scores, so the top matches are hydrated in one batched `/manga?ids[]`
+  /// call (which carries covers) and returned back in score order.
+  Future<List<Manga>> getRecommendations(
+    String seedUuid, {
+    int limit = 20,
+  }) async {
+    try {
+      final Response<dynamic> resp =
+          await _client.get('manga/$seedUuid/recommendation');
+      final Map<String, dynamic> data =
+          (resp.data as Map<String, dynamic>?) ?? <String, dynamic>{};
+      final List<dynamic> rows =
+          (data['data'] as List<dynamic>?) ?? <dynamic>[];
+
+      // Insertion order == score order (endpoint sorts by score desc).
+      final List<String> orderedUuids = <String>[];
+      for (final Map<String, dynamic> row
+          in rows.whereType<Map<String, dynamic>>()) {
+        final String? uuid = _recommendedUuid(row, seedUuid);
+        if (uuid == null || orderedUuids.contains(uuid)) continue;
+        orderedUuids.add(uuid);
+        if (orderedUuids.length >= limit) break;
+      }
+      if (orderedUuids.isEmpty) return <Manga>[];
+
+      final Map<String, Manga> byUuid = <String, Manga>{
+        for (final Manga m in await _hydrateByIds(orderedUuids))
+          if (mangaDexUuidFromUrl(m.externalUrl) case final String u
+              when u.isNotEmpty)
+            u: m,
+      };
+      return <Manga>[
+        for (final String uuid in orderedUuids)
+          if (byUuid[uuid] case final Manga m) m,
+      ];
+    } on DioException catch (e) {
+      throw _client.handleDioException(
+        e,
+        'Failed to load MangaDex recommendations',
+      );
+    }
+  }
+
+  /// Full manga records for [uuids] in one call, with covers. Content ratings
+  /// mirror the recommendation endpoint's default so nothing it surfaced is
+  /// dropped on hydration.
+  Future<List<Manga>> _hydrateByIds(List<String> uuids) async {
+    final Response<dynamic> resp = await _client.get(
+      'manga',
+      queryParameters: <String, dynamic>{
+        'ids[]': uuids,
+        'limit': uuids.length,
+        'includes[]': _includes,
+        'contentRating[]': <String>['safe', 'suggestive', 'erotica'],
+      },
+      options: _arrayOptions,
+    );
+    final Map<String, dynamic> data =
+        (resp.data as Map<String, dynamic>?) ?? <String, dynamic>{};
+    return _parseSeries((data['data'] as List<dynamic>?) ?? <dynamic>[]);
+  }
+
+  /// The recommended manga's UUID from a recommendation row: the `manga`
+  /// relationship that is not the seed itself.
+  static String? _recommendedUuid(Map<String, dynamic> row, String seedUuid) {
+    final List<dynamic> rels =
+        (row['relationships'] as List<dynamic>?) ?? <dynamic>[];
+    for (final Map<String, dynamic> rel
+        in rels.whereType<Map<String, dynamic>>()) {
+      if (rel['type'] == 'manga') {
+        final String? id = rel['id'] as String?;
+        if (id != null && id != seedUuid) return id;
+      }
+    }
+    return null;
   }
 
   static List<Manga> _parseSeries(List<dynamic> rows) {

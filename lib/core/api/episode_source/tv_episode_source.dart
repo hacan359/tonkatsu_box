@@ -5,7 +5,9 @@ import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../tmdb_api.dart';
+import '../tvmaze_api.dart';
 import 'tmdb_episode_source.dart';
+import 'tvmaze_episode_source.dart';
 
 /// Season/episode data source for the episode tracker and release calendar.
 ///
@@ -26,5 +28,8 @@ final Provider<TvEpisodeSource Function(DataSource)>
     Provider<TvEpisodeSource Function(DataSource)>((Ref ref) {
   final TmdbEpisodeSource tmdb =
       TmdbEpisodeSource(ref.watch(tmdbApiProvider));
-  return (DataSource source) => tmdb;
+  final TvMazeEpisodeSource tvmaze =
+      TvMazeEpisodeSource(ref.watch(tvMazeApiProvider));
+  return (DataSource source) =>
+      source == DataSource.tvmaze ? tvmaze : tmdb;
 });

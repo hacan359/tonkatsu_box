@@ -104,6 +104,7 @@ class ItemDetailsSheet extends StatelessWidget {
       cacheImageType: ImageType.tvShowPoster,
       cacheImageId: tvShow.tmdbId.toString(),
       externalUrl: tvShow.externalUrl,
+      dataSource: tvShow.source,
       backdropUrl: tvShow.backdropUrl,
       onAddToCollection: onAddToCollection,
     );

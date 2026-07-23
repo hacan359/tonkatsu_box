@@ -2460,6 +2460,12 @@ abstract class S {
   /// **'This product uses the TMDB API but is not endorsed or certified by TMDB.'**
   String get creditsTmdbAttribution;
 
+  /// No description provided for @creditsTvMazeAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'TV series data provided by TVmaze.'**
+  String get creditsTvMazeAttribution;
+
   /// No description provided for @creditsIgdbAttribution.
   ///
   /// In en, this message translates to:
@@ -3719,6 +3725,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Mark all watched'**
   String get markAllWatched;
+
+  /// No description provided for @markNextWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark next episode'**
+  String get markNextWatched;
 
   /// No description provided for @unmarkAll.
   ///
@@ -4985,6 +4997,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Movies, TV shows and animation.'**
   String get welcomeSourceDescTmdb;
+
+  /// No description provided for @welcomeSourceDescTvMaze.
+  ///
+  /// In en, this message translates to:
+  /// **'TV series.'**
+  String get welcomeSourceDescTvMaze;
 
   /// No description provided for @welcomeSourceDescIgdb.
   ///

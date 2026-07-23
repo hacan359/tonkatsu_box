@@ -1361,6 +1361,9 @@ class SEn extends S {
       'This product uses the TMDB API but is not endorsed or certified by TMDB.';
 
   @override
+  String get creditsTvMazeAttribution => 'TV series data provided by TVmaze.';
+
+  @override
   String get creditsIgdbAttribution => 'Game data provided by IGDB.';
 
   @override
@@ -2080,6 +2083,9 @@ class SEn extends S {
 
   @override
   String get markAllWatched => 'Mark all watched';
+
+  @override
+  String get markNextWatched => 'Mark next episode';
 
   @override
   String get unmarkAll => 'Unmark all';
@@ -2808,6 +2814,9 @@ class SEn extends S {
 
   @override
   String get welcomeSourceDescTmdb => 'Movies, TV shows and animation.';
+
+  @override
+  String get welcomeSourceDescTvMaze => 'TV series.';
 
   @override
   String get welcomeSourceDescIgdb => 'Video games across every platform.';

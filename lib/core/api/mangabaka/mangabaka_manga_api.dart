@@ -64,6 +64,37 @@ class MangaBakaMangaApi {
     }
   }
 
+  /// Series similar to [seedId] via MangaBaka's `/series/mix`, which blends
+  /// shared tags, authors and relations. The seed itself is excluded
+  /// server-side; each result carries a full series object we reuse as-is.
+  Future<List<Manga>> getRecommendations(int seedId, {int limit = 20}) async {
+    try {
+      final Response<dynamic> resp = await _client.get(
+        'series/mix',
+        queryParameters: <String, dynamic>{'series': seedId, 'limit': limit},
+      );
+      final Map<String, dynamic> data =
+          (resp.data as Map<String, dynamic>?) ?? <String, dynamic>{};
+      final List<dynamic> rows =
+          (data['data'] as List<dynamic>?) ?? <dynamic>[];
+
+      final List<Manga> out = <Manga>[];
+      for (final Map<String, dynamic> row
+          in rows.whereType<Map<String, dynamic>>()) {
+        final Object? series = row['series'];
+        if (series is! Map<String, dynamic>) continue;
+        final Manga? manga = _tryParseManga(series);
+        if (manga != null && manga.id != seedId) out.add(manga);
+      }
+      return out;
+    } on DioException catch (e) {
+      throw _client.handleDioException(
+        e,
+        'Failed to load MangaBaka recommendations',
+      );
+    }
+  }
+
   /// Full series record by id.
   Future<Manga?> getById(int id) async {
     try {

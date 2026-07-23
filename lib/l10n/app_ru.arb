@@ -534,6 +534,7 @@
   "creditsTitle": "Благодарности",
   "creditsDataProviders": "Источники данных",
   "creditsTmdbAttribution": "Приложение использует TMDB API, но не одобрено и не сертифицировано TMDB.",
+  "creditsTvMazeAttribution": "Данные о сериалах предоставлены TVmaze.",
   "creditsIgdbAttribution": "Данные об играх предоставлены IGDB.",
   "creditsSteamGridDbAttribution": "Иллюстрации предоставлены SteamGridDB.",
   "creditsVndbAttribution": "Данные о визуальных новеллах предоставлены VNDB.",
@@ -815,6 +816,7 @@
   "noSeasonData": "Данные о сезонах недоступны",
   "refreshFromTmdb": "Обновить из TMDB",
   "markAllWatched": "Отметить все",
+  "markNextWatched": "Отметить следующий эпизод",
   "unmarkAll": "Снять отметки",
   "noEpisodesFound": "Эпизоды не найдены",
   "episodeWatchedDate": "просмотрено {date}",
@@ -1072,6 +1074,7 @@
   "welcomeSourcesHardcoverTokenHint": "Обязателен — без него поиск и импорт не работают. Токены сбрасываются каждое 1 января.",
 
   "welcomeSourceDescTmdb": "Фильмы, сериалы и анимация.",
+  "welcomeSourceDescTvMaze": "Сериалы.",
   "welcomeSourceDescIgdb": "Видеоигры на любой платформе.",
   "welcomeSourceDescAniList": "Аниме и манга с подробными данными.",
   "welcomeSourceDescMangaBaka": "Манга, манхва, маньхуа и ранобэ.",

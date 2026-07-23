@@ -12,6 +12,9 @@ enum DataSource {
   /// TMDB — movie and TV database.
   tmdb('TMDB', Color(0xFF01D277), AppAssets.iconTmdbColor),
 
+  /// TVmaze — keyless TV series database with season / episode data.
+  tvmaze('TVmaze', Color(0xFF3C5C8C), AppAssets.iconTvMazeColor),
+
   /// SteamGridDB — Steam artwork.
   steamGridDb('SGDB', Color(0xFF3A9BDC), AppAssets.iconSteamGridDbColor),
 

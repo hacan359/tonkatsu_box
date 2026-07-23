@@ -56,6 +56,7 @@ class TvShowHandler implements MediaActionHandler {
       tvShow.tmdbId,
       collectedTvShowIdsProvider,
       collectedAnimationIdsProvider,
+      source: tvShow.source,
     );
     if (!context.mounted) return;
 
@@ -80,7 +81,7 @@ class TvShowHandler implements MediaActionHandler {
       imageType: ImageType.tvShowPoster,
       imageId: tvShow.tmdbId.toString(),
       imageUrl: tvShow.posterUrl,
-      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId),
+      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId, tvShow.source),
     );
   }
 
@@ -119,7 +120,7 @@ class TvShowHandler implements MediaActionHandler {
       imageType: ImageType.tvShowPoster,
       imageId: tvShow.tmdbId.toString(),
       imageUrl: tvShow.posterUrl,
-      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId),
+      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId, tvShow.source),
     );
   }
 }

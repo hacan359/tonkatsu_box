@@ -9,6 +9,66 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **TVmaze as a TV series source**
+
+  A keyless alternative source for TV series, like TMDB. Search shows by
+  title, track their seasons and episodes, and follow upcoming episodes in
+  the release calendar. Search by title only — TVmaze has no genre or other
+  filters — and TV only, no films.
+
+  * lib/core/api/tvmaze_api.dart (TvMazeApi, tvMazeApiProvider),
+    lib/core/api/tvmaze/ (TvMazeHttpClient, TvMazeShowApi,
+    TvMazeApiException): New TVmaze REST client.
+  * lib/core/api/episode_source/tvmaze_episode_source.dart
+    (TvMazeEpisodeSource), tv_episode_source.dart
+    (tvEpisodeSourceResolverProvider): New season / episode source, routed
+    by DataSource.
+  * lib/shared/models/tv_show.dart (TvShow.fromTvMaze),
+    lib/shared/models/tv_season.dart (TvSeason.fromTvMaze),
+    lib/shared/models/tv_episode.dart (TvEpisode.tryFromTvMaze): New source
+    factories.
+  * lib/shared/models/data_source.dart (DataSource.tvmaze),
+    lib/shared/theme/app_assets.dart (AppAssets.iconTvMazeColor),
+    assets/images/icon_twm_color.png: New source and brand logo.
+  * lib/shared/utils/html_text.dart (stripHtmlText),
+    lib/shared/utils/tvmaze_json.dart (tvMazeImageUrl, tvMazeRating): New
+    shared mapping helpers.
+  * lib/features/search/sources/tvmaze_tv_source.dart (TvMazeTvSource),
+    search_sources.dart (searchSources): New title-search source, registered.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog,
+    kSearchGroupToSources),
+    lib/features/welcome/widgets/welcome_step_sources.dart,
+    lib/features/settings/content/credits_content.dart: Catalog, onboarding
+    and credits entries.
+  * lib/l10n/app_*.arb (welcomeSourceDescTvMaze, creditsTvMazeAttribution):
+    New keys.
+
+- **"Similar manga" recommendations on MangaBaka and MangaDex cards**
+
+  A horizontal row of similar titles on a manga's detail card, shown when the
+  item comes from MangaBaka or MangaDex. The backend is picked by the item's
+  source: MangaBaka's `/series/mix` (blends shared tags, authors and
+  relations), or MangaDex's `/manga/{id}/recommendation` (ordered by score).
+  Tapping a card opens its details sheet and can add it to a collection,
+  mirroring the TMDB recommendations block.
+
+  * lib/core/api/mangabaka/mangabaka_manga_api.dart
+    (MangaBakaMangaApi.getRecommendations), lib/core/api/mangabaka_api.dart
+    (MangaBakaApi.getRecommendations): New `/series/mix` call, reusing
+    Manga.fromMangaBaka to parse each result's embedded series.
+  * lib/core/api/mangadex/mangadex_manga_api.dart
+    (MangaDexMangaApi.getRecommendations), lib/core/api/mangadex_api.dart
+    (MangaDexApi.getRecommendations): New `/manga/{id}/recommendation` call;
+    the endpoint returns only ids and scores, so the top matches are hydrated
+    with covers in one batched `/manga?ids[]` call and returned in score order.
+  * lib/features/collections/widgets/manga_similars_section.dart
+    (MangaSimilarsSection): New section widget; a per-seed cached
+    FutureProvider routes by `Manga.source` and handles the owned badge.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._addMangaFromSimilars): Mount the section for
+    MangaBaka and MangaDex manga and add a tapped result to a chosen
+    collection.
+
 - **MangaDex and Kitsu as manga search sources**
 
   Two more keyless manga providers alongside AniList and MangaBaka, for
@@ -289,6 +349,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     badge shrinks on very narrow cards instead of overflowing.
 
 ### Changed
+
+- **Season rows show watch progress and a "mark next episode" button**
+
+  Each collapsed season now has a progress bar alongside its watched count,
+  so you can see how far you are without expanding it. A new button marks
+  the season's next unwatched episode in one tap, loading the season from
+  its source first if needed.
+
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonExpansionTileState._markNextWatched): Progress bar in the season
+    subtitle and a mark-next-episode action.
+  * lib/l10n/app_*.arb (markNextWatched): New key.
 
 - **Mood grid became its own feature module and got a lighter screen**
 
