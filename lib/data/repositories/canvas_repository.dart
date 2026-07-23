@@ -295,9 +295,15 @@ class CanvasRepository {
         mangaMap[m.id] = m;
       }
     }
-    final Map<int, Anime> animeMap = <int, Anime>{
-      for (final Anime a in results[5] as List<Anime>) a.id: a,
-    };
+    // Canvas items carry no source; on an id collision the default provider
+    // wins to keep resolution deterministic.
+    final Map<int, Anime> animeMap = <int, Anime>{};
+    for (final Anime a in results[5] as List<Anime>) {
+      final Anime? existing = animeMap[a.id];
+      if (existing == null || a.source == DataSource.anilist) {
+        animeMap[a.id] = a;
+      }
+    }
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
       for (final CustomMedia c in results[6] as List<CustomMedia>) c.id: c,
     };

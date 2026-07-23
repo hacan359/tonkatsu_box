@@ -4,11 +4,6 @@ import '../../../shared/models/anime.dart';
 import 'kitsu_http_client.dart';
 
 /// Anime search / detail on Kitsu (`/anime`, JSON:API).
-///
-/// Groundwork for a future Kitsu-anime search source: the anime model is still
-/// single-source (AniList) in the cache, so wiring these into the search
-/// registry waits on the anime multi-source migration. The transport and
-/// mapping are complete and tested so that task only adds the discriminator.
 class KitsuAnimeApi {
   KitsuAnimeApi(this._client);
 

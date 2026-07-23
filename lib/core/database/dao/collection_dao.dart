@@ -1157,6 +1157,7 @@ class CollectionDao {
           AND mc.source = COALESCE(ci.source, 'anilist')
         LEFT JOIN anime_cache ac
           ON ci.media_type = 'anime' AND ci.external_id = ac.id
+          AND ac.source = COALESCE(ci.source, 'anilist')
         LEFT JOIN books_cache bc
           ON ci.media_type = 'book'
           AND ci.external_id = CAST(bc.id AS INTEGER)
@@ -1322,8 +1323,9 @@ class CollectionDao {
     final Map<String, Book> bookMap = <String, Book>{
       for (final Book b in books) '${b.source.name}:${b.id}': b,
     };
-    final Map<int, Anime> animeMap = <int, Anime>{
-      for (final Anime a in animes) a.id: a,
+    // Keyed by `(source, id)` — ids from different providers can collide.
+    final Map<String, Anime> animeMap = <String, Anime>{
+      for (final Anime a in animes) '${a.source.name}:${a.id}': a,
     };
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
       for (final CustomMedia c in customMediaList) c.id: c,
@@ -1356,7 +1358,10 @@ class CollectionDao {
         case MediaType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.externalId]);
         case MediaType.anime:
-          return item.copyWith(anime: animeMap[item.externalId]);
+          return item.copyWith(
+            anime: animeMap[
+                '${(item.source ?? DataSource.anilist).name}:${item.externalId}'],
+          );
         case MediaType.manga:
           return item.copyWith(
             manga: mangaMap[

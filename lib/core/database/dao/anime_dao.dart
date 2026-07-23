@@ -1,9 +1,10 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/anime.dart';
+import '../../../shared/models/data_source.dart';
 import '../query_chunk.dart';
 
-/// DAO for the `anime_cache` table.
+/// DAO for `anime_cache`. Row identity is the pair `(id, source)`.
 class AnimeDao {
   const AnimeDao(this._getDatabase);
 
@@ -32,19 +33,22 @@ class AnimeDao {
     await batch.commit(noResult: true);
   }
 
-  /// [id] is the AniList ID.
-  Future<Anime?> getAnime(int id) async {
+  Future<Anime?> getAnime(
+    int id, {
+    DataSource source = DataSource.anilist,
+  }) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
       'anime_cache',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
+      where: 'id = ? AND source = ?',
+      whereArgs: <Object?>[id, source.name],
       limit: 1,
     );
     if (rows.isEmpty) return null;
     return Anime.fromDb(rows.first);
   }
 
+  /// Matches across all sources; callers disambiguate by [Anime.source].
   Future<List<Anime>> getAnimeByIds(List<int> ids) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(ids, (List<int> chunk) async {

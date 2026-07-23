@@ -45,7 +45,7 @@ class FilterBar extends ConsumerWidget {
     final bool showCustomize = onDiscoverCustomize != null &&
         !browseState.hasSearchQuery &&
         source.groupId == 'tmdb';
-    final Color accent = filterAccentForGroup(source.groupId);
+    final Color accent = filterAccentForType(source.outputMediaType);
 
     if (isCompactScreen(context)) {
       return _CompactBar(
@@ -357,7 +357,7 @@ class _SourceDropdownChevron extends StatelessWidget {
               s.label(l),
               style: AppTypography.body.copyWith(
                 color: isSelected
-                    ? filterAccentForGroup(s.groupId)
+                    ? filterAccentForType(s.outputMediaType)
                     : AppColors.textPrimary,
                 fontWeight:
                     isSelected ? FontWeight.w600 : FontWeight.normal,

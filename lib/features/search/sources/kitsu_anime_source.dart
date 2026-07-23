@@ -3,22 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/kitsu_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/manga.dart';
+import '../../../shared/models/anime.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_assets.dart';
-import '../filters/kitsu_manga_status_filter.dart';
-import '../filters/kitsu_manga_subtype_filter.dart';
+import '../filters/kitsu_anime_status_filter.dart';
+import '../filters/kitsu_anime_subtype_filter.dart';
 import '../models/search_source.dart';
 
 const int _kitsuPageSize = 20;
 
-/// SearchSource backed by Kitsu (manga).
-class KitsuMangaSource extends SearchSource {
+/// SearchSource backed by Kitsu (anime).
+class KitsuAnimeSource extends SearchSource {
   @override
-  String get id => 'kitsu_manga';
+  String get id => 'kitsu_anime';
 
   @override
-  MediaType get outputMediaType => MediaType.manga;
+  MediaType get outputMediaType => MediaType.anime;
 
   @override
   String get groupId => 'kitsu';
@@ -30,10 +30,10 @@ class KitsuMangaSource extends SearchSource {
   IconData get groupIcon => Icons.auto_stories_outlined;
 
   @override
-  String label(S l) => l.mediaTypeManga;
+  String label(S l) => l.mediaTypeAnime;
 
   @override
-  IconData get icon => Icons.auto_stories_outlined;
+  IconData get icon => Icons.play_circle_outline;
 
   @override
   String? get iconAsset => AppAssets.iconKitsuColor;
@@ -43,8 +43,8 @@ class KitsuMangaSource extends SearchSource {
 
   @override
   List<SearchFilter> get filters => <SearchFilter>[
-        KitsuMangaSubtypeFilter(),
-        KitsuMangaStatusFilter(),
+        KitsuAnimeSubtypeFilter(),
+        KitsuAnimeStatusFilter(),
       ];
 
   @override
@@ -59,7 +59,7 @@ class KitsuMangaSource extends SearchSource {
   bool get supportsSortDuringSearch => true;
 
   @override
-  String searchHint(S l) => l.searchHintManga;
+  String searchHint(S l) => l.searchHintAnime;
 
   @override
   Future<BrowseResult> fetch(
@@ -75,8 +75,8 @@ class KitsuMangaSource extends SearchSource {
       (BrowseSortOption o) => o.id == sortBy,
       orElse: () => sortOptions.first,
     );
-    final (List<Manga> mangas, bool hasMore, int totalPages) =
-        await api.browseManga(
+    final (List<Anime> anime, bool hasMore, int totalPages) =
+        await api.browseAnime(
       query: query,
       subtype: filterValues['subtype'] as String?,
       status: filterValues['status'] as String?,
@@ -86,8 +86,8 @@ class KitsuMangaSource extends SearchSource {
     );
 
     return BrowseResult(
-      items: mangas,
-      mediaType: MediaType.manga,
+      items: anime,
+      mediaType: MediaType.anime,
       hasMore: hasMore,
       totalPages: totalPages,
       currentPage: page,

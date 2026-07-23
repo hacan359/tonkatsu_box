@@ -157,8 +157,8 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | media_type | string | yes | `"game"`, `"movie"`, `"tv_show"`, `"animation"`, `"visual_novel"`, or `"manga"` |
-| external_id | number | yes | IGDB ID (games), TMDB ID (movies/TV), VNDB numeric ID (visual novels), or provider ID (manga: AniList or MangaBaka) |
-| source | string | no | Manga provider: `"anilist"` or `"mangabaka"`. Manga identity is `(external_id, source)`. Absent/`null` for non-manga and pre-v44 files (treated as `"anilist"`) |
+| external_id | number | yes | IGDB ID (games), TMDB ID (movies/TV), VNDB numeric ID (visual novels), or provider ID (manga / anime: AniList, MangaBaka, MangaDex, Kitsu) |
+| source | string | no | Provider discriminator for multi-source media (manga, anime): identity is `(external_id, source)`. Absent/`null` for single-source media and legacy files, treated as `"anilist"` (manga before v44, anime before v60) |
 | platform_id | number | no | IGDB platform ID (games) or AnimationSource (animation: 0=movie, 1=tvShow) |
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1.0–10.0, one decimal). Integers from v2 files load as doubles |
@@ -219,6 +219,7 @@ Key format: `{ImageType.folder}/{imageId}`
 - `tv_show_posters/1399` — TV show poster for TMDB ID 1399
 - `vn_covers/17` — visual novel cover for VNDB numeric ID 17
 - `manga_covers/anilist_123` — manga cover, namespaced by provider (`anilist_` / `mangabaka_`). Pre-v44 files use a bare `manga_covers/123` and are remapped to `anilist_` on import
+- `anime_covers/anilist_123` — anime cover, namespaced by provider (`anilist_` / `kitsu_`). Pre-v60 files use a bare `anime_covers/123` and are remapped to `anilist_` on import
 
 **Canvas images** — `imageId` is FNV-1a 32-bit hash of the image URL:
 - `canvas_images/a1b2c3d4` — image added to the canvas board

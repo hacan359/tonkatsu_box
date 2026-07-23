@@ -49,7 +49,7 @@ class FilterSheet extends ConsumerWidget {
     final List<SearchFilter> filters = source.filters;
     final List<BrowseSortOption> sortOptions = source.sortOptions;
     final bool hasActiveFilters = browseState.hasFilters;
-    final Color accent = filterAccentForGroup(source.groupId);
+    final Color accent = filterAccentForType(source.outputMediaType);
 
     return Material(
       color: AppColors.background,

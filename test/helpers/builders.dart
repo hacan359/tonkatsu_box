@@ -302,6 +302,7 @@ Manga createTestManga({
 
 Anime createTestAnime({
   int id = 600,
+  DataSource source = DataSource.anilist,
   String title = 'Test Anime',
   String? description,
   String? coverUrl,
@@ -315,6 +316,7 @@ Anime createTestAnime({
 }) {
   return Anime(
     id: id,
+    source: source,
     title: title,
     description: description,
     coverUrl: coverUrl,
