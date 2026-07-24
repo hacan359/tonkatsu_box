@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -155,7 +156,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSourceHeader(
           iconAsset: AppAssets.iconIgdbColor,
           description: S.of(context).welcomeApiIgdbDesc,
-          sourceName: 'IGDB',
+          sourceName: DataSource.igdb.label,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -288,7 +289,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSourceHeader(
           iconAsset: AppAssets.iconTmdbColor,
           description: S.of(context).welcomeApiTmdbDesc,
-          sourceName: 'TMDB',
+          sourceName: DataSource.tmdb.label,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -356,7 +357,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSourceHeader(
           iconAsset: AppAssets.iconComicVineColor,
           description: S.of(context).welcomeApiComicVineDesc,
-          sourceName: 'ComicVine',
+          sourceName: DataSource.comicVine.label,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -435,7 +436,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSourceHeader(
           iconAsset: AppAssets.iconGoogleBooksColor,
           description: S.of(context).welcomeApiGoogleBooksDesc,
-          sourceName: 'Google Books',
+          sourceName: DataSource.googleBooks.label,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -516,7 +517,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSourceHeader(
           iconAsset: AppAssets.iconHardcoverColor,
           description: S.of(context).welcomeApiHardcoverDesc,
-          sourceName: 'Hardcover',
+          sourceName: DataSource.hardcover.label,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(

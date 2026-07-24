@@ -1,5 +1,6 @@
+import '../../l10n/app_localizations.dart';
 import '../../shared/models/collection_item.dart';
-import '../../shared/models/item_status.dart';
+import '../../shared/utils/anime_manga_title_language.dart';
 
 /// Template-based text exporter for a collection.
 ///
@@ -28,7 +29,7 @@ class TextExportService {
   String applyTemplate(
     String template,
     List<CollectionItem> items, {
-    String animeMangaTitleLanguage = 'romaji',
+    String animeMangaTitleLanguage = AnimeMangaTitleLanguage.defaultId,
     Map<int, String> tagsByItemId = const <int, String>{},
   }) {
     final StringBuffer buffer = StringBuffer();
@@ -51,7 +52,7 @@ class TextExportService {
     String template,
     CollectionItem item,
     int index, {
-    String animeMangaTitleLanguage = 'romaji',
+    String animeMangaTitleLanguage = AnimeMangaTitleLanguage.defaultId,
     Map<int, String> tagsByItemId = const <int, String>{},
   }) {
     String line = template;
@@ -61,7 +62,7 @@ class TextExportService {
       'rating': _formatApiRating(item.apiRating),
       'myRating': item.userRating?.toStringAsFixed(1),
       'platform': _platformOrNull(item),
-      'status': _statusLabel(item.status),
+      'status': item.status.displayLabel,
       'genres': item.genresString,
       'tags': tagsByItemId[item.id],
       'notes': item.userComment,
@@ -133,24 +134,6 @@ class TextExportService {
     if (item.platform == null) return null;
     return item.platform!.displayName;
   }
-
-  String _statusLabel(ItemStatus status) {
-    switch (status) {
-      case ItemStatus.notStarted:
-        return 'Not Started';
-      case ItemStatus.inProgress:
-        return 'In Progress';
-      case ItemStatus.completed:
-        return 'Completed';
-      case ItemStatus.dropped:
-        return 'Dropped';
-      case ItemStatus.planned:
-        return 'Planned';
-      case ItemStatus.replaying:
-        return 'Replay';
-    }
-  }
-
 }
 
 /// Sort mode for the text exporter.
@@ -160,5 +143,14 @@ enum TextExportSortMode {
   name,
   rating,
   year,
-  addedDate,
+  addedDate;
+
+  /// Localised label for the sort picker.
+  String localizedLabel(S l) => switch (this) {
+        TextExportSortMode.current => l.textExportSortCurrent,
+        TextExportSortMode.name => l.textExportSortName,
+        TextExportSortMode.rating => l.allItemsRatingDesc,
+        TextExportSortMode.year => l.textExportSortYear,
+        TextExportSortMode.addedDate => l.textExportSortAdded,
+      };
 }

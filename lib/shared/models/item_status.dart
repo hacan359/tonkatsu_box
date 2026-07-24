@@ -1,28 +1,19 @@
-// Универсальный статус элемента коллекции.
-
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import 'media_type.dart';
 
-/// Универсальный статус элемента коллекции.
-///
-/// Поддерживает контекстно-зависимые метки в зависимости от [MediaType].
+/// Universal collection-item status with media-type-aware labels.
 enum ItemStatus {
-  /// Не начат.
   notStarted('not_started'),
 
-  /// В процессе (играет / смотрит).
   inProgress('in_progress'),
 
-  /// Завершён (пройден / просмотрен).
   completed('completed'),
 
-  /// Брошен.
   dropped('dropped'),
 
-  /// Запланирован.
   planned('planned'),
 
   /// Replaying / rewatching / rereading a previously finished item.
@@ -33,10 +24,10 @@ enum ItemStatus {
 
   const ItemStatus(this.value);
 
-  /// Строковое значение для хранения в БД.
+  /// Stored value for the DB `status` column.
   final String value;
 
-  /// Создаёт [ItemStatus] из строки.
+  /// Returns [notStarted] for unknown stored values.
   static ItemStatus fromString(String value) {
     for (final ItemStatus status in ItemStatus.values) {
       if (status.value == value) {
@@ -46,7 +37,16 @@ enum ItemStatus {
     return ItemStatus.notStarted;
   }
 
-  /// Цвет для визуальной индикации статуса.
+  /// Like [fromString], but returns `null` for an unknown value.
+  static ItemStatus? tryFromString(String value) {
+    for (final ItemStatus status in ItemStatus.values) {
+      if (status.value == value) {
+        return status;
+      }
+    }
+    return null;
+  }
+
   Color get color {
     switch (this) {
       case ItemStatus.notStarted:
@@ -64,7 +64,6 @@ enum ItemStatus {
     }
   }
 
-  /// Material-иконка статуса.
   IconData get materialIcon {
     switch (this) {
       case ItemStatus.notStarted:
@@ -82,7 +81,7 @@ enum ItemStatus {
     }
   }
 
-  /// Локализованная метка с учётом типа медиа.
+  /// Localised label adapted to [mediaType] (Playing / Watching / Reading).
   String localizedLabel(S l, MediaType mediaType) {
     switch (this) {
       case ItemStatus.notStarted:
@@ -113,9 +112,28 @@ enum ItemStatus {
     }
   }
 
-  /// Локализованная метка без привязки к типу медиа.
+  /// English display name (locale-independent).
   ///
-  /// Для контекстов где тип неизвестен (заголовки таблиц, фильтры).
+  /// For non-localised contexts such as text export and MAL export.
+  String get displayLabel {
+    switch (this) {
+      case ItemStatus.notStarted:
+        return 'Not Started';
+      case ItemStatus.inProgress:
+        return 'In Progress';
+      case ItemStatus.completed:
+        return 'Completed';
+      case ItemStatus.dropped:
+        return 'Dropped';
+      case ItemStatus.planned:
+        return 'Planned';
+      case ItemStatus.replaying:
+        return 'Replay';
+    }
+  }
+
+  /// Localised label not tied to a media type, for contexts where the type
+  /// is unknown (table headers, filters).
   String genericLabel(S l) {
     switch (this) {
       case ItemStatus.notStarted:
@@ -133,9 +151,8 @@ enum ItemStatus {
     }
   }
 
-  /// Приоритет для сортировки по статусу (меньше = выше в списке).
-  ///
-  /// Активные элементы показываются первыми, завершённые — последними.
+  /// Sort priority (lower = higher in the list): active items first,
+  /// finished last.
   int get statusSortPriority {
     switch (this) {
       case ItemStatus.inProgress:

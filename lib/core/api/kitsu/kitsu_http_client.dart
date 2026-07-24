@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'kitsu_types.dart';
 
@@ -63,7 +64,7 @@ class KitsuHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'Kitsu',
+        apiName: DataSource.kitsu.label,
         exception: e,
         userMessage: message,
       ),

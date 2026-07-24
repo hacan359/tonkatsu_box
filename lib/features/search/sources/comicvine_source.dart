@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../models/search_source.dart';
 
 // Short comic titles are common, so keep the floor at 2 chars.
@@ -30,10 +30,7 @@ class ComicVineSource extends SearchSource {
   MediaType get outputMediaType => MediaType.book;
 
   @override
-  String get groupId => 'comicvine';
-
-  @override
-  String get groupName => 'ComicVine';
+  DataSource get dataSource => DataSource.comicVine;
 
   @override
   IconData get groupIcon => Icons.auto_stories;
@@ -43,9 +40,6 @@ class ComicVineSource extends SearchSource {
 
   @override
   IconData get icon => Icons.auto_stories;
-
-  @override
-  String? get iconAsset => AppAssets.iconComicVineColor;
 
   // ComicVine has no filter-only browse: the `/volumes` filters that would
   // drive it (start_year, publisher) are silently ignored by the API, so a

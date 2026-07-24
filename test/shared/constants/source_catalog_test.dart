@@ -1,30 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
 import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
 import 'package:tonkatsu_box/shared/constants/source_catalog.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 
 void main() {
   group('kDataSourceCatalog', () {
-    test('every search-source group is mapped to its sources', () {
-      for (final SourceGroupEntry g in groupedSearchSources) {
-        expect(
-          kSearchGroupToSources.containsKey(g.groupId),
-          isTrue,
-          reason: 'group "${g.groupId}" is not mapped in kSearchGroupToSources',
-        );
-      }
-    });
+    test('every search source provider is catalogued', () {
+      final Set<DataSource> catalogSources =
+          kDataSourceCatalog.map((SourceInfo info) => info.source).toSet();
+      final Set<DataSource> searchProviders =
+          searchSources.map((SearchSource s) => s.dataSource).toSet();
 
-    test('mirrors the mapped search-group sources', () {
-      final Set<DataSource> catalogSources = kDataSourceCatalog
-          .map((SourceInfo info) => info.source)
-          .toSet();
-
-      final Set<DataSource> searchSourcesMapped = kSearchGroupToSources.values
-          .expand((List<DataSource> sources) => sources)
-          .toSet();
-
-      expect(catalogSources, searchSourcesMapped);
+      expect(searchProviders, catalogSources);
     });
 
     test('has no duplicate sources', () {

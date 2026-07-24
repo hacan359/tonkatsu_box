@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../../services/app_http_overrides.dart';
 import '../api_error_detail.dart';
 import 'hardcover_types.dart';
@@ -105,7 +106,7 @@ class HardcoverGraphQLClient {
     if (statusCode == 401) {
       return HardcoverAuthException(
         detail: buildApiErrorDetail(
-          apiName: 'Hardcover',
+          apiName: DataSource.hardcover.label,
           exception: e,
           userMessage: 'Token rejected (401)',
         ),
@@ -113,7 +114,7 @@ class HardcoverGraphQLClient {
     } else if (statusCode == 429) {
       return HardcoverRateLimitException(
         detail: buildApiErrorDetail(
-          apiName: 'Hardcover',
+          apiName: DataSource.hardcover.label,
           exception: e,
           userMessage: 'Throttled (60 requests/min)',
         ),
@@ -129,7 +130,7 @@ class HardcoverGraphQLClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'Hardcover',
+        apiName: DataSource.hardcover.label,
         exception: e,
         userMessage: message,
       ),

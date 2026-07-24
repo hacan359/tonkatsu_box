@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/book.dart';
+import '../../shared/models/data_source.dart';
 import '../../shared/utils/bbcode.dart';
 import '../services/api_key_initializer.dart';
 import 'api_error_detail.dart';
@@ -255,7 +256,7 @@ class ComicVineApi {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'ComicVine',
+        apiName: DataSource.comicVine.label,
         exception: e,
         userMessage: message,
       ),

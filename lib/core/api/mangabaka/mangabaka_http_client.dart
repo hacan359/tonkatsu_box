@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'mangabaka_types.dart';
 
@@ -50,7 +51,7 @@ class MangaBakaHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'MangaBaka',
+        apiName: DataSource.mangabaka.label,
         exception: e,
         userMessage: message,
       ),

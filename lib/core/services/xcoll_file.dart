@@ -135,8 +135,9 @@ class XcollFile {
     DateTime created,
     String? description,
   ) {
-    final ExportFormat format =
-        ExportFormat.fromString(json['format'] as String? ?? 'light');
+    final ExportFormat format = ExportFormat.fromString(
+      json['format'] as String? ?? ExportFormat.light.value,
+    );
 
     // Items
     final List<dynamic> rawItems =

@@ -140,45 +140,16 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
     final Set<DiscoverSectionId> available =
         discoverSectionsPerSource[sourceId] ?? <DiscoverSectionId>{};
 
-    final Map<DiscoverSectionId, ({String label, IconData icon})> sectionMeta =
-        <DiscoverSectionId, ({String label, IconData icon})>{
-      DiscoverSectionId.trending: (
-        label: l.discoverTrending,
-        icon: Icons.local_fire_department,
-      ),
-      DiscoverSectionId.topRatedMovies: (
-        label: l.discoverTopRatedMovies,
-        icon: Icons.star,
-      ),
-      DiscoverSectionId.upcoming: (
-        label: l.discoverUpcoming,
-        icon: Icons.upcoming,
-      ),
-      DiscoverSectionId.popularTvShows: (
-        label: l.discoverPopularTvShows,
-        icon: Icons.tv,
-      ),
-      DiscoverSectionId.topRatedTvShows: (
-        label: l.discoverTopRatedTvShows,
-        icon: Icons.star_border,
-      ),
-      DiscoverSectionId.anime: (
-        label: l.mediaTypeAnime,
-        icon: Icons.animation,
-      ),
-    };
-
     return <Widget>[
       for (final DiscoverSectionId section in available)
-        if (sectionMeta.containsKey(section))
-          _buildSectionToggle(
-            context: context,
-            notifier: notifier,
-            section: section,
-            label: sectionMeta[section]!.label,
-            icon: sectionMeta[section]!.icon,
-            isEnabled: settings.enabledSections.contains(section),
-          ),
+        _buildSectionToggle(
+          context: context,
+          notifier: notifier,
+          section: section,
+          label: section.localizedLabel(l),
+          icon: section.icon,
+          isEnabled: settings.enabledSections.contains(section),
+        ),
     ];
   }
 

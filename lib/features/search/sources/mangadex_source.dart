@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/mangadex_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/mangadex_content_rating_filter.dart';
 import '../filters/mangadex_demographic_filter.dart';
 import '../filters/mangadex_genre_filter.dart';
@@ -29,10 +29,7 @@ class MangaDexSource extends SearchSource {
   MediaType get outputMediaType => MediaType.manga;
 
   @override
-  String get groupId => 'mangadex';
-
-  @override
-  String get groupName => 'MangaDex';
+  DataSource get dataSource => DataSource.mangadex;
 
   @override
   IconData get groupIcon => Icons.menu_book_outlined;
@@ -42,9 +39,6 @@ class MangaDexSource extends SearchSource {
 
   @override
   IconData get icon => Icons.menu_book_outlined;
-
-  @override
-  String? get iconAsset => AppAssets.iconMangaDexColor;
 
   @override
   bool get supportsBrowse => true;

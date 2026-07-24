@@ -8,6 +8,7 @@ import '../../../../data/repositories/wishlist_repository.dart';
 import '../../../../shared/models/anime.dart';
 import '../../../../shared/models/collection.dart';
 import '../../../../shared/models/collection_item.dart';
+import '../../../../shared/models/data_source.dart';
 import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/item_status_logic.dart';
 import '../../../../shared/models/manga.dart';
@@ -89,7 +90,7 @@ class AniListImportService implements ImportSource {
   final ImportWriter _writer;
 
   @override
-  String get displayName => 'AniList';
+  String get displayName => DataSource.anilist.label;
 
   /// Throws [AniListUserNotFoundException] / [AniListPrivateProfileException] /
   /// [AniListApiException] when the AniList API call fails, [FormatException]
@@ -167,8 +168,8 @@ class AniListImportService implements ImportSource {
       author: options.author,
     );
     if (collection == null) {
-      return const UniversalImportResult.failure(
-        sourceName: 'AniList',
+      return UniversalImportResult.failure(
+        sourceName: displayName,
         error: 'Collection not found',
       );
     }
@@ -217,7 +218,7 @@ class AniListImportService implements ImportSource {
     );
 
     return UniversalImportResult(
-      sourceName: 'AniList',
+      sourceName: displayName,
       success: true,
       collection: collection,
       importedByType: write.importedByType,

@@ -91,7 +91,7 @@ class HardcoverImportService implements ImportSource {
   final ImportWriter _writer;
 
   @override
-  String get displayName => 'Hardcover';
+  String get displayName => DataSource.hardcover.label;
 
   /// Throws [HardcoverAuthException] / [HardcoverUserNotFoundException] /
   /// [HardcoverApiException] when the Hardcover API call fails and
@@ -136,8 +136,8 @@ class HardcoverImportService implements ImportSource {
       author: options.author,
     );
     if (collection == null) {
-      return const UniversalImportResult.failure(
-        sourceName: 'Hardcover',
+      return UniversalImportResult.failure(
+        sourceName: displayName,
         error: 'Collection not found',
       );
     }
@@ -187,7 +187,7 @@ class HardcoverImportService implements ImportSource {
     );
 
     return UniversalImportResult(
-      sourceName: 'Hardcover',
+      sourceName: displayName,
       success: true,
       collection: collection,
       importedByType: write.importedByType,

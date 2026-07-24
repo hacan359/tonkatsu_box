@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 
 /// TMDB's Animation genre id, used to keep animation out of generic
@@ -126,11 +127,16 @@ class BrowseResult {
 abstract class SearchSource {
   String get id;
 
-  /// Logical group ('tmdb', 'igdb', 'anilist', 'vndb') used to cluster
-  /// sources in the picker popup.
-  String get groupId;
+  /// External data provider backing this source. Single source of truth for
+  /// [groupId], [groupName] and [iconAsset].
+  DataSource get dataSource;
 
-  String get groupName;
+  /// Logical group used to cluster sources in the picker popup; defaults to
+  /// the provider's [DataSource.key] ('tmdb', 'igdb', 'anilist', ...).
+  String get groupId => dataSource.key;
+
+  /// Brand name shown in the picker; defaults to [dataSource]'s label.
+  String get groupName => dataSource.label;
   IconData get groupIcon;
 
   /// Localised label.
@@ -138,8 +144,9 @@ abstract class SearchSource {
 
   IconData get icon;
 
-  /// Brand PNG asset; rendered instead of [icon] when present.
-  String? get iconAsset => null;
+  /// Brand PNG asset; rendered instead of [icon] when present. Defaults to
+  /// [dataSource]'s brand asset.
+  String? get iconAsset => dataSource.iconAsset;
 
   /// Filters in display order along the filter bar.
   List<SearchFilter> get filters;

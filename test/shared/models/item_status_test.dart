@@ -53,6 +53,30 @@ void main() {
       });
     });
 
+    group('tryFromString', () {
+      test('should return the matching status for every stored value', () {
+        for (final ItemStatus status in ItemStatus.values) {
+          expect(ItemStatus.tryFromString(status.value), status);
+        }
+      });
+
+      test('should return null when the value is unknown or empty', () {
+        expect(ItemStatus.tryFromString('on_hold'), isNull);
+        expect(ItemStatus.tryFromString('unknown_status'), isNull);
+        expect(ItemStatus.tryFromString(''), isNull);
+      });
+    });
+
+    group('displayLabel', () {
+      test('should be non-empty and unique for every status', () {
+        final Set<String> labels = ItemStatus.values
+            .map((ItemStatus s) => s.displayLabel)
+            .toSet();
+        expect(labels.length, ItemStatus.values.length);
+        expect(labels.every((String l) => l.isNotEmpty), isTrue);
+      });
+    });
+
     group('color', () {
       test('каждый статус возвращает ненулевой цвет', () {
         for (final ItemStatus status in ItemStatus.values) {

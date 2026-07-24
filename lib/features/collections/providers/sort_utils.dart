@@ -1,5 +1,6 @@
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/utils/anime_manga_title_language.dart';
 
 int _compareByDisplayName(CollectionItem a, CollectionItem b, String lang) =>
     a.displayName(lang).toLowerCase().compareTo(
@@ -25,7 +26,7 @@ List<CollectionItem> applySortMode(
   List<CollectionItem> items,
   CollectionSortMode sortMode, {
   bool isDescending = false,
-  String animeMangaTitleLanguage = 'romaji',
+  String animeMangaTitleLanguage = AnimeMangaTitleLanguage.defaultId,
 }) {
   final List<CollectionItem> sorted = List<CollectionItem>.of(items);
   switch (sortMode) {

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../utils/anime_manga_title_language.dart';
+
 /// TMDB content locale: the `language=` request value and its native name.
 @immutable
 class TmdbContentLanguage {
@@ -81,10 +83,10 @@ String defaultContentLanguageForUi(String uiLanguageCode) {
 /// except English and Japanese degrades to romaji.
 String anilistTitleLanguageForContent(String contentCode) {
   if (contentCode.startsWith('en-')) {
-    return 'english';
+    return AnimeMangaTitleLanguage.english.id;
   }
   if (contentCode == 'ja-JP') {
-    return 'native';
+    return AnimeMangaTitleLanguage.native.id;
   }
-  return 'romaji';
+  return AnimeMangaTitleLanguage.romaji.id;
 }

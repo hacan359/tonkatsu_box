@@ -117,7 +117,8 @@ class CanvasRepository {
   }
 
   Future<void> deleteGameItem(int collectionId, int igdbId) async {
-    await _db.canvasDao.deleteCanvasItemByRef(collectionId, 'game', igdbId);
+    await _db.canvasDao
+        .deleteCanvasItemByRef(collectionId, CanvasItemType.game.value, igdbId);
   }
 
   Future<void> deleteMediaItem(

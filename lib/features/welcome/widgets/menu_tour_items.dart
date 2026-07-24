@@ -47,9 +47,9 @@ List<MenuTourItem> buildMenuTourItems(BuildContext context) {
 
 MenuTourItem _tabItem(S l, NavTab tab) => MenuTourItem(
       tab: tab,
-      icon: _icon(tab),
-      activeIcon: _activeIcon(tab),
-      label: _label(l, tab),
+      icon: tab.icon,
+      activeIcon: tab.selectedIcon,
+      label: tab.localizedLabel(l),
       description: _description(l, tab),
     );
 
@@ -62,36 +62,6 @@ MenuTourItem _personalizationItem(S l) => MenuTourItem(
       label: l.genreCloudTitle,
       description: l.welcomeHowPersonalizationDesc,
     );
-
-IconData _icon(NavTab tab) => switch (tab) {
-      NavTab.home => Icons.home_outlined,
-      NavTab.collections => Icons.shelves,
-      NavTab.tierLists => Icons.leaderboard_outlined,
-      NavTab.releases => Icons.notifications_none,
-      NavTab.wishlist => Icons.bookmark_border,
-      NavTab.search => Icons.search_outlined,
-      NavTab.settings => Icons.settings_outlined,
-    };
-
-IconData _activeIcon(NavTab tab) => switch (tab) {
-      NavTab.home => Icons.home,
-      NavTab.collections => Icons.shelves,
-      NavTab.tierLists => Icons.leaderboard,
-      NavTab.releases => Icons.notifications,
-      NavTab.wishlist => Icons.bookmark,
-      NavTab.search => Icons.search,
-      NavTab.settings => Icons.settings,
-    };
-
-String _label(S l, NavTab tab) => switch (tab) {
-      NavTab.home => l.navMain,
-      NavTab.collections => l.navCollections,
-      NavTab.tierLists => l.navTierLists,
-      NavTab.releases => l.navReleases,
-      NavTab.wishlist => l.navWishlist,
-      NavTab.search => l.search,
-      NavTab.settings => l.navSettings,
-    };
 
 String _description(S l, NavTab tab) => switch (tab) {
       NavTab.home => l.welcomeHowMainDesc,

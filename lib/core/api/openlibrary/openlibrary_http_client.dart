@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'openlibrary_types.dart';
 
@@ -51,7 +52,7 @@ class OpenLibraryHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'OpenLibrary',
+        apiName: DataSource.openLibrary.label,
         exception: e,
         userMessage: message,
       ),

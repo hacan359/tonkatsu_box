@@ -13,6 +13,11 @@ void main() {
             AnimeMangaTitleLanguage.native);
       });
 
+      test('defaultId resolves to romaji (the app-wide default)', () {
+        expect(AnimeMangaTitleLanguage.fromId(AnimeMangaTitleLanguage.defaultId),
+            AnimeMangaTitleLanguage.romaji);
+      });
+
       test('unknown or null id defaults to romaji', () {
         expect(AnimeMangaTitleLanguage.fromId(null),
             AnimeMangaTitleLanguage.romaji);

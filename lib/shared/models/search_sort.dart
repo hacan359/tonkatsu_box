@@ -1,27 +1,16 @@
-// Модель сортировки результатов поиска.
-
 import '../../l10n/app_localizations.dart';
 
-/// Поле сортировки.
 enum SearchSortField {
-  /// По релевантности (совпадение с запросом).
-  relevance('Rel', 'Relevance'),
+  /// Best match for the query.
+  relevance,
 
-  /// По дате выпуска.
-  date('Date', 'Date'),
+  /// By release date.
+  date,
 
-  /// По рейтингу.
-  rating('Rate', 'Rating');
+  /// By rating.
+  rating;
 
-  const SearchSortField(this.shortLabel, this.displayLabel);
-
-  /// Короткий лейбл для компактного UI (3-4 символа).
-  final String shortLabel;
-
-  /// Полное отображаемое название.
-  final String displayLabel;
-
-  /// Локализованный короткий лейбл.
+  /// Localised short label for compact UI.
   String localizedShortLabel(S l) {
     switch (this) {
       case SearchSortField.relevance:
@@ -33,7 +22,7 @@ enum SearchSortField {
     }
   }
 
-  /// Локализованное полное отображаемое название.
+  /// Localised full display name.
   String localizedDisplayLabel(S l) {
     switch (this) {
       case SearchSortField.relevance:
@@ -46,36 +35,27 @@ enum SearchSortField {
   }
 }
 
-/// Направление сортировки.
 enum SearchSortOrder {
-  /// По возрастанию.
   ascending,
-
-  /// По убыванию.
   descending,
 }
 
-/// Настройки сортировки результатов поиска.
+/// Search result sort settings.
 class SearchSort {
-  /// Создаёт [SearchSort].
   const SearchSort({
     this.field = SearchSortField.relevance,
     this.order = SearchSortOrder.descending,
   });
 
-  /// Поле сортировки.
   final SearchSortField field;
 
-  /// Направление сортировки.
   final SearchSortOrder order;
 
-  /// Значение по умолчанию (релевантность, по убыванию).
+  /// Default: relevance, descending.
   static const SearchSort defaultSort = SearchSort();
 
-  /// Проверяет, является ли сортировка значением по умолчанию.
   bool get isDefault => field == SearchSortField.relevance;
 
-  /// Создаёт копию с изменённым полем.
   SearchSort copyWith({
     SearchSortField? field,
     SearchSortOrder? order,
@@ -86,7 +66,6 @@ class SearchSort {
     );
   }
 
-  /// Переключает направление сортировки.
   SearchSort toggleOrder() {
     return copyWith(
       order: order == SearchSortOrder.ascending

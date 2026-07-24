@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'tvmaze_types.dart';
 
@@ -43,7 +44,7 @@ class TvMazeHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'TVmaze',
+        apiName: DataSource.tvmaze.label,
         exception: e,
         userMessage: message,
       ),
