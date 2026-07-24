@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
+import 'package:tonkatsu_box/shared/constants/collection_sort_mode_ui.dart';
 
 void main() {
   group('CollectionSortMode', () {

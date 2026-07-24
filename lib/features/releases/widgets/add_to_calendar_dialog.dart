@@ -5,6 +5,7 @@ import '../../../shared/models/calendar_recurrence.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../../../shared/widgets/segmented_pill.dart';
+import '../../../shared/constants/calendar_recurrence_ui.dart';
 
 /// Result of [showAddToCalendarDialog].
 class AddToCalendarResult {

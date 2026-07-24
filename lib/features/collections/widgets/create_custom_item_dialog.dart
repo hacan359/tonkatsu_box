@@ -26,6 +26,7 @@ import 'custom_item/cover_image_picker.dart';
 import 'custom_item/custom_item_data.dart';
 import 'custom_item/multi_select_genre_dialog.dart';
 import 'custom_item/searchable_list_dialog.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 export 'custom_item/custom_item_data.dart' show CustomItemData;
 

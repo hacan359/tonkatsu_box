@@ -14,6 +14,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// Debug-экран для проверки URL изображений.
 ///

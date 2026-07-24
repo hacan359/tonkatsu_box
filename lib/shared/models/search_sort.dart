@@ -1,5 +1,3 @@
-import '../../l10n/app_localizations.dart';
-
 enum SearchSortField {
   /// Best match for the query.
   relevance,
@@ -8,31 +6,7 @@ enum SearchSortField {
   date,
 
   /// By rating.
-  rating;
-
-  /// Localised short label for compact UI.
-  String localizedShortLabel(S l) {
-    switch (this) {
-      case SearchSortField.relevance:
-        return l.searchSortRelevanceShort;
-      case SearchSortField.date:
-        return l.date;
-      case SearchSortField.rating:
-        return l.searchSortRatingShort;
-    }
-  }
-
-  /// Localised full display name.
-  String localizedDisplayLabel(S l) {
-    switch (this) {
-      case SearchSortField.relevance:
-        return l.browseSortRelevance;
-      case SearchSortField.date:
-        return l.date;
-      case SearchSortField.rating:
-        return l.searchSortRatingDisplay;
-    }
-  }
+  rating,
 }
 
 enum SearchSortOrder {

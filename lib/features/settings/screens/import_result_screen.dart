@@ -12,6 +12,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/error_details_dialog.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/screens/collection_screen.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// Экран результатов импорта.
 ///

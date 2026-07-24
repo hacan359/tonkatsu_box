@@ -8,6 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/markdown_toolbar.dart';
 import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 // Экран-форма для добавления/редактирования элемента вишлиста.
 

@@ -19,6 +19,7 @@ import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import 'collection_filter_sheet.dart';
+import '../../../shared/constants/collection_sort_mode_ui.dart';
 
 class CollectionFilterBar extends ConsumerStatefulWidget {
   const CollectionFilterBar({

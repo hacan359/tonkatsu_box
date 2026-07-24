@@ -11,6 +11,7 @@ import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/source_logo.dart';
 import '../widgets/settings_group.dart';
 import '../../../shared/constants/data_source_ui.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// One attribution entry.
 typedef _Provider = ({

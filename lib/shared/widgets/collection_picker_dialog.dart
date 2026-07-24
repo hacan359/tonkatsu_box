@@ -8,6 +8,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../../features/collections/providers/collections_provider.dart';
+import '../constants/collection_list_sort_mode_ui.dart';
 
 sealed class CollectionChoice {
   const CollectionChoice();

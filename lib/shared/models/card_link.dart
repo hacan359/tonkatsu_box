@@ -1,4 +1,3 @@
-import '../../l10n/app_localizations.dart';
 import 'collection_item.dart';
 import 'data_source.dart';
 import 'media_type.dart';
@@ -74,21 +73,6 @@ String _buildDisplay(CollectionItem item) {
 /// Strips characters that would break the `[[…|…]]` grammar.
 String sanitizeCardLinkDisplay(String value) =>
     value.replaceAll(RegExp(r'[\]\[|]'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
-
-/// Qualifier shown after a card's media type: platform for games, movie/TV for
-/// animation; `null` otherwise.
-String? cardSubcategoryLabel(CollectionItem item, S l) {
-  switch (item.mediaType) {
-    case MediaType.game:
-      return item.platform == null ? null : item.platformName;
-    case MediaType.animation:
-      return item.platformId == AnimationSource.tvShow
-          ? l.mediaTypeTvShow
-          : l.mediaTypeMovie;
-    default:
-      return null;
-  }
-}
 
 /// Matches a whole `[[card:payload|display]]` token in note text.
 final RegExp cardLinkTokenPattern =

@@ -1,23 +1,17 @@
-// Режим сортировки списка коллекций на Home Screen.
-
-import '../../l10n/app_localizations.dart';
-
-/// Режим сортировки списка коллекций.
+/// Sort mode for the collection list on the Home screen.
 enum CollectionListSortMode {
-  /// По дате создания (created_at, новые первыми по умолчанию).
+  /// By creation date (created_at, newest first by default).
   createdDate('created_date'),
 
-  /// По алфавиту (name, A→Z по умолчанию).
+  /// Alphabetical (name, A→Z by default).
   alphabetical('alphabetical');
 
   const CollectionListSortMode(this.value);
 
-  /// Строковое значение для хранения в SharedPreferences.
+  /// Stored value for SharedPreferences.
   final String value;
 
-  /// Создаёт [CollectionListSortMode] из строки.
-  ///
-  /// Возвращает [createdDate] для неизвестных значений.
+  /// Returns [createdDate] for unknown stored values.
   static CollectionListSortMode fromString(String value) {
     for (final CollectionListSortMode mode
         in CollectionListSortMode.values) {
@@ -26,29 +20,5 @@ enum CollectionListSortMode {
       }
     }
     return CollectionListSortMode.createdDate;
-  }
-
-  /// Локализованное отображаемое название.
-  String localizedDisplayLabel(S l) {
-    switch (this) {
-      case CollectionListSortMode.createdDate:
-        return l.collectionListSortCreatedDate;
-      case CollectionListSortMode.alphabetical:
-        return l.name;
-    }
-  }
-
-  /// Локализованное описание порядка сортировки.
-  String localizedDescription(S l, {required bool descending}) {
-    switch (this) {
-      case CollectionListSortMode.createdDate:
-        return descending
-            ? l.sortDateOldest
-            : l.sortDateDesc;
-      case CollectionListSortMode.alphabetical:
-        return descending
-            ? l.collectionListSortAlphabeticalZA
-            : l.collectionListSortAlphabeticalAZ;
-    }
   }
 }

@@ -21,6 +21,7 @@ import '../genre_cloud_aggregate.dart';
 import '../providers/genre_cloud_provider.dart';
 import '../widgets/genre_cloud_export_view.dart';
 import '../widgets/genre_cloud_view.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// Shows a preference cloud (genres / platforms / decades) for the whole
 /// library. Words are coloured by media type; two chip rows filter by facet and
