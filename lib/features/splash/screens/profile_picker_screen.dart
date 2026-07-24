@@ -1,5 +1,3 @@
-// Экран выбора профиля при запуске.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +12,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../settings/widgets/create_profile_dialog.dart';
+import '../../../shared/constants/profile_ui.dart';
 
 /// Ключ SharedPreferences для пропуска выбора профиля.
 const String kSkipProfilePickerKey = 'skip_profile_picker';
@@ -172,12 +171,12 @@ class _ProfileCard extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isCurrent
-              ? profile.colorValue.withAlpha(20)
+              ? profile.displayColor.withAlpha(20)
               : AppColors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: isCurrent
-                ? profile.colorValue.withAlpha(80)
+                ? profile.displayColor.withAlpha(80)
                 : AppColors.surfaceBorder,
           ),
         ),
@@ -188,7 +187,7 @@ class _ProfileCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: profile.colorValue,
+                color: profile.displayColor,
                 shape: BoxShape.circle,
               ),
               child: Center(

@@ -106,7 +106,7 @@ Current features: `collections` (main module — collection screens, ItemDetail,
 
 ### `shared/`
 
-- **`models/`** — immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls lib/shared/models/`.
+- **`models/`** — immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls lib/shared/models/`. Pure Dart only: no `package:flutter` / `dart:ui` / l10n imports — presentation (colors, icons, localized labels) lives in `shared/constants/*_ui.dart` extensions.
 - **`widgets/`** — shared widgets: `ScreenAppBar`, `CachedImage`, `MediaPosterCard`, `SourceBadge`, `StarRatingBar`, etc.
 - **`theme/`** — `AppColors`, `AppTypography`, `AppSpacing`, `AppTheme` (Material 3 dark).
 - **`navigation/`** — `NavigationShell` (Rail on desktop, BottomBar on mobile).

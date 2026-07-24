@@ -27,6 +27,7 @@ import 'context_menu_item.dart';
 import 'tag_picker_dialog.dart';
 import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
+import '../../../shared/constants/platform_ui.dart';
 
 /// Grid or table view for collection items, picked from [isTableMode];
 /// otherwise the grid is shown. In table mode a manual sort enables

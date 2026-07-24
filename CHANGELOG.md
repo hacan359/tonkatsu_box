@@ -7,6 +7,48 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Make all models pure Dart: move UI mapping out of the model layer**
+
+  No user-visible change. Colors, icons and localized labels that lived
+  inside model classes moved to extension files so the model layer no
+  longer depends on Flutter — groundwork for sharing models with the
+  planned selfhost server.
+
+  * lib/shared/constants/item_status_ui.dart (ItemStatusUi),
+    data_source_ui.dart (DataSourceUi), collection_item_ui.dart
+    (CollectionItemUi), canvas_item_ui.dart (CanvasItemUi), profile_ui.dart
+    (ProfileUi), platform_ui.dart (PlatformUi), tier_definition_ui.dart
+    (TierDefinitionUi): New presentation extensions holding the moved
+    getters (color, materialIcon, localizedLabel, genericLabel,
+    placeholderIcon, mediaPlaceholderIcon, familyColor, displayColor).
+  * lib/shared/utils/color_hex.dart (ColorHex.fromHex, ColorHex.toHex): New
+    hex-string color codec, replacing Profile.hexToColor / colorToHex and a
+    private duplicate in edit_connection_dialog.dart.
+  * lib/shared/models/item_status.dart (ItemStatus), data_source.dart
+    (DataSource.colorValue), profile.dart (Profile), collection_item.dart
+    (CollectionItem), canvas_item.dart (CanvasItem), platform.dart
+    (Platform), tier_definition.dart (TierDefinition.colorValue): Flutter
+    and dart:ui imports removed; DataSource and TierDefinition store the
+    color as an ARGB int.
+  * lib/shared/constants/media_type_theme.dart
+    (MediaTypeTheme.placeholderIconFor): New shared outlined-icon mapping;
+    collection_item_ui.dart, canvas_item_ui.dart and
+    lib/features/releases/screens/releases_screen.dart
+    (_ReleasesScreenState._placeholderIcon) delegate to it instead of
+    keeping three hand-maintained copies.
+  * lib/features/tier_lists/providers/tier_list_detail_provider.dart
+    (TierListDetailNotifier.updateTierDefinition,
+    TierListDetailNotifier.addTier): Convert the picked Color to an ARGB
+    int at the UI boundary.
+  * lib/features/settings/widgets/edit_profile_dialog.dart,
+    create_profile_dialog.dart, lib/features/settings/screens/
+    profiles_screen.dart, lib/features/splash/screens/
+    profile_picker_screen.dart: Switch to ColorHex and Profile.displayColor.
+  * Consumer widgets across lib/features/ and lib/shared/widgets/: one-line
+    imports of the new extension files.
+
 ### Added
 
 - **TVmaze as a TV series source**

@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/profile.dart';
 
 import '../../helpers/test_helpers.dart';
+import 'package:tonkatsu_box/shared/constants/profile_ui.dart';
+import 'package:tonkatsu_box/shared/utils/color_hex.dart';
 
 void main() {
   group('Profile', () {
@@ -62,25 +64,25 @@ void main() {
       });
     });
 
-    group('colorValue', () {
+    group('displayColor', () {
       test('should convert hex with hash to Color', () {
         final Profile profile = createTestProfile(color: '#EF7B44');
-        expect(profile.colorValue, const Color(0xFFEF7B44));
+        expect(profile.displayColor, const Color(0xFFEF7B44));
       });
 
       test('should handle lowercase hex', () {
         final Profile profile = createTestProfile(color: '#abcdef');
-        expect(profile.colorValue, const Color(0xFFABCDEF));
+        expect(profile.displayColor, const Color(0xFFABCDEF));
       });
     });
 
     group('hexToColor', () {
       test('should convert hex with hash prefix', () {
-        expect(Profile.hexToColor('#FF0000'), const Color(0xFFFF0000));
+        expect(ColorHex.fromHex('#FF0000'), const Color(0xFFFF0000));
       });
 
       test('should convert hex without hash prefix', () {
-        expect(Profile.hexToColor('00FF00'), const Color(0xFF00FF00));
+        expect(ColorHex.fromHex('00FF00'), const Color(0xFF00FF00));
       });
     });
 

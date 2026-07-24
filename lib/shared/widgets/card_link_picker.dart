@@ -12,6 +12,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';
+import '../constants/collection_item_ui.dart';
 
 /// Opens the card picker and returns the chosen item, or `null` if dismissed.
 Future<CollectionItem?> showCardLinkPicker(

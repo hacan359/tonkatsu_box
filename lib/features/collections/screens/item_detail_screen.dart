@@ -70,6 +70,7 @@ import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
+import '../../../shared/constants/collection_item_ui.dart';
 
 /// Unified detail screen for any collection item, dispatched off
 /// [CollectionItem.mediaType].

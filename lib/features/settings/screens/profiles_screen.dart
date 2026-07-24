@@ -17,6 +17,7 @@ import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/create_profile_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
+import '../../../shared/constants/profile_ui.dart';
 
 class ProfilesScreen extends ConsumerStatefulWidget {
   const ProfilesScreen({super.key});
@@ -166,13 +167,13 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
           return Card(
             margin: const EdgeInsets.only(bottom: AppSpacing.sm),
             color: isCurrent
-                ? profile.colorValue.withAlpha(15)
+                ? profile.displayColor.withAlpha(15)
                 : AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               side: BorderSide(
                 color: isCurrent
-                    ? profile.colorValue.withAlpha(60)
+                    ? profile.displayColor.withAlpha(60)
                     : AppColors.surfaceBorder,
               ),
             ),
@@ -181,7 +182,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: profile.colorValue,
+                  color: profile.displayColor,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -203,7 +204,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                     Icon(
                       Icons.check_circle,
                       size: 16,
-                      color: profile.colorValue,
+                      color: profile.displayColor,
                     ),
                   ],
                 ],

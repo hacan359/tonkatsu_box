@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 import 'image_type.dart';
 import 'book.dart';
@@ -276,7 +275,6 @@ class CollectionItem with Exportable {
     String? mediaStatus,
     DataSource source,
     ImageType imageType,
-    IconData placeholderIcon,
   }) get _resolvedMedia {
     switch (mediaType) {
       case MediaType.game:
@@ -296,7 +294,6 @@ class CollectionItem with Exportable {
           mediaStatus: null,
           source: DataSource.igdb,
           imageType: ImageType.gameCover,
-          placeholderIcon: Icons.videogame_asset,
         );
       case MediaType.movie:
         return (
@@ -315,7 +312,6 @@ class CollectionItem with Exportable {
           mediaStatus: null,
           source: DataSource.tmdb,
           imageType: ImageType.moviePoster,
-          placeholderIcon: Icons.movie_outlined,
         );
       case MediaType.tvShow:
         return (
@@ -334,7 +330,6 @@ class CollectionItem with Exportable {
           mediaStatus: tvShow?.status,
           source: tvShow?.source ?? source ?? DataSource.tmdb,
           imageType: ImageType.tvShowPoster,
-          placeholderIcon: Icons.tv_outlined,
         );
       case MediaType.animation:
         final bool isTvBased = platformId == AnimationSource.tvShow;
@@ -355,7 +350,6 @@ class CollectionItem with Exportable {
             mediaStatus: tvShow?.status,
             source: tvShow?.source ?? source ?? DataSource.tmdb,
             imageType: ImageType.tvShowPoster,
-            placeholderIcon: Icons.animation,
           );
         }
         return (
@@ -374,7 +368,6 @@ class CollectionItem with Exportable {
           mediaStatus: null,
           source: DataSource.tmdb,
           imageType: ImageType.moviePoster,
-          placeholderIcon: Icons.animation,
         );
       case MediaType.visualNovel:
         return (
@@ -393,7 +386,6 @@ class CollectionItem with Exportable {
           mediaStatus: null,
           source: DataSource.vndb,
           imageType: ImageType.vnCover,
-          placeholderIcon: Icons.menu_book,
         );
       case MediaType.manga:
         return (
@@ -412,7 +404,6 @@ class CollectionItem with Exportable {
           mediaStatus: manga?.statusLabel,
           source: manga?.source ?? DataSource.anilist,
           imageType: ImageType.mangaCover,
-          placeholderIcon: Icons.auto_stories,
         );
       case MediaType.book:
         return (
@@ -431,7 +422,6 @@ class CollectionItem with Exportable {
           mediaStatus: null,
           source: book?.source ?? DataSource.openLibrary,
           imageType: ImageType.bookCover,
-          placeholderIcon: Icons.menu_book,
         );
       case MediaType.anime:
         return (
@@ -450,11 +440,8 @@ class CollectionItem with Exportable {
           mediaStatus: anime?.statusLabel,
           source: anime?.source ?? source ?? DataSource.anilist,
           imageType: ImageType.animeCover,
-          placeholderIcon: Icons.play_circle_outline,
         );
       case MediaType.custom:
-        final MediaType displayType =
-            customMedia?.displayType ?? MediaType.custom;
         return (
           name: customMedia?.title,
           coverUrl: customMedia?.coverUrl,
@@ -471,9 +458,6 @@ class CollectionItem with Exportable {
           mediaStatus: null,
           source: DataSource.local,
           imageType: ImageType.customCover,
-          placeholderIcon: displayType == MediaType.custom
-              ? Icons.dashboard_customize
-              : _placeholderIconFor(displayType),
         );
     }
   }
@@ -591,18 +575,6 @@ class CollectionItem with Exportable {
 
   String get platformName => platform?.displayName ?? 'Unknown Platform';
 
-  static IconData _placeholderIconFor(MediaType type) => switch (type) {
-        MediaType.game => Icons.videogame_asset,
-        MediaType.movie => Icons.movie_outlined,
-        MediaType.tvShow => Icons.tv_outlined,
-        MediaType.animation => Icons.animation,
-        MediaType.visualNovel => Icons.menu_book,
-        MediaType.manga => Icons.auto_stories,
-        MediaType.anime => Icons.play_circle_outline,
-        MediaType.book => Icons.menu_book,
-        MediaType.custom => Icons.dashboard_customize,
-      };
-
   bool get hasAuthorComment =>
       authorComment != null && authorComment!.isNotEmpty;
 
@@ -635,7 +607,6 @@ class CollectionItem with Exportable {
   String? get mediaStatus => _resolvedMedia.mediaStatus;
   DataSource get dataSource => _resolvedMedia.source;
   ImageType get imageType => _resolvedMedia.imageType;
-  IconData get placeholderIcon => _resolvedMedia.placeholderIcon;
 
   /// Source-aware image-cache id (anime / manga are namespaced by provider).
   /// Use this everywhere a cover is read from / written to the image cache.

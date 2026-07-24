@@ -1,5 +1,3 @@
-// API-provider attribution and license screen content (no Scaffold/AppBar).
-
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -12,6 +10,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/source_logo.dart';
 import '../widgets/settings_group.dart';
+import '../../../shared/constants/data_source_ui.dart';
 
 /// One attribution entry.
 typedef _Provider = ({

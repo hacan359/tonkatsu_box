@@ -7,6 +7,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/utils/color_hex.dart';
 
 sealed class EditProfileResult {
   const EditProfileResult();
@@ -120,10 +121,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
               onTap: () async {
                 final Color? picked = await ColorPickerDialog.show(
                   context: context,
-                  currentColor: Profile.hexToColor(_selectedColor),
+                  currentColor: ColorHex.fromHex(_selectedColor),
                 );
                 if (picked == null) return;
-                setState(() => _selectedColor = Profile.colorToHex(picked));
+                setState(() => _selectedColor = ColorHex.toHex(picked));
               },
               borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               child: Padding(
@@ -135,7 +136,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: Profile.hexToColor(_selectedColor),
+                        color: ColorHex.fromHex(_selectedColor),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white.withAlpha(40)),
                       ),

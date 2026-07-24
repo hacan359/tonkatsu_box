@@ -34,6 +34,7 @@ import '../../collections/widgets/context_menu_item.dart';
 import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
 import '../../collections/providers/item_tags_provider.dart';
+import '../../../shared/constants/platform_ui.dart';
 
 /// Grid of all items across all collections (Home tab). The platforms
 /// filter row appears only while Games is selected.

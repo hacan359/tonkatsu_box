@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-
 import 'image_type.dart';
 import 'anime.dart';
 import 'book.dart';
@@ -290,31 +288,6 @@ class CanvasItem with Exportable {
         ),
       CanvasItemType.custom => (customMedia?.id ?? 0).toString(),
       _ => '0',
-    };
-  }
-
-  IconData get mediaPlaceholderIcon {
-    return switch (itemType) {
-      CanvasItemType.game => Icons.videogame_asset,
-      CanvasItemType.movie => Icons.movie_outlined,
-      CanvasItemType.tvShow => Icons.tv_outlined,
-      CanvasItemType.animation => Icons.animation,
-      CanvasItemType.visualNovel => Icons.menu_book,
-      CanvasItemType.manga => Icons.auto_stories,
-      CanvasItemType.anime => Icons.play_circle_outline,
-      CanvasItemType.book => Icons.menu_book,
-      CanvasItemType.custom => switch (customMedia?.displayType) {
-        MediaType.game => Icons.videogame_asset,
-        MediaType.movie => Icons.movie_outlined,
-        MediaType.tvShow => Icons.tv_outlined,
-        MediaType.animation => Icons.animation,
-        MediaType.visualNovel => Icons.menu_book,
-        MediaType.manga => Icons.auto_stories,
-        MediaType.anime => Icons.play_circle_outline,
-        MediaType.book => Icons.menu_book,
-        _ => Icons.dashboard_customize,
-      },
-      _ => Icons.note,
     };
   }
 
