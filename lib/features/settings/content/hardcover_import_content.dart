@@ -13,6 +13,7 @@ import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -315,7 +316,8 @@ class _HardcoverImportContentState
 
     final String stageText = switch (progress.stage) {
       ImportStage.fetchingBooks => l.importFetchingBooks,
-      ImportStage.completed => l.importResultComplete('Hardcover'),
+      ImportStage.completed =>
+        l.importResultComplete(DataSource.hardcover.label),
       _ => l.importAddingItems,
     };
 
@@ -387,7 +389,7 @@ class _HardcoverImportContentState
   String _defaultCollectionName(S l) {
     final String trimmed = _usernameController.text.trim();
     return l.importNewCollectionDefault(
-      'Hardcover',
+      DataSource.hardcover.label,
       trimmed.isEmpty ? 'username' : trimmed,
     );
   }

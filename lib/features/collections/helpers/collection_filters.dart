@@ -2,6 +2,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tag.dart';
+import '../../../shared/utils/anime_manga_title_language.dart';
 import '../../../shared/utils/media_format.dart';
 
 class CollectionFilters {
@@ -34,7 +35,7 @@ class CollectionFilters {
     List<CollectionItem> items,
     List<Tag> tags,
     Map<int, List<int>> itemTags, {
-    String animeMangaTitleLanguage = 'romaji',
+    String animeMangaTitleLanguage = AnimeMangaTitleLanguage.defaultId,
   }) {
     List<CollectionItem> result = items;
 

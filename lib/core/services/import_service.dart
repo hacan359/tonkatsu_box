@@ -869,27 +869,32 @@ class ImportService {
     final List<Map<String, dynamic>> animeItems = <Map<String, dynamic>>[];
 
     for (final Map<String, dynamic> item in items) {
-      final String mediaType = item['media_type'] as String;
+      final MediaType? mediaType =
+          MediaType.tryFromString(item['media_type'] as String);
       switch (mediaType) {
-        case 'game':
+        case MediaType.game:
           gameItems.add(item);
-        case 'movie':
+        case MediaType.movie:
           movieItems.add(item);
-        case 'tv_show':
+        case MediaType.tvShow:
           tvShowItems.add(item);
-        case 'animation':
+        case MediaType.animation:
           final int? platformId = item['platform_id'] as int?;
           if (platformId == AnimationSource.tvShow) {
             tvShowItems.add(item);
           } else {
             movieItems.add(item);
           }
-        case 'visual_novel':
+        case MediaType.visualNovel:
           vnItems.add(item);
-        case 'manga':
+        case MediaType.manga:
           mangaItems.add(item);
-        case 'anime':
+        case MediaType.anime:
           animeItems.add(item);
+        case MediaType.book:
+        case MediaType.custom:
+        case null:
+          break;
       }
     }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/models/search_source.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
@@ -254,6 +255,9 @@ class _TestSource extends SearchSource {
 
   @override
   String get groupId => 'test';
+
+  @override
+  DataSource get dataSource => DataSource.igdb;
 
   @override
   String get groupName => 'Test';

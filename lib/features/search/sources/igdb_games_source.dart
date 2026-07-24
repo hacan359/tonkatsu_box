@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/igdb_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/game_time_to_beat.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/igdb_game_mode_filter.dart';
 import '../filters/igdb_genre_filter.dart';
 import '../filters/igdb_min_rating_filter.dart';
@@ -22,10 +22,7 @@ class IgdbGamesSource extends SearchSource {
   MediaType get outputMediaType => MediaType.game;
 
   @override
-  String get groupId => 'igdb';
-
-  @override
-  String get groupName => 'IGDB';
+  DataSource get dataSource => DataSource.igdb;
 
   @override
   IconData get groupIcon => Icons.videogame_asset_outlined;
@@ -35,9 +32,6 @@ class IgdbGamesSource extends SearchSource {
 
   @override
   IconData get icon => Icons.videogame_asset_outlined;
-
-  @override
-  String? get iconAsset => AppAssets.iconIgdbColor;
 
   @override
   bool get supportsBrowse => true;

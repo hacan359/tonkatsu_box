@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../shared/constants/api_defaults.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/utils/anime_manga_title_language.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
@@ -102,7 +103,8 @@ abstract class SettingsKeys {
   /// AniList title language (romaji / english / native).
   static const String animeMangaTitleLanguage = 'anime_manga_title_language';
 
-  static const String animeMangaTitleLanguageDefault = 'romaji';
+  static const String animeMangaTitleLanguageDefault =
+      AnimeMangaTitleLanguage.defaultId;
 
   /// Grid card size multiplier.
   static const String cardScale = 'card_scale';

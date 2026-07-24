@@ -1,5 +1,3 @@
-// External data provider (IGDB, TMDB, SteamGridDB, VGMaps, ...).
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_assets.dart';
@@ -71,6 +69,12 @@ enum DataSource {
 
   /// Path to the color PNG logo (null when there is no brand asset).
   final String? iconAsset;
+
+  /// Canonical lowercase identifier — the single source for the provider
+  /// "key" that used to be hardcoded as `groupId` literals and in the
+  /// group→sources map. Derived from [name] so there is nothing to keep in
+  /// sync (e.g. `comicVine` → `comicvine`, `googleBooks` → `googlebooks`).
+  String get key => name.toLowerCase();
 
   /// Parses a [DataSource] from its stored name (the `source` column in DB /
   /// export). Returns [DataSource.anilist] for null and unknown values — the

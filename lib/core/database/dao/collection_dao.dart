@@ -999,46 +999,36 @@ class CollectionDao {
     };
 
     for (final Map<String, dynamic> row in result) {
-      final String status = row['status'] as String;
-      final String type = row['media_type'] as String;
       final int count = row['count'] as int;
       stats['total'] = (stats['total'] ?? 0) + count;
 
-      switch (type) {
-        case 'game':
-          stats['gameCount'] = (stats['gameCount'] ?? 0) + count;
-        case 'movie':
-          stats['movieCount'] = (stats['movieCount'] ?? 0) + count;
-        case 'tv_show':
-          stats['tvShowCount'] = (stats['tvShowCount'] ?? 0) + count;
-        case 'animation':
-          stats['animationCount'] = (stats['animationCount'] ?? 0) + count;
-        case 'visual_novel':
-          stats['visualNovelCount'] =
-              (stats['visualNovelCount'] ?? 0) + count;
-        case 'manga':
-          stats['mangaCount'] = (stats['mangaCount'] ?? 0) + count;
-        case 'anime':
-          stats['animeCount'] = (stats['animeCount'] ?? 0) + count;
-        case 'book':
-          stats['bookCount'] = (stats['bookCount'] ?? 0) + count;
-        case 'custom':
-          stats['customCount'] = (stats['customCount'] ?? 0) + count;
-      }
+      final String? typeKey = switch (
+          MediaType.tryFromString(row['media_type'] as String)) {
+        MediaType.game => 'gameCount',
+        MediaType.movie => 'movieCount',
+        MediaType.tvShow => 'tvShowCount',
+        MediaType.animation => 'animationCount',
+        MediaType.visualNovel => 'visualNovelCount',
+        MediaType.manga => 'mangaCount',
+        MediaType.anime => 'animeCount',
+        MediaType.book => 'bookCount',
+        MediaType.custom => 'customCount',
+        null => null,
+      };
+      if (typeKey != null) stats[typeKey] = (stats[typeKey] ?? 0) + count;
 
-      switch (status) {
-        case 'completed':
-          stats['completed'] = (stats['completed'] ?? 0) + count;
-        case 'in_progress':
-          stats['inProgress'] = (stats['inProgress'] ?? 0) + count;
-        case 'not_started':
-          stats['notStarted'] = (stats['notStarted'] ?? 0) + count;
-        case 'dropped':
-          stats['dropped'] = (stats['dropped'] ?? 0) + count;
-        case 'planned':
-          stats['planned'] = (stats['planned'] ?? 0) + count;
-        case 'replaying':
-          stats['replaying'] = (stats['replaying'] ?? 0) + count;
+      final String? statusKey =
+          switch (ItemStatus.tryFromString(row['status'] as String)) {
+        ItemStatus.completed => 'completed',
+        ItemStatus.inProgress => 'inProgress',
+        ItemStatus.notStarted => 'notStarted',
+        ItemStatus.dropped => 'dropped',
+        ItemStatus.planned => 'planned',
+        ItemStatus.replaying => 'replaying',
+        null => null,
+      };
+      if (statusKey != null) {
+        stats[statusKey] = (stats[statusKey] ?? 0) + count;
       }
     }
 
@@ -1429,5 +1419,83 @@ class CollectionDao {
     return rows
         .map((Map<String, dynamic> row) => row['collection_id'] as int?)
         .toSet();
+  }
+
+  /// Finds items matching (external_id, media_type) across all collections.
+  /// With [filterByPlatform], a null [platformId] matches only rows where
+  /// platform_id IS NULL.
+  Future<List<({int id, int? collectionId, int? platformId})>>
+      getItemIdsByExternalId(
+    int externalId,
+    String mediaType, {
+    int? platformId,
+    bool filterByPlatform = false,
+  }) async {
+    final Database db = await _getDatabase();
+    final List<String> conditions = <String>[
+      'external_id = ?',
+      'media_type = ?',
+    ];
+    final List<Object?> args = <Object?>[externalId, mediaType];
+    if (filterByPlatform) {
+      if (platformId == null) {
+        conditions.add('platform_id IS NULL');
+      } else {
+        conditions.add('platform_id = ?');
+        args.add(platformId);
+      }
+    }
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      columns: <String>['id', 'collection_id', 'platform_id'],
+      where: conditions.join(' AND '),
+      whereArgs: args,
+    );
+    return rows
+        .map((Map<String, dynamic> r) => (
+              id: r['id'] as int,
+              collectionId: r['collection_id'] as int?,
+              platformId: r['platform_id'] as int?,
+            ))
+        .toList();
+  }
+
+  /// Truncates every user table in a single transaction. FK-dependent tables
+  /// are deleted before their parents. Static reference tables (platforms,
+  /// tmdb_genres, igdb_genres, vndb_tags) are preserved — they're seeded by
+  /// MigrationV24 and are not user data. SharedPreferences is untouched.
+  Future<void> clearAllData() async {
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      await txn.delete('mood_grid_cells');
+      await txn.delete('mood_grids');
+      await txn.delete('tier_list_entries');
+      await txn.delete('tier_definitions');
+      await txn.delete('tier_lists');
+      await txn.delete('collection_tags');
+      await txn.delete('item_tags');
+      await txn.delete('tags');
+      await txn.delete('tracker_achievements');
+      await txn.delete('tracker_game_data');
+      await txn.delete('tracker_profiles');
+      await txn.delete('watched_episodes');
+      await txn.delete('canvas_connections');
+      await txn.delete('canvas_items');
+      await txn.delete('canvas_viewport');
+      await txn.delete('game_canvas_viewport');
+      await txn.delete('custom_items');
+      await txn.delete('collection_items');
+      await txn.delete('collections');
+      await txn.delete('tv_episodes_cache');
+      await txn.delete('tv_seasons_cache');
+      await txn.delete('tv_shows_cache');
+      await txn.delete('movies_cache');
+      await txn.delete('games');
+      await txn.delete('visual_novels_cache');
+      await txn.delete('manga_cache');
+      await txn.delete('anime_cache');
+      await txn.delete('books_cache');
+      await txn.delete('wishlist');
+    });
   }
 }

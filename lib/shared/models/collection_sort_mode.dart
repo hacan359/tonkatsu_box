@@ -2,52 +2,39 @@ import '../../l10n/app_localizations.dart';
 
 enum CollectionSortMode {
   /// Manual order (drag-and-drop, sort_order ASC).
-  manual('manual', 'Manual', 'Manual', 'Custom order'),
+  manual('manual'),
 
   /// By added date (added_at DESC, newest first).
-  addedDate('added_date', 'Date Added', 'Date', 'Newest first'),
+  addedDate('added_date'),
 
   /// By status (active first, finished last).
-  status('status', 'Status', 'Status', 'Active first'),
+  status('status'),
 
   /// Alphabetical (itemName ASC).
-  name('name', 'Name', 'A-Z', 'A to Z'),
+  name('name'),
 
   /// By user rating (userRating DESC, highest first).
-  rating('rating', 'My Rating', 'Rating', 'Highest first'),
+  rating('rating'),
 
   /// Favorites first (isFavorite DESC, then by name).
-  favorite('favorite', 'Favorite', 'Favorite', 'Favorites first'),
+  favorite('favorite'),
 
   /// By external API rating (apiRating DESC, IGDB/TMDB).
-  externalRating('external_rating', 'External Rating', 'IGDB/TMDB', 'Highest first'),
+  externalRating('external_rating'),
 
   /// By last activity (lastActivityAt DESC, recent first).
-  lastActivity('last_activity', 'Last Activity', 'Activity', 'Recent first'),
+  lastActivity('last_activity'),
 
   /// By start date (startedAt DESC, recent first, undated last).
-  startDate('start_date', 'Start Date', 'Started', 'Recent first'),
+  startDate('start_date'),
 
   /// By completion date (completedAt DESC, recent first, undated last).
-  completionDate('completion_date', 'Completion Date', 'Finished',
-      'Recent first');
+  completionDate('completion_date');
 
-  const CollectionSortMode(
-    this.value,
-    this.displayLabel,
-    this.shortLabel,
-    this.description,
-  );
+  const CollectionSortMode(this.value);
 
   /// Stored value for SharedPreferences.
   final String value;
-
-  final String displayLabel;
-
-  /// Short label for compact UI (2-6 chars).
-  final String shortLabel;
-
-  final String description;
 
   /// Returns [addedDate] for unknown stored values.
   static CollectionSortMode fromString(String value) {

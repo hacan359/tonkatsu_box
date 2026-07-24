@@ -35,8 +35,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     shared mapping helpers.
   * lib/features/search/sources/tvmaze_tv_source.dart (TvMazeTvSource),
     search_sources.dart (searchSources): New title-search source, registered.
-  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog,
-    kSearchGroupToSources),
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
     lib/features/welcome/widgets/welcome_step_sources.dart,
     lib/features/settings/content/credits_content.dart: Catalog, onboarding
     and credits entries.
@@ -118,8 +117,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/collections/helpers/collection_actions.dart
     (_refreshItemWork): Route manga refresh to the new APIs by source
     (MangaDex recovers its UUID from the cached externalUrl).
-  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog,
-    kSearchGroupToSources): Catalog entries.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog): Catalog
+    entries.
   * lib/features/settings/content/credits_content.dart,
     lib/features/welcome/widgets/welcome_step_sources.dart: Credits and
     onboarding entries.
@@ -406,6 +405,133 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     badge shrinks on very narrow cards instead of overflowing.
 
 ### Changed
+
+- **Provider identity (name, group, brand icon) now comes from DataSource**
+
+  Every place that showed or compared a provider name used its own hardcoded
+  string ('IGDB', 'AniList', ...). They now all read `DataSource.label`, a
+  new derived `DataSource.key` replaces the per-source `groupId` literals,
+  and search sources declare a single `dataSource` from which their picker
+  group and brand icon derive. No visible change; error dialogs, import
+  results and the source picker keep their current wording.
+
+  * lib/shared/models/data_source.dart (DataSource.key): New lowercase
+    provider key derived from the enum member name.
+  * lib/features/search/models/search_source.dart (SearchSource.dataSource,
+    SearchSource.groupId, SearchSource.groupName, SearchSource.iconAsset):
+    New abstract provider getter; group id, group name and brand asset now
+    derive from it.
+  * lib/features/search/sources/anilist_anime_source.dart,
+    anilist_manga_source.dart, comicvine_source.dart, fantlab_source.dart,
+    google_books_source.dart, hardcover_source.dart, igdb_games_source.dart,
+    kitsu_anime_source.dart, kitsu_manga_source.dart, mangabaka_source.dart,
+    mangadex_source.dart, openlibrary_source.dart, tmdb_anime_source.dart,
+    tmdb_movies_source.dart, tmdb_tv_source.dart, tvmaze_tv_source.dart,
+    vndb_source.dart: Replace groupId/groupName/iconAsset overrides with
+    the dataSource declaration.
+  * lib/core/api/anilist/anilist_graphql_client.dart, comicvine_api.dart,
+    google_books_api.dart, fantlab/fantlab_http_client.dart,
+    hardcover/hardcover_graphql_client.dart, igdb/igdb_http_client.dart,
+    kitsu/kitsu_http_client.dart, mangabaka/mangabaka_http_client.dart,
+    mangadex/mangadex_http_client.dart,
+    openlibrary/openlibrary_http_client.dart, tmdb/tmdb_http_client.dart,
+    tvmaze/tvmaze_http_client.dart, vndb/vndb_http_client.dart: apiName in
+    error details from DataSource.label.
+  * lib/core/import/sources/anilist/anilist_import_service.dart
+    (AniListImportService.displayName),
+    lib/core/import/sources/hardcover/hardcover_import_service.dart
+    (HardcoverImportService.displayName),
+    lib/core/import/sources/igdb_list/igdb_list_import_service.dart
+    (IgdbListImportService.displayName): displayName and result sourceName
+    from DataSource.label.
+  * lib/features/settings/content/credentials_content.dart,
+    lib/features/settings/content/hardcover_import_content.dart: Source
+    names from DataSource.label.
+  * lib/shared/constants/source_catalog.dart (kSearchGroupToSources):
+    Deleted — the parallel group→sources map is derivable from
+    SearchSource.dataSource.
+
+- **Enum-owned UI metadata: nav tabs, discover sections, statuses, sort modes**
+
+  Icons and labels that were duplicated across widgets moved onto their
+  enums: NavTab (bottom bar, rail and welcome tour now render from one
+  definition), DiscoverSectionId (feed and customize sheet), and
+  TextExportSortMode (copy-as-text dialog). ItemStatus gains a shared
+  English displayLabel used by the text exporter and MAL import notes; MAL
+  notes now write "Not Started" / "In Progress" (Title Case) instead of
+  "Not started" / "In progress".
+
+  * lib/shared/navigation/nav_tab.dart (NavTab.icon, NavTab.selectedIcon,
+    NavTab.localizedLabel): New enum accessors.
+  * lib/shared/navigation/nav_destinations.dart (buildNavDestinations),
+    lib/features/welcome/widgets/menu_tour_items.dart (buildMenuTourItems):
+    Render from NavTab accessors; local icon/label switches deleted.
+  * lib/features/search/providers/discover_provider.dart
+    (DiscoverSectionId.icon, DiscoverSectionId.localizedLabel): New enum
+    accessors.
+  * lib/features/search/widgets/discover_feed.dart (DiscoverFeed),
+    lib/features/search/widgets/discover_customize_sheet.dart
+    (DiscoverCustomizeSheet): Render from DiscoverSectionId accessors; the
+    local section-meta map deleted.
+  * lib/shared/models/item_status.dart (ItemStatus.displayLabel,
+    ItemStatus.tryFromString): New shared English label and null-safe
+    parser.
+  * lib/core/services/text_export_service.dart (TextExportService,
+    TextExportSortMode.localizedLabel): Status label from
+    ItemStatus.displayLabel; new localised sort-mode label.
+  * lib/core/import/sources/mal/mal_import_service.dart (MalImportService):
+    Status label in notes from ItemStatus.displayLabel.
+  * lib/features/collections/widgets/copy_as_text_dialog.dart
+    (_CopyAsTextDialogState): Sort menu built by looping
+    TextExportSortMode.values.
+
+- **Single-source cleanup: stored enum values, defaults and dead labels**
+
+  Remaining hardcoded copies of enum-owned strings replaced with the enum
+  accessor, the ImageType enum moved out of the image cache service into
+  shared models, and unused label fields dropped. Purely internal.
+
+  * lib/shared/utils/anime_manga_title_language.dart
+    (AnimeMangaTitleLanguage.defaultId): New app-wide default id constant.
+  * lib/core/services/discord_rpc_service.dart
+    (DiscordRpcService.updatePresence),
+    lib/core/services/text_export_service.dart
+    (TextExportService.applyTemplate),
+    lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply),
+    lib/features/collections/providers/sort_utils.dart (applySortMode),
+    lib/features/settings/providers/settings_provider.dart (SettingsKeys),
+    lib/shared/constants/tmdb_content_languages.dart
+    (anilistTitleLanguageForContent): 'romaji' / 'english' / 'native'
+    defaults from AnimeMangaTitleLanguage.
+  * lib/shared/models/image_type.dart (ImageType): New home, moved verbatim
+    from image_cache_service.dart (which keeps a re-export).
+  * lib/shared/models/canvas_item.dart, collection_item.dart,
+    cover_info.dart: Import ImageType from the model, not the service.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionStats, CollectionDao.getItemIdsByExternalId,
+    CollectionDao.clearAllData): Stats switches parse MediaType / ItemStatus
+    enums instead of raw strings; item lookup and clear-all moved here from
+    DatabaseService.
+  * lib/core/database/database_service.dart
+    (DatabaseService.getItemIdsByExternalId, DatabaseService.clearAllData):
+    Delegate to CollectionDao.
+  * lib/core/services/import_service.dart (ImportService),
+    lib/data/repositories/canvas_repository.dart
+    (CanvasRepository.deleteGameItem),
+    lib/features/collections/providers/tracker_provider.dart
+    (TrackerDetailNotifier),
+    lib/features/settings/screens/demo_collections_screen.dart
+    (_DemoCollectionsScreenState): media_type strings from MediaType.value /
+    CanvasItemType.value.
+  * lib/features/collections/models/collections_index.dart
+    (RemoteCollection.fromJson, RemoteCollection.isFull),
+    lib/core/services/xcoll_file.dart (XcollFile): 'light' / 'full' from
+    ExportFormat.value.
+  * lib/shared/models/collection_sort_mode.dart (CollectionSortMode),
+    lib/shared/models/search_sort.dart (SearchSortField): Drop unused
+    displayLabel / shortLabel / description fields — UI uses the localised
+    accessors.
 
 - **Season rows show watch progress and a "mark next episode" button**
 

@@ -1,5 +1,4 @@
 import '../../../shared/constants/platform_features.dart';
-// Экран генерации демо-коллекций (.xcollx) для tonkatsu-collections.
 
 import 'dart:convert';
 import 'dart:io';
@@ -13,6 +12,7 @@ import '../../../core/api/igdb_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../shared/models/game.dart';
+import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -31,7 +31,7 @@ const int _kPlatformGameBoy = 33;
 /// TMDB animation genre ID.
 const int _kTmdbAnimationGenreId = 16;
 
-/// Описание одной коллекции для генерации.
+/// Spec of one collection to generate.
 class _CollectionSpec {
   const _CollectionSpec({
     required this.name,
@@ -58,9 +58,9 @@ enum _CollectionType {
   tmdbAnimeSeries,
 }
 
-/// Все 10 коллекций для генерации.
+/// All 10 collections to generate.
 const List<_CollectionSpec> _collections = <_CollectionSpec>[
-  // 6 игровых
+  // 6 game collections
   _CollectionSpec(
     name: 'Top SNES Games',
     description: 'Top 50 highest rated Super Nintendo games of all time',
@@ -103,7 +103,7 @@ const List<_CollectionSpec> _collections = <_CollectionSpec>[
     type: _CollectionType.igdbPlatform,
     platformId: _kPlatformGameBoy,
   ),
-  // 4 медиа
+  // 4 media collections
   _CollectionSpec(
     name: 'Top Rated Movies',
     description: 'Top 50 highest rated movies of all time (TMDB)',
@@ -132,9 +132,8 @@ const List<_CollectionSpec> _collections = <_CollectionSpec>[
   ),
 ];
 
-/// Экран генерации демо-коллекций.
+/// Demo-collection generator screen.
 class DemoCollectionsScreen extends ConsumerStatefulWidget {
-  /// Создаёт [DemoCollectionsScreen].
   const DemoCollectionsScreen({super.key});
 
   @override
@@ -327,7 +326,7 @@ class _DemoCollectionsScreenState
 
     for (final Game game in games) {
       items.add(<String, dynamic>{
-        'media_type': 'game',
+        'media_type': MediaType.game.value,
         'external_id': game.id,
         'platform_id': spec.platformId,
       });
@@ -410,7 +409,7 @@ class _DemoCollectionsScreenState
       spec: spec,
       movies: movies,
       imageDio: imageDio,
-      mediaType: 'movie',
+      mediaType: MediaType.movie.value,
     );
   }
 
@@ -438,7 +437,7 @@ class _DemoCollectionsScreenState
       spec: spec,
       movies: movies,
       imageDio: imageDio,
-      mediaType: 'animation',
+      mediaType: MediaType.animation.value,
     );
   }
 
@@ -533,7 +532,7 @@ class _DemoCollectionsScreenState
       spec: spec,
       shows: shows,
       imageDio: imageDio,
-      mediaType: 'tv_show',
+      mediaType: MediaType.tvShow.value,
     );
   }
 
@@ -561,7 +560,7 @@ class _DemoCollectionsScreenState
       spec: spec,
       shows: shows,
       imageDio: imageDio,
-      mediaType: 'animation',
+      mediaType: MediaType.animation.value,
     );
   }
 

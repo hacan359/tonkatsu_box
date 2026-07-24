@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/services/image_cache_service.dart';
+import 'image_type.dart';
 import 'book.dart';
 import 'custom_media.dart';
 import 'data_source.dart';

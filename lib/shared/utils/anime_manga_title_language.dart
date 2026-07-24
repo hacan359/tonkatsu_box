@@ -7,6 +7,11 @@ enum AnimeMangaTitleLanguage {
 
   final String id;
 
+  /// App-wide default title language id. Romaji is the universal fallback
+  /// because AniList always returns it. Single source for the `= 'romaji'`
+  /// defaults that used to be scattered across services and settings.
+  static const String defaultId = 'romaji';
+
   static AnimeMangaTitleLanguage fromId(String? id) {
     for (final AnimeMangaTitleLanguage v in AnimeMangaTitleLanguage.values) {
       if (v.id == id) return v;

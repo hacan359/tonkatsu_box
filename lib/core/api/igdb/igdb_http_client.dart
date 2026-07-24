@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'igdb_types.dart';
 
@@ -160,7 +161,7 @@ class IgdbHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'IGDB',
+        apiName: DataSource.igdb.label,
         exception: e,
         userMessage: message,
       ),

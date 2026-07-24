@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../../services/app_http_overrides.dart';
 import '../api_error_detail.dart';
 import 'anilist_types.dart';
@@ -91,7 +92,7 @@ class AniListGraphQLClient {
       return AniListRateLimitException(
         retryAfter,
         detail: buildApiErrorDetail(
-          apiName: 'AniList',
+          apiName: DataSource.anilist.label,
           exception: e,
           userMessage:
               'Rate limit exceeded (retry in ${retryAfter.inSeconds}s)',
@@ -108,7 +109,7 @@ class AniListGraphQLClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'AniList',
+        apiName: DataSource.anilist.label,
         exception: e,
         userMessage: message,
       ),

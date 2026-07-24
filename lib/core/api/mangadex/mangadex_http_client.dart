@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'mangadex_types.dart';
 
@@ -48,7 +49,7 @@ class MangaDexHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'MangaDex',
+        apiName: DataSource.mangadex.label,
         exception: e,
         userMessage: message,
       ),

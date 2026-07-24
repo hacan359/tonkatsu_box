@@ -1,16 +1,11 @@
-// Легковесная модель обложки для карточек коллекций.
-
-import '../../core/services/image_cache_service.dart';
 import '../utils/cover_image_id.dart' as cover_id;
 import 'data_source.dart';
+import 'image_type.dart';
 import 'media_type.dart';
 
-/// Информация об обложке элемента коллекции.
-///
-/// Используется для отображения мозаики обложек на карточках коллекций
-/// без загрузки полных моделей Game/Movie/TvShow/VisualNovel.
+/// Cover of a collection item, for the cover mosaic on collection cards —
+/// avoids loading full Game/Movie/TvShow/VisualNovel models.
 class CoverInfo {
-  /// Создаёт экземпляр [CoverInfo].
   const CoverInfo({
     required this.externalId,
     required this.mediaType,
@@ -19,7 +14,6 @@ class CoverInfo {
     this.thumbnailUrl,
   });
 
-  /// Создаёт [CoverInfo] из строки БД.
   factory CoverInfo.fromDb(Map<String, dynamic> row) {
     final MediaType mediaType =
         MediaType.fromString(row['media_type'] as String);
@@ -36,19 +30,17 @@ class CoverInfo {
     );
   }
 
-  /// ID элемента во внешнем источнике (IGDB/TMDB/VNDB).
+  /// Item id in the external source (IGDB/TMDB/VNDB).
   final int externalId;
 
-  /// Тип медиа-контента.
   final MediaType mediaType;
 
-  /// ID платформы (для игр) или источник анимации (0=movie, 1=tvShow).
+  /// Platform id (games) or animation source (0=movie, 1=tvShow).
   final int? platformId;
 
   /// Provider, manga-only. Disambiguates a shared `externalId`.
   final DataSource? source;
 
-  /// URL thumbnail-обложки.
   final String? thumbnailUrl;
 
   /// Source-aware cover cache id (manga is namespaced by provider). Matches
@@ -60,10 +52,8 @@ class CoverInfo {
         coverUrl: thumbnailUrl,
       );
 
-  /// Тип изображения для локального кэша (`ImageCacheService`).
-  ///
-  /// Для `MediaType.animation` различает movie/tvShow по
-  /// [platformId] == [AnimationSource.tvShow].
+  /// Image type for the local cache; for `MediaType.animation` picks
+  /// movie/tvShow by [platformId] == [AnimationSource.tvShow].
   ImageType get imageType {
     switch (mediaType) {
       case MediaType.game:
@@ -90,10 +80,8 @@ class CoverInfo {
     }
   }
 
-  /// Конвертирует полноразмерный URL в thumbnail.
-  ///
-  /// Для TMDB (movie/tvShow/animation) заменяет `/wXXX` на `/w154`.
-  /// Для IGDB (game) и VNDB (visualNovel) возвращает как есть.
+  /// Full-size URL → thumbnail: TMDB `/wXXX` becomes `/w154`; other
+  /// providers are returned as is.
   static String? _toThumbUrl(String? url, MediaType mediaType) {
     if (url == null) return null;
 

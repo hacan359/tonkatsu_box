@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/kitsu_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/kitsu_manga_status_filter.dart';
 import '../filters/kitsu_manga_subtype_filter.dart';
 import '../models/search_source.dart';
@@ -21,10 +21,7 @@ class KitsuMangaSource extends SearchSource {
   MediaType get outputMediaType => MediaType.manga;
 
   @override
-  String get groupId => 'kitsu';
-
-  @override
-  String get groupName => 'Kitsu';
+  DataSource get dataSource => DataSource.kitsu;
 
   @override
   IconData get groupIcon => Icons.auto_stories_outlined;
@@ -34,9 +31,6 @@ class KitsuMangaSource extends SearchSource {
 
   @override
   IconData get icon => Icons.auto_stories_outlined;
-
-  @override
-  String? get iconAsset => AppAssets.iconKitsuColor;
 
   @override
   bool get supportsBrowse => true;

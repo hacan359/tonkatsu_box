@@ -186,21 +186,6 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
     }
   }
 
-  String _sortModeLabel(S l) {
-    switch (_sortMode) {
-      case TextExportSortMode.current:
-        return l.textExportSortCurrent;
-      case TextExportSortMode.name:
-        return l.textExportSortName;
-      case TextExportSortMode.rating:
-        return l.allItemsRatingDesc;
-      case TextExportSortMode.year:
-        return l.textExportSortYear;
-      case TextExportSortMode.addedDate:
-        return l.textExportSortAdded;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -275,26 +260,12 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
                   },
                   itemBuilder: (BuildContext context) =>
                       <PopupMenuEntry<TextExportSortMode>>[
-                    PopupMenuItem<TextExportSortMode>(
-                      value: TextExportSortMode.current,
-                      child: Text(l.textExportSortCurrent),
-                    ),
-                    PopupMenuItem<TextExportSortMode>(
-                      value: TextExportSortMode.name,
-                      child: Text(l.textExportSortName),
-                    ),
-                    PopupMenuItem<TextExportSortMode>(
-                      value: TextExportSortMode.rating,
-                      child: Text(l.allItemsRatingDesc),
-                    ),
-                    PopupMenuItem<TextExportSortMode>(
-                      value: TextExportSortMode.year,
-                      child: Text(l.textExportSortYear),
-                    ),
-                    PopupMenuItem<TextExportSortMode>(
-                      value: TextExportSortMode.addedDate,
-                      child: Text(l.textExportSortAdded),
-                    ),
+                    for (final TextExportSortMode mode
+                        in TextExportSortMode.values)
+                      PopupMenuItem<TextExportSortMode>(
+                        value: mode,
+                        child: Text(mode.localizedLabel(l)),
+                      ),
                   ],
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -310,7 +281,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Text(
-                          _sortModeLabel(l),
+                          _sortMode.localizedLabel(l),
                           style: AppTypography.body,
                         ),
                         const SizedBox(width: AppSpacing.xs),

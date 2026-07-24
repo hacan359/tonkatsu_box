@@ -467,35 +467,13 @@ class DatabaseService {
     String mediaType, {
     int? platformId,
     bool filterByPlatform = false,
-  }) async {
-    final Database db = await database;
-    final List<String> conditions = <String>[
-      'external_id = ?',
-      'media_type = ?',
-    ];
-    final List<Object?> args = <Object?>[externalId, mediaType];
-    if (filterByPlatform) {
-      if (platformId == null) {
-        conditions.add('platform_id IS NULL');
-      } else {
-        conditions.add('platform_id = ?');
-        args.add(platformId);
-      }
-    }
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collection_items',
-      columns: <String>['id', 'collection_id', 'platform_id'],
-      where: conditions.join(' AND '),
-      whereArgs: args,
-    );
-    return rows
-        .map((Map<String, dynamic> r) => (
-              id: r['id'] as int,
-              collectionId: r['collection_id'] as int?,
-              platformId: r['platform_id'] as int?,
-            ))
-        .toList();
-  }
+  }) =>
+      collectionDao.getItemIdsByExternalId(
+        externalId,
+        mediaType,
+        platformId: platformId,
+        filterByPlatform: filterByPlatform,
+      );
 
   Future<void> updateItemProgress(
     int id, {
@@ -560,44 +538,9 @@ class DatabaseService {
   Future<int> getUncategorizedItemCount() =>
       collectionDao.getUncategorizedItemCount();
 
-  /// Truncates every user table in a single transaction. FK-dependent tables
-  /// are deleted before their parents. Static reference tables (platforms,
-  /// tmdb_genres, igdb_genres, vndb_tags) are preserved — they're seeded by
-  /// MigrationV24 and are not user data. SharedPreferences is untouched.
-  Future<void> clearAllData() async {
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      await txn.delete('mood_grid_cells');
-      await txn.delete('mood_grids');
-      await txn.delete('tier_list_entries');
-      await txn.delete('tier_definitions');
-      await txn.delete('tier_lists');
-      await txn.delete('collection_tags');
-      await txn.delete('item_tags');
-      await txn.delete('tags');
-      await txn.delete('tracker_achievements');
-      await txn.delete('tracker_game_data');
-      await txn.delete('tracker_profiles');
-      await txn.delete('watched_episodes');
-      await txn.delete('canvas_connections');
-      await txn.delete('canvas_items');
-      await txn.delete('canvas_viewport');
-      await txn.delete('game_canvas_viewport');
-      await txn.delete('custom_items');
-      await txn.delete('collection_items');
-      await txn.delete('collections');
-      await txn.delete('tv_episodes_cache');
-      await txn.delete('tv_seasons_cache');
-      await txn.delete('tv_shows_cache');
-      await txn.delete('movies_cache');
-      await txn.delete('games');
-      await txn.delete('visual_novels_cache');
-      await txn.delete('manga_cache');
-      await txn.delete('anime_cache');
-      await txn.delete('books_cache');
-      await txn.delete('wishlist');
-    });
-  }
+  /// Truncates every user table in a single transaction; static reference
+  /// tables and SharedPreferences are untouched.
+  Future<void> clearAllData() => collectionDao.clearAllData();
 
   Future<List<CoverInfo>> getCollectionCovers(
     int? collectionId, {

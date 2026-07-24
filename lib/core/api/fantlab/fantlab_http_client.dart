@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'fantlab_types.dart';
 
@@ -73,7 +74,7 @@ class FantlabHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'Fantlab',
+        apiName: DataSource.fantlab.label,
         exception: e,
         userMessage: message,
       ),

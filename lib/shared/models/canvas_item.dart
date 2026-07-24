@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-import '../../core/services/image_cache_service.dart';
+import 'image_type.dart';
 import 'anime.dart';
 import 'book.dart';
 import 'custom_media.dart';
