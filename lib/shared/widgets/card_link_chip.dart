@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../models/card_link.dart';
 import '../models/collection_item.dart';
 import '../theme/app_colors.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';
+import '../constants/collection_item_ui.dart';
 
 /// Inline chip for a resolved cross-link: cover, source, name, year, type icon
 /// and an optional subcategory (platform for games, movie/TV for animation).
@@ -25,7 +25,7 @@ class CardLinkChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final int? year = item.releaseYear;
-    final String? subcategory = cardSubcategoryLabel(item, l);
+    final String? subcategory = item.cardSubcategoryLabel(l);
     final TextStyle metaStyle = baseStyle.copyWith(
       color: AppColors.textTertiary,
       fontSize: (baseStyle.fontSize ?? 14) - 2,

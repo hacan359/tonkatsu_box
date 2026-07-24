@@ -1,4 +1,3 @@
-import '../../l10n/app_localizations.dart';
 import 'data_source.dart';
 
 /// Media content type of a collection item.
@@ -94,30 +93,6 @@ enum MediaType {
         return 'Book';
       case MediaType.custom:
         return 'Custom';
-    }
-  }
-
-  /// Localised display name.
-  String localizedLabel(S l) {
-    switch (this) {
-      case MediaType.game:
-        return l.mediaTypeGame;
-      case MediaType.movie:
-        return l.mediaTypeMovie;
-      case MediaType.tvShow:
-        return l.mediaTypeTvShow;
-      case MediaType.animation:
-        return l.mediaTypeAnimation;
-      case MediaType.visualNovel:
-        return l.mediaTypeVisualNovel;
-      case MediaType.manga:
-        return l.mediaTypeManga;
-      case MediaType.anime:
-        return l.mediaTypeAnime;
-      case MediaType.book:
-        return l.mediaTypeBook;
-      case MediaType.custom:
-        return l.mediaTypeCustom;
     }
   }
 

@@ -20,18 +20,29 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     data_source_ui.dart (DataSourceUi), collection_item_ui.dart
     (CollectionItemUi), canvas_item_ui.dart (CanvasItemUi), profile_ui.dart
     (ProfileUi), platform_ui.dart (PlatformUi), tier_definition_ui.dart
-    (TierDefinitionUi): New presentation extensions holding the moved
-    getters (color, materialIcon, localizedLabel, genericLabel,
-    placeholderIcon, mediaPlaceholderIcon, familyColor, displayColor).
+    (TierDefinitionUi), media_type_ui.dart (MediaTypeUi),
+    collection_sort_mode_ui.dart (CollectionSortModeUi),
+    collection_list_sort_mode_ui.dart (CollectionListSortModeUi),
+    calendar_recurrence_ui.dart (CalendarRecurrenceUi): New presentation
+    extensions holding the moved getters and localized-label methods
+    (color, materialIcon, cardSubcategoryLabel,
+    localizedLabel, genericLabel, placeholderIcon, mediaPlaceholderIcon,
+    familyColor, displayColor, localizedDisplayLabel, localizedShortLabel,
+    localizedDirectionLabel, localizedDescription).
   * lib/shared/utils/color_hex.dart (ColorHex.fromHex, ColorHex.toHex): New
     hex-string color codec, replacing Profile.hexToColor / colorToHex and a
     private duplicate in edit_connection_dialog.dart.
   * lib/shared/models/item_status.dart (ItemStatus), data_source.dart
     (DataSource.colorValue), profile.dart (Profile), collection_item.dart
     (CollectionItem), canvas_item.dart (CanvasItem), platform.dart
-    (Platform), tier_definition.dart (TierDefinition.colorValue): Flutter
-    and dart:ui imports removed; DataSource and TierDefinition store the
-    color as an ARGB int.
+    (Platform), tier_definition.dart (TierDefinition.colorValue),
+    media_type.dart (MediaType), collection_sort_mode.dart
+    (CollectionSortMode), collection_list_sort_mode.dart
+    (CollectionListSortMode), search_sort.dart (SearchSortField),
+    card_link.dart, calendar_recurrence.dart (CalendarRecurrence): Flutter,
+    dart:ui and l10n imports removed; DataSource and TierDefinition store
+    the color as an ARGB int; unused SearchSortField.localizedShortLabel
+    and localizedDisplayLabel deleted as dead code.
   * lib/shared/constants/media_type_theme.dart
     (MediaTypeTheme.placeholderIconFor): New shared outlined-icon mapping;
     collection_item_ui.dart, canvas_item_ui.dart and

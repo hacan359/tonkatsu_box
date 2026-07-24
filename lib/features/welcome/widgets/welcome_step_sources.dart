@@ -18,6 +18,7 @@ import 'welcome_chip.dart';
 import 'welcome_hero.dart';
 import 'welcome_reveal.dart';
 import '../../../shared/constants/data_source_ui.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// Sources — every search provider with its logo and media types, plus inline
 /// API-key fields for IGDB and TMDB.

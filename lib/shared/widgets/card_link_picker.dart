@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
 import '../../l10n/app_localizations.dart';
-import '../models/card_link.dart';
 import '../models/collection_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -161,7 +160,7 @@ class _CardLinkPickerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final int? year = item.releaseYear;
-    final String? subcategory = cardSubcategoryLabel(item, l);
+    final String? subcategory = item.cardSubcategoryLabel(l);
     final String subtitle = <String>[
       item.dataSource.label,
       if (year != null) '$year',

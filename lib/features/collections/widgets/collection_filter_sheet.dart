@@ -1,6 +1,3 @@
-// Used on narrow screens where the TagSidebar does not fit. All changes
-// apply immediately; the sheet stays open.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +10,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/widgets/settings_tile.dart';
 import '../providers/collections_provider.dart';
+import '../../../shared/constants/collection_sort_mode_ui.dart';
 
 Future<void> showCollectionFilterSheet(
   BuildContext context, {

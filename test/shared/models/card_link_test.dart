@@ -6,6 +6,7 @@ import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../helpers/builders.dart';
+import 'package:tonkatsu_box/shared/constants/collection_item_ui.dart';
 
 void main() {
   group('CardLink', () {
@@ -122,43 +123,31 @@ void main() {
 
       test('null for a game without a platform', () {
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(mediaType: MediaType.game),
-            l,
-          ),
+          createTestCollectionItem(mediaType: MediaType.game).cardSubcategoryLabel(l),
           isNull,
         );
       });
 
       test('movie/TV label for animation', () {
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(
+          createTestCollectionItem(
               mediaType: MediaType.animation,
               platformId: AnimationSource.tvShow,
-            ),
-            l,
-          ),
+            ).cardSubcategoryLabel(l),
           l.mediaTypeTvShow,
         );
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(
+          createTestCollectionItem(
               mediaType: MediaType.animation,
               platformId: AnimationSource.movie,
-            ),
-            l,
-          ),
+            ).cardSubcategoryLabel(l),
           l.mediaTypeMovie,
         );
       });
 
       test('null for other media types', () {
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(mediaType: MediaType.movie),
-            l,
-          ),
+          createTestCollectionItem(mediaType: MediaType.movie).cardSubcategoryLabel(l),
           isNull,
         );
       });

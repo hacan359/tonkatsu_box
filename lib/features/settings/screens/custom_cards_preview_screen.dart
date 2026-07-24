@@ -18,6 +18,7 @@ import '../../collections/providers/global_tags_provider.dart';
 import '../../collections/providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import 'import_result_screen.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// Preview of a parsed custom-cards file: a summary, select-all controls and
 /// a lazy checkbox list (problem rows first), ending in the import action.
