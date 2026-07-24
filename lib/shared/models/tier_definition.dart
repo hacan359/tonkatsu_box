@@ -1,111 +1,100 @@
-// Определение тира — метка, цвет и порядок в тир-листе.
-
-import 'dart:ui';
-
-/// Определение тира (S, A, B, C или кастомный).
-///
-/// Описывает один уровень в тир-листе: ключ, метку, цвет и порядок.
+/// One tier level in a tier list: key, label, color and order.
+/// The color is stored as an ARGB int; the Color getter lives in
+/// shared/constants/tier_definition_ui.dart.
 class TierDefinition {
-  /// Создаёт [TierDefinition].
   const TierDefinition({
     required this.tierKey,
     required this.label,
-    required this.color,
+    required this.colorValue,
     required this.sortOrder,
   });
 
-  /// Создаёт [TierDefinition] из записи базы данных.
   factory TierDefinition.fromDb(Map<String, dynamic> row) {
     return TierDefinition(
       tierKey: row['tier_key'] as String,
       label: row['label'] as String,
-      color: Color(row['color'] as int),
+      colorValue: row['color'] as int,
       sortOrder: row['sort_order'] as int,
     );
   }
 
-  /// Создаёт [TierDefinition] из экспортированных данных.
   factory TierDefinition.fromExport(Map<String, dynamic> json) {
     return TierDefinition(
       tierKey: json['tier_key'] as String,
       label: json['label'] as String,
-      color: Color(json['color'] as int),
+      colorValue: json['color'] as int,
       sortOrder: json['sort_order'] as int,
     );
   }
 
-  /// Уникальный ключ тира (например, 'S', 'A', 'custom_1').
+  /// Unique tier key (e.g. 'S', 'A', 'custom_1').
   final String tierKey;
 
-  /// Отображаемая метка.
   final String label;
 
-  /// Цвет метки тира.
-  final Color color;
+  /// Tier label color as an ARGB int.
+  final int colorValue;
 
-  /// Порядок сортировки (0 = верхний тир).
+  /// Sort order (0 = top tier).
   final int sortOrder;
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb(int tierListId) {
     return <String, dynamic>{
       'tier_list_id': tierListId,
       'tier_key': tierKey,
       'label': label,
-      'color': color.toARGB32(),
+      'color': colorValue,
       'sort_order': sortOrder,
     };
   }
 
-  /// Преобразует в Map для экспорта.
   Map<String, dynamic> toExport() {
     return <String, dynamic>{
       'tier_key': tierKey,
       'label': label,
-      'color': color.toARGB32(),
+      'color': colorValue,
       'sort_order': sortOrder,
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TierDefinition copyWith({
     String? tierKey,
     String? label,
-    Color? color,
+    int? colorValue,
     int? sortOrder,
   }) {
     return TierDefinition(
       tierKey: tierKey ?? this.tierKey,
       label: label ?? this.label,
-      color: color ?? this.color,
+      colorValue: colorValue ?? this.colorValue,
       sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
-  /// Набор тиров по умолчанию: S / A / B / C.
+  /// Default tier set: S / A / B / C.
   static const List<TierDefinition> defaults = <TierDefinition>[
     TierDefinition(
       tierKey: 'S',
       label: 'S',
-      color: Color(0xFFFF4444),
+      colorValue: 0xFFFF4444,
       sortOrder: 0,
     ),
     TierDefinition(
       tierKey: 'A',
       label: 'A',
-      color: Color(0xFFFF8C00),
+      colorValue: 0xFFFF8C00,
       sortOrder: 1,
     ),
     TierDefinition(
       tierKey: 'B',
       label: 'B',
-      color: Color(0xFFFFD700),
+      colorValue: 0xFFFFD700,
       sortOrder: 2,
     ),
     TierDefinition(
       tierKey: 'C',
       label: 'C',
-      color: Color(0xFF44BB44),
+      colorValue: 0xFF44BB44,
       sortOrder: 3,
     ),
   ];

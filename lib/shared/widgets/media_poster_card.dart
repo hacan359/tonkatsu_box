@@ -12,6 +12,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'dual_rating_badge.dart';
+import '../constants/item_status_ui.dart';
 
 enum CardVariant {
   /// Full-size grid (collection + search).

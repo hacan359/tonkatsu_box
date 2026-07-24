@@ -8,6 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
+import '../../../shared/utils/color_hex.dart';
 
 /// Диалог создания нового профиля.
 ///
@@ -75,14 +76,14 @@ class _CreateProfileDialogState extends State<CreateProfileDialog> {
             Text(l.colorPickerTitle, style: AppTypography.body),
             const SizedBox(height: AppSpacing.sm),
             _ProfileColorPickerButton(
-              color: Profile.hexToColor(_selectedColor),
+              color: ColorHex.fromHex(_selectedColor),
               onTap: () async {
                 final Color? picked = await ColorPickerDialog.show(
                   context: context,
-                  currentColor: Profile.hexToColor(_selectedColor),
+                  currentColor: ColorHex.fromHex(_selectedColor),
                 );
                 if (picked == null) return;
-                setState(() => _selectedColor = Profile.colorToHex(picked));
+                setState(() => _selectedColor = ColorHex.toHex(picked));
               },
             ),
           ],

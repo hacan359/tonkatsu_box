@@ -9,6 +9,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 import '../../../../shared/widgets/cached_image.dart';
+import '../../../../shared/constants/collection_item_ui.dart';
 
 /// Off-screen widget rendered into a PNG via [RepaintBoundary].
 ///

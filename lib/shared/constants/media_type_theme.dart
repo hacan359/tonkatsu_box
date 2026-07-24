@@ -1,43 +1,29 @@
-// Цветовые темы и иконки для типов медиа.
 
 import 'package:flutter/material.dart';
 
 import '../models/media_type.dart';
 import '../theme/app_colors.dart';
 
-/// Цвета и иконки для визуального разделения типов медиа.
-///
-/// 🎮 Игры — индиго, 🎬 Фильмы — оранжевый, 📺 Сериалы — лаймовый,
-/// 🎞️ Анимация — пурпурный.
+/// Colors and icons that visually distinguish media types.
 abstract final class MediaTypeTheme {
-  /// Цвет для игр.
   static const Color gameColor = AppColors.gameAccent;
 
-  /// Цвет для фильмов.
   static const Color movieColor = AppColors.movieAccent;
 
-  /// Цвет для сериалов.
   static const Color tvShowColor = AppColors.tvShowAccent;
 
-  /// Цвет для анимации.
   static const Color animationColor = AppColors.animationAccent;
 
-  /// Цвет для визуальных новелл.
   static const Color visualNovelColor = AppColors.visualNovelAccent;
 
-  /// Цвет для манги.
   static const Color mangaColor = AppColors.mangaAccent;
 
-  /// Цвет для аниме.
   static const Color animeColor = AppColors.animeAccent;
 
-  /// Цвет для книг.
   static const Color bookColor = AppColors.bookAccent;
 
-  /// Цвет для кастомных элементов.
   static const Color customColor = AppColors.customAccent;
 
-  /// Возвращает иконку для типа медиа.
   static IconData iconFor(MediaType type) => switch (type) {
         MediaType.game => Icons.videogame_asset,
         MediaType.movie => Icons.movie,
@@ -50,7 +36,19 @@ abstract final class MediaTypeTheme {
         MediaType.custom => Icons.dashboard_customize,
       };
 
-  /// Возвращает цвет для типа медиа.
+  /// Placeholder icon for missing covers — outlined variants of [iconFor].
+  static IconData placeholderIconFor(MediaType type) => switch (type) {
+        MediaType.game => Icons.videogame_asset,
+        MediaType.movie => Icons.movie_outlined,
+        MediaType.tvShow => Icons.tv_outlined,
+        MediaType.animation => Icons.animation,
+        MediaType.visualNovel => Icons.menu_book,
+        MediaType.manga => Icons.auto_stories,
+        MediaType.anime => Icons.play_circle_outline,
+        MediaType.book => Icons.menu_book,
+        MediaType.custom => Icons.dashboard_customize,
+      };
+
   static Color colorFor(MediaType type) => switch (type) {
         MediaType.game => gameColor,
         MediaType.movie => movieColor,

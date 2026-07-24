@@ -1,6 +1,3 @@
-// Works both inside a collection and on All Items: operates on a
-// `List<CollectionItem>` via [BulkOperations], so collectionId is optional.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,6 +15,7 @@ import '../../../shared/widgets/confirm_dialog.dart';
 import '../helpers/bulk_operations.dart';
 import '../providers/collections_provider.dart';
 import 'bulk_export/bulk_poster_export_dialog.dart';
+import '../../../shared/constants/item_status_ui.dart';
 
 /// Selection toolbar that works both inside a single collection and on All
 /// Items. When [collectionId] is set the bar excludes that collection from

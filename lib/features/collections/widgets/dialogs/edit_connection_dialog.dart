@@ -5,8 +5,7 @@ import '../../../../shared/models/canvas_connection.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/color_picker_dialog.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
-
-// Dialog for editing a canvas connection's properties.
+import '../../../../shared/utils/color_hex.dart';
 
 /// Dialog for editing a connection's label, color and style.
 ///
@@ -68,15 +67,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
     _selectedStyle = widget.initialStyle ?? ConnectionStyle.solid;
   }
 
-  Color get _selectedColorValue {
-    final String cleaned = _selectedColor.replaceFirst('#', '');
-    return Color(int.parse('FF$cleaned', radix: 16));
-  }
-
-  String _colorToHex(Color color) {
-    final int rgb = color.toARGB32() & 0xFFFFFF;
-    return '#${rgb.toRadixString(16).toUpperCase().padLeft(6, '0')}';
-  }
+  Color get _selectedColorValue => ColorHex.fromHex(_selectedColor);
 
   @override
   void dispose() {
@@ -130,7 +121,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
                   currentColor: _selectedColorValue,
                 );
                 if (picked == null) return;
-                setState(() => _selectedColor = _colorToHex(picked));
+                setState(() => _selectedColor = ColorHex.toHex(picked));
               },
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               child: Row(

@@ -1,12 +1,7 @@
-// Модель пользовательского профиля.
-
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-
-/// Пользовательский профиль с изолированной БД и настройками.
+/// User profile with an isolated database and settings.
 class Profile {
-  /// Создаёт [Profile].
   const Profile({
     required this.id,
     required this.name,
@@ -14,7 +9,6 @@ class Profile {
     required this.createdAt,
   });
 
-  /// Создаёт [Profile] из JSON.
   factory Profile.fromJson(Map<String, dynamic> json) {
     return Profile(
       id: json['id'] as String,
@@ -24,37 +18,18 @@ class Profile {
     );
   }
 
-  /// Уникальный идентификатор (slug или UUID).
+  /// Unique identifier (slug or UUID); doubles as the profile folder name.
   final String id;
 
-  /// Отображаемое имя.
   final String name;
 
-  /// Hex цвет профиля (e.g. '#EF7B44').
+  /// Profile color as a hex string (e.g. '#EF7B44').
   final String color;
 
-  /// Дата создания.
   final DateTime createdAt;
 
-  /// Цвет как [Color].
-  Color get colorValue => hexToColor(color);
-
-  /// Конвертирует hex строку (e.g. '#EF7B44') в [Color].
-  static Color hexToColor(String hex) {
-    final String cleaned = hex.replaceFirst('#', '');
-    return Color(int.parse('FF$cleaned', radix: 16));
-  }
-
-  /// Конвертирует [Color] в hex строку в формате '#RRGGBB'.
-  static String colorToHex(Color color) {
-    final int rgb = color.toARGB32() & 0xFFFFFF;
-    return '#${rgb.toRadixString(16).toUpperCase().padLeft(6, '0')}';
-  }
-
-  /// Имя папки профиля.
   String get folderName => id;
 
-  /// Сериализация в JSON.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -64,7 +39,6 @@ class Profile {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   Profile copyWith({
     String? name,
     String? color,
@@ -78,16 +52,14 @@ class Profile {
   }
 }
 
-/// Данные всех профилей (profiles.json).
+/// Contents of profiles.json: the profile list and the active profile id.
 class ProfilesData {
-  /// Создаёт [ProfilesData].
   const ProfilesData({
     required this.version,
     required this.currentProfileId,
     required this.profiles,
   });
 
-  /// Создаёт [ProfilesData] из JSON.
   factory ProfilesData.fromJson(Map<String, dynamic> json) {
     final List<dynamic> profilesList = json['profiles'] as List<dynamic>;
     return ProfilesData(
@@ -100,14 +72,13 @@ class ProfilesData {
     );
   }
 
-  /// Создаёт [ProfilesData] из JSON строки.
   factory ProfilesData.fromJsonString(String jsonString) {
     return ProfilesData.fromJson(
       jsonDecode(jsonString) as Map<String, dynamic>,
     );
   }
 
-  /// Дефолтные данные для первого запуска.
+  /// Initial data for the first launch.
   factory ProfilesData.defaultData({String authorName = 'Default'}) {
     return ProfilesData(
       version: 1,
@@ -123,24 +94,19 @@ class ProfilesData {
     );
   }
 
-  /// Версия формата.
+  /// Format version.
   final int version;
 
-  /// ID текущего активного профиля.
   final String currentProfileId;
 
-  /// Список всех профилей.
   final List<Profile> profiles;
 
-  /// Текущий активный профиль.
-  ///
-  /// Если [currentProfileId] не найден — возвращает первый профиль.
+  /// Falls back to the first profile when [currentProfileId] is not found.
   Profile get currentProfile => profiles.firstWhere(
         (Profile p) => p.id == currentProfileId,
         orElse: () => profiles.first,
       );
 
-  /// Сериализация в JSON.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'version': version,
@@ -150,12 +116,10 @@ class ProfilesData {
     };
   }
 
-  /// Сериализация в JSON строку.
   String toJsonString() {
     return const JsonEncoder.withIndent('  ').convert(toJson());
   }
 
-  /// Создаёт копию с изменёнными полями.
   ProfilesData copyWith({
     String? currentProfileId,
     List<Profile>? profiles,
@@ -168,30 +132,25 @@ class ProfilesData {
   }
 }
 
-/// Статистика профиля.
+/// Per-profile collection statistics.
 class ProfileStats {
-  /// Создаёт [ProfileStats].
   const ProfileStats({
     required this.collectionsCount,
     required this.itemsCount,
   });
 
-  /// Пустая статистика.
   static const ProfileStats empty = ProfileStats(
     collectionsCount: 0,
     itemsCount: 0,
   );
 
-  /// Количество коллекций.
   final int collectionsCount;
 
-  /// Количество элементов.
   final int itemsCount;
 }
 
-/// Предустановленные цвета для профилей.
+/// Preset profile colors.
 abstract final class ProfileColors {
-  /// Список доступных цветов.
   static const List<String> values = <String>[
     '#EF7B44', // Brand orange
     '#F44336', // Red

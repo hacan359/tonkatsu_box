@@ -8,6 +8,7 @@ import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
 import '../../helpers/test_helpers.dart';
+import 'package:tonkatsu_box/shared/constants/canvas_item_ui.dart';
 
 void main() {
   group('CanvasItemType', () {

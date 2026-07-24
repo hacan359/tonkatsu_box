@@ -1,9 +1,7 @@
-// Asserts enum invariants: statuses have unique colors and icons.
-// Concrete color/icon values are not checked (design decisions).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/constants/item_status_ui.dart';
 
 void main() {
   group('ItemStatus', () {

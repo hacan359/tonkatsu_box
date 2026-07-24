@@ -6,6 +6,7 @@ import '../../../../../shared/models/media_type.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_spacing.dart';
 import '../../../../../shared/theme/app_typography.dart';
+import '../../../../../shared/constants/item_status_ui.dart';
 
 class StatusCell extends StatelessWidget {
   const StatusCell({

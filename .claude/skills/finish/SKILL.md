@@ -103,6 +103,18 @@ Allowed exceptions (do NOT flag these):
 - Generated l10n (`app_localizations*.dart`) and `.arb` — localisation resources.
 - A short badge `label` that legitimately differs from a full display name — e.g. `DataSource.steamGridDb.label` is `'SGDB'` but the credits screen shows `'SteamGridDB'`; these are different concepts, do not force one into the other. Same for a per-tab `SearchSource.id` (`'movies'`, `'manga'`) which is a media/tab identifier, not the provider name.
 
+**R2c — model purity (mandatory)**
+
+`lib/shared/models/**` stays pure Dart: no `package:flutter`, no `dart:ui`, no l10n imports — direct or transitive through other model files. Models hold data only (ARGB colors as `int`, hex colors as `String`, stored enum values); presentation (`Color`, `IconData`, localized labels) lives in `extension <Model>Ui` files under `lib/shared/constants/*_ui.dart`, hex⇄Color codecs in `lib/shared/utils/color_hex.dart`. Rationale: the model layer is slated for extraction into a pure-Dart core package shared with the selfhost server (`dev/backlog/selfhost-web/`), and `dart:ui` does not exist in a plain Dart VM.
+
+How to check (must return nothing):
+
+```bash
+grep -rln "package:flutter\|dart:ui\|l10n/" lib/shared/models/
+```
+
+Fix: move the offending getter/method into the model's `*_ui.dart` extension (create it if missing), store the raw value in the model, and add the extension import at call sites. Never "fix" by re-adding a Flutter type to a model.
+
 **R3 — localisation**
 - Every UI string uses `S.of(context).key` or `final S l = S.of(context);`.
 - ARB: every key exists in **every** `lib/l10n/app_*.arb` locale file (glob them — the set grows over time: en, ru, zh, …); placeholder names match across all of them; Russian plurals use ICU `=0` / `=1` / `few` / `other`. Languages without plural forms (e.g. Chinese) may render an ICU-plural key as a single flat string (`{count} 项`) as long as they keep the same placeholders.

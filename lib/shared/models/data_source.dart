@@ -1,71 +1,65 @@
-import 'package:flutter/material.dart';
-
 import '../theme/app_assets.dart';
 
 /// External data provider.
 enum DataSource {
   /// IGDB — game database.
-  igdb('IGDB', Color(0xFF9147FF), AppAssets.iconIgdbColor),
+  igdb('IGDB', 0xFF9147FF, AppAssets.iconIgdbColor),
 
   /// TMDB — movie and TV database.
-  tmdb('TMDB', Color(0xFF01D277), AppAssets.iconTmdbColor),
+  tmdb('TMDB', 0xFF01D277, AppAssets.iconTmdbColor),
 
   /// TVmaze — keyless TV series database with season / episode data.
-  tvmaze('TVmaze', Color(0xFF3C5C8C), AppAssets.iconTvMazeColor),
+  tvmaze('TVmaze', 0xFF3C5C8C, AppAssets.iconTvMazeColor),
 
   /// SteamGridDB — Steam artwork.
-  steamGridDb('SGDB', Color(0xFF3A9BDC), AppAssets.iconSteamGridDbColor),
+  steamGridDb('SGDB', 0xFF3A9BDC, AppAssets.iconSteamGridDbColor),
 
   /// VGMaps — video game maps.
-  vgMaps('VGMaps', Color(0xFFE57C23), null),
+  vgMaps('VGMaps', 0xFFE57C23, null),
 
   /// VNDB — visual novel database.
-  vndb('VNDB', Color(0xFF2A5FC1), AppAssets.iconVndbColor),
+  vndb('VNDB', 0xFF2A5FC1, AppAssets.iconVndbColor),
 
   /// AniList — anime and manga database.
-  anilist('AniList', Color(0xFF3DB4F2), AppAssets.iconAnilistColor),
+  anilist('AniList', 0xFF3DB4F2, AppAssets.iconAnilistColor),
 
   /// MangaBaka — open catalog of manga / manhwa / manhua / light novels.
-  mangabaka('MangaBaka', Color(0xFFE5484D), AppAssets.iconMangaBakaColor),
+  mangabaka('MangaBaka', 0xFFE5484D, AppAssets.iconMangaBakaColor),
 
   /// MangaDex — large manga catalog with localized titles and chapter counts.
-  mangadex('MangaDex', Color(0xFFFF6740), AppAssets.iconMangaDexColor),
+  mangadex('MangaDex', 0xFFFF6740, AppAssets.iconMangaDexColor),
 
   /// Kitsu — independent anime and manga catalog.
-  kitsu('Kitsu', Color(0xFFF75239), AppAssets.iconKitsuColor),
+  kitsu('Kitsu', 0xFFF75239, AppAssets.iconKitsuColor),
 
   /// OpenLibrary — global open book catalog (~40M works, CC0/ODbL).
-  openLibrary('OpenLibrary', Color(0xFF9B6A4F), AppAssets.iconOpenLibraryColor),
+  openLibrary('OpenLibrary', 0xFF9B6A4F, AppAssets.iconOpenLibraryColor),
 
   /// Fantlab — community book catalog with detailed metadata.
-  fantlab('Fantlab', Color(0xFFC5302E), AppAssets.iconFantlabColor),
+  fantlab('Fantlab', 0xFFC5302E, AppAssets.iconFantlabColor),
 
   /// ComicVine — comics / graphic novels catalog (volumes + issues). Feeds the
   /// `book` media type with `BookKind.comic` records.
-  comicVine('ComicVine', Color(0xFFF26522), AppAssets.iconComicVineColor),
+  comicVine('ComicVine', 0xFFF26522, AppAssets.iconComicVineColor),
 
   /// Google Books — global book catalog (millions of editions, public search).
   /// Feeds the `book` media type with `BookKind.book` records.
-  googleBooks(
-    'Google Books',
-    Color(0xFF4285F4),
-    AppAssets.iconGoogleBooksColor,
-  ),
+  googleBooks('Google Books', 0xFF4285F4, AppAssets.iconGoogleBooksColor),
 
   /// Hardcover — community book catalog (books, series, moods, ratings).
   /// Feeds the `book` media type; graphic novels map to `BookKind.comic`.
-  hardcover('Hardcover', Color(0xFF6366F1), AppAssets.iconHardcoverColor),
+  hardcover('Hardcover', 0xFF6366F1, AppAssets.iconHardcoverColor),
 
   /// Local source (custom items).
-  local('Custom', Color(0xFF26A69A), null);
+  local('Custom', 0xFF26A69A, null);
 
-  const DataSource(this.label, this.color, this.iconAsset);
+  const DataSource(this.label, this.colorValue, this.iconAsset);
 
   /// Short display label.
   final String label;
 
-  /// Brand color of the source.
-  final Color color;
+  /// Brand color of the source as an ARGB int.
+  final int colorValue;
 
   /// Path to the color PNG logo (null when there is no brand asset).
   final String? iconAsset;

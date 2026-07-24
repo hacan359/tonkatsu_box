@@ -6,6 +6,7 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/constants/platform_ui.dart';
 
 const double kTierItemWidth = 90;
 const double kTierItemImageHeight = 120;

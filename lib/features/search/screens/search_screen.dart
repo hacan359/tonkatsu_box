@@ -24,6 +24,7 @@ import '../widgets/collection_chips_row.dart';
 import '../widgets/discover_customize_sheet.dart';
 import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
+import '../../../shared/constants/platform_ui.dart';
 
 /// Search and browse screen — two modes: Browse (filter bar + Discover/Grid)
 /// and Search (query field + results).

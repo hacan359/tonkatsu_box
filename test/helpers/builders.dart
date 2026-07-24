@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/shared/models/book.dart';
@@ -473,7 +472,7 @@ TierDefinition createTestTierDefinition({
   return TierDefinition(
     tierKey: tierKey,
     label: label,
-    color: Color(colorValue),
+    colorValue: colorValue,
     sortOrder: sortOrder,
   );
 }

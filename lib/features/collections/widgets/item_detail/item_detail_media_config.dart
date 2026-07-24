@@ -13,6 +13,7 @@ import '../../../../shared/models/tv_show.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/widgets/media_detail_view.dart';
 import '../../../../shared/widgets/source_badge.dart';
+import '../../../../shared/constants/collection_item_ui.dart';
 
 class ItemDetailMediaConfig {
   const ItemDetailMediaConfig({
