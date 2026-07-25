@@ -9,6 +9,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Move the database schema and migrations into a pure-Dart `core` package**
+
+  No user-visible change. The migration chain and the DDL helpers now live in
+  `packages/core`, a plain Dart package with no Flutter dependency, so the
+  planned selfhost server can build and upgrade the same database without a
+  Flutter SDK. The schema itself is untouched: all 62 files moved verbatim.
+
+  * packages/core/pubspec.yaml: New pure-Dart package `core`, depending only on
+    `sqflite_common_ffi`.
+  * packages/core/lib/database/schema.dart (DatabaseSchema),
+    packages/core/lib/database/migrations/migration.dart (Migration,
+    Migration.addColumnIfAbsent), migration_registry.dart (MigrationRegistry.all,
+    MigrationRegistry.pending, MigrationRegistry.latestVersion),
+    migration_v1.dart through migration_v60.dart (MigrationV1 … MigrationV60):
+    Moved unchanged from lib/core/database/.
+  * pubspec.yaml: Add the `core` path dependency.
+  * lib/core/database/database_service.dart (DatabaseService),
+    lib/core/services/db_sync_service.dart (DbSyncService),
+    lib/core/services/storage_root.dart: Import Migration and MigrationRegistry
+    from `package:core`.
+  * test/core/database/migrations/migration_chain_test.dart: New coverage that
+    the registry is ascending and gapless, that pending() returns the right
+    slice, and that replaying the whole chain on an empty database builds every
+    table the app queries.
+
 - **Make all models pure Dart: move UI mapping out of the model layer**
 
   No user-visible change. Colors, icons and localized labels that lived

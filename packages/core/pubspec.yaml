@@ -1,0 +1,16 @@
+name: core
+description: >-
+  Pure-Dart shared layer (models, migrations, DAOs) reused by the Tonkatsu Box
+  Flutter app and the selfhost server. No Flutter dependency.
+publish_to: 'none'
+version: 0.0.1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  sqflite_common_ffi: ^2.3.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0

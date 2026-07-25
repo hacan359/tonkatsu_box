@@ -1,8 +1,8 @@
+import 'package:core/database/migrations/migration_v54.dart';
+import 'package:core/database/migrations/migration_v56.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_v54.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_v56.dart';
 import 'package:tonkatsu_box/shared/models/tag.dart';
 
 void main() {

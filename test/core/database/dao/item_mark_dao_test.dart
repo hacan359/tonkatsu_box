@@ -1,7 +1,7 @@
+import 'package:core/database/migrations/migration_v53.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/item_mark_dao.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_v53.dart';
 import 'package:tonkatsu_box/shared/models/item_mark.dart';
 
 void main() {
