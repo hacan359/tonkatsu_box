@@ -87,6 +87,28 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **French (fr) interface localization**
+
+  The app interface is now available in French alongside English, Russian,
+  Simplified Chinese, Spanish and Brazilian Portuguese. The language and
+  welcome pickers offer Français, and selecting it defaults TMDB content
+  language to `fr-FR`. Contributed by @GreenStatik (#384).
+
+  * lib/l10n/app_fr.arb, lib/l10n/app_localizations_fr.dart (SFr): New —
+    full fr translation (all 1510 keys) and its generated delegate.
+  * lib/l10n/app_localizations.dart (S.supportedLocales,
+    _SDelegate.isSupported, lookupS): Register the `fr` locale.
+  * lib/features/settings/screens/settings_screen.dart (_kAppLanguageNames):
+    Add Français to the app-language picker.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (WelcomeStepLanguage): Add the option and reindex the WelcomeReveal
+    steps after it.
+  * lib/shared/constants/tmdb_content_languages.dart
+    (_kUiToContentLanguage): Map `fr` → `fr-FR`.
+  * README.md, docs/index.html (feat_lang_title, feat_lang_desc),
+    fastlane/metadata/android/en-US/full_description.txt: List French among
+    the interface languages.
+
 - **TVmaze as a TV series source**
 
   A keyless alternative source for TV series, like TMDB. Search shows by

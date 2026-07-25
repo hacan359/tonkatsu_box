@@ -75,6 +75,7 @@ const Map<String, String> _kAppLanguageNames = <String, String>{
   'zh': '中文',
   'es': 'Español',
   'pt': 'Português (Brasil)',
+  'fr': 'Français',
 };
 const Color _kApiKeysColor = Color(0xFFEF5350);
 const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple (used for RA-sync Icons.sync tile)

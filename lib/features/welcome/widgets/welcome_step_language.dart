@@ -135,9 +135,21 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                     ),
                   ),
                 ),
-                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sm),
                 WelcomeReveal(
                   index: 6,
+                  child: SizedBox(
+                    width: 300,
+                    child: _LanguageOption(
+                      label: 'Français',
+                      isSelected: settings.appLanguage == 'fr',
+                      onTap: () => _onUiLanguageSelected('fr'),
+                    ),
+                  ),
+                ),
+                SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
+                WelcomeReveal(
+                  index: 7,
                   child: SizedBox(
                     width: 300,
                     child: _ContentLanguageDropdown(
@@ -150,7 +162,7 @@ class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 WelcomeReveal(
-                  index: 7,
+                  index: 8,
                   child: Text(
                     l.welcomeChangeLaterHint,
                     style: AppTypography.bodySmall.copyWith(
