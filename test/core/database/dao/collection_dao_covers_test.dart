@@ -1,3 +1,5 @@
+import 'package:core/database/migrations/migration.dart';
+import 'package:core/database/migrations/migration_registry.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/anime_dao.dart';
@@ -9,8 +11,6 @@ import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/movie_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_registry.dart';
 import 'package:tonkatsu_box/shared/models/cover_info.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 

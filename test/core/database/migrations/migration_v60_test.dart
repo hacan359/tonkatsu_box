@@ -1,6 +1,6 @@
+import 'package:core/database/migrations/migration_v60.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_v60.dart';
 
 /// Pre-v60 `anime_cache` (single-column PK, `source` holds source material).
 const String _oldAnimeCacheDdl = '''

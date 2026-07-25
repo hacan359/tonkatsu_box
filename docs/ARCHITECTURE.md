@@ -116,7 +116,9 @@ Current features: `collections` (main module — collection screens, ItemDetail,
 
 ## Database
 
-The source of truth is `lib/core/database/schema.dart` (table list) and `database_service.dart` (the current `version` in `_initDatabase`). Those numbers change with every migration, so this document **doesn't quote them** — grep the code instead.
+The source of truth is `packages/core/lib/database/schema.dart` (table list) and `lib/core/database/database_service.dart` (the current `version` in `_initDatabase`). Those numbers change with every migration, so this document **doesn't quote them** — grep the code instead.
+
+The schema and the migration chain live in `packages/core`, a pure-Dart package with no Flutter dependency, so the same code can build and upgrade the database outside a Flutter app. `database_service.dart` keeps the CRUD and the `dart:io` path handling.
 
 Key entities:
 

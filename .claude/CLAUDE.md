@@ -101,8 +101,10 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - `SteamGridDbApi` — Bearer token, провайдер `steamGridDbApiProvider`
 - API ключи хранятся в SharedPreferences, читаются через `SettingsNotifier`
 
-### База данных (`lib/core/database/`)
+### База данных (`packages/core/lib/database/` + `lib/core/database/`)
 - SQLite через sqflite_common_ffi
+- Схема и миграции живут в пакете `core` (чистый Dart, без Flutter) — импорт через
+  `package:core/database/...`. CRUD и инициализация остались в приложении.
 - Провайдер: `databaseServiceProvider`
 - Номер версии смотреть в `database_service.dart` (`version:` в `_initDatabase()` = версия последней миграции)
 
@@ -111,13 +113,16 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - `_onCreate` (свежая БД) → гоняет **всю** цепочку `MigrationRegistry.all` (v1..N) с нуля.
 - `_onUpgrade` (существующая БД) → гоняет `MigrationRegistry.pending(oldVersion)`.
 
-Никакого `createAll`/«полной схемы одним куском» в продакшене нет — это раньше был второй, руками-синхронизируемый источник, который дрейфовал от миграций (удалён). Прогон цепочки с пустой БД обязан давать ровно ту же схему, что у реально обновлённых БД — это проверяет `test/core/database/schema_parity_test.dart` (golden-снимок схемы).
+Никакого `createAll`/«полной схемы одним куском» в продакшене нет — это раньше был второй, руками-синхронизируемый источник, который дрейфовал от миграций (удалён). Прогон цепочки с пустой БД обязан давать ровно ту же схему, что у реально обновлённых БД — это проверяет `test/core/database/migrations/migration_chain_test.dart` (реестр без дыр, replay с нуля создаёт все таблицы, повторный replay — no-op). Golden-снимка схемы пока нет.
 
 `schema.dart` (`DatabaseSchema`) остаётся только как набор `create*Table` DDL-хелперов, которые зовут отдельные миграции (и сетап тестов). Эти хелперы **иммутабельны наравне с миграциями**: добавить колонку в существующий `create*Table` нельзя — он отражает форму таблицы на момент её создающей миграции, и правка сломает replay.
 
 ```
 lib/core/database/
-├── database_service.dart          # CRUD + _initDatabase + _onCreate/_onUpgrade (оба гоняют цепочку)
+└── database_service.dart          # CRUD + _initDatabase + _onCreate/_onUpgrade (оба гоняют цепочку)
+
+packages/core/lib/database/
+├── schema.dart                    # Иммутабельные create*Table DDL-хелперы
 └── migrations/
     ├── migration.dart             # Абстрактный Migration (version, description, migrate) + addColumnIfAbsent
     ├── migration_registry.dart    # MigrationRegistry.all (v1..N) / .pending(oldVersion)
@@ -129,12 +134,12 @@ lib/core/database/
 **Никогда не редактируй уже существующую миграцию — только добавляй новую.** Каждая миграция — исторический факт; её правка меняет результат прогона цепочки и расходится с реально установленными БД. Это включает SQL внутри `migrate()` и любой DDL, который она инлайнит. Менять схему = **новая** миграция.
 
 #### Как добавить изменение схемы:
-- Создать `migration_vN.dart` с `class MigrationVN extends Migration`; **DDL пиши inline в `migrate()`** (новый `CREATE`/`ALTER` — прямо в миграции). Существующие `create*Table`-хелперы трогать нельзя (см. выше).
+- Создать `packages/core/lib/database/migrations/migration_vN.dart` с `class MigrationVN extends Migration`; **DDL пиши inline в `migrate()`** (новый `CREATE`/`ALTER` — прямо в миграции). Существующие `create*Table`-хелперы трогать нельзя (см. выше).
 - Зарегистрировать в `MigrationRegistry.all` (`migration_registry.dart`), в конец.
 - Увеличить `version` в `_initDatabase()` (`database_service.dart`).
 - **Новая колонка** → `Migration.addColumnIfAbsent(db, table, column, def)` (идемпотентно), **не** голый `ALTER ... ADD COLUMN`.
 - **Индекс** → `CREATE [UNIQUE] INDEX IF NOT EXISTS`.
-- Прогнать `schema_parity_test` — обновить golden, если изменение схемы намеренное.
+- Прогнать `migration_chain_test` — replay с нуля и повторный replay обязаны проходить.
 - `database_service.dart` — только CRUD и инициализация, никаких CREATE/ALTER.
 
 ### Tests (test/)
@@ -315,8 +320,8 @@ D-pad и кнопка A обрабатываются глобально в `Navi
 | Файл | Описание |
 |------|----------|
 | `lib/core/database/database_service.dart` | CRUD + инициализация; `_onCreate`/`_onUpgrade` гоняют цепочку миграций |
-| `lib/core/database/migrations/` | Миграции БД (v1..N) — единственный источник схемы; реестр, базовый класс |
-| `lib/core/database/schema.dart` | Иммутабельные `create*Table` DDL-хелперы для миграций (без `createAll`) |
+| `packages/core/lib/database/migrations/` | Миграции БД (v1..N) — единственный источник схемы; реестр, базовый класс |
+| `packages/core/lib/database/schema.dart` | Иммутабельные `create*Table` DDL-хелперы для миграций (без `createAll`) |
 | `lib/features/collections/widgets/canvas_view.dart` | Главный виджет Board/Canvas |
 | `lib/features/collections/providers/canvas_provider.dart` | State канваса |
 | `lib/features/collections/providers/collections_provider.dart` | State коллекций |

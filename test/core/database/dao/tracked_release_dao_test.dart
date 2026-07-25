@@ -1,7 +1,7 @@
+import 'package:core/database/schema.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/tracked_release_dao.dart';
-import 'package:tonkatsu_box/core/database/schema.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/tracked_release.dart';

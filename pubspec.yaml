@@ -35,6 +35,8 @@ dependencies:
   intl: any
 
   # Core
+  core:
+    path: packages/core
   sqflite: ^2.4.0
   sqflite_common_ffi: ^2.3.0
   path: ^1.8.3

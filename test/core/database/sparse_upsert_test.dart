@@ -1,9 +1,9 @@
+import 'package:core/database/migrations/migration.dart';
+import 'package:core/database/migrations/migration_registry.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_registry.dart';
 import 'package:tonkatsu_box/core/database/sparse_upsert.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';

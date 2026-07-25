@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:core/database/migrations/migration_registry.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_registry.dart';
 import 'package:tonkatsu_box/core/services/storage_root.dart';
 
 void main() {

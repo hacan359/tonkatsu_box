@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:core/database/migrations/migration.dart';
+import 'package:core/database/migrations/migration_registry.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -38,8 +40,6 @@ import 'dao/calendar_entry_dao.dart';
 import 'dao/tracked_release_dao.dart';
 import 'dao/tracker_dao.dart';
 import 'dao/wishlist_dao.dart';
-import 'migrations/migration.dart';
-import 'migrations/migration_registry.dart';
 
 final Provider<DatabaseService> databaseServiceProvider =
     Provider<DatabaseService>((Ref ref) {
