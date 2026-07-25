@@ -271,6 +271,52 @@ class GlobalTagDao {
     await batch.commit(noResult: true);
   }
 
+  /// Links every tag in [tagIds] to every item in [itemIds] in one batch.
+  /// Additive like [addTagToItems]: surviving links keep their manual
+  /// position, new ones get `NULL` and land after the positioned tags.
+  Future<void> addTagsToItems(List<int> itemIds, Set<int> tagIds) async {
+    if (itemIds.isEmpty || tagIds.isEmpty) return;
+    final Database db = await _getDatabase();
+    final Batch batch = db.batch();
+    for (final int itemId in itemIds) {
+      for (final int tagId in tagIds) {
+        batch.rawInsert(
+          'INSERT OR IGNORE INTO item_tags (item_id, tag_id) VALUES (?, ?)',
+          <Object?>[itemId, tagId],
+        );
+      }
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// Unlinks every tag in [tagIds] from every item in [itemIds]. The tags
+  /// themselves survive even when no item is left carrying them.
+  Future<void> removeTagsFromItems(
+    List<int> itemIds,
+    Set<int> tagIds,
+  ) async {
+    if (itemIds.isEmpty || tagIds.isEmpty) return;
+    final Database db = await _getDatabase();
+    final String tagPlaceholders =
+        List<String>.filled(tagIds.length, '?').join(', ');
+    // Both id lists bind into the same statement, so the item chunk has to
+    // leave room for the tag ids under the variable limit.
+    final int room = kInClauseChunkSize - tagIds.length;
+    await queryByIdsInChunks<void>(
+      itemIds,
+      (List<int> chunk) async {
+        await db.rawDelete(
+          'DELETE FROM item_tags WHERE item_id IN '
+          '(${List<String>.filled(chunk.length, '?').join(', ')}) '
+          'AND tag_id IN ($tagPlaceholders)',
+          <Object?>[...chunk, ...tagIds],
+        );
+        return const <void>[];
+      },
+      chunkSize: room < 1 ? 1 : room,
+    );
+  }
+
   /// Persists a manual reorder: [orderedIds] in their new display order.
   Future<void> setSortOrders(List<int> orderedIds) async {
     if (orderedIds.isEmpty) return;

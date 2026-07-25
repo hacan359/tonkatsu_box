@@ -148,6 +148,13 @@
       "count": {"type": "int"}
     }
   },
+  "bulkAddTags": "Ajouter des tags",
+  "bulkRemoveTags": "Retirer des tags",
+  "bulkAddTagsTitle": "Ajouter des tags à {count, plural, =1{1 élément} other{{count} éléments}}",
+  "bulkRemoveTagsTitle": "Retirer des tags de {count, plural, =1{1 élément} other{{count} éléments}}",
+  "bulkTagsAdded": "Tags ajoutés : {count}",
+  "bulkTagsRemoved": "Tags retirés : {count}",
+  "bulkTagsUnchanged": "Rien à modifier",
   "bulkExportPngTitle": "Exporter en PNG",
   "columnsCount": "Colonnes",
   "bulkExportPngItemsCount": "{count, plural, =1{1 image} other{{count} images}}",

@@ -361,6 +361,47 @@ class SPt extends S {
   }
 
   @override
+  String get bulkAddTags => 'Adicionar tags';
+
+  @override
+  String get bulkRemoveTags => 'Remover tags';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count itens',
+      one: '1 item',
+    );
+    return 'Adicionar tags a $_temp0';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count itens',
+      one: '1 item',
+    );
+    return 'Remover tags de $_temp0';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return 'Tags adicionadas: $count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return 'Tags removidas: $count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => 'Nada a alterar';
+
+  @override
   String get bulkExportPngTitle => 'Exportar como PNG';
 
   @override

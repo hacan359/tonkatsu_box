@@ -148,6 +148,33 @@
       "count": {"type": "int"}
     }
   },
+  "bulkAddTags": "Add tags",
+  "bulkRemoveTags": "Remove tags",
+  "bulkAddTagsTitle": "Add tags to {count, plural, =1{1 item} other{{count} items}}",
+  "@bulkAddTagsTitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkRemoveTagsTitle": "Remove tags from {count, plural, =1{1 item} other{{count} items}}",
+  "@bulkRemoveTagsTitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsAdded": "Tags added: {count}",
+  "@bulkTagsAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsRemoved": "Tags removed: {count}",
+  "@bulkTagsRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsUnchanged": "Nothing to change",
   "bulkExportPngTitle": "Export as PNG",
   "columnsCount": "Columns",
   "bulkExportPngItemsCount": "{count, plural, =1{1 item} other{{count} items}}",

@@ -3,6 +3,7 @@ import 'package:core/database/migrations/migration_v56.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
+import 'package:tonkatsu_box/core/database/query_chunk.dart';
 import 'package:tonkatsu_box/shared/models/tag.dart';
 
 void main() {
@@ -219,6 +220,108 @@ void main() {
         await dao.addTagToItems(<int>[], owned.id);
 
         expect(await dao.getTagIdsByItem(1), isEmpty);
+      });
+
+      test('addTagsToItems links every tag to every item additively',
+          () async {
+        final Tag a = await dao.create('a');
+        final Tag b = await dao.create('b');
+        final Tag c = await dao.create('c');
+        await dao.setItemTags(1, <int>{a.id});
+
+        await dao.addTagsToItems(<int>[1, 2], <int>{b.id, c.id});
+
+        expect(await dao.getTagIdsByItem(1), <int>[a.id, b.id, c.id]);
+        expect(await dao.getTagIdsByItem(2), <int>[b.id, c.id]);
+      });
+
+      test('addTagsToItems is idempotent for already linked pairs', () async {
+        final Tag a = await dao.create('a');
+        final Tag b = await dao.create('b');
+        await dao.setItemTags(1, <int>{a.id});
+
+        await dao.addTagsToItems(<int>[1], <int>{a.id, b.id});
+        await dao.addTagsToItems(<int>[1], <int>{a.id, b.id});
+
+        expect(await dao.getTagIdsByItem(1), <int>[a.id, b.id]);
+      });
+
+      test('addTagsToItems with no items or no tags is a no-op', () async {
+        final Tag a = await dao.create('a');
+        await dao.addTagsToItems(<int>[], <int>{a.id});
+        await dao.addTagsToItems(<int>[1], <int>{});
+
+        expect(await dao.getTagIdsByItem(1), isEmpty);
+      });
+
+      test('removeTagsFromItems drops only the named pairs', () async {
+        final Tag a = await dao.create('a');
+        final Tag b = await dao.create('b');
+        final Tag c = await dao.create('c');
+        await dao.setItemTags(1, <int>{a.id, b.id, c.id});
+        await dao.setItemTags(2, <int>{a.id, b.id});
+        await dao.setItemTags(3, <int>{c.id});
+
+        await dao.removeTagsFromItems(<int>[1, 2], <int>{a.id, c.id});
+
+        expect(await dao.getTagIdsByItem(1), <int>[b.id]);
+        expect(await dao.getTagIdsByItem(2), <int>[b.id]);
+        // Item 3 was not in the id list, so its link survives.
+        expect(await dao.getTagIdsByItem(3), <int>[c.id]);
+      });
+
+      test('removeTagsFromItems can leave an item with no tags', () async {
+        final Tag a = await dao.create('a');
+        await dao.setItemTags(1, <int>{a.id});
+
+        await dao.removeTagsFromItems(<int>[1], <int>{a.id});
+
+        expect(await dao.getTagIdsByItem(1), isEmpty);
+      });
+
+      test('removeTagsFromItems keeps the tag itself in the registry',
+          () async {
+        final Tag a = await dao.create('a');
+        await dao.setItemTags(1, <int>{a.id});
+
+        await dao.removeTagsFromItems(<int>[1], <int>{a.id});
+
+        expect(await dao.getById(a.id), isNotNull);
+      });
+
+      test('removeTagsFromItems ignores unlinked pairs', () async {
+        final Tag a = await dao.create('a');
+        final Tag b = await dao.create('b');
+        await dao.setItemTags(1, <int>{a.id});
+
+        await expectLater(
+          dao.removeTagsFromItems(<int>[1, 2], <int>{b.id}),
+          completes,
+        );
+        expect(await dao.getTagIdsByItem(1), <int>[a.id]);
+      });
+
+      test('removeTagsFromItems with no items or no tags is a no-op',
+          () async {
+        final Tag a = await dao.create('a');
+        await dao.setItemTags(1, <int>{a.id});
+
+        await dao.removeTagsFromItems(<int>[], <int>{a.id});
+        await dao.removeTagsFromItems(<int>[1], <int>{});
+
+        expect(await dao.getTagIdsByItem(1), <int>[a.id]);
+      });
+
+      test('removeTagsFromItems chunks past the bound-parameter limit',
+          () async {
+        final Tag a = await dao.create('a');
+        final List<int> itemIds =
+            List<int>.generate(kInClauseChunkSize + 50, (int i) => i + 1);
+        await dao.addTagsToItems(itemIds, <int>{a.id});
+
+        await dao.removeTagsFromItems(itemIds, <int>{a.id});
+
+        expect(await dao.getTagIdsForItems(itemIds), isEmpty);
       });
     });
 

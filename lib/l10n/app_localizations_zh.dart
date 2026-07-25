@@ -342,6 +342,35 @@ class SZh extends S {
   }
 
   @override
+  String get bulkAddTags => '添加标签';
+
+  @override
+  String get bulkRemoveTags => '移除标签';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    return '为 $count 项添加标签';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    return '从 $count 项移除标签';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return '已添加标签：$count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return '已移除标签：$count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => '无需更改';
+
+  @override
   String get bulkExportPngTitle => '导出为 PNG';
 
   @override

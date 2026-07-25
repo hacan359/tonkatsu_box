@@ -87,6 +87,39 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Tag several selected items at once**
+
+  The selection toolbar in a collection and on All Items gains add-tags and
+  remove-tags actions, so a tag no longer has to be applied item by item.
+  Both open the same tag picker used for a single item, with nothing
+  pre-checked: the selection's items carry different tags, so a checked box
+  means "apply to all of them" rather than "this item has it". Adding is
+  additive and removing only drops the tags you picked, so tags assigned per
+  item and their manual order survive either way.
+
+  On a narrow window the toolbar now stacks: the counter keeps its own line
+  and the actions get theirs, instead of the actions being squeezed into a
+  sliver of scrollable space on a phone.
+
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.addTagsToItems,
+    GlobalTagDao.removeTagsFromItems): New batched link writes over an item
+    list and a tag set — one `INSERT OR IGNORE` batch and one chunked
+    `DELETE`, so neither grows a query per item.
+  * lib/features/collections/providers/item_tags_provider.dart
+    (ItemTagsNotifier.addTagsToItems, ItemTagsNotifier.removeTagsFromItems,
+    ItemTagsNotifier._syncItems): Bulk map updates — one write plus one
+    read-back that keeps the in-memory tag order identical to the DAO's, then
+    a single state update. Return how many links actually changed.
+  * lib/features/collections/widgets/bulk_action_bar.dart (BulkActionBar,
+    BulkActionBar._handleTags, BulkActionBar._buildSelectionControls,
+    BulkActionBar._buildActionStrip): Add the two tag actions; split the bar
+    into a selection-controls row and an action strip laid out in one or two
+    rows by width; ellipsize the counter so it can't push Select all off the
+    edge.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    Accept an optional title and confirm label so a bulk caller can say what
+    the picked tags will do.
+
 - **French (fr) interface localization**
 
   The app interface is now available in French alongside English, Russian,
