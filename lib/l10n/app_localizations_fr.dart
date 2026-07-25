@@ -361,6 +361,47 @@ class SFr extends S {
   }
 
   @override
+  String get bulkAddTags => 'Ajouter des tags';
+
+  @override
+  String get bulkRemoveTags => 'Retirer des tags';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments',
+      one: '1 élément',
+    );
+    return 'Ajouter des tags à $_temp0';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments',
+      one: '1 élément',
+    );
+    return 'Retirer des tags de $_temp0';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return 'Tags ajoutés : $count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return 'Tags retirés : $count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => 'Rien à modifier';
+
+  @override
   String get bulkExportPngTitle => 'Exporter en PNG';
 
   @override

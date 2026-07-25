@@ -14,8 +14,13 @@ import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../helpers/bulk_operations.dart';
 import '../providers/collections_provider.dart';
+import '../providers/item_tags_provider.dart';
 import 'bulk_export/bulk_poster_export_dialog.dart';
+import 'tag_picker_dialog.dart';
 import '../../../shared/constants/item_status_ui.dart';
+
+/// Below this width the counter and the actions stop fitting on one line.
+const double _kTwoRowBreakpoint = 620;
 
 /// Selection toolbar that works both inside a single collection and on All
 /// Items. When [collectionId] is set the bar excludes that collection from
@@ -72,85 +77,128 @@ class BulkActionBar extends ConsumerWidget {
           horizontal: AppSpacing.md,
           vertical: AppSpacing.xs,
         ),
-        child: Row(
-          children: <Widget>[
-            _CloseButton(onPressed: onClearSelection),
-            const SizedBox(width: AppSpacing.sm),
-            Text(
-              l.bulkSelected(count),
-              style: AppTypography.body.copyWith(
-                color: AppColors.brand,
-                fontWeight: FontWeight.w600,
-              ),
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            // One row cannot hold the counter and every action on a phone:
+            // the counter wins the width and the actions scroll away almost
+            // entirely. Below the threshold they get a row of their own.
+            if (constraints.maxWidth < _kTwoRowBreakpoint) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(children: _buildSelectionControls(l, count)),
+                  _buildActionStrip(context, ref, l, isManualSort),
+                ],
+              );
+            }
+            return Row(
+              children: <Widget>[
+                ..._buildSelectionControls(l, count),
+                Expanded(
+                  child: _buildActionStrip(context, ref, l, isManualSort),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildSelectionControls(S l, int count) {
+    return <Widget>[
+      _CloseButton(onPressed: onClearSelection),
+      const SizedBox(width: AppSpacing.sm),
+      // Flexible so a long localized counter ellipsizes instead of pushing
+      // the Select all button off the edge on a narrow screen.
+      Flexible(
+        child: Text(
+          l.bulkSelected(count),
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.body.copyWith(
+            color: AppColors.brand,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      if (onSelectAllVisible != null && (visibleCount ?? 0) > count) ...<Widget>[
+        const SizedBox(width: AppSpacing.sm),
+        TextButton(
+          onPressed: onSelectAllVisible,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.brand,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(l.selectAll),
+        ),
+      ],
+    ];
+  }
+
+  Widget _buildActionStrip(
+    BuildContext context,
+    WidgetRef ref,
+    S l,
+    bool isManualSort,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      reverse: true,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          _BarAction(
+            icon: Icons.drive_file_move_outlined,
+            tooltip: l.collectionMoveToCollection,
+            onTap: () => _handleMove(context, ref),
+          ),
+          _BarAction(
+            icon: Icons.copy_outlined,
+            tooltip: l.collectionCopyToCollection,
+            onTap: () => _handleClone(context, ref),
+          ),
+          _StatusMenuAction(
+            onSelected: (ItemStatus s) => _handleStatus(context, ref, s),
+          ),
+          _BarAction(
+            icon: Icons.new_label_outlined,
+            tooltip: l.bulkAddTags,
+            onTap: () => _handleTags(context, ref, add: true),
+          ),
+          _BarAction(
+            icon: Icons.label_off_outlined,
+            tooltip: l.bulkRemoveTags,
+            onTap: () => _handleTags(context, ref, add: false),
+          ),
+          _BarAction(
+            icon: Icons.image_outlined,
+            tooltip: l.bulkExportPngTitle,
+            onTap: () => _handleExportPng(context),
+          ),
+          if (isManualSort) ...<Widget>[
+            const _BarDivider(),
+            _BarAction(
+              icon: Icons.vertical_align_top,
+              tooltip: l.moveToTop,
+              onTap: () => _handleMoveToTop(ref),
             ),
-            if (onSelectAllVisible != null &&
-                (visibleCount ?? 0) > count) ...<Widget>[
-              const SizedBox(width: AppSpacing.sm),
-              TextButton(
-                onPressed: onSelectAllVisible,
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.brand,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(l.selectAll),
-              ),
-            ],
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                reverse: true,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    _BarAction(
-                      icon: Icons.drive_file_move_outlined,
-                      tooltip: l.collectionMoveToCollection,
-                      onTap: () => _handleMove(context, ref),
-                    ),
-                    _BarAction(
-                      icon: Icons.copy_outlined,
-                      tooltip: l.collectionCopyToCollection,
-                      onTap: () => _handleClone(context, ref),
-                    ),
-                    _StatusMenuAction(
-                      onSelected: (ItemStatus s) =>
-                          _handleStatus(context, ref, s),
-                    ),
-                    _BarAction(
-                      icon: Icons.image_outlined,
-                      tooltip: l.bulkExportPngTitle,
-                      onTap: () => _handleExportPng(context),
-                    ),
-                    if (isManualSort) ...<Widget>[
-                      const _BarDivider(),
-                      _BarAction(
-                        icon: Icons.vertical_align_top,
-                        tooltip: l.moveToTop,
-                        onTap: () => _handleMoveToTop(ref),
-                      ),
-                      _BarAction(
-                        icon: Icons.vertical_align_bottom,
-                        tooltip: l.moveToBottom,
-                        onTap: () => _handleMoveToBottom(ref),
-                      ),
-                    ],
-                    const _BarDivider(),
-                    _BarAction(
-                      icon: Icons.delete_outline,
-                      tooltip: l.remove,
-                      danger: true,
-                      onTap: () => _handleRemove(context, ref),
-                    ),
-                  ],
-                ),
-              ),
+            _BarAction(
+              icon: Icons.vertical_align_bottom,
+              tooltip: l.moveToBottom,
+              onTap: () => _handleMoveToBottom(ref),
             ),
           ],
-        ),
+          const _BarDivider(),
+          _BarAction(
+            icon: Icons.delete_outline,
+            tooltip: l.remove,
+            danger: true,
+            onTap: () => _handleRemove(context, ref),
+          ),
+        ],
       ),
     );
   }
@@ -224,6 +272,44 @@ class BulkActionBar extends ConsumerWidget {
     context.showSnack(
       l.bulkStatusUpdated(changed),
       type: SnackType.success,
+    );
+  }
+
+  /// Adds or drops the picked tags across the selection, leaving each item's
+  /// other tags untouched — the bar never replaces a whole tag set, because
+  /// that would wipe tags the user assigned per item.
+  Future<void> _handleTags(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool add,
+  }) async {
+    final S l = S.of(context);
+    final int count = items.length;
+    final Set<int>? picked = await TagPickerDialog.show(
+      context,
+      // Selected items carry different tags, so there is no shared state to
+      // pre-check. Here a checked box means "apply to all", not the
+      // single-item "this item has the tag".
+      initialSelection: const <int>{},
+      title: add ? l.bulkAddTagsTitle(count) : l.bulkRemoveTagsTitle(count),
+      confirmLabel: add ? l.add : l.remove,
+    );
+    if (picked == null || picked.isEmpty || !context.mounted) return;
+
+    final ItemTagsNotifier tags = ref.read(itemTagsProvider.notifier);
+    final Iterable<int> ids = items.map((CollectionItem i) => i.id);
+    final int changed = add
+        ? await tags.addTagsToItems(ids, picked)
+        : await tags.removeTagsFromItems(ids, picked);
+    onClearSelection();
+    if (!context.mounted) return;
+    context.showSnack(
+      switch (changed) {
+        0 => l.bulkTagsUnchanged,
+        _ when add => l.bulkTagsAdded(changed),
+        _ => l.bulkTagsRemoved(changed),
+      },
+      type: changed == 0 ? SnackType.info : SnackType.success,
     );
   }
 

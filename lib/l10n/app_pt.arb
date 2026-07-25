@@ -155,6 +155,13 @@
       }
     }
   },
+  "bulkAddTags": "Adicionar tags",
+  "bulkRemoveTags": "Remover tags",
+  "bulkAddTagsTitle": "Adicionar tags a {count, plural, =1{1 item} other{{count} itens}}",
+  "bulkRemoveTagsTitle": "Remover tags de {count, plural, =1{1 item} other{{count} itens}}",
+  "bulkTagsAdded": "Tags adicionadas: {count}",
+  "bulkTagsRemoved": "Tags removidas: {count}",
+  "bulkTagsUnchanged": "Nada a alterar",
   "bulkExportPngTitle": "Exportar como PNG",
   "columnsCount": "Colunas",
   "bulkExportPngItemsCount": "{count, plural, =1{1 item} other{{count} itens}}",

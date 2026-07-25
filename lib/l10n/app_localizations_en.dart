@@ -361,6 +361,47 @@ class SEn extends S {
   }
 
   @override
+  String get bulkAddTags => 'Add tags';
+
+  @override
+  String get bulkRemoveTags => 'Remove tags';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return 'Add tags to $_temp0';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return 'Remove tags from $_temp0';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return 'Tags added: $count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return 'Tags removed: $count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => 'Nothing to change';
+
+  @override
   String get bulkExportPngTitle => 'Export as PNG';
 
   @override

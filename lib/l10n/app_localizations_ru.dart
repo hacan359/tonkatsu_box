@@ -367,6 +367,49 @@ class SRu extends S {
   }
 
   @override
+  String get bulkAddTags => 'Добавить теги';
+
+  @override
+  String get bulkRemoveTags => 'Удалить теги';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count элементам',
+      few: '$count элементам',
+      one: '1 элементу',
+    );
+    return 'Добавить теги к $_temp0';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count элементов',
+      few: '$count элементов',
+      one: '1 элемента',
+    );
+    return 'Удалить теги у $_temp0';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return 'Добавлено тегов: $count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return 'Удалено тегов: $count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => 'Нечего менять';
+
+  @override
   String get bulkExportPngTitle => 'Экспорт в PNG';
 
   @override

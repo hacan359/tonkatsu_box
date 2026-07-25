@@ -747,6 +747,48 @@ abstract class S {
   /// **'Status updated for {count, plural, =1{1 item} other{{count} items}}'**
   String bulkStatusUpdated(int count);
 
+  /// No description provided for @bulkAddTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tags'**
+  String get bulkAddTags;
+
+  /// No description provided for @bulkRemoveTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tags'**
+  String get bulkRemoveTags;
+
+  /// No description provided for @bulkAddTagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tags to {count, plural, =1{1 item} other{{count} items}}'**
+  String bulkAddTagsTitle(int count);
+
+  /// No description provided for @bulkRemoveTagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tags from {count, plural, =1{1 item} other{{count} items}}'**
+  String bulkRemoveTagsTitle(int count);
+
+  /// No description provided for @bulkTagsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags added: {count}'**
+  String bulkTagsAdded(int count);
+
+  /// No description provided for @bulkTagsRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags removed: {count}'**
+  String bulkTagsRemoved(int count);
+
+  /// No description provided for @bulkTagsUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to change'**
+  String get bulkTagsUnchanged;
+
   /// No description provided for @bulkExportPngTitle.
   ///
   /// In en, this message translates to:

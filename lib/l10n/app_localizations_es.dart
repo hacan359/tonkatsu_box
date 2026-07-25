@@ -361,6 +361,47 @@ class SEs extends S {
   }
 
   @override
+  String get bulkAddTags => 'Añadir etiquetas';
+
+  @override
+  String get bulkRemoveTags => 'Quitar etiquetas';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos',
+      one: '1 elemento',
+    );
+    return 'Añadir etiquetas a $_temp0';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos',
+      one: '1 elemento',
+    );
+    return 'Quitar etiquetas de $_temp0';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return 'Etiquetas añadidas: $count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return 'Etiquetas quitadas: $count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => 'Nada que cambiar';
+
+  @override
   String get bulkExportPngTitle => 'Exportar como PNG';
 
   @override

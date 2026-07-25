@@ -148,6 +148,13 @@
       "count": {"type": "int"}
     }
   },
+  "bulkAddTags": "添加标签",
+  "bulkRemoveTags": "移除标签",
+  "bulkAddTagsTitle": "为 {count} 项添加标签",
+  "bulkRemoveTagsTitle": "从 {count} 项移除标签",
+  "bulkTagsAdded": "已添加标签：{count}",
+  "bulkTagsRemoved": "已移除标签：{count}",
+  "bulkTagsUnchanged": "无需更改",
   "bulkExportPngTitle": "导出为 PNG",
   "columnsCount": "列数",
   "bulkExportPngItemsCount": "{count} 个项目",

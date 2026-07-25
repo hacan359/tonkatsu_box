@@ -148,6 +148,13 @@
       "count": {"type": "int"}
     }
   },
+  "bulkAddTags": "Добавить теги",
+  "bulkRemoveTags": "Удалить теги",
+  "bulkAddTagsTitle": "Добавить теги к {count, plural, =1{1 элементу} few{{count} элементам} other{{count} элементам}}",
+  "bulkRemoveTagsTitle": "Удалить теги у {count, plural, =1{1 элемента} few{{count} элементов} other{{count} элементов}}",
+  "bulkTagsAdded": "Добавлено тегов: {count}",
+  "bulkTagsRemoved": "Удалено тегов: {count}",
+  "bulkTagsUnchanged": "Нечего менять",
   "bulkExportPngTitle": "Экспорт в PNG",
   "columnsCount": "Колонок",
   "bulkExportPngItemsCount": "{count, plural, =1{1 элемент} few{{count} элемента} many{{count} элементов} other{{count} элементов}}",
