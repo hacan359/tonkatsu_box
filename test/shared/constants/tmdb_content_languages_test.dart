@@ -66,6 +66,10 @@ void main() {
       expect(defaultContentLanguageForUi('pt'), 'pt-BR');
     });
 
+    test('fr → fr-FR', () {
+      expect(defaultContentLanguageForUi('fr'), 'fr-FR');
+    });
+
     test('неизвестная локаль → en-US (fallback)', () {
       expect(defaultContentLanguageForUi('xx'), 'en-US');
       expect(defaultContentLanguageForUi(''), 'en-US');
@@ -75,7 +79,15 @@ void main() {
       final Set<String> available = kTmdbContentLanguages
           .map((TmdbContentLanguage l) => l.code)
           .toSet();
-      for (final String ui in <String>['en', 'ru', 'zh', 'es', 'pt', 'unknown']) {
+      for (final String ui in <String>[
+        'en',
+        'ru',
+        'zh',
+        'es',
+        'pt',
+        'fr',
+        'unknown',
+      ]) {
         expect(available, contains(defaultContentLanguageForUi(ui)));
       }
     });
