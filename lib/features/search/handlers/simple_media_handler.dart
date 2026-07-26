@@ -177,7 +177,7 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     final Map<int, List<CollectedItemInfo>> collected =
         await _ref.read(collectedProvider.future);
     return (collected[id] ?? <CollectedItemInfo>[])
-        .where((CollectedItemInfo i) => source == null || i.source == source)
+        .forSource(mediaType, source)
         .map((CollectedItemInfo i) => i.collectionId)
         .toSet();
   }

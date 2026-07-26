@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/image_cache_service.dart';
 import '../constants/platform_features.dart';
 import '../models/book.dart';
+import '../models/data_source.dart';
 import '../models/media_type.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -21,7 +22,7 @@ class BookCarousel extends StatefulWidget {
   const BookCarousel({
     required this.books,
     required this.onTap,
-    this.ownedIds = const <int>{},
+    this.ownedKeys = const <(DataSource, int)>{},
     this.showRating = true,
     this.tooltipOf,
     this.onEndReached,
@@ -32,9 +33,10 @@ class BookCarousel extends StatefulWidget {
   final List<Book> books;
   final void Function(Book book) onTap;
 
-  /// `externalIdInt`s already in a collection — those cards show the owned
-  /// badge. Empty disables the badge.
-  final Set<int> ownedIds;
+  /// `(source, externalIdInt)` of books already in a collection — those cards
+  /// show the owned badge. Keyed by source because book providers hand out
+  /// colliding numeric ids. Empty disables the badge.
+  final Set<(DataSource, int)> ownedKeys;
 
   final bool showRating;
 
@@ -138,7 +140,8 @@ class _BookCarouselState extends State<BookCarousel> {
         year: book.publishYear,
         apiRating: widget.showRating ? book.rating : null,
         splitRatings: true,
-        isInCollection: widget.ownedIds.contains(book.externalIdInt),
+        isInCollection:
+            widget.ownedKeys.contains((book.source, book.externalIdInt)),
         placeholderIcon: Icons.menu_book,
         onTap: () => widget.onTap(book),
       ),

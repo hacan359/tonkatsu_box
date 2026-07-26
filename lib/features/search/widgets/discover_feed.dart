@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -24,7 +25,14 @@ final FutureProvider<Set<int>> _existingTmdbIdsProvider =
       await ref.watch(collectedTvShowIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> animations =
       await ref.watch(collectedAnimationIdsProvider.future);
-  return <int>{...movies.keys, ...tvShows.keys, ...animations.keys};
+  // Every card in the feed comes from TMDB, so a TVmaze show sharing a numeric
+  // id with a TMDB one must not badge it as owned. Movies and animation are
+  // TMDB-only, their keys need no narrowing.
+  return <int>{
+    ...movies.keys,
+    ...tvShows.idsFromSource(DataSource.tmdb),
+    ...animations.keys,
+  };
 });
 
 /// Shown on the search screen while the query is empty; sections are

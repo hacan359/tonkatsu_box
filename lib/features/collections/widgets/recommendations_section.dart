@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
@@ -128,8 +130,13 @@ class RecommendationsSection extends ConsumerWidget {
     final AsyncValue<List<TvShow>> asyncRecs =
         ref.watch(_getTvRecProvider(tmdbId));
 
+    // TMDB recommendations, so only TMDB placements count: a TVmaze show with
+    // the same numeric id is a different show.
     final Set<int> ownedIds = <int>{
-      ...ref.watch(collectedTvShowIdsProvider).valueOrNull?.keys ?? <int>[],
+      ...?ref
+          .watch(collectedTvShowIdsProvider)
+          .valueOrNull
+          ?.idsFromSource(DataSource.tmdb),
       ...ref.watch(collectedAnimationIdsProvider).valueOrNull?.keys ?? <int>[],
     };
 

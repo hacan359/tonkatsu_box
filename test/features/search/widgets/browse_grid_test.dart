@@ -90,6 +90,8 @@ void main() {
   Widget buildWidget({
     BrowseState? initialState,
     void Function(Object item, MediaType mediaType)? onItemTap,
+    void Function(int externalId, MediaType mediaType, DataSource? source)?
+        onOpenInCollection,
     List<Override>? extraOverrides,
     Map<int, Platform> platformMap = const <int, Platform>{},
   }) {
@@ -110,6 +112,7 @@ void main() {
         home: Scaffold(
           body: BrowseGrid(
             onItemTap: onItemTap ?? (_, _) {},
+            onOpenInCollection: onOpenInCollection,
             platformMap: platformMap,
           ),
         ),
@@ -474,6 +477,99 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+
+    testWidgets('open-in-collection carries the item source for anime',
+        (WidgetTester tester) async {
+      int? gotId;
+      MediaType? gotType;
+      DataSource? gotSource;
+
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'kitsu_anime',
+            searchQuery: 'bebop',
+            items: <Object>[
+              Anime(
+                id: 55,
+                title: 'Cowboy Bebop',
+                source: DataSource.kitsu,
+                coverUrl: 'https://example.com/anime.jpg',
+              ),
+            ],
+          ),
+          onOpenInCollection: (int id, MediaType type, DataSource? source) {
+            gotId = id;
+            gotType = type;
+            gotSource = source;
+          },
+          extraOverrides: collectedOverrides(
+            animes: <int, List<CollectedItemInfo>>{
+              55: const <CollectedItemInfo>[
+                CollectedItemInfo(
+                  recordId: 1,
+                  collectionId: 1,
+                  collectionName: 'Coll',
+                  source: DataSource.kitsu,
+                ),
+              ],
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.open_in_new));
+      await tester.pump();
+
+      expect(gotId, 55);
+      expect(gotType, MediaType.anime);
+      expect(gotSource, DataSource.kitsu);
+    });
+
+    testWidgets('open-in-collection carries no source for a single-source type',
+        (WidgetTester tester) async {
+      DataSource? gotSource;
+      bool called = false;
+
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'movies',
+            items: <Object>[
+              Movie(
+                tmdbId: 77,
+                title: 'Dune',
+                releaseYear: 2021,
+                posterUrl: 'https://example.com/dune.jpg',
+              ),
+            ],
+          ),
+          onOpenInCollection: (int id, MediaType type, DataSource? source) {
+            called = true;
+            gotSource = source;
+          },
+          extraOverrides: collectedOverrides(
+            movies: <int, List<CollectedItemInfo>>{
+              77: const <CollectedItemInfo>[
+                CollectedItemInfo(
+                  recordId: 1,
+                  collectionId: 1,
+                  collectionName: 'Coll',
+                ),
+              ],
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.open_in_new));
+      await tester.pump();
+
+      expect(called, isTrue);
+      expect(gotSource, isNull);
     });
 
     testWidgets('no collection mark when item not collected',

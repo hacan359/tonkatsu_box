@@ -68,28 +68,17 @@ final FutureProvider<_CollectedIds> _collectedIdsProvider =
   final Map<int, List<CollectedItemInfo>> books =
       await ref.watch(collectedBookIdsProvider.future);
 
-  Set<(DataSource, int)> sourceKeys(
-    List<Map<int, List<CollectedItemInfo>>> maps,
-  ) {
-    final Set<(DataSource, int)> keys = <(DataSource, int)>{};
-    for (final Map<int, List<CollectedItemInfo>> map in maps) {
-      for (final MapEntry<int, List<CollectedItemInfo>> e in map.entries) {
-        for (final CollectedItemInfo info in e.value) {
-          keys.add((info.source, e.key));
-        }
-      }
-    }
-    return keys;
-  }
-
   return (
     tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
-    tvKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[tvShows, animations]),
+    tvKeys: <(DataSource, int)>{
+      ...tvShows.sourceKeys,
+      ...animations.sourceKeys,
+    },
     gameIds: games.keys.toSet(),
     vnIds: visualNovels.keys.toSet(),
-    mangaKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[mangas]),
-    animeKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[animes]),
-    bookKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[books]),
+    mangaKeys: mangas.sourceKeys,
+    animeKeys: animes.sourceKeys,
+    bookKeys: books.sourceKeys,
   );
 });
 
@@ -104,7 +93,14 @@ class BrowseGrid extends ConsumerStatefulWidget {
 
   final void Function(Object item, MediaType mediaType) onItemTap;
 
-  final void Function(int externalId, MediaType mediaType)? onOpenInCollection;
+  /// [source] is the provider of a multi-source item, `null` otherwise; the
+  /// receiver needs it to pick the right placement when two providers share a
+  /// numeric id.
+  final void Function(
+    int externalId,
+    MediaType mediaType,
+    DataSource? source,
+  )? onOpenInCollection;
 
   /// Client-side type-to-filter query applied to titles.
   final String? clientFilter;
@@ -288,9 +284,13 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     CardVariant variant,
     String animeMangaTitleLanguage,
   ) {
-    VoidCallback? openCallback(int externalId, bool inCollection) {
+    VoidCallback? openCallback(
+      int externalId,
+      bool inCollection, {
+      DataSource? source,
+    }) {
       if (!inCollection || widget.onOpenInCollection == null) return null;
-      return () => widget.onOpenInCollection!(externalId, mediaType);
+      return () => widget.onOpenInCollection!(externalId, mediaType, source);
     }
 
     if (item is Movie) {
@@ -327,7 +327,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         mediaType: mediaType,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, mediaType),
-        onOpenInCollection: openCallback(item.tmdbId, inColl),
+        onOpenInCollection:
+            openCallback(item.tmdbId, inColl, source: item.source),
       );
     }
 
@@ -385,7 +386,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         typeLabelOverride: item.formatLabel,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, mediaType),
-        onOpenInCollection: openCallback(item.id, inColl),
+        onOpenInCollection: openCallback(item.id, inColl, source: item.source),
       );
     }
 
@@ -407,7 +408,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         typeLabelOverride: item.formatLabel,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, mediaType),
-        onOpenInCollection: openCallback(item.id, inColl),
+        onOpenInCollection: openCallback(item.id, inColl, source: item.source),
       );
     }
 
@@ -430,7 +431,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         mediaType: mediaType,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, mediaType),
-        onOpenInCollection: openCallback(externalId, inColl),
+        onOpenInCollection:
+            openCallback(externalId, inColl, source: item.source),
       );
     }
 

@@ -149,6 +149,7 @@ void main() {
                 recordId: 1,
                 collectionId: 1,
                 collectionName: 'Read',
+                source: DataSource.googleBooks,
               ),
             ],
           },
@@ -157,6 +158,30 @@ void main() {
       await pumpUntilResolved(tester);
 
       expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+
+    testWidgets('does not mark a similar book owned from another provider',
+        (WidgetTester tester) async {
+      stubSearch(<Book>[gbook(id: '1', title: 'Eden')]);
+
+      await tester.pumpWidget(
+        build(
+          ownedIds: <int, List<CollectedItemInfo>>{
+            // Same numeric id from Fantlab — a different book.
+            1: <CollectedItemInfo>[
+              const CollectedItemInfo(
+                recordId: 1,
+                collectionId: 1,
+                collectionName: 'Read',
+                source: DataSource.fantlab,
+              ),
+            ],
+          },
+        ),
+      );
+      await pumpUntilResolved(tester);
+
+      expect(find.byIcon(Icons.check), findsNothing);
     });
   });
 }
