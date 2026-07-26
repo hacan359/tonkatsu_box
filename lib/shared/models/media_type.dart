@@ -41,6 +41,15 @@ enum MediaType {
   bool get isTvBacked =>
       this == MediaType.tvShow || this == MediaType.animation;
 
+  /// Whether identity is `(externalId, source)` rather than `externalId`
+  /// alone: several providers serve this type and their numeric ids collide.
+  /// Animation is excluded on purpose — it only ever comes from TMDB.
+  bool get isMultiSource =>
+      this == MediaType.manga ||
+      this == MediaType.anime ||
+      this == MediaType.tvShow ||
+      this == MediaType.book;
+
   /// Fallback source for rows whose `source` column is NULL.
   DataSource get defaultSource => switch (this) {
         MediaType.game => DataSource.igdb,

@@ -17,7 +17,8 @@ class CardLinkRef {
   final MediaType mediaType;
   final int externalId;
 
-  /// Manga identity component; `null` for other media types.
+  /// Provider identity component for multi-source types; `null` when the
+  /// media type has one provider or the token predates source tagging.
   final DataSource? source;
 
   /// Game platform / animation source component; `null` when not applicable.
@@ -50,8 +51,9 @@ String buildCardLinkToken(CollectionItem item) {
     ..write('mt=${item.mediaType.value}')
     ..write(';id=${item.externalId}');
 
-  if (item.mediaType == MediaType.manga && item.source != null) {
-    payload.write(';src=${item.source!.name}');
+  final DataSource? source = item.source;
+  if (item.mediaType.isMultiSource && source != null) {
+    payload.write(';src=${source.name}');
   }
   if (item.platformId != null) {
     payload.write(';pf=${item.platformId}');

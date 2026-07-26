@@ -20,24 +20,17 @@ String coverImageId({
   DataSource? source,
   String? coverUrl,
 }) {
-  if (mediaType == MediaType.manga || mediaType == MediaType.anime) {
-    return '${(source ?? DataSource.anilist).name}_$externalId';
-  }
-  if (mediaType == MediaType.tvShow) {
-    return '${(source ?? DataSource.tmdb).name}_$externalId';
-  }
-  if (mediaType == MediaType.book) {
-    final String base =
-        '${(source ?? DataSource.openLibrary).name}_$externalId';
-    // A Fantlab cover belongs to a specific edition (its id is embedded in the
-    // URL). Key by it so picking a different edition is a distinct cache entry
-    // rather than a stale overwrite of the same `work` file.
-    final RegExpMatch? edition = coverUrl != null
-        ? _fantlabEditionId.firstMatch(coverUrl)
-        : null;
-    return edition != null ? '${base}_e${edition.group(1)}' : base;
-  }
-  return externalId.toString();
+  if (!mediaType.isMultiSource) return externalId.toString();
+
+  final String base = '${(source ?? mediaType.defaultSource).name}_$externalId';
+  if (mediaType != MediaType.book) return base;
+
+  // A Fantlab cover belongs to a specific edition (its id is embedded in the
+  // URL). Key by it so picking a different edition is a distinct cache entry
+  // rather than a stale overwrite of the same `work` file.
+  final RegExpMatch? edition =
+      coverUrl != null ? _fantlabEditionId.firstMatch(coverUrl) : null;
+  return edition != null ? '${base}_e${edition.group(1)}' : base;
 }
 
 final RegExp _fantlabEditionId = RegExp(r'/images/editions/\w+/(\d+)');

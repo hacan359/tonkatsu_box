@@ -9,6 +9,7 @@ import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
 import 'package:tonkatsu_box/features/search/widgets/browse_grid.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/movie.dart';
@@ -392,6 +393,78 @@ void main() {
                   collectionId: 1,
                   collectionName: 'Coll',
                   source: DataSource.tvmaze,
+                ),
+              ],
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+
+    testWidgets('does not mark a Kitsu anime when an AniList one shares the id',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'kitsu_anime',
+            searchQuery: 'bebop',
+            items: <Object>[
+              Anime(
+                id: 55,
+                title: 'Cowboy Bebop',
+                source: DataSource.kitsu,
+                coverUrl: 'https://example.com/anime.jpg',
+              ),
+            ],
+          ),
+          extraOverrides: collectedOverrides(
+            animes: <int, List<CollectedItemInfo>>{
+              55: const <CollectedItemInfo>[
+                // Defaults to DataSource.tmdb; the DAO resolves a NULL source
+                // for anime to anilist — either way, not Kitsu.
+                CollectedItemInfo(
+                  recordId: 1,
+                  collectionId: 1,
+                  collectionName: 'Coll',
+                  source: DataSource.anilist,
+                ),
+              ],
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.check), findsNothing);
+    });
+
+    testWidgets('marks a Kitsu anime collected from the same source',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'kitsu_anime',
+            searchQuery: 'bebop',
+            items: <Object>[
+              Anime(
+                id: 55,
+                title: 'Cowboy Bebop',
+                source: DataSource.kitsu,
+                coverUrl: 'https://example.com/anime.jpg',
+              ),
+            ],
+          ),
+          extraOverrides: collectedOverrides(
+            animes: <int, List<CollectedItemInfo>>{
+              55: const <CollectedItemInfo>[
+                CollectedItemInfo(
+                  recordId: 1,
+                  collectionId: 1,
+                  collectionName: 'Coll',
+                  source: DataSource.kitsu,
                 ),
               ],
             },

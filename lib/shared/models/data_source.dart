@@ -12,7 +12,8 @@ enum DataSource {
   tvmaze('TVmaze', 0xFF3C5C8C, AppAssets.iconTvMazeColor),
 
   /// SteamGridDB — Steam artwork.
-  steamGridDb('SGDB', 0xFF3A9BDC, AppAssets.iconSteamGridDbColor),
+  steamGridDb('SGDB', 0xFF3A9BDC, AppAssets.iconSteamGridDbColor,
+      brandName: 'SteamGridDB'),
 
   /// VGMaps — video game maps.
   vgMaps('VGMaps', 0xFFE57C23, null),
@@ -53,10 +54,18 @@ enum DataSource {
   /// Local source (custom items).
   local('Custom', 0xFF26A69A, null);
 
-  const DataSource(this.label, this.colorValue, this.iconAsset);
+  const DataSource(this.label, this.colorValue, this.iconAsset,
+      {String? brandName})
+      : _brandName = brandName;
 
-  /// Short display label.
+  /// Short display label (badges, chips).
   final String label;
+
+  final String? _brandName;
+
+  /// Full brand name for attribution; equals [label] unless the badge uses an
+  /// abbreviation (SGDB / SteamGridDB).
+  String get brandName => _brandName ?? label;
 
   /// Brand color of the source as an ARGB int.
   final int colorValue;
@@ -78,11 +87,15 @@ enum DataSource {
 
   /// Parses a stored name with an explicit [fallback] for null and unknown
   /// values.
-  static DataSource fromNameOr(String? name, DataSource fallback) {
-    if (name == null) return fallback;
+  static DataSource fromNameOr(String? name, DataSource fallback) =>
+      tryFromName(name) ?? fallback;
+
+  /// Parses a stored name, or null when it is absent or not a known source.
+  static DataSource? tryFromName(String? name) {
+    if (name == null) return null;
     for (final DataSource s in DataSource.values) {
       if (s.name == name) return s;
     }
-    return fallback;
+    return null;
   }
 }

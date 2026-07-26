@@ -9,8 +9,8 @@ import '../../../shared/models/book.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
+import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/models/tv_show.dart';
@@ -18,24 +18,36 @@ import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/widgets/api_error_display.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart' show ShimmerPosterCard;
-import '../../../shared/models/collected_item_info.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/browse_provider.dart';
 
 /// Sets of external IDs that already exist in the user's collections.
+/// Multi-source types are keyed by `(source, id)` — their providers hand out
+/// colliding numeric ids, so an id alone would badge the wrong card.
 typedef _CollectedIds = ({
   Set<int> tmdbIds,
   Set<(DataSource, int)> tvKeys,
   Set<int> gameIds,
   Set<int> vnIds,
-  Set<int> mangaIds,
-  Set<int> animeIds,
-  Set<int> bookIds,
+  Set<(DataSource, int)> mangaKeys,
+  Set<(DataSource, int)> animeKeys,
+  Set<(DataSource, int)> bookKeys,
 });
+
+const _CollectedIds _kNoCollected = (
+  tmdbIds: <int>{},
+  tvKeys: <(DataSource, int)>{},
+  gameIds: <int>{},
+  vnIds: <int>{},
+  mangaKeys: <(DataSource, int)>{},
+  animeKeys: <(DataSource, int)>{},
+  bookKeys: <(DataSource, int)>{},
+);
 
 final FutureProvider<_CollectedIds> _collectedIdsProvider =
     FutureProvider<_CollectedIds>((Ref ref) async {
@@ -56,26 +68,28 @@ final FutureProvider<_CollectedIds> _collectedIdsProvider =
   final Map<int, List<CollectedItemInfo>> books =
       await ref.watch(collectedBookIdsProvider.future);
 
-  // Collected TV check is keyed by (source, id), not id alone.
-  final Set<(DataSource, int)> tvKeys = <(DataSource, int)>{};
-  for (final MapEntry<int, List<CollectedItemInfo>> e
-      in <MapEntry<int, List<CollectedItemInfo>>>[
-    ...tvShows.entries,
-    ...animations.entries,
-  ]) {
-    for (final CollectedItemInfo info in e.value) {
-      tvKeys.add((info.source, e.key));
+  Set<(DataSource, int)> sourceKeys(
+    List<Map<int, List<CollectedItemInfo>>> maps,
+  ) {
+    final Set<(DataSource, int)> keys = <(DataSource, int)>{};
+    for (final Map<int, List<CollectedItemInfo>> map in maps) {
+      for (final MapEntry<int, List<CollectedItemInfo>> e in map.entries) {
+        for (final CollectedItemInfo info in e.value) {
+          keys.add((info.source, e.key));
+        }
+      }
     }
+    return keys;
   }
 
   return (
     tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
-    tvKeys: tvKeys,
+    tvKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[tvShows, animations]),
     gameIds: games.keys.toSet(),
     vnIds: visualNovels.keys.toSet(),
-    mangaIds: mangas.keys.toSet(),
-    animeIds: animes.keys.toSet(),
-    bookIds: books.keys.toSet(),
+    mangaKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[mangas]),
+    animeKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[animes]),
+    bookKeys: sourceKeys(<Map<int, List<CollectedItemInfo>>>[books]),
   );
 });
 
@@ -224,20 +238,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     // Collected IDs used to mark items already in a collection.
     final AsyncValue<_CollectedIds> collectedIds =
         ref.watch(_collectedIdsProvider);
-    final Set<int> tmdbIds =
-        collectedIds.valueOrNull?.tmdbIds ?? const <int>{};
-    final Set<(DataSource, int)> tvKeys =
-        collectedIds.valueOrNull?.tvKeys ?? const <(DataSource, int)>{};
-    final Set<int> gameIds =
-        collectedIds.valueOrNull?.gameIds ?? const <int>{};
-    final Set<int> vnIds =
-        collectedIds.valueOrNull?.vnIds ?? const <int>{};
-    final Set<int> mangaIds =
-        collectedIds.valueOrNull?.mangaIds ?? const <int>{};
-    final Set<int> animeIds =
-        collectedIds.valueOrNull?.animeIds ?? const <int>{};
-    final Set<int> bookIds =
-        collectedIds.valueOrNull?.bookIds ?? const <int>{};
+    final _CollectedIds collected = collectedIds.valueOrNull ?? _kNoCollected;
 
     final List<Object> displayItems;
     final String? clientFilter = widget.clientFilter;
@@ -274,9 +275,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         }
 
         final Object item = displayItems[index];
-        return _buildCard(item, state.source.outputMediaType, tmdbIds, tvKeys,
-            gameIds, vnIds, mangaIds, animeIds, bookIds, variant,
-            animeMangaTitleLanguage);
+        return _buildCard(item, state.source.outputMediaType, collected,
+            variant, animeMangaTitleLanguage);
       },
     );
   }
@@ -284,13 +284,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   Widget _buildCard(
     Object item,
     MediaType mediaType,
-    Set<int> tmdbIds,
-    Set<(DataSource, int)> tvKeys,
-    Set<int> gameIds,
-    Set<int> vnIds,
-    Set<int> mangaIds,
-    Set<int> animeIds,
-    Set<int> bookIds,
+    _CollectedIds collected,
     CardVariant variant,
     String animeMangaTitleLanguage,
   ) {
@@ -300,7 +294,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     if (item is Movie) {
-      final bool inColl = tmdbIds.contains(item.tmdbId);
+      final bool inColl = collected.tmdbIds.contains(item.tmdbId);
       return MediaPosterCard(
         variant: variant,
         title: item.title,
@@ -317,7 +311,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     if (item is TvShow) {
-      final bool inColl = tvKeys.contains((item.source, item.tmdbId));
+      final bool inColl = collected.tvKeys.contains((item.source, item.tmdbId));
       return MediaPosterCard(
         variant: variant,
         title: item.title,
@@ -338,7 +332,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     if (item is Game) {
-      final bool inColl = gameIds.contains(item.id);
+      final bool inColl = collected.gameIds.contains(item.id);
       return MediaPosterCard(
         variant: variant,
         title: item.name,
@@ -357,7 +351,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     if (item is VisualNovel) {
-      final bool inColl = vnIds.contains(item.numericId);
+      final bool inColl = collected.vnIds.contains(item.numericId);
       return MediaPosterCard(
         variant: variant,
         title: item.title,
@@ -374,7 +368,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     if (item is Manga) {
-      final bool inColl = mangaIds.contains(item.id);
+      final bool inColl = collected.mangaKeys.contains((item.source, item.id));
       return MediaPosterCard(
         variant: variant,
         title: item.titleByLanguage(animeMangaTitleLanguage),
@@ -396,13 +390,17 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     if (item is Anime) {
-      final bool inColl = animeIds.contains(item.id);
+      final bool inColl = collected.animeKeys.contains((item.source, item.id));
       return MediaPosterCard(
         variant: variant,
         title: item.titleByLanguage(animeMangaTitleLanguage),
         imageUrl: item.coverUrl ?? '',
         cacheImageType: ImageType.animeCover,
-        cacheImageId: item.id.toString(),
+        cacheImageId: coverImageId(
+          mediaType: MediaType.anime,
+          externalId: item.id,
+          source: item.source,
+        ),
         apiRating: item.rating10,
         year: item.releaseYear,
         mediaType: mediaType,
@@ -415,7 +413,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
     if (item is Book) {
       final int externalId = item.externalIdInt;
-      final bool inColl = bookIds.contains(externalId);
+      final bool inColl = collected.bookKeys.contains((item.source, externalId));
       return MediaPosterCard(
         variant: variant,
         title: item.title,

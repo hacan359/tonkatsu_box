@@ -228,7 +228,7 @@ Key format: `{ImageType.folder}/{imageId}`
 **Cover images** — `imageId` is the external ID (IGDB/TMDB):
 - `game_covers/1234` — game cover for IGDB ID 1234
 - `movie_posters/550` — movie poster for TMDB ID 550
-- `tv_show_posters/1399` — TV show poster for TMDB ID 1399
+- `tv_show_posters/tmdb_1399` — TV show poster, namespaced by provider (`tmdb_` / `tvmaze_`). Pre-0.40 files use a bare `tv_show_posters/1399`; they are restored under that key and the poster is re-downloaded on first display, because animation posters share this folder and keep the bare id
 - `vn_covers/17` — visual novel cover for VNDB numeric ID 17
 - `manga_covers/anilist_123` — manga cover, namespaced by provider (`anilist_` / `mangabaka_`). Pre-v44 files use a bare `manga_covers/123` and are remapped to `anilist_` on import
 - `anime_covers/anilist_123` — anime cover, namespaced by provider (`anilist_` / `kitsu_`). Pre-v60 files use a bare `anime_covers/123` and are remapped to `anilist_` on import

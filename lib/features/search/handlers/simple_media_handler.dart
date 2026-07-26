@@ -52,8 +52,9 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   final Future<void> Function(T item) upsert;
   final Widget Function(T item, VoidCallback onAddToCollection) sheetBuilder;
 
-  /// Optional provider discriminator stamped onto the collection row. Only
-  /// manga needs it (AniList vs MangaBaka share a numeric id space).
+  /// Optional provider discriminator stamped onto the collection row and used
+  /// to narrow "already collected" lookups. Set for multi-source types, whose
+  /// providers share a numeric id space; null for single-source ones.
   final DataSource? Function(T item)? sourceOf;
 
   /// Optional one-shot fetch that fills in detail a search result lacks (e.g.
@@ -105,8 +106,10 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     MediaType mediaType,
   ) async {
     final T item0 = item as T;
-    final Set<int?> alreadyIn =
-        await _collectedCollectionIds(externalIdOf(item0));
+    final Set<int?> alreadyIn = await _collectedCollectionIds(
+      externalIdOf(item0),
+      sourceOf?.call(item0),
+    );
     if (!context.mounted) return;
 
     final PickedCollection? picked = await _adder.pickCollection(
@@ -168,10 +171,13 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     );
   }
 
-  Future<Set<int?>> _collectedCollectionIds(int id) async {
+  /// Placements of [id]; [source] narrows them for multi-source types, whose
+  /// providers hand out colliding numeric ids.
+  Future<Set<int?>> _collectedCollectionIds(int id, DataSource? source) async {
     final Map<int, List<CollectedItemInfo>> collected =
         await _ref.read(collectedProvider.future);
     return (collected[id] ?? <CollectedItemInfo>[])
+        .where((CollectedItemInfo i) => source == null || i.source == source)
         .map((CollectedItemInfo i) => i.collectionId)
         .toSet();
   }

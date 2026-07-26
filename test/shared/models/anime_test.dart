@@ -191,6 +191,45 @@ void main() {
         expect(anime.genres, isNull);
         expect(anime.studios, isNull);
       });
+
+      test('reads a pre-v60 row whose source column held the source material',
+          () {
+        final Anime anime = Anime.fromDb(<String, dynamic>{
+          'id': 1,
+          'title': 'Cowboy Bebop',
+          'source': 'ORIGINAL',
+          'updated_at': 1000,
+        });
+
+        expect(anime.sourceMaterial, 'ORIGINAL');
+        expect(anime.source, DataSource.anilist);
+      });
+
+      test('keeps source_material when both columns are present', () {
+        final Anime anime = Anime.fromDb(<String, dynamic>{
+          'id': 1,
+          'title': 'Cowboy Bebop',
+          'source': 'kitsu',
+          'source_material': 'MANGA',
+          'updated_at': 1000,
+        });
+
+        expect(anime.source, DataSource.kitsu);
+        expect(anime.sourceMaterial, 'MANGA');
+      });
+
+      test('leaves source material null for a known source with no material',
+          () {
+        final Anime anime = Anime.fromDb(<String, dynamic>{
+          'id': 1,
+          'title': 'Cowboy Bebop',
+          'source': 'anilist',
+          'updated_at': 1000,
+        });
+
+        expect(anime.source, DataSource.anilist);
+        expect(anime.sourceMaterial, isNull);
+      });
     });
 
     group('toDb', () {

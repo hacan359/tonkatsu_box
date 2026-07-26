@@ -48,6 +48,33 @@ void main() {
       });
     });
 
+    group('isMultiSource', () {
+      test('true only for manga, anime, tvShow and book', () {
+        for (final MediaType type in MediaType.values) {
+          expect(
+            type.isMultiSource,
+            type == MediaType.manga ||
+                type == MediaType.anime ||
+                type == MediaType.tvShow ||
+                type == MediaType.book,
+            reason: type.name,
+          );
+        }
+      });
+
+      test('animation stays single-source', () {
+        expect(MediaType.animation.isMultiSource, isFalse);
+      });
+    });
+
+    group('defaultSource', () {
+      test('every media type resolves a fallback source', () {
+        for (final MediaType type in MediaType.values) {
+          expect(type.defaultSource, isNotNull, reason: type.name);
+        }
+      });
+    });
+
     group('value', () {
       test('game должен иметь значение "game"', () {
         expect(MediaType.game.value, 'game');

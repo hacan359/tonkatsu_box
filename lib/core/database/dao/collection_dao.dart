@@ -364,8 +364,9 @@ class CollectionDao {
         StringBuffer('media_type = ? AND external_id = ?');
     final List<Object?> whereArgs = <Object?>[mediaType.value, externalId];
 
-    if (mediaType == MediaType.manga && source != null) {
-      where.write(" AND COALESCE(source, 'anilist') = ?");
+    if (mediaType.isMultiSource && source != null) {
+      where.write(' AND COALESCE(source, ?) = ?');
+      whereArgs.add(mediaType.defaultSource.name);
       whereArgs.add(source.name);
     }
     if (platformId != null) {
@@ -1075,7 +1076,7 @@ class CollectionDao {
         collectionName: row['name'] as String?,
         platformId: row['platform_id'] as int?,
         source: DataSource.fromNameOr(
-            row['source'] as String?, DataSource.tmdb),
+            row['source'] as String?, mediaType.defaultSource),
       );
       result.putIfAbsent(externalId, () => <CollectedItemInfo>[]).add(info);
     }

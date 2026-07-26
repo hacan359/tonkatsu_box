@@ -211,9 +211,17 @@ class Anime {
       }
     }
 
+    // Before v60 the `source` column held the source material ("MANGA"), not
+    // the provider. Rows and `.xcoll` payloads written back then carry no
+    // `source_material`, so an unrecognised `source` is read as one.
+    final String? rawSource = row['source'] as String?;
+    final DataSource? knownSource = DataSource.tryFromName(rawSource);
+    final String? sourceMaterial = (row['source_material'] as String?) ??
+        (knownSource == null ? rawSource : null);
+
     return Anime(
       id: row['id'] as int,
-      source: DataSource.fromName(row['source'] as String?),
+      source: knownSource ?? DataSource.anilist,
       title: row['title'] as String,
       titleEnglish: row['title_english'] as String?,
       titleNative: row['title_native'] as String?,
@@ -232,7 +240,7 @@ class Anime {
       episodes: row['episodes'] as int?,
       duration: row['duration'] as int?,
       format: row['format'] as String?,
-      sourceMaterial: row['source_material'] as String?,
+      sourceMaterial: sourceMaterial,
       genres: genres,
       tags: tags,
       studios: studios,

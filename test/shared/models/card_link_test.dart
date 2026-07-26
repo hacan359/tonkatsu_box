@@ -29,6 +29,49 @@ void main() {
         expect(token, contains('Chrono Trigger'));
       });
 
+      test('encodes src for every multi-source media type', () {
+        for (final MediaType type in <MediaType>[
+          MediaType.manga,
+          MediaType.anime,
+          MediaType.tvShow,
+          MediaType.book,
+        ]) {
+          final String token = buildCardLinkToken(createTestCollectionItem(
+            mediaType: type,
+            externalId: 7,
+            source: DataSource.kitsu,
+          ));
+
+          expect(token, contains('src=kitsu'), reason: type.name);
+        }
+      });
+
+      test('omits src for single-source media types', () {
+        for (final MediaType type in <MediaType>[
+          MediaType.movie,
+          MediaType.game,
+          MediaType.animation,
+          MediaType.visualNovel,
+        ]) {
+          final String token = buildCardLinkToken(createTestCollectionItem(
+            mediaType: type,
+            externalId: 7,
+            source: DataSource.tmdb,
+          ));
+
+          expect(token, isNot(contains('src=')), reason: type.name);
+        }
+      });
+
+      test('omits src when the item carries no source', () {
+        final String token = buildCardLinkToken(createTestCollectionItem(
+          mediaType: MediaType.anime,
+          externalId: 7,
+        ));
+
+        expect(token, isNot(contains('src=')));
+      });
+
       test('omits pf/col when absent', () {
         final String token = buildCardLinkToken(createTestCollectionItem(
           mediaType: MediaType.movie,
