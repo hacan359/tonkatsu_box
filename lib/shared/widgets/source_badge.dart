@@ -1,8 +1,7 @@
-// Бейдж источника данных (IGDB, TMDB, SteamGridDB, VGMaps).
-
 import 'package:flutter/material.dart';
 
 import '../models/data_source.dart';
+import '../constants/data_source_ui.dart';
 
 export '../models/data_source.dart';
 

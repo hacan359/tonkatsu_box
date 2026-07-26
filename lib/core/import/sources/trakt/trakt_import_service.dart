@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
+import '../../../../shared/models/data_source.dart';
 import '../../../../shared/models/collection.dart';
 import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/models/item_status.dart';
@@ -514,6 +515,7 @@ class TraktImportService implements ImportSource {
             for (final _TraktEpisode episode in season.episodes) {
               await _database.tvShowDao.markEpisodeWatched(
                 collectionId,
+                DataSource.tmdb,
                 traktShow.tmdbId!,
                 season.number,
                 episode.number,

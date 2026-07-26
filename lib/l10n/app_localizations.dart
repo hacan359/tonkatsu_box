@@ -7,6 +7,8 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
@@ -97,6 +99,8 @@ abstract class S {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('es'),
+    Locale('fr'),
+    Locale('pt'),
     Locale('ru'),
     Locale('zh'),
   ];
@@ -742,6 +746,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Status updated for {count, plural, =1{1 item} other{{count} items}}'**
   String bulkStatusUpdated(int count);
+
+  /// No description provided for @bulkAddTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tags'**
+  String get bulkAddTags;
+
+  /// No description provided for @bulkRemoveTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tags'**
+  String get bulkRemoveTags;
+
+  /// No description provided for @bulkAddTagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tags to {count, plural, =1{1 item} other{{count} items}}'**
+  String bulkAddTagsTitle(int count);
+
+  /// No description provided for @bulkRemoveTagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tags from {count, plural, =1{1 item} other{{count} items}}'**
+  String bulkRemoveTagsTitle(int count);
+
+  /// No description provided for @bulkTagsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags added: {count}'**
+  String bulkTagsAdded(int count);
+
+  /// No description provided for @bulkTagsRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags removed: {count}'**
+  String bulkTagsRemoved(int count);
+
+  /// No description provided for @bulkTagsUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to change'**
+  String get bulkTagsUnchanged;
 
   /// No description provided for @bulkExportPngTitle.
   ///
@@ -2458,6 +2504,12 @@ abstract class S {
   /// **'This product uses the TMDB API but is not endorsed or certified by TMDB.'**
   String get creditsTmdbAttribution;
 
+  /// No description provided for @creditsTvMazeAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'TV series data provided by TVmaze.'**
+  String get creditsTvMazeAttribution;
+
   /// No description provided for @creditsIgdbAttribution.
   ///
   /// In en, this message translates to:
@@ -2487,6 +2539,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Manga data provided by MangaBaka.'**
   String get creditsMangaBakaAttribution;
+
+  /// No description provided for @creditsMangaDexAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga data provided by MangaDex.'**
+  String get creditsMangaDexAttribution;
+
+  /// No description provided for @creditsKitsuAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga data provided by Kitsu.'**
+  String get creditsKitsuAttribution;
 
   /// No description provided for @creditsOpenLibraryAttribution.
   ///
@@ -3045,6 +3109,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Brief description or notes'**
   String get customItemDescriptionHint;
+
+  /// No description provided for @customItemMyNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your note about this item'**
+  String get customItemMyNoteHint;
+
+  /// No description provided for @customItemTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Comma-separated, e.g. Backlog, Favorites'**
+  String get customItemTagsHint;
 
   /// No description provided for @customItemOptionalFields.
   ///
@@ -3693,6 +3769,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Mark all watched'**
   String get markAllWatched;
+
+  /// No description provided for @markNextWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark next episode'**
+  String get markNextWatched;
 
   /// No description provided for @unmarkAll.
   ///
@@ -4960,6 +5042,12 @@ abstract class S {
   /// **'Movies, TV shows and animation.'**
   String get welcomeSourceDescTmdb;
 
+  /// No description provided for @welcomeSourceDescTvMaze.
+  ///
+  /// In en, this message translates to:
+  /// **'TV series.'**
+  String get welcomeSourceDescTvMaze;
+
   /// No description provided for @welcomeSourceDescIgdb.
   ///
   /// In en, this message translates to:
@@ -4977,6 +5065,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Manga, manhwa, manhua and light novels.'**
   String get welcomeSourceDescMangaBaka;
+
+  /// No description provided for @welcomeSourceDescMangaDex.
+  ///
+  /// In en, this message translates to:
+  /// **'A large manga catalog with localized titles and chapter counts.'**
+  String get welcomeSourceDescMangaDex;
+
+  /// No description provided for @welcomeSourceDescKitsu.
+  ///
+  /// In en, this message translates to:
+  /// **'An independent manga catalog with ratings and covers.'**
+  String get welcomeSourceDescKitsu;
 
   /// No description provided for @welcomeSourceDescVndb.
   ///
@@ -6321,6 +6421,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Content rating'**
   String get browseFilterContentRating;
+
+  /// No description provided for @browseFilterDemographic.
+  ///
+  /// In en, this message translates to:
+  /// **'Demographic'**
+  String get browseFilterDemographic;
 
   /// No description provided for @contentRatingSafe.
   ///
@@ -8452,6 +8558,18 @@ abstract class S {
   /// **'Template applied per cell. Available tokens: name, year, genre, rating.'**
   String get moodGridCaptionTemplateHint;
 
+  /// No description provided for @moodGridCellLabelTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Cell labels'**
+  String get moodGridCellLabelTemplate;
+
+  /// No description provided for @moodGridCellSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get moodGridCellSize;
+
   /// No description provided for @collection.
   ///
   /// In en, this message translates to:
@@ -9104,8 +9222,14 @@ class _SDelegate extends LocalizationsDelegate<S> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'es', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'en',
+    'es',
+    'fr',
+    'pt',
+    'ru',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_SDelegate old) => false;
@@ -9118,6 +9242,10 @@ S lookupS(Locale locale) {
       return SEn();
     case 'es':
       return SEs();
+    case 'fr':
+      return SFr();
+    case 'pt':
+      return SPt();
     case 'ru':
       return SRu();
     case 'zh':

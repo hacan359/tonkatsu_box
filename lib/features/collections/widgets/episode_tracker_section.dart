@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/tmdb_api.dart';
+import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
+import '../../../core/services/image_cache_service.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -15,6 +17,7 @@ import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/utils/date_format_preset.dart';
+import '../../../shared/widgets/cached_image.dart';
 import '../providers/episode_tracker_provider.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
@@ -29,6 +32,7 @@ class EpisodeTrackerSection extends ConsumerWidget {
     required this.collectionId,
     required this.itemId,
     required this.externalId,
+    required this.source,
     required this.tvShow,
     required this.accentColor,
     super.key,
@@ -40,8 +44,10 @@ class EpisodeTrackerSection extends ConsumerWidget {
   /// Owning `collection_items.id` — anchor for per-episode marks.
   final int itemId;
 
-  /// TMDB show id.
+  /// Show id in the [source] provider's namespace.
   final int externalId;
+
+  final DataSource source;
 
   /// Show data.
   final TvShow? tvShow;
@@ -52,14 +58,16 @@ class EpisodeTrackerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final int tmdbShowId = externalId;
-    final ({int? collectionId, int showId}) trackerArg =
-        (collectionId: collectionId, showId: tmdbShowId);
+    final EpisodeTrackerArg trackerArg =
+        (collectionId: collectionId, showId: externalId, source: source);
 
     final EpisodeTrackerState trackerState =
         ref.watch(episodeTrackerNotifierProvider(trackerArg));
 
-    final int totalEpisodes = tvShow?.totalEpisodes ?? 0;
+    // Sparse cached rows have no totals — fall back to the count the
+    // tracker resolved from the seasons cache.
+    final int totalEpisodes =
+        tvShow?.totalEpisodes ?? trackerState.totalEpisodes ?? 0;
     final int watchedCount = trackerState.totalWatchedCount;
 
     final S l = S.of(context);
@@ -70,13 +78,17 @@ class EpisodeTrackerSection extends ConsumerWidget {
           children: <Widget>[
             Icon(Icons.playlist_add_check, size: 20, color: accentColor),
             const SizedBox(width: AppSpacing.sm),
-            Text(
-              l.episodeProgress,
-              style: AppTypography.h3.copyWith(
-                fontWeight: FontWeight.w600,
+            Expanded(
+              child: Text(
+                l.episodeProgress,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.h3.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               totalEpisodes > 0
                   ? l.episodesWatchedOf(watchedCount, totalEpisodes)
@@ -100,7 +112,8 @@ class EpisodeTrackerSection extends ConsumerWidget {
         ],
         const SizedBox(height: 12),
         SeasonsListWidget(
-          tmdbShowId: tmdbShowId,
+          showId: externalId,
+          source: source,
           collectionId: collectionId,
           itemId: itemId,
           accentColor: accentColor,
@@ -114,15 +127,18 @@ class EpisodeTrackerSection extends ConsumerWidget {
 class SeasonsListWidget extends ConsumerStatefulWidget {
   /// Creates a [SeasonsListWidget].
   const SeasonsListWidget({
-    required this.tmdbShowId,
+    required this.showId,
+    required this.source,
     required this.collectionId,
     required this.itemId,
     required this.accentColor,
     super.key,
   });
 
-  /// TMDB show id.
-  final int tmdbShowId;
+  /// Show id in the [source] provider's namespace.
+  final int showId;
+
+  final DataSource source;
 
   /// Collection id (null for uncategorized).
   final int? collectionId;
@@ -146,24 +162,29 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   @override
   void initState() {
     super.initState();
+    // Episode metadata is skipped on grid-card builds; the detail list is
+    // the consumer that needs it (marks titles, expanded seasons).
+    Future<void>.microtask(() => ref
+        .read(episodeTrackerNotifierProvider(_trackerArg).notifier)
+        .ensureCachedEpisodesLoaded());
     _loadSeasons();
   }
 
   Future<void> _loadSeasons() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
     List<TvSeason> seasons =
-        await db.tvShowDao.getTvSeasonsByShowId(widget.tmdbShowId);
+        await db.tvShowDao.getTvSeasonsByShowId(widget.source, widget.showId);
 
-    // Cache miss: fetch from the TMDB API and cache the result
     if (seasons.isEmpty) {
       try {
-        final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
-        seasons = await tmdbApi.getTvSeasons(widget.tmdbShowId);
+        final TvEpisodeSource episodeSource =
+            ref.read(tvEpisodeSourceResolverProvider)(widget.source);
+        seasons = await episodeSource.getSeasons(widget.showId);
         if (seasons.isNotEmpty) {
           await db.tvShowDao.upsertTvSeasons(seasons);
         }
       } on Exception catch (_) {
-        // TMDB API unavailable — show empty season list, not critical.
+        // Source API unavailable — show empty season list, not critical.
         // User can retry via pull-to-refresh.
       }
     }
@@ -185,10 +206,11 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
 
     try {
       final DatabaseService db = ref.read(databaseServiceProvider);
-      final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
+      final TvEpisodeSource episodeSource =
+          ref.read(tvEpisodeSourceResolverProvider)(widget.source);
 
       final List<TvSeason> seasons =
-          await tmdbApi.getTvSeasons(widget.tmdbShowId);
+          await episodeSource.getSeasons(widget.showId);
       if (seasons.isNotEmpty) {
         await db.tvShowDao.upsertTvSeasons(seasons);
       }
@@ -218,9 +240,10 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     }
   }
 
-  ({int? collectionId, int showId}) get _trackerArg => (
+  EpisodeTrackerArg get _trackerArg => (
         collectionId: widget.collectionId,
-        showId: widget.tmdbShowId,
+        showId: widget.showId,
+        source: widget.source,
       );
 
   @override
@@ -551,7 +574,7 @@ class SeasonExpansionTile extends ConsumerStatefulWidget {
   final EpisodeTrackerState trackerState;
 
   /// Argument for the tracker provider.
-  final ({int? collectionId, int showId}) trackerArg;
+  final EpisodeTrackerArg trackerArg;
 
   /// Owning `collection_items.id` — anchor for per-episode/season marks.
   final int itemId;
@@ -567,11 +590,41 @@ class SeasonExpansionTile extends ConsumerStatefulWidget {
 class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
   bool _editingNote = false;
 
+  /// Marks the season's first not-yet-watched episode, loading the season
+  /// from the source first if its episodes aren't in memory.
+  Future<void> _markNextWatched() async {
+    final int seasonNum = widget.season.seasonNumber;
+    final EpisodeTrackerNotifier notifier =
+        ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
+
+    EpisodeTrackerState state =
+        ref.read(episodeTrackerNotifierProvider(widget.trackerArg));
+    if (state.episodesBySeason[seasonNum]?.isEmpty ?? true) {
+      await notifier.loadSeason(seasonNum);
+      if (!mounted) return;
+      state = ref.read(episodeTrackerNotifierProvider(widget.trackerArg));
+    }
+
+    final List<TvEpisode> episodes =
+        state.episodesBySeason[seasonNum] ?? const <TvEpisode>[];
+    if (episodes.isEmpty) return;
+
+    final List<TvEpisode> ordered = <TvEpisode>[...episodes]
+      ..sort((TvEpisode a, TvEpisode b) =>
+          a.episodeNumber.compareTo(b.episodeNumber));
+    for (final TvEpisode ep in ordered) {
+      if (!state.isEpisodeWatched(seasonNum, ep.episodeNumber)) {
+        await notifier.toggleEpisode(seasonNum, ep.episodeNumber);
+        return;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final TvSeason season = widget.season;
     final EpisodeTrackerState trackerState = widget.trackerState;
-    final ({int? collectionId, int showId}) trackerArg = widget.trackerArg;
+    final EpisodeTrackerArg trackerArg = widget.trackerArg;
     final int itemId = widget.itemId;
     final Color accentColor = widget.accentColor;
     final S l = S.of(context);
@@ -585,9 +638,16 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
 
     final String seasonTitle =
         season.name ?? l.seasonName(seasonNum);
-    final String subtitle = episodeCount > 0
-        ? l.seasonEpisodesProgress(watchedCount, episodeCount)
-        : l.episodesWatched(watchedCount);
+    final String? airDate = season.airDate;
+    final int? airYear = airDate != null && airDate.length >= 4
+        ? int.tryParse(airDate.substring(0, 4))
+        : null;
+    final String subtitle = <String>[
+      episodeCount > 0
+          ? l.seasonEpisodesProgress(watchedCount, episodeCount)
+          : l.episodesWatched(watchedCount),
+      if (airYear != null) '$airYear',
+    ].join(' • ');
     final String? note = ref.watch(
       itemMarksProvider(itemId).select(
         (ItemMarksState s) => s.noteFor(kUnitSeason, seasonNum, 0),
@@ -597,10 +657,11 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
     return ExpansionTile(
       tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       childrenPadding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      leading: Icon(
-        allWatched ? Icons.check_circle : Icons.circle_outlined,
-        color: allWatched ? accentColor : AppColors.surfaceBorder,
-        size: 20,
+      leading: _SeasonLeading(
+        season: season,
+        source: trackerArg.source,
+        allWatched: allWatched,
+        accentColor: accentColor,
       ),
       title: Row(
         children: <Widget>[
@@ -632,6 +693,18 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
               color: AppColors.textSecondary,
             ),
           ),
+          if (episodeCount > 0) ...<Widget>[
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: (watchedCount / episodeCount).clamp(0.0, 1.0),
+                minHeight: 4,
+                backgroundColor: AppColors.surfaceLight,
+                valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+              ),
+            ),
+          ],
           if (_editingNote)
             ItemMarkNoteEditor(
               itemId: itemId,
@@ -648,6 +721,12 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          if (!allWatched && episodeCount > 0)
+            IconButton(
+              icon: const Icon(Icons.playlist_add_check, size: 20),
+              tooltip: l.markNextWatched,
+              onPressed: _markNextWatched,
+            ),
           IconButton(
             icon: Icon(
               allWatched
@@ -747,7 +826,7 @@ class EpisodeTile extends ConsumerStatefulWidget {
   final DateTime? watchedAt;
 
   /// Argument for the tracker provider.
-  final ({int? collectionId, int showId}) trackerArg;
+  final EpisodeTrackerArg trackerArg;
 
   /// Owning `collection_items.id` — anchor for per-episode marks.
   final int itemId;
@@ -797,59 +876,112 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
       ),
     );
 
-    final Widget tile = CheckboxListTile(
-      value: isWatched,
-      onChanged: (_) {
-        ref
-            .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
-            .toggleEpisode(
-              episode.seasonNumber,
-              episode.episodeNumber,
-            );
-      },
-      title: Row(
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              title,
-              style: AppTypography.bodySmall.copyWith(
-                decoration: isWatched ? TextDecoration.lineThrough : null,
-                color: isWatched
-                    ? AppColors.textSecondary
-                    : AppColors.textPrimary,
-              ),
-            ),
-          ),
-          ItemMarkControls(
-            itemId: widget.itemId,
-            unitType: kUnitEpisode,
-            parentNumber: episode.seasonNumber,
-            unitNumber: episode.episodeNumber,
-            onNotePressed: () =>
-                setState(() => _editingNote = !_editingNote),
-          ),
-        ],
-      ),
-      subtitle: (subtitleParts.isNotEmpty || (note != null && !_editingNote))
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                if (subtitleParts.isNotEmpty)
-                  Text(
-                    subtitleParts.join(' \u2022 '),
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textSecondary,
+    final String? overview = episode.overview;
+
+    void toggle() {
+      ref
+          .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
+          .toggleEpisode(episode.seasonNumber, episode.episodeNumber);
+    }
+
+    final Widget tile = InkWell(
+      onTap: toggle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            if (episode.stillUrl != null) ...<Widget>[
+              // Watched episodes get a dimmed still with a check badge,
+              // matching the struck-through title; the row tap toggles.
+              Stack(
+                children: <Widget>[
+                  Opacity(
+                    opacity: isWatched ? 0.55 : 1,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+                      child: CachedImage(
+                        imageType: ImageType.tvEpisodeStill,
+                        imageId: '${widget.trackerArg.source.name}_'
+                            '${episode.tmdbShowId}_'
+                            's${episode.seasonNumber}e${episode.episodeNumber}',
+                        remoteUrl: episode.stillUrl!,
+                        width: 96,
+                        height: 54,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 192,
+                        placeholder:
+                            const ColoredBox(color: AppColors.surfaceLight),
+                        errorWidget:
+                            const ColoredBox(color: AppColors.surfaceLight),
+                      ),
                     ),
                   ),
-                if (note != null && !_editingNote)
-                  MarkNoteText(note: note, accentColor: widget.accentColor),
-              ],
-            )
-          : null,
-      dense: true,
-      controlAffinity: ListTileControlAffinity.leading,
-      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      visualDensity: VisualDensity.compact,
+                  if (isWatched)
+                    Positioned(
+                      right: 3,
+                      bottom: 3,
+                      child: _WatchedBadge(accentColor: widget.accentColor),
+                    ),
+                ],
+              ),
+            ],
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            title,
+                            style: AppTypography.bodySmall.copyWith(
+                              decoration: isWatched
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              color: isWatched
+                                  ? AppColors.textSecondary
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      ItemMarkControls(
+                        itemId: widget.itemId,
+                        unitType: kUnitEpisode,
+                        parentNumber: episode.seasonNumber,
+                        unitNumber: episode.episodeNumber,
+                        onNotePressed: () =>
+                            setState(() => _editingNote = !_editingNote),
+                      ),
+                    ],
+                  ),
+                  if (subtitleParts.isNotEmpty)
+                    Text(
+                      subtitleParts.join(' \u2022 '),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  if (overview != null && overview.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 2),
+                    _ExpandableOverview(text: overview),
+                  ],
+                  if (note != null && !_editingNote)
+                    MarkNoteText(note: note, accentColor: widget.accentColor),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
 
     if (!_editingNote) return tile;
@@ -873,6 +1005,114 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Season poster thumbnail with an "all watched" badge; falls back to the
+/// plain check indicator when the source has no poster for the season.
+class _SeasonLeading extends StatelessWidget {
+  const _SeasonLeading({
+    required this.season,
+    required this.source,
+    required this.allWatched,
+    required this.accentColor,
+  });
+
+  final TvSeason season;
+  final DataSource source;
+  final bool allWatched;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? posterUrl = season.posterUrl;
+    if (posterUrl == null) {
+      return Icon(
+        allWatched ? Icons.check_circle : Icons.circle_outlined,
+        color: allWatched ? accentColor : AppColors.surfaceBorder,
+        size: 20,
+      );
+    }
+    return SizedBox(
+      width: 40,
+      height: 60,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+            child: CachedImage(
+              imageType: ImageType.tvSeasonPoster,
+              imageId: '${source.name}_${season.tmdbShowId}_'
+                  's${season.seasonNumber}',
+              remoteUrl: posterUrl,
+              fit: BoxFit.cover,
+              memCacheWidth: 120,
+              placeholder: const ColoredBox(color: AppColors.surfaceLight),
+              errorWidget: const ColoredBox(color: AppColors.surfaceLight),
+            ),
+          ),
+          if (allWatched)
+            Positioned(
+              right: 2,
+              bottom: 2,
+              child: _WatchedBadge(accentColor: accentColor, size: 14),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Check-circle badge shown over a poster/still corner for watched items.
+class _WatchedBadge extends StatelessWidget {
+  const _WatchedBadge({required this.accentColor, this.size = 15});
+
+  final Color accentColor;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.background.withAlpha(200),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.check_circle, color: accentColor, size: size),
+    );
+  }
+}
+
+/// Episode overview clamped to two lines; tap toggles the full text.
+/// `canRequestFocus: false` keeps it out of D-pad traversal — the row's
+/// own InkWell stays the single gamepad stop per episode.
+class _ExpandableOverview extends StatefulWidget {
+  const _ExpandableOverview({required this.text});
+
+  final String text;
+
+  @override
+  State<_ExpandableOverview> createState() => _ExpandableOverviewState();
+}
+
+class _ExpandableOverviewState extends State<_ExpandableOverview> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => setState(() => _expanded = !_expanded),
+      canRequestFocus: false,
+      child: Text(
+        widget.text,
+        maxLines: _expanded ? null : 2,
+        overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+        style: AppTypography.caption.copyWith(
+          color: AppColors.textTertiary,
+          height: 1.35,
+        ),
+      ),
     );
   }
 }

@@ -1,10 +1,6 @@
-/// Visual grid of category-labelled cells, each holding zero or one media item.
-///
-/// Second subtype of the Tier Lists feature, alongside the ranked S/A/B/C tier
-/// list. A mood grid is not tied to any collection and is not part of `.xcoll`
-/// exports — it lives independently and only travels in full app backups.
+/// Visual grid of category-labelled cells, each holding zero or one media
+/// item. Not tied to any collection; travels only in full app backups.
 class MoodGrid {
-  /// Creates a [MoodGrid].
   const MoodGrid({
     required this.id,
     required this.name,
@@ -13,9 +9,9 @@ class MoodGrid {
     required this.createdAt,
     required this.updatedAt,
     this.captionTemplate,
+    this.cellLabelTemplate,
   });
 
-  /// Reconstructs a [MoodGrid] from a row of `mood_grids`.
   factory MoodGrid.fromDb(Map<String, dynamic> row) {
     return MoodGrid(
       id: row['id'] as int,
@@ -23,6 +19,7 @@ class MoodGrid {
       rows: row['rows'] as int,
       cols: row['cols'] as int,
       captionTemplate: row['caption_template'] as String?,
+      cellLabelTemplate: row['cell_label_template'] as String?,
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         (row['created_at'] as int) * 1000,
       ),
@@ -32,7 +29,6 @@ class MoodGrid {
     );
   }
 
-  /// Reconstructs from a backup export entry.
   factory MoodGrid.fromExport(Map<String, dynamic> json) {
     return MoodGrid(
       id: json['id'] as int? ?? 0,
@@ -40,6 +36,7 @@ class MoodGrid {
       rows: json['rows'] as int,
       cols: json['cols'] as int,
       captionTemplate: json['caption_template'] as String?,
+      cellLabelTemplate: json['cell_label_template'] as String?,
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         ((json['created_at'] as num?)?.toInt() ?? 0) * 1000,
       ),
@@ -49,10 +46,8 @@ class MoodGrid {
     );
   }
 
-  /// Primary key.
   final int id;
 
-  /// User-defined title.
   final String name;
 
   /// Row count (>= 1).
@@ -61,21 +56,20 @@ class MoodGrid {
   /// Column count (>= 1).
   final int cols;
 
-  /// Creation timestamp.
   final DateTime createdAt;
 
-  /// Last update timestamp.
   final DateTime updatedAt;
 
-  /// Template rendered for each cell as the right-column caption.
-  /// Supported tokens: `{{name}}`, `{{year}}`, `{{genre}}`, `{{rating}}`.
-  /// `null` or empty disables captions.
+  /// Right-column caption template; tokens `{{name}}`, `{{year}}`,
+  /// `{{genre}}`, `{{rating}}`. Null/empty disables captions.
   final String? captionTemplate;
 
-  /// Total cell count.
+  /// Auto-fill template for empty cell labels on item pick. Same tokens as
+  /// [captionTemplate]; null/empty disables auto-filling.
+  final String? cellLabelTemplate;
+
   int get cellCount => rows * cols;
 
-  /// Maps to the `mood_grids` row representation.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -83,12 +77,12 @@ class MoodGrid {
       'rows': rows,
       'cols': cols,
       'caption_template': captionTemplate,
+      'cell_label_template': cellLabelTemplate,
       'created_at': createdAt.millisecondsSinceEpoch ~/ 1000,
       'updated_at': updatedAt.millisecondsSinceEpoch ~/ 1000,
     };
   }
 
-  /// Maps to the backup JSON shape.
   Map<String, dynamic> toExport() {
     return <String, dynamic>{
       'id': id,
@@ -96,13 +90,14 @@ class MoodGrid {
       'rows': rows,
       'cols': cols,
       'caption_template': captionTemplate,
+      'cell_label_template': cellLabelTemplate,
       'created_at': createdAt.millisecondsSinceEpoch ~/ 1000,
       'updated_at': updatedAt.millisecondsSinceEpoch ~/ 1000,
     };
   }
 
-  /// Returns a copy with the listed fields replaced. Pass
-  /// `clearCaptionTemplate: true` to set [captionTemplate] back to null.
+  /// Copy with the listed fields replaced; the `clear*Template` flags reset
+  /// the matching template to null.
   MoodGrid copyWith({
     int? id,
     String? name,
@@ -110,6 +105,8 @@ class MoodGrid {
     int? cols,
     String? captionTemplate,
     bool clearCaptionTemplate = false,
+    String? cellLabelTemplate,
+    bool clearCellLabelTemplate = false,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -121,6 +118,9 @@ class MoodGrid {
       captionTemplate: clearCaptionTemplate
           ? null
           : (captionTemplate ?? this.captionTemplate),
+      cellLabelTemplate: clearCellLabelTemplate
+          ? null
+          : (cellLabelTemplate ?? this.cellLabelTemplate),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

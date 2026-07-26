@@ -12,6 +12,8 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'dual_rating_badge.dart';
+import '../constants/item_status_ui.dart';
+import '../constants/media_type_ui.dart';
 
 enum CardVariant {
   /// Full-size grid (collection + search).
@@ -564,13 +566,22 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                             const Spacer(),
                           if (widget.onTagTap != null ||
                               widget.tagName != null)
-                            _TagBadge(
-                              tagName: widget.tagName,
-                              tagColor: widget.tagColor,
-                              tagTextColor: widget.tagTextColor,
-                              moreCount: widget.tagMoreCount,
-                              compact: _isCompact,
-                              onTap: widget.onTagTap,
+                            // Align keeps the badge flush right inside its
+                            // flex share; bare Flexible would leave the
+                            // share's leftover trailing and pull the badge
+                            // toward the middle.
+                            Flexible(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: _TagBadge(
+                                  tagName: widget.tagName,
+                                  tagColor: widget.tagColor,
+                                  tagTextColor: widget.tagTextColor,
+                                  moreCount: widget.tagMoreCount,
+                                  compact: _isCompact,
+                                  onTap: widget.onTagTap,
+                                ),
+                              ),
                             ),
                         ],
                       ),

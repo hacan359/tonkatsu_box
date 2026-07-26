@@ -1,10 +1,9 @@
-// Модель эпизода сериала из TMDB.
+import '../utils/html_text.dart';
+import '../utils/tvmaze_json.dart';
+import 'data_source.dart';
 
-/// Модель эпизода сериала из TMDB API.
-///
-/// Представляет один эпизод конкретного сезона сериала.
+/// One episode of a TV show season.
 class TvEpisode {
-  /// Создаёт экземпляр [TvEpisode].
   const TvEpisode({
     required this.tmdbShowId,
     required this.seasonNumber,
@@ -14,9 +13,9 @@ class TvEpisode {
     this.airDate,
     this.stillUrl,
     this.runtime,
+    this.source = DataSource.tmdb,
   });
 
-  /// Создаёт [TvEpisode] из JSON ответа TMDB API.
   factory TvEpisode.fromJson(
     Map<String, dynamic> json, {
     required int showId,
@@ -40,7 +39,7 @@ class TvEpisode {
     );
   }
 
-  /// Создаёт [TvEpisode] из записи базы данных.
+  /// A missing or unknown `source` column reads as [DataSource.tmdb].
   factory TvEpisode.fromDb(Map<String, dynamic> row) {
     return TvEpisode(
       tmdbShowId: row['tmdb_show_id'] as int,
@@ -51,34 +50,51 @@ class TvEpisode {
       airDate: row['air_date'] as String?,
       stillUrl: row['still_url'] as String?,
       runtime: row['runtime'] as int?,
+      source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
     );
   }
 
-  /// ID сериала в TMDB.
+  /// From a TVmaze `episode` object; null when season/episode number is missing.
+  static TvEpisode? tryFromTvMaze(
+    Map<String, dynamic> json, {
+    required int showId,
+  }) {
+    final int? season = json['season'] as int?;
+    final int? number = json['number'] as int?;
+    if (season == null || number == null) return null;
+
+    final String? airdate = json['airdate'] as String?;
+    return TvEpisode(
+      tmdbShowId: showId,
+      seasonNumber: season,
+      episodeNumber: number,
+      name: json['name'] as String? ?? '',
+      overview: stripHtmlText(json['summary'] as String?),
+      airDate: (airdate == null || airdate.isEmpty) ? null : airdate,
+      stillUrl: tvMazeImageUrl(json['image']),
+      runtime: json['runtime'] as int?,
+      source: DataSource.tvmaze,
+    );
+  }
+
+  /// Show id in the [source] provider's namespace.
   final int tmdbShowId;
 
-  /// Номер сезона.
   final int seasonNumber;
-
-  /// Номер эпизода.
   final int episodeNumber;
-
-  /// Название эпизода.
   final String name;
-
-  /// Описание эпизода.
   final String? overview;
 
-  /// Дата выхода (формат: "YYYY-MM-DD").
+  /// "YYYY-MM-DD".
   final String? airDate;
 
-  /// URL кадра из эпизода (still image).
   final String? stillUrl;
 
-  /// Длительность эпизода в минутах.
+  /// Runtime in minutes.
   final int? runtime;
 
-  /// Преобразует в Map для сохранения в базу данных.
+  final DataSource source;
+
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'tmdb_show_id': tmdbShowId,
@@ -89,11 +105,11 @@ class TvEpisode {
       'air_date': airDate,
       'still_url': stillUrl,
       'runtime': runtime,
+      'source': source.name,
       'cached_at': DateTime.now().millisecondsSinceEpoch,
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TvEpisode copyWith({
     int? tmdbShowId,
     int? seasonNumber,
@@ -103,6 +119,7 @@ class TvEpisode {
     String? airDate,
     String? stillUrl,
     int? runtime,
+    DataSource? source,
   }) {
     return TvEpisode(
       tmdbShowId: tmdbShowId ?? this.tmdbShowId,
@@ -113,6 +130,7 @@ class TvEpisode {
       airDate: airDate ?? this.airDate,
       stillUrl: stillUrl ?? this.stillUrl,
       runtime: runtime ?? this.runtime,
+      source: source ?? this.source,
     );
   }
 
@@ -120,6 +138,7 @@ class TvEpisode {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is TvEpisode &&
+        other.source == source &&
         other.tmdbShowId == tmdbShowId &&
         other.seasonNumber == seasonNumber &&
         other.episodeNumber == episodeNumber;
@@ -127,7 +146,7 @@ class TvEpisode {
 
   @override
   int get hashCode =>
-      Object.hash(tmdbShowId, seasonNumber, episodeNumber);
+      Object.hash(source, tmdbShowId, seasonNumber, episodeNumber);
 
   @override
   String toString() =>

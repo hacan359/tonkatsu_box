@@ -13,6 +13,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/tier_list_detail_provider.dart';
 import 'tier_item_card.dart';
 import 'tier_row.dart';
+import '../../../shared/constants/tier_definition_ui.dart';
 
 /// Tiers stacked over the Unranked pool, with a vertical drag handle between
 /// them so the user can resize the two regions.

@@ -5,6 +5,7 @@ import 'package:tonkatsu_box/shared/models/collected_item_info.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/cover_info.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
@@ -1389,7 +1390,26 @@ void main() {
     });
 
     group('updateItemCollectionId', () {
+      void stubItemLookup() {
+        mockDb.stubTransaction(mockTxn);
+        when(
+          () => mockTxn.query(
+            'collection_items',
+            columns: <String>[
+              'collection_id',
+              'media_type',
+              'external_id',
+              'source',
+            ],
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+            limit: 1,
+          ),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
+      }
+
       test('moves item and returns true', () async {
+        stubItemLookup();
         when(
           () => mockDb.rawQuery(
             'SELECT MAX(sort_order) AS max_sort FROM collection_items '
@@ -1402,7 +1422,7 @@ void main() {
           ],
         );
         when(
-          () => mockDb.update(
+          () => mockTxn.update(
             'collection_items',
             any(),
             where: 'id = ?',
@@ -1416,6 +1436,7 @@ void main() {
       });
 
       test('returns false on unique constraint violation', () async {
+        stubItemLookup();
         when(
           () => mockDb.rawQuery(
             'SELECT MAX(sort_order) AS max_sort FROM collection_items '
@@ -1428,7 +1449,7 @@ void main() {
           ],
         );
         when(
-          () => mockDb.update(
+          () => mockTxn.update(
             'collection_items',
             any(),
             where: 'id = ?',
@@ -1598,6 +1619,44 @@ void main() {
         expect(result.keys.length, 2);
         expect(result[100]!.length, 2);
         expect(result[200]!.length, 1);
+      });
+
+      test('defaults a null source to the media type default, not tmdb',
+          () async {
+        when(() => mockDb.rawQuery(any(), any())).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 1,
+              'external_id': 100,
+              'collection_id': 1,
+              'name': 'My Manga',
+            },
+          ],
+        );
+
+        final Map<int, List<CollectedItemInfo>> result =
+            await dao.getCollectedItemInfos(MediaType.manga);
+
+        expect(result[100]!.single.source, DataSource.anilist);
+      });
+
+      test('keeps the stored source when present', () async {
+        when(() => mockDb.rawQuery(any(), any())).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 1,
+              'external_id': 100,
+              'collection_id': 1,
+              'name': 'Shows',
+              'source': 'tvmaze',
+            },
+          ],
+        );
+
+        final Map<int, List<CollectedItemInfo>> result =
+            await dao.getCollectedItemInfos(MediaType.tvShow);
+
+        expect(result[100]!.single.source, DataSource.tvmaze);
       });
     });
 
@@ -1857,6 +1916,40 @@ void main() {
         );
 
         expect(result, hasLength(2));
+      });
+
+      test('narrows a multi-source type by source', () async {
+        when(
+          () => mockDb.query(
+            'collection_items',
+            where: 'media_type = ? AND external_id = ? '
+                'AND COALESCE(source, ?) = ?',
+            whereArgs: <Object?>['anime', 100, 'anilist', 'kitsu'],
+          ),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.anime,
+          externalId: 100,
+          source: DataSource.kitsu,
+        );
+
+        expect(result, isEmpty);
+      });
+
+      test('ignores source for a single-source type', () async {
+        stubQuery(<Map<String, dynamic>>[
+          _itemRow(id: 1, collectionId: 1, externalId: 100),
+        ]);
+        stubGameHydration();
+
+        final List<CollectionItem> result = await dao.resolveCardLink(
+          mediaType: MediaType.game,
+          externalId: 100,
+          source: DataSource.igdb,
+        );
+
+        expect(result, hasLength(1));
       });
     });
   });

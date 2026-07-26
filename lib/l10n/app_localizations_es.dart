@@ -361,6 +361,47 @@ class SEs extends S {
   }
 
   @override
+  String get bulkAddTags => 'Añadir etiquetas';
+
+  @override
+  String get bulkRemoveTags => 'Quitar etiquetas';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos',
+      one: '1 elemento',
+    );
+    return 'Añadir etiquetas a $_temp0';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos',
+      one: '1 elemento',
+    );
+    return 'Quitar etiquetas de $_temp0';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return 'Etiquetas añadidas: $count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return 'Etiquetas quitadas: $count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => 'Nada que cambiar';
+
+  @override
   String get bulkExportPngTitle => 'Exportar como PNG';
 
   @override
@@ -1387,6 +1428,10 @@ class SEs extends S {
       'Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.';
 
   @override
+  String get creditsTvMazeAttribution =>
+      'Datos de series proporcionados por TVmaze.';
+
+  @override
   String get creditsIgdbAttribution =>
       'Datos de juegos proporcionados por IGDB.';
 
@@ -1405,6 +1450,14 @@ class SEs extends S {
   @override
   String get creditsMangaBakaAttribution =>
       'Datos de manga proporcionados por MangaBaka.';
+
+  @override
+  String get creditsMangaDexAttribution =>
+      'Datos de manga proporcionados por MangaDex.';
+
+  @override
+  String get creditsKitsuAttribution =>
+      'Datos de manga proporcionados por Kitsu.';
 
   @override
   String get creditsOpenLibraryAttribution =>
@@ -1727,6 +1780,13 @@ class SEs extends S {
 
   @override
   String get customItemDescriptionHint => 'Breve descripción o notas';
+
+  @override
+  String get customItemMyNoteHint => 'Tu nota sobre este elemento';
+
+  @override
+  String get customItemTagsHint =>
+      'Separadas por comas, p. ej. Pendientes, Favoritos';
 
   @override
   String get customItemOptionalFields => 'Más campos';
@@ -2102,6 +2162,9 @@ class SEs extends S {
 
   @override
   String get markAllWatched => 'Marcar todo como visto';
+
+  @override
+  String get markNextWatched => 'Marcar siguiente episodio';
 
   @override
   String get unmarkAll => 'Desmarcar todo';
@@ -2838,6 +2901,9 @@ class SEs extends S {
   String get welcomeSourceDescTmdb => 'Películas, series y animación.';
 
   @override
+  String get welcomeSourceDescTvMaze => 'Series de TV.';
+
+  @override
   String get welcomeSourceDescIgdb => 'Videojuegos de todas las plataformas.';
 
   @override
@@ -2847,6 +2913,14 @@ class SEs extends S {
   @override
   String get welcomeSourceDescMangaBaka =>
       'Manga, manhwa, manhua y novelas ligeras.';
+
+  @override
+  String get welcomeSourceDescMangaDex =>
+      'Un amplio catálogo de manga con títulos localizados y recuento de capítulos.';
+
+  @override
+  String get welcomeSourceDescKitsu =>
+      'Un catálogo independiente de manga con valoraciones y portadas.';
 
   @override
   String get welcomeSourceDescVndb => 'La base de datos de novelas visuales.';
@@ -3590,6 +3664,9 @@ class SEs extends S {
 
   @override
   String get browseFilterContentRating => 'Clasificación de contenido';
+
+  @override
+  String get browseFilterDemographic => 'Demografía';
 
   @override
   String get contentRatingSafe => 'Seguro';
@@ -4834,6 +4911,12 @@ class SEs extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       'Plantilla aplicada por celda. Tokens disponibles: name, year, genre, rating.';
+
+  @override
+  String get moodGridCellLabelTemplate => 'Etiquetas de celda';
+
+  @override
+  String get moodGridCellSize => 'Tamaño';
 
   @override
   String get collection => 'Colección';

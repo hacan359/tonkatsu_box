@@ -116,6 +116,107 @@ void main() {
       });
     });
 
+    group('bulk tag changes', () {
+      setUp(() {
+        when(() => mockDao.getAllItemTags()).thenAnswer(
+          (_) async => <int, List<int>>{
+            1: <int>[10],
+            2: <int>[10, 20],
+          },
+        );
+        when(() => mockDao.addTagsToItems(any(), any()))
+            .thenAnswer((_) async {});
+        when(() => mockDao.removeTagsFromItems(any(), any()))
+            .thenAnswer((_) async {});
+      });
+
+      test('addTagsToItems writes once and re-reads once', () async {
+        await load();
+        when(() => mockDao.getTagIdsForItems(any())).thenAnswer(
+          (_) async => <int, List<int>>{
+            1: <int>[10, 20],
+            2: <int>[10, 20],
+          },
+        );
+
+        await container
+            .read(itemTagsProvider.notifier)
+            .addTagsToItems(<int>[1, 2], <int>{20});
+
+        verify(() => mockDao.addTagsToItems(<int>[1, 2], <int>{20})).called(1);
+        verify(() => mockDao.getTagIdsForItems(<int>[1, 2])).called(1);
+        verifyNever(() => mockDao.setItemTags(any(), any()));
+        verifyNever(() => mockDao.getTagIdsByItem(any()));
+      });
+
+      test('addTagsToItems counts only links that were missing', () async {
+        await load();
+        when(() => mockDao.getTagIdsForItems(any())).thenAnswer(
+          (_) async => <int, List<int>>{
+            1: <int>[10, 20],
+            2: <int>[10, 20],
+          },
+        );
+
+        final int changed = await container
+            .read(itemTagsProvider.notifier)
+            .addTagsToItems(<int>[1, 2], <int>{20});
+
+        // Item 2 already carried tag 20, so only item 1 gained a link.
+        expect(changed, 1);
+      });
+
+      test('addTagsToItems takes the dao order, not the requested one',
+          () async {
+        await load();
+        when(() => mockDao.getTagIdsForItems(any())).thenAnswer(
+          (_) async => <int, List<int>>{
+            1: <int>[30, 10],
+            2: <int>[10, 20],
+          },
+        );
+
+        await container
+            .read(itemTagsProvider.notifier)
+            .addTagsToItems(<int>[1], <int>{30});
+
+        expect(container.read(itemTagsProvider).valueOrNull?[1], <int>[30, 10]);
+      });
+
+      test('removeTagsFromItems drops items left without tags', () async {
+        await load();
+        when(() => mockDao.getTagIdsForItems(any())).thenAnswer(
+          (_) async => <int, List<int>>{
+            2: <int>[20],
+          },
+        );
+
+        final int changed = await container
+            .read(itemTagsProvider.notifier)
+            .removeTagsFromItems(<int>[1, 2], <int>{10});
+
+        expect(changed, 2);
+        expect(container.read(itemTagsProvider).valueOrNull, <int, List<int>>{
+          2: <int>[20],
+        });
+      });
+
+      test('both operations no-op on an empty selection or empty tag set',
+          () async {
+        await load();
+
+        final ItemTagsNotifier notifier =
+            container.read(itemTagsProvider.notifier);
+        expect(await notifier.addTagsToItems(<int>[], <int>{10}), 0);
+        expect(await notifier.addTagsToItems(<int>[1], <int>{}), 0);
+        expect(await notifier.removeTagsFromItems(<int>[], <int>{10}), 0);
+        expect(await notifier.removeTagsFromItems(<int>[1], <int>{}), 0);
+
+        verifyNever(() => mockDao.addTagsToItems(any(), any()));
+        verifyNever(() => mockDao.removeTagsFromItems(any(), any()));
+      });
+    });
+
     test('dropTagEverywhere removes the tag, keeping list order', () async {
       when(() => mockDao.getAllItemTags()).thenAnswer(
         (_) async => <int, List<int>>{

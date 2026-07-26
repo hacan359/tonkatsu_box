@@ -14,6 +14,7 @@ import '../../../shared/models/media_type.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../providers/collection_covers_provider.dart';
+import '../providers/episode_tracker_provider.dart';
 import '../providers/item_tags_provider.dart';
 import '../providers/collections_provider.dart';
 
@@ -193,8 +194,6 @@ class BulkOperations {
     return changedIds.length;
   }
 
-  // ---------------------------------------------------------------------------
-
   static void _invalidateAfterMutation(
     WidgetRef ref, {
     required Set<int?> affectedCollections,
@@ -209,6 +208,11 @@ class BulkOperations {
     }
     if (tagsChanged) {
       ref.invalidate(itemTagsProvider);
+    }
+    // Bulk moves transfer watched marks in the DB; live trackers keep the
+    // old in-memory state until invalidated.
+    if (affectedTypes.any((MediaType t) => t.isTvBacked)) {
+      ref.invalidate(episodeTrackerNotifierProvider);
     }
     for (final MediaType t in affectedTypes) {
       _invalidateCollectedIds(ref, t);

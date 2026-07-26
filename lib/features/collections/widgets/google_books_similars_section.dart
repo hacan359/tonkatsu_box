@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/google_books_api.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/widgets/book_carousel.dart';
 import '../providers/collections_provider.dart';
 import 'book_similars_carousel.dart';
@@ -53,16 +55,16 @@ class GoogleBooksSimilarsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<Book>> async =
         ref.watch(_getSimilarProvider(book));
-    final Set<int> ownedIds = <int>{
-      ...?ref.watch(collectedBookIdsProvider).valueOrNull?.keys,
-    };
+    final Set<(DataSource, int)> ownedKeys =
+        ref.watch(collectedBookIdsProvider).valueOrNull?.sourceKeys ??
+            const <(DataSource, int)>{};
 
     return async.when(
       data: (List<Book> books) => books.isEmpty
           ? const SizedBox.shrink()
           : BookSimilarsCarousel(
               books: books,
-              ownedIds: ownedIds,
+              ownedKeys: ownedKeys,
               onAddBook: onAddBook,
             ),
       loading: () => const BookCarouselShimmer(),

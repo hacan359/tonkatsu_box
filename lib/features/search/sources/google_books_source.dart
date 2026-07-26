@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/google_books_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/google_books_language_filter.dart';
 import '../filters/google_books_print_type_filter.dart';
 import '../models/search_source.dart';
@@ -28,10 +28,7 @@ class GoogleBooksSource extends SearchSource {
   MediaType get outputMediaType => MediaType.book;
 
   @override
-  String get groupId => 'googlebooks';
-
-  @override
-  String get groupName => 'Google Books';
+  DataSource get dataSource => DataSource.googleBooks;
 
   @override
   IconData get groupIcon => Icons.book;
@@ -41,9 +38,6 @@ class GoogleBooksSource extends SearchSource {
 
   @override
   IconData get icon => Icons.book;
-
-  @override
-  String? get iconAsset => AppAssets.iconGoogleBooksColor;
 
   // Google Books has no filter-only browse: `volumes.list` rejects a missing
   // `q`, so a text query is always required.

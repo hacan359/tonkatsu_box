@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:core/database/migrations/migration.dart';
+import 'package:core/database/migrations/migration_registry.dart';
+import 'package:core/database/migrations/migration_runner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -30,6 +33,7 @@ import 'dao/tv_show_dao.dart';
 import 'dao/manga_dao.dart';
 import 'dao/mangabaka_genre_dao.dart';
 import 'dao/mangabaka_tag_dao.dart';
+import 'dao/mangadex_tag_dao.dart';
 import 'dao/visual_novel_dao.dart';
 import 'dao/mood_grid_dao.dart';
 import 'dao/tier_list_dao.dart';
@@ -37,8 +41,6 @@ import 'dao/calendar_entry_dao.dart';
 import 'dao/tracked_release_dao.dart';
 import 'dao/tracker_dao.dart';
 import 'dao/wishlist_dao.dart';
-import 'migrations/migration.dart';
-import 'migrations/migration_registry.dart';
 
 final Provider<DatabaseService> databaseServiceProvider =
     Provider<DatabaseService>((Ref ref) {
@@ -128,6 +130,11 @@ final Provider<MangaBakaTagDao> mangaBakaTagDaoProvider =
   return ref.watch(databaseServiceProvider).mangaBakaTagDao;
 });
 
+final Provider<MangaDexTagDao> mangaDexTagDaoProvider =
+    Provider<MangaDexTagDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).mangaDexTagDao;
+});
+
 final Provider<TrackedReleaseDao> trackedReleaseDaoProvider =
     Provider<TrackedReleaseDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).trackedReleaseDao;
@@ -205,6 +212,8 @@ class DatabaseService {
 
   late final MangaBakaTagDao mangaBakaTagDao = MangaBakaTagDao(() => database);
 
+  late final MangaDexTagDao mangaDexTagDao = MangaDexTagDao(() => database);
+
   late final WishlistDao wishlistDao = WishlistDao(() => database);
 
   late final TrackedReleaseDao trackedReleaseDao =
@@ -248,7 +257,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 56,
+        version: 60,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -269,19 +278,31 @@ class DatabaseService {
     _log.info('Creating database schema v$version');
     // Single source of truth: a fresh DB is built by running the whole
     // migration chain (v1..N) in order, exactly like an upgrade from zero.
-    for (final Migration migration in MigrationRegistry.all) {
-      await migration.migrate(db);
-    }
+    await MigrationRunner.run(
+      db,
+      MigrationRegistry.all,
+      fromVersion: 0,
+      toVersion: version,
+      onFailure: _logMigrationFailure,
+    );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     _log.info('Upgrading database from v$oldVersion to v$newVersion');
-    for (final Migration migration in MigrationRegistry.pending(oldVersion)) {
-      _log.fine('Running migration v${migration.version}: ${migration.description}');
-      await migration.migrate(db);
-    }
+    await MigrationRunner.run(
+      db,
+      MigrationRegistry.pending(oldVersion),
+      fromVersion: oldVersion,
+      toVersion: newVersion,
+      onStart: (Migration m) =>
+          _log.fine('Running migration v${m.version}: ${m.description}'),
+      onFailure: _logMigrationFailure,
+    );
     _log.info('Database upgrade complete');
   }
+
+  void _logMigrationFailure(MigrationFailure failure, StackTrace stack) =>
+      _log.severe('Migration v${failure.version} failed', failure, stack);
 
   Future<List<Collection>> getAllCollections() =>
       collectionDao.getAllCollections();
@@ -391,12 +412,14 @@ class DatabaseService {
     required MediaType mediaType,
     required int externalId,
     int? platformId,
+    DataSource? source,
   }) =>
       collectionDao.findCollectionItem(
         collectionId: collectionId,
         mediaType: mediaType,
         externalId: externalId,
         platformId: platformId,
+        source: source,
       );
 
   Future<int?> addItemToCollection({
@@ -459,35 +482,13 @@ class DatabaseService {
     String mediaType, {
     int? platformId,
     bool filterByPlatform = false,
-  }) async {
-    final Database db = await database;
-    final List<String> conditions = <String>[
-      'external_id = ?',
-      'media_type = ?',
-    ];
-    final List<Object?> args = <Object?>[externalId, mediaType];
-    if (filterByPlatform) {
-      if (platformId == null) {
-        conditions.add('platform_id IS NULL');
-      } else {
-        conditions.add('platform_id = ?');
-        args.add(platformId);
-      }
-    }
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collection_items',
-      columns: <String>['id', 'collection_id', 'platform_id'],
-      where: conditions.join(' AND '),
-      whereArgs: args,
-    );
-    return rows
-        .map((Map<String, dynamic> r) => (
-              id: r['id'] as int,
-              collectionId: r['collection_id'] as int?,
-              platformId: r['platform_id'] as int?,
-            ))
-        .toList();
-  }
+  }) =>
+      collectionDao.getItemIdsByExternalId(
+        externalId,
+        mediaType,
+        platformId: platformId,
+        filterByPlatform: filterByPlatform,
+      );
 
   Future<void> updateItemProgress(
     int id, {
@@ -552,44 +553,9 @@ class DatabaseService {
   Future<int> getUncategorizedItemCount() =>
       collectionDao.getUncategorizedItemCount();
 
-  /// Truncates every user table in a single transaction. FK-dependent tables
-  /// are deleted before their parents. Static reference tables (platforms,
-  /// tmdb_genres, igdb_genres, vndb_tags) are preserved — they're seeded by
-  /// MigrationV24 and are not user data. SharedPreferences is untouched.
-  Future<void> clearAllData() async {
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      await txn.delete('mood_grid_cells');
-      await txn.delete('mood_grids');
-      await txn.delete('tier_list_entries');
-      await txn.delete('tier_definitions');
-      await txn.delete('tier_lists');
-      await txn.delete('collection_tags');
-      await txn.delete('item_tags');
-      await txn.delete('tags');
-      await txn.delete('tracker_achievements');
-      await txn.delete('tracker_game_data');
-      await txn.delete('tracker_profiles');
-      await txn.delete('watched_episodes');
-      await txn.delete('canvas_connections');
-      await txn.delete('canvas_items');
-      await txn.delete('canvas_viewport');
-      await txn.delete('game_canvas_viewport');
-      await txn.delete('custom_items');
-      await txn.delete('collection_items');
-      await txn.delete('collections');
-      await txn.delete('tv_episodes_cache');
-      await txn.delete('tv_seasons_cache');
-      await txn.delete('tv_shows_cache');
-      await txn.delete('movies_cache');
-      await txn.delete('games');
-      await txn.delete('visual_novels_cache');
-      await txn.delete('manga_cache');
-      await txn.delete('anime_cache');
-      await txn.delete('books_cache');
-      await txn.delete('wishlist');
-    });
-  }
+  /// Truncates every user table in a single transaction; static reference
+  /// tables and SharedPreferences are untouched.
+  Future<void> clearAllData() => collectionDao.clearAllData();
 
   Future<List<CoverInfo>> getCollectionCovers(
     int? collectionId, {

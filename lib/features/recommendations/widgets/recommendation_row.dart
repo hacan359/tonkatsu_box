@@ -6,6 +6,7 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../providers/recommendations_provider.dart';
@@ -163,7 +164,12 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                           cacheImageType: isMovie
                               ? ImageType.moviePoster
                               : ImageType.tvShowPoster,
-                          cacheImageId: item.tmdbId.toString(),
+                          cacheImageId: isMovie
+                              ? item.tmdbId.toString()
+                              : coverImageId(
+                                  mediaType: MediaType.tvShow,
+                                  externalId: item.tmdbId,
+                                ),
                           mediaType: item.mediaType,
                           year: item.year,
                           // Predicted personal rating in the badge; TMDB rating

@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
 import 'package:tonkatsu_box/core/services/xcoll_file.dart';
 import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
@@ -14,10 +15,13 @@ import 'package:tonkatsu_box/shared/models/canvas_item.dart';
 import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_mark.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/movie.dart';
+import 'package:tonkatsu_box/shared/models/tag.dart';
+import 'package:tonkatsu_box/shared/models/tier_list.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -2865,6 +2869,682 @@ void main() {
         ).captured.single as List<ItemMark>;
         expect(inserted, hasLength(2));
         expect(inserted.every((ItemMark m) => m.itemId == 77), isTrue);
+      });
+    });
+
+    group('import watched episodes (_watched_episodes)', () {
+      late ImportService sutV2;
+      late MockTvShowDao mockTvShowDao;
+
+      const List<Map<String, dynamic>> itemsWithWatched =
+          <Map<String, dynamic>>[
+        <String, dynamic>{
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          '_watched_episodes': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'season': 1,
+              'episode': 1,
+              'watched_at': 1700000000,
+            },
+            <String, dynamic>{
+              'season': 1,
+              'episode': 2,
+              'watched_at': null,
+            },
+          ],
+        },
+      ];
+
+      setUp(() {
+        mockTvShowDao = MockTvShowDao();
+        when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
+        when(() => mockTvShowDao.upsertTvShows(any()))
+            .thenAnswer((_) async {});
+        when(() => mockTvShowDao.markEpisodeWatchedAt(
+                any(), any(), any(), any(), any(), any()))
+            .thenAnswer((_) async {});
+
+        when(() => mockTmdb.getTvShow(1399)).thenAnswer(
+            (_) async => const TvShow(tmdbId: 1399, title: 'GoT'));
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+
+        sutV2 = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+        );
+      });
+
+      XcollFile xcollWith({
+        required bool userData,
+        List<Map<String, dynamic>> items = itemsWithWatched,
+      }) =>
+          XcollFile(
+            version: 2,
+            format: ExportFormat.light,
+            name: 'Import',
+            author: 'Author',
+            created: testDate,
+            includesUserData: userData,
+            items: items,
+          );
+
+      test('should restore marks re-scoped to the target collection',
+          () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.tmdb, 1399, 1, 1, 1700000000 * 1000)).called(1);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.tmdb, 1399, 1, 2, null)).called(1);
+      });
+
+      test('should skip watched marks when the file has no user data',
+          () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: false),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
+      test('should ignore _watched_episodes on a non-tv item', () async {
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        final MockGameDao gameDao = MockGameDao();
+        when(() => mockDb.gameDao).thenReturn(gameDao);
+        when(() => gameDao.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              '_watched_episodes': <Map<String, dynamic>>[
+                <String, dynamic>{'season': 1, 'episode': 1},
+              ],
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
+      test('should tolerate files without the _watched_episodes key',
+          () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{'media_type': 'tv_show', 'external_id': 1399},
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
+      test('should restore marks onto an existing duplicate item', () async {
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => null);
+        when(() => mockRepo.findItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+            )).thenAnswer((_) async => createTestCollectionItem(
+              id: 77,
+              mediaType: MediaType.tvShow,
+              externalId: 1399,
+            ));
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.tmdb, 1399, 1, 1, 1700000000 * 1000)).called(1);
+      });
+    });
+
+    group('multi-source item identity', () {
+      late ImportService sutV2;
+      late MockGlobalTagDao mockTagDao;
+
+      setUp(() {
+        mockTagDao = MockGlobalTagDao();
+        when(() => mockDb.globalTagDao).thenReturn(mockTagDao);
+        sutV2 = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+        );
+      });
+
+      // A non-empty media map keeps the import off the network APIs.
+      const Map<String, dynamic> noMedia = <String, dynamic>{
+        'animes': <dynamic>[],
+      };
+
+      test('should resolve an existing item by its own source', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 3,
+          format: ExportFormat.full,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          media: noMedia,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 123,
+              'source': 'kitsu',
+              'comment': 'Kitsu review',
+            },
+          ],
+        );
+
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => null);
+        when(() => mockRepo.findItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+            )).thenAnswer((_) async => createTestCollectionItem(
+              id: 42,
+              mediaType: MediaType.anime,
+              externalId: 123,
+            ));
+        when(() => mockDb.updateItemAuthorComment(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ImportResult result =
+            await sutV2.importFromXcoll(xcoll, collectionId: 5);
+
+        expect(result.success, isTrue);
+        final List<DataSource?> lookedUpSources = verify(() => mockRepo.findItem(
+              collectionId: 5,
+              mediaType: MediaType.anime,
+              externalId: 123,
+              platformId: null,
+              source: captureAny(named: 'source'),
+            )).captured.cast<DataSource?>();
+        expect(lookedUpSources, isNotEmpty);
+        expect(lookedUpSources, everyElement(DataSource.kitsu));
+      });
+
+      test('should tag each source separately when two share an id', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 3,
+          format: ExportFormat.full,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          media: noMedia,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 555,
+              'source': 'anilist',
+              'tag_names': <String>['Fav'],
+            },
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 555,
+              'source': 'kitsu',
+              'tag_names': <String>['Meh'],
+            },
+          ],
+          tags: const <Map<String, dynamic>>[
+            <String, dynamic>{'name': 'Fav', 'sort_order': 0},
+            <String, dynamic>{'name': 'Meh', 'sort_order': 1},
+          ],
+        );
+
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((Invocation invocation) async =>
+            invocation.namedArguments[const Symbol('source')] ==
+                    DataSource.kitsu
+                ? 22
+                : 11);
+        when(() => mockTagDao.resolveOrCreateAll(any()))
+            .thenAnswer((_) async => <String, int>{
+                  GlobalTagDao.nameKey('Fav'): 1,
+                  GlobalTagDao.nameKey('Meh'): 2,
+                });
+        when(mockTagDao.getAll).thenAnswer((_) async => <Tag>[
+              createTestTag(id: 1, name: 'Fav'),
+              createTestTag(id: 2, name: 'Meh', sortOrder: 1),
+            ]);
+        when(() => mockTagDao.setItemTags(any(), any()))
+            .thenAnswer((_) async {});
+        when(() => mockTagDao.setItemTagPositions(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ImportResult result =
+            await sutV2.importFromXcoll(xcoll, collectionId: 5);
+
+        expect(result.success, isTrue);
+        verify(() => mockTagDao.setItemTags(11, <int>{1})).called(1);
+        verify(() => mockTagDao.setItemTags(22, <int>{2})).called(1);
+      });
+
+      test('should place each source in its own tier when they share an id',
+          () async {
+        final XcollFile xcoll = XcollFile(
+          version: 3,
+          format: ExportFormat.full,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          media: noMedia,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 555,
+              'source': 'anilist',
+            },
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 555,
+              'source': 'kitsu',
+            },
+          ],
+          tierLists: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'name': 'Ranked',
+              'entries': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'media_type': 'anime',
+                  'external_id': 555,
+                  'source': 'kitsu',
+                  'tier_key': 'S',
+                  'sort_order': 0,
+                },
+              ],
+            },
+          ],
+        );
+
+        final MockTierListDao mockTierListDao = MockTierListDao();
+        when(() => mockDb.tierListDao).thenReturn(mockTierListDao);
+        when(() => mockTierListDao.createTierList(any(),
+                collectionId: any(named: 'collectionId')))
+            .thenAnswer((_) async => TierList(
+                  id: 7,
+                  name: 'Ranked',
+                  createdAt: testDate,
+                ));
+        when(() => mockTierListDao.setItemTier(any(), any(), any(), any()))
+            .thenAnswer((_) async {});
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((Invocation invocation) async =>
+            invocation.namedArguments[const Symbol('source')] ==
+                    DataSource.kitsu
+                ? 22
+                : 11);
+
+        final ImportResult result =
+            await sutV2.importFromXcoll(xcoll, collectionId: 5);
+
+        expect(result.success, isTrue);
+        verify(() => mockTierListDao.setItemTier(7, 22, 'S', 0)).called(1);
+        verifyNever(() => mockTierListDao.setItemTier(7, 11, any(), any()));
+      });
+
+      test('should fall back to the bare key for a legacy sourceless entry',
+          () async {
+        final XcollFile xcoll = XcollFile(
+          version: 3,
+          format: ExportFormat.full,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          media: noMedia,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 555,
+              'tag_names': <String>['Fav'],
+            },
+          ],
+          tags: const <Map<String, dynamic>>[
+            <String, dynamic>{'name': 'Fav', 'sort_order': 0},
+          ],
+        );
+
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 11);
+        when(() => mockTagDao.resolveOrCreateAll(any())).thenAnswer(
+            (_) async => <String, int>{GlobalTagDao.nameKey('Fav'): 1});
+        when(mockTagDao.getAll)
+            .thenAnswer((_) async => <Tag>[createTestTag(id: 1, name: 'Fav')]);
+        when(() => mockTagDao.setItemTags(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ImportResult result =
+            await sutV2.importFromXcoll(xcoll, collectionId: 5);
+
+        expect(result.success, isTrue);
+        verify(() => mockTagDao.setItemTags(11, <int>{1})).called(1);
+      });
+    });
+
+    group('light import hydration by source', () {
+      late ImportService sutLight;
+      late MockAniListApi mockAniList;
+      late MockTvMazeApi mockTvMaze;
+      late MockKitsuApi mockKitsu;
+      late MockMangaDexApi mockMangaDex;
+      late MockOpenLibraryApi mockOpenLibrary;
+      late MockMangaDao mockMangaDao;
+      late MockAnimeDao mockAnimeDao;
+      late MockBookDao mockBookDao;
+
+      setUp(() {
+        mockAniList = MockAniListApi();
+        mockTvMaze = MockTvMazeApi();
+        mockKitsu = MockKitsuApi();
+        mockMangaDex = MockMangaDexApi();
+        mockOpenLibrary = MockOpenLibraryApi();
+
+        mockMangaDao = MockMangaDao();
+        mockAnimeDao = MockAnimeDao();
+        mockBookDao = MockBookDao();
+        when(() => mockDb.mangaDao).thenReturn(mockMangaDao);
+        when(() => mockDb.animeDao).thenReturn(mockAnimeDao);
+        when(() => mockDb.bookDao).thenReturn(mockBookDao);
+        when(() => mockMangaDao.upsertMangas(any())).thenAnswer((_) async {});
+        when(() => mockAnimeDao.upsertAnimes(any())).thenAnswer((_) async {});
+        when(() => mockBookDao.upsertBooks(any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.upsertTvShows(any())).thenAnswer((_) async {});
+
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        sutLight = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          aniListApi: mockAniList,
+          tvMazeApi: mockTvMaze,
+          kitsuApi: mockKitsu,
+          mangaDexApi: mockMangaDex,
+          openLibraryApi: mockOpenLibrary,
+          database: mockDb,
+        );
+      });
+
+      XcollFile lightFile(List<Map<String, dynamic>> items) => XcollFile(
+            version: 3,
+            format: ExportFormat.light,
+            name: 'Light',
+            author: 'Author',
+            created: testDate,
+            items: items,
+          );
+
+      test('сериал TVmaze тянется из TVmaze, а не из TMDB', () async {
+        when(() => mockTvMaze.getShow(42987))
+            .thenAnswer((_) async => createTestTvShow(tmdbId: 42987));
+
+        final ImportResult result = await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 42987,
+              'source': 'tvmaze',
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvMaze.getShow(42987)).called(1);
+        verifyNever(() => mockTmdb.getTvShow(any()));
+      });
+
+      test('сериал без source остаётся на TMDB (старые файлы)', () async {
+        when(() => mockTmdb.getTvShow(70523))
+            .thenAnswer((_) async => createTestTvShow(tmdbId: 70523));
+
+        await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{'media_type': 'tv_show', 'external_id': 70523},
+          ]),
+          collectionId: 5,
+        );
+
+        verify(() => mockTmdb.getTvShow(70523)).called(1);
+        verifyNever(() => mockTvMaze.getShow(any()));
+      });
+
+      test('аниме Kitsu тянется из Kitsu, а не из AniList', () async {
+        when(() => mockKitsu.getAnimeById(8000)).thenAnswer(
+            (_) async => createTestAnime(id: 8000, source: DataSource.kitsu));
+
+        await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 8000,
+              'source': 'kitsu',
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        verify(() => mockKitsu.getAnimeById(8000)).called(1);
+        verifyNever(() => mockAniList.getAnimeByIds(any(),
+            onRateLimit: any(named: 'onRateLimit')));
+      });
+
+      test('манга MangaDex резолвится по native_id', () async {
+        when(() => mockMangaDex.getByUuid('uuid-1'))
+            .thenAnswer((_) async => createTestManga(id: 777));
+
+        await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'manga',
+              'external_id': 3151439834073630622,
+              'source': 'mangadex',
+              'native_id': 'uuid-1',
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        verify(() => mockMangaDex.getByUuid('uuid-1')).called(1);
+        verifyNever(() => mockAniList.getMangaById(any()));
+      });
+
+      test('манга MangaDex без native_id пропускается, а не идёт в AniList',
+          () async {
+        await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'manga',
+              'external_id': 3151439834073630622,
+              'source': 'mangadex',
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        verifyNever(() => mockMangaDex.getByUuid(any()));
+        verifyNever(() => mockAniList.getMangaById(any()));
+        verifyNever(() => mockMangaDao.upsertMangas(any()));
+      });
+
+      test('книга OpenLibrary резолвится по native_id', () async {
+        when(() => mockOpenLibrary.getWork('OL8193465W')).thenAnswer(
+            (_) async => createTestBook(id: '8193465', nativeId: 'OL8193465W'));
+
+        await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'book',
+              'external_id': 8193465,
+              'source': 'openLibrary',
+              'native_id': 'OL8193465W',
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        verify(() => mockOpenLibrary.getWork('OL8193465W')).called(1);
+        verify(() => mockBookDao.upsertBooks(any())).called(1);
+      });
+
+      test('книга без native_id ничего не запрашивает', () async {
+        await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'book',
+              'external_id': 8193465,
+              'source': 'openLibrary',
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        verifyNever(() => mockOpenLibrary.getWork(any()));
+        verifyNever(() => mockBookDao.upsertBooks(any()));
+      });
+
+      test('сбой одного источника не роняет остальные', () async {
+        when(() => mockTvMaze.getShow(1)).thenThrow(Exception('network down'));
+        when(() => mockTmdb.getTvShow(2))
+            .thenAnswer((_) async => createTestTvShow(tmdbId: 2));
+
+        final ImportResult result = await sutLight.importFromXcoll(
+          lightFile(const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1,
+              'source': 'tvmaze',
+            },
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 2,
+              'source': 'tmdb',
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
       });
     });
   });

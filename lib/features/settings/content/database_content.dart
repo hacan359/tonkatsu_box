@@ -12,7 +12,7 @@ import '../../../shared/navigation/app_shell.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../releases/providers/releases_provider.dart';
-import '../../tier_lists/providers/mood_grids_provider.dart';
+import '../../mood_grids/providers/mood_grids_provider.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';

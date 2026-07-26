@@ -18,6 +18,7 @@ import 'canvas_image_item.dart';
 import 'canvas_item_actions.dart';
 import 'canvas_link_item.dart';
 import 'canvas_text_item.dart';
+import '../../../shared/constants/canvas_item_ui.dart';
 
 class CanvasView extends ConsumerStatefulWidget {
   const CanvasView({

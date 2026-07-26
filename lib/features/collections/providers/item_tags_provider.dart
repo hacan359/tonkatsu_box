@@ -39,6 +39,53 @@ class ItemTagsNotifier extends AsyncNotifier<Map<int, List<int>>> {
     state = AsyncData<Map<int, List<int>>>(next);
   }
 
+  /// Adds [tagIds] to every item in [itemIds], leaving their other tags
+  /// alone. Returns how many links were actually created — items that
+  /// already carried a tag are not counted.
+  Future<int> addTagsToItems(Iterable<int> itemIds, Set<int> tagIds) async {
+    final List<int> targets = itemIds.toList(growable: false);
+    if (targets.isEmpty || tagIds.isEmpty) return 0;
+    final GlobalTagDao dao = ref.read(globalTagDaoProvider);
+    await dao.addTagsToItems(targets, tagIds);
+    return _syncItems(dao, targets);
+  }
+
+  /// Removes [tagIds] from every item in [itemIds]. Returns how many links
+  /// were actually dropped.
+  Future<int> removeTagsFromItems(
+    Iterable<int> itemIds,
+    Set<int> tagIds,
+  ) async {
+    final List<int> targets = itemIds.toList(growable: false);
+    if (targets.isEmpty || tagIds.isEmpty) return 0;
+    final GlobalTagDao dao = ref.read(globalTagDaoProvider);
+    await dao.removeTagsFromItems(targets, tagIds);
+    return _syncItems(dao, targets);
+  }
+
+  /// Re-reads the tag lists of [itemIds] in one query and patches the map in
+  /// a single state update. Reading back rather than guessing keeps the
+  /// in-memory order identical to the DAO's, which mixes manual positions
+  /// with the global-order fallback.
+  Future<int> _syncItems(GlobalTagDao dao, List<int> itemIds) async {
+    final Map<int, List<int>> fresh = await dao.getTagIdsForItems(itemIds);
+    final Map<int, List<int>> next = _copy();
+    int changed = 0;
+    for (final int itemId in itemIds) {
+      final int before = next[itemId]?.length ?? 0;
+      final List<int>? after = fresh[itemId];
+      if (after == null || after.isEmpty) {
+        next.remove(itemId);
+        changed += before;
+      } else {
+        next[itemId] = after;
+        changed += (after.length - before).abs();
+      }
+    }
+    state = AsyncData<Map<int, List<int>>>(next);
+    return changed;
+  }
+
   /// Persists a manual per-item reorder of the item's tags.
   Future<void> reorderItemTags(int itemId, List<int> orderedTagIds) async {
     final GlobalTagDao dao = ref.read(globalTagDaoProvider);

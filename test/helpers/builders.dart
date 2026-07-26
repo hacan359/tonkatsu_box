@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/shared/models/book.dart';
@@ -94,6 +93,7 @@ CollectionItem createTestCollectionItem({
   MediaType mediaType = MediaType.game,
   int externalId = 100,
   int? platformId,
+  DataSource? source,
   int? tagId,
   ItemStatus status = ItemStatus.notStarted,
   String? authorComment,
@@ -126,6 +126,7 @@ CollectionItem createTestCollectionItem({
     mediaType: mediaType,
     externalId: externalId,
     platformId: platformId,
+    source: source,
     tagId: tagId,
     status: status,
     authorComment: authorComment,
@@ -276,6 +277,7 @@ VisualNovel createTestVisualNovel({
 
 Manga createTestManga({
   int id = 500,
+  DataSource source = DataSource.anilist,
   String title = 'Test Manga',
   String? description,
   String? coverUrl,
@@ -284,9 +286,11 @@ Manga createTestManga({
   int? volumes,
   String? format,
   List<String>? genres,
+  String? externalUrl,
 }) {
   return Manga(
     id: id,
+    source: source,
     title: title,
     description: description,
     coverUrl: coverUrl,
@@ -295,11 +299,13 @@ Manga createTestManga({
     volumes: volumes,
     format: format,
     genres: genres,
+    externalUrl: externalUrl,
   );
 }
 
 Anime createTestAnime({
   int id = 600,
+  DataSource source = DataSource.anilist,
   String title = 'Test Anime',
   String? description,
   String? coverUrl,
@@ -313,6 +319,7 @@ Anime createTestAnime({
 }) {
   return Anime(
     id: id,
+    source: source,
     title: title,
     description: description,
     coverUrl: coverUrl,
@@ -469,7 +476,7 @@ TierDefinition createTestTierDefinition({
   return TierDefinition(
     tierKey: tierKey,
     label: label,
-    color: Color(colorValue),
+    colorValue: colorValue,
     sortOrder: sortOrder,
   );
 }

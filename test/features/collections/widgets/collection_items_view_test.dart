@@ -470,7 +470,7 @@ class _FakeEpisodeTrackerNotifier extends EpisodeTrackerNotifier {
   final Map<(int, int), DateTime?> _watched;
 
   @override
-  EpisodeTrackerState build(({int? collectionId, int showId}) arg) =>
+  EpisodeTrackerState build(EpisodeTrackerArg arg) =>
       EpisodeTrackerState(watchedEpisodes: _watched);
 }
 

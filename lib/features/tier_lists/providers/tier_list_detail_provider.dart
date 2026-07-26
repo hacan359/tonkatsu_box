@@ -346,7 +346,7 @@ class TierListDetailNotifier
     final List<TierDefinition> updated = state.definitions.map(
       (TierDefinition def) {
         if (def.tierKey == tierKey) {
-          return def.copyWith(label: label, color: color);
+          return def.copyWith(label: label, colorValue: color?.toARGB32());
         }
         return def;
       },
@@ -362,7 +362,7 @@ class TierListDetailNotifier
     )..add(TierDefinition(
         tierKey: tierKey,
         label: label,
-        color: color,
+        colorValue: color.toARGB32(),
         sortOrder: state.definitions.length,
       ));
 

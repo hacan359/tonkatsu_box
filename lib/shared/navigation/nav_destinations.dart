@@ -19,46 +19,22 @@ List<NavDestination> buildNavDestinations({
 }) {
   final S loc = S.of(context);
   return <NavDestination>[
-    NavDestination(
-      tab: NavTab.home,
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: loc.navMain,
-    ),
-    NavDestination(
-      tab: NavTab.collections,
-      icon: Icons.shelves,
-      selectedIcon: Icons.shelves,
-      label: loc.navCollections,
-    ),
-    NavDestination(
-      tab: NavTab.tierLists,
-      icon: Icons.leaderboard_outlined,
-      selectedIcon: Icons.leaderboard,
-      label: loc.navTierLists,
-    ),
-    NavDestination(
-      tab: NavTab.releases,
-      icon: Icons.notifications_none,
-      selectedIcon: Icons.notifications,
-      label: loc.navReleases,
-      badgeCount: releasesTodayCount,
-    ),
-    NavDestination(
-      tab: NavTab.wishlist,
-      icon: Icons.bookmark_border,
-      selectedIcon: Icons.bookmark,
-      label: loc.navWishlist,
-      badgeCount: wishlistCount,
-    ),
-    NavDestination(
-      tab: NavTab.search,
-      icon: Icons.search_outlined,
-      selectedIcon: Icons.search,
-      label: loc.search,
-    ),
+    _dest(loc, NavTab.home),
+    _dest(loc, NavTab.collections),
+    _dest(loc, NavTab.tierLists),
+    _dest(loc, NavTab.releases, badgeCount: releasesTodayCount),
+    _dest(loc, NavTab.wishlist, badgeCount: wishlistCount),
+    _dest(loc, NavTab.search),
   ];
 }
+
+NavDestination _dest(S loc, NavTab tab, {int badgeCount = 0}) => NavDestination(
+      tab: tab,
+      icon: tab.icon,
+      selectedIcon: tab.selectedIcon,
+      label: tab.localizedLabel(loc),
+      badgeCount: badgeCount,
+    );
 
 /// Slot the centre button occupies in the nav row/rail. [AppShell] draws the
 /// button (a docked logo); the bars reserve an empty slot here so the tabs

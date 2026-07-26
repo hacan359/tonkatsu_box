@@ -1,10 +1,8 @@
-// Модель сезона сериала из TMDB.
+import '../utils/tvmaze_json.dart';
+import 'data_source.dart';
 
-/// Модель сезона сериала из TMDB API.
-///
-/// Представляет сезон сериала с метаданными.
+/// One season of a TV show.
 class TvSeason {
-  /// Создаёт экземпляр [TvSeason].
   const TvSeason({
     required this.tmdbShowId,
     required this.seasonNumber,
@@ -12,9 +10,9 @@ class TvSeason {
     this.episodeCount,
     this.posterUrl,
     this.airDate,
+    this.source = DataSource.tmdb,
   });
 
-  /// Создаёт [TvSeason] из JSON ответа TMDB API.
   factory TvSeason.fromJson(Map<String, dynamic> json, {required int showId}) {
     String? posterUrl;
     final String? posterPath = json['poster_path'] as String?;
@@ -32,7 +30,21 @@ class TvSeason {
     );
   }
 
-  /// Создаёт [TvSeason] из записи базы данных.
+  /// From a TVmaze `season` object (`/shows/{id}/seasons`).
+  factory TvSeason.fromTvMaze(Map<String, dynamic> json, {required int showId}) {
+    final String? rawName = json['name'] as String?;
+    return TvSeason(
+      tmdbShowId: showId,
+      seasonNumber: json['number'] as int,
+      name: (rawName == null || rawName.isEmpty) ? null : rawName,
+      episodeCount: json['episodeOrder'] as int?,
+      posterUrl: tvMazeImageUrl(json['image']),
+      airDate: json['premiereDate'] as String?,
+      source: DataSource.tvmaze,
+    );
+  }
+
+  /// A missing or unknown `source` column reads as [DataSource.tmdb].
   factory TvSeason.fromDb(Map<String, dynamic> row) {
     return TvSeason(
       tmdbShowId: row['tmdb_show_id'] as int,
@@ -41,28 +53,23 @@ class TvSeason {
       episodeCount: row['episode_count'] as int?,
       posterUrl: row['poster_url'] as String?,
       airDate: row['air_date'] as String?,
+      source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
     );
   }
 
-  /// ID сериала в TMDB.
+  /// Show id in the [source] provider's namespace.
   final int tmdbShowId;
 
-  /// Номер сезона.
   final int seasonNumber;
-
-  /// Название сезона.
   final String? name;
-
-  /// Количество эпизодов в сезоне.
   final int? episodeCount;
-
-  /// URL постера сезона.
   final String? posterUrl;
 
-  /// Дата выхода сезона (формат: "YYYY-MM-DD").
+  /// "YYYY-MM-DD".
   final String? airDate;
 
-  /// Преобразует в Map для сохранения в базу данных.
+  final DataSource source;
+
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'tmdb_show_id': tmdbShowId,
@@ -71,10 +78,10 @@ class TvSeason {
       'episode_count': episodeCount,
       'poster_url': posterUrl,
       'air_date': airDate,
+      'source': source.name,
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TvSeason copyWith({
     int? tmdbShowId,
     int? seasonNumber,
@@ -82,6 +89,7 @@ class TvSeason {
     int? episodeCount,
     String? posterUrl,
     String? airDate,
+    DataSource? source,
   }) {
     return TvSeason(
       tmdbShowId: tmdbShowId ?? this.tmdbShowId,
@@ -90,6 +98,7 @@ class TvSeason {
       episodeCount: episodeCount ?? this.episodeCount,
       posterUrl: posterUrl ?? this.posterUrl,
       airDate: airDate ?? this.airDate,
+      source: source ?? this.source,
     );
   }
 
@@ -97,12 +106,13 @@ class TvSeason {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is TvSeason &&
+        other.source == source &&
         other.tmdbShowId == tmdbShowId &&
         other.seasonNumber == seasonNumber;
   }
 
   @override
-  int get hashCode => Object.hash(tmdbShowId, seasonNumber);
+  int get hashCode => Object.hash(source, tmdbShowId, seasonNumber);
 
   @override
   String toString() =>

@@ -11,6 +11,7 @@ import 'package:tonkatsu_box/shared/models/tier_list.dart';
 import 'package:tonkatsu_box/shared/models/tier_list_entry.dart';
 
 import '../../../helpers/test_helpers.dart';
+import 'package:tonkatsu_box/shared/constants/tier_definition_ui.dart';
 
 void main() {
   setUpAll(() {

@@ -1,12 +1,15 @@
 import 'dart:convert';
 
 import '../utils/anime_manga_title_language.dart';
+import '../utils/kitsu_status.dart';
+import 'data_source.dart';
 
-/// Anime metadata from the AniList GraphQL API.
+/// Anime metadata. Cache identity is the pair `(id, source)`.
 class Anime {
   const Anime({
     required this.id,
     required this.title,
+    this.source = DataSource.anilist,
     this.titleEnglish,
     this.titleNative,
     this.description,
@@ -24,7 +27,7 @@ class Anime {
     this.episodes,
     this.duration,
     this.format,
-    this.source,
+    this.sourceMaterial,
     this.genres,
     this.tags,
     this.studios,
@@ -102,7 +105,7 @@ class Anime {
       episodes: json['episodes'] as int?,
       duration: json['duration'] as int?,
       format: json['format'] as String?,
-      source: json['source'] as String?,
+      sourceMaterial: json['source'] as String?,
       genres: genresList?.map((dynamic g) => g as String).toList(),
       tags: tags,
       studios: studios,
@@ -111,6 +114,65 @@ class Anime {
           (json['nextAiringEpisode'] as Map<String, dynamic>?)?['episode']
               as int?,
       externalUrl: 'https://anilist.co/anime/$id',
+      updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+  }
+
+  /// Builds an [Anime] from a Kitsu `/anime` JSON:API resource
+  /// ({id, attributes}).
+  factory Anime.fromKitsu(Map<String, dynamic> json) {
+    final int id = int.parse(json['id'] as String);
+    final Map<String, dynamic> attrs =
+        (json['attributes'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+
+    final Map<String, dynamic> titles =
+        (attrs['titles'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+    final String? canonical = _nonEmpty(attrs['canonicalTitle']);
+    final String? english = _nonEmpty(titles['en']);
+    final String? romaji = _nonEmpty(titles['en_jp']) ?? canonical;
+    final String? native = _nonEmpty(titles['ja_jp']);
+    final String title =
+        _firstNonEmpty(<String?>[romaji, english, native, canonical]) ??
+            'Unknown';
+
+    final Map<String, dynamic>? poster =
+        attrs['posterImage'] as Map<String, dynamic>?;
+    final Map<String, dynamic>? banner =
+        attrs['coverImage'] as Map<String, dynamic>?;
+
+    int? startYear;
+    final String? startDate = attrs['startDate'] as String?;
+    if (startDate != null && startDate.length >= 4) {
+      startYear = int.tryParse(startDate.substring(0, 4));
+    }
+
+    final String? rating = attrs['averageRating'] as String?;
+    final double? ratingValue = rating != null ? double.tryParse(rating) : null;
+
+    final Object? slug = attrs['slug'];
+    final String path = slug is String && slug.isNotEmpty ? slug : '$id';
+
+    return Anime(
+      id: id,
+      source: DataSource.kitsu,
+      title: title,
+      titleEnglish: english,
+      titleNative: native,
+      description: _stripHtml(attrs['synopsis'] as String?),
+      coverUrl: (poster?['original'] ?? poster?['large']) as String?,
+      coverUrlMedium: poster?['medium'] as String?,
+      // Kitsu's `coverImage` is the wide banner (its `posterImage` is the
+      // cover) — mapped to bannerUrl like AniList's bannerImage.
+      bannerUrl: (banner?['original'] ?? banner?['large']) as String?,
+      averageScore: ratingValue?.round(),
+      status: kitsuStatusVocab(attrs['status'] as String?),
+      startYear: startYear,
+      episodes: (attrs['episodeCount'] as num?)?.toInt(),
+      duration: (attrs['episodeLength'] as num?)?.toInt(),
+      format: _kitsuFormat(attrs['subtype'] as String?),
+      externalUrl: 'https://kitsu.io/anime/$path',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -149,8 +211,17 @@ class Anime {
       }
     }
 
+    // Before v60 the `source` column held the source material ("MANGA"), not
+    // the provider. Rows and `.xcoll` payloads written back then carry no
+    // `source_material`, so an unrecognised `source` is read as one.
+    final String? rawSource = row['source'] as String?;
+    final DataSource? knownSource = DataSource.tryFromName(rawSource);
+    final String? sourceMaterial = (row['source_material'] as String?) ??
+        (knownSource == null ? rawSource : null);
+
     return Anime(
       id: row['id'] as int,
+      source: knownSource ?? DataSource.anilist,
       title: row['title'] as String,
       titleEnglish: row['title_english'] as String?,
       titleNative: row['title_native'] as String?,
@@ -169,7 +240,7 @@ class Anime {
       episodes: row['episodes'] as int?,
       duration: row['duration'] as int?,
       format: row['format'] as String?,
-      source: row['source'] as String?,
+      sourceMaterial: sourceMaterial,
       genres: genres,
       tags: tags,
       studios: studios,
@@ -182,6 +253,9 @@ class Anime {
   }
 
   final int id;
+
+  /// Provider this record came from; part of the cache identity `(id, source)`.
+  final DataSource source;
 
   /// Romaji title (always present per AniList contract).
   final String title;
@@ -228,7 +302,7 @@ class Anime {
   final String? format;
 
   /// Source material: ORIGINAL, MANGA, LIGHT_NOVEL, VISUAL_NOVEL, VIDEO_GAME.
-  final String? source;
+  final String? sourceMaterial;
 
   final List<String>? genres;
 
@@ -300,14 +374,14 @@ class Anime {
   String? get durationString =>
       duration != null ? '$duration min/ep' : null;
 
-  String? get sourceLabel => switch (source) {
+  String? get sourceLabel => switch (sourceMaterial) {
         'ORIGINAL' => 'Original',
         'MANGA' => 'Based on Manga',
         'LIGHT_NOVEL' => 'Based on Light Novel',
         'VISUAL_NOVEL' => 'Based on Visual Novel',
         'VIDEO_GAME' => 'Based on Video Game',
         'OTHER' => 'Other',
-        _ => source,
+        _ => sourceMaterial,
       };
 
   bool get hasNextAiring =>
@@ -328,6 +402,7 @@ class Anime {
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
+      'source': source.name,
       'title': title,
       'title_english': titleEnglish,
       'title_native': titleNative,
@@ -346,7 +421,7 @@ class Anime {
       'episodes': episodes,
       'duration': duration,
       'format': format,
-      'source': source,
+      'source_material': sourceMaterial,
       'genres': genres != null ? jsonEncode(genres) : null,
       'tags': tags != null ? jsonEncode(tags) : null,
       'studios': studios != null ? jsonEncode(studios) : null,
@@ -368,6 +443,7 @@ class Anime {
 
   Anime copyWith({
     int? id,
+    DataSource? source,
     String? title,
     String? titleEnglish,
     String? titleNative,
@@ -386,7 +462,7 @@ class Anime {
     int? episodes,
     int? duration,
     String? format,
-    String? source,
+    String? sourceMaterial,
     List<String>? genres,
     List<String>? tags,
     List<String>? studios,
@@ -398,6 +474,7 @@ class Anime {
   }) {
     return Anime(
       id: id ?? this.id,
+      source: source ?? this.source,
       title: title ?? this.title,
       titleEnglish: titleEnglish ?? this.titleEnglish,
       titleNative: titleNative ?? this.titleNative,
@@ -416,7 +493,7 @@ class Anime {
       episodes: episodes ?? this.episodes,
       duration: duration ?? this.duration,
       format: format ?? this.format,
-      source: source ?? this.source,
+      sourceMaterial: sourceMaterial ?? this.sourceMaterial,
       genres: genres ?? this.genres,
       tags: tags ?? this.tags,
       studios: studios ?? this.studios,
@@ -427,6 +504,27 @@ class Anime {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  static String? _nonEmpty(Object? value) =>
+      (value is String && value.isNotEmpty) ? value : null;
+
+  static String? _firstNonEmpty(List<String?> values) {
+    for (final String? v in values) {
+      if (v != null && v.isNotEmpty) return v;
+    }
+    return null;
+  }
+
+  /// Maps Kitsu anime `subtype` onto the AniList-style format vocabulary.
+  static String? _kitsuFormat(String? subtype) => switch (subtype) {
+        'TV' => 'TV',
+        'movie' => 'MOVIE',
+        'special' => 'SPECIAL',
+        'OVA' => 'OVA',
+        'ONA' => 'ONA',
+        'music' => 'MUSIC',
+        _ => null,
+      };
 
   static final RegExp _htmlTagPattern = RegExp('<[^>]*>');
 

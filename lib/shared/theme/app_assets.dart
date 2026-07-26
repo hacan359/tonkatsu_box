@@ -16,6 +16,7 @@ abstract final class AppAssets {
   static const String iconRaColor = 'assets/images/ra_logo.png';
   static const String iconGithub = 'assets/images/icon_github.png';
   static const String iconTmdbColor = 'assets/images/icon_tmdb_color.png';
+  static const String iconTvMazeColor = 'assets/images/icon_twm_color.png';
   static const String iconIgdbColor = 'assets/images/icon_igdb_color.png';
   static const String iconSteamGridDbColor =
       'assets/images/icon_steamgriddb_color.png';
@@ -24,6 +25,9 @@ abstract final class AppAssets {
   static const String iconAnilistColor = 'assets/images/icon_anilist_color.png';
   static const String iconMangaBakaColor =
       'assets/images/icon_mangabaka_color.png';
+  static const String iconMangaDexColor =
+      'assets/images/icon_mangadex_color.png';
+  static const String iconKitsuColor = 'assets/images/icon_kitsu_color.png';
   static const String iconVndbColor = 'assets/images/icon_vndb_color.png';
   static const String iconMalColor = 'assets/images/icon_myanimelist_color.png';
   static const String iconOpenLibraryColor =

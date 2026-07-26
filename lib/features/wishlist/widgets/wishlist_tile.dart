@@ -5,6 +5,7 @@ import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/wishlist_item.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/mini_markdown_text.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 enum _TileAction { search, edit, resolve, delete }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 void main() {
@@ -692,6 +693,54 @@ void main() {
 
       expect(show.toString(),
           'TvShow(tmdbId: 100, title: Игра Престолов)');
+    });
+
+    group('source', () {
+      test('defaults to tmdb', () {
+        const TvShow show = TvShow(tmdbId: 1396, title: 'Breaking Bad');
+
+        expect(show.source, DataSource.tmdb);
+        expect(show.toDb()['source'], 'tmdb');
+      });
+
+      test('fromDb reads a missing source as tmdb', () {
+        final TvShow show = TvShow.fromDb(<String, dynamic>{
+          'tmdb_id': 1396,
+          'title': 'Breaking Bad',
+        });
+
+        expect(show.source, DataSource.tmdb);
+      });
+
+      test('source survives a toDb/fromDb round-trip', () {
+        const TvShow original = TvShow(
+          tmdbId: 1396,
+          title: 'Breaking Bad',
+          source: DataSource.anilist,
+        );
+
+        expect(TvShow.fromDb(original.toDb()).source, DataSource.anilist);
+      });
+
+      test('shows differing only by source are not equal', () {
+        const TvShow tmdb = TvShow(tmdbId: 1396, title: 'Breaking Bad');
+        const TvShow other = TvShow(
+          tmdbId: 1396,
+          title: 'Breaking Bad',
+          source: DataSource.anilist,
+        );
+
+        expect(tmdb, isNot(equals(other)));
+      });
+
+      test('copyWith replaces source', () {
+        const TvShow show = TvShow(tmdbId: 1396, title: 'Breaking Bad');
+
+        expect(
+          show.copyWith(source: DataSource.anilist).source,
+          DataSource.anilist,
+        );
+      });
     });
   });
 }

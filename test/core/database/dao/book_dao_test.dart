@@ -1,8 +1,8 @@
+import 'package:core/database/migrations/migration_v49.dart';
+import 'package:core/database/schema.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/book_dao.dart';
-import 'package:tonkatsu_box/core/database/migrations/migration_v49.dart';
-import 'package:tonkatsu_box/core/database/schema.dart';
 import 'package:tonkatsu_box/shared/models/book.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 
@@ -60,6 +60,28 @@ void main() {
         final Book? loaded =
             await dao.getBook('27448', source: DataSource.openLibrary);
         expect(loaded!.title, 'New');
+      });
+
+      test('sparse row keeps the cached page count', () async {
+        // Similars/search-list rows carry no page count and must not wipe it.
+        await dao.upsertBook(
+          createTestBook(id: '27448', title: 'Full', pageCount: 350),
+        );
+        await dao.upsertBook(createTestBook(id: '27448', title: 'Similar'));
+
+        final Book? loaded =
+            await dao.getBook('27448', source: DataSource.openLibrary);
+        expect(loaded!.pageCount, 350);
+        expect(loaded.title, 'Similar');
+      });
+
+      test('full row updates the page count', () async {
+        await dao.upsertBook(createTestBook(id: '27448', pageCount: 350));
+        await dao.upsertBook(createTestBook(id: '27448', pageCount: 420));
+
+        final Book? loaded =
+            await dao.getBook('27448', source: DataSource.openLibrary);
+        expect(loaded!.pageCount, 420);
       });
     });
 

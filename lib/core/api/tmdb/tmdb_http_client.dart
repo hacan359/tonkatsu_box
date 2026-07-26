@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'tmdb_types.dart';
 
@@ -114,7 +115,7 @@ class TmdbHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'TMDB',
+        apiName: DataSource.tmdb.label,
         exception: e,
         userMessage: message,
       ),

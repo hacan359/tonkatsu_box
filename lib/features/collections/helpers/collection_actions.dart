@@ -5,12 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/anilist_api.dart';
+import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/fantlab_api.dart';
 import '../../../core/api/igdb_api.dart';
+import '../../../core/api/kitsu_api.dart';
 import '../../../core/api/mangabaka_api.dart';
+import '../../../core/api/mangadex_api.dart';
 import '../../../core/api/openlibrary_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/api/vndb_api.dart';
@@ -241,7 +244,7 @@ class CollectionActions {
 
     await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
-        .removeItem(item.id);
+        .removeItem(item.id, mediaType: item.mediaType);
 
     // Keep the canvas in sync: drop the removed item
     ref
@@ -646,25 +649,46 @@ class CollectionActions {
           await db.movieDao.upsertMovie(movie);
         case MediaType.tvShow:
         case MediaType.animation:
-          final TvShow? show =
-              await ref.read(tmdbApiProvider).getTvShow(item.externalId);
+          final TvEpisodeSource api = ref.read(tvEpisodeSourceResolverProvider)(
+            item.source ?? item.mediaType.defaultSource,
+          );
+          final TvShow? show = await api.getShow(item.externalId);
           if (show == null) return _RefreshOutcome.notFound();
           await db.tvShowDao.upsertTvShow(show);
         case MediaType.anime:
-          final Anime? anime = await ref
-              .read(aniListApiProvider)
-              .getAnimeById(item.externalId);
+          final Anime? anime;
+          switch (item.source) {
+            case DataSource.kitsu:
+              anime = await ref
+                  .read(kitsuApiProvider)
+                  .getAnimeById(item.externalId);
+            default:
+              anime = await ref
+                  .read(aniListApiProvider)
+                  .getAnimeById(item.externalId);
+          }
           if (anime == null) return _RefreshOutcome.notFound();
           await db.animeDao.upsertAnime(anime);
         case MediaType.manga:
-          final Manga? manga =
-              item.source == DataSource.mangabaka
-                  ? await ref
-                      .read(mangaBakaApiProvider)
-                      .getById(item.externalId)
-                  : await ref
-                      .read(aniListApiProvider)
-                      .getMangaById(item.externalId);
+          final Manga? manga;
+          switch (item.source) {
+            case DataSource.mangabaka:
+              manga =
+                  await ref.read(mangaBakaApiProvider).getById(item.externalId);
+            case DataSource.kitsu:
+              manga = await ref
+                  .read(kitsuApiProvider)
+                  .getMangaById(item.externalId);
+            case DataSource.mangadex:
+              final String? uuid = item.manga?.mangaDexUuid;
+              manga = uuid != null
+                  ? await ref.read(mangaDexApiProvider).getByUuid(uuid)
+                  : null;
+            default:
+              manga = await ref
+                  .read(aniListApiProvider)
+                  .getMangaById(item.externalId);
+          }
           if (manga == null) return _RefreshOutcome.notFound();
           await db.mangaDao.upsertManga(manga);
         case MediaType.visualNovel:

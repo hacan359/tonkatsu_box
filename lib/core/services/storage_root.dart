@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core/database/migrations/migration_registry.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -8,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../shared/models/profile.dart';
-import '../database/migrations/migration_registry.dart';
 import '../database/sqlite_health.dart';
 
 /// Verdict on whether a data directory's database can be opened by this

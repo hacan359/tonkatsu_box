@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/tmdb_api.dart';
+import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/calendar_entry.dart';
 import '../../../shared/models/calendar_recurrence.dart';
@@ -13,14 +13,15 @@ import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../models/release_event.dart';
 
-/// Whether a TMDB title is currently tracked, for the detail-screen bell.
-final AutoDisposeFutureProviderFamily<bool, ({int externalId, MediaType mediaType})>
-    isReleaseTrackedProvider =
-    FutureProvider.autoDispose.family<bool, ({int externalId, MediaType mediaType})>(
-  (Ref ref, ({int externalId, MediaType mediaType}) key) {
+/// Whether a title is currently tracked, for the detail-screen bell.
+final AutoDisposeFutureProviderFamily<bool,
+        ({int externalId, DataSource source, MediaType mediaType})>
+    isReleaseTrackedProvider = FutureProvider.autoDispose.family<bool,
+        ({int externalId, DataSource source, MediaType mediaType})>(
+  (Ref ref, ({int externalId, DataSource source, MediaType mediaType}) key) {
     return ref
         .watch(trackedReleaseDaoProvider)
-        .isTracked(key.externalId, DataSource.tmdb, key.mediaType);
+        .isTracked(key.externalId, key.source, key.mediaType);
   },
 );
 
@@ -63,20 +64,20 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
     MediaType.animation,
   };
 
-  /// Re-fetches seasons and episodes for every tracked show from TMDB and
-  /// updates the cache, then rebuilds. Used by pull-to-refresh / the refresh
-  /// button — the only way to pick up newly announced episodes.
+  /// Re-fetches seasons and episodes for every tracked show from its source
+  /// API and updates the cache, then rebuilds. Used by pull-to-refresh / the
+  /// refresh button — the only way to pick up newly announced episodes.
   Future<void> refreshFromApi() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
-    final TmdbApi api = ref.read(tmdbApiProvider);
+    final TvEpisodeSource Function(DataSource) resolve =
+        ref.read(tvEpisodeSourceResolverProvider);
     final List<TrackedRelease> tracked = await db.trackedReleaseDao.getAll();
 
     for (final TrackedRelease t in tracked) {
-      if (t.source != DataSource.tmdb || !_supported.contains(t.mediaType)) {
-        continue;
-      }
+      if (!_supported.contains(t.mediaType)) continue;
       try {
-        final List<TvSeason> seasons = await api.getTvSeasons(t.externalId);
+        final TvEpisodeSource api = resolve(t.source);
+        final List<TvSeason> seasons = await api.getSeasons(t.externalId);
         if (seasons.isNotEmpty) await db.tvShowDao.upsertTvSeasons(seasons);
         for (final TvSeason s in seasons) {
           final List<TvEpisode> episodes =
@@ -101,19 +102,18 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
     await db.calendarEntryDao.deletePastOnce(today);
 
     final List<TrackedRelease> tracked = await db.trackedReleaseDao.getAll();
-    final List<TrackedRelease> tmdb = tracked
-        .where((TrackedRelease t) =>
-            t.source == DataSource.tmdb && _supported.contains(t.mediaType))
+    final List<TrackedRelease> shows = tracked
+        .where((TrackedRelease t) => _supported.contains(t.mediaType))
         .toList();
     final List<CalendarEntry> manual = await db.calendarEntryDao.getAll();
 
     final List<List<ReleaseEvent>> perShow = await Future.wait(<Future<List<ReleaseEvent>>>[
-      ...tmdb.map((TrackedRelease t) => _eventsForShow(db, t, today)),
+      ...shows.map((TrackedRelease t) => _eventsForShow(db, t, today)),
       ...manual.map((CalendarEntry e) => _eventsForEntry(db, e, today)),
     ]);
 
     return ReleasesCalendarData(
-      trackedCount: tmdb.length + manual.length,
+      trackedCount: shows.length + manual.length,
       events: perShow.expand((List<ReleaseEvent> e) => e).toList(),
     );
   }
@@ -129,6 +129,7 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
       collectionId: null,
       mediaType: entry.mediaType,
       externalId: entry.externalId,
+      source: entry.source,
     );
     if (item == null) return <ReleaseEvent>[];
 
@@ -188,14 +189,16 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
     DateTime today,
   ) async {
     // The reads are independent — start them together.
-    final Future<TvShow?> showF = db.tvShowDao.getTvShowByTmdbId(t.externalId);
+    final Future<TvShow?> showF =
+        db.tvShowDao.getTvShowByTmdbId(t.externalId, source: t.source);
     final Future<CollectionItem?> itemF = db.collectionDao.findCollectionItem(
       collectionId: null,
       mediaType: t.mediaType,
       externalId: t.externalId,
+      source: t.source,
     );
     final Future<List<TvEpisode>> episodesF =
-        db.tvShowDao.getEpisodesByShowId(t.externalId);
+        db.tvShowDao.getEpisodesByShowId(t.source, t.externalId);
 
     final CollectionItem? item = await itemF;
     final TvShow? show = await showF;

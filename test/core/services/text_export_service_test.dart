@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/services/text_export_service.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
+import 'package:tonkatsu_box/shared/models/custom_media.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
@@ -21,6 +22,7 @@ CollectionItem _gameItem({
   String? userComment,
   int? platformId,
   Platform? platform,
+  String? externalUrl,
 }) {
   return CollectionItem(
     id: id,
@@ -41,6 +43,29 @@ CollectionItem _gameItem({
           : null,
       rating: rating != null ? rating * 10 : null,
       genres: genres?.split(', '),
+      externalUrl: externalUrl,
+    ),
+  );
+}
+
+CollectionItem _customItem({
+  int id = 20,
+  String title = 'Homebrew Quest',
+  MediaType? displayType,
+  String? externalUrl,
+}) {
+  return CollectionItem(
+    id: id,
+    collectionId: 1,
+    mediaType: MediaType.custom,
+    externalId: 300 + id,
+    status: ItemStatus.completed,
+    addedAt: DateTime(2024),
+    customMedia: CustomMedia(
+      id: 300 + id,
+      title: title,
+      displayType: displayType,
+      externalUrl: externalUrl,
     ),
   );
 }
@@ -225,6 +250,54 @@ void main() {
         );
         expect(result, equals('Inception [Movie]'));
       });
+
+      test('should use displayType for {type} of a masquerading custom', () {
+        final String result = _service().formatItem(
+          '{name} [{type}]',
+          _customItem(displayType: MediaType.anime),
+          1,
+        );
+        expect(result, equals('Homebrew Quest [Anime]'));
+      });
+
+      test('should keep Custom for {type} without displayType', () {
+        final String result = _service().formatItem(
+          '{name} [{type}]',
+          _customItem(),
+          1,
+        );
+        expect(result, equals('Homebrew Quest [Custom]'));
+      });
+
+      test('should replace {link} with the media external url', () {
+        final String result = _service().formatItem(
+          '{name} — {link}',
+          _gameItem(externalUrl: 'https://www.igdb.com/games/elden-ring'),
+          1,
+        );
+        expect(
+          result,
+          equals('Elden Ring — https://www.igdb.com/games/elden-ring'),
+        );
+      });
+
+      test('should replace {link} with the custom item own url', () {
+        final String result = _service().formatItem(
+          '{name} — {link}',
+          _customItem(externalUrl: 'https://example.com/quest'),
+          1,
+        );
+        expect(result, equals('Homebrew Quest — https://example.com/quest'));
+      });
+
+      test('should remove empty {link} with its separator', () {
+        final String result = _service().formatItem(
+          '{name} — {link}',
+          _gameItem(),
+          1,
+        );
+        expect(result, equals('Elden Ring'));
+      });
     });
 
     group('empty token cleanup', () {
@@ -348,7 +421,7 @@ void main() {
           TextExportService.availableTokens,
           containsAll(<String>[
             'name', 'year', 'rating', 'myRating', 'platform',
-            'status', 'genres', 'tags', 'notes', 'type', '#',
+            'status', 'genres', 'tags', 'notes', 'type', 'link', '#',
           ]),
         );
       });

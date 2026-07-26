@@ -87,6 +87,34 @@ Fix actionable issues. Skip false positives — don't argue, just move on. Out-o
 - Memory / leaks (subscriptions cancelled, controllers disposed).
 - Flutter specifics (`const` widgets, `ListView.builder` for long lists, no object creation in `build()`).
 
+**R2b — enum single source of truth (mandatory)**
+
+No raw string / number literal in production code may duplicate a value, `.name`, `.key`, or display label that an **enum already owns**. If a concept is modelled by an enum (`MediaType`, `ItemStatus`, `DataSource`, `CanvasItemType`, `CollectionSortMode`, `ExportFormat`, `AnimeMangaTitleLanguage`, `NavTab`, `DiscoverSectionId`, …), every read / write / compare / label / default MUST go through it — `EnumX.value`, `EnumX.name`, `EnumX.key`, `EnumX.label`, `localizedLabel(l)`, `fromString` / `tryFromString` — **never** a bare `'game'`, `'completed'`, `'mangabaka'`, `'IGDB'`, `'romaji'`, `'light'`. This is doubly non-negotiable for values that already exist in an enum: the literal must live in exactly one place, the enum.
+
+How to check: for each enum the diff touches (and its close neighbours), grep its literal values and labels across `lib/`. The only non-exception home should be the enum definition. Also grep the diff itself for quoted strings that echo an enum member — new hardcodes are the common regression.
+
+Fix: replace the literal with the enum accessor (import the enum where needed). If it is a default parameter value (needs `const`), expose a `static const` on the enum and reference that (e.g. `AnimeMangaTitleLanguage.defaultId`). If several call sites hardcode a per-source string (`groupId`, `apiName`, `sourceName`), derive it once from the owning enum (`DataSource.key` / `DataSource.label`) and delete the overrides / parallel maps.
+
+Allowed exceptions (do NOT flag these):
+- The enum's own definition file — the single place the literal lives.
+- DB migrations (`lib/core/database/migrations/`) and `create*Table` DDL in `schema.dart` — historical / storage strings, immutable.
+- Raw SQL string bodies — leave the literal; reference the enum in a comment if helpful.
+- **External-API mapping** — the provider's own tokens on the far side of a translation boundary (TMDB `movie`/`tv`, AniList `ANIME`/`MANGA`, Kitsu / MAL / Trakt / Kinorium, search-filter API values, AniList JSON keys like `romaji`). These are not the enum's namespace.
+- Generated l10n (`app_localizations*.dart`) and `.arb` — localisation resources.
+- A short badge `label` that legitimately differs from a full display name — e.g. `DataSource.steamGridDb.label` is `'SGDB'` but the credits screen shows `'SteamGridDB'`; these are different concepts, do not force one into the other. Same for a per-tab `SearchSource.id` (`'movies'`, `'manga'`) which is a media/tab identifier, not the provider name.
+
+**R2c — model purity (mandatory)**
+
+`lib/shared/models/**` stays pure Dart: no `package:flutter`, no `dart:ui`, no l10n imports — direct or transitive through other model files. Models hold data only (ARGB colors as `int`, hex colors as `String`, stored enum values); presentation (`Color`, `IconData`, localized labels) lives in `extension <Model>Ui` files under `lib/shared/constants/*_ui.dart`, hex⇄Color codecs in `lib/shared/utils/color_hex.dart`. Rationale: the model layer is slated for extraction into a pure-Dart core package shared with the selfhost server (`dev/backlog/selfhost-web/`), and `dart:ui` does not exist in a plain Dart VM.
+
+How to check (must return nothing):
+
+```bash
+grep -rln "package:flutter\|dart:ui\|l10n/" lib/shared/models/
+```
+
+Fix: move the offending getter/method into the model's `*_ui.dart` extension (create it if missing), store the raw value in the model, and add the extension import at call sites. Never "fix" by re-adding a Flutter type to a model.
+
 **R3 — localisation**
 - Every UI string uses `S.of(context).key` or `final S l = S.of(context);`.
 - ARB: every key exists in **every** `lib/l10n/app_*.arb` locale file (glob them — the set grows over time: en, ru, zh, …); placeholder names match across all of them; Russian plurals use ICU `=0` / `=1` / `few` / `other`. Languages without plural forms (e.g. Chinese) may render an ICU-plural key as a single flat string (`{count} 项`) as long as they keep the same placeholders.

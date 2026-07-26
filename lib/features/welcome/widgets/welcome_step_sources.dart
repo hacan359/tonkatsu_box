@@ -17,6 +17,8 @@ import 'welcome_card.dart';
 import 'welcome_chip.dart';
 import 'welcome_hero.dart';
 import 'welcome_reveal.dart';
+import '../../../shared/constants/data_source_ui.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// Sources — every search provider with its logo and media types, plus inline
 /// API-key fields for IGDB and TMDB.
@@ -122,9 +124,12 @@ class _SourceCard extends ConsumerWidget {
 
   String _description(S l, DataSource source) => switch (source) {
         DataSource.tmdb => l.welcomeSourceDescTmdb,
+        DataSource.tvmaze => l.welcomeSourceDescTvMaze,
         DataSource.igdb => l.welcomeSourceDescIgdb,
         DataSource.anilist => l.welcomeSourceDescAniList,
         DataSource.mangabaka => l.welcomeSourceDescMangaBaka,
+        DataSource.mangadex => l.welcomeSourceDescMangaDex,
+        DataSource.kitsu => l.welcomeSourceDescKitsu,
         DataSource.vndb => l.welcomeSourceDescVndb,
         DataSource.openLibrary => l.welcomeSourceDescOpenLibrary,
         DataSource.fantlab => l.welcomeSourceDescFantlab,

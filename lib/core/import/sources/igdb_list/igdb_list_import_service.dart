@@ -8,6 +8,7 @@ import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
 import '../../../../shared/models/collection.dart';
 import '../../../../shared/models/collection_item.dart';
+import '../../../../shared/models/data_source.dart';
 import '../../../../shared/models/game.dart';
 import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/item_status_logic.dart';
@@ -81,7 +82,7 @@ class IgdbListImportService implements ImportSource {
   final ImportWriter _writer;
 
   @override
-  String get displayName => 'IGDB';
+  String get displayName => DataSource.igdb.label;
 
   @override
   Future<UniversalImportResult> import(
@@ -100,8 +101,8 @@ class IgdbListImportService implements ImportSource {
           const IgdbListCsvParser().parseBytes(bytes);
 
       if (entries.isEmpty) {
-        return const UniversalImportResult.failure(
-          sourceName: 'IGDB',
+        return UniversalImportResult.failure(
+          sourceName: displayName,
           error: 'No games found in this file',
         );
       }
@@ -147,8 +148,8 @@ class IgdbListImportService implements ImportSource {
         author: options.author,
       );
       if (collection == null) {
-        return const UniversalImportResult.failure(
-          sourceName: 'IGDB',
+        return UniversalImportResult.failure(
+          sourceName: displayName,
           error: 'Collection not found',
         );
       }
@@ -182,7 +183,7 @@ class IgdbListImportService implements ImportSource {
               note: options.wishlistReason,
             ),
         ],
-        tag: buildImportTag('IGDB'),
+        tag: buildImportTag(displayName),
       );
 
       onProgress?.call(ImportProgress(
@@ -195,7 +196,7 @@ class IgdbListImportService implements ImportSource {
       ));
 
       return UniversalImportResult(
-        sourceName: 'IGDB',
+        sourceName: displayName,
         success: true,
         collection: collection,
         importedByType: write.importedByType,
@@ -205,19 +206,19 @@ class IgdbListImportService implements ImportSource {
       );
     } on IgdbApiException catch (e) {
       return UniversalImportResult.failure(
-        sourceName: 'IGDB',
+        sourceName: displayName,
         error: e.message,
         detail: e.detail,
       );
     } on IgdbListParseException catch (e) {
       return UniversalImportResult.failure(
-        sourceName: 'IGDB',
+        sourceName: displayName,
         error: e.message,
       );
     } on Exception catch (e) {
       final ApiError err = extractApiError(e);
       return UniversalImportResult.failure(
-        sourceName: 'IGDB',
+        sourceName: displayName,
         error: 'Import failed: ${err.message}',
         detail: err.detail,
       );

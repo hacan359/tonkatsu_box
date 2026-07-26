@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/book_carousel.dart';
@@ -14,13 +15,15 @@ import '../../search/widgets/item_details_sheet.dart';
 class BookSimilarsCarousel extends StatelessWidget {
   const BookSimilarsCarousel({
     required this.books,
-    required this.ownedIds,
+    required this.ownedKeys,
     this.onAddBook,
     super.key,
   });
 
   final List<Book> books;
-  final Set<int> ownedIds;
+
+  /// `(source, externalIdInt)` of the books already in a collection.
+  final Set<(DataSource, int)> ownedKeys;
   final void Function(Book book)? onAddBook;
 
   @override
@@ -35,7 +38,7 @@ class BookSimilarsCarousel extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         BookCarousel(
           books: books,
-          ownedIds: ownedIds,
+          ownedKeys: ownedKeys,
           onTap: (Book book) => _showBook(context, book),
         ),
       ],

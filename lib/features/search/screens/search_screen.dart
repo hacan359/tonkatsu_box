@@ -8,6 +8,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
@@ -24,6 +25,7 @@ import '../widgets/collection_chips_row.dart';
 import '../widgets/discover_customize_sheet.dart';
 import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
+import '../../../shared/constants/platform_ui.dart';
 
 /// Search and browse screen — two modes: Browse (filter bar + Discover/Grid)
 /// and Search (query field + results).
@@ -106,10 +108,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _openItemInCollection(
     int externalId,
     MediaType mediaType,
+    DataSource? source,
   ) async {
     final List<CollectedItemInfo> infos = await _getCollectedInfos(
       externalId,
       mediaType,
+      source,
     );
     if (infos.isEmpty || !mounted) return;
 
@@ -178,6 +182,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<List<CollectedItemInfo>> _getCollectedInfos(
     int externalId,
     MediaType mediaType,
+    DataSource? source,
   ) async {
     final Map<int, List<CollectedItemInfo>> collected;
     switch (mediaType) {
@@ -200,7 +205,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       case MediaType.custom:
         return <CollectedItemInfo>[];
     }
-    return collected[externalId] ?? <CollectedItemInfo>[];
+    // Narrowed by source so the placements match how the card's badge is
+    // keyed: by (source, id), not by id alone.
+    return (collected[externalId] ?? <CollectedItemInfo>[])
+        .forSource(mediaType, source);
   }
 
   void _navigateToItemDetail(CollectedItemInfo info) {

@@ -6,6 +6,8 @@ import '../../../../shared/models/media_type.dart';
 import '../../../../shared/models/tag.dart';
 import '../../../../shared/utils/item_card_progress.dart';
 import 'table_fields.dart';
+import '../../../../shared/constants/item_status_ui.dart';
+import '../../../../shared/constants/media_type_ui.dart';
 
 /// Builds grid rows for the collection table. Cell values are the plain
 /// sortable/filterable representations; widgets come from column renderers.

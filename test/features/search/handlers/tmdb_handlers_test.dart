@@ -41,6 +41,7 @@ void main() {
           mediaType: any(named: 'mediaType'),
           externalId: any(named: 'externalId'),
           platformId: any(named: 'platformId'),
+          source: any(named: 'source'),
           title: any(named: 'title'),
           upsert: any(named: 'upsert'),
           imageType: any(named: 'imageType'),

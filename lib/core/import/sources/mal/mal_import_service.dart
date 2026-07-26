@@ -757,7 +757,7 @@ class MalImportService implements ImportSource {
     final String malPath = entry.kind == MalFileKind.anime ? 'anime' : 'manga';
     lines.add('[MyAnimeList](https://myanimelist.net/$malPath/${entry.malId})');
 
-    lines.add('Status: ${_statusLabel(entry.status)}');
+    lines.add('Status: ${entry.status.displayLabel}');
 
     if (entry.score != null) {
       lines.add('Score: ${entry.score!.toStringAsFixed(0)}/10');
@@ -792,23 +792,6 @@ class MalImportService implements ImportSource {
     }
 
     return lines.join('\n');
-  }
-
-  static String _statusLabel(ItemStatus status) {
-    switch (status) {
-      case ItemStatus.notStarted:
-        return 'Not started';
-      case ItemStatus.inProgress:
-        return 'In progress';
-      case ItemStatus.completed:
-        return 'Completed';
-      case ItemStatus.dropped:
-        return 'Dropped';
-      case ItemStatus.planned:
-        return 'Planned';
-      case ItemStatus.replaying:
-        return 'Replay';
-    }
   }
 
   static int? _parseInt(String? raw) {

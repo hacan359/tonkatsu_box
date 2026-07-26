@@ -173,6 +173,70 @@ void main() {
     });
   });
 
+  group('getRecommendations', () {
+    test('unwraps the series object from each mix row', () async {
+      stubGet(makeResponse(<String, dynamic>{
+        'data': <Map<String, dynamic>>[
+          <String, dynamic>{'series': seriesJson(id: 10)},
+          <String, dynamic>{'series': seriesJson(id: 11)},
+        ],
+      }));
+
+      final List<Manga> recs = await api.getRecommendations(1);
+
+      expect(recs, hasLength(2));
+      expect(recs.map((Manga m) => m.id), <int>[10, 11]);
+    });
+
+    test('excludes the seed series if it comes back in the results', () async {
+      stubGet(makeResponse(<String, dynamic>{
+        'data': <Map<String, dynamic>>[
+          <String, dynamic>{'series': seriesJson(id: 5)},
+          <String, dynamic>{'series': seriesJson(id: 6)},
+        ],
+      }));
+
+      final List<Manga> recs = await api.getRecommendations(5);
+
+      expect(recs.map((Manga m) => m.id), <int>[6]);
+    });
+
+    test('skips rows without a series map and malformed series', () async {
+      stubGet(makeResponse(<String, dynamic>{
+        'data': <dynamic>[
+          <String, dynamic>{'series': seriesJson(id: 10)},
+          <String, dynamic>{'series': 'not a map'},
+          <String, dynamic>{'score': 0.5},
+          <String, dynamic>{
+            'series': <String, dynamic>{'title': 'missing id'}
+          },
+          'not a map',
+        ],
+      }));
+
+      final List<Manga> recs = await api.getRecommendations(1);
+
+      expect(recs, hasLength(1));
+      expect(recs.first.id, 10);
+    });
+
+    test('returns an empty list when there is no data', () async {
+      stubGet(makeResponse(<String, dynamic>{}));
+
+      expect(await api.getRecommendations(1), isEmpty);
+    });
+
+    test('maps a 429 to a rate-limit MangaBakaApiException', () async {
+      stubGetThrows(dioError(statusCode: 429));
+
+      await expectLater(
+        api.getRecommendations(1),
+        throwsA(isA<MangaBakaApiException>()
+            .having((MangaBakaApiException e) => e.statusCode, 'statusCode', 429)),
+      );
+    });
+  });
+
   group('fetchTagCatalog', () {
     test('returns parsed tags', () async {
       stubGet(makeResponse(<String, dynamic>{

@@ -35,7 +35,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, ComicVine, Google Books, and Hardcover. Track your progress, rate everything, create visual boards and mood grids, and import your library from Steam, IGDB lists, Trakt.tv, Kinorium, RetroAchievements, MyAnimeList, AniList, or Hardcover.
+Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, ComicVine, Google Books, and Hardcover. Track your progress, rate everything, create visual boards and mood grids, and import your library from Steam, IGDB lists, Trakt.tv, Kinorium, RetroAchievements, MyAnimeList, AniList, or Hardcover.
 
 <p align="center">
   <img src="docs/screenshots/mockup_main_all.jpg" width="800" alt="Main screen">
@@ -51,6 +51,8 @@ The whole interface is localized with runtime switching. Pick your language in *
 | 🇷🇺 | Русский (Russian) | ✅ Complete |
 | 🇨🇳 | 简体中文 (Simplified Chinese) | ✅ Complete |
 | 🇪🇸 | Español (Spanish) | ✅ Complete |
+| 🇧🇷 | Português (Brazilian Portuguese) | ✅ Complete |
+| 🇫🇷 | Français (French) | ✅ Complete |
 
 ## Screenshots
 
@@ -80,7 +82,7 @@ The whole interface is localized with runtime switching. Pick your language in *
 |---|---|
 | **Collections** | Organize by platform, genre, or any way you like. Grid, list, and table views |
 | **Wishlist** | Dedicated top-level list for what you want to play, watch, or read next |
-| **Search** | IGDB (games), TMDB (movies/TV), AniList (anime & manga), MangaBaka (manga), VNDB (visual novels), OpenLibrary, Fantlab, Google Books & Hardcover (books), ComicVine (comics) |
+| **Search** | IGDB (games), TMDB (movies/TV), TVmaze (TV), AniList (anime & manga), MangaBaka, MangaDex & Kitsu (manga), VNDB (visual novels), OpenLibrary, Fantlab, Google Books & Hardcover (books), ComicVine (comics) |
 | **Progress Tracking** | Status, ratings 1-10, episode tracking for TV shows and anime |
 | **Discord Rich Presence** | Show what you're playing/watching/reading in Discord (desktop) |
 | **Visual Boards** | Drag-and-drop canvas with posters, notes, and connections |
@@ -189,9 +191,12 @@ When you pick an empty folder, the app copies your current data there. When you 
 |:-:|------|--------|---------|
 | <img src="assets/images/icon_igdb_color.png" width="28" alt="IGDB"> | Games | [IGDB](https://www.igdb.com/) | Built-in |
 | <img src="assets/images/icon_tmdb_color.png" width="28" alt="TMDB"> | Movies & TV | [TMDB](https://www.themoviedb.org/) | Built-in |
+| <img src="assets/images/icon_twm_color.png" width="28" alt="TVmaze"> | TV Shows | [TVmaze](https://www.tvmaze.com/) | Not required |
 | <img src="assets/images/icon_vndb_color.png" width="28" alt="VNDB"> | Visual Novels | [VNDB](https://vndb.org/) | Not required |
 | <img src="assets/images/icon_anilist_color.png" width="28" alt="AniList"> | Anime & Manga | [AniList](https://anilist.co/) | Not required |
 | <img src="assets/images/icon_mangabaka_color.png" width="28" alt="MangaBaka"> | Manga | [MangaBaka](https://mangabaka.org/) | Not required |
+| <img src="assets/images/icon_mangadex_color.png" width="28" alt="MangaDex"> | Manga | [MangaDex](https://mangadex.org/) | Not required |
+| <img src="assets/images/icon_kitsu_color.png" width="28" alt="Kitsu"> | Manga | [Kitsu](https://kitsu.io/) | Not required |
 | <img src="assets/images/open_library_color.png" width="28" alt="OpenLibrary"> | Books | [OpenLibrary](https://openlibrary.org/) | Not required |
 | <img src="assets/images/icon_fantlab_color.png" width="28" alt="Fantlab"> | Books | [Fantlab](https://fantlab.ru/) | Not required |
 | <img src="assets/images/icon_google_book_color.png" width="28" alt="Google Books"> | Books | [Google Books](https://books.google.com/) | Optional (free key) |
@@ -244,7 +249,7 @@ Contributions welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for build ins
 
 ## Credits
 
-Data: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MyAnimeList](https://myanimelist.net/) · [RetroAchievements](https://retroachievements.org/) · [SteamGridDB](https://www.steamgriddb.com/) · [ScreenScraper](https://www.screenscraper.fr/)
+Data: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [TVmaze](https://www.tvmaze.com/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [MangaDex](https://mangadex.org/) · [Kitsu](https://kitsu.io/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MyAnimeList](https://myanimelist.net/) · [RetroAchievements](https://retroachievements.org/) · [SteamGridDB](https://www.steamgriddb.com/) · [ScreenScraper](https://www.screenscraper.fr/)
 
 *This product uses the TMDB API but is not endorsed or certified by TMDB.*
 

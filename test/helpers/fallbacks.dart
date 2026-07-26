@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
+import 'package:tonkatsu_box/shared/models/custom_media.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
 import 'package:tonkatsu_box/shared/models/item_mark.dart';
@@ -15,6 +17,7 @@ import 'package:tonkatsu_box/shared/models/platform.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
 import 'package:tonkatsu_box/shared/models/tv_season.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/shared/models/ra_game_progress.dart';
 import 'package:tonkatsu_box/shared/models/tracker_game_data.dart';
@@ -26,12 +29,14 @@ import 'mocks.dart';
 
 void registerAllFallbacks() {
   registerFallbackValue(MediaType.game);
+  registerFallbackValue(DataSource.tmdb);
   registerFallbackValue(ItemStatus.notStarted);
   registerFallbackValue(CollectionType.own);
   registerFallbackValue(ImageType.gameCover);
 
   registerFallbackValue(<int>{});
   registerFallbackValue(const Game(id: 0, name: 'fallback'));
+  registerFallbackValue(const CustomMedia(id: 0, title: 'fallback'));
   registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
   registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
 
@@ -51,6 +56,7 @@ void registerAllFallbacks() {
   registerFallbackValue(const <int>{});
 
   registerFallbackValue(<TierDefinition>[]);
+  registerFallbackValue(<TagSeed>[]);
 
   registerFallbackValue(const RaGameProgress(
     gameId: 0,

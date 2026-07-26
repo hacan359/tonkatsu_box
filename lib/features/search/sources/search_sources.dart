@@ -8,11 +8,15 @@ import 'fantlab_source.dart';
 import 'google_books_source.dart';
 import 'hardcover_source.dart';
 import 'igdb_games_source.dart';
+import 'kitsu_anime_source.dart';
+import 'kitsu_manga_source.dart';
 import 'mangabaka_source.dart';
+import 'mangadex_source.dart';
 import 'openlibrary_source.dart';
 import 'tmdb_anime_source.dart';
 import 'tmdb_movies_source.dart';
 import 'tmdb_tv_source.dart';
+import 'tvmaze_tv_source.dart';
 import 'vndb_source.dart';
 
 /// All registered search sources.
@@ -25,6 +29,8 @@ final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
     TmdbMoviesSource(),
     TmdbTvSource(),
     TmdbAnimeSource(),
+    // TVmaze
+    TvMazeTvSource(),
     // IGDB
     IgdbGamesSource(),
     // AniList
@@ -32,6 +38,11 @@ final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
     AniListMangaSource(),
     // MangaBaka
     MangaBakaSource(),
+    // MangaDex
+    MangaDexSource(),
+    // Kitsu
+    KitsuAnimeSource(),
+    KitsuMangaSource(),
     // VNDB
     VndbSource(),
     // Books

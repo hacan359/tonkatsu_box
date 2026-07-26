@@ -2,6 +2,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tag.dart';
+import '../../../shared/utils/anime_manga_title_language.dart';
 import '../../../shared/utils/media_format.dart';
 
 class CollectionFilters {
@@ -12,6 +13,7 @@ class CollectionFilters {
     this.animeFormats = const <String>{},
     this.tagIds = const <int>{},
     this.status,
+    this.favoriteOnly = false,
     this.searchQuery = '',
   });
 
@@ -27,6 +29,10 @@ class CollectionFilters {
   /// Selected global tag ids; an item passes when it carries ANY of them (OR).
   final Set<int> tagIds;
   final ItemStatus? status;
+
+  /// Keeps only favourites when true.
+  final bool favoriteOnly;
+
   final String searchQuery;
 
   /// [itemTags] is the item id → global tag ids map from `itemTagsProvider`.
@@ -34,7 +40,7 @@ class CollectionFilters {
     List<CollectionItem> items,
     List<Tag> tags,
     Map<int, List<int>> itemTags, {
-    String animeMangaTitleLanguage = 'romaji',
+    String animeMangaTitleLanguage = AnimeMangaTitleLanguage.defaultId,
   }) {
     List<CollectionItem> result = items;
 
@@ -70,6 +76,11 @@ class CollectionFilters {
       result = result
           .where((CollectionItem item) => item.status == status)
           .toList();
+    }
+
+    if (favoriteOnly) {
+      result =
+          result.where((CollectionItem item) => item.isFavorite).toList();
     }
 
     if (searchQuery.isEmpty) return result;

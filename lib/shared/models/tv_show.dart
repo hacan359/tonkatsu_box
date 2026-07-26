@@ -1,12 +1,11 @@
-// Модель сериала из TMDB.
-
 import 'dart:convert';
 
-/// Модель сериала из TMDB API.
-///
-/// Представляет сериал с метаданными из TheMovieDB.
+import '../utils/html_text.dart';
+import '../utils/tvmaze_json.dart';
+import 'data_source.dart';
+
+/// A TV show with catalog metadata.
 class TvShow {
-  /// Создаёт экземпляр [TvShow].
   const TvShow({
     required this.tmdbId,
     required this.title,
@@ -22,32 +21,29 @@ class TvShow {
     this.status,
     this.externalUrl,
     this.cachedAt,
+    this.source = DataSource.tmdb,
   });
 
-  /// Создаёт [TvShow] из JSON ответа TMDB API.
   factory TvShow.fromJson(Map<String, dynamic> json) {
-    // Извлекаем URL постера
     String? posterUrl;
     final String? posterPath = json['poster_path'] as String?;
     if (posterPath != null) {
       posterUrl = 'https://image.tmdb.org/t/p/w342$posterPath';
     }
 
-    // Извлекаем URL бэкдропа
     String? backdropUrl;
     final String? backdropPath = json['backdrop_path'] as String?;
     if (backdropPath != null) {
       backdropUrl = 'https://image.tmdb.org/t/p/w780$backdropPath';
     }
 
-    // Извлекаем год из first_air_date (формат: "2008-01-20")
+    // first_air_date is "YYYY-MM-DD".
     int? firstAirYear;
     final String? firstAirDate = json['first_air_date'] as String?;
     if (firstAirDate != null && firstAirDate.length >= 4) {
       firstAirYear = int.tryParse(firstAirDate.substring(0, 4));
     }
 
-    // Извлекаем жанры
     List<String>? genres;
     if (json['genres'] != null) {
       final List<dynamic> genresList = json['genres'] as List<dynamic>;
@@ -59,7 +55,6 @@ class TvShow {
       genres = genreIds.map((dynamic id) => id.toString()).toList();
     }
 
-    // Конструируем URL страницы сериала на TMDB
     final int tmdbId = json['id'] as int;
 
     return TvShow(
@@ -81,7 +76,60 @@ class TvShow {
     );
   }
 
-  /// Создаёт [TvShow] из записи базы данных.
+  /// From a TVmaze `show` object (search result or `/shows/{id}`).
+  factory TvShow.fromTvMaze(Map<String, dynamic> json) {
+    final int id = json['id'] as int;
+
+    List<String>? genres;
+    final Object? rawGenres = json['genres'];
+    if (rawGenres is List<dynamic>) {
+      genres = rawGenres.whereType<String>().toList();
+      if (genres.isEmpty) genres = null;
+    }
+
+    int? firstAirYear;
+    final String? premiered = json['premiered'] as String?;
+    if (premiered != null && premiered.length >= 4) {
+      firstAirYear = int.tryParse(premiered.substring(0, 4));
+    }
+
+    int? totalSeasons;
+    int? totalEpisodes;
+    final Object? embedded = json['_embedded'];
+    if (embedded is Map<String, dynamic>) {
+      final Object? seasons = embedded['seasons'];
+      if (seasons is List<dynamic>) {
+        totalSeasons = seasons.length;
+        int episodes = 0;
+        for (final dynamic s in seasons) {
+          if (s is Map<String, dynamic>) {
+            // `episodeOrder` is null for a currently-airing season, so the
+            // total undercounts until the season finishes.
+            episodes += (s['episodeOrder'] as int?) ?? 0;
+          }
+        }
+        if (episodes > 0) totalEpisodes = episodes;
+      }
+    }
+
+    return TvShow(
+      tmdbId: id,
+      title: json['name'] as String,
+      posterUrl: tvMazeImageUrl(json['image']),
+      overview: stripHtmlText(json['summary'] as String?),
+      genres: genres,
+      firstAirYear: firstAirYear,
+      totalSeasons: totalSeasons,
+      totalEpisodes: totalEpisodes,
+      rating: tvMazeRating(json['rating']),
+      status: json['status'] as String?,
+      externalUrl: json['url'] as String?,
+      cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      source: DataSource.tvmaze,
+    );
+  }
+
+  /// A missing or unknown `source` column reads as [DataSource.tmdb].
   factory TvShow.fromDb(Map<String, dynamic> row) {
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
@@ -105,73 +153,63 @@ class TvShow {
       status: row['status'] as String?,
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
+      source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
     );
   }
 
-  /// Уникальный идентификатор сериала в TMDB.
+  /// Show id in the [source] provider's namespace.
   final int tmdbId;
 
-  /// Название сериала (локализованное).
   final String title;
 
-  /// Оригинальное название сериала.
   final String? originalTitle;
 
-  /// URL постера сериала.
   final String? posterUrl;
 
-  /// URL бэкдропа сериала.
   final String? backdropUrl;
 
-  /// Описание сериала.
   final String? overview;
 
-  /// Список жанров.
   final List<String>? genres;
 
-  /// Год начала показа.
   final int? firstAirYear;
 
-  /// Общее количество сезонов.
   final int? totalSeasons;
 
-  /// Общее количество эпизодов.
   final int? totalEpisodes;
 
-  /// Рейтинг TMDB (0-10).
+  /// 0-10.
   final double? rating;
 
-  /// Статус сериала (Returning Series, Ended, Canceled).
+  /// TMDB value: "Returning Series", "Ended", "Canceled".
   final String? status;
 
-  /// URL страницы сериала на TMDB.
   final String? externalUrl;
 
-  /// Время кеширования (Unix timestamp).
+  /// Unix millis.
   final int? cachedAt;
 
-  /// URL маленького постера (w154) для thumbnail-ов.
+  final DataSource source;
+
+  /// w154 variant for thumbnails.
   String? get posterThumbUrl {
     if (posterUrl == null) return null;
     return posterUrl!.replaceFirst(RegExp(r'/w\d+'), '/w154');
   }
 
-  /// URL среднего бэкдропа (w300) для экранов деталей.
+  /// w300 variant for detail screens.
   String? get backdropSmallUrl {
     if (backdropUrl == null) return null;
     return backdropUrl!.replaceFirst('/w780', '/w300');
   }
 
-  /// Возвращает отформатированный рейтинг.
   String? get formattedRating {
     if (rating == null) return null;
     return rating!.toStringAsFixed(1);
   }
 
-  /// Возвращает жанры в виде строки через запятую.
   String? get genresString => genres?.join(', ');
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'tmdb_id': tmdbId,
@@ -188,10 +226,10 @@ class TvShow {
       'status': status,
       'external_url': externalUrl,
       'cached_at': cachedAt,
+      'source': source.name,
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TvShow copyWith({
     int? tmdbId,
     String? title,
@@ -207,6 +245,7 @@ class TvShow {
     String? status,
     String? externalUrl,
     int? cachedAt,
+    DataSource? source,
   }) {
     return TvShow(
       tmdbId: tmdbId ?? this.tmdbId,
@@ -223,17 +262,20 @@ class TvShow {
       status: status ?? this.status,
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
+      source: source ?? this.source,
     );
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is TvShow && other.tmdbId == tmdbId;
+    return other is TvShow &&
+        other.source == source &&
+        other.tmdbId == tmdbId;
   }
 
   @override
-  int get hashCode => tmdbId.hashCode;
+  int get hashCode => Object.hash(source, tmdbId);
 
   @override
   String toString() => 'TvShow(tmdbId: $tmdbId, title: $title)';

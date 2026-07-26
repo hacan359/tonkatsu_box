@@ -31,6 +31,21 @@ void main() {
       );
     });
 
+    test('namespaces anime by source', () {
+      expect(
+        coverImageId(
+          mediaType: MediaType.anime,
+          externalId: 7442,
+          source: DataSource.kitsu,
+        ),
+        'kitsu_7442',
+      );
+      expect(
+        coverImageId(mediaType: MediaType.anime, externalId: 7442),
+        'anilist_7442',
+      );
+    });
+
     test('manga key contains exactly one separator usable for import split', () {
       final String id = coverImageId(
         mediaType: MediaType.manga,
@@ -91,12 +106,47 @@ void main() {
       );
     });
 
-    test('non-manga types keep the bare external id', () {
+    test('namespaces TV shows by source', () {
+      expect(
+        coverImageId(
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          source: DataSource.tvmaze,
+        ),
+        'tvmaze_1399',
+      );
+      expect(
+        coverImageId(
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          source: DataSource.tmdb,
+        ),
+        'tmdb_1399',
+      );
+    });
+
+    test('TV show with null source defaults to tmdb', () {
+      expect(
+        coverImageId(mediaType: MediaType.tvShow, externalId: 1399),
+        'tmdb_1399',
+      );
+    });
+
+    test('animation stays bare — it only comes from TMDB', () {
+      expect(
+        coverImageId(
+          mediaType: MediaType.animation,
+          externalId: 1399,
+          source: DataSource.tmdb,
+        ),
+        '1399',
+      );
+    });
+
+    test('single-source types keep the bare external id', () {
       for (final MediaType type in <MediaType>[
         MediaType.game,
         MediaType.movie,
-        MediaType.tvShow,
-        MediaType.anime,
         MediaType.visualNovel,
       ]) {
         expect(

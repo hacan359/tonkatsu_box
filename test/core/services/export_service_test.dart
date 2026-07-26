@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/services/export_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/core/services/xcoll_file.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
 import 'package:tonkatsu_box/shared/models/canvas_item.dart';
 import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
@@ -575,7 +576,7 @@ void main() {
             )).thenAnswer((_) async => movieBytes);
         when(() => mockImageCache.readImageBytes(
               ImageType.tvShowPoster,
-              '300',
+              'tmdb_300',
             )).thenAnswer((_) async => tvShowBytes);
 
         when(() => mockCanvasRepo.getGameCanvasItems(any()))
@@ -613,7 +614,7 @@ void main() {
         expect(xcoll.images.length, equals(3));
         expect(xcoll.images.containsKey('game_covers/100'), isTrue);
         expect(xcoll.images.containsKey('movie_posters/200'), isTrue);
-        expect(xcoll.images.containsKey('tv_show_posters/300'), isTrue);
+        expect(xcoll.images.containsKey('tv_show_posters/tmdb_300'), isTrue);
       });
 
       test('без imageCacheService should return пустой images', () async {
@@ -1412,7 +1413,7 @@ void main() {
             .thenAnswer((_) async => <CanvasItem>[]);
         when(() => mockImageCache.readImageBytes(any(), any()))
             .thenAnswer((_) async => null);
-        when(() => mockTvShowDao.getEpisodesByShowId(any()))
+        when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
@@ -1440,7 +1441,7 @@ void main() {
           ),
         ];
 
-        when(() => mockTvShowDao.getTvSeasonsByShowId(1399))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(DataSource.tmdb, 1399))
             .thenAnswer((_) async => testSeasons);
 
         final ExportService sutMedia = ExportService(
@@ -1478,7 +1479,7 @@ void main() {
       });
 
       test('не должен включить tv_seasons когда сезонов нет', () async {
-        when(() => mockTvShowDao.getTvSeasonsByShowId(any()))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()))
             .thenAnswer((_) async => <TvSeason>[]);
 
         final ExportService sutMedia = ExportService(
@@ -1516,7 +1517,7 @@ void main() {
           ),
         ];
 
-        when(() => mockTvShowDao.getTvSeasonsByShowId(999))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(DataSource.tmdb, 999))
             .thenAnswer((_) async => testSeasons);
 
         final ExportService sutMedia = ExportService(
@@ -1574,7 +1575,7 @@ void main() {
             await sutMedia.createFullExport(collection, items, 1);
 
         expect(xcoll.media.containsKey('tv_seasons'), isFalse);
-        verifyNever(() => mockTvShowDao.getTvSeasonsByShowId(any()));
+        verifyNever(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()));
       });
 
       test('без database should skip tv_seasons', () async {
@@ -1607,7 +1608,7 @@ void main() {
           TvSeason(tmdbShowId: 1399, seasonNumber: 1, name: 'S1'),
         ];
 
-        when(() => mockTvShowDao.getTvSeasonsByShowId(1399))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(DataSource.tmdb, 1399))
             .thenAnswer((_) async => testSeasons);
 
         final ExportService sutMedia = ExportService(
@@ -1639,7 +1640,7 @@ void main() {
         final XcollFile xcoll =
             await sutMedia.createFullExport(collection, items, 1);
 
-        verify(() => mockTvShowDao.getTvSeasonsByShowId(1399)).called(1);
+        verify(() => mockTvShowDao.getTvSeasonsByShowId(DataSource.tmdb, 1399)).called(1);
         final List<dynamic> seasons =
             xcoll.media['tv_seasons'] as List<dynamic>;
         expect(seasons.length, equals(1));
@@ -1673,9 +1674,9 @@ void main() {
             .thenAnswer((_) async => <CanvasItem>[]);
         when(() => mockImageCache.readImageBytes(any(), any()))
             .thenAnswer((_) async => null);
-        when(() => mockTvShowDao.getTvSeasonsByShowId(any()))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()))
             .thenAnswer((_) async => <TvSeason>[]);
-        when(() => mockTvShowDao.getEpisodesByShowId(any()))
+        when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
@@ -1706,7 +1707,7 @@ void main() {
           ),
         ];
 
-        when(() => mockTvShowDao.getEpisodesByShowId(1399))
+        when(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, 1399))
             .thenAnswer((_) async => testEpisodes);
 
         final ExportService sut = ExportService(
@@ -1779,7 +1780,7 @@ void main() {
           ),
         ];
 
-        when(() => mockTvShowDao.getEpisodesByShowId(1399))
+        when(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, 1399))
             .thenAnswer((_) async => testEpisodes);
 
         final ExportService sut = ExportService(
@@ -1811,7 +1812,7 @@ void main() {
         final XcollFile xcoll =
             await sut.createFullExport(collection, items, 1);
 
-        verify(() => mockTvShowDao.getEpisodesByShowId(1399)).called(1);
+        verify(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, 1399)).called(1);
         expect(xcoll.media.containsKey('tv_episodes'), isTrue);
       });
     });
@@ -2036,10 +2037,12 @@ void main() {
             .thenAnswer((_) async => <CanvasItem>[]);
         when(() => mockImageCache.readImageBytes(any(), any()))
             .thenAnswer((_) async => null);
-        when(() => mockTvShowDao.getTvSeasonsByShowId(any()))
+        when(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()))
             .thenAnswer((_) async => <TvSeason>[]);
-        when(() => mockTvShowDao.getEpisodesByShowId(any()))
+        when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
             .thenAnswer((_) async => <TvEpisode>[]);
+        when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
         when(() => mockTagDao.getAll()).thenAnswer((_) async => <Tag>[]);
@@ -2120,6 +2123,73 @@ void main() {
 
         expect(xcoll.items[0].containsKey('_marks'), isFalse);
         verifyNever(() => mockItemMarkDao.getMarksForItems(any()));
+      });
+
+      test('should attach _watched_episodes scoped to the export collection',
+          () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+        when(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.tmdb, 1399))
+            .thenAnswer(
+          (_) async => <(int, int), DateTime?>{
+            (1, 1): DateTime.fromMillisecondsSinceEpoch(1700000000000),
+            (1, 2): null,
+          },
+        );
+
+        final XcollFile xcoll = await sutMarks.createFullExport(
+          createTestCollection(),
+          twoTvItems(),
+          1,
+          includeUserData: true,
+        );
+
+        verify(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.tmdb, 1399))
+            .called(1);
+        verify(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.tmdb, 1400))
+            .called(1);
+
+        final List<dynamic> watched =
+            xcoll.items[0]['_watched_episodes'] as List<dynamic>;
+        expect(watched, hasLength(2));
+        final Map<String, dynamic> first = watched[0] as Map<String, dynamic>;
+        expect(first['season'], 1);
+        expect(first['episode'], 1);
+        expect(first['watched_at'], 1700000000);
+        final Map<String, dynamic> second = watched[1] as Map<String, dynamic>;
+        expect(second['episode'], 2);
+        expect(second['watched_at'], isNull);
+        // The show with no marks must not carry the key at all.
+        expect(xcoll.items[1].containsKey('_watched_episodes'), isFalse);
+      });
+
+      test('should not query watched episodes for non-tv items', () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+
+        await sutMarks.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(id: 1, mediaType: MediaType.game),
+          ],
+          1,
+          includeUserData: true,
+        );
+
+        verifyNever(
+            () => mockTvShowDao.getWatchedEpisodes(any(), any(), any()));
+      });
+
+      test('should skip watched episodes when includeUserData is false',
+          () async {
+        await sutMarks.createFullExport(
+          createTestCollection(),
+          twoTvItems(),
+          1,
+        );
+
+        verifyNever(
+            () => mockTvShowDao.getWatchedEpisodes(any(), any(), any()));
       });
     });
   });

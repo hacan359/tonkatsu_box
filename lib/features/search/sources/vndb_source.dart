@@ -1,13 +1,11 @@
-// Search source: visual novels from VNDB.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/vndb_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/visual_novel.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/vndb_has_anime_filter.dart';
 import '../filters/vndb_language_filter.dart';
 import '../filters/vndb_length_filter.dart';
@@ -29,10 +27,7 @@ class VndbSource extends SearchSource {
   MediaType get outputMediaType => MediaType.visualNovel;
 
   @override
-  String get groupId => 'vndb';
-
-  @override
-  String get groupName => 'VNDB';
+  DataSource get dataSource => DataSource.vndb;
 
   @override
   IconData get groupIcon => Icons.menu_book_outlined;
@@ -42,9 +37,6 @@ class VndbSource extends SearchSource {
 
   @override
   IconData get icon => Icons.menu_book_outlined;
-
-  @override
-  String? get iconAsset => AppAssets.iconVndbColor;
 
   @override
   bool get supportsBrowse => true;

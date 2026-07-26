@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/anime_type_filter.dart';
 import '../filters/min_rating_filter.dart';
 import '../filters/min_votes_filter.dart';
@@ -26,10 +26,7 @@ class TmdbAnimeSource extends SearchSource {
   MediaType get outputMediaType => MediaType.animation;
 
   @override
-  String get groupId => 'tmdb';
-
-  @override
-  String get groupName => 'TMDB';
+  DataSource get dataSource => DataSource.tmdb;
 
   @override
   IconData get groupIcon => Icons.movie_outlined;
@@ -39,9 +36,6 @@ class TmdbAnimeSource extends SearchSource {
 
   @override
   IconData get icon => Icons.animation_outlined;
-
-  @override
-  String? get iconAsset => AppAssets.iconTmdbColor;
 
   @override
   bool get supportsBrowse => true;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../core/services/tv_show_cache_warmer.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -28,6 +30,7 @@ import '../../../shared/models/item_status.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/book.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/models/manga.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/widgets/media_detail_view.dart';
@@ -44,6 +47,7 @@ import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/book_progress_section.dart';
 import '../widgets/book_similars_section.dart';
+import '../widgets/manga_similars_section.dart';
 import '../widgets/custom_progress_section.dart';
 import '../widgets/google_books_similars_section.dart';
 import '../widgets/manga_progress_section.dart';
@@ -66,6 +70,7 @@ import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
+import '../../../shared/constants/collection_item_ui.dart';
 
 /// Unified detail screen for any collection item, dispatched off
 /// [CollectionItem.mediaType].
@@ -205,15 +210,20 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   Future<void> _toggleTracked(CollectionItem item) async {
     final TrackedReleaseDao dao = ref.read(trackedReleaseDaoProvider);
+    final DataSource source = item.dataSource;
     final bool tracked =
-        await dao.isTracked(item.externalId, DataSource.tmdb, item.mediaType);
+        await dao.isTracked(item.externalId, source, item.mediaType);
     if (tracked) {
-      await dao.unsubscribe(item.externalId, DataSource.tmdb, item.mediaType);
+      await dao.unsubscribe(item.externalId, source, item.mediaType);
     } else {
-      await dao.subscribe(item.externalId, DataSource.tmdb, item.mediaType);
+      await dao.subscribe(item.externalId, source, item.mediaType);
     }
     ref.invalidate(isReleaseTrackedProvider(
-      (externalId: item.externalId, mediaType: item.mediaType),
+      (
+        externalId: item.externalId,
+        source: source,
+        mediaType: item.mediaType,
+      ),
     ));
     ref.invalidate(releasesProvider);
   }
@@ -599,6 +609,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               ? ref
                       .watch(isReleaseTrackedProvider((
                         externalId: item.externalId,
+                        source: item.dataSource,
                         mediaType: item.mediaType,
                       )))
                       .valueOrNull ??
@@ -638,6 +649,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     // Recommendations / reviews are TMDB-only.
     final bool showRecs = settings.showRecommendations &&
+        item.dataSource == DataSource.tmdb &&
         (item.mediaType == MediaType.movie ||
             item.mediaType == MediaType.tvShow ||
             item.mediaType == MediaType.animation);
@@ -700,6 +712,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             collectionId: widget.collectionId,
             itemId: item.id,
             externalId: item.externalId,
+            source: item.dataSource,
             tvShow: config.tvShow,
             accentColor: config.accentColor,
           ),
@@ -776,6 +789,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           GoogleBooksSimilarsSection(
             book: item.book!,
             onAddBook: _addBookFromSimilars,
+          ),
+        // Similar manga — MangaBaka and MangaDex each have a native
+        // recommendations endpoint seeded by the current title.
+        if (settings.showRecommendations &&
+            item.mediaType == MediaType.manga &&
+            (item.manga?.source == DataSource.mangabaka ||
+                item.manga?.source == DataSource.mangadex))
+          MangaSimilarsSection(
+            seed: item.manga!,
+            onAddManga: _addMangaFromSimilars,
           ),
       ],
       authorComment: item.authorComment,
@@ -950,6 +973,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         mediaType: MediaType.tvShow,
         ownMapProvider: collectedTvShowIdsProvider,
         upsert: (DatabaseService db) => db.tvShowDao.upsertTvShow(tvShow),
+        // Recommendation rows carry no season/episode totals — warm the
+        // cache with full details like the search add flow does.
+        afterAdd: () =>
+            ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId, tvShow.source),
       );
 
   Future<void> _addRecommendation({
@@ -958,6 +985,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     required MediaType mediaType,
     required FutureProvider<Map<int, List<CollectedItemInfo>>> ownMapProvider,
     required Future<void> Function(DatabaseService db) upsert,
+    Future<void> Function()? afterAdd,
   }) async {
     final Map<int, List<CollectedItemInfo>> ownMap =
         await ref.read(ownMapProvider.future);
@@ -995,6 +1023,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(mediaType: mediaType, externalId: tmdbId);
+
+    if (success && afterAdd != null) {
+      unawaited(afterAdd());
+    }
 
     if (!mounted) return;
 
@@ -1054,6 +1086,64 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       success
           ? l.searchAddedToNamed(book.title, collectionName)
           : l.searchAlreadyInNamed(book.title, collectionName),
+      type: success ? SnackType.success : SnackType.info,
+    );
+  }
+
+  /// Adds a manga tapped in the "Similar" row to a chosen collection, caching
+  /// the full record first. Carries `manga.source` so the provider origin
+  /// (MangaBaka / MangaDex) survives.
+  Future<void> _addMangaFromSimilars(Manga manga) async {
+    final Map<int, List<CollectedItemInfo>> ownMap =
+        await ref.read(collectedMangaIdsProvider.future);
+    final Set<int?> alreadyIn = <CollectedItemInfo>[
+      ...?ownMap[manga.id],
+    ]
+        .where((CollectedItemInfo i) => i.source == manga.source)
+        .map((CollectedItemInfo i) => i.collectionId)
+        .toSet();
+
+    if (!mounted) return;
+    final S l = S.of(context);
+    final String title = manga.titleByLanguage(
+      ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+    );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).mangaDao.upsertManga(manga);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.manga,
+          externalId: manga.id,
+          source: manga.source,
+        );
+
+    if (!mounted) return;
+
+    context.showSnack(
+      success
+          ? l.searchAddedToNamed(title, collectionName)
+          : l.searchAlreadyInNamed(title, collectionName),
       type: success ? SnackType.success : SnackType.info,
     );
   }

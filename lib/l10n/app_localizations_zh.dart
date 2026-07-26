@@ -342,6 +342,35 @@ class SZh extends S {
   }
 
   @override
+  String get bulkAddTags => '添加标签';
+
+  @override
+  String get bulkRemoveTags => '移除标签';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    return '为 $count 项添加标签';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    return '从 $count 项移除标签';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return '已添加标签：$count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return '已移除标签：$count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => '无需更改';
+
+  @override
   String get bulkExportPngTitle => '导出为 PNG';
 
   @override
@@ -1273,6 +1302,9 @@ class SZh extends S {
   String get creditsTmdbAttribution => '本产品使用 TMDB API，但未经 TMDB 认可或认证。';
 
   @override
+  String get creditsTvMazeAttribution => '电视剧数据由 TVmaze 提供。';
+
+  @override
   String get creditsIgdbAttribution => '游戏数据由 IGDB 提供。';
 
   @override
@@ -1286,6 +1318,12 @@ class SZh extends S {
 
   @override
   String get creditsMangaBakaAttribution => '漫画数据由 MangaBaka 提供。';
+
+  @override
+  String get creditsMangaDexAttribution => '漫画数据由 MangaDex 提供。';
+
+  @override
+  String get creditsKitsuAttribution => '漫画数据由 Kitsu 提供。';
 
   @override
   String get creditsOpenLibraryAttribution =>
@@ -1592,6 +1630,12 @@ class SZh extends S {
 
   @override
   String get customItemDescriptionHint => '简要描述或备注';
+
+  @override
+  String get customItemMyNoteHint => '你对此条目的备注';
+
+  @override
+  String get customItemTagsHint => '用逗号分隔，例如：待玩、收藏';
 
   @override
   String get customItemOptionalFields => '更多字段';
@@ -1956,6 +2000,9 @@ class SZh extends S {
 
   @override
   String get markAllWatched => '全部标记为已看';
+
+  @override
+  String get markNextWatched => '标记下一集';
 
   @override
   String get unmarkAll => '全部取消标记';
@@ -2629,6 +2676,9 @@ class SZh extends S {
   String get welcomeSourceDescTmdb => '电影、电视剧和动画。';
 
   @override
+  String get welcomeSourceDescTvMaze => '电视剧。';
+
+  @override
   String get welcomeSourceDescIgdb => '涵盖所有平台的电子游戏。';
 
   @override
@@ -2636,6 +2686,12 @@ class SZh extends S {
 
   @override
   String get welcomeSourceDescMangaBaka => '漫画、韩漫、国漫和轻小说。';
+
+  @override
+  String get welcomeSourceDescMangaDex => '大型漫画目录，带本地化标题和章节数。';
+
+  @override
+  String get welcomeSourceDescKitsu => '独立的漫画目录，带评分和封面。';
 
   @override
   String get welcomeSourceDescVndb => '视觉小说数据库。';
@@ -3348,6 +3404,9 @@ class SZh extends S {
 
   @override
   String get browseFilterContentRating => '内容分级';
+
+  @override
+  String get browseFilterDemographic => '受众';
 
   @override
   String get contentRatingSafe => '全年龄';
@@ -4533,6 +4592,12 @@ class SZh extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       '应用于每个单元格的模板。可用占位符：name、year、genre、rating。';
+
+  @override
+  String get moodGridCellLabelTemplate => '单元格标题';
+
+  @override
+  String get moodGridCellSize => '大小';
 
   @override
   String get collection => '收藏';

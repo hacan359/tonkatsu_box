@@ -8,6 +8,7 @@ import 'collections_provider.dart';
 import '../../../core/services/tracker_sync_service.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
+import '../../../shared/models/media_type.dart';
 import '../../../shared/models/ra_game_progress.dart';
 import '../../../shared/models/tracker_achievement.dart';
 import '../../../shared/models/tracker_game_data.dart';
@@ -250,7 +251,7 @@ class TrackerDetailNotifier
       final List<({int id, int? collectionId, int? platformId})> items =
           await _db.getItemIdsByExternalId(
         _gameId,
-        'game',
+        MediaType.game.value,
         platformId: _platformId,
         filterByPlatform: true,
       );

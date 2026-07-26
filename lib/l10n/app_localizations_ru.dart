@@ -367,6 +367,49 @@ class SRu extends S {
   }
 
   @override
+  String get bulkAddTags => 'Добавить теги';
+
+  @override
+  String get bulkRemoveTags => 'Удалить теги';
+
+  @override
+  String bulkAddTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count элементам',
+      few: '$count элементам',
+      one: '1 элементу',
+    );
+    return 'Добавить теги к $_temp0';
+  }
+
+  @override
+  String bulkRemoveTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count элементов',
+      few: '$count элементов',
+      one: '1 элемента',
+    );
+    return 'Удалить теги у $_temp0';
+  }
+
+  @override
+  String bulkTagsAdded(int count) {
+    return 'Добавлено тегов: $count';
+  }
+
+  @override
+  String bulkTagsRemoved(int count) {
+    return 'Удалено тегов: $count';
+  }
+
+  @override
+  String get bulkTagsUnchanged => 'Нечего менять';
+
+  @override
   String get bulkExportPngTitle => 'Экспорт в PNG';
 
   @override
@@ -1380,6 +1423,10 @@ class SRu extends S {
       'Приложение использует TMDB API, но не одобрено и не сертифицировано TMDB.';
 
   @override
+  String get creditsTvMazeAttribution =>
+      'Данные о сериалах предоставлены TVmaze.';
+
+  @override
   String get creditsIgdbAttribution => 'Данные об играх предоставлены IGDB.';
 
   @override
@@ -1397,6 +1444,13 @@ class SRu extends S {
   @override
   String get creditsMangaBakaAttribution =>
       'Данные о манге предоставлены MangaBaka.';
+
+  @override
+  String get creditsMangaDexAttribution =>
+      'Данные о манге предоставлены MangaDex.';
+
+  @override
+  String get creditsKitsuAttribution => 'Данные о манге предоставлены Kitsu.';
 
   @override
   String get creditsOpenLibraryAttribution =>
@@ -1734,6 +1788,12 @@ class SRu extends S {
 
   @override
   String get customItemDescriptionHint => 'Краткое описание или заметки';
+
+  @override
+  String get customItemMyNoteHint => 'Ваша заметка об этом элементе';
+
+  @override
+  String get customItemTagsHint => 'Через запятую, напр. Бэклог, Избранное';
 
   @override
   String get customItemOptionalFields => 'Дополнительные поля';
@@ -2109,6 +2169,9 @@ class SRu extends S {
 
   @override
   String get markAllWatched => 'Отметить все';
+
+  @override
+  String get markNextWatched => 'Отметить следующий эпизод';
 
   @override
   String get unmarkAll => 'Снять отметки';
@@ -2859,6 +2922,9 @@ class SRu extends S {
   String get welcomeSourceDescTmdb => 'Фильмы, сериалы и анимация.';
 
   @override
+  String get welcomeSourceDescTvMaze => 'Сериалы.';
+
+  @override
   String get welcomeSourceDescIgdb => 'Видеоигры на любой платформе.';
 
   @override
@@ -2866,6 +2932,14 @@ class SRu extends S {
 
   @override
   String get welcomeSourceDescMangaBaka => 'Манга, манхва, маньхуа и ранобэ.';
+
+  @override
+  String get welcomeSourceDescMangaDex =>
+      'Крупный каталог манги с локализованными названиями и счётчиком глав.';
+
+  @override
+  String get welcomeSourceDescKitsu =>
+      'Независимый каталог манги с рейтингами и обложками.';
 
   @override
   String get welcomeSourceDescVndb => 'База данных визуальных новелл.';
@@ -3604,6 +3678,9 @@ class SRu extends S {
 
   @override
   String get browseFilterContentRating => 'Рейтинг контента';
+
+  @override
+  String get browseFilterDemographic => 'Демография';
 
   @override
   String get contentRatingSafe => 'Безопасный';
@@ -4861,6 +4938,12 @@ class SRu extends S {
   @override
   String get moodGridCaptionTemplateHint =>
       'Шаблон применяется к каждой ячейке. Доступные токены: name, year, genre, rating.';
+
+  @override
+  String get moodGridCellLabelTemplate => 'Подписи ячеек';
+
+  @override
+  String get moodGridCellSize => 'Размер';
 
   @override
   String get collection => 'Коллекция';

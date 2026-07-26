@@ -17,6 +17,8 @@ class CustomItemData {
     this.unitTotal,
     this.unitGroupTotal,
     this.externalUrl,
+    this.comment,
+    this.tags = const <String>[],
   });
 
   final String title;
@@ -44,4 +46,12 @@ class CustomItemData {
   final int? unitGroupTotal;
 
   final String? externalUrl;
+
+  /// Personal note (`user_comment` on the collection item, not the card).
+  /// Only produced by the create flow; the edit flow leaves it null.
+  final String? comment;
+
+  /// Global tag names to attach to the created item; missing tags are
+  /// created automatically. Only produced by the create flow.
+  final List<String> tags;
 }

@@ -1,6 +1,3 @@
-// Reusable chevron segments for the filter bars on AllItemsScreen and
-// CollectionScreen (media type / status filtering).
-
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart' show SemanticsRole;
 
@@ -10,6 +7,7 @@ import '../models/item_status.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../constants/item_status_ui.dart';
 
 /// Filter-bar segment: a V-notch on the left (except the first) and a
 /// V-point on the right (except the last). [compact] shows a tooltip'd icon

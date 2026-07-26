@@ -9,6 +9,7 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/tier_list_detail_provider.dart';
 import 'tier_item_card.dart';
+import '../../../shared/constants/tier_definition_ui.dart';
 
 const double _kExportItemWidth = 80;
 const double _kExportItemHeight = 110;

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/openlibrary_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/openlibrary_language_filter.dart';
 import '../filters/openlibrary_scope_filter.dart';
 import '../models/search_source.dart';
@@ -26,10 +26,7 @@ class OpenLibrarySource extends SearchSource {
   MediaType get outputMediaType => MediaType.book;
 
   @override
-  String get groupId => 'openlibrary';
-
-  @override
-  String get groupName => 'OpenLibrary';
+  DataSource get dataSource => DataSource.openLibrary;
 
   @override
   IconData get groupIcon => Icons.menu_book;
@@ -39,9 +36,6 @@ class OpenLibrarySource extends SearchSource {
 
   @override
   IconData get icon => Icons.menu_book;
-
-  @override
-  String? get iconAsset => AppAssets.iconOpenLibraryColor;
 
   // OpenLibrary search needs a query — there is no clean "popular" feed.
   @override

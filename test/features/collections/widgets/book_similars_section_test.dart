@@ -117,6 +117,7 @@ void main() {
                 recordId: 1,
                 collectionId: 1,
                 collectionName: 'Read',
+                source: DataSource.fantlab,
               ),
             ],
           },
@@ -126,6 +127,32 @@ void main() {
 
       // One of the two cards (the owned one) shows the in-collection badge.
       expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+
+    testWidgets('does not mark a similar book owned from another provider',
+        (WidgetTester tester) async {
+      when(() => mockApi.getSimilars('3104')).thenAnswer(
+        (_) async => <Book>[fantlabBook(id: '1', title: 'Eden')],
+      );
+
+      await tester.pumpWidget(
+        build(
+          ownedIds: <int, List<CollectedItemInfo>>{
+            // Same numeric id, different provider — a different book.
+            1: <CollectedItemInfo>[
+              const CollectedItemInfo(
+                recordId: 1,
+                collectionId: 1,
+                collectionName: 'Read',
+                source: DataSource.openLibrary,
+              ),
+            ],
+          },
+        ),
+      );
+      await pumpUntilResolved(tester);
+
+      expect(find.byIcon(Icons.check), findsNothing);
     });
   });
 }

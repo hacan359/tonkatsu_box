@@ -1,5 +1,3 @@
-// API-provider attribution and license screen content (no Scaffold/AppBar).
-
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -12,11 +10,12 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/source_logo.dart';
 import '../widgets/settings_group.dart';
+import '../../../shared/constants/data_source_ui.dart';
+import '../../../shared/constants/media_type_ui.dart';
 
 /// One attribution entry.
 typedef _Provider = ({
   DataSource source,
-  String name,
   String description,
   String linkLabel,
   String url,
@@ -41,77 +40,84 @@ class CreditsContent extends StatelessWidget {
     final List<_Provider> providers = <_Provider>[
       (
         source: DataSource.tmdb,
-        name: 'TMDB',
         description: l10n.creditsTmdbAttribution,
         linkLabel: 'themoviedb.org',
         url: 'https://www.themoviedb.org/',
       ),
       (
+        source: DataSource.tvmaze,
+        description: l10n.creditsTvMazeAttribution,
+        linkLabel: 'tvmaze.com',
+        url: 'https://www.tvmaze.com/',
+      ),
+      (
         source: DataSource.igdb,
-        name: 'IGDB',
         description: l10n.creditsIgdbAttribution,
         linkLabel: 'igdb.com',
         url: 'https://www.igdb.com/',
       ),
       (
         source: DataSource.steamGridDb,
-        name: 'SteamGridDB',
         description: l10n.creditsSteamGridDbAttribution,
         linkLabel: 'steamgriddb.com',
         url: 'https://www.steamgriddb.com/',
       ),
       (
         source: DataSource.anilist,
-        name: 'AniList',
         description: l10n.creditsAniListAttribution,
         linkLabel: 'anilist.co',
         url: 'https://anilist.co/',
       ),
       (
         source: DataSource.mangabaka,
-        name: 'MangaBaka',
         description: l10n.creditsMangaBakaAttribution,
         linkLabel: 'mangabaka.org',
         url: 'https://mangabaka.org/',
       ),
       (
+        source: DataSource.mangadex,
+        description: l10n.creditsMangaDexAttribution,
+        linkLabel: 'mangadex.org',
+        url: 'https://mangadex.org/',
+      ),
+      (
+        source: DataSource.kitsu,
+        description: l10n.creditsKitsuAttribution,
+        linkLabel: 'kitsu.io',
+        url: 'https://kitsu.io/',
+      ),
+      (
         source: DataSource.vndb,
-        name: 'VNDB',
         description: l10n.creditsVndbAttribution,
         linkLabel: 'vndb.org',
         url: 'https://vndb.org/',
       ),
       (
         source: DataSource.openLibrary,
-        name: 'OpenLibrary',
         description: l10n.creditsOpenLibraryAttribution,
         linkLabel: 'openlibrary.org',
         url: 'https://openlibrary.org/',
       ),
       (
         source: DataSource.fantlab,
-        name: 'Fantlab',
         description: l10n.creditsFantlabAttribution,
         linkLabel: 'fantlab.ru',
         url: 'https://fantlab.ru/',
       ),
       (
         source: DataSource.comicVine,
-        name: 'ComicVine',
         description: l10n.creditsComicVineAttribution,
         linkLabel: 'comicvine.gamespot.com',
         url: 'https://comicvine.gamespot.com/',
       ),
       (
         source: DataSource.googleBooks,
-        name: 'Google Books',
         description: l10n.creditsGoogleBooksAttribution,
         linkLabel: 'books.google.com',
         url: 'https://books.google.com/',
       ),
       (
         source: DataSource.hardcover,
-        name: 'Hardcover',
         description: l10n.creditsHardcoverAttribution,
         linkLabel: 'hardcover.app',
         url: 'https://hardcover.app/',
@@ -272,7 +278,7 @@ class _ProviderCard extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        provider.name,
+                        provider.source.brandName,
                         style: AppTypography.h3.copyWith(fontSize: 14),
                       ),
                     ),

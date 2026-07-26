@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/models/collection_item.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/widgets/cached_image.dart';
+import '../../../../../shared/constants/collection_item_ui.dart';
 
 class ThumbnailCell extends StatelessWidget {
   const ThumbnailCell({

@@ -62,8 +62,9 @@ void main() {
       );
     });
 
-    testWidgets('shows English, Russian, Chinese and Spanish options',
-        (WidgetTester tester) async {
+    testWidgets(
+        'shows English, Russian, Chinese, Spanish, Portuguese and French '
+        'options', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
@@ -71,6 +72,21 @@ void main() {
       expect(find.text('Русский'), findsWidgets);
       expect(find.text('中文'), findsWidgets);
       expect(find.text('Español'), findsWidgets);
+      expect(find.text('Português (Brasil)'), findsWidgets);
+      expect(find.text('Français'), findsWidgets);
+    });
+
+    testWidgets('does not overflow on a phone-sized screen',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Français'), findsWidgets);
     });
 
     testWidgets('English is selected by default in UI radio',
@@ -79,7 +95,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
-      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(3));
+      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(5));
     });
 
     testWidgets('shows content language dropdown', (WidgetTester tester) async {
@@ -137,6 +153,30 @@ void main() {
 
       expect(prefs.getString(SettingsKeys.appLanguage), 'es');
       expect(prefs.getString(SettingsKeys.tmdbLanguage), 'es-ES');
+    });
+
+    testWidgets('tapping Portuguese selects it and sets tmdbLanguage to pt-BR',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      await tester.tap(find.text('Português (Brasil)').first);
+      await tester.pump();
+
+      expect(prefs.getString(SettingsKeys.appLanguage), 'pt');
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'pt-BR');
+    });
+
+    testWidgets('tapping French selects it and sets tmdbLanguage to fr-FR',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      await tester.tap(find.text('Français').first);
+      await tester.pump();
+
+      expect(prefs.getString(SettingsKeys.appLanguage), 'fr');
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'fr-FR');
     });
 
     testWidgets('tapping English selects it back',
@@ -208,7 +248,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
-      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(3));
+      expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(5));
     });
   });
 }

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/tier_definition.dart';
 
 import '../../helpers/test_helpers.dart';
+import 'package:tonkatsu_box/shared/constants/tier_definition_ui.dart';
 
 void main() {
   group('TierDefinition', () {
@@ -94,7 +95,7 @@ void main() {
       test('должен копировать с изменённым color', () {
         final TierDefinition original = createTestTierDefinition();
         final TierDefinition copy =
-            original.copyWith(color: const Color(0xFF00FF00));
+            original.copyWith(colorValue: 0xFF00FF00);
         expect(copy.color, const Color(0xFF00FF00));
       });
     });

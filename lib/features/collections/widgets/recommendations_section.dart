@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
@@ -13,6 +15,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../../search/widgets/item_details_sheet.dart';
@@ -127,8 +130,13 @@ class RecommendationsSection extends ConsumerWidget {
     final AsyncValue<List<TvShow>> asyncRecs =
         ref.watch(_getTvRecProvider(tmdbId));
 
+    // TMDB recommendations, so only TMDB placements count: a TVmaze show with
+    // the same numeric id is a different show.
     final Set<int> ownedIds = <int>{
-      ...ref.watch(collectedTvShowIdsProvider).valueOrNull?.keys ?? <int>[],
+      ...?ref
+          .watch(collectedTvShowIdsProvider)
+          .valueOrNull
+          ?.idsFromSource(DataSource.tmdb),
       ...ref.watch(collectedAnimationIdsProvider).valueOrNull?.keys ?? <int>[],
     };
 
@@ -146,7 +154,11 @@ class RecommendationsSection extends ConsumerWidget {
                   apiRating: s.rating,
                   icon: Icons.tv_outlined,
                   cacheImageType: ImageType.tvShowPoster,
-                  cacheImageId: s.tmdbId.toString(),
+                  cacheImageId: coverImageId(
+                    mediaType: MediaType.tvShow,
+                    externalId: s.tmdbId,
+                    source: s.source,
+                  ),
                   onAddToCollection: () => _showTvShowDetails(context, s),
                   isOwned: ownedIds.contains(s.tmdbId),
                 ),

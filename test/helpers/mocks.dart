@@ -6,13 +6,19 @@ import 'package:gamepads/gamepads.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/api/fantlab_api.dart';
+import 'package:tonkatsu_box/core/api/mangabaka_api.dart';
 import 'package:tonkatsu_box/core/api/google_books_api.dart';
 import 'package:tonkatsu_box/core/api/hardcover_api.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
+import 'package:tonkatsu_box/core/api/kitsu_api.dart';
 import 'package:tonkatsu_box/core/api/kodi_api.dart';
+import 'package:tonkatsu_box/core/api/mangadex_api.dart';
+import 'package:tonkatsu_box/core/api/openlibrary_api.dart';
+import 'package:tonkatsu_box/core/database/dao/mangadex_tag_dao.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
 import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
 import 'package:tonkatsu_box/core/api/anilist/anilist_graphql_client.dart';
 import 'package:tonkatsu_box/core/api/anilist_api.dart';
 import 'package:tonkatsu_box/core/database/dao/anilist_tag_dao.dart';
@@ -32,6 +38,7 @@ import 'package:tonkatsu_box/core/database/dao/book_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/mood_grid_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tier_list_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tracker_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/wishlist_dao.dart';
@@ -126,6 +133,8 @@ class MockCanvasDao extends Mock implements CanvasDao {}
 
 class MockTierListDao extends Mock implements TierListDao {}
 
+class MockMoodGridDao extends Mock implements MoodGridDao {}
+
 class MockWishlistDao extends Mock implements WishlistDao {}
 
 class MockTrackerDao extends Mock implements TrackerDao {}
@@ -135,6 +144,8 @@ class MockGlobalTagDao extends Mock implements GlobalTagDao {}
 class MockIgdbApi extends Mock implements IgdbApi {}
 
 class MockTmdbApi extends Mock implements TmdbApi {}
+
+class MockTvMazeApi extends Mock implements TvMazeApi {}
 
 class MockSteamGridDbApi extends Mock implements SteamGridDbApi {}
 
@@ -153,9 +164,19 @@ class MockRaApi extends Mock implements RaApi {}
 
 class MockFantlabApi extends Mock implements FantlabApi {}
 
+class MockMangaBakaApi extends Mock implements MangaBakaApi {}
+
 class MockGoogleBooksApi extends Mock implements GoogleBooksApi {}
 
 class MockHardcoverApi extends Mock implements HardcoverApi {}
+
+class MockMangaDexApi extends Mock implements MangaDexApi {}
+
+class MockOpenLibraryApi extends Mock implements OpenLibraryApi {}
+
+class MockMangaDexTagDao extends Mock implements MangaDexTagDao {}
+
+class MockKitsuApi extends Mock implements KitsuApi {}
 
 class MockKodiApi extends Mock implements KodiApi {}
 

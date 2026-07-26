@@ -6,6 +6,7 @@ import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../helpers/builders.dart';
+import 'package:tonkatsu_box/shared/constants/collection_item_ui.dart';
 
 void main() {
   group('CardLink', () {
@@ -26,6 +27,49 @@ void main() {
         expect(token, contains('pf=5'));
         expect(token, contains('col=1'));
         expect(token, contains('Chrono Trigger'));
+      });
+
+      test('encodes src for every multi-source media type', () {
+        for (final MediaType type in <MediaType>[
+          MediaType.manga,
+          MediaType.anime,
+          MediaType.tvShow,
+          MediaType.book,
+        ]) {
+          final String token = buildCardLinkToken(createTestCollectionItem(
+            mediaType: type,
+            externalId: 7,
+            source: DataSource.kitsu,
+          ));
+
+          expect(token, contains('src=kitsu'), reason: type.name);
+        }
+      });
+
+      test('omits src for single-source media types', () {
+        for (final MediaType type in <MediaType>[
+          MediaType.movie,
+          MediaType.game,
+          MediaType.animation,
+          MediaType.visualNovel,
+        ]) {
+          final String token = buildCardLinkToken(createTestCollectionItem(
+            mediaType: type,
+            externalId: 7,
+            source: DataSource.tmdb,
+          ));
+
+          expect(token, isNot(contains('src=')), reason: type.name);
+        }
+      });
+
+      test('omits src when the item carries no source', () {
+        final String token = buildCardLinkToken(createTestCollectionItem(
+          mediaType: MediaType.anime,
+          externalId: 7,
+        ));
+
+        expect(token, isNot(contains('src=')));
       });
 
       test('omits pf/col when absent', () {
@@ -122,43 +166,31 @@ void main() {
 
       test('null for a game without a platform', () {
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(mediaType: MediaType.game),
-            l,
-          ),
+          createTestCollectionItem(mediaType: MediaType.game).cardSubcategoryLabel(l),
           isNull,
         );
       });
 
       test('movie/TV label for animation', () {
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(
+          createTestCollectionItem(
               mediaType: MediaType.animation,
               platformId: AnimationSource.tvShow,
-            ),
-            l,
-          ),
+            ).cardSubcategoryLabel(l),
           l.mediaTypeTvShow,
         );
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(
+          createTestCollectionItem(
               mediaType: MediaType.animation,
               platformId: AnimationSource.movie,
-            ),
-            l,
-          ),
+            ).cardSubcategoryLabel(l),
           l.mediaTypeMovie,
         );
       });
 
       test('null for other media types', () {
         expect(
-          cardSubcategoryLabel(
-            createTestCollectionItem(mediaType: MediaType.movie),
-            l,
-          ),
+          createTestCollectionItem(mediaType: MediaType.movie).cardSubcategoryLabel(l),
           isNull,
         );
       });

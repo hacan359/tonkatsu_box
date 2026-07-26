@@ -16,19 +16,40 @@ import '../providers/global_tags_provider.dart';
 /// "Create «query»" row appears at the top of the list.
 ///
 /// Returns the chosen tag id set, or `null` when dismissed.
+///
+/// A bulk caller opens it with an empty [initialSelection] — a selection's
+/// items carry different tags, so there is no common state to show — and
+/// passes its own [title] and [confirmLabel], because there an unchecked box
+/// means "leave alone" rather than the single-item "remove this tag".
 class TagPickerDialog extends ConsumerStatefulWidget {
-  const TagPickerDialog({required this.initialSelection, super.key});
+  const TagPickerDialog({
+    required this.initialSelection,
+    this.title,
+    this.confirmLabel,
+    super.key,
+  });
 
   final Set<int> initialSelection;
+
+  /// Defaults to the neutral "select tags" wording.
+  final String? title;
+
+  /// Defaults to "Apply".
+  final String? confirmLabel;
 
   static Future<Set<int>?> show(
     BuildContext context, {
     required Set<int> initialSelection,
+    String? title,
+    String? confirmLabel,
   }) {
     return showDialog<Set<int>>(
       context: context,
-      builder: (BuildContext context) =>
-          TagPickerDialog(initialSelection: initialSelection),
+      builder: (BuildContext context) => TagPickerDialog(
+        initialSelection: initialSelection,
+        title: title,
+        confirmLabel: confirmLabel,
+      ),
     );
   }
 
@@ -104,7 +125,7 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
         AppSpacing.md,
         0,
       ),
-      title: Text(l.tagPickerTitle),
+      title: Text(widget.title ?? l.tagPickerTitle),
       content: SizedBox(
         width: 360,
         child: SingleChildScrollView(
@@ -194,7 +215,7 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_selected),
-          child: Text(l.apply),
+          child: Text(widget.confirmLabel ?? l.apply),
         ),
       ],
     );

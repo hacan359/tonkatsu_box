@@ -8,6 +8,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../../features/collections/providers/collections_provider.dart';
+import '../constants/collection_list_sort_mode_ui.dart';
 
 sealed class CollectionChoice {
   const CollectionChoice();
@@ -133,16 +134,8 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
   List<Collection> get _sortedCollections {
     final List<Collection> filtered = List<Collection>.of(_filteredCollections);
 
-    filtered.sort((Collection a, Collection b) {
-      final int result;
-      switch (_sortMode) {
-        case CollectionListSortMode.alphabetical:
-          result = a.name.toLowerCase().compareTo(b.name.toLowerCase());
-        case CollectionListSortMode.createdDate:
-          result = a.createdAt.compareTo(b.createdAt);
-      }
-      return _descending ? -result : result;
-    });
+    filtered.sort((Collection a, Collection b) =>
+        _sortMode.compare(a, b, descending: _descending));
 
     // Already-added collections sink to the bottom of the list.
     final List<Collection> available = filtered

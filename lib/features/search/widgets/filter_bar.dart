@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
@@ -44,8 +45,8 @@ class FilterBar extends ConsumerWidget {
     // — only a text query does, since that turns the feed into search results.
     final bool showCustomize = onDiscoverCustomize != null &&
         !browseState.hasSearchQuery &&
-        source.groupId == 'tmdb';
-    final Color accent = filterAccentForGroup(source.groupId);
+        source.dataSource == DataSource.tmdb;
+    final Color accent = filterAccentForType(source.outputMediaType);
 
     if (isCompactScreen(context)) {
       return _CompactBar(
@@ -357,7 +358,7 @@ class _SourceDropdownChevron extends StatelessWidget {
               s.label(l),
               style: AppTypography.body.copyWith(
                 color: isSelected
-                    ? filterAccentForGroup(s.groupId)
+                    ? filterAccentForType(s.outputMediaType)
                     : AppColors.textPrimary,
                 fontWeight:
                     isSelected ? FontWeight.w600 : FontWeight.normal,

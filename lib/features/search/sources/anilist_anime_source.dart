@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/anilist_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/anime.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/anilist_anime_format_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
 import '../filters/anilist_genre_filter.dart';
@@ -25,10 +25,7 @@ class AniListAnimeSource extends SearchSource {
   MediaType get outputMediaType => MediaType.anime;
 
   @override
-  String get groupId => 'anilist';
-
-  @override
-  String get groupName => 'AniList';
+  DataSource get dataSource => DataSource.anilist;
 
   @override
   IconData get groupIcon => Icons.auto_stories_outlined;
@@ -38,9 +35,6 @@ class AniListAnimeSource extends SearchSource {
 
   @override
   IconData get icon => Icons.play_circle_outline;
-
-  @override
-  String? get iconAsset => AppAssets.iconAnilistColor;
 
   @override
   bool get supportsBrowse => true;

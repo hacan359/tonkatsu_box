@@ -148,6 +148,33 @@
       "count": {"type": "int"}
     }
   },
+  "bulkAddTags": "Add tags",
+  "bulkRemoveTags": "Remove tags",
+  "bulkAddTagsTitle": "Add tags to {count, plural, =1{1 item} other{{count} items}}",
+  "@bulkAddTagsTitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkRemoveTagsTitle": "Remove tags from {count, plural, =1{1 item} other{{count} items}}",
+  "@bulkRemoveTagsTitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsAdded": "Tags added: {count}",
+  "@bulkTagsAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsRemoved": "Tags removed: {count}",
+  "@bulkTagsRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsUnchanged": "Nothing to change",
   "bulkExportPngTitle": "Export as PNG",
   "columnsCount": "Columns",
   "bulkExportPngItemsCount": "{count, plural, =1{1 item} other{{count} items}}",
@@ -598,11 +625,14 @@
   "creditsTitle": "Credits",
   "creditsDataProviders": "Data Providers",
   "creditsTmdbAttribution": "This product uses the TMDB API but is not endorsed or certified by TMDB.",
+  "creditsTvMazeAttribution": "TV series data provided by TVmaze.",
   "creditsIgdbAttribution": "Game data provided by IGDB.",
   "creditsSteamGridDbAttribution": "Artwork provided by SteamGridDB.",
   "creditsVndbAttribution": "Visual novel data provided by VNDB.",
   "creditsAniListAttribution": "Manga data provided by AniList.",
   "creditsMangaBakaAttribution": "Manga data provided by MangaBaka.",
+  "creditsMangaDexAttribution": "Manga data provided by MangaDex.",
+  "creditsKitsuAttribution": "Manga data provided by Kitsu.",
   "creditsOpenLibraryAttribution": "Book data from Open Library (CC0 / ODbL).",
   "creditsFantlabAttribution": "Book data from Fantlab.",
   "creditsComicVineAttribution": "Comic data from ComicVine (non-commercial use).",
@@ -766,6 +796,8 @@
   "customUnitSeasons": "Seasons",
   "description": "Description",
   "customItemDescriptionHint": "Brief description or notes",
+  "customItemMyNoteHint": "Your note about this item",
+  "customItemTagsHint": "Comma-separated, e.g. Backlog, Favorites",
   "customItemOptionalFields": "More fields",
   "customItemEdit": "Edit Custom Item",
   "customItemFillFromFile": "Fill from file",
@@ -976,6 +1008,7 @@
   "noSeasonData": "No season data available",
   "refreshFromTmdb": "Refresh from TMDB",
   "markAllWatched": "Mark all watched",
+  "markNextWatched": "Mark next episode",
   "unmarkAll": "Unmark all",
   "noEpisodesFound": "No episodes found",
   "episodeWatchedDate": "watched {date}",
@@ -1304,9 +1337,12 @@
   "welcomeSourcesHardcoverTokenHint": "Required — search and import stay disabled without it. Tokens expire every January 1st.",
 
   "welcomeSourceDescTmdb": "Movies, TV shows and animation.",
+  "welcomeSourceDescTvMaze": "TV series.",
   "welcomeSourceDescIgdb": "Video games across every platform.",
   "welcomeSourceDescAniList": "Anime and manga with rich metadata.",
   "welcomeSourceDescMangaBaka": "Manga, manhwa, manhua and light novels.",
+  "welcomeSourceDescMangaDex": "A large manga catalog with localized titles and chapter counts.",
+  "welcomeSourceDescKitsu": "An independent manga catalog with ratings and covers.",
   "welcomeSourceDescVndb": "The visual novel database.",
   "welcomeSourceDescOpenLibrary": "An open catalog of millions of books.",
   "welcomeSourceDescFantlab": "A detailed book catalog with ratings, awards and series.",
@@ -1618,6 +1654,7 @@
   "mangaFormatNovel": "Novel",
   "mangaFormatLightNovel": "Light Novel",
   "browseFilterContentRating": "Content rating",
+  "browseFilterDemographic": "Demographic",
   "contentRatingSafe": "Safe",
   "contentRatingSuggestive": "Suggestive",
   "contentRatingErotica": "Erotica",
@@ -2279,6 +2316,8 @@
   "moodGridClearItem": "Clear item",
   "moodGridCaptionTemplate": "Row captions",
   "moodGridCaptionTemplateHint": "Template applied per cell. Available tokens: name, year, genre, rating.",
+  "moodGridCellLabelTemplate": "Cell labels",
+  "moodGridCellSize": "Size",
   "collection": "Collection",
   "moodGridPickerAllCollections": "All collections",
   "moodGridPickerSearchHint": "Search by name",

@@ -266,6 +266,7 @@ class CollectionDao {
     required MediaType mediaType,
     required int externalId,
     int? platformId,
+    DataSource? source,
   }) async {
     final Database db = await _getDatabase();
     final StringBuffer where = StringBuffer();
@@ -288,6 +289,13 @@ class CollectionDao {
       whereArgs.add(platformId);
     }
 
+    if (source != null) {
+      where.write(' AND COALESCE(source, ?) = ?');
+      whereArgs
+        ..add(mediaType.defaultSource.name)
+        ..add(source.name);
+    }
+
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
       where: where.toString(),
@@ -306,12 +314,14 @@ class CollectionDao {
     required MediaType mediaType,
     required int externalId,
     int? platformId,
+    DataSource? source,
   }) async {
     final CollectionItem? item = await findCollectionItem(
       collectionId: collectionId,
       mediaType: mediaType,
       externalId: externalId,
       platformId: platformId,
+      source: source,
     );
     if (item == null) return null;
     return (await _loadJoinedData(<CollectionItem>[item])).first;
@@ -320,12 +330,22 @@ class CollectionDao {
   Future<List<CollectionItem>> findAllCollectionItems({
     required MediaType mediaType,
     required int externalId,
+    DataSource? source,
   }) async {
     final Database db = await _getDatabase();
+    final StringBuffer where =
+        StringBuffer('media_type = ? AND external_id = ?');
+    final List<Object?> whereArgs = <Object?>[mediaType.value, externalId];
+    if (source != null) {
+      where.write(' AND COALESCE(source, ?) = ?');
+      whereArgs
+        ..add(mediaType.defaultSource.name)
+        ..add(source.name);
+    }
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
-      where: 'media_type = ? AND external_id = ?',
-      whereArgs: <Object?>[mediaType.value, externalId],
+      where: where.toString(),
+      whereArgs: whereArgs,
     );
     return rows.map(CollectionItem.fromDb).toList();
   }
@@ -344,8 +364,9 @@ class CollectionDao {
         StringBuffer('media_type = ? AND external_id = ?');
     final List<Object?> whereArgs = <Object?>[mediaType.value, externalId];
 
-    if (mediaType == MediaType.manga && source != null) {
-      where.write(" AND COALESCE(source, 'anilist') = ?");
+    if (mediaType.isMultiSource && source != null) {
+      where.write(' AND COALESCE(source, ?) = ?');
+      whereArgs.add(mediaType.defaultSource.name);
       whereArgs.add(source.name);
     }
     if (platformId != null) {
@@ -521,12 +542,113 @@ class CollectionDao {
     });
   }
 
+  /// Watch marks are keyed by (collection, source, show), not by item id,
+  /// so they deliberately survive the removal: re-adding the show to the
+  /// same collection restores its progress.
   Future<void> removeItemFromCollection(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
       'collection_items',
       where: 'id = ?',
       whereArgs: <Object?>[id],
+    );
+  }
+
+  /// The columns the watched-episodes helpers need, or null when the item
+  /// row is gone.
+  Future<Map<String, dynamic>?> _loadItemMeta(
+    DatabaseExecutor db,
+    int id,
+  ) async {
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      columns: <String>['collection_id', 'media_type', 'external_id', 'source'],
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  /// Whether another tv/animation item for the same show remains in the
+  /// collection — it shares the watch marks, so they must not be
+  /// moved/deleted.
+  Future<bool> _hasTvSibling(
+    DatabaseExecutor db,
+    int collectionId,
+    int externalId,
+    String source,
+  ) async {
+    final List<Map<String, dynamic>> siblings = await db.query(
+      'collection_items',
+      columns: <String>['id'],
+      where: 'collection_id = ? AND external_id = ? '
+          "AND media_type IN ('tv_show', 'animation') "
+          "AND COALESCE(source, 'tmdb') = ?",
+      whereArgs: <Object?>[
+        collectionId,
+        externalId,
+        source,
+      ],
+      limit: 1,
+    );
+    return siblings.isNotEmpty;
+  }
+
+  Future<void> _deleteWatchedEpisodesUnlessShared(
+    DatabaseExecutor db,
+    int collectionId,
+    int externalId,
+    String source,
+  ) async {
+    if (await _hasTvSibling(db, collectionId, externalId, source)) return;
+    await db.delete(
+      'watched_episodes',
+      where: 'collection_id = ? AND source = ? AND show_id = ?',
+      whereArgs: <Object?>[
+        collectionId,
+        source,
+        externalId,
+      ],
+    );
+  }
+
+  /// Sibling items keep the source rows (copy instead of move); moves
+  /// to/from uncategorized leave the marks behind, like removal does.
+  Future<void> _transferWatchedEpisodes(
+    DatabaseExecutor db,
+    Map<String, dynamic> movedItem,
+    int? targetCollectionId,
+  ) async {
+    if (!MediaType.fromString(movedItem['media_type'] as String).isTvBacked) {
+      return;
+    }
+    final int? oldCollectionId = movedItem['collection_id'] as int?;
+    if (oldCollectionId == targetCollectionId) return;
+    if (oldCollectionId == null || targetCollectionId == null) return;
+    final int externalId = movedItem['external_id'] as int;
+    final String source = (movedItem['source'] as String?) ?? 'tmdb';
+
+    await db.rawInsert(
+      'INSERT OR REPLACE INTO watched_episodes '
+      '(collection_id, source, show_id, season_number, episode_number, '
+      'watched_at) '
+      'SELECT ?, source, show_id, season_number, episode_number, watched_at '
+      'FROM watched_episodes '
+      'WHERE collection_id = ? AND source = ? AND show_id = ?',
+      <Object?>[
+        targetCollectionId,
+        oldCollectionId,
+        source,
+        externalId,
+      ],
+    );
+
+    await _deleteWatchedEpisodesUnlessShared(
+      db,
+      oldCollectionId,
+      externalId,
+      source,
     );
   }
 
@@ -722,27 +844,34 @@ class CollectionDao {
   }
 
   /// Moves item to another collection (null = uncategorized) and appends to its
-  /// sort order. Returns false on UNIQUE conflict (already present in target).
+  /// sort order. Watch progress of tv-backed items moves along with the item.
+  /// Returns false on UNIQUE conflict (already present in target).
   Future<bool> updateItemCollectionId(int id, int? collectionId) async {
     final Database db = await _getDatabase();
     final int newSortOrder = await getNextSortOrder(collectionId);
-    try {
-      await db.update(
-        'collection_items',
-        <String, dynamic>{
-          'collection_id': collectionId,
-          'sort_order': newSortOrder,
-        },
-        where: 'id = ?',
-        whereArgs: <Object?>[id],
-      );
-      return true;
-    } on DatabaseException catch (e) {
-      if (e.isUniqueConstraintError()) {
-        return false;
+    return db.transaction((Transaction txn) async {
+      final Map<String, dynamic>? item = await _loadItemMeta(txn, id);
+      try {
+        await txn.update(
+          'collection_items',
+          <String, dynamic>{
+            'collection_id': collectionId,
+            'sort_order': newSortOrder,
+          },
+          where: 'id = ?',
+          whereArgs: <Object?>[id],
+        );
+      } on DatabaseException catch (e) {
+        if (e.isUniqueConstraintError()) {
+          return false;
+        }
+        rethrow;
       }
-      rethrow;
-    }
+      if (item != null) {
+        await _transferWatchedEpisodes(txn, item, collectionId);
+      }
+      return true;
+    });
   }
 
   /// Full-row copy resilient to new columns: overrides only id, collection_id,
@@ -871,46 +1000,36 @@ class CollectionDao {
     };
 
     for (final Map<String, dynamic> row in result) {
-      final String status = row['status'] as String;
-      final String type = row['media_type'] as String;
       final int count = row['count'] as int;
       stats['total'] = (stats['total'] ?? 0) + count;
 
-      switch (type) {
-        case 'game':
-          stats['gameCount'] = (stats['gameCount'] ?? 0) + count;
-        case 'movie':
-          stats['movieCount'] = (stats['movieCount'] ?? 0) + count;
-        case 'tv_show':
-          stats['tvShowCount'] = (stats['tvShowCount'] ?? 0) + count;
-        case 'animation':
-          stats['animationCount'] = (stats['animationCount'] ?? 0) + count;
-        case 'visual_novel':
-          stats['visualNovelCount'] =
-              (stats['visualNovelCount'] ?? 0) + count;
-        case 'manga':
-          stats['mangaCount'] = (stats['mangaCount'] ?? 0) + count;
-        case 'anime':
-          stats['animeCount'] = (stats['animeCount'] ?? 0) + count;
-        case 'book':
-          stats['bookCount'] = (stats['bookCount'] ?? 0) + count;
-        case 'custom':
-          stats['customCount'] = (stats['customCount'] ?? 0) + count;
-      }
+      final String? typeKey = switch (
+          MediaType.tryFromString(row['media_type'] as String)) {
+        MediaType.game => 'gameCount',
+        MediaType.movie => 'movieCount',
+        MediaType.tvShow => 'tvShowCount',
+        MediaType.animation => 'animationCount',
+        MediaType.visualNovel => 'visualNovelCount',
+        MediaType.manga => 'mangaCount',
+        MediaType.anime => 'animeCount',
+        MediaType.book => 'bookCount',
+        MediaType.custom => 'customCount',
+        null => null,
+      };
+      if (typeKey != null) stats[typeKey] = (stats[typeKey] ?? 0) + count;
 
-      switch (status) {
-        case 'completed':
-          stats['completed'] = (stats['completed'] ?? 0) + count;
-        case 'in_progress':
-          stats['inProgress'] = (stats['inProgress'] ?? 0) + count;
-        case 'not_started':
-          stats['notStarted'] = (stats['notStarted'] ?? 0) + count;
-        case 'dropped':
-          stats['dropped'] = (stats['dropped'] ?? 0) + count;
-        case 'planned':
-          stats['planned'] = (stats['planned'] ?? 0) + count;
-        case 'replaying':
-          stats['replaying'] = (stats['replaying'] ?? 0) + count;
+      final String? statusKey =
+          switch (ItemStatus.tryFromString(row['status'] as String)) {
+        ItemStatus.completed => 'completed',
+        ItemStatus.inProgress => 'inProgress',
+        ItemStatus.notStarted => 'notStarted',
+        ItemStatus.dropped => 'dropped',
+        ItemStatus.planned => 'planned',
+        ItemStatus.replaying => 'replaying',
+        null => null,
+      };
+      if (statusKey != null) {
+        stats[statusKey] = (stats[statusKey] ?? 0) + count;
       }
     }
 
@@ -939,7 +1058,8 @@ class CollectionDao {
   ) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.rawQuery('''
-      SELECT ci.id, ci.external_id, ci.collection_id, ci.platform_id, c.name
+      SELECT ci.id, ci.external_id, ci.source, ci.collection_id,
+             ci.platform_id, c.name
       FROM collection_items ci
       LEFT JOIN collections c ON c.id = ci.collection_id
       WHERE ci.media_type = ?
@@ -955,6 +1075,8 @@ class CollectionDao {
         collectionId: row['collection_id'] as int?,
         collectionName: row['name'] as String?,
         platformId: row['platform_id'] as int?,
+        source: DataSource.fromNameOr(
+            row['source'] as String?, mediaType.defaultSource),
       );
       result.putIfAbsent(externalId, () => <CollectedItemInfo>[]).add(info);
     }
@@ -1011,9 +1133,11 @@ class CollectionDao {
           ON ci.media_type = 'movie' AND ci.external_id = m.tmdb_id
         LEFT JOIN tv_shows_cache t
           ON ci.media_type = 'tv_show' AND ci.external_id = t.tmdb_id
+          AND t.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN tv_shows_cache t2
           ON ci.media_type = 'animation' AND ci.platform_id = 1
           AND ci.external_id = t2.tmdb_id
+          AND t2.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN movies_cache m2
           ON ci.media_type = 'animation' AND ci.platform_id != 1
           AND ci.external_id = m2.tmdb_id
@@ -1024,6 +1148,7 @@ class CollectionDao {
           AND mc.source = COALESCE(ci.source, 'anilist')
         LEFT JOIN anime_cache ac
           ON ci.media_type = 'anime' AND ci.external_id = ac.id
+          AND ac.source = COALESCE(ci.source, 'anilist')
         LEFT JOIN books_cache bc
           ON ci.media_type = 'book'
           AND ci.external_id = CAST(bc.id AS INTEGER)
@@ -1170,8 +1295,10 @@ class CollectionDao {
     final Map<int, Movie> moviesMap = <int, Movie>{
       for (final Movie m in resolvedMovies) m.tmdbId: m,
     };
-    final Map<int, TvShow> tvShowsMap = <int, TvShow>{
-      for (final TvShow t in resolvedTvShows) t.tmdbId: t,
+    // TV shows are keyed by `(source, id)` — ids from different providers
+    // can collide numerically.
+    final Map<String, TvShow> tvShowsMap = <String, TvShow>{
+      for (final TvShow t in resolvedTvShows) '${t.source.name}:${t.tmdbId}': t,
     };
     final Map<int, VisualNovel> vnMap = <int, VisualNovel>{
       for (final VisualNovel vn in visualNovels) vn.numericId: vn,
@@ -1187,8 +1314,9 @@ class CollectionDao {
     final Map<String, Book> bookMap = <String, Book>{
       for (final Book b in books) '${b.source.name}:${b.id}': b,
     };
-    final Map<int, Anime> animeMap = <int, Anime>{
-      for (final Anime a in animes) a.id: a,
+    // Keyed by `(source, id)` — ids from different providers can collide.
+    final Map<String, Anime> animeMap = <String, Anime>{
+      for (final Anime a in animes) '${a.source.name}:${a.id}': a,
     };
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
       for (final CustomMedia c in customMediaList) c.id: c,
@@ -1206,16 +1334,25 @@ class CollectionDao {
         case MediaType.movie:
           return item.copyWith(movie: moviesMap[item.externalId]);
         case MediaType.tvShow:
-          return item.copyWith(tvShow: tvShowsMap[item.externalId]);
+          return item.copyWith(
+            tvShow: tvShowsMap[
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+          );
         case MediaType.animation:
           if (item.platformId == AnimationSource.tvShow) {
-            return item.copyWith(tvShow: tvShowsMap[item.externalId]);
+            return item.copyWith(
+              tvShow: tvShowsMap[
+                  '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+            );
           }
           return item.copyWith(movie: moviesMap[item.externalId]);
         case MediaType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.externalId]);
         case MediaType.anime:
-          return item.copyWith(anime: animeMap[item.externalId]);
+          return item.copyWith(
+            anime: animeMap[
+                '${(item.source ?? DataSource.anilist).name}:${item.externalId}'],
+          );
         case MediaType.manga:
           return item.copyWith(
             manga: mangaMap[
@@ -1283,5 +1420,83 @@ class CollectionDao {
     return rows
         .map((Map<String, dynamic> row) => row['collection_id'] as int?)
         .toSet();
+  }
+
+  /// Finds items matching (external_id, media_type) across all collections.
+  /// With [filterByPlatform], a null [platformId] matches only rows where
+  /// platform_id IS NULL.
+  Future<List<({int id, int? collectionId, int? platformId})>>
+      getItemIdsByExternalId(
+    int externalId,
+    String mediaType, {
+    int? platformId,
+    bool filterByPlatform = false,
+  }) async {
+    final Database db = await _getDatabase();
+    final List<String> conditions = <String>[
+      'external_id = ?',
+      'media_type = ?',
+    ];
+    final List<Object?> args = <Object?>[externalId, mediaType];
+    if (filterByPlatform) {
+      if (platformId == null) {
+        conditions.add('platform_id IS NULL');
+      } else {
+        conditions.add('platform_id = ?');
+        args.add(platformId);
+      }
+    }
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      columns: <String>['id', 'collection_id', 'platform_id'],
+      where: conditions.join(' AND '),
+      whereArgs: args,
+    );
+    return rows
+        .map((Map<String, dynamic> r) => (
+              id: r['id'] as int,
+              collectionId: r['collection_id'] as int?,
+              platformId: r['platform_id'] as int?,
+            ))
+        .toList();
+  }
+
+  /// Truncates every user table in a single transaction. FK-dependent tables
+  /// are deleted before their parents. Static reference tables (platforms,
+  /// tmdb_genres, igdb_genres, vndb_tags) are preserved — they're seeded by
+  /// MigrationV24 and are not user data. SharedPreferences is untouched.
+  Future<void> clearAllData() async {
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      await txn.delete('mood_grid_cells');
+      await txn.delete('mood_grids');
+      await txn.delete('tier_list_entries');
+      await txn.delete('tier_definitions');
+      await txn.delete('tier_lists');
+      await txn.delete('collection_tags');
+      await txn.delete('item_tags');
+      await txn.delete('tags');
+      await txn.delete('tracker_achievements');
+      await txn.delete('tracker_game_data');
+      await txn.delete('tracker_profiles');
+      await txn.delete('watched_episodes');
+      await txn.delete('canvas_connections');
+      await txn.delete('canvas_items');
+      await txn.delete('canvas_viewport');
+      await txn.delete('game_canvas_viewport');
+      await txn.delete('custom_items');
+      await txn.delete('collection_items');
+      await txn.delete('collections');
+      await txn.delete('tv_episodes_cache');
+      await txn.delete('tv_seasons_cache');
+      await txn.delete('tv_shows_cache');
+      await txn.delete('movies_cache');
+      await txn.delete('games');
+      await txn.delete('visual_novels_cache');
+      await txn.delete('manga_cache');
+      await txn.delete('anime_cache');
+      await txn.delete('books_cache');
+      await txn.delete('wishlist');
+    });
   }
 }

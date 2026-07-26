@@ -17,9 +17,9 @@ import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../helpers/collection_actions.dart';
+import '../helpers/tracker_card_progress.dart';
 import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
-import '../providers/episode_tracker_provider.dart';
 import '../providers/item_tags_provider.dart';
 import '../extensions/item_display_name.dart';
 import 'collection_table/collection_table_view.dart';
@@ -27,6 +27,7 @@ import 'context_menu_item.dart';
 import 'tag_picker_dialog.dart';
 import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
+import '../../../shared/constants/platform_ui.dart';
 
 /// Grid or table view for collection items, picked from [isTableMode];
 /// otherwise the grid is shown. In table mode a manual sort enables
@@ -373,7 +374,7 @@ class CollectionItemsView extends ConsumerWidget {
     final bool selectionActive = selection.isNotEmpty;
     final bool isSelected = selection.contains(item.id);
     final ItemCardProgress? progress =
-        itemCardProgress(item) ?? _trackerProgress(ref, item);
+        itemCardProgress(item) ?? trackerCardProgress(ref, item);
 
     final Widget card = MediaPosterCard(
       key: ValueKey<int>(item.id),
@@ -436,27 +437,6 @@ class CollectionItemsView extends ConsumerWidget {
           .read(collectionSelectionProvider(collectionId).notifier)
           .toggle(item.id),
       child: card,
-    );
-  }
-
-  /// Card progress for TMDB shows, whose marks live in the episode tracker
-  /// rather than on the item (itemCardProgress returns null for them).
-  ItemCardProgress? _trackerProgress(WidgetRef ref, CollectionItem item) {
-    if (collectionId == null) return null;
-    if (item.mediaType != MediaType.tvShow &&
-        item.mediaType != MediaType.animation) {
-      return null;
-    }
-    final int watched = ref
-        .watch(episodeTrackerNotifierProvider(
-            (collectionId: collectionId, showId: item.externalId)))
-        .totalWatchedCount;
-    if (watched == 0) return null;
-    final int total = item.tvShow?.totalEpisodes ?? 0;
-    return ItemCardProgress(
-      label: total > 0 ? '$watched/$total' : '$watched',
-      fraction:
-          total > 0 ? (watched / total).clamp(0.0, 1.0) : null,
     );
   }
 

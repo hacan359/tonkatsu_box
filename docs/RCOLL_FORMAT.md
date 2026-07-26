@@ -45,6 +45,17 @@ Tonkatsu Box supports two file formats for sharing collections.
     {
       "media_type": "visual_novel",
       "external_id": 17
+    },
+    {
+      "media_type": "tv_show",
+      "external_id": 42987,
+      "source": "tvmaze"
+    },
+    {
+      "media_type": "book",
+      "external_id": 8193465,
+      "source": "openLibrary",
+      "native_id": "OL8193465W"
     }
   ]
 }
@@ -114,7 +125,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
       { "tmdb_id": 550, "title": "Movie Title", "overview": "...", "poster_url": "/poster.jpg", "genres": "[\"Action\",\"Drama\"]", "runtime": 139, ... }
     ],
     "tv_shows": [
-      { "tmdb_id": 1399, "title": "TV Show", "total_seasons": 8, "total_episodes": 73, "genres": "[\"Drama\"]", ... }
+      { "tmdb_id": 1399, "source": "tmdb", "title": "TV Show", "total_seasons": 8, "total_episodes": 73, "genres": "[\"Drama\"]", ... }
     ],
     "visual_novels": [
       { "id": "v17", "numeric_id": 17, "title": "Ever17", "alt_title": "Ever17 -the out of infinity-", "rating": 85.5, "vote_count": 1200, "released": "2002-08-29", "tags": "[\"Sci-fi\",\"Mystery\"]", ... }
@@ -123,10 +134,10 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
       { "id": 30002, "source": "anilist", "title": "Berserk", "title_english": "Berserk", "title_native": "ベルセルク", "cover_url": "https://...", "genres": "[\"Action\",\"Drama\"]", "average_score": 93, "format": "MANGA", "country_of_origin": "JP", ... }
     ],
     "tv_seasons": [
-      { "tmdb_show_id": 1399, "season_number": 1, "name": "Season 1", "episode_count": 10, "poster_url": "https://image.tmdb.org/t/p/w500/...", "air_date": "2011-04-17" }
+      { "tmdb_show_id": 1399, "source": "tmdb", "season_number": 1, "name": "Season 1", "episode_count": 10, "poster_url": "https://image.tmdb.org/t/p/w500/...", "air_date": "2011-04-17" }
     ],
     "tv_episodes": [
-      { "tmdb_show_id": 1399, "season_number": 1, "episode_number": 1, "name": "Winter Is Coming", "overview": "...", "air_date": "2011-04-17", "still_url": "https://image.tmdb.org/t/p/w300/...", "runtime": 62 }
+      { "tmdb_show_id": 1399, "source": "tmdb", "season_number": 1, "episode_number": 1, "name": "Winter Is Coming", "overview": "...", "air_date": "2011-04-17", "still_url": "https://image.tmdb.org/t/p/w300/...", "runtime": 62 }
     ]
   }
 }
@@ -148,7 +159,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | items | array | yes | List of collection items |
 | canvas | object | no | Collection-level canvas (full only) |
 | images | object | no | Base64 cover images (full only) |
-| media | object | no | Embedded Game/Movie/TvShow/VisualNovel/Manga/TvSeason/TvEpisode data for offline import (full only) |
+| media | object | no | Embedded Game/Movie/TvShow/VisualNovel/Manga/Anime/Book/TvSeason/TvEpisode data for offline import (full only) |
 | tags | array | no | Global tag definitions used by the collection's items (full only). Each: `{ name, color?, text_color?, sort_order }` |
 | tracker_data | array | no | Tracker progress data for games (full + user_data only). Each entry is a `tracker_game_data` row: `{ tracker_type, game_id, tracker_game_id, achievements_earned, achievements_total, ... }` |
 
@@ -156,9 +167,10 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| media_type | string | yes | `"game"`, `"movie"`, `"tv_show"`, `"animation"`, `"visual_novel"`, or `"manga"` |
-| external_id | number | yes | IGDB ID (games), TMDB ID (movies/TV), VNDB numeric ID (visual novels), or provider ID (manga: AniList or MangaBaka) |
-| source | string | no | Manga provider: `"anilist"` or `"mangabaka"`. Manga identity is `(external_id, source)`. Absent/`null` for non-manga and pre-v44 files (treated as `"anilist"`) |
+| media_type | string | yes | `"game"`, `"movie"`, `"tv_show"`, `"animation"`, `"visual_novel"`, `"manga"`, `"anime"`, `"book"`, or `"custom"` |
+| external_id | number | yes | IGDB ID (games), TMDB ID (movies/TV), VNDB numeric ID (visual novels), or provider ID (manga / anime: AniList, MangaBaka, MangaDex, Kitsu) |
+| source | string | no | Provider discriminator for multi-source media (manga, anime, book, tv_show): identity is `(external_id, source)`. Absent/`null` for single-source media and legacy files; defaults per type: manga/anime `"anilist"`, books `"openLibrary"`, TV shows `"tmdb"` |
+| native_id | string | no | The provider's own id, when `external_id` can't reproduce it: books (`"OL8193465W"`, `"4050-86463"`) and MangaDex manga (its UUID), whose `external_id` is a hash. A light import needs it to refetch the item; files written before it exist leave those items unresolved |
 | platform_id | number | no | IGDB platform ID (games) or AnimationSource (animation: 0=movie, 1=tvShow) |
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1.0–10.0, one decimal). Integers from v2 files load as doubles |
@@ -166,6 +178,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | tag_names | array | no | Names of all assigned tags in the item's display order — manual per-item order when set, global tag order otherwise (full only, resolved into the global tag set on import) |
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
+| _watched_episodes | array | no | Watched-episode marks of a TV/animation item (full + `user_data` only). Each entry: `{season, episode, watched_at}` with `watched_at` in Unix seconds or `null`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 
 **User data fields** (present only when top-level `user_data` is `true`):
 
@@ -215,9 +228,10 @@ Key format: `{ImageType.folder}/{imageId}`
 **Cover images** — `imageId` is the external ID (IGDB/TMDB):
 - `game_covers/1234` — game cover for IGDB ID 1234
 - `movie_posters/550` — movie poster for TMDB ID 550
-- `tv_show_posters/1399` — TV show poster for TMDB ID 1399
+- `tv_show_posters/tmdb_1399` — TV show poster, namespaced by provider (`tmdb_` / `tvmaze_`). Pre-0.40 files use a bare `tv_show_posters/1399`; they are restored under that key and the poster is re-downloaded on first display, because animation posters share this folder and keep the bare id
 - `vn_covers/17` — visual novel cover for VNDB numeric ID 17
 - `manga_covers/anilist_123` — manga cover, namespaced by provider (`anilist_` / `mangabaka_`). Pre-v44 files use a bare `manga_covers/123` and are remapped to `anilist_` on import
+- `anime_covers/anilist_123` — anime cover, namespaced by provider (`anilist_` / `kitsu_`). Pre-v60 files use a bare `anime_covers/123` and are remapped to `anilist_` on import
 
 **Canvas images** — `imageId` is FNV-1a 32-bit hash of the image URL:
 - `canvas_images/a1b2c3d4` — image added to the canvas board
@@ -253,9 +267,9 @@ Contains tier list data for the exported collection. Only present when the colle
 | name | string | Tier list name |
 | collection_id | int? | Source collection ID (null for global) |
 | definitions | array | Tier definitions: `{ tier_key, label, color (0xAARRGGBB int), sort_order }` |
-| entries | array | Items placed in tiers: `{ collection_item_id, tier_key, sort_order, external_id, media_type, platform_id? }` |
+| entries | array | Items placed in tiers: `{ collection_item_id, tier_key, sort_order, external_id, media_type, platform_id?, source? }` |
 
-Entries include `external_id`, `media_type`, and optional `platform_id` fields for cross-collection resolution on import. The import process builds an `itemIdMapping` (`"media_type:external_id[:platform_id]" → newItemId`) and resolves entries via this map rather than raw collection_item_id values. For games, the key includes `platform_id` to distinguish the same game on different platforms; lookup falls back to a key without platform for backward compatibility with older exports. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Visual novel items are stored in `visual_novels` with VNDB string IDs (e.g. "v17"). Manga items are stored in `mangas` with AniList integer IDs. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
+Entries include `external_id`, `media_type`, and optional `platform_id` / `source` fields for cross-collection resolution on import. The import process builds an `itemIdMapping` (`"media_type:external_id[:platform_id][@source]" → newItemId`) and resolves entries via this map rather than raw collection_item_id values. For games, the key includes `platform_id` to distinguish the same game on different platforms; for multi-source media it includes `source`, without which two titles sharing a numeric id across providers (an AniList and a Kitsu anime) would collapse onto one item. Lookup falls back to the keys without platform and source for backward compatibility with older exports. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Visual novel items are stored in `visual_novels` with VNDB string IDs (e.g. "v17"). Manga items are stored in `mangas` with AniList integer IDs. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
 
 ### Tags Object
 
@@ -290,7 +304,9 @@ Contains RetroAchievements (or other tracker) progress data for games in the col
 
 On import, tracker data is upserted into `tracker_game_data` via `TrackerDao.upsertGameDataBatch()`. This preserves the RA achievements section in game detail cards without requiring a re-import from RetroAchievements.
 
-When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB/VNDB are needed. TV seasons and episodes are also restored if present. When `media` is absent (light export or older full exports), the app fetches data from APIs as before.
+When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB/VNDB are needed. TV seasons and episodes are also restored if present.
+
+When `media` is absent (light export or older full exports), the app refetches each item from the provider named by its `source`: TMDB or TVmaze for shows, AniList or Kitsu for anime, AniList / MangaBaka / MangaDex / Kitsu for manga, and the five book providers. A missing `source` falls back to the media type's default (`tmdb` for shows, `anilist` for manga and anime), which is what pre-0.40 files carry. Books and MangaDex manga also need `native_id`; without it the item is left unresolved rather than fetched from the wrong provider. One provider failing only drops its own items — the rest of the import continues.
 
 ---
 
@@ -309,6 +325,8 @@ When `media` is present during import, data is restored directly from the file v
 3. Creates collection and inserts items with metadata
 4. Restores collection-level canvas (viewport, items, connections)
 5. Restores per-item canvases (embedded in `_canvas` field of each item)
+   and watched-episode marks (embedded in `_watched_episodes`, when
+   `user_data` is present)
 6. Restores cover images and canvas images from base64 to local disk cache
 7. Restores tier lists — creates tier list, saves definitions, resolves entries via `itemIdMapping` (`media_type:external_id` → new item ID)
 8. Restores tracker data (RA progress) if present — upserts into `tracker_game_data`

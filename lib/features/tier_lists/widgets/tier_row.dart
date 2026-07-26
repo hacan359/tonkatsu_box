@@ -8,6 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import 'tier_item_card.dart';
+import '../../../shared/constants/tier_definition_ui.dart';
 
 const double _kCompactBreakpoint = 500;
 

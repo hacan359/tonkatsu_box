@@ -1,4 +1,3 @@
-import '../../l10n/app_localizations.dart';
 import 'collection_item.dart';
 import 'data_source.dart';
 import 'media_type.dart';
@@ -18,7 +17,8 @@ class CardLinkRef {
   final MediaType mediaType;
   final int externalId;
 
-  /// Manga identity component; `null` for other media types.
+  /// Provider identity component for multi-source types; `null` when the
+  /// media type has one provider or the token predates source tagging.
   final DataSource? source;
 
   /// Game platform / animation source component; `null` when not applicable.
@@ -51,8 +51,9 @@ String buildCardLinkToken(CollectionItem item) {
     ..write('mt=${item.mediaType.value}')
     ..write(';id=${item.externalId}');
 
-  if (item.mediaType == MediaType.manga && item.source != null) {
-    payload.write(';src=${item.source!.name}');
+  final DataSource? source = item.source;
+  if (item.mediaType.isMultiSource && source != null) {
+    payload.write(';src=${source.name}');
   }
   if (item.platformId != null) {
     payload.write(';pf=${item.platformId}');
@@ -74,21 +75,6 @@ String _buildDisplay(CollectionItem item) {
 /// Strips characters that would break the `[[…|…]]` grammar.
 String sanitizeCardLinkDisplay(String value) =>
     value.replaceAll(RegExp(r'[\]\[|]'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
-
-/// Qualifier shown after a card's media type: platform for games, movie/TV for
-/// animation; `null` otherwise.
-String? cardSubcategoryLabel(CollectionItem item, S l) {
-  switch (item.mediaType) {
-    case MediaType.game:
-      return item.platform == null ? null : item.platformName;
-    case MediaType.animation:
-      return item.platformId == AnimationSource.tvShow
-          ? l.mediaTypeTvShow
-          : l.mediaTypeMovie;
-    default:
-      return null;
-  }
-}
 
 /// Matches a whole `[[card:payload|display]]` token in note text.
 final RegExp cardLinkTokenPattern =

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../models/search_source.dart';
 
 const int _hardcoverMinQuery = 2;
@@ -23,10 +23,7 @@ class HardcoverSource extends SearchSource {
   MediaType get outputMediaType => MediaType.book;
 
   @override
-  String get groupId => 'hardcover';
-
-  @override
-  String get groupName => 'Hardcover';
+  DataSource get dataSource => DataSource.hardcover;
 
   @override
   IconData get groupIcon => Icons.book;
@@ -36,9 +33,6 @@ class HardcoverSource extends SearchSource {
 
   @override
   IconData get icon => Icons.book;
-
-  @override
-  String? get iconAsset => AppAssets.iconHardcoverColor;
 
   // Typesense rejects a query-less search, so a text query is always required.
   @override

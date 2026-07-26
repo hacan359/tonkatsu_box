@@ -1,8 +1,58 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_list_sort_mode.dart';
 
 void main() {
+  int nextId = 0;
+  Collection collection(String name, DateTime createdAt) => Collection(
+        id: ++nextId,
+        name: name,
+        author: 'User',
+        type: CollectionType.own,
+        createdAt: createdAt,
+      );
+
   group('CollectionListSortMode', () {
+    group('compare', () {
+      final Collection older = collection('Older', DateTime(2025, 1, 1));
+      final Collection newer = collection('Newer', DateTime(2026, 6, 1));
+
+      test('createdDate без descending ставит новые выше', () {
+        final List<Collection> sorted = <Collection>[older, newer]
+          ..sort((Collection a, Collection b) => CollectionListSortMode
+              .createdDate
+              .compare(a, b, descending: false));
+
+        expect(sorted.first, same(newer));
+      });
+
+      test('createdDate с descending ставит старые выше', () {
+        final List<Collection> sorted = <Collection>[newer, older]
+          ..sort((Collection a, Collection b) => CollectionListSortMode
+              .createdDate
+              .compare(a, b, descending: true));
+
+        expect(sorted.first, same(older));
+      });
+
+      test('alphabetical сортирует A→Z, с descending — Z→A', () {
+        final Collection apple = collection('Apple', DateTime(2026, 1, 1));
+        final Collection banana = collection('banana', DateTime(2026, 1, 2));
+
+        final List<Collection> asc = <Collection>[banana, apple]
+          ..sort((Collection a, Collection b) => CollectionListSortMode
+              .alphabetical
+              .compare(a, b, descending: false));
+        final List<Collection> desc = <Collection>[apple, banana]
+          ..sort((Collection a, Collection b) => CollectionListSortMode
+              .alphabetical
+              .compare(a, b, descending: true));
+
+        expect(asc.first, same(apple));
+        expect(desc.first, same(banana));
+      });
+    });
+
     group('значения enum', () {
       test('should contain 2 значения', () {
         expect(CollectionListSortMode.values.length, 2);

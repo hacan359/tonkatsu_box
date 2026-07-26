@@ -1,9 +1,7 @@
-// Asserts enum invariants: statuses have unique colors and icons.
-// Concrete color/icon values are not checked (design decisions).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
+import 'package:tonkatsu_box/shared/constants/item_status_ui.dart';
 
 void main() {
   group('ItemStatus', () {
@@ -50,6 +48,30 @@ void main() {
 
       test('fallback в notStarted для пустой строки', () {
         expect(ItemStatus.fromString(''), ItemStatus.notStarted);
+      });
+    });
+
+    group('tryFromString', () {
+      test('should return the matching status for every stored value', () {
+        for (final ItemStatus status in ItemStatus.values) {
+          expect(ItemStatus.tryFromString(status.value), status);
+        }
+      });
+
+      test('should return null when the value is unknown or empty', () {
+        expect(ItemStatus.tryFromString('on_hold'), isNull);
+        expect(ItemStatus.tryFromString('unknown_status'), isNull);
+        expect(ItemStatus.tryFromString(''), isNull);
+      });
+    });
+
+    group('displayLabel', () {
+      test('should be non-empty and unique for every status', () {
+        final Set<String> labels = ItemStatus.values
+            .map((ItemStatus s) => s.displayLabel)
+            .toSet();
+        expect(labels.length, ItemStatus.values.length);
+        expect(labels.every((String l) => l.isNotEmpty), isTrue);
       });
     });
 

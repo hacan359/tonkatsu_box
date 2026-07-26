@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'vndb_types.dart';
 
@@ -44,7 +45,7 @@ class VndbHttpClient {
       message,
       statusCode: statusCode,
       detail: buildApiErrorDetail(
-        apiName: 'VNDB',
+        apiName: DataSource.vndb.label,
         exception: e,
         userMessage: message,
       ),

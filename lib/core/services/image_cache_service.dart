@@ -7,37 +7,16 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../shared/models/image_type.dart';
 import '../../shared/models/profile.dart';
 import 'profile_service.dart';
 import 'storage_root.dart';
 
+export '../../shared/models/image_type.dart';
+
 class _CacheKeys {
   static const String customCachePath = 'image_cache_path';
   static const String cacheEnabled = 'image_cache_enabled';
-}
-
-enum ImageType {
-  gameCover('game_covers'),
-
-  moviePoster('movie_posters'),
-
-  tvShowPoster('tv_show_posters'),
-
-  canvasImage('canvas_images'),
-
-  mangaCover('manga_covers'),
-
-  vnCover('vn_covers'),
-
-  animeCover('anime_covers'),
-
-  bookCover('book_covers'),
-
-  customCover('custom_covers');
-
-  const ImageType(this.folder);
-
-  final String folder;
 }
 
 final Provider<ImageCacheService> imageCacheServiceProvider =

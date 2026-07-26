@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/tmdb_api.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -36,6 +38,26 @@ enum DiscoverSectionId {
 
   /// String key used for SharedPreferences persistence.
   final String key;
+
+  /// Icon shown for this section in the feed and customize sheet.
+  IconData get icon => switch (this) {
+        DiscoverSectionId.trending => Icons.local_fire_department,
+        DiscoverSectionId.topRatedMovies => Icons.star,
+        DiscoverSectionId.popularTvShows => Icons.tv,
+        DiscoverSectionId.upcoming => Icons.upcoming,
+        DiscoverSectionId.anime => Icons.animation,
+        DiscoverSectionId.topRatedTvShows => Icons.star_border,
+      };
+
+  /// Localised section title.
+  String localizedLabel(S l) => switch (this) {
+        DiscoverSectionId.trending => l.discoverTrending,
+        DiscoverSectionId.topRatedMovies => l.discoverTopRatedMovies,
+        DiscoverSectionId.popularTvShows => l.discoverPopularTvShows,
+        DiscoverSectionId.upcoming => l.discoverUpcoming,
+        DiscoverSectionId.anime => l.mediaTypeAnime,
+        DiscoverSectionId.topRatedTvShows => l.discoverTopRatedTvShows,
+      };
 
   /// Returns `null` for an unknown key.
   static DiscoverSectionId? fromKey(String key) {

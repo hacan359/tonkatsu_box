@@ -58,12 +58,32 @@ void main() {
       final Book owned = gbook(id: '1', title: 'Dune');
       await tester.pumpWidget(host(BookCarousel(
         books: <Book>[owned, gbook(id: '2', title: 'Hyperion')],
-        ownedIds: <int>{owned.externalIdInt},
+        ownedKeys: <(DataSource, int)>{(owned.source, owned.externalIdInt)},
         onTap: (_) {},
       )));
       await tester.pump();
 
       expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+
+    testWidgets('does not mark a book whose id is owned from another provider',
+        (WidgetTester tester) async {
+      final Book fantlab = createTestBook(
+        id: '3104',
+        source: DataSource.fantlab,
+        nativeId: '3104',
+        title: 'Trudno byt bogom',
+      );
+      await tester.pumpWidget(host(BookCarousel(
+        books: <Book>[fantlab],
+        ownedKeys: <(DataSource, int)>{
+          (DataSource.openLibrary, fantlab.externalIdInt),
+        },
+        onTap: (_) {},
+      )));
+      await tester.pump();
+
+      expect(find.byIcon(Icons.check), findsNothing);
     });
 
     testWidgets('appends a trailing spinner while loading more',

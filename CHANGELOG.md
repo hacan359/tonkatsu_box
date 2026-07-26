@@ -7,6 +7,898 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Favourites filter inside a collection**
+
+  The chevron bar in a collection gains a Favorite segment. It combines with
+  the type, subfilter, tag, status and search filters, and the type counts
+  follow it.
+
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.favoriteOnly): New filter field, applied alongside the
+    others so grid, table and counts share one definition.
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (CollectionFilterBar.filterFavoriteOnly,
+    CollectionFilterBar.onFavoriteToggled): New segment after the status
+    dropdown, tinted with the favourite accent.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._filterFavoriteOnly): Holds the toggle, like the
+    collection's other filters it resets when the screen is reopened.
+
+- **A light `.xcoll` restores items from every source, not just TMDB and AniList**
+
+  Importing a light file refetches each item from the provider it came from,
+  including TVmaze shows, Kitsu and MangaDex titles, and books.
+
+  Light exports also carry `native_id` for books and MangaDex manga. Files
+  exported by earlier versions don't have it: their books and MangaDex manga
+  arrive unresolved and can be fixed with a refresh of the item.
+
+  * lib/core/services/import_service.dart (ImportService._fetchMediaFromApi,
+    ImportService._fetchTvShow, ImportService._fetchMangaRefs,
+    ImportService._fetchOneManga, ImportService._fetchAnimeRefs,
+    ImportService._fetchOneAnime, ImportService._fetchBookRefs,
+    ImportService._fetchOneBook, _MediaRef): Group items by
+    `(media type, source)` and route each group to its own API; AniList still
+    resolves its ids in one batched query. A provider that fails or is not
+    wired only drops its own items.
+  * lib/shared/models/collection_item.dart (CollectionItem.exportNativeId,
+    CollectionItem.toExport): Carry `native_id` for books and MangaDex manga.
+  * lib/shared/models/manga.dart (Manga.mangaDexUuid): Recover the UUID from
+    the cached `externalUrl`; collection_actions.dart uses it too instead of
+    splitting the URL itself.
+  * docs/RCOLL_FORMAT.md: Document `native_id` and the per-source hydration.
+
+- **Tag several selected items at once**
+
+  The selection toolbar in a collection and on All Items gains add-tags and
+  remove-tags actions. Both open the same tag picker used for a single item,
+  with nothing pre-checked: a checked box means "apply to all of them", not
+  "this item has it". Adding is additive and removing only drops the tags you
+  picked, so per-item tags and their manual order survive either way.
+
+  On a narrow window the toolbar stacks: the counter keeps its own line and
+  the actions get theirs.
+
+  * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.addTagsToItems,
+    GlobalTagDao.removeTagsFromItems): New batched link writes over an item
+    list and a tag set — one `INSERT OR IGNORE` batch and one chunked
+    `DELETE`.
+  * lib/features/collections/providers/item_tags_provider.dart
+    (ItemTagsNotifier.addTagsToItems, ItemTagsNotifier.removeTagsFromItems,
+    ItemTagsNotifier._syncItems): Bulk map updates — one write plus one
+    read-back that keeps the in-memory tag order identical to the DAO's, then
+    a single state update. Return how many links changed.
+  * lib/features/collections/widgets/bulk_action_bar.dart (BulkActionBar,
+    BulkActionBar._handleTags, BulkActionBar._buildSelectionControls,
+    BulkActionBar._buildActionStrip): Add the two tag actions; split the bar
+    into a selection-controls row and an action strip laid out in one or two
+    rows by width; ellipsize the counter so it can't push Select all off the
+    edge.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    Accept an optional title and confirm label so a bulk caller can say what
+    the picked tags will do.
+  * lib/l10n/app_*.arb (bulkAddTags, bulkRemoveTags, bulkAddTagsTitle,
+    bulkRemoveTagsTitle, bulkTagsAdded, bulkTagsRemoved, bulkTagsUnchanged):
+    New keys.
+
+- **French (fr) interface localization**
+
+  The app interface is now available in French alongside English, Russian,
+  Simplified Chinese, Spanish and Brazilian Portuguese. The language and
+  welcome pickers offer Français, and selecting it defaults TMDB content
+  language to `fr-FR`. Contributed by @GreenStatik (#384).
+
+  * lib/l10n/app_fr.arb, lib/l10n/app_localizations_fr.dart (SFr): New —
+    full fr translation (all 1517 keys) and its generated delegate.
+  * lib/l10n/app_localizations.dart (S.supportedLocales,
+    _SDelegate.isSupported, lookupS): Register the `fr` locale.
+  * lib/features/settings/screens/settings_screen.dart (_kAppLanguageNames):
+    Add Français to the app-language picker.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (WelcomeStepLanguage): Add the option and reindex the WelcomeReveal
+    steps after it.
+  * lib/shared/constants/tmdb_content_languages.dart
+    (_kUiToContentLanguage): Map `fr` → `fr-FR`.
+  * README.md, docs/index.html (feat_lang_title, feat_lang_desc),
+    fastlane/metadata/android/en-US/full_description.txt: List French among
+    the interface languages.
+
+- **TVmaze as a TV series source**
+
+  A keyless alternative source for TV series, like TMDB. Search shows by
+  title, track their seasons and episodes, and follow upcoming episodes in
+  the release calendar. Title search only, and TV only — no films.
+
+  TV posters are now cached per source, like anime and manga covers. Posters
+  saved under the old key download again the first time their card is shown.
+  Animated series and films are untouched.
+
+  * lib/core/api/tvmaze_api.dart (TvMazeApi, tvMazeApiProvider),
+    lib/core/api/tvmaze/ (TvMazeHttpClient, TvMazeShowApi,
+    TvMazeApiException): New TVmaze REST client.
+  * lib/core/api/episode_source/tvmaze_episode_source.dart
+    (TvMazeEpisodeSource), tv_episode_source.dart
+    (tvEpisodeSourceResolverProvider): New season / episode source, routed
+    by DataSource.
+  * lib/shared/models/tv_show.dart (TvShow.fromTvMaze),
+    lib/shared/models/tv_season.dart (TvSeason.fromTvMaze),
+    lib/shared/models/tv_episode.dart (TvEpisode.tryFromTvMaze): New source
+    factories.
+  * lib/shared/models/data_source.dart (DataSource.tvmaze),
+    lib/shared/theme/app_assets.dart (AppAssets.iconTvMazeColor),
+    assets/images/icon_twm_color.png: New source and brand logo.
+  * lib/shared/utils/html_text.dart (stripHtmlText),
+    lib/shared/utils/tvmaze_json.dart (tvMazeImageUrl, tvMazeRating): New
+    shared mapping helpers.
+  * lib/features/search/sources/tvmaze_tv_source.dart (TvMazeTvSource),
+    search_sources.dart (searchSources): New title-search source, registered.
+  * lib/features/collections/helpers/collection_actions.dart
+    (_refreshItemWork): Route TV show refresh through the item's own episode
+    source instead of always TMDB.
+  * lib/shared/utils/cover_image_id.dart (coverImageId): Namespace
+    `MediaType.tvShow` covers by source; animation stays bare.
+  * lib/shared/models/canvas_item.dart (CanvasItem.mediaCacheId),
+    lib/features/search/handlers/tv_show_handler.dart,
+    lib/features/search/widgets/browse_grid.dart, item_details_sheet.dart,
+    discover_row.dart, lib/features/collections/widgets/
+    recommendations_section.dart, lib/features/recommendations/widgets/
+    recommendation_row.dart: Build the cache id through `coverImageId` instead
+    of the bare TMDB id.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
+    lib/features/welcome/widgets/welcome_step_sources.dart,
+    lib/features/settings/content/credits_content.dart: Catalog, onboarding
+    and credits entries.
+  * lib/l10n/app_*.arb (welcomeSourceDescTvMaze, creditsTvMazeAttribution):
+    New keys.
+  * README.md, docs/index.html,
+    fastlane/metadata/android/en-US/full_description.txt: List TVmaze among
+    the data sources.
+
+- **"Similar manga" recommendations on MangaBaka and MangaDex cards**
+
+  A horizontal row of similar titles on a manga's detail card, shown when the
+  item comes from MangaBaka or MangaDex. Tapping a card opens its details
+  sheet and can add it to a collection.
+
+  * lib/core/api/mangabaka/mangabaka_manga_api.dart
+    (MangaBakaMangaApi.getRecommendations), lib/core/api/mangabaka_api.dart
+    (MangaBakaApi.getRecommendations): New `/series/mix` call, reusing
+    Manga.fromMangaBaka to parse each result's embedded series.
+  * lib/core/api/mangadex/mangadex_manga_api.dart
+    (MangaDexMangaApi.getRecommendations), lib/core/api/mangadex_api.dart
+    (MangaDexApi.getRecommendations): New `/manga/{id}/recommendation` call;
+    the top matches are hydrated with covers in one batched `/manga?ids[]`
+    call and returned in score order.
+  * lib/features/collections/widgets/manga_similars_section.dart
+    (MangaSimilarsSection): New section widget; a per-seed cached
+    FutureProvider routes by `Manga.source` and handles the owned badge.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._addMangaFromSimilars): Mount the section for
+    MangaBaka and MangaDex manga and add a tapped result to a chosen
+    collection.
+
+- **MangaDex and Kitsu as manga search sources**
+
+  Two more keyless manga providers alongside AniList and MangaBaka. Both
+  search by title, map covers, ratings, year, status and chapter/volume
+  counts, and carry their own `DataSource`. MangaDex adds Genre, Tags,
+  status, demographic, content-rating and sort filters; Kitsu adds subtype,
+  status and sort, and shows its wide cover art as the card backdrop.
+
+  * lib/core/api/mangadex_api.dart (MangaDexApi), lib/core/api/mangadex/
+    (MangaDexHttpClient, MangaDexMangaApi, MangaDexTagsApi,
+    MangaDexApiException): New MangaDex REST client.
+  * lib/core/api/kitsu_api.dart (KitsuApi), lib/core/api/kitsu/
+    (KitsuHttpClient, KitsuMangaApi, KitsuAnimeApi, KitsuApiException): New
+    Kitsu JSON:API client; KitsuHttpClient.totalCount / KitsuHttpClient.hasNext
+    hold the shared pagination parsing.
+  * lib/shared/models/manga.dart (Manga.fromMangaDex, Manga.fromKitsu),
+    lib/shared/models/anime.dart (Anime.fromKitsu): New source factories.
+  * lib/shared/models/mangadex_tag.dart (MangaDexTag): New tag model.
+  * lib/shared/utils/stable_id.dart (fnv1a64): Lifted out of
+    lib/shared/models/book.dart so MangaDex can fold its UUID into the
+    numeric external-id contract; book.dart re-exports it.
+  * lib/shared/utils/kitsu_status.dart (kitsuStatusVocab): Shared Kitsu
+    status → vocabulary mapping used by both models.
+  * lib/shared/models/data_source.dart (DataSource.mangadex, DataSource.kitsu),
+    lib/shared/theme/app_assets.dart (AppAssets.iconMangaDexColor,
+    AppAssets.iconKitsuColor): New sources and brand logos.
+  * lib/features/search/sources/mangadex_source.dart (MangaDexSource),
+    kitsu_manga_source.dart (KitsuMangaSource),
+    search_sources.dart (searchSources): New sources, registered.
+  * lib/features/search/filters/mangadex_genre_filter.dart,
+    mangadex_tag_filter.dart, mangadex_status_filter.dart,
+    mangadex_demographic_filter.dart, mangadex_content_rating_filter.dart,
+    kitsu_manga_subtype_filter.dart, kitsu_manga_status_filter.dart: New
+    filters.
+  * lib/features/search/widgets/mangadex_tag_picker.dart
+    (showMangaDexTagPicker): New MangaBaka-style tag picker.
+  * lib/data/repositories/mangadex_tags_repository.dart
+    (MangaDexTagsRepository), lib/core/database/dao/mangadex_tag_dao.dart
+    (MangaDexTagDao): SQLite-cached tag catalog.
+  * packages/core/lib/database/migrations/migration_v59.dart (MigrationV59): New
+    `mangadex_tags` table; registered in migration_registry.dart and
+    database_service.dart (version 59, MangaDexTagDao wiring).
+  * lib/features/collections/helpers/collection_actions.dart
+    (_refreshItemWork): Route manga refresh to the new APIs by source
+    (MangaDex recovers its UUID from the cached externalUrl).
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog): Catalog
+    entries.
+  * lib/features/settings/content/credits_content.dart,
+    lib/features/welcome/widgets/welcome_step_sources.dart: Credits and
+    onboarding entries.
+  * lib/l10n/app_*.arb (welcomeSourceDescMangaDex, welcomeSourceDescKitsu,
+    creditsMangaDexAttribution, creditsKitsuAttribution,
+    browseFilterDemographic): New keys.
+  * README.md, docs/index.html,
+    fastlane/metadata/android/en-US/full_description.txt: List MangaDex and
+    Kitsu among the data sources.
+
+- **Custom card form: personal note and tags**
+
+  The create form gained "My Notes" and "Tags" fields (tags as
+  comma-separated input). Loading a JSON/CSV file prefills them from the
+  `comment` and `tags` columns. On Create the note is saved as the item's
+  personal comment and the tags go through the global tag system, creating
+  missing tags automatically. The edit form does not show the fields.
+
+  * lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.comment, CustomItemData.tags): New fields.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._buildCommentSection,
+    _CreateCustomItemDialogState._buildTagsSection,
+    _CreateCustomItemDialogState._applyEntry): Fields, prefill, submit.
+  * lib/shared/models/tag.dart (Tag.dedupeNames): New shared tag-name
+    parser, reused by lib/core/import/sources/custom_file/custom_cards_parser.dart
+    (CustomCardsParser._tags) and the form.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.addCustomItem,
+    CollectionItemsNotifier._applyItemTags): Write the comment and tags
+    onto the created item.
+  * lib/features/collections/screens/collection_screen.dart
+    (_handleCreateCustomItem): Pass the new fields through.
+  * lib/l10n/app_*.arb (customItemMyNoteHint, customItemTagsHint): New
+    hints.
+
+- **Text export: `{link}` token**
+
+  The template exporter can now output the item's external page URL —
+  IGDB for games, TMDB for movies and shows, AniList for anime and manga,
+  the user's own link for custom items. An empty link is stripped together
+  with its separator like the other tokens.
+
+  * lib/shared/models/collection_item.dart (CollectionItem.externalUrl):
+    New getter resolving the active media's URL.
+  * lib/core/services/text_export_service.dart
+    (TextExportService.availableTokens, TextExportService.formatItem):
+    Register and fill the token.
+
+- **Mood grid: separate tap zones, auto-filled cell labels, sticky picker,
+  cleaner export, cell size control**
+
+  Tapping the cover picks an item while tapping the label below edits the
+  text (right-click menu unchanged). A new per-grid "Cell labels" template
+  (same tokens as row captions) fills an empty label automatically when an
+  item is picked. The item picker remembers its collection filter and
+  search text while the grid stays open, reuses the loaded item list,
+  hides duplicates of the same title held in several collections, and
+  builds its grid in windows of 60 cards as the user scrolls.
+  Exported PNGs no longer draw the `+` placeholder for empty slots. A size
+  stepper (80–240) scales cells on screen and in the export; the value is
+  session-only and resets to the default on reopen. On desktop the grid
+  shows draggable scrollbars for both axes and pans with a mouse drag. On
+  narrow screens the stepper toolbar reflows into two rows of equal-width
+  controls.
+
+  * packages/core/lib/database/migrations/migration_v58.dart (MigrationV58): New —
+    `cell_label_template` column on `mood_grids`.
+  * lib/features/mood_grids/services/mood_grid_caption.dart
+    (kMoodGridCaptionTokens, renderRowCaption): New shared template renderer
+    used by row captions and the auto-filled cell labels.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all), lib/core/database/database_service.dart:
+    Register v58, bump version to 58.
+  * lib/shared/models/mood_grid.dart (MoodGrid.cellLabelTemplate): New
+    field in fromDb/toDb/fromExport/toExport/copyWith.
+  * lib/core/database/dao/mood_grid_dao.dart
+    (MoodGridDao.setCellLabelTemplate): New setter.
+  * lib/features/mood_grids/providers/mood_grid_detail_provider.dart
+    (MoodGridDetailNotifier.setCellItem,
+    MoodGridDetailNotifier._autoFillLabel,
+    MoodGridDetailNotifier.setCellLabelTemplate): Auto-fill only on item
+    pick and only into an empty label.
+  * lib/features/mood_grids/providers/mood_grid_picker_session_provider.dart
+    (MoodGridPickerSession, MoodGridPickerSessionNotifier): New — filter,
+    query and per-filter item cache pinned to the grid screen's lifetime;
+    the cache collapses duplicates by media identity.
+  * lib/features/mood_grids/widgets/mood_grid_cell_widget.dart
+    (MoodGridCellWidget.onLabelTap): Split tap targets; label renders up
+    to two lines without clipping glyphs.
+  * lib/features/mood_grids/widgets/mood_grid_item_picker.dart
+    (_MoodGridItemPickerState): Read/write the session instead of local
+    state; incremental 60-card grid windows; card tile leaves room for a
+    two-line title.
+  * lib/features/mood_grids/widgets/mood_grid_export_view.dart
+    (MoodGridExportView._buildCell, MoodGridExportView.cellWidth): Blank
+    empty slots; cell width as a parameter.
+  * lib/features/mood_grids/widgets/mood_grid_view.dart (_MoodGridViewState):
+    Interactive scrollbars on both axes, mouse-drag panning.
+  * lib/features/mood_grids/screens/mood_grid_detail_screen.dart
+    (_MoodGridDetailScreenState._buildResizeControls,
+    _MoodGridDetailScreenState._editCellLabelTemplate): Size stepper,
+    template dialog reused for both templates, dialog controllers
+    disposed.
+  * lib/l10n/app_*.arb (moodGridCellLabelTemplate, moodGridCellSize): New
+    keys.
+
+- **Brazilian Portuguese (pt) interface localization**
+
+  The app interface is now available in Brazilian Portuguese alongside
+  English, Russian, Simplified Chinese and Spanish. The language and
+  welcome pickers offer Português (Brasil), and selecting it defaults
+  TMDB content language to `pt-BR`. Contributed by @bonbj (#370).
+
+  * lib/l10n/app_pt.arb, lib/l10n/app_localizations_pt.dart (SPt): New —
+    full pt translation (all 1517 keys) and its generated delegate.
+  * lib/l10n/app_localizations.dart (S.supportedLocales,
+    _SDelegate.isSupported, lookupS): Register the `pt` locale.
+  * lib/features/settings/screens/settings_screen.dart: Add Português
+    (Brasil) to the app-language picker.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (_WelcomeStepLanguageState, _LanguageOption): Add the option; reindex
+    WelcomeReveal; ellipsize long labels.
+  * lib/shared/constants/tmdb_content_languages.dart: Map `pt` → `pt-BR`.
+
+- **Full export (.xcollx) with user data now carries watched-episode marks
+  and restores them on import**
+
+  Watch marks travel in a new per-item `_watched_episodes` section and are
+  re-applied to the target collection on import. Older files without the
+  section import as before; the format version stays 3.
+
+  * lib/core/services/export_service.dart
+    (ExportService._attachWatchedEpisodes): Nest the item's watch marks
+    under `_watched_episodes` (full export, user data only).
+  * lib/core/services/import_service.dart
+    (ImportService._importWatchedEpisodes): Restore the marks re-scoped
+    to the target collection; conflict-ignoring, so re-import merges.
+  * docs/RCOLL_FORMAT.md: Document the `_watched_episodes` item field.
+
+- **Kitsu as an anime search source**
+
+  Kitsu joins AniList as a keyless anime source, searchable by title with
+  subtype, status and sort filters. Anime identity is now `(id, source)`: an
+  AniList and a Kitsu title sharing a numeric id coexist in the cache,
+  collections, mood grids and canvas, and covers are namespaced by provider.
+
+  * packages/core/lib/database/migrations/migration_v60.dart (MigrationV60): Rebuild
+    `anime_cache` with a composite `(id, source)` primary key, rename the old
+    source-material column to `source_material`, and add source-aware
+    `collection_items` anime indexes; registered in migration_registry.dart
+    and database_service.dart (version 60).
+  * lib/shared/models/anime.dart (Anime.source, Anime.sourceMaterial,
+    Anime.fromKitsu, Anime.fromDb, Anime.toDb, Anime.copyWith): Add the
+    provider `source` field; the former source-material `source` becomes
+    `sourceMaterial`.
+  * lib/core/database/dao/anime_dao.dart (AnimeDao.getAnime): Take an optional
+    `source` for the composite key.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao._loadJoinedData,
+    CollectionDao.getCollectionCovers), lib/data/repositories/canvas_repository.dart,
+    lib/features/mood_grids/widgets/mood_grid_cell_media.dart: Key anime by
+    `(id, source)` when hydrating.
+  * lib/shared/models/collection_item.dart: Resolve an anime item's source
+    from its record instead of hard-coding AniList.
+  * lib/shared/utils/cover_image_id.dart (coverImageId),
+    lib/shared/models/canvas_item.dart (CanvasItem.mediaCacheId): Namespace
+    anime covers by source, like manga.
+  * lib/core/services/import_service.dart (ImportService._itemMappingKeys,
+    ImportService._registerItemMapping, ImportService._resolveMappedItem),
+    lib/data/repositories/collection_repository.dart
+    (CollectionRepository.findItem), lib/core/database/database_service.dart
+    (DatabaseService.findCollectionItem): Resolve an imported item by
+    `(id, source)`.
+  * lib/core/services/export_service.dart: Tier-list entries carry the item's
+    source; docs/RCOLL_FORMAT.md documents the field.
+  * lib/core/services/export_service.dart (ExportService._collectMediaData):
+    Key exported anime by `source:externalId`.
+  * lib/features/collections/helpers/collection_actions.dart: Route anime
+    refresh to Kitsu or AniList by the item's source.
+  * lib/core/services/import_service.dart: Remap legacy bare-id anime covers
+    to `anilist_` on restore, like manga.
+  * lib/features/search/sources/kitsu_anime_source.dart (KitsuAnimeSource),
+    search_sources.dart (searchSources): New source, registered.
+  * lib/features/search/filters/kitsu_anime_subtype_filter.dart
+    (KitsuAnimeSubtypeFilter), kitsu_anime_status_filter.dart
+    (KitsuAnimeStatusFilter): New filters.
+  * lib/features/search/handlers/media_handlers.dart: Stamp the anime item's
+    source and namespace its cover.
+  * lib/features/search/widgets/item_details_sheet.dart (ItemDetailsSheet.anime):
+    Use the anime's own source for the badge and cached cover.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog): Kitsu now
+    lists anime and manga.
+
+### Fixed
+
+- **Type counts in a collection follow the subfilters**
+
+  The media-type chevron counts in a collection now follow the active
+  subfilters — game platform, manga or anime format — like the All Items
+  screen does. Chevron visibility still uses the unfiltered totals.
+
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (_CollectionFilterBarState._typeCounts): Tally the items that survive
+    `CollectionFilters` with every active filter except the type one, instead
+    of re-implementing a status-only count. Chevron visibility keeps using the
+    unfiltered totals.
+
+- **The collection picker sorts by date the same way the Collections screen does**
+
+  "Newest first" on the Collections screen no longer lists the collections
+  oldest first in the picker (add to collection, move, filters). Both screens
+  now sort through one shared comparator; alphabetical order was never
+  affected.
+
+  * lib/shared/models/collection_list_sort_mode.dart
+    (CollectionListSortMode.compare): New shared comparator; the persisted
+    flag means Z→A for names and oldest-first for dates.
+  * lib/features/collections/screens/home_screen.dart
+    (_HomeScreenState._sortCollections),
+    lib/shared/widgets/collection_picker_dialog.dart
+    (_CollectionPickerContentState._sortedCollections): Both delegate to it.
+
+- **Search filter accent follows the source's media type**
+
+  The filter bar accent derives from the source's media type. Hardcover,
+  TVmaze, MangaDex and Kitsu show their media-type colour instead of the
+  generic brand orange.
+
+  * lib/features/search/utils/filter_ui.dart (filterAccentForType): Replaces
+    `filterAccentForGroup`; maps via `MediaTypeTheme.colorFor`.
+  * lib/features/search/widgets/filter_bar.dart, filter_sheet.dart: Colour by
+    `source.outputMediaType`.
+
+- **Text export: `{type}` shows the displayed type of a custom item**
+
+  A custom item masquerading as a game / anime / … exported as "Custom";
+  now `{type}` uses the display type the user picked. Plain customs still
+  say "Custom".
+
+  * lib/core/services/text_export_service.dart
+    (TextExportService.formatItem): Label from `displayMediaType`.
+
+- **Mood grid resize no longer drops the cells' data source**
+
+  Shrinking or growing a grid keeps each cell's `source`. MangaBaka manga and
+  non-TMDB shows keep resolving against their own provider.
+
+  * lib/core/database/dao/mood_grid_dao.dart (MoodGridDao.resizeMoodGrid):
+    Carry `source` when re-inserting cells.
+
+- **Backup restore keeps mood-grid templates**
+
+  Restoring a full backup re-applies the row-caption and cell-label
+  templates.
+
+  * lib/core/services/backup_service.dart
+    (BackupService._restoreMoodGrids): Apply `caption_template` and
+    `cell_label_template` after recreating the grid.
+
+- **Narrow mood-grid exports no longer overflow the footer**
+
+  The export canvas is floored at 320 px wide; a one-column grid at a small
+  cell size fits the footer credit line.
+
+  * lib/features/mood_grids/widgets/mood_grid_export_view.dart
+    (MoodGridExportView._minWidth): Floor the canvas width at 320.
+
+- **Sparse cache rows no longer wipe episode/chapter/page totals**
+
+  Cache upserts for TV shows, manga and books keep the cached value when the
+  incoming one is NULL: a row parsed from a list view (search, recommendations,
+  similars) no longer degrades a `38/38` badge to a bare `38`. Adding a TV show
+  from recommendations warms the cache like the search flow does, and the
+  episode tracker recovers missing totals from the seasons cache for
+  already-affected databases.
+
+  * lib/core/database/sparse_upsert.dart (buildPreservingUpsert): New
+    `INSERT OR REPLACE` builder that keeps the cached column when the
+    incoming value is NULL.
+  * lib/core/database/dao/tv_show_dao.dart, manga_dao.dart, book_dao.dart:
+    Upserts preserve totals via buildPreservingUpsert.
+  * lib/core/services/tv_show_cache_warmer.dart (TvShowCacheWarmer.warm,
+    tvShowCacheWarmerProvider): New best-effort warmer filling show details,
+    seasons and episodes after an add; called from
+    lib/features/search/handlers/tv_show_handler.dart and
+    lib/features/collections/screens/item_detail_screen.dart.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier): Recover missing totals from the seasons cache.
+
+- **Moving a TV show between collections takes its watch progress along**
+
+  Removing a show (or moving it to "uncategorized") keeps its watch marks,
+  and adding it back restores the progress.
+
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.updateItemCollectionId,
+    CollectionDao._transferWatchedEpisodes): Move watched_episodes rows
+    with the item; copy when a sibling animation/TV entry stays behind.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.moveItem),
+    lib/features/collections/helpers/bulk_operations.dart
+    (BulkOperations._invalidateAfterMutation): Refresh live episode
+    trackers after a move.
+
+- **Re-adding a just-removed show to the same collection works again**
+
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.removeItem): Invalidate the collected-ids cache on
+    removal.
+
+- **Episode progress badge shows "12/22" instead of a bare "12" and now
+  also appears on the All Items screen**
+
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerState.totalEpisodes): Expose the resolved episode
+    totals to the badge.
+  * lib/features/collections/helpers/tracker_card_progress.dart
+    (trackerCardProgress): New shared badge helper used by
+    lib/features/collections/widgets/collection_items_view.dart and
+    lib/features/home/screens/all_items_screen.dart.
+  * lib/features/search/handlers/tv_show_handler.dart
+    (TvShowHandler._preloadSeasons), lib/core/api/tmdb/tmdb_tv_api.dart
+    (TmdbTvApi.getTvShowWithSeasons): Cache full show details on add.
+
+- **Search results no longer badge a title as collected because another provider shares its id**
+
+  A Kitsu anime, MangaDex manga or Hardcover book whose numeric id matches an
+  item you own from a different provider no longer shows the "in collection"
+  check, and the add-to-collection dialog no longer pre-ticks that item's
+  collections. TV already worked this way.
+
+  * lib/shared/models/media_type.dart (MediaType.isMultiSource): New — the
+    types whose identity is `(externalId, source)`; reused by
+    lib/shared/utils/cover_image_id.dart (coverImageId),
+    lib/shared/models/card_link.dart and
+    lib/core/database/dao/collection_dao.dart.
+  * lib/features/search/widgets/browse_grid.dart (_CollectedIds,
+    _BrowseGridState._buildCard): Key manga, anime and book placements by
+    `(source, id)` like tv; pass the whole record to the card builder instead
+    of seven positional sets.
+  * lib/features/search/handlers/simple_media_handler.dart
+    (SimpleMediaHandler._collectedCollectionIds): Narrow the placements by the
+    item's source.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.getCollectedItemInfos): A NULL source resolves to
+    `MediaType.defaultSource` instead of always tmdb.
+  * lib/features/search/services/search_collection_adder.dart
+    (SearchCollectionAdder.addToCollections,
+    SearchCollectionAdder.pickCollection): Take the item's source and filter
+    the existing placements by it.
+  * docs/RCOLL_FORMAT.md: Document the per-source TV poster cache key.
+
+- **Anime covers in search results download on every visit**
+
+  The browse grid read the cover under the bare anime id while every other
+  screen wrote it namespaced by provider.
+
+  * lib/features/search/widgets/browse_grid.dart: Build the anime cache id
+    through `coverImageId`.
+
+- **A card link to a TVmaze show or Kitsu anime can open the wrong item**
+
+  `[[card:…]]` tokens now carry the provider for every multi-source media
+  type, not only manga. Tokens written by earlier versions have no provider
+  and resolve as before.
+
+  * lib/shared/models/card_link.dart (buildCardLinkToken, CardLinkRef.source):
+    Emit `src=` for manga, anime, tv shows and books.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.resolveCardLink):
+    Filter by source for those types, defaulting a NULL column to the media
+    type's default source.
+
+- **Anime source material survives importing a pre-0.40 backup**
+
+  Before v60 the anime cache stored the source material ("Manga", "Light
+  Novel") in the column that now holds the provider. Restoring an older
+  `.xcollx` kept the field blank.
+
+  * lib/shared/models/anime.dart (Anime.fromDb): Read an unrecognised `source`
+    value as the source material when `source_material` is absent.
+  * lib/shared/models/data_source.dart (DataSource.tryFromName): New —
+    null-returning parser behind `fromNameOr`.
+
+- **Fixed row overflows on narrow layouts**
+
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (EpisodeTrackerSection.build): The header title ellipsizes instead of
+    overflowing next to the watched counter.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard): The tag
+    badge shrinks on very narrow cards instead of overflowing.
+
+### Changed
+
+- **Schema, migrations and models moved to a pure-Dart core package**
+
+  No user-visible change. The database schema and migration chain moved
+  verbatim into `packages/core`, a pure-Dart package with no Flutter
+  dependency, and the model layer (`lib/shared/models/`) dropped its
+  Flutter / l10n imports — colors, icons and localized labels now live in
+  UI extension files under `lib/shared/constants/`.
+
+  * packages/core/: New package holding schema.dart and migrations
+    (MigrationRegistry, MigrationV1 … MigrationV60), moved unchanged from
+    lib/core/database/; packages/core/pubspec.yaml wired as a path dependency
+    from the app pubspec.yaml.
+  * packages/core/lib/database/migrations/migration_runner.dart
+    (MigrationRunner): New — runs the chain for a fresh database and the
+    pending tail for an upgrade; called from
+    lib/core/database/database_service.dart (_onCreate, _onUpgrade).
+  * packages/core/lib/database/schema.dart (DatabaseSchema): Drop the unused
+    createAnimeCacheTable helper — no migration calls it and its shape
+    predates the v60 rebuild.
+  * docs/ARCHITECTURE.md: Describe the core package.
+  * lib/shared/constants/*_ui.dart, lib/shared/utils/color_hex.dart
+    (ColorHex): New presentation extensions and hex color codec replacing
+    the in-model getters.
+
+- **Provider identity (name, group, brand icon) now comes from DataSource**
+
+  Provider names now come from `DataSource.label`, a new derived
+  `DataSource.key` replaces the per-source `groupId` literals, and search
+  sources declare a single `dataSource` from which their picker group and
+  brand icon derive. No visible change; error dialogs, import results and the
+  source picker keep their current wording.
+
+  * lib/shared/models/data_source.dart (DataSource.key): New lowercase
+    provider key derived from the enum member name.
+  * lib/features/search/models/search_source.dart (SearchSource.dataSource,
+    SearchSource.groupId, SearchSource.groupName, SearchSource.iconAsset):
+    New abstract provider getter; group id, group name and brand asset now
+    derive from it.
+  * lib/features/search/sources/anilist_anime_source.dart,
+    anilist_manga_source.dart, comicvine_source.dart, fantlab_source.dart,
+    google_books_source.dart, hardcover_source.dart, igdb_games_source.dart,
+    kitsu_anime_source.dart, kitsu_manga_source.dart, mangabaka_source.dart,
+    mangadex_source.dart, openlibrary_source.dart, tmdb_anime_source.dart,
+    tmdb_movies_source.dart, tmdb_tv_source.dart, tvmaze_tv_source.dart,
+    vndb_source.dart: Replace groupId/groupName/iconAsset overrides with
+    the dataSource declaration.
+  * lib/core/api/anilist/anilist_graphql_client.dart, comicvine_api.dart,
+    google_books_api.dart, fantlab/fantlab_http_client.dart,
+    hardcover/hardcover_graphql_client.dart, igdb/igdb_http_client.dart,
+    kitsu/kitsu_http_client.dart, mangabaka/mangabaka_http_client.dart,
+    mangadex/mangadex_http_client.dart,
+    openlibrary/openlibrary_http_client.dart, tmdb/tmdb_http_client.dart,
+    tvmaze/tvmaze_http_client.dart, vndb/vndb_http_client.dart: apiName in
+    error details from DataSource.label.
+  * lib/core/import/sources/anilist/anilist_import_service.dart
+    (AniListImportService.displayName),
+    lib/core/import/sources/hardcover/hardcover_import_service.dart
+    (HardcoverImportService.displayName),
+    lib/core/import/sources/igdb_list/igdb_list_import_service.dart
+    (IgdbListImportService.displayName): displayName and result sourceName
+    from DataSource.label.
+  * lib/features/settings/content/credentials_content.dart,
+    lib/features/settings/content/hardcover_import_content.dart: Source
+    names from DataSource.label.
+  * lib/shared/constants/source_catalog.dart (kSearchGroupToSources):
+    Deleted — the parallel group→sources map is derivable from
+    SearchSource.dataSource.
+  * lib/shared/models/data_source.dart (DataSource.brandName): New — full
+    attribution name, equal to `label` unless the badge abbreviates it.
+  * lib/features/settings/content/credits_content.dart (_Provider): Drop the
+    parallel table of provider names; the credits card renders
+    `DataSource.brandName`.
+
+- **Enum-owned UI metadata: nav tabs, discover sections, statuses, sort modes**
+
+  Icons and labels moved onto their enums: NavTab (bottom bar, rail and
+  welcome tour render from one definition), DiscoverSectionId (feed and
+  customize sheet), and
+  TextExportSortMode (copy-as-text dialog). ItemStatus gains a shared
+  English displayLabel used by the text exporter and MAL import notes; MAL
+  notes now write "Not Started" / "In Progress" (Title Case) instead of
+  "Not started" / "In progress".
+
+  * lib/shared/navigation/nav_tab.dart (NavTab.icon, NavTab.selectedIcon,
+    NavTab.localizedLabel): New enum accessors.
+  * lib/shared/navigation/nav_destinations.dart (buildNavDestinations),
+    lib/features/welcome/widgets/menu_tour_items.dart (buildMenuTourItems):
+    Render from NavTab accessors; local icon/label switches deleted.
+  * lib/features/search/providers/discover_provider.dart
+    (DiscoverSectionId.icon, DiscoverSectionId.localizedLabel): New enum
+    accessors.
+  * lib/features/search/widgets/discover_feed.dart (DiscoverFeed),
+    lib/features/search/widgets/discover_customize_sheet.dart
+    (DiscoverCustomizeSheet): Render from DiscoverSectionId accessors; the
+    local section-meta map deleted.
+  * lib/shared/models/item_status.dart (ItemStatus.displayLabel,
+    ItemStatus.tryFromString): New shared English label and null-safe
+    parser.
+  * lib/core/services/text_export_service.dart (TextExportService,
+    TextExportSortMode.localizedLabel): Status label from
+    ItemStatus.displayLabel; new localised sort-mode label.
+  * lib/core/import/sources/mal/mal_import_service.dart (MalImportService):
+    Status label in notes from ItemStatus.displayLabel.
+  * lib/features/collections/widgets/copy_as_text_dialog.dart
+    (_CopyAsTextDialogState): Sort menu built by looping
+    TextExportSortMode.values.
+
+- **Single-source cleanup: stored enum values, defaults and dead labels**
+
+  Remaining hardcoded copies of enum-owned strings replaced with the enum
+  accessor, the ImageType enum moved out of the image cache service into
+  shared models, and unused label fields dropped. Purely internal.
+
+  * lib/shared/utils/anime_manga_title_language.dart
+    (AnimeMangaTitleLanguage.defaultId): New app-wide default id constant.
+  * lib/core/services/discord_rpc_service.dart
+    (DiscordRpcService.updatePresence),
+    lib/core/services/text_export_service.dart
+    (TextExportService.applyTemplate),
+    lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply),
+    lib/features/collections/providers/sort_utils.dart (applySortMode),
+    lib/features/settings/providers/settings_provider.dart (SettingsKeys),
+    lib/shared/constants/tmdb_content_languages.dart
+    (anilistTitleLanguageForContent): 'romaji' / 'english' / 'native'
+    defaults from AnimeMangaTitleLanguage.
+  * lib/shared/models/image_type.dart (ImageType): New home, moved verbatim
+    from image_cache_service.dart (which keeps a re-export).
+  * lib/shared/models/canvas_item.dart, collection_item.dart,
+    cover_info.dart: Import ImageType from the model, not the service.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionStats, CollectionDao.getItemIdsByExternalId,
+    CollectionDao.clearAllData): Stats switches parse MediaType / ItemStatus
+    enums instead of raw strings; item lookup and clear-all moved here from
+    DatabaseService.
+  * lib/core/database/database_service.dart
+    (DatabaseService.getItemIdsByExternalId, DatabaseService.clearAllData):
+    Delegate to CollectionDao.
+  * lib/core/services/import_service.dart (ImportService),
+    lib/data/repositories/canvas_repository.dart
+    (CanvasRepository.deleteGameItem),
+    lib/features/collections/providers/tracker_provider.dart
+    (TrackerDetailNotifier),
+    lib/features/settings/screens/demo_collections_screen.dart
+    (_DemoCollectionsScreenState): media_type strings from MediaType.value /
+    CanvasItemType.value.
+  * lib/features/collections/models/collections_index.dart
+    (RemoteCollection.fromJson, RemoteCollection.isFull),
+    lib/core/services/xcoll_file.dart (XcollFile): 'light' / 'full' from
+    ExportFormat.value.
+  * lib/shared/models/collection_sort_mode.dart (CollectionSortMode),
+    lib/shared/models/search_sort.dart (SearchSortField): Drop unused
+    displayLabel / shortLabel / description fields — UI uses the localised
+    accessors.
+
+- **Season rows show watch progress and a "mark next episode" button**
+
+  Each collapsed season has a progress bar alongside its watched count. A new
+  button marks the season's next unwatched episode in one tap, loading the
+  season from its source first if needed.
+
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonExpansionTileState._markNextWatched): Progress bar in the season
+    subtitle and a mark-next-episode action.
+  * lib/l10n/app_*.arb (markNextWatched): New key.
+
+- **Mood grid became its own feature module and got a lighter screen**
+
+  Files moved from `lib/features/tier_lists/` to `lib/features/mood_grids/`
+  (models, DAO and migrations stay where they were). The detail screen
+  resolves cell media in one query per media type instead of one per cell,
+  mounts the offscreen export tree only while exporting, and no longer
+  re-reads the grid list on every cell edit.
+
+  * lib/features/mood_grids/: New home for mood-grid providers, screens,
+    services and widgets; imports updated in
+    lib/features/tier_lists/screens/tier_lists_screen.dart and
+    lib/features/settings/content/database_content.dart.
+  * lib/features/mood_grids/widgets/mood_grid_cell_media.dart
+    (resolveMoodGridCellMediaBatch): New batched resolver.
+  * lib/features/mood_grids/providers/mood_grid_detail_provider.dart
+    (MoodGridDetailNotifier.build, MoodGridDetailNotifier.resize): Use the
+    batched resolver; cell-level edits no longer invalidate
+    moodGridsProvider.
+  * lib/features/mood_grids/screens/mood_grid_detail_screen.dart
+    (_MoodGridDetailScreenState._exportAsImage): Export view mounted on
+    demand.
+  * lib/features/mood_grids/widgets/mood_grid_view.dart,
+    lib/features/mood_grids/widgets/mood_grid_export_view.dart: Cell
+    lookup via a position map instead of a per-cell linear search.
+
+- **Episode tracker got season posters, episode stills and overviews**
+
+  Season rows show the season poster with an all-watched badge and the air
+  year; episode rows show the episode still (dimmed with a check badge once
+  watched) and a two-line overview that expands on tap. The episode
+  checkbox is gone — tapping the row toggles watched, same as before.
+  Season posters and episode stills are cached on disk for offline use.
+
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonLeading, _WatchedBadge, _ExpandableOverview, _EpisodeTileState):
+    Season poster with an all-watched badge and air year, episode still,
+    expandable overview, row-tap toggle in place of the checkbox.
+  * lib/shared/models/image_type.dart (ImageType.tvSeasonPoster,
+    ImageType.tvEpisodeStill): Cache folders for the new artwork.
+
+- **Decouple the episode tracker and release calendar from TMDB**
+
+  Seasons, episodes and watch progress are keyed by `(source, show id)`
+  instead of a bare TMDB id, and season/episode fetching goes through a
+  provider-agnostic `TvEpisodeSource` interface. TMDB is the first
+  implementation and existing data is migrated as TMDB. No user-visible
+  behaviour changes yet.
+
+  * lib/core/api/episode_source/tv_episode_source.dart (TvEpisodeSource,
+    tvEpisodeSourceResolverProvider): New — season/episode source
+    interface and per-DataSource resolver (unknown sources fall back to
+    TMDB).
+  * lib/core/api/episode_source/tmdb_episode_source.dart
+    (TmdbEpisodeSource): New — TMDB implementation over TmdbApi.
+  * packages/core/lib/database/migrations/migration_v57.dart (MigrationV57): New —
+    rebuilds tv_shows_cache with a (tmdb_id, source) primary key, adds
+    `source` to the UNIQUE keys of tv_seasons_cache, tv_episodes_cache
+    and watched_episodes, backfills existing rows as 'tmdb', re-scopes
+    the collection_items unique indexes so tv_show includes source
+    (idx_ci_coll_tv, idx_ci_uncat_tv), backfills
+    collection_items.source and mood_grid_cells.source for tv shows, and
+    drops watched_episodes rows whose collection no longer exists before the
+    rebuild re-inserts them under the foreign key.
+  * lib/core/database/database_service.dart (DatabaseService._initDatabase),
+    packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Version 57.
+  * lib/shared/models/tv_show.dart (TvShow), tv_season.dart (TvSeason),
+    tv_episode.dart (TvEpisode): New `source` field (default tmdb) in
+    fromDb/toDb/copyWith/==/hashCode.
+  * lib/shared/models/data_source.dart (DataSource.fromNameOr): New —
+    parse with an explicit fallback.
+  * lib/shared/models/media_type.dart (MediaType.defaultSource): New —
+    fallback source for rows with a NULL source column.
+  * lib/core/database/dao/tv_show_dao.dart (TvShowDao.getTvShowByTmdbId,
+    TvShowDao.getTvSeasonsByShowId, TvShowDao.getEpisodesByShowId,
+    TvShowDao.getEpisodesByShowAndSeason, TvShowDao.clearEpisodesByShow,
+    TvShowDao.getWatchedEpisodes, TvShowDao.getWatchedEpisodesForShow,
+    TvShowDao.getAllWatchedEpisodes, TvShowDao.markEpisodeWatched,
+    TvShowDao.markEpisodeWatchedAt, TvShowDao.markEpisodeUnwatched,
+    TvShowDao.getWatchedEpisodeCount, TvShowDao.markSeasonWatched,
+    TvShowDao.unmarkSeasonWatched): All season/episode/watched queries
+    take a DataSource.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.findCollectionItem, CollectionDao.findAllCollectionItems):
+    Optional source filter; (CollectionDao._loadJoinedData): tv shows
+    matched by (source, id); (CollectionDao.getCollectionCovers): tv
+    joins constrained by source.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerArg, EpisodeTrackerNotifier): Family arg carries the
+    source; fetches go through the resolved TvEpisodeSource.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (EpisodeTrackerSection, SeasonsListWidget): Source-aware season
+    loading.
+  * lib/features/releases/providers/releases_provider.dart
+    (ReleasesNotifier.refreshFromApi, ReleasesNotifier._eventsForShow,
+    isReleaseTrackedProvider): Tracked shows refresh via their own
+    source's TvEpisodeSource; the tracked-bell key includes the source.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._toggleTracked): Subscribe/unsubscribe with
+    the item's data source.
+  * lib/features/search/handlers/tv_show_handler.dart (TvShowHandler):
+    Stamp the source on added items.
+  * lib/core/services/export_service.dart (ExportService.createFullExport):
+    TV shows deduped by source:id like manga.
+  * lib/core/services/backup_service.dart
+    (BackupService._restoreWatchedEpisodes): Watched rows restore into
+    their source namespace; legacy rows restore as TMDB.
+  * lib/core/import/sources/trakt/trakt_import_service.dart
+    (TraktImportService): Watched marks written as TMDB.
+  * lib/features/mood_grids/widgets/mood_grid_cell_media.dart
+    (resolveMoodGridCellMedia), lib/data/repositories/canvas_repository.dart
+    (CanvasRepository), lib/shared/models/collection_item.dart
+    (CollectionItem._resolvedMedia): Source-aware show lookups.
+
 ## [0.39.0] - 2026-07-18
 
 ### Added

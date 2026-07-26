@@ -43,6 +43,9 @@ class MangaBakaApi {
 
   Future<Manga?> getById(int id) => _manga.getById(id);
 
+  Future<List<Manga>> getRecommendations(int seedId, {int limit = 20}) =>
+      _manga.getRecommendations(seedId, limit: limit);
+
   Future<List<MangaBakaTag>> fetchTagCatalog() => _tags.fetchTagCatalog();
 
   void dispose() => _client.dispose();

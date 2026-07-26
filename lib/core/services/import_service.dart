@@ -31,9 +31,19 @@ import '../../shared/models/manga.dart';
 import '../../shared/models/tag.dart';
 import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/visual_novel.dart';
+import '../../shared/models/data_source.dart';
 import '../api/anilist_api.dart';
+import '../api/comicvine_api.dart';
+import '../api/fantlab_api.dart';
+import '../api/google_books_api.dart';
+import '../api/hardcover_api.dart';
 import '../api/igdb_api.dart';
+import '../api/kitsu_api.dart';
+import '../api/mangabaka_api.dart';
+import '../api/mangadex_api.dart';
+import '../api/openlibrary_api.dart';
 import '../api/tmdb_api.dart';
+import '../api/tvmaze_api.dart';
 import '../api/vndb_api.dart';
 import '../database/dao/global_tag_dao.dart';
 import '../database/dao/tracker_dao.dart';
@@ -50,6 +60,15 @@ final Provider<ImportService> importServiceProvider =
     tmdbApi: ref.watch(tmdbApiProvider),
     vndbApi: ref.watch(vndbApiProvider),
     aniListApi: ref.watch(aniListApiProvider),
+    tvMazeApi: ref.watch(tvMazeApiProvider),
+    kitsuApi: ref.watch(kitsuApiProvider),
+    mangaBakaApi: ref.watch(mangaBakaApiProvider),
+    mangaDexApi: ref.watch(mangaDexApiProvider),
+    openLibraryApi: ref.watch(openLibraryApiProvider),
+    googleBooksApi: ref.watch(googleBooksApiProvider),
+    comicVineApi: ref.watch(comicVineApiProvider),
+    hardcoverApi: ref.watch(hardcoverApiProvider),
+    fantlabApi: ref.watch(fantlabApiProvider),
     database: ref.watch(databaseServiceProvider),
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
@@ -186,6 +205,15 @@ class ImportService {
     TmdbApi? tmdbApi,
     VndbApi? vndbApi,
     AniListApi? aniListApi,
+    TvMazeApi? tvMazeApi,
+    KitsuApi? kitsuApi,
+    MangaBakaApi? mangaBakaApi,
+    MangaDexApi? mangaDexApi,
+    OpenLibraryApi? openLibraryApi,
+    GoogleBooksApi? googleBooksApi,
+    ComicVineApi? comicVineApi,
+    HardcoverApi? hardcoverApi,
+    FantlabApi? fantlabApi,
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
     TrackerDao? trackerDao,
@@ -195,6 +223,15 @@ class ImportService {
         _tmdbApi = tmdbApi,
         _vndbApi = vndbApi,
         _aniListApi = aniListApi,
+        _tvMazeApi = tvMazeApi,
+        _kitsuApi = kitsuApi,
+        _mangaBakaApi = mangaBakaApi,
+        _mangaDexApi = mangaDexApi,
+        _openLibraryApi = openLibraryApi,
+        _googleBooksApi = googleBooksApi,
+        _comicVineApi = comicVineApi,
+        _hardcoverApi = hardcoverApi,
+        _fantlabApi = fantlabApi,
         _database = database,
         _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService,
@@ -206,6 +243,15 @@ class ImportService {
   final TmdbApi? _tmdbApi;
   final VndbApi? _vndbApi;
   final AniListApi? _aniListApi;
+  final TvMazeApi? _tvMazeApi;
+  final KitsuApi? _kitsuApi;
+  final MangaBakaApi? _mangaBakaApi;
+  final MangaDexApi? _mangaDexApi;
+  final OpenLibraryApi? _openLibraryApi;
+  final GoogleBooksApi? _googleBooksApi;
+  final ComicVineApi? _comicVineApi;
+  final HardcoverApi? _hardcoverApi;
+  final FantlabApi? _fantlabApi;
   final DatabaseService _database;
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
@@ -347,8 +393,8 @@ class ImportService {
         ));
       }
 
-      // Maps (media_type:external_id[:platform_id]) to new collection_item_id
-      // for tier-list/tag entries to resolve.
+      // Item keys (see _itemMappingKeys) to new collection_item_id, so
+      // tier-list and tag entries can resolve their item.
       final Map<String, int> itemIdMapping = <String, int>{};
       int addedCount = 0;
       int updatedCount = 0;
@@ -375,17 +421,7 @@ class ImportService {
 
         if (itemId != null) {
           addedCount++;
-          final String key = _itemMappingKey(
-            parsed.mediaType,
-            parsed.externalId,
-            parsed.platformId,
-          );
-          itemIdMapping[key] = itemId;
-          // Fallback key without platform for backwards compatibility with
-          // old exports where tier-list/tag entries lack platform_id.
-          final String fallbackKey =
-              '${parsed.mediaType.value}:${parsed.externalId}';
-          itemIdMapping.putIfAbsent(fallbackKey, () => itemId);
+          _registerItemMapping(itemIdMapping, parsed, itemId);
 
           if (xcoll.includesUserData && _hasUserData(parsed)) {
             await _restoreUserData(itemId, parsed);
@@ -400,6 +436,7 @@ class ImportService {
 
           if (xcoll.includesUserData) {
             await _importItemMarks(itemData, itemId);
+            await _importWatchedEpisodes(itemData, collection.id, parsed);
           }
         } else if (collectionId != null) {
           // Item already exists — update from file.
@@ -417,22 +454,16 @@ class ImportService {
             mediaType: parsed.mediaType,
             externalId: parsed.externalId,
             platformId: parsed.platformId,
+            source: parsed.source,
           );
           if (existing != null) {
-            final String key = _itemMappingKey(
-              parsed.mediaType,
-              parsed.externalId,
-              parsed.platformId,
-            );
-            itemIdMapping[key] = existing.id;
-            final String fallbackKey =
-                '${parsed.mediaType.value}:${parsed.externalId}';
-            itemIdMapping.putIfAbsent(fallbackKey, () => existing.id);
+            _registerItemMapping(itemIdMapping, parsed, existing.id);
 
             // Marks are idempotent (insertMarks replaces on the unique key),
             // so re-importing onto an existing item merges, not duplicates.
             if (xcoll.includesUserData) {
               await _importItemMarks(itemData, existing.id);
+              await _importWatchedEpisodes(itemData, collection.id, parsed);
             }
           }
         }
@@ -528,6 +559,7 @@ class ImportService {
       mediaType: parsed.mediaType,
       externalId: parsed.externalId,
       platformId: parsed.platformId,
+      source: parsed.source,
     );
     if (existing == null) return false;
 
@@ -853,47 +885,63 @@ class ImportService {
     }
   }
 
-  /// Online fallback for light exports or legacy full exports without
-  /// an embedded `media` section.
+  /// Online fallback for light exports or legacy full exports without an
+  /// embedded `media` section. Items are grouped by (media type, source) and
+  /// each group is refetched from the provider that owns it: sending a TVmaze
+  /// show id to TMDB caches a different show under that id.
   Future<void> _fetchMediaFromApi(
     List<Map<String, dynamic>> items, {
     ImportProgressCallback? onProgress,
   }) async {
-    final List<Map<String, dynamic>> gameItems = <Map<String, dynamic>>[];
-    final List<Map<String, dynamic>> movieItems = <Map<String, dynamic>>[];
-    final List<Map<String, dynamic>> tvShowItems = <Map<String, dynamic>>[];
-    final List<Map<String, dynamic>> vnItems = <Map<String, dynamic>>[];
-    final List<Map<String, dynamic>> mangaItems = <Map<String, dynamic>>[];
-    final List<Map<String, dynamic>> animeItems = <Map<String, dynamic>>[];
+    final List<int> gameIds = <int>[];
+    final List<int> movieIds = <int>[];
+    final List<String> vnIds = <String>[];
+    final List<_MediaRef> tvRefs = <_MediaRef>[];
+    final List<_MediaRef> mangaRefs = <_MediaRef>[];
+    final List<_MediaRef> animeRefs = <_MediaRef>[];
+    final List<_MediaRef> bookRefs = <_MediaRef>[];
 
     for (final Map<String, dynamic> item in items) {
-      final String mediaType = item['media_type'] as String;
+      final MediaType? mediaType =
+          MediaType.tryFromString(item['media_type'] as String);
+      final int? externalId = item['external_id'] as int?;
+      if (mediaType == null || externalId == null) continue;
+
+      final _MediaRef ref = _MediaRef(
+        externalId: externalId,
+        source: DataSource.fromNameOr(
+          item['source'] as String?,
+          mediaType.defaultSource,
+        ),
+        nativeId: item['native_id'] as String?,
+      );
+
       switch (mediaType) {
-        case 'game':
-          gameItems.add(item);
-        case 'movie':
-          movieItems.add(item);
-        case 'tv_show':
-          tvShowItems.add(item);
-        case 'animation':
-          final int? platformId = item['platform_id'] as int?;
-          if (platformId == AnimationSource.tvShow) {
-            tvShowItems.add(item);
+        case MediaType.game:
+          gameIds.add(externalId);
+        case MediaType.movie:
+          movieIds.add(externalId);
+        case MediaType.tvShow:
+          tvRefs.add(ref);
+        case MediaType.animation:
+          // Animated films live in the movie cache, series in the show cache.
+          if ((item['platform_id'] as int?) == AnimationSource.tvShow) {
+            tvRefs.add(ref);
           } else {
-            movieItems.add(item);
+            movieIds.add(externalId);
           }
-        case 'visual_novel':
-          vnItems.add(item);
-        case 'manga':
-          mangaItems.add(item);
-        case 'anime':
-          animeItems.add(item);
+        case MediaType.visualNovel:
+          vnIds.add('v$externalId');
+        case MediaType.manga:
+          mangaRefs.add(ref);
+        case MediaType.anime:
+          animeRefs.add(ref);
+        case MediaType.book:
+          bookRefs.add(ref);
+        case MediaType.custom:
+          break;
       }
     }
-
-    final List<int> gameIds = gameItems
-        .map((Map<String, dynamic> i) => i['external_id'] as int)
-        .toList();
 
     onProgress?.call(ImportProgress(
       stage: ImportStage.fetchingGames,
@@ -907,11 +955,7 @@ class ImportService {
       games = await _igdbApi.getGamesByIds(gameIds);
     }
 
-    final List<int> movieIds = movieItems
-        .map((Map<String, dynamic> i) => i['external_id'] as int)
-        .toList();
     final List<Movie> movies = <Movie>[];
-
     if (movieIds.isNotEmpty && _tmdbApi != null) {
       final TmdbApi tmdbApi = _tmdbApi;
       onProgress?.call(ImportProgress(
@@ -938,43 +982,29 @@ class ImportService {
       }
     }
 
-    final List<int> tvShowIds = tvShowItems
-        .map((Map<String, dynamic> i) => i['external_id'] as int)
-        .toList();
     final List<TvShow> tvShows = <TvShow>[];
-
-    if (tvShowIds.isNotEmpty && _tmdbApi != null) {
-      final TmdbApi tmdbApi = _tmdbApi;
+    if (tvRefs.isNotEmpty) {
       onProgress?.call(ImportProgress(
         stage: ImportStage.fetchingTvShows,
         current: 0,
-        total: tvShowIds.length,
-        message: 'Fetching ${tvShowIds.length} TV shows from TMDB...',
+        total: tvRefs.length,
+        message: 'Fetching ${tvRefs.length} TV shows...',
       ));
 
-      for (int i = 0; i < tvShowIds.length; i++) {
-        try {
-          final TvShow? tvShow = await tmdbApi.getTvShow(tvShowIds[i]);
-          if (tvShow != null) {
-            tvShows.add(tvShow);
-          }
-        } on TmdbApiException {
-          // Skip unavailable TV shows so one failure doesn't abort the batch.
+      for (int i = 0; i < tvRefs.length; i++) {
+        final TvShow? show = await _fetchTvShow(tvRefs[i]);
+        if (show != null) {
+          tvShows.add(show);
         }
         onProgress?.call(ImportProgress(
           stage: ImportStage.fetchingTvShows,
           current: i + 1,
-          total: tvShowIds.length,
+          total: tvRefs.length,
         ));
       }
     }
 
-    final List<String> vnIds = vnItems
-        .where((Map<String, dynamic> i) => i['external_id'] != null)
-        .map((Map<String, dynamic> i) => 'v${i['external_id'] as int}')
-        .toList();
     List<VisualNovel> visualNovels = <VisualNovel>[];
-
     if (vnIds.isNotEmpty && _vndbApi != null) {
       final VndbApi vndbApi = _vndbApi;
       onProgress?.call(ImportProgress(
@@ -996,88 +1026,37 @@ class ImportService {
       ));
     }
 
-    final List<int> mangaIds = mangaItems
-        .where((Map<String, dynamic> i) => i['external_id'] != null)
-        .map((Map<String, dynamic> i) => i['external_id'] as int)
-        .toList();
-    List<Manga> mangas = <Manga>[];
-
-    if (mangaIds.isNotEmpty && _aniListApi != null) {
-      final AniListApi aniListApi = _aniListApi;
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.fetchingManga,
-        current: 0,
-        total: mangaIds.length,
-        message: 'Fetching ${mangaIds.length} manga from AniList...',
-      ));
-
-      try {
-        mangas = await aniListApi.getMangaByIds(
-          mangaIds,
-          onRateLimit: (Duration wait, int attempt) => onProgress?.call(
-            ImportProgress(
-              stage: ImportStage.fetchingManga,
-              current: 0,
-              total: mangaIds.length,
-              message: 'Rate limited, waiting ${wait.inSeconds}s '
-                  '(attempt $attempt)...',
-            ),
-          ),
-        );
-      } on AniListApiException catch (e) {
-        _log.warning('Failed to fetch manga: ${e.message}');
-      }
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.fetchingManga,
-        current: mangaIds.length,
-        total: mangaIds.length,
-      ));
-    }
-
-    final List<int> animeIds = animeItems
-        .where((Map<String, dynamic> i) => i['external_id'] != null)
-        .map((Map<String, dynamic> i) => i['external_id'] as int)
-        .toList();
-    List<Anime> animes = <Anime>[];
-
-    if (animeIds.isNotEmpty && _aniListApi != null) {
-      final AniListApi aniListApi = _aniListApi;
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.fetchingAnime,
-        current: 0,
-        total: animeIds.length,
-        message: 'Fetching ${animeIds.length} anime from AniList...',
-      ));
-
-      try {
-        animes = await aniListApi.getAnimeByIds(
-          animeIds,
-          onRateLimit: (Duration wait, int attempt) => onProgress?.call(
-            ImportProgress(
-              stage: ImportStage.fetchingAnime,
-              current: 0,
-              total: animeIds.length,
-              message: 'Rate limited, waiting ${wait.inSeconds}s '
-                  '(attempt $attempt)...',
-            ),
-          ),
-        );
-      } on AniListApiException catch (e) {
-        _log.warning('Failed to fetch anime: ${e.message}');
-      }
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.fetchingAnime,
-        current: animeIds.length,
-        total: animeIds.length,
-      ));
-    }
+    final AniListApi? aniList = _aniListApi;
+    final List<Manga> mangas = await _fetchByRefs<Manga>(
+      mangaRefs,
+      stage: ImportStage.fetchingManga,
+      label: 'manga',
+      aniListBatch: (List<int> ids,
+              void Function(Duration, int) onRateLimit) async =>
+          aniList?.getMangaByIds(ids, onRateLimit: onRateLimit) ?? <Manga>[],
+      fetchOne: _fetchOneManga,
+      onProgress: onProgress,
+    );
+    final List<Anime> animes = await _fetchByRefs<Anime>(
+      animeRefs,
+      stage: ImportStage.fetchingAnime,
+      label: 'anime',
+      aniListBatch: (List<int> ids,
+              void Function(Duration, int) onRateLimit) async =>
+          aniList?.getAnimeByIds(ids, onRateLimit: onRateLimit) ?? <Anime>[],
+      fetchOne: _fetchOneAnime,
+      onProgress: onProgress,
+    );
+    final List<Book> books =
+        await _fetchBookRefs(bookRefs, onProgress: onProgress);
 
     final int totalMedia = games.length +
         movies.length +
         tvShows.length +
         visualNovels.length +
         mangas.length +
-        animes.length;
+        animes.length +
+        books.length;
     onProgress?.call(ImportProgress(
       stage: ImportStage.cachingMedia,
       current: 0,
@@ -1085,64 +1064,217 @@ class ImportService {
     ));
 
     int cachedCount = 0;
-    for (final Game game in games) {
-      await _database.gameDao.upsertGame(game);
-      cachedCount++;
+    void reportCached(int added) {
+      cachedCount += added;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
         current: cachedCount,
         total: totalMedia,
       ));
+    }
+
+    for (final Game game in games) {
+      await _database.gameDao.upsertGame(game);
+      reportCached(1);
     }
 
     if (movies.isNotEmpty) {
       await _database.movieDao.upsertMovies(movies);
-      cachedCount += movies.length;
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.cachingMedia,
-        current: cachedCount,
-        total: totalMedia,
-      ));
+      reportCached(movies.length);
     }
 
     if (tvShows.isNotEmpty) {
       await _database.tvShowDao.upsertTvShows(tvShows);
-      cachedCount += tvShows.length;
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.cachingMedia,
-        current: cachedCount,
-        total: totalMedia,
-      ));
+      reportCached(tvShows.length);
     }
 
     if (visualNovels.isNotEmpty) {
       await _database.visualNovelDao.upsertVisualNovels(visualNovels);
-      cachedCount += visualNovels.length;
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.cachingMedia,
-        current: cachedCount,
-        total: totalMedia,
-      ));
+      reportCached(visualNovels.length);
     }
 
     if (mangas.isNotEmpty) {
       await _database.mangaDao.upsertMangas(mangas);
-      cachedCount += mangas.length;
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.cachingMedia,
-        current: cachedCount,
-        total: totalMedia,
-      ));
+      reportCached(mangas.length);
     }
 
     if (animes.isNotEmpty) {
       await _database.animeDao.upsertAnimes(animes);
-      cachedCount += animes.length;
+      reportCached(animes.length);
+    }
+
+    if (books.isNotEmpty) {
+      await _database.bookDao.upsertBooks(books);
+      reportCached(books.length);
+    }
+  }
+
+  Future<TvShow?> _fetchTvShow(_MediaRef ref) async {
+    try {
+      if (ref.source == DataSource.tvmaze) {
+        return await _tvMazeApi?.getShow(ref.externalId);
+      }
+      return await _tmdbApi?.getTvShow(ref.externalId);
+    } on Exception catch (e) {
+      // One unavailable show must not abort the batch.
+      _log.warning('Failed to fetch TV show ${ref.externalId} '
+          'from ${ref.source.name}: $e');
+      return null;
+    }
+  }
+
+  /// AniList resolves its ids in one batched query; every other provider only
+  /// answers per id, so they go one by one. Shared by manga and anime, whose
+  /// progress accounting and rate-limit reporting must not drift apart.
+  Future<List<T>> _fetchByRefs<T>(
+    List<_MediaRef> refs, {
+    required ImportStage stage,
+    required String label,
+    required Future<List<T>> Function(
+      List<int> ids,
+      void Function(Duration wait, int attempt) onRateLimit,
+    ) aniListBatch,
+    required Future<T?> Function(_MediaRef ref) fetchOne,
+    ImportProgressCallback? onProgress,
+  }) async {
+    if (refs.isEmpty) return <T>[];
+
+    final List<T> result = <T>[];
+    int done = 0;
+    void report({String? message}) => onProgress?.call(ImportProgress(
+          stage: stage,
+          current: done,
+          total: refs.length,
+          message: message,
+        ));
+    report(message: 'Fetching ${refs.length} $label...');
+
+    final List<_MediaRef> byId = <_MediaRef>[];
+    final List<int> aniListIds = <int>[];
+    for (final _MediaRef ref in refs) {
+      if (ref.source == DataSource.anilist) {
+        aniListIds.add(ref.externalId);
+      } else {
+        byId.add(ref);
+      }
+    }
+
+    if (aniListIds.isNotEmpty) {
+      try {
+        result.addAll(await aniListBatch(
+          aniListIds,
+          (Duration wait, int attempt) => report(
+            message: 'Rate limited, waiting ${wait.inSeconds}s '
+                '(attempt $attempt)...',
+          ),
+        ));
+      } on AniListApiException catch (e) {
+        _log.warning('Failed to fetch $label from AniList: ${e.message}');
+      }
+      done += aniListIds.length;
+      report();
+    }
+
+    for (final _MediaRef ref in byId) {
+      final T? item = await fetchOne(ref);
+      if (item != null) {
+        result.add(item);
+      }
+      done++;
+      report();
+    }
+    return result;
+  }
+
+  Future<Manga?> _fetchOneManga(_MediaRef ref) async {
+    try {
+      switch (ref.source) {
+        case DataSource.mangabaka:
+          return await _mangaBakaApi?.getById(ref.externalId);
+        case DataSource.kitsu:
+          return await _kitsuApi?.getMangaById(ref.externalId);
+        case DataSource.mangadex:
+          // MangaDex is keyed by a UUID and external_id is only its hash, so
+          // files written before native_id can't be resolved.
+          final String? uuid = ref.nativeId;
+          return uuid != null ? await _mangaDexApi?.getByUuid(uuid) : null;
+        default:
+          return await _aniListApi?.getMangaById(ref.externalId);
+      }
+    } on Exception catch (e) {
+      _log.warning('Failed to fetch manga ${ref.externalId} '
+          'from ${ref.source.name}: $e');
+      return null;
+    }
+  }
+
+  Future<Anime?> _fetchOneAnime(_MediaRef ref) async {
+    try {
+      if (ref.source == DataSource.kitsu) {
+        return await _kitsuApi?.getAnimeById(ref.externalId);
+      }
+      return await _aniListApi?.getAnimeById(ref.externalId);
+    } on Exception catch (e) {
+      _log.warning('Failed to fetch anime ${ref.externalId} '
+          'from ${ref.source.name}: $e');
+      return null;
+    }
+  }
+
+  Future<List<Book>> _fetchBookRefs(
+    List<_MediaRef> refs, {
+    ImportProgressCallback? onProgress,
+  }) async {
+    if (refs.isEmpty) return const <Book>[];
+
+    final List<Book> result = <Book>[];
+    onProgress?.call(ImportProgress(
+      stage: ImportStage.fetchingBooks,
+      current: 0,
+      total: refs.length,
+      message: 'Fetching ${refs.length} books...',
+    ));
+
+    for (int i = 0; i < refs.length; i++) {
+      final Book? book = await _fetchOneBook(refs[i]);
+      if (book != null) {
+        result.add(book);
+      }
       onProgress?.call(ImportProgress(
-        stage: ImportStage.cachingMedia,
-        current: cachedCount,
-        total: totalMedia,
+        stage: ImportStage.fetchingBooks,
+        current: i + 1,
+        total: refs.length,
       ));
+    }
+    return result;
+  }
+
+  Future<Book?> _fetchOneBook(_MediaRef ref) async {
+    // Every book provider is keyed by its own string id; external_id is
+    // derived from it and can't be turned back, so files written before
+    // native_id existed leave their books unresolved.
+    final String? nativeId = ref.nativeId;
+    if (nativeId == null) return null;
+
+    try {
+      switch (ref.source) {
+        case DataSource.openLibrary:
+          return await _openLibraryApi?.getWork(nativeId);
+        case DataSource.googleBooks:
+          return await _googleBooksApi?.getVolume(nativeId);
+        case DataSource.comicVine:
+          return await _comicVineApi?.getVolume(nativeId);
+        case DataSource.hardcover:
+          return await _hardcoverApi?.getBook(nativeId);
+        case DataSource.fantlab:
+          return await _fantlabApi?.getWork(nativeId);
+        default:
+          return null;
+      }
+    } on Exception catch (e) {
+      _log.warning('Failed to fetch book $nativeId '
+          'from ${ref.source.name}: $e');
+      return null;
     }
   }
 
@@ -1173,11 +1305,13 @@ class ImportService {
       final ImageType? imageType = _imageTypeFromFolder(folder);
       if (imageType == null) continue;
 
-      // Backward-compat: pre-v44 backups stored manga covers under the bare
-      // numeric id. Manga covers are now namespaced by source — legacy manga
-      // was always AniList, so remap to keep the cover instead of forcing a
-      // network re-download. New backups already carry `anilist_`/`mangabaka_`.
-      if (imageType == ImageType.mangaCover && int.tryParse(imageId) != null) {
+      // Backward-compat: legacy backups stored manga / anime covers under the
+      // bare numeric id before those media went source-namespaced. Legacy rows
+      // were always AniList, so remap to keep the cover instead of forcing a
+      // network re-download. New backups already carry the source prefix.
+      if ((imageType == ImageType.mangaCover ||
+              imageType == ImageType.animeCover) &&
+          int.tryParse(imageId) != null) {
         imageId = 'anilist_$imageId';
       }
 
@@ -1333,7 +1467,36 @@ class ImportService {
     await _database.itemMarkDao.insertMarks(marks);
   }
 
-  /// [itemIdMapping]: 'media_type:external_id[:platform_id]' -> new collection_item_id.
+  /// Restores watch marks nested under the item's `_watched_episodes` key,
+  /// re-scoped to the target collection. Older exports lack the key; rows
+  /// already marked stay untouched (insert is conflict-ignoring).
+  Future<void> _importWatchedEpisodes(
+    Map<String, dynamic> itemData,
+    int collectionId,
+    CollectionItem parsed,
+  ) async {
+    if (!parsed.mediaType.isTvBacked) return;
+    final List<dynamic>? raw =
+        itemData['_watched_episodes'] as List<dynamic>?;
+    if (raw == null || raw.isEmpty) return;
+    for (final dynamic entry in raw) {
+      if (entry is! Map<String, dynamic>) continue;
+      final Object? season = entry['season'];
+      final Object? episode = entry['episode'];
+      if (season is! int || episode is! int) continue;
+      final Object? watchedAtSec = entry['watched_at'];
+      await _database.tvShowDao.markEpisodeWatchedAt(
+        collectionId,
+        parsed.dataSource,
+        parsed.externalId,
+        season,
+        episode,
+        watchedAtSec is int ? watchedAtSec * 1000 : null,
+      );
+    }
+  }
+
+  /// [itemIdMapping]: item keys (see [_itemMappingKeys]) -> collection_item_id.
   Future<void> _importTierLists(
     List<Map<String, dynamic>> tierListsData,
     int collectionId,
@@ -1371,11 +1534,13 @@ class ImportService {
 
         if (externalId == null || mediaType == null) continue;
 
-        // Try platform-qualified key, then fall back for legacy exports.
-        final String keyWithPlatform = '$mediaType:$externalId:$platformId';
-        final String keyWithout = '$mediaType:$externalId';
-        final int? newItemId =
-            itemIdMapping[keyWithPlatform] ?? itemIdMapping[keyWithout];
+        final int? newItemId = _resolveMappedItem(
+          itemIdMapping,
+          mediaType: mediaType,
+          externalId: externalId,
+          platformId: platformId,
+          source: entryData['source'] as String?,
+        );
         if (newItemId == null) continue;
 
         final String tierKey = entryData['tier_key'] as String;
@@ -1435,11 +1600,13 @@ class ImportService {
       final int? platformId = itemData['platform_id'] as int?;
       if (mediaType == null || externalId == null) continue;
 
-      // Try platform-qualified key, then fall back for legacy exports.
-      final String keyWithPlatform = '$mediaType:$externalId:$platformId';
-      final String keyWithout = '$mediaType:$externalId';
-      final int? itemId =
-          itemIdMapping[keyWithPlatform] ?? itemIdMapping[keyWithout];
+      final int? itemId = _resolveMappedItem(
+        itemIdMapping,
+        mediaType: mediaType,
+        externalId: externalId,
+        platformId: platformId,
+        source: itemData['source'] as String?,
+      );
       if (itemId == null) continue;
 
       // Imported items are freshly created, so a replace-set write is safe
@@ -1459,17 +1626,64 @@ class ImportService {
     }
   }
 
-  /// Games include platform_id in the key to distinguish per-platform versions;
-  /// other media types use only media_type:external_id.
-  static String _itemMappingKey(
-    MediaType mediaType,
-    int externalId,
+  /// Keys an imported item is filed under so tier-list and tag entries can
+  /// find it. `exact` qualifies by provider, without which an AniList and a
+  /// Kitsu title sharing a numeric id collapse onto one item; `shared` keys
+  /// stay for legacy exports whose entries carry no source.
+  static ({List<String> exact, List<String> shared}) _itemMappingKeys({
+    required String mediaType,
+    required int externalId,
     int? platformId,
+    String? source,
+  }) {
+    final String withPlatform = '$mediaType:$externalId:$platformId';
+    final String bare = '$mediaType:$externalId';
+    return (
+      exact: source == null
+          ? const <String>[]
+          : <String>['$withPlatform@$source', '$bare@$source'],
+      shared: <String>[withPlatform, bare],
+    );
+  }
+
+  static void _registerItemMapping(
+    Map<String, int> mapping,
+    CollectionItem item,
+    int itemId,
   ) {
-    if (mediaType == MediaType.game && platformId != null) {
-      return '${mediaType.value}:$externalId:$platformId';
+    final ({List<String> exact, List<String> shared}) keys = _itemMappingKeys(
+      mediaType: item.mediaType.value,
+      externalId: item.externalId,
+      platformId: item.platformId,
+      source: item.source?.name,
+    );
+    for (final String key in keys.exact) {
+      mapping[key] = itemId;
     }
-    return '${mediaType.value}:$externalId';
+    // A shared key can name several items (same id from two providers, an
+    // animation held as both a movie and a show) — the first one wins.
+    for (final String key in keys.shared) {
+      mapping.putIfAbsent(key, () => itemId);
+    }
+  }
+
+  static int? _resolveMappedItem(
+    Map<String, int> mapping, {
+    required String mediaType,
+    required int externalId,
+    int? platformId,
+    String? source,
+  }) {
+    final ({List<String> exact, List<String> shared}) keys = _itemMappingKeys(
+      mediaType: mediaType,
+      externalId: externalId,
+      platformId: platformId,
+      source: source,
+    );
+    for (final String key in <String>[...keys.exact, ...keys.shared]) {
+      if (mapping[key] case final int id) return id;
+    }
+    return null;
   }
 
   Future<void> _importTrackerData(
@@ -1528,4 +1742,19 @@ class ImportService {
     if (dot == -1) return 'png';
     return key.substring(dot + 1).toLowerCase();
   }
+}
+
+/// One item's media reference from an export file. [nativeId] is the
+/// provider's own string id, carried by light exports for sources whose API
+/// can't be reached with the numeric [externalId].
+class _MediaRef {
+  const _MediaRef({
+    required this.externalId,
+    required this.source,
+    this.nativeId,
+  });
+
+  final int externalId;
+  final DataSource source;
+  final String? nativeId;
 }

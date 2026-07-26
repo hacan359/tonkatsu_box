@@ -117,7 +117,8 @@ class CanvasRepository {
   }
 
   Future<void> deleteGameItem(int collectionId, int igdbId) async {
-    await _db.canvasDao.deleteCanvasItemByRef(collectionId, 'game', igdbId);
+    await _db.canvasDao
+        .deleteCanvasItemByRef(collectionId, CanvasItemType.game.value, igdbId);
   }
 
   Future<void> deleteMediaItem(
@@ -270,9 +271,16 @@ class CanvasRepository {
     final Map<int, Movie> moviesMap = <int, Movie>{
       for (final Movie m in results[1] as List<Movie>) m.tmdbId: m,
     };
-    final Map<int, TvShow> tvShowsMap = <int, TvShow>{
-      for (final TvShow t in results[2] as List<TvShow>) t.tmdbId: t,
-    };
+    // Like manga, canvas items carry no show source, so a numeric id can
+    // match rows from several providers. TMDB wins to keep behaviour
+    // deterministic.
+    final Map<int, TvShow> tvShowsMap = <int, TvShow>{};
+    for (final TvShow t in results[2] as List<TvShow>) {
+      final TvShow? existing = tvShowsMap[t.tmdbId];
+      if (existing == null || t.source == DataSource.tmdb) {
+        tvShowsMap[t.tmdbId] = t;
+      }
+    }
     final Map<int, VisualNovel> vnMap = <int, VisualNovel>{
       for (final VisualNovel vn in results[3] as List<VisualNovel>)
         vn.numericId: vn,
@@ -288,9 +296,15 @@ class CanvasRepository {
         mangaMap[m.id] = m;
       }
     }
-    final Map<int, Anime> animeMap = <int, Anime>{
-      for (final Anime a in results[5] as List<Anime>) a.id: a,
-    };
+    // Canvas items carry no source; on an id collision the default provider
+    // wins to keep resolution deterministic.
+    final Map<int, Anime> animeMap = <int, Anime>{};
+    for (final Anime a in results[5] as List<Anime>) {
+      final Anime? existing = animeMap[a.id];
+      if (existing == null || a.source == DataSource.anilist) {
+        animeMap[a.id] = a;
+      }
+    }
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
       for (final CustomMedia c in results[6] as List<CustomMedia>) c.id: c,
     };

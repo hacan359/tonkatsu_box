@@ -1,4 +1,4 @@
-import '../../l10n/app_localizations.dart';
+import 'data_source.dart';
 
 /// Media content type of a collection item.
 enum MediaType {
@@ -36,6 +36,32 @@ enum MediaType {
   custom('custom');
 
   const MediaType(this.value);
+
+  /// Whether episode tracking applies (tv show or tv-based animation).
+  bool get isTvBacked =>
+      this == MediaType.tvShow || this == MediaType.animation;
+
+  /// Whether identity is `(externalId, source)` rather than `externalId`
+  /// alone: several providers serve this type and their numeric ids collide.
+  /// Animation is excluded on purpose — it only ever comes from TMDB.
+  bool get isMultiSource =>
+      this == MediaType.manga ||
+      this == MediaType.anime ||
+      this == MediaType.tvShow ||
+      this == MediaType.book;
+
+  /// Fallback source for rows whose `source` column is NULL.
+  DataSource get defaultSource => switch (this) {
+        MediaType.game => DataSource.igdb,
+        MediaType.movie => DataSource.tmdb,
+        MediaType.tvShow => DataSource.tmdb,
+        MediaType.animation => DataSource.tmdb,
+        MediaType.visualNovel => DataSource.vndb,
+        MediaType.manga => DataSource.anilist,
+        MediaType.anime => DataSource.anilist,
+        MediaType.book => DataSource.openLibrary,
+        MediaType.custom => DataSource.local,
+      };
 
   /// String value stored in the database.
   final String value;
@@ -76,30 +102,6 @@ enum MediaType {
         return 'Book';
       case MediaType.custom:
         return 'Custom';
-    }
-  }
-
-  /// Localised display name.
-  String localizedLabel(S l) {
-    switch (this) {
-      case MediaType.game:
-        return l.mediaTypeGame;
-      case MediaType.movie:
-        return l.mediaTypeMovie;
-      case MediaType.tvShow:
-        return l.mediaTypeTvShow;
-      case MediaType.animation:
-        return l.mediaTypeAnimation;
-      case MediaType.visualNovel:
-        return l.mediaTypeVisualNovel;
-      case MediaType.manga:
-        return l.mediaTypeManga;
-      case MediaType.anime:
-        return l.mediaTypeAnime;
-      case MediaType.book:
-        return l.mediaTypeBook;
-      case MediaType.custom:
-        return l.mediaTypeCustom;
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -795,18 +796,8 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     );
   }
 
-  IconData _placeholderIcon(MediaType? type) => switch (type) {
-        MediaType.game => Icons.videogame_asset,
-        MediaType.movie => Icons.movie_outlined,
-        MediaType.tvShow => Icons.tv_outlined,
-        MediaType.animation => Icons.animation,
-        MediaType.visualNovel => Icons.menu_book,
-        MediaType.manga => Icons.auto_stories,
-        MediaType.anime => Icons.play_circle_outline,
-        MediaType.book => Icons.menu_book,
-        MediaType.custom => Icons.dashboard_customize,
-        null => Icons.event,
-      };
+  IconData _placeholderIcon(MediaType? type) =>
+      type != null ? MediaTypeTheme.placeholderIconFor(type) : Icons.event;
 
   Color _colorFor(ReleaseEvent e) {
     if (e.isUpcoming) return AppColors.statusPlanned;

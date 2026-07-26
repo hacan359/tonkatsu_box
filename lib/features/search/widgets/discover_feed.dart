@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -24,7 +25,14 @@ final FutureProvider<Set<int>> _existingTmdbIdsProvider =
       await ref.watch(collectedTvShowIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> animations =
       await ref.watch(collectedAnimationIdsProvider.future);
-  return <int>{...movies.keys, ...tvShows.keys, ...animations.keys};
+  // Every card in the feed comes from TMDB, so a TVmaze show sharing a numeric
+  // id with a TMDB one must not badge it as owned. Movies and animation are
+  // TMDB-only, their keys need no narrowing.
+  return <int>{
+    ...movies.keys,
+    ...tvShows.idsFromSource(DataSource.tmdb),
+    ...animations.keys,
+  };
 });
 
 /// Shown on the search screen while the query is empty; sections are
@@ -69,8 +77,8 @@ class DiscoverFeed extends ConsumerWidget {
         _buildMovieSection(
           context,
           ref,
-          title: l.discoverTopRatedMovies,
-          icon: Icons.star,
+          title: DiscoverSectionId.topRatedMovies.localizedLabel(l),
+          icon: DiscoverSectionId.topRatedMovies.icon,
           provider: discoverTopRatedMoviesProvider,
           ownedIds: ownedIds,
           settings: settings,
@@ -84,8 +92,8 @@ class DiscoverFeed extends ConsumerWidget {
         _buildTvShowSection(
           context,
           ref,
-          title: l.discoverPopularTvShows,
-          icon: Icons.tv,
+          title: DiscoverSectionId.popularTvShows.localizedLabel(l),
+          icon: DiscoverSectionId.popularTvShows.icon,
           provider: discoverPopularTvShowsProvider,
           ownedIds: ownedIds,
           settings: settings,
@@ -99,8 +107,8 @@ class DiscoverFeed extends ConsumerWidget {
         _buildMovieSection(
           context,
           ref,
-          title: l.discoverUpcoming,
-          icon: Icons.upcoming,
+          title: DiscoverSectionId.upcoming.localizedLabel(l),
+          icon: DiscoverSectionId.upcoming.icon,
           provider: discoverUpcomingMoviesProvider,
           ownedIds: ownedIds,
           settings: settings,
@@ -114,8 +122,8 @@ class DiscoverFeed extends ConsumerWidget {
         _buildTvShowSection(
           context,
           ref,
-          title: l.mediaTypeAnime,
-          icon: Icons.animation,
+          title: DiscoverSectionId.anime.localizedLabel(l),
+          icon: DiscoverSectionId.anime.icon,
           provider: discoverAnimeProvider,
           ownedIds: ownedIds,
           settings: settings,
@@ -129,8 +137,8 @@ class DiscoverFeed extends ConsumerWidget {
         _buildTvShowSection(
           context,
           ref,
-          title: l.discoverTopRatedTvShows,
-          icon: Icons.star_border,
+          title: DiscoverSectionId.topRatedTvShows.localizedLabel(l),
+          icon: DiscoverSectionId.topRatedTvShows.icon,
           provider: discoverTopRatedTvShowsProvider,
           ownedIds: ownedIds,
           settings: settings,
@@ -193,8 +201,8 @@ class DiscoverFeed extends ConsumerWidget {
       return _buildMovieSection(
         context,
         ref,
-        title: l.discoverTrending,
-        icon: Icons.local_fire_department,
+        title: DiscoverSectionId.trending.localizedLabel(l),
+        icon: DiscoverSectionId.trending.icon,
         provider: discoverTrendingMoviesProvider,
         ownedIds: ownedIds,
         settings: settings,
@@ -203,8 +211,8 @@ class DiscoverFeed extends ConsumerWidget {
     return _buildTvShowSection(
       context,
       ref,
-      title: l.discoverTrending,
-      icon: Icons.local_fire_department,
+      title: DiscoverSectionId.trending.localizedLabel(l),
+      icon: DiscoverSectionId.trending.icon,
       provider: discoverTrendingTvShowsProvider,
       ownedIds: ownedIds,
       settings: settings,

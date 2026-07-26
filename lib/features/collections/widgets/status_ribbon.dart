@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/constants/item_status_ui.dart';
 
 /// Hidden for [ItemStatus.notStarted]. Must be placed in a [Stack] inside
 /// a widget with `clipBehavior: Clip.antiAlias` (e.g. [Card]).

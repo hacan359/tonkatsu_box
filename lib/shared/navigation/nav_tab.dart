@@ -1,5 +1,9 @@
 // Main navigation tabs of the app.
 
+import 'package:flutter/material.dart';
+
+import '../../l10n/app_localizations.dart';
+
 /// Tab indices for the primary navigation.
 ///
 /// Used by [AppShell] to switch tabs and by external screens (e.g.
@@ -24,5 +28,38 @@ enum NavTab {
   search,
 
   /// Settings.
-  settings,
+  settings;
+
+  /// Icon shown when the tab is not selected.
+  IconData get icon => switch (this) {
+        NavTab.home => Icons.home_outlined,
+        NavTab.collections => Icons.shelves,
+        NavTab.tierLists => Icons.leaderboard_outlined,
+        NavTab.releases => Icons.notifications_none,
+        NavTab.wishlist => Icons.bookmark_border,
+        NavTab.search => Icons.search_outlined,
+        NavTab.settings => Icons.settings_outlined,
+      };
+
+  /// Icon shown when the tab is selected.
+  IconData get selectedIcon => switch (this) {
+        NavTab.home => Icons.home,
+        NavTab.collections => Icons.shelves,
+        NavTab.tierLists => Icons.leaderboard,
+        NavTab.releases => Icons.notifications,
+        NavTab.wishlist => Icons.bookmark,
+        NavTab.search => Icons.search,
+        NavTab.settings => Icons.settings,
+      };
+
+  /// Localised menu label.
+  String localizedLabel(S l) => switch (this) {
+        NavTab.home => l.navMain,
+        NavTab.collections => l.navCollections,
+        NavTab.tierLists => l.navTierLists,
+        NavTab.releases => l.navReleases,
+        NavTab.wishlist => l.navWishlist,
+        NavTab.search => l.search,
+        NavTab.settings => l.navSettings,
+      };
 }

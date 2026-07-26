@@ -1,5 +1,3 @@
-import '../../l10n/app_localizations.dart';
-
 /// How a manual calendar entry repeats.
 enum CalendarRecurrence {
   once('once'),
@@ -17,10 +15,4 @@ enum CalendarRecurrence {
     }
     return CalendarRecurrence.once;
   }
-
-  String localizedLabel(S l) => switch (this) {
-        CalendarRecurrence.once => l.recurrenceOnce,
-        CalendarRecurrence.weekly => l.recurrenceWeekly,
-        CalendarRecurrence.monthly => l.recurrenceMonthly,
-      };
 }

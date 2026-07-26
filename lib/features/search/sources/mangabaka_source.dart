@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/mangabaka_api.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/mangabaka_content_rating_filter.dart';
 import '../filters/mangabaka_genre_filter.dart';
 import '../filters/mangabaka_status_filter.dart';
@@ -30,10 +30,7 @@ class MangaBakaSource extends SearchSource {
   MediaType get outputMediaType => MediaType.manga;
 
   @override
-  String get groupId => 'mangabaka';
-
-  @override
-  String get groupName => 'MangaBaka';
+  DataSource get dataSource => DataSource.mangabaka;
 
   @override
   IconData get groupIcon => Icons.local_library_outlined;
@@ -43,9 +40,6 @@ class MangaBakaSource extends SearchSource {
 
   @override
   IconData get icon => Icons.local_library_outlined;
-
-  @override
-  String? get iconAsset => AppAssets.iconMangaBakaColor;
 
   @override
   bool get supportsBrowse => true;

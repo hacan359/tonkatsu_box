@@ -106,7 +106,7 @@ Current features: `collections` (main module — collection screens, ItemDetail,
 
 ### `shared/`
 
-- **`models/`** — immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls lib/shared/models/`.
+- **`models/`** — immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls lib/shared/models/`. Pure Dart only: no `package:flutter` / `dart:ui` / l10n imports — presentation (colors, icons, localized labels) lives in `shared/constants/*_ui.dart` extensions.
 - **`widgets/`** — shared widgets: `ScreenAppBar`, `CachedImage`, `MediaPosterCard`, `SourceBadge`, `StarRatingBar`, etc.
 - **`theme/`** — `AppColors`, `AppTypography`, `AppSpacing`, `AppTheme` (Material 3 dark).
 - **`navigation/`** — `NavigationShell` (Rail on desktop, BottomBar on mobile).
@@ -116,15 +116,17 @@ Current features: `collections` (main module — collection screens, ItemDetail,
 
 ## Database
 
-The source of truth is `lib/core/database/schema.dart` (table list) and `database_service.dart` (the current `version` in `_initDatabase`). Those numbers change with every migration, so this document **doesn't quote them** — grep the code instead.
+The source of truth is `packages/core/lib/database/schema.dart` (table list) and `lib/core/database/database_service.dart` (the current `version` in `_initDatabase`). Those numbers change with every migration, so this document **doesn't quote them** — grep the code instead.
+
+The schema and the migration chain live in `packages/core`, a pure-Dart package with no Flutter dependency, so the same code can build and upgrade the database outside a Flutter app. `database_service.dart` keeps the CRUD and the `dart:io` path handling.
 
 Key entities:
 
 - **`collections`** + **`collection_items`** — user collections and their members. `collection_id` is nullable; `NULL` means uncategorized.
 - **`collection_items.media_type`** — discriminator: `game` / `movie` / `tvShow` / `anime` / `manga` / `visualNovel` / `book` / `custom`. `external_id` points at a row in the matching cache table.
-- **Media cache tables**: `games`, `movies_cache`, `tv_shows_cache` (+ `tv_seasons_cache`, `tv_episodes_cache`), `anime_cache`, `manga_cache`, `visual_novels_cache`, `books_cache`, `custom_items`. These are local mirrors of API responses keyed by external id (IGDB / TMDB / AniList / VNDB / OpenLibrary / Fantlab). `manga_cache` and `books_cache` use a composite key `(id, source)` since two providers can share a numeric id.
+- **Media cache tables**: `games`, `movies_cache`, `tv_shows_cache` (+ `tv_seasons_cache`, `tv_episodes_cache`), `anime_cache`, `manga_cache`, `visual_novels_cache`, `books_cache`, `custom_items`. These are local mirrors of API responses keyed by external id (IGDB / TMDB / AniList / VNDB / OpenLibrary / Fantlab). `manga_cache`, `books_cache` and `tv_shows_cache` (with its season/episode tables) use a composite key `(id, source)` since two providers can share a numeric id.
 - **`canvas_items` / `canvas_connections` / `canvas_viewport`** — the Board. Lives at both the collection level and the per-item level (`game_canvas_viewport`).
-- **`watched_episodes`** — episode-watch marks for TV shows.
+- **`watched_episodes`** — episode-watch marks for TV shows, keyed by `(collection_id, source, show_id, season, episode)`.
 - **`wishlist`** — quick free-text "look it up later" notes.
 - **`collection_tags`** — sub-categories inside a collection.
 - **`tier_lists` / `tier_definitions` / `tier_list_entries`** — Tier list.

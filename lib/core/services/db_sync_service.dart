@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:archive/archive.dart';
+import 'package:core/database/migrations/migration_registry.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -12,7 +13,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../shared/constants/platform_features.dart';
 import '../../shared/models/sync_manifest.dart';
 import '../database/database_service.dart';
-import '../database/migrations/migration_registry.dart';
 import '../database/sqlite_health.dart';
 import 'image_cache_service.dart';
 import 'storage_root.dart';

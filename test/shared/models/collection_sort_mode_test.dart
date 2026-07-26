@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
+import 'package:tonkatsu_box/shared/constants/collection_sort_mode_ui.dart';
 
 void main() {
   group('CollectionSortMode', () {
@@ -53,87 +54,6 @@ void main() {
 
       test('externalRating должен иметь значение "external_rating"', () {
         expect(CollectionSortMode.externalRating.value, 'external_rating');
-      });
-    });
-
-    group('displayLabel', () {
-      test('manual должен отображаться как "Manual"', () {
-        expect(CollectionSortMode.manual.displayLabel, 'Manual');
-      });
-
-      test('addedDate должен отображаться как "Date Added"', () {
-        expect(CollectionSortMode.addedDate.displayLabel, 'Date Added');
-      });
-
-      test('status должен отображаться как "Status"', () {
-        expect(CollectionSortMode.status.displayLabel, 'Status');
-      });
-
-      test('name должен отображаться как "Name"', () {
-        expect(CollectionSortMode.name.displayLabel, 'Name');
-      });
-
-      test('rating должен отображаться как "My Rating"', () {
-        expect(CollectionSortMode.rating.displayLabel, 'My Rating');
-      });
-
-      test('externalRating должен отображаться как "External Rating"', () {
-        expect(
-          CollectionSortMode.externalRating.displayLabel,
-          'External Rating',
-        );
-      });
-    });
-
-    group('shortLabel', () {
-      test('manual должен иметь shortLabel "Manual"', () {
-        expect(CollectionSortMode.manual.shortLabel, 'Manual');
-      });
-
-      test('addedDate должен иметь shortLabel "Date"', () {
-        expect(CollectionSortMode.addedDate.shortLabel, 'Date');
-      });
-
-      test('status должен иметь shortLabel "Status"', () {
-        expect(CollectionSortMode.status.shortLabel, 'Status');
-      });
-
-      test('name должен иметь shortLabel "A-Z"', () {
-        expect(CollectionSortMode.name.shortLabel, 'A-Z');
-      });
-
-      test('rating должен иметь shortLabel "Rating"', () {
-        expect(CollectionSortMode.rating.shortLabel, 'Rating');
-      });
-
-      test('externalRating должен иметь shortLabel "IGDB/TMDB"', () {
-        expect(CollectionSortMode.externalRating.shortLabel, 'IGDB/TMDB');
-      });
-    });
-
-    group('description', () {
-      test('manual должен иметь описание "Custom order"', () {
-        expect(CollectionSortMode.manual.description, 'Custom order');
-      });
-
-      test('addedDate должен иметь описание "Newest first"', () {
-        expect(CollectionSortMode.addedDate.description, 'Newest first');
-      });
-
-      test('status должен иметь описание "Active first"', () {
-        expect(CollectionSortMode.status.description, 'Active first');
-      });
-
-      test('name должен иметь описание "A to Z"', () {
-        expect(CollectionSortMode.name.description, 'A to Z');
-      });
-
-      test('rating должен иметь описание "Highest first"', () {
-        expect(CollectionSortMode.rating.description, 'Highest first');
-      });
-
-      test('externalRating должен иметь описание "Highest first"', () {
-        expect(CollectionSortMode.externalRating.description, 'Highest first');
       });
     });
 
@@ -268,36 +188,6 @@ void main() {
             mode.value.isNotEmpty,
             isTrue,
             reason: '${mode.name} value должен быть непустым',
-          );
-        }
-      });
-
-      test('каждый режим должен иметь непустой displayLabel', () {
-        for (final CollectionSortMode mode in CollectionSortMode.values) {
-          expect(
-            mode.displayLabel.isNotEmpty,
-            isTrue,
-            reason: '${mode.name} displayLabel должен быть непустым',
-          );
-        }
-      });
-
-      test('каждый режим должен иметь непустой shortLabel', () {
-        for (final CollectionSortMode mode in CollectionSortMode.values) {
-          expect(
-            mode.shortLabel.isNotEmpty,
-            isTrue,
-            reason: '${mode.name} shortLabel должен быть непустым',
-          );
-        }
-      });
-
-      test('каждый режим должен иметь непустой description', () {
-        for (final CollectionSortMode mode in CollectionSortMode.values) {
-          expect(
-            mode.description.isNotEmpty,
-            isTrue,
-            reason: '${mode.name} description должен быть непустым',
           );
         }
       });

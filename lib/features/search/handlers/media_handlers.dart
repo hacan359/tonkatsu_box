@@ -117,12 +117,17 @@ class MediaHandlers {
       imageType: ImageType.animeCover,
       collectedProvider: collectedAnimeIdsProvider,
       externalIdOf: (Anime a) => a.id,
-      imageIdOf: (Anime a) => a.id.toString(),
+      imageIdOf: (Anime a) => coverImageId(
+        mediaType: MediaType.anime,
+        externalId: a.id,
+        source: a.source,
+      ),
       titleOf: (Anime a) => a.titleByLanguage(
         ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
       imageUrlOf: (Anime a) => a.coverUrl,
       upsert: (Anime a) => ref.read(animeDaoProvider).upsertAnime(a),
+      sourceOf: (Anime a) => a.source,
       sheetBuilder: (Anime a, VoidCallback onAdd) => ItemDetailsSheet.anime(
         a,
         onAddToCollection: onAdd,

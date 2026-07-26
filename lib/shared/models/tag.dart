@@ -88,6 +88,19 @@ class Tag {
     return null;
   }
 
+  /// Trims [parts] into a tag-name list, dropping empties and deduping
+  /// case-insensitively (first spelling wins).
+  static List<String> dedupeNames(Iterable<String> parts) {
+    final Set<String> seen = <String>{};
+    final List<String> names = <String>[];
+    for (final String part in parts) {
+      final String name = part.trim();
+      if (name.isEmpty) continue;
+      if (seen.add(name.toLowerCase())) names.add(name);
+    }
+    return names;
+  }
+
   /// Creates a copy with the given fields replaced.
   ///
   /// [clearColor] / [clearTextColor] reset the nullable colors to `null`.

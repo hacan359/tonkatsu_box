@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
 import 'package:tonkatsu_box/shared/models/tv_season.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
@@ -31,6 +32,7 @@ void main() {
         conflictAlgorithm: any(named: 'conflictAlgorithm'),
       ),
     ).thenReturn(null);
+    when(() => mockBatch.rawInsert(any(), any())).thenReturn(null);
     when(() => mockBatch.commit(noResult: true))
         .thenAnswer((_) async => <Object?>[]);
   }
@@ -43,8 +45,8 @@ void main() {
         when(
           () => mockDb.query(
             'tv_shows_cache',
-            where: 'tmdb_id = ?',
-            whereArgs: <Object?>[999],
+            where: 'tmdb_id = ? AND source = ?',
+            whereArgs: <Object?>[999, 'tmdb'],
             limit: 1,
           ),
         ).thenAnswer((_) async => <Map<String, dynamic>>[]);
@@ -72,8 +74,8 @@ void main() {
         when(
           () => mockDb.query(
             'tv_shows_cache',
-            where: 'tmdb_id = ?',
-            whereArgs: <Object?>[200],
+            where: 'tmdb_id = ? AND source = ?',
+            whereArgs: <Object?>[200, 'tmdb'],
             limit: 1,
           ),
         ).thenAnswer((_) async => <Map<String, dynamic>>[row]);
@@ -87,25 +89,23 @@ void main() {
     });
 
     group('upsertTvShow', () {
-      test('inserts with replace', () async {
+      test('upserts preserving totals and status for sparse rows', () async {
         const TvShow show = TvShow(tmdbId: 1, title: 'Test');
-        when(
-          () => mockDb.insert(
-            'tv_shows_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).thenAnswer((_) async => 1);
+        when(() => mockDb.rawInsert(any(), any()))
+            .thenAnswer((_) async => 1);
 
         await dao.upsertTvShow(show);
 
-        verify(
-          () => mockDb.insert(
-            'tv_shows_cache',
-            show.toDb(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(1);
+        final VerificationResult captured =
+            verify(() => mockDb.rawInsert(captureAny(), captureAny()));
+        captured.called(1);
+        final String sql = captured.captured.first as String;
+        expect(sql, startsWith('INSERT OR REPLACE INTO tv_shows_cache'));
+        expect(sql, contains('COALESCE(?, (SELECT total_seasons'));
+        expect(sql, contains('COALESCE(?, (SELECT total_episodes'));
+        expect(sql, contains('COALESCE(?, (SELECT status'));
+        final List<Object?> args = captured.captured[1] as List<Object?>;
+        expect(args, containsAllInOrder(<Object?>[1, 'Test']));
       });
     });
 
@@ -124,13 +124,7 @@ void main() {
           TvShow(tmdbId: 2, title: 'S2'),
         ]);
 
-        verify(
-          () => mockBatch.insert(
-            'tv_shows_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(2);
+        verify(() => mockBatch.rawInsert(any(), any())).called(2);
       });
     });
 
@@ -173,8 +167,8 @@ void main() {
         when(
           () => mockDb.query(
             'tv_seasons_cache',
-            where: 'tmdb_show_id = ?',
-            whereArgs: <Object?>[200],
+            where: 'source = ? AND tmdb_show_id = ?',
+            whereArgs: <Object?>['tmdb', 200],
             orderBy: 'season_number ASC',
           ),
         ).thenAnswer(
@@ -182,6 +176,7 @@ void main() {
             <String, dynamic>{
               'tmdb_show_id': 200,
               'season_number': 1,
+              'source': 'tmdb',
               'name': 'Season 1',
               'episode_count': 10,
               'poster_url': null,
@@ -190,7 +185,8 @@ void main() {
           ],
         );
 
-        final List<TvSeason> result = await dao.getTvSeasonsByShowId(200);
+        final List<TvSeason> result =
+            await dao.getTvSeasonsByShowId(DataSource.tmdb, 200);
 
         expect(result.length, 1);
         expect(result.first.seasonNumber, 1);
@@ -240,8 +236,8 @@ void main() {
         when(
           () => mockDb.query(
             'tv_episodes_cache',
-            where: 'tmdb_show_id = ?',
-            whereArgs: <Object?>[200],
+            where: 'source = ? AND tmdb_show_id = ?',
+            whereArgs: <Object?>['tmdb', 200],
             orderBy: 'season_number ASC, episode_number ASC',
           ),
         ).thenAnswer(
@@ -259,7 +255,8 @@ void main() {
           ],
         );
 
-        final List<TvEpisode> result = await dao.getEpisodesByShowId(200);
+        final List<TvEpisode> result =
+            await dao.getEpisodesByShowId(DataSource.tmdb, 200);
 
         expect(result.length, 1);
         expect(result.first.name, 'Pilot');
@@ -271,14 +268,14 @@ void main() {
         when(
           () => mockDb.query(
             'tv_episodes_cache',
-            where: 'tmdb_show_id = ? AND season_number = ?',
-            whereArgs: <Object?>[200, 2],
+            where: 'source = ? AND tmdb_show_id = ? AND season_number = ?',
+            whereArgs: <Object?>['tmdb', 200, 2],
             orderBy: 'episode_number ASC',
           ),
         ).thenAnswer((_) async => <Map<String, dynamic>>[]);
 
         final List<TvEpisode> result =
-            await dao.getEpisodesByShowAndSeason(200, 2);
+            await dao.getEpisodesByShowAndSeason(DataSource.tmdb, 200, 2);
 
         expect(result, isEmpty);
       });
@@ -318,18 +315,18 @@ void main() {
         when(
           () => mockDb.delete(
             'tv_episodes_cache',
-            where: 'tmdb_show_id = ?',
-            whereArgs: <Object?>[200],
+            where: 'source = ? AND tmdb_show_id = ?',
+            whereArgs: <Object?>['tmdb', 200],
           ),
         ).thenAnswer((_) async => 10);
 
-        await dao.clearEpisodesByShow(200);
+        await dao.clearEpisodesByShow(DataSource.tmdb, 200);
 
         verify(
           () => mockDb.delete(
             'tv_episodes_cache',
-            where: 'tmdb_show_id = ?',
-            whereArgs: <Object?>[200],
+            where: 'source = ? AND tmdb_show_id = ?',
+            whereArgs: <Object?>['tmdb', 200],
           ),
         ).called(1);
       });
@@ -343,8 +340,8 @@ void main() {
           () => mockDb.query(
             'watched_episodes',
             columns: <String>['season_number', 'episode_number', 'watched_at'],
-            where: 'collection_id = ? AND show_id = ?',
-            whereArgs: <Object?>[1, 200],
+            where: 'collection_id = ? AND source = ? AND show_id = ?',
+            whereArgs: <Object?>[1, 'tmdb', 200],
           ),
         ).thenAnswer(
           (_) async => <Map<String, dynamic>>[
@@ -362,7 +359,7 @@ void main() {
         );
 
         final Map<(int, int), DateTime?> result =
-            await dao.getWatchedEpisodes(1, 200);
+            await dao.getWatchedEpisodes(1, DataSource.tmdb, 200);
 
         expect(result.length, 2);
         expect(result[(1, 1)], isNotNull);
@@ -376,8 +373,8 @@ void main() {
           () => mockDb.query(
             'watched_episodes',
             columns: <String>['season_number', 'episode_number'],
-            where: 'show_id = ?',
-            whereArgs: <Object?>[200],
+            where: 'source = ? AND show_id = ?',
+            whereArgs: <Object?>['tmdb', 200],
             distinct: true,
           ),
         ).thenAnswer(
@@ -388,7 +385,7 @@ void main() {
         );
 
         final Set<(int, int)> result =
-            await dao.getWatchedEpisodesForShow(200);
+            await dao.getWatchedEpisodesForShow(DataSource.tmdb, 200);
 
         expect(result, <(int, int)>{(1, 1), (2, 3)});
       });
@@ -399,6 +396,7 @@ void main() {
         when(() => mockDb.rawQuery(any())).thenAnswer(
           (_) async => <Map<String, Object?>>[
             <String, Object?>{
+              'source': 'tmdb',
               'show_id': 200,
               'season_number': 1,
               'episode_number': 1,
@@ -422,7 +420,8 @@ void main() {
               conflictAlgorithm: ConflictAlgorithm.ignore,
             )).thenAnswer((_) async => 1);
 
-        await dao.markEpisodeWatchedAt(1, 200, 2, 3, 1705320000000);
+        await dao.markEpisodeWatchedAt(
+            1, DataSource.tmdb, 200, 2, 3, 1705320000000);
 
         final VerificationResult captured = verify(
           () => mockDb.insert(
@@ -450,7 +449,7 @@ void main() {
           ),
         ).thenAnswer((_) async => 1);
 
-        await dao.markEpisodeWatched(1, 200, 1, 3);
+        await dao.markEpisodeWatched(1, DataSource.tmdb, 200, 1, 3);
 
         final VerificationResult captured = verify(
           () => mockDb.insert(
@@ -464,6 +463,7 @@ void main() {
         final Map<String, dynamic> data =
             captured.captured.first as Map<String, dynamic>;
         expect(data['collection_id'], 1);
+        expect(data['source'], 'tmdb');
         expect(data['show_id'], 200);
         expect(data['season_number'], 1);
         expect(data['episode_number'], 3);
@@ -476,20 +476,20 @@ void main() {
         when(
           () => mockDb.delete(
             'watched_episodes',
-            where: 'collection_id = ? AND show_id = ? '
+            where: 'collection_id = ? AND source = ? AND show_id = ? '
                 'AND season_number = ? AND episode_number = ?',
-            whereArgs: <Object?>[1, 200, 1, 3],
+            whereArgs: <Object?>[1, 'tmdb', 200, 1, 3],
           ),
         ).thenAnswer((_) async => 1);
 
-        await dao.markEpisodeUnwatched(1, 200, 1, 3);
+        await dao.markEpisodeUnwatched(1, DataSource.tmdb, 200, 1, 3);
 
         verify(
           () => mockDb.delete(
             'watched_episodes',
-            where: 'collection_id = ? AND show_id = ? '
+            where: 'collection_id = ? AND source = ? AND show_id = ? '
                 'AND season_number = ? AND episode_number = ?',
-            whereArgs: <Object?>[1, 200, 1, 3],
+            whereArgs: <Object?>[1, 'tmdb', 200, 1, 3],
           ),
         ).called(1);
       });
@@ -500,8 +500,8 @@ void main() {
         when(
           () => mockDb.rawQuery(
             'SELECT COUNT(*) as cnt FROM watched_episodes '
-            'WHERE collection_id = ? AND show_id = ?',
-            <Object?>[1, 200],
+            'WHERE collection_id = ? AND source = ? AND show_id = ?',
+            <Object?>[1, 'tmdb', 200],
           ),
         ).thenAnswer(
           (_) async => <Map<String, dynamic>>[
@@ -509,13 +509,16 @@ void main() {
           ],
         );
 
-        expect(await dao.getWatchedEpisodeCount(1, 200), 15);
+        expect(
+          await dao.getWatchedEpisodeCount(1, DataSource.tmdb, 200),
+          15,
+        );
       });
     });
 
     group('markSeasonWatched', () {
       test('skips when episode list is empty', () async {
-        await dao.markSeasonWatched(1, 200, 1, <int>[]);
+        await dao.markSeasonWatched(1, DataSource.tmdb, 200, 1, <int>[]);
 
         verifyNever(() => mockTxn.batch());
       });
@@ -523,7 +526,8 @@ void main() {
       test('batch inserts episodes for season', () async {
         stubTransaction();
 
-        await dao.markSeasonWatched(1, 200, 1, <int>[1, 2, 3]);
+        await dao.markSeasonWatched(
+            1, DataSource.tmdb, 200, 1, <int>[1, 2, 3]);
 
         verify(
           () => mockBatch.insert(
@@ -540,18 +544,20 @@ void main() {
         when(
           () => mockDb.delete(
             'watched_episodes',
-            where: 'collection_id = ? AND show_id = ? AND season_number = ?',
-            whereArgs: <Object?>[1, 200, 2],
+            where: 'collection_id = ? AND source = ? AND show_id = ? '
+                'AND season_number = ?',
+            whereArgs: <Object?>[1, 'tmdb', 200, 2],
           ),
         ).thenAnswer((_) async => 5);
 
-        await dao.unmarkSeasonWatched(1, 200, 2);
+        await dao.unmarkSeasonWatched(1, DataSource.tmdb, 200, 2);
 
         verify(
           () => mockDb.delete(
             'watched_episodes',
-            where: 'collection_id = ? AND show_id = ? AND season_number = ?',
-            whereArgs: <Object?>[1, 200, 2],
+            where: 'collection_id = ? AND source = ? AND show_id = ? '
+                'AND season_number = ?',
+            whereArgs: <Object?>[1, 'tmdb', 200, 2],
           ),
         ).called(1);
       });

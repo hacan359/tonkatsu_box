@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
 
@@ -17,28 +16,23 @@ void main() {
 
   group('MangaDao', () {
     group('upsertManga', () {
-      test('inserts manga with replace', () async {
+      test('upserts preserving chapters/volumes for sparse rows', () async {
         const Manga manga = Manga(
           id: 1,
           title: 'Test Manga',
         );
-        when(
-          () => mockDb.insert(
-            'manga_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).thenAnswer((_) async => 1);
+        when(() => mockDb.rawInsert(any(), any()))
+            .thenAnswer((_) async => 1);
 
         await dao.upsertManga(manga);
 
-        verify(
-          () => mockDb.insert(
-            'manga_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(1);
+        final VerificationResult captured =
+            verify(() => mockDb.rawInsert(captureAny(), any()));
+        captured.called(1);
+        final String sql = captured.captured.first as String;
+        expect(sql, startsWith('INSERT OR REPLACE INTO manga_cache'));
+        expect(sql, contains('COALESCE(?, (SELECT chapters'));
+        expect(sql, contains('COALESCE(?, (SELECT volumes'));
       });
     });
 
@@ -51,13 +45,7 @@ void main() {
       test('batch inserts multiple mangas', () async {
         final MockBatch mockBatch = MockBatch();
         when(() => mockDb.batch()).thenReturn(mockBatch);
-        when(
-          () => mockBatch.insert(
-            any(),
-            any(),
-            conflictAlgorithm: any(named: 'conflictAlgorithm'),
-          ),
-        ).thenReturn(null);
+        when(() => mockBatch.rawInsert(any(), any())).thenReturn(null);
         when(() => mockBatch.commit(noResult: true))
             .thenAnswer((_) async => <Object?>[]);
 
@@ -68,13 +56,7 @@ void main() {
 
         await dao.upsertMangas(mangas);
 
-        verify(
-          () => mockBatch.insert(
-            'manga_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(2);
+        verify(() => mockBatch.rawInsert(any(), any())).called(2);
         verify(() => mockBatch.commit(noResult: true)).called(1);
       });
     });

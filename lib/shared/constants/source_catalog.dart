@@ -1,6 +1,6 @@
 // Single source of truth for the data providers exposed on the Search screen.
 // The Welcome "Sources" step and Settings → Credits both render from this, so
-// `source_catalog_test` asserts it mirrors [groupedSearchSources].
+// `source_catalog_test` asserts it mirrors the registered `searchSources`.
 
 import '../models/data_source.dart';
 import '../models/media_type.dart';
@@ -40,6 +40,11 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     keyRequirement: SourceKeyRequirement.recommended,
   ),
   SourceInfo(
+    source: DataSource.tvmaze,
+    mediaTypes: <MediaType>[MediaType.tvShow],
+    url: 'https://www.tvmaze.com/',
+  ),
+  SourceInfo(
     source: DataSource.igdb,
     mediaTypes: <MediaType>[MediaType.game],
     url: 'https://www.igdb.com/',
@@ -54,6 +59,16 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     source: DataSource.mangabaka,
     mediaTypes: <MediaType>[MediaType.manga],
     url: 'https://mangabaka.org/',
+  ),
+  SourceInfo(
+    source: DataSource.mangadex,
+    mediaTypes: <MediaType>[MediaType.manga],
+    url: 'https://mangadex.org/',
+  ),
+  SourceInfo(
+    source: DataSource.kitsu,
+    mediaTypes: <MediaType>[MediaType.anime, MediaType.manga],
+    url: 'https://kitsu.io/',
   ),
   SourceInfo(
     source: DataSource.vndb,
@@ -91,19 +106,3 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     keyRequirement: SourceKeyRequirement.recommended,
   ),
 ];
-
-/// Maps a search-source `groupId` to the [DataSource]s in that group (used by
-/// the sync test). Each provider is its own group (source-first).
-const Map<String, List<DataSource>> kSearchGroupToSources =
-    <String, List<DataSource>>{
-  'tmdb': <DataSource>[DataSource.tmdb],
-  'igdb': <DataSource>[DataSource.igdb],
-  'anilist': <DataSource>[DataSource.anilist],
-  'mangabaka': <DataSource>[DataSource.mangabaka],
-  'vndb': <DataSource>[DataSource.vndb],
-  'openlibrary': <DataSource>[DataSource.openLibrary],
-  'fantlab': <DataSource>[DataSource.fantlab],
-  'googlebooks': <DataSource>[DataSource.googleBooks],
-  'hardcover': <DataSource>[DataSource.hardcover],
-  'comicvine': <DataSource>[DataSource.comicVine],
-};

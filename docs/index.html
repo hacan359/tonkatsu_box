@@ -7,7 +7,7 @@
   <!-- SEO Meta Tags -->
   <title>Tonkatsu Box — Organize Games, Movies, TV Shows, Anime, Manga, Visual Novels & Books</title>
   <meta name="description" content="Free open-source app to build and manage collections of retro games, movies, TV shows, anime, manga, visual novels, and books. Track progress, rate favorites, create tier lists, visual boards, and share with friends. Windows, Linux, macOS & Android.">
-  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, book tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, ComicVine, Google Books, Hardcover, Trakt import, Steam import, Kinorium import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
+  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, book tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, ComicVine, Google Books, Hardcover, Trakt import, Steam import, Kinorium import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
   <meta name="author" content="hacan359">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://hacan359.github.io/tonkatsu_box/">
@@ -1174,7 +1174,7 @@
           <div class="feature-card__icon">🔍</div>
           <h3 class="feature-card__title" data-i18n="feat_search_title">Search & Discover</h3>
           <p class="feature-card__desc" data-i18n="feat_search_desc">
-            Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine. Filter by year, genre, or platform. Add anything to your collections with one tap.
+            Find titles from IGDB, TMDB, TVmaze, AniList, MangaBaka, MangaDex, Kitsu, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine. Filter by year, genre, or platform. Add anything to your collections with one tap.
           </p>
         </div>
 
@@ -1235,9 +1235,9 @@
 
         <div class="feature-card feature-card--lang reveal">
           <div class="feature-card__icon">🌐</div>
-          <h3 class="feature-card__title" data-i18n="feat_lang_title">English, Russian, Chinese &amp; Spanish</h3>
+          <h3 class="feature-card__title" data-i18n="feat_lang_title">English, Russian, Chinese, Spanish, Portuguese &amp; French</h3>
           <p class="feature-card__desc" data-i18n="feat_lang_desc">
-            Full interface localization with runtime language switching. All menus, statuses, labels, and messages available in English, Russian, Simplified Chinese, and Spanish.
+            Full interface localization with runtime language switching. All menus, statuses, labels, and messages available in English, Russian, Simplified Chinese, Spanish, Brazilian Portuguese, and French.
           </p>
         </div>
       </div>
@@ -1248,7 +1248,7 @@
   <div class="slider-section reveal">
     <div class="section-label" data-i18n="slider_search_label">Search</div>
     <h2 class="section-title" data-i18n="slider_search_title">Search &amp; Discover</h2>
-    <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine databases with hundreds of thousands of titles</p>
+    <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine databases with hundreds of thousands of titles</p>
     <div class="screenshot-slider" data-autoplay="5000">
       <div class="slider-track">
         <img src="screenshots/mockup_game_search.jpg" alt="Search games" data-caption="slider_search_2" loading="lazy">
@@ -1414,9 +1414,12 @@
         <span class="tech-pill">Material Design 3</span>
         <span class="tech-pill">IGDB API</span>
         <span class="tech-pill">TMDB API</span>
+        <span class="tech-pill">TVmaze API</span>
         <span class="tech-pill">VNDB API</span>
         <span class="tech-pill">AniList API</span>
         <span class="tech-pill">MangaBaka API</span>
+        <span class="tech-pill">MangaDex API</span>
+        <span class="tech-pill">Kitsu API</span>
         <span class="tech-pill">OpenLibrary API</span>
         <span class="tech-pill">Fantlab API</span>
         <span class="tech-pill">Google Books API</span>
@@ -1472,6 +1475,9 @@
       <a href="https://www.igdb.com/" target="_blank" rel="noopener"><img src="assets/igdb_logo.svg" alt="IGDB"></a>
       <a href="https://vndb.org/" target="_blank" rel="noopener" style="color:var(--vn);font-weight:700;font-size:14px;text-decoration:none;">VNDB</a>
       <a href="https://mangabaka.org/" target="_blank" rel="noopener"><img src="assets/mangabaka_logo.png" alt="MangaBaka"></a>
+      <a href="https://www.tvmaze.com/" target="_blank" rel="noopener" style="color:#3C5C8C;font-weight:700;font-size:14px;text-decoration:none;">TVmaze</a>
+      <a href="https://mangadex.org/" target="_blank" rel="noopener" style="color:#FF6740;font-weight:700;font-size:14px;text-decoration:none;">MangaDex</a>
+      <a href="https://kitsu.io/" target="_blank" rel="noopener" style="color:#F75239;font-weight:700;font-size:14px;text-decoration:none;">Kitsu</a>
       <a href="https://hardcover.app/" target="_blank" rel="noopener" style="color:#6366F1;font-weight:700;font-size:14px;text-decoration:none;">Hardcover</a>
       <a href="https://www.steamgriddb.com/" target="_blank" rel="noopener"><img src="assets/steamgriddb_logo.svg" alt="SteamGridDB"></a>
     </div>
@@ -1600,7 +1606,7 @@
         feat_collections_title: 'Build Collections',
         feat_collections_desc: 'Create unlimited collections by platform, genre, or custom lists. Mix games, movies, anime, manga, novels, and books in a single collection. Switch between grid and list views.',
         feat_search_title: 'Search & Discover',
-        feat_search_desc: 'Find titles from IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine. Filter by year, genre, or platform. Add anything to your collections with one tap.',
+        feat_search_desc: 'Find titles from IGDB, TMDB, TVmaze, AniList, MangaBaka, MangaDex, Kitsu, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine. Filter by year, genre, or platform. Add anything to your collections with one tap.',
         feat_progress_title: 'Track Progress',
         feat_progress_desc: 'Mark items as In Progress, Completed, Planned, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.',
         status_progress: 'In Progress',
@@ -1617,8 +1623,8 @@
         feat_rate_desc: 'Rate every title from 1–10 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.',
         feat_tier_title: 'Tier Lists',
         feat_tier_desc: 'Rank items from your collections into S/A/B/C tiers with drag-and-drop, or build a Mood Grid — an N×M board of items with labels. Customize tiers, export either layout as a shareable PNG.',
-        feat_lang_title: 'English, Russian, Chinese & Spanish',
-        feat_lang_desc: 'Full interface localization with runtime language switching. All menus, statuses, labels, and messages available in English, Russian, Simplified Chinese, and Spanish.',
+        feat_lang_title: 'English, Russian, Chinese, Spanish, Portuguese & French',
+        feat_lang_desc: 'Full interface localization with runtime language switching. All menus, statuses, labels, and messages available in English, Russian, Simplified Chinese, Spanish, Brazilian Portuguese, and French.',
         steps_label: 'Get Started',
         steps_title: 'Up and running in minutes',
         steps_subtitle: 'Install the app and start building your collection — no setup required.',
@@ -1662,11 +1668,11 @@
         slider_organize_4: 'Collection grid view with poster cards, ratings, and search',
         slider_search_label: 'Search',
         slider_search_title: 'Search &amp; Discover',
-        slider_search_subtitle: 'Search IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine databases with hundreds of thousands of titles',
+        slider_search_subtitle: 'Search IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine databases with hundreds of thousands of titles',
         slider_search_1: 'Add anything to your collections — set status, pick platform, leave a note, attach an author comment',
         slider_search_2: 'Search games across hundreds of platforms via IGDB',
         slider_search_3: 'Search manga and light novels via AniList — no API key required',
-        slider_search_4: 'Multiple sources — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine all in one place',
+        slider_search_4: 'Multiple sources — IGDB, TMDB, TVmaze, AniList, MangaBaka, MangaDex, Kitsu, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover, and ComicVine all in one place',
         slider_track_label: 'Track',
         slider_track_title: 'Track &amp; Visualize',
         slider_track_subtitle: 'Rank your favorites in tier lists, lay out picks on a mood grid, export both as PNG',
@@ -1706,7 +1712,7 @@
         feat_collections_title: 'Коллекции',
         feat_collections_desc: 'Создавайте неограниченное количество коллекций по платформе, жанру или своим спискам. Смешивайте игры, фильмы, аниме, мангу, новеллы и книги в одной коллекции. Переключайтесь между сеткой и списком.',
         feat_search_title: 'Поиск',
-        feat_search_desc: 'Находите названия в базах IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover и ComicVine. Фильтруйте по году, жанру или платформе. Добавляйте в коллекцию одним нажатием.',
+        feat_search_desc: 'Находите названия в базах IGDB, TMDB, TVmaze, AniList, MangaBaka, MangaDex, Kitsu, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover и ComicVine. Фильтруйте по году, жанру или платформе. Добавляйте в коллекцию одним нажатием.',
         feat_progress_title: 'Прогресс',
         feat_progress_desc: 'Отмечайте статусы: В процессе, Пройдено, Отложено, Брошено. Отслеживайте эпизоды сериалов и аниме. Оценивайте от 1 до 10 звёзд.',
         status_progress: 'В процессе',
@@ -1723,8 +1729,8 @@
         feat_rate_desc: 'Оценивайте от 1 до 10 звёзд. Пишите личные заметки и рецензии, видимые при экспорте. Отслеживайте даты начала и окончания.',
         feat_tier_title: 'Тир-листы',
         feat_tier_desc: 'Ранжируйте элементы коллекций по уровням S/A/B/C перетаскиванием, либо собирайте Mood Grid — доску N×M из элементов с подписями. Экспорт обоих видов в PNG.',
-        feat_lang_title: 'Английский, русский, китайский и испанский',
-        feat_lang_desc: 'Полная локализация интерфейса с переключением языка на лету. Все меню, статусы, надписи и сообщения на английском, русском, упрощённом китайском и испанском.',
+        feat_lang_title: 'Английский, русский, китайский, испанский, португальский и французский',
+        feat_lang_desc: 'Полная локализация интерфейса с переключением языка на лету. Все меню, статусы, надписи и сообщения на английском, русском, упрощённом китайском, испанском, бразильском португальском и французском.',
         steps_label: 'Начало работы',
         steps_title: 'Запуск за несколько минут',
         steps_subtitle: 'Установите приложение и начните собирать коллекцию — без настройки.',
@@ -1768,11 +1774,11 @@
         slider_organize_4: 'Сетка коллекции с постерами, рейтингами и поиском',
         slider_search_label: 'Поиск',
         slider_search_title: 'Поиск и открытия',
-        slider_search_subtitle: 'Ищите в базах IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, Google Books, Hardcover и ComicVine среди сотен тысяч названий',
+        slider_search_subtitle: 'Ищите в базах IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, Google Books, Hardcover и ComicVine среди сотен тысяч названий',
         slider_search_1: 'Добавляйте что угодно в коллекции — статус, платформа, заметка, авторский комментарий',
         slider_search_2: 'Поиск игр по сотням платформ через IGDB',
         slider_search_3: 'Поиск манги и ранобэ через AniList — без API-ключа',
-        slider_search_4: 'Множество источников — IGDB, TMDB, AniList, MangaBaka, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover и ComicVine в одном окне',
+        slider_search_4: 'Множество источников — IGDB, TMDB, TVmaze, AniList, MangaBaka, MangaDex, Kitsu, VNDB, OpenLibrary, Fantlab, Google Books, Hardcover и ComicVine в одном окне',
         slider_track_label: 'Прогресс',
         slider_track_title: 'Отслеживание и визуализация',
         slider_track_subtitle: 'Ранжируйте фавориты в тир-листах, раскладывайте на mood-доске, экспорт в PNG',

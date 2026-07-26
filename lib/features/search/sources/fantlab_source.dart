@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/fantlab_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/book.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../filters/fantlab_work_type_filter.dart';
 import '../models/search_source.dart';
 
@@ -29,10 +29,7 @@ class FantlabSource extends SearchSource {
   MediaType get outputMediaType => MediaType.book;
 
   @override
-  String get groupId => 'fantlab';
-
-  @override
-  String get groupName => 'Fantlab';
+  DataSource get dataSource => DataSource.fantlab;
 
   @override
   IconData get groupIcon => Icons.menu_book;
@@ -42,9 +39,6 @@ class FantlabSource extends SearchSource {
 
   @override
   IconData get icon => Icons.menu_book;
-
-  @override
-  String? get iconAsset => AppAssets.iconFantlabColor;
 
   // Fantlab search needs a query — there is no clean "popular" feed.
   @override
