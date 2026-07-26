@@ -4,7 +4,7 @@ Search millions of titles from online databases, track your progress, rate every
 
 Features:
 
-* Unified search across many sources: IGDB, TMDB, VNDB, AniList, MangaBaka, OpenLibrary, Fantlab, ComicVine and Google Books.
+* Unified search across many sources: IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, ComicVine and Google Books.
 * Build collections and organize them your way — grids, sorting, filters and bulk editing.
 * Track progress and episodes, rate items, and keep detailed notes.
 * Visual boards and mood grids to arrange your collection the way you like.

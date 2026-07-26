@@ -29,10 +29,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 - **A light `.xcoll` restores items from every source, not just TMDB and AniList**
 
   Importing a light file refetches each item from the provider it came from,
-  including TVmaze shows, Kitsu and MangaDex titles, and books — which were
-  not fetched at all before and arrived as "Unknown".
+  including TVmaze shows, Kitsu and MangaDex titles, and books.
 
-  Light exports now also carry `native_id` for books and MangaDex manga. Files
+  Light exports also carry `native_id` for books and MangaDex manga. Files
   exported by earlier versions don't have it: their books and MangaDex manga
   arrive unresolved and can be fixed with a refresh of the item.
 
@@ -65,12 +64,12 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/database/dao/global_tag_dao.dart (GlobalTagDao.addTagsToItems,
     GlobalTagDao.removeTagsFromItems): New batched link writes over an item
     list and a tag set — one `INSERT OR IGNORE` batch and one chunked
-    `DELETE`, so neither grows a query per item.
+    `DELETE`.
   * lib/features/collections/providers/item_tags_provider.dart
     (ItemTagsNotifier.addTagsToItems, ItemTagsNotifier.removeTagsFromItems,
     ItemTagsNotifier._syncItems): Bulk map updates — one write plus one
     read-back that keeps the in-memory tag order identical to the DAO's, then
-    a single state update. Return how many links actually changed.
+    a single state update. Return how many links changed.
   * lib/features/collections/widgets/bulk_action_bar.dart (BulkActionBar,
     BulkActionBar._handleTags, BulkActionBar._buildSelectionControls,
     BulkActionBar._buildActionStrip): Add the two tag actions; split the bar
@@ -80,6 +79,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
     Accept an optional title and confirm label so a bulk caller can say what
     the picked tags will do.
+  * lib/l10n/app_*.arb (bulkAddTags, bulkRemoveTags, bulkAddTagsTitle,
+    bulkRemoveTagsTitle, bulkTagsAdded, bulkTagsRemoved, bulkTagsUnchanged):
+    New keys.
 
 - **French (fr) interface localization**
 
@@ -136,28 +138,29 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (_refreshItemWork): Route TV show refresh through the item's own episode
     source instead of always TMDB.
   * lib/shared/utils/cover_image_id.dart (coverImageId): Namespace
-    `MediaType.tvShow` covers by source; documents why animation stays bare.
+    `MediaType.tvShow` covers by source; animation stays bare.
   * lib/shared/models/canvas_item.dart (CanvasItem.mediaCacheId),
     lib/features/search/handlers/tv_show_handler.dart,
     lib/features/search/widgets/browse_grid.dart, item_details_sheet.dart,
     discover_row.dart, lib/features/collections/widgets/
     recommendations_section.dart, lib/features/recommendations/widgets/
     recommendation_row.dart: Build the cache id through `coverImageId` instead
-    of the bare TMDB id, so the write and read sides stay in step.
+    of the bare TMDB id.
   * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
     lib/features/welcome/widgets/welcome_step_sources.dart,
     lib/features/settings/content/credits_content.dart: Catalog, onboarding
     and credits entries.
   * lib/l10n/app_*.arb (welcomeSourceDescTvMaze, creditsTvMazeAttribution):
     New keys.
+  * README.md, docs/index.html,
+    fastlane/metadata/android/en-US/full_description.txt: List TVmaze among
+    the data sources.
 
 - **"Similar manga" recommendations on MangaBaka and MangaDex cards**
 
   A horizontal row of similar titles on a manga's detail card, shown when the
-  item comes from MangaBaka or MangaDex. The backend follows the item's
-  source: MangaBaka's `/series/mix`, or MangaDex's
-  `/manga/{id}/recommendation` in score order. Tapping a card opens its
-  details sheet and can add it to a collection.
+  item comes from MangaBaka or MangaDex. Tapping a card opens its details
+  sheet and can add it to a collection.
 
   * lib/core/api/mangabaka/mangabaka_manga_api.dart
     (MangaBakaMangaApi.getRecommendations), lib/core/api/mangabaka_api.dart
@@ -166,8 +169,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/api/mangadex/mangadex_manga_api.dart
     (MangaDexMangaApi.getRecommendations), lib/core/api/mangadex_api.dart
     (MangaDexApi.getRecommendations): New `/manga/{id}/recommendation` call;
-    the endpoint returns only ids and scores, so the top matches are hydrated
-    with covers in one batched `/manga?ids[]` call and returned in score order.
+    the top matches are hydrated with covers in one batched `/manga?ids[]`
+    call and returned in score order.
   * lib/features/collections/widgets/manga_similars_section.dart
     (MangaSimilarsSection): New section widget; a per-seed cached
     FutureProvider routes by `Manga.source` and handles the owned badge.
@@ -180,11 +183,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   Two more keyless manga providers alongside AniList and MangaBaka. Both
   search by title, map covers, ratings, year, status and chapter/volume
-  counts, and carry their own `DataSource`. MangaDex adds Genre and Tags
-  filters (the Tags picker is backed by a SQLite-cached `/manga/tag`
-  catalog), plus status, demographic, content-rating and sort; Kitsu adds
-  subtype, status and sort, and surfaces its wide `coverImage` as the card
-  backdrop.
+  counts, and carry their own `DataSource`. MangaDex adds Genre, Tags,
+  status, demographic, content-rating and sort filters; Kitsu adds subtype,
+  status and sort, and shows its wide cover art as the card backdrop.
 
   * lib/core/api/mangadex_api.dart (MangaDexApi), lib/core/api/mangadex/
     (MangaDexHttpClient, MangaDexMangaApi, MangaDexTagsApi,
@@ -231,6 +232,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_*.arb (welcomeSourceDescMangaDex, welcomeSourceDescKitsu,
     creditsMangaDexAttribution, creditsKitsuAttribution,
     browseFilterDemographic): New keys.
+  * README.md, docs/index.html,
+    fastlane/metadata/android/en-US/full_description.txt: List MangaDex and
+    Kitsu among the data sources.
 
 - **Custom card form: personal note and tags**
 
@@ -326,6 +330,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     _MoodGridDetailScreenState._editCellLabelTemplate): Size stepper,
     template dialog reused for both templates, dialog controllers
     disposed.
+  * lib/l10n/app_*.arb (moodGridCellLabelTemplate, moodGridCellSize): New
+    keys.
 
 - **Brazilian Portuguese (pt) interface localization**
 
@@ -392,11 +398,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/data/repositories/collection_repository.dart
     (CollectionRepository.findItem), lib/core/database/database_service.dart
     (DatabaseService.findCollectionItem): Resolve an imported item by
-    `(id, source)`, so restoring a file that holds the same numeric id from
-    two providers writes each one's status, tags and tier placement onto its
-    own item instead of collapsing both onto the first.
+    `(id, source)`.
   * lib/core/services/export_service.dart: Tier-list entries carry the item's
-    source for the same reason; docs/RCOLL_FORMAT.md documents the field.
+    source; docs/RCOLL_FORMAT.md documents the field.
   * lib/core/services/export_service.dart (ExportService._collectMediaData):
     Key exported anime by `source:externalId`.
   * lib/features/collections/helpers/collection_actions.dart: Route anime
@@ -426,8 +430,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/collections/widgets/collection_filter_bar.dart
     (_CollectionFilterBarState._typeCounts): Tally the items that survive
     `CollectionFilters` with every active filter except the type one, instead
-    of re-implementing a status-only count. Chevron visibility still uses the
-    unfiltered totals, so a subfilter can't make a chevron disappear.
+    of re-implementing a status-only count. Chevron visibility keeps using the
+    unfiltered totals.
 
 - **The collection picker sorts by date the same way the Collections screen does**
 
@@ -437,8 +441,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   affected.
 
   * lib/shared/models/collection_list_sort_mode.dart
-    (CollectionListSortMode.compare): New shared comparator; documents that
-    the persisted flag means Z→A for names and oldest-first for dates.
+    (CollectionListSortMode.compare): New shared comparator; the persisted
+    flag means Z→A for names and oldest-first for dates.
   * lib/features/collections/screens/home_screen.dart
     (_HomeScreenState._sortCollections),
     lib/shared/widgets/collection_picker_dialog.dart
@@ -446,9 +450,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Search filter accent follows the source's media type**
 
-  The filter bar accent now derives from the source's media type, so
-  Hardcover, TVmaze, MangaDex and Kitsu read their media-type colour instead
-  of the generic brand orange.
+  The filter bar accent derives from the source's media type. Hardcover,
+  TVmaze, MangaDex and Kitsu show their media-type colour instead of the
+  generic brand orange.
 
   * lib/features/search/utils/filter_ui.dart (filterAccentForType): Replaces
     `filterAccentForGroup`; maps via `MediaTypeTheme.colorFor`.
@@ -466,8 +470,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Mood grid resize no longer drops the cells' data source**
 
-  Shrinking or growing a grid keeps each cell's `source`, so MangaBaka manga
-  and non-TMDB shows still resolve against their own provider.
+  Shrinking or growing a grid keeps each cell's `source`. MangaBaka manga and
+  non-TMDB shows keep resolving against their own provider.
 
   * lib/core/database/dao/mood_grid_dao.dart (MoodGridDao.resizeMoodGrid):
     Carry `source` when re-inserting cells.
@@ -483,8 +487,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Narrow mood-grid exports no longer overflow the footer**
 
-  The export canvas is floored at 320 px wide, so a one-column grid at a
-  small cell size still fits the footer credit line.
+  The export canvas is floored at 320 px wide; a one-column grid at a small
+  cell size fits the footer credit line.
 
   * lib/features/mood_grids/widgets/mood_grid_export_view.dart
     (MoodGridExportView._minWidth): Floor the canvas width at 320.
@@ -492,11 +496,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 - **Sparse cache rows no longer wipe episode/chapter/page totals**
 
   Cache upserts for TV shows, manga and books keep the cached value when the
-  incoming one is NULL, so a row parsed from a list endpoint (search,
-  recommendations, similars) no longer degrades a `38/38` badge to a bare
-  `38`. Adding a TV show from recommendations warms the cache like the search
-  flow does, and the episode tracker recovers missing totals from the seasons
-  cache for already-affected databases.
+  incoming one is NULL: a row parsed from a list view (search, recommendations,
+  similars) no longer degrades a `38/38` badge to a bare `38`. Adding a TV show
+  from recommendations warms the cache like the search flow does, and the
+  episode tracker recovers missing totals from the seasons cache for
+  already-affected databases.
 
   * lib/core/database/sparse_upsert.dart (buildPreservingUpsert): New
     `INSERT OR REPLACE` builder that keeps the cached column when the
@@ -544,8 +548,66 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/features/home/screens/all_items_screen.dart.
   * lib/features/search/handlers/tv_show_handler.dart
     (TvShowHandler._preloadSeasons), lib/core/api/tmdb/tmdb_tv_api.dart
-    (TmdbTvApi.getTvShowWithSeasons): Cache full show details on add with
-    a single /tv/{id} request.
+    (TmdbTvApi.getTvShowWithSeasons): Cache full show details on add.
+
+- **Search results no longer badge a title as collected because another provider shares its id**
+
+  A Kitsu anime, MangaDex manga or Hardcover book whose numeric id matches an
+  item you own from a different provider no longer shows the "in collection"
+  check, and the add-to-collection dialog no longer pre-ticks that item's
+  collections. TV already worked this way.
+
+  * lib/shared/models/media_type.dart (MediaType.isMultiSource): New — the
+    types whose identity is `(externalId, source)`; reused by
+    lib/shared/utils/cover_image_id.dart (coverImageId),
+    lib/shared/models/card_link.dart and
+    lib/core/database/dao/collection_dao.dart.
+  * lib/features/search/widgets/browse_grid.dart (_CollectedIds,
+    _BrowseGridState._buildCard): Key manga, anime and book placements by
+    `(source, id)` like tv; pass the whole record to the card builder instead
+    of seven positional sets.
+  * lib/features/search/handlers/simple_media_handler.dart
+    (SimpleMediaHandler._collectedCollectionIds): Narrow the placements by the
+    item's source.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.getCollectedItemInfos): A NULL source resolves to
+    `MediaType.defaultSource` instead of always tmdb.
+  * lib/features/search/services/search_collection_adder.dart
+    (SearchCollectionAdder.addToCollections,
+    SearchCollectionAdder.pickCollection): Take the item's source and filter
+    the existing placements by it.
+  * docs/RCOLL_FORMAT.md: Document the per-source TV poster cache key.
+
+- **Anime covers in search results download on every visit**
+
+  The browse grid read the cover under the bare anime id while every other
+  screen wrote it namespaced by provider.
+
+  * lib/features/search/widgets/browse_grid.dart: Build the anime cache id
+    through `coverImageId`.
+
+- **A card link to a TVmaze show or Kitsu anime can open the wrong item**
+
+  `[[card:…]]` tokens now carry the provider for every multi-source media
+  type, not only manga. Tokens written by earlier versions have no provider
+  and resolve as before.
+
+  * lib/shared/models/card_link.dart (buildCardLinkToken, CardLinkRef.source):
+    Emit `src=` for manga, anime, tv shows and books.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.resolveCardLink):
+    Filter by source for those types, defaulting a NULL column to the media
+    type's default source.
+
+- **Anime source material survives importing a pre-0.40 backup**
+
+  Before v60 the anime cache stored the source material ("Manga", "Light
+  Novel") in the column that now holds the provider. Restoring an older
+  `.xcollx` kept the field blank.
+
+  * lib/shared/models/anime.dart (Anime.fromDb): Read an unrecognised `source`
+    value as the source material when `source_material` is absent.
+  * lib/shared/models/data_source.dart (DataSource.tryFromName): New —
+    null-returning parser behind `fromNameOr`.
 
 - **Fixed row overflows on narrow layouts**
 
@@ -567,7 +629,16 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * packages/core/: New package holding schema.dart and migrations
     (MigrationRegistry, MigrationV1 … MigrationV60), moved unchanged from
-    lib/core/database/.
+    lib/core/database/; packages/core/pubspec.yaml wired as a path dependency
+    from the app pubspec.yaml.
+  * packages/core/lib/database/migrations/migration_runner.dart
+    (MigrationRunner): New — runs the chain for a fresh database and the
+    pending tail for an upgrade; called from
+    lib/core/database/database_service.dart (_onCreate, _onUpgrade).
+  * packages/core/lib/database/schema.dart (DatabaseSchema): Drop the unused
+    createAnimeCacheTable helper — no migration calls it and its shape
+    predates the v60 rebuild.
+  * docs/ARCHITECTURE.md: Describe the core package.
   * lib/shared/constants/*_ui.dart, lib/shared/utils/color_hex.dart
     (ColorHex): New presentation extensions and hex color codec replacing
     the in-model getters.
@@ -615,6 +686,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/shared/constants/source_catalog.dart (kSearchGroupToSources):
     Deleted — the parallel group→sources map is derivable from
     SearchSource.dataSource.
+  * lib/shared/models/data_source.dart (DataSource.brandName): New — full
+    attribution name, equal to `label` unless the badge abbreviates it.
+  * lib/features/settings/content/credits_content.dart (_Provider): Drop the
+    parallel table of provider names; the credits card renders
+    `DataSource.brandName`.
 
 - **Enum-owned UI metadata: nav tabs, discover sections, statuses, sort modes**
 
@@ -742,6 +818,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   checkbox is gone — tapping the row toggles watched, same as before.
   Season posters and episode stills are cached on disk for offline use.
 
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonLeading, _WatchedBadge, _ExpandableOverview, _EpisodeTileState):
+    Season poster with an all-watched badge and air year, episode still,
+    expandable overview, row-tap toggle in place of the checkbox.
+  * lib/shared/models/image_type.dart (ImageType.tvSeasonPoster,
+    ImageType.tvEpisodeStill): Cache folders for the new artwork.
+
 - **Decouple the episode tracker and release calendar from TMDB**
 
   Seasons, episodes and watch progress are keyed by `(source, show id)`
@@ -788,7 +871,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (CollectionDao.findCollectionItem, CollectionDao.findAllCollectionItems):
     Optional source filter; (CollectionDao._loadJoinedData): tv shows
     matched by (source, id); (CollectionDao.getCollectionCovers): tv
-    joins constrained by source to avoid cross-source row fan-out.
+    joins constrained by source.
   * lib/features/collections/providers/episode_tracker_provider.dart
     (EpisodeTrackerArg, EpisodeTrackerNotifier): Family arg carries the
     source; fetches go through the resolved TvEpisodeSource.
@@ -811,7 +894,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     their source namespace; legacy rows restore as TMDB.
   * lib/core/import/sources/trakt/trakt_import_service.dart
     (TraktImportService): Watched marks written as TMDB.
-  * lib/features/tier_lists/widgets/mood_grid_cell_media.dart
+  * lib/features/mood_grids/widgets/mood_grid_cell_media.dart
     (resolveMoodGridCellMedia), lib/data/repositories/canvas_repository.dart
     (CanvasRepository), lib/shared/models/collection_item.dart
     (CollectionItem._resolvedMedia): Source-aware show lookups.
