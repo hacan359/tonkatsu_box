@@ -168,6 +168,16 @@ class MigrationV57 extends Migration {
   }
 
   Future<void> _rebuildWatchedEpisodes(Database db) async {
+    // The rebuild re-inserts every row under the same foreign key, and the app
+    // runs with `PRAGMA foreign_keys = ON`: a row left pointing at a deleted
+    // collection would fail the insert and roll the whole upgrade back, on
+    // every launch. Such rows are unreachable in the app anyway — every read is
+    // scoped by collection — so they go instead of the upgrade.
+    await db.execute(
+      'DELETE FROM watched_episodes WHERE NOT EXISTS ('
+      'SELECT 1 FROM collections WHERE collections.id = '
+      'watched_episodes.collection_id)',
+    );
     await db.execute(
         'ALTER TABLE watched_episodes RENAME TO watched_episodes_old');
     await db.execute('''

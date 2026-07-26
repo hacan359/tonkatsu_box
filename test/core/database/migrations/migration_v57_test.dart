@@ -380,4 +380,64 @@ void main() {
       expect(cells.first['source'], 'tmdb');
     });
   });
+
+  // The app opens its database with `PRAGMA foreign_keys = ON`, so the
+  // watched_episodes rebuild re-inserts every row under the foreign key. A row
+  // without its collection would abort the migration and roll the whole
+  // upgrade back on every launch.
+  group('MigrationV57 with foreign keys enforced', () {
+    test('drops watched rows whose collection is gone instead of failing',
+        () async {
+      final Database db = await openOldDb();
+      addTearDown(() async => db.close());
+      await db.insert('collections', <String, Object?>{'id': 1, 'name': 'TV'});
+      await db.insert('watched_episodes', <String, Object?>{
+        'collection_id': 1,
+        'show_id': 100,
+        'season_number': 1,
+        'episode_number': 1,
+        'watched_at': 1000,
+      });
+      // Only reachable in a database that lost the parent row while foreign
+      // keys were off — an external snapshot or a hand-copied file.
+      await db.insert('watched_episodes', <String, Object?>{
+        'collection_id': 999,
+        'show_id': 100,
+        'season_number': 1,
+        'episode_number': 2,
+        'watched_at': 1000,
+      });
+      await db.execute('PRAGMA foreign_keys = ON');
+
+      await expectLater(MigrationV57().migrate(db), completes);
+
+      final List<Map<String, Object?>> rows =
+          await db.query('watched_episodes');
+      expect(rows, hasLength(1));
+      expect(rows.single['collection_id'], 1);
+      expect(rows.single['episode_number'], 1);
+      expect(rows.single['source'], 'tmdb');
+    });
+
+    test('keeps every row when no collection is missing', () async {
+      final Database db = await openOldDb();
+      addTearDown(() async => db.close());
+      await db.insert('collections', <String, Object?>{'id': 1, 'name': 'TV'});
+      await db.insert('collections', <String, Object?>{'id': 2, 'name': 'Anim'});
+      for (final int collectionId in <int>[1, 2]) {
+        await db.insert('watched_episodes', <String, Object?>{
+          'collection_id': collectionId,
+          'show_id': 100,
+          'season_number': 1,
+          'episode_number': 1,
+          'watched_at': 1000,
+        });
+      }
+      await db.execute('PRAGMA foreign_keys = ON');
+
+      await expectLater(MigrationV57().migrate(db), completes);
+
+      expect(await db.query('watched_episodes'), hasLength(2));
+    });
+  });
 }
