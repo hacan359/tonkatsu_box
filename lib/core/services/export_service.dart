@@ -738,6 +738,11 @@ class ExportService {
         if (item.platformId != null) {
           entryData['platform_id'] = item.platformId;
         }
+        // Without it, two same-id titles from different providers resolve to
+        // one item on import and only one keeps its tier placement.
+        if (item.source != null) {
+          entryData['source'] = item.source!.name;
+        }
         exportedEntries.add(entryData);
       }
 

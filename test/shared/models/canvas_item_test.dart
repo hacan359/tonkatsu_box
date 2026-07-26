@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/shared/models/canvas_item.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
@@ -677,6 +678,32 @@ void main() {
           createdAt: testDate,
         );
         expect(item.mediaCacheId, '0');
+      });
+
+      test('mediaCacheId should namespace anime covers by source', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.anime,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          anime: createTestAnime(id: 123, source: DataSource.kitsu),
+        );
+        expect(item.mediaCacheId, 'kitsu_123');
+      });
+
+      test('mediaCacheId should use the anilist namespace by default', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.anime,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          anime: createTestAnime(id: 123),
+        );
+        expect(item.mediaCacheId, 'anilist_123');
       });
 
       test('mediaPlaceholderIcon should return Icons.menu_book', () {

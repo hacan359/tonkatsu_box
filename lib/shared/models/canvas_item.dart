@@ -268,7 +268,11 @@ class CanvasItem with Exportable {
     return switch (itemType) {
       CanvasItemType.game => (game?.id ?? 0).toString(),
       CanvasItemType.movie => (movie?.tmdbId ?? 0).toString(),
-      CanvasItemType.tvShow => (tvShow?.tmdbId ?? 0).toString(),
+      CanvasItemType.tvShow => cover_id.coverImageId(
+          mediaType: MediaType.tvShow,
+          externalId: tvShow?.tmdbId ?? 0,
+          source: tvShow?.source,
+        ),
       CanvasItemType.animation => tvShow != null
           ? (tvShow?.tmdbId ?? 0).toString()
           : (movie?.tmdbId ?? 0).toString(),
@@ -279,7 +283,11 @@ class CanvasItem with Exportable {
           externalId: manga?.id ?? 0,
           source: manga?.source,
         ),
-      CanvasItemType.anime => (anime?.id ?? 0).toString(),
+      CanvasItemType.anime => cover_id.coverImageId(
+          mediaType: MediaType.anime,
+          externalId: anime?.id ?? 0,
+          source: anime?.source,
+        ),
       CanvasItemType.book => cover_id.coverImageId(
           mediaType: MediaType.book,
           externalId: book?.externalIdInt ?? 0,

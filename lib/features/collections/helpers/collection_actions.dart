@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/anilist_api.dart';
+import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
 import '../../../core/api/hardcover_api.dart';
@@ -648,8 +649,10 @@ class CollectionActions {
           await db.movieDao.upsertMovie(movie);
         case MediaType.tvShow:
         case MediaType.animation:
-          final TvShow? show =
-              await ref.read(tmdbApiProvider).getTvShow(item.externalId);
+          final TvEpisodeSource api = ref.read(tvEpisodeSourceResolverProvider)(
+            item.source ?? item.mediaType.defaultSource,
+          );
+          final TvShow? show = await api.getShow(item.externalId);
           if (show == null) return _RefreshOutcome.notFound();
           await db.tvShowDao.upsertTvShow(show);
         case MediaType.anime:
@@ -677,10 +680,8 @@ class CollectionActions {
                   .read(kitsuApiProvider)
                   .getMangaById(item.externalId);
             case DataSource.mangadex:
-              // The numeric id is a hash of the UUID; the UUID itself lives in
-              // the cached externalUrl (`.../title/{uuid}`).
-              final String? uuid = item.manga?.externalUrl?.split('/').last;
-              manga = (uuid != null && uuid.isNotEmpty)
+              final String? uuid = item.manga?.mangaDexUuid;
+              manga = uuid != null
                   ? await ref.read(mangaDexApiProvider).getByUuid(uuid)
                   : null;
             default:

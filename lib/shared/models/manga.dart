@@ -504,6 +504,15 @@ class Manga {
   /// Transient — not persisted (only present on fresh API responses).
   final String? bannerUrl;
 
+  /// MangaDex's own UUID, recovered from [externalUrl]
+  /// (`https://mangadex.org/title/{uuid}`). The numeric [id] is a hash of it,
+  /// so this is the only way back to the provider's API.
+  String? get mangaDexUuid {
+    if (source != DataSource.mangadex) return null;
+    final String? last = externalUrl?.split('/').last;
+    return (last != null && last.isNotEmpty) ? last : null;
+  }
+
   double? get rating10 =>
       averageScore != null ? averageScore! / 10.0 : null;
 

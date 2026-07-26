@@ -277,6 +277,7 @@ VisualNovel createTestVisualNovel({
 
 Manga createTestManga({
   int id = 500,
+  DataSource source = DataSource.anilist,
   String title = 'Test Manga',
   String? description,
   String? coverUrl,
@@ -285,9 +286,11 @@ Manga createTestManga({
   int? volumes,
   String? format,
   List<String>? genres,
+  String? externalUrl,
 }) {
   return Manga(
     id: id,
+    source: source,
     title: title,
     description: description,
     coverUrl: coverUrl,
@@ -296,6 +299,7 @@ Manga createTestManga({
     volumes: volumes,
     format: format,
     genres: genres,
+    externalUrl: externalUrl,
   );
 }
 

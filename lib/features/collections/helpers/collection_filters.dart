@@ -13,6 +13,7 @@ class CollectionFilters {
     this.animeFormats = const <String>{},
     this.tagIds = const <int>{},
     this.status,
+    this.favoriteOnly = false,
     this.searchQuery = '',
   });
 
@@ -28,6 +29,10 @@ class CollectionFilters {
   /// Selected global tag ids; an item passes when it carries ANY of them (OR).
   final Set<int> tagIds;
   final ItemStatus? status;
+
+  /// Keeps only favourites when true.
+  final bool favoriteOnly;
+
   final String searchQuery;
 
   /// [itemTags] is the item id → global tag ids map from `itemTagsProvider`.
@@ -71,6 +76,11 @@ class CollectionFilters {
       result = result
           .where((CollectionItem item) => item.status == status)
           .toList();
+    }
+
+    if (favoriteOnly) {
+      result =
+          result.where((CollectionItem item) => item.isFavorite).toList();
     }
 
     if (searchQuery.isEmpty) return result;

@@ -669,11 +669,21 @@ class CollectionItem with Exportable {
   /// When [includeUserData] is true the export carries personal fields
   /// (status, dates, notes, season/episode progress, sort order) on top of
   /// the bare media reference suitable for sharing.
+  /// Provider-native id for sources whose API is keyed by a string the numeric
+  /// [externalId] can't reproduce — a hash (MangaDex, Google Books) or an OLID.
+  /// A light export carries it so import can refetch from the right provider.
+  String? get exportNativeId {
+    if (mediaType == MediaType.book) return book?.nativeId;
+    if (mediaType == MediaType.manga) return manga?.mangaDexUuid;
+    return null;
+  }
+
   @override
   Map<String, dynamic> toExport({bool includeUserData = false}) {
     final Map<String, dynamic> data = <String, dynamic>{
       'media_type': mediaType.value,
       'external_id': externalId,
+      'native_id': ?exportNativeId,
       'platform_id': platformId,
       'source': source?.name,
       'comment': authorComment,

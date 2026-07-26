@@ -206,7 +206,9 @@ Widget _buildFilterBar({
   ValueChanged<String?>? onAnimeFormatToggled,
   ValueChanged<int?>? onTagToggled,
   ValueChanged<ItemStatus?>? onStatusChanged,
+  VoidCallback? onFavoriteToggled,
   ItemStatus? filterStatus,
+  bool filterFavoriteOnly = false,
 }) {
   return CollectionFilterBar(
     collectionId: collectionId,
@@ -218,6 +220,7 @@ Widget _buildFilterBar({
     filterAnimeFormats: filterAnimeFormats,
     filterTagIds: filterTagIds,
     filterStatus: filterStatus,
+    filterFavoriteOnly: filterFavoriteOnly,
     tags: tags,
     searchQuery: searchQuery,
     onTypeToggled: onTypeToggled ?? (_) {},
@@ -226,6 +229,7 @@ Widget _buildFilterBar({
     onAnimeFormatToggled: onAnimeFormatToggled ?? (_) {},
     onTagToggled: onTagToggled ?? (_) {},
     onStatusChanged: onStatusChanged ?? (_) {},
+    onFavoriteToggled: onFavoriteToggled ?? () {},
     onGroupToggled: () {},
   );
 }
@@ -534,6 +538,147 @@ void main() {
           expect(find.byType(FilterTabChip), findsNothing);
         },
       );
+    });
+
+    group('счётчики типов', () {
+      testWidgets(
+        'формат-субфильтр сужает счётчик у шеврона, а не только сетку',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: _defaultOverrides(),
+              child: _buildFilterBar(
+                filterTypes: <MediaType>{MediaType.manga},
+                filterMangaFormats: <String>{'MANHWA'},
+                itemsAsync:
+                    AsyncData<List<CollectionItem>>(_mangaItemsWithFormats),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          // Из двух манг под MANHWA попадает одна — счётчик обязан это
+          // отражать, иначе он расходится с тем, что видно на экране.
+          expect(find.textContaining('(1)'), findsOneWidget);
+          expect(find.textContaining('(2)'), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'без субфильтра счётчик показывает все элементы типа',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: _defaultOverrides(),
+              child: _buildFilterBar(
+                filterTypes: <MediaType>{MediaType.manga},
+                itemsAsync:
+                    AsyncData<List<CollectionItem>>(_mangaItemsWithFormats),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.textContaining('(2)'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'статус-фильтр тоже сужает счётчик',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: _defaultOverrides(),
+              child: _buildFilterBar(
+                filterTypes: <MediaType>{MediaType.manga},
+                filterStatus: ItemStatus.completed,
+                itemsAsync:
+                    AsyncData<List<CollectionItem>>(_mangaItemsWithFormats),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.textContaining('(1)'), findsOneWidget);
+        },
+      );
+    });
+
+    group('фильтр избранного', () {
+      testWidgets('тап по сегменту зовёт onFavoriteToggled',
+          (WidgetTester tester) async {
+        int calls = 0;
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(onFavoriteToggled: () => calls++),
+          ),
+        );
+        await tester.pumpAndSettle();
+        // Не-compact режим рисует подпись, иконка появляется только в compact.
+        await tester.tap(find.text('Favorite'));
+        await tester.pumpAndSettle();
+
+        expect(calls, 1);
+      });
+
+      testWidgets('строка шевронов не переполняется на ширине телефона',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('счётчик типа учитывает избранное',
+          (WidgetTester tester) async {
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
+            id: 40,
+            collectionId: _testCollectionId,
+            mediaType: MediaType.manga,
+            externalId: 800,
+            status: ItemStatus.notStarted,
+            addedAt: DateTime(2024),
+            isFavorite: true,
+            manga: const Manga(id: 800, title: 'Favourite'),
+          ),
+          CollectionItem(
+            id: 41,
+            collectionId: _testCollectionId,
+            mediaType: MediaType.manga,
+            externalId: 801,
+            status: ItemStatus.notStarted,
+            addedAt: DateTime(2024),
+            manga: const Manga(id: 801, title: 'Plain'),
+          ),
+        ];
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.manga},
+              filterFavoriteOnly: true,
+              itemsAsync: AsyncData<List<CollectionItem>>(items),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('(1)'), findsOneWidget);
+        expect(find.textContaining('(2)'), findsNothing);
+      });
     });
 
     group('always show subcategories setting', () {

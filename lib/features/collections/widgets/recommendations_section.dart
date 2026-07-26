@@ -13,6 +13,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../../search/widgets/item_details_sheet.dart';
@@ -146,7 +147,11 @@ class RecommendationsSection extends ConsumerWidget {
                   apiRating: s.rating,
                   icon: Icons.tv_outlined,
                   cacheImageType: ImageType.tvShowPoster,
-                  cacheImageId: s.tmdbId.toString(),
+                  cacheImageId: coverImageId(
+                    mediaType: MediaType.tvShow,
+                    externalId: s.tmdbId,
+                    source: s.source,
+                  ),
                   onAddToCollection: () => _showTvShowDetails(context, s),
                   isOwned: ownedIds.contains(s.tmdbId),
                 ),

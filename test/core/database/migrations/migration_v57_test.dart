@@ -46,17 +46,29 @@ void main() {
               source TEXT
             )
           ''');
+          // Index shape as of v48..v56: book carved out into source-aware
+          // indexes, excluded from the generic ones.
           await db.execute('''
             CREATE UNIQUE INDEX idx_ci_coll_other
             ON collection_items(collection_id, media_type, external_id)
             WHERE collection_id IS NOT NULL
-              AND media_type NOT IN ('game', 'manga')
+              AND media_type NOT IN ('game', 'manga', 'book')
           ''');
           await db.execute('''
             CREATE UNIQUE INDEX idx_ci_uncat_other
             ON collection_items(media_type, external_id)
             WHERE collection_id IS NULL
-              AND media_type NOT IN ('game', 'manga')
+              AND media_type NOT IN ('game', 'manga', 'book')
+          ''');
+          await db.execute('''
+            CREATE UNIQUE INDEX idx_ci_coll_book
+            ON collection_items(collection_id, media_type, external_id, COALESCE(source, 'openLibrary'))
+            WHERE collection_id IS NOT NULL AND media_type = 'book'
+          ''');
+          await db.execute('''
+            CREATE UNIQUE INDEX idx_ci_uncat_book
+            ON collection_items(media_type, external_id, COALESCE(source, 'openLibrary'))
+            WHERE collection_id IS NULL AND media_type = 'book'
           ''');
           await db.execute('''
             CREATE TABLE mood_grid_cells (
@@ -131,6 +143,21 @@ void main() {
         'collection_id': 1,
         'media_type': 'movie',
         'external_id': 42,
+      });
+      // Legal since v48: same numeric book id from two sources in one
+      // collection. The rebuilt generic index must keep excluding 'book',
+      // or this data aborts the whole upgrade.
+      await db.insert('collection_items', <String, Object?>{
+        'collection_id': 1,
+        'media_type': 'book',
+        'external_id': 777,
+        'source': 'openLibrary',
+      });
+      await db.insert('collection_items', <String, Object?>{
+        'collection_id': 1,
+        'media_type': 'book',
+        'external_id': 777,
+        'source': 'googleBooks',
       });
       await db.insert('mood_grid_cells', <String, Object?>{
         'media_type': 'tv_show',
@@ -321,6 +348,24 @@ void main() {
           'media_type': 'tv_show',
           'external_id': 100,
           'source': 'tmdb',
+        }),
+        throwsA(isA<DatabaseException>()),
+      );
+    });
+
+    test('cross-source book duplicates survive the index rebuild', () async {
+      final List<Map<String, Object?>> books = await db.query(
+        'collection_items',
+        where: 'media_type = ? AND external_id = ?',
+        whereArgs: <Object?>['book', 777],
+      );
+      expect(books, hasLength(2));
+      await expectLater(
+        db.insert('collection_items', <String, Object?>{
+          'collection_id': 1,
+          'media_type': 'book',
+          'external_id': 777,
+          'source': 'openLibrary',
         }),
         throwsA(isA<DatabaseException>()),
       );

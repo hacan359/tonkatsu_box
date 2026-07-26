@@ -7,85 +7,55 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
-### Changed
-
-- **Move the database schema and migrations into a pure-Dart `core` package**
-
-  No user-visible change. The migration chain and the DDL helpers now live in
-  `packages/core`, a plain Dart package with no Flutter dependency, so the
-  planned selfhost server can build and upgrade the same database without a
-  Flutter SDK. The schema itself is untouched: all 62 files moved verbatim.
-
-  * packages/core/pubspec.yaml: New pure-Dart package `core`, depending only on
-    `sqflite_common_ffi`.
-  * packages/core/lib/database/schema.dart (DatabaseSchema),
-    packages/core/lib/database/migrations/migration.dart (Migration,
-    Migration.addColumnIfAbsent), migration_registry.dart (MigrationRegistry.all,
-    MigrationRegistry.pending, MigrationRegistry.latestVersion),
-    migration_v1.dart through migration_v60.dart (MigrationV1 … MigrationV60):
-    Moved unchanged from lib/core/database/.
-  * pubspec.yaml: Add the `core` path dependency.
-  * lib/core/database/database_service.dart (DatabaseService),
-    lib/core/services/db_sync_service.dart (DbSyncService),
-    lib/core/services/storage_root.dart: Import Migration and MigrationRegistry
-    from `package:core`.
-  * test/core/database/migrations/migration_chain_test.dart: New coverage that
-    the registry is ascending and gapless, that pending() returns the right
-    slice, and that replaying the whole chain on an empty database builds every
-    table the app queries.
-
-- **Make all models pure Dart: move UI mapping out of the model layer**
-
-  No user-visible change. Colors, icons and localized labels that lived
-  inside model classes moved to extension files so the model layer no
-  longer depends on Flutter — groundwork for sharing models with the
-  planned selfhost server.
-
-  * lib/shared/constants/item_status_ui.dart (ItemStatusUi),
-    data_source_ui.dart (DataSourceUi), collection_item_ui.dart
-    (CollectionItemUi), canvas_item_ui.dart (CanvasItemUi), profile_ui.dart
-    (ProfileUi), platform_ui.dart (PlatformUi), tier_definition_ui.dart
-    (TierDefinitionUi), media_type_ui.dart (MediaTypeUi),
-    collection_sort_mode_ui.dart (CollectionSortModeUi),
-    collection_list_sort_mode_ui.dart (CollectionListSortModeUi),
-    calendar_recurrence_ui.dart (CalendarRecurrenceUi): New presentation
-    extensions holding the moved getters and localized-label methods
-    (color, materialIcon, cardSubcategoryLabel,
-    localizedLabel, genericLabel, placeholderIcon, mediaPlaceholderIcon,
-    familyColor, displayColor, localizedDisplayLabel, localizedShortLabel,
-    localizedDirectionLabel, localizedDescription).
-  * lib/shared/utils/color_hex.dart (ColorHex.fromHex, ColorHex.toHex): New
-    hex-string color codec, replacing Profile.hexToColor / colorToHex and a
-    private duplicate in edit_connection_dialog.dart.
-  * lib/shared/models/item_status.dart (ItemStatus), data_source.dart
-    (DataSource.colorValue), profile.dart (Profile), collection_item.dart
-    (CollectionItem), canvas_item.dart (CanvasItem), platform.dart
-    (Platform), tier_definition.dart (TierDefinition.colorValue),
-    media_type.dart (MediaType), collection_sort_mode.dart
-    (CollectionSortMode), collection_list_sort_mode.dart
-    (CollectionListSortMode), search_sort.dart (SearchSortField),
-    card_link.dart, calendar_recurrence.dart (CalendarRecurrence): Flutter,
-    dart:ui and l10n imports removed; DataSource and TierDefinition store
-    the color as an ARGB int; unused SearchSortField.localizedShortLabel
-    and localizedDisplayLabel deleted as dead code.
-  * lib/shared/constants/media_type_theme.dart
-    (MediaTypeTheme.placeholderIconFor): New shared outlined-icon mapping;
-    collection_item_ui.dart, canvas_item_ui.dart and
-    lib/features/releases/screens/releases_screen.dart
-    (_ReleasesScreenState._placeholderIcon) delegate to it instead of
-    keeping three hand-maintained copies.
-  * lib/features/tier_lists/providers/tier_list_detail_provider.dart
-    (TierListDetailNotifier.updateTierDefinition,
-    TierListDetailNotifier.addTier): Convert the picked Color to an ARGB
-    int at the UI boundary.
-  * lib/features/settings/widgets/edit_profile_dialog.dart,
-    create_profile_dialog.dart, lib/features/settings/screens/
-    profiles_screen.dart, lib/features/splash/screens/
-    profile_picker_screen.dart: Switch to ColorHex and Profile.displayColor.
-  * Consumer widgets across lib/features/ and lib/shared/widgets/: one-line
-    imports of the new extension files.
-
 ### Added
+
+- **Favourites filter inside a collection**
+
+  The chevron bar in a collection gains the Favorite segment that All Items
+  already had, so a collection can be narrowed to its favourites without
+  leaving for the global screen. It combines with the type, subfilter, tag,
+  status and search filters, and the type counts follow it like they follow
+  the rest.
+
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.favoriteOnly): New filter field, applied alongside the
+    others so grid, table and counts share one definition.
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (CollectionFilterBar.filterFavoriteOnly,
+    CollectionFilterBar.onFavoriteToggled): New segment after the status
+    dropdown, tinted with the favourite accent.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._filterFavoriteOnly): Holds the toggle, like the
+    collection's other filters it resets when the screen is reopened.
+
+- **A light `.xcoll` restores items from every source, not just TMDB and AniList**
+
+  Importing a light file refetches each item from the provider it actually
+  came from. Before, everything went to one API per media type: a TVmaze show
+  was looked up in TMDB by the same number, which imported a different show
+  under that id, and a Kitsu or MangaDex title had the same problem with
+  AniList. Books were not fetched at all and always arrived as "Unknown".
+
+  Book and MangaDex ids can't be reversed (`external_id` is a hash of the
+  provider's own id), so light exports now also carry `native_id`. Files
+  exported by earlier versions don't have it — their books and MangaDex manga
+  stay unresolved instead of being fetched from the wrong provider, and can be
+  fixed with a refresh of the item.
+
+  * lib/core/services/import_service.dart (ImportService._fetchMediaFromApi,
+    ImportService._fetchTvShow, ImportService._fetchMangaRefs,
+    ImportService._fetchOneManga, ImportService._fetchAnimeRefs,
+    ImportService._fetchOneAnime, ImportService._fetchBookRefs,
+    ImportService._fetchOneBook, _MediaRef): Group items by
+    `(media type, source)` and route each group to its own API; AniList still
+    resolves its ids in one batched query. A provider that fails or is not
+    wired only drops its own items.
+  * lib/shared/models/collection_item.dart (CollectionItem.exportNativeId,
+    CollectionItem.toExport): Carry `native_id` for books and MangaDex manga.
+  * lib/shared/models/manga.dart (Manga.mangaDexUuid): Recover the UUID from
+    the cached `externalUrl`; collection_actions.dart uses it too instead of
+    splitting the URL itself.
+  * docs/RCOLL_FORMAT.md: Document `native_id` and the per-source hydration.
 
 - **Tag several selected items at once**
 
@@ -128,7 +98,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   language to `fr-FR`. Contributed by @GreenStatik (#384).
 
   * lib/l10n/app_fr.arb, lib/l10n/app_localizations_fr.dart (SFr): New —
-    full fr translation (all 1510 keys) and its generated delegate.
+    full fr translation (all 1517 keys) and its generated delegate.
   * lib/l10n/app_localizations.dart (S.supportedLocales,
     _SDelegate.isSupported, lookupS): Register the `fr` locale.
   * lib/features/settings/screens/settings_screen.dart (_kAppLanguageNames):
@@ -149,6 +119,12 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   the release calendar. Search by title only — TVmaze has no genre or other
   filters — and TV only, no films.
 
+  Because two providers can hand out the same number, TV posters are now
+  cached per source the way anime and manga covers already are. Posters saved
+  under the old key won't be found, so each one downloads again the first time
+  its card is shown. Animated series and films are untouched — they only come
+  from TMDB, so their cached posters stay valid.
+
   * lib/core/api/tvmaze_api.dart (TvMazeApi, tvMazeApiProvider),
     lib/core/api/tvmaze/ (TvMazeHttpClient, TvMazeShowApi,
     TvMazeApiException): New TVmaze REST client.
@@ -168,6 +144,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     shared mapping helpers.
   * lib/features/search/sources/tvmaze_tv_source.dart (TvMazeTvSource),
     search_sources.dart (searchSources): New title-search source, registered.
+  * lib/features/collections/helpers/collection_actions.dart
+    (_refreshItemWork): Route TV show refresh through the item's own episode
+    source instead of always TMDB.
+  * lib/shared/utils/cover_image_id.dart (coverImageId): Namespace
+    `MediaType.tvShow` covers by source; documents why animation stays bare.
+  * lib/shared/models/canvas_item.dart (CanvasItem.mediaCacheId),
+    lib/features/search/handlers/tv_show_handler.dart,
+    lib/features/search/widgets/browse_grid.dart, item_details_sheet.dart,
+    discover_row.dart, lib/features/collections/widgets/
+    recommendations_section.dart, lib/features/recommendations/widgets/
+    recommendation_row.dart: Build the cache id through `coverImageId` instead
+    of the bare TMDB id, so the write and read sides stay in step.
   * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
     lib/features/welcome/widgets/welcome_step_sources.dart,
     lib/features/settings/content/credits_content.dart: Catalog, onboarding
@@ -320,6 +308,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/core/database/migrations/migration_v58.dart (MigrationV58): New —
     `cell_label_template` column on `mood_grids`.
+  * lib/features/mood_grids/services/mood_grid_caption.dart
+    (kMoodGridCaptionTokens, renderRowCaption): New shared template renderer
+    used by row captions and the auto-filled cell labels.
   * lib/core/database/migrations/migration_registry.dart
     (MigrationRegistry.all), lib/core/database/database_service.dart:
     Register v58, bump version to 58.
@@ -362,7 +353,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   TMDB content language to `pt-BR`. Contributed by @bonbj (#370).
 
   * lib/l10n/app_pt.arb, lib/l10n/app_localizations_pt.dart (SPt): New —
-    full pt translation (all 1498 keys) and its generated delegate.
+    full pt translation (all 1517 keys) and its generated delegate.
   * lib/l10n/app_localizations.dart (S.supportedLocales,
     _SDelegate.isSupported, lookupS): Register the `pt` locale.
   * lib/features/settings/screens/settings_screen.dart: Add Português
@@ -398,9 +389,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/database/migrations/migration_v60.dart (MigrationV60): Rebuild
     `anime_cache` with a composite `(id, source)` primary key, rename the old
     source-material column to `source_material`, and add source-aware
-    `collection_items` anime indexes (also restoring `book` to the generic
-    index exclusion list); registered in migration_registry.dart and
-    database_service.dart (version 60).
+    `collection_items` anime indexes; registered in migration_registry.dart
+    and database_service.dart (version 60).
   * lib/shared/models/anime.dart (Anime.source, Anime.sourceMaterial,
     Anime.fromKitsu, Anime.fromDb, Anime.toDb, Anime.copyWith): Add the
     provider `source` field; the former source-material `source` becomes
@@ -413,8 +403,19 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     `(id, source)` when hydrating.
   * lib/shared/models/collection_item.dart: Resolve an anime item's source
     from its record instead of hard-coding AniList.
-  * lib/shared/utils/cover_image_id.dart (coverImageId): Namespace anime
-    covers by source, like manga.
+  * lib/shared/utils/cover_image_id.dart (coverImageId),
+    lib/shared/models/canvas_item.dart (CanvasItem.mediaCacheId): Namespace
+    anime covers by source, like manga.
+  * lib/core/services/import_service.dart (ImportService._itemMappingKeys,
+    ImportService._registerItemMapping, ImportService._resolveMappedItem),
+    lib/data/repositories/collection_repository.dart
+    (CollectionRepository.findItem), lib/core/database/database_service.dart
+    (DatabaseService.findCollectionItem): Resolve an imported item by
+    `(id, source)`, so restoring a file that holds the same numeric id from
+    two providers writes each one's status, tags and tier placement onto its
+    own item instead of collapsing both onto the first.
+  * lib/core/services/export_service.dart: Tier-list entries carry the item's
+    source for the same reason; docs/RCOLL_FORMAT.md documents the field.
   * lib/core/services/export_service.dart (ExportService._collectMediaData):
     Key exported anime by `source:externalId`.
   * lib/features/collections/helpers/collection_actions.dart: Route anime
@@ -434,6 +435,38 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lists anime and manga.
 
 ### Fixed
+
+- **Type counts in a collection follow the subfilters**
+
+  Picking a subfilter inside a collection — a game platform, a manga or anime
+  format — narrowed the grid but not the number on the media-type chevron. A
+  collection with 12 anime still read "Anime (12)" after filtering down to the
+  2 TV ones, which made the count look broken. The All Items screen already
+  counted this way; the collection bar applied only the status filter.
+
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (_CollectionFilterBarState._typeCounts): Tally the items that survive
+    `CollectionFilters` with every active filter except the type one, instead
+    of re-implementing a status-only count. Chevron visibility still uses the
+    unfiltered totals, so a subfilter can't make a chevron disappear.
+
+- **The collection picker sorts by date the same way the Collections screen does**
+
+  Picking "Newest first" on the Collections screen and then opening the
+  picker (add to collection, move, filters) listed the collections oldest
+  first, so a freshly created collection sat at the bottom and the sort had
+  to be flipped by hand to find it. The two screens carried their own
+  comparators and the picker's date branch read the shared descending flag
+  the other way round; alphabetical order was never affected. Both now share
+  one comparator, so they can't drift apart again.
+
+  * lib/shared/models/collection_list_sort_mode.dart
+    (CollectionListSortMode.compare): New shared comparator; documents that
+    the persisted flag means Z→A for names and oldest-first for dates.
+  * lib/features/collections/screens/home_screen.dart
+    (_HomeScreenState._sortCollections),
+    lib/shared/widgets/collection_picker_dialog.dart
+    (_CollectionPickerContentState._sortedCollections): Both delegate to it.
 
 - **Search filter accent follows the source's media type**
 
@@ -493,6 +526,19 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   flow does, and the episode tracker recovers missing totals from the
   seasons cache for already-affected databases.
 
+  * lib/core/database/sparse_upsert.dart (buildPreservingUpsert): New
+    `INSERT OR REPLACE` builder that keeps the cached column when the
+    incoming value is NULL.
+  * lib/core/database/dao/tv_show_dao.dart, manga_dao.dart, book_dao.dart:
+    Upserts preserve totals via buildPreservingUpsert.
+  * lib/core/services/tv_show_cache_warmer.dart (TvShowCacheWarmer.warm,
+    tvShowCacheWarmerProvider): New best-effort warmer filling show details,
+    seasons and episodes after an add; called from
+    lib/features/search/handlers/tv_show_handler.dart and
+    lib/features/collections/screens/item_detail_screen.dart.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier): Recover missing totals from the seasons cache.
+
 - **Moving a TV show between collections takes its watch progress along**
 
   Removing a show (or moving it to "uncategorized") keeps the marks, so
@@ -538,6 +584,21 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     badge shrinks on very narrow cards instead of overflowing.
 
 ### Changed
+
+- **Internal groundwork for the planned selfhost server**
+
+  No user-visible change. The database schema and migration chain moved
+  verbatim into `packages/core`, a pure-Dart package with no Flutter
+  dependency, and the model layer (`lib/shared/models/`) dropped its
+  Flutter / l10n imports — colors, icons and localized labels now live in
+  UI extension files under `lib/shared/constants/`.
+
+  * packages/core/: New package holding schema.dart and migrations
+    (MigrationRegistry, MigrationV1 … MigrationV60), moved unchanged from
+    lib/core/database/.
+  * lib/shared/constants/*_ui.dart, lib/shared/utils/color_hex.dart
+    (ColorHex): New presentation extensions and hex color codec replacing
+    the in-model getters.
 
 - **Provider identity (name, group, brand icon) now comes from DataSource**
 

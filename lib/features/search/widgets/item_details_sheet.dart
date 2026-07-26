@@ -102,7 +102,11 @@ class ItemDetailsSheet extends StatelessWidget {
       extraInfoIcon: icon,
       posterUrl: tvShow.posterUrl,
       cacheImageType: ImageType.tvShowPoster,
-      cacheImageId: tvShow.tmdbId.toString(),
+      cacheImageId: coverImageId(
+        mediaType: MediaType.tvShow,
+        externalId: tvShow.tmdbId,
+        source: tvShow.source,
+      ),
       externalUrl: tvShow.externalUrl,
       dataSource: tvShow.source,
       backdropUrl: tvShow.backdropUrl,

@@ -323,7 +323,11 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         title: item.title,
         imageUrl: item.posterUrl ?? '',
         cacheImageType: ImageType.tvShowPoster,
-        cacheImageId: item.tmdbId.toString(),
+        cacheImageId: coverImageId(
+          mediaType: MediaType.tvShow,
+          externalId: item.tmdbId,
+          source: item.source,
+        ),
         apiRating: item.rating,
         year: item.firstAirYear,
         mediaType: mediaType,

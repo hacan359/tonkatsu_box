@@ -93,6 +93,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Set<int> _filterTagIds = <int>{};
   bool _groupByTags = false;
   ItemStatus? _filterStatus;
+  bool _filterFavoriteOnly = false;
   ItemStatus? _tableFilterStatus;
   CollectionItem? _focusedItem;
 
@@ -184,6 +185,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       animeFormats: _filterAnimeFormats,
       tagIds: _filterTagIds,
       status: _filterStatus,
+      favoriteOnly: _filterFavoriteOnly,
       searchQuery: searchQuery,
     );
     final S l = S.of(context);
@@ -337,10 +339,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       filterAnimeFormats: _filterAnimeFormats,
       filterTagIds: _filterTagIds,
       filterStatus: _filterStatus,
+      filterFavoriteOnly: _filterFavoriteOnly,
       effectiveStatusForCounts: _effectiveStatusForChevrons,
       tags: tags,
       searchQuery: searchQuery,
       groupByTags: _groupByTags,
+      onFavoriteToggled: () =>
+          setState(() => _filterFavoriteOnly = !_filterFavoriteOnly),
       onGroupToggled: () {
         setState(() {
           _groupByTags = !_groupByTags;
@@ -463,6 +468,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       animeFormats: _filterAnimeFormats,
       tagIds: _filterTagIds,
       status: _filterStatus,
+      favoriteOnly: _filterFavoriteOnly,
       searchQuery: searchQuery,
     );
 

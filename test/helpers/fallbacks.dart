@@ -17,6 +17,7 @@ import 'package:tonkatsu_box/shared/models/platform.dart';
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
 import 'package:tonkatsu_box/shared/models/tv_season.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/shared/models/ra_game_progress.dart';
 import 'package:tonkatsu_box/shared/models/tracker_game_data.dart';
@@ -55,6 +56,7 @@ void registerAllFallbacks() {
   registerFallbackValue(const <int>{});
 
   registerFallbackValue(<TierDefinition>[]);
+  registerFallbackValue(<TagSeed>[]);
 
   registerFallbackValue(const RaGameProgress(
     gameId: 0,

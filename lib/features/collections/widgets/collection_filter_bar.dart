@@ -17,7 +17,9 @@ import '../../../shared/utils/media_format.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../helpers/collection_filters.dart';
 import '../providers/collections_provider.dart';
+import '../providers/item_tags_provider.dart';
 import 'collection_filter_sheet.dart';
 import '../../../shared/constants/collection_sort_mode_ui.dart';
 
@@ -32,6 +34,7 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.filterAnimeFormats,
     required this.filterTagIds,
     required this.filterStatus,
+    this.filterFavoriteOnly = false,
     this.effectiveStatusForCounts,
     required this.tags,
     this.searchQuery = '',
@@ -41,6 +44,7 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.onAnimeFormatToggled,
     required this.onTagToggled,
     required this.onStatusChanged,
+    required this.onFavoriteToggled,
     required this.onGroupToggled,
     this.groupByTags = false,
     super.key,
@@ -67,6 +71,9 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   final ItemStatus? filterStatus;
 
+  /// Show only favourites.
+  final bool filterFavoriteOnly;
+
   /// Status that drives chevron counts when it diverges from [filterStatus]
   /// (e.g. the table column header cycled a local filter). Falls back to
   /// [filterStatus] when null.
@@ -88,6 +95,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   final ValueChanged<int?> onTagToggled;
 
   final ValueChanged<ItemStatus?> onStatusChanged;
+
+  final VoidCallback onFavoriteToggled;
 
   final VoidCallback onGroupToggled;
 
@@ -246,6 +255,19 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                 compact: compact,
                 subtitle: l.status,
                 onChanged: widget.onStatusChanged,
+              ),
+            ),
+            Expanded(
+              child: ChevronSegment(
+                label: l.favorite,
+                icon: Icons.favorite,
+                selected: widget.filterFavoriteOnly,
+                accentColor: AppColors.favorite,
+                isFirst: false,
+                isLast: false,
+                onTap: widget.onFavoriteToggled,
+                compact: compact,
+                tintWhenInactive: true,
               ),
             ),
             if (useTagSheetButton)
@@ -461,16 +483,35 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.custom: stats?.customCount,
       };
     }
+    // Count what the grid actually shows: every active filter except the type
+    // one, so picking a subfilter (platform, manga / anime format) narrows the
+    // chevron numbers instead of leaving them at the unfiltered total.
+    final List<CollectionItem> visible = CollectionFilters(
+      platformIds: widget.filterPlatformIds,
+      mangaFormats: widget.filterMangaFormats,
+      animeFormats: widget.filterAnimeFormats,
+      tagIds: widget.filterTagIds,
+      status: statusFilter,
+      favoriteOnly: widget.filterFavoriteOnly,
+      searchQuery: widget.searchQuery,
+    ).apply(
+      items,
+      widget.tags,
+      ref.watch(itemTagsProvider).valueOrNull ?? const <int, List<int>>{},
+      animeMangaTitleLanguage: ref.watch(
+        settingsNotifierProvider
+            .select((SettingsState s) => s.animeMangaTitleLanguage),
+      ),
+    );
+
     // Count by effective type so a custom item that masquerades as e.g. anime
     // is tallied under Anime, matching what the type filter will show.
     final Map<MediaType, int> tally = <MediaType, int>{
       for (final MediaType t in MediaType.values) t: 0,
     };
-    for (final CollectionItem item in items) {
-      if (statusFilter == null || item.status == statusFilter) {
-        for (final MediaType bucket in item.filterTypeBuckets) {
-          tally[bucket] = tally[bucket]! + 1;
-        }
+    for (final CollectionItem item in visible) {
+      for (final MediaType bucket in item.filterTypeBuckets) {
+        tally[bucket] = tally[bucket]! + 1;
       }
     }
     return tally;
