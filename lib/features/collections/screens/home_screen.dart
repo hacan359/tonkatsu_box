@@ -194,16 +194,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     bool descending,
   ) {
     final List<Collection> sorted = List<Collection>.of(collections);
-    switch (mode) {
-      case CollectionListSortMode.createdDate:
-        sorted.sort((Collection a, Collection b) => descending
-            ? a.createdAt.compareTo(b.createdAt)
-            : b.createdAt.compareTo(a.createdAt));
-      case CollectionListSortMode.alphabetical:
-        sorted.sort((Collection a, Collection b) => descending
-            ? b.name.toLowerCase().compareTo(a.name.toLowerCase())
-            : a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    }
+    sorted.sort((Collection a, Collection b) =>
+        mode.compare(a, b, descending: descending));
     return sorted;
   }
 

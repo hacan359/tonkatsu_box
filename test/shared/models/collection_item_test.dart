@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/custom_media.dart';
+import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/game.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
@@ -9,6 +10,8 @@ import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/movie.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart';
 import 'package:tonkatsu_box/shared/models/tv_show.dart';
+
+import '../../helpers/test_helpers.dart';
 
 void main() {
   group('CollectionItem', () {
@@ -468,6 +471,51 @@ void main() {
     });
 
     group('toExport', () {
+      test('книга несёт native_id — без него её не перезапросить', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.book,
+          externalId: 8193465,
+          source: DataSource.openLibrary,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          book: createTestBook(id: '8193465', nativeId: 'OL8193465W'),
+        );
+
+        expect(item.toExport()['native_id'], 'OL8193465W');
+      });
+
+      test('манга MangaDex несёт UUID, у остальных источников поля нет', () {
+        final CollectionItem mangaDex = CollectionItem(
+          id: 2,
+          collectionId: 10,
+          mediaType: MediaType.manga,
+          externalId: 3151439834073630622,
+          source: DataSource.mangadex,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          manga: createTestManga(
+            id: 3151439834073630622,
+            source: DataSource.mangadex,
+            externalUrl: 'https://mangadex.org/title/uuid-1',
+          ),
+        );
+        final CollectionItem aniList = CollectionItem(
+          id: 3,
+          collectionId: 10,
+          mediaType: MediaType.manga,
+          externalId: 97700,
+          source: DataSource.anilist,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          manga: createTestManga(id: 97700),
+        );
+
+        expect(mangaDex.toExport()['native_id'], 'uuid-1');
+        expect(aniList.toExport().containsKey('native_id'), isFalse);
+      });
+
       test('должен конвертировать game элемент в JSON', () {
         final CollectionItem item = CollectionItem(
           id: 1,

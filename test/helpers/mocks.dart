@@ -13,6 +13,7 @@ import 'package:tonkatsu_box/core/api/igdb_api.dart';
 import 'package:tonkatsu_box/core/api/kitsu_api.dart';
 import 'package:tonkatsu_box/core/api/kodi_api.dart';
 import 'package:tonkatsu_box/core/api/mangadex_api.dart';
+import 'package:tonkatsu_box/core/api/openlibrary_api.dart';
 import 'package:tonkatsu_box/core/database/dao/mangadex_tag_dao.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
 import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
@@ -170,6 +171,8 @@ class MockGoogleBooksApi extends Mock implements GoogleBooksApi {}
 class MockHardcoverApi extends Mock implements HardcoverApi {}
 
 class MockMangaDexApi extends Mock implements MangaDexApi {}
+
+class MockOpenLibraryApi extends Mock implements OpenLibraryApi {}
 
 class MockMangaDexTagDao extends Mock implements MangaDexTagDao {}
 

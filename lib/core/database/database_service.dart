@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:core/database/migrations/migration.dart';
 import 'package:core/database/migrations/migration_registry.dart';
+import 'package:core/database/migrations/migration_runner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -277,19 +278,31 @@ class DatabaseService {
     _log.info('Creating database schema v$version');
     // Single source of truth: a fresh DB is built by running the whole
     // migration chain (v1..N) in order, exactly like an upgrade from zero.
-    for (final Migration migration in MigrationRegistry.all) {
-      await migration.migrate(db);
-    }
+    await MigrationRunner.run(
+      db,
+      MigrationRegistry.all,
+      fromVersion: 0,
+      toVersion: version,
+      onFailure: _logMigrationFailure,
+    );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     _log.info('Upgrading database from v$oldVersion to v$newVersion');
-    for (final Migration migration in MigrationRegistry.pending(oldVersion)) {
-      _log.fine('Running migration v${migration.version}: ${migration.description}');
-      await migration.migrate(db);
-    }
+    await MigrationRunner.run(
+      db,
+      MigrationRegistry.pending(oldVersion),
+      fromVersion: oldVersion,
+      toVersion: newVersion,
+      onStart: (Migration m) =>
+          _log.fine('Running migration v${m.version}: ${m.description}'),
+      onFailure: _logMigrationFailure,
+    );
     _log.info('Database upgrade complete');
   }
+
+  void _logMigrationFailure(MigrationFailure failure, StackTrace stack) =>
+      _log.severe('Migration v${failure.version} failed', failure, stack);
 
   Future<List<Collection>> getAllCollections() =>
       collectionDao.getAllCollections();
@@ -399,12 +412,14 @@ class DatabaseService {
     required MediaType mediaType,
     required int externalId,
     int? platformId,
+    DataSource? source,
   }) =>
       collectionDao.findCollectionItem(
         collectionId: collectionId,
         mediaType: mediaType,
         externalId: externalId,
         platformId: platformId,
+        source: source,
       );
 
   Future<int?> addItemToCollection({

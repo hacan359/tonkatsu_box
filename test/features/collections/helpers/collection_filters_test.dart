@@ -17,6 +17,7 @@ void main() {
       String? name,
       String? userComment,
       String? authorComment,
+      bool isFavorite = false,
     }) =>
         createTestCollectionItem(
           id: id,
@@ -27,6 +28,7 @@ void main() {
           overrideName: name,
           userComment: userComment,
           authorComment: authorComment,
+          isFavorite: isFavorite,
         );
 
     final List<Tag> tags = <Tag>[
@@ -117,6 +119,29 @@ void main() {
         make(id: 2, status: ItemStatus.inProgress),
       ];
       final List<CollectionItem> r = const CollectionFilters(
+        status: ItemStatus.completed,
+      ).apply(items, tags, noLinks);
+      expect(r.map((CollectionItem i) => i.id), <int>[1]);
+    });
+
+    test('filters by favourite', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1, isFavorite: true),
+        make(id: 2),
+      ];
+      final List<CollectionItem> r =
+          const CollectionFilters(favoriteOnly: true).apply(items, tags, noLinks);
+      expect(r.map((CollectionItem i) => i.id), <int>[1]);
+    });
+
+    test('favourite combines with the other filters', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1, isFavorite: true, status: ItemStatus.completed),
+        make(id: 2, isFavorite: true, status: ItemStatus.inProgress),
+        make(id: 3, status: ItemStatus.completed),
+      ];
+      final List<CollectionItem> r = const CollectionFilters(
+        favoriteOnly: true,
         status: ItemStatus.completed,
       ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);

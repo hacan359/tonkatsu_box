@@ -6,6 +6,7 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/tv_show_cache_warmer.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/utils/cover_image_id.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
@@ -79,7 +80,11 @@ class TvShowHandler implements MediaActionHandler {
       title: tvShow.title,
       upsert: () => _ref.read(tvShowDaoProvider).upsertTvShow(tvShow),
       imageType: ImageType.tvShowPoster,
-      imageId: tvShow.tmdbId.toString(),
+      imageId: coverImageId(
+        mediaType: mediaType,
+        externalId: tvShow.tmdbId,
+        source: tvShow.source,
+      ),
       imageUrl: tvShow.posterUrl,
       afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId, tvShow.source),
     );
@@ -118,7 +123,11 @@ class TvShowHandler implements MediaActionHandler {
       title: tvShow.title,
       upsert: () => _ref.read(tvShowDaoProvider).upsertTvShow(tvShow),
       imageType: ImageType.tvShowPoster,
-      imageId: tvShow.tmdbId.toString(),
+      imageId: coverImageId(
+        mediaType: mediaType,
+        externalId: tvShow.tmdbId,
+        source: tvShow.source,
+      ),
       imageUrl: tvShow.posterUrl,
       afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId, tvShow.source),
     );

@@ -106,11 +106,47 @@ void main() {
       );
     });
 
-    test('non-manga types keep the bare external id', () {
+    test('namespaces TV shows by source', () {
+      expect(
+        coverImageId(
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          source: DataSource.tvmaze,
+        ),
+        'tvmaze_1399',
+      );
+      expect(
+        coverImageId(
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          source: DataSource.tmdb,
+        ),
+        'tmdb_1399',
+      );
+    });
+
+    test('TV show with null source defaults to tmdb', () {
+      expect(
+        coverImageId(mediaType: MediaType.tvShow, externalId: 1399),
+        'tmdb_1399',
+      );
+    });
+
+    test('animation stays bare — it only comes from TMDB', () {
+      expect(
+        coverImageId(
+          mediaType: MediaType.animation,
+          externalId: 1399,
+          source: DataSource.tmdb,
+        ),
+        '1399',
+      );
+    });
+
+    test('single-source types keep the bare external id', () {
       for (final MediaType type in <MediaType>[
         MediaType.game,
         MediaType.movie,
-        MediaType.tvShow,
         MediaType.visualNovel,
       ]) {
         expect(

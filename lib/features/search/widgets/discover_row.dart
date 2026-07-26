@@ -6,6 +6,8 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/models/media_type.dart';
+import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 
@@ -132,7 +134,12 @@ class _DiscoverRowState extends State<DiscoverRow> {
                     cacheImageType: item.isMovie
                         ? ImageType.moviePoster
                         : ImageType.tvShowPoster,
-                    cacheImageId: item.tmdbId.toString(),
+                    cacheImageId: item.isMovie
+                        ? item.tmdbId.toString()
+                        : coverImageId(
+                            mediaType: MediaType.tvShow,
+                            externalId: item.tmdbId,
+                          ),
                     year: item.year,
                     apiRating: double.tryParse(item.rating ?? ''),
                     isInCollection: item.isOwned,

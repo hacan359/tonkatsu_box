@@ -576,7 +576,7 @@ void main() {
             )).thenAnswer((_) async => movieBytes);
         when(() => mockImageCache.readImageBytes(
               ImageType.tvShowPoster,
-              '300',
+              'tmdb_300',
             )).thenAnswer((_) async => tvShowBytes);
 
         when(() => mockCanvasRepo.getGameCanvasItems(any()))
@@ -614,7 +614,7 @@ void main() {
         expect(xcoll.images.length, equals(3));
         expect(xcoll.images.containsKey('game_covers/100'), isTrue);
         expect(xcoll.images.containsKey('movie_posters/200'), isTrue);
-        expect(xcoll.images.containsKey('tv_show_posters/300'), isTrue);
+        expect(xcoll.images.containsKey('tv_show_posters/tmdb_300'), isTrue);
       });
 
       test('без imageCacheService should return пустой images', () async {

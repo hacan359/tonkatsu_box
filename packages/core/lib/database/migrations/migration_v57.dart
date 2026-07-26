@@ -72,17 +72,20 @@ class MigrationV57 extends Migration {
     // unique indexes that include source.
     await db.execute('DROP INDEX IF EXISTS idx_ci_coll_other');
     await db.execute('DROP INDEX IF EXISTS idx_ci_uncat_other');
+    // Keep 'book' excluded (source-aware since v48): re-including it here
+    // would make this CREATE UNIQUE INDEX throw on legal cross-source book
+    // duplicates and roll back the whole upgrade.
     await db.execute('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll_other
       ON collection_items(collection_id, media_type, external_id)
       WHERE collection_id IS NOT NULL
-        AND media_type NOT IN ('game', 'manga', 'tv_show')
+        AND media_type NOT IN ('game', 'manga', 'book', 'tv_show')
     ''');
     await db.execute('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_uncat_other
       ON collection_items(media_type, external_id)
       WHERE collection_id IS NULL
-        AND media_type NOT IN ('game', 'manga', 'tv_show')
+        AND media_type NOT IN ('game', 'manga', 'book', 'tv_show')
     ''');
     await db.execute('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll_tv

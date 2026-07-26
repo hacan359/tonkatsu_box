@@ -657,7 +657,7 @@ void main() {
       });
 
       testWidgets(
-          'должен сортировать по дате создания (ascending)',
+          'дата без descending — новые сверху, как на экране коллекций',
           (WidgetTester tester) async {
         final Collection cOldest = Collection(
           id: 1,
@@ -691,15 +691,15 @@ void main() {
           ),
         );
 
-        final Offset posOldest = tester.getCenter(find.text('Oldest'));
-        final Offset posMiddle = tester.getCenter(find.text('Middle'));
         final Offset posNewest = tester.getCenter(find.text('Newest'));
-        expect(posOldest.dy, lessThan(posMiddle.dy));
-        expect(posMiddle.dy, lessThan(posNewest.dy));
+        final Offset posMiddle = tester.getCenter(find.text('Middle'));
+        final Offset posOldest = tester.getCenter(find.text('Oldest'));
+        expect(posNewest.dy, lessThan(posMiddle.dy));
+        expect(posMiddle.dy, lessThan(posOldest.dy));
       });
 
       testWidgets(
-          'должен сортировать по дате создания descending (новые сверху)',
+          'дата с descending — старые сверху, как на экране коллекций',
           (WidgetTester tester) async {
         final Collection cOldest = Collection(
           id: 1,
@@ -726,9 +726,9 @@ void main() {
           ),
         );
 
-        final Offset posNewest = tester.getCenter(find.text('Newest'));
         final Offset posOldest = tester.getCenter(find.text('Oldest'));
-        expect(posNewest.dy, lessThan(posOldest.dy));
+        final Offset posNewest = tester.getCenter(find.text('Newest'));
+        expect(posOldest.dy, lessThan(posNewest.dy));
       });
 
       testWidgets(
