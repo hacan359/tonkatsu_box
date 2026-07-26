@@ -557,8 +557,8 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Из двух манг под MANHWA попадает одна — счётчик обязан это
-          // отражать, иначе он расходится с тем, что видно на экране.
+          // Only one of the two manga matches MANHWA; the count has to follow
+          // the subfilter or it drifts from what the grid shows.
           expect(find.textContaining('(1)'), findsOneWidget);
           expect(find.textContaining('(2)'), findsNothing);
         },
@@ -616,7 +616,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        // Не-compact режим рисует подпись, иконка появляется только в compact.
+        // The non-compact bar renders the label; the icon only appears compact.
         await tester.tap(find.text('Favorite'));
         await tester.pumpAndSettle();
 

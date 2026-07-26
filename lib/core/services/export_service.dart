@@ -517,19 +517,22 @@ class ExportService {
           }
         case MediaType.manga:
           final String mangaKey =
-              '${item.manga?.source.name ?? 'anilist'}:${item.externalId}';
+              '${(item.manga?.source ?? DataSource.anilist).name}:'
+              '${item.externalId}';
           if (item.manga != null && !mangas.containsKey(mangaKey)) {
             mangas[mangaKey] = item.manga!.toExport();
           }
         case MediaType.book:
           final String bookKey =
-              '${item.book?.source.name ?? 'openLibrary'}:${item.externalId}';
+              '${(item.book?.source ?? DataSource.openLibrary).name}:'
+              '${item.externalId}';
           if (item.book != null && !books.containsKey(bookKey)) {
             books[bookKey] = item.book!.toExport();
           }
         case MediaType.anime:
           final String animeKey =
-              '${item.anime?.source.name ?? 'anilist'}:${item.externalId}';
+              '${(item.anime?.source ?? DataSource.anilist).name}:'
+              '${item.externalId}';
           if (item.anime != null && !animes.containsKey(animeKey)) {
             animes[animeKey] = item.anime!.toExport();
           }

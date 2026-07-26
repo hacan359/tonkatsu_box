@@ -1310,7 +1310,7 @@ void main() {
         await notifier.toggleEpisode(1, 1);
         await Future<void>.delayed(Duration.zero);
 
-        // 1 обычная из 2 + спецвыпуск: inProgress, а не completed.
+        // 1 regular of 2 plus a special: inProgress, not completed.
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
       });
@@ -1367,8 +1367,8 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
 
-        // Загружены season 0 и season 1 из двух обычных сезонов — season 0
-        // не должен «добить» условие «все сезоны загружены».
+        // Season 0 and season 1 loaded out of two regular seasons: season 0
+        // must not satisfy the "all seasons loaded" condition.
         await notifier.loadSeason(0);
         await notifier.loadSeason(1);
         await notifier.toggleSeason(1);
