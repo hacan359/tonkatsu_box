@@ -1,0 +1,8 @@
+v0.40.0
+
+* TVmaze as a TV series source: seasons, episodes and the release calendar.
+* MangaDex and Kitsu manga sources, Kitsu anime, and a "Similar manga" row.
+* French and Brazilian Portuguese interface languages.
+* Add or remove tags across a whole selection at once.
+* Mood grids: auto-filled cell labels, cell size stepper, cleaner exports.
+* Covers are now stored per source, so some download again once after the update.

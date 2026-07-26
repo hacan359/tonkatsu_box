@@ -1,18 +1,25 @@
-# 0.39.0
+# 0.40.0
 
-**Poster cards got a fresh look.** Title, rating, year and your watch
-progress now live on a translucent banner right on the poster — hover
-a card to expand the full title. TV shows count episodes live from the
-tracker, and the new Laboratory in Settings lets you compare
-experimental card designs.
+**More sources, no keys required.** TVmaze joins TMDB for TV series with
+seasons, episodes and the release calendar. MangaDex and Kitsu join AniList
+and MangaBaka for manga, Kitsu is also an anime source, and manga cards got
+a "Similar manga" row.
 
-- Hardcover joins the book sources: search, library import and an edition picker
-- Spanish interface language
-- Reading/watching progress on item cards and in the table
-- Sort by start date and completion date
-- Drag tag chips into your own order right in the item card
-- Cover size slider in Settings → Appearance
-- Specials (season 0) can be tracked — listed last, excluded from progress
-- Import errors are now readable, with copyable details
-- Slightly larger fonts on phones
-- Release notes (this dialog!) appear once after every update
+- French and Brazilian Portuguese interface languages
+- Add or remove tags across a whole selection at once
+- Favourites filter inside a collection
+- Custom cards can be created with a personal note and tags
+- Full backups now carry your watched-episode marks
+- A light .xcoll restores items from every source, not just TMDB and AniList
+- Mood grids: auto-filled cell labels, sticky picker, cell size stepper, cleaner exports
+- Season rows show watch progress and a mark-next-episode button
+- Episode tracker got season posters, episode stills and overviews
+- Fixed collected badges matching a title from another provider
+- Fixed watch progress lost when moving a show between collections
+
+*Heads up:* covers are now stored per source, so some of them download again
+the first time you open a card after the update. That is expected, nothing is
+lost, and it only happens once.
+
+Come say hi on [Discord](https://discord.gg/JZVNPF7cS2) — questions, bug
+reports and feature ideas all welcome.
