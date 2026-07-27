@@ -562,7 +562,15 @@ class CollectionDao {
   ) async {
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
-      columns: <String>['collection_id', 'media_type', 'external_id', 'source'],
+      columns: <String>[
+        'collection_id',
+        'media_type',
+        'external_id',
+        'source',
+        // Tells an animated series from an animated movie; only the former
+        // carries watch marks.
+        'platform_id',
+      ],
       where: 'id = ?',
       whereArgs: <Object?>[id],
       limit: 1,
@@ -570,9 +578,10 @@ class CollectionDao {
     return rows.isEmpty ? null : rows.first;
   }
 
-  /// Whether another tv/animation item for the same show remains in the
+  /// Whether another tracker-backed item for the same show remains in the
   /// collection — it shares the watch marks, so they must not be
-  /// moved/deleted.
+  /// moved/deleted. Kitsu anime included: marks are keyed by
+  /// `(collection, source, show)`, not by item.
   Future<bool> _hasTvSibling(
     DatabaseExecutor db,
     int collectionId,
@@ -583,7 +592,7 @@ class CollectionDao {
       'collection_items',
       columns: <String>['id'],
       where: 'collection_id = ? AND external_id = ? '
-          "AND media_type IN ('tv_show', 'animation') "
+          "AND media_type IN ('tv_show', 'animation', 'anime') "
           "AND COALESCE(source, 'tmdb') = ?",
       whereArgs: <Object?>[
         collectionId,
@@ -620,7 +629,14 @@ class CollectionDao {
     Map<String, dynamic> movedItem,
     int? targetCollectionId,
   ) async {
-    if (!MediaType.fromString(movedItem['media_type'] as String).isTvBacked) {
+    if (!CollectionItem.usesEpisodeTrackerFor(
+      mediaType: MediaType.fromString(movedItem['media_type'] as String),
+      source: DataSource.fromNameOr(
+        movedItem['source'] as String?,
+        DataSource.tmdb,
+      ),
+      platformId: movedItem['platform_id'] as int?,
+    )) {
       return;
     }
     final int? oldCollectionId = movedItem['collection_id'] as int?;

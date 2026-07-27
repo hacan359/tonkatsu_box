@@ -41,6 +41,11 @@ enum MediaType {
   bool get isTvBacked =>
       this == MediaType.tvShow || this == MediaType.animation;
 
+  /// Whether items of this type *may* carry episode-tracker marks — the source
+  /// decides per item (see `CollectionItem.usesEpisodeTracker`). For coarse
+  /// decisions like cache invalidation, where only the type is known.
+  bool get mayUseEpisodeTracker => isTvBacked || this == MediaType.anime;
+
   /// Whether identity is `(externalId, source)` rather than `externalId`
   /// alone: several providers serve this type and their numeric ids collide.
   /// Animation is excluded on purpose — it only ever comes from TMDB.

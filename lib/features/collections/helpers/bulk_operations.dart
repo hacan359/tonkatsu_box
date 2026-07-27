@@ -211,7 +211,7 @@ class BulkOperations {
     }
     // Bulk moves transfer watched marks in the DB; live trackers keep the
     // old in-memory state until invalidated.
-    if (affectedTypes.any((MediaType t) => t.isTvBacked)) {
+    if (affectedTypes.any((MediaType t) => t.mayUseEpisodeTracker)) {
       ref.invalidate(episodeTrackerNotifierProvider);
     }
     for (final MediaType t in affectedTypes) {

@@ -34,6 +34,9 @@ ItemCardProgress? itemCardProgress(CollectionItem item) {
   } else {
     switch (type) {
       case MediaType.anime:
+        // Kitsu anime run on the episode tracker, so their progress lives in
+        // `watched_episodes` — same reason TV shows are excluded here.
+        if (item.usesEpisodeTracker) return null;
         fineTotal = item.anime?.episodes;
       case MediaType.manga:
         fineTotal = item.manga?.chapters;

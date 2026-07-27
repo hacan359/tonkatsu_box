@@ -1475,7 +1475,7 @@ class ImportService {
     int collectionId,
     CollectionItem parsed,
   ) async {
-    if (!parsed.mediaType.isTvBacked) return;
+    if (!parsed.usesEpisodeTracker) return;
     final List<dynamic>? raw =
         itemData['_watched_episodes'] as List<dynamic>?;
     if (raw == null || raw.isEmpty) return;

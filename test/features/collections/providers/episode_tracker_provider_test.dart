@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/api/kitsu_api.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
+import 'package:tonkatsu_box/shared/models/anime.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
@@ -1109,10 +1111,21 @@ void main() {
 
       ProviderContainer createTrackingContainer(
           List<CollectionItem> items) {
+        // Kitsu anime resolve their totals through the Kitsu source; without
+        // the override the resolver would build a real networked client.
+        final MockKitsuApi mockKitsuApi = MockKitsuApi();
+        when(() => mockKitsuApi.getAnimeById(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockKitsuApi.getAnimeEpisodes(any()))
+            .thenAnswer((_) async => <TvEpisode>[]);
+        when(() => mockKitsuApi.getAnimeEpisodeCount(any()))
+            .thenAnswer((_) async => null);
+
         final ProviderContainer container = ProviderContainer(
           overrides: <Override>[
             databaseServiceProvider.overrideWithValue(mockDb),
             tmdbApiProvider.overrideWithValue(mockTmdbApi),
+            kitsuApiProvider.overrideWithValue(mockKitsuApi),
             collectionItemsNotifierProvider.overrideWith(
               () {
                 lastTracking = TrackingCollectionItemsNotifier(items);
@@ -1131,6 +1144,7 @@ void main() {
         MediaType mediaType = MediaType.tvShow,
         int totalEpisodes = 10,
         int? totalSeasons,
+        int? platformId,
       }) {
         return CollectionItem(
           id: id,
@@ -1139,6 +1153,7 @@ void main() {
           externalId: testShowId,
           status: status,
           addedAt: DateTime(2024),
+          platformId: platformId,
           tvShow: TvShow(
             tmdbId: testShowId,
             title: 'Test Show',
@@ -1193,6 +1208,79 @@ void main() {
 
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
+      });
+
+      // Kitsu anime run on the same tracker; their totals come from the anime
+      // record instead of a cached `tvShow` row.
+      CollectionItem createKitsuAnimeItem({
+        ItemStatus status = ItemStatus.notStarted,
+        int episodes = 10,
+      }) {
+        return CollectionItem(
+          id: 1,
+          collectionId: testCollectionId,
+          mediaType: MediaType.anime,
+          externalId: testShowId,
+          status: status,
+          addedAt: DateTime(2024),
+          anime: Anime(
+            id: testShowId,
+            source: DataSource.kitsu,
+            title: 'Test Anime',
+            episodes: episodes,
+          ),
+        );
+      }
+
+      const ({int collectionId, int showId, DataSource source}) kitsuArg = (
+        collectionId: testCollectionId,
+        showId: testShowId,
+        source: DataSource.kitsu,
+      );
+
+      test('kitsu-аниме: первый эпизод переводит в inProgress', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.kitsu, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.markEpisodeWatched(
+                testCollectionId, DataSource.kitsu, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createTrackingContainer(
+            <CollectionItem>[createKitsuAnimeItem()]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(kitsuArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
+        expect(lastTracking.updateStatusCalls.first.$3, MediaType.anime);
+      });
+
+      test('kitsu-аниме: последний эпизод переводит в completed', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.kitsu, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (1, 1): DateTime(2024),
+                });
+        when(() => mockTvShowDao.markEpisodeWatched(
+                testCollectionId, DataSource.kitsu, testShowId, 1, 2))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createTrackingContainer(
+            <CollectionItem>[createKitsuAnimeItem(episodes: 2)]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(kitsuArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 2);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.completed);
       });
 
       test('должен перевести в completed когда все эпизоды просмотрены',
@@ -1430,9 +1518,13 @@ void main() {
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
       });
 
-      test('должен находить item по MediaType.animation', () async {
+      // Only the TV-show flavour of animation runs on the tracker; an
+      // animated movie has no episode grid to mark from.
+      test('должен находить анимационный сериал (MediaType.animation)',
+          () async {
         final CollectionItem item = createTvItem(
           mediaType: MediaType.animation,
+          platformId: AnimationSource.tvShow,
         );
         when(() => mockTvShowDao.getWatchedEpisodes(testCollectionId, DataSource.tmdb, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});

@@ -1400,6 +1400,7 @@ void main() {
               'media_type',
               'external_id',
               'source',
+              'platform_id',
             ],
             where: 'id = ?',
             whereArgs: <Object?>[1],

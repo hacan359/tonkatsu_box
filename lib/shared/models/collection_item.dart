@@ -505,6 +505,38 @@ class CollectionItem with Exportable {
           ? customMedia!.displayType!
           : mediaType;
 
+  /// Whether progress lives in the episode tracker (`watched_episodes`) rather
+  /// than in the item's own counter. Drives the tracker section, the card
+  /// badge, automatic status updates and mark transfer, so they all agree.
+  bool get usesEpisodeTracker => usesEpisodeTrackerFor(
+        mediaType: mediaType,
+        source: dataSource,
+        platformId: platformId,
+      );
+
+  /// [usesEpisodeTracker] for callers holding raw parts instead of an item —
+  /// DAO rows during a move, for instance.
+  ///
+  /// Kitsu anime qualify: Kitsu ships per-episode metadata. AniList anime keep
+  /// the flat counter.
+  static bool usesEpisodeTrackerFor({
+    required MediaType mediaType,
+    required DataSource source,
+    int? platformId,
+  }) =>
+      switch (mediaType) {
+        MediaType.tvShow => true,
+        MediaType.animation => platformId == AnimationSource.tvShow,
+        MediaType.anime => source == DataSource.kitsu,
+        MediaType.game ||
+        MediaType.movie ||
+        MediaType.visualNovel ||
+        MediaType.manga ||
+        MediaType.book ||
+        MediaType.custom =>
+          false,
+      };
+
   /// External page URL of the active media (IGDB / TMDB / AniList / …).
   /// Custom items carry their own user-entered link.
   String? get externalUrl => switch (mediaType) {

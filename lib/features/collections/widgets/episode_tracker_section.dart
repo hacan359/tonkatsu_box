@@ -787,6 +787,7 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
                 trackerArg: trackerArg,
                 itemId: itemId,
                 accentColor: accentColor,
+                seasonPosterUrl: season.posterUrl,
               ))
         else if (episodes != null && episodes.isEmpty)
           Padding(
@@ -813,11 +814,15 @@ class EpisodeTile extends ConsumerStatefulWidget {
     required this.itemId,
     required this.accentColor,
     this.watchedAt,
+    this.seasonPosterUrl,
     super.key,
   });
 
   /// Episode data.
   final TvEpisode episode;
+
+  /// Stands in when the episode has no still of its own.
+  final String? seasonPosterUrl;
 
   /// Whether the episode has been watched.
   final bool isWatched;
@@ -878,6 +883,11 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
 
     final String? overview = episode.overview;
 
+    // Kitsu ships stills for some episodes only; the season poster keeps the
+    // rows aligned instead of leaving a ragged gap where a still is missing.
+    final bool hasOwnStill = episode.stillUrl != null;
+    final String? stillUrl = episode.stillUrl ?? widget.seasonPosterUrl;
+
     void toggle() {
       ref
           .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
@@ -894,7 +904,7 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (episode.stillUrl != null) ...<Widget>[
+            if (stillUrl != null) ...<Widget>[
               // Watched episodes get a dimmed still with a check badge,
               // matching the struck-through title; the row tap toggles.
               Stack(
@@ -905,10 +915,19 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                       child: CachedImage(
                         imageType: ImageType.tvEpisodeStill,
-                        imageId: '${widget.trackerArg.source.name}_'
-                            '${episode.tmdbShowId}_'
-                            's${episode.seasonNumber}e${episode.episodeNumber}',
-                        remoteUrl: episode.stillUrl!,
+                        // Keyed by what is actually shown: a season poster
+                        // standing in for a still must not be cached under the
+                        // episode's own id, or it would stick once the real
+                        // still appears.
+                        imageId: hasOwnStill
+                            ? '${widget.trackerArg.source.name}_'
+                                '${episode.tmdbShowId}_'
+                                's${episode.seasonNumber}'
+                                'e${episode.episodeNumber}'
+                            : '${widget.trackerArg.source.name}_'
+                                '${episode.tmdbShowId}_'
+                                's${episode.seasonNumber}_poster',
+                        remoteUrl: stillUrl,
                         width: 96,
                         height: 54,
                         fit: BoxFit.cover,

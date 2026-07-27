@@ -776,7 +776,7 @@ class CollectionItemsNotifier
   /// so the show would keep showing zero progress in the target collection
   /// until restart. Invalidating the family reloads every live tracker.
   void _invalidateEpisodeTrackers(MediaType mediaType) {
-    if (mediaType.isTvBacked) {
+    if (mediaType.mayUseEpisodeTracker) {
       ref.invalidate(episodeTrackerNotifierProvider);
     }
   }

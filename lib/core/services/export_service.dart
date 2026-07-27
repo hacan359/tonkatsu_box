@@ -336,7 +336,7 @@ class ExportService {
     if (db == null) return;
     for (int i = 0; i < items.length; i++) {
       final CollectionItem item = items[i];
-      if (!item.mediaType.isTvBacked) continue;
+      if (!item.usesEpisodeTracker) continue;
       // Resolve the source exactly like import will: parsed items carry no
       // joined show, so their dataSource collapses to the raw column.
       final DataSource source = item.source ?? DataSource.tmdb;
