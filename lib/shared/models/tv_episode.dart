@@ -77,6 +77,53 @@ class TvEpisode {
     );
   }
 
+  /// From a Kitsu `episodes` resource; null when the episode number is missing.
+  ///
+  /// Kitsu's `synopsis` is plain text, so no HTML stripping. Episodes without a
+  /// `seasonNumber` fall into season 1 — the synthesized season Kitsu anime use.
+  static TvEpisode? tryFromKitsu(
+    Map<String, dynamic> json, {
+    required int showId,
+  }) {
+    final Map<String, dynamic> attrs =
+        (json['attributes'] as Map<String, dynamic>?) ??
+            const <String, dynamic>{};
+
+    final int? number = (attrs['number'] as num?)?.toInt();
+    if (number == null) return null;
+
+    final Map<String, dynamic> titles =
+        (attrs['titles'] as Map<String, dynamic>?) ?? const <String, dynamic>{};
+    final String? airdate = attrs['airdate'] as String?;
+    final Map<String, dynamic>? thumbnail =
+        attrs['thumbnail'] as Map<String, dynamic>?;
+
+    return TvEpisode(
+      tmdbShowId: showId,
+      seasonNumber: (attrs['seasonNumber'] as num?)?.toInt() ?? 1,
+      episodeNumber: number,
+      name: _firstNonEmpty(<Object?>[
+            attrs['canonicalTitle'],
+            titles['en_us'],
+            titles['en_jp'],
+            titles['ja_jp'],
+          ]) ??
+          '',
+      overview: _firstNonEmpty(<Object?>[attrs['synopsis']]),
+      airDate: (airdate == null || airdate.isEmpty) ? null : airdate,
+      stillUrl: _firstNonEmpty(<Object?>[thumbnail?['original']]),
+      runtime: (attrs['length'] as num?)?.toInt(),
+      source: DataSource.kitsu,
+    );
+  }
+
+  static String? _firstNonEmpty(List<Object?> values) {
+    for (final Object? value in values) {
+      if (value is String && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
   /// Show id in the [source] provider's namespace.
   final int tmdbShowId;
 

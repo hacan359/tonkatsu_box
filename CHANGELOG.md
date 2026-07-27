@@ -7,6 +7,73 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Kitsu anime run on the season-and-episode tracker, like TV series**
+
+  A Kitsu anime opens the same season accordion TV shows use: episode tiles with
+  a preview frame, title, air date, runtime and synopsis, a watched checkbox,
+  likes and per-episode notes. Marking an episode moves the item to In progress,
+  marking every episode completes it, and the card badge shows watched of total.
+  Episodes without a preview frame borrow the season poster.
+
+  Seasons come from Kitsu's own episode data, so long titles keep their real
+  structure (Bleach: 16 seasons, 366 episodes) instead of one flat list.
+  Episode numbering stays absolute the way anime is usually counted. AniList
+  anime keep the flat counter — only Kitsu ships per-episode metadata.
+
+  * lib/core/api/kitsu/kitsu_episode_api.dart (KitsuEpisodeApi.getAllEpisodes,
+    KitsuEpisodeApi.getEpisodeCount): New. Kitsu caps a page at 20 episodes and
+    has no season filter, so the full list is fetched — page one carries
+    `meta.count` and the rest go out in parallel batches.
+  * lib/core/api/kitsu_api.dart (KitsuApi.getAnimeEpisodes,
+    KitsuApi.getAnimeEpisodeCount): Expose the episode API on the facade.
+  * lib/core/api/episode_source/kitsu_episode_source.dart (KitsuEpisodeSource):
+    New. Groups episodes into real seasons, falls back to a single synthesized
+    season when the list is unavailable, and memoizes both the anime record and
+    the episode list per show.
+  * lib/core/api/episode_source/tv_episode_source.dart
+    (tvEpisodeSourceResolverProvider): Route `DataSource.kitsu` to the new source.
+  * lib/shared/models/tv_episode.dart (TvEpisode.tryFromKitsu): New factory;
+    Kitsu's synopsis is plain text, so no HTML stripping.
+  * lib/shared/models/collection_item.dart (CollectionItem.usesEpisodeTracker,
+    CollectionItem.usesEpisodeTrackerFor): New single definition of "progress
+    lives in the episode tracker", replacing the condition that was spelled out
+    separately in the detail config and the card badge.
+  * lib/shared/models/media_type.dart (MediaType.mayUseEpisodeTracker): New
+    coarse check for callers that only know the type, such as cache invalidation.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (ItemDetailMediaConfig.from): Kitsu anime get the tracker section instead of
+    the flat progress widget.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (EpisodeTile.seasonPosterUrl): Stand-in image when an episode has no still
+    of its own; cached under the season's id so it is not mistaken for the
+    episode's own frame.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier._updateAutoStatus): Find the item through
+    `usesEpisodeTracker` and read the episode total from the anime record, so
+    status updates work without a cached show row.
+  * lib/features/collections/helpers/tracker_card_progress.dart
+    (trackerCardProgress): Same predicate, plus the anime episode count as the
+    total.
+  * lib/shared/utils/item_card_progress.dart (itemCardProgress): Kitsu anime
+    fall through to the tracker badge instead of the item counter.
+  * lib/core/services/export_service.dart (ExportService._attachWatchedEpisodes),
+    lib/core/services/import_service.dart
+    (ImportService._importWatchedEpisodes): Backups carry and restore watched
+    episodes for Kitsu anime, which the tv-only gate skipped.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao._loadItemMeta,
+    CollectionDao._transferWatchedEpisodes, CollectionDao._hasTvSibling): Moving
+    a Kitsu anime between collections carries its marks; `_loadItemMeta` now
+    selects `platform_id`, which the animated-series check needs.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier._invalidateEpisodeTrackers),
+    lib/features/collections/helpers/bulk_operations.dart
+    (BulkOperations._invalidateAfterMutation): Refresh live trackers after an
+    anime move too.
+  * test/helpers/fallbacks.dart (registerAllFallbacks): Register an `Anime`
+    fallback for mocktail.
+
 ## [0.40.0] - 2026-07-26
 
 ### Added

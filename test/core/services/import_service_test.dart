@@ -2978,6 +2978,75 @@ void main() {
             any(), any(), any(), any(), any(), any()));
       });
 
+      test('should restore marks for kitsu anime', () async {
+        final MockAnimeDao animeDao = MockAnimeDao();
+        when(() => mockDb.animeDao).thenReturn(animeDao);
+        when(() => animeDao.upsertAnime(any())).thenAnswer((_) async {});
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 244,
+              'source': 'kitsu',
+              '_watched_episodes': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'season': 2,
+                  'episode': 21,
+                  'watched_at': 1700000000,
+                },
+              ],
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.kitsu, 244, 2, 21, 1700000000 * 1000)).called(1);
+      });
+
+      test('should ignore _watched_episodes on anilist anime', () async {
+        final MockAnimeDao animeDao = MockAnimeDao();
+        when(() => mockDb.animeDao).thenReturn(animeDao);
+        when(() => animeDao.upsertAnime(any())).thenAnswer((_) async {});
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+
+        await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 600,
+              'source': 'anilist',
+              '_watched_episodes': <Map<String, dynamic>>[
+                <String, dynamic>{'season': 1, 'episode': 1},
+              ],
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
       test('should ignore _watched_episodes on a non-tv item', () async {
         when(() => mockApi.getGamesByIds(any()))
             .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);

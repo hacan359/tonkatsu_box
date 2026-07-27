@@ -2163,6 +2163,61 @@ void main() {
         expect(xcoll.items[1].containsKey('_watched_episodes'), isFalse);
       });
 
+      test('should attach _watched_episodes for kitsu anime', () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+        when(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.kitsu, 244))
+            .thenAnswer(
+          (_) async => <(int, int), DateTime?>{
+            (2, 21): DateTime.fromMillisecondsSinceEpoch(1700000000000),
+          },
+        );
+
+        final XcollFile xcoll = await sutMarks.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 244,
+              source: DataSource.kitsu,
+              anime: createTestAnime(id: 244, source: DataSource.kitsu),
+            ),
+          ],
+          1,
+          includeUserData: true,
+        );
+
+        final List<dynamic> watched =
+            xcoll.items[0]['_watched_episodes'] as List<dynamic>;
+        expect(watched, hasLength(1));
+        expect((watched[0] as Map<String, dynamic>)['season'], 2);
+        expect((watched[0] as Map<String, dynamic>)['episode'], 21);
+      });
+
+      test('should not query watched episodes for anilist anime', () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+
+        await sutMarks.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 600,
+              source: DataSource.anilist,
+              anime: createTestAnime(source: DataSource.anilist),
+            ),
+          ],
+          1,
+          includeUserData: true,
+        );
+
+        verifyNever(
+            () => mockTvShowDao.getWatchedEpisodes(any(), any(), any()));
+      });
+
       test('should not query watched episodes for non-tv items', () async {
         when(() => mockItemMarkDao.getMarksForItems(any()))
             .thenAnswer((_) async => <ItemMark>[]);

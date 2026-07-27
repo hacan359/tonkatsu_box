@@ -39,6 +39,7 @@ void registerAllFallbacks() {
   registerFallbackValue(const CustomMedia(id: 0, title: 'fallback'));
   registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
   registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
+  registerFallbackValue(const Anime(id: 0, title: 'fallback'));
 
   registerFallbackValue(FakeCanvasItem());
   registerFallbackValue(FakeCanvasConnection());

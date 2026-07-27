@@ -12,6 +12,7 @@ import 'package:tonkatsu_box/core/database/dao/movie_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
+import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   setUpAll(() {
@@ -209,6 +210,65 @@ void main() {
 
       expect(ok, isTrue);
       expect(await watchedCount(2, 500), 1);
+    });
+
+    test('should move marks for a kitsu anime', () async {
+      await insertItem(
+        id: 10,
+        collectionId: 1,
+        mediaType: 'anime',
+        externalId: 244,
+        source: 'kitsu',
+      );
+      await insertWatched(collectionId: 1, showId: 244, source: 'kitsu');
+
+      await dao.updateItemCollectionId(10, 2);
+
+      expect(await watchedCount(1, 244), 0);
+      expect(await watchedCount(2, 244), 1);
+    });
+
+    test('should not touch marks for an anilist anime', () async {
+      await insertItem(
+        id: 10,
+        collectionId: 1,
+        mediaType: 'anime',
+        externalId: 600,
+        source: 'anilist',
+      );
+      await insertWatched(collectionId: 1, showId: 600, source: 'anilist');
+
+      await dao.updateItemCollectionId(10, 2);
+
+      expect(await watchedCount(1, 600), 1);
+      expect(await watchedCount(2, 600), 0);
+    });
+
+    test('should move marks for an animated series but not an animated movie',
+        () async {
+      await insertItem(
+        id: 10,
+        collectionId: 1,
+        mediaType: 'animation',
+        externalId: 700,
+        platformId: AnimationSource.tvShow,
+      );
+      await insertItem(
+        id: 11,
+        collectionId: 1,
+        mediaType: 'animation',
+        externalId: 800,
+        platformId: AnimationSource.movie,
+      );
+      await insertWatched(collectionId: 1, showId: 700);
+      await insertWatched(collectionId: 1, showId: 800);
+
+      await dao.updateItemCollectionId(10, 2);
+      await dao.updateItemCollectionId(11, 3);
+
+      expect(await watchedCount(2, 700), 1);
+      expect(await watchedCount(1, 800), 1);
+      expect(await watchedCount(3, 800), 0);
     });
 
     test('should not touch marks when moving a non-tv item', () async {

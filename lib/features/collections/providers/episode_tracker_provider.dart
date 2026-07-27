@@ -397,17 +397,22 @@ class EpisodeTrackerNotifier
     for (final CollectionItem ci in items) {
       if (ci.externalId == _showId &&
           ci.dataSource == _source &&
-          ci.mediaType.isTvBacked) {
+          ci.usesEpisodeTracker) {
         targetItem = ci;
         break;
       }
     }
     if (targetItem == null) return;
 
+    // Kitsu anime have no cached `tvShow` row, but the anime record already
+    // carries the episode count — that spares a request on every toggle.
     int totalInShow = _cachedTotalEpisodes ??
-        targetItem.tvShow?.totalEpisodes ?? 0;
+        targetItem.tvShow?.totalEpisodes ??
+        targetItem.anime?.episodes ??
+        0;
     int totalSeasons = _cachedTotalSeasons ??
-        targetItem.tvShow?.totalSeasons ?? 0;
+        targetItem.tvShow?.totalSeasons ??
+        0;
 
     // Fetch missing totals from the source API once per session, so a
     // toggle doesn't turn into a network call every time.

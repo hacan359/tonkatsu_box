@@ -66,11 +66,12 @@ class ItemDetailMediaConfig {
       accentColor: MediaTypeTheme.colorFor(item.displayMediaType),
       infoChips: _buildChips(item, context),
       description: item.itemDescription,
-      hasEpisodeTracker: item.mediaType == MediaType.tvShow ||
-          (item.mediaType == MediaType.animation &&
-              item.platformId == AnimationSource.tvShow),
+      hasEpisodeTracker: item.usesEpisodeTracker,
       hasMangaProgress: item.mediaType == MediaType.manga,
-      hasAnimeProgress: item.mediaType == MediaType.anime,
+      // Kitsu anime moved to the season grid; AniList anime stay on the flat
+      // counter.
+      hasAnimeProgress:
+          item.mediaType == MediaType.anime && !item.usesEpisodeTracker,
       hasBookProgress: item.mediaType == MediaType.book,
       hasCustomProgress: item.mediaType == MediaType.custom &&
           (item.customUnitTotal != null || item.customUnitGroupTotal != null),

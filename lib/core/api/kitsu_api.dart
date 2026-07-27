@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
+import '../../shared/models/tv_episode.dart';
 import 'kitsu/kitsu_anime_api.dart';
+import 'kitsu/kitsu_episode_api.dart';
 import 'kitsu/kitsu_http_client.dart';
 import 'kitsu/kitsu_manga_api.dart';
 
@@ -16,11 +18,13 @@ class KitsuApi {
   KitsuApi({Dio? dio}) : _client = KitsuHttpClient(dio: dio) {
     _manga = KitsuMangaApi(_client);
     _anime = KitsuAnimeApi(_client);
+    _episodes = KitsuEpisodeApi(_client);
   }
 
   final KitsuHttpClient _client;
   late final KitsuMangaApi _manga;
   late final KitsuAnimeApi _anime;
+  late final KitsuEpisodeApi _episodes;
 
   Future<(List<Manga>, bool hasMore, int totalPages)> browseManga({
     String? query,
@@ -59,6 +63,11 @@ class KitsuApi {
       );
 
   Future<Anime?> getAnimeById(int id) => _anime.getById(id);
+
+  Future<List<TvEpisode>> getAnimeEpisodes(int id) =>
+      _episodes.getAllEpisodes(id);
+
+  Future<int?> getAnimeEpisodeCount(int id) => _episodes.getEpisodeCount(id);
 
   void dispose() => _client.dispose();
 }

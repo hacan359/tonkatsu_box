@@ -4,8 +4,10 @@ import '../../../shared/models/data_source.dart';
 import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
+import '../kitsu_api.dart';
 import '../tmdb_api.dart';
 import '../tvmaze_api.dart';
+import 'kitsu_episode_source.dart';
 import 'tmdb_episode_source.dart';
 import 'tvmaze_episode_source.dart';
 
@@ -30,6 +32,11 @@ final Provider<TvEpisodeSource Function(DataSource)>
       TmdbEpisodeSource(ref.watch(tmdbApiProvider));
   final TvMazeEpisodeSource tvmaze =
       TvMazeEpisodeSource(ref.watch(tvMazeApiProvider));
-  return (DataSource source) =>
-      source == DataSource.tvmaze ? tvmaze : tmdb;
+  final KitsuEpisodeSource kitsu =
+      KitsuEpisodeSource(ref.watch(kitsuApiProvider));
+  return (DataSource source) => switch (source) {
+        DataSource.tvmaze => tvmaze,
+        DataSource.kitsu => kitsu,
+        _ => tmdb,
+      };
 });

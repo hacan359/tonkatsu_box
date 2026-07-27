@@ -3223,6 +3223,85 @@ void main() {
           expect(game.customUnitGroupTotal, isNull);
         });
       });
+
+      group('usesEpisodeTracker', () {
+        CollectionItem itemOf({
+          required MediaType mediaType,
+          int? platformId,
+          Anime? anime,
+        }) =>
+            CollectionItem(
+              id: 1,
+              collectionId: 1,
+              mediaType: mediaType,
+              externalId: 1,
+              status: ItemStatus.notStarted,
+              addedAt: now,
+              platformId: platformId,
+              anime: anime,
+            );
+
+        test('true for TV shows', () {
+          expect(itemOf(mediaType: MediaType.tvShow).usesEpisodeTracker,
+              isTrue);
+        });
+
+        test('animation only when it is the TV-show source', () {
+          expect(
+            itemOf(
+              mediaType: MediaType.animation,
+              platformId: AnimationSource.tvShow,
+            ).usesEpisodeTracker,
+            isTrue,
+          );
+          expect(
+            itemOf(
+              mediaType: MediaType.animation,
+              platformId: AnimationSource.movie,
+            ).usesEpisodeTracker,
+            isFalse,
+          );
+        });
+
+        test('anime only from kitsu — anilist keeps the flat counter', () {
+          expect(
+            itemOf(
+              mediaType: MediaType.anime,
+              anime: const Anime(
+                id: 1,
+                source: DataSource.kitsu,
+                title: 'K',
+              ),
+            ).usesEpisodeTracker,
+            isTrue,
+          );
+          expect(
+            itemOf(
+              mediaType: MediaType.anime,
+              anime: const Anime(
+                id: 1,
+                source: DataSource.anilist,
+                title: 'A',
+              ),
+            ).usesEpisodeTracker,
+            isFalse,
+          );
+        });
+
+        test('false for every other type', () {
+          for (final MediaType type in <MediaType>[
+            MediaType.game,
+            MediaType.movie,
+            MediaType.visualNovel,
+            MediaType.manga,
+            MediaType.book,
+            MediaType.custom,
+          ]) {
+            expect(itemOf(mediaType: type).usesEpisodeTracker, isFalse,
+                reason: type.name);
+          }
+        });
+      });
     });
   });
 }
