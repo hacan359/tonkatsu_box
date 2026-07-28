@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/logo_loader.dart';
 
 /// Can only be dismissed via the "Done" button, which appears once the
 /// import future completes.
@@ -28,7 +29,7 @@ class ImportProgressDialog extends StatelessWidget {
           if (progress == null) {
             return const SizedBox(
               height: 100,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: LogoLoader()),
             );
           }
 

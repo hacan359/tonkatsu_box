@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -154,6 +155,31 @@ class _TraktWatchlistEntry {
   final String type; // 'movie' | 'show'
 }
 
+/// Everything parsed out of the export archive in one background-isolate
+/// pass; only plain data, so it is sendable back to the main isolate.
+class _TraktParsedArchive {
+  const _TraktParsedArchive({
+    required this.username,
+    required this.hasNoJsonFiles,
+    required this.watchedMovies,
+    required this.watchedShows,
+    required this.movieRatings,
+    required this.showRatings,
+    required this.watchlistEntries,
+  });
+
+  final String username;
+
+  /// True when the archive contained no JSON files at all.
+  final bool hasNoJsonFiles;
+
+  final List<_TraktMovie> watchedMovies;
+  final List<_TraktShow> watchedShows;
+  final List<_TraktRating> movieRatings;
+  final List<_TraktRating> showRatings;
+  final List<_TraktWatchlistEntry> watchlistEntries;
+}
+
 final Provider<TraktImportService> traktImportServiceProvider =
     Provider<TraktImportService>((Ref ref) {
   return TraktImportService(
@@ -193,10 +219,16 @@ class TraktImportService implements ImportSource {
   @override
   String get displayName => 'Trakt';
 
-  Future<TraktZipInfo> validateZip(String zipPath) async {
+  Future<TraktZipInfo> validateZip(String zipPath) {
+    // Unzip + JSON decode of a large export blocks for seconds — run it on a
+    // background isolate so the UI (and its loader animation) keeps running.
+    return Isolate.run(() => _validateZipSync(zipPath));
+  }
+
+  static TraktZipInfo _validateZipSync(String zipPath) {
     try {
       final ({Map<String, String> files, String username}) archive =
-          _readArchive(zipPath);
+          _readArchiveSync(zipPath);
       if (archive.files.isEmpty) {
         return const TraktZipInfo.invalid('No JSON files found in archive');
       }
@@ -289,47 +321,30 @@ class TraktImportService implements ImportSource {
         message: 'Reading ZIP archive...',
       ));
 
-      final ({Map<String, String> files, String username}) archive =
-          _readArchive(options.zipPath);
-      if (archive.files.isEmpty) {
+      // Unzip + JSON parse of the whole export runs on a background isolate:
+      // done synchronously it freezes the progress dialog for seconds.
+      final _TraktParsedArchive parsed = await Isolate.run(
+        () => _readAndParseArchive(
+          zipPath: options.zipPath,
+          importWatched: options.importWatched,
+          importRatings: options.importRatings,
+          importWatchlist: options.importWatchlist,
+        ),
+      );
+      if (parsed.hasNoJsonFiles) {
         return const UniversalImportResult.failure(
           sourceName: 'Trakt',
           error: 'No data found in archive',
         );
       }
 
-      final Map<String, String> files = archive.files;
-      final String username = archive.username;
-
-      final List<_TraktMovie> watchedMovies = options.importWatched
-          ? _parseWatchedMovies(_getFile(
-              files, 'watched/watched-movies.json', 'watched-movies.json'))
-          : <_TraktMovie>[];
-
-      final List<_TraktShow> watchedShows = options.importWatched
-          ? _parseWatchedShows(_getFile(
-              files, 'watched/watched-shows.json', 'watched-shows.json'))
-          : <_TraktShow>[];
-
-      final List<_TraktRating> movieRatings = options.importRatings
-          ? _parseRatings(
-              _getFile(
-                  files, 'ratings/ratings-movies.json', 'ratings-movies.json'),
-              'movie')
-          : <_TraktRating>[];
-
-      final List<_TraktRating> showRatings = options.importRatings
-          ? _parseRatings(
-              _getFile(
-                  files, 'ratings/ratings-shows.json', 'ratings-shows.json'),
-              'show')
-          : <_TraktRating>[];
-
+      final String username = parsed.username;
+      final List<_TraktMovie> watchedMovies = parsed.watchedMovies;
+      final List<_TraktShow> watchedShows = parsed.watchedShows;
+      final List<_TraktRating> movieRatings = parsed.movieRatings;
+      final List<_TraktRating> showRatings = parsed.showRatings;
       final List<_TraktWatchlistEntry> watchlistEntries =
-          options.importWatchlist
-              ? _parseWatchlist(_getFile(
-                  files, 'lists/watchlist.json', 'lists-watchlist.json'))
-              : <_TraktWatchlistEntry>[];
+          parsed.watchlistEntries;
 
       // Dedup TMDB IDs across all sections to fetch each from TMDB once.
       final Set<int> movieTmdbIds = <int>{};
@@ -720,8 +735,51 @@ class TraktImportService implements ImportSource {
     );
   }
 
+  /// Reads and parses the export archive in one go. Static and pure so it can
+  /// run on a background isolate via [Isolate.run] without capturing `this`
+  /// (the service holds non-sendable handles: API client, database).
+  static _TraktParsedArchive _readAndParseArchive({
+    required String zipPath,
+    required bool importWatched,
+    required bool importRatings,
+    required bool importWatchlist,
+  }) {
+    final ({Map<String, String> files, String username}) archive =
+        _readArchiveSync(zipPath);
+    final Map<String, String> files = archive.files;
+    return _TraktParsedArchive(
+      username: archive.username,
+      hasNoJsonFiles: files.isEmpty,
+      watchedMovies: importWatched
+          ? _parseWatchedMovies(_getFile(
+              files, 'watched/watched-movies.json', 'watched-movies.json'))
+          : <_TraktMovie>[],
+      watchedShows: importWatched
+          ? _parseWatchedShows(_getFile(
+              files, 'watched/watched-shows.json', 'watched-shows.json'))
+          : <_TraktShow>[],
+      movieRatings: importRatings
+          ? _parseRatings(
+              _getFile(
+                  files, 'ratings/ratings-movies.json', 'ratings-movies.json'),
+              'movie')
+          : <_TraktRating>[],
+      showRatings: importRatings
+          ? _parseRatings(
+              _getFile(
+                  files, 'ratings/ratings-shows.json', 'ratings-shows.json'),
+              'show')
+          : <_TraktRating>[],
+      watchlistEntries: importWatchlist
+          ? _parseWatchlist(_getFile(
+              files, 'lists/watchlist.json', 'lists-watchlist.json'))
+          : <_TraktWatchlistEntry>[],
+    );
+  }
+
   /// Reads JSON files and username in a single pass.
-  ({Map<String, String> files, String username}) _readArchive(String zipPath) {
+  static ({Map<String, String> files, String username}) _readArchiveSync(
+      String zipPath) {
     final List<int> bytes = File(zipPath).readAsBytesSync();
     final Archive archive = ZipDecoder().decodeBytes(bytes);
     final Map<String, String> files = <String, String>{};
@@ -768,11 +826,11 @@ class TraktImportService implements ImportSource {
   }
 
   /// Tries both old (nested) and new (flat) key layouts.
-  String? _getFile(Map<String, String> files, String oldKey, String newKey) {
+  static String? _getFile(Map<String, String> files, String oldKey, String newKey) {
     return files[oldKey] ?? files[newKey];
   }
 
-  List<_TraktMovie> _parseWatchedMovies(String? json) {
+  static List<_TraktMovie> _parseWatchedMovies(String? json) {
     if (json == null || json.isEmpty) return <_TraktMovie>[];
 
     final List<dynamic> list = jsonDecode(json) as List<dynamic>;
@@ -805,7 +863,7 @@ class TraktImportService implements ImportSource {
     return result;
   }
 
-  List<_TraktShow> _parseWatchedShows(String? json) {
+  static List<_TraktShow> _parseWatchedShows(String? json) {
     if (json == null || json.isEmpty) return <_TraktShow>[];
 
     final List<dynamic> list = jsonDecode(json) as List<dynamic>;
@@ -876,7 +934,7 @@ class TraktImportService implements ImportSource {
     return result;
   }
 
-  List<_TraktRating> _parseRatings(String? json, String type) {
+  static List<_TraktRating> _parseRatings(String? json, String type) {
     if (json == null || json.isEmpty) return <_TraktRating>[];
 
     final List<dynamic> list = jsonDecode(json) as List<dynamic>;
@@ -906,7 +964,7 @@ class TraktImportService implements ImportSource {
     return result;
   }
 
-  List<_TraktWatchlistEntry> _parseWatchlist(String? json) {
+  static List<_TraktWatchlistEntry> _parseWatchlist(String? json) {
     if (json == null || json.isEmpty) return <_TraktWatchlistEntry>[];
 
     final List<dynamic> list = jsonDecode(json) as List<dynamic>;

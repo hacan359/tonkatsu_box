@@ -161,21 +161,21 @@ class TierItemCard extends StatelessWidget {
                   vertical: 2,
                 ),
                 alignment: Alignment.center,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      displayName,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        height: 1.2,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  displayName,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  // The label box is metrics-sized to exactly 2 lines of
+                  // 10pt × 1.2 (cardLabelMinHeight); system font scaling
+                  // pushes past that and overflows on Android, so this tiny
+                  // caption opts out — the full name is in the tooltip.
+                  textScaler: TextScaler.noScaling,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    height: 1.2,
+                    color: Colors.white,
+                  ),
                 ),
               ),
           ],

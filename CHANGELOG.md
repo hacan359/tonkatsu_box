@@ -74,6 +74,30 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * test/helpers/fallbacks.dart (registerAllFallbacks): Register an `Anime`
     fallback for mocktail.
 
+- **Branded loading indicator: the app logo pulses and rotates instead of the
+  Material spinner**
+
+  Long operations now show the Tonkatsu Box logo breathing (85%→105% scale)
+  and turning a quarter revolution per pulse: the blocking overlay, import
+  progress dialogs (Trakt, Kinorium, collections), Trakt archive validation,
+  the genre cloud and recommendations loading states, and the All Items
+  reload. Small inline spinners (collection pickers, image placeholders) keep
+  the stock indicator.
+
+  * lib/shared/widgets/logo_loader.dart (LogoLoader): New. Pure widget code —
+    no dart:io or isolates — so the planned selfhost web target renders it
+    unchanged.
+  * lib/shared/widgets/loading_overlay.dart (withBlockingSpinner),
+    lib/features/collections/widgets/import_progress_dialog.dart
+    (ImportProgressDialog), lib/features/settings/content/trakt_import_content.dart,
+    lib/features/settings/content/kinorium_import_content.dart,
+    lib/features/genre_cloud/screens/genre_cloud_screen.dart,
+    lib/features/genre_cloud/widgets/genre_cloud_view.dart,
+    lib/features/recommendations/screens/recommendations_screen.dart,
+    lib/features/home/screens/all_items_screen.dart: Replace the centred
+    CircularProgressIndicator with LogoLoader.
+  * test/shared/widgets/logo_loader_test.dart: New.
+
 ### Changed
 
 - **Move DAO query infrastructure and pure-Dart utils into the `core` package**
@@ -95,6 +119,49 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     packages/core/lib/utils/tvmaze_json.dart: Moved from lib/shared/utils/.
   * lib/, test/: Import paths rewritten to `package:core/...` across the DAOs,
     models, services and tests that consume the moved files.
+
+- **Loading indicators no longer freeze during heavy operations**
+
+  The spinner used to stand still because heavy work ran synchronously on the
+  UI thread. The genre cloud layout now computes cooperatively (yielding to
+  the event loop on a time budget, so it also works on the future web target),
+  and the Trakt / Kinorium imports unzip and parse their exports on a
+  background isolate. Animations keep running through personalization loads
+  and import parsing.
+
+  * lib/features/genre_cloud/genre_cloud_layout.dart (layoutGenreCloudAsync,
+    _placeAllChunked, _placeWord): New chunked layout entry point producing
+    results identical to the synchronous layoutGenreCloud (kept for export
+    views).
+  * lib/features/genre_cloud/widgets/genre_cloud_view.dart
+    (_GenreCloudViewState._runLayout, _GenreCloudViewState._memoizedMeasure,
+    measureGenreWord): Drive the deferred layout through the async entry
+    point; memoize word measurements across auto-fit and growth passes and
+    dispose TextPainters after measuring.
+  * lib/core/import/sources/trakt/trakt_import_service.dart
+    (TraktImportService.validateZip, TraktImportService._readAndParseArchive,
+    _TraktParsedArchive): Read, unzip and JSON-parse the export via
+    Isolate.run; parse helpers became static so the isolate closure carries no
+    API/DB handles.
+  * lib/core/import/sources/kinorium/kinorium_import_service.dart
+    (KinoriumImportService.import): Read and parse the CSV via Isolate.run.
+  * test/features/genre_cloud/genre_cloud_layout_test.dart: Async layout
+    equivalence tests.
+
+### Fixed
+
+- **Tier list card labels no longer overflow under Android font scaling**
+
+  The compact card label reserves exactly two lines of caption text; with a
+  system font scale above 1.0 the text grew past that and threw a RenderFlex
+  overflow. The tiny caption now opts out of system text scaling — the full
+  name stays available in the tooltip.
+
+  * lib/features/tier_lists/widgets/tier_item_card.dart (TierItemCard._buildCard):
+    Pin the label to TextScaler.noScaling and drop the single-child Column
+    that produced the overflowing RenderFlex.
+  * test/features/tier_lists/widgets/tier_item_card_test.dart: Regression test
+    at text scale 1.3.
 
 ## [0.40.0] - 2026-07-26
 

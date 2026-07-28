@@ -14,6 +14,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
+import '../../../shared/widgets/logo_loader.dart';
 import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
@@ -383,7 +384,7 @@ class _KinoriumImportProgressDialog extends StatelessWidget {
           if (progress == null) {
             return const SizedBox(
               height: 100,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: LogoLoader()),
             );
           }
 
