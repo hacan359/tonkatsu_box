@@ -20,6 +20,7 @@ import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/models/platform.dart' as model;
 import 'package:tonkatsu_box/shared/models/tv_episode.dart';
+import 'package:tonkatsu_box/shared/widgets/logo_loader.dart';
 import 'package:tonkatsu_box/shared/models/tv_season.dart';
 import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
@@ -291,7 +292,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(LogoLoader), findsOneWidget);
 
       // Complete the future to avoid leaving a pending timer.
       completer.complete(testItems);

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -138,8 +139,14 @@ class KinoriumImportService implements ImportSource {
         );
       }
 
-      final List<KinoriumEntry> entries =
-          _parser.parseBytes(await file.readAsBytes());
+      // Read + parse off the UI isolate: a big CSV decoded synchronously
+      // would freeze the progress dialog. Local copies keep the closure from
+      // capturing `this` (non-sendable API/DB handles).
+      final KinoriumCsvParser parser = _parser;
+      final String filePath = options.filePath;
+      final List<KinoriumEntry> entries = await Isolate.run(
+        () => parser.parseBytes(File(filePath).readAsBytesSync()),
+      );
       if (entries.isEmpty) {
         return const UniversalImportResult.failure(
           sourceName: 'Kinorium',

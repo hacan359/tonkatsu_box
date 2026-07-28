@@ -14,6 +14,7 @@ import '../../../shared/services/png_export_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/logo_loader.dart';
 import '../../../shared/widgets/draggable_fab.dart';
 import '../facet.dart';
 import '../facet_value.dart';
@@ -177,7 +178,7 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
     List<FacetValue> words,
   ) {
     return itemsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: LogoLoader()),
       error: (Object error, StackTrace stack) => Center(
         child: Text(
           '${l.settingsError}: $error',

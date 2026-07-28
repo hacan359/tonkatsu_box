@@ -13,6 +13,7 @@ import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/logo_loader.dart';
 import '../../search/handlers/media_handlers.dart';
 import '../../search/widgets/collection_chips_row.dart';
 import '../providers/recommendations_provider.dart';
@@ -134,7 +135,7 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
     AsyncValue<RecommendationResult> async,
   ) {
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: LogoLoader()),
       error: (Object error, StackTrace _) => Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),

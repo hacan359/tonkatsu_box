@@ -4,6 +4,7 @@ import 'package:tonkatsu_box/features/genre_cloud/facet.dart';
 import 'package:tonkatsu_box/features/genre_cloud/facet_value.dart';
 import 'package:tonkatsu_box/features/genre_cloud/widgets/genre_cloud_view.dart';
 import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/widgets/logo_loader.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -83,12 +84,12 @@ void main() {
       );
 
       // First frame: the expensive placement is deferred past it.
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(LogoLoader), findsOneWidget);
       expect(find.byType(InteractiveViewer), findsNothing);
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(LogoLoader), findsNothing);
       expect(find.byType(InteractiveViewer), findsOneWidget);
     });
 

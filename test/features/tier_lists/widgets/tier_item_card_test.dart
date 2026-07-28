@@ -204,6 +204,38 @@ void main() {
       expect(find.text('Unknown Platform'), findsNothing);
     });
 
+    testWidgets(
+        'label fits the compact metrics box under system font scaling',
+        (WidgetTester tester) async {
+      // Compact metrics reserve exactly 2 lines of 10pt × 1.2 + 4px padding
+      // for the label; with system font scaling the caption must not grow
+      // past that (it opts out of scaling) — previously this overflowed on
+      // Android and threw a RenderFlex overflow.
+      const String longName = 'Very Long Game Name That Wraps Twice';
+      await tester.pumpApp(
+        Builder(
+          builder: (BuildContext context) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.3)),
+            child: TierItemCard(
+              item: itemNoThumb,
+              displayName: longName,
+              width: 64,
+              height: 86,
+              labelHeight: 28,
+            ),
+          ),
+        ),
+        settle: false,
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      // 28px label minus 4px vertical padding.
+      expect(tester.getSize(find.text(longName)).height,
+          lessThanOrEqualTo(24.0));
+    });
+
     testWidgets('should not show platform when platform is null',
         (WidgetTester tester) async {
       final CollectionItem gameNoPlatform = createTestCollectionItem(
