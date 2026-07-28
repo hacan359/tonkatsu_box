@@ -13,7 +13,7 @@ import '../../../../shared/models/item_status.dart';
 import '../../../../shared/models/item_status_logic.dart';
 import '../../../../shared/models/media_type.dart';
 import '../../../../shared/models/universal_import_result.dart';
-import '../../../../shared/utils/bbcode.dart';
+import 'package:core/utils/bbcode.dart';
 import '../../../api/hardcover_api.dart';
 import '../../../database/database_service.dart';
 import '../../../services/import_service.dart';

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
@@ -668,6 +669,8 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
           Expanded(
             child: Text(
               seasonTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTypography.body.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -689,6 +692,8 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
         children: <Widget>[
           Text(
             subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -888,6 +893,11 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
     final bool hasOwnStill = episode.stillUrl != null;
     final String? stillUrl = episode.stillUrl ?? widget.seasonPosterUrl;
 
+    // A 96px still eats a third of a phone row and long titles/synopses then
+    // wrap into tall uneven blocks — give the text the width back on mobile.
+    final double stillWidth = kIsMobile ? 72 : 96;
+    final double stillHeight = kIsMobile ? 40 : 54;
+
     void toggle() {
       ref
           .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
@@ -928,8 +938,8 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                                 '${episode.tmdbShowId}_'
                                 's${episode.seasonNumber}_poster',
                         remoteUrl: stillUrl,
-                        width: 96,
-                        height: 54,
+                        width: stillWidth,
+                        height: stillHeight,
                         fit: BoxFit.cover,
                         memCacheWidth: 192,
                         placeholder:
@@ -961,6 +971,8 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: AppTypography.bodySmall.copyWith(
                               decoration: isWatched
                                   ? TextDecoration.lineThrough
@@ -985,6 +997,8 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                   if (subtitleParts.isNotEmpty)
                     Text(
                       subtitleParts.join(' \u2022 '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTypography.caption.copyWith(
                         color: AppColors.textSecondary,
                       ),

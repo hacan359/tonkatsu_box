@@ -260,6 +260,31 @@ void main() {
           )).called(1);
     });
 
+    testWidgets(
+        'renders long texts without exception on a phone-sized screen',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final TvEpisode verboseEpisode = TvEpisode(
+        tmdbShowId: testShowId,
+        seasonNumber: 1,
+        episodeNumber: 3,
+        name: 'A very long episode title that keeps going and going far '
+            'beyond what any phone row could ever hope to fit on one line',
+        overview: 'An extremely long synopsis sentence repeated many times. ' *
+            30,
+        stillUrl: 'https://image.tmdb.org/t/p/w300/e3.jpg',
+        airDate: '2023-01-15',
+        runtime: 62,
+      );
+
+      await pumpTile(tester, verboseEpisode);
+
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('should not toggle the episode when the overview is tapped',
         (WidgetTester tester) async {
       when(() => mockTvShowDao.markEpisodeWatched(
@@ -351,6 +376,26 @@ void main() {
       final double season1Top =
           tester.getTopLeft(find.byKey(const ValueKey<int>(1))).dy;
       expect(specialsTop, greaterThan(season1Top));
+    });
+
+    testWidgets('длинное название сезона не ломает вёрстку на телефоне',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      const TvSeason verboseSeason = TvSeason(
+        tmdbShowId: testShowId,
+        seasonNumber: 1,
+        name: 'The First and Extraordinarily Verbosely Named Season of the '
+            'Show That Never Learned Brevity',
+        episodeCount: 13,
+        airDate: '2023-01-01',
+      );
+
+      await pumpSeasonsList(tester, <TvSeason>[verboseSeason]);
+
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('рендерится без Specials, если season 0 нет',

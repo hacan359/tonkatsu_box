@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/core/database/query_chunk.dart';
+import 'package:core/database/query_chunk.dart';
 
 void main() {
   group('queryByIdsInChunks', () {

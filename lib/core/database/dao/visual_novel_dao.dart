@@ -1,7 +1,7 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/visual_novel.dart';
-import '../query_chunk.dart';
+import 'package:core/database/query_chunk.dart';
 
 /// DAO for the `visual_novels_cache` and `vndb_tags` tables.
 class VisualNovelDao {

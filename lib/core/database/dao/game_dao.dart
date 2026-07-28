@@ -2,7 +2,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/game.dart';
 import '../../../shared/models/platform.dart';
-import '../query_chunk.dart';
+import 'package:core/database/query_chunk.dart';
 
 class GameDao {
   const GameDao(this._getDatabase);

@@ -1,4 +1,4 @@
-import '../utils/tvmaze_json.dart';
+import 'package:core/utils/tvmaze_json.dart';
 import 'data_source.dart';
 
 /// One season of a TV show.

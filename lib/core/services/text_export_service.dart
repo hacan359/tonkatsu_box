@@ -1,6 +1,6 @@
 import '../../l10n/app_localizations.dart';
 import '../../shared/models/collection_item.dart';
-import '../../shared/utils/anime_manga_title_language.dart';
+import 'package:core/utils/anime_manga_title_language.dart';
 
 /// Template-based text exporter for a collection.
 ///

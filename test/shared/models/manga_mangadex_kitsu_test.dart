@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/manga.dart';
-import 'package:tonkatsu_box/shared/utils/stable_id.dart';
+import 'package:core/utils/stable_id.dart';
 
 void main() {
   group('Manga.fromMangaDex', () {

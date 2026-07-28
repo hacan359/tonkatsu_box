@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../utils/anime_manga_title_language.dart';
-import '../utils/kitsu_status.dart';
+import 'package:core/utils/anime_manga_title_language.dart';
+import 'package:core/utils/kitsu_status.dart';
 import 'data_source.dart';
 
 /// Anime metadata. Cache identity is the pair `(id, source)`.
