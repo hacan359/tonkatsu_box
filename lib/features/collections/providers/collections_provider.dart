@@ -594,6 +594,9 @@ class CollectionItemsNotifier
     _invalidateCollectedIds(mediaType);
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
+    // The new item must show up in the unranked pool of this collection's
+    // (and global) tier lists; their detail providers cache collection items.
+    ref.invalidate(tierListDetailProvider);
     return true;
   }
 
@@ -654,6 +657,7 @@ class CollectionItemsNotifier
       await refresh();
       ref.invalidate(uncategorizedItemCountProvider);
       ref.invalidate(allItemsNotifierProvider);
+      ref.invalidate(tierListDetailProvider);
       return true;
     } catch (e, stack) {
       debugPrint('addCustomItem error: $e\n$stack'); // TODO: remove after stabilization
@@ -703,6 +707,7 @@ class CollectionItemsNotifier
     _invalidateCollectedIds(mediaType);
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
+    ref.invalidate(tierListDetailProvider);
     return true;
   }
 
@@ -714,8 +719,6 @@ class CollectionItemsNotifier
   }) async {
     // Remove from tier-lists of source collection before the move.
     final TierListDao tierDao = ref.read(tierListDaoProvider);
-    final List<int> affectedTierListIds =
-        await tierDao.getTierListIdsForItem(itemId);
     if (_collectionId != null) {
       await tierDao.removeItemFromCollectionTierLists(
         itemId,
@@ -745,19 +748,15 @@ class CollectionItemsNotifier
     _invalidateEpisodeTrackers(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
-    for (final int tierListId in affectedTierListIds) {
-      ref.invalidate(tierListDetailProvider(tierListId));
-    }
+    // Family-wide: covers the target collection's tier lists (where the item
+    // appears in the unranked pool) and global ones, not just lists the item
+    // was placed in.
+    ref.invalidate(tierListDetailProvider);
 
     return (success: true, sourceEmpty: sourceEmpty);
   }
 
   Future<void> removeItem(int id, {MediaType? mediaType}) async {
-    // Capture tier-lists before delete: CASCADE wipes entries from DB.
-    final TierListDao tierDao = ref.read(tierListDaoProvider);
-    final List<int> affectedTierListIds =
-        await tierDao.getTierListIdsForItem(id);
-
     await _repository.removeItem(id);
     await refresh();
     if (mediaType != null) {
@@ -767,9 +766,9 @@ class CollectionItemsNotifier
     ref.invalidate(allItemsNotifierProvider);
     await _pruneCalendarOrphans(ref);
 
-    for (final int tierListId in affectedTierListIds) {
-      ref.invalidate(tierListDetailProvider(tierListId));
-    }
+    // Family-wide: the item may sit unranked in tier lists (no entry rows),
+    // so per-entry lookups can't find every affected list.
+    ref.invalidate(tierListDetailProvider);
   }
 
   /// In-memory tracker state survives the DAO-side mark transfer on move,

@@ -21,7 +21,7 @@ import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/utils/anime_manga_title_language.dart';
+import 'package:core/utils/anime_manga_title_language.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../core/services/update_service.dart';
 import '../providers/kodi_settings_provider.dart';

@@ -10,7 +10,7 @@ import '../../shared/models/ra_user_profile.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/tracker_game_data.dart';
-import '../../shared/utils/anime_manga_title_language.dart';
+import 'package:core/utils/anime_manga_title_language.dart';
 
 /// Application ID from the Discord Developer Portal.
 const String _kApplicationId = '1492141877456015491';

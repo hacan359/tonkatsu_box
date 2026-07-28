@@ -1,4 +1,4 @@
-import '../../../shared/utils/bbcode.dart';
+import 'package:core/utils/bbcode.dart';
 
 /// One Fantlab edition (`издание`) of a work, built from `/work/{id}/extended`
 /// `editions_blocks`. Transient — used only to pick a cover / metadata for a

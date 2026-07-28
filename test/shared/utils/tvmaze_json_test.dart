@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/utils/tvmaze_json.dart';
+import 'package:core/utils/tvmaze_json.dart';
 
 void main() {
   group('tvMazeImageUrl', () {

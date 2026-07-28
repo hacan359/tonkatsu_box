@@ -74,6 +74,28 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * test/helpers/fallbacks.dart (registerAllFallbacks): Register an `Anime`
     fallback for mocktail.
 
+### Changed
+
+- **Move DAO query infrastructure and pure-Dart utils into the `core` package**
+
+  Second wave of the selfhost-web extraction (after the migrations): the
+  chunked-query and sparse-upsert helpers every DAO uses, the SQLite health
+  checks, and the six dependency-free utils the models rely on now live in
+  `packages/core`, ready for the selfhost server. No behaviour change — files
+  moved verbatim, only import paths in the app were updated.
+
+  * packages/core/lib/database/query_chunk.dart (queryByIdsInChunks),
+    packages/core/lib/database/sparse_upsert.dart,
+    packages/core/lib/database/sqlite_health.dart (readUserVersion,
+    quickCheckOk): Moved from lib/core/database/.
+  * packages/core/lib/utils/anime_manga_title_language.dart,
+    packages/core/lib/utils/bbcode.dart, packages/core/lib/utils/html_text.dart,
+    packages/core/lib/utils/kitsu_status.dart,
+    packages/core/lib/utils/stable_id.dart,
+    packages/core/lib/utils/tvmaze_json.dart: Moved from lib/shared/utils/.
+  * lib/, test/: Import paths rewritten to `package:core/...` across the DAOs,
+    models, services and tests that consume the moved files.
+
 ## [0.40.0] - 2026-07-26
 
 ### Added

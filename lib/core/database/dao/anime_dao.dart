@@ -2,7 +2,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/anime.dart';
 import '../../../shared/models/data_source.dart';
-import '../query_chunk.dart';
+import 'package:core/database/query_chunk.dart';
 
 /// DAO for `anime_cache`. Row identity is the pair `(id, source)`.
 class AnimeDao {

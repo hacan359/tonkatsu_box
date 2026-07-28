@@ -6,8 +6,8 @@ import '../../../shared/models/data_source.dart';
 import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
-import '../query_chunk.dart';
-import '../sparse_upsert.dart';
+import 'package:core/database/query_chunk.dart';
+import 'package:core/database/sparse_upsert.dart';
 
 /// DAO for the `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache` and
 /// `watched_episodes` tables.

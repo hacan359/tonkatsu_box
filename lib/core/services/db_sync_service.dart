@@ -13,7 +13,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../shared/constants/platform_features.dart';
 import '../../shared/models/sync_manifest.dart';
 import '../database/database_service.dart';
-import '../database/sqlite_health.dart';
+import 'package:core/database/sqlite_health.dart';
 import 'image_cache_service.dart';
 import 'storage_root.dart';
 

@@ -7,6 +7,7 @@ import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/features/tier_lists/providers/tier_list_detail_provider.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
 import 'package:tonkatsu_box/shared/models/item_status.dart';
@@ -25,6 +26,18 @@ class _ProbeEpisodeTrackerNotifier extends EpisodeTrackerNotifier {
   EpisodeTrackerState build(EpisodeTrackerArg arg) {
     buildCount++;
     return const EpisodeTrackerState();
+  }
+}
+
+/// Counts family rebuilds so tests can assert tier-list invalidation without
+/// wiring the real tier-list DB dependencies.
+class _ProbeTierListDetailNotifier extends TierListDetailNotifier {
+  static int buildCount = 0;
+
+  @override
+  TierListDetailState build(int arg) {
+    buildCount++;
+    return TierListDetailState.loading();
   }
 }
 
@@ -478,20 +491,23 @@ void main() {
           tierListDaoProvider.overrideWithValue(mockTierListDao),
           calendarEntryDaoProvider.overrideWithValue(mockCalendarDao),
           trackedReleaseDaoProvider.overrideWithValue(mockTrackedDao),
+          tierListDetailProvider.overrideWith(_ProbeTierListDetailNotifier.new),
         ],
       );
       addTearDown(container.dispose);
       return container;
     }
 
-    test('запрашивает тир-листы элемента до удаления', () async {
-      when(() => mockTierListDao.getTierListIdsForItem(1))
-          .thenAnswer((_) async => <int>[10, 20]);
+    test('инвалидирует tierListDetailProvider при удалении', () async {
+      _ProbeTierListDetailNotifier.buildCount = 0;
 
       final ProviderContainer container = createTierContainer(
         initialItems: <CollectionItem>[_makeItem()],
       );
       await waitForLoad(container, testCollectionId);
+
+      container.read(tierListDetailProvider(10));
+      expect(_ProbeTierListDetailNotifier.buildCount, 1);
 
       when(() => mockRepository.getItemsWithData(testCollectionId))
           .thenAnswer((_) async => <CollectionItem>[]);
@@ -500,28 +516,51 @@ void main() {
           .read(collectionItemsNotifierProvider(testCollectionId).notifier);
       await notifier.removeItem(1, mediaType: MediaType.game);
 
-      verify(() => mockTierListDao.getTierListIdsForItem(1)).called(1);
+      container.read(tierListDetailProvider(10));
+      expect(_ProbeTierListDetailNotifier.buildCount, 2);
       verify(() => mockRepository.removeItem(1)).called(1);
     });
+  });
 
-    test('вызывает getTierListIdsForItem даже если тир-листов нет', () async {
-      when(() => mockTierListDao.getTierListIdsForItem(1))
-          .thenAnswer((_) async => <int>[]);
-
-      final ProviderContainer container = createTierContainer(
-        initialItems: <CollectionItem>[_makeItem()],
-      );
-      await waitForLoad(container, testCollectionId);
-
+  group('CollectionItemsNotifier.addItem', () {
+    test('инвалидирует tierListDetailProvider при добавлении', () async {
+      _ProbeTierListDetailNotifier.buildCount = 0;
       when(() => mockRepository.getItemsWithData(testCollectionId))
           .thenAnswer((_) async => <CollectionItem>[]);
+      when(() => mockRepository.addItem(
+            collectionId: any(named: 'collectionId'),
+            mediaType: any(named: 'mediaType'),
+            externalId: any(named: 'externalId'),
+            platformId: any(named: 'platformId'),
+            source: any(named: 'source'),
+            authorComment: any(named: 'authorComment'),
+          )).thenAnswer((_) async => 42);
+
+      final ProviderContainer container = ProviderContainer(
+        overrides: <Override>[
+          collectionRepositoryProvider.overrideWithValue(mockRepository),
+          sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+          tierListDetailProvider.overrideWith(_ProbeTierListDetailNotifier.new),
+        ],
+      );
+      addTearDown(container.dispose);
+      await waitForLoad(container, testCollectionId);
+
+      // A tier list created from this collection: the new item must appear
+      // in its unranked pool, which requires a provider reload.
+      container.read(tierListDetailProvider(10));
+      expect(_ProbeTierListDetailNotifier.buildCount, 1);
 
       final CollectionItemsNotifier notifier = container
           .read(collectionItemsNotifierProvider(testCollectionId).notifier);
-      await notifier.removeItem(1, mediaType: MediaType.game);
+      final bool added = await notifier.addItem(
+        mediaType: MediaType.game,
+        externalId: 100,
+      );
 
-      verify(() => mockTierListDao.getTierListIdsForItem(1)).called(1);
-      verify(() => mockRepository.removeItem(1)).called(1);
+      expect(added, isTrue);
+      container.read(tierListDetailProvider(10));
+      expect(_ProbeTierListDetailNotifier.buildCount, 2);
     });
   });
 
@@ -555,6 +594,7 @@ void main() {
           globalTagDaoProvider.overrideWithValue(mockTagDao),
           episodeTrackerNotifierProvider
               .overrideWith(_ProbeEpisodeTrackerNotifier.new),
+          tierListDetailProvider.overrideWith(_ProbeTierListDetailNotifier.new),
         ],
       );
       addTearDown(container.dispose);
@@ -563,8 +603,6 @@ void main() {
 
     Future<int> trackerBuildsAfterMove(MediaType mediaType) async {
       _ProbeEpisodeTrackerNotifier.buildCount = 0;
-      when(() => mockTierListDao.getTierListIdsForItem(1))
-          .thenAnswer((_) async => <int>[]);
       when(() => mockTierListDao.removeItemFromCollectionTierLists(
           1, testCollectionId)).thenAnswer((_) async {});
 
@@ -601,8 +639,6 @@ void main() {
 
     test('удаляет entries из тир-листов исходной коллекции при перемещении',
         () async {
-      when(() => mockTierListDao.getTierListIdsForItem(1))
-          .thenAnswer((_) async => <int>[10]);
       when(() => mockTierListDao.removeItemFromCollectionTierLists(
             1, testCollectionId))
           .thenAnswer((_) async {});
@@ -631,9 +667,8 @@ void main() {
       ).called(1);
     });
 
-    test('запрашивает affected tier list IDs при перемещении', () async {
-      when(() => mockTierListDao.getTierListIdsForItem(1))
-          .thenAnswer((_) async => <int>[10, 20]);
+    test('инвалидирует tierListDetailProvider при перемещении', () async {
+      _ProbeTierListDetailNotifier.buildCount = 0;
       when(() => mockTierListDao.removeItemFromCollectionTierLists(
             1, testCollectionId))
           .thenAnswer((_) async {});
@@ -642,6 +677,11 @@ void main() {
         initialItems: <CollectionItem>[_makeItem()],
       );
       await waitForLoad(container, testCollectionId);
+
+      // The target collection's tier list: the item was never placed in it,
+      // yet it must reload so the item shows up in its unranked pool.
+      container.read(tierListDetailProvider(10));
+      expect(_ProbeTierListDetailNotifier.buildCount, 1);
 
       when(() => mockRepository.getItemsWithData(testCollectionId))
           .thenAnswer((_) async => <CollectionItem>[]);
@@ -654,13 +694,12 @@ void main() {
         mediaType: MediaType.game,
       );
 
-      verify(() => mockTierListDao.getTierListIdsForItem(1)).called(1);
+      container.read(tierListDetailProvider(10));
+      expect(_ProbeTierListDetailNotifier.buildCount, 2);
     });
 
     test('не вызывает removeItemFromCollectionTierLists для uncategorized',
         () async {
-      when(() => mockTierListDao.getTierListIdsForItem(1))
-          .thenAnswer((_) async => <int>[]);
       when(() => mockRepository.getItemsWithData(null))
           .thenAnswer(
               (_) async => <CollectionItem>[_makeItem(collectionId: null)]);
@@ -705,8 +744,6 @@ void main() {
     setUp(() {
       mockTierListDao = MockTierListDao();
       mockTagDao = MockGlobalTagDao();
-      when(() => mockTierListDao.getTierListIdsForItem(any()))
-          .thenAnswer((_) async => <int>[]);
       when(() => mockTierListDao.removeItemFromCollectionTierLists(
             any(),
             any(),

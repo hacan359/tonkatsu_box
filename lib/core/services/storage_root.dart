@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../shared/models/profile.dart';
-import '../database/sqlite_health.dart';
+import 'package:core/database/sqlite_health.dart';
 
 /// Verdict on whether a data directory's database can be opened by this
 /// build.
