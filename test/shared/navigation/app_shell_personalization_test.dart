@@ -8,10 +8,11 @@ import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/core/services/update_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/genre_cloud/providers/genre_cloud_provider.dart';
-import 'package:tonkatsu_box/features/genre_cloud/screens/genre_cloud_screen.dart';
 import 'package:tonkatsu_box/features/home/screens/all_items_screen.dart';
 import 'package:tonkatsu_box/features/personalization/screens/personalization_screen.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/features/statistics/providers/statistics_provider.dart';
+import 'package:tonkatsu_box/features/statistics/screens/statistics_screen.dart';
 import 'package:tonkatsu_box/features/welcome/screens/welcome_screen.dart';
 import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/models/collection_item.dart';
@@ -64,6 +65,9 @@ void main() {
                 <CollectionItem>[],
               ),
             ),
+            libraryStatsProvider.overrideWith(
+              (Ref ref) async => createEmptyLibraryStats(),
+            ),
           ],
           child: const TonkatsuBoxApp(),
         ),
@@ -77,23 +81,23 @@ void main() {
       WidgetTester tester,
     ) async {
       await pumpShell(tester);
-      expect(find.byType(GenreCloudScreen), findsNothing);
+      expect(find.byType(StatisticsScreen), findsNothing);
 
       // Open Personalization via the centre nav button.
       await tester.tap(find.byType(NavCenterButton));
       await tester.pumpAndSettle();
-      expect(find.byType(GenreCloudScreen), findsOneWidget);
+      expect(find.byType(StatisticsScreen), findsOneWidget);
 
       // Switch to another tab — the cloud must be hidden.
       await tester.tap(find.byType(NavIconButton).at(1));
       await tester.pumpAndSettle();
-      expect(find.byType(GenreCloudScreen), findsNothing);
+      expect(find.byType(StatisticsScreen), findsNothing);
 
       // Return to the first tab — the cloud must NOT reappear (the regression:
       // it used to stay glued to that tab's navigator while Home was highlighted).
       await tester.tap(find.byType(NavIconButton).at(0));
       await tester.pumpAndSettle();
-      expect(find.byType(GenreCloudScreen), findsNothing);
+      expect(find.byType(StatisticsScreen), findsNothing);
     });
 
     testWidgets('should fully unmount Personalization after leaving', (
@@ -113,7 +117,7 @@ void main() {
         findsNothing,
       );
       expect(
-        find.byType(GenreCloudScreen, skipOffstage: false),
+        find.byType(StatisticsScreen, skipOffstage: false),
         findsNothing,
       );
     });
@@ -155,8 +159,7 @@ void main() {
       expect(tester.widget<TextField>(searchField).enabled, isTrue);
 
       // Personalization has no search of its own, so the shared search field
-      // is disabled while it is open (which also drops focus / hides the
-      // mobile keyboard).
+      // is disabled while it is open (drops focus / hides the keyboard).
       await tester.tap(find.byType(NavCenterButton));
       await tester.pumpAndSettle();
       expect(tester.widget<TextField>(searchField).enabled, isFalse);
@@ -167,7 +170,7 @@ void main() {
       expect(tester.widget<TextField>(searchField).enabled, isTrue);
     });
 
-    testWidgets('should reopen the cloud from the centre button', (
+    testWidgets('should reopen statistics from the centre button', (
       WidgetTester tester,
     ) async {
       await pumpShell(tester);
@@ -176,11 +179,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byType(NavIconButton).at(0));
       await tester.pumpAndSettle();
-      expect(find.byType(GenreCloudScreen), findsNothing);
+      expect(find.byType(StatisticsScreen), findsNothing);
 
       await tester.tap(find.byType(NavCenterButton));
       await tester.pumpAndSettle();
-      expect(find.byType(GenreCloudScreen), findsOneWidget);
+      expect(find.byType(StatisticsScreen), findsOneWidget);
     });
   });
 }

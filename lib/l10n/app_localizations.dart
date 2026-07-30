@@ -9211,6 +9211,336 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Capture controller button codes'**
   String get settingsGamepadDebugSubtitle;
+
+  /// No description provided for @statsTabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statsTabTitle;
+
+  /// No description provided for @statsPeriodAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get statsPeriodAllTime;
+
+  /// No description provided for @statsEyebrowYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year in review · {year}'**
+  String statsEyebrowYear(int year);
+
+  /// No description provided for @statsEyebrowAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Library in review'**
+  String get statsEyebrowAllTime;
+
+  /// No description provided for @statsLede.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {items} items in your collection'**
+  String statsLede(String items);
+
+  /// No description provided for @statsMetricMoviesWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'movies watched'**
+  String get statsMetricMoviesWatched;
+
+  /// No description provided for @statsMetricMangaChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'manga chapters'**
+  String get statsMetricMangaChapters;
+
+  /// No description provided for @statsMetricBookPages.
+  ///
+  /// In en, this message translates to:
+  /// **'book pages'**
+  String get statsMetricBookPages;
+
+  /// No description provided for @statsMetricEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'episodes'**
+  String get statsMetricEpisodes;
+
+  /// No description provided for @statsMetricHours.
+  ///
+  /// In en, this message translates to:
+  /// **'watched & played'**
+  String get statsMetricHours;
+
+  /// No description provided for @statsMetricAvgRating.
+  ///
+  /// In en, this message translates to:
+  /// **'average rating'**
+  String get statsMetricAvgRating;
+
+  /// No description provided for @statsMetricReplays.
+  ///
+  /// In en, this message translates to:
+  /// **'replays'**
+  String get statsMetricReplays;
+
+  /// No description provided for @statsMetricLikedUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'liked episodes'**
+  String get statsMetricLikedUnits;
+
+  /// No description provided for @statsHoursShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h'**
+  String statsHoursShort(String hours);
+
+  /// No description provided for @statsHoursBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'hours: manual {manual}h · trackers {tracker}h · estimated {estimated}h'**
+  String statsHoursBreakdown(int manual, int tracker, int estimated);
+
+  /// No description provided for @statsMonthsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your year, month by month'**
+  String get statsMonthsTitle;
+
+  /// No description provided for @statsMonthsTitleAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'This year, month by month'**
+  String get statsMonthsTitleAllTime;
+
+  /// No description provided for @statsMonthsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'cover — the highest rated title of the month'**
+  String get statsMonthsHint;
+
+  /// No description provided for @statsPeakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'peak'**
+  String get statsPeakLabel;
+
+  /// No description provided for @statsMonthCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{items} added · {episodes} ep.'**
+  String statsMonthCounts(int items, int episodes);
+
+  /// No description provided for @statsVersusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Best and worst'**
+  String get statsVersusTitle;
+
+  /// No description provided for @statsVersusHint.
+  ///
+  /// In en, this message translates to:
+  /// **'by your own ratings'**
+  String get statsVersusHint;
+
+  /// No description provided for @statsBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get statsBest;
+
+  /// No description provided for @statsWorst.
+  ///
+  /// In en, this message translates to:
+  /// **'Worst'**
+  String get statsWorst;
+
+  /// No description provided for @statsPlatformsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h · {games} games'**
+  String statsPlatformsSummary(String hours, int games);
+
+  /// No description provided for @statsPlatformNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No platform'**
+  String get statsPlatformNone;
+
+  /// No description provided for @statsPlatformsShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ({count})'**
+  String statsPlatformsShowAll(int count);
+
+  /// No description provided for @statsPlatformsCollapse.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get statsPlatformsCollapse;
+
+  /// No description provided for @statsHoursUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get statsHoursUnit;
+
+  /// No description provided for @statsGamesUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'games'**
+  String get statsGamesUnit;
+
+  /// No description provided for @statsTypesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Library by type'**
+  String get statsTypesTitle;
+
+  /// No description provided for @statsTypesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'live status breakdown for each media type'**
+  String get statsTypesHint;
+
+  /// No description provided for @statsCompletedPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% completed'**
+  String statsCompletedPercent(int percent);
+
+  /// No description provided for @statsPlatformMostPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'most played'**
+  String get statsPlatformMostPlayed;
+
+  /// No description provided for @statsFormatsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'format comes from the source data'**
+  String get statsFormatsHint;
+
+  /// No description provided for @statsTitlesUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'titles'**
+  String get statsTitlesUnit;
+
+  /// No description provided for @statsSubgenresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subgenres and tags'**
+  String get statsSubgenresTitle;
+
+  /// No description provided for @statsSubgenresHint.
+  ///
+  /// In en, this message translates to:
+  /// **'source tags are shown per type — vocabularies differ'**
+  String get statsSubgenresHint;
+
+  /// No description provided for @statsSubgenresTitles.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{no titles} =1{1 title} other{{count} titles}}'**
+  String statsSubgenresTitles(int count);
+
+  /// No description provided for @statsCrowdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Me vs the crowd'**
+  String get statsCrowdTitle;
+
+  /// No description provided for @statsCrowdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'where my rating differs most from the source'**
+  String get statsCrowdHint;
+
+  /// No description provided for @statsCrowdHigher.
+  ///
+  /// In en, this message translates to:
+  /// **'I rate them higher'**
+  String get statsCrowdHigher;
+
+  /// No description provided for @statsCrowdLower.
+  ///
+  /// In en, this message translates to:
+  /// **'I rate them lower'**
+  String get statsCrowdLower;
+
+  /// No description provided for @statsCrowdMyRating.
+  ///
+  /// In en, this message translates to:
+  /// **'my rating'**
+  String get statsCrowdMyRating;
+
+  /// No description provided for @statsCrowdSource.
+  ///
+  /// In en, this message translates to:
+  /// **'source'**
+  String get statsCrowdSource;
+
+  /// No description provided for @statsTopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated'**
+  String get statsTopTitle;
+
+  /// No description provided for @statsTopHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} highest rated'**
+  String statsTopHint(int count);
+
+  /// No description provided for @statsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No statistics yet'**
+  String get statsEmptyTitle;
+
+  /// No description provided for @statsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items to your library and they will show up here in numbers.'**
+  String get statsEmptyBody;
+
+  /// No description provided for @statsExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export share card'**
+  String get statsExportTitle;
+
+  /// No description provided for @statsExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the image'**
+  String get statsExportFailed;
+
+  /// No description provided for @statsShareTitleYear.
+  ///
+  /// In en, this message translates to:
+  /// **'My {year}'**
+  String statsShareTitleYear(int year);
+
+  /// No description provided for @statsShareTitleAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'My library'**
+  String get statsShareTitleAllTime;
+
+  /// No description provided for @statsShareLede.
+  ///
+  /// In en, this message translates to:
+  /// **'{items} items · {completed} completed · {rating} average'**
+  String statsShareLede(String items, String completed, String rating);
+
+  /// No description provided for @statsShareBest.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} · {rating} — best of the period'**
+  String statsShareBest(String title, String rating);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

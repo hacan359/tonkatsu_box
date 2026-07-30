@@ -5297,4 +5297,206 @@ class SRu extends S {
 
   @override
   String get settingsGamepadDebugSubtitle => 'Снять коды кнопок контроллера';
+
+  @override
+  String get statsTabTitle => 'Статистика';
+
+  @override
+  String get statsPeriodAllTime => 'Всё время';
+
+  @override
+  String statsEyebrowYear(int year) {
+    return 'Итоги года · $year';
+  }
+
+  @override
+  String get statsEyebrowAllTime => 'Библиотека в цифрах';
+
+  @override
+  String statsLede(String items) {
+    return 'Всего $items элементов в вашей коллекции';
+  }
+
+  @override
+  String get statsMetricMoviesWatched => 'фильмов просмотрено';
+
+  @override
+  String get statsMetricMangaChapters => 'глав манги';
+
+  @override
+  String get statsMetricBookPages => 'страниц книг';
+
+  @override
+  String get statsMetricEpisodes => 'эпизодов';
+
+  @override
+  String get statsMetricHours => 'просмотрено и наиграно';
+
+  @override
+  String get statsMetricAvgRating => 'средняя оценка';
+
+  @override
+  String get statsMetricReplays => 'повторов';
+
+  @override
+  String get statsMetricLikedUnits => 'лайкнутых эпизодов';
+
+  @override
+  String statsHoursShort(String hours) {
+    return '$hours ч';
+  }
+
+  @override
+  String statsHoursBreakdown(int manual, int tracker, int estimated) {
+    return 'часы: вручную $manual ч · трекеры $tracker ч · оценка $estimated ч';
+  }
+
+  @override
+  String get statsMonthsTitle => 'Год по месяцам';
+
+  @override
+  String get statsMonthsTitleAllTime => 'Этот год по месяцам';
+
+  @override
+  String get statsMonthsHint => 'обложка — лучший тайтл месяца по вашей оценке';
+
+  @override
+  String get statsPeakLabel => 'пик';
+
+  @override
+  String statsMonthCounts(int items, int episodes) {
+    return '$items доб. · $episodes эп.';
+  }
+
+  @override
+  String get statsVersusTitle => 'Лучшее и худшее';
+
+  @override
+  String get statsVersusHint => 'по вашим оценкам';
+
+  @override
+  String get statsBest => 'Лучшее';
+
+  @override
+  String get statsWorst => 'Худшее';
+
+  @override
+  String statsPlatformsSummary(String hours, int games) {
+    return '$hours ч · $games игр';
+  }
+
+  @override
+  String get statsPlatformNone => 'Без платформы';
+
+  @override
+  String statsPlatformsShowAll(int count) {
+    return 'Показать все ($count)';
+  }
+
+  @override
+  String get statsPlatformsCollapse => 'Свернуть';
+
+  @override
+  String get statsHoursUnit => 'ч';
+
+  @override
+  String get statsGamesUnit => 'игр';
+
+  @override
+  String get statsTypesTitle => 'По типам медиа';
+
+  @override
+  String get statsTypesHint => 'живая разбивка по статусам для каждого типа';
+
+  @override
+  String statsCompletedPercent(int percent) {
+    return '$percent% завершено';
+  }
+
+  @override
+  String get statsPlatformMostPlayed => 'больше всего наиграно';
+
+  @override
+  String get statsFormatsHint => 'формат — из данных источника';
+
+  @override
+  String get statsTitlesUnit => 'тайтлов';
+
+  @override
+  String get statsSubgenresTitle => 'Сабжанры и теги';
+
+  @override
+  String get statsSubgenresHint =>
+      'теги источника показаны по типам — словари не смешиваются';
+
+  @override
+  String statsSubgenresTitles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count тайтлов',
+      few: '$count тайтла',
+      one: '$count тайтл',
+      zero: 'нет тайтлов',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsCrowdTitle => 'Я против всех';
+
+  @override
+  String get statsCrowdHint =>
+      'где моя оценка сильнее всего расходится с источником';
+
+  @override
+  String get statsCrowdHigher => 'Я оцениваю выше';
+
+  @override
+  String get statsCrowdLower => 'Я оцениваю ниже';
+
+  @override
+  String get statsCrowdMyRating => 'моя оценка';
+
+  @override
+  String get statsCrowdSource => 'источник';
+
+  @override
+  String get statsTopTitle => 'Топ по оценке';
+
+  @override
+  String statsTopHint(int count) {
+    return '$count лучших';
+  }
+
+  @override
+  String get statsEmptyTitle => 'Статистики пока нет';
+
+  @override
+  String get statsEmptyBody =>
+      'Добавьте элементы в библиотеку — и здесь появятся цифры.';
+
+  @override
+  String get statsExportTitle => 'Экспорт карточки';
+
+  @override
+  String get statsExportFailed => 'Не удалось сохранить изображение';
+
+  @override
+  String statsShareTitleYear(int year) {
+    return 'Мой $year';
+  }
+
+  @override
+  String get statsShareTitleAllTime => 'Моя библиотека';
+
+  @override
+  String statsShareLede(String items, String completed, String rating) {
+    return '$items элементов · $completed завершено · $rating средняя';
+  }
+
+  @override
+  String statsShareBest(String title, String rating) {
+    return '$title · $rating — лучшее за период';
+  }
 }

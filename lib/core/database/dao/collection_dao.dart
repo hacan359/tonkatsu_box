@@ -1,3 +1,4 @@
+import 'package:core/database/query_chunk.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/anime.dart';
@@ -100,6 +101,8 @@ class CollectionDao {
     return Collection.fromDb(rows.first);
   }
 
+  /// [createdAt] overrides the creation date — backup restore passes the
+  /// original one so the collection keeps its history; defaults to now.
   Future<Collection> createCollection({
     required String name,
     required String author,
@@ -107,9 +110,11 @@ class CollectionDao {
     String? originalSnapshot,
     String? forkedFromAuthor,
     String? forkedFromName,
+    DateTime? createdAt,
   }) async {
     final Database db = await _getDatabase();
-    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int timestamp =
+        (createdAt ?? DateTime.now()).millisecondsSinceEpoch ~/ 1000;
 
     final int id = await db.insert(
       'collections',
@@ -117,7 +122,7 @@ class CollectionDao {
         'name': name,
         'author': author,
         'type': type.value,
-        'created_at': now,
+        'created_at': timestamp,
         'original_snapshot': originalSnapshot,
         'forked_from_author': forkedFromAuthor,
         'forked_from_name': forkedFromName,
@@ -129,7 +134,7 @@ class CollectionDao {
       name: name,
       author: author,
       type: type,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+      createdAt: DateTime.fromMillisecondsSinceEpoch(timestamp * 1000),
       originalSnapshot: originalSnapshot,
       forkedFromAuthor: forkedFromAuthor,
       forkedFromName: forkedFromName,
@@ -245,6 +250,26 @@ class CollectionDao {
     final List<CollectionItem> items = await getAllCollectionItems(
       mediaType: mediaType,
     );
+    if (items.isEmpty) return items;
+    return _loadJoinedData(items);
+  }
+
+  /// Hydrated items for the given row ids (order not preserved, missing ids
+  /// skipped) — aggregate screens load only the covers they actually show.
+  Future<List<CollectionItem>> getItemsWithDataByRowIds(List<int> ids) async {
+    if (ids.isEmpty) return const <CollectionItem>[];
+    final Database db = await _getDatabase();
+    final List<CollectionItem> items =
+        await queryByIdsInChunks(ids, (List<int> chunk) async {
+      final String placeholders =
+          List<String>.filled(chunk.length, '?').join(',');
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        where: 'id IN ($placeholders)',
+        whereArgs: chunk.cast<Object?>(),
+      );
+      return rows.map(CollectionItem.fromDb).toList();
+    });
     if (items.isEmpty) return items;
     return _loadJoinedData(items);
   }
@@ -391,8 +416,8 @@ class CollectionDao {
     return _loadJoinedData(items);
   }
 
-  /// [collectionId] == null adds as uncategorized.
-  /// Returns null on UNIQUE constraint conflict.
+  /// [collectionId] null adds as uncategorized; returns null on UNIQUE
+  /// conflict. [addedAt] overrides the added date (backup restore keeps it).
   Future<int?> addItemToCollection({
     required int? collectionId,
     required MediaType mediaType,
@@ -401,9 +426,11 @@ class CollectionDao {
     DataSource? source,
     String? authorComment,
     ItemStatus status = ItemStatus.notStarted,
+    DateTime? addedAt,
   }) async {
     final Database db = await _getDatabase();
-    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int timestamp =
+        (addedAt ?? DateTime.now()).millisecondsSinceEpoch ~/ 1000;
 
     try {
       final int sortOrder = await getNextSortOrder(collectionId);
@@ -417,7 +444,7 @@ class CollectionDao {
           'source': source?.name,
           'status': status.value,
           'author_comment': authorComment,
-          'added_at': now,
+          'added_at': timestamp,
           'sort_order': sortOrder,
         },
       );
@@ -445,14 +472,8 @@ class CollectionDao {
     return maxSort + 1;
   }
 
-  /// Bulk-inserts collection items in a single transaction. Each [rows] map
-  /// holds the item's own columns (media_type, external_id, status,
-  /// user_rating, completed_at, …); collection_id and an incrementing
-  /// sort_order are filled here, added_at only when the row doesn't carry
-  /// one (sources that import their own add date pass it in the row). Rows
-  /// that violate the unique (collection_id, media_type, external_id,
-  /// platform_id) constraint are ignored. Returns the number of rows
-  /// actually inserted.
+  /// Bulk insert in one transaction: fills collection_id/sort_order, defaults
+  /// added_at when the row has none, skips UNIQUE conflicts; returns count.
   Future<int> addItemsBatch(
     int? collectionId,
     List<Map<String, dynamic>> rows,
@@ -461,9 +482,8 @@ class CollectionDao {
     return ids.whereType<int>().length;
   }
 
-  /// Same bulk insert as [addItemsBatch], but returns the new row id for
-  /// each input row, aligned with [rows]; `null` marks rows skipped by the
-  /// unique constraint.
+  /// Same bulk insert as [addItemsBatch], but returns new row ids aligned
+  /// with [rows]; `null` marks rows skipped by the unique constraint.
   Future<List<int?>> addItemsBatchReturningIds(
     int? collectionId,
     List<Map<String, dynamic>> rows,
@@ -496,10 +516,8 @@ class CollectionDao {
     ];
   }
 
-  /// Batch-updates selected columns of existing items in one transaction. Each
-  /// entry is an `(id, columns)` pair; only the given columns are written, so
-  /// callers update just the fields that changed. Empty column maps are
-  /// skipped.
+  /// Batch-updates only the given columns per `(id, columns)` entry in one
+  /// transaction; empty column maps are skipped.
   Future<void> updateItemFieldsBatch(
     List<(int id, Map<String, dynamic> fields)> updates,
   ) async {
@@ -542,9 +560,8 @@ class CollectionDao {
     });
   }
 
-  /// Watch marks are keyed by (collection, source, show), not by item id,
-  /// so they deliberately survive the removal: re-adding the show to the
-  /// same collection restores its progress.
+  /// Watch marks are keyed by (collection, source, show), not item id — they
+  /// survive removal so re-adding the show restores its progress.
   Future<void> removeItemFromCollection(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
@@ -578,10 +595,8 @@ class CollectionDao {
     return rows.isEmpty ? null : rows.first;
   }
 
-  /// Whether another tracker-backed item for the same show remains in the
-  /// collection — it shares the watch marks, so they must not be
-  /// moved/deleted. Kitsu anime included: marks are keyed by
-  /// `(collection, source, show)`, not by item.
+  /// Whether another tracker-backed item for the same show remains — shared
+  /// watch marks must then stay put. Kitsu anime included.
   Future<bool> _hasTvSibling(
     DatabaseExecutor db,
     int collectionId,
@@ -668,12 +683,8 @@ class CollectionDao {
     );
   }
 
-  /// Activity dates derived from status transition:
-  /// - `last_activity_at` bumped every call.
-  /// - `started_at` set on first transition to inProgress/completed.
-  /// - `completed_at` set on transition to completed.
-  /// - `rewatch_count` recomputed via [computeRewatchCountForStatus] on
-  ///   transitions into completed.
+  /// Bumps last_activity_at; sets started_at/completed_at on their first
+  /// transitions; recomputes rewatch_count on transitions into completed.
   Future<void> updateItemStatus(
     int id,
     ItemStatus status, {
@@ -834,9 +845,8 @@ class CollectionDao {
     );
   }
 
-  /// Sets a user-defined display name for the item. Empty / whitespace-only
-  /// input clears the override (NULL) so the UI falls back to the cached
-  /// API title.
+  /// Sets a user display name; empty/whitespace input clears the override so
+  /// the UI falls back to the cached API title.
   Future<void> setItemOverrideName(int id, String? name) async {
     final Database db = await _getDatabase();
     final String? normalized =
@@ -859,9 +869,8 @@ class CollectionDao {
     );
   }
 
-  /// Moves item to another collection (null = uncategorized) and appends to its
-  /// sort order. Watch progress of tv-backed items moves along with the item.
-  /// Returns false on UNIQUE conflict (already present in target).
+  /// Moves item to another collection (null = uncategorized), appending to its
+  /// sort order; tv watch progress moves along. False on UNIQUE conflict.
   Future<bool> updateItemCollectionId(int id, int? collectionId) async {
     final Database db = await _getDatabase();
     final int newSortOrder = await getNextSortOrder(collectionId);
@@ -890,10 +899,8 @@ class CollectionDao {
     });
   }
 
-  /// Full-row copy resilient to new columns: overrides only id, collection_id,
-  /// added_at, sort_order. tag_id is cleared because tags are bound per
-  /// collection — the provider rebinds by tag name in the target collection.
-  /// Returns null on UNIQUE conflict.
+  /// Full-row copy overriding only id/collection_id/added_at/sort_order;
+  /// tag_id cleared (tags are per collection). Null on UNIQUE conflict.
   Future<int?> cloneItemToCollection(
     int itemId,
     int targetCollectionId,
@@ -1275,9 +1282,8 @@ class CollectionDao {
       for (final Platform p in platforms) p.id: p,
     };
 
-    // Custom games keep their platform FK on `custom_items`, not on the
-    // collection row, so their platform ids surface only after the custom
-    // media loads. Fetch any that the games pass above did not already cover.
+    // Custom games keep their platform FK on `custom_items`, so fetch the
+    // platform ids the games pass above did not already cover.
     final List<int> customPlatformIds = <int>[
       for (final CustomMedia c in customMediaList)
         if (c.platformId != null && !platformsMap.containsKey(c.platformId))
@@ -1324,9 +1330,8 @@ class CollectionDao {
     final Map<String, Manga> mangaMap = <String, Manga>{
       for (final Manga m in mangas) '${m.source.name}:${m.id}': m,
     };
-    // Books are keyed by `(source, id)` like manga — OpenLibrary and Fantlab
-    // can share a numeric id. `book.id` is the numeric id as a string, so it
-    // matches `item.externalId.toString()`.
+    // Books are keyed by `(source, id)` — OpenLibrary and Fantlab can share
+    // a numeric id; `book.id` is that id as a string.
     final Map<String, Book> bookMap = <String, Book>{
       for (final Book b in books) '${b.source.name}:${b.id}': b,
     };
@@ -1438,9 +1443,8 @@ class CollectionDao {
         .toSet();
   }
 
-  /// Finds items matching (external_id, media_type) across all collections.
-  /// With [filterByPlatform], a null [platformId] matches only rows where
-  /// platform_id IS NULL.
+  /// Finds items matching (external_id, media_type) across all collections;
+  /// with [filterByPlatform], a null [platformId] matches only NULL rows.
   Future<List<({int id, int? collectionId, int? platformId})>>
       getItemIdsByExternalId(
     int externalId,
@@ -1477,10 +1481,8 @@ class CollectionDao {
         .toList();
   }
 
-  /// Truncates every user table in a single transaction. FK-dependent tables
-  /// are deleted before their parents. Static reference tables (platforms,
-  /// tmdb_genres, igdb_genres, vndb_tags) are preserved — they're seeded by
-  /// MigrationV24 and are not user data. SharedPreferences is untouched.
+  /// Truncates every user table in one transaction (children before parents);
+  /// static reference tables seeded by MigrationV24 are preserved.
   Future<void> clearAllData() async {
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {

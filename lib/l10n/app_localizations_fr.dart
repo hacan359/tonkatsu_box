@@ -5285,4 +5285,205 @@ class SFr extends S {
   @override
   String get settingsGamepadDebugSubtitle =>
       'Enregistrer les codes des boutons de la manette';
+
+  @override
+  String get statsTabTitle => 'Statistiques';
+
+  @override
+  String get statsPeriodAllTime => 'Depuis toujours';
+
+  @override
+  String statsEyebrowYear(int year) {
+    return 'Bilan de l\'année · $year';
+  }
+
+  @override
+  String get statsEyebrowAllTime => 'Bibliothèque en chiffres';
+
+  @override
+  String statsLede(String items) {
+    return 'Au total $items éléments dans votre collection';
+  }
+
+  @override
+  String get statsMetricMoviesWatched => 'films vus';
+
+  @override
+  String get statsMetricMangaChapters => 'chapitres de manga';
+
+  @override
+  String get statsMetricBookPages => 'pages de livres';
+
+  @override
+  String get statsMetricEpisodes => 'épisodes';
+
+  @override
+  String get statsMetricHours => 'vus et joués';
+
+  @override
+  String get statsMetricAvgRating => 'note moyenne';
+
+  @override
+  String get statsMetricReplays => 'reprises';
+
+  @override
+  String get statsMetricLikedUnits => 'épisodes aimés';
+
+  @override
+  String statsHoursShort(String hours) {
+    return '$hours h';
+  }
+
+  @override
+  String statsHoursBreakdown(int manual, int tracker, int estimated) {
+    return 'heures : manuel $manual h · trackers $tracker h · estimé $estimated h';
+  }
+
+  @override
+  String get statsMonthsTitle => 'Votre année, mois par mois';
+
+  @override
+  String get statsMonthsTitleAllTime => 'Cette année, mois par mois';
+
+  @override
+  String get statsMonthsHint => 'jaquette : le titre le mieux noté du mois';
+
+  @override
+  String get statsPeakLabel => 'pic';
+
+  @override
+  String statsMonthCounts(int items, int episodes) {
+    return '$items ajoutés · $episodes ép.';
+  }
+
+  @override
+  String get statsVersusTitle => 'Le meilleur et le pire';
+
+  @override
+  String get statsVersusHint => 'selon vos propres notes';
+
+  @override
+  String get statsBest => 'Meilleur';
+
+  @override
+  String get statsWorst => 'Pire';
+
+  @override
+  String statsPlatformsSummary(String hours, int games) {
+    return '$hours h · $games jeux';
+  }
+
+  @override
+  String get statsPlatformNone => 'Sans plateforme';
+
+  @override
+  String statsPlatformsShowAll(int count) {
+    return 'Tout afficher ($count)';
+  }
+
+  @override
+  String get statsPlatformsCollapse => 'Réduire';
+
+  @override
+  String get statsHoursUnit => 'h';
+
+  @override
+  String get statsGamesUnit => 'jeux';
+
+  @override
+  String get statsTypesTitle => 'Bibliothèque par type';
+
+  @override
+  String get statsTypesHint =>
+      'répartition par statut pour chaque type de média';
+
+  @override
+  String statsCompletedPercent(int percent) {
+    return '$percent% terminés';
+  }
+
+  @override
+  String get statsPlatformMostPlayed => 'les plus joués';
+
+  @override
+  String get statsFormatsHint => 'le format vient des données de la source';
+
+  @override
+  String get statsTitlesUnit => 'titres';
+
+  @override
+  String get statsSubgenresTitle => 'Sous-genres et tags';
+
+  @override
+  String get statsSubgenresHint =>
+      'les tags de la source sont affichés par type — les vocabulaires diffèrent';
+
+  @override
+  String statsSubgenresTitles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count titres',
+      one: '1 titre',
+      zero: 'aucun titre',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsCrowdTitle => 'Moi contre tous';
+
+  @override
+  String get statsCrowdHint => 'là où ma note s\'écarte le plus de la source';
+
+  @override
+  String get statsCrowdHigher => 'Je note plus haut';
+
+  @override
+  String get statsCrowdLower => 'Je note plus bas';
+
+  @override
+  String get statsCrowdMyRating => 'ma note';
+
+  @override
+  String get statsCrowdSource => 'source';
+
+  @override
+  String get statsTopTitle => 'Les mieux notés';
+
+  @override
+  String statsTopHint(int count) {
+    return 'les $count mieux notés';
+  }
+
+  @override
+  String get statsEmptyTitle => 'Pas encore de statistiques';
+
+  @override
+  String get statsEmptyBody =>
+      'Ajoutez des éléments à votre bibliothèque et les chiffres apparaîtront ici.';
+
+  @override
+  String get statsExportTitle => 'Exporter la carte';
+
+  @override
+  String get statsExportFailed => 'Impossible d\'enregistrer l\'image';
+
+  @override
+  String statsShareTitleYear(int year) {
+    return 'Mon $year';
+  }
+
+  @override
+  String get statsShareTitleAllTime => 'Ma bibliothèque';
+
+  @override
+  String statsShareLede(String items, String completed, String rating) {
+    return '$items éléments · $completed terminés · $rating de moyenne';
+  }
+
+  @override
+  String statsShareBest(String title, String rating) {
+    return '$title · $rating — le meilleur de la période';
+  }
 }

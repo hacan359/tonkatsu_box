@@ -25,6 +25,7 @@ import 'package:tonkatsu_box/core/database/dao/anilist_tag_dao.dart';
 import 'package:tonkatsu_box/core/api/vndb_api.dart';
 import 'package:tonkatsu_box/core/database/dao/canvas_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/collection_dao.dart';
+import 'package:tonkatsu_box/core/database/dao/stats_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/game_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/item_mark_dao.dart';
 import 'package:tonkatsu_box/core/database/dao/movie_dao.dart';
@@ -128,6 +129,8 @@ class MockDiscordRpcService extends Mock implements DiscordRpcService {}
 class MockCustomMediaDao extends Mock implements CustomMediaDao {}
 
 class MockCollectionDao extends Mock implements CollectionDao {}
+
+class MockStatsDao extends Mock implements StatsDao {}
 
 class MockCanvasDao extends Mock implements CanvasDao {}
 

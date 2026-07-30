@@ -69,9 +69,8 @@ class CollectionStats {
   );
 }
 
-/// Thin orchestrator over [DatabaseService] for collections and their items.
-/// A `null` collectionId everywhere means "uncategorized" — the catch-all
-/// bucket for items that aren't in any user collection.
+/// Thin orchestrator over [DatabaseService] for collections and their items;
+/// a `null` collectionId everywhere means "uncategorized".
 class CollectionRepository {
   CollectionRepository({required DatabaseService db}) : _db = db;
 
@@ -93,11 +92,13 @@ class CollectionRepository {
     required String name,
     required String author,
     CollectionType type = CollectionType.own,
+    DateTime? createdAt,
   }) async {
     return _db.createCollection(
       name: name,
       author: author,
       type: type,
+      createdAt: createdAt,
     );
   }
 
@@ -175,6 +176,7 @@ class CollectionRepository {
     DataSource? source,
     String? authorComment,
     ItemStatus status = ItemStatus.notStarted,
+    DateTime? addedAt,
   }) async {
     return _db.addItemToCollection(
       collectionId: collectionId,
@@ -184,12 +186,12 @@ class CollectionRepository {
       source: source,
       authorComment: authorComment,
       status: status,
+      addedAt: addedAt,
     );
   }
 
-  /// Bulk-inserts collection items in one transaction (used by imports).
-  /// Returns the number of rows actually inserted; rows that collide with the
-  /// unique item constraint are ignored. Delegates to `CollectionDao`.
+  /// Bulk-inserts items in one transaction (used by imports); returns rows
+  /// actually inserted — unique-constraint collisions are ignored.
   Future<int> addItemsBatch(
     int? collectionId,
     List<Map<String, dynamic>> rows,
@@ -214,10 +216,8 @@ class CollectionRepository {
     return _db.collectionDao.updateItemFieldsBatch(updates);
   }
 
-  /// Returns `true` on success, `false` if the target collection already
-  /// holds an item with the same `(mediaType, externalId, platformId)` —
-  /// callers should fall back to [cloneItemToCollection] or surface a
-  /// duplicate warning.
+  /// True on success, false when the target already holds the same
+  /// (mediaType, externalId, platformId) — callers fall back to clone/warn.
   Future<bool> moveItemToCollection(int itemId, int? targetCollectionId) async {
     return _db.updateItemCollectionId(itemId, targetCollectionId);
   }

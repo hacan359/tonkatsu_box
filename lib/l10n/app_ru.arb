@@ -1,14 +1,11 @@
 {
   "@@locale": "ru",
-
   "appName": "Tonkatsu Box",
-
   "navMain": "Главная",
   "navCollections": "Коллекции",
   "navWishlist": "Желаемое",
   "navSettings": "Настройки",
   "navReleases": "Релизы",
-
   "releasesEmpty": "Нет отслеживаемых сериалов",
   "releasesEmptyHint": "Нажмите колокольчик на сериале или аниме, чтобы отслеживать новые серии.",
   "releasesTrackShow": "Отслеживать релизы",
@@ -35,7 +32,6 @@
   "recurrenceOnce": "Один раз",
   "recurrenceWeekly": "Еженедельно",
   "recurrenceMonthly": "Ежемесячно",
-
   "statusNotStarted": "Не начато",
   "statusPlaying": "Играю",
   "statusWatching": "Смотрю",
@@ -50,7 +46,6 @@
   "statusRewatching": "Пересматриваю",
   "statusRereading": "Перечитываю",
   "all": "Все",
-
   "mediaTypeGame": "Игра",
   "mediaTypeMovie": "Фильм",
   "mediaTypeTvShow": "Сериал",
@@ -60,7 +55,6 @@
   "mediaTypeAnime": "Аниме",
   "mediaTypeBook": "Книга",
   "mediaTypeCustom": "Своё",
-
   "sortManualDisplay": "Вручную",
   "sortManualDesc": "Свой порядок",
   "sortDateDisplay": "Дата добавления",
@@ -81,16 +75,13 @@
   "sortStartDateShort": "Начато",
   "sortCompletionDateDisplay": "Дата завершения",
   "sortCompletionDateShort": "Завершено",
-
   "sortDateOldest": "Сначала старые",
   "sortStatusFinished": "Сначала завершённые",
   "sortRatingLowest": "Сначала худшие",
   "sortFavoriteLast": "Избранные последними",
-
   "searchSortRelevanceShort": "Рел",
   "searchSortRatingShort": "Оценка",
   "searchSortRatingDisplay": "Рейтинг",
-
   "cancel": "Отмена",
   "confirm": "ОК",
   "restore": "Восстановить",
@@ -188,7 +179,6 @@
   "close": "Закрыть",
   "keep": "Оставить",
   "change": "Изменить",
-
   "settingsProfile": "Автор коллекций",
   "settingsProfileSubtitle": "Имя автора для ваших коллекций",
   "settingsAuthorName": "Имя автора",
@@ -289,7 +279,6 @@
       "size": {"type": "String"}
     }
   },
-
   "credentialsTitle": "Учётные данные",
   "credentialsWelcome": "Добро пожаловать в Tonkatsu Box!",
   "credentialsWelcomeHint": "Для начала работы настройте учётные данные IGDB API. Получите Client ID и Client Secret в Twitch Developer Console.",
@@ -346,7 +335,6 @@
   "credentialsEnterSteamGridDbKeyError": "Введите ключ SteamGridDB API",
   "credentialsEnterTmdbKeyError": "Введите ключ TMDB API",
   "credentialsTmdbKeySaved": "Ключ TMDB API сохранён",
-
   "timeAgo": "{value} {unit} назад",
   "timeUnitDays": "{count, plural, =1{день} few{дня} other{дней}}",
   "@timeUnitDays": {
@@ -367,7 +355,6 @@
     }
   },
   "timeJustNow": "Только что",
-
   "cacheTitle": "Кэш",
   "cacheImageCache": "Кэш изображений",
   "cacheOfflineMode": "Офлайн-режим",
@@ -393,7 +380,6 @@
       "size": {"type": "String"}
     }
   },
-
   "databaseTitle": "База данных",
   "databaseConfiguration": "Конфигурация",
   "databaseConfigSubtitle": "Экспорт или импорт ваших ключей API и настроек.",
@@ -407,7 +393,6 @@
   "databaseConfigExported": "Конфигурация экспортирована в {path}",
   "databaseConfigImported": "Конфигурация успешно импортирована",
   "databaseReset": "База данных сброшена",
-
   "storageLocationTitle": "Расположение данных",
   "storageLocationSubtitle": "Папка, где хранятся база данных и профили. Не выбирайте папку, которую облако синхронизирует на лету (OneDrive, Syncthing): база может повредиться посреди записи. Для переноса между устройствами используйте экспорт.",
   "storageLocationDangerWarning": "Внимание: смена папки данных может привести к их потере. Вы делаете это на свой страх и риск.",
@@ -438,7 +423,6 @@
   "storageLocationRestartMessage": "Новая папка данных начнёт использоваться после перезапуска. Перезапустить сейчас?",
   "storageLocationRestartNow": "Перезапустить",
   "storageLocationRestartLater": "Изменение вступит в силу после перезапуска",
-
   "backupRestoreTile": "Восстановить предыдущую базу",
   "backupNone": "Копии пока нет",
   "backupRestoreConfirmTitle": "Восстановить предыдущую базу?",
@@ -446,7 +430,6 @@
   "backupRestored": "База данных восстановлена",
   "backupRestoreError": "Не удалось восстановить копию",
   "backupRestartMessage": "Восстановленные данные начнут использоваться после перезапуска. Перезапустить сейчас?",
-
   "lanSyncTitle": "Синхронизация по сети",
   "lanSyncOpenTile": "Устройства поблизости",
   "lanSyncTileSubtitle": "Прямая передача данных между устройствами в одной Wi-Fi сети",
@@ -474,7 +457,6 @@
   "lanSyncImagesWarning": "База перенесена, но картинки не удалось перенести",
   "lanSyncRestartMessage": "Полученные данные начнут использоваться после перезапуска. Перезапустить сейчас?",
   "lanSyncFirewallNote": "При первом запуске Windows может спросить разрешение брандмауэра - разрешите доступ в частных сетях.",
-
   "folderPickerNewFolder": "Новая папка",
   "folderPickerVolumeList": "Накопители",
   "folderPickerInternalStorage": "Внутренняя память",
@@ -484,7 +466,6 @@
   "folderPickerEmpty": "Подпапок нет",
   "folderPickerReadError": "Не удалось прочитать папку",
   "folderPickerCreateError": "Не удалось создать папку",
-
   "traktTitle": "Импорт Trakt",
   "traktImportFrom": "Импорт из Trakt.tv",
   "traktImportDescription": "Скачайте данные с trakt.tv/users/YOU/data и выберите ZIP-файл ниже.",
@@ -510,7 +491,6 @@
   "importStart": "Начать импорт",
   "traktRequiresOwnTmdbKey": "Для импорта из Trakt необходим собственный TMDB API ключ. Добавьте его в Настройки → Учётные данные.",
   "traktInvalidExport": "Некорректный экспорт Trakt",
-
   "kinoriumImportFrom": "Импорт из Kinorium",
   "kinoriumImportDescription": "Выгрузите список из Kinorium (приходит на почту в виде CSV) и выберите файл ниже.",
   "kinoriumSelectCsvFile": "Выбрать CSV-файл",
@@ -537,7 +517,6 @@
   },
   "traktImportedItems": "Импортировано тайтлов: {count}",
   "traktImporting": "Импорт из Trakt",
-
   "creditsTitle": "Благодарности",
   "creditsDataProviders": "Источники данных",
   "creditsTmdbAttribution": "Приложение использует TMDB API, но не одобрено и не сертифицировано TMDB.",
@@ -558,7 +537,6 @@
   "creditsOpenSourceDesc": "Tonkatsu Box — бесплатное ПО с открытым исходным кодом, распространяемое под лицензией MIT.",
   "creditsViewLicenses": "Посмотреть лицензии",
   "creditsDiscord": "Discord сервер",
-
   "collectionsImportCollection": "Импорт коллекции",
   "collectionsNoCollectionsYet": "Пока нет коллекций",
   "collectionsNoCollectionsHint": "Нажмите + чтобы создать первую коллекцию и начать\nорганизовывать свою медиатеку.",
@@ -579,7 +557,6 @@
   "collectionsFailedToCreate": "Ошибка создания коллекции: {error}",
   "collectionsImported": "Импортирована \"{name}\" — {count} тайтлов",
   "collectionsImporting": "Импорт коллекции",
-
   "importTargetTitle": "Импортировать в...",
   "importCreateNew": "Создать новую коллекцию",
   "importUseExisting": "Добавить в существующую",
@@ -635,7 +612,6 @@
       "error": {"type": "String"}
     }
   },
-
   "collectionNotFound": "Коллекция не найдена",
   "collectionAddItems": "Добавить тайтлы",
   "collectionSwitchToList": "Переключить на список",
@@ -774,16 +750,13 @@
   "collectionFilterDescending": "По убыванию",
   "collectionFilterFilters": "Фильтры",
   "collectionFilterClearAll": "Сбросить все",
-
   "collectionItemMovedTo": "{name} перемещён в {collection}",
   "collectionItemAlreadyExists": "{name} уже есть в {collection}",
   "collectionItemRemoved": "{name} удалён",
-
   "boardTab": "Доска",
   "imageAddedToBoard": "Изображение добавлено на доску",
   "mapAddedToBoard": "Карта добавлена на доску",
   "loading": "Загрузка...",
-
   "gameNotFound": "Игра не найдена",
   "movieNotFound": "Фильм не найден",
   "tvShowNotFound": "Сериал не найден",
@@ -803,11 +776,9 @@
   "animeNextEpisode": "Эп. {episode} скоро выйдет",
   "animatedMovie": "Мультфильм",
   "animatedSeries": "Мультсериал",
-
   "runtimeHoursMinutes": "{hours}ч {minutes}м",
   "runtimeHours": "{hours}ч",
   "runtimeMinutes": "{minutes}м",
-
   "totalSeasons": "{count, plural, =1{1 сезон} few{{count} сезона} other{{count} сезонов}}",
   "@totalSeasons": {
     "placeholders": {
@@ -827,7 +798,6 @@
   "unmarkAll": "Снять отметки",
   "noEpisodesFound": "Эпизоды не найдены",
   "episodeWatchedDate": "просмотрено {date}",
-
   "createCollectionTitle": "Новая коллекция",
   "createCollectionNameLabel": "Название коллекции",
   "createCollectionNameHint": "напр., Классика SNES",
@@ -836,7 +806,6 @@
   "renameCollectionTitle": "Переименовать коллекцию",
   "deleteCollectionTitle": "Удалить коллекцию?",
   "deleteCollectionMessage": "Вы уверены, что хотите удалить {name}?\n\nЭто действие нельзя отменить.",
-
   "canvasAddText": "Добавить текст",
   "canvasAddImage": "Добавить изображение",
   "canvasAddLink": "Добавить ссылку",
@@ -850,7 +819,6 @@
   "canvasDeleteElement": "Удалить элемент",
   "canvasDeleteElementMessage": "Вы уверены, что хотите удалить этот элемент?",
   "canvasAddToBoard": "Добавить на доску",
-
   "editTextTitle": "Редактировать текст",
   "textContentLabel": "Содержимое текста",
   "fontSizeLabel": "Размер шрифта",
@@ -858,7 +826,6 @@
   "fontSizeMedium": "Средний",
   "fontSizeLarge": "Большой",
   "fontSizeTitle": "Заголовок",
-
   "editImageTitle": "Редактировать изображение",
   "imageFromUrl": "По URL",
   "imageFromFile": "Из файла",
@@ -866,17 +833,14 @@
   "imageUrlHint": "https://example.com/image.png",
   "imageChooseFile": "Выбрать файл",
   "imageChooseAnother": "Выбрать другой",
-
   "editLinkTitle": "Редактировать ссылку",
   "linkLabelOptional": "Подпись (необязательно)",
   "linkLabelHint": "Моя ссылка",
-
   "connectionLabelHint": "напр. зависит от, связано с...",
   "connectionStyleLabel": "Стиль",
   "connectionStyleSolid": "Сплошная",
   "connectionStyleDashed": "Пунктирная",
   "connectionStyleArrow": "Стрелка",
-
   "searchTabTv": "ТВ",
   "searchHintMovies": "Поиск фильмов...",
   "searchHintTv": "Поиск ТВ...",
@@ -925,7 +889,6 @@
   "errorDetailsShow": "Подробнее",
   "showMore": "Ещё…",
   "showLess": "Свернуть",
-
   "platformFilterTitle": "Выбор платформ",
   "platformFilterClearAll": "Очистить всё",
   "platformFilterSearchHint": "Поиск платформ...",
@@ -935,7 +898,6 @@
   "platformFilterApply": "Применить ({count})",
   "platformFilterNone": "Платформы не найдены",
   "platformFilterTryDifferent": "Попробуйте другой запрос",
-
   "wishlistHideResolved": "Скрыть выполненные",
   "wishlistShowResolved": "Показать выполненные",
   "wishlistClearResolved": "Удалить выполненные",
@@ -951,14 +913,12 @@
   },
   "wishlistMarkResolved": "Выполнено",
   "wishlistUnresolve": "Вернуть",
-
   "wishlistTitleHint": "Игра, фильм или сериал...",
   "wishlistTitleMinChars": "Минимум 2 символа",
   "wishlistTypeOptional": "Тип (необязательно)",
   "any": "Любой",
   "wishlistNoteOptional": "Заметка (необязательно)",
   "wishlistNoteHint": "Платформа, год, кто рекомендовал...",
-
   "wishlistTagOptional": "Тег (опционально)",
   "wishlistTagHint": "Группировка записей — например, по импорту или источнику",
   "wishlistTagUntagged": "Без тега",
@@ -994,16 +954,13 @@
     }
   },
   "apply": "Применить",
-
   "welcomeStepWelcome": "Добро пожаловать",
   "welcomeStepReady": "Готово!",
-
   "welcomeNameTitle": "Как вас зовут?",
   "welcomeNameSubtitle": "Это имя будет указано как автор ваших коллекций",
   "welcomeChangeLaterHint": "Можно изменить позже в Настройках",
   "welcomeLanguageTitle": "Выберите язык",
   "welcomeLanguageSubtitle": "Язык интерфейса приложения",
-
   "welcomeTitle": "Добро пожаловать в Tonkatsu Box",
   "welcomeSubtitle": "Организуйте коллекции игр, фильмов,\nсериалов, аниме, новелл, манги и книг",
   "welcomeWhatYouCanDo": "Что вы можете делать",
@@ -1023,7 +980,6 @@
   "welcomeChipAnime": "Аниме (TMDB)",
   "welcomeChipVisualNovels": "Новеллы (VNDB)",
   "welcomeChipManga": "Манга (AniList)",
-
   "welcomeApiTitle": "Получение ключей API",
   "welcomeApiFreeHint": "Бесплатная регистрация, займёт 2-3 минуты",
   "welcomeApiIgdbTag": "IGDB",
@@ -1042,7 +998,6 @@
   "welcomeApiOwnKeyHint": "Можно добавить свой ключ позже в Настройках для лучшей производительности",
   "welcomeApiEnterKeysHint": "Введите ключи в Настройки → Учётные данные",
   "welcomeApiRateLimitHint": "Встроенные ключи общие для всех пользователей и имеют лимиты запросов. Для лучшего опыта используйте свои ключи — это бесплатно и займёт пару минут.",
-
   "welcomeHowTitle": "Как это работает",
   "welcomeHowAppStructure": "Структура приложения",
   "welcomeHowMainDesc": "Все тайтлы из всех коллекций в одном месте. Фильтрация по типу, сортировка по оценке.",
@@ -1062,16 +1017,13 @@
   "welcomeHowSharingDesc1": "Экспортируйте коллекции в формате ",
   "welcomeHowSharingDesc2": " (лёгкий, только метаданные) или ",
   "welcomeHowSharingDesc3": " (полный, с изображениями и доской — работает офлайн). Импортируйте у друзей — API не нужен!",
-
   "welcomeReadyTitle": "Всё готово!",
   "welcomeReadyMessage": "Перейдите в Настройки → Учётные данные, чтобы ввести ключи API, или начните с импорта коллекции.",
   "welcomeReadySkip": "Пропустить — разберусь сам",
   "welcomeReadyReturnHint": "Вы всегда можете вернуться сюда из Настроек",
-
   "welcomeStepSources": "Источники",
   "welcomeStepTour": "Тур",
   "welcomeChipBooks": "Книги (OpenLibrary, Fantlab)",
-
   "welcomeSourcesTitle": "Откуда берутся данные",
   "welcomeSourcesSubtitle": "Эти источники питают поиск по всему приложению. Большинство работает сразу — лишь пара просит бесплатный ключ.",
   "welcomeSourcesNoKeyNeeded": "БЕЗ КЛЮЧА",
@@ -1079,7 +1031,6 @@
   "welcomeSourcesGetKey": "Получить ключ",
   "welcomeSourcesKeyOptionalHint": "Необязательно — свой ключ повышает лимиты. Поиск работает и без него.",
   "welcomeSourcesHardcoverTokenHint": "Обязателен — без него поиск и импорт не работают. Токены сбрасываются каждое 1 января.",
-
   "welcomeSourceDescTmdb": "Фильмы, сериалы и анимация.",
   "welcomeSourceDescTvMaze": "Сериалы.",
   "welcomeSourceDescIgdb": "Видеоигры на любой платформе.",
@@ -1093,21 +1044,17 @@
   "welcomeSourceDescComicVine": "Обширный каталог комиксов и графических романов.",
   "welcomeSourceDescGoogleBooks": "Миллионы изданий из книжного каталога Google: поиск по названию, автору или ISBN.",
   "welcomeSourceDescHardcover": "Книжный каталог сообщества: серии, жанры, настроения и оценки. Нужен бесплатный персональный токен.",
-
   "welcomeTourTitle": "Знакомство с меню",
   "welcomeTourSubtitle": "Короткий тур по основной навигации — жмите «Далее», чтобы пройти его.",
   "welcomeTourStart": "Начать",
   "welcomeHowReleasesDesc": "Новые эпизоды и релизы отслеживаемых сериалов и игр.",
-
   "updateAvailable": "Доступно обновление: v{version}",
   "updateCurrent": "Текущая: v{version}",
   "updateWarningTitle": "Перед обновлением",
   "updateWarningBody": "Приложение в активной разработке. Обновления могут включать миграции базы данных, которые изменяют формат данных.\n\nПожалуйста, создайте бэкап перед обновлением (Настройки → Бэкап). Так вы сможете восстановить данные, если что-то пойдёт не так.",
   "updateWarningProceed": "Перейти к релизу",
-
   "chooseCollection": "Выбрать коллекцию",
   "withoutCollection": "Без коллекции",
-
   "detailMyRating": "Мой рейтинг",
   "detailRatingValue": "{rating}/10",
   "detailActivityProgress": "Активность и прогресс",
@@ -1122,7 +1069,6 @@
   "detailWriteNotesHint": "Напишите ваши личные заметки...",
   "detailNoNotesYet": "Заметок пока нет. Нажмите «Редактировать», чтобы добавить.",
   "detailNoNotesReadonly": "Автор не оставил заметок.",
-
   "unknownGame": "Неизвестная игра",
   "unknownMovie": "Неизвестный фильм",
   "unknownTvShow": "Неизвестный сериал",
@@ -1132,9 +1078,7 @@
   "unknownCustom": "Неизвестный тайтл",
   "unknownPlatform": "Неизвестная платформа",
   "defaultAuthor": "Пользователь",
-
   "errorPrefix": "Ошибка: {error}",
-
   "allItemsRatingAsc": "Оценка ↑",
   "allItemsRatingDesc": "Оценка ↓",
   "allItemsNoItems": "Пока нет тайтлов",
@@ -1143,7 +1087,6 @@
   "allItemsFailedToLoad": "Не удалось загрузить тайтлы",
   "allPlatforms": "Все платформы",
   "allItemsFilterPlatformsTitle": "Фильтр по платформе",
-
   "debugIgdbMedia": "IGDB Медиа",
   "debugGamepad": "Геймпад",
   "debugClearLogs": "Очистить логи",
@@ -1163,7 +1106,6 @@
   "debugLoadTab": "Загрузить {tabName}",
   "debugEnterGameIdHint": "Введите ID игры и нажмите «Загрузить {tabName}»",
   "debugNoImagesFound": "Изображения не найдены",
-
   "collectionTileStats": "{count, plural, =1{1 тайтл} few{{count} тайтла} other{{count} тайтлов}} · {percent} завершено",
   "@collectionTileStats": {
     "placeholders": {
@@ -1172,7 +1114,6 @@
     }
   },
   "collectionTileError": "Ошибка загрузки статистики",
-
   "activityDatesTitle": "Даты активности",
   "activityDatesAdded": "Добавлено",
   "activityDatesStarted": "Начато",
@@ -1206,7 +1147,6 @@
   "@durationMonths": { "placeholders": { "count": { "type": "int" } } },
   "durationYears": "{count} лет",
   "@durationYears": { "placeholders": { "count": { "type": "String" } } },
-
   "canvasFailedToLoad": "Не удалось загрузить доску",
   "canvasBoardEmpty": "Доска пуста",
   "canvasBoardEmptyHint": "Сначала добавьте тайтлы в коллекцию",
@@ -1214,7 +1154,6 @@
   "canvasResetPositions": "Сбросить позиции",
   "canvasVgmapsBrowser": "Браузер VGMaps",
   "canvasSteamGridDbImages": "Изображения SteamGridDB",
-
   "steamGridDbPanelTitle": "SteamGridDB",
   "closePanel": "Закрыть панель",
   "steamGridDbSearchHint": "Поиск игры...",
@@ -1225,7 +1164,6 @@
   "steamGridDbLogos": "Логотипы",
   "steamGridDbIcons": "Иконки",
   "steamGridDbSearchFirst": "Сначала найдите игру",
-
   "vgmapsBack": "Назад",
   "vgmapsForward": "Вперёд",
   "vgmapsHome": "Домой",
@@ -1239,7 +1177,6 @@
       "error": {"type": "String"}
     }
   },
-
   "discoverTitle": "Подборки",
   "discoverCustomize": "Настроить",
   "discoverTrending": "Тренды недели",
@@ -1253,9 +1190,7 @@
   "discoverAlreadyInCollection": "Уже в коллекции",
   "discoverShowWithBadge": "Показывать с отметкой",
   "discoverHideCompletely": "Скрывать",
-
   "recommendationsTitle": "Рекомендации",
-
   "reviewsTitle": "Отзывы",
   "reviewsShowAll": "Все {count} отзывов",
   "@reviewsShowAll": {
@@ -1265,7 +1200,6 @@
   },
   "reviewsReadMore": "Читать далее",
   "reviewsInEnglish": "Отзывы на английском",
-
   "settingsShowRecommendationsSubtitle": "Похожие фильмы и сериалы на странице деталей",
   "settingsHideEmptyMediaTypeChevrons": "Скрывать пустые фильтры типов",
   "settingsHideEmptyMediaTypeChevronsSubtitle": "Скрывать шевроны типов медиа (Игры, Фильмы и т.д.), если в коллекции нет таких записей",
@@ -1290,11 +1224,9 @@
   "settingsDiscordRpcSubtitle": "Показывать текущий тайтл в статусе Discord",
   "settingsDiscordRaSync": "Синхронизация RetroAchievements",
   "settingsDiscordRaSyncSubtitle": "Показывать активность RetroAchievements в Discord",
-
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
   "uncategorizedDeprecationNotice": "Эта системная коллекция скоро будет удалена. Создайте свою коллекцию и перенесите в неё все элементы отсюда.",
   "uncategorizedDeprecationBadge": "Будет удалена",
-
   "browseFilterGenre": "Жанр",
   "browseFilterLength": "Длительность",
   "vndbLengthVeryShort": "Очень короткая",
@@ -1373,15 +1305,12 @@
   "animeStatusFinished": "Завершено",
   "animeStatusNotYetAired": "Ещё не вышло",
   "animeStatusCancelled": "Отменено",
-
   "browseAnimeTypeSeries": "Сериалы",
   "browseAnimeTypeMovies": "Фильмы",
   "browseEmptyFilters": "Выберите фильтр или выполните поиск",
   "browseBackToBrowse": "Назад к обзору",
-
   "typeToFilterHint": "Фильтр...",
   "appBarSearchHint": "Начните печатать для поиска",
-
   "insertLink": "Вставить ссылку",
   "linkText": "Текст",
   "linkHint": "Гайд",
@@ -1390,7 +1319,6 @@
   "markdownBold": "Жирный",
   "markdownItalic": "Курсив",
   "insert": "Вставить",
-
   "navTierLists": "Тир-листы",
   "tierListCreate": "Новый тир-лист",
   "tierListCreateFromCollection": "Создать тир-лист",
@@ -1429,7 +1357,6 @@
   "collectionPickerFilter": "Фильтр коллекций...",
   "collectionPickerAlreadyAdded": "✓ Добавлено",
   "collectionPickerAlreadyInCount": "{count, plural, one{Уже в {count} коллекции} few{Уже в {count} коллекциях} other{Уже в {count} коллекциях}}",
-
   "settingsSteamImport": "Библиотека Steam",
   "settingsSteamImportSubtitle": "Импорт игр через Steam Web API",
   "settingsIgdbImport": "Список IGDB",
@@ -1500,7 +1427,6 @@
   "steamImportPlaytimeComment": "Время в игре сохранено в комментариях",
   "openCollection": "Открыть коллекцию",
   "steamImportRememberCredentials": "Запомнить данные",
-
   "collectionListSortCreatedDate": "Дата создания",
   "collectionListSortAlphabeticalAZ": "А → Я",
   "collectionListSortAlphabeticalZA": "Я → А",
@@ -1508,13 +1434,10 @@
   "collectionListViewList": "Список",
   "collectionListViewTable": "Таблица",
   "collectionTableExternalRating": "Внешний",
-
   "collectionCopyToCollection": "Копировать в коллекцию",
   "collectionItemCopiedTo": "{name} скопирован в {collection}",
   "collectionItemAlreadyInTarget": "{name} уже есть в {collection}",
-
   "openInCollection": "Открыть в коллекции",
-
   "importResultTitle": "Результаты импорта",
   "importResultComplete": "Импорт {source} завершён!",
   "@importResultComplete": {
@@ -1547,7 +1470,6 @@
   "importResultOpenCollection": "Открыть коллекцию",
   "importResultWishlistHint": "Тайтлы, не найденные в базе данных, сохранены в Список желаний.",
   "importResultSourceCollectionFile": "Файл коллекции",
-
   "settingsBrowseCollections": "Каталог коллекций",
   "settingsBrowseCollectionsSubtitle": "Скачать готовые коллекции",
   "browseCollectionsSummary": "{count} коллекций, {items} тайтлов",
@@ -1564,7 +1486,6 @@
   "browseCollectionsNewCollection": "Новую коллекцию",
   "browseCollectionsExistingCollection": "Существующую коллекцию",
   "noCollectionsYet": "Коллекций пока нет",
-
   "settingsRaImport": "RetroAchievements",
   "settingsRaImportSubtitle": "Импорт игр из RetroAchievements",
   "raImportTitle": "Импорт RetroAchievements",
@@ -1614,7 +1535,6 @@
       "date": {"type": "String"}
     }
   },
-
   "raRefresh": "Обновить достижения",
   "raOpenOnRa": "Открыть на RA ↗",
   "raHardcore": "Хардкор",
@@ -1642,7 +1562,6 @@
   "raStatsWorth": "на",
   "raStatsPoints": "очков",
   "raStatsUnlocked": "Получено",
-
   "copyAsText": "Копировать как текст…",
   "copiedToClipboard": "{count,plural, =1{Скопирован 1 тайтл} few{Скопировано {count} тайтла} other{Скопировано {count} тайтлов}}",
   "template": "Шаблон",
@@ -1663,7 +1582,6 @@
   "tableFilterCondEndsWith": "Заканчивается на",
   "tableFilterCondAtLeast": "Не меньше (≥)",
   "tableFilterCondAtMost": "Не больше (≤)",
-
   "profiles": "Профили приложения",
   "currentProfile": "Текущий: {name}",
   "switchProfile": "Сменить профиль",
@@ -1681,11 +1599,9 @@
   "appWillRestart": "Приложение перезапустится для применения изменений.",
   "profileCreated": "Профиль создан",
   "profileDeleted": "Профиль удалён",
-
   "settingsIntegrations": "Интеграции",
   "settingsKodiSubtitle": "Синхронизация просмотров с Kodi",
   "settingsOn": "Вкл.",
-
   "kodiConnectionTitle": "Подключение",
   "kodiConnectionSubtitle": "Kodi HTTP JSON-RPC (Настройки → Службы → Управление)",
   "kodiHost": "Хост",
@@ -1702,7 +1618,6 @@
       "name": {"type": "String"}
     }
   },
-
   "kodiSyncTitle": "Синхронизация",
   "kodiTargetCollectionSubtitle": "Все фильмы из Kodi попадут сюда",
   "kodiTargetNotSelected": "Не выбрана",
@@ -1720,7 +1635,6 @@
   "kodiCreateSubCollectionsSubtitle": "Например, «Harry Potter Collection (kodi)»",
   "kodiImportRatings": "Импортировать оценки из Kodi",
   "kodiImportRatingsSubtitle": "Переносить userrating Kodi (1–10)",
-
   "kodiCollectionLibraryName": "Библиотека Kodi",
   "kodiCollectionCreated": "Создана «{name}»",
   "@kodiCollectionCreated": {
@@ -1729,7 +1643,6 @@
     }
   },
   "kodiTargetDeletedSnack": "Целевая коллекция удалена — синхронизация остановлена",
-
   "kodiSyncStatus": "Статус синхронизации",
   "kodiSyncRunning": "Активна",
   "kodiSyncStopped": "Остановлена",
@@ -1737,7 +1650,6 @@
   "kodiClearLastSync": "Сбросить метку последней синхронизации",
   "kodiClearLastSyncSubtitle": "При следующей синхронизации подтянутся все просмотренные",
   "kodiLastSyncCleared": "Метка последней синхронизации сброшена",
-
   "kodiRequestLog": "Лог запросов ({count})",
   "@kodiRequestLog": {
     "placeholders": {
@@ -1748,7 +1660,6 @@
   "kodiLogCopied": "Лог скопирован",
   "kodiClearLog": "Очистить лог",
   "kodiNoRequests": "Запросов пока нет",
-
   "kodiRawJsonRpc": "Сырой JSON-RPC",
   "kodiMethod": "Метод",
   "kodiParams": "Параметры (JSON)",
@@ -1768,7 +1679,6 @@
       "message": {"type": "String"}
     }
   },
-
   "settingsMalImport": "MyAnimeList",
   "settingsMalImportSubtitle": "Импорт списков аниме и манги из XML",
   "malImportTitle": "Импорт MyAnimeList",
@@ -1821,7 +1731,6 @@
       "count": {"type": "int"}
     }
   },
-
   "settingsAniListImport": "AniList",
   "settingsAniListImportSubtitle": "Импорт списков аниме и манги по публичному имени",
   "settingsHardcoverImportSubtitle": "Импорт библиотеки книг с hardcover.app по имени пользователя",
@@ -1855,7 +1764,6 @@
   },
   "aniListImportEmptyUsername": "Введите имя пользователя AniList",
   "aniListImportSelectAtLeastOne": "Выберите хотя бы один тип: аниме или манга",
-
   "settingsCustomCardsImport": "Кастомные карточки",
   "settingsCustomCardsImportSubtitle": "Импорт карточек из JSON или CSV файла",
   "customImportTitle": "Импорт кастомных карточек",
@@ -1937,7 +1845,6 @@
       "value": {"type": "String"}
     }
   },
-
   "moodGridCreate": "Создать mood-сетку",
   "moodGridCreateTitle": "Новая mood-сетка",
   "moodGridPresetAboutMe": "About Me: Tonkatsu Box",
@@ -2021,7 +1928,6 @@
       "count": {"type": "int"}
     }
   },
-
   "itemMarkLike": "Нравится",
   "itemMarkNote": "Заметка",
   "itemMarkNoteHint": "Напишите заметку…",
@@ -2093,5 +1999,61 @@
   "shortcutClearOrBack": "Очистить / назад",
   "shortcutRunSearch": "Выполнить поиск",
   "debugKeyEvents": "Кнопки (key events)",
-  "settingsGamepadDebugSubtitle": "Снять коды кнопок контроллера"
+  "settingsGamepadDebugSubtitle": "Снять коды кнопок контроллера",
+  "statsTabTitle": "Статистика",
+  "statsPeriodAllTime": "Всё время",
+  "statsEyebrowYear": "Итоги года · {year}",
+  "statsEyebrowAllTime": "Библиотека в цифрах",
+  "statsLede": "Всего {items} элементов в вашей коллекции",
+  "statsMetricMoviesWatched": "фильмов просмотрено",
+  "statsMetricMangaChapters": "глав манги",
+  "statsMetricBookPages": "страниц книг",
+  "statsMetricEpisodes": "эпизодов",
+  "statsMetricHours": "просмотрено и наиграно",
+  "statsMetricAvgRating": "средняя оценка",
+  "statsMetricReplays": "повторов",
+  "statsMetricLikedUnits": "лайкнутых эпизодов",
+  "statsHoursShort": "{hours} ч",
+  "statsHoursBreakdown": "часы: вручную {manual} ч · трекеры {tracker} ч · оценка {estimated} ч",
+  "statsMonthsTitle": "Год по месяцам",
+  "statsMonthsTitleAllTime": "Этот год по месяцам",
+  "statsMonthsHint": "обложка — лучший тайтл месяца по вашей оценке",
+  "statsPeakLabel": "пик",
+  "statsMonthCounts": "{items} доб. · {episodes} эп.",
+  "statsVersusTitle": "Лучшее и худшее",
+  "statsVersusHint": "по вашим оценкам",
+  "statsBest": "Лучшее",
+  "statsWorst": "Худшее",
+  "statsPlatformsSummary": "{hours} ч · {games} игр",
+  "statsPlatformNone": "Без платформы",
+  "statsPlatformsShowAll": "Показать все ({count})",
+  "statsPlatformsCollapse": "Свернуть",
+  "statsHoursUnit": "ч",
+  "statsGamesUnit": "игр",
+  "statsTypesTitle": "По типам медиа",
+  "statsTypesHint": "живая разбивка по статусам для каждого типа",
+  "statsCompletedPercent": "{percent}% завершено",
+  "@statsCompletedPercent": {"placeholders": {"percent": {"type": "int"}}},
+  "statsPlatformMostPlayed": "больше всего наиграно",
+  "statsFormatsHint": "формат — из данных источника",
+  "statsTitlesUnit": "тайтлов",
+  "statsSubgenresTitle": "Сабжанры и теги",
+  "statsSubgenresHint": "теги источника показаны по типам — словари не смешиваются",
+  "statsSubgenresTitles": "{count, plural, =0{нет тайтлов} one{{count} тайтл} few{{count} тайтла} other{{count} тайтлов}}",
+  "statsCrowdTitle": "Я против всех",
+  "statsCrowdHint": "где моя оценка сильнее всего расходится с источником",
+  "statsCrowdHigher": "Я оцениваю выше",
+  "statsCrowdLower": "Я оцениваю ниже",
+  "statsCrowdMyRating": "моя оценка",
+  "statsCrowdSource": "источник",
+  "statsTopTitle": "Топ по оценке",
+  "statsTopHint": "{count} лучших",
+  "statsEmptyTitle": "Статистики пока нет",
+  "statsEmptyBody": "Добавьте элементы в библиотеку — и здесь появятся цифры.",
+  "statsExportTitle": "Экспорт карточки",
+  "statsExportFailed": "Не удалось сохранить изображение",
+  "statsShareTitleYear": "Мой {year}",
+  "statsShareTitleAllTime": "Моя библиотека",
+  "statsShareLede": "{items} элементов · {completed} завершено · {rating} средняя",
+  "statsShareBest": "{title} · {rating} — лучшее за период"
 }

@@ -102,7 +102,7 @@ Each feature is a self-contained folder with three subdirectories:
 - `providers/` — Riverpod notifiers and `FutureProvider`s scoped to the feature.
 - `widgets/` — feature-local reusable widgets.
 
-Current features: `collections` (main module — collection screens, ItemDetail, canvas, panels), `search` (universal search via `SearchSource` over 7 backends), `tier_lists` (Tier list + Mood Grid), `wishlist`, `home` (All Items), `settings` (19 screens: credentials, imports, debug), `welcome` (6-step onboarding), `splash`.
+Current features: `collections` (main module — collection screens, ItemDetail, canvas, panels), `search` (universal search via `SearchSource` over 7 backends), `tier_lists` (Tier list + Mood Grid), `wishlist`, `home` (All Items), `personalization` (hub over `statistics`, `genre_cloud`, `recommendations`), `statistics` ("my library in numbers": SQL aggregates via `StatsDao`, share card), `settings` (19 screens: credentials, imports, debug), `welcome` (6-step onboarding), `splash`.
 
 ### `shared/`
 
