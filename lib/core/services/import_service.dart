@@ -378,10 +378,13 @@ class ImportService {
           total: 1,
         ));
 
+        // Keep the original creation date: a backup restore must not collapse
+        // the collection's history onto the restore day.
         collection = await _repository.create(
           name: xcoll.name,
           author: xcoll.author,
           type: CollectionType.own,
+          createdAt: xcoll.created,
         );
 
         await _restoreCollectionPersonalization(collection, xcoll);
@@ -417,6 +420,9 @@ class ImportService {
           source: parsed.source,
           authorComment: parsed.authorComment,
           status: xcoll.includesUserData ? parsed.status : ItemStatus.notStarted,
+          // Keep the exported added date, otherwise a backup restore collapses
+          // the whole "added by month" timeline onto the restore day.
+          addedAt: xcoll.includesUserData ? parsed.addedAt : null,
         );
 
         if (itemId != null) {
@@ -610,10 +616,8 @@ class ImportService {
         mediaType: parsed.mediaType,
       );
     }
-    // After the status restore: a transition into `completed` bumps
-    // rewatch_count, and the file value must win over that bump. `null` is
-    // never applied — it would wipe a locally tracked counter on re-import
-    // of an older export.
+    // The file value must win over the bump a `completed` transition just
+    // made; `null` is never applied — it would wipe a local counter.
     if (parsed.rewatchCount != null) {
       await _database.updateItemRewatchCount(itemId, parsed.rewatchCount);
     }
@@ -885,10 +889,8 @@ class ImportService {
     }
   }
 
-  /// Online fallback for light exports or legacy full exports without an
-  /// embedded `media` section. Items are grouped by (media type, source) and
-  /// each group is refetched from the provider that owns it: sending a TVmaze
-  /// show id to TMDB caches a different show under that id.
+  /// Online fallback for exports without an embedded `media` section; items
+  /// refetch grouped by (media type, source) — ids are not portable across providers.
   Future<void> _fetchMediaFromApi(
     List<Map<String, dynamic>> items, {
     ImportProgressCallback? onProgress,
@@ -1123,9 +1125,8 @@ class ImportService {
     }
   }
 
-  /// AniList resolves its ids in one batched query; every other provider only
-  /// answers per id, so they go one by one. Shared by manga and anime, whose
-  /// progress accounting and rate-limit reporting must not drift apart.
+  /// AniList ids resolve in one batched query, all other providers per id.
+  /// Shared by manga and anime so progress/rate-limit reporting can't drift.
   Future<List<T>> _fetchByRefs<T>(
     List<_MediaRef> refs, {
     required ImportStage stage,
@@ -1250,9 +1251,8 @@ class ImportService {
   }
 
   Future<Book?> _fetchOneBook(_MediaRef ref) async {
-    // Every book provider is keyed by its own string id; external_id is
-    // derived from it and can't be turned back, so files written before
-    // native_id existed leave their books unresolved.
+    // external_id derives from the provider's string id and can't be turned
+    // back, so files predating native_id leave their books unresolved.
     final String? nativeId = ref.nativeId;
     if (nativeId == null) return null;
 
@@ -1305,10 +1305,8 @@ class ImportService {
       final ImageType? imageType = _imageTypeFromFolder(folder);
       if (imageType == null) continue;
 
-      // Backward-compat: legacy backups stored manga / anime covers under the
-      // bare numeric id before those media went source-namespaced. Legacy rows
-      // were always AniList, so remap to keep the cover instead of forcing a
-      // network re-download. New backups already carry the source prefix.
+      // Legacy backups stored manga/anime covers under the bare numeric id;
+      // those rows were always AniList, so remap instead of re-downloading.
       if ((imageType == ImageType.mangaCover ||
               imageType == ImageType.animeCover) &&
           int.tryParse(imageId) != null) {
@@ -1467,9 +1465,8 @@ class ImportService {
     await _database.itemMarkDao.insertMarks(marks);
   }
 
-  /// Restores watch marks nested under the item's `_watched_episodes` key,
-  /// re-scoped to the target collection. Older exports lack the key; rows
-  /// already marked stay untouched (insert is conflict-ignoring).
+  /// Restores watch marks under `_watched_episodes`, re-scoped to the target
+  /// collection; already-marked rows stay (insert is conflict-ignoring).
   Future<void> _importWatchedEpisodes(
     Map<String, dynamic> itemData,
     int collectionId,
@@ -1556,10 +1553,8 @@ class ImportService {
     }
   }
 
-  /// Restores tags into the global set: names resolve case-insensitively to
-  /// existing global tags, missing ones are created with the exported colors.
-  /// Accepts both the multi-tag `tag_names` array and the legacy single
-  /// `tag_name` string on items.
+  /// Restores tags globally: names resolve case-insensitively, missing ones
+  /// are created. Accepts `tag_names` arrays and the legacy `tag_name` string.
   Future<void> _importTags(
     List<Map<String, dynamic>> tagsData,
     List<Map<String, dynamic>> exportedItems,
@@ -1626,10 +1621,8 @@ class ImportService {
     }
   }
 
-  /// Keys an imported item is filed under so tier-list and tag entries can
-  /// find it. `exact` qualifies by provider, without which an AniList and a
-  /// Kitsu title sharing a numeric id collapse onto one item; `shared` keys
-  /// stay for legacy exports whose entries carry no source.
+  /// Keys an item is filed under for tier-list/tag lookup: `exact` qualifies
+  /// by provider (ids collide across providers), `shared` serves legacy exports.
   static ({List<String> exact, List<String> shared}) _itemMappingKeys({
     required String mediaType,
     required int externalId,
@@ -1744,9 +1737,8 @@ class ImportService {
   }
 }
 
-/// One item's media reference from an export file. [nativeId] is the
-/// provider's own string id, carried by light exports for sources whose API
-/// can't be reached with the numeric [externalId].
+/// One item's media reference from an export file; [nativeId] is the
+/// provider's own string id for APIs unreachable via the numeric [externalId].
 class _MediaRef {
   const _MediaRef({
     required this.externalId,

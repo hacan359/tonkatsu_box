@@ -9,6 +9,68 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Library statistics page — "my library in numbers" — in the personalization hub**
+
+  The personalization hub (centre nav button) opens on a new statistics view,
+  next to the genre cloud and recommendations. Underline tabs switch between
+  all time and a calendar year. The hero shows the item total over a cover
+  wall, library-wide consumption counters (episodes, chapters, pages, hours
+  split into manual / tracker / runtime-estimated, average rating, replays,
+  liked episodes), then the page breaks the library down block by block:
+  per-media-type cards with a live status bar and completion percent, a
+  month-by-month activity ribbon with each month's best-rated cover and a
+  per-week drill-down dialog, best-vs-worst pairs per media type, game cards
+  per platform (game count, hours, status split, most-played covers), anime
+  and manga cards per source format (TV/OVA/Movie, manga/novel/one-shot) with
+  top-rated covers, anime/manga subgenre chip cards side by side, "me vs the
+  crowd" rating deltas, and a shareable PNG summary card. Everything is
+  computed in SQL over the local timezone — no window functions, so it runs
+  on old Android SQLite — and only the few dozen items that show covers are
+  hydrated.
+
+  * lib/core/database/dao/stats_dao.dart (StatsDao): New. SQL aggregates:
+    getTypeStatusCounts, getGamePlatformStatusCounts, getRewatchSum,
+    getAverageRating, getEpisodeSplit, getProgressCounterSums,
+    getLikedUnitsByType, getManualMinutes, getTrackerMinutes,
+    getEstimatedMinutes, getAddedByMonth, getEpisodesByMonth,
+    getBestItemByMonth, getGamePlatformRows, getTrackerMinutesByPlatform,
+    getTopGamesByPlatform, getSourceFormatStatusCounts, getTopItemsByFormat,
+    getSourceTagCounts, getRatedItemIds, getMonthAddedByDayType,
+    getAvailableYears.
+  * lib/features/statistics/models/library_stats.dart (LibraryStats,
+    LibraryTotals, UnitsWatched, StatsHours, StatsPeriod, MonthActivity,
+    MonthDetail, PlatformStats, FormatStats, TagCount, SubgenreGroup,
+    VersusPair, RatingDelta): New pure-Dart payload models.
+  * lib/features/statistics/providers/statistics_provider.dart
+    (libraryStatsProvider, statsPeriodProvider, monthDetailProvider): New.
+    Fetches the independent aggregates in parallel batches, then hydrates
+    covers in one pass.
+  * lib/features/statistics/screens/statistics_screen.dart (StatisticsScreen,
+    _PeriodTab): New. Period tabs, section list, empty state, offscreen
+    share-card export.
+  * lib/features/statistics/widgets/stats_hero.dart (StatsHero),
+    stats_types_section.dart (StatsTypesSection), stats_months_ribbon.dart
+    (StatsMonthsRibbon), stats_month_detail_dialog.dart
+    (StatsMonthDetailDialog), stats_platforms_section.dart
+    (StatsPlatformsSection), stats_formats_section.dart (StatsFormatsSection),
+    stats_subgenres_section.dart (StatsSubgenresSection),
+    stats_versus_section.dart (StatsVersusSection), stats_crowd_section.dart
+    (StatsCrowdSection), stats_share_card.dart (StatsShareCard),
+    stats_poster.dart (StatsPoster), stats_section_header.dart
+    (StatsSectionHeader): New section widgets.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.getItemsWithDataByRowIds): New hydration of items by row
+    ids, so aggregate screens load only what they show.
+  * lib/core/database/database_service.dart (statsDaoProvider,
+    DatabaseService.statsDao): Wire up the DAO.
+  * lib/features/personalization/screens/personalization_screen.dart
+    (PersonalizationScreen): Statistics becomes the hub's default view; the
+    view switcher pill scrolls horizontally so it fits narrow phones.
+  * lib/shared/constants/media_type_ui.dart (MediaTypeUi.localizedPluralLabel):
+    New plural type labels reused as section titles.
+  * lib/l10n/app_en.arb, app_ru.arb, app_zh.arb, app_es.arb, app_fr.arb,
+    app_pt.arb: New stats* keys in every locale.
+
 - **Kitsu anime run on the season-and-episode tracker, like TV series**
 
   A Kitsu anime opens the same season accordion TV shows use: episode tiles with
@@ -149,6 +211,23 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     equivalence tests.
 
 ### Fixed
+
+- **Backup restore keeps collection creation and item added dates**
+
+  Restoring a full backup used to stamp every collection and item with the
+  restore day, collapsing the whole "added by month" history. The exported
+  dates now survive the round trip (user-data exports only).
+
+  * lib/core/services/import_service.dart (ImportService): Pass the exported
+    collection `created` date and per-item added date through the restore.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.createCollection, CollectionDao.addItemToCollection):
+    Optional createdAt / addedAt overrides, defaulting to now.
+  * lib/core/database/database_service.dart (DatabaseService.createCollection,
+    DatabaseService.addItemToCollection), lib/data/repositories/collection_repository.dart
+    (CollectionRepository.create, CollectionRepository.addItemToCollection):
+    Plumb the new parameters through.
+  * test/core/services/import_service_test.dart: Restore-date regression tests.
 
 - **Tier list card labels no longer overflow under Android font scaling**
 

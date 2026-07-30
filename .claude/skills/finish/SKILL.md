@@ -20,7 +20,8 @@ Run this **once** at the end of a task. The pipeline merges the old simplify / d
 - **English only.** No Russian / Cyrillic in `///`, `//`, or `/* */` blocks. UI strings stay in `.arb`; this rule is about code comments.
 - **Only WHY, never WHAT.** A comment exists to explain a hidden constraint, a subtle invariant, a workaround, a non-obvious algorithm choice, or a refactor note. Names and types already cover *what*.
 - **No comment > bad comment.** If you can't say something the code can't, delete the comment.
-- **One short line.** Avoid multi-paragraph dartdoc. If a public API truly needs prose, keep it ≤2 lines.
+- **Hard cap: 2 lines.** No comment block (`//`, `///`, or `/* */`) may exceed 2 consecutive lines — anywhere, including dartdoc on public API. If it doesn't fit in 2 lines, cut it until it does.
+- **No file-header comments.** A file never starts with a comment block describing what the file is — the path and the first declaration already say that. Delete top-of-file comments in every new or touched file.
 - **No section dividers, no banners.** `// ===== Foo =====` and `// --- bar ---` are noise — drop them.
 - **No TODOs without a tracker reference.** A bare `// TODO: fix this` rots; tie it to an issue or remove it.
 - **Translate, don't preserve.** When touching a file with Russian comments, translate the salvageable ones to English and delete the rest as part of the same diff.
@@ -114,6 +115,18 @@ grep -rln "package:flutter\|dart:ui\|l10n/" lib/shared/models/
 ```
 
 Fix: move the offending getter/method into the model's `*_ui.dart` extension (create it if missing), store the raw value in the model, and add the extension import at call sites. Never "fix" by re-adding a Flutter type to a model.
+
+**R2d — web readiness (mandatory)**
+
+The project is headed for a selfhost web build (`dev/backlog/selfhost-web/`): same branch, web as one more build target, DAO calls become the client↔server RPC boundary, external APIs go through a server proxy. New code must not create rework for that plan. Check the diff for:
+
+- **No new unguarded `dart:io`** (`Platform.is*`, `File`, `Directory`, `Process`) in `lib/features/` or `lib/shared/`. Platform branching goes through `platform_features.dart` flags; intrinsic file I/O (export/import, disk cache) stays behind existing service boundaries or a flag so web can stub it. `dart:io` inside `lib/core/services/` that a web build will conditionally replace is acceptable; a `Platform.isWindows` inline in a widget is not.
+- **DB access only through DAO methods.** No raw SQL or `db.rawQuery` outside `lib/core/database/dao/` — every DAO method is a future RPC endpoint, so the UI/provider layer must call `dao.method(...)`, never touch the `Database` handle. New DAO method signatures must be JSON-serialisable at the boundary: arguments and returns built from primitives, enums (sent as `.name`/`.value`), `DateTime`, models with `toDb`/`fromDb`, and collections thereof — no callbacks other than the established `_getDatabase` injection, no `Database`/`Transaction` parameters in public signatures, no returning raw `Map` rows where a typed record/model is feasible.
+- **External API calls stay inside `lib/core/api/` clients** (Dio) — never a one-off `http`/`Dio` call from a widget or provider; the proxy phase swaps base URLs in one place.
+- **`dart:ui` / `package:flutter` stay out of models and pure-logic layers** (overlaps R2c) — the server imports these files in a plain Dart VM.
+- **Web-incompatible plugins** (`webview_windows`, window management, gamepad, Discord RPC, file pickers) — any new usage must sit behind a `platform_features.dart` flag, not a bare platform check.
+
+Fix: route the platform check through a flag, move raw SQL into a DAO method, move the HTTP call into the API client. Flag (don't silently accept) anything that would force the selfhost phases to redesign the new code.
 
 **R3 — localisation**
 - Every UI string uses `S.of(context).key` or `final S l = S.of(context);`.

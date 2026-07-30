@@ -21,6 +21,7 @@ import 'package:tonkatsu_box/shared/models/tier_definition.dart';
 import 'package:tonkatsu_box/shared/models/tier_list.dart';
 import 'package:tonkatsu_box/shared/models/tier_list_entry.dart';
 import 'package:tonkatsu_box/core/api/steam_api.dart';
+import 'package:tonkatsu_box/features/statistics/models/library_stats.dart';
 import 'package:tonkatsu_box/shared/models/profile.dart';
 import 'package:tonkatsu_box/shared/models/ra_game_progress.dart';
 import 'package:tonkatsu_box/shared/models/ra_user_profile.dart';
@@ -607,5 +608,31 @@ Tag createTestTag({
     textColor: textColor,
     sortOrder: sortOrder,
     createdAt: createdAt,
+  );
+}
+
+/// An empty statistics payload, for hub/screen tests that only need the
+/// statistics tab to resolve out of its loading state.
+LibraryStats createEmptyLibraryStats({
+  StatsPeriod period = const StatsPeriod.allTime(),
+}) {
+  return LibraryStats(
+    period: period,
+    availableYears: const <int>[],
+    totals: const LibraryTotals.empty(),
+    units: const UnitsWatched.empty(),
+    typeStatus: const <MediaType, Map<ItemStatus, int>>{},
+    likedByType: const <MediaType, int>{},
+    hours: const StatsHours.empty(),
+    months: const <MonthActivity>[],
+    platforms: const <PlatformStats>[],
+    formatsByType: const <MediaType, List<FormatStats>>{},
+    subgenres: const <SubgenreGroup>[],
+    versus: const <VersusPair>[],
+    topRated: const <CollectionItem>[],
+    higherThanCrowd: const <RatingDelta>[],
+    lowerThanCrowd: const <RatingDelta>[],
+    wallItems: const <CollectionItem>[],
+    coversById: const <int, CollectionItem>{},
   );
 }

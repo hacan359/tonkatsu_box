@@ -1,11 +1,3 @@
-// Personalization hub opened from the centre nav button: two views over the
-// whole library — the genre cloud (a taste *picture*) and recommendations
-// (taste *acted on*). The two are switched with a segmented pill (the same
-// switcher style as the item-detail status row); it does not touch the app's
-// primary navigation. Only the selected view is built — both subtrees are
-// heavy, so the hidden one must not cost layout/memory; fetched
-// recommendations survive the switch in their provider, not in the widget.
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -14,9 +6,10 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/segmented_pill.dart';
 import '../../genre_cloud/screens/genre_cloud_screen.dart';
 import '../../recommendations/screens/recommendations_screen.dart';
+import '../../statistics/screens/statistics_screen.dart';
 
 /// Which personalization view is showing.
-enum _PersonalizationView { cloud, recommendations }
+enum _PersonalizationView { stats, cloud, recommendations }
 
 /// Container that switches between the genre cloud and recommendations.
 class PersonalizationScreen extends StatefulWidget {
@@ -28,7 +21,7 @@ class PersonalizationScreen extends StatefulWidget {
 }
 
 class _PersonalizationScreenState extends State<PersonalizationScreen> {
-  _PersonalizationView _view = _PersonalizationView.cloud;
+  _PersonalizationView _view = _PersonalizationView.stats;
 
   @override
   Widget build(BuildContext context) {
@@ -48,13 +41,18 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                 bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
               ),
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
+            // Scrollable: three localized labels outgrow narrow phones.
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: SegmentedPill<_PersonalizationView>(
                 selected: _view,
                 onChanged: (_PersonalizationView v) =>
                     setState(() => _view = v),
                 options: <SegmentedPillOption<_PersonalizationView>>[
+                  SegmentedPillOption<_PersonalizationView>(
+                    value: _PersonalizationView.stats,
+                    label: l.statsTabTitle,
+                  ),
                   SegmentedPillOption<_PersonalizationView>(
                     value: _PersonalizationView.cloud,
                     label: l.personalizationTabCloud,
@@ -69,6 +67,7 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
           ),
           Expanded(
             child: switch (_view) {
+              _PersonalizationView.stats => const StatisticsScreen(),
               _PersonalizationView.cloud =>
                 const GenreCloudScreen(showTitle: false),
               _PersonalizationView.recommendations =>

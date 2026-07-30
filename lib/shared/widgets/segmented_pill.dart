@@ -9,11 +9,16 @@ class SegmentedPillOption<T> {
     required this.value,
     required this.label,
     this.icon,
+    this.color,
   });
 
   final T value;
   final String label;
   final IconData? icon;
+
+  /// Per-option accent (e.g. a media-type color); overrides the pill's
+  /// `selectedColor` and tints the label even when not selected.
+  final Color? color;
 }
 
 /// Rounded "pill" segmented switcher matching the item-detail status row:
@@ -92,7 +97,10 @@ class _Segment<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color fg = isSelected ? selectedColor : AppColors.textTertiary;
+    final Color accent = option.color ?? selectedColor;
+    final Color fg = isSelected
+        ? accent
+        : option.color?.withAlpha(150) ?? AppColors.textTertiary;
     final Widget label = Text(
       option.label,
       maxLines: 1,
@@ -114,7 +122,7 @@ class _Segment<T> extends StatelessWidget {
           horizontal: expand ? AppSpacing.sm : AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? selectedColor.withAlpha(48) : Colors.transparent,
+          color: isSelected ? accent.withAlpha(48) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
         alignment: Alignment.center,

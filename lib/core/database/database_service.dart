@@ -38,6 +38,7 @@ import 'dao/visual_novel_dao.dart';
 import 'dao/mood_grid_dao.dart';
 import 'dao/tier_list_dao.dart';
 import 'dao/calendar_entry_dao.dart';
+import 'dao/stats_dao.dart';
 import 'dao/tracked_release_dao.dart';
 import 'dao/tracker_dao.dart';
 import 'dao/wishlist_dao.dart';
@@ -145,6 +146,10 @@ final Provider<CalendarEntryDao> calendarEntryDaoProvider =
   return ref.watch(databaseServiceProvider).calendarEntryDao;
 });
 
+final Provider<StatsDao> statsDaoProvider = Provider<StatsDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).statsDao;
+});
+
 class DatabaseService {
   static final Logger _log = Logger('DatabaseService');
 
@@ -224,6 +229,8 @@ class DatabaseService {
 
   late final ItemMarkDao itemMarkDao = ItemMarkDao(() => database);
 
+  late final StatsDao statsDao = StatsDao(() => database);
+
   Future<Database> _initDatabase() async {
     final String basePath = (await StorageRoot.resolve()).path;
 
@@ -262,11 +269,8 @@ class DatabaseService {
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
           await db.execute('PRAGMA foreign_keys = ON');
-          // WAL + NORMAL: SQLite-recommended durable-but-fast combo;
-          // commits batch into one fsync per checkpoint instead of
-          // one per write. `journal_mode` returns the resulting mode,
-          // so Android's SQLiteDatabase rejects it via `execute()` —
-          // use `rawQuery` cross-platform.
+          // WAL + NORMAL batches commits into one fsync per checkpoint;
+          // `journal_mode` returns a row, so Android needs rawQuery.
           await db.rawQuery('PRAGMA journal_mode = WAL');
           await db.execute('PRAGMA synchronous = NORMAL');
         },
@@ -332,6 +336,7 @@ class DatabaseService {
     String? originalSnapshot,
     String? forkedFromAuthor,
     String? forkedFromName,
+    DateTime? createdAt,
   }) =>
       collectionDao.createCollection(
         name: name,
@@ -340,6 +345,7 @@ class DatabaseService {
         originalSnapshot: originalSnapshot,
         forkedFromAuthor: forkedFromAuthor,
         forkedFromName: forkedFromName,
+        createdAt: createdAt,
       );
 
   Future<void> updateCollection(
@@ -430,6 +436,7 @@ class DatabaseService {
     DataSource? source,
     String? authorComment,
     ItemStatus status = ItemStatus.notStarted,
+    DateTime? addedAt,
   }) =>
       collectionDao.addItemToCollection(
         collectionId: collectionId,
@@ -439,6 +446,7 @@ class DatabaseService {
         source: source,
         authorComment: authorComment,
         status: status,
+        addedAt: addedAt,
       );
 
   Future<int> getNextSortOrder(int? collectionId) =>
