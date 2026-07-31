@@ -276,6 +276,39 @@ class TvShowDao {
     );
   }
 
+  /// Marks many episodes of one show watched, each with its own timestamp.
+  ///
+  /// One transaction for the whole title — an import expanding a completed
+  /// series would otherwise pay a separate commit per episode.
+  Future<void> markEpisodesWatchedAt(
+    int collectionId,
+    DataSource source,
+    int showId,
+    List<(int seasonNumber, int episodeNumber, int? watchedAtMs)> episodes,
+  ) async {
+    if (episodes.isEmpty) return;
+
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final (int season, int episode, int? watchedAtMs) in episodes) {
+        batch.insert(
+          'watched_episodes',
+          <String, dynamic>{
+            'collection_id': collectionId,
+            'source': source.name,
+            'show_id': showId,
+            'season_number': season,
+            'episode_number': episode,
+            'watched_at': watchedAtMs,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   /// Marks an episode as watched.
   Future<void> markEpisodeWatched(
     int collectionId,

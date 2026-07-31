@@ -15,6 +15,7 @@ import 'package:tonkatsu_box/core/api/kodi_api.dart';
 import 'package:tonkatsu_box/core/api/mangadex_api.dart';
 import 'package:tonkatsu_box/core/api/openlibrary_api.dart';
 import 'package:tonkatsu_box/core/database/dao/mangadex_tag_dao.dart';
+import 'package:tonkatsu_box/core/api/simkl_api.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
 import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
@@ -180,6 +181,8 @@ class MockOpenLibraryApi extends Mock implements OpenLibraryApi {}
 class MockMangaDexTagDao extends Mock implements MangaDexTagDao {}
 
 class MockKitsuApi extends Mock implements KitsuApi {}
+
+class MockSimklApi extends Mock implements SimklApi {}
 
 class MockKodiApi extends Mock implements KodiApi {}
 

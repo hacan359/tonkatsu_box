@@ -18,7 +18,7 @@ import '../../../../shared/models/wishlist_tag.dart';
 import '../../../api/api_error_extract.dart';
 import '../../../api/tmdb_api.dart';
 import '../../../database/database_service.dart';
-import '../../../services/import_service.dart';
+import '../../import_progress.dart';
 import '../../import_source.dart';
 import '../../import_writer.dart';
 import '../../tmdb_matcher.dart';

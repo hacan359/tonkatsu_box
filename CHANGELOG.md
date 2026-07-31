@@ -9,6 +9,92 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Simkl import — movies, TV shows and anime from one account**
+
+  A new import source in Settings → Import. Sign-in is a short code: the app
+  shows a 5-character PIN, you confirm it at simkl.com/pin — no password and
+  no API token to paste — and the screen shows which account got connected
+  before anything is imported, with an optional "stay connected" toggle for
+  next time. One import brings the whole Simkl library: movies, TV shows and
+  anime arrive together with statuses, ratings and notes. Episode history
+  comes over episode-by-episode with the original watch dates, so the episode
+  tracker and the card progress match Simkl right away; the progress panel
+  reports that pass title by title, since a large account takes a while.
+  Anime is matched by
+  id against the anime catalog (no title guessing) and lands with the full
+  episode tracker; Simkl's "on hold" entries arrive as planned with an
+  `on-hold` tag. The usual import controls apply — "only new" or "overwrite"
+  mode, a new or existing target collection — and anything that cannot be
+  matched is kept in the wishlist under the import tag instead of being
+  dropped.
+
+  * lib/core/api/simkl_api.dart (SimklApi, simklApiProvider): New. PIN flow
+    (requestPin, pollPin), getUserSettings, getAllItems.
+  * lib/core/api/simkl/simkl_http_client.dart (SimklHttpClient): New.
+    Transport with app-key + bearer headers, typed 412/401 handling.
+  * lib/core/api/simkl/simkl_types.dart (SimklPin, SimklUser, SimklIds,
+    SimklEntry, SimklSeason, SimklEpisodeMark, SimklAllItems,
+    SimklApiException): New.
+  * lib/core/import/sources/simkl/simkl_import_service.dart
+    (SimklImportService, SimklImportOptions, simklImportServiceProvider,
+    kSimklOnHoldTag): New. TMDB enrichment for movies/shows, Kitsu id
+    resolution for anime, per-episode marks via markEpisodesWatchedAt.
+  * lib/core/api/kitsu/kitsu_mapping_api.dart (KitsuMappingApi): New.
+    /mappings lookup by MyAnimeList / AniDB ids, batched, card included.
+  * lib/core/api/kitsu/kitsu_anime_api.dart (KitsuAnimeApi.getByIds): batched
+    filter[id] card fetch.
+  * lib/core/api/kitsu_api.dart (KitsuApi.getAnimeByIds, getAnimeByMalIds,
+    getAnimeByAnidbIds): New facade methods.
+  * lib/core/api/api_error_extract.dart (extractApiError): SimklApiException
+    case.
+  * lib/core/database/dao/tv_show_dao.dart (TvShowDao.markEpisodesWatchedAt):
+    New. Batched per-episode marks with individual timestamps, one transaction
+    per title instead of a commit per episode.
+  * lib/core/import/import_progress.dart (ImportProgress, ImportStage,
+    ImportProgressCallback): New. Moved out of core/services/import_service.dart
+    (which re-exports them) so the import layer no longer depends on the
+    collection-file importer.
+  * lib/core/import/import_writer.dart (ImportWriteResult.itemIdsByKey,
+    ImportWriteResult.idFor, ImportWriteResult.idsWhere,
+    ImportWriter.writeItems): Return the row ids the write resolved to, so an
+    adapter can tag written items without re-reading the collection.
+  * lib/core/import/sources/hardcover/hardcover_import_service.dart
+    (HardcoverImportService._applyOwnedTag): Take the owned-tag ids from the
+    write result instead of re-reading every item in the collection.
+  * lib/core/import/import_source.dart,
+    lib/core/import/sources/anilist/anilist_import_service.dart,
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart,
+    lib/core/import/sources/igdb_list/igdb_list_import_service.dart,
+    lib/core/import/sources/kinorium/kinorium_import_service.dart,
+    lib/core/import/sources/mal/mal_import_service.dart,
+    lib/core/import/sources/ra/ra_import_service.dart,
+    lib/core/import/sources/steam/steam_import_service.dart,
+    lib/core/import/sources/trakt/trakt_import_service.dart: Import the
+    progress types from the layer, not from core/services/import_service.dart.
+  * lib/features/settings/screens/simkl_import_screen.dart
+    (SimklImportScreen): New.
+  * lib/features/settings/content/simkl_import_content.dart
+    (SimklImportContent): New. PIN block with polling and expiry, connected
+    account row, remember toggles, mode/collection sections, inline progress.
+  * lib/features/settings/screens/settings_screen.dart: Simkl tile in the
+    Import group.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.simklAccessToken, simklRememberToken, simklClientId,
+    simklRememberClientId): New keys.
+  * lib/core/services/config_service.dart: Simkl keys in the config backup
+    round-trip.
+  * lib/shared/constants/api_defaults.dart (ApiDefaults.simklClientId,
+    hasSimklClientId): New.
+  * lib/shared/theme/app_assets.dart (AppAssets.iconSimklColor),
+    assets/images/icon_simkl_color.png: New icon.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb: Simkl strings.
+  * .github/workflows/release.yml: SIMKL_CLIENT_ID dart-define in both build
+    jobs.
+  * docs/ARCHITECTURE.md, lib/core/import/README.md,
+    lib/core/import/sources/simkl/README.md: Simkl on the import layer, the
+    shared progress vocabulary and the written-row ids.
+
 - **Library statistics page — "my library in numbers" — in the personalization hub**
 
   The personalization hub (centre nav button) opens on a new statistics view,

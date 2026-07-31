@@ -5120,4 +5120,82 @@ class SZh extends S {
   String statsShareBest(String title, String rating) {
     return '$title · $rating — 本期最佳';
   }
+
+  @override
+  String get simklImportTitle => 'Simkl 导入';
+
+  @override
+  String get settingsSimklImportSubtitle => '从 Simkl 账户导入电影、剧集和动画';
+
+  @override
+  String get simklImportSubtitle => '使用短代码连接 Simkl 账户——电影、剧集和动画一次导入，并附带剧集观看记录';
+
+  @override
+  String get simklClientIdLabel => 'Simkl 应用密钥（client_id）';
+
+  @override
+  String get simklGetClientId => '在 simkl.com 获取 client_id';
+
+  @override
+  String get simklRememberClientId => '记住应用密钥';
+
+  @override
+  String get simklGetPin => '获取代码';
+
+  @override
+  String get simklGetNewPin => '获取新代码';
+
+  @override
+  String get simklPinPrompt => '在 simkl.com/pin 输入此代码：';
+
+  @override
+  String get simklOpenPinPage => '打开 simkl.com/pin';
+
+  @override
+  String get simklWaitingConfirmation => '等待确认…';
+
+  @override
+  String get simklPinExpired => '代码已过期。';
+
+  @override
+  String simklConnectedAs(String name) {
+    return '已连接账户：$name';
+  }
+
+  @override
+  String get simklCheckingAccount => '正在检查账户…';
+
+  @override
+  String get simklRememberToken => '在此设备上保持连接';
+
+  @override
+  String get simklRememberTokenSubtitle => '访问令牌将保存在设置中；取消勾选则下次需要重新输入代码';
+
+  @override
+  String get simklDisconnect => '断开连接';
+
+  @override
+  String get simklImportFetching => '正在获取 Simkl 媒体库…';
+
+  @override
+  String get simklImportFetchingDetails => '正在获取详情…';
+
+  @override
+  String get simklImportWatchHistory => '正在恢复观看记录…';
+
+  @override
+  String simklImportNewCollectionDefault(String name) {
+    return 'Simkl：$name';
+  }
+
+  @override
+  String get simklImportModeOverwriteSubtitle => '更新现有条目的状态、评分和备注';
+
+  @override
+  String get simklClientIdRequired => '导入需要 Simkl 应用密钥——请输入你的 client_id';
+
+  @override
+  String simklImportRateLimitWait(int seconds, int attempt, int max) {
+    return '已达请求上限——$seconds 秒后重试（第 $attempt/$max 次）';
+  }
 }

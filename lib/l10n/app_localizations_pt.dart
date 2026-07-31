@@ -5451,4 +5451,87 @@ class SPt extends S {
   String statsShareBest(String title, String rating) {
     return '$title · $rating — o melhor do período';
   }
+
+  @override
+  String get simklImportTitle => 'Importação do Simkl';
+
+  @override
+  String get settingsSimklImportSubtitle =>
+      'Filmes, séries e anime da sua conta Simkl';
+
+  @override
+  String get simklImportSubtitle =>
+      'Conecte sua conta Simkl com um código curto — filmes, séries e anime chegam em uma única importação, junto com o histórico de episódios';
+
+  @override
+  String get simklClientIdLabel => 'Chave do app Simkl (client_id)';
+
+  @override
+  String get simklGetClientId => 'Obter um client_id em simkl.com';
+
+  @override
+  String get simklRememberClientId => 'Lembrar a chave do app';
+
+  @override
+  String get simklGetPin => 'Obter código';
+
+  @override
+  String get simklGetNewPin => 'Obter um novo código';
+
+  @override
+  String get simklPinPrompt => 'Digite este código em simkl.com/pin:';
+
+  @override
+  String get simklOpenPinPage => 'Abrir simkl.com/pin';
+
+  @override
+  String get simklWaitingConfirmation => 'Aguardando confirmação…';
+
+  @override
+  String get simklPinExpired => 'O código expirou.';
+
+  @override
+  String simklConnectedAs(String name) {
+    return 'Conta conectada: $name';
+  }
+
+  @override
+  String get simklCheckingAccount => 'Verificando a conta…';
+
+  @override
+  String get simklRememberToken => 'Manter conectado neste dispositivo';
+
+  @override
+  String get simklRememberTokenSubtitle =>
+      'O token de acesso fica salvo nas configurações; sem a opção, o código será pedido novamente';
+
+  @override
+  String get simklDisconnect => 'Desconectar';
+
+  @override
+  String get simklImportFetching => 'Obtendo a biblioteca do Simkl…';
+
+  @override
+  String get simklImportFetchingDetails => 'Obtendo as fichas…';
+
+  @override
+  String get simklImportWatchHistory => 'Restaurando o histórico de exibição…';
+
+  @override
+  String simklImportNewCollectionDefault(String name) {
+    return 'Simkl: $name';
+  }
+
+  @override
+  String get simklImportModeOverwriteSubtitle =>
+      'Atualizar status, nota e comentário dos itens existentes';
+
+  @override
+  String get simklClientIdRequired =>
+      'A importação precisa de uma chave do app Simkl — informe seu client_id';
+
+  @override
+  String simklImportRateLimitWait(int seconds, int attempt, int max) {
+    return 'Limite de requisições atingido — tentando de novo em ${seconds}s (tentativa $attempt/$max)';
+  }
 }

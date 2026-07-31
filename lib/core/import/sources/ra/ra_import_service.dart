@@ -20,9 +20,9 @@ import '../../../api/igdb_api.dart';
 import '../../../api/ra_api.dart';
 import '../../../database/dao/tracker_dao.dart';
 import '../../../database/database_service.dart';
-import '../../../services/import_service.dart';
 import '../../../services/ra_to_igdb_mapper.dart';
 import '../../import_columns.dart';
+import '../../import_progress.dart';
 import '../../import_source.dart';
 import '../../import_writer.dart';
 

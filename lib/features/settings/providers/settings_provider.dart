@@ -80,6 +80,18 @@ abstract class SettingsKeys {
 
   static const String steamRememberCredentials = 'steam_remember_credentials';
 
+  /// Simkl access token from the PIN flow. Persisted only if user opts in
+  /// via the Simkl Import checkbox (the token lives ~forever server-side).
+  static const String simklAccessToken = 'simkl_access_token';
+
+  static const String simklRememberToken = 'simkl_remember_token';
+
+  /// User-provided Simkl client id, overriding the build-time default.
+  /// Entered on the import screen (the Steam pattern); saved by default.
+  static const String simklClientId = 'simkl_client_id';
+
+  static const String simklRememberClientId = 'simkl_remember_client_id';
+
   /// Last AniList username used in import dialog. Persisted on successful import.
   static const String aniListUsername = 'anilist_username';
 

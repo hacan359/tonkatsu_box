@@ -26,9 +26,10 @@ void main() {
 
     when(() => mockCollections.getItems(any()))
         .thenAnswer((_) async => <CollectionItem>[]);
-    when(() => mockCollections.addItemsBatch(any(), any())).thenAnswer(
-        (Invocation i) async =>
-            (i.positionalArguments[1] as List<dynamic>).length);
+    when(() => mockCollections.addItemsBatchReturningIds(any(), any())).thenAnswer(
+        (Invocation i) async => List<int?>.generate(
+            (i.positionalArguments[1] as List<dynamic>).length,
+            (int index) => index + 1));
     when(() => mockCollections.updateItemFieldsBatch(any()))
         .thenAnswer((_) async {});
     when(() => mockWishlist.getAll(
@@ -109,7 +110,7 @@ void main() {
         expect(r.importedByType[MediaType.tvShow], 1);
         expect(r.skipped, 0);
         final List<dynamic> captured =
-            verify(() => mockCollections.addItemsBatch(1, captureAny()))
+            verify(() => mockCollections.addItemsBatchReturningIds(1, captureAny()))
                 .captured;
         expect(captured.single as List<dynamic>, hasLength(2));
       });

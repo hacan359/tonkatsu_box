@@ -53,6 +53,7 @@ jobs:
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
           --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
           --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+          --dart-define=SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
 
       - name: Archive Windows build
         run: |
@@ -109,6 +110,7 @@ jobs:
             --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
             --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
             --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+            --dart-define=SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
           )
           flutter build apk --release "${DEFINES[@]}"
           flutter build apk --release --split-per-abi "${DEFINES[@]}"

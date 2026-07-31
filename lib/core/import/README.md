@@ -8,7 +8,7 @@ adapters (one per source, under `sources/`). The reusable domain pieces —
 collection writing, TMDB matching, rate-limit retry — live at the root and are
 **injected** into adapters, not inherited.
 
-> Status: every importer — **Kinorium, Steam, IGDB lists, Trakt,
+> Status: every importer — **Kinorium, Steam, IGDB lists, Trakt, Simkl,
 > RetroAchievements, MyAnimeList and AniList** — is now an adapter on this
 > layer. The `.xcoll` /
 > `.xcollx` collection-file import (`core/services/import_service.dart`) stays
@@ -20,7 +20,8 @@ collection writing, TMDB matching, rate-limit retry — live at the root and are
 | File | Purpose |
 |---|---|
 | `import_source.dart` | The port: `ImportSource` + `ImportOptions`. Each adapter implements `import(options) → UniversalImportResult` with progress callbacks. |
-| `import_writer.dart` | Shared write-side: resolve-or-create the collection, batch-insert new items, selectively update existing ones (per-source merge policy via a closure), batch-write wishlist fallbacks. Goes through the **repositories**, never the DAOs. |
+| `import_progress.dart` | `ImportProgress` / `ImportStage` / `ImportProgressCallback` — the progress vocabulary shared by the layer and the `.xcoll` importer (which re-exports it for its own callers). |
+| `import_writer.dart` | Shared write-side: resolve-or-create the collection, batch-insert new items, selectively update existing ones (per-source merge policy via a closure), batch-write wishlist fallbacks. Returns the resulting row ids (`itemIdsByKey` / `idFor`) so adapters can act on written items — tags, side-tables — without re-reading the collection. Goes through the **repositories**, never the DAOs. |
 | `tmdb_matcher.dart` | Matches a title against TMDB by name (original + localized query, year then no-year, pick-best, animation-by-genre). For sources whose rows carry no TMDB id. |
 | `rate_limited_retry.dart` | Source-agnostic exponential backoff; the caller decides what counts as a rate limit. |
 | `sources/<name>/` | One adapter per source, each with its own `README.md`. |
@@ -28,8 +29,8 @@ collection writing, TMDB matching, rate-limit retry — live at the root and are
 ## What is shared vs per-source
 
 **Shared (here):** collection resolve/create, batch item write with re-sync
-change detection, wishlist fallback (import tag + text dedup), per-type tallies,
-rate-limit retry, TMDB-by-name matching.
+change detection, written-row ids, wishlist fallback (import tag + text dedup),
+per-type tallies, progress vocabulary, rate-limit retry, TMDB-by-name matching.
 
 **Per-source (in the adapter):** input parsing/fetching (file vs username vs
 token), the matching strategy (TMDB vs IGDB vs AniList — rows may already carry

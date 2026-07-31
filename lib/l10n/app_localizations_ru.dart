@@ -5499,4 +5499,87 @@ class SRu extends S {
   String statsShareBest(String title, String rating) {
     return '$title · $rating — лучшее за период';
   }
+
+  @override
+  String get simklImportTitle => 'Импорт из Simkl';
+
+  @override
+  String get settingsSimklImportSubtitle =>
+      'Фильмы, сериалы и аниме из аккаунта Simkl';
+
+  @override
+  String get simklImportSubtitle =>
+      'Подключите аккаунт Simkl по короткому коду — фильмы, сериалы и аниме приедут одним импортом, вместе с историей просмотра серий';
+
+  @override
+  String get simklClientIdLabel => 'Ключ приложения Simkl (client_id)';
+
+  @override
+  String get simklGetClientId => 'Получить client_id на simkl.com';
+
+  @override
+  String get simklRememberClientId => 'Запомнить ключ приложения';
+
+  @override
+  String get simklGetPin => 'Получить код';
+
+  @override
+  String get simklGetNewPin => 'Получить новый код';
+
+  @override
+  String get simklPinPrompt => 'Введите этот код на simkl.com/pin:';
+
+  @override
+  String get simklOpenPinPage => 'Открыть simkl.com/pin';
+
+  @override
+  String get simklWaitingConfirmation => 'Ждём подтверждения…';
+
+  @override
+  String get simklPinExpired => 'Срок действия кода истёк.';
+
+  @override
+  String simklConnectedAs(String name) {
+    return 'Подключён аккаунт: $name';
+  }
+
+  @override
+  String get simklCheckingAccount => 'Проверяем аккаунт…';
+
+  @override
+  String get simklRememberToken => 'Оставаться подключённым на этом устройстве';
+
+  @override
+  String get simklRememberTokenSubtitle =>
+      'Токен доступа сохранится в настройках; без галки код попросят снова';
+
+  @override
+  String get simklDisconnect => 'Отключить';
+
+  @override
+  String get simklImportFetching => 'Получаем библиотеку Simkl…';
+
+  @override
+  String get simklImportFetchingDetails => 'Получаем карточки…';
+
+  @override
+  String get simklImportWatchHistory => 'Восстанавливаем историю просмотров…';
+
+  @override
+  String simklImportNewCollectionDefault(String name) {
+    return 'Simkl: $name';
+  }
+
+  @override
+  String get simklImportModeOverwriteSubtitle =>
+      'Обновить статус, оценку и заметку у существующих';
+
+  @override
+  String get simklClientIdRequired =>
+      'Для импорта нужен ключ приложения Simkl — укажите client_id';
+
+  @override
+  String simklImportRateLimitWait(int seconds, int attempt, int max) {
+    return 'Достигнут лимит запросов — ждём $seconds сек (попытка $attempt/$max)';
+  }
 }

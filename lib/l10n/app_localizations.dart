@@ -9541,6 +9541,150 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{title} · {rating} — best of the period'**
   String statsShareBest(String title, String rating);
+
+  /// No description provided for @simklImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Simkl Import'**
+  String get simklImportTitle;
+
+  /// No description provided for @settingsSimklImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies, TV shows and anime from your Simkl account'**
+  String get settingsSimklImportSubtitle;
+
+  /// No description provided for @simklImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your Simkl account with a short code — movies, TV shows and anime arrive in one import, together with the episode watch history'**
+  String get simklImportSubtitle;
+
+  /// No description provided for @simklClientIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Simkl app key (client_id)'**
+  String get simklClientIdLabel;
+
+  /// No description provided for @simklGetClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a client_id at simkl.com'**
+  String get simklGetClientId;
+
+  /// No description provided for @simklRememberClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember the app key'**
+  String get simklRememberClientId;
+
+  /// No description provided for @simklGetPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Get code'**
+  String get simklGetPin;
+
+  /// No description provided for @simklGetNewPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a new code'**
+  String get simklGetNewPin;
+
+  /// No description provided for @simklPinPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this code at simkl.com/pin:'**
+  String get simklPinPrompt;
+
+  /// No description provided for @simklOpenPinPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open simkl.com/pin'**
+  String get simklOpenPinPage;
+
+  /// No description provided for @simklWaitingConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for confirmation…'**
+  String get simklWaitingConfirmation;
+
+  /// No description provided for @simklPinExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The code has expired.'**
+  String get simklPinExpired;
+
+  /// No description provided for @simklConnectedAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected account: {name}'**
+  String simklConnectedAs(String name);
+
+  /// No description provided for @simklCheckingAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking account…'**
+  String get simklCheckingAccount;
+
+  /// No description provided for @simklRememberToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay connected on this device'**
+  String get simklRememberToken;
+
+  /// No description provided for @simklRememberTokenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The access token is stored in settings; uncheck to be asked for a code next time'**
+  String get simklRememberTokenSubtitle;
+
+  /// No description provided for @simklDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get simklDisconnect;
+
+  /// No description provided for @simklImportFetching.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching the Simkl library…'**
+  String get simklImportFetching;
+
+  /// No description provided for @simklImportFetchingDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching details…'**
+  String get simklImportFetchingDetails;
+
+  /// No description provided for @simklImportWatchHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring watch history…'**
+  String get simklImportWatchHistory;
+
+  /// No description provided for @simklImportNewCollectionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Simkl: {name}'**
+  String simklImportNewCollectionDefault(String name);
+
+  /// No description provided for @simklImportModeOverwriteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update status, rating and note on existing items'**
+  String get simklImportModeOverwriteSubtitle;
+
+  /// No description provided for @simklClientIdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'The import needs a Simkl app key — enter your client_id'**
+  String get simklClientIdRequired;
+
+  /// No description provided for @simklImportRateLimitWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate limit reached — retrying in {seconds}s (attempt {attempt}/{max})'**
+  String simklImportRateLimitWait(int seconds, int attempt, int max);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
