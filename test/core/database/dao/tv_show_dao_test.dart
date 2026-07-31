@@ -439,6 +439,57 @@ void main() {
       });
     });
 
+    group('markEpisodesWatchedAt', () {
+      test('opens no transaction for an empty list', () async {
+        // The fake throws when transaction() runs unstubbed.
+        await expectLater(
+          dao.markEpisodesWatchedAt(
+            1,
+            DataSource.tmdb,
+            200,
+            const <(int, int, int?)>[],
+          ),
+          completes,
+        );
+      });
+
+      test('batches every row in one transaction', () async {
+        stubTransaction();
+
+        await dao.markEpisodesWatchedAt(
+          1,
+          DataSource.kitsu,
+          6448,
+          const <(int, int, int?)>[
+            (1, 1, 1705320000000),
+            (3, 42, null),
+          ],
+        );
+
+        final VerificationResult captured = verify(
+          () => mockBatch.insert(
+            'watched_episodes',
+            captureAny(),
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          ),
+        );
+        captured.called(2);
+        final Map<String, dynamic> first =
+            captured.captured[0] as Map<String, dynamic>;
+        final Map<String, dynamic> second =
+            captured.captured[1] as Map<String, dynamic>;
+        expect(first['source'], DataSource.kitsu.name);
+        expect(first['show_id'], 6448);
+        expect(first['season_number'], 1);
+        expect(first['episode_number'], 1);
+        expect(first['watched_at'], 1705320000000);
+        expect(second['season_number'], 3);
+        expect(second['episode_number'], 42);
+        expect(second['watched_at'], isNull);
+        verify(() => mockBatch.commit(noResult: true)).called(1);
+      });
+    });
+
     group('markEpisodeWatched', () {
       test('inserts with ignore conflict', () async {
         when(

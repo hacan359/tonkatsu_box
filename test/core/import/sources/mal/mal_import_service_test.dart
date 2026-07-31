@@ -54,9 +54,10 @@ void main() {
         .thenAnswer((_) async => createTestCollection(id: 1));
     when(() => mockRepo.getItems(any()))
         .thenAnswer((_) async => <CollectionItem>[]);
-    when(() => mockRepo.addItemsBatch(any(), any())).thenAnswer(
-        (Invocation inv) async =>
-            (inv.positionalArguments[1] as List<dynamic>).length);
+    when(() => mockRepo.addItemsBatchReturningIds(any(), any())).thenAnswer(
+        (Invocation inv) async => List<int?>.generate(
+            (inv.positionalArguments[1] as List<dynamic>).length,
+            (int index) => index + 1));
     when(() => mockRepo.updateItemFieldsBatch(any())).thenAnswer((_) async {});
     when(() => mockWishlist.getAll(
           includeResolved: any(named: 'includeResolved'),
@@ -317,7 +318,7 @@ void main() {
           );
 
       List<Map<String, dynamic>> capturedItemRows() =>
-          verify(() => mockRepo.addItemsBatch(any(), captureAny()))
+          verify(() => mockRepo.addItemsBatchReturningIds(any(), captureAny()))
               .captured
               .single as List<Map<String, dynamic>>;
 

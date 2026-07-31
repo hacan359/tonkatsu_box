@@ -464,9 +464,10 @@ void main() {
         when(() => mockRepo.getItems(any()))
             .thenAnswer((_) async => <CollectionItem>[]);
 
-        when(() => mockRepo.addItemsBatch(any(), any())).thenAnswer(
-            (Invocation inv) async =>
-                (inv.positionalArguments[1] as List<dynamic>).length);
+        when(() => mockRepo.addItemsBatchReturningIds(any(), any())).thenAnswer(
+            (Invocation inv) async => List<int?>.generate(
+                (inv.positionalArguments[1] as List<dynamic>).length,
+                (int index) => index + 1));
 
         when(() => mockRepo.updateItemFieldsBatch(any()))
             .thenAnswer((_) async {});
@@ -487,7 +488,7 @@ void main() {
       // All insert rows passed to addItemsBatch, flattened across every pass.
       List<Map<String, dynamic>> capturedItemRows() {
         final List<dynamic> calls =
-            verify(() => mockRepo.addItemsBatch(any(), captureAny())).captured;
+            verify(() => mockRepo.addItemsBatchReturningIds(any(), captureAny())).captured;
         return <Map<String, dynamic>>[
           for (final dynamic batch in calls)
             ...(batch as List<dynamic>).cast<Map<String, dynamic>>(),

@@ -54,12 +54,15 @@ class WishlistCandidate {
   final String? note;
 }
 
-/// Per-type tallies for one collection write.
+/// Per-type tallies for one collection write, plus the row ids the write
+/// resolved to — so an adapter can act on the written items (tags, tracker
+/// side-tables) without re-reading the whole collection.
 class ImportWriteResult {
   const ImportWriteResult({
     required this.importedByType,
     required this.updatedByType,
     required this.skipped,
+    this.itemIdsByKey = const <String, int>{},
   });
 
   final Map<MediaType, int> importedByType;
@@ -67,6 +70,23 @@ class ImportWriteResult {
 
   /// Items dropped as in-batch duplicates or as unchanged existing items.
   final int skipped;
+
+  /// `collection_items.id` for every candidate that ended up in the
+  /// collection — freshly inserted and already-present alike — keyed by
+  /// [ImportWriter.itemKey].
+  final Map<String, int> itemIdsByKey;
+
+  /// The row id for one written item, or `null` when it was not written
+  /// (unresolved insert, e.g. a unique-constraint collision).
+  int? idFor(MediaType mediaType, int externalId, int? platformId) =>
+      itemIdsByKey[ImportWriter.itemKey(mediaType, externalId, platformId)];
+
+  /// Row ids of every candidate matching [test]; the common case is "all the
+  /// items this import touched, filtered by some source-side flag".
+  List<int> idsWhere(bool Function(String key) test) => <int>[
+        for (final MapEntry<String, int> e in itemIdsByKey.entries)
+          if (test(e.key)) e.value,
+      ];
 }
 
 /// Shared write-side for importers: resolves the target collection,
@@ -108,6 +128,10 @@ class ImportWriter {
   /// Writes [candidates] to [collectionId]: new items are batch-inserted,
   /// already-present items get the fields their [ImportCandidate.changedFields]
   /// reports (skipped when empty), and in-batch duplicates are dropped.
+  ///
+  /// The result carries the resulting row ids
+  /// ([ImportWriteResult.itemIdsByKey]) for both inserted and pre-existing
+  /// items.
   Future<ImportWriteResult> writeItems({
     required int collectionId,
     required List<ImportCandidate> candidates,
@@ -121,6 +145,9 @@ class ImportWriter {
     final Map<MediaType, int> importedByType = <MediaType, int>{};
     final Map<MediaType, int> updatedByType = <MediaType, int>{};
     final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[];
+    // Keys aligned with [rows], to pair inserted ids back to their candidates.
+    final List<String> insertedKeys = <String>[];
+    final Map<String, int> itemIdsByKey = <String, int>{};
     final List<(int, Map<String, dynamic>)> updates =
         <(int, Map<String, dynamic>)>[];
     final Set<String> seen = <String>{};
@@ -146,10 +173,12 @@ class ImportWriter {
       final CollectionItem? current = existing[key];
       if (current == null) {
         rows.add(candidate.insertRow);
+        insertedKeys.add(key);
         importedByType[candidate.mediaType] =
             (importedByType[candidate.mediaType] ?? 0) + 1;
         importedRunning++;
       } else {
+        itemIdsByKey[key] = current.id;
         final Map<String, dynamic> changed = candidate.changedFields(current);
         if (changed.isEmpty) {
           skipped++;
@@ -165,12 +194,18 @@ class ImportWriter {
           updatedRunning, candidate.label);
     }
 
-    await _collections.addItemsBatch(collectionId, rows);
+    final List<int?> insertedIds =
+        await _collections.addItemsBatchReturningIds(collectionId, rows);
+    for (int i = 0; i < insertedKeys.length && i < insertedIds.length; i++) {
+      final int? id = insertedIds[i];
+      if (id != null) itemIdsByKey[insertedKeys[i]] = id;
+    }
     await _collections.updateItemFieldsBatch(updates);
     return ImportWriteResult(
       importedByType: importedByType,
       updatedByType: updatedByType,
       skipped: skipped,
+      itemIdsByKey: itemIdsByKey,
     );
   }
 

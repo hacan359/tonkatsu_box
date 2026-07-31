@@ -16,8 +16,8 @@ import '../../../../shared/models/universal_import_result.dart';
 import 'package:core/utils/bbcode.dart';
 import '../../../api/hardcover_api.dart';
 import '../../../database/database_service.dart';
-import '../../../services/import_service.dart';
 import '../../import_columns.dart';
+import '../../import_progress.dart';
 import '../../import_source.dart';
 import '../../import_writer.dart';
 import '../anilist/anilist_import_service.dart' show ImportMode;
@@ -66,7 +66,6 @@ class HardcoverImportService implements ImportSource {
     required WishlistRepository wishlistRepository,
   })  : _hardcover = hardcoverApi,
         _db = database,
-        _collections = repository,
         _writer = ImportWriter(
           collections: repository,
           wishlist: wishlistRepository,
@@ -87,7 +86,6 @@ class HardcoverImportService implements ImportSource {
 
   final HardcoverApi _hardcover;
   final DatabaseService _db;
-  final CollectionRepository _collections;
   final ImportWriter _writer;
 
   @override
@@ -167,7 +165,7 @@ class HardcoverImportService implements ImportSource {
       },
     );
 
-    await _applyOwnedTag(collection.id, <int>{
+    await _applyOwnedTag(write, <int>{
       for (final HardcoverUserBookEntry entry in entries)
         if (entry.owned) entry.book.externalIdInt,
     });
@@ -306,19 +304,17 @@ class HardcoverImportService implements ImportSource {
   /// preserved; a flag removed on Hardcover never removes the tag here (it
   /// may have been set by hand).
   Future<void> _applyOwnedTag(
-    int collectionId,
+    ImportWriteResult write,
     Set<int> ownedExternalIds,
   ) async {
     if (ownedExternalIds.isEmpty) return;
 
     final int tagId = await _db.globalTagDao.resolveOrCreate(ownedTagName);
     final List<int> itemIds = <int>[
-      for (final CollectionItem item
-          in await _collections.getItems(collectionId))
-        if (item.mediaType == MediaType.book &&
-            ownedExternalIds.contains(item.externalId))
-          item.id,
+      for (final int externalId in ownedExternalIds)
+        ?write.idFor(MediaType.book, externalId, null),
     ];
+    if (itemIds.isEmpty) return;
     await _db.globalTagDao.addTagToItems(itemIds, tagId);
   }
 

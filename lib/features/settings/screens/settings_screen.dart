@@ -50,6 +50,7 @@ import 'mal_import_screen.dart';
 import 'ra_import_screen.dart';
 import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
+import 'simkl_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'card_banner_debug_screen.dart';
 import 'debug_hub_screen.dart';
@@ -281,6 +282,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.traktTitle,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
+          ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconSimklColor,
+            leadingAssetColored: true,
+            title: l.simklImportTitle,
+            subtitle: l.settingsSimklImportSubtitle,
+            onTap: () => _pushScreen(const SimklImportScreen()),
           ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconKinoriumColor,

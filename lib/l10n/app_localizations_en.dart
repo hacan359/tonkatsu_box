@@ -5401,4 +5401,87 @@ class SEn extends S {
   String statsShareBest(String title, String rating) {
     return '$title · $rating — best of the period';
   }
+
+  @override
+  String get simklImportTitle => 'Simkl Import';
+
+  @override
+  String get settingsSimklImportSubtitle =>
+      'Movies, TV shows and anime from your Simkl account';
+
+  @override
+  String get simklImportSubtitle =>
+      'Connect your Simkl account with a short code — movies, TV shows and anime arrive in one import, together with the episode watch history';
+
+  @override
+  String get simklClientIdLabel => 'Simkl app key (client_id)';
+
+  @override
+  String get simklGetClientId => 'Get a client_id at simkl.com';
+
+  @override
+  String get simklRememberClientId => 'Remember the app key';
+
+  @override
+  String get simklGetPin => 'Get code';
+
+  @override
+  String get simklGetNewPin => 'Get a new code';
+
+  @override
+  String get simklPinPrompt => 'Enter this code at simkl.com/pin:';
+
+  @override
+  String get simklOpenPinPage => 'Open simkl.com/pin';
+
+  @override
+  String get simklWaitingConfirmation => 'Waiting for confirmation…';
+
+  @override
+  String get simklPinExpired => 'The code has expired.';
+
+  @override
+  String simklConnectedAs(String name) {
+    return 'Connected account: $name';
+  }
+
+  @override
+  String get simklCheckingAccount => 'Checking account…';
+
+  @override
+  String get simklRememberToken => 'Stay connected on this device';
+
+  @override
+  String get simklRememberTokenSubtitle =>
+      'The access token is stored in settings; uncheck to be asked for a code next time';
+
+  @override
+  String get simklDisconnect => 'Disconnect';
+
+  @override
+  String get simklImportFetching => 'Fetching the Simkl library…';
+
+  @override
+  String get simklImportFetchingDetails => 'Fetching details…';
+
+  @override
+  String get simklImportWatchHistory => 'Restoring watch history…';
+
+  @override
+  String simklImportNewCollectionDefault(String name) {
+    return 'Simkl: $name';
+  }
+
+  @override
+  String get simklImportModeOverwriteSubtitle =>
+      'Update status, rating and note on existing items';
+
+  @override
+  String get simklClientIdRequired =>
+      'The import needs a Simkl app key — enter your client_id';
+
+  @override
+  String simklImportRateLimitWait(int seconds, int attempt, int max) {
+    return 'Rate limit reached — retrying in ${seconds}s (attempt $attempt/$max)';
+  }
 }

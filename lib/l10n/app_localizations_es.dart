@@ -5469,4 +5469,88 @@ class SEs extends S {
   String statsShareBest(String title, String rating) {
     return '$title · $rating — lo mejor del periodo';
   }
+
+  @override
+  String get simklImportTitle => 'Importación de Simkl';
+
+  @override
+  String get settingsSimklImportSubtitle =>
+      'Películas, series y anime desde tu cuenta de Simkl';
+
+  @override
+  String get simklImportSubtitle =>
+      'Conecta tu cuenta de Simkl con un código corto: películas, series y anime llegan en una sola importación, junto con el historial de episodios';
+
+  @override
+  String get simklClientIdLabel => 'Clave de la app de Simkl (client_id)';
+
+  @override
+  String get simklGetClientId => 'Obtener un client_id en simkl.com';
+
+  @override
+  String get simklRememberClientId => 'Recordar la clave de la app';
+
+  @override
+  String get simklGetPin => 'Obtener código';
+
+  @override
+  String get simklGetNewPin => 'Obtener un código nuevo';
+
+  @override
+  String get simklPinPrompt => 'Introduce este código en simkl.com/pin:';
+
+  @override
+  String get simklOpenPinPage => 'Abrir simkl.com/pin';
+
+  @override
+  String get simklWaitingConfirmation => 'Esperando confirmación…';
+
+  @override
+  String get simklPinExpired => 'El código ha caducado.';
+
+  @override
+  String simklConnectedAs(String name) {
+    return 'Cuenta conectada: $name';
+  }
+
+  @override
+  String get simklCheckingAccount => 'Comprobando la cuenta…';
+
+  @override
+  String get simklRememberToken => 'Mantener la conexión en este dispositivo';
+
+  @override
+  String get simklRememberTokenSubtitle =>
+      'El token de acceso se guarda en los ajustes; sin la casilla se pedirá el código de nuevo';
+
+  @override
+  String get simklDisconnect => 'Desconectar';
+
+  @override
+  String get simklImportFetching => 'Obteniendo la biblioteca de Simkl…';
+
+  @override
+  String get simklImportFetchingDetails => 'Obteniendo fichas…';
+
+  @override
+  String get simklImportWatchHistory =>
+      'Restaurando el historial de visualización…';
+
+  @override
+  String simklImportNewCollectionDefault(String name) {
+    return 'Simkl: $name';
+  }
+
+  @override
+  String get simklImportModeOverwriteSubtitle =>
+      'Actualizar estado, nota y comentario de los existentes';
+
+  @override
+  String get simklClientIdRequired =>
+      'La importación necesita una clave de la app de Simkl: introduce tu client_id';
+
+  @override
+  String simklImportRateLimitWait(int seconds, int attempt, int max) {
+    return 'Límite de peticiones alcanzado: reintento en $seconds s (intento $attempt/$max)';
+  }
 }

@@ -16,8 +16,8 @@ import '../../../../shared/models/universal_import_result.dart';
 import '../../../database/dao/global_tag_dao.dart';
 import '../../../database/database_service.dart';
 import '../../../services/image_cache_service.dart';
-import '../../../services/import_service.dart';
 import '../../import_columns.dart';
+import '../../import_progress.dart';
 import 'custom_card_entry.dart';
 import 'custom_cards_parser.dart';
 

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:dio/dio.dart';
 
 import '../../../shared/models/anime.dart';
@@ -45,6 +47,34 @@ class KitsuAnimeApi {
     } on DioException catch (e) {
       throw _client.handleDioException(e, 'Failed to search Kitsu');
     }
+  }
+
+  /// Kitsu rejects `page[limit]` above 20 with a 400.
+  static const int _batchLimit = 20;
+
+  /// Fetches cards for a list of Kitsu ids (`filter[id]` accepts a comma
+  /// list), batched by the page cap. Unknown ids are silently absent.
+  Future<List<Anime>> getByIds(List<int> ids) async {
+    final List<Anime> out = <Anime>[];
+    for (int i = 0; i < ids.length; i += _batchLimit) {
+      final List<int> batch =
+          ids.sublist(i, math.min(i + _batchLimit, ids.length));
+      try {
+        final Response<dynamic> resp = await _client.get(
+          'anime',
+          queryParameters: <String, dynamic>{
+            'filter[id]': batch.join(','),
+            'page[limit]': _batchLimit,
+          },
+        );
+        final Map<String, dynamic> data =
+            (resp.data as Map<String, dynamic>?) ?? <String, dynamic>{};
+        out.addAll(_parse((data['data'] as List<dynamic>?) ?? <dynamic>[]));
+      } on DioException catch (e) {
+        throw _client.handleDioException(e, 'Failed to load anime from Kitsu');
+      }
+    }
+    return out;
   }
 
   Future<Anime?> getById(int id) async {
