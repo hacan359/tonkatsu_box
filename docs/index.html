@@ -7,7 +7,7 @@
   <!-- SEO Meta Tags -->
   <title>Tonkatsu Box — Organize Games, Movies, TV Shows, Anime, Manga, Visual Novels & Books</title>
   <meta name="description" content="Free open-source app to build and manage collections of retro games, movies, TV shows, anime, manga, visual novels, and books. Track progress, rate favorites, create tier lists, visual boards, and share with friends. Windows, Linux, macOS & Android.">
-  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, book tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, ComicVine, Google Books, Hardcover, Trakt import, Steam import, Kinorium import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
+  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, book tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, TVmaze, VNDB, AniList, MangaBaka, MangaDex, Kitsu, OpenLibrary, Fantlab, ComicVine, Google Books, Hardcover, Trakt import, Simkl import, Steam import, Kinorium import, RetroAchievements import, MyAnimeList import, AniList import, Hardcover import, ScreenScraper, library statistics, collection app, backlog tracker, game library, Flutter app, open source">
   <meta name="author" content="hacan359">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://hacan359.github.io/tonkatsu_box/">
@@ -539,6 +539,7 @@
     .feature-card--board  { --accent: var(--custom); }
     .feature-card--tier   { --accent: var(--status-planned); }
     .feature-card--lang   { --accent: var(--status-progress); }
+    .feature-card--stats  { --accent: var(--anime); }
 
     .feature-card__icon {
       width: 48px;
@@ -1192,6 +1193,14 @@
           </div>
         </div>
 
+        <div class="feature-card feature-card--stats reveal">
+          <div class="feature-card__icon">📈</div>
+          <h3 class="feature-card__title" data-i18n="feat_stats_title">Your Library in Numbers</h3>
+          <p class="feature-card__desc" data-i18n="feat_stats_desc">
+            Episodes, chapters, pages and hours you got through, a status breakdown per media type, a month-by-month ribbon, platforms, formats, tags, best against worst — for all time or a single year, with a share card to export.
+          </p>
+        </div>
+
         <div class="feature-card feature-card--book reveal">
           <div class="feature-card__icon">📚</div>
           <h3 class="feature-card__title" data-i18n="feat_books_title">Books & Reading</h3>
@@ -1212,7 +1221,7 @@
           <div class="feature-card__icon">📤</div>
           <h3 class="feature-card__title" data-i18n="feat_share_title">Import & Share</h3>
           <p class="feature-card__desc" data-i18n="feat_share_desc">
-            Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.
+            Import from Simkl, Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, Hardcover, an IGDB list or Kinorium. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.
           </p>
         </div>
 
@@ -1322,11 +1331,32 @@
         <div class="section-label" data-i18n="sharing_label">Import & Share</div>
         <h2 class="section-title" data-i18n="sharing_title">Import &amp; share your taste</h2>
         <p class="section-subtitle" data-i18n="sharing_subtitle">
-          Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium, export your collections, and share with friends.
+          Import from Simkl, Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, Hardcover or Kinorium, export your collections, and share with friends.
         </p>
       </div>
 
       <div class="formats reveal">
+        <div class="format-card">
+          <div class="format-card__ext">Simkl</div>
+          <div class="format-card__name" data-i18n="format_simkl_name">Simkl Import</div>
+          <p class="format-card__desc" data-i18n="format_simkl_desc">
+            Sign in with a short code and bring movies, TV shows and anime from one Simkl account, together with the episode watch history and its original dates.
+          </p>
+        </div>
+        <div class="format-card">
+          <div class="format-card__ext">Steam</div>
+          <div class="format-card__name" data-i18n="format_steam_name">Steam Import</div>
+          <p class="format-card__desc" data-i18n="format_steam_desc">
+            Import your owned games with playtime and the last played date, matched against IGDB.
+          </p>
+        </div>
+        <div class="format-card">
+          <div class="format-card__ext">Hardcover</div>
+          <div class="format-card__name" data-i18n="format_hardcover_name">Hardcover Import</div>
+          <p class="format-card__desc" data-i18n="format_hardcover_desc">
+            Import a book library by username — statuses, ratings, dates and re-reads, graphic novels included.
+          </p>
+        </div>
         <div class="format-card">
           <div class="format-card__ext">Trakt.tv</div>
           <div class="format-card__name" data-i18n="format_trakt_name">Trakt Import</div>
@@ -1613,12 +1643,14 @@
         status_completed: 'Completed',
         status_planned: 'Planned',
         status_dropped: 'Dropped',
+        feat_stats_title: 'Your Library in Numbers',
+        feat_stats_desc: 'Episodes, chapters, pages and hours you got through, a status breakdown per media type, a month-by-month ribbon, platforms, formats, tags, best against worst — for all time or a single year, with a share card to export.',
         feat_books_title: 'Books & Reading',
         feat_books_desc: 'Search books on OpenLibrary, Fantlab, Google Books, and Hardcover, and comics on ComicVine — track your reading and organize novels and series alongside the rest of your collection.',
         feat_boards_title: 'Visual Boards',
         feat_boards_desc: 'Arrange posters on a free-form canvas. Add text notes, images, and links. Draw connections between items. Browse artwork from SteamGridDB.',
         feat_share_title: 'Import & Share',
-        feat_share_desc: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.',
+        feat_share_desc: 'Import from Simkl, Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, Hardcover, an IGDB list or Kinorium. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.',
         feat_rate_title: 'Rate & Review',
         feat_rate_desc: 'Rate every title from 1–10 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.',
         feat_tier_title: 'Tier Lists',
@@ -1636,7 +1668,13 @@
         step3_desc: 'Want to use your own API keys? Register for free at <strong>IGDB</strong>, <strong>TMDB</strong>, or <strong>SteamGridDB</strong> and enter them in Settings. Completely optional — everything works without them.',
         sharing_label: 'Import & Share',
         sharing_title: 'Import &amp; share your taste',
-        sharing_subtitle: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, or Kinorium, export your collections, and share with friends.',
+        sharing_subtitle: 'Import from Simkl, Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, Hardcover or Kinorium, export your collections, and share with friends.',
+        format_simkl_name: 'Simkl Import',
+        format_simkl_desc: 'Sign in with a short code and bring movies, TV shows and anime from one Simkl account, together with the episode watch history and its original dates.',
+        format_steam_name: 'Steam Import',
+        format_steam_desc: 'Import your owned games with playtime and the last played date, matched against IGDB.',
+        format_hardcover_name: 'Hardcover Import',
+        format_hardcover_desc: 'Import a book library by username — statuses, ratings, dates and re-reads, graphic novels included.',
         format_trakt_name: 'Trakt Import',
         format_trakt_desc: 'Import watched movies, shows, ratings, and watchlist from your Trakt.tv ZIP data export.',
         format_ra_name: 'RA Import',
@@ -1719,12 +1757,14 @@
         status_completed: 'Пройдено',
         status_planned: 'Отложено',
         status_dropped: 'Брошено',
+        feat_stats_title: 'Библиотека в цифрах',
+        feat_stats_desc: 'Серии, главы, страницы и часы, разбивка по статусам для каждого типа медиа, лента по месяцам, платформы, форматы, теги, лучшее против худшего — за всё время или за один год, с карточкой итогов на экспорт.',
         feat_books_title: 'Книги',
         feat_books_desc: 'Ищите книги в OpenLibrary, Fantlab, Google Books и Hardcover, а комиксы — в ComicVine, отслеживайте чтение и организуйте романы и циклы вместе с остальной коллекцией.',
         feat_boards_title: 'Визуальные доски',
         feat_boards_desc: 'Расставляйте постеры на свободном холсте. Добавляйте заметки, изображения и ссылки. Рисуйте связи между элементами. Арты из SteamGridDB.',
         feat_share_title: 'Импорт и шаринг',
-        feat_share_desc: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList или Kinorium. Делитесь коллекциями через <code>.xcoll</code> и <code>.xcollx</code>. Друзья могут импортировать и форкнуть.',
+        feat_share_desc: 'Импорт из Simkl, Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, Hardcover, списка IGDB или Kinorium. Делитесь коллекциями через <code>.xcoll</code> и <code>.xcollx</code>. Друзья могут импортировать и форкнуть.',
         feat_rate_title: 'Оценки и отзывы',
         feat_rate_desc: 'Оценивайте от 1 до 10 звёзд. Пишите личные заметки и рецензии, видимые при экспорте. Отслеживайте даты начала и окончания.',
         feat_tier_title: 'Тир-листы',
@@ -1742,7 +1782,13 @@
         step3_desc: 'Хотите использовать свои ключи? Зарегистрируйтесь бесплатно на <strong>IGDB</strong>, <strong>TMDB</strong> или <strong>SteamGridDB</strong> и введите их в Настройках. Полностью опционально — всё работает и без них.',
         sharing_label: 'Импорт и шаринг',
         sharing_title: 'Импорт и обмен',
-        sharing_subtitle: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList или Kinorium, экспорт коллекций и обмен с друзьями.',
+        sharing_subtitle: 'Импорт из Simkl, Steam, Trakt.tv, RetroAchievements, MyAnimeList, AniList, Hardcover или Kinorium, экспорт коллекций и обмен с друзьями.',
+        format_simkl_name: 'Импорт Simkl',
+        format_simkl_desc: 'Войдите по короткому коду и заберите фильмы, сериалы и аниме из одного аккаунта Simkl вместе с историей просмотра серий и её датами.',
+        format_steam_name: 'Импорт Steam',
+        format_steam_desc: 'Импортируйте купленные игры с наигранным временем и датой последнего запуска, сопоставленные с IGDB.',
+        format_hardcover_name: 'Импорт Hardcover',
+        format_hardcover_desc: 'Импортируйте книжную библиотеку по нику — статусы, оценки, даты и перечитывания, включая графические романы.',
         format_trakt_name: 'Импорт Trakt',
         format_trakt_desc: 'Импортируйте просмотренные фильмы, сериалы, оценки и вишлист из ZIP-выгрузки Trakt.tv.',
         format_ra_name: 'Импорт RA',
