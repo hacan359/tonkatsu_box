@@ -5258,14 +5258,6 @@ class SPt extends S {
   String get statsPeriodAllTime => 'Todo o período';
 
   @override
-  String statsEyebrowYear(int year) {
-    return 'Retrospectiva · $year';
-  }
-
-  @override
-  String get statsEyebrowAllTime => 'Biblioteca em números';
-
-  @override
   String statsLede(String items) {
     return 'No total, $items itens na sua coleção';
   }
@@ -5353,9 +5345,6 @@ class SPt extends S {
   String get statsHoursUnit => 'h';
 
   @override
-  String get statsGamesUnit => 'jogos';
-
-  @override
   String get statsTypesTitle => 'Biblioteca por tipo';
 
   @override
@@ -5374,26 +5363,10 @@ class SPt extends S {
   String get statsFormatsHint => 'o formato vem dos dados da fonte';
 
   @override
-  String get statsTitlesUnit => 'títulos';
-
-  @override
   String get statsSubgenresTitle => 'Subgêneros e tags';
 
   @override
-  String get statsSubgenresHint =>
-      'as tags da fonte são exibidas por tipo — os vocabulários diferem';
-
-  @override
-  String statsSubgenresTitles(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count títulos',
-      one: '1 título',
-      zero: 'nenhum título',
-    );
-    return '$_temp0';
-  }
+  String get statsSubgenresHint => 'as tags da fonte são exibidas por tipo';
 
   @override
   String get statsCrowdTitle => 'Eu contra todos';

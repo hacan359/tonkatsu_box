@@ -7,6 +7,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../layout/stats_layout_scope.dart';
 import 'stats_poster.dart';
 
 /// Locale-aware thousands-separated number format for the stats sections.
@@ -31,7 +32,7 @@ extension StatusCountsX on Map<ItemStatus, int> {
 }
 
 /// The standard stats surface card; [highlightColor] marks the leading card
-/// of a group (top platform / top format) with a stronger accent border.
+/// of a group. Inner padding comes from the page's layout spec.
 class StatsCard extends StatelessWidget {
   /// Creates the card shell.
   const StatsCard({required this.child, this.highlightColor, super.key});
@@ -46,7 +47,7 @@ class StatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: StatsLayoutScope.of(context).cardPadding,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),

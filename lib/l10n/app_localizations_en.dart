@@ -5209,14 +5209,6 @@ class SEn extends S {
   String get statsPeriodAllTime => 'All time';
 
   @override
-  String statsEyebrowYear(int year) {
-    return 'Year in review · $year';
-  }
-
-  @override
-  String get statsEyebrowAllTime => 'Library in review';
-
-  @override
   String statsLede(String items) {
     return 'Total $items items in your collection';
   }
@@ -5304,9 +5296,6 @@ class SEn extends S {
   String get statsHoursUnit => 'h';
 
   @override
-  String get statsGamesUnit => 'games';
-
-  @override
   String get statsTypesTitle => 'Library by type';
 
   @override
@@ -5324,26 +5313,10 @@ class SEn extends S {
   String get statsFormatsHint => 'format comes from the source data';
 
   @override
-  String get statsTitlesUnit => 'titles';
-
-  @override
   String get statsSubgenresTitle => 'Subgenres and tags';
 
   @override
-  String get statsSubgenresHint =>
-      'source tags are shown per type — vocabularies differ';
-
-  @override
-  String statsSubgenresTitles(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count titles',
-      one: '1 title',
-      zero: 'no titles',
-    );
-    return '$_temp0';
-  }
+  String get statsSubgenresHint => 'source tags are shown per type';
 
   @override
   String get statsCrowdTitle => 'Me vs the crowd';

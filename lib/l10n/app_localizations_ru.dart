@@ -5305,14 +5305,6 @@ class SRu extends S {
   String get statsPeriodAllTime => 'Всё время';
 
   @override
-  String statsEyebrowYear(int year) {
-    return 'Итоги года · $year';
-  }
-
-  @override
-  String get statsEyebrowAllTime => 'Библиотека в цифрах';
-
-  @override
   String statsLede(String items) {
     return 'Всего $items элементов в вашей коллекции';
   }
@@ -5400,9 +5392,6 @@ class SRu extends S {
   String get statsHoursUnit => 'ч';
 
   @override
-  String get statsGamesUnit => 'игр';
-
-  @override
   String get statsTypesTitle => 'По типам медиа';
 
   @override
@@ -5420,27 +5409,10 @@ class SRu extends S {
   String get statsFormatsHint => 'формат — из данных источника';
 
   @override
-  String get statsTitlesUnit => 'тайтлов';
-
-  @override
   String get statsSubgenresTitle => 'Сабжанры и теги';
 
   @override
-  String get statsSubgenresHint =>
-      'теги источника показаны по типам — словари не смешиваются';
-
-  @override
-  String statsSubgenresTitles(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count тайтлов',
-      few: '$count тайтла',
-      one: '$count тайтл',
-      zero: 'нет тайтлов',
-    );
-    return '$_temp0';
-  }
+  String get statsSubgenresHint => 'теги источника показаны по типам';
 
   @override
   String get statsCrowdTitle => 'Я против всех';

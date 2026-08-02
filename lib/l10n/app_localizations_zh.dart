@@ -4937,14 +4937,6 @@ class SZh extends S {
   String get statsPeriodAllTime => '全部时间';
 
   @override
-  String statsEyebrowYear(int year) {
-    return '年度回顾 · $year';
-  }
-
-  @override
-  String get statsEyebrowAllTime => '数字中的媒体库';
-
-  @override
   String statsLede(String items) {
     return '收藏中共有 $items 个条目';
   }
@@ -5032,9 +5024,6 @@ class SZh extends S {
   String get statsHoursUnit => '小时';
 
   @override
-  String get statsGamesUnit => '款';
-
-  @override
   String get statsTypesTitle => '按媒体类型';
 
   @override
@@ -5052,18 +5041,10 @@ class SZh extends S {
   String get statsFormatsHint => '形式来自数据源';
 
   @override
-  String get statsTitlesUnit => '部';
-
-  @override
   String get statsSubgenresTitle => '子类型与标签';
 
   @override
-  String get statsSubgenresHint => '数据源标签按类型展示——词表互不相同';
-
-  @override
-  String statsSubgenresTitles(int count) {
-    return '$count 部作品';
-  }
+  String get statsSubgenresHint => '数据源标签按类型展示';
 
   @override
   String get statsCrowdTitle => '我 vs 大众';

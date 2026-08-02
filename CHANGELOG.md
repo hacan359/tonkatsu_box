@@ -141,9 +141,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 - **Library statistics page — "my library in numbers" — in the personalization hub**
 
   The personalization hub (centre nav button) opens on a new statistics view,
-  next to the genre cloud and recommendations. Underline tabs switch between
-  all time and a calendar year. The hero shows the item total over a cover
-  wall, library-wide consumption counters (episodes, chapters, pages, hours
+  next to the genre cloud and recommendations. A dropdown across from the
+  headline switches between all time and a calendar year. The hero shows the
+  item total over a cover wall, library-wide consumption counters (episodes, chapters, pages, hours
   split into manual / tracker / runtime-estimated, average rating, replays,
   liked episodes), then the page breaks the library down block by block:
   per-media-type cards with a live status bar and completion percent, a
@@ -156,6 +156,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   computed in SQL over the local timezone — no window functions, so it runs
   on old Android SQLite — and only the few dozen items that show covers are
   hydrated.
+
+  The page has a phone layout of its own rather than a squeezed desktop one:
+  wide and narrow build the same sections from the same models but out of
+  separate files, so each can lay them out its own way. On a phone the hero
+  metrics form a two-column grid instead of a ragged wrap, the activity ribbon
+  loses its hover arrows and bleeds to the screen edges, gaps and card padding
+  tighten, and the platform and format cards trade their cover strips for a
+  second column. On desktop the page fills the window instead of a centred
+  1240px column, and the section grids gain columns as the window grows
+  instead of inflating their cards. Sections with no data are dropped outright
+  rather than collapsing to zero height and leaving their gap behind.
 
   * lib/core/database/dao/stats_dao.dart (StatsDao): New. SQL aggregates:
     getTypeStatusCounts, getGamePlatformStatusCounts, getRewatchSum,
@@ -175,18 +186,51 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     Fetches the independent aggregates in parallel batches, then hydrates
     covers in one pass.
   * lib/features/statistics/screens/statistics_screen.dart (StatisticsScreen,
-    _PeriodTab): New. Period tabs, section list, empty state, offscreen
-    share-card export.
-  * lib/features/statistics/widgets/stats_hero.dart (StatsHero),
-    stats_types_section.dart (StatsTypesSection), stats_months_ribbon.dart
-    (StatsMonthsRibbon), stats_month_detail_dialog.dart
+    _StatisticsScreenState._buildPage, _StatisticsScreenState._buildPeriodPicker):
+    New. Owns the provider, the period picker and the PNG export, and picks the
+    wide or the phone page by measured content width — a LayoutBuilder rather
+    than MediaQuery, because the nav shell makes the window width overstate the
+    room the sections get.
+  * lib/features/statistics/views/statistics_view_desktop.dart
+    (StatisticsViewDesktop), statistics_view_mobile.dart
+    (StatisticsViewMobile), stats_sections.dart (statsSectionsAfterMonths):
+    New. One file per form factor, sharing the section list that does not
+    differ between them.
+  * lib/features/statistics/layout/stats_layout.dart (StatsLayout),
+    stats_layout_desktop.dart (kStatsLayoutDesktop), stats_layout_mobile.dart
+    (kStatsLayoutMobile), stats_layout_scope.dart (StatsLayoutScope,
+    kStatsMobileBreakpoint): New. The numbers a section cannot derive from its
+    own constraints — gaps, card padding, grid column bounds, whether cards
+    show their cover strip — with one file per form factor.
+  * lib/features/statistics/widgets/stats_hero_common.dart (StatsHeroMetric,
+    statsHeroMetrics, StatsHeroWall, StatsHeroMetricTile, StatsHoursBreakdown),
+    stats_hero_desktop.dart (StatsHeroDesktop), stats_hero_mobile.dart
+    (StatsHeroMobile), stats_months_common.dart (StatsMonthColumn,
+    statsMonthsPeak, statsMonthRowHeight), stats_months_ribbon_desktop.dart
+    (StatsMonthsRibbonDesktop), stats_months_ribbon_mobile.dart
+    (StatsMonthsRibbonMobile): New, replacing stats_hero.dart and
+    stats_months_ribbon.dart. The headline count sits in a FittedBox, so a
+    narrow phone scales it down instead of ellipsizing it away.
+  * lib/features/statistics/widgets/stats_period_picker.dart
+    (StatsPeriodPicker, StatsPeriodPickerData): New. A dropdown in the hero
+    across from the headline; a tab row cost a whole band of the page and grew
+    with every year in the library.
+  * lib/features/statistics/widgets/stats_types_section.dart
+    (StatsTypesSection), stats_month_detail_dialog.dart
     (StatsMonthDetailDialog), stats_platforms_section.dart
     (StatsPlatformsSection), stats_formats_section.dart (StatsFormatsSection),
     stats_subgenres_section.dart (StatsSubgenresSection),
     stats_versus_section.dart (StatsVersusSection), stats_crowd_section.dart
     (StatsCrowdSection), stats_share_card.dart (StatsShareCard),
     stats_poster.dart (StatsPoster), stats_section_header.dart
-    (StatsSectionHeader): New section widgets.
+    (StatsSectionHeader), stats_cards.dart (StatsCard, StatusSplitBar,
+    StatsTopCoversRow, StatsLegendDot): New section widgets; the grid sections
+    and the card shell take their column bounds and padding from StatsLayout.
+  * lib/features/statistics/models/library_stats.dart
+    (LibraryStats.hasTypeBreakdown, LibraryStats.hasMonthActivity,
+    LibraryStats.hasCrowdDeltas, LibraryStats.hasFormats): New presence checks
+    so the page can leave an empty section out instead of mounting one that
+    collapses and still takes the gap after it.
   * lib/core/database/dao/collection_dao.dart
     (CollectionDao.getItemsWithDataByRowIds): New hydration of items by row
     ids, so aggregate screens load only what they show.
@@ -194,7 +238,12 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     DatabaseService.statsDao): Wire up the DAO.
   * lib/features/personalization/screens/personalization_screen.dart
     (PersonalizationScreen): Statistics becomes the hub's default view; the
-    view switcher pill scrolls horizontally so it fits narrow phones.
+    view switcher is a full-width FlatTabBar splitting the header into equal
+    blocks, replacing a rounded pill that hugged its content and read as a
+    fragment of an empty band.
+  * lib/shared/widgets/flat_tab_bar.dart (FlatTabBar, FlatTabOption): New.
+    Edge-to-edge switcher with no container of its own, for a page's own tab
+    row — unlike SegmentedPill, which suits a toolbar beside other controls.
   * lib/shared/constants/media_type_ui.dart (MediaTypeUi.localizedPluralLabel):
     New plural type labels reused as section titles.
   * lib/l10n/app_en.arb, app_ru.arb, app_zh.arb, app_es.arb, app_fr.arb,
@@ -290,6 +339,41 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * test/shared/widgets/logo_loader_test.dart: New.
 
 ### Changed
+
+- **Rainbow highlight on the centre navigation button**
+
+  The centre button opens the whole library — statistics, genre cloud and
+  recommendations — but its highlight was the same flat orange as every other
+  tab, so it did not read as different. It now fills with the media-type
+  accents run around the circle.
+
+  * lib/shared/constants/media_type_theme.dart (MediaTypeTheme.rainbowSweep):
+    New. Every accent sorted by hue with the first repeated at the end, since
+    a SweepGradient meets a hard seam otherwise. Sorted rather than written
+    out by hand so a new media type places itself.
+  * lib/shared/navigation/liquid_indicator.dart (LiquidIndicator.rainbow,
+    _LiquidIndicatorState.build): Paint the sweep instead of the flat brand
+    fill, cross-faded over the same slide so the colour does not snap halfway
+    between the centre button and a tab. Russian comments translated.
+  * lib/shared/navigation/app_sidebar.dart (AppSidebar),
+    lib/shared/navigation/app_bottom_bar.dart (AppBottomBar): Turn the rainbow
+    on while the centre button is the active destination.
+  * test/shared/constants/media_type_theme_test.dart: Sweep closes the loop,
+    covers every media type, and runs in hue order.
+
+- **Genre cloud legends fit on one scrolling row**
+
+  The facet and media-type legends wrapped, so on a phone every extra media
+  type stole another line from the cloud itself. They are one fixed-height row
+  each now, scrolled by swipe on mobile and by the usual hover arrows, wheel
+  or click-drag on desktop, and they run to the screen edges.
+
+  * lib/features/genre_cloud/screens/genre_cloud_screen.dart (_ChipRow,
+    _ChipRowState): Wrap replaced by ScrollableRowWithArrows, matching the
+    collection chips and subfilter rows. The page inset moved into the scroll
+    view's content padding so the chips scroll out to the edges.
+  * test/features/genre_cloud/genre_cloud_screen_test.dart: The cloud's top
+    edge does not move as media types are added.
 
 - **Move DAO query infrastructure and pure-Dart utils into the `core` package**
 

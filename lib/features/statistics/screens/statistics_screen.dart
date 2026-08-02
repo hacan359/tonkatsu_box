@@ -4,31 +4,27 @@ import 'package:logging/logging.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/services/png_export_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/logo_loader.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../layout/stats_layout_scope.dart';
 import '../models/library_stats.dart';
 import '../providers/statistics_provider.dart';
-import '../widgets/stats_crowd_section.dart';
-import '../widgets/stats_formats_section.dart';
-import '../widgets/stats_hero.dart';
-import '../widgets/stats_months_ribbon.dart';
-import '../widgets/stats_platforms_section.dart';
+import '../views/statistics_view_desktop.dart';
+import '../views/statistics_view_mobile.dart';
+import '../widgets/stats_period_picker.dart';
 import '../widgets/stats_share_card.dart';
-import '../widgets/stats_subgenres_section.dart';
-import '../widgets/stats_types_section.dart';
-import '../widgets/stats_versus_section.dart';
 
 final Logger _log = Logger('StatisticsScreen');
 
 /// How many recent years the period picker offers besides "all time".
 const int _maxYearOptions = 5;
 
-/// The statistics tab of the personalization hub.
+/// The statistics tab. Owns the form-factor-independent parts — provider,
+/// period picker, PNG export — and hands the payload to one of the two pages.
 class StatisticsScreen extends ConsumerStatefulWidget {
   /// Creates the statistics screen.
   const StatisticsScreen({super.key});
@@ -106,66 +102,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       ),
       data: (LibraryStats stats) => Stack(
         children: <Widget>[
-          Positioned.fill(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xl * 2),
-              child: Center(
-                child: ConstrainedBox(
-                  // The mockup page column: sections never stretch edge to
-                  // edge on a wide desktop window.
-                  constraints: const BoxConstraints(maxWidth: 1240),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                        // No horizontal inset: the tabs line up with the
-                        // full-bleed hero panel right below them.
-                        padding: const EdgeInsets.only(top: AppSpacing.md),
-                        child: _buildToolbar(l, stats),
-                      ),
-                      if (stats.isEmpty)
-                        _buildEmptyState(l)
-                      else ...<Widget>[
-                        StatsHero(stats: stats),
-                        for (final Widget section in <Widget>[
-                          StatsTypesSection(stats: stats),
-                          StatsMonthsRibbon(stats: stats),
-                          StatsVersusSection(
-                            pairs: stats.versus,
-                            titleLanguage: titleLanguage,
-                          ),
-                          StatsPlatformsSection(stats: stats),
-                          StatsFormatsSection(
-                            stats: stats,
-                            mediaType: MediaType.anime,
-                          ),
-                          StatsFormatsSection(
-                            stats: stats,
-                            mediaType: MediaType.manga,
-                          ),
-                          StatsSubgenresSection(stats: stats),
-                          StatsCrowdSection(
-                            stats: stats,
-                            titleLanguage: titleLanguage,
-                          ),
-                        ])
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.md,
-                              0,
-                              AppSpacing.md,
-                              AppSpacing.xl + AppSpacing.lg,
-                            ),
-                            child: section,
-                          ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Offscreen share card, mounted only during export.
+          Positioned.fill(child: _buildPage(l, stats, titleLanguage)),
+          // Outside the page, so the export keeps its fixed width whichever
+          // layout is showing.
           if (_exporting)
             Positioned(
               left: -10000,
@@ -184,47 +123,72 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     );
   }
 
-  Widget _buildToolbar(S l, LibraryStats stats) {
-    final StatsPeriod period = ref.watch(statsPeriodProvider);
-    final List<int> years =
-        stats.availableYears.take(_maxYearOptions).toList();
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            // No horizontal padding inside the tabs: the first label sits
-            // flush with the section content below.
-            child: Row(
-              spacing: AppSpacing.lg,
-              children: <Widget>[
-                _PeriodTab(
-                  label: l.statsPeriodAllTime,
-                  selected: period.isAllTime,
-                  onTap: () => ref.read(statsPeriodProvider.notifier).state =
-                      const StatsPeriod.allTime(),
-                ),
-                for (final int year in years)
-                  _PeriodTab(
-                    label: '$year',
-                    selected: period.year == year,
-                    onTap: () => ref.read(statsPeriodProvider.notifier).state =
-                        StatsPeriod.year(year),
-                  ),
-              ],
+  /// Picks the page by measured content width, not [MediaQuery]: the nav
+  /// shell makes the window width overstate the room the sections get.
+  Widget _buildPage(S l, LibraryStats stats, String titleLanguage) {
+    // Assembled here, not inside the builder below: LayoutBuilder's callback
+    // runs during layout, and ref.watch is only legal during build.
+    final StatsPeriodPickerData picker = _buildPeriodPicker(l, stats);
+    if (stats.isEmpty) {
+      // No hero to host the dropdown, so it stands on its own — the year
+      // picker still has to work when the period has no data.
+      return SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                0,
+              ),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: StatsPeriodPicker(data: picker),
+              ),
             ),
-          ),
+            _buildEmptyState(l),
+          ],
         ),
-        const SizedBox(width: AppSpacing.sm),
-        if (!stats.isEmpty)
-          IconButton(
-            tooltip: l.statsExportTitle,
-            onPressed: _exporting ? null : () => _exportShareCard(stats),
-            icon: const Icon(Icons.ios_share, size: 20),
-            style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
-          ),
+      );
+    }
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        if (constraints.maxWidth < kStatsMobileBreakpoint) {
+          return StatisticsViewMobile(
+            stats: stats,
+            titleLanguage: titleLanguage,
+            picker: picker,
+          );
+        }
+        return StatisticsViewDesktop(
+          stats: stats,
+          titleLanguage: titleLanguage,
+          picker: picker,
+        );
+      },
+    );
+  }
+
+  /// The selectable periods and the share action.
+  StatsPeriodPickerData _buildPeriodPicker(S l, LibraryStats stats) {
+    return StatsPeriodPickerData(
+      selected: ref.watch(statsPeriodProvider),
+      onChanged: (StatsPeriod next) =>
+          ref.read(statsPeriodProvider.notifier).state = next,
+      periods: <StatsPeriod>[
+        const StatsPeriod.allTime(),
+        for (final int year in stats.availableYears.take(_maxYearOptions))
+          StatsPeriod.year(year),
       ],
+      trailing: stats.isEmpty
+          ? null
+          : IconButton(
+              tooltip: l.statsExportTitle,
+              onPressed: _exporting ? null : () => _exportShareCard(stats),
+              icon: const Icon(Icons.ios_share, size: 20),
+              style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
+            ),
     );
   }
 
@@ -253,46 +217,6 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               textAlign: TextAlign.center,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// One underline tab of the period picker: the active period gets a brand
-/// underline and bright label, the rest stay muted.
-class _PeriodTab extends StatelessWidget {
-  const _PeriodTab({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: selected ? AppColors.brand : Colors.transparent,
-              width: 2,
-            ),
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.bodySmall.copyWith(
-            fontWeight: FontWeight.w600,
-            color: selected ? null : AppColors.textSecondary,
-          ),
         ),
       ),
     );

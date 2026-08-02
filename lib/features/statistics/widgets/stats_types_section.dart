@@ -10,13 +10,14 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../layout/stats_layout.dart';
+import '../layout/stats_layout_scope.dart';
 import '../models/library_stats.dart';
 import 'stats_cards.dart';
 import 'stats_section_header.dart';
 
-/// One card per media type: item count, a stacked status bar with a legend
-/// and the type's own consumption counter — the detailed split the hero
-/// deliberately doesn't show.
+/// One card per media type: count, stacked status bar with a legend, and the
+/// type's own consumption counter — the split the hero omits.
 class StatsTypesSection extends StatelessWidget {
   /// Creates the per-type breakdown section.
   const StatsTypesSection({required this.stats, super.key});
@@ -44,6 +45,7 @@ class StatsTypesSection extends StatelessWidget {
     if (types.isEmpty) return const SizedBox.shrink();
 
     final NumberFormat numberFormat = statsNumberFormat(context);
+    final StatsLayout layout = StatsLayoutScope.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,8 +56,9 @@ class StatsTypesSection extends StatelessWidget {
         ),
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            final int columns =
-                (constraints.maxWidth / 300).floor().clamp(1, 3);
+            final int columns = (constraints.maxWidth / layout.typeCardMinWidth)
+                .floor()
+                .clamp(1, layout.typeCardMaxColumns);
             final double width =
                 (constraints.maxWidth - (columns - 1) * AppSpacing.md) /
                     columns;

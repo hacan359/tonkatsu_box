@@ -102,6 +102,8 @@ Each feature is a self-contained folder with three subdirectories:
 - `providers/` — Riverpod notifiers and `FutureProvider`s scoped to the feature.
 - `widgets/` — feature-local reusable widgets.
 
+A feature may add folders when it needs them: `statistics` also has `models/`, plus `views/` and `layout/` for its per-form-factor split. Where desktop and mobile lay a page out differently enough that one widget tree with branches inside would be harder to read than two, each form factor gets its own file (`statistics_view_desktop.dart` / `statistics_view_mobile.dart`, `stats_hero_desktop.dart` / `stats_hero_mobile.dart`), the parts that do not differ stay in a shared `*_common.dart`, and the numbers each layout feeds its sections live in an immutable spec (`StatsLayout`) with one `const` per form factor, published to the sections through an `InheritedWidget`. The page picks the file by measured content width via `LayoutBuilder`, not `MediaQuery` — the nav shell makes the window width overstate the room the content gets.
+
 Current features: `collections` (main module — collection screens, ItemDetail, canvas, panels), `search` (universal search via `SearchSource` over 7 backends), `tier_lists` (Tier list + Mood Grid), `wishlist`, `home` (All Items), `personalization` (hub over `statistics`, `genre_cloud`, `recommendations`), `statistics` ("my library in numbers": SQL aggregates via `StatsDao`, share card), `settings` (19 screens: credentials, imports, debug), `welcome` (6-step onboarding), `splash`.
 
 ### `shared/`

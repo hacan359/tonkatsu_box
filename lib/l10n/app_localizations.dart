@@ -9224,18 +9224,6 @@ abstract class S {
   /// **'All time'**
   String get statsPeriodAllTime;
 
-  /// No description provided for @statsEyebrowYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Year in review · {year}'**
-  String statsEyebrowYear(int year);
-
-  /// No description provided for @statsEyebrowAllTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Library in review'**
-  String get statsEyebrowAllTime;
-
   /// No description provided for @statsLede.
   ///
   /// In en, this message translates to:
@@ -9386,12 +9374,6 @@ abstract class S {
   /// **'h'**
   String get statsHoursUnit;
 
-  /// No description provided for @statsGamesUnit.
-  ///
-  /// In en, this message translates to:
-  /// **'games'**
-  String get statsGamesUnit;
-
   /// No description provided for @statsTypesTitle.
   ///
   /// In en, this message translates to:
@@ -9422,12 +9404,6 @@ abstract class S {
   /// **'format comes from the source data'**
   String get statsFormatsHint;
 
-  /// No description provided for @statsTitlesUnit.
-  ///
-  /// In en, this message translates to:
-  /// **'titles'**
-  String get statsTitlesUnit;
-
   /// No description provided for @statsSubgenresTitle.
   ///
   /// In en, this message translates to:
@@ -9437,14 +9413,8 @@ abstract class S {
   /// No description provided for @statsSubgenresHint.
   ///
   /// In en, this message translates to:
-  /// **'source tags are shown per type — vocabularies differ'**
+  /// **'source tags are shown per type'**
   String get statsSubgenresHint;
-
-  /// No description provided for @statsSubgenresTitles.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{no titles} =1{1 title} other{{count} titles}}'**
-  String statsSubgenresTitles(int count);
 
   /// No description provided for @statsCrowdTitle.
   ///

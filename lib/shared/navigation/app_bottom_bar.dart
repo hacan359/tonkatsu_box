@@ -1,5 +1,3 @@
-// Bottom navigation bar — horizontal, for narrow screens.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,10 +16,8 @@ import 'nav_tour_keys.dart';
 /// Height of the bottom bar.
 const double kAppBottomBarHeight = 64;
 
-/// Bottom navigation bar (horizontal).
-///
-/// Used on narrow screens instead of [AppSidebar]. Settings is not here — it
-/// lives in [AppTopBar]. The middle slot is left empty for the centre button.
+/// Horizontal nav bar for narrow screens. Settings lives in [AppTopBar]; the
+/// middle slot is left empty for the centre button.
 class AppBottomBar extends ConsumerWidget {
   /// Creates an [AppBottomBar].
   const AppBottomBar({
@@ -49,9 +45,8 @@ class AppBottomBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final int wishlistCount = ref.watch(activeWishlistCountProvider);
     final NavTourKeys tourKeys = ref.watch(navTourKeysProvider);
-    // The tour keys are stable app-wide singletons; attach them only while the
-    // menu tour runs. Otherwise two shells alive at once (e.g. the DB-reset
-    // `pushReplacement`) would reuse the same GlobalKeys and crash the tree.
+    // App-wide singletons: attaching them outside the tour would let two
+    // live shells reuse the same GlobalKeys and crash the tree.
     final bool tourActive = ref.watch(menuTourControllerProvider);
 
     final List<NavDestination> destinations = buildNavDestinations(
@@ -96,6 +91,7 @@ class AppBottomBar extends ConsumerWidget {
                       // The centre logo is larger than a tab icon, so its
                       // highlight needs to be bigger too.
                       size: centerActive ? 50 : 40,
+                      rainbow: centerActive,
                     ),
                     Row(
                       children: <Widget>[
