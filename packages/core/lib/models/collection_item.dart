@@ -192,10 +192,8 @@ class CollectionItem with Exportable {
   /// games and for [MediaType.animation] (Movie vs TV via [AnimationSource]).
   final int? platformId;
 
-  /// External provider this item came from. Only meaningful for manga
-  /// ([DataSource.anilist] / [DataSource.mangabaka]); `null` for other media
-  /// types. Part of the manga identity so the same `external_id` from two
-  /// providers stays distinct.
+  /// Manga only ([DataSource.anilist] / [DataSource.mangabaka]). Part of the
+  /// manga identity so one `external_id` from two providers stays distinct.
   final DataSource? source;
 
   /// Optional grouping tag inside a collection.
@@ -210,9 +208,8 @@ class CollectionItem with Exportable {
   /// Manual playtime in minutes — separate from any provider-side stats.
   final int timeSpentMinutes;
 
-  /// How many times the item was completed again after the first completion
-  /// (MAL "times watched" / AniList "repeat" semantics: 0 = completed once,
-  /// no repeats). `null` = never completed / not tracked.
+  /// MAL "times watched" / AniList "repeat": 0 means completed once with no
+  /// repeats, `null` means never completed or not tracked.
   final int? rewatchCount;
 
   final ItemStatus status;
@@ -240,9 +237,8 @@ class CollectionItem with Exportable {
   final DateTime? completedAt;
   final DateTime? lastActivityAt;
 
-  /// Joined media payloads — exactly one of the eight fields is non-null,
-  /// picked by [mediaType] (game / movie / tvShow / visualNovel / anime /
-  /// manga / book / customMedia).
+  /// Joined media payloads — exactly one of the eight is non-null, picked by
+  /// [mediaType].
   final Game? game;
   final Movie? movie;
   final TvShow? tvShow;
@@ -480,9 +476,8 @@ class CollectionItem with Exportable {
     return overrideName ?? _resolvedMedia.name ?? fallback;
   }
 
-  /// AniList-aware display name. `overrideName` wins; for anime/manga the
-  /// preferred language from settings drives the title, with a fallback to
-  /// romaji.
+  /// `overrideName` wins; anime and manga otherwise follow the preferred
+  /// title language from settings, falling back to romaji.
   String displayName(String animeMangaTitleLanguage) {
     if (overrideName != null) return overrideName!;
     switch (mediaType) {
@@ -506,20 +501,16 @@ class CollectionItem with Exportable {
           ? customMedia!.displayType!
           : mediaType;
 
-  /// Whether progress lives in the episode tracker (`watched_episodes`) rather
-  /// than in the item's own counter. Drives the tracker section, the card
-  /// badge, automatic status updates and mark transfer, so they all agree.
+  /// Progress lives in the episode tracker (`watched_episodes`) rather than the
+  /// item's own counter. Drives tracker, badge, auto-status and mark transfer.
   bool get usesEpisodeTracker => usesEpisodeTrackerFor(
         mediaType: mediaType,
         source: dataSource,
         platformId: platformId,
       );
 
-  /// [usesEpisodeTracker] for callers holding raw parts instead of an item —
-  /// DAO rows during a move, for instance.
-  ///
-  /// Kitsu anime qualify: Kitsu ships per-episode metadata. AniList anime keep
-  /// the flat counter.
+  /// For callers holding raw parts instead of an item, such as DAO rows mid-move.
+  /// Kitsu anime qualify (per-episode metadata); AniList anime keep the counter.
   static bool usesEpisodeTrackerFor({
     required MediaType mediaType,
     required DataSource source,
@@ -554,10 +545,8 @@ class CollectionItem with Exportable {
         MediaType.custom => customMedia?.externalUrl,
       };
 
-  /// Type-filter chevrons this item belongs to. A masquerading custom item
-  /// shows under both its display type (e.g. Anime) and Custom — it is a custom
-  /// element regardless of what it imitates, so the Custom filter still finds
-  /// it. Every other item belongs to exactly its own type.
+  /// A masquerading custom item shows under both its display type and Custom —
+  /// it stays a custom element whatever it imitates.
   List<MediaType> get filterTypeBuckets =>
       mediaType == MediaType.custom && displayMediaType != MediaType.custom
           ? <MediaType>[displayMediaType, MediaType.custom]
@@ -567,18 +556,16 @@ class CollectionItem with Exportable {
   bool matchesTypeFilter(Set<MediaType> selected) =>
       filterTypeBuckets.any(selected.contains);
 
-  /// Platform FK used by the platform subfilter. Real games use the joined
-  /// [platformId]; custom games carry their chosen platform on [customMedia],
-  /// so resolve it from there when the item masquerades as a game.
+  /// Real games use the joined [platformId]; a custom item masquerading as a
+  /// game carries its platform on [customMedia] instead.
   int? get effectivePlatformId =>
       mediaType == MediaType.custom &&
               customMedia?.displayType == MediaType.game
           ? customMedia?.platformId
           : platformId;
 
-  /// Raw manga / anime format code keyed by [displayMediaType]: the real
-  /// media's format, or the custom item's stored format when masquerading as
-  /// manga / anime. `null` for every other type.
+  /// The real media's format, or a masquerading custom item's stored one.
+  /// `null` for every type other than manga / anime.
   String? get formatCode => switch (displayMediaType) {
         MediaType.manga =>
           mediaType == MediaType.custom ? customMedia?.format : manga?.format,
@@ -597,9 +584,8 @@ class CollectionItem with Exportable {
   int? get customUnitGroupTotal =>
       mediaType == MediaType.custom ? customMedia?.unitGroupTotal : null;
 
-  /// Format label for manga / anime (e.g. "Manhwa", "OVA"). `null` for other
-  /// media types or when the source did not report a format — callers fall
-  /// back to the generic media-type caption in that case.
+  /// Format label for manga / anime ("Manhwa", "OVA"); `null` when the source
+  /// reported none, and callers fall back to the media-type caption.
   String? get formatLabel => switch (displayMediaType) {
         MediaType.manga => Manga.mangaFormatLabel(formatCode),
         MediaType.anime => Anime.animeFormatLabel(formatCode),
@@ -699,12 +685,8 @@ class CollectionItem with Exportable {
     };
   }
 
-  /// When [includeUserData] is true the export carries personal fields
-  /// (status, dates, notes, season/episode progress, sort order) on top of
-  /// the bare media reference suitable for sharing.
-  /// Provider-native id for sources whose API is keyed by a string the numeric
-  /// [externalId] can't reproduce — a hash (MangaDex, Google Books) or an OLID.
-  /// A light export carries it so import can refetch from the right provider.
+  /// Provider-native id where the numeric [externalId] can't reproduce it — a
+  /// hash (MangaDex, Google Books) or an OLID. Lets import refetch correctly.
   String? get exportNativeId {
     if (mediaType == MediaType.book) return book?.nativeId;
     if (mediaType == MediaType.manga) return manga?.mangaDexUuid;
@@ -830,10 +812,8 @@ class CollectionItem with Exportable {
     );
   }
 
-  /// Returns a copy with the new status, recomputed activity dates and
-  /// rewatch count. All the math goes through [computeDatesForStatus] /
-  /// [computeRewatchCountForStatus] so UI, importers and external syncs stay
-  /// in lockstep.
+  /// All the date and rewatch math goes through [computeDatesForStatus] /
+  /// [computeRewatchCountForStatus] so UI, importers and syncs stay in lockstep.
   CollectionItem withStatus(ItemStatus newStatus, {DateTime? now}) {
     final StatusDatesUpdate update = computeDatesForStatus(
       newStatus: newStatus,

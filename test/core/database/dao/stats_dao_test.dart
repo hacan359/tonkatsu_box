@@ -1,12 +1,12 @@
 import 'dart:convert';
 
+import 'package:core/database/dao/stats_dao.dart';
 import 'package:core/database/migrations/migration.dart';
 import 'package:core/database/migrations/migration_registry.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:tonkatsu_box/core/database/dao/stats_dao.dart';
 
 void main() {
   setUpAll(() {

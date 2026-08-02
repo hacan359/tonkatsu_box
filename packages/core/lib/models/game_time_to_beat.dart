@@ -1,7 +1,5 @@
-/// Среднее время прохождения игры из IGDB (`game_time_to_beats`).
-///
-/// Транзиентная сущность: подтягивается при поиске и едет вместе с [Game] в
-/// памяти, в базе не хранится. Значения IGDB отдаёт в секундах.
+/// IGDB `game_time_to_beats`. Transient: fetched with search and carried
+/// alongside [Game] in memory, never stored. IGDB reports seconds.
 class GameTimeToBeat {
   const GameTimeToBeat({
     this.hastily,
@@ -10,7 +8,6 @@ class GameTimeToBeat {
     this.count = 0,
   });
 
-  /// Создаёт [GameTimeToBeat] из записи `game_time_to_beats` IGDB API.
   factory GameTimeToBeat.fromJson(Map<String, dynamic> json) {
     return GameTimeToBeat(
       hastily: json['hastily'] as int?,
@@ -20,24 +17,21 @@ class GameTimeToBeat {
     );
   }
 
-  /// «По-быстрому» (≈ Main Story), секунды.
+  /// Rushed (≈ Main Story), seconds.
   final int? hastily;
 
-  /// «Нормально» (≈ Main + Extra), секунды.
+  /// Normal (≈ Main + Extra), seconds.
   final int? normally;
 
-  /// «На 100%» (≈ Completionist), секунды.
+  /// Completionist (100%), seconds.
   final int? completely;
 
-  /// Число пользовательских замеров — надёжность данных.
   final int count;
 
-  /// Наиболее репрезентативное значение в секундах: нормальное прохождение, с
-  /// откатом к быстрому, затем к полному.
+  /// Most representative: normal, then rushed, then completionist.
   int? get primarySeconds => normally ?? hastily ?? completely;
 
-  /// Основное значение в часах, округлённое (минимум 1ч, если время > 0).
-  /// Возвращает `null`, когда у игры нет данных о времени прохождения.
+  /// Whole hours, floored to 1h while non-zero; `null` when IGDB has no data.
   int? get primaryHours {
     final int? seconds = primarySeconds;
     if (seconds == null || seconds <= 0) return null;

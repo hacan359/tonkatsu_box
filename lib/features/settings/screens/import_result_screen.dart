@@ -18,13 +18,11 @@ import '../../../shared/constants/media_type_ui.dart';
 ///
 /// Показывает breakdown по типам медиа, вишлист, обновления, кнопки навигации.
 class ImportResultScreen extends StatelessWidget {
-  /// Создаёт [ImportResultScreen].
   const ImportResultScreen({
     required this.result,
     super.key,
   });
 
-  /// Результат импорта.
   final UniversalImportResult result;
 
   @override
@@ -176,7 +174,6 @@ class ImportResultScreen extends StatelessWidget {
   }
 }
 
-/// Карточка результата с breakdown по типам медиа.
 class _ResultCard extends StatelessWidget {
   const _ResultCard({
     required this.title,

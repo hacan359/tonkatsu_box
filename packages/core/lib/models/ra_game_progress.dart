@@ -1,12 +1,7 @@
-// Прогресс игры из RetroAchievements.
 
 import 'item_status.dart';
 
-/// Прогресс игры пользователя из RetroAchievements.
-///
-/// Содержит данные о достижениях, платформе и наивысшей награде.
 class RaGameProgress {
-  /// Создаёт [RaGameProgress].
   const RaGameProgress({
     required this.gameId,
     required this.title,
@@ -21,7 +16,6 @@ class RaGameProgress {
     this.lastPlayedAt,
   });
 
-  /// Создаёт [RaGameProgress] из JSON ответа API_GetUserCompletionProgress.
   factory RaGameProgress.fromJson(Map<String, dynamic> json) {
     return RaGameProgress(
       gameId: json['GameID'] as int? ?? 0,
@@ -42,66 +36,50 @@ class RaGameProgress {
     );
   }
 
-  /// ID игры на RetroAchievements.
   final int gameId;
 
-  /// Название игры.
   final String title;
 
-  /// Название консоли (напр. "SNES", "Genesis").
+  /// RA console name, e.g. `SNES`, `Genesis`.
   final String consoleName;
 
-  /// ID консоли на RetroAchievements.
   final int consoleId;
 
-  /// Количество полученных ачивок (softcore + hardcore).
+  /// Softcore and hardcore combined.
   final int numAwarded;
 
-  /// Количество hardcore ачивок.
   final int numAwardedHardcore;
 
-  /// Максимальное количество ачивок.
   final int maxPossible;
 
-  /// Режим Hardcore.
   final bool hardcoreMode;
 
-  /// Наивысшая награда: mastered, completed, beaten, или null.
+  /// `mastered`, `completed`, `beaten`, or null.
   final String? highestAwardKind;
 
-  /// Дата получения наивысшей награды (beaten/mastered).
   final DateTime? highestAwardDate;
 
-  /// Дата последней активности (получение ачивки).
   final DateTime? lastPlayedAt;
 
-  /// Не-игровые ConsoleID (Hubs, Events, Standalone).
+  /// Hubs, Events and Standalone entries — not real games.
   static const Set<int> _nonGameConsoleIds = <int>{100, 101, 102};
 
-  /// Это реальная игра (не ивент, хаб или standalone).
   bool get isRealGame => !_nonGameConsoleIds.contains(consoleId);
 
-  /// Процент прохождения (0.0–1.0).
+  /// Fraction in 0.0–1.0, not a percentage.
   double get completionRate =>
       maxPossible > 0 ? numAwarded / maxPossible : 0.0;
 
-  /// Маппинг RA award → [ItemStatus].
-  ///
-  /// mastered*/completed*/beaten* → completed,
-  /// >0 ачивок → inProgress,
-  /// 0 ачивок → planned.
+  /// Any award means completed; otherwise earned achievements decide between
+  /// inProgress and planned.
   ItemStatus? get itemStatus => statusFromAward(
         awardKind: highestAwardKind,
         numAwarded: numAwarded,
         lastPlayedAt: lastPlayedAt,
       );
 
-  /// Маппинг RA данных → [ItemStatus] или null (не менять).
-  ///
-  /// mastered*/completed*/beaten* → completed,
-  /// >0 ачивок + последняя активность >3 месяцев назад → dropped,
-  /// >0 ачивок → inProgress,
-  /// 0 ачивок → null (не трогаем — RA ничего не знает).
+  /// Like [itemStatus] but also drops an item idle for over three months, and
+  /// returns `null` on zero achievements — RA knows nothing then.
   static ItemStatus? statusFromAward({
     required String? awardKind,
     required int numAwarded,
@@ -121,7 +99,7 @@ class RaGameProgress {
       }
       return ItemStatus.inProgress;
     }
-    // 0 achievements — не трогаем статус (нет данных от RA).
+    // Zero achievements: RA has no signal, so the status stays put.
     return null;
   }
 }

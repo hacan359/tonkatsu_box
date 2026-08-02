@@ -1,5 +1,3 @@
-// Wishlist tag helpers: filter type + auto-tag parsing.
-
 /// Three-way filter used by the wishlist UI: show everything, show only
 /// untagged items, or show items carrying a specific tag.
 sealed class WishlistTagFilter {
@@ -58,9 +56,8 @@ class WishlistTagInfo {
 String buildImportTag(String source) =>
     '$source-${DateTime.now().millisecondsSinceEpoch}';
 
-/// Parses an auto-generated tag back into source name + timestamp. Tags that
-/// don't fit the pattern come back as [WishlistTagInfo] with a null timestamp
-/// so callers can still display the raw value.
+/// Tags that don't fit the pattern come back with a null timestamp so callers
+/// can still show the raw value.
 WishlistTagInfo parseWishlistTag(String tag) {
   final int sep = tag.lastIndexOf('-');
   if (sep <= 0 || sep == tag.length - 1) {

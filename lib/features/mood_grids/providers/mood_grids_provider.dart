@@ -1,7 +1,7 @@
+import 'package:core/database/dao/mood_grid_dao.dart';
 import 'package:core/models/mood_grid.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/mood_grid_dao.dart';
 import '../../../core/database/database_service.dart';
 
 /// Default preset id used by the create dialog and elsewhere.

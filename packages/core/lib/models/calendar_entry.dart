@@ -3,9 +3,8 @@ import 'media_type.dart';
 
 import 'calendar_recurrence.dart';
 
-/// A manual calendar entry the user added for any item: a start date and a
-/// recurrence. Identity is `(externalId, source, mediaType)` — one entry per
-/// item, independent of collections.
+/// A manual start date plus recurrence. Identity is
+/// `(externalId, source, mediaType)` — one entry per item, collection-agnostic.
 class CalendarEntry {
   const CalendarEntry({
     required this.externalId,

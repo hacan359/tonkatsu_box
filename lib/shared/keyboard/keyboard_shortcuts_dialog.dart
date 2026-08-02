@@ -12,7 +12,6 @@ import 'keyboard_shortcuts.dart';
 ///
 /// Показывает глобальные хоткеи (навигация) и хоткеи текущего экрана.
 class KeyboardShortcutsDialog extends StatelessWidget {
-  /// Создаёт [KeyboardShortcutsDialog].
   const KeyboardShortcutsDialog({
     required this.screenGroups,
     super.key,
@@ -21,7 +20,6 @@ class KeyboardShortcutsDialog extends StatelessWidget {
   /// Группы хоткеев текущего экрана (без глобальных).
   final List<ShortcutGroup> screenGroups;
 
-  /// Показывает диалог справки по хоткеям.
   static void show(
     BuildContext context, {
     List<ShortcutGroup> screenGroups = const <ShortcutGroup>[],

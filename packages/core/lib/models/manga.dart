@@ -5,10 +5,8 @@ import '../utils/anime_manga_title_language.dart';
 import '../utils/kitsu_status.dart';
 import '../utils/stable_id.dart';
 
-/// Manga metadata from AniList or MangaBaka.
-///
-/// [id] is the provider-side id and is NOT unique on its own across
-/// providers — the cache identity is the pair `(id, source)`.
+/// [id] is the provider-side id and is not unique across providers — the
+/// cache identity is the pair `(id, source)`.
 class Manga {
   const Manga({
     required this.id,
@@ -53,9 +51,8 @@ class Manga {
 
     final List<dynamic>? genresList = json['genres'] as List<dynamic>?;
 
-    // AniList tag objects carry category, rank, isMediaSpoiler — we drop
-    // everything except the name since per-media spoiler / category are
-    // looked up from the catalog table when needed.
+    // Only the name is kept; per-media spoiler / category are looked up from
+    // the catalog table when needed.
     List<String>? tags;
     final List<dynamic>? tagsList = json['tags'] as List<dynamic>?;
     if (tagsList != null && tagsList.isNotEmpty) {
@@ -128,10 +125,8 @@ class Manga {
     );
   }
 
-  /// Builds a [Manga] from a MangaBaka `/v1/series/{id}` (or search `data[]`)
-  /// record. MangaBaka has a flat REST shape distinct from AniList: titles are
-  /// top-level, chapters / volumes are strings, the rating is already 0–100,
-  /// and only the raw cover variant is populated.
+  /// MangaBaka's flat REST shape differs from AniList: top-level titles,
+  /// string chapter / volume counts, a 0–100 rating, raw cover variant only.
   factory Manga.fromMangaBaka(Map<String, dynamic> json) {
     final int id = (json['id'] as num).toInt();
 
@@ -141,11 +136,8 @@ class Manga {
                 .toList() ??
             const <Map<String, dynamic>>[];
 
-    // Map MangaBaka titles onto the AniList-style romaji / english / native
-    // slots so `titleByLanguage` and the title-language setting behave the
-    // same for both sources. `ja-Latn` is the real romaji — the flat
-    // `romanized_title` is sometimes a localized title. Fall back to the flat
-    // fields, then to whatever non-empty title exists.
+    // Mapped onto AniList's romaji / english / native slots so the title-language
+    // setting behaves alike. `ja-Latn` is the real romaji; the flat field is not.
     final String? romaji =
         _bakaTitle(titles, 'ja-Latn') ?? json['romanized_title'] as String?;
     final String? native =
@@ -210,12 +202,8 @@ class Manga {
     );
   }
 
-  /// Builds a [Manga] from a MangaDex `/manga` resource ({id (UUID),
-  /// attributes, relationships}). MangaDex ids are UUIDs, so [id] is a stable
-  /// [fnv1a64] hash (keeping the numeric cache / external-id contract) and the
-  /// UUID is preserved in [externalUrl] (`.../title/{uuid}`) for later refresh.
-  /// Chapter / volume counts come from a separate `/aggregate` call, so they
-  /// are absent on search rows.
+  /// MangaDex ids are UUIDs, so [id] is an [fnv1a64] hash and the UUID survives
+  /// in [externalUrl]. Chapter counts need `/aggregate`, so search rows lack them.
   factory Manga.fromMangaDex(Map<String, dynamic> json) {
     final String uuid = json['id'] as String;
     final Map<String, dynamic> attrs =
@@ -299,9 +287,8 @@ class Manga {
       coverUrl: coverUrl,
       status: _mangaDexStatus(attrs['status'] as String?),
       startYear: (attrs['year'] as num?)?.toInt(),
-      // `lastChapter` / `lastVolume` are the final numbers on the manga object
-      // itself (populated for completed series) — an inline counter without the
-      // per-title `/aggregate` call. getByUuid refines these when available.
+      // Final numbers on the manga object itself, populated for completed series
+      // — an inline counter without the `/aggregate` call. getByUuid refines them.
       chapters: _parseCount(attrs['lastChapter']),
       volumes: _parseCount(attrs['lastVolume']),
       format: _mangaDexFormat(attrs['originalLanguage'] as String?),
@@ -313,9 +300,8 @@ class Manga {
     );
   }
 
-  /// Builds a [Manga] from a Kitsu `/manga` JSON:API resource
-  /// ({id, attributes}). Genres are related resources not requested here, so
-  /// they stay null.
+  /// Genres are related JSON:API resources not requested here, so they stay
+  /// null.
   factory Manga.fromKitsu(Map<String, dynamic> json) {
     final int id = int.parse(json['id'] as String);
     final Map<String, dynamic> attrs =
@@ -440,9 +426,8 @@ class Manga {
   /// column of `manga_cache`. NOT unique without [source].
   final int id;
 
-  /// Which provider this record came from. Part of the cache identity
-  /// `(id, source)` so AniList and MangaBaka entries that share a numeric id
-  /// never collide.
+  /// Part of the cache identity `(id, source)` so AniList and MangaBaka entries
+  /// sharing a numeric id never collide.
   final DataSource source;
 
   /// Romaji title (always present per AniList contract).
@@ -504,9 +489,8 @@ class Manga {
   /// Transient — not persisted (only present on fresh API responses).
   final String? bannerUrl;
 
-  /// MangaDex's own UUID, recovered from [externalUrl]
-  /// (`https://mangadex.org/title/{uuid}`). The numeric [id] is a hash of it,
-  /// so this is the only way back to the provider's API.
+  /// Recovered from [externalUrl]; the numeric [id] is a hash of it, so this is
+  /// the only way back to MangaDex's API.
   String? get mangaDexUuid {
     if (source != DataSource.mangadex) return null;
     final String? last = externalUrl?.split('/').last;

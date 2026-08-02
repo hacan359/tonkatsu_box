@@ -5,10 +5,8 @@ class CanvasDao {
 
   final Future<Database> Function() _getDatabase;
 
-  /// Joined `override_name` is the rename set on the matching `collection_items`
-  /// row in the same collection (matched by media type + external id). For
-  /// multi-platform games in the collection any of the per-platform rows
-  /// works — the rename is per-collection, not per-platform.
+  /// Joined `override_name` is the rename on the matching `collection_items`
+  /// row; it is per-collection, so any per-platform row will do.
   Future<List<Map<String, dynamic>>> getCanvasItems(int collectionId) async {
     final Database db = await _getDatabase();
     return db.rawQuery(
@@ -209,9 +207,7 @@ class CanvasDao {
     );
   }
 
-  /// Joined `override_name` mirrors `getCanvasItems`: the rename is looked
-  /// up on any `collection_items` row in the same collection that points
-  /// at the same media — so titles on the per-item board inherit the
+  /// Mirrors `getCanvasItems`, so per-item board titles inherit the
   /// per-collection rename.
   Future<List<Map<String, dynamic>>> getGameCanvasItems(
     int collectionItemId,

@@ -1,4 +1,3 @@
-// Утилиты для клавиатурных сочетаний.
 
 import 'package:flutter/material.dart';
 

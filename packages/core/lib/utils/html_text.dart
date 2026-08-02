@@ -1,9 +1,8 @@
 final RegExp _htmlTagPattern = RegExp('<[^>]*>');
 final RegExp _numericEntity = RegExp('&#(x?[0-9a-fA-F]+);');
 
-/// Removes HTML markup and decodes the entities common in TVmaze summaries;
-/// returns `null` when nothing readable is left. `&amp;` is decoded last so an
-/// escaped entity like `&amp;lt;` stays literal instead of double-decoding.
+/// Strips HTML and decodes TVmaze entities; `null` when nothing readable is
+/// left. `&amp;` is decoded last so `&amp;lt;` stays literal.
 String? stripHtmlText(String? text) {
   if (text == null) return null;
   String clean = text.replaceAll(_htmlTagPattern, '');

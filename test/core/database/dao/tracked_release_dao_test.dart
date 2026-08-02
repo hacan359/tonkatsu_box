@@ -1,10 +1,10 @@
+import 'package:core/database/dao/tracked_release_dao.dart';
 import 'package:core/database/schema.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tracked_release.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:tonkatsu_box/core/database/dao/tracked_release_dao.dart';
 
 void main() {
   sqfliteFfiInit();

@@ -1,4 +1,3 @@
-// Единый AppBar для всех экранов приложения.
 
 import 'package:flutter/material.dart';
 
@@ -6,7 +5,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'copyable_text.dart';
 
-/// Высота toolbar для [ScreenAppBar].
 const double kScreenAppBarHeight = 44;
 
 /// Icon size for [ScreenAppBar]'s leading/action buttons. Sized down from the
@@ -25,7 +23,6 @@ const double kScreenAppBarIconSize = 20;
 /// )
 /// ```
 class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
-  /// Создаёт [ScreenAppBar].
   const ScreenAppBar({
     super.key,
     this.title,
@@ -33,10 +30,8 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.bottom,
   });
 
-  /// Заголовок. Если null — AppBar без заголовка.
   final String? title;
 
-  /// Кнопки действий справа.
   final List<Widget>? actions;
 
   /// Нижний виджет (например, TabBar).

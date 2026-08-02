@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/database/dao/tracker_dao.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -24,6 +26,7 @@ import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,13 +48,10 @@ import '../api/openlibrary_api.dart';
 import '../api/tmdb_api.dart';
 import '../api/tvmaze_api.dart';
 import '../api/vndb_api.dart';
-import '../database/dao/global_tag_dao.dart';
-import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import '../import/import_progress.dart';
 import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
-import 'xcoll_file.dart';
 
 // Progress types moved to the import layer; re-exported so the many existing
 // `services/import_service.dart` importers keep compiling.

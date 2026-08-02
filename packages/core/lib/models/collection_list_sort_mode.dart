@@ -13,13 +13,8 @@ enum CollectionListSortMode {
   /// Stored value for SharedPreferences.
   final String value;
 
-  /// Orders collections for every place that lists them — the Collections
-  /// screen and the collection picker share this so they can't drift apart.
-  ///
-  /// [descending] is the stored `collection_list_sort_desc` flag. It reads as
-  /// Z→A for [alphabetical] and as oldest-first for [createdDate]: the date
-  /// meaning is the opposite of the flag's name, but it is what users already
-  /// have persisted and what `localizedDescription` says, so it stays.
+  /// Shared by the Collections screen and the picker so they can't drift.
+  /// [descending] reads as Z→A but oldest-first for dates — as already persisted.
   int compare(Collection a, Collection b, {required bool descending}) {
     switch (this) {
       case CollectionListSortMode.createdDate:

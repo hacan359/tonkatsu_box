@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:core/database/dao/tracker_dao.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/game.dart';
@@ -18,7 +19,6 @@ import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
 import '../../../api/igdb_api.dart';
 import '../../../api/ra_api.dart';
-import '../../../database/dao/tracker_dao.dart';
 import '../../../database/database_service.dart';
 import '../../../services/ra_to_igdb_mapper.dart';
 import '../../import_columns.dart';

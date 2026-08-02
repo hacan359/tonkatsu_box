@@ -1,5 +1,3 @@
-// Universal per-unit mark (like + note) attached to a collection item unit.
-
 /// Preset unit type: a TV / anime episode.
 const String kUnitEpisode = 'episode';
 
@@ -18,9 +16,8 @@ const String kUnitPage = 'page';
 /// Preset unit type: a part / arc.
 const String kUnitPart = 'part';
 
-/// Preset unit types offered by the "add mark" form. Users may also type an
-/// arbitrary string, so this list is not exhaustive — [ItemMark.unitType] is a
-/// free-form string, not a strict enum.
+/// Presets offered by the "add mark" form. Not exhaustive —
+/// [ItemMark.unitType] is free-form text, not an enum.
 const List<String> kUnitPresets = <String>[
   kUnitEpisode,
   kUnitSeason,
@@ -30,9 +27,8 @@ const List<String> kUnitPresets = <String>[
   kUnitPart,
 ];
 
-/// Maps a single user-entered [number] to `(parent, unit)` coordinates for a
-/// [unitType]: season / volume numbers live in `parent_number`, every other
-/// unit's number lives in `unit_number`.
+/// Season and volume numbers live in `parent_number`; every other unit's
+/// number lives in `unit_number`.
 ({int parent, int unit}) unitCoordsFor(String unitType, int number) {
   if (unitType == kUnitSeason || unitType == kUnitVolume) {
     return (parent: number, unit: 0);
@@ -40,15 +36,8 @@ const List<String> kUnitPresets = <String>[
   return (parent: 0, unit: number);
 }
 
-/// A user mark on a single unit inside a collection item: a like (favorite
-/// flag) and/or a free-text note. Anchored on `collection_items.id`
-/// ([itemId]) so it works for every media type without duplicating the
-/// item's `external_id` / `source`.
-///
-/// The unit is described generically by [unitType] plus two numbers:
-/// [parentNumber] (season / volume, or 0 when not applicable) and
-/// [unitNumber] (episode / chapter / page number, or 0 for a season/volume
-/// row). See the task doc for the full mapping table.
+/// A like and/or note on one unit of a collection item. Anchored on
+/// `collection_items.id` so it works for every media type without duplication.
 class ItemMark {
   /// Creates an [ItemMark].
   const ItemMark({
@@ -81,8 +70,7 @@ class ItemMark {
     );
   }
 
-  /// Builds an [ItemMark] from an export map (timestamps in seconds). [itemId]
-  /// is supplied by the caller because export nests marks inside their item and
+  /// [itemId] comes from the caller: export nests marks inside their item and
   /// the id is remapped on import.
   factory ItemMark.fromExport(
     Map<String, dynamic> json, {
@@ -151,9 +139,8 @@ class ItemMark {
   /// no note) is deleted rather than stored.
   bool get hasContent => isFavorite || note != null;
 
-  /// Serialises to a database row. [id] is intentionally omitted so upserts
-  /// resolve against the `(item_id, unit_type, parent_number, unit_number)`
-  /// unique key instead of the surrogate id.
+  /// [id] is omitted so upserts resolve against the
+  /// `(item_id, unit_type, parent_number, unit_number)` unique key.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'item_id': itemId,

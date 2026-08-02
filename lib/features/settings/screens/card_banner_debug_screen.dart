@@ -209,9 +209,7 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Section + card scaffolding
-// ---------------------------------------------------------------------------
 
 /// Tappable banner inviting the user to vote for their favourite design on the
 /// project Discord channel.
@@ -527,9 +525,7 @@ class _ProgressEdge extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Variant F — dense two-liner with a status stripe on the panel edge
-// ---------------------------------------------------------------------------
 
 class _StatusStripeBanner extends StatelessWidget {
   const _StatusStripeBanner({required this.demo, required this.hovered});
@@ -625,9 +621,7 @@ class _StatusStripeBanner extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Variant G — split meta line: rating/date left, status + episodes right
-// ---------------------------------------------------------------------------
 
 class _SplitMetaBanner extends StatelessWidget {
   const _SplitMetaBanner({required this.demo, required this.hovered});
@@ -721,9 +715,7 @@ class _SplitMetaBanner extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Variant D — stats strip only (title stays below the poster)
-// ---------------------------------------------------------------------------
 
 class _StatsStripBanner extends StatelessWidget {
   const _StatsStripBanner({required this.demo, required this.hovered});

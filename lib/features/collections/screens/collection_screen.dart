@@ -6,6 +6,7 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/steamgriddb_image.dart';
 import 'package:core/models/tag.dart';
 import 'package:core/models/tier_list.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,7 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/collection_hero_service.dart';
 import '../../../core/services/import_service.dart';
-import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../widgets/create_custom_item_dialog.dart';

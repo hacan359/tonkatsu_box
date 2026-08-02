@@ -1,10 +1,8 @@
 import 'kodi_date_parser.dart';
 import 'kodi_unique_ids.dart';
 
-/// A TV show from Kodi `VideoLibrary.GetTVShows`.
-///
-/// Show-level `playcount`/`lastplayed` is usually 0 in Kodi (tracked per
-/// episode); used for matching and to decide whether to fetch episodes.
+/// From Kodi `VideoLibrary.GetTVShows`. Show-level `playcount` is usually 0
+/// (Kodi tracks per episode); used for matching and whether to fetch episodes.
 class KodiTvShow {
   const KodiTvShow({
     required this.tvShowId,

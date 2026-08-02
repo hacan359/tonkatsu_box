@@ -2,9 +2,7 @@ import 'dart:convert';
 
 import 'tracker_profile.dart';
 
-/// Per-game tracker progress (RA, Steam). Linked to `games.id` (IGDB id),
-/// optionally scoped by [platformId] so the same IGDB game can hold separate
-/// progress for each platform installation (PS2, GameCube, …).
+/// Linked to `games.id` (IGDB id), optionally scoped by [platformId].
 class TrackerGameData {
   const TrackerGameData({
     required this.id,
@@ -57,9 +55,8 @@ class TrackerGameData {
   /// IGDB id (`games.id`).
   final int gameId;
 
-  /// Optional platform scope — same IGDB game on PS2 vs GameCube can hold
-  /// separate progress. `null` means "applies to the game regardless of
-  /// platform" (legacy rows, trackers that don't differentiate).
+  /// Lets one IGDB game hold separate progress per platform. `null` means it
+  /// applies regardless (legacy rows, trackers that don't differentiate).
   final int? platformId;
 
   /// Provider-side game id (RA GameID / Steam AppID). Different per platform

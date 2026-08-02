@@ -1,13 +1,8 @@
-// Модель кастомного медиа-элемента (созданного пользователем).
-
 import 'media_type.dart';
 
-/// Кастомный медиа-элемент.
-///
-/// Представляет элемент, созданный пользователем вручную — без API.
-/// Аналог [Game], [Movie], [TvShow] для типа [MediaType.custom].
+/// A user-created item with no API behind it — the [MediaType.custom]
+/// counterpart to [Game] / [Movie] / [TvShow].
 class CustomMedia {
-  /// Создаёт экземпляр [CustomMedia].
   const CustomMedia({
     required this.id,
     required this.title,
@@ -26,7 +21,6 @@ class CustomMedia {
     this.cachedAt,
   });
 
-  /// Создаёт [CustomMedia] из записи базы данных.
   factory CustomMedia.fromDb(Map<String, dynamic> row) {
     final String? displayTypeValue = row['display_type'] as String?;
     return CustomMedia(
@@ -50,48 +44,35 @@ class CustomMedia {
     );
   }
 
-  /// Маркер cover_url для обложек, загруженных с ПК.
-  ///
-  /// CachedImage получает непустой imageUrl и проверяет кэш,
-  /// где файл уже лежит. До remoteUrl дело не доходит.
+  /// Cover picked from disk. CachedImage gets a non-empty imageUrl, finds the
+  /// file already cached, and never reaches for a remote URL.
   static const String localCoverMarker = 'local://cover';
 
-  /// Проверяет, является ли URL маркером локальной обложки.
   static bool isLocalCover(String? url) =>
       url != null && url.startsWith('local://');
 
-  /// Уникальный идентификатор.
   final int id;
 
-  /// Основное название.
   final String title;
 
-  /// Визуальный тип для отображения (цвет, иконка).
-  ///
-  /// Если null — используется стандартный custom стиль (бирюзовый).
-  /// Если game/movie/etc — карточка выглядит как соответствующий тип.
+  /// Borrows another type's card styling (color, icon); `null` keeps the
+  /// default custom look.
   final MediaType? displayType;
 
-  /// Альтернативное название (оригинальный язык).
+  /// Original-language title.
   final String? altTitle;
 
-  /// Описание.
   final String? description;
 
-  /// URL обложки.
   final String? coverUrl;
 
-  /// Год выпуска.
   final int? year;
 
-  /// Жанры через запятую (напр. "RPG, Action, Puzzle").
+  /// Comma-separated, e.g. `RPG, Action, Puzzle`.
   final String? genres;
 
-  /// Platform display name (free text, not an FK).
-  ///
-  /// Fallback for platforms absent from the catalog. The platform subfilter uses
-  /// [platformId]; when picked from the catalog the display name is mirrored here
-  /// too, so the card shows without joining `platforms`.
+  /// Free text, not an FK — a fallback for platforms absent from the catalog.
+  /// Mirrored here on a catalog pick so the card renders without a join.
   final String? platformName;
 
   /// Platform FK value from the `platforms` catalog — only for custom games
@@ -102,27 +83,22 @@ class CustomMedia {
   /// `displayType == manga`/`anime`. `null` for other types.
   final String? format;
 
-  /// Total fine progress units — episodes / chapters / pages / parts depending
-  /// on `displayType`. The "done" position lives in
-  /// `collection_items.current_episode`. `null` when no total is set.
+  /// Episodes / chapters / pages / parts per `displayType`; the done position
+  /// lives in `collection_items.current_episode`.
   final int? unitTotal;
 
-  /// Total coarse units — seasons (series) / volumes (manga). The "done"
-  /// position lives in `collection_items.current_season`. `null` for types
-  /// without a coarse axis.
+  /// Seasons or volumes; the done position lives in
+  /// `collection_items.current_season`. `null` when the type has no coarse axis.
   final int? unitGroupTotal;
 
-  /// URL внешней страницы.
   final String? externalUrl;
 
-  /// Время кэширования (unix timestamp).
+  /// Cache timestamp, Unix seconds.
   final int? cachedAt;
 
-  /// Список жанров.
   List<String>? get genreList =>
       genres?.split(',').map((String g) => g.trim()).toList();
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -143,14 +119,12 @@ class CustomMedia {
     };
   }
 
-  /// Преобразует в Map для экспорта коллекции.
   Map<String, dynamic> toExport() {
     final Map<String, dynamic> data = toDb();
     data.remove('cached_at');
     return data;
   }
 
-  /// Создаёт копию с изменёнными полями.
   CustomMedia copyWith({
     int? id,
     String? title,

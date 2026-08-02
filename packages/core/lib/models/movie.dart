@@ -1,12 +1,7 @@
-// Модель фильма из TMDB.
 
 import 'dart:convert';
 
-/// Модель фильма из TMDB API.
-///
-/// Представляет фильм с метаданными из TheMovieDB.
 class Movie {
-  /// Создаёт экземпляр [Movie].
   const Movie({
     required this.tmdbId,
     required this.title,
@@ -22,30 +17,26 @@ class Movie {
     this.cachedAt,
   });
 
-  /// Создаёт [Movie] из JSON ответа TMDB API.
   factory Movie.fromJson(Map<String, dynamic> json) {
-    // Извлекаем URL постера
     String? posterUrl;
     final String? posterPath = json['poster_path'] as String?;
     if (posterPath != null) {
       posterUrl = 'https://image.tmdb.org/t/p/w342$posterPath';
     }
 
-    // Извлекаем URL бэкдропа
     String? backdropUrl;
     final String? backdropPath = json['backdrop_path'] as String?;
     if (backdropPath != null) {
       backdropUrl = 'https://image.tmdb.org/t/p/w780$backdropPath';
     }
 
-    // Извлекаем год из release_date (формат: "2010-07-16")
+    // release_date arrives as `2010-07-16`.
     int? releaseYear;
     final String? releaseDate = json['release_date'] as String?;
     if (releaseDate != null && releaseDate.length >= 4) {
       releaseYear = int.tryParse(releaseDate.substring(0, 4));
     }
 
-    // Извлекаем жанры
     List<String>? genres;
     if (json['genres'] != null) {
       final List<dynamic> genresList = json['genres'] as List<dynamic>;
@@ -53,12 +44,10 @@ class Movie {
           .map((dynamic g) => (g as Map<String, dynamic>)['name'] as String)
           .toList();
     } else if (json['genre_ids'] != null) {
-      // В результатах поиска приходят только ID жанров
       final List<dynamic> genreIds = json['genre_ids'] as List<dynamic>;
       genres = genreIds.map((dynamic id) => id.toString()).toList();
     }
 
-    // Конструируем URL страницы фильма на TMDB
     final int tmdbId = json['id'] as int;
 
     return Movie(
@@ -77,7 +66,6 @@ class Movie {
     );
   }
 
-  /// Создаёт [Movie] из записи базы данных.
   factory Movie.fromDb(Map<String, dynamic> row) {
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
@@ -102,64 +90,52 @@ class Movie {
     );
   }
 
-  /// Уникальный идентификатор фильма в TMDB.
   final int tmdbId;
 
-  /// Название фильма (локализованное).
+  /// Localised by the TMDB request language.
   final String title;
 
-  /// Оригинальное название фильма.
   final String? originalTitle;
 
-  /// URL постера фильма.
   final String? posterUrl;
 
-  /// URL бэкдропа фильма.
   final String? backdropUrl;
 
-  /// Описание фильма.
   final String? overview;
 
-  /// Список жанров.
   final List<String>? genres;
 
-  /// Год выхода.
   final int? releaseYear;
 
-  /// Рейтинг TMDB (0-10).
+  /// TMDB scale is already 0–10.
   final double? rating;
 
-  /// Длительность в минутах.
   final int? runtime;
 
-  /// URL страницы фильма на TMDB.
   final String? externalUrl;
 
-  /// Время кеширования (Unix timestamp).
+  /// Cache timestamp, Unix seconds.
   final int? cachedAt;
 
-  /// URL маленького постера (w154) для thumbnail-ов.
+  /// w154 poster for thumbnails.
   String? get posterThumbUrl {
     if (posterUrl == null) return null;
     return posterUrl!.replaceFirst(RegExp(r'/w\d+'), '/w154');
   }
 
-  /// URL среднего бэкдропа (w300) для экранов деталей.
+  /// w300 backdrop for detail screens.
   String? get backdropSmallUrl {
     if (backdropUrl == null) return null;
     return backdropUrl!.replaceFirst('/w780', '/w300');
   }
 
-  /// Возвращает отформатированный рейтинг.
   String? get formattedRating {
     if (rating == null) return null;
     return rating!.toStringAsFixed(1);
   }
 
-  /// Возвращает жанры в виде строки через запятую.
   String? get genresString => genres?.join(', ');
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'tmdb_id': tmdbId,
@@ -177,7 +153,6 @@ class Movie {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   Movie copyWith({
     int? tmdbId,
     String? title,

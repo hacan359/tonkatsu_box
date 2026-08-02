@@ -13,14 +13,12 @@ import '../theme/app_typography.dart';
 /// Высота 44px, нижний бордер. Используется вместо [AppBar]
 /// на экранах внутри tab Navigator.
 class SubScreenTitleBar extends StatelessWidget {
-  /// Создаёт [SubScreenTitleBar].
   const SubScreenTitleBar({
     required this.title,
     this.onBack,
     super.key,
   });
 
-  /// Заголовок экрана.
   final String title;
 
   /// Callback кнопки назад. Если null — `Navigator.of(context).pop()`.

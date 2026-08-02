@@ -17,7 +17,6 @@ import '../../collections/providers/global_tags_provider.dart';
 import '../../collections/providers/sort_utils.dart';
 import '../../settings/providers/settings_provider.dart';
 
-// ==================== Sort Providers ====================
 
 /// SharedPreferences key for the All Items sort mode.
 const String _allItemsSortModeKey = 'all_items_sort_mode';
@@ -95,7 +94,6 @@ class AllItemsSortDescNotifier extends Notifier<bool> {
   }
 }
 
-// ==================== All Items ====================
 
 /// Provider for all items across every collection.
 final NotifierProvider<AllItemsNotifier, AsyncValue<List<CollectionItem>>>
@@ -220,7 +218,6 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
   }
 }
 
-// ==================== Platform Filter ====================
 
 /// Unique platforms from games in collections, for filtering.
 ///
@@ -255,7 +252,6 @@ final FutureProvider<List<Platform>> allItemsPlatformsProvider =
   return platforms;
 });
 
-// ==================== Collection Names ====================
 
 /// Map of collectionId -> collectionName for display in the UI.
 final Provider<Map<int, String>> collectionNamesProvider =
@@ -268,7 +264,6 @@ final Provider<Map<int, String>> collectionNamesProvider =
   };
 });
 
-// ==================== Tags ====================
 
 /// Map of tagId -> Tag for display and tag search on All Items.
 /// Derived from [globalTagsProvider] so the tags table is loaded once.

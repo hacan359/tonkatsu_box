@@ -1,9 +1,3 @@
-// Глобальная шапка приложения для [AppShell].
-//
-// Содержит логотип слева, контекстное поле поиска и аватар профиля справа.
-// Поле поиска меняет hint и пишет query в провайдер, соответствующий
-// активному табу. Если таб не поддерживает поиск — поле отключено.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,19 +13,13 @@ import 'nav_tour_keys.dart';
 import 'search_providers.dart';
 import 'service_badges.dart';
 
-/// Высота шапки.
 const double kAppTopBarHeight = 56;
 
-/// Ограничение ширины поля поиска, пока оно пустое и не в фокусе.
 const double _kIdleSearchMaxWidth = 280;
 
-/// Глобальная шапка приложения.
-///
-/// Оборачивать в [PreferredSize] с динамической высотой
-/// (`kAppTopBarHeight + MediaQuery.paddingOf(context).top`), чтобы Scaffold
-/// выделил правильное место под статусбар на Android.
+  /// Wrap in [PreferredSize] with `kAppTopBarHeight + MediaQuery.paddingOf(context).top`
+  /// so Scaffold reserves room for the Android status bar.
 class AppTopBar extends ConsumerStatefulWidget {
-  /// Создаёт [AppTopBar].
   const AppTopBar({
     required this.activeTab,
     required this.onSettingsTap,
@@ -39,15 +27,13 @@ class AppTopBar extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Активный таб (определяет контекст поиска).
+  /// Decides which provider the search field writes to.
   final NavTab activeTab;
 
-  /// Disables the search field (e.g. in personalization mode, which has no
-  /// search of its own). A disabled field drops focus — on mobile this hides
-  /// the keyboard that would otherwise pop up when personalization opens.
+  /// A disabled field drops focus, which on mobile hides the keyboard that would
+  /// otherwise pop up when personalization opens.
   final bool suppressSearch;
 
-  /// Колбэк при тапе по шестерёнке — переход в Settings.
   final VoidCallback onSettingsTap;
 
   @override
@@ -68,8 +54,8 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
     super.dispose();
   }
 
-  /// Подписывается на провайдер текущего таба (если он поменялся)
-  /// и синхронизирует контроллер с внешним значением.
+  /// Re-subscribes when the tab changed and syncs the controller with the
+  /// provider's value.
   void _syncSubscription(SearchContext? ctx) {
     if (ctx?.queryProvider == _subscribedProvider) return;
 
@@ -99,8 +85,7 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
     );
   }
 
-  /// Подписывается на focus node, чтобы ребилдить виджет при смене фокуса
-  /// (нужно для сужения/расширения «пустого» поля).
+  /// Rebuilds on focus change — the empty field narrows and widens with it.
   void _syncFocusListener(FocusNode node) {
     if (_watchedFocusNode == node) return;
     _watchedFocusNode?.removeListener(_onFocusChanged);
@@ -111,8 +96,8 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
   void _onFocusChanged() {
     if (!mounted) return;
     setState(() {});
-    // При получении фокуса (type-to-search) ставим курсор в конец,
-    // чтобы следующая буква не затирала текст.
+    // On focus (type-to-search) the caret goes to the end so the next letter
+    // appends instead of replacing.
     if (_watchedFocusNode?.hasFocus ?? false) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -201,7 +186,7 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
   }
 }
 
-/// Иконка шестерёнки с опциональным пульсирующим бейджем (update available).
+/// Gear icon with an optional pulsing badge when an update is available.
 class _SettingsButton extends StatelessWidget {
   const _SettingsButton({
     required this.active,

@@ -1,5 +1,5 @@
-import 'package:core/database/query_chunk.dart';
-import 'package:core/models/custom_media.dart';
+import '../query_chunk.dart';
+import '../../models/custom_media.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for the `custom_items` table.

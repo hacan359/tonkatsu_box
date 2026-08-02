@@ -10,10 +10,8 @@ enum ItemStatus {
 
   planned('planned'),
 
-  /// Replaying / rewatching / rereading a previously finished item.
-  ///
-  /// A bare indicator status: switching to it never touches
-  /// `startedAt`/`completedAt` (the item was already completed once).
+  /// A bare indicator: switching to it never touches `startedAt` /
+  /// `completedAt`, since the item was already completed once.
   replaying('replaying');
 
   const ItemStatus(this.value);
@@ -41,9 +39,7 @@ enum ItemStatus {
     return null;
   }
 
-  /// English display name (locale-independent).
-  ///
-  /// For non-localised contexts such as text export and MAL export.
+  /// Locale-independent, for non-localised contexts such as text and MAL export.
   String get displayLabel {
     switch (this) {
       case ItemStatus.notStarted:

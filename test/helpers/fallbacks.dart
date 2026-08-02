@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/canvas_viewport.dart';
 import 'package:core/models/collection.dart';
@@ -22,7 +23,6 @@ import 'package:core/models/tv_show.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 
 import 'mocks.dart';

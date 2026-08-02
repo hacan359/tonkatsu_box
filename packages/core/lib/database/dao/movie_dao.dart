@@ -1,5 +1,5 @@
-import 'package:core/database/query_chunk.dart';
-import 'package:core/models/movie.dart';
+import '../query_chunk.dart';
+import '../../models/movie.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for the `movies_cache` and `tmdb_genres` tables.
@@ -65,9 +65,7 @@ class MovieDao {
     await db.delete('movies_cache');
   }
 
-  /// Returns a genre ID → name map from the cache.
-  ///
-  /// [type] is `'movie'` or `'tv'`; [lang] is `'en'` or `'ru'`.
+  /// [type] is `movie` or `tv`; [lang] is `en` or `ru`.
   Future<Map<String, String>> getTmdbGenreMap(
     String type, {
     String lang = 'en',

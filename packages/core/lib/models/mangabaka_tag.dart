@@ -1,8 +1,5 @@
-// One entry from the MangaBaka tag catalog (`/v1/tags`).
-
-/// Tag from MangaBaka's tag catalog. The catalog is hierarchical
-/// ([parentId] / [level] / [namePath]); genres are a subset flagged with
-/// [isGenre]. Cached in the `mangabaka_tags` table and refreshed on demand.
+/// Hierarchical catalog ([parentId] / [level] / [namePath]); genres are the
+/// subset flagged [isGenre]. Cached in `mangabaka_tags`.
 class MangaBakaTag {
   const MangaBakaTag({
     required this.id,

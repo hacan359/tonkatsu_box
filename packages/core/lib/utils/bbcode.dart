@@ -1,8 +1,5 @@
-// Cleans Fantlab rich text: BB-codes, HTML / LINK tags and common entities.
-
-/// A BB-code marker — an opening `[tag]` / `[tag=value]` or a closing `[/tag]`.
-/// Inner text between a paired tag is kept; only the markers are removed, so
-/// `[url=x]Title[/url]` and `[USER=79]Nog[/USER]` collapse to `Title` / `Nog`.
+/// Matches an opening `[tag]` / `[tag=value]` or a closing `[/tag]`; inner text
+/// survives, so `[url=x]Title[/url]` collapses to `Title`.
 final RegExp _bbTag = RegExp(r'\[/?[a-zA-Z][^\]]*\]');
 
 /// An HTML / LINK tag (Fantlab text can carry both BB-codes and HTML links).
@@ -27,10 +24,8 @@ const Map<String, String> _entities = <String, String>{
 final RegExp _trailingSpaces = RegExp(r'[ \t]+\n');
 final RegExp _multiNewline = RegExp(r'\n{3,}');
 
-/// Strips Fantlab BB-codes (`[b]`, `[i]`, `[url=…]`, `[USER=…]`, `[autor=…]`,
-/// `[spoiler]`, …), HTML / LINK tags and common HTML entities, preserving the
-/// human-readable inner text. Newlines are normalised (CRLF → LF, runs of 3+
-/// blank lines collapsed) and the result is trimmed.
+/// Strips Fantlab BB-codes, HTML / LINK tags and common entities, keeping the
+/// readable text. Newlines are normalised and the result trimmed.
 String stripBbCodes(String input) {
   if (input.isEmpty) return input;
 

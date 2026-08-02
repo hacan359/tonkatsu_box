@@ -14,7 +14,6 @@ import '../../settings/providers/settings_provider.dart';
 import '../../settings/widgets/create_profile_dialog.dart';
 import '../../../shared/constants/profile_ui.dart';
 
-/// Ключ SharedPreferences для пропуска выбора профиля.
 const String kSkipProfilePickerKey = 'skip_profile_picker';
 
 /// Экран выбора профиля при запуске.
@@ -22,7 +21,6 @@ const String kSkipProfilePickerKey = 'skip_profile_picker';
 /// Показывается после splash, если профилей > 1 и пользователь
 /// не отключил этот экран через "Don't ask again".
 class ProfilePickerScreen extends ConsumerStatefulWidget {
-  /// Создаёт [ProfilePickerScreen].
   const ProfilePickerScreen({super.key});
 
   @override
@@ -38,7 +36,6 @@ class _ProfilePickerScreenState
     final ProfilesData data = ref.read(profilesDataProvider);
 
     if (profile.id != data.currentProfileId) {
-      // Переключаем и перезапускаем
       final ProfileService service = ref.read(profileServiceProvider);
       await service.switchProfile(profile.id);
       if (!mounted) return;
@@ -46,7 +43,6 @@ class _ProfilePickerScreenState
       return;
     }
 
-    // Текущий профиль — просто идём дальше
     if (_dontAskAgain) {
       final SharedPreferences prefs =
           ref.read(sharedPreferencesProvider);
@@ -70,7 +66,6 @@ class _ProfilePickerScreenState
     final Profile profile =
         await service.createProfile(result.name, result.color);
 
-    // Переключаемся на новый профиль и перезапускаем
     await service.switchProfile(profile.id);
     if (!mounted) return;
     await ProfileService.restartApp(context, ref);

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:core/models/item_status.dart';
-import 'package:core/models/media_type.dart';
+import '../../models/item_status.dart';
+import '../../models/media_type.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// SQL aggregates for the statistics page. Schema date units: `added_at` is
@@ -184,9 +184,8 @@ class StatsDao {
     return (rows.first['s'] as int?) ?? 0;
   }
 
-  /// Runtime minutes from fixed data only: watched episodes with a known
-  /// runtime plus completed movies' runtimes (rewatches included). No
-  /// averages — episodes without a cached runtime contribute nothing.
+  /// Fixed data only — watched episodes with a known runtime plus completed
+  /// movies. No averaging: an episode without a cached runtime counts as 0.
   Future<int> getEstimatedMinutes({int? year}) async {
     final Database db = await _getDatabase();
     final _Window w = _Window.year(year);
@@ -248,11 +247,8 @@ class StatsDao {
     };
   }
 
-  /// Highest-rated item added in each `year-month` bucket.
-  ///
-  /// No window functions anywhere in this DAO: they need SQLite 3.25+,
-  /// which older Android devices don't ship. Rows come back ordered and
-  /// the per-group cap happens in Dart over (group, id) pairs only.
+  /// No window functions anywhere in this DAO: they need SQLite 3.25+, which
+  /// older Android devices lack. Rows arrive ordered and are capped in Dart.
   Future<Map<String, int>> getBestItemByMonth({int? year}) async {
     final Database db = await _getDatabase();
     final _Window w = _Window.year(year);
@@ -410,9 +406,8 @@ class StatsDao {
     return result;
   }
 
-  /// The highest-rated row ids per source format of [mediaType] (top
-  /// [perFormat] each), for the format card covers.
-  /// Ordered rows, capped per group in Dart (see [getBestItemByMonth]).
+  /// Top [perFormat] row ids per source format, for the format card covers.
+  /// Capped per group in Dart (see [getBestItemByMonth]).
   Future<Map<String, List<int>>> getTopItemsByFormat(
     MediaType mediaType, {
     int? year,

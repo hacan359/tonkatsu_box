@@ -1,10 +1,5 @@
-// Тир-лист — сущность для ранжирования элементов коллекции.
 
-/// Тир-лист.
-///
-/// Может быть глобальным (все элементы) или привязанным к коллекции.
 class TierList {
-  /// Создаёт [TierList].
   const TierList({
     required this.id,
     required this.name,
@@ -12,7 +7,6 @@ class TierList {
     this.collectionId,
   });
 
-  /// Создаёт [TierList] из записи базы данных.
   factory TierList.fromDb(Map<String, dynamic> row) {
     return TierList(
       id: row['id'] as int,
@@ -24,22 +18,17 @@ class TierList {
     );
   }
 
-  /// Уникальный идентификатор.
   final int id;
 
-  /// Название тир-листа.
   final String name;
 
-  /// ID коллекции (null = глобальный, все элементы).
+  /// `null` scopes the list globally, across every item.
   final int? collectionId;
 
-  /// Дата создания.
   final DateTime createdAt;
 
-  /// Глобальный тир-лист (не привязан к коллекции).
   bool get isGlobal => collectionId == null;
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -49,7 +38,6 @@ class TierList {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TierList copyWith({
     int? id,
     String? name,

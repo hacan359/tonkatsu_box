@@ -1,16 +1,11 @@
-// DAO for TV shows, seasons, episodes and watched episodes.
-
-import 'package:core/database/query_chunk.dart';
-import 'package:core/database/sparse_upsert.dart';
-import 'package:core/models/data_source.dart';
-import 'package:core/models/tv_episode.dart';
-import 'package:core/models/tv_season.dart';
-import 'package:core/models/tv_show.dart';
+import '../query_chunk.dart';
+import '../sparse_upsert.dart';
+import '../../models/data_source.dart';
+import '../../models/tv_episode.dart';
+import '../../models/tv_season.dart';
+import '../../models/tv_show.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-/// DAO for the `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache` and
-/// `watched_episodes` tables.
-///
 /// Season, episode and watched rows are keyed by `(source, show id)`.
 class TvShowDao {
   /// Creates the DAO with a database accessor.
@@ -33,9 +28,8 @@ class TvShowDao {
     return TvShow.fromDb(rows.first);
   }
 
-  // Shows parsed from list endpoints (search, recommendations, imports)
-  // carry no totals/status; those columns keep the cached detail-endpoint
-  // value instead of being wiped by the sparse row.
+  // List endpoints carry no totals/status; those columns keep the cached
+  // detail-endpoint value rather than being wiped by the sparse row.
   static ({String sql, List<Object?> args}) _showUpsert(TvShow tvShow) =>
       buildPreservingUpsert(
         table: 'tv_shows_cache',
@@ -190,9 +184,7 @@ class TvShowDao {
     );
   }
 
-  /// Watched episodes of a show within a collection.
-  ///
-  /// Returns a set of (seasonNumber, episodeNumber) records.
+  /// Keyed by (seasonNumber, episodeNumber).
   Future<Map<(int, int), DateTime?>> getWatchedEpisodes(
     int collectionId,
     DataSource source,
@@ -218,10 +210,8 @@ class TvShowDao {
     return result;
   }
 
-  /// Watched episodes for a show aggregated across all collections: an episode
-  /// counts as watched if it is marked in any collection. Release tracking
-  /// treats a show as a single subscription regardless of how many collections
-  /// hold it, so the per-collection split in `watched_episodes` is collapsed.
+  /// Collapses the per-collection split: release tracking treats a show as one
+  /// subscription however many collections hold it.
   Future<Set<(int, int)>> getWatchedEpisodesForShow(
     DataSource source,
     int showId,
@@ -275,10 +265,8 @@ class TvShowDao {
     );
   }
 
-  /// Marks many episodes of one show watched, each with its own timestamp.
-  ///
   /// One transaction for the whole title — an import expanding a completed
-  /// series would otherwise pay a separate commit per episode.
+  /// series would otherwise pay a commit per episode.
   Future<void> markEpisodesWatchedAt(
     int collectionId,
     DataSource source,

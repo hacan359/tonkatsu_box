@@ -3,9 +3,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../schema.dart';
 import 'migration.dart';
 
-/// Seeds genres / tags / platforms as static lookup data. Recreates
-/// `tmdb_genres` with the new `lang` column (EN+RU) and `platforms` without
-/// `logo_image_id` so seeded rows match the post-v24 schema.
+/// Seeds genres / tags / platforms as static lookup data, recreating
+/// `tmdb_genres` with `lang` and `platforms` without `logo_image_id`.
 class MigrationV24 extends Migration {
   @override
   int get version => 24;

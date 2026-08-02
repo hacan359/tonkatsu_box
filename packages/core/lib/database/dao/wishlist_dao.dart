@@ -1,6 +1,6 @@
-import 'package:core/models/media_type.dart';
-import 'package:core/models/wishlist_item.dart';
-import 'package:core/models/wishlist_tag.dart';
+import '../../models/media_type.dart';
+import '../../models/wishlist_item.dart';
+import '../../models/wishlist_tag.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Aggregate of a single wishlist-tag bucket. `null` [tag] is the
@@ -61,9 +61,8 @@ class WishlistDao {
     );
   }
 
-  /// Bulk-inserts wishlist entries in a single transaction. Each [rows] map
-  /// holds text/media_type_hint/note/tag; is_resolved and created_at are filled
-  /// here. Callers dedup against existing entries beforehand. Returns the count.
+  /// Each row holds text/media_type_hint/note/tag; is_resolved and created_at
+  /// are filled here. Callers dedup beforehand. Returns the inserted count.
   Future<int> addWishlistItemsBatch(List<Map<String, dynamic>> rows) async {
     if (rows.isEmpty) return 0;
     final Database db = await _getDatabase();

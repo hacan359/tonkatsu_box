@@ -18,11 +18,11 @@ import 'package:core/models/tier_list.dart';
 import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
 import 'package:core/models/tv_show.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/services/export_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
-import 'package:tonkatsu_box/core/services/xcoll_file.dart';
 
 import '../../helpers/test_helpers.dart';
 

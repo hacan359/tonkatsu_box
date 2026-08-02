@@ -1,7 +1,7 @@
-import 'package:core/database/query_chunk.dart';
-import 'package:core/models/tracker_achievement.dart';
-import 'package:core/models/tracker_game_data.dart';
-import 'package:core/models/tracker_profile.dart';
+import '../query_chunk.dart';
+import '../../models/tracker_achievement.dart';
+import '../../models/tracker_game_data.dart';
+import '../../models/tracker_profile.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for `tracker_profiles`, `tracker_game_data`, `tracker_achievements`.
@@ -86,9 +86,8 @@ class TrackerDao {
     return TrackerGameData.fromDb(rows.first);
   }
 
-  /// Returns every tracker row tied to `(tracker_type, game_id)` regardless
-  /// of platform — useful when the caller wants to aggregate across all
-  /// platform variants of the same IGDB game.
+  /// Every row for `(tracker_type, game_id)` regardless of platform, for
+  /// callers aggregating across platform variants of one IGDB game.
   Future<List<TrackerGameData>> getGameDataForAnyPlatform(
     TrackerType type,
     int gameId,
@@ -164,9 +163,8 @@ class TrackerDao {
     });
   }
 
-  /// Drops tracker rows + their per-game achievements. When [platformId] is
-  /// provided only that platform variant is removed; otherwise every platform
-  /// variant for the IGDB game is wiped together.
+  /// With [platformId] only that variant is removed; otherwise every platform
+  /// variant of the IGDB game is wiped together.
   Future<void> deleteGameData(
     TrackerType type,
     int gameId, {
@@ -200,9 +198,8 @@ class TrackerDao {
     final Set<String> trackerGameIds = <String>{
       for (final Map<String, dynamic> r in rows) r['tracker_game_id'] as String,
     };
-    // Only drop achievements when no other tracker_game_data row still
-    // references them — different platform installs can share an RA id only
-    // in theory, but Steam definitely shares AppId across platforms.
+    // Steam shares an AppId across platforms, so achievements only go once no
+    // other tracker_game_data row references them.
     for (final String trackerGameId in trackerGameIds) {
       final List<Map<String, Object?>> countRows = await db.rawQuery(
         'SELECT COUNT(*) AS c FROM tracker_game_data '

@@ -1,6 +1,6 @@
+import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/global_tag_dao.dart';
 import '../../../core/database/database_service.dart';
 
 /// Item → global tag ids for the whole database, each list in the item's

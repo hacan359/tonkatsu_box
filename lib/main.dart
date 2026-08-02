@@ -19,13 +19,11 @@ import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
 
-/// Глобальные данные инициализации, перечитываемые при перезапуске.
 late SharedPreferences _prefs;
 late ApiKeys _apiKeys;
 late ProfilesData _profilesData;
 late String _heroDir;
 
-/// Точка входа в приложение.
 Future<void> main() async {
   AppLogger.init();
 
@@ -35,7 +33,6 @@ Future<void> main() async {
       AppLogger.setupErrorHandlers();
       HttpOverrides.global = AppHttpOverrides();
 
-      // Инициализация SQLite FFI для Windows/Linux/macOS
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
         sqfliteFfiInit();
         databaseFactory = databaseFactoryFfi;
@@ -69,7 +66,6 @@ Future<void> main() async {
   );
 }
 
-/// Загружает SharedPreferences, API keys и профильные данные.
 Future<void> _loadAppState() async {
   _prefs = await SharedPreferences.getInstance();
   _apiKeys = ApiKeys.fromPrefs(_prefs);
@@ -86,7 +82,6 @@ Future<void> _loadAppState() async {
 /// Меняет [Key] у [ProviderScope], что пересоздаёт все провайдеры с нуля.
 /// На десктопе перезапуск происходит через `Process.start + exit(0)`.
 class AppRestartScope extends StatefulWidget {
-  /// Создаёт [AppRestartScope].
   const AppRestartScope({required this.child, super.key});
 
   /// Дочерний виджет (обычно [TonkatsuBoxApp]).

@@ -2,9 +2,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Splits the single `collection_items` unique index into media-type-aware
-/// variants so multi-platform installs of the same game can coexist while
-/// non-game media still dedupe by `(collection, type, external_id)` alone.
+/// Splits the `collection_items` unique index into media-type-aware variants so
+/// multi-platform games coexist while other media dedupe without platform.
 class MigrationV30 extends Migration {
   @override
   int get version => 30;

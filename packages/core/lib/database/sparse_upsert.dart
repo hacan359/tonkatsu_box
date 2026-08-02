@@ -1,14 +1,5 @@
-// Upsert SQL builder for media cache tables.
-
-/// Builds an `INSERT OR REPLACE` statement where [preserveWhenNull] columns
-/// keep the cached value when the incoming one is NULL.
-///
-/// Rows parsed from list endpoints (search, recommendations, similars) lack
-/// fields that only detail endpoints provide (episode totals, page counts);
-/// a plain REPLACE would wipe those cached values. Preserved columns are
-/// written as `COALESCE(?, (SELECT col ... WHERE key))` — the subquery reads
-/// the old row before REPLACE deletes it. This idiom works on any SQLite,
-/// unlike `ON CONFLICT DO UPDATE` (3.24+, missing on Android < 11).
+/// [preserveWhenNull] columns keep their cached value via
+/// `COALESCE(?, (SELECT ...))` — works on any SQLite, unlike `ON CONFLICT` 3.24+.
 ({String sql, List<Object?> args}) buildPreservingUpsert({
   required String table,
   required Map<String, Object?> row,

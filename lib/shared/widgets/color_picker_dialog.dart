@@ -45,7 +45,6 @@ const List<Color> kDefaultColorPalette = <Color>[
 /// [noColorSentinel], если пользователь нажал «Без цвета» (только когда
 /// [allowNoColor] = `true`).
 class ColorPickerDialog extends StatefulWidget {
-  /// Создаёт [ColorPickerDialog].
   const ColorPickerDialog({
     this.palette = kDefaultColorPalette,
     this.currentColor,
@@ -56,10 +55,8 @@ class ColorPickerDialog extends StatefulWidget {
   /// Текущий выбранный цвет (для инициализации HSL).
   final Color? currentColor;
 
-  /// Пресет-палитра для быстрого выбора.
   final List<Color> palette;
 
-  /// Показывать кнопку «Без цвета».
   final bool allowNoColor;
 
   /// Значение, возвращаемое при нажатии «Без цвета».
@@ -67,7 +64,6 @@ class ColorPickerDialog extends StatefulWidget {
   /// Позволяет вызывающему коду отличить «без цвета» от «отменено» (`null`).
   static const Color noColorSentinel = Color(0x00000000);
 
-  /// Показывает диалог и возвращает результат.
   static Future<Color?> show({
     required BuildContext context,
     Color? currentColor,
@@ -119,7 +115,6 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
               ),
               const SizedBox(height: 20),
 
-              // Палитра пресетов
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -129,7 +124,6 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Превью + hex
               Row(
                 children: <Widget>[
                   Container(
@@ -154,7 +148,6 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
               ),
               const SizedBox(height: 16),
 
-              // HSL слайдеры
               _HslSlider(
                 label: 'H',
                 value: _hsl.hue,

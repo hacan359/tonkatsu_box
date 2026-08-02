@@ -86,7 +86,7 @@ Immutable classes with factory constructors. Order within model class:
 
 Database operations are organized into domain-specific DAO classes. Each DAO receives a database accessor function.
 
-DAOs live in lib/core/database/dao/. DatabaseService exposes DAO instances via late final fields and delegates all public methods to them, preserving the existing API for consumers.
+DAOs live in packages/core/lib/database/dao/ (pure Dart, imported as `package:core/database/dao/...`). DatabaseService exposes DAO instances via late final fields and delegates all public methods to them, preserving the existing API for consumers.
 
 Available DAOs:
 - GameDao: games, platforms, IGDB genres

@@ -1,5 +1,3 @@
-/// External data provider.
-///
 /// Brand assets live app-side: see the `DataSourceUi.iconAsset` extension.
 enum DataSource {
   /// IGDB — game database.
@@ -68,15 +66,12 @@ enum DataSource {
   /// Brand color of the source as an ARGB int.
   final int colorValue;
 
-  /// Canonical lowercase identifier — the single source for the provider
-  /// "key" that used to be hardcoded as `groupId` literals and in the
-  /// group→sources map. Derived from [name] so there is nothing to keep in
-  /// sync (e.g. `comicVine` → `comicvine`, `googleBooks` → `googlebooks`).
+  /// Canonical provider key, derived from [name] so nothing needs syncing
+  /// (`comicVine` → `comicvine`).
   String get key => name.toLowerCase();
 
-  /// Parses a [DataSource] from its stored name (the `source` column in DB /
-  /// export). Returns [DataSource.anilist] for null and unknown values — the
-  /// safe manga default, since the manga cache was AniList-only before v44.
+  /// Falls back to [DataSource.anilist] for null / unknown — the manga cache
+  /// was AniList-only before v44.
   static DataSource fromName(String? name) =>
       fromNameOr(name, DataSource.anilist);
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
@@ -13,7 +14,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
-import '../../../database/dao/global_tag_dao.dart';
 import '../../../database/database_service.dart';
 import '../../../services/image_cache_service.dart';
 import '../../import_columns.dart';

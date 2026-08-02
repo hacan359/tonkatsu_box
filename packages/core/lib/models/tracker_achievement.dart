@@ -1,10 +1,7 @@
-// Модель конкретного достижения от внешнего трекера.
 
 import 'tracker_profile.dart';
 
-/// Конкретное достижение per-game от трекера (RA, Steam).
 class TrackerAchievement {
-  /// Создаёт [TrackerAchievement].
   const TrackerAchievement({
     required this.id,
     required this.trackerType,
@@ -20,7 +17,6 @@ class TrackerAchievement {
     this.earnedAt,
   });
 
-  /// Создаёт [TrackerAchievement] из записи БД.
   factory TrackerAchievement.fromDb(Map<String, dynamic> row) {
     return TrackerAchievement(
       id: row['id'] as int,
@@ -38,10 +34,8 @@ class TrackerAchievement {
     );
   }
 
-  /// Создаёт [TrackerAchievement] из RA API JSON.
-  ///
-  /// [json] — значение из `Achievements` map в `GetGameInfoAndUserProgress`.
-  /// [trackerGameId] — RA GameID.
+  /// [json] is one value of the `Achievements` map in
+  /// `GetGameInfoAndUserProgress`.
   factory TrackerAchievement.fromRaJson(
     Map<String, dynamic> json, {
     required String trackerGameId,
@@ -77,67 +71,50 @@ class TrackerAchievement {
     );
   }
 
-  /// Уникальный ID.
   final int id;
 
-  /// Тип трекера.
   final TrackerType trackerType;
 
-  /// ID игры в трекере (RA GameID / Steam AppID).
+  /// RA GameID or Steam AppID.
   final String trackerGameId;
 
-  /// ID достижения в трекере.
   final String achievementId;
 
-  /// Название достижения.
   final String title;
 
-  /// Описание достижения.
   final String? description;
 
-  /// Очки за достижение (RA Points).
   final int? points;
 
-  /// Имя бейджа для иконки (RA BadgeName).
   final String? badgeName;
 
-  /// Тип достижения ('missable', 'progression', null).
+  /// RA type token: `missable`, `progression`, `win_condition`, or null.
   final String? type;
 
-  /// Порядок отображения.
   final int displayOrder;
 
-  /// Заработано ли.
   final bool earned;
 
-  /// Timestamp разблокировки.
   final int? earnedAt;
 
-  /// URL иконки достижения (RA).
   String? get badgeUrl => badgeName != null
       ? 'https://media.retroachievements.org/Badge/$badgeName.png'
       : null;
 
-  /// URL иконки заблокированного достижения (RA).
   String? get lockedBadgeUrl => badgeName != null
       ? 'https://media.retroachievements.org/Badge/${badgeName}_lock.png'
       : null;
 
-  /// Является ли missable (можно пропустить).
   bool get isMissable => type == 'missable';
 
-  /// Является ли progression (прогрессионное).
   bool get isProgression => type == 'progression';
 
-  /// Является ли win condition (обязательное для beaten).
   bool get isWinCondition => type == 'win_condition';
 
-  /// DateTime разблокировки.
   DateTime? get earnedDateTime => earnedAt != null
       ? DateTime.fromMillisecondsSinceEpoch(earnedAt! * 1000)
       : null;
 
-  /// Преобразует в Map для БД.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       if (id != 0) 'id': id,
@@ -155,7 +132,6 @@ class TrackerAchievement {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TrackerAchievement copyWith({
     int? id,
     TrackerType? trackerType,

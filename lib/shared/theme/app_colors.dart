@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 ///
 /// All colors are static constants for consistency across widgets.
 abstract final class AppColors {
-  // ==================== Backgrounds ====================
 
   /// Main app background.
   static const Color background = Color(0xFF0A0A0A);
@@ -20,7 +19,6 @@ abstract final class AppColors {
   /// Surface border.
   static const Color surfaceBorder = Color(0xFF2A2A2A);
 
-  // ==================== Text ====================
 
   /// Primary text.
   static const Color textPrimary = Color(0xFFFFFFFF);
@@ -31,12 +29,10 @@ abstract final class AppColors {
   /// Tertiary text (disabled items, hints).
   static const Color textTertiary = Color(0xFF707070);
 
-  // ==================== Brand / App Accent ====================
 
   /// Main app accent color (orange).
   static const Color brand = Color(0xFFEF7B44);
 
-  // ==================== Media type accents ====================
 
   /// Accent for games (indigo).
   static const Color gameAccent = Color(0xFF707DD2);
@@ -65,7 +61,6 @@ abstract final class AppColors {
   /// Accent for custom items (teal).
   static const Color customAccent = Color(0xFF26A69A);
 
-  // ==================== Semantic colors ====================
 
   /// Success (completed, done).
   static const Color success = Color(0xFF66BB6A);
@@ -79,7 +74,6 @@ abstract final class AppColors {
   /// Favorite heart (filled).
   static const Color favorite = Color(0xFFFF4D6D);
 
-  // ==================== Statuses ====================
 
   /// "In Progress" status (playing/watching).
   static const Color statusInProgress = Color(0xFF42A5F5);
@@ -96,7 +90,6 @@ abstract final class AppColors {
   /// "Replay" status (replaying / rewatching / rereading).
   static const Color statusReplaying = Color(0xFF26C6DA);
 
-  // ==================== Ratings ====================
 
   /// Rating star icon (amber).
   static const Color ratingStar = Color(0xFFF59E0B);

@@ -1,4 +1,3 @@
-// Определения глобальных клавиатурных сочетаний.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,34 +5,29 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/platform_features.dart';
 
-/// Описание одного хоткея для легенды (F1 диалог).
+/// One row of the F1 shortcut legend.
 class ShortcutEntry {
-  /// Создаёт [ShortcutEntry].
   const ShortcutEntry({required this.keys, required this.description});
 
-  /// Человекочитаемое описание клавиш, например 'Ctrl+N'.
+  /// Human-readable combo, e.g. `Ctrl+N`.
   final String keys;
 
-  /// Описание действия, например 'Создать коллекцию'.
+  /// What the combo does.
   final String description;
 }
 
-/// Группа хоткеев (секция в диалоге F1).
+/// One section of the F1 legend.
 class ShortcutGroup {
-  /// Создаёт [ShortcutGroup].
   const ShortcutGroup({required this.title, required this.entries});
 
-  /// Название группы, например 'Навигация'.
+  /// Section heading.
   final String title;
 
-  /// Список хоткеев в группе.
   final List<ShortcutEntry> entries;
 }
 
-/// Глобальные клавиатурные сочетания (AppShell).
-///
-/// Возвращает маппинг [ShortcutActivator] → callback для использования
-/// в [CallbackShortcuts]. Только для десктопа.
+/// Desktop only. Returns the [ShortcutActivator] → callback map for
+/// [CallbackShortcuts].
 Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
   required void Function(int tabIndex) onSwitchTab,
   required VoidCallback onNextTab,
@@ -46,7 +40,7 @@ Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
   if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
 
   return <ShortcutActivator, VoidCallback>{
-    // Ctrl+1..6 — переключение табов
+    // Ctrl+1..6 switch tabs.
     const SingleActivator(LogicalKeyboardKey.digit1, control: true):
         () => onSwitchTab(0),
     const SingleActivator(LogicalKeyboardKey.digit2, control: true):
@@ -60,38 +54,30 @@ Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
     const SingleActivator(LogicalKeyboardKey.digit6, control: true):
         () => onSwitchTab(5),
 
-    // Ctrl+Tab / Ctrl+Shift+Tab — циклическое переключение
     const SingleActivator(LogicalKeyboardKey.tab, control: true):
         onNextTab,
     const SingleActivator(LogicalKeyboardKey.tab, control: true, shift: true):
         onPreviousTab,
 
-    // Escape — назад
     const SingleActivator(LogicalKeyboardKey.escape):
         onBack,
 
-    // Alt+Left — назад (браузерный стиль)
+    // Alt+Left goes back, browser-style.
     const SingleActivator(LogicalKeyboardKey.arrowLeft, alt: true):
         onBack,
 
-    // Ctrl+F — фокус на поиск
     const SingleActivator(LogicalKeyboardKey.keyF, control: true):
         onSearch,
 
-    // F5 — обновить
     const SingleActivator(LogicalKeyboardKey.f5):
         onRefresh,
 
-    // F1 — показать легенду хоткеев
     const SingleActivator(LogicalKeyboardKey.f1):
         onShowHelp,
   };
 }
 
-/// Проверяет, находится ли фокус в текстовом поле.
-///
-/// Используется для подавления однобуквенных хоткеев (V, B, L и т.д.)
-/// когда пользователь набирает текст.
+/// Suppresses single-letter hotkeys (V, B, L…) while the user is typing.
 bool isTextFieldFocused() {
   final FocusNode? focus = FocusManager.instance.primaryFocus;
   if (focus == null) return false;
@@ -99,7 +85,6 @@ bool isTextFieldFocused() {
   final BuildContext? ctx = focus.context;
   if (ctx == null) return false;
 
-  // Проверяем наличие EditableText в предках сфокусированного виджета
   bool found = false;
   ctx.visitAncestorElements((Element element) {
     if (element.widget is EditableText) {

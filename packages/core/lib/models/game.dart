@@ -1,10 +1,6 @@
 import 'game_time_to_beat.dart';
 
-/// Модель игры из IGDB.
-///
-/// Представляет игру с метаданными из IGDB API.
 class Game {
-  /// Создаёт экземпляр [Game].
   const Game({
     required this.id,
     required this.name,
@@ -21,20 +17,17 @@ class Game {
     this.timeToBeat,
   });
 
-  /// Создаёт [Game] из JSON ответа IGDB API.
   factory Game.fromJson(Map<String, dynamic> json) {
-    // Извлекаем URL обложки из вложенного объекта cover
     String? coverUrl;
     if (json['cover'] != null) {
       final Map<String, dynamic> cover = json['cover'] as Map<String, dynamic>;
       final String? imageId = cover['image_id'] as String?;
       if (imageId != null) {
-        // Используем размер cover_big (264x374)
+        // cover_big is 264x374.
         coverUrl = 'https://images.igdb.com/igdb/image/upload/t_cover_big/$imageId.jpg';
       }
     }
 
-    // Извлекаем список жанров
     List<String>? genres;
     if (json['genres'] != null) {
       final List<dynamic> genresList = json['genres'] as List<dynamic>;
@@ -43,14 +36,13 @@ class Game {
           .toList();
     }
 
-    // Извлекаем список платформ (только ID)
+    // Ids only; names are resolved from the platforms table.
     List<int>? platformIds;
     if (json['platforms'] != null) {
       final List<dynamic> platformsList = json['platforms'] as List<dynamic>;
       platformIds = platformsList.map((dynamic p) => p as int).toList();
     }
 
-    // Конвертируем Unix timestamp в DateTime
     DateTime? releaseDate;
     if (json['first_release_date'] != null) {
       releaseDate = DateTime.fromMillisecondsSinceEpoch(
@@ -58,7 +50,6 @@ class Game {
       );
     }
 
-    // Извлекаем первый artwork для фонового изображения.
     String? artworkUrl;
     if (json['artworks'] != null) {
       final List<dynamic> artworks = json['artworks'] as List<dynamic>;
@@ -89,9 +80,7 @@ class Game {
     );
   }
 
-  /// Создаёт [Game] из записи базы данных.
   factory Game.fromDb(Map<String, dynamic> row) {
-    // Парсим JSON строки для списков
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
       genres = (row['genres'] as String).split('|');
@@ -129,58 +118,43 @@ class Game {
     );
   }
 
-  /// Уникальный идентификатор игры в IGDB.
   final int id;
 
-  /// Название игры.
   final String name;
 
-  /// Краткое описание игры.
   final String? summary;
 
-  /// URL обложки игры.
   final String? coverUrl;
 
-  /// Дата первого релиза.
   final DateTime? releaseDate;
 
-  /// Рейтинг IGDB (0-100).
+  /// IGDB scale is 0–100; [formattedRating] converts to 0–10.
   final double? rating;
 
-  /// Количество оценок.
   final int? ratingCount;
 
-  /// Список жанров.
   final List<String>? genres;
 
-  /// Список ID платформ.
   final List<int>? platformIds;
 
-  /// URL страницы игры на IGDB.
   final String? externalUrl;
 
-  /// Время кеширования (Unix timestamp).
+  /// Cache timestamp, Unix seconds.
   final int? cachedAt;
 
-  /// URL artwork для фонового изображения.
   final String? artworkUrl;
 
-  /// Среднее время прохождения (IGDB `game_time_to_beats`).
-  ///
-  /// Транзиентное поле: подтягивается при поиске, в базе не хранится
-  /// (исключено из [toDb] / [fromDb] / [fromJson]).
+  /// Transient: fetched with search, never stored — excluded from [toDb] /
+  /// [fromDb] / [fromJson].
   final GameTimeToBeat? timeToBeat;
 
-  /// Возвращает год релиза или null.
   int? get releaseYear => releaseDate?.year;
 
-  /// Возвращает отформатированный рейтинг (0-10).
   String? get formattedRating {
     if (rating == null) return null;
     return (rating! / 10).toStringAsFixed(1);
   }
 
-  /// Возвращает жанры в виде строки через запятую.
   String? get genresString => genres?.join(', ');
 
   @override
@@ -195,7 +169,6 @@ class Game {
   @override
   String toString() => 'Game(id: $id, name: $name)';
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -215,7 +188,6 @@ class Game {
     };
   }
 
-  /// Преобразует в JSON для API.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -233,7 +205,6 @@ class Game {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   Game copyWith({
     int? id,
     String? name,

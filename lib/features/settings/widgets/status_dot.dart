@@ -1,4 +1,3 @@
-// Индикатор статуса с иконкой и текстовой меткой.
 
 import 'package:flutter/material.dart';
 
@@ -6,24 +5,18 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Тип статуса для отображения.
 enum StatusType {
-  /// Успешное состояние.
   success,
 
-  /// Предупреждение.
   warning,
 
-  /// Ошибка.
   error,
 
-  /// Неактивное/неизвестное состояние.
   inactive,
 }
 
 /// Компактный индикатор статуса: иконка + текст.
 class StatusDot extends StatelessWidget {
-  /// Создаёт [StatusDot].
   const StatusDot({
     required this.label,
     required this.type,
@@ -31,13 +24,11 @@ class StatusDot extends StatelessWidget {
     super.key,
   });
 
-  /// Текстовая метка статуса.
   final String label;
 
   /// Тип статуса (определяет иконку и цвет).
   final StatusType type;
 
-  /// Уменьшенный размер для мобильных экранов.
   final bool compact;
 
   @override
