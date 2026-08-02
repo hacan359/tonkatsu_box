@@ -7,6 +7,8 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../layout/stats_layout.dart';
+import '../layout/stats_layout_scope.dart';
 import '../models/library_stats.dart';
 import 'stats_cards.dart';
 import 'stats_section_header.dart';
@@ -34,6 +36,7 @@ class _StatsPlatformsSectionState extends State<StatsPlatformsSection> {
     if (platforms.isEmpty) return const SizedBox.shrink();
 
     final NumberFormat numberFormat = statsNumberFormat(context);
+    final StatsLayout layout = StatsLayoutScope.of(context);
     int totalMinutes = 0;
     int totalGames = 0;
     for (final PlatformStats p in platforms) {
@@ -54,7 +57,9 @@ class _StatsPlatformsSectionState extends State<StatsPlatformsSection> {
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             final int columns =
-                (constraints.maxWidth / 260).floor().clamp(1, 4);
+                (constraints.maxWidth / layout.gridCardMinWidth)
+                    .floor()
+                    .clamp(1, layout.gridCardMaxColumns);
             final double width = (constraints.maxWidth -
                     (columns - 1) * AppSpacing.md) /
                 columns;
@@ -144,18 +149,12 @@ class _PlatformCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
-          Text.rich(
-            TextSpan(
-              text: numberFormat.format(platform.gameCount),
-              style: AppTypography.h1.copyWith(fontSize: 30, height: 1.1),
-              children: <InlineSpan>[
-                TextSpan(
-                  text: ' ${l.statsGamesUnit}',
-                  style: AppTypography.bodySmall
-                      .copyWith(color: AppColors.textTertiary),
-                ),
-              ],
-            ),
+          // Bare count: the platform name above already says what is counted.
+          Text(
+            numberFormat.format(platform.gameCount),
+            style: AppTypography.h1.copyWith(fontSize: 30, height: 1.1),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           Text(
             <String>[
@@ -171,23 +170,27 @@ class _PlatformCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           StatusSplitBar(counts: platform.statusCounts),
-          const SizedBox(height: AppSpacing.sm),
-          if (platform.topItemIds.isNotEmpty) ...<Widget>[
-            Text(
-              platform.minutes > 0
-                  ? l.statsPlatformMostPlayed
-                  : l.statsTopHint(platform.topItemIds.length),
-              style: AppTypography.caption
-                  .copyWith(color: AppColors.textTertiary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          // The covers strip and the caption that labels it travel together:
+          // the phone layout drops both to buy a second grid column.
+          if (StatsLayoutScope.of(context).showCardTopCovers) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            if (platform.topItemIds.isNotEmpty) ...<Widget>[
+              Text(
+                platform.minutes > 0
+                    ? l.statsPlatformMostPlayed
+                    : l.statsTopHint(platform.topItemIds.length),
+                style: AppTypography.caption
+                    .copyWith(color: AppColors.textTertiary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+            StatsTopCoversRow(
+              itemIds: platform.topItemIds,
+              coversById: stats.coversById,
             ),
-            const SizedBox(height: AppSpacing.xs),
           ],
-          StatsTopCoversRow(
-            itemIds: platform.topItemIds,
-            coversById: stats.coversById,
-          ),
         ],
       ),
     );

@@ -8,6 +8,8 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../layout/stats_layout.dart';
+import '../layout/stats_layout_scope.dart';
 import '../models/library_stats.dart';
 import 'stats_cards.dart';
 import 'stats_section_header.dart';
@@ -36,6 +38,7 @@ class StatsFormatsSection extends StatelessWidget {
     if (formats.isEmpty) return const SizedBox.shrink();
 
     final NumberFormat numberFormat = statsNumberFormat(context);
+    final StatsLayout layout = StatsLayoutScope.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,8 +49,9 @@ class StatsFormatsSection extends StatelessWidget {
         ),
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            final int columns =
-                (constraints.maxWidth / 260).floor().clamp(1, 4);
+            final int columns = (constraints.maxWidth / layout.gridCardMinWidth)
+                .floor()
+                .clamp(1, layout.gridCardMaxColumns);
             final double width =
                 (constraints.maxWidth - (columns - 1) * AppSpacing.md) /
                     columns;
@@ -111,18 +115,12 @@ class _FormatCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
-          Text.rich(
-            TextSpan(
-              text: numberFormat.format(format.count),
-              style: AppTypography.h1.copyWith(fontSize: 30, height: 1.1),
-              children: <InlineSpan>[
-                TextSpan(
-                  text: ' ${l.statsTitlesUnit}',
-                  style: AppTypography.bodySmall
-                      .copyWith(color: AppColors.textTertiary),
-                ),
-              ],
-            ),
+          // Bare count: the format label above already says what is counted.
+          Text(
+            numberFormat.format(format.count),
+            style: AppTypography.h1.copyWith(fontSize: 30, height: 1.1),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           Text(
             l.statsCompletedPercent(format.statusCounts.completedPercent),
@@ -131,21 +129,25 @@ class _FormatCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           StatusSplitBar(counts: format.statusCounts),
-          const SizedBox(height: AppSpacing.sm),
-          if (format.topItemIds.isNotEmpty) ...<Widget>[
-            Text(
-              l.statsTopHint(format.topItemIds.length),
-              style: AppTypography.caption
-                  .copyWith(color: AppColors.textTertiary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          // Same trade as the platform cards: no covers on a phone, two
+          // columns instead.
+          if (StatsLayoutScope.of(context).showCardTopCovers) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            if (format.topItemIds.isNotEmpty) ...<Widget>[
+              Text(
+                l.statsTopHint(format.topItemIds.length),
+                style: AppTypography.caption
+                    .copyWith(color: AppColors.textTertiary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+            StatsTopCoversRow(
+              itemIds: format.topItemIds,
+              coversById: stats.coversById,
             ),
-            const SizedBox(height: AppSpacing.xs),
           ],
-          StatsTopCoversRow(
-            itemIds: format.topItemIds,
-            coversById: stats.coversById,
-          ),
         ],
       ),
     );

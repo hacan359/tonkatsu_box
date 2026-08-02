@@ -1,5 +1,3 @@
-// Side navigation rail — vertical, for wide screens.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,11 +23,8 @@ const double _kItemHeight = 56;
 /// Minimum tab-button height — below this the icon becomes hard to read.
 const double _kItemHeightMin = 36;
 
-/// Side navigation rail (vertical).
-///
-/// Icons only (no labels or logo); centers the buttons vertically and
-/// highlights the active item with an animated [LiquidIndicator]. Settings is
-/// not here — it lives in [AppTopBar].
+/// Vertical nav rail for wide screens: icons only, active item marked by a
+/// [LiquidIndicator]. Settings lives in [AppTopBar].
 class AppSidebar extends ConsumerWidget {
   /// Creates an [AppSidebar].
   const AppSidebar({
@@ -57,9 +52,8 @@ class AppSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final int wishlistCount = ref.watch(activeWishlistCountProvider);
     final NavTourKeys tourKeys = ref.watch(navTourKeysProvider);
-    // Tour keys are app-wide singletons; attach only during the menu tour so two
-    // shells alive at once (DB-reset `pushReplacement`) can't reuse the same
-    // GlobalKeys and crash the tree.
+    // App-wide singletons: attaching them outside the tour would let two
+    // live shells reuse the same GlobalKeys and crash the tree.
     final bool tourActive = ref.watch(menuTourControllerProvider);
 
     final List<NavDestination> destinations = buildNavDestinations(
@@ -112,6 +106,7 @@ class AppSidebar extends ConsumerWidget {
                           // The centre logo is larger than a tab icon, so its
                           // highlight needs to be bigger too.
                           size: centerActive ? 50 : 40,
+                          rainbow: centerActive,
                         ),
                         Column(
                           children: <Widget>[

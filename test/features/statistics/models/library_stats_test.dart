@@ -6,29 +6,46 @@ import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 
-// Wraps hand-built totals into an otherwise empty payload for isEmpty checks.
+// Wraps hand-built fields into an otherwise empty payload, so each test only
+// states the part of the payload it cares about.
 LibraryStats _statsWithTotals(
   LibraryTotals totals, {
   UnitsWatched units = const UnitsWatched.empty(),
+  Map<MediaType, Map<ItemStatus, int>> typeStatus =
+      const <MediaType, Map<ItemStatus, int>>{},
+  List<MonthActivity> months = const <MonthActivity>[],
+  Map<MediaType, List<FormatStats>> formatsByType =
+      const <MediaType, List<FormatStats>>{},
+  List<RatingDelta> higherThanCrowd = const <RatingDelta>[],
+  List<RatingDelta> lowerThanCrowd = const <RatingDelta>[],
 }) {
   return LibraryStats(
     period: const StatsPeriod.allTime(),
     availableYears: const <int>[],
     totals: totals,
     units: units,
-    typeStatus: const <MediaType, Map<ItemStatus, int>>{},
+    typeStatus: typeStatus,
     likedByType: const <MediaType, int>{},
     hours: const StatsHours.empty(),
-    months: const <MonthActivity>[],
+    months: months,
     platforms: const <PlatformStats>[],
-    formatsByType: const <MediaType, List<FormatStats>>{},
+    formatsByType: formatsByType,
     subgenres: const <SubgenreGroup>[],
     versus: const <VersusPair>[],
     topRated: const <CollectionItem>[],
-    higherThanCrowd: const <RatingDelta>[],
-    lowerThanCrowd: const <RatingDelta>[],
+    higherThanCrowd: higherThanCrowd,
+    lowerThanCrowd: lowerThanCrowd,
     wallItems: const <CollectionItem>[],
     coversById: const <int, CollectionItem>{},
+  );
+}
+
+MonthActivity _month({int itemsAdded = 0, int episodesWatched = 0}) {
+  return MonthActivity(
+    year: 2024,
+    month: 1,
+    itemsAdded: itemsAdded,
+    episodesWatched: episodesWatched,
   );
 }
 
@@ -206,6 +223,112 @@ void main() {
           _statsWithTotals(const LibraryTotals.empty(), units: units).isEmpty,
           isFalse,
         );
+      });
+    });
+
+    group('hasTypeBreakdown', () {
+      test('should return false when no type has a counted item', () {
+        expect(
+          _statsWithTotals(
+            const LibraryTotals.empty(),
+            typeStatus: const <MediaType, Map<ItemStatus, int>>{
+              MediaType.game: <ItemStatus, int>{ItemStatus.completed: 0},
+            },
+          ).hasTypeBreakdown,
+          isFalse,
+        );
+      });
+
+      test('should return true when any type has a counted item', () {
+        expect(
+          _statsWithTotals(
+            const LibraryTotals.empty(),
+            typeStatus: const <MediaType, Map<ItemStatus, int>>{
+              MediaType.game: <ItemStatus, int>{ItemStatus.completed: 0},
+              MediaType.movie: <ItemStatus, int>{ItemStatus.planned: 1},
+            },
+          ).hasTypeBreakdown,
+          isTrue,
+        );
+      });
+    });
+
+    group('hasMonthActivity', () {
+      test('should return false when every month is idle', () {
+        expect(
+          _statsWithTotals(
+            const LibraryTotals.empty(),
+            months: <MonthActivity>[_month(), _month()],
+          ).hasMonthActivity,
+          isFalse,
+        );
+      });
+
+      test('should return true when a month only watched episodes', () {
+        expect(
+          _statsWithTotals(
+            const LibraryTotals.empty(),
+            months: <MonthActivity>[_month(), _month(episodesWatched: 3)],
+          ).hasMonthActivity,
+          isTrue,
+        );
+      });
+    });
+
+    group('hasCrowdDeltas', () {
+      test('should return false when both delta lists are empty', () {
+        expect(createEmptyLibraryStats().hasCrowdDeltas, isFalse);
+      });
+
+      test('should return true when only the lower list has rows', () {
+        final CollectionItem item = createTestCollectionItem(id: 1);
+
+        expect(
+          _statsWithTotals(
+            const LibraryTotals.empty(),
+            lowerThanCrowd: <RatingDelta>[
+              RatingDelta(item: item, mine: 3, external: 8),
+            ],
+          ).hasCrowdDeltas,
+          isTrue,
+        );
+      });
+    });
+
+    group('hasFormats', () {
+      const FormatStats format = FormatStats(
+        label: 'TV',
+        count: 2,
+        statusCounts: <ItemStatus, int>{},
+        topItemIds: <int>[],
+      );
+
+      test('should return false when the type has no entry', () {
+        expect(createEmptyLibraryStats().hasFormats(MediaType.anime), isFalse);
+      });
+
+      test('should return false when the type has an empty list', () {
+        expect(
+          _statsWithTotals(
+            const LibraryTotals.empty(),
+            formatsByType: const <MediaType, List<FormatStats>>{
+              MediaType.anime: <FormatStats>[],
+            },
+          ).hasFormats(MediaType.anime),
+          isFalse,
+        );
+      });
+
+      test('should return true only for the type that has cards', () {
+        final LibraryStats stats = _statsWithTotals(
+          const LibraryTotals.empty(),
+          formatsByType: const <MediaType, List<FormatStats>>{
+            MediaType.anime: <FormatStats>[format],
+          },
+        );
+
+        expect(stats.hasFormats(MediaType.anime), isTrue);
+        expect(stats.hasFormats(MediaType.manga), isFalse);
       });
     });
   });

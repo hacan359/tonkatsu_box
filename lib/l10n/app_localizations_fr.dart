@@ -5293,14 +5293,6 @@ class SFr extends S {
   String get statsPeriodAllTime => 'Depuis toujours';
 
   @override
-  String statsEyebrowYear(int year) {
-    return 'Bilan de l\'année · $year';
-  }
-
-  @override
-  String get statsEyebrowAllTime => 'Bibliothèque en chiffres';
-
-  @override
   String statsLede(String items) {
     return 'Au total $items éléments dans votre collection';
   }
@@ -5388,9 +5380,6 @@ class SFr extends S {
   String get statsHoursUnit => 'h';
 
   @override
-  String get statsGamesUnit => 'jeux';
-
-  @override
   String get statsTypesTitle => 'Bibliothèque par type';
 
   @override
@@ -5409,26 +5398,11 @@ class SFr extends S {
   String get statsFormatsHint => 'le format vient des données de la source';
 
   @override
-  String get statsTitlesUnit => 'titres';
-
-  @override
   String get statsSubgenresTitle => 'Sous-genres et tags';
 
   @override
   String get statsSubgenresHint =>
-      'les tags de la source sont affichés par type — les vocabulaires diffèrent';
-
-  @override
-  String statsSubgenresTitles(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count titres',
-      one: '1 titre',
-      zero: 'aucun titre',
-    );
-    return '$_temp0';
-  }
+      'les tags de la source sont affichés par type';
 
   @override
   String get statsCrowdTitle => 'Moi contre tous';

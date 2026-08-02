@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/segmented_pill.dart';
+import '../../../shared/widgets/flat_tab_bar.dart';
 import '../../genre_cloud/screens/genre_cloud_screen.dart';
 import '../../recommendations/screens/recommendations_screen.dart';
 import '../../statistics/screens/statistics_screen.dart';
@@ -30,40 +29,25 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
       color: AppColors.background,
       child: Column(
         children: <Widget>[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
+          // No wrapper padding and no container of its own: the blocks start
+          // at one screen edge and end at the other.
+          FlatTabBar<_PersonalizationView>(
+            selected: _view,
+            onChanged: (_PersonalizationView v) => setState(() => _view = v),
+            options: <FlatTabOption<_PersonalizationView>>[
+              FlatTabOption<_PersonalizationView>(
+                value: _PersonalizationView.stats,
+                label: l.statsTabTitle,
               ),
-            ),
-            // Scrollable: three localized labels outgrow narrow phones.
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SegmentedPill<_PersonalizationView>(
-                selected: _view,
-                onChanged: (_PersonalizationView v) =>
-                    setState(() => _view = v),
-                options: <SegmentedPillOption<_PersonalizationView>>[
-                  SegmentedPillOption<_PersonalizationView>(
-                    value: _PersonalizationView.stats,
-                    label: l.statsTabTitle,
-                  ),
-                  SegmentedPillOption<_PersonalizationView>(
-                    value: _PersonalizationView.cloud,
-                    label: l.personalizationTabCloud,
-                  ),
-                  SegmentedPillOption<_PersonalizationView>(
-                    value: _PersonalizationView.recommendations,
-                    label: l.recommendationsTitle,
-                  ),
-                ],
+              FlatTabOption<_PersonalizationView>(
+                value: _PersonalizationView.cloud,
+                label: l.personalizationTabCloud,
               ),
-            ),
+              FlatTabOption<_PersonalizationView>(
+                value: _PersonalizationView.recommendations,
+                label: l.recommendationsTitle,
+              ),
+            ],
           ),
           Expanded(
             child: switch (_view) {

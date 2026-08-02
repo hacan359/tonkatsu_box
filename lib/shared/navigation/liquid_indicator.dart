@@ -1,47 +1,40 @@
-// Анимированный «жидкий» индикатор выбранного таба.
-
 import 'package:flutter/material.dart';
 
+import '../constants/media_type_theme.dart';
 import '../theme/app_colors.dart';
 
-/// Анимированный круглый blob, который «переливается» от одного пункта
-/// к другому.
-///
-/// Работает поверх списка иконок через [Stack]. Используется в вертикальном
-/// боковом меню ([AppSidebar]) и в горизонтальном нижнем меню ([AppBottomBar]).
-///
-/// При смене [selectedIndex]:
-/// - blob перемещается из старой позиции в новую (`Curves.easeInOutCubic`);
-/// - вытягивается по направлению движения и сжимается поперёк (squash/stretch);
-/// - в финале возвращается к круглой форме с лёгким elastic-отскоком.
-///
-/// Если `selectedIndex < 0` — blob не рендерится (например, активный таб
-/// не входит в меню, как Settings).
+/// Round blob that slides between nav items, squashing along the way and
+/// settling back with an elastic bounce. Hidden while [selectedIndex] is -1.
 class LiquidIndicator extends StatefulWidget {
-  /// Создаёт [LiquidIndicator].
+  /// Creates a [LiquidIndicator].
   const LiquidIndicator({
     required this.selectedIndex,
     required this.itemExtent,
     required this.crossExtent,
     this.axis = Axis.vertical,
     this.size = 40,
+    this.rainbow = false,
     super.key,
   });
 
-  /// Индекс активного пункта (0..n-1) или `-1` если нет активного.
+  /// Active item index, or -1 when no menu item is active.
   final int selectedIndex;
 
-  /// Размер одной ячейки вдоль основной оси.
+  /// Extent of one cell along the main axis.
   final double itemExtent;
 
-  /// Размер контейнера поперёк основной оси.
+  /// Extent of the container across the main axis.
   final double crossExtent;
 
-  /// Направление, вдоль которого перемещается blob.
+  /// Axis the blob travels along.
   final Axis axis;
 
-  /// Диаметр круга в «спокойном» состоянии.
+  /// Diameter of the blob at rest.
   final double size;
+
+  /// Fill with the media-type rainbow instead of flat brand. Marks the
+  /// centre button, which opens the whole library rather than one section.
+  final bool rainbow;
 
   @override
   State<LiquidIndicator> createState() => _LiquidIndicatorState();
@@ -53,6 +46,9 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
   late double _fromOffset;
   late double _toOffset;
 
+  /// Fill the blob is sliding away from, cross-faded into the current one.
+  late bool _fromRainbow;
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +58,7 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
     );
     _fromOffset = _offsetFor(widget.selectedIndex);
     _toOffset = _fromOffset;
+    _fromRainbow = widget.rainbow;
     _controller.value = 1.0;
   }
 
@@ -74,6 +71,9 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
         widget.crossExtent != oldWidget.crossExtent) {
       _fromOffset = _offsetFor(oldWidget.selectedIndex);
       _toOffset = _offsetFor(widget.selectedIndex);
+      // Cross-faded over the same slide, so the fill does not snap halfway
+      // between the centre button and a tab.
+      _fromRainbow = oldWidget.rainbow;
       _controller
         ..reset()
         ..forward();
@@ -125,6 +125,11 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
         final double scaleX = vertical ? scaleCross : scaleMain;
         final double scaleY = vertical ? scaleMain : scaleCross;
 
+        // 0 = plain brand, 1 = rainbow. Only moves while the blob slides.
+        final double rainbowT = _fromRainbow == widget.rainbow
+            ? (widget.rainbow ? 1.0 : 0.0)
+            : (widget.rainbow ? posT : 1 - posT);
+
         return Positioned(
           top: top,
           left: left,
@@ -133,23 +138,52 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
           child: Transform.scale(
             scaleX: scaleX,
             scaleY: scaleY,
-            child: child,
+            // Both fills are translucent, so painting them stacked at rest
+            // would tint the rainbow orange.
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                if (rainbowT < 1)
+                  Opacity(
+                    opacity: 1 - rainbowT,
+                    child: DecoratedBox(decoration: _brandBlob),
+                  ),
+                if (rainbowT > 0)
+                  Opacity(
+                    opacity: rainbowT,
+                    child: DecoratedBox(decoration: _rainbowBlob),
+                  ),
+              ],
+            ),
           ),
         );
       },
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.brand.withAlpha(180),
-          shape: BoxShape.circle,
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: AppColors.brand.withAlpha(60),
-              blurRadius: 12,
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
+
+/// Fill opacity, shared by both variants.
+const int _kBlobAlpha = 180;
+
+/// Flat brand fill, used by the regular menu items.
+final BoxDecoration _brandBlob = BoxDecoration(
+  color: AppColors.brand.withAlpha(_kBlobAlpha),
+  shape: BoxShape.circle,
+  boxShadow: <BoxShadow>[
+    BoxShadow(color: AppColors.brand.withAlpha(60), blurRadius: 12),
+  ],
+);
+
+/// Media-type accents run around the circle.
+final BoxDecoration _rainbowBlob = BoxDecoration(
+  shape: BoxShape.circle,
+  gradient: SweepGradient(
+    colors: <Color>[
+      for (final Color c in MediaTypeTheme.rainbowSweep)
+        c.withAlpha(_kBlobAlpha),
+    ],
+  ),
+  boxShadow: <BoxShadow>[
+    BoxShadow(color: AppColors.brand.withAlpha(60), blurRadius: 12),
+  ],
+);

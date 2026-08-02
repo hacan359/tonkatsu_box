@@ -61,5 +61,37 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(GenreCloudView), findsNothing);
     });
+
+    testWidgets('should keep the legends on one row as chips are added', (
+      WidgetTester tester,
+    ) async {
+      // The legends used to wrap, so every extra media type stole a line
+      // from the cloud on a phone. They scroll now, so the chrome is fixed.
+      Future<double> cloudTop(List<CollectionItem> items) async {
+        await tester.pumpApp(
+          const GenreCloudScreen(),
+          overrides: <Override>[_items(items)],
+          mediaQuerySize: const Size(360, 640),
+        );
+        return tester.getTopLeft(find.byType(GenreCloudView)).dy;
+      }
+
+      final double twoTypes = await cloudTop(_itemsWithGenres());
+      final double manyTypes = await cloudTop(<CollectionItem>[
+        ..._itemsWithGenres(),
+        createTestCollectionItem(
+          id: 3,
+          mediaType: MediaType.tvShow,
+          tvShow: createTestTvShow(genres: <String>['Comedy']),
+        ),
+        createTestCollectionItem(
+          id: 4,
+          mediaType: MediaType.anime,
+          anime: createTestAnime(genres: <String>['Fantasy']),
+        ),
+      ]);
+
+      expect(manyTypes, twoTypes);
+    });
   });
 }

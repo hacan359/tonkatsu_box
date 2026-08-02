@@ -29,7 +29,6 @@ class StatsSubgenresSection extends StatelessWidget {
       for (final SubgenreGroup group in stats.subgenres)
         _TagCard(
           title: group.mediaType.localizedLabel(l),
-          subtitle: l.statsSubgenresTitles(group.titleCount),
           color: MediaTypeTheme.colorFor(group.mediaType),
           tags: group.tags,
         ),
@@ -82,13 +81,11 @@ class StatsSubgenresSection extends StatelessWidget {
 class _TagCard extends StatelessWidget {
   const _TagCard({
     required this.title,
-    required this.subtitle,
     required this.color,
     required this.tags,
   });
 
   final String title;
-  final String subtitle;
   final Color color;
   final List<TagCount> tags;
 
@@ -106,11 +103,6 @@ class _TagCard extends StatelessWidget {
             title,
             style: AppTypography.body
                 .copyWith(fontWeight: FontWeight.w600, color: color),
-          ),
-          Text(
-            subtitle,
-            style:
-                AppTypography.caption.copyWith(color: AppColors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.md),
           Wrap(

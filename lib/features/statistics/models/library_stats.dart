@@ -397,4 +397,25 @@ class LibraryStats {
 
   /// True when the period has nothing to show.
   bool get isEmpty => totals.items == 0 && units.episodes == 0;
+
+  // The page drops empty sections outright: one collapsed to zero height
+  // still takes the gap after it, which reads as a hole.
+
+  /// Whether the per-type breakdown has anything to count.
+  bool get hasTypeBreakdown => typeStatus.values.any(
+        (Map<ItemStatus, int> counts) =>
+            counts.values.any((int count) => count > 0),
+      );
+
+  /// Whether the activity ribbon has at least one active month.
+  bool get hasMonthActivity =>
+      months.any((MonthActivity month) => month.activity > 0);
+
+  /// Whether the "me vs the crowd" block has any row.
+  bool get hasCrowdDeltas =>
+      higherThanCrowd.isNotEmpty || lowerThanCrowd.isNotEmpty;
+
+  /// Whether [mediaType] has source-format cards to show.
+  bool hasFormats(MediaType mediaType) =>
+      formatsByType[mediaType]?.isNotEmpty ?? false;
 }
