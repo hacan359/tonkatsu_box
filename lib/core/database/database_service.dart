@@ -23,8 +23,8 @@ import 'package:core/database/dao/tracker_dao.dart';
 import 'package:core/database/dao/tv_show_dao.dart';
 import 'package:core/database/dao/visual_novel_dao.dart';
 import 'package:core/database/dao/wishlist_dao.dart';
+import 'package:core/database/database_opener.dart';
 import 'package:core/database/migrations/migration.dart';
-import 'package:core/database/migrations/migration_registry.dart';
 import 'package:core/database/migrations/migration_runner.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/collection.dart';
@@ -261,52 +261,16 @@ class DatabaseService {
       'Database path: $dbPath (${kReleaseMode ? 'release' : 'debug'} mode)',
     );
 
-    return databaseFactory.openDatabase(
-      dbPath,
-      options: OpenDatabaseOptions(
-        version: 60,
-        onCreate: _onCreate,
-        onUpgrade: _onUpgrade,
-        onConfigure: (Database db) async {
-          await db.execute('PRAGMA foreign_keys = ON');
-          // WAL + NORMAL batches commits into one fsync per checkpoint;
-          // `journal_mode` returns a row, so Android needs rawQuery.
-          await db.rawQuery('PRAGMA journal_mode = WAL');
-          await db.execute('PRAGMA synchronous = NORMAL');
-        },
-      ),
-    );
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    _log.info('Creating database schema v$version');
-    // Single source of truth: a fresh DB is built by running the whole
-    // migration chain (v1..N) in order, exactly like an upgrade from zero.
-    await MigrationRunner.run(
-      db,
-      MigrationRegistry.all,
-      fromVersion: 0,
-      toVersion: version,
-      onFailure: _logMigrationFailure,
-    );
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    _log.info('Upgrading database from v$oldVersion to v$newVersion');
-    await MigrationRunner.run(
-      db,
-      MigrationRegistry.pending(oldVersion),
-      fromVersion: oldVersion,
-      toVersion: newVersion,
-      onStart: (Migration m) =>
+    return openAppDatabase(
+      factory: databaseFactory,
+      path: dbPath,
+      onInfo: _log.info,
+      onMigrationStart: (Migration m) =>
           _log.fine('Running migration v${m.version}: ${m.description}'),
-      onFailure: _logMigrationFailure,
+      onMigrationFailure: (MigrationFailure failure, StackTrace stack) =>
+          _log.severe('Migration v${failure.version} failed', failure, stack),
     );
-    _log.info('Database upgrade complete');
   }
-
-  void _logMigrationFailure(MigrationFailure failure, StackTrace stack) =>
-      _log.severe('Migration v${failure.version} failed', failure, stack);
 
   Future<List<Collection>> getAllCollections() =>
       collectionDao.getAllCollections();
