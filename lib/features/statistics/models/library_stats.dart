@@ -1,6 +1,6 @@
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 
 /// Reporting window for the statistics page: a calendar [year], or all time
 /// when [year] is null.

@@ -1,3 +1,6 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,9 +17,6 @@ import 'package:tonkatsu_box/features/statistics/widgets/stats_months_ribbon_des
 import 'package:tonkatsu_box/features/statistics/widgets/stats_months_ribbon_mobile.dart';
 import 'package:tonkatsu_box/features/statistics/widgets/stats_period_picker.dart';
 import 'package:tonkatsu_box/features/statistics/widgets/stats_types_section.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 

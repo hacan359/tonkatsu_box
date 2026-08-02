@@ -1,10 +1,10 @@
 // Провайдер списка тир-листов.
 
+import 'package:core/models/tier_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/tier_list.dart';
 
 /// Провайдер списка всех тир-листов.
 final AsyncNotifierProvider<TierListsNotifier, List<TierList>>

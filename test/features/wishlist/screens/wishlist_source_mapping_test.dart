@@ -1,8 +1,8 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/models/search_source.dart';
 import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
 import 'package:tonkatsu_box/features/wishlist/screens/wishlist_screen.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   group('wishlistSourceIdFor', () {

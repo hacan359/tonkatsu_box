@@ -1,10 +1,10 @@
+import 'package:core/models/media_type.dart';
+import 'package:core/models/wishlist_item.dart';
+import 'package:core/models/wishlist_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/dao/wishlist_dao.dart';
 import '../../core/database/database_service.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/wishlist_item.dart';
-import '../../shared/models/wishlist_tag.dart';
 
 final Provider<WishlistRepository> wishlistRepositoryProvider =
     Provider<WishlistRepository>((Ref ref) {

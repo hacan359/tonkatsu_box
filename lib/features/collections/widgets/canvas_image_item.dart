@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/canvas_item.dart';
 import '../../../shared/widgets/cached_image.dart';
 
 // Two supported data shapes:

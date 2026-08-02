@@ -1,6 +1,7 @@
 import 'dart:ui';
 
-import '../models/profile.dart';
+import 'package:core/models/profile.dart';
+
 import '../utils/color_hex.dart';
 
 /// Presentation extras for [Profile].

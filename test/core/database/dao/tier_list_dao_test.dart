@@ -1,9 +1,9 @@
+import 'package:core/models/tier_definition.dart';
+import 'package:core/models/tier_list.dart';
+import 'package:core/models/tier_list_entry.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/dao/tier_list_dao.dart';
-import 'package:tonkatsu_box/shared/models/tier_definition.dart';
-import 'package:tonkatsu_box/shared/models/tier_list.dart';
-import 'package:tonkatsu_box/shared/models/tier_list_entry.dart';
 
 import '../../../helpers/mocks.dart';
 

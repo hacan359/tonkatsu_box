@@ -1,6 +1,5 @@
+import 'package:core/models/mangabaka_genre.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/mangabaka_genre.dart';
 
 /// DAO for the static `mangabaka_genres` lookup table.
 class MangaBakaGenreDao {

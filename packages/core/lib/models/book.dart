@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:core/utils/bbcode.dart';
-import 'package:core/utils/stable_id.dart';
-import 'book_kind.dart';
-import 'data_source.dart';
-
 export 'package:core/utils/stable_id.dart' show fnv1a64;
+import 'data_source.dart';
+import '../utils/bbcode.dart';
+import '../utils/stable_id.dart';
+
+import 'book_kind.dart';
 
 /// Book metadata from OpenLibrary, Fantlab, ComicVine, Google Books or
 /// Hardcover.

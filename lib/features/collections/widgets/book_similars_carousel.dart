@@ -2,11 +2,11 @@
 // similars and Google Books category matches): a titled [BookCarousel] that
 // opens a tapped book's sheet and routes adds through [onAddBook].
 
+import 'package:core/models/book.dart';
+import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/book.dart';
-import '../../../shared/models/data_source.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/book_carousel.dart';

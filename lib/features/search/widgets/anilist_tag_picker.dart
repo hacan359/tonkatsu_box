@@ -1,9 +1,9 @@
+import 'package:core/models/anilist_tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/anilist_tags_repository.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/anilist_tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

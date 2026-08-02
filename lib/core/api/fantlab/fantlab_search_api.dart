@@ -1,6 +1,6 @@
+import 'package:core/models/book.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/book.dart';
 import 'fantlab_http_client.dart';
 
 /// `/search-works` — full-text work search. The endpoint takes only `q`, `page`

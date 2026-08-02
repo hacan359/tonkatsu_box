@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:core/models/tv_episode.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/tv_episode.dart';
 import 'kitsu_http_client.dart';
 
 /// Anime episodes on Kitsu (`/anime/{id}/episodes`, JSON:API).

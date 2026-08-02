@@ -1,12 +1,12 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tracker_game_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/api/ra_api.dart';
 import '../../../../core/services/ra_to_igdb_mapper.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/tracker_game_data.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../providers/tracker_provider.dart';
 import 'pulsing_ra_link.dart';

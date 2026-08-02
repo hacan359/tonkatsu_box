@@ -1,5 +1,5 @@
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_sort_mode.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/collection_sort_mode.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
 
 int _compareByDisplayName(CollectionItem a, CollectionItem b, String lang) =>

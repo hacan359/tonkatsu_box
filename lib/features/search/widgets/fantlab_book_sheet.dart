@@ -1,7 +1,7 @@
+import 'package:core/models/book.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/api/fantlab_api.dart';
-import '../../../shared/models/book.dart';
 import '../../collections/widgets/fantlab_edition_picker.dart';
 import 'item_details_sheet.dart';
 

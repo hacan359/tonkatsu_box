@@ -1,12 +1,11 @@
+import 'package:core/models/manga.dart';
+import 'package:core/models/mangabaka_tag.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/manga.dart';
-import '../../shared/models/mangabaka_tag.dart';
 import 'mangabaka/mangabaka_http_client.dart';
 import 'mangabaka/mangabaka_manga_api.dart';
 import 'mangabaka/mangabaka_tags_api.dart';
-
 export 'mangabaka/mangabaka_types.dart';
 
 /// MangaBaka REST facade. See `mangabaka/README.md` for the layer breakdown.

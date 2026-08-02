@@ -1,7 +1,7 @@
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/visual_novel.dart';
 import '../models/search_source.dart';
 import '../providers/vndb_tag_provider.dart';
 

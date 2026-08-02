@@ -1,10 +1,10 @@
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../services/search_collection_adder.dart';
 import 'media_action_handler.dart';

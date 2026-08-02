@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/constants/item_status_ui.dart';
 
 /// Hidden for [ItemStatus.notStarted]. Must be placed in a [Stack] inside

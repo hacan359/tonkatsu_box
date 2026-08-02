@@ -1,13 +1,13 @@
 import 'dart:convert';
 
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../utils/genre_utils.dart';
 import 'genre_provider.dart';

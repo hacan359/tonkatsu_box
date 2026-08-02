@@ -2,18 +2,18 @@
 
 import 'dart:async';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/item_status_logic.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import 'collections_provider.dart';
 
 /// Episode tracker state.

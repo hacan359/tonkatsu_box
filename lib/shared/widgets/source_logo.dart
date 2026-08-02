@@ -1,6 +1,6 @@
+import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';
 
-import '../models/data_source.dart';
 import '../constants/data_source_ui.dart';
 
 /// A [DataSource]'s brand logo, with a colored monogram fallback when the

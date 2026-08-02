@@ -1,6 +1,6 @@
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/manga.dart';
-import '../../../shared/models/media_type.dart';
+import 'package:core/models/anime.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
 
 class AniListApiException implements Exception {
   const AniListApiException(this.message, {this.statusCode, this.detail});

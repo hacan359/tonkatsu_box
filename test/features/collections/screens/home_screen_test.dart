@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_list_sort_mode.dart';
+import 'package:core/models/cover_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,9 +16,6 @@ import 'package:tonkatsu_box/features/collections/widgets/collection_card.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_list_tile.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/collection_list_sort_mode.dart';
-import 'package:tonkatsu_box/shared/models/cover_info.dart';
 import 'package:tonkatsu_box/shared/widgets/shimmer_loading.dart';
 
 import '../../../helpers/test_helpers.dart';

@@ -1,8 +1,8 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/recommendations/engine/recommendation_models.dart';
 import 'package:tonkatsu_box/features/recommendations/tmdb_taste_input.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../helpers/test_helpers.dart';
 

@@ -1,9 +1,10 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
+import '../../../shared/constants/data_source_ui.dart';
 
 /// TMDB's Animation genre id, used to keep animation out of generic
 /// TV / movie searches.

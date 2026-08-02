@@ -2,13 +2,13 @@
 // one book provider with a native similars endpoint. Renders the shared
 // [BookSimilarsCarousel]; mirrors the TMDB [RecommendationsSection].
 
+import 'package:core/models/book.dart';
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/fantlab_api.dart';
-import '../../../shared/models/book.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/data_source.dart';
 import '../../../shared/widgets/book_carousel.dart';
 import '../providers/collections_provider.dart';
 import 'book_similars_carousel.dart';

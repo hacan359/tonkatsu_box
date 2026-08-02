@@ -2,8 +2,8 @@
 // The Welcome "Sources" step and Settings → Credits both render from this, so
 // `source_catalog_test` asserts it mirrors the registered `searchSources`.
 
-import '../models/data_source.dart';
-import '../models/media_type.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 
 /// Whether a data source needs the user to supply an API key.
 enum SourceKeyRequirement { none, recommended, mandatory }

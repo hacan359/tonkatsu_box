@@ -1,3 +1,4 @@
+import 'package:core/models/steamgriddb_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,7 +6,6 @@ import '../../../../data/repositories/canvas_repository.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/platform_features.dart';
 import '../../../../shared/extensions/snackbar_extension.dart';
-import '../../../../shared/models/steamgriddb_image.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_durations.dart';
 import '../../providers/canvas_provider.dart';

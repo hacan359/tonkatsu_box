@@ -1,9 +1,8 @@
 import 'dart:convert';
 
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
 
 /// SQL aggregates for the statistics page. Schema date units: `added_at` is
 /// unix seconds, `watched_at`/`liked_at` milliseconds; bucketing is local time.

@@ -1,5 +1,9 @@
 import 'dart:io';
 
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart' as model;
+import 'package:core/models/tag.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,10 +16,6 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/custom_media.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/platform.dart' as model;
-import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -27,7 +27,6 @@ import 'custom_item/custom_item_data.dart';
 import 'custom_item/multi_select_genre_dialog.dart';
 import 'custom_item/searchable_list_dialog.dart';
 import '../../../shared/constants/media_type_ui.dart';
-
 export 'custom_item/custom_item_data.dart' show CustomItemData;
 
 /// Full-screen create / edit form for a custom collection item.

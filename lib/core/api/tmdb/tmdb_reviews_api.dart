@@ -1,6 +1,6 @@
+import 'package:core/models/tmdb_review.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/tmdb_review.dart';
 import 'tmdb_http_client.dart';
 
 /// Movie / TV reviews. Always queried in en-US — non-English reviews are

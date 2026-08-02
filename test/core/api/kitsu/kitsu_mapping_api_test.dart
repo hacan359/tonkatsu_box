@@ -1,8 +1,8 @@
+import 'package:core/models/anime.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/kitsu_api.dart';
-import 'package:tonkatsu_box/shared/models/anime.dart';
 
 import '../../../helpers/test_helpers.dart';
 

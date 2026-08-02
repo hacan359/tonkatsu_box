@@ -1,12 +1,11 @@
+import 'package:core/models/manga.dart';
+import 'package:core/models/mangadex_tag.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/manga.dart';
-import '../../shared/models/mangadex_tag.dart';
 import 'mangadex/mangadex_http_client.dart';
 import 'mangadex/mangadex_manga_api.dart';
 import 'mangadex/mangadex_tags_api.dart';
-
 export 'mangadex/mangadex_types.dart';
 
 /// MangaDex REST facade (`https://api.mangadex.org`, no auth).

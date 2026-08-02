@@ -1,15 +1,15 @@
 import 'dart:ui';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/tier_definition.dart';
+import 'package:core/models/tier_list.dart';
+import 'package:core/models/tier_list_entry.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/dao/collection_dao.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/tier_definition.dart';
-import '../../../shared/models/tier_list.dart';
-import '../../../shared/models/tier_list_entry.dart';
 
 /// Identity of a tier-list item for de-duplication. A global tier list
 /// aggregates every collection, so the same title arrives as several rows (one

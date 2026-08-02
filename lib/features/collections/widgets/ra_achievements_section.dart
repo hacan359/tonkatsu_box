@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:core/models/tracker_achievement.dart';
+import 'package:core/models/tracker_game_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,8 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/api/ra_api.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/tracker_achievement.dart';
-import '../../../shared/models/tracker_game_data.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

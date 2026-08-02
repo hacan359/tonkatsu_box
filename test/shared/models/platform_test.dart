@@ -1,5 +1,5 @@
+import 'package:core/models/platform.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart';
 
 void main() {
   group('Platform', () {

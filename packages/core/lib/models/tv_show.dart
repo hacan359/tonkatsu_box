@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:core/utils/html_text.dart';
-import 'package:core/utils/tvmaze_json.dart';
 import 'data_source.dart';
+import '../utils/html_text.dart';
+import '../utils/tvmaze_json.dart';
 
 /// A TV show with catalog metadata.
 class TvShow {

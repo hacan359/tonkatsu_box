@@ -1,10 +1,10 @@
 // MangaBaka genre filter (multi-select, from the DB catalog).
 
+import 'package:core/models/mangabaka_genre.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../data/repositories/mangabaka_genres_repository.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/mangabaka_genre.dart';
 import '../models/search_source.dart';
 
 /// MangaBaka `genre` — closed enum (46 entries) served from the seeded

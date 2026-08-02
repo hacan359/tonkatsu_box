@@ -1,13 +1,13 @@
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../collections/providers/collections_provider.dart';
 

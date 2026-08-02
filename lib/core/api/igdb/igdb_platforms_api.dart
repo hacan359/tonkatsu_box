@@ -1,6 +1,6 @@
+import 'package:core/models/platform.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/platform.dart';
 import 'igdb_http_client.dart';
 import 'igdb_types.dart';
 

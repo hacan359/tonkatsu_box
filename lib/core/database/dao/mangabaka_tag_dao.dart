@@ -1,6 +1,5 @@
+import 'package:core/models/mangabaka_tag.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/mangabaka_tag.dart';
 
 /// DAO for the `mangabaka_tags` catalog.
 class MangaBakaTagDao {

@@ -1,6 +1,6 @@
-import '../../../shared/models/canvas_connection.dart';
-import '../../../shared/models/canvas_item.dart';
-import '../../../shared/models/canvas_viewport.dart';
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
 
 /// Состояние канваса для коллекции.
 class CanvasState {

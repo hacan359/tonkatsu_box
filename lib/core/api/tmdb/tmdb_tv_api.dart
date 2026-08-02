@@ -1,8 +1,8 @@
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import 'tmdb_genres_api.dart';
 import 'tmdb_http_client.dart';
 import 'tmdb_types.dart';

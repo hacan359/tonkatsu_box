@@ -1,11 +1,11 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/media_type_theme.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/tag.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';

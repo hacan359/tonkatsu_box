@@ -1,5 +1,5 @@
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
 
 class TmdbPagedResult<T> {
   const TmdbPagedResult({

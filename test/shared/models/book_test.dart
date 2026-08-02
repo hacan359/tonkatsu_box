@@ -1,7 +1,7 @@
+import 'package:core/models/book.dart';
+import 'package:core/models/book_kind.dart';
+import 'package:core/models/data_source.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/book.dart';
-import 'package:tonkatsu_box/shared/models/book_kind.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
 
 import '../../helpers/test_helpers.dart';
 

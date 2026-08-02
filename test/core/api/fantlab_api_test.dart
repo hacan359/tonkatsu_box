@@ -1,11 +1,11 @@
 import 'dart:convert';
 
+import 'package:core/models/book.dart';
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/fantlab_api.dart';
-import 'package:tonkatsu_box/shared/models/book.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
 
 import '../../helpers/test_helpers.dart';
 

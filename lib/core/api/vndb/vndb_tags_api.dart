@@ -1,6 +1,6 @@
+import 'package:core/models/visual_novel.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/visual_novel.dart';
 import 'vndb_http_client.dart';
 import 'vndb_types.dart';
 

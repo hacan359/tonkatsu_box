@@ -1,9 +1,9 @@
+import 'package:core/models/anime.dart';
+import 'package:core/models/item_mark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/item_mark.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';

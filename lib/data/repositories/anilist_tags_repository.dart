@@ -1,9 +1,9 @@
+import 'package:core/models/anilist_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/anilist_api.dart';
 import '../../core/database/dao/anilist_tag_dao.dart';
 import '../../core/database/database_service.dart';
-import '../../shared/models/anilist_tag.dart';
 
 /// Loads the AniList tag catalog with a SQLite-backed cache.
 ///

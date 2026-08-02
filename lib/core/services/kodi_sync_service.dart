@@ -1,15 +1,15 @@
 import 'dart:async';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/kodi_movie.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../shared/models/collection.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/item_status.dart';
-import '../../shared/models/item_status_logic.dart';
-import '../../shared/models/kodi_movie.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/movie.dart';
 import '../api/kodi_api.dart';
 import '../api/tmdb_api.dart';
 import '../database/database_service.dart';

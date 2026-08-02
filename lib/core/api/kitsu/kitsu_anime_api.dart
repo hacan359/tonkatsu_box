@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:core/models/anime.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/anime.dart';
 import 'kitsu_http_client.dart';
 
 /// Anime search / detail on Kitsu (`/anime`, JSON:API).

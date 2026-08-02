@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../models/tier_definition.dart';
+import 'package:core/models/tier_definition.dart';
 
 /// Presentation extras for [TierDefinition].
 extension TierDefinitionUi on TierDefinition {

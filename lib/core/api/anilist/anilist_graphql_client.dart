@@ -1,7 +1,7 @@
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
-import '../../../shared/models/data_source.dart';
 import '../../services/app_http_overrides.dart';
 import '../api_error_detail.dart';
 import 'anilist_types.dart';

@@ -1,5 +1,11 @@
 import 'dart:io';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart' as model;
+import 'package:core/models/universal_import_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
@@ -7,12 +13,6 @@ import 'package:tonkatsu_box/core/import/sources/custom_file/custom_card_entry.d
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_cards_import_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/custom_media.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart' as model;
-import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
 
 import '../../../../helpers/test_helpers.dart';
 

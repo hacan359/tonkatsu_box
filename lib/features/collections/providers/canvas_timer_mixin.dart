@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+
 import '../../../data/repositories/canvas_repository.dart';
-import '../../../shared/models/canvas_item.dart';
-import '../../../shared/models/canvas_viewport.dart';
 import 'canvas_state.dart';
 
 /// Mixin с debounce-логикой для сохранения позиций и viewport канваса.

@@ -1,10 +1,10 @@
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/widgets/tag_picker_dialog.dart';
-import 'package:tonkatsu_box/shared/models/tag.dart';
 
 import '../../../../helpers/test_helpers.dart';
 

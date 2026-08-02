@@ -1,5 +1,6 @@
+import 'package:core/models/collection_list_sort_mode.dart';
+
 import '../../l10n/app_localizations.dart';
-import '../models/collection_list_sort_mode.dart';
 
 /// Presentation extras for [CollectionListSortMode].
 extension CollectionListSortModeUi on CollectionListSortMode {

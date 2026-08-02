@@ -1,9 +1,9 @@
+import 'package:core/models/mangabaka_tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/mangabaka_tags_repository.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/mangabaka_tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

@@ -1,7 +1,7 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/recommendations/providers/recommendations_provider.dart';
 import 'package:tonkatsu_box/features/recommendations/widgets/recommendation_row.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
 import '../../../helpers/test_helpers.dart';

@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:core/models/profile.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/profile.dart';
-
-import '../../helpers/test_helpers.dart';
 import 'package:tonkatsu_box/shared/constants/profile_ui.dart';
 import 'package:tonkatsu_box/shared/utils/color_hex.dart';
+
+import '../../helpers/test_helpers.dart';
 
 void main() {
   group('Profile', () {

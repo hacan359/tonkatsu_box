@@ -1,5 +1,11 @@
 import 'dart:async';
 
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,12 +13,6 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/platform.dart';
-import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

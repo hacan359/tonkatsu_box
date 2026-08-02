@@ -1,5 +1,6 @@
+import 'package:core/models/media_type.dart';
+
 import '../../l10n/app_localizations.dart';
-import '../models/media_type.dart';
 
 /// Resolves the unit labels for a custom item's universal progress tracker.
 ///

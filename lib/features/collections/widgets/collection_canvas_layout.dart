@@ -1,8 +1,8 @@
+import 'package:core/models/steamgriddb_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../providers/steamgriddb_panel_provider.dart';

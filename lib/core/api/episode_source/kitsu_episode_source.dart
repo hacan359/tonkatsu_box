@@ -1,8 +1,9 @@
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
+import 'package:core/models/anime.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
+
 import '../kitsu_api.dart';
 import 'tv_episode_source.dart';
 

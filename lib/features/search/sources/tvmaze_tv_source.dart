@@ -1,11 +1,11 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tvmaze_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/tv_show.dart';
 import '../models/search_source.dart';
 
 const int _tvMazePageSize = 20;

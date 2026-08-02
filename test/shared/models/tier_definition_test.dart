@@ -1,10 +1,10 @@
 import 'dart:ui';
 
+import 'package:core/models/tier_definition.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/tier_definition.dart';
+import 'package:tonkatsu_box/shared/constants/tier_definition_ui.dart';
 
 import '../../helpers/test_helpers.dart';
-import 'package:tonkatsu_box/shared/constants/tier_definition_ui.dart';
 
 void main() {
   group('TierDefinition', () {

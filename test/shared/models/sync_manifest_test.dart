@@ -1,5 +1,5 @@
+import 'package:core/models/sync_manifest.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/sync_manifest.dart';
 
 void main() {
   group('SyncManifest', () {

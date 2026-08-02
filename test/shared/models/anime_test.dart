@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:core/models/anime.dart';
+import 'package:core/models/data_source.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/anime.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
 
 void main() {
   group('Anime', () {

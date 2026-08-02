@@ -1,9 +1,9 @@
+import 'package:core/models/card_link.dart';
+import 'package:core/models/collection_item.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../models/card_link.dart';
-import '../models/collection_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../utils/url_launch.dart';

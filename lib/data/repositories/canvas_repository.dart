@@ -1,21 +1,21 @@
 import 'dart:convert';
 
+import 'package:core/models/anime.dart';
+import 'package:core/models/book.dart';
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
-import '../../shared/models/anime.dart';
-import '../../shared/models/book.dart';
-import '../../shared/models/canvas_connection.dart';
-import '../../shared/models/canvas_item.dart';
-import '../../shared/models/canvas_viewport.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/custom_media.dart';
-import '../../shared/models/data_source.dart';
-import '../../shared/models/game.dart';
-import '../../shared/models/manga.dart';
-import '../../shared/models/movie.dart';
-import '../../shared/models/tv_show.dart';
-import '../../shared/models/visual_novel.dart';
 
 final Provider<CanvasRepository> canvasRepositoryProvider =
     Provider<CanvasRepository>((Ref ref) {

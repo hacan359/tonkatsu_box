@@ -1,15 +1,15 @@
 // Debug-экран для проверки URL изображений в коллекциях.
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/providers/collections_provider.dart';

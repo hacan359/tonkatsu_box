@@ -1,8 +1,8 @@
+import 'package:core/models/mood_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/mood_grid.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../providers/mood_grids_provider.dart';
 

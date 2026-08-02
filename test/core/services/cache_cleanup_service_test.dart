@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/services/cache_cleanup_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../helpers/test_helpers.dart';
 

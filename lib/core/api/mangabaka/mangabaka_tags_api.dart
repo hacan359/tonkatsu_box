@@ -1,6 +1,6 @@
+import 'package:core/models/mangabaka_tag.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/mangabaka_tag.dart';
 import 'mangabaka_http_client.dart';
 
 /// MangaBaka tag catalog (`/tags`).

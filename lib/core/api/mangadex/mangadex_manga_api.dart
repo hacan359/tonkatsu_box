@@ -1,6 +1,6 @@
+import 'package:core/models/manga.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/manga.dart';
 import 'mangadex_http_client.dart';
 import 'mangadex_types.dart';
 

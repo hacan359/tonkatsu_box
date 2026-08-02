@@ -1,9 +1,9 @@
+import 'package:core/models/game.dart';
+import 'package:core/models/platform.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart';
 
 import '../../helpers/test_helpers.dart';
 

@@ -1,6 +1,6 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_season.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
 
 void main() {
   group('TvSeason', () {

@@ -1,8 +1,8 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/tag.dart';
 import '../../helpers/collection_filters.dart';
 import '../../providers/collection_selection_provider.dart';
 import '../../providers/collections_provider.dart';

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/cover_info.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,9 +11,6 @@ import 'package:tonkatsu_box/features/collections/providers/collection_covers_pr
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_card.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/cover_info.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 Collection _makeCollection({
   int id = 1,

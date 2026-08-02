@@ -1,6 +1,6 @@
+import 'package:core/models/item_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/statistics/widgets/stats_cards.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
 
 void main() {
   group('StatusCountsX', () {

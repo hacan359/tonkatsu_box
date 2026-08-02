@@ -1,5 +1,6 @@
-import '../../shared/models/game.dart';
-import '../../shared/models/ra_game_progress.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/ra_game_progress.dart';
+
 import '../api/igdb_api.dart';
 
 /// Maps RA ConsoleID -> IGDB Platform ID and looks games up in IGDB.

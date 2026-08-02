@@ -1,6 +1,6 @@
+import 'package:core/models/collection_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/models/collection_item.dart';
 import '../../../shared/utils/item_card_progress.dart';
 import '../providers/episode_tracker_provider.dart';
 

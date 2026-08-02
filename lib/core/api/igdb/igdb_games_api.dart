@@ -1,7 +1,7 @@
+import 'package:core/models/game.dart';
+import 'package:core/models/game_time_to_beat.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/game.dart';
-import '../../../shared/models/game_time_to_beat.dart';
 import 'igdb_http_client.dart';
 import 'igdb_types.dart';
 

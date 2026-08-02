@@ -1,8 +1,8 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/filters/fantlab_work_type_filter.dart';
 import 'package:tonkatsu_box/features/search/sources/fantlab_source.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   group('FantlabSource', () {

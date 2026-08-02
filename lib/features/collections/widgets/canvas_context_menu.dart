@@ -1,7 +1,7 @@
+import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/canvas_item.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 
 class CanvasContextMenu {

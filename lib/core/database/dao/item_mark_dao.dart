@@ -1,8 +1,7 @@
 // DAO for per-unit item marks (likes and notes on units of a collection item).
 
+import 'package:core/models/item_mark.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/item_mark.dart';
 
 /// DAO for the `item_marks` table.
 ///

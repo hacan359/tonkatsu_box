@@ -1,11 +1,11 @@
 import 'package:core/database/schema.dart';
+import 'package:core/models/calendar_entry.dart';
+import 'package:core/models/calendar_recurrence.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/database/dao/calendar_entry_dao.dart';
-import 'package:tonkatsu_box/shared/models/calendar_entry.dart';
-import 'package:tonkatsu_box/shared/models/calendar_recurrence.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   sqfliteFfiInit();

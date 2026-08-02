@@ -1,11 +1,10 @@
 // DAO for books from OpenLibrary / Fantlab.
 
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/book.dart';
-import '../../../shared/models/data_source.dart';
 import 'package:core/database/query_chunk.dart';
 import 'package:core/database/sparse_upsert.dart';
+import 'package:core/models/book.dart';
+import 'package:core/models/data_source.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for `books_cache`. Row identity is the pair `(id, source)`, so the same
 /// numeric `id` from OpenLibrary and Fantlab can coexist. `id` is stored as

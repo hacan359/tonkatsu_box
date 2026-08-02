@@ -1,5 +1,5 @@
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/manga.dart';
+import 'package:core/models/anime.dart';
+import 'package:core/models/manga.dart';
 
 class AniListMediaParser {
   const AniListMediaParser._();

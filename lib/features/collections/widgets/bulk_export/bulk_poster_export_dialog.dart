@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core/models/collection_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/image_cache_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/extensions/snackbar_extension.dart';
-import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';

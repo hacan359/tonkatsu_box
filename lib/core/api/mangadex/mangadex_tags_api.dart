@@ -1,6 +1,6 @@
+import 'package:core/models/mangadex_tag.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/mangadex_tag.dart';
 import 'mangadex_http_client.dart';
 
 /// MangaDex tag catalog (`/manga/tag`). Tags are grouped into

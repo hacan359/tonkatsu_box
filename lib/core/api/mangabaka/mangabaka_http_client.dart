@@ -1,6 +1,6 @@
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/data_source.dart';
 import '../api_error_detail.dart';
 import 'mangabaka_types.dart';
 

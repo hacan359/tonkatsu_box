@@ -1,7 +1,7 @@
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/item_status.dart';
-import '../../shared/models/item_status_logic.dart';
-import '../../shared/models/media_type.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/media_type.dart';
 
 /// `collection_items` date columns store seconds since the Unix epoch.
 int? epochSeconds(DateTime? date) =>

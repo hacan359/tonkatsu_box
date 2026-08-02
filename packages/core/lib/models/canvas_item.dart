@@ -1,14 +1,15 @@
 import 'dart:convert';
 
+import 'exportable.dart';
 import 'image_type.dart';
+import 'media_type.dart';
+import '../utils/cover_image_id.dart' as cover_id;
+
 import 'anime.dart';
 import 'book.dart';
 import 'custom_media.dart';
-import 'exportable.dart';
 import 'game.dart';
-import '../utils/cover_image_id.dart' as cover_id;
 import 'manga.dart';
-import 'media_type.dart';
 import 'movie.dart';
 import 'tv_show.dart';
 import 'visual_novel.dart';

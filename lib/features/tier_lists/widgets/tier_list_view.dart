@@ -1,10 +1,10 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/tier_definition.dart';
+import 'package:core/models/tier_list_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/tier_definition.dart';
-import '../../../shared/models/tier_list_entry.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../settings/providers/settings_provider.dart';

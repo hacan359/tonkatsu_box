@@ -1,7 +1,7 @@
+import 'package:core/models/collection.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/universal_import_result.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
 
 import '../../helpers/builders.dart';
 

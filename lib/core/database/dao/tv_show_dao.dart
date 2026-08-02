@@ -1,13 +1,12 @@
 // DAO for TV shows, seasons, episodes and watched episodes.
 
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import 'package:core/database/query_chunk.dart';
 import 'package:core/database/sparse_upsert.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for the `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache` and
 /// `watched_episodes` tables.

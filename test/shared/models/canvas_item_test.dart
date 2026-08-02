@@ -1,15 +1,15 @@
 import 'dart:convert';
 
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
-import 'package:tonkatsu_box/shared/models/canvas_item.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/visual_novel.dart';
+import 'package:tonkatsu_box/shared/constants/canvas_item_ui.dart';
 
 import '../../helpers/test_helpers.dart';
-import 'package:tonkatsu_box/shared/constants/canvas_item_ui.dart';
 
 void main() {
   group('CanvasItemType', () {
