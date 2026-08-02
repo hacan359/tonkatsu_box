@@ -1,19 +1,16 @@
-// Laboratory: mockups of bottom-banner variants for poster cards, kept in
-// release builds (Settings > Laboratory) so future designs can be compared.
-
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/source_logo.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/extensions/item_display_name.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -22,6 +19,7 @@ import '../../collections/providers/collections_provider.dart';
 class _DemoCard {
   const _DemoCard({
     required this.title,
+    required this.source,
     this.item,
     this.tagName,
     this.tagColor,
@@ -34,6 +32,7 @@ class _DemoCard {
   });
 
   final String title;
+  final DataSource source;
   final CollectionItem? item;
   final String? tagName;
   final Color? tagColor;
@@ -122,69 +121,31 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
             children: <Widget>[
               const _VotePrompt(),
               _VariantSection(
-                title: 'B — Solid panel',
-                note: 'Hard-edged translucent panel hugging the content. '
-                    'Hover: more opaque, full title.',
+                title: 'D — Stats strip only',
+                note: 'Current layout: title and meta line below the poster, '
+                    'the strip carries status and tag on the left and the '
+                    'episode count on the right.',
                 demos: demos,
+                titleBelowPoster: true,
                 builder: (_DemoCard d, bool hovered) =>
-                    _SolidPanelBanner(demo: d, hovered: hovered),
-              ),
-              _VariantSection(
-                title: 'E — One meta line ( \\ )',
-                note: 'Status dot and episodes merged into the rating/date '
-                    'line, backslash separators. Tag right.',
-                demos: demos,
-                builder: (_DemoCard d, bool hovered) =>
-                    _InlineSlashBanner(demo: d, hovered: hovered),
+                    _StatsStripBanner(demo: d, hovered: hovered),
               ),
               _VariantSection(
                 title: 'F — Dense + status stripe',
                 note: 'Status is a colored stripe on the panel edge; single '
-                    'title line; rating · date · episodes in one line.',
+                    'title line; source, rating and date left, episode count '
+                    'right.',
                 demos: demos,
                 builder: (_DemoCard d, bool hovered) =>
                     _StatusStripeBanner(demo: d, hovered: hovered),
               ),
               _VariantSection(
                 title: 'G — Split meta line',
-                note: 'Rating/date left, status + episodes right on the '
-                    'same line; tag right of the title.',
+                note: 'Source, rating and date left, status and episode count '
+                    'right on the same line; tag right of the title.',
                 demos: demos,
                 builder: (_DemoCard d, bool hovered) =>
                     _SplitMetaBanner(demo: d, hovered: hovered),
-              ),
-              _VariantSection(
-                title: 'H — Label inside progress bar',
-                note: 'Episodes label lives inside a taller progress bar '
-                    'tinted with the status color.',
-                demos: demos,
-                builder: (_DemoCard d, bool hovered) =>
-                    _ProgressLabelBanner(demo: d, hovered: hovered),
-              ),
-              _VariantSection(
-                title: 'A — Gradient scrim',
-                note: 'Netflix-style: soft gradient, title + stats + tag '
-                    'inside. Hover: darker gradient, full title.',
-                demos: demos,
-                builder: (_DemoCard d, bool hovered) =>
-                    _GradientBanner(demo: d, hovered: hovered),
-              ),
-              _VariantSection(
-                title: 'C — Frosted glass',
-                note: 'Blur + dark tint (heavier to render). Hover: stronger '
-                    'blur and tint, full title.',
-                demos: demos,
-                builder: (_DemoCard d, bool hovered) =>
-                    _FrostedBanner(demo: d, hovered: hovered),
-              ),
-              _VariantSection(
-                title: 'D — Stats strip only',
-                note: 'Compromise: title stays below the poster (current '
-                    'layout), the banner carries only episode stats + tag.',
-                demos: demos,
-                titleBelowPoster: true,
-                builder: (_DemoCard d, bool hovered) =>
-                    _StatsStripBanner(demo: d, hovered: hovered),
               ),
             ],
           ),
@@ -208,6 +169,7 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
             '${titleAt(0, 'Star Trek')}: The Extended Ultimate Anniversary '
             'Collector Edition of Doom',
         item: at(0),
+        source: DataSource.tmdb,
         tagName: 'weekend',
         tagColor: AppColors.tvShowAccent,
         statsLabel: 'S2 · 12/24',
@@ -220,6 +182,7 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
       _DemoCard(
         title: titleAt(1, 'Dark'),
         item: at(1),
+        source: DataSource.anilist,
         statsLabel: '24/24',
         fraction: 1.0,
         apiRating: 8.7,
@@ -230,6 +193,7 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
       _DemoCard(
         title: titleAt(2, 'The Wire'),
         item: at(2),
+        source: DataSource.igdb,
         tagName: 'top',
         tagColor: AppColors.favorite,
         apiRating: 9.3,
@@ -238,6 +202,7 @@ class _CardBannerDebugScreenState extends ConsumerState<CardBannerDebugScreen> {
       _DemoCard(
         title: titleAt(3, 'Severance'),
         item: at(3),
+        source: DataSource.mangadex,
         year: 2022,
       ),
     ];
@@ -411,13 +376,14 @@ class _HoverPosterCardState extends State<_HoverPosterCard> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (widget.demo.metaLine.isNotEmpty)
-                Text(
-                  widget.demo.metaLine,
+              _MetaLine(
+                source: widget.demo.source,
+                span: TextSpan(
+                  text: widget.demo.metaLine,
                   style: AppTypography.posterSubtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
+                fontSize: AppTypography.posterSubtitle.fontSize ?? 11,
+              ),
             ],
           ],
         ),
@@ -451,93 +417,46 @@ class _HoverPosterCardState extends State<_HoverPosterCard> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Shared banner content (title / stats / tag / progress bar)
-// ---------------------------------------------------------------------------
+class _MetaLine extends StatelessWidget {
+  const _MetaLine({
+    required this.source,
+    required this.span,
+    required this.fontSize,
+  });
 
-class _BannerContent extends StatelessWidget {
-  const _BannerContent({required this.demo, required this.hovered});
-
-  final _DemoCard demo;
-  final bool hovered;
+  final DataSource source;
+  final InlineSpan span;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
-    final bool hasMetaRow = demo.statusColor != null ||
-        demo.statsLabel != null ||
-        demo.tagName != null;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: <Widget>[
-        AnimatedSize(
-          duration: AppDurations.fast,
-          alignment: Alignment.bottomLeft,
-          child: Text(
-            demo.title,
-            style: AppTypography.posterTitle.copyWith(
-              color: AppColors.textPrimary,
-              height: 1.2,
-              shadows: const <Shadow>[
-                Shadow(color: Colors.black87, blurRadius: 4),
-              ],
-            ),
-            maxLines: hovered ? 6 : 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+        SourceLogo(source: source, size: fontSize * 1.1),
+        SizedBox(width: fontSize * 0.3),
+        Expanded(
+          child: Text.rich(span, maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
-        if (demo.metaLine.isNotEmpty) ...<Widget>[
-          const SizedBox(height: 2),
-          Text.rich(
-            TextSpan(
-              children: <InlineSpan>[
-                if (demo.apiRating != null)
-                  TextSpan(
-                    text: '★${demo.apiRating!.toStringAsFixed(1)}',
-                    style: const TextStyle(color: Color(0xFFFFD700)),
-                  ),
-                if (demo.apiRating != null && demo.year != null)
-                  const TextSpan(text: ' · '),
-                if (demo.year != null) TextSpan(text: '${demo.year}'),
-              ],
-            ),
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 10,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-        if (hasMetaRow) ...<Widget>[
-          const SizedBox(height: 3),
-          Row(
-            children: <Widget>[
-              if (demo.statusColor != null) ...<Widget>[
-                _StatusDot(color: demo.statusColor!, icon: demo.statusIcon),
-                const SizedBox(width: 4),
-              ],
-              if (demo.statsLabel != null)
-                Expanded(
-                  child: Text(
-                    demo.statsLabel!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )
-              else
-                const Spacer(),
-              if (demo.tagName != null)
-                _TagChip(name: demo.tagName!, color: demo.tagColor),
-            ],
-          ),
-        ],
       ],
+    );
+  }
+}
+
+class _EpisodeCount extends StatelessWidget {
+  const _EpisodeCount({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 9,
+        fontWeight: FontWeight.w700,
+      ),
+      maxLines: 1,
     );
   }
 }
@@ -609,218 +528,6 @@ class _ProgressEdge extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Variant A — gradient scrim
-// ---------------------------------------------------------------------------
-
-class _GradientBanner extends StatelessWidget {
-  const _GradientBanner({required this.demo, required this.hovered});
-
-  final _DemoCard demo;
-  final bool hovered;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: AppDurations.fast,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: <Color>[
-            Colors.transparent,
-            Colors.black.withValues(alpha: hovered ? 0.75 : 0.55),
-            Colors.black.withValues(alpha: hovered ? 0.95 : 0.85),
-          ],
-          stops: const <double>[0.0, 0.45, 1.0],
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 20, 8, 6),
-            child: _BannerContent(demo: demo, hovered: hovered),
-          ),
-          if (demo.fraction != null) _ProgressEdge(fraction: demo.fraction!),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Variant B — solid translucent panel
-// ---------------------------------------------------------------------------
-
-class _SolidPanelBanner extends StatelessWidget {
-  const _SolidPanelBanner({required this.demo, required this.hovered});
-
-  final _DemoCard demo;
-  final bool hovered;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: AppDurations.fast,
-      color: Colors.black.withValues(alpha: hovered ? 0.85 : 0.6),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-            child: _BannerContent(demo: demo, hovered: hovered),
-          ),
-          if (demo.fraction != null) _ProgressEdge(fraction: demo.fraction!),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Variant C — frosted glass
-// ---------------------------------------------------------------------------
-
-class _FrostedBanner extends StatelessWidget {
-  const _FrostedBanner({required this.demo, required this.hovered});
-
-  final _DemoCard demo;
-  final bool hovered;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: hovered ? 10 : 5,
-          sigmaY: hovered ? 10 : 5,
-        ),
-        child: AnimatedContainer(
-          duration: AppDurations.fast,
-          color: Colors.black.withValues(alpha: hovered ? 0.55 : 0.35),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                child: _BannerContent(demo: demo, hovered: hovered),
-              ),
-              if (demo.fraction != null)
-                _ProgressEdge(fraction: demo.fraction!),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Variant E — one meta line, backslash separators
-// ---------------------------------------------------------------------------
-
-class _InlineSlashBanner extends StatelessWidget {
-  const _InlineSlashBanner({required this.demo, required this.hovered});
-
-  final _DemoCard demo;
-  final bool hovered;
-
-  @override
-  Widget build(BuildContext context) {
-    final TextStyle sep = AppTypography.caption.copyWith(
-      color: AppColors.textTertiary,
-      fontSize: 10,
-    );
-    final TextStyle base = AppTypography.caption.copyWith(
-      color: AppColors.textSecondary,
-      fontSize: 10,
-    );
-
-    final List<InlineSpan> spans = <InlineSpan>[];
-    void addPart(TextSpan span) {
-      if (spans.isNotEmpty) spans.add(TextSpan(text: ' \\ ', style: sep));
-      spans.add(span);
-    }
-
-    if (demo.apiRating != null) {
-      addPart(TextSpan(
-        text: '★${demo.apiRating!.toStringAsFixed(1)}',
-        style: base.copyWith(color: const Color(0xFFFFD700)),
-      ));
-    }
-    if (demo.year != null) {
-      addPart(TextSpan(text: '${demo.year}', style: base));
-    }
-    if (demo.statsLabel != null) {
-      addPart(TextSpan(
-        text: demo.statsLabel,
-        style: base.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
-      ));
-    }
-
-    return AnimatedContainer(
-      duration: AppDurations.fast,
-      color: Colors.black.withValues(alpha: hovered ? 0.85 : 0.6),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                AnimatedSize(
-                  duration: AppDurations.fast,
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    demo.title,
-                    style: AppTypography.posterTitle.copyWith(height: 1.2),
-                    maxLines: hovered ? 6 : 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Row(
-                  children: <Widget>[
-                    if (demo.statusColor != null) ...<Widget>[
-                      _StatusDot(
-                        color: demo.statusColor!,
-                        icon: demo.statusIcon,
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(children: spans),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (demo.tagName != null) ...<Widget>[
-                      const SizedBox(width: 4),
-                      _TagChip(name: demo.tagName!, color: demo.tagColor),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          if (demo.fraction != null) _ProgressEdge(fraction: demo.fraction!),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Variant F — dense two-liner with a status stripe on the panel edge
 // ---------------------------------------------------------------------------
 
@@ -836,10 +543,6 @@ class _StatusStripeBanner extends StatelessWidget {
       color: AppColors.textSecondary,
       fontSize: 10,
     );
-    final List<String> parts = <String>[
-      if (demo.year != null) '${demo.year}',
-      if (demo.statsLabel != null) demo.statsLabel!,
-    ];
 
     // A left border (not a stretched sibling) gives the full-height stripe
     // without an IntrinsicHeight — IntrinsicHeight fights the AnimatedSize
@@ -879,26 +582,24 @@ class _StatusStripeBanner extends StatelessWidget {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      child: Text.rich(
-                        TextSpan(
+                      child: _MetaLine(
+                        source: demo.source,
+                        fontSize: base.fontSize ?? 10,
+                        span: TextSpan(
                           children: <InlineSpan>[
                             if (demo.apiRating != null)
                               TextSpan(
                                 text:
                                     '★${demo.apiRating!.toStringAsFixed(1)}'
-                                    '${parts.isNotEmpty ? ' · ' : ''}',
+                                    '${demo.year != null ? ' · ' : ''}',
                                 style: base.copyWith(
                                   color: const Color(0xFFFFD700),
                                 ),
                               ),
-                            TextSpan(
-                              text: parts.join(' · '),
-                              style: base,
-                            ),
+                            if (demo.year != null)
+                              TextSpan(text: '${demo.year}', style: base),
                           ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (demo.tagName != null) ...<Widget>[
@@ -907,6 +608,10 @@ class _StatusStripeBanner extends StatelessWidget {
                         name: demo.tagName!,
                         color: demo.tagColor,
                       ),
+                    ],
+                    if (demo.statsLabel != null) ...<Widget>[
+                      const SizedBox(width: 4),
+                      _EpisodeCount(label: demo.statsLabel!),
                     ],
                   ],
                 ),
@@ -976,8 +681,10 @@ class _SplitMetaBanner extends StatelessWidget {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      child: Text.rich(
-                        TextSpan(
+                      child: _MetaLine(
+                        source: demo.source,
+                        fontSize: base.fontSize ?? 10,
+                        span: TextSpan(
                           children: <InlineSpan>[
                             if (demo.apiRating != null)
                               TextSpan(
@@ -991,8 +698,6 @@ class _SplitMetaBanner extends StatelessWidget {
                               TextSpan(text: '${demo.year}', style: base),
                           ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (demo.statusColor != null) ...<Widget>[
@@ -1003,134 +708,13 @@ class _SplitMetaBanner extends StatelessWidget {
                       const SizedBox(width: 3),
                     ],
                     if (demo.statsLabel != null)
-                      Text(
-                        demo.statsLabel!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      _EpisodeCount(label: demo.statsLabel!),
                   ],
                 ),
               ],
             ),
           ),
           if (demo.fraction != null) _ProgressEdge(fraction: demo.fraction!),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Variant H — episodes label inside a taller, status-tinted progress bar
-// ---------------------------------------------------------------------------
-
-class _ProgressLabelBanner extends StatelessWidget {
-  const _ProgressLabelBanner({required this.demo, required this.hovered});
-
-  final _DemoCard demo;
-  final bool hovered;
-
-  @override
-  Widget build(BuildContext context) {
-    final TextStyle base = AppTypography.caption.copyWith(
-      color: AppColors.textSecondary,
-      fontSize: 10,
-    );
-    final double? fraction =
-        demo.fraction ?? (demo.statusColor != null ? 1.0 : null);
-    final Color fillColor = (demo.statusColor ?? AppColors.tvShowAccent)
-        .withValues(alpha: demo.fraction != null ? 0.75 : 0.4);
-
-    return AnimatedContainer(
-      duration: AppDurations.fast,
-      color: Colors.black.withValues(alpha: hovered ? 0.85 : 0.6),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 6, 8, 5),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                AnimatedSize(
-                  duration: AppDurations.fast,
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    demo.title,
-                    style: AppTypography.posterTitle.copyWith(height: 1.2),
-                    maxLines: hovered ? 6 : 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          children: <InlineSpan>[
-                            if (demo.apiRating != null)
-                              TextSpan(
-                                text: '★${demo.apiRating!.toStringAsFixed(1)}'
-                                    '${demo.year != null ? ' · ' : ''}',
-                                style: base.copyWith(
-                                  color: const Color(0xFFFFD700),
-                                ),
-                              ),
-                            if (demo.year != null)
-                              TextSpan(text: '${demo.year}', style: base),
-                          ],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (demo.tagName != null) ...<Widget>[
-                      const SizedBox(width: 4),
-                      _TagChip(name: demo.tagName!, color: demo.tagColor),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Strip is always rendered so every card keeps the same banner
-          // height, with or without status/episodes — mirrors production.
-          SizedBox(
-            height: 14,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                ColoredBox(color: Colors.black.withValues(alpha: 0.45)),
-                if (fraction != null)
-                  FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: fraction,
-                    child: ColoredBox(color: fillColor),
-                  ),
-                if (demo.statsLabel != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        demo.statsLabel!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -1163,6 +747,8 @@ class _StatsStripBanner extends StatelessWidget {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+            // Status and tag left, episode count right — the split the
+            // Discord vote asked for.
             child: Row(
               children: <Widget>[
                 if (demo.statusColor != null) ...<Widget>[
@@ -1172,29 +758,21 @@ class _StatsStripBanner extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                 ],
-                if (demo.statsLabel != null) ...<Widget>[
-                  const Icon(
-                    Icons.live_tv_outlined,
-                    size: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      demo.statsLabel!,
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textPrimary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ] else
-                  const Spacer(),
-                if (demo.tagName != null)
-                  _TagChip(name: demo.tagName!, color: demo.tagColor),
+                // The tag takes the free space so the count lands on the right
+                // edge; a Spacer would split it with the tag's flex.
+                Expanded(
+                  child: demo.tagName != null
+                      ? Align(
+                          alignment: Alignment.centerLeft,
+                          child: _TagChip(
+                            name: demo.tagName!,
+                            color: demo.tagColor,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                if (demo.statsLabel != null)
+                  _EpisodeCount(label: demo.statsLabel!),
               ],
             ),
           ),

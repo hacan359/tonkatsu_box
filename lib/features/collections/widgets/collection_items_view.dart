@@ -14,6 +14,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/item_card_progress.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../helpers/collection_actions.dart';
@@ -239,7 +240,7 @@ class CollectionItemsView extends ConsumerWidget {
         maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * settings.cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     } else {
       final int baseCount;
@@ -254,7 +255,7 @@ class CollectionItemsView extends ConsumerWidget {
         crossAxisCount: AppSpacing.scaledColumns(baseCount, settings.cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     }
 
@@ -409,6 +410,8 @@ class CollectionItemsView extends ConsumerWidget {
       tagTextColor: tag?.textColor,
       tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
       tagGlow: tagGlow,
+      source: item.dataSource,
+      onSourceTap: openUrlCallback(item.externalUrl),
       onTagTap: canEdit
           ? (Offset pos) => _editItemTags(context, ref, item.id)
           : null,

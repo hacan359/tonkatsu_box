@@ -19,6 +19,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/cover_image_id.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/api_error_display.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart' show ShimmerPosterCard;
@@ -271,8 +272,9 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         }
 
         final Object item = displayItems[index];
-        return _buildCard(item, state.source.outputMediaType, collected,
-            variant, animeMangaTitleLanguage);
+        return _buildCard(item, state.source.outputMediaType,
+            state.source.dataSource, collected, variant,
+            animeMangaTitleLanguage);
       },
     );
   }
@@ -280,6 +282,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   Widget _buildCard(
     Object item,
     MediaType mediaType,
+    DataSource gridSource,
     _CollectedIds collected,
     CardVariant variant,
     String animeMangaTitleLanguage,
@@ -305,6 +308,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.releaseYear,
         mediaType: mediaType,
         isInCollection: inColl,
+        source: gridSource,
+        onSourceTap: openUrlCallback(item.externalUrl),
         onTap: () => widget.onItemTap(item, mediaType),
         onOpenInCollection: openCallback(item.tmdbId, inColl),
       );
@@ -326,6 +331,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.firstAirYear,
         mediaType: mediaType,
         isInCollection: inColl,
+        source: item.source,
+        onSourceTap: openUrlCallback(item.externalUrl),
         onTap: () => widget.onItemTap(item, mediaType),
         onOpenInCollection:
             openCallback(item.tmdbId, inColl, source: item.source),
@@ -346,6 +353,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         timeToBeatHours: item.timeToBeat?.primaryHours,
         mediaType: mediaType,
         isInCollection: inColl,
+        source: gridSource,
+        onSourceTap: openUrlCallback(item.externalUrl),
         onTap: () => widget.onItemTap(item, mediaType),
         onOpenInCollection: openCallback(item.id, inColl),
       );
@@ -363,6 +372,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.releaseYear,
         mediaType: mediaType,
         isInCollection: inColl,
+        source: gridSource,
+        onSourceTap: openUrlCallback(item.externalUrl),
         onTap: () => widget.onItemTap(item, mediaType),
         onOpenInCollection: openCallback(item.numericId, inColl),
       );
@@ -385,6 +396,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         mediaType: mediaType,
         typeLabelOverride: item.formatLabel,
         isInCollection: inColl,
+        source: item.source,
+        onSourceTap: openUrlCallback(item.externalUrl),
         onTap: () => widget.onItemTap(item, mediaType),
         onOpenInCollection: openCallback(item.id, inColl, source: item.source),
       );
@@ -407,6 +420,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         mediaType: mediaType,
         typeLabelOverride: item.formatLabel,
         isInCollection: inColl,
+        source: item.source,
+        onSourceTap: openUrlCallback(item.externalUrl),
         onTap: () => widget.onItemTap(item, mediaType),
         onOpenInCollection: openCallback(item.id, inColl, source: item.source),
       );
@@ -430,6 +445,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.releaseYear,
         mediaType: mediaType,
         isInCollection: inColl,
+        source: item.source,
+        onSourceTap: openUrlCallback(item.externalUrl),
         onTap: () => widget.onItemTap(item, mediaType),
         onOpenInCollection:
             openCallback(externalId, inColl, source: item.source),
@@ -464,9 +481,6 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     return '';
   }
 
-  /// Card aspect ratio; kept in sync with collection_screen.
-  static const double _cardAspectRatio = AppSpacing.posterAspectRatio;
-
   SliverGridDelegate _buildGridDelegate(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
     final double cardScale = ref.watch(
@@ -475,7 +489,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (width >= 800) {
       return SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
-        childAspectRatio: _cardAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
         crossAxisSpacing: AppSpacing.sm,
         mainAxisSpacing: AppSpacing.sm,
       );
@@ -485,7 +499,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         : AppSpacing.gridColumnsMobile;
     return SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
-      childAspectRatio: _cardAspectRatio,
+      childAspectRatio: AppSpacing.posterCardAspectRatio,
       crossAxisSpacing: AppSpacing.sm,
       mainAxisSpacing: AppSpacing.sm,
     );

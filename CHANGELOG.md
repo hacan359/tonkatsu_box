@@ -9,6 +9,49 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Source logo on poster cards, linking to the item's page**
+
+  Every card in a collection, in search results and in the recommendation and
+  discover rows now opens its meta line with the logo of the source the entry
+  came from — AniList, MangaDex, IGDB, TMDB and the rest — so it is clear at a
+  glance where a title is tracked. Clicking the logo opens that title's page on
+  the source in a browser; entries without a link (local and custom items) keep
+  the logo as a plain marker. Hovering it shows the source name. The bundled
+  brand logos were also trimmed of their empty margins and brought to one
+  256×256 canvas, so they read at the small sizes a card uses.
+
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.source,
+    MediaPosterCard.onSourceTap, _MediaPosterCardState._buildSubtitleRow,
+    _MediaPosterCardState._buildMetaText, _SourceLogoLink): New. The logo sits
+    in a Row beside the meta text rather than in a WidgetSpan, which would grow
+    the text line past the title block's fixed height.
+  * lib/shared/utils/url_launch.dart (openUrlCallback): New. Returns a tap
+    handler, or null when the item has no external page.
+  * lib/features/recommendations/providers/recommendations_provider.dart
+    (RecommendedItem.externalUrl): New getter resolving the page of the
+    underlying Movie / TvShow.
+  * lib/features/search/widgets/discover_row.dart (DiscoverItem.externalUrl),
+    lib/features/collections/widgets/recommendations_section.dart
+    (_RecItem.source, _RecItem.externalUrl): New fields carrying the link to
+    the card.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView), lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState), lib/features/search/widgets/browse_grid.dart
+    (_BrowseGridState._buildCard),
+    lib/features/collections/widgets/manga_similars_section.dart (_MangaRow),
+    lib/features/search/widgets/discover_feed.dart (DiscoverFeed),
+    lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget), lib/shared/widgets/book_carousel.dart
+    (BookCarousel): Pass the source and its page link to every poster card.
+  * assets/images/: 24 brand logos cropped to their content and normalised to
+    a 256×256 canvas; icon_myanimelist_color.png and icon_simkl_color.png keep
+    their opaque brand background.
+  * test/shared/utils/url_launch_test.dart,
+    test/features/recommendations/recommended_item_test.dart: New.
+    test/shared/widgets/media_poster_card_test.dart,
+    test/features/search/widgets/browse_grid_test.dart: Logo rendering, tap
+    callback, inert logo without a link, and source pass-through.
+
 - **Simkl import — movies, TV shows and anime from one account**
 
   A new import source in Settings → Import. Sign-in is a short code: the app
@@ -295,6 +338,66 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (KinoriumImportService.import): Read and parse the CSV via Isolate.run.
   * test/features/genre_cloud/genre_cloud_layout_test.dart: Async layout
     equivalence tests.
+
+- **Poster cards show the title under the artwork instead of over it**
+
+  Grid and carousel cards no longer cover the bottom of the poster with a
+  translucent title banner. The artwork stays clear, and the title plus its
+  meta line (rating, platform, year, type, genre) sit below it in a block of
+  fixed height, so cards in a row stay aligned however long the titles are and
+  a one-line title keeps its meta line right underneath. What stays on the
+  poster is a thin strip carrying the status and tag on the left and the
+  episode count on the right — and it disappears entirely for items that have
+  none of them. Hovering no longer expands the title; the full name comes up as
+  a tooltip. Loading skeletons now reserve the same title block, so posters do
+  not jump when the real cards arrive.
+
+  * lib/shared/widgets/media_poster_card.dart
+    (_MediaPosterCardState._buildGridVariant,
+    _MediaPosterCardState._buildTitleBlock,
+    _MediaPosterCardState._buildGridPoster,
+    _MediaPosterCardState._buildStatsStrip,
+    _MediaPosterCardState._buildSubtitleRow): Title and subtitle moved out of
+    the poster into a fixed-height block with a hover-only tooltip (the default
+    long-press trigger would take the card's context menu on Android); the
+    former bottom banner is now a stats strip that puts the status and tag left
+    and the progress label right, and collapses when the item has none of them.
+  * lib/features/settings/screens/card_banner_debug_screen.dart
+    (CardBannerDebugScreen, _StatsStripBanner, _StatusStripeBanner,
+    _SplitMetaBanner, _MetaLine, _EpisodeCount): Laboratory keeps only the
+    three variants still in play (D, F, G), each showing the source logo and
+    the episode count on the right; the gradient, solid, frosted, inline-slash
+    and progress-label mockups are gone.
+  * lib/shared/theme/app_typography.dart (AppTypography.posterTitleFor,
+    AppTypography.posterSubtitleFor, AppTypography.posterTextBlockHeight): New.
+    Poster text styles per card variant, plus the height of two title lines and
+    one subtitle line derived from those styles and the system font scale.
+  * lib/shared/theme/app_spacing.dart (AppSpacing.posterCardAspectRatio,
+    AppSpacing.posterRowVerticalPadding, AppSpacing.cardTitleBlockGap,
+    AppSpacing.cardTitleBlockHeight, AppSpacing.posterRowHeight): New. One
+    source of truth for the grid cell ratio and the carousel row height.
+  * lib/shared/widgets/shimmer_loading.dart (ShimmerPosterCard,
+    ShimmerPosterGrid): Skeleton card reserves the same title block and gained
+    a compact variant; the grid skeleton takes its ratio from AppSpacing.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView), lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState), lib/features/search/widgets/browse_grid.dart
+    (_BrowseGridState): Grid cells use AppSpacing.posterCardAspectRatio.
+  * lib/shared/widgets/book_carousel.dart (BookCarousel, BookCarouselShimmer),
+    lib/features/search/widgets/discover_row.dart (DiscoverRow),
+    lib/features/search/widgets/discover_feed.dart (DiscoverFeed),
+    lib/features/collections/widgets/recommendations_section.dart
+    (_RecommendationRow, _RecommendationShimmer),
+    lib/features/collections/widgets/manga_similars_section.dart (_MangaRow,
+    _MangaRowShimmer), lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget): Row height via AppSpacing.posterRowHeight, and
+    the loading rows reuse ShimmerPosterCard instead of four hand-rolled
+    copies of the same placeholder.
+  * test/shared/theme/app_typography_test.dart: New.
+    test/shared/theme/app_spacing_test.dart,
+    test/shared/widgets/media_poster_card_test.dart,
+    test/shared/widgets/shimmer_loading_test.dart: Title-block metrics, layout
+    of the title and meta line, and a render check at double font scale.
 
 ### Fixed
 

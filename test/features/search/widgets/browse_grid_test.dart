@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/shared/models/collected_item_info.dart';
 import 'package:tonkatsu_box/shared/models/data_source.dart';
+import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
 import 'package:tonkatsu_box/features/search/widgets/browse_grid.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
@@ -337,6 +338,52 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+
+    testWidgets('passes the item source and its page link to the card',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'tv',
+            filterValues: <String, Object?>{'genre': 18},
+            items: <Object>[
+              TvShow(
+                tmdbId: 55,
+                title: 'Linked Show',
+                source: DataSource.tvmaze,
+                externalUrl: 'https://example.org/tv/55',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final MediaPosterCard card =
+          tester.widget<MediaPosterCard>(find.byType(MediaPosterCard));
+      expect(card.source, DataSource.tvmaze);
+      expect(card.onSourceTap, isNotNull);
+    });
+
+    testWidgets('leaves the source logo inert when the item has no link',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            sourceId: 'tv',
+            filterValues: <String, Object?>{'genre': 18},
+            items: <Object>[
+              TvShow(tmdbId: 56, title: 'Unlinked Show'),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final MediaPosterCard card =
+          tester.widget<MediaPosterCard>(find.byType(MediaPosterCard));
+      expect(card.onSourceTap, isNull);
     });
 
     testWidgets(

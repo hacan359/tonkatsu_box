@@ -34,6 +34,18 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(ShimmerPosterCard), findsOneWidget);
     });
+
+    testWidgets('рендерится в компактном варианте',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrap(const SizedBox(
+          width: 100,
+          child: ShimmerPosterCard(compact: true),
+        )),
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ShimmerPosterCard), findsOneWidget);
+    });
   });
 
   group('ShimmerTierListCard', () {

@@ -18,6 +18,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/utils/media_format.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/logo_loader.dart';
@@ -462,7 +463,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     } else {
       final int baseCount;
@@ -477,7 +478,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     }
 
@@ -558,6 +559,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       tagColor: tag?.color,
                       tagTextColor: tag?.textColor,
                       tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
+                      source: item.dataSource,
+                      onSourceTap: openUrlCallback(item.externalUrl),
                       onTap: selection.isEmpty
                           ? () => _showItemDetails(item, collectionNames)
                           : () => ref
