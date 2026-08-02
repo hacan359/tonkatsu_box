@@ -1,11 +1,7 @@
-// Модель изображения из SteamGridDB API.
 
-/// Изображение из SteamGridDB (grid, hero, logo или icon).
-///
-/// Используется для всех типов изображений, так как структура ответа
-/// одинаковая для эндпоинтов `/grids`, `/heroes`, `/logos`, `/icons`.
+/// Covers grids, heroes, logos and icons alike — SteamGridDB returns the same
+/// shape from `/grids`, `/heroes`, `/logos` and `/icons`.
 class SteamGridDbImage {
-  /// Создаёт экземпляр [SteamGridDbImage].
   const SteamGridDbImage({
     required this.id,
     required this.score,
@@ -18,7 +14,6 @@ class SteamGridDbImage {
     this.author,
   });
 
-  /// Создаёт [SteamGridDbImage] из JSON ответа SteamGridDB API.
   factory SteamGridDbImage.fromJson(Map<String, dynamic> json) {
     String? author;
     if (json['author'] != null) {
@@ -40,37 +35,29 @@ class SteamGridDbImage {
     );
   }
 
-  /// Уникальный идентификатор изображения.
   final int id;
 
-  /// Оценка (голоса сообщества).
+  /// Community vote score.
   final int score;
 
-  /// Визуальный стиль (например, "alternate", "blurred", "material").
+  /// SteamGridDB style token, e.g. `alternate`, `blurred`, `material`.
   final String style;
 
-  /// URL полноразмерного изображения.
   final String url;
 
-  /// URL превью изображения.
   final String thumb;
 
-  /// Ширина в пикселях.
   final int width;
 
-  /// Высота в пикселях.
   final int height;
 
-  /// MIME-тип (например, "image/png", "image/jpeg").
+  /// MIME type, e.g. `image/png`.
   final String? mime;
 
-  /// Имя автора изображения.
   final String? author;
 
-  /// Возвращает строку размера в формате "WxH".
   String get dimensions => '${width}x$height';
 
-  /// Создаёт копию с изменёнными полями.
   SteamGridDbImage copyWith({
     int? id,
     int? score,

@@ -11,10 +11,8 @@ enum MediaType {
   /// TV show (TMDB).
   tvShow('tv_show'),
 
-  /// Animation (TMDB) — animated movies and series (Pixar, Disney, etc.).
-  ///
-  /// Uses the [Movie]/[TvShow] models with an [AnimationSource] platformId.
-  /// Not to be confused with [anime] — Japanese anime from AniList.
+  /// Animated movies and series (Pixar, Disney). Uses [Movie] / [TvShow] with
+  /// an [AnimationSource] platformId — not [anime], which is AniList.
   animation('animation'),
 
   /// Visual novel (VNDB).
@@ -23,10 +21,8 @@ enum MediaType {
   /// Manga (AniList).
   manga('manga'),
 
-  /// Anime (AniList) — Japanese anime with full metadata.
-  ///
-  /// Uses its own [Anime] model backed by the AniList API.
-  /// Not to be confused with [animation] — TMDB animation (cartoons).
+  /// Japanese anime on its own [Anime] model backed by AniList — not
+  /// [animation], which is TMDB cartoons.
   anime('anime'),
 
   /// Book (OpenLibrary / Fantlab).
@@ -41,14 +37,12 @@ enum MediaType {
   bool get isTvBacked =>
       this == MediaType.tvShow || this == MediaType.animation;
 
-  /// Whether items of this type *may* carry episode-tracker marks — the source
-  /// decides per item (see `CollectionItem.usesEpisodeTracker`). For coarse
-  /// decisions like cache invalidation, where only the type is known.
+  /// Coarse, type-only answer for things like cache invalidation; the source
+  /// decides per item (see `CollectionItem.usesEpisodeTracker`).
   bool get mayUseEpisodeTracker => isTvBacked || this == MediaType.anime;
 
-  /// Whether identity is `(externalId, source)` rather than `externalId`
-  /// alone: several providers serve this type and their numeric ids collide.
-  /// Animation is excluded on purpose — it only ever comes from TMDB.
+  /// Several providers serve this type and their numeric ids collide. Animation
+  /// is excluded on purpose — it only ever comes from TMDB.
   bool get isMultiSource =>
       this == MediaType.manga ||
       this == MediaType.anime ||
@@ -110,10 +104,8 @@ enum MediaType {
     }
   }
 
-  /// Overlay asset path for this media type, or `null`.
-  ///
-  /// Used for movies and TV shows (Blu-ray template); game overlays come
-  /// from [Platform.overlayAsset] instead.
+  /// Movies and TV shows only (Blu-ray template); game overlays come from
+  /// [Platform.overlayAsset] instead.
   String? get overlayAsset => switch (this) {
         MediaType.movie || MediaType.tvShow =>
           'assets/images/platform_overlays/blu-ray.png',
@@ -121,11 +113,7 @@ enum MediaType {
       };
 }
 
-/// Animation source kind (movie or series).
-///
-/// Stored in `collection_items.platform_id`:
-/// - [movie] = 0 → animated movie
-/// - [tvShow] = 1 → animated series
+/// Stored in `collection_items.platform_id`: [movie] = 0, [tvShow] = 1.
 abstract final class AnimationSource {
   /// Animated movie.
   static const int movie = 0;

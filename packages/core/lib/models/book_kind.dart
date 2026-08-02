@@ -1,11 +1,5 @@
-// Sub-type of a [Book] record — prose book vs. comic / graphic novel.
-
-/// Discriminates a [Book] as prose or a comic.
-///
-/// Comics (ComicVine) and books (OpenLibrary / Fantlab) share the `book`
-/// [MediaType]; [BookKind] is the stored discriminator that keeps them
-/// separable later without a dedicated media type. Persisted in the
-/// `books_cache.kind` column and carried through export / import.
+/// Comics and prose books share the `book` [MediaType]; this is the stored
+/// discriminator in `books_cache.kind`, carried through export / import.
 enum BookKind {
   /// Prose book (OpenLibrary, Fantlab).
   book('book'),
@@ -18,9 +12,8 @@ enum BookKind {
   /// Stable storage value written to the DB / export payload.
   final String value;
 
-  /// Parses a [BookKind] from its stored [value]. Unknown / null values fall
-  /// back to [BookKind.book], so pre-existing rows without the column stay
-  /// prose books.
+  /// Unknown / null falls back to [BookKind.book], so rows predating the column
+  /// stay prose.
   static BookKind fromName(String? value) {
     if (value == null) return BookKind.book;
     for (final BookKind kind in BookKind.values) {

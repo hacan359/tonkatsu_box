@@ -1,4 +1,3 @@
-// Плавающий overlay для Type-to-Filter на десктопе.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,12 +9,9 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Overlay для клиентской фильтрации набором текста с клавиатуры.
-///
-/// На мобильной платформе просто возвращает [child] без overhead.
-/// На десктопе перехватывает нажатия клавиш и показывает плавающую строку поиска.
+/// Desktop-only: intercepts key presses and floats a search line. On mobile it
+/// returns [child] untouched, with no overhead.
 class TypeToFilterOverlay extends StatefulWidget {
-  /// Создаёт [TypeToFilterOverlay].
   const TypeToFilterOverlay({
     required this.child,
     required this.onFilterChanged,
@@ -23,22 +19,17 @@ class TypeToFilterOverlay extends StatefulWidget {
     super.key,
   });
 
-  /// Основной контент экрана.
   final Widget child;
 
-  /// Вызывается при изменении текста фильтра.
   final ValueChanged<String> onFilterChanged;
 
-  /// Подсказка в поле ввода.
   final String? hintText;
 
   @override
   State<TypeToFilterOverlay> createState() => TypeToFilterOverlayState();
 }
 
-/// State для [TypeToFilterOverlay].
-///
-/// Публичный для доступа к методу [clear] через GlobalKey.
+/// Public so [clear] can be reached through a GlobalKey.
 class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     with SingleTickerProviderStateMixin {
   final FocusNode _wrapperFocus = FocusNode(debugLabel: 'TypeToFilter-wrapper');
@@ -76,7 +67,6 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     super.dispose();
   }
 
-  /// Программный сброс фильтра.
   void clear() {
     if (_isVisible) {
       _hide();
@@ -92,14 +82,13 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
   }
 
   void _hide() {
-    // Фокус на wrapper ДО анимации — чтобы фокус не был на TextField overlay
     _wrapperFocus.requestFocus();
     _animationController.reverse().then((_) {
       if (mounted) {
         setState(() => _isVisible = false);
         _controller.clear();
-        // Фокус на wrapper ПОСЛЕ rebuild — setState может сбросить фокус
-        // когда overlay с TextField убирается из дерева
+        // Focus the wrapper AFTER the rebuild — setState can drop focus when the
+        // overlay's TextField leaves the tree.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && !_wrapperFocus.hasFocus &&
               !_isExternalTextFieldFocused()) {
@@ -110,7 +99,7 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     });
   }
 
-  /// Мгновенно закрывает оверлей без анимации (при возврате на маршрут).
+  /// Closes without animation, for returning to the route.
   void _dismissInstantly() {
     if (!_isVisible) return;
     _animationController.value = 0;
@@ -119,7 +108,6 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     widget.onFilterChanged('');
   }
 
-  /// Планирует восстановление фокуса на wrapper после перестроения.
   void _scheduleWrapperFocusRestore() {
     if (_focusRestoreScheduled) return;
     _focusRestoreScheduled = true;
@@ -129,7 +117,7 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
       if (_wrapperFocus.hasFocus || _textFieldFocus.hasFocus) return;
       if (_isExternalTextFieldFocused()) return;
       _dismissInstantly();
-      // requestFocus после СЛЕДУЮЩЕГО rebuild (dismissInstantly делает setState)
+      // requestFocus after the NEXT rebuild, since _dismissInstantly setStates.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !_wrapperFocus.hasFocus &&
             !_isExternalTextFieldFocused()) {
@@ -139,12 +127,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     });
   }
 
-  /// Проверяет, находится ли фокус во внешнем EditableText
-  /// (не в нашем TextField overlay).
+  /// True when focus sits in an EditableText outside this overlay.
   bool _isExternalTextFieldFocused() {
     final FocusNode? focus = FocusManager.instance.primaryFocus;
     if (focus == null) return false;
-    // Наш TextField — пропускаем
     if (focus == _textFieldFocus) return false;
     final BuildContext? ctx = focus.context;
     if (ctx == null) return false;
@@ -162,12 +148,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (kIsMobile) return KeyEventResult.ignored;
 
-    // Только KeyDown и KeyRepeat
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
 
-    // Наш TextField в фокусе — только Escape обрабатываем
     if (_textFieldFocus.hasFocus) {
       if (event.logicalKey == LogicalKeyboardKey.escape) {
         _hide();
@@ -177,7 +161,6 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
       return KeyEventResult.ignored;
     }
 
-    // Внешний EditableText в фокусе — не перехватываем
     if (_isExternalTextFieldFocused()) {
       return KeyEventResult.ignored;
     }
@@ -192,7 +175,6 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
       return KeyEventResult.ignored;
     }
 
-    // Backspace — удалить символ
     if (event.logicalKey == LogicalKeyboardKey.backspace) {
       if (_controller.text.isNotEmpty) {
         _controller.text =
@@ -208,11 +190,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
       return KeyEventResult.ignored;
     }
 
-    // Печатный символ (codeUnit >= 32)
+    // Printable characters only (codeUnit >= 32).
     final String? char = event.character;
     if (char != null && char.isNotEmpty && char.codeUnitAt(0) >= 32) {
       _show();
-      // Атомарное обновление текста и курсора
       final String newText = _controller.text + char;
       _controller.value = TextEditingValue(
         text: newText,
@@ -227,12 +208,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
 
   @override
   Widget build(BuildContext context) {
-    // На мобильной платформе — zero overhead
     if (kIsMobile) return widget.child;
 
-    // Восстанавливаем фокус если потерян (после навигации назад и т.п.)
-    // ModalRoute.of регистрирует зависимость → didChangeDependencies →
-    // build вызывается при смене статуса маршрута.
+    // ModalRoute.of registers a dependency, so build re-runs on route status
+    // change — that is where lost focus (e.g. after back) gets restored.
     final ModalRoute<dynamic>? route = ModalRoute.of(context);
     if (route != null && route.isCurrent &&
         !_wrapperFocus.hasFocus && !_textFieldFocus.hasFocus) {

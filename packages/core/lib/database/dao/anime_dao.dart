@@ -1,6 +1,6 @@
-import 'package:core/database/query_chunk.dart';
-import 'package:core/models/anime.dart';
-import 'package:core/models/data_source.dart';
+import '../query_chunk.dart';
+import '../../models/anime.dart';
+import '../../models/data_source.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for `anime_cache`. Row identity is the pair `(id, source)`.

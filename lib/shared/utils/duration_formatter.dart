@@ -1,8 +1,6 @@
-// Утилиты для форматирования Duration в человекочитаемые строки.
 
 import '../../l10n/app_localizations.dart';
 
-/// Константы для расчёта периодов.
 class _DurationConstants {
   static const int daysInWeek = 7;
   static const int daysInMonth = 30;

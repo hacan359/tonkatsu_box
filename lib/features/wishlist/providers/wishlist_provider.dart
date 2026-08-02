@@ -1,18 +1,16 @@
+import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/wishlist_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/wishlist_dao.dart';
 import '../../../data/repositories/wishlist_repository.dart';
 
-/// Провайдер для списка элементов вишлиста.
 final AsyncNotifierProvider<WishlistNotifier, List<WishlistItem>>
     wishlistProvider =
     AsyncNotifierProvider<WishlistNotifier, List<WishlistItem>>(
   WishlistNotifier.new,
 );
 
-/// Notifier для управления вишлистом.
 class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
   late WishlistRepository _repository;
 
@@ -22,13 +20,11 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     return _repository.getAll();
   }
 
-  /// Обновляет список из БД.
   Future<void> refresh() async {
     state = const AsyncLoading<List<WishlistItem>>();
     state = await AsyncValue.guard(() => _repository.getAll());
   }
 
-  /// Добавляет элемент в вишлист.
   Future<WishlistItem> add({
     required String text,
     MediaType? mediaTypeHint,
@@ -51,7 +47,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     return item;
   }
 
-  /// Помечает элемент как resolved.
   Future<void> resolve(int id) async {
     await _repository.resolve(id);
 
@@ -71,7 +66,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     );
   }
 
-  /// Снимает отметку resolved.
   Future<void> unresolve(int id) async {
     await _repository.unresolve(id);
 
@@ -91,7 +85,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     );
   }
 
-  /// Обновляет элемент вишлиста.
   Future<void> updateItem(
     int id, {
     String? text,
@@ -132,7 +125,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     );
   }
 
-  /// Удаляет элемент.
   Future<void> delete(int id) async {
     await _repository.delete(id);
 
@@ -142,7 +134,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     );
   }
 
-  /// Удаляет все resolved элементы.
   Future<int> clearResolved() async {
     final int count = await _repository.clearResolved();
 
@@ -187,7 +178,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     );
   }
 
-  /// Удаляет записи с указанными ID одной пачкой.
   Future<void> deleteIds(Set<int> ids) async {
     if (ids.isEmpty) return;
     for (final int id in ids) {
@@ -200,7 +190,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     );
   }
 
-  /// Переименовывает тег у всех носителей.
   Future<int> renameTag(String? from, String to) async {
     final int count = await _repository.renameTag(from, to);
 

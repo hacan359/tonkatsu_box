@@ -1,8 +1,5 @@
-// Модель отзыва из TMDB.
 
-/// Отзыв пользователя из TMDB API.
 class TmdbReview {
-  /// Создаёт экземпляр [TmdbReview].
   const TmdbReview({
     required this.author,
     required this.content,
@@ -12,7 +9,6 @@ class TmdbReview {
     this.url,
   });
 
-  /// Создаёт [TmdbReview] из JSON ответа TMDB API.
   factory TmdbReview.fromJson(Map<String, dynamic> json) {
     final Map<String, dynamic>? authorDetails =
         json['author_details'] as Map<String, dynamic>?;
@@ -23,7 +19,6 @@ class TmdbReview {
     if (authorDetails != null) {
       final String? rawAvatar = authorDetails['avatar_path'] as String?;
       if (rawAvatar != null && rawAvatar.isNotEmpty) {
-        // Аватар может быть полным URL или путём TMDB
         if (rawAvatar.startsWith('/http')) {
           avatarPath = rawAvatar.substring(1);
         } else {
@@ -44,25 +39,19 @@ class TmdbReview {
     );
   }
 
-  /// Имя автора отзыва.
   final String author;
 
-  /// URL аватара автора.
   final String? avatarPath;
 
-  /// Оценка автора (0-10).
+  /// TMDB scale is already 0–10.
   final double? authorRating;
 
-  /// Текст отзыва.
   final String content;
 
-  /// Дата создания отзыва.
   final DateTime createdAt;
 
-  /// URL отзыва на TMDB.
   final String? url;
 
-  /// Возвращает отформатированный рейтинг автора.
   String? get formattedRating {
     if (authorRating == null) return null;
     return authorRating!.toStringAsFixed(0);

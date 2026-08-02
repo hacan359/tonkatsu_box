@@ -1,8 +1,8 @@
+import 'package:core/database/dao/mangadex_tag_dao.dart';
 import 'package:core/models/mangadex_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/mangadex_api.dart';
-import '../../core/database/dao/mangadex_tag_dao.dart';
 import '../../core/database/database_service.dart';
 
 /// Loads the MangaDex tag catalog with a SQLite-backed cache.

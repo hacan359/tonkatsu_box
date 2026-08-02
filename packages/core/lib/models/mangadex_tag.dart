@@ -1,9 +1,5 @@
-// One entry from the MangaDex tag catalog (`/manga/tag`).
-
-/// Tag from MangaDex's tag catalog. [group] is one of
-/// `genre` / `theme` / `format` / `content`; the genre-group entries feed the
-/// genre filter. [id] is the tag UUID passed to `includedTags[]`. Cached in the
-/// `mangadex_tags` table and refreshed on demand.
+/// [group] is `genre` / `theme` / `format` / `content`; [id] is the UUID passed
+/// to `includedTags[]`. Cached in `mangadex_tags`.
 class MangaDexTag {
   const MangaDexTag({
     required this.id,

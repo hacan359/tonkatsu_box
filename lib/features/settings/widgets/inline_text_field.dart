@@ -1,4 +1,3 @@
-// Inline текстовое поле — тап для редактирования, явная кнопка «Сохранить».
 
 import 'package:flutter/material.dart';
 
@@ -8,23 +7,9 @@ import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Текстовое поле с inline редактированием.
-///
-/// Тап по полю включает режим ввода. Сохранение — **только** по явной
-/// кнопке (✓) или Enter. Потеря фокуса сбрасывает несохранённый ввод
-/// обратно к [value]. Автосохранения нет — в настройках всё должно быть
-/// явным.
-///
-/// Никаких AlertDialog — всё прямо на месте.
-///
-/// **Важно для кастомных контейнеров с TextField:**
-/// Глобальная тема (`AppTheme`) задаёт `filled: true` + `focusedBorder` для
-/// всех TextField. Если TextField вложен в контейнер с собственной рамкой,
-/// необходимо отключить декорации: `border: InputBorder.none`,
-/// `focusedBorder: InputBorder.none`, `enabledBorder: InputBorder.none`,
-/// `filled: false` — иначе будет двойная рамка.
+/// Saves only on an explicit tick or Enter — losing focus reverts to [value].
+/// Nothing autosaves: settings must be deliberate.
 class InlineTextField extends StatefulWidget {
-  /// Создаёт [InlineTextField].
   const InlineTextField({
     required this.value,
     required this.onChanged,
@@ -35,22 +20,18 @@ class InlineTextField extends StatefulWidget {
     super.key,
   });
 
-  /// Текущее значение.
   final String value;
 
-  /// Вызывается при сохранении (blur или Enter).
+  /// Fires on save, never on keystroke.
   final ValueChanged<String> onChanged;
 
-  /// Метка над полем.
   final String? label;
 
-  /// Текст-заглушка при пустом значении.
   final String? placeholder;
 
-  /// Скрывать ли текст (для паролей/ключей).
+  /// For passwords and API keys.
   final bool obscureText;
 
-  /// Уменьшенный размер для мобильных экранов.
   final bool compact;
 
   @override
@@ -88,14 +69,13 @@ class _InlineTextFieldState extends State<InlineTextField> {
   }
 
   void _onTextChanged() {
-    // Обновляем видимость кнопки Save при каждом изменении.
     if (mounted) setState(() {});
   }
 
   void _onFocusChange() {
     if (!_focusNode.hasFocus && _editing) {
-      // Потеря фокуса без явного сохранения — сбрасываем типизацию
-      // к сохранённому значению. Сохранить можно только кнопкой/Enter.
+      // Losing focus without an explicit save reverts the typing; only the
+      // button or Enter commits.
       _cancel();
     }
   }
@@ -133,7 +113,6 @@ class _InlineTextFieldState extends State<InlineTextField> {
     super.dispose();
   }
 
-  // Фиксированная длина — не раскрываем длину реального значения.
   String get _displayValue {
     if (widget.value.isEmpty) return widget.placeholder ?? '';
     if (widget.obscureText && _obscured) return _obscuredDots;
@@ -152,7 +131,6 @@ class _InlineTextFieldState extends State<InlineTextField> {
             padding: const EdgeInsets.only(bottom: AppSpacing.xs),
             child: Text(widget.label!, style: AppTypography.bodySmall),
           ),
-        // Actions > Focus для поддержки D-pad/gamepad навигации.
         Actions(
           actions: <Type, Action<Intent>>{
             ActivateIntent: CallbackAction<ActivateIntent>(
@@ -233,12 +211,8 @@ class _InlineTextFieldState extends State<InlineTextField> {
                         ),
                       ),
                     if (_editing && _dirty)
-                      // Listener.onPointerDown срабатывает ДО любой
-                      // focus-механики — это важно, т.к. клик по кнопке
-                      // иначе сначала вызывает blur TextField → _cancel(),
-                      // и Save видит уже сброшенное значение.
-                      // На мобильном touch это не проблема, на PC мыши —
-                      // обязательно.
+                      // onPointerDown runs BEFORE any focus handling: otherwise a
+                      // click blurs the field first and Save sees the reverted value.
                       Listener(
                         behavior: HitTestBehavior.opaque,
                         onPointerDown: (_) => _commit(),

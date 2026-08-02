@@ -1,17 +1,12 @@
-// Привязка элемента коллекции к тиру в тир-листе.
 
-/// Запись элемента в тире.
-///
-/// Связывает элемент коллекции с конкретным тиром и определяет порядок.
+/// Places a collection item in a tier and fixes its order there.
 class TierListEntry {
-  /// Создаёт [TierListEntry].
   const TierListEntry({
     required this.collectionItemId,
     required this.tierKey,
     required this.sortOrder,
   });
 
-  /// Создаёт [TierListEntry] из записи базы данных.
   factory TierListEntry.fromDb(Map<String, dynamic> row) {
     return TierListEntry(
       collectionItemId: row['collection_item_id'] as int,
@@ -20,7 +15,6 @@ class TierListEntry {
     );
   }
 
-  /// Создаёт [TierListEntry] из экспортированных данных.
   factory TierListEntry.fromExport(Map<String, dynamic> json) {
     return TierListEntry(
       collectionItemId: json['collection_item_id'] as int,
@@ -29,16 +23,13 @@ class TierListEntry {
     );
   }
 
-  /// ID элемента коллекции.
   final int collectionItemId;
 
-  /// Ключ тира, к которому привязан элемент.
   final String tierKey;
 
-  /// Порядок внутри тира (0 = первый).
+  /// Position inside the tier; 0 is first.
   final int sortOrder;
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb(int tierListId) {
     return <String, dynamic>{
       'tier_list_id': tierListId,
@@ -48,7 +39,6 @@ class TierListEntry {
     };
   }
 
-  /// Преобразует в Map для экспорта.
   Map<String, dynamic> toExport() {
     return <String, dynamic>{
       'collection_item_id': collectionItemId,
@@ -57,7 +47,6 @@ class TierListEntry {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TierListEntry copyWith({
     int? collectionItemId,
     String? tierKey,

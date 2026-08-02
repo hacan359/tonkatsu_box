@@ -54,8 +54,8 @@ lib/
     └── widgets/            # CachedImage, PosterCard, RatingBadge, ShimmerLoading...
 
 packages/core/lib/         # Чистый Dart, без Flutter — общий с будущим selfhost-сервером
-├── models/                # 63 модели: Game, Movie, TvShow, Collection, CanvasItem...
-├── database/              # schema.dart + migrations/
+├── models/                # Модели: Game, Movie, TvShow, Collection, CanvasItem, XcollFile...
+├── database/              # schema.dart + migrations/ + dao/
 └── utils/                 # bbcode, html_text, stable_id, cover_image_id...
 ```
 
@@ -111,10 +111,12 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - `SteamGridDbApi` — Bearer token, провайдер `steamGridDbApiProvider`
 - API ключи хранятся в SharedPreferences, читаются через `SettingsNotifier`
 
-### База данных (`packages/core/lib/database/` + `lib/core/database/`)
+### База данных (`packages/core/lib/database/` + `lib/core/database/database_service.dart`)
 - SQLite через sqflite_common_ffi
-- Схема и миграции живут в пакете `core` (чистый Dart, без Flutter) — импорт через
-  `package:core/database/...`. CRUD и инициализация остались в приложении.
+- Схема, миграции и DAO живут в пакете `core` (чистый Dart, без Flutter) — импорт через
+  `package:core/database/...`. В приложении остался только `database_service.dart`:
+  инициализация, пути/профили (`dart:io`) и Riverpod-провайдеры DAO — та самая точка,
+  где на web DAO подменятся на Remote-заглушки.
 - Провайдер: `databaseServiceProvider`
 - Номер версии смотреть в `database_service.dart` (`version:` в `_initDatabase()` = версия последней миграции)
 
@@ -209,10 +211,20 @@ fetchUsers(limit) {}    // Нет типов
 - `_privateVariable` — приватные члены начинаются с `_`
 - `SCREAMING_CAPS` — только для deprecated констант
 
-### Документация:
-- Публичные API должны иметь `///` документацию
+### Комментарии (действует на весь проект):
+- **Только английский.** Никакой кириллицы в `///`, `//`, `/* */`. Исключение — literal-значения
+  внешнего API, которые нужны для грепа ответа (`роман` / `повесть` у Fantlab); проза вокруг
+  всё равно английская. UI-строки живут в `.arb`, это правило про комментарии в коде.
+- **Только WHY, никогда WHAT.** Имя и тип уже говорят *что*. Комментарий существует, чтобы
+  объяснить скрытое ограничение, неочевидный инвариант, воркэраунд или выбор алгоритма.
+- **Жёсткий лимит 2 строки** на блок — включая dartdoc публичного API. Не влезает — режь.
+  Если нужно больше, обычно это два разных факта: сводка над объявлением + `//` по месту.
+- **Никаких шапок файла.** Файл не начинается с блока «что это за файл» — путь и первое
+  объявление уже сказали. Dartdoc первого объявления (в файле без импортов) — это не шапка.
+- **Никаких баннеров-разделителей** (`// ==== Foo ====`, `// --- bar ---`).
+- **Нет комментария лучше плохого.** `/// Название коллекции.` над `final String name` — удалять.
+- `public_member_api_docs` отключён намеренно: докстринг не обязателен, отсутствие лучше дубля.
 - **НЕ** ставить `///` в начале файла без `library` директивы (вызывает `dangling_library_doc_comments`) — использовать `//`
-- Сложная логика должна иметь комментарии
 
 ### Обработка ошибок:
 - Использовать кастомные Exception классы
@@ -335,7 +347,8 @@ D-pad и кнопка A обрабатываются глобально в `Navi
 | `lib/features/collections/widgets/canvas_view.dart` | Главный виджет Board/Canvas |
 | `lib/features/collections/providers/canvas_provider.dart` | State канваса |
 | `lib/features/collections/providers/collections_provider.dart` | State коллекций |
-| `packages/core/lib/models/` | Все 63 модели (чистый Dart, `package:core/models/...`) |
+| `packages/core/lib/models/` | Все модели (чистый Dart, `package:core/models/...`) |
+| `packages/core/lib/database/dao/` | DAO — будущая граница RPC для web |
 | `packages/core/lib/models/collection_item.dart` | Универсальный элемент коллекции |
 | `packages/core/lib/models/canvas_item.dart` | Элемент канваса (7 типов) |
 | `lib/shared/theme/app_theme.dart` | Централизованная тема (dark Material 3) |

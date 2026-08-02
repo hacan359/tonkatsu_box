@@ -1,11 +1,7 @@
 import 'exportable.dart';
 
-/// Модель состояния viewport канваса.
-///
-/// Хранит позицию камеры и уровень масштабирования
-/// для восстановления при повторном открытии канваса.
+/// Camera position and zoom, restored when the canvas reopens.
 class CanvasViewport with Exportable {
-  /// Создаёт экземпляр [CanvasViewport].
   const CanvasViewport({
     required this.collectionId,
     this.scale = 1.0,
@@ -13,7 +9,6 @@ class CanvasViewport with Exportable {
     this.offsetY = 0.0,
   });
 
-  /// Создаёт [CanvasViewport] из записи базы данных.
   factory CanvasViewport.fromDb(Map<String, dynamic> row) {
     return CanvasViewport(
       collectionId: row['collection_id'] as int,
@@ -23,7 +18,6 @@ class CanvasViewport with Exportable {
     );
   }
 
-  /// Создаёт [CanvasViewport] из экспортных данных.
   factory CanvasViewport.fromExport(
     Map<String, dynamic> json, {
     int collectionId = 0,
@@ -36,24 +30,19 @@ class CanvasViewport with Exportable {
     );
   }
 
-  /// ID коллекции.
   final int collectionId;
 
-  /// Уровень масштабирования.
   final double scale;
 
-  /// Смещение по X.
   final double offsetX;
 
-  /// Смещение по Y.
   final double offsetY;
 
-  /// Viewport по умолчанию (используется для новых канвасов).
+  /// Default for a new canvas.
   static const CanvasViewport defaultValue = CanvasViewport(
     collectionId: 0,
   );
 
-  // -- Exportable контракт --
 
   @override
   Set<String> get internalDbFields => const <String>{'collection_id'};
@@ -62,7 +51,6 @@ class CanvasViewport with Exportable {
   Map<String, String> get dbToExportKeyMapping =>
       const <String, String>{'offset_x': 'offsetX', 'offset_y': 'offsetY'};
 
-  /// Преобразует в Map для сохранения в базу данных.
   @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
@@ -73,7 +61,6 @@ class CanvasViewport with Exportable {
     };
   }
 
-  /// Преобразует в Map для экспорта.
   @override
   Map<String, dynamic> toExport() {
     return <String, dynamic>{
@@ -83,7 +70,6 @@ class CanvasViewport with Exportable {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   CanvasViewport copyWith({
     int? collectionId,
     double? scale,

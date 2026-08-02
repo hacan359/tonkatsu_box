@@ -1,4 +1,3 @@
-// Диалог создания нового тир-листа.
 
 import 'package:core/models/collection.dart';
 import 'package:core/models/tier_list.dart';
@@ -102,7 +101,6 @@ class _CreateTierListDialogState
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // Scope выбор
             if (widget.preselectedCollectionId == null) ...<Widget>[
               RadioGroup<bool>(
                 groupValue: _isGlobal,
@@ -200,7 +198,6 @@ class _CreateTierListDialogState
     final S l = S.of(context);
     final String name = _nameController.text.trim();
 
-    // Валидация
     bool hasError = false;
     if (name.isEmpty) {
       setState(() => _nameError = l.tierListErrorEmptyName);

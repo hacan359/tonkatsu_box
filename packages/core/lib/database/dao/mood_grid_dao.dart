@@ -1,7 +1,7 @@
-import 'package:core/models/data_source.dart';
-import 'package:core/models/media_type.dart';
-import 'package:core/models/mood_grid.dart';
-import 'package:core/models/mood_grid_cell.dart';
+import '../../models/data_source.dart';
+import '../../models/media_type.dart';
+import '../../models/mood_grid.dart';
+import '../../models/mood_grid_cell.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Spec for a cell created at grid initialisation time (template / blank).

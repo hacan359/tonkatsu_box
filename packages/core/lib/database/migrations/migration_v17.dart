@@ -2,9 +2,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// SQLite has no `ALTER COLUMN`, so dropping the `NOT NULL` constraint on
-/// `collection_id` requires a full table rebuild (copy → drop → rename) plus
-/// rebuilding the unique indexes.
+/// SQLite has no `ALTER COLUMN`, so dropping `NOT NULL` on `collection_id`
+/// needs a full table rebuild plus rebuilt unique indexes.
 class MigrationV17 extends Migration {
   @override
   int get version => 17;
@@ -47,9 +46,8 @@ class MigrationV17 extends Migration {
       'ALTER TABLE collection_items_new RENAME TO collection_items',
     );
 
-    // Split unique constraints: items in a collection vs. uncategorised items
-    // (collection_id IS NULL). COALESCE(platform_id, -1) buckets NULL so
-    // multi-platform installs of the same external_id keep distinct rows.
+    // Split by collection vs uncategorised (collection_id IS NULL);
+    // COALESCE(platform_id, -1) buckets NULL so multi-platform rows stay distinct.
     await db.execute('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll
       ON collection_items(

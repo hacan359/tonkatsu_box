@@ -248,9 +248,7 @@ class _FiltersChevronButton extends StatelessWidget {
   }
 }
 
-// =========================================================================
 // Clear button
-// =========================================================================
 
 class _ClearButton extends StatelessWidget {
   const _ClearButton({required this.onTap});
@@ -277,9 +275,7 @@ class _ClearButton extends StatelessWidget {
   }
 }
 
-// =========================================================================
 // Source dropdown chevron
-// =========================================================================
 
 class _SourceDropdownChevron extends StatelessWidget {
   const _SourceDropdownChevron({
@@ -373,9 +369,7 @@ class _SourceDropdownChevron extends StatelessWidget {
   }
 }
 
-// =========================================================================
 // Filter dropdown chevron
-// =========================================================================
 
 class _FilterDropdownChevron extends ConsumerStatefulWidget {
   const _FilterDropdownChevron({
@@ -588,9 +582,7 @@ class _FilterDropdownChevronState
   }
 }
 
-// =========================================================================
 // Sort dropdown chevron
-// =========================================================================
 
 class _SortDropdownChevron extends StatelessWidget {
   const _SortDropdownChevron({

@@ -1,4 +1,3 @@
-// Строка прогресса с меткой, значением, прогресс-баром и кнопками.
 
 import 'package:flutter/material.dart';
 
@@ -10,7 +9,6 @@ import '../theme/app_typography.dart';
 ///
 /// Переиспользуется в [MangaProgressSection] и [AnimeProgressSection].
 class MediaProgressRow extends StatelessWidget {
-  /// Создаёт [MediaProgressRow].
   const MediaProgressRow({
     required this.label,
     required this.current,
@@ -24,13 +22,11 @@ class MediaProgressRow extends StatelessWidget {
   /// Метка (например "Chapters", "Episodes").
   final String label;
 
-  /// Текущее значение.
   final int current;
 
   /// Общее количество (null если неизвестно).
   final int? total;
 
-  /// Акцентный цвет прогресс-бара и кнопки.
   final Color accentColor;
 
   /// Callback при нажатии "+1".

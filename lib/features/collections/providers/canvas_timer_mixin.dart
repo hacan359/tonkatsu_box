@@ -15,22 +15,17 @@ mixin CanvasTimerMixin {
   Timer? _viewportSaveTimer;
   Timer? _positionSaveTimer;
 
-  /// Репозиторий для сохранения позиций элементов.
   CanvasRepository get timerRepository;
 
-  /// Текущее состояние канваса.
   CanvasState get state;
 
-  /// Устанавливает новое состояние канваса.
   set state(CanvasState value);
 
   /// ID для создания [CanvasViewport] (collectionId или collectionItemId).
   int get viewportId;
 
-  /// Сохраняет viewport в БД. Реализуется в каждом Notifier по-своему.
   void persistViewport(CanvasViewport viewport);
 
-  /// Отменяет активные таймеры. Вызывать в ref.onDispose.
   void cancelTimers() {
     _viewportSaveTimer?.cancel();
     _positionSaveTimer?.cancel();

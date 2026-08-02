@@ -1,8 +1,5 @@
-// Профиль пользователя RetroAchievements.
 
-/// Профиль пользователя RetroAchievements.
 class RaUserProfile {
-  /// Создаёт [RaUserProfile].
   const RaUserProfile({
     required this.user,
     required this.totalPoints,
@@ -13,7 +10,6 @@ class RaUserProfile {
     this.lastGameId,
   });
 
-  /// Создаёт [RaUserProfile] из JSON ответа API.
   factory RaUserProfile.fromJson(Map<String, dynamic> json) {
     return RaUserProfile(
       user: json['User'] as String? ?? '',
@@ -26,28 +22,24 @@ class RaUserProfile {
     );
   }
 
-  /// Имя пользователя.
   final String user;
 
-  /// Общее количество очков (softcore + hardcore).
+  /// Softcore and hardcore combined.
   final int totalPoints;
 
-  /// Дата регистрации (строка, напр. "2024-03-15 11:27:24").
+  /// RA sends a string, e.g. `2024-03-15 11:27:24`.
   final String memberSince;
 
-  /// Путь к аватарке (напр. "/UserPic/Hacan359.png").
+  /// Path only, e.g. `/UserPic/Hacan359.png`.
   final String? userPic;
 
-  /// Rich Presence — текущая активность.
   final String? richPresenceMsg;
 
   /// True Points (hardcore weighted).
   final int totalTruePoints;
 
-  /// ID последней запущенной игры на RetroAchievements.
   final int? lastGameId;
 
-  /// Полный URL аватарки.
   String? get userPicUrl =>
       userPic != null ? 'https://retroachievements.org$userPic' : null;
 }

@@ -173,7 +173,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return result;
   }
 
-  // ==================== Sections ====================
 
   List<Widget> _buildSections() {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
@@ -695,7 +694,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ];
   }
 
-  // ==================== Helpers ====================
 
   void _pushScreen(Widget screen) {
     Navigator.of(context).push(

@@ -1,9 +1,9 @@
+import 'package:core/database/dao/tier_list_dao.dart';
 import 'package:core/models/tier_definition.dart';
 import 'package:core/models/tier_list.dart';
 import 'package:core/models/tier_list_entry.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:tonkatsu_box/core/database/dao/tier_list_dao.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -21,7 +21,6 @@ void main() {
   });
 
   group('TierListDao', () {
-    // ==================== Tier Lists ====================
 
     group('getAllTierLists', () {
       test('returns all tier lists ordered by created_at DESC', () async {
@@ -208,7 +207,6 @@ void main() {
       });
     });
 
-    // ==================== Definitions ====================
 
     group('getTierDefinitions', () {
       test('returns definitions ordered by sort_order', () async {
@@ -280,7 +278,6 @@ void main() {
       });
     });
 
-    // ==================== Entries ====================
 
     group('getTierListEntries', () {
       test('returns entries ordered by sort_order', () async {

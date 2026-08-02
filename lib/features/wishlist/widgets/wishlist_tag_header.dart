@@ -1,7 +1,7 @@
+import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/models/wishlist_tag.dart';
 import 'package:flutter/material.dart';
 
-import '../../../core/database/dao/wishlist_dao.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';

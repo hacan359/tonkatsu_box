@@ -1,9 +1,9 @@
+import 'package:core/database/dao/game_dao.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/platform.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/igdb_api.dart';
-import '../../core/database/dao/game_dao.dart';
 import '../../core/database/database_service.dart';
 
 final Provider<GameRepository> gameRepositoryProvider =

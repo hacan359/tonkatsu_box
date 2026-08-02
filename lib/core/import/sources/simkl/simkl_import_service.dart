@@ -147,7 +147,6 @@ class SimklImportService implements ImportSource {
 
     final List<WishlistCandidate> wishlistFallback = <WishlistCandidate>[];
 
-    // -- Enrich movies and shows from TMDB by id (no title search). --------
     final int tmdbTotal = items.movies.length + items.shows.length;
     final _TmdbFetch movies = await _fetchTmdbCards<Movie>(
       entries: items.movies,
@@ -169,7 +168,6 @@ class SimklImportService implements ImportSource {
       genresOf: (TvShow show) => show.genres,
     );
 
-    // -- Resolve anime through Kitsu (direct ids, then mappings). ----------
     onProgress?.call(ImportProgress(
       stage: ImportStage.fetchingAnime,
       current: 0,
@@ -199,7 +197,6 @@ class SimklImportService implements ImportSource {
       );
     }
 
-    // -- Build candidates; everything unresolved goes to the wishlist. -----
     final List<ImportCandidate> candidates = <ImportCandidate>[];
     final List<_HeldItem> held = <_HeldItem>[];
     final List<_EpisodeMarks> episodeMarks = <_EpisodeMarks>[];
@@ -300,10 +297,8 @@ class SimklImportService implements ImportSource {
       },
     );
 
-    // -- Per-episode watch marks with their Simkl dates. --------------------
     await _writeEpisodeMarks(collection.id, episodeMarks, onProgress);
 
-    // -- The on-hold tag for entries Simkl keeps as `hold`. -----------------
     await _applyOnHoldTag(write, held);
 
     final Map<MediaType, int> wishlisted = await _writer.writeWishlist(
@@ -337,7 +332,6 @@ class SimklImportService implements ImportSource {
     );
   }
 
-  // -- TMDB enrichment ------------------------------------------------------
 
   /// Fetches and caches the TMDB card for every distinct `ids.tmdb` in
   /// [entries], recording whether it is animation. A failed title is only
@@ -394,7 +388,6 @@ class SimklImportService implements ImportSource {
     return result;
   }
 
-  // -- Anime resolution through Kitsu ---------------------------------------
 
   /// Maps each anime entry index to its Kitsu card. Order of attempts:
   /// direct `kitsu` ids from the Simkl list (batched `filter[id]`), then
@@ -458,7 +451,6 @@ class SimklImportService implements ImportSource {
     return resolved;
   }
 
-  // -- Candidates -----------------------------------------------------------
 
   /// Simkl page for the note: `simkl.com/<section>/<id>[/<slug>]`.
   static String? _simklUrl(SimklEntry entry, String section) {
@@ -645,7 +637,6 @@ class SimklImportService implements ImportSource {
     );
   }
 
-  // -- Episode marks ---------------------------------------------------------
 
   /// Expanding completed titles costs a metadata request per title, so this
   /// phase reports its own progress instead of leaving the bar at 100%.
@@ -770,7 +761,6 @@ class SimklImportService implements ImportSource {
     );
   }
 
-  // -- The on-hold tag -------------------------------------------------------
 
   Future<void> _applyOnHoldTag(
     ImportWriteResult write,

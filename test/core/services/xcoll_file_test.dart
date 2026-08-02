@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:core/models/xcoll_file.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/core/services/xcoll_file.dart';
 
 void main() {
   group('ExportFormat', () {

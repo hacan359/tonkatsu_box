@@ -1,12 +1,7 @@
-// Модель визуальной новеллы из VNDB.
-
 import 'dart:convert';
 
-/// Модель визуальной новеллы из VNDB API.
-///
-/// Представляет визуальную новеллу с метаданными из VNDB.
+/// Visual novel from the VNDB API.
 class VisualNovel {
-  /// Создаёт экземпляр [VisualNovel].
   const VisualNovel({
     required this.id,
     required this.title,
@@ -25,9 +20,8 @@ class VisualNovel {
     this.updatedAt,
   });
 
-  /// Создаёт [VisualNovel] из JSON ответа VNDB API.
   factory VisualNovel.fromJson(Map<String, dynamic> json) {
-    // Извлекаем URL обложки из вложенного объекта image
+    // The cover URL is nested in the `image` object.
     String? imageUrl;
     if (json['image'] != null) {
       final Map<String, dynamic> image =
@@ -35,11 +29,10 @@ class VisualNovel {
       imageUrl = image['url'] as String?;
     }
 
-    // Извлекаем теги (только имена, сортируем по rating)
+    // Names only, ordered by the tag's rating.
     List<String>? tags;
     if (json['tags'] != null) {
       final List<dynamic> tagsList = json['tags'] as List<dynamic>;
-      // Сортируем по rating (убывание) и берём имена
       final List<Map<String, dynamic>> sortedTags = tagsList
           .map((dynamic t) => t as Map<String, dynamic>)
           .toList()
@@ -52,7 +45,6 @@ class VisualNovel {
           .toList();
     }
 
-    // Извлекаем разработчиков
     List<String>? developers;
     if (json['developers'] != null) {
       final List<dynamic> devList = json['developers'] as List<dynamic>;
@@ -63,7 +55,6 @@ class VisualNovel {
           .toList();
     }
 
-    // Извлекаем платформы
     List<String>? platforms;
     if (json['platforms'] != null) {
       final List<dynamic> platList = json['platforms'] as List<dynamic>;
@@ -91,7 +82,6 @@ class VisualNovel {
     );
   }
 
-  /// Создаёт [VisualNovel] из записи базы данных.
   factory VisualNovel.fromDb(Map<String, dynamic> row) {
     List<String>? tags;
     if (row['tags'] != null && (row['tags'] as String).isNotEmpty) {
@@ -149,52 +139,44 @@ class VisualNovel {
     );
   }
 
-  /// Уникальный идентификатор новеллы в VNDB (например "v2").
+  /// VNDB id such as `v2`.
   final String id;
 
-  /// Название новеллы.
   final String title;
 
-  /// Альтернативное название (обычно оригинальное японское).
+  /// Usually the original Japanese title.
   final String? altTitle;
 
-  /// Описание новеллы.
   final String? description;
 
-  /// URL обложки.
   final String? imageUrl;
 
-  /// Рейтинг VNDB (0-100).
+  /// VNDB scale is 0–100; [rating10] converts it.
   final double? rating;
 
-  /// Количество голосов.
   final int? voteCount;
 
-  /// Дата релиза ("2009-10-15" или partial "2024").
+  /// May be partial: `2009-10-15` or just `2024`.
   final String? released;
 
-  /// Время прохождения в минутах.
   final int? lengthMinutes;
 
-  /// Категория длительности (1-5).
+  /// VNDB length bucket 1–5; see [lengthLabel].
   final int? length;
 
-  /// Список тегов (жанров).
   final List<String>? tags;
 
-  /// Список разработчиков.
   final List<String>? developers;
 
-  /// Список платформ (коды: "win", "ps3" и т.д.).
+  /// VNDB platform codes (`win`, `ps3`), not display labels.
   final List<String>? platforms;
 
-  /// URL страницы на VNDB.
   final String? externalUrl;
 
-  /// Время кеширования (Unix timestamp).
+  /// Cache timestamp, Unix seconds.
   final int? updatedAt;
 
-  /// Числовой ID для хранения в collection_items.external_id.
+  /// Numeric form for `collection_items.external_id`.
   int get numericId {
     final int? parsed = int.tryParse(id.replaceFirst('v', ''));
     if (parsed == null) {
@@ -203,25 +185,20 @@ class VisualNovel {
     return parsed;
   }
 
-  /// Рейтинг в шкале 0-10.
   double? get rating10 => rating != null ? rating! / 10 : null;
 
-  /// Форматированный рейтинг (0-10).
   String? get formattedRating {
     if (rating10 == null) return null;
     return rating10!.toStringAsFixed(1);
   }
 
-  /// Год релиза.
   int? get releaseYear {
     if (released == null || released!.length < 4) return null;
     return int.tryParse(released!.substring(0, 4));
   }
 
-  /// Теги в виде строки через запятую.
   String? get genresString => tags?.join(', ');
 
-  /// Человекочитаемая метка длительности.
   String? get lengthLabel => switch (length) {
         1 => '< 2h',
         2 => '2-10h',
@@ -231,10 +208,8 @@ class VisualNovel {
         _ => null,
       };
 
-  /// Разработчики в виде строки через запятую.
   String? get developersString => developers?.join(', ');
 
-  /// Платформы в виде строки через запятую.
   String? get platformsString =>
       platforms?.map(_platformLabel).join(', ');
 
@@ -250,7 +225,6 @@ class VisualNovel {
   @override
   String toString() => 'VisualNovel(id: $id, title: $title)';
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -272,14 +246,12 @@ class VisualNovel {
     };
   }
 
-  /// Преобразует в Map для экспорта коллекции.
   Map<String, dynamic> toExport() {
     final Map<String, dynamic> data = toDb();
     data.remove('updated_at');
     return data;
   }
 
-  /// Создаёт копию с изменёнными полями.
   VisualNovel copyWith({
     String? id,
     String? title,
@@ -320,10 +292,9 @@ class VisualNovel {
   static final RegExp _boldPattern = RegExp(r'\[b\]|\[/b\]');
   static final RegExp _italicPattern = RegExp(r'\[i\]|\[/i\]');
 
-  /// Убирает VNDB-специфичную разметку из описания.
   static String? _cleanDescription(String? description) {
     if (description == null) return null;
-    // VNDB использует [url=...]text[/url] и [spoiler]...[/spoiler]
+    // VNDB markup: [url=...]text[/url] and [spoiler]...[/spoiler].
     String clean = description;
     clean = clean.replaceAll(_urlPattern, '');
     clean = clean.replaceAll('[/url]', '');
@@ -335,7 +306,6 @@ class VisualNovel {
     return clean.isEmpty ? null : clean;
   }
 
-  /// Человекочитаемая метка платформы VNDB.
   static String _platformLabel(String code) => switch (code) {
         'win' => 'Windows',
         'lin' => 'Linux',
@@ -369,15 +339,13 @@ class VisualNovel {
       };
 }
 
-/// Тег (жанр) VNDB.
+/// A VNDB tag, used as a genre.
 class VndbTag {
-  /// Создаёт экземпляр [VndbTag].
   const VndbTag({
     required this.id,
     required this.name,
   });
 
-  /// Создаёт [VndbTag] из JSON ответа VNDB API.
   factory VndbTag.fromJson(Map<String, dynamic> json) {
     return VndbTag(
       id: json['id'] as String,
@@ -385,7 +353,6 @@ class VndbTag {
     );
   }
 
-  /// Создаёт [VndbTag] из записи базы данных.
   factory VndbTag.fromDb(Map<String, dynamic> row) {
     return VndbTag(
       id: row['id'] as String,
@@ -393,13 +360,11 @@ class VndbTag {
     );
   }
 
-  /// Уникальный идентификатор тега (например "g7").
+  /// VNDB tag id such as `g7`.
   final String id;
 
-  /// Название тега.
   final String name;
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,

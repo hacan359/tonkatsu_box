@@ -1,6 +1,5 @@
-/// One tier level in a tier list: key, label, color and order.
-/// The color is stored as an ARGB int; the Color getter lives in
-/// shared/constants/tier_definition_ui.dart.
+/// One tier level: key, label, ARGB color int and order. The Color getter lives
+/// in `shared/constants/tier_definition_ui.dart`.
 class TierDefinition {
   const TierDefinition({
     required this.tierKey,

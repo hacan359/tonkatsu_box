@@ -240,9 +240,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     };
   }
 
-  // ---------------------------------------------------------------------------
   // Grid / Compact variant
-  // ---------------------------------------------------------------------------
 
   Widget _buildGridVariant() {
     return Actions(
@@ -770,9 +768,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       widget.userRating != null ||
       (widget.apiRating != null && widget.apiRating! > 0);
 
-  // ---------------------------------------------------------------------------
   // Canvas variant
-  // ---------------------------------------------------------------------------
 
   Widget _buildCanvasVariant(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -831,9 +827,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Common
-  // ---------------------------------------------------------------------------
 
   /// Poster decode width in px (2x for HiDPI).
   static const int _posterDecodeWidth = 300;

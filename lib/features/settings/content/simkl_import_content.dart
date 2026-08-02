@@ -152,7 +152,6 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
     );
   }
 
-  // -- Account / PIN block --------------------------------------------------
 
   Widget _buildAccountSection(S l) {
     return Column(
@@ -425,7 +424,6 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
     );
   }
 
-  // -- Mode / collection (the shared import-screen idiom) -------------------
 
   Widget _buildModeSection(S l) {
     return Column(
@@ -667,7 +665,6 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
     );
   }
 
-  // -- Auth flow -------------------------------------------------------------
 
   Future<void> _requestPin() async {
     final String clientId = _needsClientId
@@ -813,7 +810,6 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
     });
   }
 
-  // -- Import ----------------------------------------------------------------
 
   String _defaultCollectionName(S l) {
     return l.simklImportNewCollectionDefault(_accountName ?? 'Simkl');

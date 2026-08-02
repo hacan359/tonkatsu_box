@@ -1,4 +1,3 @@
-// Текст с копированием по нажатию.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +9,6 @@ import '../theme/app_colors.dart';
 /// При hover показывает иконку копирования, при нажатии — галочку.
 /// Переиспользуется в [ScreenAppBar] и [ItemDetailsSheet].
 class CopyableText extends StatefulWidget {
-  /// Создаёт [CopyableText].
   const CopyableText({
     required this.text,
     required this.child,
@@ -18,13 +16,11 @@ class CopyableText extends StatefulWidget {
     super.key,
   });
 
-  /// Текст для копирования.
   final String text;
 
   /// Виджет-содержимое (обычно Text или Text.rich).
   final Widget child;
 
-  /// Размер иконки copy/check.
   final double iconSize;
 
   @override

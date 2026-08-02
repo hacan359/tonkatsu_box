@@ -1,4 +1,3 @@
-// Экран импорта RetroAchievements → IGDB игры.
 
 import 'package:flutter/material.dart';
 
@@ -11,7 +10,6 @@ import '../content/ra_import_content.dart';
 ///
 /// Тонкая обёртка вокруг [RaImportContent] с Scaffold/AppBar.
 class RaImportScreen extends StatelessWidget {
-  /// Создаёт [RaImportScreen].
   const RaImportScreen({super.key});
 
   @override

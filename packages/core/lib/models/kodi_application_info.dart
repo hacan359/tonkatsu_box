@@ -1,11 +1,7 @@
-// Информация о запущенном экземпляре Kodi для отображения в debug-панели.
 
-/// Ответ метода `Application.GetProperties` / `JSONRPC.Version`.
-///
-/// Используется для человеко-читаемого отображения в "Test connection" и
-/// Kodi Debug Panel: «Connected (Kodi 21.0 "Omega" on Living Room HTPC)».
+/// Feeds the human-readable line in "Test connection" and the Kodi debug
+/// panel: «Connected (Kodi 21.0 "Omega" on Living Room HTPC)».
 class KodiApplicationInfo {
-  /// Создаёт [KodiApplicationInfo].
   const KodiApplicationInfo({
     required this.versionMajor,
     required this.versionMinor,
@@ -13,12 +9,8 @@ class KodiApplicationInfo {
     this.name,
   });
 
-  /// Парсит ответ `Application.GetProperties` с полями `version`/`name`.
-  ///
-  /// Kodi возвращает:
-  /// ```json
-  /// { "version": { "major": 21, "minor": 0, "tag": "stable" }, "name": "Kodi" }
-  /// ```
+  /// Reads `{"version": {"major": 21, "minor": 0, "tag": "stable"},
+  /// "name": "Kodi"}`.
   factory KodiApplicationInfo.fromJson(Map<String, dynamic> json) {
     final Map<String, dynamic>? version =
         json['version'] as Map<String, dynamic>?;
@@ -30,19 +22,17 @@ class KodiApplicationInfo {
     );
   }
 
-  /// Major версия (например, 21 для "Omega").
+  /// Major version, e.g. 21 for "Omega".
   final int versionMajor;
 
-  /// Minor версия.
   final int versionMinor;
 
-  /// Tag сборки: `stable`, `beta`, `alpha`, `releasecandidate`, `prealpha`.
+  /// Build tag: `stable`, `beta`, `alpha`, `releasecandidate`, `prealpha`.
   final String? versionTag;
 
-  /// Имя инстанса (обычно `"Kodi"`, может быть кастомное).
+  /// Instance name, usually `Kodi` but may be customised.
   final String? name;
 
-  /// Короткая строка "21.0" / "21.0 beta".
   String get versionString {
     final String base = '$versionMajor.$versionMinor';
     if (versionTag == null || versionTag == 'stable') return base;

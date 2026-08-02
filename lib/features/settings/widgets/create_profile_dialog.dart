@@ -1,4 +1,3 @@
-// Диалог создания профиля.
 
 import 'package:core/models/profile.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +13,8 @@ import '../../../shared/utils/color_hex.dart';
 ///
 /// Возвращает `(String name, String color)` при создании или null при отмене.
 class CreateProfileDialog extends StatefulWidget {
-  /// Создаёт [CreateProfileDialog].
   const CreateProfileDialog({super.key});
 
-  /// Показывает диалог и возвращает результат.
   static Future<({String name, String color})?> show(
     BuildContext context,
   ) {
@@ -108,7 +105,6 @@ class _CreateProfileDialogState extends State<CreateProfileDialog> {
   }
 }
 
-/// Круглая плашка цвета с надписью «Изменить» — открывает полный color picker.
 class _ProfileColorPickerButton extends StatelessWidget {
   const _ProfileColorPickerButton({required this.color, required this.onTap});
 

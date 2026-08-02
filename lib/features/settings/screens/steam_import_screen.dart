@@ -1,4 +1,3 @@
-// Экран импорта библиотеки Steam → IGDB игры.
 
 import 'package:flutter/material.dart';
 
@@ -11,7 +10,6 @@ import '../content/steam_import_content.dart';
 ///
 /// Тонкая обёртка вокруг [SteamImportContent] с Scaffold/AppBar.
 class SteamImportScreen extends StatelessWidget {
-  /// Создаёт [SteamImportScreen].
   const SteamImportScreen({super.key});
 
   @override

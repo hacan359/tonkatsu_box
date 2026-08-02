@@ -1,9 +1,7 @@
-// DAO for manga from AniList / MangaBaka.
-
-import 'package:core/database/query_chunk.dart';
-import 'package:core/database/sparse_upsert.dart';
-import 'package:core/models/data_source.dart';
-import 'package:core/models/manga.dart';
+import '../query_chunk.dart';
+import '../sparse_upsert.dart';
+import '../../models/data_source.dart';
+import '../../models/manga.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for `manga_cache`. Row identity is the pair `(id, source)`, so the same

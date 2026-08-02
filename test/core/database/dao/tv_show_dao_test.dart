@@ -1,3 +1,4 @@
+import 'package:core/database/dao/tv_show_dao.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
@@ -5,7 +6,6 @@ import 'package:core/models/tv_show.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -38,7 +38,6 @@ void main() {
   }
 
   group('TvShowDao', () {
-    // ==================== TV Shows ====================
 
     group('getTvShowByTmdbId', () {
       test('returns null when not found', () async {
@@ -160,7 +159,6 @@ void main() {
       });
     });
 
-    // ==================== TV Seasons ====================
 
     group('getTvSeasonsByShowId', () {
       test('returns seasons ordered by number', () async {
@@ -229,7 +227,6 @@ void main() {
       });
     });
 
-    // ==================== TV Episodes ====================
 
     group('getEpisodesByShowId', () {
       test('returns episodes ordered by season and number', () async {
@@ -332,7 +329,6 @@ void main() {
       });
     });
 
-    // ==================== Watched Episodes ====================
 
     group('getWatchedEpisodes', () {
       test('returns map of watched episodes', () async {

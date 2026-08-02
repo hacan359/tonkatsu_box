@@ -1,22 +1,19 @@
 import 'exportable.dart';
 
-/// Тип коллекции.
 enum CollectionType {
-  /// Собственная коллекция пользователя.
   own('own'),
 
-  /// Импортированная коллекция (только для чтения).
+  /// Imported from a shared file.
   imported('imported'),
 
-  /// Форк импортированной коллекции (редактируемый).
+  /// Editable fork of an imported collection.
   fork('fork');
 
   const CollectionType(this.value);
 
-  /// Строковое значение для базы данных.
+  /// Value stored in the database.
   final String value;
 
-  /// Создаёт [CollectionType] из строки.
   static CollectionType fromString(String value) {
     return CollectionType.values.firstWhere(
       (CollectionType type) => type.value == value,
@@ -25,11 +22,7 @@ enum CollectionType {
   }
 }
 
-/// Модель коллекции игр.
-///
-/// Представляет коллекцию игр пользователя с метаданными.
 class Collection with Exportable {
-  /// Создаёт экземпляр [Collection].
   const Collection({
     required this.id,
     required this.name,
@@ -43,7 +36,6 @@ class Collection with Exportable {
     this.description,
   });
 
-  /// Создаёт [Collection] из записи базы данных.
   factory Collection.fromDb(Map<String, dynamic> row) {
     return Collection(
       id: row['id'] as int,
@@ -61,7 +53,6 @@ class Collection with Exportable {
     );
   }
 
-  /// Создаёт [Collection] из экспортных данных.
   factory Collection.fromExport(
     Map<String, dynamic> json, {
     int id = 0,
@@ -77,45 +68,35 @@ class Collection with Exportable {
     );
   }
 
-  /// Уникальный идентификатор коллекции.
   final int id;
 
-  /// Название коллекции.
   final String name;
 
-  /// Автор коллекции.
   final String author;
 
-  /// Тип коллекции.
   final CollectionType type;
 
-  /// Дата создания.
   final DateTime createdAt;
 
-  /// Снимок оригинальной коллекции (для форков).
+  /// Original collection snapshot; forks only.
   final String? originalSnapshot;
 
-  /// Автор оригинальной коллекции (для форков).
+  /// Original author; forks only.
   final String? forkedFromAuthor;
 
-  /// Название оригинальной коллекции (для форков).
+  /// Original title; forks only.
   final String? forkedFromName;
 
-  /// Относительный путь к hero-изображению в `<appDocs>/`.
-  ///
-  /// Например: `collections/hero_17.jpg`. Путь локальный — не экспортируется
-  /// в JSON; бинарник вкладывается в `.xcollx` отдельно.
+  /// Path under `<appDocs>/`, e.g. `collections/hero_17.jpg`. Local, so it is
+  /// absent from the JSON — the binary rides in `.xcollx` separately.
   final String? heroImagePath;
 
-  /// Краткое описание коллекции (tagline для rich hero).
+  /// Tagline for the rich hero.
   final String? description;
 
-  /// Возвращает true, если коллекция редактируемая.
-  ///
-  /// Все коллекции редактируемые (импортированные ведут себя как обычные).
+  /// Always true — imported collections behave like ordinary ones.
   bool get isEditable => true;
 
-  // -- Exportable контракт --
 
   @override
   Set<String> get internalDbFields => const <String>{
@@ -124,8 +105,8 @@ class Collection with Exportable {
         'original_snapshot',
         'forked_from_author',
         'forked_from_name',
-        // Локальный путь картинки не экспортируется: сам бинарник
-        // вкладывается в секцию `images` .xcollx отдельно.
+        // The local path is not exported; the binary rides in the `.xcollx`
+        // `images` section instead.
         'hero_image_path',
       };
 
@@ -133,7 +114,6 @@ class Collection with Exportable {
   Map<String, String> get dbToExportKeyMapping =>
       const <String, String>{'created_at': 'created'};
 
-  /// Преобразует в Map для сохранения в базу данных.
   @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
@@ -150,7 +130,6 @@ class Collection with Exportable {
     };
   }
 
-  /// Преобразует в Map для экспорта.
   @override
   Map<String, dynamic> toExport() {
     return <String, dynamic>{
@@ -161,7 +140,6 @@ class Collection with Exportable {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   Collection copyWith({
     int? id,
     String? name,

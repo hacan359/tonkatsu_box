@@ -1,6 +1,6 @@
-import 'package:core/models/tier_definition.dart';
-import 'package:core/models/tier_list.dart';
-import 'package:core/models/tier_list_entry.dart';
+import '../../models/tier_definition.dart';
+import '../../models/tier_list.dart';
+import '../../models/tier_list_entry.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class TierListDao {

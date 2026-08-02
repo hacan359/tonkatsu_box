@@ -2,10 +2,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Adds the `kind` discriminator to `books_cache` so comics (ComicVine,
-/// `BookKind.comic`) and prose books (OpenLibrary / Fantlab, `BookKind.book`)
-/// share the `book` media type while staying separable. Existing rows default
-/// to `'book'`.
+/// Adds the `kind` discriminator so comics and prose books share the `book`
+/// media type while staying separable. Existing rows default to `book`.
 class MigrationV49 extends Migration {
   @override
   int get version => 49;

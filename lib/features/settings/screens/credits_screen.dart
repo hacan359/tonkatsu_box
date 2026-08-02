@@ -1,4 +1,3 @@
-// Экран атрибуции API-провайдеров и лицензий.
 
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,6 @@ import '../content/credits_content.dart';
 /// Тонкая обёртка вокруг [CreditsContent] с Scaffold/AppBar.
 /// Используется при push-навигации на мобильных устройствах.
 class CreditsScreen extends StatelessWidget {
-  /// Создаёт [CreditsScreen].
   const CreditsScreen({super.key});
 
   @override

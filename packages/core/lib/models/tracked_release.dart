@@ -1,10 +1,8 @@
 import 'data_source.dart';
 import 'media_type.dart';
 
-/// A release-tracking subscription for one title.
-///
 /// Identity is `(externalId, source, mediaType)`, matching how the app
-/// disambiguates entities across providers (e.g. AniList vs MangaBaka ids).
+/// disambiguates entities across providers.
 class TrackedRelease {
   const TrackedRelease({
     required this.externalId,

@@ -3,10 +3,7 @@ import 'dart:convert';
 /// Format version written on export.
 const int xcollFormatVersion = 3;
 
-/// Oldest format version the importer can read.
-///
-/// v2 and v3 are structurally identical apart from `user_rating` (int in v2,
-/// double in v3), which is handled by reading it via `as num?`.
+/// v2 and v3 differ only in `user_rating` (int vs double), read via `as num?`.
 const int xcollMinReadableVersion = 2;
 
 enum ExportFormat {
@@ -66,10 +63,8 @@ class ExportCanvas {
   }
 }
 
-/// Collection export/import file.
-///
-/// `.xcoll` — light export (metadata + item ids);
-/// `.xcollx` — full export (+ canvas + base64 images).
+/// `.xcoll` is a light export (metadata + item ids); `.xcollx` is full
+/// (+ canvas + base64 images).
 class XcollFile {
   const XcollFile({
     required this.version,
@@ -238,9 +233,8 @@ class XcollFile {
   /// `{ImageType.folder}/{imageId}` (e.g. `game_covers/12345`).
   final Map<String, String> images;
 
-  /// Full media objects (full export only). Shape:
-  /// `{games: [...], movies: [...], tv_shows: [...], tv_seasons: [...],
-  /// tv_episodes: [...]}`, each entry a model's `toDb()` map.
+  /// Full media objects, full export only: `{games: [...], movies: [...], ...}`,
+  /// each entry a model's `toDb()` map.
   final Map<String, dynamic> media;
 
   /// Full export only.

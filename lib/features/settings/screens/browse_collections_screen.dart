@@ -1,4 +1,3 @@
-// Экран каталога онлайн-коллекций.
 
 import 'package:flutter/material.dart';
 
@@ -10,7 +9,6 @@ import '../content/browse_collections_content.dart';
 ///
 /// Тонкая обёртка вокруг [BrowseCollectionsContent] с Scaffold/AppBar.
 class BrowseCollectionsScreen extends StatelessWidget {
-  /// Создаёт [BrowseCollectionsScreen].
   const BrowseCollectionsScreen({super.key});
 
   @override

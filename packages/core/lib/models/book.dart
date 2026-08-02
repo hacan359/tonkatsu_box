@@ -7,14 +7,8 @@ import '../utils/stable_id.dart';
 
 import 'book_kind.dart';
 
-/// Book metadata from OpenLibrary, Fantlab, ComicVine, Google Books or
-/// Hardcover.
-///
-/// Identity mirrors [Manga]: the cache key is the pair `(id, source)`. [id] is
-/// the provider numeric id stored as a string (`"27448"` / `"3104"`) and maps
-/// to `collection_items.external_id` via [externalIdInt]. The provider-native
-/// id (`"OL27448W"` / `"3104"`) is kept separately in [nativeId] so the full
-/// OLID is never reconstructed.
+/// Identity mirrors [Manga]: cache key is `(id, source)`. [id] holds the
+/// provider's numeric id; its native form (`OL27448W`) stays in [nativeId].
 class Book {
   const Book({
     required this.id,
@@ -74,9 +68,8 @@ class Book {
   /// [toExport]). The export omits `cached_at`, so it stays null here.
   factory Book.fromExport(Map<String, dynamic> json) => Book.fromDb(json);
 
-  /// Lightweight [Book] from an OpenLibrary `search.json` `docs[]` entry. Holds
-  /// only what the search grid needs; description / subjects / rating arrive
-  /// when the work is opened ([Book.fromOpenLibraryWork]).
+  /// Search-grid subset; description / subjects / rating arrive later via
+  /// [Book.fromOpenLibraryWork].
   factory Book.fromOpenLibrarySearchDoc(Map<String, dynamic> doc) {
     final String key = doc['key'] as String? ?? '';
     final (String nativeId, String id) = _olidParts(key);
@@ -100,9 +93,8 @@ class Book {
     );
   }
 
-  /// Full [Book] from an OpenLibrary `/works/{OLID}.json` response, optionally
-  /// enriched with `/ratings.json`, resolved author names, and one edition
-  /// (`/books/{OLID}.json`) for ISBNs / page count / publishers.
+  /// Full work, optionally enriched with ratings, resolved author names and
+  /// one edition for ISBNs / page count / publishers.
   factory Book.fromOpenLibraryWork(
     Map<String, dynamic> work, {
     Map<String, dynamic>? ratings,
@@ -146,10 +138,8 @@ class Book {
     );
   }
 
-  /// Lightweight [Book] from a Fantlab `/search-works` `matches[]` entry. Holds
-  /// what the search grid needs (title, authors, cover, year, rating); the
-  /// description / subjects / series / awards arrive when the work is opened
-  /// ([Book.fromFantlabWork]).
+  /// Search-grid subset; description / subjects / series / awards arrive later
+  /// via [Book.fromFantlabWork].
   factory Book.fromFantlabSearchMatch(Map<String, dynamic> match) {
     final String id = _fantlabId(match['work_id']);
     final String rus = _trimmed(match['rusname']);
@@ -179,10 +169,8 @@ class Book {
     );
   }
 
-  /// Full [Book] from a Fantlab `/work/{id}/extended` response (a superset of
-  /// `/work/{id}` that also carries `classificatory`, `awards`, `parents` and
-  /// `editions_blocks`). [extended] may be passed separately when the rich
-  /// blocks come from a second call; otherwise they are read from [work].
+  /// Reads `/work/{id}/extended`. [extended] may arrive separately when the
+  /// rich blocks come from a second call.
   factory Book.fromFantlabWork(
     Map<String, dynamic> work, {
     Map<String, dynamic>? extended,
@@ -231,9 +219,8 @@ class Book {
     );
   }
 
-  /// [Book] from a Fantlab `/work/{id}/similars` array entry. That payload has
-  /// its own shape (`id`, `name`, `creators.authors`, `stat.rating`, `saga`),
-  /// distinct from `/work/{id}`.
+  /// The `similars` payload has its own shape (`creators.authors`,
+  /// `stat.rating`, `saga`), distinct from `/work/{id}`.
   factory Book.fromFantlabSimilar(Map<String, dynamic> entry) {
     final String id = _fantlabId(entry['id']);
     final String rus = _trimmed(entry['name']);
@@ -268,16 +255,8 @@ class Book {
     );
   }
 
-  /// [Book] from a ComicVine `volume` object — both the `/search` rows and the
-  /// richer `/volume/{id}` payload share this shape. Tagged
-  /// [BookKind.comic]; the numeric [id] feeds `external_id` while [nativeId]
-  /// keeps the `4050-{id}` detail-endpoint id so the full volume can be
-  /// refetched. `count_of_issues` is stored in [pageCount] — for comics this
-  /// is the number of issues in the series, not pages (the UI labels it
-  /// accordingly via [BookKind.comic]); `start_year` arrives as a string and
-  /// is parsed to a year. On the detail payload `people` (creators) feeds
-  /// [authors] and `characters` feeds [subjects] — comics have no genres, so
-  /// the character list stands in for the genre/tag chips.
+  /// Shared by ComicVine `/search` rows and `/volume/{id}`. `count_of_issues`
+  /// lands in [pageCount] — issues, not pages; `characters` stands in for genres.
   factory Book.fromComicVineVolume(Map<String, dynamic> json) {
     final int numericId = _intOrNull(json['id']) ?? 0;
     final String id = numericId.toString();
@@ -307,13 +286,8 @@ class Book {
     );
   }
 
-  /// [Book] from a Google Books `Volume` object — shared by the `volumes.list`
-  /// search rows and the `volumes/{id}` detail payload, which carry the same
-  /// `{id, volumeInfo}` shape. Google's `volumeId` is an alphanumeric string, so
-  /// [id] is a deterministic 63-bit [fnv1a64] hash of it (kept numeric for the
-  /// `external_id: int` contract) while the real id lives in [nativeId] for
-  /// detail refetch / links. `averageRating` (0–5) is doubled to the app's 0–10
-  /// scale; the HTML `description` is sanitised. Tagged [BookKind.book].
+  /// Google's volume id is alphanumeric, so [id] is an [fnv1a64] hash of it to
+  /// keep the `external_id: int` contract; the real id lives in [nativeId].
   factory Book.fromGoogleBooksVolume(Map<String, dynamic> json) {
     final String volumeId = _trimmed(json['id']);
     final Object? infoObj = json['volumeInfo'];
@@ -327,10 +301,8 @@ class Book {
     final double? avg = (info['averageRating'] as num?)?.toDouble();
     final String? language = _nonEmpty(info['language']);
     final String? publisher = _nonEmpty(info['publisher']);
-    // Search-list rows return pageCount 0 for catalog-only volumes (the real
-    // count lives only in the volume detail), so treat 0 as unknown — the UI
-    // then shows no page count instead of "0 pages". The detail fetch on add
-    // fills in the real value.
+    // Catalog-only search rows report 0, with the real count only in the volume
+    // detail — treat 0 as unknown so the UI omits it instead of "0 pages".
     final int? pageCount = _intOrNull(info['pageCount']);
 
     return Book(
@@ -356,11 +328,8 @@ class Book {
     );
   }
 
-  /// [Book] from a Hardcover search `document` (Typesense). The document
-  /// already carries the whole card — authors, genres, moods, ISBNs, image,
-  /// rating — so search results need no detail follow-up. Ids are numeric
-  /// (arriving as a string); `rating` (0–5) is doubled to the app's 0–10
-  /// scale. Graphic novels (`book_category_id` 4) map to [BookKind.comic].
+  /// The Typesense document already carries the whole card, so search results
+  /// need no detail follow-up. `rating` (0–5) is doubled to the app's 0–10.
   factory Book.fromHardcoverDocument(Map<String, dynamic> doc) {
     final String id = _hardcoverId(doc['id']);
     final String title = _nonEmpty(doc['title']) ?? 'Unknown';
@@ -394,10 +363,8 @@ class Book {
     );
   }
 
-  /// [Book] from a Hardcover graph `book` object — shared by the
-  /// `books_by_pk` detail payload and the `book` nested in `user_books`
-  /// import rows (the import shape simply lacks `default_physical_edition`).
-  /// Genres and moods come from the `cached_tags` dictionary.
+  /// Shared by `books_by_pk` and the `book` nested in `user_books` import rows,
+  /// which simply lacks `default_physical_edition`.
   factory Book.fromHardcoverBook(Map<String, dynamic> json) {
     final String id = _hardcoverId(json['id']);
     final String title = _nonEmpty(json['title']) ?? 'Unknown';
@@ -444,15 +411,12 @@ class Book {
     );
   }
 
-  /// Provider numeric id stored as a string (`"27448"` / `"3104"`). The column
-  /// type is `TEXT` as headroom for a future non-numeric id, but today the
-  /// content is always digits — so [externalIdInt] feeds
-  /// `collection_items.external_id` (INTEGER) without loss.
+  /// `TEXT` as headroom for a future non-numeric id, but always digits today —
+  /// so [externalIdInt] feeds the INTEGER `external_id` without loss.
   final String id;
 
-  /// Which provider this record came from. Part of the cache identity
-  /// `(id, source)` so OpenLibrary and Fantlab entries that share a numeric id
-  /// never collide.
+  /// Part of the cache identity `(id, source)` so OpenLibrary and Fantlab
+  /// entries sharing a numeric id never collide.
   final DataSource source;
 
   /// Provider-native id: `"OL27448W"` (OpenLibrary work) or `"3104"` (Fantlab).
@@ -484,7 +448,7 @@ class Book {
   /// Deduplicated genres / tags.
   final List<String> subjects;
 
-  /// `"роман"` / `"повесть"` / null — Fantlab only.
+  /// Fantlab-only form token, verbatim from the API: `роман`, `повесть`, null.
   final String? workType;
 
   /// Cycle / series name — Fantlab only.
@@ -610,9 +574,8 @@ class Book {
     );
   }
 
-  /// Overlays the richer fields a full work fetch adds (description, original
-  /// title, cleaned subjects) onto a lightweight search-result book, keeping
-  /// the search row's year / pages / languages / rating.
+  /// Overlays a full fetch onto a lightweight search row, keeping the row's
+  /// year / pages / languages / rating.
   Book withWorkDetails(Book full) => copyWith(
         description: full.description,
         originalTitle: full.originalTitle,
@@ -656,9 +619,8 @@ class Book {
   static String coverUrlFromIsbn(String isbn) =>
       'https://covers.openlibrary.org/b/isbn/$isbn-L.jpg';
 
-  /// Splits an OLID key (`/works/OL27448W`) into the native id (`OL27448W`) and
-  /// the numeric id stored in [id] (`27448`). Falls back to the native id when
-  /// it carries no digits.
+  /// Splits `/works/OL27448W` into native id and numeric [id]. Falls back to
+  /// the native id when it carries no digits.
   static (String nativeId, String id) _olidParts(String key) {
     final String nativeId =
         key.contains('/') ? key.substring(key.lastIndexOf('/') + 1) : key;
@@ -708,8 +670,7 @@ class Book {
   }
 
   // OpenLibrary `subject` mixes real subjects with machine markers
-  // (`award:hugo_award=1966`, `nyt:...=...`). Drop anything with a `:` or `=`,
-  // dedupe, and cap so a card / sheet isn't buried in tags.
+  // (`award:hugo_award=1966`); anything with `:` or `=` is dropped.
   static const int _maxSubjects = 15;
 
   static List<String> _cleanSubjects(List<String> values) {
@@ -738,7 +699,6 @@ class Book {
     return clean.isEmpty ? null : clean;
   }
 
-  // --- ComicVine helpers -----------------------------------------------------
 
   /// Strips an HTML description (tags + entities) to plain text — used by the
   /// ComicVine and Google Books factories, whose descriptions come as HTML.
@@ -764,10 +724,8 @@ class Book {
     return null;
   }
 
-  /// Distinct `name` values from a ComicVine array of `{name: ...}` objects
-  /// (`people` → [authors], `characters` → [subjects]), in API order, capped
-  /// at [max]. These arrays appear only on `/volume` detail payloads — the
-  /// search / browse list rows omit them, so list items stay lightweight.
+  /// Present only on `/volume` detail payloads — search / browse rows omit
+  /// them, keeping list items lightweight.
   static List<String> _comicVineNames(Object? raw, {required int max}) {
     if (raw is! List) return const <String>[];
     final List<String> names = <String>[];
@@ -786,7 +744,6 @@ class Book {
   static const int _comicVineMaxPeople = 12;
   static const int _comicVineMaxCharacters = 15;
 
-  // --- Google Books helpers --------------------------------------------------
 
   /// Splits a Google Books `industryIdentifiers` array into ISBN-10 / ISBN-13,
   /// keeping the first of each type.
@@ -805,12 +762,8 @@ class Book {
     return (isbn10, isbn13);
   }
 
-  /// Cover from a Google Books `imageLinks` object. Only the thumbnail zoom
-  /// levels reliably carry the cover — the volume-detail sizes
-  /// (`small`..`extraLarge`, zoom 2-6) are interior page scans for scanned
-  /// volumes despite `printsec=frontcover` — so the thumbnail is upscaled via
-  /// Google's `fife` width parameter instead. The curled-corner overlay
-  /// (`&edge=curl`) is removed and the scheme upgraded to HTTPS.
+  /// Only thumbnail zoom levels reliably carry the cover: `small`..`extraLarge`
+  /// are interior page scans, so the thumbnail is upscaled via Google's `fife`.
   static String? _googleCover(Object? imageLinks) {
     if (imageLinks is! Map<String, dynamic>) return null;
     for (final String key in const <String>['thumbnail', 'smallThumbnail']) {
@@ -825,16 +778,14 @@ class Book {
     return null;
   }
 
-  // --- Hardcover helpers -------------------------------------------------------
 
   /// `https://hardcover.app/id/book/{id}` — permanent id URL (302 to the
   /// current slug), immune to slug renames.
   static String _hardcoverBookUrl(String id) =>
       'https://hardcover.app/id/book/$id';
 
-  /// Id normalizer — the search document carries `id` as a string, graph
-  /// objects as an int. A non-numeric id (future headroom) folds through
-  /// [fnv1a64] to keep the numeric `external_id` contract.
+  /// Search documents carry `id` as a string, graph objects as an int. A
+  /// non-numeric id folds through [fnv1a64] to keep the numeric contract.
   static String _hardcoverId(Object? raw) {
     if (raw is num) return raw.toInt().toString();
     if (raw is String && raw.isNotEmpty) {
@@ -914,9 +865,8 @@ class Book {
     return name ?? _firstString(doc['series_names']);
   }
 
-  /// Series name from graph `book_series`: the entry with the lowest
-  /// position — the primary series lists the book early, derived universe
-  /// orderings much later.
+  /// Lowest position wins — the primary series lists the book early, derived
+  /// universe orderings much later.
   static String? _hardcoverSeries(Object? raw) {
     if (raw is! List<dynamic>) return null;
     String? best;
@@ -938,7 +888,6 @@ class Book {
     return best;
   }
 
-  // --- Fantlab helpers -------------------------------------------------------
 
   /// `https://fantlab.ru/work{id}` — the canonical work page.
   static String _fantlabWorkUrl(String id) => 'https://fantlab.ru/work$id';
@@ -947,9 +896,8 @@ class Book {
   static String _fantlabCoverUrlFromEdition(int editionId) =>
       'https://fantlab.ru/images/editions/big/$editionId';
 
-  /// Cover edition id from a search match — the manually chosen
-  /// `pic_edition_id`, falling back to Fantlab's auto pick
-  /// `pic_edition_id_auto`. Returns 0 when neither is set.
+  /// Prefers the manual `pic_edition_id` over Fantlab's auto pick. Returns 0
+  /// when neither is set.
   static int _fantlabCoverEdition(Map<String, dynamic> match) {
     final int manual = _intOrNull(match['pic_edition_id']) ?? 0;
     if (manual > 0) return manual;
@@ -964,9 +912,8 @@ class Book {
     return 'https://fantlab.ru$path';
   }
 
-  /// Tolerant id parse — Fantlab's Perl backend returns `work_id` as an int, a
-  /// string, or a single-element array. Keeps the digits as a string; falls
-  /// back to the trimmed input.
+  /// Fantlab's Perl backend returns `work_id` as an int, a string, or a
+  /// single-element array.
   static String _fantlabId(Object? raw) {
     if (raw is num) return raw.toInt().toString();
     if (raw is String) {
@@ -989,9 +936,8 @@ class Book {
     return null;
   }
 
-  /// Parses a Fantlab rating (already on a 1–10 scale) from a num, a numeric
-  /// string (`"8.62"`), or an array (`[8.53]`). Non-positive values are
-  /// treated as "no rating".
+  /// Accepts a num, a numeric string (`"8.62"`), or an array (`[8.53]`).
+  /// Non-positive means "no rating".
   static double? _fantlabRating(Object? raw) {
     final double? value;
     if (raw is num) {
@@ -1052,10 +998,8 @@ class Book {
     return out;
   }
 
-  /// Author names from a `/work/{id}` `authors[]` array (or the similars
-  /// `creators.authors`). Keeps authors (`type == 'autor'` or untyped),
-  /// dropping tagged non-authors like translators, and caps the list so a
-  /// credits-heavy work can't flood the card.
+  /// Keeps `type == 'autor'` or untyped, dropping translators, and caps the
+  /// list so a credits-heavy work can't flood the card.
   static List<String> _fantlabWorkAuthors(Object? authors) {
     if (authors is! List<dynamic>) return const <String>[];
     final List<String> out = <String>[];
@@ -1141,9 +1085,8 @@ class Book {
     return null;
   }
 
-  /// Edition data from `extended.editions_blocks`: the first edition's id (for a
-  /// cover fallback) plus the first page count / ISBN found across editions
-  /// (fields the bare work response lacks).
+  /// First edition id plus the first page count / ISBN found across editions —
+  /// fields the bare work response lacks.
   static ({int? pages, String? isbn, int? editionId}) _fantlabFirstEdition(
     Object? blocks,
   ) {

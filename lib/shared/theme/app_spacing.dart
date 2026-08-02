@@ -9,7 +9,6 @@ import 'app_typography.dart';
 /// One spacing system for a consistent UI.
 /// Base step is 4px; the main values are multiples of it.
 abstract final class AppSpacing {
-  // ==================== Padding ====================
 
   /// 4px — minimal padding.
   static const double xs = 4;
@@ -26,7 +25,6 @@ abstract final class AppSpacing {
   /// 32px — extra large padding.
   static const double xl = 32;
 
-  // ==================== Border radii ====================
 
   /// 2px — half-height rounding for 4px-tall elements
   /// (sheet grab handles, thin progress bars).
@@ -47,7 +45,6 @@ abstract final class AppSpacing {
   /// 20px — extra large rounding (modal dialogs).
   static const double radiusXl = 20;
 
-  // ==================== Controls ====================
 
   /// 48px — standard button height (filled/outlined buttons).
   static const double buttonHeight = 48;
@@ -59,7 +56,6 @@ abstract final class AppSpacing {
   /// 28px — dense chip-like button height (filter sheets).
   static const double buttonHeightDense = 28;
 
-  // ==================== Grid ====================
 
   /// 16px — gap between grid cards.
   static const double gridGap = 16;

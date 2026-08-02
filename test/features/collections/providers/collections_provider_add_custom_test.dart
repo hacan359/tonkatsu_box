@@ -1,3 +1,4 @@
+import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
@@ -5,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';

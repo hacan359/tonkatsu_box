@@ -1,3 +1,4 @@
+import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/wishlist_item.dart';
 import 'package:core/models/wishlist_tag.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/wishlist_dao.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';

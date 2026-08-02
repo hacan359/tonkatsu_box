@@ -1,24 +1,17 @@
-// Модель связи между элементами канваса.
-
 import 'exportable.dart';
 
-/// Стиль линии связи.
 enum ConnectionStyle {
-  /// Сплошная линия.
   solid('solid'),
 
-  /// Пунктирная линия.
   dashed('dashed'),
 
-  /// Линия со стрелкой.
   arrow('arrow');
 
   const ConnectionStyle(this.value);
 
-  /// Строковое значение для базы данных.
+  /// Value stored in the database.
   final String value;
 
-  /// Создаёт [ConnectionStyle] из строки.
   static ConnectionStyle fromString(String value) {
     return ConnectionStyle.values.firstWhere(
       (ConnectionStyle style) => style.value == value,
@@ -27,12 +20,7 @@ enum ConnectionStyle {
   }
 }
 
-/// Модель связи между двумя элементами канваса.
-///
-/// Представляет визуальную линию от одного элемента к другому
-/// с настраиваемым стилем, цветом и лейблом.
 class CanvasConnection with Exportable {
-  /// Создаёт экземпляр [CanvasConnection].
   const CanvasConnection({
     required this.id,
     required this.collectionId,
@@ -45,7 +33,6 @@ class CanvasConnection with Exportable {
     this.style = ConnectionStyle.solid,
   });
 
-  /// Создаёт [CanvasConnection] из записи базы данных.
   factory CanvasConnection.fromDb(Map<String, dynamic> row) {
     return CanvasConnection(
       id: row['id'] as int,
@@ -62,7 +49,6 @@ class CanvasConnection with Exportable {
     );
   }
 
-  /// Создаёт [CanvasConnection] из экспортных данных.
   factory CanvasConnection.fromExport(
     Map<String, dynamic> json, {
     int collectionId = 0,
@@ -84,39 +70,30 @@ class CanvasConnection with Exportable {
     );
   }
 
-  /// Уникальный идентификатор связи.
   final int id;
 
-  /// ID коллекции.
   final int collectionId;
 
-  /// ID элемента коллекции (для per-game canvas, null для коллекционного).
+  /// Set for a per-item canvas; `null` for a collection-level one.
   final int? collectionItemId;
 
-  /// ID элемента-источника.
   final int fromItemId;
 
-  /// ID элемента-цели.
   final int toItemId;
 
-  /// Текстовый лейбл на линии связи.
   final String? label;
 
-  /// Цвет линии в формате hex (например, '#FF0000').
+  /// Hex color, e.g. `#FF0000`.
   final String color;
 
-  /// Стиль линии.
   final ConnectionStyle style;
 
-  /// Дата создания.
   final DateTime createdAt;
 
-  // -- Exportable контракт --
 
   @override
   Set<String> get internalDbFields => const <String>{'collection_id'};
 
-  /// Преобразует в Map для сохранения в базу данных.
   @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
@@ -132,7 +109,6 @@ class CanvasConnection with Exportable {
     };
   }
 
-  /// Преобразует в Map для экспорта.
   @override
   Map<String, dynamic> toExport() {
     return <String, dynamic>{
@@ -147,10 +123,7 @@ class CanvasConnection with Exportable {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
-  ///
-  /// Используйте [clearLabel] = true для сброса label в null,
-  /// так как передача `label: null` оставляет текущее значение.
+  /// [clearLabel] erases the label; `label: null` keeps the current one.
   CanvasConnection copyWith({
     int? id,
     int? collectionId,

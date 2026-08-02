@@ -1,5 +1,3 @@
-// MangaBaka genre from the static `mangabaka_genres` lookup table.
-
 /// One MangaBaka genre. [key] is the API filter value (`genre=`), [name] the
 /// display label. The genre list is a fixed enum seeded into the DB.
 class MangaBakaGenre {

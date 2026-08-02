@@ -1,13 +1,10 @@
-// Общая кнопка-иконка для [AppSidebar] и [AppBottomBar].
 
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import 'nav_tab.dart';
 
-/// Описание одного пункта навигации.
 class NavDestination {
-  /// Создаёт [NavDestination].
   const NavDestination({
     required this.tab,
     required this.icon,
@@ -16,13 +13,10 @@ class NavDestination {
     this.badgeCount = 0,
   });
 
-  /// Таб, на который ведёт этот пункт.
   final NavTab tab;
 
-  /// Иконка в неактивном состоянии.
   final IconData icon;
 
-  /// Иконка в активном состоянии.
   final IconData selectedIcon;
 
   /// Локализованное имя (для Tooltip).
@@ -38,7 +32,6 @@ class NavDestination {
 /// (горизонтальное меню). Размер `width × height` задаёт ячейку —
 /// иконка центрируется внутри.
 class NavIconButton extends StatelessWidget {
-  /// Создаёт [NavIconButton].
   const NavIconButton({
     required this.destination,
     required this.active,
@@ -48,19 +41,15 @@ class NavIconButton extends StatelessWidget {
     super.key,
   });
 
-  /// Описание пункта.
   final NavDestination destination;
 
   /// Активен ли пункт (выбран).
   final bool active;
 
-  /// Ширина ячейки.
   final double width;
 
-  /// Высота ячейки.
   final double height;
 
-  /// Колбэк при тапе.
   final VoidCallback onTap;
 
   @override
@@ -99,12 +88,9 @@ class NavIconButton extends StatelessWidget {
   }
 }
 
-/// Маленький пульсирующий Badge для индикации обновления.
 class NavPulsingBadge extends StatefulWidget {
-  /// Создаёт [NavPulsingBadge].
   const NavPulsingBadge({required this.child, super.key});
 
-  /// Виджет, к которому прикрепляется badge.
   final Widget child;
 
   @override

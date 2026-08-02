@@ -1,15 +1,11 @@
-// DAO for books from OpenLibrary / Fantlab.
-
-import 'package:core/database/query_chunk.dart';
-import 'package:core/database/sparse_upsert.dart';
-import 'package:core/models/book.dart';
-import 'package:core/models/data_source.dart';
+import '../query_chunk.dart';
+import '../sparse_upsert.dart';
+import '../../models/book.dart';
+import '../../models/data_source.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-/// DAO for `books_cache`. Row identity is the pair `(id, source)`, so the same
-/// numeric `id` from OpenLibrary and Fantlab can coexist. `id` is stored as
-/// `TEXT` but always holds digits, so id-list lookups match on
-/// `CAST(id AS INTEGER)` against `collection_items.external_id`.
+/// Row identity is `(id, source)`, so one numeric `id` can exist for both
+/// OpenLibrary and Fantlab. `id` is `TEXT` but always digits, hence the CAST.
 class BookDao {
   const BookDao(this._getDatabase);
 

@@ -5,6 +5,7 @@ import 'package:core/models/game.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/tmdb_api.dart';
-import '../../../core/services/xcoll_file.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
@@ -301,7 +301,6 @@ class _DemoCollectionsScreenState
     }
   }
 
-  // ===== Game collections (IGDB) =====
 
   Future<XcollFile> _generateGameCollection({
     required _CollectionSpec spec,
@@ -387,7 +386,6 @@ class _DemoCollectionsScreenState
     return images;
   }
 
-  // ===== Movie collections (TMDB) =====
 
   Future<XcollFile> _generateMovieCollection({
     required _CollectionSpec spec,
@@ -510,7 +508,6 @@ class _DemoCollectionsScreenState
     return images;
   }
 
-  // ===== TV Show collections (TMDB) =====
 
   Future<XcollFile> _generateTvShowCollection({
     required _CollectionSpec spec,
@@ -633,7 +630,6 @@ class _DemoCollectionsScreenState
     return images;
   }
 
-  // ===== Image download helper =====
 
   Future<String?> _downloadImageBase64(Dio dio, String url) async {
     try {

@@ -1,4 +1,3 @@
-// Экран настроек кэширования изображений.
 
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,6 @@ import '../content/cache_content.dart';
 /// Тонкая обёртка вокруг [CacheContent] с Scaffold/AppBar.
 /// Используется при push-навигации на мобильных устройствах.
 class CacheScreen extends StatelessWidget {
-  /// Создаёт [CacheScreen].
   const CacheScreen({super.key});
 
   @override

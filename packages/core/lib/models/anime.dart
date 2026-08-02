@@ -53,9 +53,8 @@ class Anime {
 
     final List<dynamic>? genresList = json['genres'] as List<dynamic>?;
 
-    // AniList tag objects carry category, rank, isMediaSpoiler — we drop
-    // everything except the name since per-media spoiler / category are
-    // looked up from the catalog table when needed.
+    // Only the name is kept; per-media spoiler / category are looked up from
+    // the catalog table when needed.
     List<String>? tags;
     final List<dynamic>? tagsList = json['tags'] as List<dynamic>?;
     if (tagsList != null && tagsList.isNotEmpty) {
@@ -211,9 +210,8 @@ class Anime {
       }
     }
 
-    // Before v60 the `source` column held the source material ("MANGA"), not
-    // the provider. Rows and `.xcoll` payloads written back then carry no
-    // `source_material`, so an unrecognised `source` is read as one.
+    // Before v60 `source` held the source material ("MANGA"), not the provider,
+    // so an unrecognised value is read as one.
     final String? rawSource = row['source'] as String?;
     final DataSource? knownSource = DataSource.tryFromName(rawSource);
     final String? sourceMaterial = (row['source_material'] as String?) ??

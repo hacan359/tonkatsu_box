@@ -1,10 +1,7 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-/// Immutable `CREATE TABLE` DDL helpers called by individual migrations (and
-/// test setup). There is intentionally no `createAll` — a database is built by
-/// running the migration chain (see `database_service.dart`). Each method
-/// reflects its table's shape at the migration that creates it; never modify
-/// one (it would change the migration replay).
+/// Immutable `CREATE TABLE` helpers called by individual migrations. Each
+/// reflects its table at its creating migration; editing one breaks replay.
 abstract final class DatabaseSchema {
   static Future<void> createPlatformsTable(Database db) async {
     await db.execute('''
@@ -178,12 +175,8 @@ abstract final class DatabaseSchema {
     ''');
   }
 
-  /// Release-tracking subscriptions, keyed by the title identity
-  /// `(external_id, source, media_type)` so the same numeric id from different
-  /// providers (e.g. AniList vs MangaBaka) never collides. Independent of
-  /// `collection_items`: one subscription per title regardless of how many
-  /// collections it sits in. The Releases calendar reads dates straight from
-  /// `tv_episodes_cache`; this table only records what the user opted into.
+  /// Keyed by `(external_id, source, media_type)` and independent of
+  /// `collection_items`: one subscription per title, whatever collections hold it.
   static Future<void> createTrackedReleasesTable(Database db) async {
     await db.execute('''
       CREATE TABLE tracked_releases (
@@ -262,9 +255,8 @@ abstract final class DatabaseSchema {
       ON collection_items(collection_id, media_type, external_id, platform_id)
       WHERE collection_id IS NOT NULL AND media_type = 'game'
     ''');
-    // Manga: identity includes `source` so the same external_id from AniList
-    // and MangaBaka coexist as separate rows. COALESCE keeps legacy NULL
-    // sources (pre-v44) collapsing to a single bucket.
+    // Manga identity includes `source`; COALESCE collapses legacy NULL sources
+    // (pre-v44) into one bucket.
     await db.execute('''
       CREATE UNIQUE INDEX idx_ci_coll_manga
       ON collection_items(collection_id, media_type, external_id, COALESCE(source, 'anilist'))
@@ -704,9 +696,8 @@ abstract final class DatabaseSchema {
     ''');
   }
 
-  /// No UNIQUE on `(grid_id, media_type, external_id)` — the same item
-  /// can occupy several cells. No FK to `collection_items` — a cell
-  /// stands alone, regardless of whether the item is in any collection.
+  /// No UNIQUE — one item may occupy several cells. No FK to `collection_items`
+  /// — a cell stands alone whether or not the item is in a collection.
   static Future<void> createMoodGridCellsTable(Database db) async {
     await db.execute('''
       CREATE TABLE mood_grid_cells (

@@ -2,10 +2,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Universal per-unit marks: a like and/or note on a single unit (episode,
-/// season, chapter, volume, page, part or a custom unit) inside a collection
-/// item. Anchored on `collection_items.id` with `ON DELETE CASCADE`, kept in a
-/// dedicated table separate from progress tracking.
+/// Per-unit marks (like and/or note) in a dedicated table, anchored on
+/// `collection_items.id` with `ON DELETE CASCADE`.
 class MigrationV53 extends Migration {
   @override
   int get version => 53;

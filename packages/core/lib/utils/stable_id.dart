@@ -1,10 +1,5 @@
-// Stable string→int hashing for folding a provider's non-numeric id (Google
-// Books `volumeId`, MangaDex UUID) into the numeric `external_id` contract.
-
-/// Deterministic 64-bit FNV-1a hash of [input], masked to 63 bits so the result
-/// is always a non-negative [int] that fits both SQLite's signed INTEGER and a
-/// native Dart int. Unlike [String.hashCode] it is stable across runs and
-/// platforms, so cached / persisted ids stay valid.
+/// 64-bit FNV-1a masked to 63 bits, so it fits SQLite's signed INTEGER. Stable
+/// across runs and platforms, unlike [String.hashCode].
 int fnv1a64(String input) {
   // 64-bit FNV-1a. Dart ints are 64-bit two's-complement on the VM/AOT, so the
   // multiply wraps mod 2^64 exactly as the algorithm requires.

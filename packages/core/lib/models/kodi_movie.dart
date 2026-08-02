@@ -1,10 +1,8 @@
 import 'kodi_date_parser.dart';
 import 'kodi_unique_ids.dart';
 
-/// A movie from Kodi `VideoLibrary.GetMovies`.
-///
-/// DTO, never persisted to SQLite — used only by `KodiSyncService` to match
-/// against the local collection and wishlist.
+/// A DTO from Kodi `VideoLibrary.GetMovies`, never persisted — only
+/// `KodiSyncService` uses it to match the collection and wishlist.
 class KodiMovie {
   const KodiMovie({
     required this.movieId,

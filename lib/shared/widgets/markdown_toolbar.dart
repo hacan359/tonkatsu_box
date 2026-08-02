@@ -8,14 +8,12 @@ import '../theme/app_colors.dart';
 /// Используется совместно с [TextEditingController] для вставки
 /// маркеров в текстовое поле.
 class MarkdownToolbar extends StatelessWidget {
-  /// Создаёт [MarkdownToolbar].
   const MarkdownToolbar({
     required this.controller,
     this.onInsertCardLink,
     super.key,
   });
 
-  /// Контроллер текстового поля, в которое вставляются маркеры.
   final TextEditingController controller;
 
   /// When set, adds a button that inserts a `[[card:…]]` cross-link.
@@ -153,7 +151,6 @@ class MarkdownToolbar extends StatelessWidget {
   }
 }
 
-/// Кнопка мини-тулбара для markdown-разметки.
 class _MarkdownToolbarButton extends StatelessWidget {
   const _MarkdownToolbarButton({
     required this.icon,

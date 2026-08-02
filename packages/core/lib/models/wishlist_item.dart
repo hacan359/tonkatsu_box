@@ -1,12 +1,8 @@
-// Элемент вишлиста — заметка для отложенного поиска контента.
 
 import 'media_type.dart';
 
-/// Элемент вишлиста.
-///
-/// Представляет текстовую заметку о контенте, который нужно найти позже.
+/// A free-text note about content to track down later.
 class WishlistItem {
-  /// Создаёт экземпляр [WishlistItem].
   const WishlistItem({
     required this.id,
     required this.text,
@@ -18,7 +14,6 @@ class WishlistItem {
     this.tag,
   });
 
-  /// Создаёт [WishlistItem] из записи базы данных.
   factory WishlistItem.fromDb(Map<String, dynamic> row) {
     final String? mediaTypeHintValue = row['media_type_hint'] as String?;
     return WishlistItem(
@@ -41,34 +36,28 @@ class WishlistItem {
     );
   }
 
-  /// Уникальный идентификатор записи.
   final int id;
 
-  /// Текст заметки (название контента).
+  /// The content's name, as typed.
   final String text;
 
-  /// Опциональный хинт типа медиа.
   final MediaType? mediaTypeHint;
 
-  /// Дополнительная заметка (платформа, год, откуда узнал).
+  /// Free-form extras: platform, year, where the user heard about it.
   final String? note;
 
-  /// Найдено и добавлено в коллекцию.
   final bool isResolved;
 
-  /// Дата создания заметки.
   final DateTime createdAt;
 
-  /// Дата разрешения (когда элемент найден и добавлен).
+  /// Set once the item is found and added to a collection.
   final DateTime? resolvedAt;
 
-  /// Опциональный тег для группировки (например, авто-тег импорта).
+  /// Grouping tag, e.g. an importer's auto-tag.
   final String? tag;
 
-  /// Есть ли дополнительная заметка.
   bool get hasNote => note != null && note!.isNotEmpty;
 
-  /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -84,7 +73,6 @@ class WishlistItem {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   WishlistItem copyWith({
     int? id,
     String? text,

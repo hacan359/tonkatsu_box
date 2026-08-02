@@ -1,4 +1,3 @@
-// Debug-экран для проверки URL изображений в коллекциях.
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:core/models/collection.dart';
@@ -21,7 +20,6 @@ import '../../../shared/constants/media_type_ui.dart';
 /// Показывает все элементы коллекций с URL постеров,
 /// статусом загрузки и превью изображений.
 class ImageDebugScreen extends ConsumerStatefulWidget {
-  /// Создаёт [ImageDebugScreen].
   const ImageDebugScreen({super.key});
 
   @override
@@ -60,7 +58,6 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     return Column(
       children: <Widget>[
         const SubScreenTitleBar(title: 'Image Debug'),
-        // Выбор коллекции
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -88,7 +85,6 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
 
         const Divider(height: 1),
 
-        // Список элементов
         Expanded(
           child: _selectedCollectionId != null
               ? _buildItemsList(colorScheme)
@@ -135,7 +131,6 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
   }
 }
 
-/// Плитка отладки изображения элемента.
 class _ImageDebugTile extends ConsumerWidget {
   const _ImageDebugTile({required this.item});
 
@@ -223,7 +218,6 @@ class _ImageDebugTile extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // Превью изображений
             Row(
               children: <Widget>[
                 // Thumbnail preview

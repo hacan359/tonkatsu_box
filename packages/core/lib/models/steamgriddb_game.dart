@@ -1,10 +1,6 @@
-// Модель игры из SteamGridDB API.
 
-/// Результат поиска игры в SteamGridDB.
-///
-/// Представляет игру из ответа эндпоинта `/search/autocomplete`.
+/// A row from SteamGridDB's `/search/autocomplete`.
 class SteamGridDbGame {
-  /// Создаёт экземпляр [SteamGridDbGame].
   const SteamGridDbGame({
     required this.id,
     required this.name,
@@ -12,7 +8,6 @@ class SteamGridDbGame {
     this.verified = false,
   });
 
-  /// Создаёт [SteamGridDbGame] из JSON ответа SteamGridDB API.
   factory SteamGridDbGame.fromJson(Map<String, dynamic> json) {
     List<String>? types;
     if (json['types'] != null) {
@@ -28,19 +23,15 @@ class SteamGridDbGame {
     );
   }
 
-  /// Уникальный идентификатор игры в SteamGridDB.
   final int id;
 
-  /// Название игры.
   final String name;
 
-  /// Типы игры (например, "steam", "origin").
+  /// Store tokens, e.g. `steam`, `origin`.
   final List<String>? types;
 
-  /// Подтверждена ли игра на SteamGridDB.
   final bool verified;
 
-  /// Создаёт копию с изменёнными полями.
   SteamGridDbGame copyWith({
     int? id,
     String? name,

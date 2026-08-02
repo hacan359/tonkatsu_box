@@ -1,5 +1,28 @@
 import 'dart:io';
 
+import 'package:core/database/dao/anilist_tag_dao.dart';
+import 'package:core/database/dao/anime_dao.dart';
+import 'package:core/database/dao/book_dao.dart';
+import 'package:core/database/dao/calendar_entry_dao.dart';
+import 'package:core/database/dao/canvas_dao.dart';
+import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/database/dao/custom_media_dao.dart';
+import 'package:core/database/dao/game_dao.dart';
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/database/dao/item_mark_dao.dart';
+import 'package:core/database/dao/manga_dao.dart';
+import 'package:core/database/dao/mangabaka_genre_dao.dart';
+import 'package:core/database/dao/mangabaka_tag_dao.dart';
+import 'package:core/database/dao/mangadex_tag_dao.dart';
+import 'package:core/database/dao/mood_grid_dao.dart';
+import 'package:core/database/dao/movie_dao.dart';
+import 'package:core/database/dao/stats_dao.dart';
+import 'package:core/database/dao/tier_list_dao.dart';
+import 'package:core/database/dao/tracked_release_dao.dart';
+import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/database/dao/tv_show_dao.dart';
+import 'package:core/database/dao/visual_novel_dao.dart';
+import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/database/migrations/migration.dart';
 import 'package:core/database/migrations/migration_registry.dart';
 import 'package:core/database/migrations/migration_runner.dart';
@@ -19,29 +42,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../services/profile_service.dart';
 import '../services/storage_root.dart';
-import 'dao/anilist_tag_dao.dart';
-import 'dao/canvas_dao.dart';
-import 'dao/collection_dao.dart';
-import 'dao/custom_media_dao.dart';
-import 'dao/anime_dao.dart';
-import 'dao/book_dao.dart';
-import 'dao/game_dao.dart';
-import 'dao/item_mark_dao.dart';
-import 'dao/movie_dao.dart';
-import 'dao/global_tag_dao.dart';
-import 'dao/tv_show_dao.dart';
-import 'dao/manga_dao.dart';
-import 'dao/mangabaka_genre_dao.dart';
-import 'dao/mangabaka_tag_dao.dart';
-import 'dao/mangadex_tag_dao.dart';
-import 'dao/visual_novel_dao.dart';
-import 'dao/mood_grid_dao.dart';
-import 'dao/tier_list_dao.dart';
-import 'dao/calendar_entry_dao.dart';
-import 'dao/stats_dao.dart';
-import 'dao/tracked_release_dao.dart';
-import 'dao/tracker_dao.dart';
-import 'dao/wishlist_dao.dart';
 
 final Provider<DatabaseService> databaseServiceProvider =
     Provider<DatabaseService>((Ref ref) {

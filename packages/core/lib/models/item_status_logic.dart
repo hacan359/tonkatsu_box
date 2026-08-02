@@ -1,22 +1,8 @@
-// Чистые функции для вычисления статусов и дат активности элемента коллекции.
-//
-// Используются во всех местах, где меняется `ItemStatus`, `startedAt`,
-// `completedAt`, `lastActivityAt`: ручное редактирование в карточке, авто-апдейт
-// по прогрессу эпизодов/глав, импорты (Steam / RA / Trakt) и внешний sync
-// (Kodi). Централизация гарантирует единообразное поведение и 100% покрытие
-// чистыми тестами.
-//
-// Файл не импортирует Flutter — только Dart core.
-
 import 'item_status.dart';
 
-/// Результат вычисления новых дат при смене статуса.
-///
-/// Поля `clearStartedAt`/`clearCompletedAt` нужны для вызывающего кода,
-/// который использует `CollectionItem.copyWith` с явным затиранием значения
-/// (потому что `null` в `copyWith` трактуется как «не менять»).
+/// The `clear*` flags exist because `CollectionItem.copyWith` reads `null` as
+/// "leave unchanged", so erasing a date needs an explicit signal.
 class StatusDatesUpdate {
-  /// Создаёт [StatusDatesUpdate].
   const StatusDatesUpdate({
     required this.status,
     required this.lastActivityAt,
@@ -26,41 +12,16 @@ class StatusDatesUpdate {
     this.clearCompletedAt = false,
   });
 
-  /// Итоговый статус (совпадает с `newStatus`, дублируется для удобства).
   final ItemStatus status;
-
-  /// Новое значение `startedAt`. Если `clearStartedAt == true` — значение
-  /// должно быть затёрто (null в БД); иначе — применяется как есть.
   final DateTime? startedAt;
-
-  /// Новое значение `completedAt`. Если `clearCompletedAt == true` —
-  /// должно быть затёрто; иначе — применяется как есть.
   final DateTime? completedAt;
-
-  /// Новое значение `lastActivityAt`. Всегда не null.
   final DateTime lastActivityAt;
-
-  /// Нужно ли явно затереть `startedAt` (для `copyWith(clearStartedAt: true)`).
   final bool clearStartedAt;
-
-  /// Нужно ли явно затереть `completedAt`.
   final bool clearCompletedAt;
 }
 
-/// Вычисляет новые даты активности при смене статуса.
-///
-/// Правила:
-/// - `notStarted` — обе даты `startedAt`/`completedAt` очищаются
-///   (`clearStartedAt = clearCompletedAt = true`).
-/// - `inProgress` — `startedAt` ставится если ещё не был, `completedAt`
-///   очищается.
-/// - `completed` — `completedAt = now`; `startedAt` проставляется если
-///   ещё не был.
-/// - `planned`/`dropped` — даты не меняются.
-/// - `lastActivityAt = now` во всех случаях.
-///
-/// [now] — момент изменения. UI-сценарий передаёт `DateTime.now()`,
-/// внешний sync (Kodi) — дату события из источника.
+/// [now] is injected rather than read from the clock: external sync (Kodi)
+/// passes the source event's timestamp, not the moment of import.
 StatusDatesUpdate computeDatesForStatus({
   required ItemStatus newStatus,
   required DateTime? currentStartedAt,
@@ -103,14 +64,8 @@ StatusDatesUpdate computeDatesForStatus({
   }
 }
 
-/// New rewatch count after a status change.
-///
-/// Every transition *into* `completed` counts as one more completion:
-/// `null` (never completed) becomes `0` (completed once, no repeats),
-/// any tracked value gets `+1`. Re-setting `completed` on an already
-/// completed item is a no-op, as is any other transition.
-///
-/// Matches MAL "times watched" / AniList "repeat" semantics.
+/// Matches MAL "times watched" / AniList "repeat": `null` means never
+/// completed, so the first completion lands on `0`, not `1`.
 int? computeRewatchCountForStatus({
   required ItemStatus oldStatus,
   required ItemStatus newStatus,
@@ -123,19 +78,8 @@ int? computeRewatchCountForStatus({
   return currentCount == null ? 0 : currentCount + 1;
 }
 
-/// Вычисляет новый статус при ручной установке дат активности.
-///
-/// Используется когда юзер в карточке двигает `Started`/`Completed`
-/// через DatePicker.
-///
-/// Правила:
-/// - Задан `newCompletedAt`, статус ещё не `completed` → `completed`.
-/// - Задан `newStartedAt` без `newCompletedAt`, статус `notStarted`/`planned`
-///   → `inProgress`.
-/// - Иначе — `null` (статус не меняется).
-///
-/// `dropped` / `completed` / `inProgress` не меняются при установке
-/// `startedAt` — юзер уже решил сознательно.
+/// Drives status off a manual date edit. `dropped` / `completed` / `inProgress`
+/// are left alone — the user already made that call deliberately.
 ItemStatus? computeStatusForDates({
   required ItemStatus currentStatus,
   required DateTime? newCompletedAt,
@@ -153,26 +97,8 @@ ItemStatus? computeStatusForDates({
   return null;
 }
 
-/// Вычисляет новый статус по прогрессу (эпизоды / главы / тома).
-///
-/// Используется для:
-/// - TV-сериалов (просмотренные эпизоды → статус).
-/// - Манги (прочитанные главы/тома → статус).
-/// - Аниме (просмотренные эпизоды → статус).
-/// - Kodi TV-sync (после обновления `watched_episodes`).
-///
-/// Параметры — булевы флаги, caller сам решает что считать «прогрессом»
-/// и «полным завершением» (это позволяет манге учитывать и главы, и тома).
-///
-/// Правила:
-/// - `dropped` — никогда не меняем (пользовательское решение).
-/// - `!hasAnyProgress` — `notStarted` (только если был `inProgress`
-///   или `completed`).
-/// - `isFullyCompleted` — `completed` (если ещё не был).
-/// - Иначе (есть прогресс, но не полное завершение) — `inProgress`
-///   (из `notStarted`/`planned`/`completed`).
-///
-/// Возвращает `null` если статус менять не нужно.
+/// Progress arrives as booleans, not counts, so the caller decides what counts
+/// as progress — manga weighs both chapters and volumes. `null` means no change.
 ItemStatus? computeStatusFromProgress({
   required ItemStatus currentStatus,
   required bool hasAnyProgress,
@@ -195,7 +121,6 @@ ItemStatus? computeStatusFromProgress({
     return null;
   }
 
-  // hasAnyProgress && !isFullyCompleted.
   if (currentStatus == ItemStatus.notStarted ||
       currentStatus == ItemStatus.planned ||
       currentStatus == ItemStatus.completed) {
@@ -204,28 +129,8 @@ ItemStatus? computeStatusFromProgress({
   return null;
 }
 
-/// Слияние локального статуса с внешним (external sync).
-///
-/// Применяется при получении статуса из внешнего источника: RA, Steam,
-/// Trakt, Kodi. Гарантирует что данные трекера не затрут решения
-/// пользователя.
-///
-/// Общие правила:
-/// - Локальный `dropped` защищён от любой перезаписи — юзер решил бросить.
-/// - Внешний `dropped` игнорируется если локальный `notStarted`/`planned`
-///   (источник даёт `dropped` по длительному простою, юзер мог просто ещё
-///   не начать).
-///
-/// Параметр [allowDowngrade]:
-/// - `false` (по умолчанию, Steam/Trakt/Kodi): внешний статус применяется
-///   только если он «выше» локального по приоритету (`notStarted` <
-///   `planned` < `inProgress` < `completed` < `dropped`). Юзер-решение
-///   «completed» не откатывается если трекер показывает меньше прогресса.
-/// - `true` (RA): внешний статус — источник правды, принимаем как есть
-///   (после проверки двух правил выше). Используется где трекер надёжно
-///   даёт актуальный статус (RA считает достижения).
-///
-/// Возвращает `null` если менять не нужно.
+/// Folds a tracker status into the local one without overwriting a user
+/// decision. `null` means no change.
 ItemStatus? mergeExternalStatus({
   required ItemStatus currentStatus,
   required ItemStatus externalStatus,
@@ -234,12 +139,16 @@ ItemStatus? mergeExternalStatus({
   if (currentStatus == ItemStatus.dropped) return null;
   if (currentStatus == externalStatus) return null;
 
+  // Trackers report `dropped` on mere idleness, which says nothing about an
+  // item the user has not started yet.
   if (externalStatus == ItemStatus.dropped &&
       (currentStatus == ItemStatus.notStarted ||
           currentStatus == ItemStatus.planned)) {
     return null;
   }
 
+  // Only RA sets this: achievement counts are authoritative, so its status may
+  // move the item backwards. Others must outrank the local status to apply.
   if (allowDowngrade) {
     return externalStatus;
   }

@@ -5,19 +5,16 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Набор выделенных id на экране All Items.
 final NotifierProvider<AllItemsSelectionNotifier, Set<int>>
     allItemsSelectionProvider =
     NotifierProvider<AllItemsSelectionNotifier, Set<int>>(
   AllItemsSelectionNotifier.new,
 );
 
-/// Управляет селекшном на All Items.
 class AllItemsSelectionNotifier extends Notifier<Set<int>> {
   @override
   Set<int> build() => <int>{};
 
-  /// Переключает выделение для [id].
   void toggle(int id) {
     final Set<int> next = Set<int>.of(state);
     if (!next.add(id)) next.remove(id);
@@ -29,7 +26,6 @@ class AllItemsSelectionNotifier extends Notifier<Set<int>> {
     state = Set<int>.of(ids);
   }
 
-  /// Очищает селекшн.
   void clear() {
     if (state.isEmpty) return;
     state = <int>{};

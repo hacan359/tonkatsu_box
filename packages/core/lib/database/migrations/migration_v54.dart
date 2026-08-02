@@ -2,19 +2,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Global tags: `tags` (app-wide, with an optional explicit text color) and
-/// the `item_tags` many-to-many junction replacing the single
-/// `collection_items.tag_id` link.
-///
-/// Existing per-collection tags are merged into the global set: tags whose
-/// names match case-insensitively (compared in Dart — SQLite `LOWER()` is
-/// ASCII-only, tag names can be Cyrillic) collapse into one global tag that
-/// takes its name casing and color from the most-used source tag and the
-/// earliest creation time. Every `tag_id` link is carried into `item_tags`.
-///
-/// The legacy `collection_tags` table and `collection_items.tag_id` column
-/// are left untouched: the code paths still using them keep working until
-/// they are moved onto the global tables.
+/// Global `tags` plus the `item_tags` junction. Name matching happens in Dart —
+/// SQLite `LOWER()` is ASCII-only and tag names can be Cyrillic.
 class MigrationV54 extends Migration {
   @override
   int get version => 54;

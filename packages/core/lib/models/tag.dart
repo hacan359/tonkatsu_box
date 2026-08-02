@@ -1,8 +1,5 @@
-/// A global tag shared by all collections.
-///
-/// Items link to tags through the `item_tags` junction table, so an item can
-/// carry any number of tags. [textColor] is an explicit label color for when
-/// the auto-contrast text is unreadable on [color]; `null` means default.
+/// Shared by all collections; items link through the `item_tags` junction, so
+/// an item carries any number of tags.
 class Tag {
   /// Creates a [Tag] instance.
   const Tag({
@@ -101,8 +98,6 @@ class Tag {
     return names;
   }
 
-  /// Creates a copy with the given fields replaced.
-  ///
   /// [clearColor] / [clearTextColor] reset the nullable colors to `null`.
   Tag copyWith({
     int? id,
@@ -125,12 +120,8 @@ class Tag {
   }
 }
 
-/// Shared "item's tags" projections, so every surface (grid, table, detail
-/// card) derives the same order and primary tag.
-///
-/// [ids] come from `itemTagsProvider` already in the item's display order
-/// (manual positions, then global-order fallback — the DAO bakes that in),
-/// so both helpers follow the [ids] order, not this list's.
+/// Shared "item's tags" projections so every surface derives the same order.
+/// [ids] already arrive in display order from the DAO, and win over this list.
 extension TagListProjection on List<Tag> {
   Map<int, Tag> get byId => <int, Tag>{for (final Tag t in this) t.id: t};
 
@@ -141,9 +132,8 @@ extension TagListProjection on List<Tag> {
   Tag? primaryFor(List<int>? ids) => byId.primaryFor(ids);
 }
 
-/// Same projections over a prebuilt id → tag map. Hoist
-/// [TagListProjection.byId] out of loops that project many items — the
-/// list-based helpers rebuild the map on every call.
+/// Same projections over a prebuilt map. Hoist [TagListProjection.byId] out of
+/// loops — the list helpers rebuild the map on every call.
 extension TagMapProjection on Map<int, Tag> {
   List<Tag> orderedFor(List<int>? ids) {
     if (ids == null || ids.isEmpty) return const <Tag>[];

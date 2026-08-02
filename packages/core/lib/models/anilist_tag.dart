@@ -1,6 +1,5 @@
-/// One entry from AniList's `MediaTagCollection`. Per-media tags are stored
-/// by name only in `anime_cache.tags` / `manga_cache.tags`; this is the
-/// structured catalog backing the picker.
+/// The structured catalog behind the tag picker; per-media tags are stored by
+/// name only in `anime_cache.tags` / `manga_cache.tags`.
 class AniListTag {
   const AniListTag({
     required this.id,

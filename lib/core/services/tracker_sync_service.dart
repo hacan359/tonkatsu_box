@@ -1,3 +1,4 @@
+import 'package:core/database/dao/tracker_dao.dart';
 import 'package:core/models/ra_game_progress.dart';
 import 'package:core/models/ra_user_profile.dart';
 import 'package:core/models/tracker_achievement.dart';
@@ -7,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../api/ra_api.dart';
-import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'ra_to_igdb_mapper.dart';
 

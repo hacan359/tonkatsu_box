@@ -1,3 +1,4 @@
+import 'package:core/database/dao/tracker_dao.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
@@ -8,7 +9,6 @@ import 'package:core/models/tracker_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../../core/database/dao/tracker_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/ra_sync_helpers.dart';
 import 'collections_provider.dart';

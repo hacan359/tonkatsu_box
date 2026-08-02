@@ -1,5 +1,5 @@
-import 'package:core/database/query_chunk.dart';
-import 'package:core/models/visual_novel.dart';
+import '../query_chunk.dart';
+import '../../models/visual_novel.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for the `visual_novels_cache` and `vndb_tags` tables.

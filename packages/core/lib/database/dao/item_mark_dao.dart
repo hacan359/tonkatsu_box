@@ -1,14 +1,8 @@
-// DAO for per-unit item marks (likes and notes on units of a collection item).
-
-import 'package:core/models/item_mark.dart';
+import '../../models/item_mark.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-/// DAO for the `item_marks` table.
-///
-/// Writes go through a read-modify-write merge inside a transaction: the
-/// current row (if any) is combined with the incoming change, then either
-/// re-written (`INSERT OR REPLACE`) or deleted when it becomes empty (no like,
-/// no note) so the table never accumulates blank rows.
+/// Writes read-modify-write inside a transaction, then `INSERT OR REPLACE` or
+/// delete once the mark is empty, so the table never accumulates blank rows.
 class ItemMarkDao {
   /// Creates the DAO with a database accessor.
   const ItemMarkDao(this._getDatabase);
@@ -85,9 +79,8 @@ class ItemMarkDao {
     });
   }
 
-  /// Sets (or clears) the note on a unit, merging with any existing like.
-  /// A blank/whitespace-only comment clears the note. Returns the merged mark,
-  /// or null when the row was deleted (empty mark).
+  /// A blank comment clears the note. Returns the merged mark, or null when the
+  /// row was deleted.
   Future<ItemMark?> setComment(
     int itemId,
     String unitType,

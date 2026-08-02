@@ -1,29 +1,29 @@
-import 'package:core/models/mangadex_tag.dart';
+import '../../models/anilist_tag.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-/// DAO for the `mangadex_tags` catalog.
-class MangaDexTagDao {
-  const MangaDexTagDao(this._getDatabase);
+/// DAO for the `anilist_tags` catalog table.
+class AniListTagDao {
+  const AniListTagDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
-  Future<List<MangaDexTag>> getAll() async {
+  Future<List<AniListTag>> getAll() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
-      'mangadex_tags',
-      orderBy: 'name ASC',
+      'anilist_tags',
+      orderBy: 'category ASC, name ASC',
     );
-    return rows.map(MangaDexTag.fromDb).toList();
+    return rows.map(AniListTag.fromDb).toList();
   }
 
   /// Atomically replaces the catalog — truncate + bulk insert in one tx.
-  Future<void> replaceAll(List<MangaDexTag> tags) async {
+  Future<void> replaceAll(List<AniListTag> tags) async {
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {
-      await txn.delete('mangadex_tags');
+      await txn.delete('anilist_tags');
       final Batch batch = txn.batch();
-      for (final MangaDexTag tag in tags) {
-        batch.insert('mangadex_tags', tag.toDb());
+      for (final AniListTag tag in tags) {
+        batch.insert('anilist_tags', tag.toDb());
       }
       await batch.commit(noResult: true);
     });

@@ -1,3 +1,4 @@
+import 'package:core/database/dao/collection_dao.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -12,7 +13,6 @@ import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:tonkatsu_box/core/database/dao/collection_dao.dart';
 
 import '../../../helpers/mocks.dart';
 

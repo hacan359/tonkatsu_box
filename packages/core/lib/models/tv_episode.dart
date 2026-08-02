@@ -77,10 +77,8 @@ class TvEpisode {
     );
   }
 
-  /// From a Kitsu `episodes` resource; null when the episode number is missing.
-  ///
-  /// Kitsu's `synopsis` is plain text, so no HTML stripping. Episodes without a
-  /// `seasonNumber` fall into season 1 — the synthesized season Kitsu anime use.
+  /// Null when the episode number is missing. Kitsu's `synopsis` is plain text;
+  /// episodes without a `seasonNumber` fall into the synthesized season 1.
   static TvEpisode? tryFromKitsu(
     Map<String, dynamic> json, {
     required int showId,

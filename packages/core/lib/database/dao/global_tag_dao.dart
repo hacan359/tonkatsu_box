@@ -1,16 +1,13 @@
-import 'package:core/database/query_chunk.dart';
-import 'package:core/models/tag.dart';
+import '../query_chunk.dart';
+import '../../models/tag.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Name + colors for a tag to resolve or create in
 /// [GlobalTagDao.resolveOrCreateAll].
 typedef TagSeed = ({String name, int? color, int? textColor});
 
-/// DAO for the global `tags` table and the `item_tags` junction.
-///
-/// Deletions clean `item_tags` explicitly instead of leaning on the
-/// `ON DELETE CASCADE` clause, so they behave the same on connections
-/// opened without `PRAGMA foreign_keys = ON`.
+/// Deletions clean `item_tags` explicitly rather than leaning on
+/// `ON DELETE CASCADE`, so they behave alike without `PRAGMA foreign_keys`.
 class GlobalTagDao {
   const GlobalTagDao(this._getDatabase);
 
@@ -117,9 +114,8 @@ class GlobalTagDao {
     return ids[nameKey(name)]!;
   }
 
-  /// Batch resolve-or-create against one snapshot of the table: existing
-  /// names keep their local settings, missing seeds are created with their
-  /// colors. Returns a [nameKey] → id map covering every seed.
+  /// One snapshot of the table: existing names keep their local settings,
+  /// missing seeds are created. Returns a [nameKey] → id map for every seed.
   Future<Map<String, int>> resolveOrCreateAll(Iterable<TagSeed> seeds) async {
     final Map<String, int> byKey = <String, int>{
       for (final Tag tag in await getAll()) nameKey(tag.name): tag.id,
@@ -193,9 +189,8 @@ class GlobalTagDao {
     return result;
   }
 
-  /// Replaces the item's tag set with [tagIds]. Links that survive keep
-  /// their manual position; new links get `NULL` (global-order fallback,
-  /// displayed after the positioned ones).
+  /// Surviving links keep their manual position; new ones get `NULL` and fall
+  /// back to global order, displayed after the positioned ones.
   Future<void> setItemTags(int itemId, Set<int> tagIds) async {
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {
@@ -270,9 +265,8 @@ class GlobalTagDao {
     await batch.commit(noResult: true);
   }
 
-  /// Links every tag in [tagIds] to every item in [itemIds] in one batch.
-  /// Additive like [addTagToItems]: surviving links keep their manual
-  /// position, new ones get `NULL` and land after the positioned tags.
+  /// Additive like [addTagToItems]: surviving links keep their manual position,
+  /// new ones get `NULL` and land after the positioned tags.
   Future<void> addTagsToItems(List<int> itemIds, Set<int> tagIds) async {
     if (itemIds.isEmpty || tagIds.isEmpty) return;
     final Database db = await _getDatabase();
