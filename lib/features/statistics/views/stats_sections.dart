@@ -1,6 +1,6 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../../shared/models/media_type.dart';
 import '../models/library_stats.dart';
 import '../widgets/stats_crowd_section.dart';
 import '../widgets/stats_formats_section.dart';

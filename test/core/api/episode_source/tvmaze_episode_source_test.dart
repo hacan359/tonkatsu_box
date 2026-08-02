@@ -1,3 +1,7 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -6,10 +10,6 @@ import 'package:tonkatsu_box/core/api/episode_source/tv_episode_source.dart';
 import 'package:tonkatsu_box/core/api/episode_source/tvmaze_episode_source.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/tv_episode.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../../helpers/test_helpers.dart';
 

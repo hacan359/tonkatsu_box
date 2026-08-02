@@ -1,6 +1,6 @@
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_list_sort_mode.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/collection_list_sort_mode.dart';
 
 void main() {
   int nextId = 0;

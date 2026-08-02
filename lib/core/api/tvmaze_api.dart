@@ -1,12 +1,11 @@
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/tv_episode.dart';
-import '../../shared/models/tv_season.dart';
-import '../../shared/models/tv_show.dart';
 import 'tvmaze/tvmaze_http_client.dart';
 import 'tvmaze/tvmaze_show_api.dart';
-
 export 'tvmaze/tvmaze_types.dart';
 
 /// TVmaze API facade (`https://api.tvmaze.com`, keyless). TV series only.

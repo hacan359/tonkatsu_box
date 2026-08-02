@@ -1,18 +1,18 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/universal_import_result.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
-import '../../../../shared/models/collection.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/custom_media.dart';
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/item_status_logic.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/platform.dart';
-import '../../../../shared/models/universal_import_result.dart';
 import '../../../database/dao/global_tag_dao.dart';
 import '../../../database/database_service.dart';
 import '../../../services/image_cache_service.dart';

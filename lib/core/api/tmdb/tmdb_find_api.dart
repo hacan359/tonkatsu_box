@@ -1,7 +1,7 @@
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
 import 'tmdb_genres_api.dart';
 import 'tmdb_http_client.dart';
 import 'tmdb_types.dart';

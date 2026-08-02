@@ -1,6 +1,9 @@
 // Widget tests for RecommendationsSection — owned badge (check_circle).
 
-import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,10 +15,7 @@ import 'package:tonkatsu_box/features/collections/providers/collections_provider
 import 'package:tonkatsu_box/features/collections/widgets/recommendations_section.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collected_item_info.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
+import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
 
 import '../../../helpers/test_helpers.dart';
 

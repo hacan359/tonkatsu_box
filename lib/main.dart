@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:core/models/profile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +18,6 @@ import 'core/services/collection_hero_service.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
-import 'shared/models/profile.dart';
 
 /// Глобальные данные инициализации, перечитываемые при перезапуске.
 late SharedPreferences _prefs;

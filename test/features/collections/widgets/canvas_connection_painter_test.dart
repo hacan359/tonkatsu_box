@@ -1,10 +1,10 @@
 import 'dart:ui';
 
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/canvas_connection_painter.dart';
-import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
-import 'package:tonkatsu_box/shared/models/canvas_item.dart';
 
 void main() {
   final DateTime testDate = DateTime(2024, 6, 15);

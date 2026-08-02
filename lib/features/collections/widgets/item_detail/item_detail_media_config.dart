@@ -1,15 +1,15 @@
+import 'package:core/models/anime.dart';
+import 'package:core/models/book.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/services/image_cache_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/media_type_theme.dart';
-import '../../../../shared/models/anime.dart';
-import '../../../../shared/models/book.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/custom_media.dart';
-import '../../../../shared/models/manga.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/tv_show.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/widgets/media_detail_view.dart';
 import '../../../../shared/widgets/source_badge.dart';

@@ -2,15 +2,15 @@
 // selection (a collection, All Items). Each method runs the low-level ops in
 // a loop and invalidates every affected provider exactly once at the end.
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/dao/global_tag_dao.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../providers/collection_covers_provider.dart';

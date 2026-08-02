@@ -2,11 +2,11 @@
 // Built on [CollectionCardShell] for focus/hover/border, so it stays
 // structurally identical to the classic card.
 
+import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
-import '../../../../shared/models/collection.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../providers/collections_provider.dart';
 import '../collection_card_overlay.dart';

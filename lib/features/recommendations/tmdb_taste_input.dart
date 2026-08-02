@@ -11,10 +11,11 @@
 // one key that is identical in every language. Matching on names instead made
 // an English-cached library silently miss Russian-localized candidates.
 
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/movie.dart';
-import '../../shared/models/tv_show.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+
 import 'engine/recommendation_config.dart';
 import 'engine/recommendation_models.dart';
 

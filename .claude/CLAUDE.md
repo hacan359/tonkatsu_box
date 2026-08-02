@@ -48,11 +48,15 @@ lib/
 │   ├── settings/          # Настройки API keys, кэш, debug панели
 │   └── splash/            # Splash screen с анимацией логотипа
 └── shared/
-    ├── constants/          # media_type_theme, platform_features
-    ├── models/             # 19 моделей: Game, Movie, TvShow, Collection, CanvasItem...
+    ├── constants/          # media_type_theme, platform_features, *_ui extensions
     ├── navigation/         # NavigationShell (Rail на desktop, BottomBar на mobile)
     ├── theme/              # AppColors, AppTypography, AppSpacing, AppTheme (dark)
     └── widgets/            # CachedImage, PosterCard, RatingBadge, ShimmerLoading...
+
+packages/core/lib/         # Чистый Dart, без Flutter — общий с будущим selfhost-сервером
+├── models/                # 63 модели: Game, Movie, TvShow, Collection, CanvasItem...
+├── database/              # schema.dart + migrations/
+└── utils/                 # bbcode, html_text, stable_id, cover_image_id...
 ```
 
 ### Принципы:
@@ -64,7 +68,13 @@ lib/
 
 ## Паттерны проекта
 
-### Модели (`lib/shared/models/`)
+### Модели (`packages/core/lib/models/`)
+Модели живут в чистом Dart-пакете `core` — импорт через `package:core/models/...`.
+Flutter в них запрещён физически: `core` не зависит от Flutter, и `dart analyze`
+внутри пакета падает на любом `package:flutter` / `dart:ui`. Всё презентационное
+(цвета, иконки, локализованные подписи) — в extension'ах `lib/shared/constants/*_ui.dart`
+на стороне приложения.
+
 Все модели имеют единообразный интерфейс:
 ```dart
 class Game {
@@ -325,8 +335,9 @@ D-pad и кнопка A обрабатываются глобально в `Navi
 | `lib/features/collections/widgets/canvas_view.dart` | Главный виджет Board/Canvas |
 | `lib/features/collections/providers/canvas_provider.dart` | State канваса |
 | `lib/features/collections/providers/collections_provider.dart` | State коллекций |
-| `lib/shared/models/collection_item.dart` | Универсальный элемент коллекции |
-| `lib/shared/models/canvas_item.dart` | Элемент канваса (7 типов) |
+| `packages/core/lib/models/` | Все 63 модели (чистый Dart, `package:core/models/...`) |
+| `packages/core/lib/models/collection_item.dart` | Универсальный элемент коллекции |
+| `packages/core/lib/models/canvas_item.dart` | Элемент канваса (7 типов) |
 | `lib/shared/theme/app_theme.dart` | Централизованная тема (dark Material 3) |
 | `test/helpers/test_helpers.dart` | Shared mocks, builders, pumpApp for tests |
 | `analysis_options.yaml` | Строгие lint правила |

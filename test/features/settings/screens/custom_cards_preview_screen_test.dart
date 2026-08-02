@@ -1,9 +1,9 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_card_entry.dart';
 import 'package:tonkatsu_box/features/settings/screens/custom_cards_preview_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 

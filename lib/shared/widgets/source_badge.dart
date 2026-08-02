@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+export 'package:core/models/data_source.dart';
+import 'package:core/models/data_source.dart';
 
-import '../models/data_source.dart';
 import '../constants/data_source_ui.dart';
-
-export '../models/data_source.dart';
 
 /// Компактный бейдж с названием и цветом источника данных.
 ///

@@ -1,12 +1,12 @@
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/tv_show_cache_warmer.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/tv_show.dart';
-import '../../../shared/utils/cover_image_id.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';

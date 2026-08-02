@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
-import '../../../shared/models/canvas_connection.dart';
-import '../../../shared/models/canvas_item.dart';
 
 class CanvasConnectionPainter extends CustomPainter {
   CanvasConnectionPainter({

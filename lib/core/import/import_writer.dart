@@ -1,9 +1,10 @@
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/wishlist_item.dart';
+
 import '../../data/repositories/collection_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
-import '../../shared/models/collection.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/wishlist_item.dart';
 
 /// One item an adapter wants written to the target collection.
 ///

@@ -1,8 +1,8 @@
+import 'package:core/models/book.dart';
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/book.dart';
-import '../../shared/models/data_source.dart';
 import '../services/api_key_initializer.dart';
 import 'api_error_detail.dart';
 

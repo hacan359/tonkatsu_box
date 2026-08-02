@@ -1,5 +1,10 @@
 import 'dart:io';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart' as model;
+import 'package:core/models/universal_import_result.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,11 +14,6 @@ import '../../../core/import/sources/igdb_list/igdb_list_import_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/platform.dart' as model;
-import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

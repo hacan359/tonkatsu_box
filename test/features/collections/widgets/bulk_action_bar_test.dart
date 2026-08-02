@@ -1,7 +1,7 @@
+import 'package:core/models/collection_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/bulk_action_bar.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
 
 import '../../../helpers/test_helpers.dart';
 

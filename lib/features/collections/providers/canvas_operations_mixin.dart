@@ -1,6 +1,7 @@
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+
 import '../../../data/repositories/canvas_repository.dart';
-import '../../../shared/models/canvas_connection.dart';
-import '../../../shared/models/canvas_item.dart';
 import 'canvas_state.dart';
 
 /// Mixin с общими CRUD-операциями для элементов и связей канваса.

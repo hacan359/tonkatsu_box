@@ -1,9 +1,9 @@
+import 'package:core/models/media_type.dart';
+import 'package:core/models/wishlist_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/dao/wishlist_dao.dart';
 import '../../../data/repositories/wishlist_repository.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/wishlist_item.dart';
 
 /// Провайдер для списка элементов вишлиста.
 final AsyncNotifierProvider<WishlistNotifier, List<WishlistItem>>

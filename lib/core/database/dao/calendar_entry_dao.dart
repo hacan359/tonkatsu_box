@@ -1,9 +1,8 @@
+import 'package:core/models/calendar_entry.dart';
+import 'package:core/models/calendar_recurrence.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/calendar_entry.dart';
-import '../../../shared/models/calendar_recurrence.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 
 /// DAO for `calendar_entries` — manual calendar entries keyed by
 /// `(external_id, source, media_type)`.

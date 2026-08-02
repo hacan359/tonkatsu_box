@@ -1,6 +1,6 @@
+import 'package:core/models/collection_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/models/collection_item.dart';
 import '../../settings/providers/settings_provider.dart';
 
 /// Resolves the user-facing name for a [CollectionItem], honouring the

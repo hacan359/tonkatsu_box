@@ -1,6 +1,6 @@
+import 'package:core/models/movie.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
 
 void main() {
   group('TmdbPagedResult', () {

@@ -1,16 +1,16 @@
+import 'package:core/models/calendar_entry.dart';
+import 'package:core/models/calendar_recurrence.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tracked_release.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/calendar_entry.dart';
-import '../../../shared/models/calendar_recurrence.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/tracked_release.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import '../models/release_event.dart';
 
 /// Whether a title is currently tracked, for the detail-screen bell.

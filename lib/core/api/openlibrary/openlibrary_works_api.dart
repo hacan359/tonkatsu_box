@@ -1,6 +1,6 @@
+import 'package:core/models/book.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/book.dart';
 import 'openlibrary_http_client.dart';
 
 /// `/works/{OLID}.json` plus the calls that enrich a work: `/ratings.json` and

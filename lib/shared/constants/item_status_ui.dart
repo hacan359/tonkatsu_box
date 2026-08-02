@@ -1,8 +1,8 @@
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../models/item_status.dart';
-import '../models/media_type.dart';
 import '../theme/app_colors.dart';
 
 /// Presentation extras for [ItemStatus].

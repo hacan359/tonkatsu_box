@@ -1,5 +1,5 @@
+import 'package:core/models/tracker_profile.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/tracker_profile.dart';
 
 void main() {
   group('TrackerType.fromString', () {

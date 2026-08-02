@@ -1,5 +1,5 @@
+import 'package:core/models/kodi_episode.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/kodi_episode.dart';
 
 void main() {
   group('KodiEpisode.fromJson', () {

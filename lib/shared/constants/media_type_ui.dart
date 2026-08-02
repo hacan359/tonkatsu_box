@@ -1,5 +1,6 @@
+import 'package:core/models/media_type.dart';
+
 import '../../l10n/app_localizations.dart';
-import '../models/media_type.dart';
 
 /// Presentation extras for [MediaType].
 extension MediaTypeUi on MediaType {

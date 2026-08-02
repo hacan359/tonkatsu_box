@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AnimeMangaTitleLanguage', () {

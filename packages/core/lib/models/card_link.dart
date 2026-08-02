@@ -1,6 +1,7 @@
-import 'collection_item.dart';
 import 'data_source.dart';
 import 'media_type.dart';
+
+import 'collection_item.dart';
 
 /// Content-based reference to a collection item, decoded from a `[[card:…]]`
 /// note token; survives export/import since it carries no autoincrement id.

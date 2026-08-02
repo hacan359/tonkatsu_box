@@ -1,13 +1,13 @@
 import 'dart:convert';
 
+import 'package:core/models/kodi_application_info.dart';
+import 'package:core/models/kodi_episode.dart';
+import 'package:core/models/kodi_movie.dart';
+import 'package:core/models/kodi_tv_show.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../shared/models/kodi_application_info.dart';
-import '../../shared/models/kodi_episode.dart';
-import '../../shared/models/kodi_movie.dart';
-import '../../shared/models/kodi_tv_show.dart';
 import 'api_error_detail.dart';
 
 /// Kodi JSON-RPC client. Talks HTTP to `http://{host}:{port}/jsonrpc` with

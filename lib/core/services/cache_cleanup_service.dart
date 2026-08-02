@@ -1,7 +1,7 @@
+import 'package:core/models/collection_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/collection_repository.dart';
-import '../../shared/models/collection_item.dart';
 import 'image_cache_service.dart';
 
 final Provider<CacheCleanupService> cacheCleanupServiceProvider =

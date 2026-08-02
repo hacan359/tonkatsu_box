@@ -2,12 +2,12 @@
 // (full-card hero image) depending on the rich-mode setting and whether the
 // collection has a hero. Public API stays [CollectionCard]/[UncategorizedCard].
 
+import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/collection_hero_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/rich_collections_provider.dart';

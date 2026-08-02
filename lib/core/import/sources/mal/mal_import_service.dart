@@ -2,21 +2,21 @@
 
 import 'dart:io';
 
+import 'package:core/models/anime.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/universal_import_result.dart';
+import 'package:core/models/wishlist_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:xml/xml.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
-import '../../../../shared/models/anime.dart';
-import '../../../../shared/models/collection.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/item_status_logic.dart';
-import '../../../../shared/models/manga.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/universal_import_result.dart';
-import '../../../../shared/models/wishlist_tag.dart';
 import '../../../api/anilist_api.dart';
 import '../../../database/database_service.dart';
 import '../../import_columns.dart';

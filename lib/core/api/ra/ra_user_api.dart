@@ -1,8 +1,8 @@
+import 'package:core/models/ra_game_progress.dart';
+import 'package:core/models/ra_user_profile.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
-import '../../../shared/models/ra_game_progress.dart';
-import '../../../shared/models/ra_user_profile.dart';
 import 'ra_http_client.dart';
 
 /// User-scoped RetroAchievements calls: profile, completion progress, awards.

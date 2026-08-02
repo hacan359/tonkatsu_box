@@ -5,11 +5,11 @@
 // selected — opens the same details sheet Search uses, so the pick can be added
 // without leaving the tab.
 
+import 'package:core/models/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

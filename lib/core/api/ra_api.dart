@@ -1,14 +1,13 @@
+import 'package:core/models/ra_game_progress.dart';
+import 'package:core/models/ra_user_profile.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/ra_game_progress.dart';
-import '../../shared/models/ra_user_profile.dart';
 import '../services/api_key_initializer.dart';
 import 'ra/ra_games_api.dart';
 import 'ra/ra_http_client.dart';
 import 'ra/ra_types.dart';
 import 'ra/ra_user_api.dart';
-
 export 'ra/ra_types.dart';
 
 final Provider<RaApi> raApiProvider = Provider<RaApi>((Ref ref) {

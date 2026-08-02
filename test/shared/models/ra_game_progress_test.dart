@@ -1,6 +1,6 @@
+import 'package:core/models/item_status.dart';
+import 'package:core/models/ra_game_progress.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/ra_game_progress.dart';
 
 import '../../helpers/test_helpers.dart';
 

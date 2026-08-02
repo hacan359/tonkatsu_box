@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_card_entry.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_cards_parser.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   const CustomCardsParser sut = CustomCardsParser();

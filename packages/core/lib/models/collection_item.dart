@@ -1,20 +1,21 @@
 
-import 'image_type.dart';
-import 'book.dart';
-import 'custom_media.dart';
 import 'data_source.dart';
 import 'exportable.dart';
+import 'image_type.dart';
+import 'media_type.dart';
+import '../utils/cover_image_id.dart' as cover_id;
+
+import 'book.dart';
+import 'custom_media.dart';
 import 'game.dart';
 import 'item_status.dart';
 import 'item_status_logic.dart';
-import 'media_type.dart';
 import 'movie.dart';
 import 'platform.dart';
 import 'anime.dart';
 import 'manga.dart';
 import 'tv_show.dart';
 import 'visual_novel.dart';
-import '../utils/cover_image_id.dart' as cover_id;
 
 /// Universal collection entry — games, movies, TV, anime, manga, visual
 /// novels and custom items share one row type, switched on [mediaType].

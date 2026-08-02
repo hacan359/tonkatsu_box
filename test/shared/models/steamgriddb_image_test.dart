@@ -1,5 +1,5 @@
+import 'package:core/models/steamgriddb_image.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/steamgriddb_image.dart';
 
 void main() {
   group('SteamGridDbImage', () {

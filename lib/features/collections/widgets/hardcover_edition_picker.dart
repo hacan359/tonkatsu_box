@@ -2,12 +2,12 @@
 // titles, own covers, languages); this strip lets the user pick which one a
 // book carries — the Fantlab editions strip pattern, plus language chips.
 
+import 'package:core/models/book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/hardcover_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/book.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

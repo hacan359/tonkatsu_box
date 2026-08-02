@@ -1,7 +1,7 @@
-import '../utils/cover_image_id.dart' as cover_id;
 import 'data_source.dart';
 import 'image_type.dart';
 import 'media_type.dart';
+import '../utils/cover_image_id.dart' as cover_id;
 
 /// Cover of a collection item, for the cover mosaic on collection cards —
 /// avoids loading full Game/Movie/TvShow/VisualNovel models.

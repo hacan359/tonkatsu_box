@@ -1,17 +1,17 @@
 // Providers for the All Items screen (Home tab).
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/collection_sort_mode.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
-import '../../../shared/models/tag.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/platform.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/providers/global_tags_provider.dart';
 import '../../collections/providers/sort_utils.dart';

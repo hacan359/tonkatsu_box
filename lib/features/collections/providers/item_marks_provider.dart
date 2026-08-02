@@ -2,10 +2,10 @@
 
 import 'dart:async';
 
+import 'package:core/models/item_mark.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/item_mark.dart';
 
 /// Key identifying a unit within an item.
 typedef UnitKey = ({String unitType, int parent, int unit});

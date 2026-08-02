@@ -1,5 +1,5 @@
+import 'package:core/models/tag.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/tag.dart';
 
 void main() {
   group('Tag', () {

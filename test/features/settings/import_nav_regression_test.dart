@@ -19,6 +19,9 @@
 // file-pick -> preview -> import -> result, then simulate the gear's
 // `popUntil(isFirst)` and assert the sentinel ROOT route is never popped away.
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/universal_import_result.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,9 +35,6 @@ import 'package:tonkatsu_box/features/settings/screens/import_result_screen.dart
 import 'package:tonkatsu_box/features/settings/screens/kinorium_import_screen.dart';
 import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
 
 import '../../helpers/test_helpers.dart';
 

@@ -1,12 +1,12 @@
+import 'package:core/models/card_link.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/l10n/app_localizations_ru.dart';
-import 'package:tonkatsu_box/shared/models/card_link.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
+import 'package:tonkatsu_box/shared/constants/collection_item_ui.dart';
 
 import '../../helpers/builders.dart';
-import 'package:tonkatsu_box/shared/constants/collection_item_ui.dart';
 
 void main() {
   group('CardLink', () {

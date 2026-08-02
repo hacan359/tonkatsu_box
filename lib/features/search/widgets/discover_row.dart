@@ -1,14 +1,13 @@
-import '../../../shared/constants/platform_features.dart';
-
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 
+import '../../../shared/constants/platform_features.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';

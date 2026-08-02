@@ -1,16 +1,15 @@
+import 'package:core/models/game.dart';
+import 'package:core/models/game_time_to_beat.dart';
+import 'package:core/models/platform.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/api_key_initializer.dart';
-import '../../shared/models/game.dart';
-import '../../shared/models/game_time_to_beat.dart';
-import '../../shared/models/platform.dart';
 import 'igdb/igdb_games_api.dart';
 import 'igdb/igdb_genres_api.dart';
 import 'igdb/igdb_http_client.dart';
 import 'igdb/igdb_platforms_api.dart';
 import 'igdb/igdb_types.dart';
-
 export 'igdb/igdb_types.dart';
 
 // Credentials seeded from apiKeysProvider loaded in main() before runApp().

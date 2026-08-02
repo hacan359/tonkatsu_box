@@ -1,3 +1,14 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_mark.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,18 +21,7 @@ import 'package:tonkatsu_box/features/collections/screens/item_detail_screen.dar
 import 'package:tonkatsu_box/features/collections/widgets/status_chip_row.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart';
-import 'package:tonkatsu_box/shared/models/item_mark.dart';
-import 'package:tonkatsu_box/shared/models/tv_episode.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
-import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 import 'package:tonkatsu_box/shared/widgets/source_badge.dart';
 
 import '../../../helpers/test_helpers.dart';

@@ -1,8 +1,8 @@
 // One facet value with its frequency and dominant media type.
 
+import 'package:core/models/media_type.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../shared/models/media_type.dart';
 import 'facet.dart';
 
 /// A single value of some [Facet] (e.g. genre "RPG", platform "PlayStation 2",

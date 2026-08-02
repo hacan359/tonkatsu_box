@@ -6,13 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
+export 'package:core/models/image_type.dart';
+import 'package:core/models/image_type.dart';
+import 'package:core/models/profile.dart';
 
-import '../../shared/models/image_type.dart';
-import '../../shared/models/profile.dart';
 import 'profile_service.dart';
 import 'storage_root.dart';
-
-export '../../shared/models/image_type.dart';
 
 class _CacheKeys {
   static const String customCachePath = 'image_cache_path';

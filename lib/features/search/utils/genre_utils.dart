@@ -1,5 +1,6 @@
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+
 import '../models/search_source.dart' show tmdbAnimationGenreId;
 
 /// True if [genre] is the TMDB animation genre. Accepts the raw id ("16"),

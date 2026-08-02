@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core/models/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -9,7 +10,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../main.dart' show AppRestartScope;
 import '../../shared/constants/platform_features.dart';
-import '../../shared/models/profile.dart';
 import '../database/database_service.dart';
 import 'storage_root.dart';
 

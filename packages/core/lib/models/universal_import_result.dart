@@ -1,5 +1,6 @@
-import 'collection.dart';
 import 'media_type.dart';
+
+import 'collection.dart';
 
 class UniversalImportResult {
   const UniversalImportResult({

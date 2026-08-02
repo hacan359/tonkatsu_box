@@ -1,6 +1,5 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
-
-import '../../../shared/models/media_type.dart';
 
 /// Contract for source-specific search actions.
 ///

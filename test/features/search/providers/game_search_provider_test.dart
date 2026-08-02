@@ -1,8 +1,8 @@
+import 'package:core/models/game.dart';
+import 'package:core/models/search_sort.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/providers/game_search_provider.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/search_sort.dart';
 
 void main() {
   group('GameSearchState', () {

@@ -1,6 +1,7 @@
-import '../../../shared/models/anilist_tag.dart';
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/manga.dart';
+import 'package:core/models/anilist_tag.dart';
+import 'package:core/models/anime.dart';
+import 'package:core/models/manga.dart';
+
 import 'anilist_graphql_client.dart';
 import 'anilist_media_parser.dart';
 import 'anilist_queries.dart';

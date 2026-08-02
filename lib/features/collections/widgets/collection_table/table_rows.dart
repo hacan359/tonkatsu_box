@@ -1,9 +1,9 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tag.dart';
 import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/tag.dart';
 import '../../../../shared/utils/item_card_progress.dart';
 import 'table_fields.dart';
 import '../../../../shared/constants/item_status_ui.dart';

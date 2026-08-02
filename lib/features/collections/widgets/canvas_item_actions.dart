@@ -1,8 +1,8 @@
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
 import 'package:flutter/widgets.dart';
 
 import '../providers/canvas_state.dart';
-import '../../../shared/models/canvas_connection.dart';
-import '../../../shared/models/canvas_item.dart';
 import 'dialogs/add_image_dialog.dart';
 import 'dialogs/add_link_dialog.dart';
 import 'dialogs/add_text_dialog.dart';

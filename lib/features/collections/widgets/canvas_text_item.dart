@@ -1,6 +1,5 @@
+import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
-
-import '../../../shared/models/canvas_item.dart';
 
 /// Data lives in CanvasItem.data: {content: String, fontSize: double}.
 class CanvasTextItem extends StatelessWidget {

@@ -3,9 +3,9 @@
 
 import 'dart:io';
 
+import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../shared/models/collection.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';

@@ -2,12 +2,12 @@
 // cover; this sheet lets the user pick which one a book carries.
 // Grouped by Fantlab's blocks (domestic / foreign / ...), covers first.
 
+import 'package:core/models/book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/fantlab_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/book.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

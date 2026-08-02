@@ -1,8 +1,8 @@
+import 'package:core/models/anime.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
 import 'package:logging/logging.dart';
 
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/manga.dart';
-import '../../../shared/models/media_type.dart';
 import 'anilist_graphql_client.dart';
 import 'anilist_media_parser.dart';
 import 'anilist_queries.dart';

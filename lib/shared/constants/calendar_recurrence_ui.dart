@@ -1,5 +1,6 @@
+import 'package:core/models/calendar_recurrence.dart';
+
 import '../../l10n/app_localizations.dart';
-import '../models/calendar_recurrence.dart';
 
 /// Presentation extras for [CalendarRecurrence].
 extension CalendarRecurrenceUi on CalendarRecurrence {

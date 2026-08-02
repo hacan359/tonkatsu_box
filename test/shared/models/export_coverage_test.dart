@@ -1,14 +1,14 @@
 // Guard test: auto-detects fields missing from export contract.
 
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/exportable.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
-import 'package:tonkatsu_box/shared/models/canvas_item.dart';
-import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/exportable.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   final DateTime testDate = DateTime(2025, 1, 15, 12, 0);

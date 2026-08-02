@@ -1,10 +1,10 @@
 // Reading-progress section for books — pages read (issues read for comics).
 
+import 'package:core/models/book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/book.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';

@@ -1,11 +1,11 @@
 // MangaBaka tag filter (multi-select + custom picker with manual refresh).
 
+import 'package:core/models/mangabaka_tag.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../data/repositories/mangabaka_tags_repository.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/mangabaka_tag.dart';
 import '../models/search_source.dart';
 import '../widgets/mangabaka_tag_picker.dart';
 

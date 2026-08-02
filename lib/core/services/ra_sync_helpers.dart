@@ -1,8 +1,8 @@
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/item_status.dart';
-import '../../shared/models/item_status_logic.dart';
-import '../../shared/models/media_type.dart';
 import '../database/database_service.dart';
 import '../../features/collections/providers/collections_provider.dart';
 

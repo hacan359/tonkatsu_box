@@ -1,9 +1,8 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import '../../../shared/models/tracker_achievement.dart';
-import '../../../shared/models/tracker_game_data.dart';
-import '../../../shared/models/tracker_profile.dart';
 import 'package:core/database/query_chunk.dart';
+import 'package:core/models/tracker_achievement.dart';
+import 'package:core/models/tracker_game_data.dart';
+import 'package:core/models/tracker_profile.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// DAO for `tracker_profiles`, `tracker_game_data`, `tracker_achievements`.
 class TrackerDao {

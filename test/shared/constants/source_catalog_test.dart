@@ -1,8 +1,8 @@
+import 'package:core/models/data_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/models/search_source.dart';
 import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
 import 'package:tonkatsu_box/shared/constants/source_catalog.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
 
 void main() {
   group('kDataSourceCatalog', () {

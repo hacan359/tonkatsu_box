@@ -1,10 +1,10 @@
 // MangaDex genre filter (multi-select, from the SQLite-cached tag catalog).
 
+import 'package:core/models/mangadex_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/mangadex_tags_repository.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/mangadex_tag.dart';
 import '../models/search_source.dart';
 
 /// The genre-group entries of the cached MangaDex tag catalog, sorted by name.

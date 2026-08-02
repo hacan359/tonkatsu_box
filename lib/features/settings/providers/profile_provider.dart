@@ -1,6 +1,5 @@
+import 'package:core/models/profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../shared/models/profile.dart';
 
 /// Initialized in main() via overrideWithValue and re-initialized whenever
 /// a profile is created or deleted.

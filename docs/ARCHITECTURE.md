@@ -108,11 +108,18 @@ Current features: `collections` (main module — collection screens, ItemDetail,
 
 ### `shared/`
 
-- **`models/`** — immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls lib/shared/models/`. Pure Dart only: no `package:flutter` / `dart:ui` / l10n imports — presentation (colors, icons, localized labels) lives in `shared/constants/*_ui.dart` extensions.
 - **`widgets/`** — shared widgets: `ScreenAppBar`, `CachedImage`, `MediaPosterCard`, `SourceBadge`, `StarRatingBar`, etc.
 - **`theme/`** — `AppColors`, `AppTypography`, `AppSpacing`, `AppTheme` (Material 3 dark).
 - **`navigation/`** — `NavigationShell` (Rail on desktop, BottomBar on mobile).
 - **`gamepad/`** — gamepad events, `InputMode`, `GamepadListener`. See [GAMEPAD.md](GAMEPAD.md).
+
+### `packages/core/`
+
+A pure-Dart package (no Flutter dependency) holding the data layer the app shares with the planned selfhost server, imported as `package:core/...`:
+
+- **`models/`** — all immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls packages/core/lib/models/`. Purity is enforced by construction: `core` does not depend on Flutter, so `dart analyze` inside the package rejects any `package:flutter` / `dart:ui` / l10n import. Presentation (colors, icons, localized labels) lives in `lib/shared/constants/*_ui.dart` extensions on the app side.
+- **`database/`** — `schema.dart` DDL helpers and `migrations/` (see [Database](#database)).
+- **`utils/`** — pure helpers the models need: `bbcode`, `html_text`, `stable_id`, `cover_image_id`, `tvmaze_json`, `kitsu_status`, `anime_manga_title_language`.
 
 ---
 
@@ -181,7 +188,7 @@ Navigation is imperative `Navigator.push(MaterialPageRoute(...))`. No `go_router
 
 ## Key patterns
 
-1. **Immutable models.** Every model in `shared/models/` has `final` fields and a `copyWith()`. Direct mutation is forbidden — state changes go through Riverpod notifiers.
+1. **Immutable models.** Every model in `packages/core/lib/models/` has `final` fields and a `copyWith()`. Direct mutation is forbidden — state changes go through Riverpod notifiers.
 2. **Factory constructors.** Each model: `fromJson` (API), `fromDb` (SQLite), `toDb` (serialisation). Models that ship in `.xcoll` exports also implement the `Exportable` mixin with `toExport()`.
 3. **`SearchSource` abstraction.** Universal search (`features/search/sources/`) gives features one interface over 7 different backends — no per-source `switch` in the UI.
 4. **DB-first lookup-data cache.** Genre maps (TMDB / IGDB) and VNDB tags are seeded into SQLite by migration v24 and read locally. The network is only hit when the local row is missing — losing internet **does not break the filter UI**.

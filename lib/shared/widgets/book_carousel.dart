@@ -2,16 +2,16 @@
 // sections (Fantlab / Google Books) and the search sheet's "more by this
 // author" strip.
 
+import 'package:core/models/book.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
 import '../constants/platform_features.dart';
-import '../models/book.dart';
-import '../models/data_source.dart';
-import '../models/media_type.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
-import '../utils/cover_image_id.dart';
 import '../utils/url_launch.dart';
 import 'media_poster_card.dart';
 import 'scrollable_row_with_arrows.dart';

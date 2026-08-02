@@ -1,3 +1,4 @@
+import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,7 +8,6 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_group.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
 
 import '../../../helpers/test_helpers.dart';
 

@@ -1,3 +1,9 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/collection_sort_mode.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,15 +11,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_items_view.dart';
-import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
-import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
 CollectionItem _makeItem({
   int id = 1,

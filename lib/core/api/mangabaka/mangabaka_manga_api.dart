@@ -1,6 +1,6 @@
+import 'package:core/models/manga.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/manga.dart';
 import 'mangabaka_http_client.dart';
 
 /// Manga series: search / browse and detail by id (`/series`).

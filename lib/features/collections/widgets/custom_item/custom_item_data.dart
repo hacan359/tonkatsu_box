@@ -1,4 +1,4 @@
-import '../../../../shared/models/media_type.dart';
+import 'package:core/models/media_type.dart';
 
 /// Result of the create / edit custom item form.
 class CustomItemData {

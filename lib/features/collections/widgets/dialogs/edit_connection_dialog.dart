@@ -1,7 +1,7 @@
+import 'package:core/models/canvas_connection.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/models/canvas_connection.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/color_picker_dialog.dart';
 import '../../../../shared/widgets/segmented_pill.dart';

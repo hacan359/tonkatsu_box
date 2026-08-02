@@ -1,15 +1,15 @@
 import 'dart:async';
 
+import 'package:core/models/anime.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/dao/collection_dao.dart';
 import '../../../core/database/dao/stats_dao.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/manga.dart';
-import '../../../shared/models/media_type.dart';
 import '../models/library_stats.dart';
 
 /// Minimum rated items a media type needs before its best/worst pair shows —

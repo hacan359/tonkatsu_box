@@ -1,6 +1,7 @@
-import 'calendar_recurrence.dart';
 import 'data_source.dart';
 import 'media_type.dart';
+
+import 'calendar_recurrence.dart';
 
 /// A manual calendar entry the user added for any item: a start date and a
 /// recurrence. Identity is `(externalId, source, mediaType)` — one entry per

@@ -1,7 +1,7 @@
 
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 
-import '../models/media_type.dart';
 import '../theme/app_colors.dart';
 
 /// Colors and icons that visually distinguish media types.

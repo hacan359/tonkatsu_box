@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:core/models/card_link.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,9 +10,6 @@ import '../../core/database/database_service.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../features/settings/providers/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
-import '../models/card_link.dart';
-import '../models/collection_item.dart';
-import '../models/data_source.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -28,7 +28,6 @@ import 'media_detail/system_meta_info_button.dart';
 import 'media_detail/tracker_comments_layout.dart';
 import 'media_detail/user_rating_section.dart';
 import 'mini_markdown_text.dart';
-
 export 'media_detail/media_detail_chip.dart' show MediaDetailChip;
 
 /// `type` is either 'started' or 'completed'.

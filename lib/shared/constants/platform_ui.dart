@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../models/platform.dart';
+import 'package:core/models/platform.dart';
 
 /// Presentation extras for [Platform].
 extension PlatformUi on Platform {

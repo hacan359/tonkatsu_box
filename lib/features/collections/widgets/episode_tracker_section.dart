@@ -1,5 +1,10 @@
 // Episode Tracker section: season/episode watch progress.
 
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_mark.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,16 +12,11 @@ import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/models/data_source.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/models/item_mark.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../providers/episode_tracker_provider.dart';

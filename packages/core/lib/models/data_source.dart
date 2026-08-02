@@ -1,61 +1,59 @@
-import '../theme/app_assets.dart';
-
 /// External data provider.
+///
+/// Brand assets live app-side: see the `DataSourceUi.iconAsset` extension.
 enum DataSource {
   /// IGDB — game database.
-  igdb('IGDB', 0xFF9147FF, AppAssets.iconIgdbColor),
+  igdb('IGDB', 0xFF9147FF),
 
   /// TMDB — movie and TV database.
-  tmdb('TMDB', 0xFF01D277, AppAssets.iconTmdbColor),
+  tmdb('TMDB', 0xFF01D277),
 
   /// TVmaze — keyless TV series database with season / episode data.
-  tvmaze('TVmaze', 0xFF3C5C8C, AppAssets.iconTvMazeColor),
+  tvmaze('TVmaze', 0xFF3C5C8C),
 
   /// SteamGridDB — Steam artwork.
-  steamGridDb('SGDB', 0xFF3A9BDC, AppAssets.iconSteamGridDbColor,
-      brandName: 'SteamGridDB'),
+  steamGridDb('SGDB', 0xFF3A9BDC, brandName: 'SteamGridDB'),
 
   /// VGMaps — video game maps.
-  vgMaps('VGMaps', 0xFFE57C23, null),
+  vgMaps('VGMaps', 0xFFE57C23),
 
   /// VNDB — visual novel database.
-  vndb('VNDB', 0xFF2A5FC1, AppAssets.iconVndbColor),
+  vndb('VNDB', 0xFF2A5FC1),
 
   /// AniList — anime and manga database.
-  anilist('AniList', 0xFF3DB4F2, AppAssets.iconAnilistColor),
+  anilist('AniList', 0xFF3DB4F2),
 
   /// MangaBaka — open catalog of manga / manhwa / manhua / light novels.
-  mangabaka('MangaBaka', 0xFFE5484D, AppAssets.iconMangaBakaColor),
+  mangabaka('MangaBaka', 0xFFE5484D),
 
   /// MangaDex — large manga catalog with localized titles and chapter counts.
-  mangadex('MangaDex', 0xFFFF6740, AppAssets.iconMangaDexColor),
+  mangadex('MangaDex', 0xFFFF6740),
 
   /// Kitsu — independent anime and manga catalog.
-  kitsu('Kitsu', 0xFFF75239, AppAssets.iconKitsuColor),
+  kitsu('Kitsu', 0xFFF75239),
 
   /// OpenLibrary — global open book catalog (~40M works, CC0/ODbL).
-  openLibrary('OpenLibrary', 0xFF9B6A4F, AppAssets.iconOpenLibraryColor),
+  openLibrary('OpenLibrary', 0xFF9B6A4F),
 
   /// Fantlab — community book catalog with detailed metadata.
-  fantlab('Fantlab', 0xFFC5302E, AppAssets.iconFantlabColor),
+  fantlab('Fantlab', 0xFFC5302E),
 
   /// ComicVine — comics / graphic novels catalog (volumes + issues). Feeds the
   /// `book` media type with `BookKind.comic` records.
-  comicVine('ComicVine', 0xFFF26522, AppAssets.iconComicVineColor),
+  comicVine('ComicVine', 0xFFF26522),
 
   /// Google Books — global book catalog (millions of editions, public search).
   /// Feeds the `book` media type with `BookKind.book` records.
-  googleBooks('Google Books', 0xFF4285F4, AppAssets.iconGoogleBooksColor),
+  googleBooks('Google Books', 0xFF4285F4),
 
   /// Hardcover — community book catalog (books, series, moods, ratings).
   /// Feeds the `book` media type; graphic novels map to `BookKind.comic`.
-  hardcover('Hardcover', 0xFF6366F1, AppAssets.iconHardcoverColor),
+  hardcover('Hardcover', 0xFF6366F1),
 
   /// Local source (custom items).
-  local('Custom', 0xFF26A69A, null);
+  local('Custom', 0xFF26A69A);
 
-  const DataSource(this.label, this.colorValue, this.iconAsset,
-      {String? brandName})
+  const DataSource(this.label, this.colorValue, {String? brandName})
       : _brandName = brandName;
 
   /// Short display label (badges, chips).
@@ -69,9 +67,6 @@ enum DataSource {
 
   /// Brand color of the source as an ARGB int.
   final int colorValue;
-
-  /// Path to the color PNG logo (null when there is no brand asset).
-  final String? iconAsset;
 
   /// Canonical lowercase identifier — the single source for the provider
   /// "key" that used to be hardcoded as `groupId` literals and in the

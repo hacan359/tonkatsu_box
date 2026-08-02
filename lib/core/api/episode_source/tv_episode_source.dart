@@ -1,9 +1,9 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import '../kitsu_api.dart';
 import '../tmdb_api.dart';
 import '../tvmaze_api.dart';

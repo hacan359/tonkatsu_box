@@ -1,10 +1,10 @@
+import 'package:core/models/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/profile_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/profile.dart';
 import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';

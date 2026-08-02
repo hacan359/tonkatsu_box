@@ -1,12 +1,12 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
 import 'package:tonkatsu_box/features/search/models/search_source.dart';
 import 'package:tonkatsu_box/features/search/sources/tvmaze_tv_source.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../../helpers/test_helpers.dart';
 

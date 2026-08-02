@@ -1,8 +1,8 @@
+import 'package:core/models/calendar_entry.dart';
+import 'package:core/models/calendar_recurrence.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/calendar_entry.dart';
-import 'package:tonkatsu_box/shared/models/calendar_recurrence.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 void main() {
   group('CalendarRecurrence', () {

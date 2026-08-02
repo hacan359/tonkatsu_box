@@ -1,5 +1,10 @@
 import '../../../shared/constants/platform_features.dart';
 
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,14 +12,9 @@ import '../../../core/api/mangabaka_api.dart';
 import '../../../core/api/mangadex_api.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/manga.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';

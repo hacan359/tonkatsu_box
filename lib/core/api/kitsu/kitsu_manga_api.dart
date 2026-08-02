@@ -1,6 +1,6 @@
+import 'package:core/models/manga.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/manga.dart';
 import 'kitsu_http_client.dart';
 
 /// Manga search / detail on Kitsu (`/manga`, JSON:API).

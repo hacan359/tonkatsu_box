@@ -1,10 +1,10 @@
+import 'package:core/models/anilist_tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/data/repositories/anilist_tags_repository.dart';
 import 'package:tonkatsu_box/features/search/widgets/anilist_tag_picker.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/anilist_tag.dart';
 
 import '../../../helpers/test_helpers.dart';
 

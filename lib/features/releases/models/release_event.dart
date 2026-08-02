@@ -1,5 +1,6 @@
+import 'package:core/models/media_type.dart';
+
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/media_type.dart';
 
 /// One aired-or-upcoming episode of a tracked show, placed on the calendar by
 /// its air date.

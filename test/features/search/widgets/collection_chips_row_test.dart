@@ -1,11 +1,10 @@
+import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/search/widgets/collection_chips_row.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 import 'package:tonkatsu_box/shared/widgets/filter_subfilter_bar.dart';
 import 'package:tonkatsu_box/shared/widgets/selected_count_chip.dart';

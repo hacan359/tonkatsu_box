@@ -1,15 +1,14 @@
+import 'package:core/models/anime.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/tv_episode.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/anime.dart';
-import '../../shared/models/manga.dart';
-import '../../shared/models/tv_episode.dart';
 import 'kitsu/kitsu_anime_api.dart';
 import 'kitsu/kitsu_episode_api.dart';
 import 'kitsu/kitsu_http_client.dart';
 import 'kitsu/kitsu_manga_api.dart';
 import 'kitsu/kitsu_mapping_api.dart';
-
 export 'kitsu/kitsu_types.dart';
 
 /// Kitsu JSON:API facade (`https://kitsu.io/api/edge`, no auth).

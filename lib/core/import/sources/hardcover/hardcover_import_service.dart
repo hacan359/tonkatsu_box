@@ -1,19 +1,19 @@
 // Imports books from a Hardcover user library via GraphQL.
 
+import 'package:core/models/book.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/universal_import_result.dart';
+import 'package:core/utils/bbcode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
-import '../../../../shared/models/book.dart';
-import '../../../../shared/models/collection.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/data_source.dart';
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/item_status_logic.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/universal_import_result.dart';
-import 'package:core/utils/bbcode.dart';
 import '../../../api/hardcover_api.dart';
 import '../../../database/database_service.dart';
 import '../../import_columns.dart';

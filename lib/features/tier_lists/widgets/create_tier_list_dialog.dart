@@ -1,11 +1,11 @@
 // Диалог создания нового тир-листа.
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/tier_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/tier_list.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/collection_picker_field.dart';

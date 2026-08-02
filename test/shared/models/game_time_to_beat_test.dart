@@ -1,5 +1,5 @@
+import 'package:core/models/game_time_to_beat.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/game_time_to_beat.dart';
 
 void main() {
   group('GameTimeToBeat', () {

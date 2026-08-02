@@ -1,7 +1,7 @@
+import 'package:core/models/collection_item.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../models/collection_item.dart';
 import '../theme/app_colors.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';

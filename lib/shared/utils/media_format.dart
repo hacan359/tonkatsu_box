@@ -1,7 +1,7 @@
-import '../models/anime.dart';
-import '../models/collection_item.dart';
-import '../models/manga.dart';
-import '../models/media_type.dart';
+import 'package:core/models/anime.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
 
 /// Helpers for the manga / anime `format` subfilter: canonical chip ordering,
 /// display labels, and extracting the distinct formats present in a list of
