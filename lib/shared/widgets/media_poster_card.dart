@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/media_type_theme.dart';
+import '../models/data_source.dart';
 import '../models/item_status.dart';
 import '../models/media_type.dart';
 import '../utils/item_card_progress.dart';
@@ -12,6 +13,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'dual_rating_badge.dart';
+import 'source_logo.dart';
 import '../constants/item_status_ui.dart';
 import '../constants/media_type_ui.dart';
 
@@ -69,6 +71,8 @@ class MediaPosterCard extends StatefulWidget {
     this.tagMoreCount = 0,
     this.tagGlow = false,
     this.onTagTap,
+    this.source,
+    this.onSourceTap,
     super.key,
   });
 
@@ -84,8 +88,8 @@ class MediaPosterCard extends StatefulWidget {
   /// API rating (0.0–10.0). Grid/compact only.
   final double? apiRating;
 
-  /// When true (collection), only the API rating goes to the banner's
-  /// subtitle line — the personal rating stays in the top-left badge. When
+  /// When true (collection), only the API rating goes to the subtitle line
+  /// under the poster — the personal rating stays in the top-left badge. When
   /// false (search), both ratings render in the subtitle line. Grid/compact
   /// only.
   final bool splitRatings;
@@ -177,6 +181,13 @@ class MediaPosterCard extends StatefulWidget {
   /// Fired on tag-badge tap (to pick/change the tag).
   final void Function(Offset globalPosition)? onTagTap;
 
+  /// Data source whose logo opens the subtitle line. Grid/compact only.
+  final DataSource? source;
+
+  /// Fired on source-logo tap (open the item's page on that source). Null
+  /// leaves the logo as a plain marker.
+  final VoidCallback? onSourceTap;
+
   @override
   State<MediaPosterCard> createState() => _MediaPosterCardState();
 }
@@ -188,6 +199,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   FocusNode? _focusNode;
 
   static const double _hoverScale = 1.02;
+
+  /// Source logo size as a share of the meta font size. Stays under the line
+  /// height (font × 1.3) so the logo never raises the meta line.
+  static const double _sourceLogoScale = 1.1;
 
   bool get _isGridVariant =>
       widget.variant == CardVariant.grid ||
@@ -271,8 +286,49 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   ? (TapUpDetails details) =>
                       widget.onSecondaryTap!(details.globalPosition)
                   : null,
-              child: _buildGridPoster(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(child: _buildGridPoster()),
+                  _buildTitleBlock(context),
+                ],
+              ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Title + subtitle under the poster. The height is fixed so grid rows stay
+  /// aligned, and the text hugs its top so a one-line title leaves no gap.
+  Widget _buildTitleBlock(BuildContext context) {
+    return Tooltip(
+      message: widget.title,
+      waitDuration: AppDurations.tooltipDelay,
+      // Hover-only: the default long-press trigger would win the gesture arena
+      // over the card's own long-press context menu on Android.
+      triggerMode: TooltipTriggerMode.manual,
+      child: SizedBox(
+        height: AppSpacing.cardTitleBlockHeight(
+          compact: _isCompact,
+          textScaler: MediaQuery.textScalerOf(context),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: AppSpacing.cardTitleBlockGap(compact: _isCompact),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                widget.title,
+                style: AppTypography.posterTitleFor(compact: _isCompact),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              _buildSubtitleRow(context),
+            ],
           ),
         ),
       ),
@@ -301,9 +357,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       color: glowColor,
       borderRadius: borderRadius,
       child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: Stack(
-            fit: StackFit.expand,
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: Stack(
+          fit: StackFit.expand,
           children: <Widget>[
             _buildCachedImage(
               placeholder: _buildGridPlaceholder(),
@@ -355,8 +411,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             ),
 
             // Top-left row: personal rating badge (split mode only — in
-            // non-split mode both ratings render in the banner's subtitle
-            // line) and the time-to-beat clock.
+            // non-split mode both ratings render in the subtitle line under
+            // the poster) and the time-to-beat clock.
             if ((widget.splitRatings && widget.userRating != null) ||
                 widget.timeToBeatHours != null)
               Positioned(
@@ -470,13 +526,13 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               ),
             ),
 
-            // Bottom banner: solid translucent panel with title, subtitle
-            // line and the always-visible progress + tag row.
+            // Bottom strip: status, progress and tag only — the title and its
+            // meta line live under the poster.
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              child: _buildBottomBanner(context),
+              child: _buildStatsStrip(),
             ),
           ],
         ),
@@ -484,131 +540,103 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Solid translucent panel pinned to the poster's bottom edge: title,
-  /// subtitle line, then the always-visible progress + tag row and the
-  /// progress bar. The panel darkens and the title expands on hover/focus.
-  Widget _buildBottomBanner(BuildContext context) {
+  /// Translucent strip pinned to the poster's bottom edge, carrying the status
+  /// dot, the progress label, the tag badge and the progress bar. Collapses to
+  /// nothing when the item has none of them, leaving the poster bare.
+  Widget _buildStatsStrip() {
     final double hPad = _isCompact ? 4 : 6;
-    final double vPad = _isCompact ? 3 : 5;
+    final double vPad = _isCompact ? 2 : 4;
     final bool showStatusDot =
         widget.status != null && widget.status != ItemStatus.notStarted;
-    final bool hasBottomRow = showStatusDot ||
-        widget.progress != null ||
-        widget.onTagTap != null ||
-        widget.tagName != null;
+    final bool hasTag = widget.onTagTap != null || widget.tagName != null;
+    if (!showStatusDot && widget.progress == null && !hasTag) {
+      return const SizedBox.shrink();
+    }
 
     return AnimatedBuilder(
       animation: _hoverController!,
       builder: (BuildContext context, Widget? child) {
-        final double t = _hoverController!.value;
-        final bool expanded = t > 0.3;
         return ColoredBox(
-          color: Colors.black.withValues(alpha: 0.6 + 0.25 * t),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(hPad, vPad, hPad, vPad),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    AnimatedSize(
-                      duration: AppDurations.fast,
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        widget.title,
-                        style: (_isCompact
-                                ? AppTypography.posterTitle
-                                    .copyWith(fontSize: 9)
-                                : AppTypography.posterTitle)
-                            .copyWith(height: 1.2),
-                        maxLines: expanded ? 6 : 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    _buildSubtitleRow(context),
-                    if (hasBottomRow) ...<Widget>[
-                      const SizedBox(height: 3),
-                      Row(
-                        children: <Widget>[
-                          if (showStatusDot) ...<Widget>[
-                            Container(
-                              padding: EdgeInsets.all(_isCompact ? 2 : 3),
-                              decoration: BoxDecoration(
-                                color: widget.status!.color,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                widget.status!.materialIcon,
-                                size: _isCompact ? 7 : 10,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(width: _isCompact ? 2 : 4),
-                          ],
-                          if (widget.progress != null)
-                            Expanded(
-                              child: Text(
-                                widget.progress!.label,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: _isCompact ? 7 : 9,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            )
-                          else
-                            const Spacer(),
-                          if (widget.onTagTap != null ||
-                              widget.tagName != null)
-                            // Align keeps the badge flush right inside its
-                            // flex share; bare Flexible would leave the
-                            // share's leftover trailing and pull the badge
-                            // toward the middle.
-                            Flexible(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: _TagBadge(
-                                  tagName: widget.tagName,
-                                  tagColor: widget.tagColor,
-                                  tagTextColor: widget.tagTextColor,
-                                  moreCount: widget.tagMoreCount,
-                                  compact: _isCompact,
-                                  onTap: widget.onTagTap,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (widget.progress?.fraction != null)
-                SizedBox(
-                  height: _isCompact ? 2 : 3,
-                  child: ColoredBox(
-                    color: Colors.black.withAlpha(120),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: widget.progress!.fraction,
-                      child: ColoredBox(
-                        color: widget.mediaType != null
-                            ? MediaTypeTheme.colorFor(widget.mediaType!)
-                            : AppColors.brand,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          color: Colors.black.withValues(
+            alpha: 0.55 + 0.25 * _hoverController!.value,
           ),
+          child: child,
         );
       },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.fromLTRB(hPad, vPad, hPad, vPad),
+            child: Row(
+              children: <Widget>[
+                if (showStatusDot) ...<Widget>[
+                  Container(
+                    padding: EdgeInsets.all(_isCompact ? 2 : 3),
+                    decoration: BoxDecoration(
+                      color: widget.status!.color,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      widget.status!.materialIcon,
+                      size: _isCompact ? 7 : 10,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: _isCompact ? 2 : 4),
+                ],
+                // The tag takes the free space so the progress label lands on
+                // the right edge; a Spacer would split it with the tag's flex.
+                Expanded(
+                  child: hasTag
+                      ? Align(
+                          alignment: Alignment.centerLeft,
+                          child: _TagBadge(
+                            tagName: widget.tagName,
+                            tagColor: widget.tagColor,
+                            tagTextColor: widget.tagTextColor,
+                            moreCount: widget.tagMoreCount,
+                            compact: _isCompact,
+                            onTap: widget.onTagTap,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                if (widget.progress != null) ...<Widget>[
+                  SizedBox(width: _isCompact ? 2 : 4),
+                  Text(
+                    widget.progress!.label,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: _isCompact ? 7 : 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (widget.progress?.fraction != null)
+            SizedBox(
+              height: _isCompact ? 2 : 3,
+              child: ColoredBox(
+                color: Colors.black.withAlpha(120),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: widget.progress!.fraction,
+                  child: ColoredBox(
+                    color: widget.mediaType != null
+                        ? MediaTypeTheme.colorFor(widget.mediaType!)
+                        : AppColors.brand,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -625,11 +653,33 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Subtitle row: [rating ·] platform · year · MediaType (colored) · genre.
+  /// Meta line, with the source logo ahead of it when the card has a source.
+  /// The logo sits in a [Row] rather than inline: a [WidgetSpan] grows the
+  /// text line past the height the title block budgeted for it.
   Widget _buildSubtitleRow(BuildContext context) {
-    final TextStyle baseStyle = _isCompact
-        ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
-        : AppTypography.posterSubtitle;
+    final TextStyle baseStyle =
+        AppTypography.posterSubtitleFor(compact: _isCompact);
+    final Widget metaText = _buildMetaText(context, baseStyle);
+
+    if (widget.source case final DataSource source) {
+      final double fontSize =
+          MediaQuery.textScalerOf(context).scale(baseStyle.fontSize ?? 11);
+      return Row(
+        children: <Widget>[
+          _SourceLogoLink(
+            source: source,
+            size: fontSize * _sourceLogoScale,
+            onTap: widget.onSourceTap,
+          ),
+          Expanded(child: metaText),
+        ],
+      );
+    }
+    return metaText;
+  }
+
+  /// [rating ·] platform · year · MediaType (colored) · genre.
+  Widget _buildMetaText(BuildContext context, TextStyle baseStyle) {
 
     // Parts before the type: rating, platform, year.
     final List<String> before = <String>[];
@@ -1014,6 +1064,48 @@ class _TagBadge extends StatelessWidget {
 /// phone it was easy to miss and open the card instead). The heart's own tap
 /// recognizer wins over the card's open-tap, so a hit on the target toggles the
 /// flag rather than opening the item.
+/// Source brand logo opening the meta line, optionally a link to the item's
+/// page on that source.
+class _SourceLogoLink extends StatelessWidget {
+  const _SourceLogoLink({
+    required this.source,
+    required this.size,
+    this.onTap,
+  });
+
+  final DataSource source;
+  final double size;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget logo = Padding(
+      padding: EdgeInsets.only(right: size * 0.3),
+      child: SourceLogo(source: source, size: size),
+    );
+
+    if (onTap == null) return logo;
+
+    return Tooltip(
+      message: source.label,
+      waitDuration: AppDurations.tooltipDelay,
+      // Hover-only, like the title tooltip: the long-press trigger would take
+      // the card's context menu on Android.
+      triggerMode: TooltipTriggerMode.manual,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          // One focus stop per card: a focusable logo would trap D-pad
+          // navigation between cards.
+          canRequestFocus: false,
+          child: logo,
+        ),
+      ),
+    );
+  }
+}
+
 class _FavoriteButton extends StatelessWidget {
   const _FavoriteButton({
     required this.isFavorite,

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/cover_image_id.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../providers/recommendations_provider.dart';
@@ -68,8 +70,11 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
 
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -131,11 +136,9 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 clipBehavior: Clip.none,
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  4,
-                  AppSpacing.md,
-                  AppSpacing.md,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.posterRowVerticalPadding,
                 ),
                 itemCount: widget.items.length,
                 separatorBuilder: (_, _) =>
@@ -182,6 +185,8 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                           placeholderIcon: isMovie
                               ? Icons.movie_outlined
                               : Icons.tv_outlined,
+                          source: DataSource.tmdb,
+                          onSourceTap: openUrlCallback(item.externalUrl),
                           onTap: () => widget.onTap(item),
                         ),
                       ),
@@ -190,6 +195,11 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                 },
               ),
             ),
+          ),
+          // Rest of the card's bottom inset; the row itself only pads by
+          // [AppSpacing.posterRowVerticalPadding], which its height assumes.
+          const SizedBox(
+            height: AppSpacing.md - AppSpacing.posterRowVerticalPadding,
           ),
         ],
       ),

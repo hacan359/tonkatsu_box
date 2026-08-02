@@ -12,8 +12,10 @@ import '../models/media_type.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../utils/cover_image_id.dart';
+import '../utils/url_launch.dart';
 import 'media_poster_card.dart';
 import 'scrollable_row_with_arrows.dart';
+import 'shimmer_loading.dart';
 
 /// One horizontal strip of book cards (cover + title + year, with optional
 /// rating and in-collection badge). Supports lazy paging through
@@ -87,8 +89,11 @@ class _BookCarouselState extends State<BookCarousel> {
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
     final int itemCount = widget.books.length + (widget.loadingMore ? 1 : 0);
 
     return SizedBox(
@@ -100,7 +105,9 @@ class _BookCarouselState extends State<BookCarousel> {
           controller: _scrollController,
           scrollDirection: Axis.horizontal,
           clipBehavior: Clip.none,
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.posterRowVerticalPadding,
+          ),
           itemCount: itemCount,
           separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
           itemBuilder: (BuildContext context, int index) {
@@ -143,6 +150,8 @@ class _BookCarouselState extends State<BookCarousel> {
         isInCollection:
             widget.ownedKeys.contains((book.source, book.externalIdInt)),
         placeholderIcon: Icons.menu_book,
+        source: book.source,
+        onSourceTap: openUrlCallback(book.externalUrl),
         onTap: () => widget.onTap(book),
       ),
     );
@@ -167,8 +176,11 @@ class BookCarouselShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,30 +198,14 @@ class BookCarouselShimmer extends StatelessWidget {
           height: rowHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.posterRowVerticalPadding,
+            ),
             itemCount: 5,
             separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
             itemBuilder: (_, _) => SizedBox(
               width: posterWidth,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: posterWidth * 0.7,
-                    height: 12,
-                    color: AppColors.surfaceLight,
-                  ),
-                ],
-              ),
+              child: ShimmerPosterCard(compact: compact),
             ),
           ),
         ),

@@ -6,8 +6,10 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/models/data_source.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/utils/cover_image_id.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 
@@ -20,6 +22,7 @@ class DiscoverItem {
     this.rating,
     this.isOwned = false,
     this.isMovie = true,
+    this.externalUrl,
   });
 
   final String title;
@@ -38,6 +41,9 @@ class DiscoverItem {
   /// Distinguishes movies (true) from TV shows: tmdbId values may collide
   /// between the two.
   final bool isMovie;
+
+  /// TMDB page of the title; null when the API gave no link.
+  final String? externalUrl;
 }
 
 class DiscoverRow extends StatefulWidget {
@@ -76,8 +82,11 @@ class _DiscoverRowState extends State<DiscoverRow> {
 
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +125,7 @@ class _DiscoverRowState extends State<DiscoverRow> {
               clipBehavior: Clip.none,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
-                vertical: 4,
+                vertical: AppSpacing.posterRowVerticalPadding,
               ),
               itemCount: widget.items.length,
               separatorBuilder: (_, _) =>
@@ -146,6 +155,8 @@ class _DiscoverRowState extends State<DiscoverRow> {
                     placeholderIcon: item.isMovie
                         ? Icons.movie_outlined
                         : Icons.tv_outlined,
+                    source: DataSource.tmdb,
+                    onSourceTap: openUrlCallback(item.externalUrl),
                     onTap: () => widget.onTap(item),
                   ),
                 );

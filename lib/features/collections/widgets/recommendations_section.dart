@@ -16,8 +16,10 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/utils/cover_image_id.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../search/widgets/item_details_sheet.dart';
 import '../../settings/providers/settings_provider.dart' show SettingsState, settingsNotifierProvider;
 
@@ -116,6 +118,8 @@ class RecommendationsSection extends ConsumerWidget {
                   cacheImageId: m.tmdbId.toString(),
                   onAddToCollection: () => _showMovieDetails(context, m),
                   isOwned: ownedIds.contains(m.tmdbId),
+                  source: DataSource.tmdb,
+                  externalUrl: m.externalUrl,
                 ),
               )
               .toList(),
@@ -161,6 +165,8 @@ class RecommendationsSection extends ConsumerWidget {
                   ),
                   onAddToCollection: () => _showTvShowDetails(context, s),
                   isOwned: ownedIds.contains(s.tmdbId),
+                  source: s.source,
+                  externalUrl: s.externalUrl,
                 ),
               )
               .toList(),
@@ -203,10 +209,12 @@ class _RecItem {
     required this.onAddToCollection,
     required this.cacheImageType,
     required this.cacheImageId,
+    required this.source,
     this.posterUrl,
     this.year,
     this.apiRating,
     this.isOwned = false,
+    this.externalUrl,
   });
 
   final String title;
@@ -218,6 +226,10 @@ class _RecItem {
   final double? apiRating;
   final ImageType cacheImageType;
   final String cacheImageId;
+  final DataSource source;
+
+  /// Page on [source]; null when the provider gave no link.
+  final String? externalUrl;
 }
 
 class _RecommendationRow extends StatefulWidget {
@@ -246,8 +258,11 @@ class _RecommendationRowState extends State<_RecommendationRow> {
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,7 +281,9 @@ class _RecommendationRowState extends State<_RecommendationRow> {
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               clipBehavior: Clip.none,
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.posterRowVerticalPadding,
+              ),
               itemCount: widget.items.length,
               separatorBuilder: (_, _) =>
                   const SizedBox(width: AppSpacing.sm),
@@ -287,6 +304,8 @@ class _RecommendationRowState extends State<_RecommendationRow> {
                     splitRatings: true,
                     isInCollection: item.isOwned,
                     placeholderIcon: item.icon,
+                    source: item.source,
+                    onSourceTap: openUrlCallback(item.externalUrl),
                     onTap: item.onAddToCollection,
                   ),
                 );
@@ -306,8 +325,11 @@ class _RecommendationShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,31 +347,15 @@ class _RecommendationShimmer extends StatelessWidget {
           height: rowHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.posterRowVerticalPadding,
+            ),
             itemCount: 5,
             separatorBuilder: (_, _) =>
                 const SizedBox(width: AppSpacing.sm),
             itemBuilder: (_, _) => SizedBox(
               width: posterWidth,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: posterWidth * 0.7,
-                    height: 12,
-                    color: AppColors.surfaceLight,
-                  ),
-                ],
-              ),
+              child: ShimmerPosterCard(compact: compact),
             ),
           ),
         ),

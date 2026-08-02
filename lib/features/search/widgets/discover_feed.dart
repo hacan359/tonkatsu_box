@@ -11,6 +11,7 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/discover_provider.dart';
 import 'discover_row.dart';
@@ -243,6 +244,7 @@ class DiscoverFeed extends ConsumerWidget {
                 year: m.releaseYear,
                 rating: m.formattedRating,
                 isOwned: owned,
+                externalUrl: m.externalUrl,
               );
             })
             .whereType<DiscoverItem>()
@@ -291,6 +293,7 @@ class DiscoverFeed extends ConsumerWidget {
                 rating: s.formattedRating,
                 isOwned: owned,
                 isMovie: false,
+                externalUrl: s.externalUrl,
               );
             })
             .whereType<DiscoverItem>()
@@ -339,8 +342,11 @@ class DiscoverFeed extends ConsumerWidget {
   Widget _buildShimmerRow(BuildContext context, String title) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,33 +363,16 @@ class DiscoverFeed extends ConsumerWidget {
           height: rowHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.posterRowVerticalPadding,
+            ),
             itemCount: 5,
             separatorBuilder: (_, _) =>
                 const SizedBox(width: AppSpacing.sm),
             itemBuilder: (_, _) => SizedBox(
               width: posterWidth,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: posterWidth * 0.7,
-                    height: 12,
-                    color: AppColors.surfaceLight,
-                  ),
-                ],
-              ),
+              child: ShimmerPosterCard(compact: compact),
             ),
           ),
         ),

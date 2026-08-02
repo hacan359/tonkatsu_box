@@ -93,6 +93,13 @@ class RecommendedItem {
 
   /// Predicted personal rating (1–10), or `null` when not predictable.
   final double? predictedRating;
+
+  /// TMDB page of the underlying [media].
+  String? get externalUrl => switch (media) {
+        final Movie m => m.externalUrl,
+        final TvShow t => t.externalUrl,
+        _ => null,
+      };
 }
 
 /// A row of recommendations under one "because you liked …" header.
