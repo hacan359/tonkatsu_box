@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_dio.dart';
 import 'api_error_detail.dart';
 
 final Provider<SteamApi> steamApiProvider = Provider<SteamApi>((Ref ref) {
@@ -65,10 +66,10 @@ class SteamOwnedGame {
 class SteamApi {
   SteamApi({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            ));
+            );
 
   static final Logger _log = Logger('SteamApi');
 

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/constants/api_defaults.dart';
+import 'api_dio.dart';
 
 class ScreenScraperApiException implements Exception {
   ScreenScraperApiException(this.message, {this.statusCode});
@@ -101,12 +102,11 @@ final Provider<ScreenScraperApi> screenScraperApiProvider =
 class ScreenScraperApi {
   ScreenScraperApi({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               baseUrl: 'https://api.screenscraper.fr/api2/',
               connectTimeout: const Duration(seconds: 15),
               receiveTimeout: const Duration(seconds: 30),
-              responseType: ResponseType.json,
-            ));
+            );
 
   final Dio _dio;
 

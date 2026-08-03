@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'simkl_types.dart';
 
@@ -13,15 +14,13 @@ class SimklHttpClient {
   SimklHttpClient({required String clientId, Dio? dio})
       : _clientId = clientId,
         _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: 'https://api.simkl.com/',
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 30),
-                headers: <String, String>{
-                  'Content-Type': 'application/json',
-                },
-              ),
+            createApiDio(
+              baseUrl: 'https://api.simkl.com/',
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 30),
+              headers: <String, String>{
+                'Content-Type': 'application/json',
+              },
             );
 
   final Dio _dio;

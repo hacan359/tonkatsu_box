@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_dio.dart';
 import 'api_error_detail.dart';
 
 /// Kodi JSON-RPC client. Talks HTTP to `http://{host}:{port}/jsonrpc` with
@@ -64,10 +65,10 @@ class KodiApi {
   /// [timeout] applies to both connect and receive — tuned for LAN.
   KodiApi({Dio? dio, Duration? timeout})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: timeout ?? _defaultTimeout,
               receiveTimeout: timeout ?? _defaultTimeout,
-            ));
+            );
 
   static final Logger _log = Logger('KodiApi');
   static const Duration _defaultTimeout = Duration(seconds: 5);

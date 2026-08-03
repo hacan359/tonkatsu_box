@@ -1,6 +1,7 @@
 import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'tmdb_types.dart';
 
@@ -10,10 +11,10 @@ import 'tmdb_types.dart';
 class TmdbHttpClient {
   TmdbHttpClient({Dio? dio, String language = 'ru-RU'})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            )),
+            ),
         _language = language;
 
   static const Duration _timeout = Duration(seconds: 5);
