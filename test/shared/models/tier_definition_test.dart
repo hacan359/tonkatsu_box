@@ -118,6 +118,25 @@ void main() {
         final TierDefinition b = createTestTierDefinition(tierKey: 'A');
         expect(a, isNot(equals(b)));
       });
+
+      test('same tierKey shares a hash, so a Set deduplicates', () {
+        final TierDefinition a =
+            createTestTierDefinition(tierKey: 'S', label: 'Stellar');
+        final TierDefinition b =
+            createTestTierDefinition(tierKey: 'S', label: 'Superb');
+
+        expect(a.hashCode, b.hashCode);
+        expect(<TierDefinition>{a, b}, hasLength(1));
+      });
+
+      test('toString names the key and the label', () {
+        final TierDefinition a =
+            createTestTierDefinition(tierKey: 'S', label: 'Stellar');
+
+        final String text = a.toString();
+        expect(text, contains('S'));
+        expect(text, contains('Stellar'));
+      });
     });
   });
 }

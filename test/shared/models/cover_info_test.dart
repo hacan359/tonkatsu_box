@@ -1,4 +1,5 @@
 import 'package:core/models/cover_info.dart';
+import 'package:core/models/image_type.dart';
 import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -209,6 +210,33 @@ void main() {
         );
 
         expect(a, isNot(equals(b)));
+      });
+    });
+
+    group('imageType', () {
+      ImageType typeOf(MediaType mediaType, {int? platformId}) => CoverInfo(
+            externalId: 1,
+            mediaType: mediaType,
+            platformId: platformId,
+          ).imageType;
+
+      test('maps each media type to its own cache bucket', () {
+        expect(typeOf(MediaType.game), ImageType.gameCover);
+        expect(typeOf(MediaType.movie), ImageType.moviePoster);
+        expect(typeOf(MediaType.tvShow), ImageType.tvShowPoster);
+        expect(typeOf(MediaType.visualNovel), ImageType.vnCover);
+        expect(typeOf(MediaType.manga), ImageType.mangaCover);
+        expect(typeOf(MediaType.anime), ImageType.animeCover);
+        expect(typeOf(MediaType.book), ImageType.bookCover);
+        expect(typeOf(MediaType.custom), ImageType.customCover);
+      });
+
+      test('animation picks the tv bucket only for the tvShow platform', () {
+        expect(
+          typeOf(MediaType.animation, platformId: AnimationSource.tvShow),
+          ImageType.tvShowPoster,
+        );
+        expect(typeOf(MediaType.animation), ImageType.moviePoster);
       });
     });
 

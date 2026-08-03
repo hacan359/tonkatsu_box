@@ -1,8 +1,14 @@
 import 'dart:convert';
 
+import 'package:core/models/anime.dart';
+import 'package:core/models/book.dart';
 import 'package:core/models/canvas_item.dart';
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/data_source.dart';
+import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -858,6 +864,212 @@ void main() {
         final CanvasItem cleared = original.copyWith(clearOverrideName: true);
         expect(cleared.overrideName, isNull);
         expect(cleared.mediaTitle, 'Final Fantasy VII Remake');
+      });
+    });
+
+    group('media accessors per item type', () {
+      CanvasItem itemOf(
+        CanvasItemType type, {
+        Manga? manga,
+        Anime? anime,
+        Book? book,
+        CustomMedia? customMedia,
+        TvShow? tvShow,
+        Movie? movie,
+      }) =>
+          CanvasItem(
+            id: 1,
+            collectionId: 10,
+            itemType: type,
+            itemRefId: 1,
+            x: 0,
+            y: 0,
+            createdAt: testDate,
+            manga: manga,
+            anime: anime,
+            book: book,
+            customMedia: customMedia,
+            tvShow: tvShow,
+            movie: movie,
+          );
+
+      group('manga', () {
+        test('exposes title, cover and image type', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.manga,
+            manga: createTestManga(
+              title: 'Berserk',
+              coverUrl: 'https://example.com/berserk.jpg',
+            ),
+          );
+
+          expect(item.mediaTitle, 'Berserk');
+          expect(item.mediaThumbnailUrl, 'https://example.com/berserk.jpg');
+          expect(item.mediaImageType, ImageType.mangaCover);
+          expect(item.asMediaType, MediaType.manga);
+        });
+
+        test('namespaces the cache id by source', () {
+          final CanvasItem anilist = itemOf(
+            CanvasItemType.manga,
+            manga: createTestManga(id: 42),
+          );
+          final CanvasItem mangadex = itemOf(
+            CanvasItemType.manga,
+            manga: createTestManga(id: 42, source: DataSource.mangadex),
+          );
+
+          expect(anilist.mediaCacheId, isNot(mangadex.mediaCacheId));
+          expect(anilist.mediaCacheId, contains('42'));
+        });
+
+        test('falls back to a zero cache id when the join is missing', () {
+          expect(itemOf(CanvasItemType.manga).mediaTitle, isNull);
+          expect(itemOf(CanvasItemType.manga).mediaThumbnailUrl, isNull);
+          expect(itemOf(CanvasItemType.manga).mediaCacheId, contains('0'));
+        });
+      });
+
+      group('anime', () {
+        test('exposes title, cover and image type', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.anime,
+            anime: createTestAnime(
+              title: 'Cowboy Bebop',
+              coverUrl: 'https://example.com/bebop.jpg',
+            ),
+          );
+
+          expect(item.mediaTitle, 'Cowboy Bebop');
+          expect(item.mediaThumbnailUrl, 'https://example.com/bebop.jpg');
+          expect(item.mediaImageType, ImageType.animeCover);
+          expect(item.asMediaType, MediaType.anime);
+        });
+
+        test('returns nulls when the join is missing', () {
+          expect(itemOf(CanvasItemType.anime).mediaTitle, isNull);
+          expect(itemOf(CanvasItemType.anime).mediaThumbnailUrl, isNull);
+        });
+      });
+
+      group('book', () {
+        test('exposes title, cover and image type', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.book,
+            book: createTestBook(
+              title: 'Dune',
+              coverUrl: 'https://example.com/dune.jpg',
+            ),
+          );
+
+          expect(item.mediaTitle, 'Dune');
+          expect(item.mediaThumbnailUrl, 'https://example.com/dune.jpg');
+          expect(item.mediaImageType, ImageType.bookCover);
+          expect(item.asMediaType, MediaType.book);
+        });
+
+        test('namespaces the cache id by source', () {
+          final CanvasItem openLibrary = itemOf(
+            CanvasItemType.book,
+            book: createTestBook(id: '42'),
+          );
+          final CanvasItem fantlab = itemOf(
+            CanvasItemType.book,
+            book: createTestBook(id: '42', source: DataSource.fantlab),
+          );
+
+          expect(openLibrary.mediaCacheId, isNot(fantlab.mediaCacheId));
+        });
+
+        test('returns nulls when the join is missing', () {
+          expect(itemOf(CanvasItemType.book).mediaTitle, isNull);
+          expect(itemOf(CanvasItemType.book).mediaThumbnailUrl, isNull);
+        });
+      });
+
+      group('custom', () {
+        test('exposes title, cover and image type', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.custom,
+            customMedia: const CustomMedia(
+              id: 3,
+              title: 'My card',
+              coverUrl: 'https://example.com/card.jpg',
+            ),
+          );
+
+          expect(item.mediaTitle, 'My card');
+          expect(item.mediaThumbnailUrl, 'https://example.com/card.jpg');
+          expect(item.mediaImageType, ImageType.customCover);
+          expect(item.mediaCacheId, '3');
+        });
+
+        test('asMediaType borrows the display type when set', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.custom,
+            customMedia: const CustomMedia(
+              id: 3,
+              title: 'My card',
+              displayType: MediaType.manga,
+            ),
+          );
+
+          expect(item.asMediaType, MediaType.manga);
+        });
+
+        test('asMediaType stays custom without a display type', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.custom,
+            customMedia: const CustomMedia(id: 3, title: 'My card'),
+          );
+
+          expect(item.asMediaType, MediaType.custom);
+        });
+
+        test('cache id is 0 when the join is missing', () {
+          expect(itemOf(CanvasItemType.custom).mediaCacheId, '0');
+        });
+      });
+
+      group('tvShow', () {
+        test('namespaces the cache id, unlike a bare tmdb id', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.tvShow,
+            tvShow: createTestTvShow(tmdbId: 77),
+          );
+
+          expect(item.mediaCacheId, contains('77'));
+          expect(item.asMediaType, MediaType.tvShow);
+        });
+      });
+
+      group('animation', () {
+        test('prefers the tv show over the movie when both are joined', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.animation,
+            tvShow: createTestTvShow(
+              tmdbId: 77,
+              title: 'Show',
+              posterUrl: 'https://example.com/show.jpg',
+            ),
+            movie: createTestMovie(tmdbId: 88, title: 'Movie'),
+          );
+
+          expect(item.mediaTitle, 'Movie');
+          expect(item.mediaImageType, ImageType.tvShowPoster);
+          expect(item.mediaCacheId, '77');
+        });
+
+        test('falls back to the movie when no tv show is joined', () {
+          final CanvasItem item = itemOf(
+            CanvasItemType.animation,
+            movie: createTestMovie(tmdbId: 88, title: 'Movie'),
+          );
+
+          expect(item.mediaTitle, 'Movie');
+          expect(item.mediaImageType, ImageType.moviePoster);
+          expect(item.mediaCacheId, '88');
+        });
       });
     });
   });

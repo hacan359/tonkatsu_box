@@ -658,5 +658,212 @@ void main() {
         expect(await dao.getAvailableYears(), <int>[2024, 2023]);
       });
     });
+
+    group('getManualMinutes', () {
+      test('should return 0 when nothing carries manual minutes', () async {
+        await insertItem(id: 1);
+
+        expect(await dao.getManualMinutes(), 0);
+      });
+
+      test('should sum manual minutes across items', () async {
+        await insertItem(id: 1, timeSpentMinutes: 30);
+        await insertItem(id: 2, externalId: 101, timeSpentMinutes: 45);
+
+        expect(await dao.getManualMinutes(), 75);
+      });
+
+      test('should exclude movies, whose time comes from the runtime',
+          () async {
+        await insertItem(id: 1, timeSpentMinutes: 30);
+        await insertItem(
+          id: 2,
+          externalId: 101,
+          mediaType: 'movie',
+          timeSpentMinutes: 120,
+        );
+
+        expect(await dao.getManualMinutes(), 30);
+      });
+
+      test('should only sum items added within the year window', () async {
+        await insertItem(id: 1, timeSpentMinutes: 30, addedAt: in2024);
+        await insertItem(
+          id: 2,
+          externalId: 101,
+          timeSpentMinutes: 45,
+          addedAt: in2023,
+        );
+
+        expect(await dao.getManualMinutes(year: 2024), 30);
+      });
+    });
+
+    group('getEpisodesByMonth', () {
+      Future<void> watch(int id, DateTime at) => db.insert(
+            'watched_episodes',
+            <String, Object?>{
+              'id': id,
+              'collection_id': 1,
+              'show_id': 1,
+              'season_number': 1,
+              'episode_number': id,
+              'watched_at': ms(at),
+            },
+          );
+
+      test('should return an empty map when nothing was watched', () async {
+        expect(await dao.getEpisodesByMonth(), isEmpty);
+      });
+
+      test('should bucket episodes by year-month', () async {
+        await watch(1, DateTime(2024, 5, 1));
+        await watch(2, DateTime(2024, 5, 20));
+        await watch(3, DateTime(2024, 6, 2));
+
+        expect(
+          await dao.getEpisodesByMonth(),
+          <String, int>{'2024-05': 2, '2024-06': 1},
+        );
+      });
+
+      test('should only count episodes inside the year window', () async {
+        await watch(1, DateTime(2024, 5, 1));
+        await watch(2, DateTime(2023, 5, 1));
+
+        expect(
+          await dao.getEpisodesByMonth(year: 2024),
+          <String, int>{'2024-05': 1},
+        );
+      });
+    });
+
+    group('getMonthAddedByDayType', () {
+      test('should return empty for a month with no items', () async {
+        expect(await dao.getMonthAddedByDayType(2024, 1), isEmpty);
+      });
+
+      test('should group by day of month and media type', () async {
+        await insertItem(id: 1, addedAt: DateTime(2024, 5, 3));
+        await insertItem(
+          id: 2,
+          externalId: 101,
+          addedAt: DateTime(2024, 5, 3),
+        );
+        await insertItem(
+          id: 3,
+          externalId: 102,
+          mediaType: 'movie',
+          addedAt: DateTime(2024, 5, 7),
+        );
+
+        final List<(int, MediaType, int)> rows =
+            await dao.getMonthAddedByDayType(2024, 5);
+
+        expect(rows, contains((3, MediaType.game, 2)));
+        expect(rows, contains((7, MediaType.movie, 1)));
+      });
+
+      test('should exclude items from neighbouring months', () async {
+        await insertItem(id: 1, addedAt: DateTime(2024, 4, 30));
+        await insertItem(id: 2, externalId: 101, addedAt: DateTime(2024, 6, 1));
+
+        expect(await dao.getMonthAddedByDayType(2024, 5), isEmpty);
+      });
+
+      test('should handle December, where the window rolls over a year',
+          () async {
+        await insertItem(id: 1, addedAt: DateTime(2024, 12, 25));
+        await insertItem(id: 2, externalId: 101, addedAt: DateTime(2025, 1, 2));
+
+        expect(
+          await dao.getMonthAddedByDayType(2024, 12),
+          <(int, MediaType, int)>[(25, MediaType.game, 1)],
+        );
+      });
+
+      test('should skip rows whose media type is not recognised', () async {
+        await insertItem(id: 1, addedAt: DateTime(2024, 5, 3));
+        await db.insert('collection_items', <String, Object?>{
+          'id': 2,
+          'collection_id': 1,
+          'media_type': 'not_a_type',
+          'external_id': 999,
+          'status': 'not_started',
+          'added_at': secs(DateTime(2024, 5, 4)),
+          'sort_order': 2,
+        });
+
+        expect(
+          await dao.getMonthAddedByDayType(2024, 5),
+          <(int, MediaType, int)>[(3, MediaType.game, 1)],
+        );
+      });
+    });
+
+    group('getSourceTagCounts', () {
+      Future<void> insertAnime(int id, String? tags) => db.insert(
+            'anime_cache',
+            <String, Object?>{
+              'id': id,
+              'source': 'anilist',
+              'title': 'Anime $id',
+              'tags': tags,
+              'updated_at': 1700000000,
+            },
+          );
+
+      test('should count each tag across the collected titles', () async {
+        await insertAnime(1, jsonEncode(<String>['Mecha', 'Space']));
+        await insertAnime(2, jsonEncode(<String>['Mecha']));
+        await insertItem(id: 1, mediaType: 'anime', externalId: 1);
+        await insertItem(id: 2, mediaType: 'anime', externalId: 2);
+
+        final ({int titles, List<(String, int)> tags}) result =
+            await dao.getSourceTagCounts(MediaType.anime);
+
+        expect(result.titles, 2);
+        expect(result.tags, contains(('Mecha', 2)));
+        expect(result.tags, contains(('Space', 1)));
+      });
+
+      test('should ignore titles with no tags', () async {
+        await insertAnime(1, null);
+        await insertAnime(2, '');
+        await insertAnime(3, jsonEncode(<String>[]));
+        await insertItem(id: 1, mediaType: 'anime', externalId: 1);
+        await insertItem(id: 2, mediaType: 'anime', externalId: 2);
+        await insertItem(id: 3, mediaType: 'anime', externalId: 3);
+
+        final ({int titles, List<(String, int)> tags}) result =
+            await dao.getSourceTagCounts(MediaType.anime);
+
+        expect(result.titles, 0);
+        expect(result.tags, isEmpty);
+      });
+
+      test('should skip a row whose tags column is not valid JSON', () async {
+        await insertAnime(1, 'not json at all');
+        await insertAnime(2, jsonEncode(<String>['Mecha']));
+        await insertItem(id: 1, mediaType: 'anime', externalId: 1);
+        await insertItem(id: 2, mediaType: 'anime', externalId: 2);
+
+        final ({int titles, List<(String, int)> tags}) result =
+            await dao.getSourceTagCounts(MediaType.anime);
+
+        expect(result.titles, 1);
+        expect(result.tags, <(String, int)>[('Mecha', 1)]);
+      });
+
+      test('should skip a row whose tags JSON is not a list', () async {
+        await insertAnime(1, jsonEncode(<String, String>{'a': 'b'}));
+        await insertItem(id: 1, mediaType: 'anime', externalId: 1);
+
+        final ({int titles, List<(String, int)> tags}) result =
+            await dao.getSourceTagCounts(MediaType.anime);
+
+        expect(result.titles, 0);
+      });
+    });
   });
 }

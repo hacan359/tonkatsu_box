@@ -129,4 +129,75 @@ void main() {
       expect(a.earned, isTrue);
     });
   });
+
+  group('earnedDateTime', () {
+    test('converts the stored unix seconds to a DateTime', () {
+      const TrackerAchievement a = TrackerAchievement(
+        id: 1,
+        trackerType: TrackerType.ra,
+        trackerGameId: 'g',
+        achievementId: 'a',
+        title: 't',
+        displayOrder: 0,
+        earned: true,
+        earnedAt: 1700000000,
+      );
+
+      expect(
+        a.earnedDateTime,
+        DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000),
+      );
+    });
+  });
+
+  group('copyWith', () {
+    const TrackerAchievement base = TrackerAchievement(
+      id: 1,
+      trackerType: TrackerType.ra,
+      trackerGameId: 'g',
+      achievementId: 'a',
+      title: 'Original',
+      description: 'desc',
+      points: 5,
+      badgeName: '123',
+      type: 'missable',
+      displayOrder: 2,
+      earned: false,
+      earnedAt: null,
+    );
+
+    test('returns an equal-valued copy when nothing is passed', () {
+      final TrackerAchievement copy = base.copyWith();
+
+      expect(copy.id, base.id);
+      expect(copy.trackerType, base.trackerType);
+      expect(copy.trackerGameId, base.trackerGameId);
+      expect(copy.achievementId, base.achievementId);
+      expect(copy.title, base.title);
+      expect(copy.description, base.description);
+      expect(copy.points, base.points);
+      expect(copy.badgeName, base.badgeName);
+      expect(copy.type, base.type);
+      expect(copy.displayOrder, base.displayOrder);
+      expect(copy.earned, base.earned);
+      expect(copy.earnedAt, base.earnedAt);
+    });
+
+    test('replaces only the fields that were passed', () {
+      final TrackerAchievement copy =
+          base.copyWith(title: 'Renamed', earned: true, earnedAt: 1700000000);
+
+      expect(copy.title, 'Renamed');
+      expect(copy.earned, isTrue);
+      expect(copy.earnedAt, 1700000000);
+      expect(copy.points, 5);
+      expect(copy.type, 'missable');
+    });
+
+    test('leaves the original untouched', () {
+      base.copyWith(title: 'Renamed');
+
+      expect(base.title, 'Original');
+    });
+  });
 }

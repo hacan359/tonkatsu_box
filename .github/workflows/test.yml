@@ -18,8 +18,12 @@ jobs:
           channel: stable
           cache: true
 
+      # packages/core resolves separately: the root package_config has no `test`
+      # entry, so without this its test/ files fail to analyze.
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          dart pub get --directory packages/core
 
       - name: Analyze code
         run: flutter analyze --fatal-infos --fatal-warnings
@@ -39,10 +43,18 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          dart pub get --directory packages/core
 
+      - name: Run core package tests
+        run: dart test
+        working-directory: packages/core
+
+      # --coverage-package defaults to the current package only, which silently
+      # dropped every packages/core line from the report after the extraction.
       - name: Run tests with coverage
-        run: flutter test --coverage
+        run: flutter test --coverage --coverage-package='tonkatsu_box|core'
 
       # Drop generated / non-product code so the percentage reflects real,
       # testable code (l10n is pure generated strings; debug screens are tools).

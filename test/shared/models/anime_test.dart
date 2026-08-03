@@ -530,5 +530,71 @@ void main() {
         expect(anime.tagsString, isNull);
       });
     });
+
+    group('hasNextAiring', () {
+      test('is true only when both episode and timestamp are known', () {
+        const Anime full = Anime(
+          id: 1,
+          title: 'X',
+          nextAiringEpisode: 5,
+          nextAiringAt: 1700000000,
+        );
+        expect(full.hasNextAiring, isTrue);
+      });
+
+      test('is false when either half is missing', () {
+        const Anime noAt = Anime(id: 1, title: 'X', nextAiringEpisode: 5);
+        const Anime noEp = Anime(id: 1, title: 'X', nextAiringAt: 1700000000);
+        const Anime neither = Anime(id: 1, title: 'X');
+
+        expect(noAt.hasNextAiring, isFalse);
+        expect(noEp.hasNextAiring, isFalse);
+        expect(neither.hasNextAiring, isFalse);
+      });
+    });
+
+    group('seasonLabel', () {
+      test('passes an unknown season code through unchanged', () {
+        const Anime anime =
+            Anime(id: 1, title: 'X', season: 'MONSOON', seasonYear: 2024);
+
+        expect(anime.seasonLabel, 'MONSOON 2024');
+      });
+    });
+
+    group('titleByLanguage', () {
+      test('falls back to the romaji title for an unknown language', () {
+        const Anime anime = Anime(id: 1, title: 'Kaubōi Bibappu');
+
+        expect(anime.titleByLanguage('kl'), 'Kaubōi Bibappu');
+      });
+    });
+
+    group('identity', () {
+      test('equality is the id alone', () {
+        const Anime a = Anime(id: 1, title: 'One');
+        const Anime b = Anime(id: 1, title: 'Renamed');
+        const Anime c = Anime(id: 2, title: 'One');
+
+        expect(a, equals(b));
+        expect(a.hashCode, b.hashCode);
+        expect(a, isNot(equals(c)));
+        expect(<Anime>{a, b}, hasLength(1));
+      });
+
+      test('is not equal to another type', () {
+        const Anime a = Anime(id: 1, title: 'One');
+
+        expect(a, isNot(equals(Object())));
+      });
+
+      test('toString names the id and title', () {
+        const Anime a = Anime(id: 7, title: 'Cowboy Bebop');
+
+        final String text = a.toString();
+        expect(text, contains('7'));
+        expect(text, contains('Cowboy Bebop'));
+      });
+    });
   });
 }
