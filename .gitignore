@@ -35,6 +35,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+packages/core/coverage/
 
 # Flutter auto-generated plugin registrations
 windows/flutter/generated_plugin_registrant.cc

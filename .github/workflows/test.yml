@@ -47,22 +47,41 @@ jobs:
           flutter pub get
           dart pub get --directory packages/core
 
-      - name: Run core package tests
-        run: dart test
+      # Model tests live in the package now, so its lines only reach the report
+      # through this run. --base-directory makes the paths repo-relative so they
+      # merge with the app report below.
+      - name: Run core package tests with coverage
         working-directory: packages/core
+        run: |
+          dart test --coverage=coverage
+          dart pub global activate coverage
+          dart pub global run coverage:format_coverage \
+            --lcov --in=coverage --out=coverage/lcov.info \
+            --report-on=lib --base-directory=../.. \
+            --packages=.dart_tool/package_config.json
 
       # --coverage-package defaults to the current package only, which silently
       # dropped every packages/core line from the report after the extraction.
+      # App tests still exercise core (DAOs, migrations), so both reports carry
+      # core lines and have to be unioned, not concatenated.
       - name: Run tests with coverage
         run: flutter test --coverage --coverage-package='tonkatsu_box|core'
 
+      - name: Merge core coverage into the app report
+        run: |
+          python3 tool/merge_lcov.py coverage/merged.info \
+            coverage/lcov.info packages/core/coverage/lcov.info
+          mv coverage/merged.info coverage/lcov.info
+
       # Drop generated / non-product code so the percentage reflects real,
-      # testable code (l10n is pure generated strings; debug screens are tools).
+      # testable code (l10n is pure generated strings, debug screens are tools,
+      # core/lib/testing holds the shared test builders).
       - name: Strip generated code from coverage
         run: |
           sudo apt-get update && sudo apt-get install -y lcov
           lcov --remove coverage/lcov.info \
             'lib/l10n/*' '*.g.dart' '*.freezed.dart' '*_debug_screen.dart' \
+            'packages/core/lib/testing/*' \
             -o coverage/lcov.info --ignore-errors unused
 
       - name: Compute coverage summary
