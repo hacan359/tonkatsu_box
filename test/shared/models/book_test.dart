@@ -544,6 +544,87 @@ void main() {
         expect(ol == ol2, isTrue);
         expect(ol.hashCode == ol2.hashCode, isTrue);
       });
+
+      test('toString names the id, source and title', () {
+        final Book book = createTestBook(id: '100', title: 'Dune');
+
+        final String text = book.toString();
+        expect(text, contains('100'));
+        expect(text, contains('Dune'));
+        expect(text, contains(DataSource.openLibrary.name));
+      });
+    });
+
+    group('formatted getters', () {
+      test('formattedRating keeps one decimal', () {
+        expect(createTestBook(rating: 4.25).formattedRating, '4.3');
+      });
+
+      test('formattedRating is null without a rating', () {
+        expect(createTestBook().formattedRating, isNull);
+      });
+
+      test('authorsString joins the authors', () {
+        final Book book = createTestBook(
+          authors: const <String>['Frank Herbert', 'Brian Herbert'],
+        );
+
+        expect(book.authorsString, 'Frank Herbert, Brian Herbert');
+      });
+
+      test('authorsString is null when there are no authors', () {
+        expect(
+          createTestBook(authors: const <String>[]).authorsString,
+          isNull,
+        );
+      });
+    });
+
+    group('cover URL helpers', () {
+      test('coverUrlFromId builds the large OpenLibrary id URL', () {
+        expect(
+          Book.coverUrlFromId(12345),
+          'https://covers.openlibrary.org/b/id/12345-L.jpg',
+        );
+      });
+
+      test('coverUrlFromIsbn builds the large OpenLibrary isbn URL', () {
+        expect(
+          Book.coverUrlFromIsbn('9780441013593'),
+          'https://covers.openlibrary.org/b/isbn/9780441013593-L.jpg',
+        );
+      });
+    });
+
+    group('list columns', () {
+      Map<String, dynamic> rowWith(Object? subjects) => <String, dynamic>{
+            'id': '100',
+            'source': DataSource.openLibrary.name,
+            'native_id': 'OL100W',
+            'title': 'Dune',
+            'authors': '["Frank Herbert"]',
+            'subjects': subjects,
+            'cached_at': 1700000000,
+          };
+
+      test('decodes a JSON array column', () {
+        expect(
+          Book.fromDb(rowWith('["Sci-Fi","Desert"]')).subjects,
+          <String>['Sci-Fi', 'Desert'],
+        );
+      });
+
+      test('tolerates a malformed JSON column', () {
+        expect(Book.fromDb(rowWith('not json')).subjects, isEmpty);
+      });
+
+      test('tolerates a JSON value that is not a list', () {
+        expect(Book.fromDb(rowWith('{"a":1}')).subjects, isEmpty);
+      });
+
+      test('tolerates a NULL column', () {
+        expect(Book.fromDb(rowWith(null)).subjects, isEmpty);
+      });
     });
   });
 }

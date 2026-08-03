@@ -1,3 +1,4 @@
+import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/mood_grid_cell.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -96,6 +97,58 @@ void main() {
         mediaType: MediaType.anime,
       );
       expect(partial.isEmpty, isTrue);
+    });
+
+    group('fromDb source column', () {
+      Map<String, dynamic> row(Object? source) => <String, dynamic>{
+            'id': 1,
+            'grid_id': 10,
+            'position': 0,
+            'media_type': 'anime',
+            'external_id': 42,
+            'source': source,
+          };
+
+      test('parses a stored source name', () {
+        expect(MoodGridCell.fromDb(row('kitsu')).source, DataSource.kitsu);
+      });
+
+      test('leaves source null when the column is NULL', () {
+        expect(MoodGridCell.fromDb(row(null)).source, isNull);
+      });
+    });
+
+    group('identity', () {
+      test('two cells with the same id are equal and share a hash', () {
+        const MoodGridCell a = MoodGridCell(id: 1, gridId: 1, position: 0);
+        const MoodGridCell b = MoodGridCell(id: 1, gridId: 2, position: 5);
+
+        expect(a, equals(b));
+        expect(a.hashCode, b.hashCode);
+        expect(<MoodGridCell>{a, b}, hasLength(1));
+      });
+
+      test('differing ids are not equal', () {
+        const MoodGridCell a = MoodGridCell(id: 1, gridId: 1, position: 0);
+        const MoodGridCell b = MoodGridCell(id: 2, gridId: 1, position: 0);
+
+        expect(a, isNot(equals(b)));
+      });
+
+      test('is not equal to another type', () {
+        const MoodGridCell a = MoodGridCell(id: 1, gridId: 1, position: 0);
+
+        expect(a, isNot(equals(Object())));
+      });
+
+      test('toString names the id, grid and position', () {
+        const MoodGridCell a = MoodGridCell(id: 7, gridId: 3, position: 5);
+
+        final String text = a.toString();
+        expect(text, contains('7'));
+        expect(text, contains('3'));
+        expect(text, contains('5'));
+      });
     });
   });
 }

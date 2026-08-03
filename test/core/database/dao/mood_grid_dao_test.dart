@@ -238,6 +238,43 @@ void main() {
       });
     });
 
+    group('resizeMoodGrid edge cases', () {
+      test('rejects non-positive dimensions', () async {
+        final MoodGrid grid = await dao.createMoodGrid(name: 'G');
+
+        expect(
+          () => dao.resizeMoodGrid(grid.id, newRows: 0, newCols: 5),
+          throwsArgumentError,
+        );
+        expect(
+          () => dao.resizeMoodGrid(grid.id, newRows: 1, newCols: 0),
+          throwsArgumentError,
+        );
+      });
+
+      test('throws when the grid does not exist', () async {
+        expect(
+          () => dao.resizeMoodGrid(404, newRows: 2, newCols: 2),
+          throwsStateError,
+        );
+      });
+
+      test('leaves cells untouched when the size is unchanged', () async {
+        final MoodGrid grid = await dao.createMoodGrid(name: 'G', cols: 3);
+        await dao.setCellItem(
+          cellId: (await cellAt(grid.id, 0)).id,
+          mediaType: MediaType.game,
+          externalId: 42,
+        );
+
+        await dao.resizeMoodGrid(grid.id, newRows: 1, newCols: 3);
+
+        final List<MoodGridCell> cells = await dao.getCells(grid.id);
+        expect(cells, hasLength(3));
+        expect(cells.first.externalId, 42);
+      });
+    });
+
     group('deleteMoodGrid', () {
       test('cascade removes cells', () async {
         // FK enforcement is opt-in per connection in SQLite.
@@ -248,6 +285,69 @@ void main() {
 
         expect(await dao.getMoodGridById(grid.id), isNull);
         expect(await dao.getCells(grid.id), isEmpty);
+      });
+
+      test('leaves other grids alone', () async {
+        final MoodGrid kept = await dao.createMoodGrid(name: 'Keep');
+        final MoodGrid dropped = await dao.createMoodGrid(name: 'Drop');
+
+        await dao.deleteMoodGrid(dropped.id);
+
+        expect(await dao.getMoodGridById(kept.id), isNotNull);
+      });
+    });
+
+    group('getAllMoodGrids', () {
+      test('returns empty when none exist', () async {
+        expect(await dao.getAllMoodGrids(), isEmpty);
+      });
+
+      test('returns every grid with its dimensions', () async {
+        await dao.createMoodGrid(name: 'A', rows: 2, cols: 3);
+        await dao.createMoodGrid(name: 'B');
+
+        final List<MoodGrid> all = await dao.getAllMoodGrids();
+
+        expect(all, hasLength(2));
+        expect(
+          all.map((MoodGrid g) => g.name).toSet(),
+          <String>{'A', 'B'},
+        );
+        final MoodGrid a = all.firstWhere((MoodGrid g) => g.name == 'A');
+        expect(a.rows, 2);
+        expect(a.cols, 3);
+      });
+    });
+
+    group('getMoodGridById', () {
+      test('returns null for an unknown id', () async {
+        expect(await dao.getMoodGridById(404), isNull);
+      });
+    });
+
+    group('renameMoodGrid', () {
+      test('changes the name', () async {
+        final MoodGrid grid = await dao.createMoodGrid(name: 'Before');
+
+        await dao.renameMoodGrid(grid.id, 'After');
+
+        expect((await dao.getMoodGridById(grid.id))?.name, 'After');
+      });
+
+      test('keeps the cells untouched', () async {
+        final MoodGrid grid = await dao.createMoodGrid(name: 'G', cols: 3);
+
+        await dao.renameMoodGrid(grid.id, 'Renamed');
+
+        expect(await dao.getCells(grid.id), hasLength(3));
+      });
+
+      test('is a no-op for an unknown id', () async {
+        final MoodGrid grid = await dao.createMoodGrid(name: 'Keep');
+
+        await dao.renameMoodGrid(grid.id + 1000, 'Ghost');
+
+        expect((await dao.getMoodGridById(grid.id))?.name, 'Keep');
       });
     });
   });

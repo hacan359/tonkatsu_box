@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:core/models/data_source.dart';
 import 'package:core/models/manga.dart';
+import 'package:core/utils/anime_manga_title_language.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -832,6 +833,24 @@ void main() {
           ];
         // No ja-Latn → romaji falls back to romanized_title.
         expect(Manga.fromMangaBaka(json).title, 'Sousou no Frieren');
+      });
+    });
+
+    group('titleByLanguage', () {
+      test('falls back to the romaji title for an unknown language', () {
+        const Manga manga = Manga(id: 1, title: 'Berserk');
+
+        expect(manga.titleByLanguage('kl'), 'Berserk');
+      });
+
+      test('prefers the english title when asked for english', () {
+        const Manga manga =
+            Manga(id: 1, title: 'Kimetsu', titleEnglish: 'Demon Slayer');
+
+        expect(
+          manga.titleByLanguage(AnimeMangaTitleLanguage.english.id),
+          'Demon Slayer',
+        );
       });
     });
   });

@@ -116,5 +116,31 @@ void main() {
       const KodiUniqueIds b = KodiUniqueIds(tmdbId: 2);
       expect(a, isNot(b));
     });
+
+    test('differing imdbId alone breaks equality', () {
+      const KodiUniqueIds a = KodiUniqueIds(tmdbId: 1, imdbId: 'tt1');
+      const KodiUniqueIds b = KodiUniqueIds(tmdbId: 1, imdbId: 'tt2');
+      expect(a, isNot(b));
+    });
+
+    test('differing tvdbId alone breaks equality', () {
+      const KodiUniqueIds a = KodiUniqueIds(tmdbId: 1, tvdbId: 5);
+      const KodiUniqueIds b = KodiUniqueIds(tmdbId: 1, tvdbId: 6);
+      expect(a, isNot(b));
+    });
+
+    test('is not equal to another type', () {
+      const KodiUniqueIds a = KodiUniqueIds(tmdbId: 1);
+      expect(a, isNot(equals(Object())));
+    });
+
+    test('toString names every id', () {
+      const KodiUniqueIds a =
+          KodiUniqueIds(tmdbId: 1, imdbId: 'tt1', tvdbId: 2);
+      final String text = a.toString();
+      expect(text, contains('1'));
+      expect(text, contains('tt1'));
+      expect(text, contains('2'));
+    });
   });
 }

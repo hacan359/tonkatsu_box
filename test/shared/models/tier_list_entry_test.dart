@@ -93,6 +93,35 @@ void main() {
         final TierListEntry b = createTestTierListEntry(tierKey: 'A');
         expect(a, isNot(equals(b)));
       });
+
+      test('identity is the (item, tier) pair, not the sort order', () {
+        final TierListEntry a = createTestTierListEntry(
+          collectionItemId: 1,
+          tierKey: 'S',
+          sortOrder: 0,
+        );
+        final TierListEntry b = createTestTierListEntry(
+          collectionItemId: 1,
+          tierKey: 'S',
+          sortOrder: 5,
+        );
+
+        expect(a.hashCode, b.hashCode);
+        expect(<TierListEntry>{a, b}, hasLength(1));
+      });
+
+      test('toString names the item, tier and order', () {
+        final TierListEntry a = createTestTierListEntry(
+          collectionItemId: 11,
+          tierKey: 'S',
+          sortOrder: 3,
+        );
+
+        final String text = a.toString();
+        expect(text, contains('11'));
+        expect(text, contains('S'));
+        expect(text, contains('3'));
+      });
     });
   });
 }

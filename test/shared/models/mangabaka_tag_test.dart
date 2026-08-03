@@ -67,5 +67,54 @@ void main() {
       expect(explicit.isAdult, isTrue);
       expect(safe.isAdult, isFalse);
     });
+
+    test('isAdult also covers the erotica rating', () {
+      const MangaBakaTag tag =
+          MangaBakaTag(id: 1, name: 'X', contentRating: 'erotica');
+      expect(tag.isAdult, isTrue);
+    });
+
+    test('isAdult is false without a rating', () {
+      const MangaBakaTag tag = MangaBakaTag(id: 1, name: 'X');
+      expect(tag.isAdult, isFalse);
+    });
+
+    group('identity', () {
+      test('two tags with the same id are equal and share a hash', () {
+        const MangaBakaTag a = MangaBakaTag(id: 1, name: 'One');
+        const MangaBakaTag b = MangaBakaTag(id: 1, name: 'Renamed');
+
+        expect(a, equals(b));
+        expect(a.hashCode, b.hashCode);
+      });
+
+      test('differing ids are not equal', () {
+        const MangaBakaTag a = MangaBakaTag(id: 1, name: 'Same');
+        const MangaBakaTag b = MangaBakaTag(id: 2, name: 'Same');
+
+        expect(a, isNot(equals(b)));
+      });
+
+      test('is not equal to another type', () {
+        const MangaBakaTag a = MangaBakaTag(id: 1, name: 'One');
+
+        expect(a, isNot(equals(Object())));
+      });
+
+      test('deduplicates by id inside a Set', () {
+        const MangaBakaTag a = MangaBakaTag(id: 1, name: 'One');
+        const MangaBakaTag b = MangaBakaTag(id: 1, name: 'Renamed');
+
+        expect(<MangaBakaTag>{a, b}, hasLength(1));
+      });
+
+      test('toString names the id and the name', () {
+        const MangaBakaTag a = MangaBakaTag(id: 7, name: 'Isekai');
+
+        final String text = a.toString();
+        expect(text, contains('7'));
+        expect(text, contains('Isekai'));
+      });
+    });
   });
 }

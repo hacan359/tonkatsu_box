@@ -94,6 +94,22 @@ void main() {
         final TierList b = createTestTierList(id: 2);
         expect(a, isNot(equals(b)));
       });
+
+      test('same id shares a hash, so a Set deduplicates', () {
+        final TierList a = createTestTierList(id: 1, name: 'A');
+        final TierList b = createTestTierList(id: 1, name: 'B');
+
+        expect(a.hashCode, b.hashCode);
+        expect(<TierList>{a, b}, hasLength(1));
+      });
+
+      test('toString names the id, name and collection', () {
+        final TierList a = createTestTierList(id: 3, name: 'Best of 2024');
+
+        final String text = a.toString();
+        expect(text, contains('3'));
+        expect(text, contains('Best of 2024'));
+      });
     });
   });
 }

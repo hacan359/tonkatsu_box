@@ -156,6 +156,89 @@ void main() {
         expect(cleared.userComment, isNull);
         expect(cleared.likedAt, isNull);
       });
+
+      test('keeps every field when nothing is passed', () {
+        final ItemMark m = buildMark(likedAt: DateTime(2024, 5, 1));
+        final ItemMark copy = m.copyWith();
+
+        expect(copy.id, m.id);
+        expect(copy.itemId, m.itemId);
+        expect(copy.unitType, m.unitType);
+        expect(copy.parentNumber, m.parentNumber);
+        expect(copy.unitNumber, m.unitNumber);
+        expect(copy.isFavorite, m.isFavorite);
+        expect(copy.userComment, m.userComment);
+        expect(copy.likedAt, m.likedAt);
+        expect(copy.updatedAt, m.updatedAt);
+      });
+
+      test('replaces only the fields that were passed', () {
+        final ItemMark m = buildMark(isFavorite: true, userComment: 'old');
+        final ItemMark copy = m.copyWith(isFavorite: false, userComment: 'new');
+
+        expect(copy.isFavorite, isFalse);
+        expect(copy.userComment, 'new');
+        expect(copy.unitNumber, m.unitNumber);
+      });
+
+      test('a clear flag wins over a value passed alongside it', () {
+        final ItemMark m = buildMark(likedAt: DateTime(2024, 5, 1));
+        final ItemMark copy = m.copyWith(
+          userComment: 'ignored',
+          clearUserComment: true,
+          likedAt: DateTime(2025),
+          clearLikedAt: true,
+        );
+
+        expect(copy.userComment, isNull);
+        expect(copy.likedAt, isNull);
+      });
+    });
+
+    group('fromExport', () {
+      test('defaults updatedAt to now when the payload omits it', () {
+        final DateTime before = DateTime.now();
+
+        final ItemMark m = ItemMark.fromExport(
+          <String, dynamic>{
+            'unit_type': kUnitEpisode,
+            'unit_number': 3,
+            'is_favorite': 1,
+          },
+          itemId: 42,
+        );
+
+        expect(m.updatedAt.isBefore(before), isFalse);
+        expect(m.id, 0);
+        expect(m.itemId, 42);
+        expect(m.isFavorite, isTrue);
+      });
+
+      test('reads the stored updatedAt when present', () {
+        final ItemMark m = ItemMark.fromExport(
+          <String, dynamic>{
+            'unit_type': kUnitEpisode,
+            'unit_number': 3,
+            'is_favorite': 0,
+            'updated_at': 1700000000,
+          },
+          itemId: 42,
+        );
+
+        expect(
+          m.updatedAt,
+          DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000),
+        );
+      });
+    });
+
+    test('toString names the item, coordinates and flags', () {
+      final ItemMark m = buildMark(itemId: 42, unitNumber: 3);
+
+      final String text = m.toString();
+      expect(text, contains('42'));
+      expect(text, contains(kUnitEpisode));
+      expect(text, contains('3'));
     });
   });
 
