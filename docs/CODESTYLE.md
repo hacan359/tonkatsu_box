@@ -259,6 +259,8 @@ Global theme sets filled: true + focusedBorder: brand. If TextField is inside a 
 ### Platform-Specific Code
 
 - Check platform via platform_features.dart (kCanvasEnabled, kVgMapsEnabled)
+- Never `Platform.is*` in a feature — the OS detect lives only in
+  platform_features_io.dart / platform_features_web.dart; add a flag instead
 - VGMaps / WebView2: Windows only
 - Long press context menu: Android, right-click: Windows
 - Gamepad: new interactive widgets must be focusable (see docs/GAMEPAD.md)
