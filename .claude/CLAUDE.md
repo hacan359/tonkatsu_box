@@ -202,11 +202,23 @@ To add a schema change:
 
 ### Tests
 
-`test/` mirrors `lib/`, with model tests under `test/shared/models/`. Shared
-helpers in `test/helpers/`:
+Tests live next to the code they cover, in two trees:
+
+- `test/` mirrors `lib/` — widgets, providers, services, API clients, plus the
+  DAO and migration tests (they need `flutter_test` and mocktail mocks).
+- `packages/core/test/` mirrors `packages/core/lib/` — model tests and the DB
+  opener. Pure `package:test`, run by `dart test` with no Flutter SDK.
+
+Assertions that go through an app-side `*_ui.dart` extension or l10n belong in
+`test/shared/constants/<name>_ui_test.dart`, never in a core model test —
+otherwise the core tree stops building without Flutter.
+
+Shared helpers in `test/helpers/`:
 
 - `mocks.dart` — every mock/fake class (single source of truth)
-- `builders.dart` — test data factories (`createTestCollection`, `createTestGame`…)
+- `builders.dart` — the three app-side factories, plus a re-export of
+  `package:core/testing/builders.dart` (the model factories live there so core's
+  own tests can use them; a package cannot import another package's `test/`)
 - `fallbacks.dart` — `registerAllFallbacks()` for mocktail
 - `pump_app.dart` — `tester.pumpApp(widget, overrides: [...])` for widget tests
 - `test_helpers.dart` — barrel export of the above
@@ -239,8 +251,9 @@ db = await databaseFactory.openDatabase(
 );
 ```
 
-`packages/core` also has its own `test/` run by `dart test` from inside the
-package (CI runs it as a separate step).
+Coverage comes from two runs that overlap (app tests exercise core too), so CI
+unions them with `tool/merge_lcov.py` rather than concatenating — see the
+`--coverage-package` note above.
 
 ### Navigation
 
