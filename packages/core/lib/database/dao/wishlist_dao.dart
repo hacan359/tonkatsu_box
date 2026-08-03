@@ -1,7 +1,7 @@
 import '../../models/media_type.dart';
 import '../../models/wishlist_item.dart';
 import '../../models/wishlist_tag.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// Aggregate of a single wishlist-tag bucket. `null` [tag] is the
 /// "Untagged" pseudo-bucket for items with no tag.

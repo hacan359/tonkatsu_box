@@ -1,4 +1,4 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// Immutable `CREATE TABLE` helpers called by individual migrations. Each
 /// reflects its table at its creating migration; editing one breaks replay.

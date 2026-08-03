@@ -1,7 +1,7 @@
 import '../../models/tier_definition.dart';
 import '../../models/tier_list.dart';
 import '../../models/tier_list_entry.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 class TierListDao {
   const TierListDao(this._getDatabase);

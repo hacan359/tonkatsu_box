@@ -2,7 +2,7 @@ import '../../models/calendar_entry.dart';
 import '../../models/calendar_recurrence.dart';
 import '../../models/data_source.dart';
 import '../../models/media_type.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for `calendar_entries` — manual calendar entries keyed by
 /// `(external_id, source, media_type)`.

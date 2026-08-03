@@ -2,6 +2,7 @@ import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'igdb_types.dart';
 
@@ -9,10 +10,10 @@ import 'igdb_types.dart';
 class IgdbHttpClient {
   IgdbHttpClient({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            ));
+            );
 
   static final Logger _log = Logger('IgdbApi');
 

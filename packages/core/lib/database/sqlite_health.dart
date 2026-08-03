@@ -1,4 +1,4 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 // Shared between StorageRoot.validateDataDir and
 // DbSyncService.inspectSnapshot so the two validation paths cannot drift.

@@ -1,6 +1,6 @@
 import '../query_chunk.dart';
 import '../../models/movie.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for the `movies_cache` and `tmdb_genres` tables.
 class MovieDao {

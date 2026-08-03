@@ -1,7 +1,7 @@
 import '../../models/data_source.dart';
 import '../../models/media_type.dart';
 import '../../models/tracked_release.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for the `tracked_releases` table — release-tracking subscriptions keyed
 /// by `(external_id, source, media_type)`.

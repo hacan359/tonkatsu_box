@@ -9,8 +9,12 @@ environment:
   sdk: ^3.10.8
 
 dependencies:
-  sqflite_common_ffi: ^2.3.0
+  # The pure API only — sqflite_common_ffi pulls dart:ffi and dart:io, which
+  # would make every DAO and migration uncompilable for the web target.
+  sqflite_common: ^2.5.0
 
 dev_dependencies:
   lints: ^5.0.0
+  # Tests need a real engine: they open in-memory databases.
+  sqflite_common_ffi: ^2.3.0
   test: ^1.25.0

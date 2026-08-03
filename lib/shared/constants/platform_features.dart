@@ -1,28 +1,37 @@
-// Feature-availability flags for the current platform.
-import 'dart:io' show Platform;
-
+// Feature-availability flags for the current platform. Only the detection is
+// platform-conditional; the flags themselves are defined once, here.
 import 'package:flutter/widgets.dart' show BuildContext, MediaQuery, Orientation;
+
+// A conditional import, not `kIsWeb`: only this keeps dart:io out of the web
+// compile. defaultTargetPlatform would also report android in Windows tests.
+import 'platform_features_io.dart'
+    if (dart.library.js_interop) 'platform_features_web.dart'
+    as platform;
+
+/// Whether this is the selfhost web build (served from the container).
+bool get kIsWebBuild => platform.isWeb;
 
 /// Whether the Board (visual canvas) is available. Available on all platforms.
 bool get kCanvasEnabled => true;
 
 /// Whether the VGMaps browser (webview_windows) is available.
-bool get kVgMapsEnabled => Platform.isWindows;
+bool get kVgMapsEnabled => platform.isWindows;
 
 /// Whether screenshot capture is available.
-bool get kScreenshotEnabled => Platform.isWindows;
+bool get kScreenshotEnabled => platform.isWindows;
 
 /// Discord Rich Presence is available on desktop.
 bool get kDiscordRpcAvailable =>
-    Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    platform.isWindows || platform.isLinux || platform.isMacOS;
 
 /// Mobile platform (Android / iOS).
-bool get kIsMobile => Platform.isAndroid || Platform.isIOS;
+bool get kIsMobile => platform.isAndroid || platform.isIOS;
 
 /// Disabled on Windows: the native gamepads_windows plugin crashes with an
 /// access violation (0xc0000005) in its device-polling thread for some users.
-/// Disabled on iOS: no gamepads package.
-bool get kGamepadSupported => !Platform.isIOS && !Platform.isWindows;
+/// Disabled on iOS: no gamepads package. Disabled on web: no plugin at all.
+bool get kGamepadSupported =>
+    !platform.isIOS && !platform.isWindows && !platform.isWeb;
 
 /// Landscape orientation on a mobile device.
 bool isLandscapeMobile(BuildContext context) {

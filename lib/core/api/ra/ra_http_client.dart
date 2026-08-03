@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'ra_types.dart';
 
@@ -9,10 +10,10 @@ import 'ra_types.dart';
 class RaHttpClient {
   RaHttpClient({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            ));
+            );
 
   final Dio _dio;
   static const Duration _timeout = Duration(seconds: 5);

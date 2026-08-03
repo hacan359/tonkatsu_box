@@ -134,12 +134,22 @@ One class per provider, Dio + a Riverpod provider. `IgdbApi` uses Twitch OAuth
 (client credentials); `TmdbApi` and `SteamGridDbApi` use bearer tokens. Keys live
 in SharedPreferences and are read through `SettingsNotifier`.
 
+Every client takes its `Dio` from `createApiDio` (`lib/core/api/api_dio.dart`) —
+never `Dio(BaseOptions(...))` directly. It is the one seam where the selfhost
+web build will route calls through the server proxy.
+
 ### Database
 
 Schema, migrations and DAOs live in `packages/core/lib/database/` (pure Dart).
 The app keeps only `lib/core/database/database_service.dart`: initialization,
 paths/profiles (`dart:io`) and the Riverpod DAO providers — the seam where DAOs
 get swapped for remote stubs on web. Provider: `databaseServiceProvider`.
+
+`packages/core` imports `package:sqflite_common/sqlite_api.dart`, the pure API —
+**never** `sqflite_common_ffi`, which drags in `dart:ffi`/`dart:io` and would
+make every DAO and migration uncompilable for web. The engine is the caller's
+choice: the app installs `databaseFactoryFfi` in `main.dart`, tests do the same
+(`sqflite_common_ffi` is a dev-dependency of the package).
 
 #### Migrations are the single source of truth
 
@@ -204,10 +214,11 @@ To add a schema change:
 
 Tests live next to the code they cover, in two trees:
 
-- `test/` mirrors `lib/` — widgets, providers, services, API clients, plus the
-  DAO and migration tests (they need `flutter_test` and mocktail mocks).
-- `packages/core/test/` mirrors `packages/core/lib/` — model tests and the DB
-  opener. Pure `package:test`, run by `dart test` with no Flutter SDK.
+- `test/` mirrors `lib/` — widgets, providers, services, API clients, and
+  `database_service`. Needs `flutter_test` and the mocktail mocks.
+- `packages/core/test/` mirrors `packages/core/lib/` — models, utils, DAOs,
+  migrations and the DB opener. Pure `package:test` + `sqflite_common_ffi`, run
+  by `dart test` with no Flutter SDK and no mocks.
 
 Assertions that go through an app-side `*_ui.dart` extension or l10n belong in
 `test/shared/constants/<name>_ui_test.dart`, never in a core model test —
@@ -430,8 +441,15 @@ Reference: `InlineTextField` (`lib/features/settings/widgets/inline_text_field.d
 
 Check the platform through `lib/shared/constants/platform_features.dart`
 (`kCanvasEnabled`, `kVgMapsEnabled`, `kScreenshotEnabled`, `kIsMobile`,
-`kGamepadSupported`, `kDiscordRpcAvailable`). VGMaps / WebView2 are Windows-only.
-Long-press context menus are Android; right-click is Windows.
+`kGamepadSupported`, `kDiscordRpcAvailable`, `kIsWebBuild`). VGMaps / WebView2
+are Windows-only. Long-press context menus are Android; right-click is Windows.
+
+The flags are defined once there; only the OS detection is per-target, behind a
+conditional import (`platform_features_io.dart` /
+`platform_features_web.dart`). Never reach for `Platform.is*` in a feature — a
+new `dart:io` import is a file the web build cannot compile. Add a flag instead.
+`defaultTargetPlatform` is not a substitute: it reports android in tests running
+on Windows.
 
 ### Gamepad support (D-pad navigation)
 

@@ -2,7 +2,7 @@ import '../query_chunk.dart';
 import '../sparse_upsert.dart';
 import '../../models/book.dart';
 import '../../models/data_source.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// Row identity is `(id, source)`, so one numeric `id` can exist for both
 /// OpenLibrary and Fantlab. `id` is `TEXT` but always digits, hence the CAST.

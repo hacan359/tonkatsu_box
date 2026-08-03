@@ -1,6 +1,6 @@
 import '../query_chunk.dart';
 import '../../models/tag.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// Name + colors for a tag to resolve or create in
 /// [GlobalTagDao.resolveOrCreateAll].

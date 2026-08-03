@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/api_key_initializer.dart';
+import 'api_dio.dart';
 import 'api_error_detail.dart';
 
 /// Typed ComicVine error carrying a user-facing [message] and a redacted debug
@@ -45,12 +46,12 @@ final Provider<ComicVineApi> comicVineApiProvider =
 class ComicVineApi {
   ComicVineApi({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               baseUrl: _baseUrl,
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
               headers: const <String, String>{'User-Agent': _userAgent},
-            ));
+            );
 
   static const String _baseUrl = 'https://comicvine.gamespot.com/api';
   static const String _userAgent = 'TonkatsuBox/1.0 (Flutter app)';
