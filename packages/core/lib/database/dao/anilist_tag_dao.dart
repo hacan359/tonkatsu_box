@@ -1,5 +1,5 @@
 import '../../models/anilist_tag.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for the `anilist_tags` catalog table.
 class AniListTagDao {

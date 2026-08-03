@@ -1,5 +1,5 @@
 import '../../models/mangadex_tag.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for the `mangadex_tags` catalog.
 class MangaDexTagDao {

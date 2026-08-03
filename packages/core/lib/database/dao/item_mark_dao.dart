@@ -1,5 +1,5 @@
 import '../../models/item_mark.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// Writes read-modify-write inside a transaction, then `INSERT OR REPLACE` or
 /// delete once the mark is empty, so the table never accumulates blank rows.

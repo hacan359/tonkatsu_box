@@ -2,7 +2,7 @@ import '../query_chunk.dart';
 import '../../models/tracker_achievement.dart';
 import '../../models/tracker_game_data.dart';
 import '../../models/tracker_profile.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for `tracker_profiles`, `tracker_game_data`, `tracker_achievements`.
 class TrackerDao {

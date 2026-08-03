@@ -2,7 +2,7 @@ import '../../models/data_source.dart';
 import '../../models/media_type.dart';
 import '../../models/mood_grid.dart';
 import '../../models/mood_grid_cell.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// Spec for a cell created at grid initialisation time (template / blank).
 class MoodGridCellSpec {

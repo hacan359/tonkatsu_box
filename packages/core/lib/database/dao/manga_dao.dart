@@ -2,7 +2,7 @@ import '../query_chunk.dart';
 import '../sparse_upsert.dart';
 import '../../models/data_source.dart';
 import '../../models/manga.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for `manga_cache`. Row identity is the pair `(id, source)`, so the same
 /// numeric `id` from AniList and MangaBaka can coexist.

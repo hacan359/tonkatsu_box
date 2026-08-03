@@ -4,7 +4,7 @@ import '../../models/data_source.dart';
 import '../../models/tv_episode.dart';
 import '../../models/tv_season.dart';
 import '../../models/tv_show.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 /// Season, episode and watched rows are keyed by `(source, show id)`.
 class TvShowDao {

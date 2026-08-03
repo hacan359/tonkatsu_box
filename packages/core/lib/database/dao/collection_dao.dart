@@ -16,7 +16,7 @@ import '../../models/movie.dart';
 import '../../models/platform.dart';
 import '../../models/tv_show.dart';
 import '../../models/visual_novel.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'anime_dao.dart';
 import 'book_dao.dart';
