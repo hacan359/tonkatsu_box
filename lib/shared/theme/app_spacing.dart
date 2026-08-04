@@ -9,7 +9,6 @@ import 'app_typography.dart';
 /// One spacing system for a consistent UI.
 /// Base step is 4px; the main values are multiples of it.
 abstract final class AppSpacing {
-
   /// 4px — minimal padding.
   static const double xs = 4;
 

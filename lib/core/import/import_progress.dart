@@ -1,9 +1,8 @@
 /// Receives [ImportProgress] updates while an import runs.
 typedef ImportProgressCallback = void Function(ImportProgress progress);
 
-/// A snapshot of an import in flight: the current [stage], how far it has
-/// got, running tallies, and rate-limit back-off info when a source is
-/// waiting out a 429 window.
+/// A snapshot of an import in flight: [stage], progress, running tallies,
+/// and rate-limit back-off info when a source is waiting out a 429 window.
 class ImportProgress {
   const ImportProgress({
     required this.stage,

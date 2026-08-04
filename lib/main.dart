@@ -38,9 +38,8 @@ Future<void> main() async {
         databaseFactory = databaseFactoryFfi;
       }
 
-      // SharedPreferences.setPrefix должен вызываться строго до первого
-      // getInstance() и ровно один раз за процесс, иначе StateError при
-      // рестарте через AppRestartScope.
+      // setPrefix must run before the first getInstance() and exactly once
+      // per process — otherwise a restart via AppRestartScope hits StateError.
       if (!kReleaseMode) {
         SharedPreferences.setPrefix('flutter_dev.');
       }
@@ -77,17 +76,14 @@ Future<void> _loadAppState() async {
   _heroDir = await CollectionHeroService.resolveRoot();
 }
 
-/// Обёртка для перезапуска приложения на мобильных платформах.
-///
-/// Меняет [Key] у [ProviderScope], что пересоздаёт все провайдеры с нуля.
-/// На десктопе перезапуск происходит через `Process.start + exit(0)`.
+/// In-process restart for mobile: swaps the [ProviderScope]'s [Key] to rebuild
+/// every provider from scratch. Desktop restarts via `Process.start + exit(0)`.
 class AppRestartScope extends StatefulWidget {
   const AppRestartScope({required this.child, super.key});
 
-  /// Дочерний виджет (обычно [TonkatsuBoxApp]).
   final Widget child;
 
-  /// Перезапускает приложение: перечитывает профили и пересоздаёт ProviderScope.
+  /// Reloads profiles and recreates the ProviderScope.
   static Future<void> restart(BuildContext context) async {
     final _AppRestartScopeState? state =
         context.findAncestorStateOfType<_AppRestartScopeState>();

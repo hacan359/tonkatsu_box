@@ -60,15 +60,8 @@ class SimklImportOptions extends ImportOptions {
   final String newCollectionName;
 }
 
-/// Simkl import on the shared import layer.
-///
-/// One `all-items` call brings the whole account. Movies and shows are
-/// enriched from TMDB by the `tmdb` id (the Trakt path); anime goes to Kitsu
-/// — primarily by the `kitsu` id Simkl sends in the list, with `/mappings`
-/// lookups by MAL/AniDB ids as fallback — so anime lands as a
-/// `DataSource.kitsu` item, the one source whose episode tracker supports
-/// per-episode marks. Everything that cannot be resolved goes to the text
-/// wishlist under the import tag; nothing is dropped silently.
+/// Simkl import: movies and shows enrich from TMDB, anime resolves to Kitsu
+/// (per-episode marks); anything unresolved goes to the text wishlist.
 class SimklImportService implements ImportSource {
   SimklImportService({
     required SimklApi simklApi,
@@ -333,12 +326,8 @@ class SimklImportService implements ImportSource {
   }
 
 
-  /// Fetches and caches the TMDB card for every distinct `ids.tmdb` in
-  /// [entries], recording whether it is animation. A failed title is only
-  /// missing from the result — the caller routes it to the wishlist.
-  ///
-  /// [alreadyFetched] offsets the reported progress so movies and shows share
-  /// one bar over [grandTotal].
+  /// Fetches the TMDB card per distinct `ids.tmdb`; a failed title is simply
+  /// absent and routes to the wishlist. [alreadyFetched] offsets progress.
   Future<_TmdbFetch> _fetchTmdbCards<T>({
     required List<SimklEntry> entries,
     required ImportStage stage,
@@ -388,11 +377,8 @@ class SimklImportService implements ImportSource {
     return result;
   }
 
-
-  /// Maps each anime entry index to its Kitsu card. Order of attempts:
-  /// direct `kitsu` ids from the Simkl list (batched `filter[id]`), then
-  /// `/mappings` by MAL id, then by AniDB id. Failures of any lane only
-  /// shrink the result — callers route unresolved entries to the wishlist.
+  /// Maps each anime entry index to its Kitsu card: direct `kitsu` ids, then
+  /// `/mappings` by MAL, then AniDB. Unresolved entries route to the wishlist.
   Future<Map<int, Anime>> _resolveAnime(List<SimklEntry> entries) async {
     final Map<int, Anime> resolved = <int, Anime>{};
 
@@ -668,13 +654,8 @@ class SimklImportService implements ImportSource {
     }
   }
 
-  /// TMDB shows: Simkl season/episode numbers match TMDB numbering directly.
-  ///
-  /// A `completed` entry arrives with NO `seasons` block (Simkl drops the
-  /// per-episode detail once a title is completed) — [_EpisodeMarks.fillAll]
-  /// then expands the title into marks for every episode from the TMDB
-  /// metadata, dated by the entry's `last_watched_at`. Episodes that already
-  /// carry a mark keep their own date (inserts use `ConflictAlgorithm.ignore`).
+  /// TMDB shows: Simkl numbering matches TMDB directly. `completed` entries
+  /// come without `seasons`, so [_EpisodeMarks.fillAll] marks every episode.
   Future<void> _markShowEpisodes(int collectionId, _EpisodeMarks mark) async {
     final int fallbackMs =
         mark.entry.lastWatchedAt?.millisecondsSinceEpoch ??
@@ -718,14 +699,8 @@ class SimklImportService implements ImportSource {
     );
   }
 
-  /// Kitsu anime: Simkl sends one season with absolute episode numbers, and
-  /// our synthesized Kitsu seasons keep the same absolute numbers inside —
-  /// so the only work is mapping "absolute number → synthesized season" via
-  /// the full Kitsu episode list. The Simkl season number is ignored.
-  ///
-  /// [_EpisodeMarks.fillAll] (a `completed` entry, which Simkl sends without
-  /// the `seasons` block) marks every episode of the Kitsu list, dated by the
-  /// entry's `last_watched_at`; existing marks keep their own dates.
+  /// Kitsu anime: Simkl episode numbers are absolute and map onto synthesized
+  /// Kitsu seasons via the full episode list; the Simkl season number is ignored.
   Future<void> _markAnimeEpisodes(int collectionId, _EpisodeMarks mark) async {
     final List<TvEpisode> episodes = await _retry.run(
       () => _kitsu.getAnimeEpisodes(mark.showId),

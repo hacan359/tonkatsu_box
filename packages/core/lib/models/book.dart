@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-export 'package:core/utils/stable_id.dart' show fnv1a64;
-import 'data_source.dart';
 import '../utils/bbcode.dart';
 import '../utils/stable_id.dart';
-
 import 'book_kind.dart';
+import 'data_source.dart';
+
+export '../utils/stable_id.dart' show fnv1a64;
 
 /// Identity mirrors [Manga]: cache key is `(id, source)`. [id] holds the
 /// provider's numeric id; its native form (`OL27448W`) stays in [nativeId].

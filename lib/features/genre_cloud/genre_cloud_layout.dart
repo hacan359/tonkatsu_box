@@ -1,15 +1,5 @@
-// Pure word-cloud layout: places facet words on a canvas with no overlaps.
-//
-// Kept free of Flutter widget code so it can be unit-tested with an injected
-// text measurement function. Words are placed largest-first along an
-// Archimedean spiral; if not everything fits, the size scale is shrunk and the
-// layout is retried (auto-fit). Whatever still cannot be placed is reported via
-// [hidden].
-//
-// Two entry points share the same placement code: [layoutGenreCloud] runs
-// synchronously (export views, tests) and [layoutGenreCloudAsync] yields to the
-// event loop between words so the UI thread keeps pumping frames (the loading
-// indicator keeps animating) while a large cloud is being placed.
+// Pure word-cloud layout, free of Flutter widget code so it unit-tests with an
+// injected text measurer; layoutGenreCloudAsync yields between words.
 
 import 'dart:math' as math;
 import 'dart:ui' show Offset, Rect, Size;

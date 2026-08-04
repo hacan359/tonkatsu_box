@@ -139,9 +139,8 @@ class KinoriumImportService implements ImportSource {
         );
       }
 
-      // Read + parse off the UI isolate: a big CSV decoded synchronously
-      // would freeze the progress dialog. Local copies keep the closure from
-      // capturing `this` (non-sendable API/DB handles).
+      // Parse off the UI isolate (a big CSV would freeze the dialog); local
+      // copies keep the closure from capturing non-sendable `this`.
       final KinoriumCsvParser parser = _parser;
       final String filePath = options.filePath;
       final List<KinoriumEntry> entries = await Isolate.run(

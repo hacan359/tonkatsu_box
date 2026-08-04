@@ -29,7 +29,7 @@ class MediaTypeChevron extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return DropdownChevronSegment<Object>(
+    return DropdownChevronSegment<MediaType>(
       label: mediaType.localizedPluralLabel(l),
       subtitle: l.searchWhatToFind,
       icon: Icons.category_outlined,
@@ -37,10 +37,10 @@ class MediaTypeChevron extends StatelessWidget {
       accentColor: accentColor,
       isFirst: true,
       isLast: isLast,
-      menuBuilder: (BuildContext _) => <PopupMenuEntry<Object>>[
+      menuBuilder: (BuildContext _) => <PopupMenuEntry<MediaType>>[
         for (final MediaType type in searchableMediaTypes)
-          PopupMenuItem<Object>(
-            value: type.name,
+          PopupMenuItem<MediaType>(
+            value: type,
             height: 36,
             child: Row(
               children: <Widget>[
@@ -66,14 +66,8 @@ class MediaTypeChevron extends StatelessWidget {
             ),
           ),
       ],
-      onSelected: (Object? value) {
-        if (value is! String) return;
-        for (final MediaType type in searchableMediaTypes) {
-          if (type.name == value) {
-            onChanged(type);
-            return;
-          }
-        }
+      onSelected: (MediaType? value) {
+        if (value != null) onChanged(value);
       },
     );
   }

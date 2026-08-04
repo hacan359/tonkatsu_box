@@ -10,6 +10,7 @@ Usage: merge_lcov.py OUT IN [IN ...]
 """
 
 import collections
+import posixpath
 import sys
 
 
@@ -21,7 +22,12 @@ def read(path, hits):
             if line.startswith('SF:'):
                 # Normalize separators so a Windows-produced report merges with
                 # a Linux-produced one.
-                current = line[3:].replace('\\', '/')
+                current = posixpath.normpath(line[3:].replace('\\', '/'))
+                if (posixpath.isabs(current) or ':' in current[:3]
+                        or current.startswith('..')):
+                    # A path outside the repo root would silently split one
+                    # file into two records — fail loudly instead.
+                    raise SystemExit(f'{path}: non-repo-relative SF: {current}')
                 hits.setdefault(current, collections.Counter())
             elif line.startswith('DA:') and current is not None:
                 number, _, count = line[3:].partition(',')

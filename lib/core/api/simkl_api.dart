@@ -7,12 +7,8 @@ import 'simkl/simkl_types.dart';
 
 export 'simkl/simkl_types.dart';
 
-/// Simkl (`api.simkl.com`) facade backing the library import.
-///
-/// Auth is the PIN flow — the only OAuth variant that works identically on
-/// Windows and Android without a redirect URI, a deep link, or a client
-/// secret in the build: [requestPin] issues a short code the user enters at
-/// simkl.com/pin while [pollPin] waits for the token.
+/// Simkl facade backing the library import. Auth is the PIN flow — the one
+/// OAuth variant needing no redirect URI, deep link, or client secret.
 class SimklApi {
   SimklApi({String? clientId, Dio? dio})
       : _client = SimklHttpClient(
@@ -48,9 +44,8 @@ class SimklApi {
     return pin;
   }
 
-  /// One poll tick (`GET /oauth/pin/{code}`). Returns the access token once
-  /// the user has confirmed the code, null while authorization is pending
-  /// (Simkl answers `result: "KO"` — and 4xx on some edges — until then).
+  /// One poll tick: the access token once the user confirmed the code, null
+  /// while pending (Simkl answers `result: "KO"`, and 4xx on some edges).
   Future<String?> pollPin(String userCode) async {
     try {
       final Map<String, dynamic> json =

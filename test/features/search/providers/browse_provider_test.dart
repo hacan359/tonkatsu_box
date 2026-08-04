@@ -493,6 +493,35 @@ void main() {
       expect(container.read(browseProvider).isLoading, isFalse);
     });
 
+    test('clearing filters resets a load-more left in flight', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      // Stand in for a page-2 request whose completion the generation bump
+      // will discard — the flag must not stay up or loadMore is blocked.
+      notifier.state = notifier.state.copyWith(isLoadingMore: true);
+      notifier.clearFilters();
+
+      expect(container.read(browseProvider).isLoadingMore, isFalse);
+    });
+
+    test('clearing the search resets a load-more left in flight', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      notifier.state = notifier.state.copyWith(
+        searchQuery: 'berserk',
+        isLoadingMore: true,
+      );
+      notifier.clearSearch();
+
+      expect(container.read(browseProvider).isLoadingMore, isFalse);
+    });
+
     test('setSort is refused when the source ignores sort on search', () async {
       final ProviderContainer container = await containerWith(
         <String, Object>{BrowseSettingsKeys.mediaType: 'movie'},

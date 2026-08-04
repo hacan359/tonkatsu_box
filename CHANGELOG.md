@@ -580,6 +580,19 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Episode watch marks no longer stay behind for a look-alike sibling**
+
+  Moving a series between collections deletes its old watch marks unless
+  another item can still use them. The sibling check now counts only items
+  that actually carry marks — an animated movie sharing the same TMDB id
+  (movie and TV ids overlap numerically) no longer keeps orphaned rows alive.
+
+  * packages/core/lib/database/dao/collection_dao.dart (CollectionDao._hasTvSibling):
+    Mirror CollectionItem.usesEpisodeTrackerFor — require platform_id for
+    animation and source kitsu for anime instead of any media-type match.
+  * packages/core/test/database/dao/collection_dao_watched_transfer_test.dart:
+    Regression test with an animated-movie and an AniList-anime sibling.
+
 - **Backup restore keeps collection creation and item added dates**
 
   Restoring a full backup used to stamp every collection and item with the

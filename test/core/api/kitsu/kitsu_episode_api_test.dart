@@ -137,6 +137,40 @@ void main() {
       expect(await api.getAnimeEpisodes(1), hasLength(1));
     });
 
+    test('crawls by links.next when meta.count is absent', () async {
+      Response<dynamic> linkedPage(
+        List<Map<String, dynamic>> rows, {
+        required bool hasNext,
+      }) =>
+          Response<dynamic>(
+            data: <String, dynamic>{
+              'data': rows,
+              'links': <String, dynamic>{
+                if (hasNext) 'next': 'https://kitsu.io/api/edge/next',
+              },
+            },
+            statusCode: 200,
+            requestOptions: RequestOptions(path: ''),
+          );
+
+      stubPages(<int, Response<dynamic>>{
+        0: linkedPage(<Map<String, dynamic>>[
+          for (int i = 1; i <= 20; i++) episode(i),
+        ], hasNext: true),
+        20: linkedPage(<Map<String, dynamic>>[
+          for (int i = 21; i <= 25; i++) episode(i),
+        ], hasNext: false),
+      });
+
+      final List<TvEpisode> episodes = await api.getAnimeEpisodes(1);
+
+      expect(episodes, hasLength(25));
+      expect(
+        episodes.map((TvEpisode e) => e.episodeNumber),
+        List<int>.generate(25, (int i) => i + 1),
+      );
+    });
+
     test('wraps transport failures in KitsuApiException', () async {
       when(() => mockDio.get<dynamic>(
             any(),

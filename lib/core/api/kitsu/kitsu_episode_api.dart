@@ -5,12 +5,8 @@ import 'package:dio/dio.dart';
 
 import 'kitsu_http_client.dart';
 
-/// Anime episodes on Kitsu (`/anime/{id}/episodes`, JSON:API).
-///
-/// The endpoint caps a page at 20 items and has no season filter, so a full
-/// list is the only way to get one season. Page one carries `meta.count`, the
-/// remaining pages go out in parallel batches — that keeps even the outliers
-/// (One Piece, ~70 pages) down to seconds instead of a serial crawl.
+/// Anime episodes on Kitsu (`/anime/{id}/episodes`, JSON:API). Pages cap at 20;
+/// `meta.count` from page one lets the remaining pages go out in parallel batches.
 class KitsuEpisodeApi {
   KitsuEpisodeApi(this._client);
 
@@ -39,23 +35,36 @@ class KitsuEpisodeApi {
     try {
       final Map<String, dynamic> firstPage = await _page(animeId, 0);
       final List<TvEpisode> episodes = _parse(firstPage, animeId);
-      final int total = _client.totalCount(firstPage) ?? episodes.length;
+      final int? total = _client.totalCount(firstPage);
 
-      final List<int> offsets = <int>[
-        for (int offset = _pageLimit; offset < total; offset += _pageLimit)
-          offset,
-      ];
+      if (total == null) {
+        // No meta.count — crawl serially until links.next disappears.
+        bool more = _client.hasNext(firstPage) ?? episodes.length == _pageLimit;
+        int offset = _pageLimit;
+        while (more) {
+          final Map<String, dynamic> page = await _page(animeId, offset);
+          final List<TvEpisode> parsed = _parse(page, animeId);
+          episodes.addAll(parsed);
+          offset += _pageLimit;
+          more = _client.hasNext(page) ?? parsed.length == _pageLimit;
+        }
+      } else {
+        final List<int> offsets = <int>[
+          for (int offset = _pageLimit; offset < total; offset += _pageLimit)
+            offset,
+        ];
 
-      for (int i = 0; i < offsets.length; i += _maxConcurrentPages) {
-        final List<int> batch = offsets.sublist(
-          i,
-          math.min(i + _maxConcurrentPages, offsets.length),
-        );
-        final List<Map<String, dynamic>> pages = await Future.wait(
-          batch.map((int offset) => _page(animeId, offset)),
-        );
-        for (final Map<String, dynamic> page in pages) {
-          episodes.addAll(_parse(page, animeId));
+        for (int i = 0; i < offsets.length; i += _maxConcurrentPages) {
+          final List<int> batch = offsets.sublist(
+            i,
+            math.min(i + _maxConcurrentPages, offsets.length),
+          );
+          final List<Map<String, dynamic>> pages = await Future.wait(
+            batch.map((int offset) => _page(animeId, offset)),
+          );
+          for (final Map<String, dynamic> page in pages) {
+            episodes.addAll(_parse(page, animeId));
+          }
         }
       }
 

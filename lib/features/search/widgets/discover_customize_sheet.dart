@@ -13,7 +13,6 @@ import '../providers/discover_provider.dart';
 class DiscoverCustomizeSheet extends ConsumerWidget {
   const DiscoverCustomizeSheet({required this.mediaType, super.key});
 
-  /// Current source id: movies, tv, or anime.
   final MediaType mediaType;
 
   @override
