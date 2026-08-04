@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 ///
 /// All colors are static constants for consistency across widgets.
 abstract final class AppColors {
-
   /// Main app background.
   static const Color background = Color(0xFF0A0A0A);
 

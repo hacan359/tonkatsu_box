@@ -158,7 +158,7 @@ void main() {
         expect(
           discoverSectionsPerMediaType[type],
           contains(DiscoverSectionId.trending),
-          reason: '\$type should contain trending',
+          reason: '$type should contain trending',
         );
       }
     });

@@ -146,26 +146,32 @@ class _WeekBars extends StatelessWidget {
     }
     if (maxTotal == 0) return const SizedBox.shrink();
 
+    // Expanded slots: fixed bar widths overflow the dialog once the phone
+    // keyboard-squeezed width drops under 5 * (bar + gap).
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         for (final (int index, Map<MediaType, int> week) in weeks.indexed)
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.md),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                _WeekBar(
-                  week: week,
-                  maxTotal: maxTotal,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  _labels[index],
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.textTertiary, fontSize: 10),
-                ),
-              ],
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                right: index == weeks.length - 1 ? 0 : AppSpacing.md,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  _WeekBar(
+                    week: week,
+                    maxTotal: maxTotal,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    _labels[index],
+                    style: AppTypography.caption
+                        .copyWith(color: AppColors.textTertiary, fontSize: 10),
+                  ),
+                ],
+              ),
             ),
           ),
       ],
@@ -183,35 +189,40 @@ class _WeekBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final int total = week.values.fold(0, (int sum, int c) => sum + c);
-    return SizedBox(
-      height: _WeekBars._barHeight,
-      width: 32,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          if (total == 0)
-            Container(height: 2, color: AppColors.surfaceLight)
-          else
-            SizedBox(
-              height: total / maxTotal * _WeekBars._barHeight,
-              child: Column(
-                children: <Widget>[
-                  for (final MediaType type in MediaType.values)
-                    if ((week[type] ?? 0) > 0)
-                      Expanded(
-                        flex: week[type]!,
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 1),
-                          decoration: BoxDecoration(
-                            color: MediaTypeTheme.colorFor(type),
-                            borderRadius: BorderRadius.circular(2),
+    // Fills its Expanded slot up to the design width, shrinking on narrow
+    // dialogs instead of overflowing.
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 32),
+      child: SizedBox(
+        height: _WeekBars._barHeight,
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            if (total == 0)
+              Container(height: 2, color: AppColors.surfaceLight)
+            else
+              SizedBox(
+                height: total / maxTotal * _WeekBars._barHeight,
+                child: Column(
+                  children: <Widget>[
+                    for (final MediaType type in MediaType.values)
+                      if ((week[type] ?? 0) > 0)
+                        Expanded(
+                          flex: week[type]!,
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 1),
+                            decoration: BoxDecoration(
+                              color: MediaTypeTheme.colorFor(type),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
                         ),
-                      ),
-                ],
+                  ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -4,12 +4,8 @@ import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'simkl_types.dart';
 
-/// Simkl transport (`https://api.simkl.com`).
-///
-/// Every request carries the app's `simkl-api-key` (the OAuth client id);
-/// account requests additionally send the user's Bearer token obtained via
-/// the PIN flow. The token may live only in memory — persisting it is the
-/// user's opt-in choice on the import screen.
+/// Simkl transport: every request carries the `simkl-api-key` client id;
+/// account requests add the user's PIN-flow Bearer token (persisting is opt-in).
 class SimklHttpClient {
   SimklHttpClient({required String clientId, Dio? dio})
       : _clientId = clientId,
@@ -45,10 +41,8 @@ class SimklHttpClient {
 
   void clearAccessToken() => _accessToken = null;
 
-  /// GET returning a decoded JSON map.
-  ///
-  /// [authorized] adds the Bearer token; [tokenOverride] sends a specific
-  /// token instead (used while the poll loop validates a fresh one).
+  /// GET returning a decoded JSON map. [authorized] adds the Bearer token;
+  /// [tokenOverride] sends a specific one (the poll loop validating a fresh one).
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, dynamic>? queryParameters,

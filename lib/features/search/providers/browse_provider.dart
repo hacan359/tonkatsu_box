@@ -371,6 +371,7 @@ class BrowseNotifier extends Notifier<BrowseState> {
       // The generation bump discards whatever is in flight, so its loading
       // marks have to go with it or a source shimmers forever.
       loadingSourceIds: const <String>{},
+      isLoadingMore: false,
       clearSortBy: true,
     );
 
@@ -397,6 +398,7 @@ class BrowseNotifier extends Notifier<BrowseState> {
     state = state.copyWith(
       searchQuery: '',
       loadingSourceIds: const <String>{},
+      isLoadingMore: false,
     );
 
     // Remaining filters still warrant a reload with filters only.
@@ -477,6 +479,9 @@ class BrowseNotifier extends Notifier<BrowseState> {
       loadingSourceIds: <String>{
         for (final SearchSource source in stale.keys) source.id,
       },
+      // The generation bump discards an in-flight loadMore, which can no
+      // longer reset its own flag.
+      isLoadingMore: false,
       itemsBySource: items,
       pages: pages,
       moreBySource: more,
@@ -563,11 +568,15 @@ class BrowseNotifier extends Notifier<BrowseState> {
             : (Map<String, String>.from(state.loadedSignatures)
               ..[source.id] = signature),
       );
-    } on Exception catch (e) {
+    } on Object catch (e) {
+      // A non-Exception throw (e.g. a TypeError in a source's mapping) must
+      // not escape Future.wait and leave the source shimmering forever.
       if (_generation != gen) return;
+      final ApiError error = e is Exception
+          ? extractApiError(e)
+          : (message: 'Unexpected error', detail: e.toString());
       state = state.copyWith(
-        errors: Map<String, ApiError>.from(state.errors)
-          ..[source.id] = extractApiError(e),
+        errors: Map<String, ApiError>.from(state.errors)..[source.id] = error,
         loadingSourceIds: _doneLoading(source.id),
         moreBySource: Map<String, bool>.from(state.moreBySource)
           ..[source.id] = false,

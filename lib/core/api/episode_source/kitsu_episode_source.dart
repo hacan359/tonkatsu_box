@@ -3,20 +3,17 @@ import 'package:core/models/data_source.dart';
 import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
 import 'package:core/models/tv_show.dart';
+import 'package:logging/logging.dart';
 
 import '../kitsu_api.dart';
 import 'tv_episode_source.dart';
 
-/// [TvEpisodeSource] backed by Kitsu anime episodes.
-///
-/// Kitsu has no seasons endpoint and no per-season episode filter, so seasons
-/// are synthesized and [getSeasonEpisodes] fetches the full list once per anime
-/// and filters in memory (the shape [TvMazeEpisodeSource] already uses). Both
-/// the anime record and the episode list are memoized per show id so opening a
-/// card does not repeat requests; a failed fetch is dropped so the next call
-/// retries.
+/// [TvEpisodeSource] backed by Kitsu: seasons are synthesized from the full
+/// episode list, memoized per show id; a failed fetch is dropped so calls retry.
 class KitsuEpisodeSource implements TvEpisodeSource {
   KitsuEpisodeSource(this._api);
+
+  static final Logger _log = Logger('KitsuEpisodeSource');
 
   /// Kitsu splits long-running titles into separate anime records, so a record
   /// nearly always carries a single season.
@@ -36,14 +33,8 @@ class KitsuEpisodeSource implements TvEpisodeSource {
     return anime == null ? null : _asTvShow(anime);
   }
 
-  /// Seasons come from the episodes themselves — Kitsu has no seasons endpoint,
-  /// and long-running records really do carry several seasons (Bleach: 16, with
-  /// `number` counting absolutely across all of them). That costs the full
-  /// episode list here, but the caller persists the result and the list is
-  /// memoized, so expanding a season afterwards needs no further requests.
-  ///
-  /// Falls back to one synthesized season when the list is unavailable, so an
-  /// API failure still renders a tracker instead of nothing.
+  /// Seasons come from the episodes — Kitsu has no seasons endpoint and
+  /// `number` counts absolutely across a record's seasons (Bleach: 16).
   @override
   Future<List<TvSeason>> getSeasons(int showId) async {
     final Anime? anime = await _animeRecord(showId);
@@ -51,7 +42,10 @@ class KitsuEpisodeSource implements TvEpisodeSource {
     List<TvEpisode> episodes;
     try {
       episodes = await _allEpisodes(showId);
-    } on Object {
+    } on Object catch (e) {
+      // Fall back to one synthesized season so an API failure still renders
+      // a tracker instead of nothing.
+      _log.warning('Episode list for anime $showId failed: $e');
       episodes = const <TvEpisode>[];
     }
 

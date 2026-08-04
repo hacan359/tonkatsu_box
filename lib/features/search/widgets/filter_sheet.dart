@@ -341,7 +341,7 @@ class _FilterRowState extends ConsumerState<_FilterRow>
     if (widget.filter.multiSelect && widget.value is List<Object>) {
       final List<Object> sel = widget.value! as List<Object>;
       if (sel.isEmpty) return l.all;
-      return l.platformFilterApply(sel.length);
+      return l.selectedCount(sel.length);
     }
     final List<FilterOption>? loaded = options;
     if (loaded == null) return '…';

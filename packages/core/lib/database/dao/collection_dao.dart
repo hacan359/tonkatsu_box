@@ -1,4 +1,5 @@
-import '../query_chunk.dart';
+import 'package:sqflite_common/sqlite_api.dart';
+
 import '../../models/anime.dart';
 import '../../models/book.dart';
 import '../../models/collected_item_info.dart';
@@ -16,8 +17,7 @@ import '../../models/movie.dart';
 import '../../models/platform.dart';
 import '../../models/tv_show.dart';
 import '../../models/visual_novel.dart';
-import 'package:sqflite_common/sqlite_api.dart';
-
+import '../query_chunk.dart';
 import 'anime_dao.dart';
 import 'book_dao.dart';
 import 'custom_media_dao.dart';
@@ -603,16 +603,21 @@ class CollectionDao {
     int externalId,
     String source,
   ) async {
+    // Mirrors CollectionItem.usesEpisodeTrackerFor: only rows that can carry
+    // watch marks count (not animated movies, not non-Kitsu anime).
     final List<Map<String, dynamic>> siblings = await db.query(
       'collection_items',
       columns: <String>['id'],
       where: 'collection_id = ? AND external_id = ? '
-          "AND media_type IN ('tv_show', 'animation', 'anime') "
-          "AND COALESCE(source, 'tmdb') = ?",
+          "AND COALESCE(source, 'tmdb') = ? "
+          "AND (media_type = 'tv_show' "
+          "OR (media_type = 'animation' AND platform_id = ?) "
+          "OR (media_type = 'anime' AND source = 'kitsu'))",
       whereArgs: <Object?>[
         collectionId,
         externalId,
         source,
+        AnimationSource.tvShow,
       ],
       limit: 1,
     );

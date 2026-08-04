@@ -198,6 +198,33 @@ void main() {
       expect(await watchedCount(2, 500), 1);
     });
 
+    test('should not count a sibling that cannot carry marks', () async {
+      await insertItem(
+          id: 10, collectionId: 1, mediaType: 'tv_show', externalId: 500);
+      // Same external id, but an animated movie (TMDB movie namespace) and an
+      // AniList anime never use the shared tracker rows.
+      await insertItem(
+        id: 11,
+        collectionId: 1,
+        mediaType: 'animation',
+        externalId: 500,
+        platformId: AnimationSource.movie,
+      );
+      await insertItem(
+        id: 12,
+        collectionId: 1,
+        mediaType: 'anime',
+        externalId: 500,
+        source: 'anilist',
+      );
+      await insertWatched(collectionId: 1, showId: 500);
+
+      await dao.updateItemCollectionId(10, 2);
+
+      expect(await watchedCount(1, 500), 0);
+      expect(await watchedCount(2, 500), 1);
+    });
+
     test('should overwrite stale orphan marks in the target', () async {
       await insertItem(
           id: 10, collectionId: 1, mediaType: 'tv_show', externalId: 500);

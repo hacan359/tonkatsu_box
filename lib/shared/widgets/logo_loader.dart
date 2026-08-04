@@ -1,7 +1,5 @@
-// Branded loading indicator. Like any Flutter animation it is driven by the
-// UI thread — it only animates while heavy work stays off the main isolate
-// (layoutGenreCloudAsync, Isolate.run in imports). Pure widget code, so the
-// selfhost web target (dev/backlog/selfhost-web) renders it unchanged.
+// UI-thread animation: it only animates while heavy work stays off the main
+// isolate (layoutGenreCloudAsync, Isolate.run in imports).
 
 import 'dart:math' as math;
 

@@ -130,6 +130,31 @@ void main() {
           ));
     });
 
+    test('follows links.next when duplicate rows overflow one page', () async {
+      stubGet(<Response<dynamic>>[
+        makeResponse(<String, dynamic>{
+          'data': <Map<String, dynamic>>[mapping('11061', '6448')],
+          'included': <Map<String, dynamic>>[animeResource('6448')],
+          'links': <String, dynamic>{
+            'next': 'https://kitsu.io/api/edge/next',
+          },
+        }),
+        makeResponse(<String, dynamic>{
+          'data': <Map<String, dynamic>>[mapping('999', '500')],
+          'included': <Map<String, dynamic>>[animeResource('500')],
+        }),
+      ]);
+
+      final Map<int, Anime> result =
+          await api.getAnimeByMalIds(<int>[11061, 999]);
+
+      expect(result.keys, containsAll(<int>[11061, 999]));
+      final List<Map<String, dynamic>> queries = capturedQueries();
+      expect(queries, hasLength(2));
+      expect(queries[0]['page[offset]'], 0);
+      expect(queries[1]['page[offset]'], 20);
+    });
+
     test('surfaces transport failures as KitsuApiException', () async {
       when(() => mockDio.get<dynamic>(
             any(),
