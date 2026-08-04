@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-08-04
+
 ### Added
 
 - **Source logo on poster cards, linking to the item's page**

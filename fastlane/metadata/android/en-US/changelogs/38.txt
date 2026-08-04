@@ -1,0 +1,7 @@
+v0.41.0
+
+* Simkl import: movies, TV shows and anime with full episode history.
+* Library statistics page: totals, watch time, monthly activity, platforms.
+* Kitsu anime get the full season-and-episode tracker, like TV series.
+* Search all providers of a media type at once, with shared filters.
+* Card titles moved below the poster; a source logo links to the title's page.
