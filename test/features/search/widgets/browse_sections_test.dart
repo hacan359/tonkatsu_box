@@ -183,6 +183,26 @@ void main() {
       expect(find.text('AniList 0'), findsOneWidget);
     });
 
+    testWidgets('a load-more failure keeps the loaded results under the strip',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1400, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final BrowseState state = mangaState().copyWith(
+        errors: const <String, ApiError>{
+          'mangadex': (message: 'boom', detail: null),
+        },
+      );
+
+      await tester.pumpWidget(build(state, compact: false));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(SourceErrorStrip), findsOneWidget);
+      expect(find.text('MangaDex 0'), findsOneWidget);
+    });
+
     testWidgets('a source still answering shimmers next to one that has',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1400, 1000);
@@ -243,6 +263,26 @@ void main() {
       expect(find.text('AniList 0'), findsOneWidget);
       expect(find.byType(ShimmerPosterCard), findsWidgets);
       expect(find.text(DataSource.kitsu.label), findsOneWidget);
+    });
+
+    testWidgets('a load-more failure keeps the rail under the strip',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final BrowseState state = mangaState().copyWith(
+        errors: const <String, ApiError>{
+          'mangadex': (message: 'boom', detail: null),
+        },
+      );
+
+      await tester.pumpWidget(build(state, compact: true));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(SourceErrorStrip), findsOneWidget);
+      expect(find.text('MangaDex 0'), findsOneWidget);
     });
   });
 }

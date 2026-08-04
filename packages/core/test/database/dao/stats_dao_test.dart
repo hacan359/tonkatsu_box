@@ -474,6 +474,55 @@ void main() {
 
         expect(minutes[10], 60);
       });
+
+      test(
+          'should attribute a platform-agnostic tracker row to one platform '
+          'when the game is filed under two', () async {
+        await insertItem(id: 1, externalId: 100, platformId: 10);
+        await insertItem(id: 2, externalId: 100, platformId: 20);
+        await db.insert('tracker_game_data', <String, Object?>{
+          'tracker_type': 'retro_achievements',
+          'game_id': 100,
+          'tracker_game_id': '100',
+          'playtime_minutes': 60,
+          'last_synced_at': 1700000000,
+        });
+
+        final Map<int?, int> minutes = await dao.getTrackerMinutesByPlatform();
+
+        final int total =
+            minutes.values.fold(0, (int sum, int m) => sum + m);
+        expect(total, await dao.getTrackerMinutes());
+        expect(minutes[10], 60);
+        expect(minutes.containsKey(20), isFalse);
+      });
+
+      test('should keep per-platform tracker rows on their own platforms',
+          () async {
+        await insertItem(id: 1, externalId: 100, platformId: 10);
+        await insertItem(id: 2, externalId: 100, platformId: 20);
+        await db.insert('tracker_game_data', <String, Object?>{
+          'tracker_type': 'retro_achievements',
+          'game_id': 100,
+          'platform_id': 10,
+          'tracker_game_id': '100',
+          'playtime_minutes': 60,
+          'last_synced_at': 1700000000,
+        });
+        await db.insert('tracker_game_data', <String, Object?>{
+          'tracker_type': 'retro_achievements',
+          'game_id': 100,
+          'platform_id': 20,
+          'tracker_game_id': '100',
+          'playtime_minutes': 30,
+          'last_synced_at': 1700000000,
+        });
+
+        final Map<int?, int> minutes = await dao.getTrackerMinutesByPlatform();
+
+        expect(minutes[10], 60);
+        expect(minutes[20], 30);
+      });
     });
 
     group('getTopGamesByPlatform', () {

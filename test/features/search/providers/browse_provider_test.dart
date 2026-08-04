@@ -402,6 +402,31 @@ void main() {
       expect(state.hasFilters, isFalse);
     });
 
+    test('setSearchQuery drops the stale query when the box is emptied',
+        () async {
+      final ProviderContainer container =
+          await containerWith(<String, Object>{});
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+      notifier.state = notifier.state.copyWith(searchQuery: 'berserk');
+
+      notifier.setSearchQuery('b');
+
+      expect(container.read(browseProvider).searchQuery, isEmpty);
+      expect(container.read(browseProvider).hasSearchQuery, isFalse);
+    });
+
+    test('setSearchQuery below the threshold with no prior query is a no-op',
+        () async {
+      final ProviderContainer container =
+          await containerWith(<String, Object>{});
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+      final BrowseState before = container.read(browseProvider);
+
+      notifier.setSearchQuery('b');
+
+      expect(identical(container.read(browseProvider), before), isTrue);
+    });
+
     test('setSource narrows to that one provider', () async {
       final ProviderContainer container =
           await containerWith(<String, Object>{});

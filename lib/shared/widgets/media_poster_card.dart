@@ -590,33 +590,41 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 ],
                 // The tag takes the free space so the progress label lands on
                 // the right edge; a Spacer would split it with the tag's flex.
-                Expanded(
-                  child: hasTag
-                      ? Align(
-                          alignment: Alignment.centerLeft,
-                          child: _TagBadge(
-                            tagName: widget.tagName,
-                            tagColor: widget.tagColor,
-                            tagTextColor: widget.tagTextColor,
-                            moreCount: widget.tagMoreCount,
-                            compact: _isCompact,
-                            onTap: widget.onTagTap,
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                // Without a tag the label owns the flex, so a long one
+                // ellipsizes instead of overflowing the strip.
+                if (hasTag)
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: _TagBadge(
+                        tagName: widget.tagName,
+                        tagColor: widget.tagColor,
+                        tagTextColor: widget.tagTextColor,
+                        moreCount: widget.tagMoreCount,
+                        compact: _isCompact,
+                        onTap: widget.onTagTap,
+                      ),
+                    ),
+                  )
+                else if (widget.progress == null)
+                  const Spacer(),
                 if (widget.progress != null) ...<Widget>[
                   SizedBox(width: _isCompact ? 2 : 4),
-                  Text(
-                    widget.progress!.label,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: _isCompact ? 7 : 9,
-                      fontWeight: FontWeight.w700,
+                  if (hasTag)
+                    _ProgressLabel(
+                      label: widget.progress!.label,
+                      compact: _isCompact,
+                    )
+                  else
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _ProgressLabel(
+                          label: widget.progress!.label,
+                          compact: _isCompact,
+                        ),
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
               ],
             ),
@@ -984,6 +992,27 @@ class _GlowBorderPainter extends CustomPainter {
 }
 
 /// Tappable tag badge shown over the poster.
+class _ProgressLabel extends StatelessWidget {
+  const _ProgressLabel({required this.label, required this.compact});
+
+  final String label;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: compact ? 7 : 9,
+        fontWeight: FontWeight.w700,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+}
+
 class _TagBadge extends StatelessWidget {
   const _TagBadge({
     required this.tagName,
@@ -1056,19 +1085,6 @@ class _TagBadge extends StatelessWidget {
   }
 }
 
-/// Tappable favorite heart shown over the poster (top-right).
-///
-/// A solid colored circle with a white icon, matching the status /
-/// in-collection badges: the favorite color when on, a dark scrim when off. A
-/// red heart on a translucent scrim blended into colorful, warm-toned covers;
-/// white on a solid fill stays legible over any poster, and the elevation
-/// shadow separates the badge from the background.
-///
-/// The visible badge stays small, but the tap target is padded out to a finger-
-/// friendly box (the bare icon is far under the ~40px touch guideline, so on a
-/// phone it was easy to miss and open the card instead). The heart's own tap
-/// recognizer wins over the card's open-tap, so a hit on the target toggles the
-/// flag rather than opening the item.
 /// Source brand logo opening the meta line, optionally a link to the item's
 /// page on that source.
 class _SourceLogoLink extends StatelessWidget {
@@ -1111,6 +1127,8 @@ class _SourceLogoLink extends StatelessWidget {
   }
 }
 
+/// Favorite heart over the poster: white icon on a solid fill (a red heart on
+/// a translucent scrim blended into warm-toned covers).
 class _FavoriteButton extends StatelessWidget {
   const _FavoriteButton({
     required this.isFavorite,
@@ -1143,6 +1161,8 @@ class _FavoriteButton extends StatelessWidget {
 
     if (onTap == null) return badge;
 
+    // The bare icon is far under the ~40px touch guideline; the padded box
+    // also lets the heart's recognizer win over the card's open-tap.
     final double target = compact ? 28 : 32;
     return SizedBox(
       width: target,

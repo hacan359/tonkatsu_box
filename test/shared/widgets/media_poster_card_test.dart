@@ -642,6 +642,34 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
+      testWidgets(
+          'should ellipsize a long tagless progress label at 60px width',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 60,
+              height: 250,
+              child: MediaPosterCard(
+                variant: CardVariant.compact,
+                title: 'Test Show',
+                imageUrl: '',
+                cacheImageType: ImageType.tvShowPoster,
+                cacheImageId: '1',
+                status: ItemStatus.inProgress,
+                progress:
+                    ItemCardProgress(label: 'V12 · 1450/1500', fraction: 0.5),
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
       testWidgets('should keep the progress label on the right, tag on the left',
           (WidgetTester tester) async {
         await tester.pumpWidget(const MaterialApp(

@@ -287,20 +287,26 @@ class StatsDao {
     );
   }
 
-  /// Tracker minutes per platform for game items added in [year]. The DISTINCT
-  /// subquery keeps per-collection duplicates from inflating a platform.
+  /// Tracker minutes per platform for game items added in [year]. Each tracker
+  /// row lands on exactly one platform, so the buckets sum to the hero total.
   Future<Map<int?, int>> getTrackerMinutesByPlatform({int? year}) async {
     final Database db = await _getDatabase();
     final _Window w = _Window.year(year);
+    final String ciWindow =
+        w.where('ci.added_at', seconds: true, extra: "ci.media_type = 'game'");
+    final List<Object?> args = <Object?>[...w.args, ...w.args];
+    // A platform-agnostic tracker row (t.platform_id NULL) falls back to one
+    // deterministic library platform, never to every platform the game is on.
     final List<Map<String, dynamic>> rows = await db.rawQuery(
-      'SELECT ci.platform_id AS platform_id, '
+      'SELECT COALESCE(t.platform_id, '
+      '(SELECT MIN(ci.platform_id) FROM collection_items ci '
+      '$ciWindow AND ci.external_id = t.game_id)) AS platform_id, '
       'SUM(t.playtime_minutes) AS minutes '
       'FROM tracker_game_data t '
-      'JOIN (SELECT DISTINCT external_id, platform_id FROM collection_items '
-      "${w.where('added_at', seconds: true, extra: "media_type = 'game'")}"
-      ') ci ON ci.external_id = t.game_id '
-      'GROUP BY ci.platform_id',
-      w.args,
+      'WHERE EXISTS (SELECT 1 FROM collection_items ci '
+      '$ciWindow AND ci.external_id = t.game_id) '
+      'GROUP BY platform_id',
+      args,
     );
     return <int?, int>{
       for (final Map<String, dynamic> row in rows)

@@ -849,6 +849,9 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
 
       if (!result.success) {
         setState(() => _isImporting = false);
+        // A failure after the collection was created must still surface it,
+        // or a retry silently builds a duplicate next to an invisible one.
+        _invalidateAfterImport();
         if (result.fatalError != null) {
           context.showErrorSnack(
             result.fatalError!,
@@ -859,15 +862,13 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
       }
 
       final int? collectionId = result.effectiveCollectionId;
-      ref.invalidate(collectionsProvider);
+      _invalidateAfterImport();
       if (collectionId != null) {
         ref.invalidate(collectionStatsProvider(collectionId));
         ref.invalidate(collectionCoversProvider(collectionId));
         ref.invalidate(collectionItemsNotifierProvider(collectionId));
         ref.invalidate(canvasNotifierProvider(collectionId));
       }
-      ref.invalidate(allItemsNotifierProvider);
-      ref.invalidate(wishlistProvider);
 
       setState(() => _isImporting = false);
 
@@ -882,8 +883,16 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isImporting = false);
+      // The service may have written the collection before throwing.
+      _invalidateAfterImport();
       final ApiError err = extractApiError(e);
       context.showErrorSnack(l.importFailed(err.message), detail: err.detail);
     }
+  }
+
+  void _invalidateAfterImport() {
+    ref.invalidate(collectionsProvider);
+    ref.invalidate(allItemsNotifierProvider);
+    ref.invalidate(wishlistProvider);
   }
 }

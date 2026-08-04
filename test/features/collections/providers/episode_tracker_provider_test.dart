@@ -1283,6 +1283,58 @@ void main() {
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.completed);
       });
 
+      test(
+          'kitsu-аниме онгоинг (episodes == null): total берётся из '
+          'кэшированных сезонов и последний эпизод переводит в completed',
+          () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.kitsu, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (1, 1): DateTime(2024),
+                });
+        when(() => mockTvShowDao.markEpisodeWatched(
+                testCollectionId, DataSource.kitsu, testShowId, 1, 2))
+            .thenAnswer((_) async {});
+        // The tracker section caches Kitsu's synthesized season with the
+        // aired count — the only place an ongoing anime's total exists.
+        when(() =>
+                mockTvShowDao.getTvSeasonsByShowId(DataSource.kitsu, testShowId))
+            .thenAnswer((_) async => <TvSeason>[
+                  const TvSeason(
+                    tmdbShowId: testShowId,
+                    seasonNumber: 1,
+                    episodeCount: 2,
+                    source: DataSource.kitsu,
+                  ),
+                ]);
+
+        final CollectionItem ongoing = CollectionItem(
+          id: 1,
+          collectionId: testCollectionId,
+          mediaType: MediaType.anime,
+          externalId: testShowId,
+          status: ItemStatus.inProgress,
+          addedAt: DateTime(2024),
+          anime: const Anime(
+            id: testShowId,
+            source: DataSource.kitsu,
+            title: 'Ongoing Anime',
+          ),
+        );
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[ongoing]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(kitsuArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 2);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.completed);
+      });
+
       test('должен перевести в completed когда все эпизоды просмотрены',
           () async {
         final CollectionItem item =

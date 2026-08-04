@@ -383,7 +383,13 @@ class BrowseNotifier extends Notifier<BrowseState> {
   /// from the controller right before a filter change.
   void setSearchQuery(String query) {
     final String trimmed = query.trim();
-    if (trimmed.length < 2 || state.searchQuery == trimmed) return;
+    if (trimmed.length < 2) {
+      // The box was emptied below the threshold: drop the stale query, or the
+      // next filter change re-searches text the user already deleted.
+      if (state.hasSearchQuery) state = state.copyWith(searchQuery: '');
+      return;
+    }
+    if (state.searchQuery == trimmed) return;
     state = state.copyWith(searchQuery: trimmed);
   }
 
@@ -560,8 +566,10 @@ class BrowseNotifier extends Notifier<BrowseState> {
         itemsBySource: items,
         loadingSourceIds: _doneLoading(source.id),
         pages: Map<String, int>.from(state.pages)..[source.id] = page,
+        // An empty page is the end no matter what hasMore claims, or the
+        // viewport-fill listener keeps requesting pages forever.
         moreBySource: Map<String, bool>.from(state.moreBySource)
-          ..[source.id] = result.hasMore,
+          ..[source.id] = result.hasMore && result.items.isNotEmpty,
         errors: Map<String, ApiError>.from(state.errors)..remove(source.id),
         loadedSignatures: signature == null
             ? null

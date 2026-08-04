@@ -164,7 +164,10 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ApiError? error = state.errors[source.id];
-    if (error != null) {
+    final List<Object> items = state.itemsBySource[source.id] ?? <Object>[];
+    // A load-more failure keeps the page-1 results; the strip goes above them
+    // instead of replacing them.
+    if (error != null && items.isEmpty) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.md,
@@ -179,8 +182,6 @@ class _Section extends StatelessWidget {
         ),
       );
     }
-
-    final List<Object> items = state.itemsBySource[source.id] ?? <Object>[];
     // This provider's own state, so one that already answered with nothing
     // collapses instead of shimmering until the slowest one lands.
     final bool loading = state.isSourceLoading(source.id) && items.isEmpty;
@@ -196,6 +197,20 @@ class _Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                0,
+                AppSpacing.md,
+                AppSpacing.sm,
+              ),
+              child: SourceErrorStrip(
+                source: source,
+                error: error,
+                onRetry: onRetry,
+              ),
+            ),
           _SectionHeader(
             source: source,
             count: loading ? null : items.length,

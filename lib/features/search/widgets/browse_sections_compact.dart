@@ -83,7 +83,9 @@ class BrowseSectionsCompact extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       children: <Widget>[
-        for (final SearchSource source in state.activeSources)
+        for (final SearchSource source in state.activeSources) ...<Widget>[
+          // A load-more failure keeps the rail; the strip goes above it
+          // instead of replacing the page-1 results.
           if (state.errors[source.id] case final ApiError error)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
@@ -92,10 +94,11 @@ class BrowseSectionsCompact extends ConsumerWidget {
                 error: error,
                 onRetry: () => ref.read(browseProvider.notifier).refresh(),
               ),
-            )
+            ),
           // A rail of its own while it is still answering: with nothing here at
           // all, a slow provider looks like one that found nothing.
-          else if (state.isSourceLoading(source.id) &&
+          if (state.errors[source.id] == null &&
+              state.isSourceLoading(source.id) &&
               (state.itemsBySource[source.id] ?? <Object>[]).isEmpty)
             _CompactRail(
               source: source,
@@ -130,6 +133,7 @@ class BrowseSectionsCompact extends ConsumerWidget {
                 onOpenInCollection: onOpenInCollection,
               ),
             ),
+        ],
       ],
     );
   }

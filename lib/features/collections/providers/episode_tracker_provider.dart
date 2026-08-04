@@ -443,6 +443,23 @@ class EpisodeTrackerNotifier
       totalInShow = state.totalEpisodeCount;
     }
 
+    // Kitsu carries no totals for an ongoing anime, but the tracker section
+    // cached its synthesized seasons with aired counts — sum those.
+    if (totalInShow == 0) {
+      try {
+        final List<TvSeason> seasons =
+            await _db.tvShowDao.getTvSeasonsByShowId(_source, _showId);
+        for (final TvSeason season in seasons) {
+          if (season.seasonNumber > 0) {
+            totalInShow += season.episodeCount ?? 0;
+          }
+        }
+        if (totalInShow > 0) _cachedTotalEpisodes = totalInShow;
+      } on Exception catch (_) {
+        // Totals stay unknown; auto-status keeps the current status.
+      }
+    }
+
     // Publish resolved totals so progress badges can render "x/y" even when
     // the cached show row (e.g. from search results) has no totals.
     if (totalInShow > 0 && totalInShow != state.totalEpisodes) {
