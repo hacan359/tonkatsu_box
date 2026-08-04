@@ -10,12 +10,42 @@ import '../../../shared/constants/data_source_ui.dart';
 /// TV / movie searches.
 const int tmdbAnimationGenreId = 16;
 
+/// Group of [FilterSemantic] values that answer one question, so filters from
+/// different sources can be folded into a single cross-source control.
+enum FilterSemanticFamily { status, format }
+
+/// Cross-source identity of a filter option. Labels are localized and per-source
+/// ids diverge (`releasing` / `ongoing` / `current`), so only this can join them.
+enum FilterSemantic {
+  statusReleasing(FilterSemanticFamily.status),
+  statusFinished(FilterSemanticFamily.status),
+  statusHiatus(FilterSemanticFamily.status),
+  statusCancelled(FilterSemanticFamily.status),
+  statusNotYetReleased(FilterSemanticFamily.status),
+  formatTv(FilterSemanticFamily.format),
+  formatTvShort(FilterSemanticFamily.format),
+  formatMovie(FilterSemanticFamily.format),
+  formatOva(FilterSemanticFamily.format),
+  formatOna(FilterSemanticFamily.format),
+  formatSpecial(FilterSemanticFamily.format),
+  typeManga(FilterSemanticFamily.format),
+  typeNovel(FilterSemanticFamily.format),
+  typeOneShot(FilterSemanticFamily.format),
+  typeManhwa(FilterSemanticFamily.format),
+  typeManhua(FilterSemanticFamily.format);
+
+  const FilterSemantic(this.family);
+
+  final FilterSemanticFamily family;
+}
+
 class FilterOption {
   const FilterOption({
     required this.id,
     required this.label,
     this.icon,
     this.value,
+    this.semantic,
   });
 
   final String id;
@@ -24,6 +54,9 @@ class FilterOption {
 
   /// Raw value passed to the API for this option.
   final Object? value;
+
+  /// Set only on options a shared cross-source filter can broadcast.
+  final FilterSemantic? semantic;
 
   @override
   bool operator ==(Object other) =>
@@ -88,6 +121,11 @@ abstract class SearchFilter {
   /// Separate from [key] when several filters share the same key but expose
   /// different option sets (e.g. genres for Movie vs TV vs IGDB).
   String get cacheKey => key;
+
+  /// Non-null when this filter's options carry [FilterSemantic] and can be
+  /// folded into one cross-source control. Declared here so grouping stays
+  /// synchronous — [options] is async and needs localizations.
+  FilterSemanticFamily? get semanticFamily => null;
 
   /// True for filters with many options — turns on the in-dropdown search.
   bool get searchable => false;

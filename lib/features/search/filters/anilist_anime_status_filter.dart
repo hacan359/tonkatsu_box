@@ -12,6 +12,10 @@ class AniListAnimeStatusFilter extends SearchFilter {
   String placeholder(S l) => l.status;
 
   @override
+  FilterSemanticFamily? get semanticFamily =>
+      FilterSemanticFamily.status;
+
+  @override
   FilterOption get allOption => const FilterOption(
         id: 'any',
         label: 'All',
@@ -25,21 +29,25 @@ class AniListAnimeStatusFilter extends SearchFilter {
         id: 'releasing',
         label: l.animeStatusAiring,
         value: 'RELEASING',
+        semantic: FilterSemantic.statusReleasing,
       ),
       FilterOption(
         id: 'finished',
         label: l.animeStatusFinished,
         value: 'FINISHED',
+        semantic: FilterSemantic.statusFinished,
       ),
       FilterOption(
         id: 'not_yet_released',
         label: l.animeStatusNotYetAired,
         value: 'NOT_YET_RELEASED',
+        semantic: FilterSemantic.statusNotYetReleased,
       ),
       FilterOption(
         id: 'cancelled',
         label: l.animeStatusCancelled,
         value: 'CANCELLED',
+        semantic: FilterSemantic.statusCancelled,
       ),
     ];
   }

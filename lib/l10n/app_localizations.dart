@@ -4280,6 +4280,66 @@ abstract class S {
   /// **'No results found'**
   String get searchNoResults;
 
+  /// No description provided for @searchWhatToFind.
+  ///
+  /// In en, this message translates to:
+  /// **'What to find'**
+  String get searchWhatToFind;
+
+  /// No description provided for @searchSortNeedsSingleSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting is available with a single source'**
+  String get searchSortNeedsSingleSource;
+
+  /// No description provided for @searchSortUnavailableInSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'This source does not sort search results'**
+  String get searchSortUnavailableInSearch;
+
+  /// No description provided for @searchSourcesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources'**
+  String get searchSourcesLabel;
+
+  /// No description provided for @searchTextOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Text search only'**
+  String get searchTextOnlyHint;
+
+  /// No description provided for @searchSourceNoResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'did not respond'**
+  String get searchSourceNoResponse;
+
+  /// No description provided for @searchCommonFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get searchCommonFilters;
+
+  /// No description provided for @searchShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'all'**
+  String get searchShowAll;
+
+  /// No description provided for @searchNarrowedBySource.
+  ///
+  /// In en, this message translates to:
+  /// **'narrowed by this source\'s filter'**
+  String get searchNarrowedBySource;
+
+  /// No description provided for @searchSourceLacksValue.
+  ///
+  /// In en, this message translates to:
+  /// **'does not support the selected value'**
+  String get searchSourceLacksValue;
+
   /// No description provided for @searchNothingFoundFor.
   ///
   /// In en, this message translates to:

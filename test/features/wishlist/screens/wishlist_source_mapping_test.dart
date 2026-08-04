@@ -5,39 +5,43 @@ import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
 import 'package:tonkatsu_box/features/wishlist/screens/wishlist_screen.dart';
 
 void main() {
-  group('wishlistSourceIdFor', () {
-    test('maps book hint to a books source, not movies', () {
-      expect(wishlistSourceIdFor(MediaType.book), 'openlibrary');
+  group('wishlistMediaTypeFor', () {
+    test('a book hint opens books, not the first registered type', () {
+      expect(wishlistMediaTypeFor(MediaType.book), MediaType.book);
     });
 
     test('returns null for custom and for an absent hint', () {
-      expect(wishlistSourceIdFor(MediaType.custom), isNull);
-      expect(wishlistSourceIdFor(null), isNull);
+      expect(wishlistMediaTypeFor(MediaType.custom), isNull);
+      expect(wishlistMediaTypeFor(null), isNull);
     });
 
-    test('every non-null id resolves to a real source of that media type',
-        () {
-      final Set<String> known =
-          searchSources.map((SearchSource s) => s.id).toSet();
-
+    test('every returned type has at least one registered source', () {
       for (final MediaType type in MediaType.values) {
-        final String? id = wishlistSourceIdFor(type);
-        if (id == null) continue;
+        final MediaType? opened = wishlistMediaTypeFor(type);
+        if (opened == null) continue;
 
         expect(
-          known,
-          contains(id),
-          reason: '$type maps to "$id" which is not a registered source',
+          searchSourcesFor(opened),
+          isNotEmpty,
+          reason: '$type opens $opened, which has no sources',
         );
         expect(
-          getSearchSourceById(id).id,
-          id,
-          reason: '$type -> "$id" fell back to a different source',
+          searchSourcesFor(opened)
+              .every((SearchSource s) => s.outputMediaType == opened),
+          isTrue,
+          reason: '$opened is served by a source of another media type',
         );
+      }
+    });
+
+    test('a hint without sources never reaches the search tab', () {
+      final Set<MediaType> searchable = searchableMediaTypes.toSet();
+      for (final MediaType type in MediaType.values) {
+        if (searchable.contains(type)) continue;
         expect(
-          getSearchSourceById(id).outputMediaType,
-          type,
-          reason: '$type -> "$id" outputs a different media type',
+          wishlistMediaTypeFor(type),
+          isNull,
+          reason: '$type has no sources but would still open search',
         );
       }
     });

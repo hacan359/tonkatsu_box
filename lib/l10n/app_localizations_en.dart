@@ -2405,6 +2405,38 @@ class SEn extends S {
   String get searchNoResults => 'No results found';
 
   @override
+  String get searchWhatToFind => 'What to find';
+
+  @override
+  String get searchSortNeedsSingleSource =>
+      'Sorting is available with a single source';
+
+  @override
+  String get searchSortUnavailableInSearch =>
+      'This source does not sort search results';
+
+  @override
+  String get searchSourcesLabel => 'Sources';
+
+  @override
+  String get searchTextOnlyHint => 'Text search only';
+
+  @override
+  String get searchSourceNoResponse => 'did not respond';
+
+  @override
+  String get searchCommonFilters => 'Shared';
+
+  @override
+  String get searchShowAll => 'all';
+
+  @override
+  String get searchNarrowedBySource => 'narrowed by this source\'s filter';
+
+  @override
+  String get searchSourceLacksValue => 'does not support the selected value';
+
+  @override
   String searchNothingFoundFor(String query) {
     return 'Nothing found for \"$query\"';
   }

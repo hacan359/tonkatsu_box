@@ -340,6 +340,101 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Search asks what you are looking for, not which provider to ask**
+
+  The first segment of the filter bar is now the media type, and every provider
+  of that type answers at once: a manga search reaches AniList, MangaDex,
+  MangaBaka and Kitsu in one go instead of one at a time. Providers are listed
+  underneath and can be switched off individually; with several answering, the
+  results are laid out one block per provider, and "all →" narrows to a single
+  one, where the flat grid, its paging and sorting take over. A failing
+  provider now reports its own error inline while the others keep their
+  results, instead of blanking the screen. Each provider also shows its own
+  progress: AniList answers instantly and Kitsu takes seconds, so the slow one
+  holds a shimmering block (and a spinner on its chip) until it lands, rather
+  than looking like a provider that found nothing.
+
+  Filters that mean the same thing in several providers — status and format —
+  are merged into one control, so "Publishing" is picked once and each provider
+  receives its own spelling of it (`RELEASING`, `ongoing`, `releasing`,
+  `current`). A provider that has no word for the picked value drops out of the
+  query and says so on its chip rather than silently returning nothing.
+  Provider-specific filters (genres, tags, year, content rating, demographic)
+  stay theirs and live in the filter sheet, grouped under the provider's logo.
+
+  * lib/features/search/models/common_filter.dart (CommonFilter,
+    CommonFilterOptions, CommonFilterMember, CommonFilterTarget,
+    MediaTypeFilters, filtersForMediaType): New. Joins filters by
+    [FilterSemantic] and keeps a family shared only when two or more providers
+    know it — one provider's filter stays its own, so it never loses its owner.
+  * lib/features/search/models/search_source.dart (FilterSemantic,
+    FilterSemanticFamily, FilterOption.semantic, SearchFilter.semanticFamily):
+    New. Cross-provider identity of an option, since ids and labels diverge.
+  * lib/features/search/filters/anilist_anime_format_filter.dart
+    (AniListAnimeFormatFilter), anilist_anime_status_filter.dart
+    (AniListAnimeStatusFilter), anilist_manga_status_filter.dart
+    (AniListMangaStatusFilter), kitsu_anime_status_filter.dart
+    (KitsuAnimeStatusFilter), kitsu_anime_subtype_filter.dart
+    (KitsuAnimeSubtypeFilter), kitsu_manga_status_filter.dart
+    (KitsuMangaStatusFilter), kitsu_manga_subtype_filter.dart
+    (KitsuMangaSubtypeFilter), manga_format_filter.dart (MangaFormatFilter),
+    mangabaka_status_filter.dart (MangaBakaStatusFilter),
+    mangabaka_type_filter.dart (MangaBakaTypeFilter),
+    mangadex_status_filter.dart (MangaDexStatusFilter): Declare a semantic
+    family and tag each option with its semantic. Raw API values untouched.
+  * lib/features/search/providers/browse_provider.dart (BrowseState,
+    BrowseNotifier, CommonSelection, BrowseSettingsKeys): Hold a media type and
+    a per-provider slice of results, filter values, pages and errors instead of
+    one active source. `BrowseState.loadingSourceIds` /
+    `BrowseState.isSourceLoading` replace the single `isLoading` flag, which
+    `isLoading` now derives from — one flag could not say which provider is
+    still answering. Per-provider request signatures mean hiding a provider
+    and bringing it back costs no requests. Sort belongs to the provider it was
+    picked for, so it cannot leak into another's request. A saved pre-0.41
+    source id is migrated to that source's media type.
+  * lib/features/search/sources/search_sources.dart (searchSourcesByMediaType,
+    searchableMediaTypes, searchSourcesFor, primarySearchSourceFor): New.
+    Providers grouped by output media type, registration order preserved.
+  * lib/features/search/widgets/filter_bar.dart (FilterBar, _SheetButton,
+    _SortChevron), filter_bar_compact.dart (CompactFilterBar),
+    media_type_chevron.dart (MediaTypeChevron), filter_control.dart
+    (FilterOptionsLoader, FilterChevron, FilterPick), filter_sheet.dart
+    (FilterSheet): Media type first, shared filters in the bar, per-provider
+    filters and the provider switches in the sheet.
+  * lib/features/search/widgets/browse_sections.dart (BrowseSections),
+    browse_sections_compact.dart (BrowseSectionsCompact), browse_card.dart
+    (BrowseCard, CollectedIds, collectedIdsProvider, extractTitle,
+    buildPlatformLabel), source_chips_row.dart (SourceChipsRow),
+    source_error_strip.dart (SourceErrorStrip): New. Per-provider result
+    blocks, provider chips and the inline per-provider error.
+  * lib/features/search/widgets/browse_grid.dart (BrowseGrid): Keeps the flat
+    grid for a single answering provider; card branches moved to BrowseCard.
+    The viewport-fill check also runs on first build — narrowing hands the grid
+    a page already in state, and a page too short to scroll on a tall window
+    could otherwise never ask for the next one.
+  * lib/features/search/providers/discover_provider.dart
+    (discoverSectionsPerMediaType, discoverMediaTypes),
+    lib/features/search/widgets/discover_feed.dart (DiscoverFeed.mediaType),
+    lib/features/search/widgets/discover_customize_sheet.dart
+    (DiscoverCustomizeSheet.mediaType): Key the TMDB feeds by media type.
+  * lib/shared/navigation/search_providers.dart (SearchTabRequest.mediaType),
+    lib/shared/navigation/app_shell.dart (_AppShellState),
+    lib/features/wishlist/screens/wishlist_screen.dart
+    (wishlistMediaTypeFor): A wishlist note opens the Search tab on its media
+    type with every provider on, replacing the hand-written hint-to-source map.
+  * lib/shared/theme/app_typography.dart (AppTypography.posterSourceLogoScale,
+    AppTypography.posterTextBlockHeight),
+    lib/shared/widgets/media_poster_card.dart
+    (_MediaPosterCardState._buildTitleBlock,
+    _MediaPosterCardState._buildMetaText): Budget the subtitle row for the
+    source logo, and pin the title and meta line heights with
+    `forceStrutHeight` — the rating star and CJK titles come from fallback
+    fonts whose taller lines burst the block budgeted as fontSize×height.
+  * lib/l10n/app_*.arb: searchWhatToFind, searchSourcesLabel,
+    searchCommonFilters, searchShowAll, searchSourceNoResponse,
+    searchSourceLacksValue, searchNarrowedBySource, searchTextOnlyHint,
+    searchSortNeedsSingleSource, searchSortUnavailableInSearch.
+
 - **Rainbow highlight on the centre navigation button**
 
   The centre button opens the whole library — statistics, genre cloud and

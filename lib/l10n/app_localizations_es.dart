@@ -2444,6 +2444,38 @@ class SEs extends S {
   String get searchNoResults => 'Sin resultados';
 
   @override
+  String get searchWhatToFind => 'Qué buscar';
+
+  @override
+  String get searchSortNeedsSingleSource =>
+      'La ordenación está disponible con una sola fuente';
+
+  @override
+  String get searchSortUnavailableInSearch =>
+      'Esta fuente no ordena los resultados de búsqueda';
+
+  @override
+  String get searchSourcesLabel => 'Fuentes';
+
+  @override
+  String get searchTextOnlyHint => 'Solo búsqueda por texto';
+
+  @override
+  String get searchSourceNoResponse => 'no respondió';
+
+  @override
+  String get searchCommonFilters => 'Comunes';
+
+  @override
+  String get searchShowAll => 'todos';
+
+  @override
+  String get searchNarrowedBySource => 'limitado por el filtro de esta fuente';
+
+  @override
+  String get searchSourceLacksValue => 'no admite el valor seleccionado';
+
+  @override
   String searchNothingFoundFor(String query) {
     return 'No se encontró nada para \"$query\"';
   }
