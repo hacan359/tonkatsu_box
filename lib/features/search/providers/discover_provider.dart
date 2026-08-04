@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
@@ -68,24 +69,29 @@ enum DiscoverSectionId {
   }
 }
 
-/// Which Discover sections to show on each search tab, keyed by sourceId.
-const Map<String, Set<DiscoverSectionId>> discoverSectionsPerSource =
-    <String, Set<DiscoverSectionId>>{
-  'movies': <DiscoverSectionId>{
+/// Which Discover sections to show for each media type. TMDB-backed only —
+/// the other providers have no curated feeds.
+const Map<MediaType, Set<DiscoverSectionId>> discoverSectionsPerMediaType =
+    <MediaType, Set<DiscoverSectionId>>{
+  MediaType.movie: <DiscoverSectionId>{
     DiscoverSectionId.trending,
     DiscoverSectionId.topRatedMovies,
     DiscoverSectionId.upcoming,
   },
-  'tv': <DiscoverSectionId>{
+  MediaType.tvShow: <DiscoverSectionId>{
     DiscoverSectionId.trending,
     DiscoverSectionId.popularTvShows,
     DiscoverSectionId.topRatedTvShows,
   },
-  'anime': <DiscoverSectionId>{
+  MediaType.animation: <DiscoverSectionId>{
     DiscoverSectionId.trending,
     DiscoverSectionId.anime,
   },
 };
+
+/// Derived, so a type added above cannot be forgotten here.
+final Set<MediaType> discoverMediaTypes =
+    Set<MediaType>.unmodifiable(discoverSectionsPerMediaType.keys);
 
 class DiscoverSettings {
   const DiscoverSettings({

@@ -1087,6 +1087,16 @@
   "goToSettings": "Aller dans les Paramètres",
   "searchMinCharsHint": "Entrez au moins 2 caractères et appuyez sur Entrer",
   "searchNoResults": "Aucun résultat",
+  "searchWhatToFind": "Que chercher",
+  "searchSortNeedsSingleSource": "Le tri est disponible avec une seule source",
+  "searchSortUnavailableInSearch": "Cette source ne trie pas les résultats de recherche",
+  "searchSourcesLabel": "Sources",
+  "searchTextOnlyHint": "Recherche textuelle uniquement",
+  "searchSourceNoResponse": "n'a pas répondu",
+  "searchCommonFilters": "Communs",
+  "searchShowAll": "tout",
+  "searchNarrowedBySource": "restreint par le filtre de cette source",
+  "searchSourceLacksValue": "ne prend pas en charge la valeur sélectionnée",
   "searchNothingFoundFor": "Aucun résultat pour \"{query}\"",
   "@searchNothingFoundFor": {
     "placeholders": {

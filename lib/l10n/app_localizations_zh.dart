@@ -2273,6 +2273,36 @@ class SZh extends S {
   String get searchNoResults => '未找到结果';
 
   @override
+  String get searchWhatToFind => '查找内容';
+
+  @override
+  String get searchSortNeedsSingleSource => '仅在单一来源时可排序';
+
+  @override
+  String get searchSortUnavailableInSearch => '该来源不支持对搜索结果排序';
+
+  @override
+  String get searchSourcesLabel => '来源';
+
+  @override
+  String get searchTextOnlyHint => '仅支持文本搜索';
+
+  @override
+  String get searchSourceNoResponse => '无响应';
+
+  @override
+  String get searchCommonFilters => '通用';
+
+  @override
+  String get searchShowAll => '全部';
+
+  @override
+  String get searchNarrowedBySource => '已按该来源的筛选缩小';
+
+  @override
+  String get searchSourceLacksValue => '不支持所选值';
+
+  @override
   String searchNothingFoundFor(String query) {
     return '未找到「$query」的相关结果';
   }

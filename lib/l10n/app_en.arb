@@ -1107,6 +1107,16 @@
   "goToSettings": "Go to Settings",
   "searchMinCharsHint": "Type at least 2 characters and press Enter",
   "searchNoResults": "No results found",
+  "searchWhatToFind": "What to find",
+  "searchSortNeedsSingleSource": "Sorting is available with a single source",
+  "searchSortUnavailableInSearch": "This source does not sort search results",
+  "searchSourcesLabel": "Sources",
+  "searchTextOnlyHint": "Text search only",
+  "searchSourceNoResponse": "did not respond",
+  "searchCommonFilters": "Shared",
+  "searchShowAll": "all",
+  "searchNarrowedBySource": "narrowed by this source's filter",
+  "searchSourceLacksValue": "does not support the selected value",
   "searchNothingFoundFor": "Nothing found for \"{query}\"",
   "@searchNothingFoundFor": {
     "placeholders": {

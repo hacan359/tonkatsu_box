@@ -433,6 +433,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
     if (request.sourceId != null) {
       ref.read(browseProvider.notifier).setSource(request.sourceId!);
+    } else if (request.mediaType != null) {
+      ref.read(browseProvider.notifier).setMediaType(request.mediaType!);
     }
     final String query = request.query?.trim() ?? '';
     if (query.isNotEmpty) {

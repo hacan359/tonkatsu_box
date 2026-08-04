@@ -2433,6 +2433,38 @@ class SPt extends S {
   String get searchNoResults => 'Nenhum resultado encontrado';
 
   @override
+  String get searchWhatToFind => 'O que buscar';
+
+  @override
+  String get searchSortNeedsSingleSource =>
+      'A ordenação está disponível com uma única fonte';
+
+  @override
+  String get searchSortUnavailableInSearch =>
+      'Esta fonte não ordena os resultados da pesquisa';
+
+  @override
+  String get searchSourcesLabel => 'Fontes';
+
+  @override
+  String get searchTextOnlyHint => 'Apenas busca por texto';
+
+  @override
+  String get searchSourceNoResponse => 'não respondeu';
+
+  @override
+  String get searchCommonFilters => 'Comuns';
+
+  @override
+  String get searchShowAll => 'todos';
+
+  @override
+  String get searchNarrowedBySource => 'limitado pelo filtro desta fonte';
+
+  @override
+  String get searchSourceLacksValue => 'não suporta o valor selecionado';
+
+  @override
   String searchNothingFoundFor(String query) {
     return 'Nada encontrado para \"$query\"';
   }

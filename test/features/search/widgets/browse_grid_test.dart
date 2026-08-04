@@ -9,6 +9,8 @@ import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/core/api/api_error_extract.dart';
+import 'package:tonkatsu_box/features/search/widgets/source_error_strip.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
@@ -127,8 +129,8 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            isLoading: true,
+            mediaType: MediaType.movie,
+            loadingSourceIds: <String>{'movies'},
           ),
         ),
       );
@@ -142,15 +144,56 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            error: 'Network error',
+            mediaType: MediaType.movie,
+            errors: <String, ApiError>{
+              'movies': (message: 'Network error', detail: null),
+            },
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
-      expect(find.text('Network error'), findsOneWidget);
+      expect(find.byType(SourceErrorStrip), findsOneWidget);
+    });
+
+    testWidgets('reports the API message, not a generic failure',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            mediaType: MediaType.movie,
+            errors: <String, ApiError>{
+              'movies': (message: 'Invalid API key', detail: null),
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Invalid API key'), findsOneWidget);
+    });
+
+    testWidgets('hides the error of a source the user switched off',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildWidget(
+          initialState: const BrowseState(
+            mediaType: MediaType.manga,
+            searchQuery: 'berserk',
+            disabledSourceIds: <String>{
+              'mangadex',
+              'kitsu_manga',
+              'mangabaka',
+            },
+            errors: <String, ApiError>{
+              'mangadex': (message: 'Network error', detail: null),
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SourceErrorStrip), findsNothing);
     });
 
     testWidgets('shows empty results state when empty with filters',
@@ -158,8 +201,8 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            filterValues: <String, Object?>{'genre': 28},
+            mediaType: MediaType.movie,
+            ownFilterValues: <String, Map<String, Object?>>{'movies': <String, Object?>{'genre': 28}},
           ),
         ),
       );
@@ -173,7 +216,7 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
+            mediaType: MediaType.movie,
           ),
         ),
       );
@@ -186,9 +229,9 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            filterValues: <String, Object?>{'genre': 28},
-            items: <Object>[
+            mediaType: MediaType.movie,
+            ownFilterValues: <String, Map<String, Object?>>{'movies': <String, Object?>{'genre': 28}},
+            itemsBySource: <String, List<Object>>{'movies': <Object>[
               Movie(
                 tmdbId: 1,
                 title: 'Test Movie 1',
@@ -201,13 +244,12 @@ void main() {
                 releaseYear: 2023,
                 posterUrl: 'https://example.com/2.jpg',
               ),
-            ],
+            ]},
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(GridView), findsOneWidget);
       expect(find.text('Test Movie 1'), findsOneWidget);
       expect(find.text('Test Movie 2'), findsOneWidget);
     });
@@ -220,16 +262,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            filterValues: <String, Object?>{'genre': 28},
-            items: <Object>[
+            mediaType: MediaType.movie,
+            ownFilterValues: <String, Map<String, Object?>>{'movies': <String, Object?>{'genre': 28}},
+            itemsBySource: <String, List<Object>>{'movies': <Object>[
               Movie(
                 tmdbId: 1,
                 title: 'Tap Me',
                 releaseYear: 2024,
                 posterUrl: 'https://example.com/1.jpg',
               ),
-            ],
+            ]},
           ),
           onItemTap: (Object item, MediaType type) {
             tappedItem = item;
@@ -251,9 +293,9 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            filterValues: <String, Object?>{'genre': 28},
-            items: <Object>[
+            mediaType: MediaType.movie,
+            ownFilterValues: <String, Map<String, Object?>>{'movies': <String, Object?>{'genre': 28}},
+            itemsBySource: <String, List<Object>>{'movies': <Object>[
               Movie(
                 tmdbId: 42,
                 title: 'Collected Movie',
@@ -266,7 +308,7 @@ void main() {
                 releaseYear: 2024,
                 posterUrl: 'https://example.com/nc.jpg',
               ),
-            ],
+            ]},
           ),
           extraOverrides: collectedOverrides(
             movies: <int, List<CollectedItemInfo>>{
@@ -287,15 +329,15 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'games',
-            filterValues: <String, Object?>{'genre': 5},
-            items: <Object>[
+            mediaType: MediaType.game,
+            ownFilterValues: <String, Map<String, Object?>>{'games': <String, Object?>{'genre': 5}},
+            itemsBySource: <String, List<Object>>{'games': <Object>[
               Game(
                 id: 100,
                 name: 'Collected Game',
                 coverUrl: 'https://example.com/g.jpg',
               ),
-            ],
+            ]},
           ),
           extraOverrides: collectedOverrides(
             games: <int, List<CollectedItemInfo>>{
@@ -316,15 +358,15 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'tv',
-            filterValues: <String, Object?>{'genre': 18},
-            items: <Object>[
+            mediaType: MediaType.tvShow,
+            ownFilterValues: <String, Map<String, Object?>>{'tv': <String, Object?>{'genre': 18}},
+            itemsBySource: <String, List<Object>>{'tv': <Object>[
               TvShow(
                 tmdbId: 55,
                 title: 'Collected Show',
                 posterUrl: 'https://example.com/tv.jpg',
               ),
-            ],
+            ]},
           ),
           extraOverrides: collectedOverrides(
             tvShows: <int, List<CollectedItemInfo>>{
@@ -345,16 +387,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'tv',
-            filterValues: <String, Object?>{'genre': 18},
-            items: <Object>[
+            mediaType: MediaType.tvShow,
+            ownFilterValues: <String, Map<String, Object?>>{'tv': <String, Object?>{'genre': 18}},
+            itemsBySource: <String, List<Object>>{'tv': <Object>[
               TvShow(
                 tmdbId: 55,
                 title: 'Linked Show',
                 source: DataSource.tvmaze,
                 externalUrl: 'https://example.org/tv/55',
               ),
-            ],
+            ]},
           ),
         ),
       );
@@ -371,11 +413,11 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'tv',
-            filterValues: <String, Object?>{'genre': 18},
-            items: <Object>[
+            mediaType: MediaType.tvShow,
+            ownFilterValues: <String, Map<String, Object?>>{'tv': <String, Object?>{'genre': 18}},
+            itemsBySource: <String, List<Object>>{'tv': <Object>[
               TvShow(tmdbId: 56, title: 'Unlinked Show'),
-            ],
+            ]},
           ),
         ),
       );
@@ -392,16 +434,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'tvmaze_tv',
+            mediaType: MediaType.tvShow,
             searchQuery: 'dark',
-            items: <Object>[
+            itemsBySource: <String, List<Object>>{'tvmaze_tv': <Object>[
               TvShow(
                 tmdbId: 55,
                 title: 'Dark',
                 source: DataSource.tvmaze,
                 posterUrl: 'https://example.com/tv.jpg',
               ),
-            ],
+            ]},
           ),
           extraOverrides: collectedOverrides(
             tvShows: <int, List<CollectedItemInfo>>{
@@ -424,16 +466,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'tvmaze_tv',
+            mediaType: MediaType.tvShow,
             searchQuery: 'dark',
-            items: <Object>[
+            itemsBySource: <String, List<Object>>{'tvmaze_tv': <Object>[
               TvShow(
                 tmdbId: 55,
                 title: 'Dark',
                 source: DataSource.tvmaze,
                 posterUrl: 'https://example.com/tv.jpg',
               ),
-            ],
+            ]},
           ),
           extraOverrides: collectedOverrides(
             tvShows: <int, List<CollectedItemInfo>>{
@@ -459,16 +501,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'kitsu_anime',
+            mediaType: MediaType.anime,
             searchQuery: 'bebop',
-            items: <Object>[
+            itemsBySource: <String, List<Object>>{'kitsu_anime': <Object>[
               Anime(
                 id: 55,
                 title: 'Cowboy Bebop',
                 source: DataSource.kitsu,
                 coverUrl: 'https://example.com/anime.jpg',
               ),
-            ],
+            ]},
           ),
           extraOverrides: collectedOverrides(
             animes: <int, List<CollectedItemInfo>>{
@@ -496,16 +538,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'kitsu_anime',
+            mediaType: MediaType.anime,
             searchQuery: 'bebop',
-            items: <Object>[
+            itemsBySource: <String, List<Object>>{'kitsu_anime': <Object>[
               Anime(
                 id: 55,
                 title: 'Cowboy Bebop',
                 source: DataSource.kitsu,
                 coverUrl: 'https://example.com/anime.jpg',
               ),
-            ],
+            ]},
           ),
           extraOverrides: collectedOverrides(
             animes: <int, List<CollectedItemInfo>>{
@@ -535,16 +577,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'kitsu_anime',
+            mediaType: MediaType.anime,
             searchQuery: 'bebop',
-            items: <Object>[
+            itemsBySource: <String, List<Object>>{'kitsu_anime': <Object>[
               Anime(
                 id: 55,
                 title: 'Cowboy Bebop',
                 source: DataSource.kitsu,
                 coverUrl: 'https://example.com/anime.jpg',
               ),
-            ],
+            ]},
           ),
           onOpenInCollection: (int id, MediaType type, DataSource? source) {
             gotId = id;
@@ -583,15 +625,15 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            items: <Object>[
+            mediaType: MediaType.movie,
+            itemsBySource: <String, List<Object>>{'movies': <Object>[
               Movie(
                 tmdbId: 77,
                 title: 'Dune',
                 releaseYear: 2021,
                 posterUrl: 'https://example.com/dune.jpg',
               ),
-            ],
+            ]},
           ),
           onOpenInCollection: (int id, MediaType type, DataSource? source) {
             called = true;
@@ -624,16 +666,16 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            filterValues: <String, Object?>{'genre': 28},
-            items: <Object>[
+            mediaType: MediaType.movie,
+            ownFilterValues: <String, Map<String, Object?>>{'movies': <String, Object?>{'genre': 28}},
+            itemsBySource: <String, List<Object>>{'movies': <Object>[
               Movie(
                 tmdbId: 999,
                 title: 'Not In Collection',
                 releaseYear: 2024,
                 posterUrl: 'https://example.com/nc.jpg',
               ),
-            ],
+            ]},
           ),
         ),
       );
@@ -652,8 +694,8 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            isLoading: true,
+            mediaType: MediaType.movie,
+            loadingSourceIds: <String>{'movies'},
           ),
         ),
       );
@@ -677,8 +719,8 @@ void main() {
       await tester.pumpWidget(
         buildWidget(
           initialState: const BrowseState(
-            sourceId: 'movies',
-            isLoading: true,
+            mediaType: MediaType.movie,
+            loadingSourceIds: <String>{'movies'},
           ),
         ),
       );
@@ -735,6 +777,57 @@ void main() {
           hasMore: true,
         );
 
+        await tester.pump();
+        await tester.pump();
+
+        expect(loadMoreCalls, greaterThan(0));
+      });
+
+      testWidgets(
+          'auto-loads when the grid appears with a short page already loaded',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        int loadMoreCalls = 0;
+
+        // Narrowing to one provider swaps the sections view for this grid with
+        // the page already in state — no state change follows, so the initial
+        // build must run the fill check itself.
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              ...emptyCollectedOverrides(),
+              browseProvider.overrideWith(
+                () => _ViewportFillTestNotifier(
+                  onLoadMore: () => loadMoreCalls++,
+                  initial: const BrowseState(
+                    mediaType: MediaType.movie,
+                    searchQuery: 'bleach',
+                    itemsBySource: <String, List<Object>>{
+                      'movies': <Object>[
+                        Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
+                        Movie(tmdbId: 2, title: 'M2', releaseYear: 2024),
+                      ],
+                    },
+                    moreBySource: <String, bool>{'movies': true},
+                  ),
+                ),
+              ),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              locale: const Locale('en'),
+              home: Scaffold(
+                body: BrowseGrid(onItemTap: (_, _) {}),
+              ),
+            ),
+          ),
+        );
         await tester.pump();
         await tester.pump();
 
@@ -932,16 +1025,16 @@ void main() {
         await tester.pumpWidget(
           buildWidget(
             initialState: const BrowseState(
-              sourceId: 'games',
-              filterValues: <String, Object?>{'genre': 5},
-              items: <Object>[
+              mediaType: MediaType.game,
+              ownFilterValues: <String, Map<String, Object?>>{'games': <String, Object?>{'genre': 5}},
+              itemsBySource: <String, List<Object>>{'games': <Object>[
                 Game(
                   id: 1,
                   name: 'Super Mario',
                   platformIds: <int>[19],
                   coverUrl: 'https://example.com/mario.jpg',
                 ),
-              ],
+              ]},
             ),
             platformMap: const <int, Platform>{
               19: Platform(id: 19, name: 'Super Nintendo', abbreviation: 'SNES'),
@@ -959,16 +1052,16 @@ void main() {
         await tester.pumpWidget(
           buildWidget(
             initialState: const BrowseState(
-              sourceId: 'games',
-              filterValues: <String, Object?>{'genre': 5},
-              items: <Object>[
+              mediaType: MediaType.game,
+              ownFilterValues: <String, Map<String, Object?>>{'games': <String, Object?>{'genre': 5}},
+              itemsBySource: <String, List<Object>>{'games': <Object>[
                 Game(
                   id: 2,
                   name: 'Multi Plat Game',
                   platformIds: <int>[6, 48],
                   coverUrl: 'https://example.com/mp.jpg',
                 ),
-              ],
+              ]},
             ),
             platformMap: const <int, Platform>{
               6: Platform(id: 6, name: 'PC (Microsoft Windows)', abbreviation: 'PC'),
@@ -987,16 +1080,16 @@ void main() {
         await tester.pumpWidget(
           buildWidget(
             initialState: const BrowseState(
-              sourceId: 'games',
-              filterValues: <String, Object?>{'genre': 5},
-              items: <Object>[
+              mediaType: MediaType.game,
+              ownFilterValues: <String, Map<String, Object?>>{'games': <String, Object?>{'genre': 5}},
+              itemsBySource: <String, List<Object>>{'games': <Object>[
                 Game(
                   id: 3,
                   name: 'Everywhere Game',
                   platformIds: <int>[6, 48, 49, 130],
                   coverUrl: 'https://example.com/eg.jpg',
                 ),
-              ],
+              ]},
             ),
             platformMap: const <int, Platform>{
               6: Platform(id: 6, name: 'PC', abbreviation: 'PC'),
@@ -1016,16 +1109,16 @@ void main() {
         await tester.pumpWidget(
           buildWidget(
             initialState: const BrowseState(
-              sourceId: 'games',
-              filterValues: <String, Object?>{'genre': 5},
-              items: <Object>[
+              mediaType: MediaType.game,
+              ownFilterValues: <String, Map<String, Object?>>{'games': <String, Object?>{'genre': 5}},
+              itemsBySource: <String, List<Object>>{'games': <Object>[
                 Game(
                   id: 4,
                   name: 'No Platform Game',
                   platformIds: <int>[19],
                   coverUrl: 'https://example.com/np.jpg',
                 ),
-              ],
+              ]},
             ),
           ),
         );
@@ -1040,16 +1133,16 @@ void main() {
         await tester.pumpWidget(
           buildWidget(
             initialState: const BrowseState(
-              sourceId: 'games',
-              filterValues: <String, Object?>{'genre': 5},
-              items: <Object>[
+              mediaType: MediaType.game,
+              ownFilterValues: <String, Map<String, Object?>>{'games': <String, Object?>{'genre': 5}},
+              itemsBySource: <String, List<Object>>{'games': <Object>[
                 Game(
                   id: 5,
                   name: 'Full Name Game',
                   platformIds: <int>[999],
                   coverUrl: 'https://example.com/fn.jpg',
                 ),
-              ],
+              ]},
             ),
             platformMap: const <int, Platform>{
               999: Platform(id: 999, name: 'My Custom Platform'),
@@ -1074,39 +1167,46 @@ class _TestBrowseNotifier extends BrowseNotifier {
 }
 
 class _ViewportFillTestNotifier extends BrowseNotifier {
-  _ViewportFillTestNotifier({required this.onLoadMore});
+  _ViewportFillTestNotifier({required this.onLoadMore, BrowseState? initial})
+      : _initial = initial;
 
   final void Function() onLoadMore;
+  final BrowseState? _initial;
 
   @override
   BrowseState build() =>
-      const BrowseState(sourceId: 'movies', isLoading: true);
+      _initial ??
+      const BrowseState(
+        mediaType: MediaType.movie,
+        loadingSourceIds: <String>{'movies'},
+      );
 
   void completeLoading(List<Object> items, {required bool hasMore}) {
-    state = state.copyWith(
-      items: items,
-      hasMore: hasMore,
-      isLoading: false,
-      filterValues: const <String, Object?>{'genre': 28},
-    );
+    state = _withItems(items, hasMore: hasMore, isLoading: false);
   }
 
   void setLoadingMore(List<Object> items) {
-    state = state.copyWith(
-      items: items,
-      hasMore: true,
-      isLoading: false,
-      isLoadingMore: true,
-      filterValues: const <String, Object?>{'genre': 28},
-    );
+    state = _withItems(items, hasMore: true, isLoading: false)
+        .copyWith(isLoadingMore: true);
   }
 
   void setStillLoading(List<Object> items) {
-    state = state.copyWith(
-      items: items,
-      hasMore: true,
-      isLoading: true,
-      filterValues: const <String, Object?>{'genre': 28},
+    state = _withItems(items, hasMore: true, isLoading: true);
+  }
+
+  BrowseState _withItems(
+    List<Object> items, {
+    required bool hasMore,
+    required bool isLoading,
+  }) {
+    return state.copyWith(
+      itemsBySource: <String, List<Object>>{'movies': items},
+      moreBySource: <String, bool>{'movies': hasMore},
+      loadingSourceIds:
+          isLoading ? const <String>{'movies'} : const <String>{},
+      ownFilterValues: const <String, Map<String, Object?>>{
+        'movies': <String, Object?>{'genre': 28},
+      },
     );
   }
 

@@ -2451,6 +2451,38 @@ class SRu extends S {
   String get searchNoResults => 'Ничего не найдено';
 
   @override
+  String get searchWhatToFind => 'Что ищем';
+
+  @override
+  String get searchSortNeedsSingleSource =>
+      'Сортировка доступна при одном источнике';
+
+  @override
+  String get searchSortUnavailableInSearch =>
+      'Этот источник не сортирует результаты поиска';
+
+  @override
+  String get searchSourcesLabel => 'Источники';
+
+  @override
+  String get searchTextOnlyHint => 'Только текстовый поиск';
+
+  @override
+  String get searchSourceNoResponse => 'не ответил';
+
+  @override
+  String get searchCommonFilters => 'Общие';
+
+  @override
+  String get searchShowAll => 'все';
+
+  @override
+  String get searchNarrowedBySource => 'сужено фильтром источника';
+
+  @override
+  String get searchSourceLacksValue => 'не поддерживает выбранное значение';
+
+  @override
   String searchNothingFoundFor(String query) {
     return 'Ничего не найдено по запросу «$query»';
   }

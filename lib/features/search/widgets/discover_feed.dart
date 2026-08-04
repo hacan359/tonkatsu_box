@@ -1,5 +1,6 @@
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
@@ -36,17 +37,17 @@ final FutureProvider<Set<int>> _existingTmdbIdsProvider =
 });
 
 /// Shown on the search screen while the query is empty; sections are
-/// filtered by the current [sourceId].
+/// filtered by the current [mediaType].
 class DiscoverFeed extends ConsumerWidget {
   const DiscoverFeed({
-    required this.sourceId,
+    required this.mediaType,
     required this.onAddMovie,
     required this.onAddTvShow,
     super.key,
   });
 
-  /// Current source id: movies, tv, or anime.
-  final String sourceId;
+  /// Movie, TV show or animation — the types with a TMDB feed.
+  final MediaType mediaType;
 
   final void Function(Movie movie) onAddMovie;
 
@@ -60,7 +61,7 @@ class DiscoverFeed extends ConsumerWidget {
         ref.watch(_existingTmdbIdsProvider).valueOrNull ?? <int>{};
 
     final Set<DiscoverSectionId> available =
-        discoverSectionsPerSource[sourceId] ?? <DiscoverSectionId>{};
+        discoverSectionsPerMediaType[mediaType] ?? <DiscoverSectionId>{};
 
     final List<Widget> sections = <Widget>[];
 
@@ -197,7 +198,7 @@ class DiscoverFeed extends ConsumerWidget {
   ) {
     // Movies tab → trending movies, TV/Anime → trending TV shows. The TMDB
     // trending API has no genre filter, so anime and tv share one provider.
-    if (sourceId == 'movies') {
+    if (mediaType == MediaType.movie) {
       return _buildMovieSection(
         context,
         ref,

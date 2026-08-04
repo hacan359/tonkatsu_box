@@ -1087,6 +1087,16 @@
   "goToSettings": "前往设置",
   "searchMinCharsHint": "输入至少 2 个字符并按回车",
   "searchNoResults": "未找到结果",
+  "searchWhatToFind": "查找内容",
+  "searchSortNeedsSingleSource": "仅在单一来源时可排序",
+  "searchSortUnavailableInSearch": "该来源不支持对搜索结果排序",
+  "searchSourcesLabel": "来源",
+  "searchTextOnlyHint": "仅支持文本搜索",
+  "searchSourceNoResponse": "无响应",
+  "searchCommonFilters": "通用",
+  "searchShowAll": "全部",
+  "searchNarrowedBySource": "已按该来源的筛选缩小",
+  "searchSourceLacksValue": "不支持所选值",
   "searchNothingFoundFor": "未找到「{query}」的相关结果",
   "@searchNothingFoundFor": {
     "placeholders": {

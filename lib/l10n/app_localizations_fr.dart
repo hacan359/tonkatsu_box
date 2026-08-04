@@ -2441,6 +2441,40 @@ class SFr extends S {
   String get searchNoResults => 'Aucun résultat';
 
   @override
+  String get searchWhatToFind => 'Que chercher';
+
+  @override
+  String get searchSortNeedsSingleSource =>
+      'Le tri est disponible avec une seule source';
+
+  @override
+  String get searchSortUnavailableInSearch =>
+      'Cette source ne trie pas les résultats de recherche';
+
+  @override
+  String get searchSourcesLabel => 'Sources';
+
+  @override
+  String get searchTextOnlyHint => 'Recherche textuelle uniquement';
+
+  @override
+  String get searchSourceNoResponse => 'n\'a pas répondu';
+
+  @override
+  String get searchCommonFilters => 'Communs';
+
+  @override
+  String get searchShowAll => 'tout';
+
+  @override
+  String get searchNarrowedBySource =>
+      'restreint par le filtre de cette source';
+
+  @override
+  String get searchSourceLacksValue =>
+      'ne prend pas en charge la valeur sélectionnée';
+
+  @override
   String searchNothingFoundFor(String query) {
     return 'Aucun résultat pour \"$query\"';
   }

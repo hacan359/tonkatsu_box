@@ -1,3 +1,4 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -87,7 +88,7 @@ void main() {
       await pumpAndReset(tester, container);
 
       expect(container.read(browseProvider).searchQuery, isEmpty);
-      expect(container.read(browseProvider).sourceId, 'games');
+      expect(container.read(browseProvider).mediaType, MediaType.game);
     });
 
     testWidgets('clears the add-target collections', (WidgetTester tester) async {

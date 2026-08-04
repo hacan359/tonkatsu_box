@@ -17,6 +17,10 @@ class KitsuMangaStatusFilter extends SearchFilter {
   String placeholder(S l) => l.status;
 
   @override
+  FilterSemanticFamily? get semanticFamily =>
+      FilterSemanticFamily.status;
+
+  @override
   FilterOption get allOption => const FilterOption(
         id: 'any',
         label: 'All',
@@ -30,16 +34,19 @@ class KitsuMangaStatusFilter extends SearchFilter {
         id: 'current',
         label: l.mangaStatusPublishing,
         value: 'current',
+        semantic: FilterSemantic.statusReleasing,
       ),
       FilterOption(
         id: 'finished',
         label: l.mangaStatusFinished,
         value: 'finished',
+        semantic: FilterSemantic.statusFinished,
       ),
       FilterOption(
         id: 'upcoming',
         label: l.mangaStatusNotYetPublished,
         value: 'upcoming',
+        semantic: FilterSemantic.statusNotYetReleased,
       ),
     ];
   }

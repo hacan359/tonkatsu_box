@@ -10,9 +10,12 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/source_logo.dart';
+import '../models/common_filter.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
 import '../utils/filter_ui.dart';
+import 'filter_control.dart';
 import 'filter_dropdown.dart';
 
 Future<void> showFilterSheet(BuildContext context) {
@@ -45,11 +48,12 @@ class FilterSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
     final BrowseState browseState = ref.watch(browseProvider);
-    final SearchSource source = browseState.source;
-    final List<SearchFilter> filters = source.filters;
-    final List<BrowseSortOption> sortOptions = source.sortOptions;
+    final MediaTypeFilters filters = browseState.filters;
+    final List<BrowseSortOption> sortOptions = browseState.canSort
+        ? browseState.sortSource?.sortOptions ?? const <BrowseSortOption>[]
+        : const <BrowseSortOption>[];
     final bool hasActiveFilters = browseState.hasFilters;
-    final Color accent = filterAccentForType(source.outputMediaType);
+    final Color accent = filterAccentForType(browseState.mediaType);
 
     return Material(
       color: AppColors.background,
@@ -177,20 +181,40 @@ class FilterSheet extends ConsumerWidget {
                       ),
                     ),
 
-                    // Filters.
-                    if (filters.isNotEmpty)
-                      for (final SearchFilter f in filters)
+                    // Sources come first: on a phone this sheet is the only
+                    // place they can be switched.
+                    if (browseState.sources.length > 1)
+                      _SourcesSection(state: browseState, accent: accent),
+
+                    if (filters.common.isNotEmpty) ...<Widget>[
+                      _GroupLabel(text: l.searchCommonFilters),
+                      for (final CommonFilter f in filters.common)
                         _FilterRow(
-                          key: ValueKey<String>(
-                            '${source.id}_${f.cacheKey}',
-                          ),
+                          key: ValueKey<String>('common_${f.cacheKey}'),
                           filter: f,
-                          value: browseState.filterValues[f.key],
+                          value: browseState.commonSelections[f.key]?.semantic,
                           accent: accent,
-                          onChanged: (Object? v) => ref
+                          onPick: (Object? v, CommonSelection? selection) => ref
                               .read(browseProvider.notifier)
-                              .setFilter(f.key, v),
+                              .setCommonFilter(f.key, selection),
                         ),
+                    ],
+
+                    for (final SearchSource src in browseState.sources)
+                      if ((filters.own[src.id] ?? const <SearchFilter>[])
+                          .isNotEmpty) ...<Widget>[
+                        _SourceLabel(source: src),
+                        for (final SearchFilter f in filters.own[src.id]!)
+                          _FilterRow(
+                            key: ValueKey<String>('${src.id}_${f.cacheKey}'),
+                            filter: f,
+                            value: browseState.ownFilterValues[src.id]?[f.key],
+                            accent: accent,
+                            onPick: (Object? v, CommonSelection? _) => ref
+                                .read(browseProvider.notifier)
+                                .setOwnFilter(src.id, f.key, v),
+                          ),
+                      ],
 
                     // Sort.
                     if (sortOptions.isNotEmpty) ...<Widget>[
@@ -283,50 +307,32 @@ class _FilterRow extends ConsumerStatefulWidget {
     required this.filter,
     required this.value,
     required this.accent,
-    required this.onChanged,
+    required this.onPick,
     super.key,
   });
 
   final SearchFilter filter;
   final Object? value;
   final Color accent;
-  final ValueChanged<Object?> onChanged;
+  final FilterPick onPick;
 
   @override
   ConsumerState<_FilterRow> createState() => _FilterRowState();
 }
 
-class _FilterRowState extends ConsumerState<_FilterRow> {
-  List<FilterOption>? _options;
-  bool _isLoading = false;
+class _FilterRowState extends ConsumerState<_FilterRow>
+    with FilterOptionsLoader<_FilterRow> {
   bool _initialLoadDone = false;
-  int _loadGeneration = 0;
+
+  @override
+  SearchFilter get filter => widget.filter;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialLoadDone) {
       _initialLoadDone = true;
-      _loadOptions();
-    }
-  }
-
-  Future<void> _loadOptions() async {
-    if (_isLoading) return;
-    final int gen = ++_loadGeneration;
-    setState(() => _isLoading = true);
-    try {
-      final S l = S.of(context);
-      final List<FilterOption> opts =
-          await widget.filter.options(ref, l);
-      if (_loadGeneration != gen || !mounted) return;
-      setState(() {
-        _options = opts;
-        _isLoading = false;
-      });
-    } on Exception {
-      if (_loadGeneration != gen || !mounted) return;
-      setState(() => _isLoading = false);
+      loadOptions();
     }
   }
 
@@ -337,8 +343,9 @@ class _FilterRowState extends ConsumerState<_FilterRow> {
       if (sel.isEmpty) return l.all;
       return l.platformFilterApply(sel.length);
     }
-    if (_options == null) return '…';
-    for (final FilterOption opt in _options!) {
+    final List<FilterOption>? loaded = options;
+    if (loaded == null) return '…';
+    for (final FilterOption opt in loaded) {
       if (opt.value == widget.value) return opt.label;
     }
     return widget.value.toString();
@@ -362,16 +369,15 @@ class _FilterRowState extends ConsumerState<_FilterRow> {
             context: context,
             builder: (BuildContext ctx) => SearchableFilterDialog(
               title: widget.filter.placeholder(l),
-              options: _options,
-              isLoading: _isLoading,
+              options: options,
+              isLoading: isLoadingOptions,
               currentValue: widget.value,
               allLabel: l.all,
               multiSelect: widget.filter.multiSelect,
             ),
           );
-    if (result == null) return;
-    // SearchableFilterDialog returns the sentinel for the "All" reset.
-    widget.onChanged(result == kFilterResetSentinel ? null : result);
+    if (result == null || !mounted) return;
+    report(result, widget.onPick);
   }
 
   @override
@@ -418,5 +424,167 @@ class _FilterRowState extends ConsumerState<_FilterRow> {
         onTap: _openDialog,
       ),
     );
+  }
+}
+
+/// Uppercase group caption inside the sheet.
+class _GroupLabel extends StatelessWidget {
+  const _GroupLabel({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.xs,
+      ),
+      child: Text(
+        text.toUpperCase(),
+        style: AppTypography.caption.copyWith(
+          color: AppColors.textTertiary,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+}
+
+/// Group caption for one provider's private filters, with its logo so it is
+/// obvious whose filter is being set.
+class _SourceLabel extends StatelessWidget {
+  const _SourceLabel({required this.source});
+
+  final SearchSource source;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.xs,
+      ),
+      child: Row(
+        children: <Widget>[
+          SourceLogo(source: source.dataSource, size: 14),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            source.dataSource.label.toUpperCase(),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textTertiary,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Multi-select provider row. On a phone this is the only way to switch
+/// sources, so it lives at the top of the sheet.
+class _SourcesSection extends ConsumerWidget {
+  const _SourcesSection({required this.state, required this.accent});
+
+  final BrowseState state;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final S l = S.of(context);
+    final Set<String> unsupported = state.unsupportedSourceIds;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _GroupLabel(text: l.searchSourcesLabel),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
+            children: <Widget>[
+              for (final SearchSource source in state.sources)
+                _SourceChip(
+                  source: source,
+                  accent: accent,
+                  selected: !state.disabledSourceIds.contains(source.id),
+                  blocked: unsupported.contains(source.id),
+                  onTap: () => ref
+                      .read(browseProvider.notifier)
+                      .toggleSource(source.id),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SourceChip extends StatelessWidget {
+  const _SourceChip({
+    required this.source,
+    required this.accent,
+    required this.selected,
+    required this.blocked,
+    required this.onTap,
+  });
+
+  final SearchSource source;
+  final Color accent;
+  final bool selected;
+
+  /// Cannot answer the picked shared value, so it is out of this query.
+  final bool blocked;
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool on = selected && !blocked;
+    final Widget chip = Material(
+      color: on ? accent.withAlpha(38) : Colors.transparent,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+        onTap: blocked ? null : onTap,
+        child: Container(
+          height: AppSpacing.buttonHeightDense,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+            border: Border.all(
+              color: on ? accent : AppColors.surfaceBorder,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Opacity(
+                opacity: on ? 1 : 0.4,
+                child: SourceLogo(source: source.dataSource, size: 14),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                source.dataSource.label,
+                style: AppTypography.bodySmall.copyWith(
+                  color: on ? AppColors.textPrimary : AppColors.textTertiary,
+                  fontWeight: on ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (!blocked) return chip;
+    return Tooltip(message: S.of(context).searchSourceLacksValue, child: chip);
   }
 }

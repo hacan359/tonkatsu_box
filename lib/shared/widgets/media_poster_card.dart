@@ -202,8 +202,6 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
   /// Source logo size as a share of the meta font size. Stays under the line
   /// height (font × 1.3) so the logo never raises the meta line.
-  static const double _sourceLogoScale = 1.1;
-
   bool get _isGridVariant =>
       widget.variant == CardVariant.grid ||
       widget.variant == CardVariant.compact;
@@ -322,6 +320,12 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               Text(
                 widget.title,
                 style: AppTypography.posterTitleFor(compact: _isCompact),
+                // Fallback glyphs (CJK titles) raise the line past
+                // fontSize×height and burst the block budgeted from it.
+                strutStyle: StrutStyle.fromTextStyle(
+                  AppTypography.posterTitleFor(compact: _isCompact),
+                  forceStrutHeight: true,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -666,7 +670,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         children: <Widget>[
           _SourceLogoLink(
             source: source,
-            size: fontSize * _sourceLogoScale,
+            size: fontSize * AppTypography.posterSourceLogoScale,
             onTap: widget.onSourceTap,
           ),
           Expanded(child: metaText),
@@ -678,6 +682,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
   /// [rating ·] platform · year · MediaType (colored) · genre.
   Widget _buildMetaText(BuildContext context, TextStyle baseStyle) {
+    // The rating star is not in Inter; its fallback font would raise the line
+    // past fontSize×height and burst the block budgeted from it.
+    final StrutStyle strut =
+        StrutStyle.fromTextStyle(baseStyle, forceStrutHeight: true);
 
     // Parts before the type: rating, platform, year.
     final List<String> before = <String>[];
@@ -717,6 +725,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         return Text(
           all.join(' \u00b7 '),
           style: baseStyle,
+          strutStyle: strut,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         );
@@ -732,6 +741,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               TextSpan(text: ' \u00b7 ${all.join(' \u00b7 ')}', style: baseStyle),
           ],
         ),
+        strutStyle: strut,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );
@@ -759,6 +769,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             TextSpan(text: ' \u00b7 $afterText', style: baseStyle),
         ],
       ),
+      strutStyle: strut,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );

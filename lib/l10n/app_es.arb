@@ -1087,6 +1087,16 @@
   "goToSettings": "Ir a Ajustes",
   "searchMinCharsHint": "Escribe al menos 2 caracteres y pulsa Intro",
   "searchNoResults": "Sin resultados",
+  "searchWhatToFind": "Qué buscar",
+  "searchSortNeedsSingleSource": "La ordenación está disponible con una sola fuente",
+  "searchSortUnavailableInSearch": "Esta fuente no ordena los resultados de búsqueda",
+  "searchSourcesLabel": "Fuentes",
+  "searchTextOnlyHint": "Solo búsqueda por texto",
+  "searchSourceNoResponse": "no respondió",
+  "searchCommonFilters": "Comunes",
+  "searchShowAll": "todos",
+  "searchNarrowedBySource": "limitado por el filtro de esta fuente",
+  "searchSourceLacksValue": "no admite el valor seleccionado",
   "searchNothingFoundFor": "No se encontró nada para \"{query}\"",
   "@searchNothingFoundFor": {
     "placeholders": {
