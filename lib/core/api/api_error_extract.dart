@@ -9,6 +9,7 @@ import 'mangabaka_api.dart';
 import 'openlibrary_api.dart';
 import 'ra_api.dart';
 import 'screenscraper_api.dart';
+import 'simkl_api.dart';
 import 'steam_api.dart';
 import 'steamgriddb_api.dart';
 import 'tmdb_api.dart';
@@ -51,6 +52,8 @@ ApiError extractApiError(Exception e) {
       (message: message, detail: detail),
     ScreenScraperApiException(:final String message) =>
       (message: message, detail: null),
+    SimklApiException(:final String message, :final String? detail) =>
+      (message: message, detail: detail),
     _ => (message: e.toString(), detail: null),
   };
 }

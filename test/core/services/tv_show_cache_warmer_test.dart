@@ -1,15 +1,15 @@
+import 'package:core/database/dao/tv_show_dao.dart';
 import 'package:core/database/migrations/migration.dart';
 import 'package:core/database/migrations/migration_registry.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_box/core/api/episode_source/tv_episode_source.dart';
-import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
 import 'package:tonkatsu_box/core/services/tv_show_cache_warmer.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/tv_episode.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
 

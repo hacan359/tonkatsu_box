@@ -1,12 +1,9 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// Custom items get a universal progress tracker mirroring manga / anime: a
-/// total count for the fine unit (episodes / chapters / pages / parts) and an
-/// optional total for the coarse unit (seasons / volumes). The "current"
-/// position reuses `collection_items.current_episode` / `current_season`, the
-/// same slots manga and TV already use — no new progress columns.
+/// Universal progress totals for custom items. The current position reuses
+/// `current_episode` / `current_season` — no new progress columns.
 class MigrationV52 extends Migration {
   @override
   int get version => 52;

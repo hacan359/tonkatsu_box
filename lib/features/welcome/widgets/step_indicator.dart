@@ -1,4 +1,3 @@
-// Step indicator для Welcome Wizard — номер шага с лейблом.
 
 import 'package:flutter/material.dart';
 
@@ -10,7 +9,6 @@ import '../../../shared/theme/app_spacing.dart';
 /// Показывает номер шага в кружке и опциональный лейбл.
 /// Три состояния: done (галочка, зелёный), active (brand), pending (серый).
 class StepIndicator extends StatelessWidget {
-  /// Создаёт [StepIndicator].
   const StepIndicator({
     required this.number,
     required this.label,
@@ -24,16 +22,12 @@ class StepIndicator extends StatelessWidget {
   /// Порядковый номер шага (1-based).
   final int number;
 
-  /// Текстовый лейбл шага.
   final String label;
 
-  /// Текущий активный шаг.
   final bool isActive;
 
-  /// Шаг уже пройден.
   final bool isDone;
 
-  /// Обработчик нажатия на индикатор.
   final VoidCallback? onTap;
 
   /// Показывать ли лейбл (на узких экранах скрываем неактивные).

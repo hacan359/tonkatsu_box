@@ -1,7 +1,7 @@
+import 'package:core/database/dao/canvas_dao.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:tonkatsu_box/core/database/dao/canvas_dao.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -19,7 +19,6 @@ void main() {
   });
 
   group('CanvasDao', () {
-    // ==================== Canvas Items ====================
 
     group('getCanvasItems', () {
       test('returns items for collection excluding per-item', () async {
@@ -214,7 +213,6 @@ void main() {
       });
     });
 
-    // ==================== Batch Operations ====================
 
     group('insertCanvasItemsBatch', () {
       test('returns empty list for empty input', () async {
@@ -295,7 +293,6 @@ void main() {
       });
     });
 
-    // ==================== Canvas Viewport ====================
 
     group('getCanvasViewport', () {
       test('returns null when not found', () async {
@@ -366,7 +363,6 @@ void main() {
       });
     });
 
-    // ==================== Canvas Connections ====================
 
     group('getCanvasConnections', () {
       test('returns connections excluding per-item', () async {
@@ -474,7 +470,6 @@ void main() {
       });
     });
 
-    // ==================== Game Canvas ====================
 
     group('getGameCanvasItems', () {
       test('returns items by collection_item_id', () async {

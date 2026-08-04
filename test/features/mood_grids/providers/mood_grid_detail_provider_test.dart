@@ -1,12 +1,12 @@
+import 'package:core/models/media_type.dart';
+import 'package:core/models/mood_grid.dart';
+import 'package:core/models/mood_grid_cell.dart';
+import 'package:core/models/movie.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/mood_grids/providers/mood_grid_detail_provider.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/mood_grid.dart';
-import 'package:tonkatsu_box/shared/models/mood_grid_cell.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
 
 import '../../../helpers/test_helpers.dart';
 

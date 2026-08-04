@@ -1,12 +1,11 @@
-import '../../../shared/constants/platform_features.dart';
-
+import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/constants/platform_features.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/data_source.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -112,7 +111,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== Welcome ====================
 
   Widget _buildWelcomeSection() {
     return SettingsGroup(
@@ -147,7 +145,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== IGDB ====================
 
   Widget _buildIgdbSection(SettingsState settings, bool compact) {
     return SettingsGroup(
@@ -210,7 +207,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== SteamGridDB ====================
 
   Widget _buildSteamGridDbSection(SettingsState settings, bool compact) {
     return SettingsGroup(
@@ -280,7 +276,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== TMDB ====================
 
   Widget _buildTmdbSection(SettingsState settings, bool compact) {
     return SettingsGroup(
@@ -348,7 +343,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== ComicVine ====================
 
   Widget _buildComicVineSection(SettingsState settings, bool compact) {
     return SettingsGroup(
@@ -427,7 +421,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== Google Books ====================
 
   Widget _buildGoogleBooksSection(SettingsState settings, bool compact) {
     return SettingsGroup(
@@ -508,7 +501,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== Hardcover ====================
 
   Widget _buildHardcoverSection(SettingsState settings, bool compact) {
     return SettingsGroup(
@@ -586,7 +578,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== Hints ====================
 
   Widget _buildSourceHeader({
     required String description,
@@ -864,7 +855,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== ScreenScraper ====================
 
   Widget _buildScreenScraperSection(SettingsState settings, bool compact) {
     final S l = S.of(context);

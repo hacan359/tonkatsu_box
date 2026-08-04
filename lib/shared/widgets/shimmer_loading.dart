@@ -77,27 +77,46 @@ class _ShimmerBoxState extends State<ShimmerBox>
 
 /// Poster card placeholder (shimmer).
 ///
-/// A 2:3 rectangle plus two text lines below.
+/// A poster rectangle plus the card's title block, so the skeleton and the
+/// real [MediaPosterCard] give the poster the same height.
 class ShimmerPosterCard extends StatelessWidget {
   /// Creates a poster card shimmer placeholder.
-  const ShimmerPosterCard({super.key});
+  const ShimmerPosterCard({this.compact = false, super.key});
+
+  /// Mirrors the compact card variant (landscape phone).
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Expanded(
+        const Expanded(
           child: ShimmerBox(
             width: double.infinity,
             height: double.infinity,
             borderRadius: AppSpacing.radiusMd,
           ),
         ),
-        SizedBox(height: AppSpacing.xs),
-        ShimmerBox(width: 100, height: 14),
-        SizedBox(height: AppSpacing.xs),
-        ShimmerBox(width: 60, height: 11),
+        SizedBox(
+          height: AppSpacing.cardTitleBlockHeight(
+            compact: compact,
+            textScaler: MediaQuery.textScalerOf(context),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: AppSpacing.cardTitleBlockGap(compact: compact),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                ShimmerBox(width: 100, height: 12),
+                SizedBox(height: AppSpacing.xs),
+                ShimmerBox(width: 60, height: 10),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -254,10 +273,10 @@ class ShimmerPosterGrid extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 170,
+        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth,
         crossAxisSpacing: AppSpacing.gridGap,
         mainAxisSpacing: AppSpacing.lg,
-        childAspectRatio: 0.55,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       ),
       itemCount: itemCount,
       itemBuilder: (BuildContext context, int index) =>

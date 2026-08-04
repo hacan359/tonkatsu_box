@@ -2273,6 +2273,36 @@ class SZh extends S {
   String get searchNoResults => '未找到结果';
 
   @override
+  String get searchWhatToFind => '查找内容';
+
+  @override
+  String get searchSortNeedsSingleSource => '仅在单一来源时可排序';
+
+  @override
+  String get searchSortUnavailableInSearch => '该来源不支持对搜索结果排序';
+
+  @override
+  String get searchSourcesLabel => '来源';
+
+  @override
+  String get searchTextOnlyHint => '仅支持文本搜索';
+
+  @override
+  String get searchSourceNoResponse => '无响应';
+
+  @override
+  String get searchCommonFilters => '通用';
+
+  @override
+  String get searchShowAll => '全部';
+
+  @override
+  String get searchNarrowedBySource => '已按该来源的筛选缩小';
+
+  @override
+  String get searchSourceLacksValue => '不支持所选值';
+
+  @override
   String searchNothingFoundFor(String query) {
     return '未找到「$query」的相关结果';
   }
@@ -4929,4 +4959,254 @@ class SZh extends S {
 
   @override
   String get settingsGamepadDebugSubtitle => '捕获手柄按键代码';
+
+  @override
+  String get statsTabTitle => '统计';
+
+  @override
+  String get statsPeriodAllTime => '全部时间';
+
+  @override
+  String statsLede(String items) {
+    return '收藏中共有 $items 个条目';
+  }
+
+  @override
+  String get statsMetricMoviesWatched => '已看电影';
+
+  @override
+  String get statsMetricMangaChapters => '漫画章节';
+
+  @override
+  String get statsMetricBookPages => '书籍页数';
+
+  @override
+  String get statsMetricEpisodes => '集';
+
+  @override
+  String get statsMetricHours => '观看与游玩';
+
+  @override
+  String get statsMetricAvgRating => '平均评分';
+
+  @override
+  String get statsMetricReplays => '重刷';
+
+  @override
+  String get statsMetricLikedUnits => '点赞的剧集';
+
+  @override
+  String statsHoursShort(String hours) {
+    return '$hours 小时';
+  }
+
+  @override
+  String statsHoursBreakdown(int manual, int tracker, int estimated) {
+    return '时长：手动 $manual 小时 · 追踪器 $tracker 小时 · 估算 $estimated 小时';
+  }
+
+  @override
+  String get statsMonthsTitle => '逐月回顾';
+
+  @override
+  String get statsMonthsTitleAllTime => '今年逐月';
+
+  @override
+  String get statsMonthsHint => '封面为当月评分最高的作品';
+
+  @override
+  String get statsPeakLabel => '峰值';
+
+  @override
+  String statsMonthCounts(int items, int episodes) {
+    return '新增 $items · $episodes 集';
+  }
+
+  @override
+  String get statsVersusTitle => '最佳与最差';
+
+  @override
+  String get statsVersusHint => '按你自己的评分';
+
+  @override
+  String get statsBest => '最佳';
+
+  @override
+  String get statsWorst => '最差';
+
+  @override
+  String statsPlatformsSummary(String hours, int games) {
+    return '$hours 小时 · $games 款游戏';
+  }
+
+  @override
+  String get statsPlatformNone => '无平台';
+
+  @override
+  String statsPlatformsShowAll(int count) {
+    return '显示全部（$count）';
+  }
+
+  @override
+  String get statsPlatformsCollapse => '收起';
+
+  @override
+  String get statsHoursUnit => '小时';
+
+  @override
+  String get statsTypesTitle => '按媒体类型';
+
+  @override
+  String get statsTypesHint => '每种媒体类型的实时状态分布';
+
+  @override
+  String statsCompletedPercent(int percent) {
+    return '已完成 $percent%';
+  }
+
+  @override
+  String get statsPlatformMostPlayed => '游玩最多';
+
+  @override
+  String get statsFormatsHint => '形式来自数据源';
+
+  @override
+  String get statsSubgenresTitle => '子类型与标签';
+
+  @override
+  String get statsSubgenresHint => '数据源标签按类型展示';
+
+  @override
+  String get statsCrowdTitle => '我 vs 大众';
+
+  @override
+  String get statsCrowdHint => '我的评分与来源差异最大的作品';
+
+  @override
+  String get statsCrowdHigher => '我评得更高';
+
+  @override
+  String get statsCrowdLower => '我评得更低';
+
+  @override
+  String get statsCrowdMyRating => '我的评分';
+
+  @override
+  String get statsCrowdSource => '来源';
+
+  @override
+  String get statsTopTitle => '评分最高';
+
+  @override
+  String statsTopHint(int count) {
+    return '前 $count 名';
+  }
+
+  @override
+  String get statsEmptyTitle => '暂无统计';
+
+  @override
+  String get statsEmptyBody => '向媒体库添加条目后，这里会显示数据。';
+
+  @override
+  String get statsExportTitle => '导出分享卡片';
+
+  @override
+  String get statsExportFailed => '无法保存图片';
+
+  @override
+  String statsShareTitleYear(int year) {
+    return '我的 $year';
+  }
+
+  @override
+  String get statsShareTitleAllTime => '我的媒体库';
+
+  @override
+  String statsShareLede(String items, String completed, String rating) {
+    return '$items 个条目 · 已完成 $completed · 平均 $rating';
+  }
+
+  @override
+  String statsShareBest(String title, String rating) {
+    return '$title · $rating — 本期最佳';
+  }
+
+  @override
+  String get simklImportTitle => 'Simkl 导入';
+
+  @override
+  String get settingsSimklImportSubtitle => '从 Simkl 账户导入电影、剧集和动画';
+
+  @override
+  String get simklImportSubtitle => '使用短代码连接 Simkl 账户——电影、剧集和动画一次导入，并附带剧集观看记录';
+
+  @override
+  String get simklClientIdLabel => 'Simkl 应用密钥（client_id）';
+
+  @override
+  String get simklGetClientId => '在 simkl.com 获取 client_id';
+
+  @override
+  String get simklRememberClientId => '记住应用密钥';
+
+  @override
+  String get simklGetPin => '获取代码';
+
+  @override
+  String get simklGetNewPin => '获取新代码';
+
+  @override
+  String get simklPinPrompt => '在 simkl.com/pin 输入此代码：';
+
+  @override
+  String get simklOpenPinPage => '打开 simkl.com/pin';
+
+  @override
+  String get simklWaitingConfirmation => '等待确认…';
+
+  @override
+  String get simklPinExpired => '代码已过期。';
+
+  @override
+  String simklConnectedAs(String name) {
+    return '已连接账户：$name';
+  }
+
+  @override
+  String get simklCheckingAccount => '正在检查账户…';
+
+  @override
+  String get simklRememberToken => '在此设备上保持连接';
+
+  @override
+  String get simklRememberTokenSubtitle => '访问令牌将保存在设置中；取消勾选则下次需要重新输入代码';
+
+  @override
+  String get simklDisconnect => '断开连接';
+
+  @override
+  String get simklImportFetching => '正在获取 Simkl 媒体库…';
+
+  @override
+  String get simklImportFetchingDetails => '正在获取详情…';
+
+  @override
+  String get simklImportWatchHistory => '正在恢复观看记录…';
+
+  @override
+  String simklImportNewCollectionDefault(String name) {
+    return 'Simkl：$name';
+  }
+
+  @override
+  String get simklImportModeOverwriteSubtitle => '更新现有条目的状态、评分和备注';
+
+  @override
+  String get simklClientIdRequired => '导入需要 Simkl 应用密钥——请输入你的 client_id';
+
+  @override
+  String simklImportRateLimitWait(int seconds, int attempt, int max) {
+    return '已达请求上限——$seconds 秒后重试（第 $attempt/$max 次）';
+  }
 }

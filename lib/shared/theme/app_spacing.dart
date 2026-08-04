@@ -1,12 +1,14 @@
 // Spacing and sizing constants.
 
+import 'package:flutter/painting.dart';
+
+import 'app_typography.dart';
+
 /// Spacing and sizing constants.
 ///
 /// One spacing system for a consistent UI.
 /// Base step is 4px; the main values are multiples of it.
 abstract final class AppSpacing {
-  // ==================== Padding ====================
-
   /// 4px — minimal padding.
   static const double xs = 4;
 
@@ -22,7 +24,6 @@ abstract final class AppSpacing {
   /// 32px — extra large padding.
   static const double xl = 32;
 
-  // ==================== Border radii ====================
 
   /// 2px — half-height rounding for 4px-tall elements
   /// (sheet grab handles, thin progress bars).
@@ -43,7 +44,6 @@ abstract final class AppSpacing {
   /// 20px — extra large rounding (modal dialogs).
   static const double radiusXl = 20;
 
-  // ==================== Controls ====================
 
   /// 48px — standard button height (filled/outlined buttons).
   static const double buttonHeight = 48;
@@ -55,7 +55,6 @@ abstract final class AppSpacing {
   /// 28px — dense chip-like button height (filter sheets).
   static const double buttonHeightDense = 28;
 
-  // ==================== Grid ====================
 
   /// 16px — gap between grid cards.
   static const double gridGap = 16;
@@ -77,6 +76,39 @@ abstract final class AppSpacing {
 
   /// Max card width on desktop grids at 100% card scale.
   static const double desktopMaxCardWidth = 170;
+
+  /// Grid cell ratio for poster cards: a ~2:3 poster plus the title block
+  /// below it.
+  static const double posterCardAspectRatio = 0.55;
+
+  /// Padding a horizontal poster row puts above and below its cards.
+  static const double posterRowVerticalPadding = 4;
+
+  /// Gap between the poster and the title block under it.
+  static double cardTitleBlockGap({required bool compact}) => compact ? 2 : xs;
+
+  /// Fixed height of the title + subtitle block under a poster card: the gap
+  /// plus room for exactly two title lines and one subtitle line.
+  static double cardTitleBlockHeight({
+    required bool compact,
+    required TextScaler textScaler,
+  }) =>
+      cardTitleBlockGap(compact: compact) +
+      AppTypography.posterTextBlockHeight(
+        compact: compact,
+        textScaler: textScaler,
+      );
+
+  /// Height of a horizontal poster row: the 2:3 poster of [posterWidth], the
+  /// title block under it and the list's vertical padding.
+  static double posterRowHeight({
+    required double posterWidth,
+    required bool compact,
+    required TextScaler textScaler,
+  }) =>
+      posterWidth / posterAspectRatio +
+      cardTitleBlockHeight(compact: compact, textScaler: textScaler) +
+      2 * posterRowVerticalPadding;
 
   /// Column count for fixed-count grids adjusted by the card scale setting:
   /// larger cards → fewer columns.

@@ -1,6 +1,7 @@
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/data_source.dart';
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'openlibrary_types.dart';
 
@@ -10,13 +11,11 @@ import 'openlibrary_types.dart';
 class OpenLibraryHttpClient {
   OpenLibraryHttpClient({Dio? dio})
       : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: _baseUrl,
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 20),
-                headers: <String, String>{'User-Agent': _userAgent},
-              ),
+            createApiDio(
+              baseUrl: _baseUrl,
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 20),
+              headers: <String, String>{'User-Agent': _userAgent},
             );
 
   static const String _baseUrl = 'https://openlibrary.org';

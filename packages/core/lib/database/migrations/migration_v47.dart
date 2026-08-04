@@ -1,12 +1,10 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import '../schema.dart';
 import 'migration.dart';
 
-/// Adds the `books_cache` table backing the `MediaType.book` media type
-/// (OpenLibrary + Fantlab). Identity mirrors manga: the composite primary key
-/// `(id, source)` lets an OpenLibrary and a Fantlab entry that share a numeric
-/// id coexist.
+/// Adds `books_cache` for `MediaType.book`. Identity mirrors manga: the
+/// composite PK `(id, source)` lets two providers share a numeric id.
 class MigrationV47 extends Migration {
   @override
   int get version => 47;

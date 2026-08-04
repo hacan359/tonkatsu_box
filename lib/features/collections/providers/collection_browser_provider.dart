@@ -1,4 +1,3 @@
-// Провайдеры для каталога онлайн-коллекций.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,7 +11,6 @@ final AsyncNotifierProvider<CollectionsIndexNotifier, CollectionsIndex>
   CollectionsIndexNotifier.new,
 );
 
-/// Нотифаер для загрузки и обновления индекса коллекций.
 class CollectionsIndexNotifier extends AsyncNotifier<CollectionsIndex> {
   @override
   Future<CollectionsIndex> build() async {
@@ -21,7 +19,6 @@ class CollectionsIndexNotifier extends AsyncNotifier<CollectionsIndex> {
     return service.fetchIndex();
   }
 
-  /// Принудительно обновляет индекс с сервера.
   Future<void> refresh() async {
     final CollectionBrowserService service =
         ref.read(collectionBrowserServiceProvider);
@@ -40,11 +37,9 @@ final StateProvider<String?> browserPlatformFilterProvider =
 final StateProvider<String?> browserCategoryFilterProvider =
     StateProvider<String?>((Ref ref) => null);
 
-/// Поисковый запрос.
 final StateProvider<String> browserSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Отфильтрованный список коллекций.
 final Provider<List<RemoteCollection>> filteredRemoteCollectionsProvider =
     Provider<List<RemoteCollection>>((Ref ref) {
   final AsyncValue<CollectionsIndex> indexAsync =

@@ -1,8 +1,8 @@
+import 'package:core/models/media_type.dart';
+import 'package:core/models/wishlist_item.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/data/repositories/wishlist_repository.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/wishlist_item.dart';
 
 import '../../helpers/test_helpers.dart';
 

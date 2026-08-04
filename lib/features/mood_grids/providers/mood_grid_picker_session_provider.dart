@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 
 /// Filter state of the mood-grid item picker, kept between openings so
 /// filling a large grid doesn't reset the filter and search on every cell.

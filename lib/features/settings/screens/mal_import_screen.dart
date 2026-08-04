@@ -1,4 +1,3 @@
-// Экран импорта MyAnimeList выгрузки.
 
 import 'package:flutter/material.dart';
 
@@ -11,7 +10,6 @@ import '../content/mal_import_content.dart';
 ///
 /// Тонкая обёртка вокруг [MalImportContent] с заголовком.
 class MalImportScreen extends StatelessWidget {
-  /// Создаёт [MalImportScreen].
   const MalImportScreen({super.key});
 
   @override

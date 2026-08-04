@@ -1,12 +1,12 @@
+import 'package:core/models/movie.dart';
+import 'package:core/models/tmdb_review.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/movie.dart';
-import '../../shared/models/tmdb_review.dart';
-import '../../shared/models/tv_episode.dart';
-import '../../shared/models/tv_season.dart';
-import '../../shared/models/tv_show.dart';
 import '../services/api_key_initializer.dart';
 import 'tmdb/tmdb_find_api.dart';
 import 'tmdb/tmdb_genres_api.dart';
@@ -15,7 +15,6 @@ import 'tmdb/tmdb_movies_api.dart';
 import 'tmdb/tmdb_reviews_api.dart';
 import 'tmdb/tmdb_tv_api.dart';
 import 'tmdb/tmdb_types.dart';
-
 export 'tmdb/tmdb_types.dart';
 
 final Provider<TmdbApi> tmdbApiProvider = Provider<TmdbApi>((Ref ref) {

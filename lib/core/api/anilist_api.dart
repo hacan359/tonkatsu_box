@@ -1,10 +1,10 @@
+import 'package:core/models/anilist_tag.dart';
+import 'package:core/models/anime.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/anilist_tag.dart';
-import '../../shared/models/anime.dart';
-import '../../shared/models/manga.dart';
-import '../../shared/models/media_type.dart';
 import 'anilist/anilist_graphql_client.dart';
 import 'anilist/anilist_mal_lookup_api.dart';
 import 'anilist/anilist_media_api.dart';

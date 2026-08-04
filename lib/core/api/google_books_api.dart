@@ -1,9 +1,10 @@
+import 'package:core/models/book.dart';
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/book.dart';
-import '../../shared/models/data_source.dart';
 import '../services/api_key_initializer.dart';
+import 'api_dio.dart';
 import 'api_error_detail.dart';
 
 /// Typed Google Books error carrying a user-facing [message] and a redacted
@@ -45,11 +46,11 @@ final Provider<GoogleBooksApi> googleBooksApiProvider =
 class GoogleBooksApi {
   GoogleBooksApi({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               baseUrl: _baseUrl,
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            ));
+            );
 
   static const String _baseUrl = 'https://www.googleapis.com/books/v1';
   static const Duration _timeout = Duration(seconds: 8);

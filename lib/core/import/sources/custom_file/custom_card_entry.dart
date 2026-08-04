@@ -1,5 +1,5 @@
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/media_type.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 
 /// Field keys of the custom-cards import schema, shared by the JSON and CSV
 /// parsers and the downloadable templates.

@@ -1,31 +1,23 @@
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+
 import '../../../data/repositories/canvas_repository.dart';
-import '../../../shared/models/canvas_connection.dart';
-import '../../../shared/models/canvas_item.dart';
 import 'canvas_state.dart';
 
-/// Mixin с общими CRUD-операциями для элементов и связей канваса.
-///
-/// Используется в [CanvasNotifier] и [GameCanvasNotifier] для устранения
-/// дублирования ~200 строк идентичного кода. Единственное различие между
-/// двумя Notifier-ами — значение [itemCollectionItemId]: null для коллекционного
-/// канваса и ID элемента для per-game канваса.
+/// Shared by [CanvasNotifier] and [GameCanvasNotifier]; the only difference is
+/// [itemCollectionItemId] — null for a collection canvas, set for a per-item one.
 mixin CanvasOperationsMixin {
-  /// Текущее состояние канваса.
   CanvasState get state;
 
-  /// Устанавливает новое состояние канваса.
   set state(CanvasState value);
 
-  /// Репозиторий для CRUD-операций.
   CanvasRepository get operationsRepository;
 
-  /// ID коллекции.
   int get collectionId;
 
-  /// ID элемента коллекции для per-game canvas (null для коллекционного).
+  /// Null for a collection canvas, the item's id for a per-item one.
   int? get itemCollectionItemId;
 
-  /// Следующий z-index (на 1 больше максимального).
   int _nextZIndex() {
     if (state.items.isEmpty) return 0;
     return state.items
@@ -34,9 +26,7 @@ mixin CanvasOperationsMixin {
         1;
   }
 
-  // ==================== Items ====================
 
-  /// Добавляет элемент на канвас.
   Future<CanvasItem> addItem(CanvasItem item) async {
     final CanvasItem created = await operationsRepository.createItem(item);
     state = state.copyWith(
@@ -45,10 +35,7 @@ mixin CanvasOperationsMixin {
     return created;
   }
 
-  /// Удаляет элемент с канваса.
-  ///
-  /// Связи удаляются каскадно в БД (FK CASCADE).
-  /// В state фильтруем connections с участием удалённого элемента.
+  /// Connections cascade in the DB (FK CASCADE); state filters them out here.
   Future<void> deleteItem(int itemId) async {
     await operationsRepository.deleteItem(itemId);
     state = state.copyWith(
@@ -62,7 +49,6 @@ mixin CanvasOperationsMixin {
     );
   }
 
-  /// Добавляет текстовый блок на канвас.
   Future<CanvasItem> addTextItem(
     double x,
     double y,
@@ -91,10 +77,7 @@ mixin CanvasOperationsMixin {
     return addItem(item);
   }
 
-  /// Добавляет изображение на канвас.
-  ///
-  /// [width] и [height] задают размер элемента на канвасе.
-  /// Если не указаны, используется 200x200.
+  /// [width] / [height] default to 200x200 when omitted.
   Future<CanvasItem> addImageItem(
     double x,
     double y,
@@ -121,7 +104,6 @@ mixin CanvasOperationsMixin {
     return addItem(item);
   }
 
-  /// Добавляет ссылку на канвас.
   Future<CanvasItem> addLinkItem(
     double x,
     double y,
@@ -150,7 +132,6 @@ mixin CanvasOperationsMixin {
     return addItem(item);
   }
 
-  /// Обновляет дополнительные данные элемента.
   Future<void> updateItemData(
     int itemId,
     Map<String, dynamic> data,
@@ -166,9 +147,7 @@ mixin CanvasOperationsMixin {
     );
   }
 
-  /// Обновляет размеры элемента.
-  ///
-  /// Обновляет state мгновенно, сохраняет в БД.
+  /// Updates state immediately, then persists.
   Future<void> updateItemSize(
     int itemId, {
     required double width,
@@ -189,7 +168,6 @@ mixin CanvasOperationsMixin {
     );
   }
 
-  /// Перемещает элемент на передний план (максимальный z-index).
   Future<void> bringToFront(int itemId) async {
     if (state.items.isEmpty) return;
 
@@ -209,7 +187,6 @@ mixin CanvasOperationsMixin {
     );
   }
 
-  /// Перемещает элемент на задний план (минимальный z-index).
   Future<void> sendToBack(int itemId) async {
     if (state.items.isEmpty) return;
 
@@ -229,9 +206,7 @@ mixin CanvasOperationsMixin {
     );
   }
 
-  /// Сбрасывает позиции всех элементов в сетку по центру канваса.
-  ///
-  /// [viewportWidth] — ширина видимой области для расчёта колонок.
+  /// [viewportWidth] is the visible width, used to pick the column count.
   Future<void> resetPositions(double viewportWidth) async {
     final List<CanvasItem> items = state.items;
     if (items.isEmpty) return;
@@ -240,12 +215,10 @@ mixin CanvasOperationsMixin {
     const double cardH = CanvasRepository.defaultCardHeight;
     const double gap = CanvasRepository.gridGap;
 
-    // Рассчитываем количество колонок по ширине видимой области
     final int columns =
         ((viewportWidth + gap) / (cardW + gap)).floor().clamp(1, items.length);
     final int rowCount = (items.length + columns - 1) ~/ columns;
 
-    // Центрируем сетку вокруг центра канваса
     final double gridWidth = columns * (cardW + gap) - gap;
     final double gridHeight = rowCount * (cardH + gap) - gap;
     final double startX =
@@ -268,14 +241,11 @@ mixin CanvasOperationsMixin {
     state = state.copyWith(items: updated);
   }
 
-  // ==================== Connections ====================
 
-  /// Начинает создание связи от указанного элемента.
   void startConnection(int fromItemId) {
     state = state.copyWith(connectingFromId: fromItemId);
   }
 
-  /// Завершает создание связи к указанному элементу.
   Future<void> completeConnection(int toItemId) async {
     final int? fromItemId = state.connectingFromId;
     if (fromItemId == null || fromItemId == toItemId) {
@@ -301,12 +271,10 @@ mixin CanvasOperationsMixin {
     );
   }
 
-  /// Отменяет режим создания связи.
   void cancelConnection() {
     state = state.copyWith(clearConnectingFromId: true);
   }
 
-  /// Удаляет связь.
   Future<void> deleteConnection(int connectionId) async {
     await operationsRepository.deleteConnection(connectionId);
     state = state.copyWith(
@@ -316,7 +284,6 @@ mixin CanvasOperationsMixin {
     );
   }
 
-  /// Обновляет свойства связи (label, color, style).
   Future<void> updateConnection(
     int connectionId, {
     String? label,

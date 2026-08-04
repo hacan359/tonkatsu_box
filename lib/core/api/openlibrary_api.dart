@@ -1,11 +1,10 @@
+import 'package:core/models/book.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/book.dart';
 import 'openlibrary/openlibrary_http_client.dart';
 import 'openlibrary/openlibrary_search_api.dart';
 import 'openlibrary/openlibrary_works_api.dart';
-
 export 'openlibrary/openlibrary_types.dart';
 
 /// OpenLibrary REST facade. See `openlibrary/README.md` for the layer

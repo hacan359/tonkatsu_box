@@ -1,3 +1,6 @@
+import 'dart:collection';
+
+import 'package:core/models/media_type.dart';
 import 'package:flutter/widgets.dart';
 
 import '../models/search_source.dart';
@@ -61,6 +64,39 @@ SearchSource getSearchSourceById(String id) {
     (SearchSource s) => s.id == id,
     orElse: () => searchSources.first,
   );
+}
+
+/// Sources by [SearchSource.outputMediaType], keeping registration order, so
+/// the first entry of a type is its primary source and the rest its fallbacks.
+final Map<MediaType, List<SearchSource>> searchSourcesByMediaType = () {
+  final Map<MediaType, List<SearchSource>> byType =
+      <MediaType, List<SearchSource>>{};
+  for (final SearchSource source in searchSources) {
+    (byType[source.outputMediaType] ??= <SearchSource>[]).add(source);
+  }
+  return UnmodifiableMapView<MediaType, List<SearchSource>>(
+    byType.map(
+      (MediaType type, List<SearchSource> sources) =>
+          MapEntry<MediaType, List<SearchSource>>(
+        type,
+        List<SearchSource>.unmodifiable(sources),
+      ),
+    ),
+  );
+}();
+
+/// Media types that have at least one source, in registration order.
+final List<MediaType> searchableMediaTypes =
+    List<MediaType>.unmodifiable(searchSourcesByMediaType.keys);
+
+List<SearchSource> searchSourcesFor(MediaType type) =>
+    searchSourcesByMediaType[type] ?? const <SearchSource>[];
+
+/// Primary source of [type]; null when the type has none (e.g. custom).
+SearchSource? primarySearchSourceFor(MediaType? type) {
+  if (type == null) return null;
+  final List<SearchSource> sources = searchSourcesFor(type);
+  return sources.isEmpty ? null : sources.first;
 }
 
 typedef SourceGroupEntry = ({

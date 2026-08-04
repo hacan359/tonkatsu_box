@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:core/models/collection_item.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../shared/models/collection_item.dart';
 import '../../../../shared/theme/app_assets.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';

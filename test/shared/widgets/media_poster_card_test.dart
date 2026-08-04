@@ -1,13 +1,15 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/utils/item_card_progress.dart';
 import 'package:tonkatsu_box/shared/widgets/dual_rating_badge.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
+import 'package:tonkatsu_box/shared/widgets/source_logo.dart';
 
 void main() {
   Widget buildCard({
@@ -33,37 +35,47 @@ void main() {
     VoidCallback? onLongPress,
     VoidCallback? onOpenInCollection,
     VoidCallback? onToggleFavorite,
+    TextScaler textScaler = TextScaler.noScaling,
+    DataSource? source,
+    VoidCallback? onSourceTap,
   }) {
     return MaterialApp(
       localizationsDelegates: S.localizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(
-        body: SizedBox(
-          width: 150,
-          height: 250,
-          child: MediaPosterCard(
-            variant: variant,
-            title: title,
-            imageUrl: imageUrl,
-            cacheImageType: cacheImageType,
-            cacheImageId: cacheImageId,
-            userRating: userRating,
-            apiRating: apiRating,
-            splitRatings: splitRatings,
-            isInCollection: isInCollection,
-            status: status,
-            year: year,
-            subtitle: subtitle,
-            mediaType: mediaType,
-            placeholderIcon: placeholderIcon,
-            timeToBeatHours: timeToBeatHours,
-            progress: progress,
-            isFavorite: isFavorite,
-            showFavorite: showFavorite,
-            onTap: onTap,
-            onLongPress: onLongPress,
-            onOpenInCollection: onOpenInCollection,
-            onToggleFavorite: onToggleFavorite,
+        body: Builder(
+          builder: (BuildContext context) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+            child: SizedBox(
+              width: 150,
+              height: 250,
+              child: MediaPosterCard(
+                variant: variant,
+                title: title,
+                imageUrl: imageUrl,
+                cacheImageType: cacheImageType,
+                cacheImageId: cacheImageId,
+                userRating: userRating,
+                apiRating: apiRating,
+                splitRatings: splitRatings,
+                isInCollection: isInCollection,
+                status: status,
+                year: year,
+                subtitle: subtitle,
+                mediaType: mediaType,
+                placeholderIcon: placeholderIcon,
+                timeToBeatHours: timeToBeatHours,
+                progress: progress,
+                isFavorite: isFavorite,
+                showFavorite: showFavorite,
+                onTap: onTap,
+                onLongPress: onLongPress,
+                onOpenInCollection: onOpenInCollection,
+                onToggleFavorite: onToggleFavorite,
+                source: source,
+                onSourceTap: onSourceTap,
+              ),
+            ),
           ),
         ),
       ),
@@ -394,9 +406,136 @@ void main() {
         final Text text = tester.widget<Text>(find.text('A' * 200));
         expect(text.maxLines, 2);
         expect(text.overflow, TextOverflow.ellipsis);
+        // A two-line title plus the subtitle must fit the fixed-height block.
+        expect(tester.takeException(), isNull);
       });
 
-      testWidgets('должен раскрывать название при hover',
+      testWidgets('должен показывать логотип источника, когда он задан',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          title: 'Berserk',
+          year: 1989,
+          mediaType: MediaType.manga,
+          source: DataSource.anilist,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SourceLogo), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('не должен показывать логотип без источника',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(title: 'Berserk', year: 1989));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SourceLogo), findsNothing);
+      });
+
+      testWidgets('должен вызывать onSourceTap по тапу на логотип',
+          (WidgetTester tester) async {
+        int taps = 0;
+        await tester.pumpWidget(buildCard(
+          title: 'Berserk',
+          year: 1989,
+          source: DataSource.anilist,
+          onSourceTap: () => taps++,
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(SourceLogo));
+        await tester.pumpAndSettle();
+
+        expect(taps, 1);
+      });
+
+      testWidgets('логотип не должен быть кликабельным без onSourceTap',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          title: 'Berserk',
+          year: 1989,
+          source: DataSource.anilist,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.ancestor(
+            of: find.byType(SourceLogo),
+            matching: find.byType(InkWell),
+          ),
+          findsNothing,
+        );
+      });
+
+      testWidgets('логотип источника не должен ломать блок названия',
+          (WidgetTester tester) async {
+        // Two title lines plus the meta line must still fit the fixed block.
+        await tester.pumpWidget(buildCard(
+          title: 'A' * 200,
+          year: 1989,
+          subtitle: 'Seinen',
+          mediaType: MediaType.manga,
+          source: DataSource.anilist,
+          onSourceTap: () {},
+        ));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('должен вмещать текст при увеличенном системном шрифте',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          title: 'A' * 200,
+          year: 2017,
+          subtitle: 'RPG',
+          textScaler: const TextScaler.linear(2),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('подпись должна идти сразу под однострочным названием',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(title: 'Dark', year: 2017));
+        await tester.pumpAndSettle();
+
+        final Rect title = tester.getRect(find.text('Dark'));
+        final Rect subtitle = tester.getRect(find.text('2017'));
+        expect(subtitle.top, lessThanOrEqualTo(title.bottom + 1));
+      });
+
+      testWidgets(
+          'подпись должна идти сразу под однострочным названием (compact)',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          variant: CardVariant.compact,
+          title: 'Dark',
+          year: 2017,
+        ));
+        await tester.pumpAndSettle();
+
+        final Rect title = tester.getRect(find.text('Dark'));
+        final Rect subtitle = tester.getRect(find.text('2017'));
+        expect(subtitle.top, lessThanOrEqualTo(title.bottom + 1));
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('должен отдавать полное название в Tooltip',
+          (WidgetTester tester) async {
+        final String title = 'A' * 200;
+        await tester.pumpWidget(buildCard(title: title));
+        await tester.pumpAndSettle();
+
+        final Tooltip tooltip = tester.widget<Tooltip>(find.ancestor(
+          of: find.text(title),
+          matching: find.byType(Tooltip),
+        ));
+        expect(tooltip.message, title);
+      });
+
+      testWidgets('hover не ломает раскладку карточки',
           (WidgetTester tester) async {
         final String title = 'A' * 200;
         await tester.pumpWidget(buildCard(title: title));
@@ -410,7 +549,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final Text text = tester.widget<Text>(find.text(title));
-        expect(text.maxLines, greaterThan(2));
+        expect(text.maxLines, 2);
         expect(tester.takeException(), isNull);
       });
     });
@@ -503,7 +642,35 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should keep the tag badge anchored to the right edge',
+      testWidgets(
+          'should ellipsize a long tagless progress label at 60px width',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 60,
+              height: 250,
+              child: MediaPosterCard(
+                variant: CardVariant.compact,
+                title: 'Test Show',
+                imageUrl: '',
+                cacheImageType: ImageType.tvShowPoster,
+                cacheImageId: '1',
+                status: ItemStatus.inProgress,
+                progress:
+                    ItemCardProgress(label: 'V12 · 1450/1500', fraction: 0.5),
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('should keep the progress label on the right, tag on the left',
           (WidgetTester tester) async {
         await tester.pumpWidget(const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
@@ -527,10 +694,13 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        final double cardRight =
-            tester.getTopRight(find.byType(MediaPosterCard)).dx;
-        final double badgeRight = tester.getTopRight(find.text('Tag')).dx;
-        expect(cardRight - badgeRight, lessThan(20));
+        final Rect card = tester.getRect(find.byType(MediaPosterCard));
+        final Rect badge = tester.getRect(find.text('Tag'));
+        final Rect progress = tester.getRect(find.text('12/22'));
+
+        expect(badge.left - card.left, lessThan(20));
+        expect(card.right - progress.right, lessThan(20));
+        expect(badge.right, lessThanOrEqualTo(progress.left));
       });
     });
   });

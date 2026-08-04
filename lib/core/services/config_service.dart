@@ -82,6 +82,10 @@ class ConfigService {
     SettingsKeys.steamApiKey,
     SettingsKeys.steamId,
     SettingsKeys.steamRememberCredentials,
+    SettingsKeys.simklAccessToken,
+    SettingsKeys.simklRememberToken,
+    SettingsKeys.simklClientId,
+    SettingsKeys.simklRememberClientId,
     SettingsKeys.aniListUsername,
     SettingsKeys.defaultAuthor,
     SettingsKeys.tmdbLanguage,
@@ -108,6 +112,8 @@ class ConfigService {
   /// the import screen only restores the saved Steam key/id when it is set.
   static const List<String> _boolKeys = <String>[
     SettingsKeys.steamRememberCredentials,
+    SettingsKeys.simklRememberToken,
+    SettingsKeys.simklRememberClientId,
     SettingsKeys.showRecommendations,
     SettingsKeys.showBlurayOverlay,
     SettingsKeys.showPlatformOverlay,

@@ -1,5 +1,8 @@
 // Widget tests for BookSimilarsSection — render / empty / error / owned badge.
 
+import 'package:core/models/book.dart';
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,9 +11,6 @@ import 'package:tonkatsu_box/core/api/fantlab_api.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/book_similars_section.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/book.dart';
-import 'package:tonkatsu_box/shared/models/collected_item_info.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
 
 import '../../../helpers/test_helpers.dart';
 

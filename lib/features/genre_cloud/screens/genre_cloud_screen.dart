@@ -1,6 +1,5 @@
-// Preference cloud screen: facet legend + media-type legend + cloud + image
-// export. Filtering is "broad strokes" via the two chip rows.
-
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -8,13 +7,13 @@ import 'package:logging/logging.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/services/png_export_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/logo_loader.dart';
 import '../../../shared/widgets/draggable_fab.dart';
+import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../facet.dart';
 import '../facet_value.dart';
 import '../genre_cloud_aggregate.dart';
@@ -23,14 +22,11 @@ import '../widgets/genre_cloud_export_view.dart';
 import '../widgets/genre_cloud_view.dart';
 import '../../../shared/constants/media_type_ui.dart';
 
-/// Shows a preference cloud (genres / platforms / decades) for the whole
-/// library. Words are coloured by media type; two chip rows filter by facet and
-/// by media type.
+/// Preference cloud (genres / platforms / decades) over the whole library,
+/// coloured by media type and filtered by the two chip rows.
 class GenreCloudScreen extends ConsumerStatefulWidget {
-  /// Creates a [GenreCloudScreen].
-  ///
-  /// [showTitle] draws the screen's own title strip. Set it to `false` when the
-  /// cloud is embedded under a tab that already names it (Personalization).
+  /// [showTitle] draws the own title strip; pass `false` under a tab that
+  /// already names the cloud.
   const GenreCloudScreen({this.showTitle = true, super.key});
 
   /// Whether to draw the own title strip; see the constructor.
@@ -177,7 +173,7 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
     List<FacetValue> words,
   ) {
     return itemsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: LogoLoader()),
       error: (Object error, StackTrace stack) => Center(
         child: Text(
           '${l.settingsError}: $error',
@@ -272,33 +268,57 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
   }
 }
 
-/// A horizontally-wrapping row of legend chips.
-class _ChipRow extends StatelessWidget {
+/// A single scrolling row of legend chips. Wrapping cost the cloud several
+/// lines on a phone; a fixed-height row keeps the chrome constant.
+class _ChipRow extends StatefulWidget {
   const _ChipRow({required this.children});
 
   final List<Widget> children;
 
   @override
+  State<_ChipRow> createState() => _ChipRowState();
+}
+
+class _ChipRowState extends State<_ChipRow> {
+  /// Fits a legend pill and positions the desktop arrows.
+  static const double _kRowHeight = 32;
+
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        0,
-      ),
-      child: Wrap(
-        spacing: AppSpacing.sm,
-        runSpacing: AppSpacing.sm,
-        children: children,
+      // Vertical only: the page inset lives in the scroll view's content
+      // padding below, so the chips scroll out to the screen edges.
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: SizedBox(
+        height: _kRowHeight,
+        child: ScrollableRowWithArrows(
+          controller: _controller,
+          height: _kRowHeight,
+          child: SingleChildScrollView(
+            controller: _controller,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: Row(
+              spacing: AppSpacing.sm,
+              children: widget.children,
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-/// Legend pill. Tapping toggles whether its dimension/type is hidden. An
-/// optional [color] dot is shown for media-type chips (colour = the cloud's
-/// encoding); facet chips omit it.
+/// Legend pill; tapping hides or shows its dimension. The [color] dot mirrors
+/// the cloud's encoding and is omitted by facet chips.
 class _LegendChip extends StatelessWidget {
   const _LegendChip({
     required this.label,

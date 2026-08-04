@@ -1,6 +1,7 @@
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/data_source.dart';
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'mangabaka_types.dart';
 
@@ -8,14 +9,12 @@ import 'mangabaka_types.dart';
 class MangaBakaHttpClient {
   MangaBakaHttpClient({Dio? dio})
       : _dio = dio ??
-            Dio(
-              BaseOptions(
-                // .dev is deprecated (works until 2026-08-01); .org is the
-                // current host. Same schema / behaviour, shared rate limit.
-                baseUrl: 'https://api.mangabaka.org/v1/',
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 20),
-              ),
+            createApiDio(
+              // .dev is deprecated (works until 2026-08-01); .org is the
+              // current host. Same schema / behaviour, shared rate limit.
+              baseUrl: 'https://api.mangabaka.org/v1/',
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 20),
             );
 
   final Dio _dio;

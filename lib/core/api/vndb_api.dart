@@ -1,11 +1,10 @@
+import 'package:core/models/visual_novel.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/visual_novel.dart';
 import 'vndb/vndb_http_client.dart';
 import 'vndb/vndb_tags_api.dart';
 import 'vndb/vndb_vn_api.dart';
-
 export 'vndb/vndb_types.dart';
 
 final Provider<VndbApi> vndbApiProvider = Provider<VndbApi>((Ref ref) {

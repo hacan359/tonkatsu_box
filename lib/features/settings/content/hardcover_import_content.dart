@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/universal_import_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,9 +15,6 @@ import '../../../core/import/sources/hardcover/hardcover_import_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

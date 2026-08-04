@@ -1,12 +1,12 @@
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/widgets/create_custom_item_dialog.dart';
-import 'package:tonkatsu_box/shared/models/custom_media.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart';
 
 import '../../../helpers/test_helpers.dart';
 

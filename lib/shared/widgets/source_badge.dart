@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+export 'package:core/models/data_source.dart';
+import 'package:core/models/data_source.dart';
 
-import '../models/data_source.dart';
 import '../constants/data_source_ui.dart';
-
-export '../models/data_source.dart';
 
 /// Компактный бейдж с названием и цветом источника данных.
 ///
@@ -12,7 +11,6 @@ export '../models/data_source.dart';
 /// Если задан [onTap], бейдж становится кликабельным и показывает
 /// иконку внешней ссылки.
 class SourceBadge extends StatelessWidget {
-  /// Создаёт [SourceBadge].
   const SourceBadge({
     required this.source,
     this.size = SourceBadgeSize.small,
@@ -20,10 +18,8 @@ class SourceBadge extends StatelessWidget {
     super.key,
   });
 
-  /// Источник данных.
   final DataSource source;
 
-  /// Размер бейджа.
   final SourceBadgeSize size;
 
   /// Колбэк при нажатии (открытие внешней ссылки).
@@ -90,15 +86,11 @@ class SourceBadge extends StatelessWidget {
   }
 }
 
-/// Размеры бейджа источника.
 enum SourceBadgeSize {
-  /// Маленький — для карточек в списке.
   small(fontSize: 8, horizontalPadding: 4, verticalPadding: 2, borderRadius: 3),
 
-  /// Средний — для экранов деталей.
   medium(fontSize: 10, horizontalPadding: 6, verticalPadding: 3, borderRadius: 4),
 
-  /// Большой — для настроек.
   large(fontSize: 12, horizontalPadding: 8, verticalPadding: 4, borderRadius: 6);
 
   const SourceBadgeSize({
@@ -108,15 +100,11 @@ enum SourceBadgeSize {
     required this.borderRadius,
   });
 
-  /// Размер шрифта.
   final double fontSize;
 
-  /// Горизонтальный отступ.
   final double horizontalPadding;
 
-  /// Вертикальный отступ.
   final double verticalPadding;
 
-  /// Радиус скругления.
   final double borderRadius;
 }

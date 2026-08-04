@@ -1,11 +1,11 @@
+import 'package:core/models/anime.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/anilist_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 import '../filters/anilist_anime_format_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
 import '../filters/anilist_genre_filter.dart';

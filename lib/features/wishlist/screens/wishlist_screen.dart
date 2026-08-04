@@ -1,45 +1,31 @@
+import 'package:core/database/dao/wishlist_dao.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/wishlist_item.dart';
+import 'package:core/models/wishlist_tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/wishlist_dao.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/wishlist_item.dart';
-import '../../../shared/models/wishlist_tag.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../search/sources/search_sources.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/add_wishlist_dialog.dart';
 import '../widgets/wishlist_dialogs.dart';
 import '../widgets/wishlist_tag_header.dart';
 import '../widgets/wishlist_tile.dart';
 
-/// Maps a wishlist [MediaType] hint to the primary search source id.
-///
-/// The returned id must exist in `searchSources`; an unknown id makes
-/// `getSearchSourceById` silently fall back to the first source (movies),
-/// which is how a book hint used to open the movies tab.
-String? wishlistSourceIdFor(MediaType? hint) {
-  return switch (hint) {
-    MediaType.game => 'games',
-    MediaType.movie => 'movies',
-    MediaType.tvShow => 'tv',
-    MediaType.animation => 'anime',
-    MediaType.visualNovel => 'visual_novels',
-    MediaType.manga => 'manga',
-    MediaType.anime => 'anilist_anime',
-    MediaType.book => 'openlibrary',
-    MediaType.custom => null,
-    null => null,
-  };
-}
+/// Media type a wishlist hint opens the Search tab on. Null when the hint has
+/// no searchable sources (custom items), which leaves the tab as it was.
+MediaType? wishlistMediaTypeFor(MediaType? hint) =>
+    primarySearchSourceFor(hint) == null ? null : hint;
 
 /// Wishlist screen — notes for deferred content search.
 class WishlistScreen extends ConsumerStatefulWidget {
@@ -286,7 +272,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     // separate search screen — keeps the shell and its single search field.
     ref.read(searchTabRequestProvider.notifier).state = SearchTabRequest(
       query: item.text,
-      sourceId: wishlistSourceIdFor(item.mediaTypeHint),
+      mediaType: wishlistMediaTypeFor(item.mediaTypeHint),
     );
   }
 

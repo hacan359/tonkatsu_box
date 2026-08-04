@@ -12,7 +12,6 @@ import '../content/credentials_content.dart';
 /// Тонкая обёртка вокруг [CredentialsContent] с Scaffold/AppBar.
 /// Используется при push-навигации на мобильных устройствах.
 class CredentialsScreen extends StatelessWidget {
-  /// Создаёт [CredentialsScreen].
   const CredentialsScreen({
     super.key,
     this.isInitialSetup = false,

@@ -1,8 +1,27 @@
+import 'package:core/models/media_type.dart';
+
 import '../../l10n/app_localizations.dart';
-import '../models/media_type.dart';
 
 /// Presentation extras for [MediaType].
 extension MediaTypeUi on MediaType {
+  /// Plural label ("Games", "TV Shows"); invariant types reuse the singular.
+  String localizedPluralLabel(S l) {
+    switch (this) {
+      case MediaType.game:
+        return l.collectionFilterGames;
+      case MediaType.movie:
+        return l.collectionFilterMovies;
+      case MediaType.tvShow:
+        return l.collectionFilterTvShows;
+      case MediaType.visualNovel:
+        return l.collectionFilterVisualNovels;
+      case MediaType.book:
+        return l.collectionFilterBooks;
+      default:
+        return localizedLabel(l);
+    }
+  }
+
   String localizedLabel(S l) {
     switch (this) {
       case MediaType.game:

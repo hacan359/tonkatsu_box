@@ -1,8 +1,9 @@
 import 'dart:convert';
 
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/data_source.dart';
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'fantlab_types.dart';
 
@@ -12,18 +13,16 @@ import 'fantlab_types.dart';
 class FantlabHttpClient {
   FantlabHttpClient({Dio? dio})
       : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: _baseUrl,
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 20),
-                headers: <String, String>{'User-Agent': _userAgent},
-                // Fantlab sends `Content-Type: application/json; charset=utf-8;`
-                // (note the trailing `;`), which Dio's JSON sniffing rejects —
-                // it would hand back the raw body as a String. Read everything
-                // as plain text and decode it ourselves via [decodeBody].
-                responseType: ResponseType.plain,
-              ),
+            createApiDio(
+              baseUrl: _baseUrl,
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 20),
+              headers: <String, String>{'User-Agent': _userAgent},
+              // Fantlab sends `Content-Type: application/json; charset=utf-8;`
+              // (note the trailing `;`), which Dio's JSON sniffing rejects —
+              // it would hand back the raw body as a String. Read everything
+              // as plain text and decode it ourselves via [decodeBody].
+              responseType: ResponseType.plain,
             );
 
   static const String _baseUrl = 'https://api.fantlab.ru';

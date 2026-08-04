@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'steamgriddb_types.dart';
 
@@ -8,10 +9,10 @@ import 'steamgriddb_types.dart';
 class SteamGridDbHttpClient {
   SteamGridDbHttpClient({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            ));
+            );
 
   static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://www.steamgriddb.com/api/v2';

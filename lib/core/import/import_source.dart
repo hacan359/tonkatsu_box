@@ -1,5 +1,6 @@
-import '../../shared/models/universal_import_result.dart';
-import '../services/import_service.dart';
+import 'package:core/models/universal_import_result.dart';
+
+import 'import_progress.dart';
 
 /// Base options for an import run. Sources extend this with their own inputs
 /// (file path, username, token, feature toggles).

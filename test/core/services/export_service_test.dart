@@ -1,28 +1,28 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_mark.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tag.dart';
+import 'package:core/models/tier_list.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/services/export_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
-import 'package:tonkatsu_box/core/services/xcoll_file.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
-import 'package:tonkatsu_box/shared/models/canvas_item.dart';
-import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/item_mark.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart';
-import 'package:tonkatsu_box/shared/models/tv_episode.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
-import 'package:tonkatsu_box/shared/models/tag.dart';
-import 'package:tonkatsu_box/shared/models/tier_list.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -2161,6 +2161,61 @@ void main() {
         expect(second['watched_at'], isNull);
         // The show with no marks must not carry the key at all.
         expect(xcoll.items[1].containsKey('_watched_episodes'), isFalse);
+      });
+
+      test('should attach _watched_episodes for kitsu anime', () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+        when(() => mockTvShowDao.getWatchedEpisodes(1, DataSource.kitsu, 244))
+            .thenAnswer(
+          (_) async => <(int, int), DateTime?>{
+            (2, 21): DateTime.fromMillisecondsSinceEpoch(1700000000000),
+          },
+        );
+
+        final XcollFile xcoll = await sutMarks.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 244,
+              source: DataSource.kitsu,
+              anime: createTestAnime(id: 244, source: DataSource.kitsu),
+            ),
+          ],
+          1,
+          includeUserData: true,
+        );
+
+        final List<dynamic> watched =
+            xcoll.items[0]['_watched_episodes'] as List<dynamic>;
+        expect(watched, hasLength(1));
+        expect((watched[0] as Map<String, dynamic>)['season'], 2);
+        expect((watched[0] as Map<String, dynamic>)['episode'], 21);
+      });
+
+      test('should not query watched episodes for anilist anime', () async {
+        when(() => mockItemMarkDao.getMarksForItems(any()))
+            .thenAnswer((_) async => <ItemMark>[]);
+
+        await sutMarks.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 600,
+              source: DataSource.anilist,
+              anime: createTestAnime(source: DataSource.anilist),
+            ),
+          ],
+          1,
+          includeUserData: true,
+        );
+
+        verifyNever(
+            () => mockTvShowDao.getWatchedEpisodes(any(), any(), any()));
       });
 
       test('should not query watched episodes for non-tv items', () async {

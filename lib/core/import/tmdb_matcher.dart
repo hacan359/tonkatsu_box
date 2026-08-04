@@ -1,6 +1,7 @@
-import '../../shared/models/media_type.dart';
-import '../../shared/models/movie.dart';
-import '../../shared/models/tv_show.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+
 import '../api/tmdb_api.dart';
 import 'rate_limited_retry.dart';
 

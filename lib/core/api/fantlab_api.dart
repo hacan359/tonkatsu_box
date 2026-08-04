@@ -1,12 +1,11 @@
+import 'package:core/models/book.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/book.dart';
 import 'fantlab/fantlab_editions.dart';
 import 'fantlab/fantlab_http_client.dart';
 import 'fantlab/fantlab_search_api.dart';
 import 'fantlab/fantlab_works_api.dart';
-
 export 'fantlab/fantlab_editions.dart';
 export 'fantlab/fantlab_types.dart';
 

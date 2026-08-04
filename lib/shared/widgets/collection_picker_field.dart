@@ -1,8 +1,8 @@
+import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/collections/providers/collections_provider.dart';
-import '../models/collection.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';

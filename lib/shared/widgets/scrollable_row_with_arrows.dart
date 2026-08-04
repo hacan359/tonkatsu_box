@@ -1,4 +1,3 @@
-// Горизонтальный список с кнопками-стрелками для десктопа.
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ import 'horizontal_mouse_scroll.dart';
 /// поверх списка для удобной навигации колёсиком или кликом.
 /// На мобильных устройствах стрелки не отображаются.
 class ScrollableRowWithArrows extends StatefulWidget {
-  /// Создаёт [ScrollableRowWithArrows].
   const ScrollableRowWithArrows({
     required this.controller,
     required this.child,
@@ -21,7 +19,6 @@ class ScrollableRowWithArrows extends StatefulWidget {
     super.key,
   });
 
-  /// Контроллер горизонтального списка.
   final ScrollController controller;
 
   /// Дочерний виджет (горизонтальный ListView).
@@ -127,7 +124,6 @@ class _ScrollableRowWithArrowsState extends State<ScrollableRowWithArrows> {
   }
 }
 
-/// Полупрозрачная кнопка-стрелка с градиентным фоном.
 class _ArrowButton extends StatelessWidget {
   const _ArrowButton({
     required this.icon,

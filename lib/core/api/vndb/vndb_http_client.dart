@@ -1,6 +1,7 @@
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/data_source.dart';
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'vndb_types.dart';
 
@@ -8,10 +9,10 @@ import 'vndb_types.dart';
 class VndbHttpClient {
   VndbHttpClient({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            ));
+            );
 
   static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://api.vndb.org/kana';

@@ -1,8 +1,8 @@
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/global_tag_dao.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/tag.dart';
 import 'item_tags_provider.dart';
 
 /// All global tags in display order (manual sort_order, then name).

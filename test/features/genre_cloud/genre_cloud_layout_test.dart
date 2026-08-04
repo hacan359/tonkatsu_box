@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/genre_cloud/facet.dart';
 import 'package:tonkatsu_box/features/genre_cloud/facet_value.dart';
 import 'package:tonkatsu_box/features/genre_cloud/genre_cloud_layout.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 FacetValue _w(String label, int count) => FacetValue(
       facet: Facet.genre,
@@ -161,6 +161,47 @@ void main() {
       );
       expect(layout.placed, isEmpty);
       expect(layout.hidden, 1);
+    });
+  });
+
+  group('layoutGenreCloudAsync', () {
+    test('returns empty layout for no words', () async {
+      final GenreCloudLayout layout = await layoutGenreCloudAsync(
+        words: const <FacetValue>[],
+        canvasSize: const Size(500, 500),
+        measure: _fakeMeasure,
+      );
+      expect(layout.isEmpty, isTrue);
+      expect(layout.hidden, 0);
+    });
+
+    test('produces exactly the same layout as the sync version', () async {
+      // Enough words to force yields (>4) and the auto-fit shrink loop.
+      final List<FacetValue> words = <FacetValue>[
+        for (int i = 0; i < 40; i++) _w('Genre$i', 40 - i),
+      ];
+      const Size canvas = Size(800, 600);
+
+      final GenreCloudLayout sync = layoutGenreCloud(
+        words: words,
+        canvasSize: canvas,
+        measure: _fakeMeasure,
+      );
+      final GenreCloudLayout chunked = await layoutGenreCloudAsync(
+        words: words,
+        canvasSize: canvas,
+        measure: _fakeMeasure,
+      );
+
+      expect(chunked.hidden, sync.hidden);
+      expect(chunked.size, sync.size);
+      expect(chunked.placed.length, sync.placed.length);
+      for (int i = 0; i < sync.placed.length; i++) {
+        expect(chunked.placed[i].word.label, sync.placed[i].word.label);
+        expect(chunked.placed[i].fontSize, sync.placed[i].fontSize);
+        expect(chunked.placed[i].center, sync.placed[i].center);
+        expect(chunked.placed[i].rotated, sync.placed[i].rotated);
+      }
     });
   });
 }

@@ -1,13 +1,9 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// A migration that threw, wrapped so the reason reads before the stack trace.
-///
-/// The raw SQLite error names a table and a constraint but not the migration,
-/// which is only recoverable from the stack frames. On the startup error screen
-/// that is the difference between "the v57 upgrade failed" and an unreadable
-/// wall of SQL.
+/// Names the failing migration, which the raw SQLite error does not. On the
+/// startup error screen that is "the v57 upgrade failed" versus a wall of SQL.
 class MigrationFailure implements Exception {
   const MigrationFailure({
     required this.version,
@@ -48,15 +44,11 @@ class MigrationFailure implements Exception {
   }
 }
 
-/// Runs a migration chain, reporting which migration failed.
-///
-/// Shared by the app's `onCreate` / `onUpgrade` and, later, by the selfhost
-/// server, so both surface the same message.
+/// Shared by the app's `onCreate` / `onUpgrade` and, later, the selfhost server,
+/// so both surface the same message.
 abstract final class MigrationRunner {
-  /// Runs [migrations] in order against [db].
-  ///
   /// [onStart] fires before each migration, for logging. Throws
-  /// [MigrationFailure] with the original stack trace if one of them throws.
+  /// [MigrationFailure] with the original stack trace.
   static Future<void> run(
     Database db,
     Iterable<Migration> migrations, {

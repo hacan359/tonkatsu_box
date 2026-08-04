@@ -20,6 +20,10 @@ class MangaDexStatusFilter extends SearchFilter {
   String placeholder(S l) => l.status;
 
   @override
+  FilterSemanticFamily? get semanticFamily =>
+      FilterSemanticFamily.status;
+
+  @override
   FilterOption get allOption => const FilterOption(
         id: 'any',
         label: 'All',
@@ -33,21 +37,25 @@ class MangaDexStatusFilter extends SearchFilter {
         id: 'ongoing',
         label: l.mangaStatusPublishing,
         value: 'ongoing',
+        semantic: FilterSemantic.statusReleasing,
       ),
       FilterOption(
         id: 'completed',
         label: l.mangaStatusFinished,
         value: 'completed',
+        semantic: FilterSemantic.statusFinished,
       ),
       FilterOption(
         id: 'hiatus',
         label: l.mangaStatusHiatus,
         value: 'hiatus',
+        semantic: FilterSemantic.statusHiatus,
       ),
       FilterOption(
         id: 'cancelled',
         label: l.mangaStatusCancelled,
         value: 'cancelled',
+        semantic: FilterSemantic.statusCancelled,
       ),
     ];
   }

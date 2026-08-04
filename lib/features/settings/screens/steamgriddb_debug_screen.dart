@@ -1,13 +1,12 @@
-// Debug экран для тестирования SteamGridDB API.
 
+import 'package:core/models/steamgriddb_game.dart';
+import 'package:core/models/steamgriddb_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/steamgriddb_game.dart';
-import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 
@@ -15,7 +14,6 @@ import '../../../shared/widgets/sub_screen_title_bar.dart';
 ///
 /// Позволяет тестировать все эндпоинты: поиск игр, grids, heroes, logos, icons.
 class SteamGridDbDebugScreen extends ConsumerStatefulWidget {
-  /// Создаёт [SteamGridDbDebugScreen].
   const SteamGridDbDebugScreen({super.key});
 
   @override

@@ -1,4 +1,3 @@
-// Плоская группа настроек с uppercase заголовком и dividers между детьми.
 
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,6 @@ import '../../../shared/theme/app_typography.dart';
 /// Отображает необязательный uppercase-заголовок мелким шрифтом,
 /// необязательный подзаголовок и контейнер с детьми, разделёнными тонкими dividers.
 class SettingsGroup extends StatelessWidget {
-  /// Создаёт [SettingsGroup].
   const SettingsGroup({
     required this.children,
     this.title,
@@ -28,10 +26,8 @@ class SettingsGroup extends StatelessWidget {
   /// Необязательный подзаголовок группы (обычный размер, приглушённый цвет).
   final String? subtitle;
 
-  /// Иконка перед заголовком. Если null — не отображается.
   final IconData? titleIcon;
 
-  /// Цвет иконки заголовка. Если null — textTertiary.
   final Color? titleIconColor;
 
   /// Дочерние виджеты (обычно [SettingsTile]).

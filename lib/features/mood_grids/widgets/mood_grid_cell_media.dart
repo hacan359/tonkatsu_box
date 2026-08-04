@@ -1,18 +1,18 @@
+import 'package:core/models/anime.dart';
+import 'package:core/models/book.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/mood_grid_cell.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/book.dart';
-import '../../../shared/models/custom_media.dart';
-import '../../../shared/models/game.dart';
-import '../../../shared/models/manga.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/mood_grid_cell.dart';
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
-import '../../../shared/models/visual_novel.dart';
 
 /// Minimal display payload for a cell, resolved from the global `*_cache`
 /// tables — removing the item from a collection doesn't affect rendering.

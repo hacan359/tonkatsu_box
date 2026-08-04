@@ -1,5 +1,5 @@
-import '../models/collection_item.dart';
-import '../models/media_type.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 
 /// Card progress: [label] like `12/24` / `V2 · 12/24`, [fraction] 0..1
 /// for the bar (null when the total is unknown).
@@ -34,6 +34,9 @@ ItemCardProgress? itemCardProgress(CollectionItem item) {
   } else {
     switch (type) {
       case MediaType.anime:
+        // Kitsu anime run on the episode tracker, so their progress lives in
+        // `watched_episodes` — same reason TV shows are excluded here.
+        if (item.usesEpisodeTracker) return null;
         fineTotal = item.anime?.episodes;
       case MediaType.manga:
         fineTotal = item.manga?.chapters;

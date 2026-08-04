@@ -1,29 +1,29 @@
 import 'dart:io';
 
+import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/database/dao/tier_list_dao.dart';
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/collection_list_sort_mode.dart';
+import 'package:core/models/collection_sort_mode.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/database/dao/collection_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/custom_media.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_list_sort_mode.dart';
-import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/game.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/item_status_logic.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../releases/providers/releases_provider.dart';
-import '../../../core/database/dao/global_tag_dao.dart';
-import '../../../core/database/dao/tier_list_dao.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -594,6 +594,9 @@ class CollectionItemsNotifier
     _invalidateCollectedIds(mediaType);
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
+    // The new item must show up in the unranked pool of this collection's
+    // (and global) tier lists; their detail providers cache collection items.
+    ref.invalidate(tierListDetailProvider);
     return true;
   }
 
@@ -654,6 +657,7 @@ class CollectionItemsNotifier
       await refresh();
       ref.invalidate(uncategorizedItemCountProvider);
       ref.invalidate(allItemsNotifierProvider);
+      ref.invalidate(tierListDetailProvider);
       return true;
     } catch (e, stack) {
       debugPrint('addCustomItem error: $e\n$stack'); // TODO: remove after stabilization
@@ -703,6 +707,7 @@ class CollectionItemsNotifier
     _invalidateCollectedIds(mediaType);
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
+    ref.invalidate(tierListDetailProvider);
     return true;
   }
 
@@ -714,8 +719,6 @@ class CollectionItemsNotifier
   }) async {
     // Remove from tier-lists of source collection before the move.
     final TierListDao tierDao = ref.read(tierListDaoProvider);
-    final List<int> affectedTierListIds =
-        await tierDao.getTierListIdsForItem(itemId);
     if (_collectionId != null) {
       await tierDao.removeItemFromCollectionTierLists(
         itemId,
@@ -745,19 +748,15 @@ class CollectionItemsNotifier
     _invalidateEpisodeTrackers(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
-    for (final int tierListId in affectedTierListIds) {
-      ref.invalidate(tierListDetailProvider(tierListId));
-    }
+    // Family-wide: covers the target collection's tier lists (where the item
+    // appears in the unranked pool) and global ones, not just lists the item
+    // was placed in.
+    ref.invalidate(tierListDetailProvider);
 
     return (success: true, sourceEmpty: sourceEmpty);
   }
 
   Future<void> removeItem(int id, {MediaType? mediaType}) async {
-    // Capture tier-lists before delete: CASCADE wipes entries from DB.
-    final TierListDao tierDao = ref.read(tierListDaoProvider);
-    final List<int> affectedTierListIds =
-        await tierDao.getTierListIdsForItem(id);
-
     await _repository.removeItem(id);
     await refresh();
     if (mediaType != null) {
@@ -767,16 +766,16 @@ class CollectionItemsNotifier
     ref.invalidate(allItemsNotifierProvider);
     await _pruneCalendarOrphans(ref);
 
-    for (final int tierListId in affectedTierListIds) {
-      ref.invalidate(tierListDetailProvider(tierListId));
-    }
+    // Family-wide: the item may sit unranked in tier lists (no entry rows),
+    // so per-entry lookups can't find every affected list.
+    ref.invalidate(tierListDetailProvider);
   }
 
   /// In-memory tracker state survives the DAO-side mark transfer on move,
   /// so the show would keep showing zero progress in the target collection
   /// until restart. Invalidating the family reloads every live tracker.
   void _invalidateEpisodeTrackers(MediaType mediaType) {
-    if (mediaType.isTvBacked) {
+    if (mediaType.mayUseEpisodeTracker) {
       ref.invalidate(episodeTrackerNotifierProvider);
     }
   }

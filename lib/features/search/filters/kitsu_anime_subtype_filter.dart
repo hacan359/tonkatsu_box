@@ -15,6 +15,10 @@ class KitsuAnimeSubtypeFilter extends SearchFilter {
   String placeholder(S l) => l.type;
 
   @override
+  FilterSemanticFamily? get semanticFamily =>
+      FilterSemanticFamily.format;
+
+  @override
   FilterOption get allOption => const FilterOption(
         id: 'any',
         label: 'All',
@@ -24,14 +28,35 @@ class KitsuAnimeSubtypeFilter extends SearchFilter {
   @override
   Future<List<FilterOption>> options(WidgetRef ref, S l) async {
     return <FilterOption>[
-      FilterOption(id: 'TV', label: l.animeFormatTv, value: 'TV'),
-      FilterOption(id: 'movie', label: l.animeFormatMovie, value: 'movie'),
-      FilterOption(id: 'OVA', label: l.animeFormatOva, value: 'OVA'),
-      FilterOption(id: 'ONA', label: l.animeFormatOna, value: 'ONA'),
+      FilterOption(
+        id: 'TV',
+        label: l.animeFormatTv,
+        value: 'TV',
+        semantic: FilterSemantic.formatTv,
+      ),
+      FilterOption(
+        id: 'movie',
+        label: l.animeFormatMovie,
+        value: 'movie',
+        semantic: FilterSemantic.formatMovie,
+      ),
+      FilterOption(
+        id: 'OVA',
+        label: l.animeFormatOva,
+        value: 'OVA',
+        semantic: FilterSemantic.formatOva,
+      ),
+      FilterOption(
+        id: 'ONA',
+        label: l.animeFormatOna,
+        value: 'ONA',
+        semantic: FilterSemantic.formatOna,
+      ),
       FilterOption(
         id: 'special',
         label: l.animeFormatSpecial,
         value: 'special',
+        semantic: FilterSemantic.formatSpecial,
       ),
     ];
   }

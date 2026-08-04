@@ -1,8 +1,8 @@
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import 'tvmaze_http_client.dart';
 
 /// TV series search / detail on TVmaze (`/search/shows`, `/shows/{id}`).

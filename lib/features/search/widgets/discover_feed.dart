@@ -1,16 +1,17 @@
-import '../../../shared/constants/platform_features.dart';
-
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/constants/platform_features.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/discover_provider.dart';
 import 'discover_row.dart';
@@ -36,17 +37,17 @@ final FutureProvider<Set<int>> _existingTmdbIdsProvider =
 });
 
 /// Shown on the search screen while the query is empty; sections are
-/// filtered by the current [sourceId].
+/// filtered by the current [mediaType].
 class DiscoverFeed extends ConsumerWidget {
   const DiscoverFeed({
-    required this.sourceId,
+    required this.mediaType,
     required this.onAddMovie,
     required this.onAddTvShow,
     super.key,
   });
 
-  /// Current source id: movies, tv, or anime.
-  final String sourceId;
+  /// Movie, TV show or animation — the types with a TMDB feed.
+  final MediaType mediaType;
 
   final void Function(Movie movie) onAddMovie;
 
@@ -60,7 +61,7 @@ class DiscoverFeed extends ConsumerWidget {
         ref.watch(_existingTmdbIdsProvider).valueOrNull ?? <int>{};
 
     final Set<DiscoverSectionId> available =
-        discoverSectionsPerSource[sourceId] ?? <DiscoverSectionId>{};
+        discoverSectionsPerMediaType[mediaType] ?? <DiscoverSectionId>{};
 
     final List<Widget> sections = <Widget>[];
 
@@ -197,7 +198,7 @@ class DiscoverFeed extends ConsumerWidget {
   ) {
     // Movies tab → trending movies, TV/Anime → trending TV shows. The TMDB
     // trending API has no genre filter, so anime and tv share one provider.
-    if (sourceId == 'movies') {
+    if (mediaType == MediaType.movie) {
       return _buildMovieSection(
         context,
         ref,
@@ -243,6 +244,7 @@ class DiscoverFeed extends ConsumerWidget {
                 year: m.releaseYear,
                 rating: m.formattedRating,
                 isOwned: owned,
+                externalUrl: m.externalUrl,
               );
             })
             .whereType<DiscoverItem>()
@@ -291,6 +293,7 @@ class DiscoverFeed extends ConsumerWidget {
                 rating: s.formattedRating,
                 isOwned: owned,
                 isMovie: false,
+                externalUrl: s.externalUrl,
               );
             })
             .whereType<DiscoverItem>()
@@ -339,8 +342,11 @@ class DiscoverFeed extends ConsumerWidget {
   Widget _buildShimmerRow(BuildContext context, String title) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,33 +363,16 @@ class DiscoverFeed extends ConsumerWidget {
           height: rowHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.posterRowVerticalPadding,
+            ),
             itemCount: 5,
             separatorBuilder: (_, _) =>
                 const SizedBox(width: AppSpacing.sm),
             itemBuilder: (_, _) => SizedBox(
               width: posterWidth,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: posterWidth * 0.7,
-                    height: 12,
-                    color: AppColors.surfaceLight,
-                  ),
-                ],
-              ),
+              child: ShimmerPosterCard(compact: compact),
             ),
           ),
         ),

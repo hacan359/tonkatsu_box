@@ -25,7 +25,6 @@ import 'service_status_provider.dart';
 /// Брендовый цвет Discord (Blurple).
 const Color _kDiscordColor = Color(0xFF5865F2);
 
-/// Брендовый цвет Kodi.
 const Color _kKodiColor = Color(0xFF17B2E7);
 
 /// Icon size for the top bar's right-hand chrome — the service badges and the
@@ -39,7 +38,6 @@ const double kTopBarIconSize = 18;
 /// Логотип цветной = сервис работает, серый = остановлен.
 /// Клик toggle'ит сервис.
 class ServiceBadges extends ConsumerWidget {
-  /// Создаёт [ServiceBadges].
   const ServiceBadges({super.key});
 
   @override

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Runs [action] behind a modal, non-dismissible spinner so the user sees that
+import 'logo_loader.dart';
+
+/// Runs [action] behind a modal, non-dismissible loader so the user sees that
 /// something is happening during a slow step (a network fetch, a heavy save).
 ///
 /// The overlay is always torn down, even if [action] throws. Reusable for any
@@ -17,7 +19,7 @@ Future<T> withBlockingSpinner<T>(
       barrierColor: Colors.black54,
       builder: (BuildContext _) => const PopScope<Object?>(
         canPop: false,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: LogoLoader(size: 96)),
       ),
     ),
   );

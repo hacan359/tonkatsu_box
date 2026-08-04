@@ -1,18 +1,18 @@
+import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/cover_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:tonkatsu_box/core/database/dao/collection_dao.dart';
-import 'package:tonkatsu_box/shared/models/collected_item_info.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/cover_info.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
-import 'package:tonkatsu_box/shared/models/visual_novel.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -1400,6 +1400,7 @@ void main() {
               'media_type',
               'external_id',
               'source',
+              'platform_id',
             ],
             where: 'id = ?',
             whereArgs: <Object?>[1],

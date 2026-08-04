@@ -1,11 +1,11 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/vndb_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/visual_novel.dart';
 import '../filters/vndb_has_anime_filter.dart';
 import '../filters/vndb_language_filter.dart';
 import '../filters/vndb_length_filter.dart';

@@ -1,9 +1,9 @@
+import 'package:core/models/manga.dart';
+import 'package:core/models/mangabaka_tag.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/mangabaka_api.dart';
-import 'package:tonkatsu_box/shared/models/manga.dart';
-import 'package:tonkatsu_box/shared/models/mangabaka_tag.dart';
 
 import '../../helpers/test_helpers.dart';
 

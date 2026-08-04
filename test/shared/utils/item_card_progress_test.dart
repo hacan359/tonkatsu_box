@@ -1,7 +1,8 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/custom_media.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/utils/item_card_progress.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -39,6 +40,15 @@ void main() {
       final ItemCardProgress? p = itemCardProgress(item);
       expect(p!.label, '12/24');
       expect(p.fraction, closeTo(0.5, 0.001));
+    });
+
+    test('null для kitsu-аниме: прогресс живёт в трекере эпизодов', () {
+      final CollectionItem item = createTestCollectionItem(
+        mediaType: MediaType.anime,
+        currentEpisode: 12,
+        anime: createTestAnime(source: DataSource.kitsu, episodes: 24),
+      );
+      expect(itemCardProgress(item), isNull);
     });
 
     test('аниме без известного тотала: только текущий, без доли', () {

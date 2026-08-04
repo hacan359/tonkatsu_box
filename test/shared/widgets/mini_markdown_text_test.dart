@@ -1,12 +1,12 @@
+import 'package:core/models/card_link.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
-import 'package:tonkatsu_box/shared/models/card_link.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/theme/app_colors.dart';
 import 'package:tonkatsu_box/shared/theme/app_typography.dart';
 import 'package:tonkatsu_box/shared/widgets/card_link_chip.dart';

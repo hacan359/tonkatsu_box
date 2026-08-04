@@ -1,10 +1,10 @@
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
-import '../../../shared/models/canvas_connection.dart';
-import '../../../shared/models/canvas_item.dart';
-import '../../../shared/models/canvas_viewport.dart';
-import '../../../shared/models/collection_item.dart';
 import 'canvas_operations_mixin.dart';
 import 'canvas_state.dart';
 import 'canvas_timer_mixin.dart';

@@ -2,15 +2,15 @@
 // selection (a collection, All Items). Each method runs the low-level ops in
 // a loop and invalidates every affected provider exactly once at the end.
 
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/database/dao/tier_list_dao.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/global_tag_dao.dart';
-import '../../../core/database/dao/tier_list_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../providers/collection_covers_provider.dart';
@@ -34,16 +34,12 @@ class BulkOperations {
     if (items.isEmpty) return 0;
     final CollectionRepository repo =
         ref.read(collectionRepositoryProvider);
-    final TierListDao tierDao = ref.read(tierListDaoProvider);
 
     final Set<int?> affectedCollections = <int?>{};
     final Set<MediaType> affectedTypes = <MediaType>{};
-    final Set<int> affectedTierLists = <int>{};
     int removed = 0;
 
     for (final CollectionItem item in items) {
-      affectedTierLists
-          .addAll(await tierDao.getTierListIdsForItem(item.id));
       await repo.removeItem(item.id);
       affectedCollections.add(item.collectionId);
       affectedTypes.add(item.mediaType);
@@ -54,7 +50,6 @@ class BulkOperations {
       ref,
       affectedCollections: affectedCollections,
       affectedTypes: affectedTypes,
-      affectedTierLists: affectedTierLists,
     );
     return removed;
   }
@@ -73,13 +68,10 @@ class BulkOperations {
 
     final Set<int?> affectedCollections = <int?>{targetCollectionId};
     final Set<MediaType> affectedTypes = <MediaType>{};
-    final Set<int> affectedTierLists = <int>{};
     int moved = 0;
     int skipped = 0;
 
     for (final CollectionItem item in items) {
-      affectedTierLists
-          .addAll(await tierDao.getTierListIdsForItem(item.id));
       if (item.collectionId != null) {
         await tierDao.removeItemFromCollectionTierLists(
           item.id,
@@ -106,7 +98,6 @@ class BulkOperations {
       ref,
       affectedCollections: affectedCollections,
       affectedTypes: affectedTypes,
-      affectedTierLists: affectedTierLists,
     );
     return (moved: moved, skipped: skipped);
   }
@@ -148,7 +139,6 @@ class BulkOperations {
       ref,
       affectedCollections: affectedCollections,
       affectedTypes: affectedTypes,
-      affectedTierLists: const <int>{},
       tagsChanged: tagsCopiedAny,
     );
     return (cloned: cloned, skipped: skipped);
@@ -198,7 +188,6 @@ class BulkOperations {
     WidgetRef ref, {
     required Set<int?> affectedCollections,
     required Set<MediaType> affectedTypes,
-    required Set<int> affectedTierLists,
     bool tagsChanged = false,
   }) {
     for (final int? cid in affectedCollections) {
@@ -211,7 +200,7 @@ class BulkOperations {
     }
     // Bulk moves transfer watched marks in the DB; live trackers keep the
     // old in-memory state until invalidated.
-    if (affectedTypes.any((MediaType t) => t.isTvBacked)) {
+    if (affectedTypes.any((MediaType t) => t.mayUseEpisodeTracker)) {
       ref.invalidate(episodeTrackerNotifierProvider);
     }
     for (final MediaType t in affectedTypes) {
@@ -219,9 +208,10 @@ class BulkOperations {
     }
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
-    for (final int tlId in affectedTierLists) {
-      ref.invalidate(tierListDetailProvider(tlId));
-    }
+    // Family-wide: items may sit unranked in tier lists (no entry rows), so
+    // per-entry lookups can't find every affected list; this also covers the
+    // target collection's lists on move/clone and global lists.
+    ref.invalidate(tierListDetailProvider);
   }
 
   static void _invalidateCollectedIds(WidgetRef ref, MediaType type) {

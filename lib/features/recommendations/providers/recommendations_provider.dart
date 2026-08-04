@@ -8,18 +8,18 @@
 // doesn't reload the list mid-browse; the refresh button or reopening the tab
 // recomputes fresh.
 
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -93,6 +93,13 @@ class RecommendedItem {
 
   /// Predicted personal rating (1–10), or `null` when not predictable.
   final double? predictedRating;
+
+  /// TMDB page of the underlying [media].
+  String? get externalUrl => switch (media) {
+        final Movie m => m.externalUrl,
+        final TvShow t => t.externalUrl,
+        _ => null,
+      };
 }
 
 /// A row of recommendations under one "because you liked …" header.

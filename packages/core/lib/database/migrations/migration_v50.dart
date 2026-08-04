@@ -1,10 +1,9 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// Adds the user-set `is_favorite` flag to `collection_items`. Per-item and
-/// per-collection: the same title in two collections has independent flags.
-/// Existing rows default to not-favorite (0).
+/// Adds `is_favorite`, per item and per collection — the same title in two
+/// collections has independent flags.
 class MigrationV50 extends Migration {
   @override
   int get version => 50;

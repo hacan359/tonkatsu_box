@@ -1,23 +1,22 @@
 // Providers for the All Items screen (Home tab).
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/collection_sort_mode.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
-import '../../../shared/models/tag.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/platform.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/providers/global_tags_provider.dart';
 import '../../collections/providers/sort_utils.dart';
 import '../../settings/providers/settings_provider.dart';
 
-// ==================== Sort Providers ====================
 
 /// SharedPreferences key for the All Items sort mode.
 const String _allItemsSortModeKey = 'all_items_sort_mode';
@@ -95,7 +94,6 @@ class AllItemsSortDescNotifier extends Notifier<bool> {
   }
 }
 
-// ==================== All Items ====================
 
 /// Provider for all items across every collection.
 final NotifierProvider<AllItemsNotifier, AsyncValue<List<CollectionItem>>>
@@ -220,7 +218,6 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
   }
 }
 
-// ==================== Platform Filter ====================
 
 /// Unique platforms from games in collections, for filtering.
 ///
@@ -255,7 +252,6 @@ final FutureProvider<List<Platform>> allItemsPlatformsProvider =
   return platforms;
 });
 
-// ==================== Collection Names ====================
 
 /// Map of collectionId -> collectionName for display in the UI.
 final Provider<Map<int, String>> collectionNamesProvider =
@@ -268,7 +264,6 @@ final Provider<Map<int, String>> collectionNamesProvider =
   };
 });
 
-// ==================== Tags ====================
 
 /// Map of tagId -> Tag for display and tag search on All Items.
 /// Derived from [globalTagsProvider] so the tags table is loaded once.

@@ -1,7 +1,7 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/constants/media_type_theme.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 import 'package:tonkatsu_box/shared/theme/app_colors.dart';
 
 void main() {
@@ -91,6 +91,29 @@ void main() {
 
       test('animationColor должен быть AppColors.animationAccent', () {
         expect(MediaTypeTheme.animationColor, AppColors.animationAccent);
+      });
+    });
+
+    group('rainbowSweep', () {
+      test('должен содержать каждый тип и замыкать круг', () {
+        final List<Color> sweep = MediaTypeTheme.rainbowSweep;
+
+        expect(sweep, hasLength(MediaType.values.length + 1));
+        expect(sweep.last, sweep.first);
+        for (final MediaType type in MediaType.values) {
+          expect(sweep, contains(MediaTypeTheme.colorFor(type)));
+        }
+      });
+
+      test('должен идти по возрастанию hue, чтобы переход был плавным', () {
+        // Drop the closing colour: it repeats the first and breaks the order.
+        final List<Color> ring = MediaTypeTheme.rainbowSweep
+            .sublist(0, MediaTypeTheme.rainbowSweep.length - 1);
+        final List<double> hues = ring
+            .map((Color c) => HSVColor.fromColor(c).hue)
+            .toList();
+
+        expect(hues, orderedEquals(<double>[...hues]..sort()));
       });
     });
   });

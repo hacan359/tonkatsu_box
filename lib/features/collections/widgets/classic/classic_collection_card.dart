@@ -1,12 +1,12 @@
 // Uses [CollectionCardShell] for focus/hover/border, so it is structurally
 // identical to the rich card and differs only in the image area content.
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/cover_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
-import '../../../../shared/models/collection.dart';
-import '../../../../shared/models/cover_info.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_typography.dart';
 import '../../../../shared/widgets/cached_image.dart';

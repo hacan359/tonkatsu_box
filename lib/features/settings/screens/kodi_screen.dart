@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/kodi_application_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +13,6 @@ import '../../../core/database/database_service.dart';
 import '../../../core/services/kodi_sync_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/kodi_application_info.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -27,12 +27,10 @@ import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/status_dot.dart';
 
-/// Breakpoint для переключения ширины контента.
 const double _desktopBreakpoint = 800;
 
 /// Единый экран Kodi: подключение, sync-настройки, debug-инструменты.
 class KodiScreen extends ConsumerStatefulWidget {
-  /// Создаёт [KodiScreen].
   const KodiScreen({super.key});
 
   @override
@@ -65,7 +63,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     super.dispose();
   }
 
-  // ==================== Actions ====================
 
   Future<void> _testConnection() async {
     setState(() {
@@ -235,7 +232,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     return '${seconds ~/ 3600}h';
   }
 
-  // ==================== Build ====================
 
   @override
   Widget build(BuildContext context) {
@@ -259,7 +255,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                   vertical: AppSpacing.sm,
                 ),
                 children: <Widget>[
-                  // Сначала выбираем коллекцию — без неё остальное бесполезно.
                   _buildTargetSection(settings),
                   const SizedBox(height: AppSpacing.md),
                   _buildConnectionSection(settings),
@@ -279,7 +274,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     );
   }
 
-  // ==================== Connection ====================
 
   Widget _buildConnectionSection(KodiSettingsState settings) {
     final S l = S.of(context);
@@ -398,9 +392,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     );
   }
 
-  // ==================== Sync ====================
 
-  /// Возвращает true, если коллекция привязана и существует.
   bool _hasValidTarget(
     KodiSettingsState settings,
     AsyncValue<List<Collection>> collectionsAsync,
@@ -416,7 +408,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
 
-    // Если коллекция была удалена — чистим запись в настройках.
     collectionsAsync.whenData((List<Collection> cols) {
       if (settings.targetCollectionId != null &&
           !cols.any((Collection c) => c.id == settings.targetCollectionId) &&
@@ -693,7 +684,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     );
   }
 
-  // ==================== Debug ====================
 
   Widget _buildDebugSection(KodiSettingsState settings) {
     final S l = S.of(context);

@@ -1,23 +1,24 @@
-// Типографика приложения.
+// App typography.
+
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
 import '../constants/platform_features.dart';
 import 'app_colors.dart';
 
-/// Типографика приложения.
+/// Text styles for every level of the hierarchy.
 ///
-/// Определяет стили текста для всех уровней иерархии.
-/// Все стили используют шрифт Inter и [AppColors.textPrimary] по умолчанию.
+/// Every style uses the Inter font and [AppColors.textPrimary] by default.
 abstract final class AppTypography {
-  /// Семейство шрифтов по умолчанию.
+  /// Default font family.
   static const String fontFamily = 'Inter';
 
-  /// Базовая шкала плотная, под desktop; на мобильных экранах она мелкая,
-  /// поэтому все стили получают +1px.
+  /// The base scale is dense, tuned for desktop; on phones it reads too small,
+  /// so every style gets +1px.
   static final double _bump = kIsMobile ? 1 : 0;
 
-  /// Крупный заголовок (название приложения, заголовок экрана).
+  /// Large heading (app name, screen title).
   static final TextStyle h1 = TextStyle(
     fontFamily: fontFamily,
     fontSize: 26 + _bump,
@@ -27,7 +28,7 @@ abstract final class AppTypography {
     letterSpacing: -0.5,
   );
 
-  /// Заголовок секции.
+  /// Section heading.
   static final TextStyle h2 = TextStyle(
     fontFamily: fontFamily,
     fontSize: 18 + _bump,
@@ -37,7 +38,7 @@ abstract final class AppTypography {
     letterSpacing: -0.2,
   );
 
-  /// Подзаголовок (название карточки, элемент списка).
+  /// Subheading (card title, list item).
   static final TextStyle h3 = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14 + _bump,
@@ -46,7 +47,7 @@ abstract final class AppTypography {
     height: 1.3,
   );
 
-  /// Основной текст.
+  /// Body text.
   static final TextStyle body = TextStyle(
     fontFamily: fontFamily,
     fontSize: 13 + _bump,
@@ -55,7 +56,7 @@ abstract final class AppTypography {
     height: 1.4,
   );
 
-  /// Мелкий текст (даты, мета-информация).
+  /// Small text (dates, meta information).
   static final TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
     fontSize: 12 + _bump,
@@ -64,7 +65,7 @@ abstract final class AppTypography {
     height: 1.4,
   );
 
-  /// Подпись (badge, chip, label).
+  /// Caption (badge, chip, label).
   static final TextStyle caption = TextStyle(
     fontFamily: fontFamily,
     fontSize: 11 + _bump,
@@ -73,7 +74,7 @@ abstract final class AppTypography {
     height: 1.2,
   );
 
-  /// Название на постерной карточке.
+  /// Title on a poster card.
   static final TextStyle posterTitle = TextStyle(
     fontFamily: fontFamily,
     fontSize: 13 + _bump,
@@ -82,7 +83,7 @@ abstract final class AppTypography {
     height: 1.3,
   );
 
-  /// Подпись на постерной карточке (год, жанр).
+  /// Subtitle on a poster card (year, genre).
   static final TextStyle posterSubtitle = TextStyle(
     fontFamily: fontFamily,
     fontSize: 11 + _bump,
@@ -91,7 +92,43 @@ abstract final class AppTypography {
     height: 1.3,
   );
 
-  /// Название на карточке (grid).
+  /// [posterTitle] for a compact (landscape-phone) card.
+  static TextStyle posterTitleFor({required bool compact}) =>
+      compact ? posterTitle.copyWith(fontSize: 9) : posterTitle;
+
+  /// [posterSubtitle] for a compact (landscape-phone) card.
+  static TextStyle posterSubtitleFor({required bool compact}) =>
+      compact ? posterSubtitle.copyWith(fontSize: 7) : posterSubtitle;
+
+  static double _lineHeight(TextStyle style, TextScaler textScaler) =>
+      textScaler.scale(style.fontSize ?? 14) * (style.height ?? 1.0);
+
+  /// Source logo on a poster card, as a multiple of the subtitle font size.
+  /// Lives here because it sets the subtitle row's height, which
+  /// [posterTextBlockHeight] must budget for.
+  static const double posterSourceLogoScale = 1.1;
+
+  /// Height of a poster card's text block — two title lines plus one subtitle
+  /// line — derived from the styles so it tracks the +1px bump and font scale.
+  ///
+  /// The subtitle row is as tall as the taller of its text and the source logo:
+  /// the logo is [posterSourceLogoScale] of the font size, so budgeting the
+  /// line height alone overflows a card that carries one.
+  static double posterTextBlockHeight({
+    required bool compact,
+    required TextScaler textScaler,
+  }) {
+    final TextStyle subtitle = posterSubtitleFor(compact: compact);
+    final double subtitleRow = math.max(
+      _lineHeight(subtitle, textScaler),
+      textScaler.scale(subtitle.fontSize ?? 11) * posterSourceLogoScale,
+    );
+    return (2 * _lineHeight(posterTitleFor(compact: compact), textScaler) +
+            subtitleRow)
+        .ceilToDouble();
+  }
+
+  /// Title on a grid card.
   static final TextStyle cardTitle = TextStyle(
     fontFamily: fontFamily,
     fontSize: 13 + _bump,
@@ -100,7 +137,7 @@ abstract final class AppTypography {
     height: 1.3,
   );
 
-  /// Подпись на карточке (grid).
+  /// Subtitle on a grid card.
   static final TextStyle cardSubtitle = TextStyle(
     fontFamily: fontFamily,
     fontSize: 11 + _bump,

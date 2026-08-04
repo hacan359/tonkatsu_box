@@ -2,6 +2,8 @@
 
 import 'dart:async';
 
+import 'package:core/models/profile.dart';
+import 'package:core/utils/anime_manga_title_language.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +23,6 @@ import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/utils/anime_manga_title_language.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../core/services/update_service.dart';
 import '../providers/kodi_settings_provider.dart';
@@ -50,13 +51,13 @@ import 'mal_import_screen.dart';
 import 'ra_import_screen.dart';
 import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
+import 'simkl_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'card_banner_debug_screen.dart';
 import 'debug_hub_screen.dart';
 import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
 import 'profiles_screen.dart';
-import '../../../shared/models/profile.dart';
 import '../providers/profile_provider.dart';
 
 /// Breakpoint for switching content width.
@@ -172,7 +173,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return result;
   }
 
-  // ==================== Sections ====================
 
   List<Widget> _buildSections() {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
@@ -281,6 +281,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.traktTitle,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
+          ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconSimklColor,
+            leadingAssetColored: true,
+            title: l.simklImportTitle,
+            subtitle: l.settingsSimklImportSubtitle,
+            onTap: () => _pushScreen(const SimklImportScreen()),
           ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconKinoriumColor,
@@ -687,7 +694,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ];
   }
 
-  // ==================== Helpers ====================
 
   void _pushScreen(Widget screen) {
     Navigator.of(context).push(

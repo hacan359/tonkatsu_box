@@ -1,5 +1,10 @@
 import '../../../shared/constants/platform_features.dart';
 
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,16 +12,13 @@ import '../../../core/api/mangabaka_api.dart';
 import '../../../core/api/mangadex_api.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/manga.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/utils/cover_image_id.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../search/widgets/item_details_sheet.dart';
 import '../../settings/providers/settings_provider.dart'
     show settingsNotifierProvider;
@@ -145,8 +147,11 @@ class _MangaRowState extends State<_MangaRow> {
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    // Poster fills the card (2:3) + the list rows' vertical padding.
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +170,9 @@ class _MangaRowState extends State<_MangaRow> {
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               clipBehavior: Clip.none,
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.posterRowVerticalPadding,
+              ),
               itemCount: widget.mangas.length,
               separatorBuilder: (_, _) =>
                   const SizedBox(width: AppSpacing.sm),
@@ -189,6 +196,8 @@ class _MangaRowState extends State<_MangaRow> {
                     splitRatings: true,
                     isInCollection: widget.ownedIds.contains(manga.id),
                     placeholderIcon: Icons.auto_stories,
+                    source: manga.source,
+                    onSourceTap: openUrlCallback(manga.externalUrl),
                     onTap: () => widget.onTap(manga),
                   ),
                 );
@@ -208,7 +217,11 @@ class _MangaRowShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    final double rowHeight = posterWidth / AppSpacing.posterAspectRatio + 8;
+    final double rowHeight = AppSpacing.posterRowHeight(
+      posterWidth: posterWidth,
+      compact: compact,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,31 +239,15 @@ class _MangaRowShimmer extends StatelessWidget {
           height: rowHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.posterRowVerticalPadding,
+            ),
             itemCount: 5,
             separatorBuilder: (_, _) =>
                 const SizedBox(width: AppSpacing.sm),
             itemBuilder: (_, _) => SizedBox(
               width: posterWidth,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: posterWidth * 0.7,
-                    height: 12,
-                    color: AppColors.surfaceLight,
-                  ),
-                ],
-              ),
+              child: ShimmerPosterCard(compact: compact),
             ),
           ),
         ),

@@ -1,20 +1,17 @@
+import 'package:core/models/media_type.dart';
+import 'package:core/models/wishlist_item.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/wishlist_item.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/markdown_toolbar.dart';
 import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/constants/media_type_ui.dart';
 
-// Экран-форма для добавления/редактирования элемента вишлиста.
 
-/// Результат формы вишлиста.
 class WishlistDialogResult {
-  /// Создаёт экземпляр [WishlistDialogResult].
   const WishlistDialogResult({
     required this.text,
     this.mediaTypeHint,
@@ -25,13 +22,10 @@ class WishlistDialogResult {
   /// Текст заметки (название контента).
   final String text;
 
-  /// Опциональный тип медиа.
   final MediaType? mediaTypeHint;
 
-  /// Дополнительная заметка.
   final String? note;
 
-  /// Опциональный тег для группировки.
   final String? tag;
 }
 
@@ -40,7 +34,6 @@ class WishlistDialogResult {
 /// Открывается как полноценная страница через [Navigator.push].
 /// Возвращает [WishlistDialogResult] или `null` при отмене (back).
 class AddWishlistForm extends StatefulWidget {
-  /// Создаёт [AddWishlistForm].
   const AddWishlistForm({
     this.existing,
     super.key,
@@ -49,7 +42,6 @@ class AddWishlistForm extends StatefulWidget {
   /// Существующий элемент (для режима редактирования).
   final WishlistItem? existing;
 
-  /// Открывает экран формы и возвращает результат.
   static Future<WishlistDialogResult?> show(
     BuildContext context, {
     WishlistItem? existing,

@@ -1,8 +1,9 @@
+import 'package:core/models/data_source.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 
-import '../../../shared/models/data_source.dart';
 import '../../services/app_http_overrides.dart';
+import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'hardcover_types.dart';
 
@@ -15,13 +16,13 @@ import 'hardcover_types.dart';
 class HardcoverGraphQLClient {
   HardcoverGraphQLClient({Dio? dio})
       : _dio = dio ??
-            Dio(BaseOptions(
+            createApiDio(
               connectTimeout: _connectTimeout,
               receiveTimeout: _receiveTimeout,
               headers: const <String, String>{
                 'User-Agent': AppHttpOverrides.userAgent,
               },
-            ));
+            );
 
   static const Duration _connectTimeout = Duration(seconds: 8);
 

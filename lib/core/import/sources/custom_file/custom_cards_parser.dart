@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/tag.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tag.dart';
+
 import '../../../../shared/utils/media_format.dart';
 import 'custom_card_entry.dart';
 

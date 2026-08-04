@@ -2,27 +2,27 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_mark.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tag.dart';
+import 'package:core/models/tier_list.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
-import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
+import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
-import 'package:tonkatsu_box/core/services/xcoll_file.dart';
-import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
-import 'package:tonkatsu_box/shared/models/canvas_item.dart';
-import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/item_mark.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
-import 'package:tonkatsu_box/shared/models/tag.dart';
-import 'package:tonkatsu_box/shared/models/tier_list.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -304,6 +304,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -311,6 +312,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -327,6 +329,7 @@ void main() {
               externalId: 100,
               platformId: 48,
               authorComment: 'Great game',
+              addedAt: any(named: 'addedAt'),
             )).called(1);
         verify(() => mockRepo.addItem(
               collectionId: 10,
@@ -334,6 +337,7 @@ void main() {
               externalId: 200,
               platformId: null,
               authorComment: null,
+              addedAt: any(named: 'addedAt'),
             )).called(1);
       });
 
@@ -369,6 +373,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -376,6 +381,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -422,6 +428,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -429,6 +436,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -484,6 +492,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -491,6 +500,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -539,6 +549,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -546,6 +557,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -583,6 +595,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -590,6 +603,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -655,6 +669,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -662,6 +677,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutNoTmdb.importFromXcoll(xcoll);
@@ -693,6 +709,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -738,6 +755,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -745,6 +763,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final List<ImportStage> stages = <ImportStage>[];
@@ -796,6 +815,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
 
         int callCount = 0;
@@ -805,6 +825,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async {
           callCount++;
           return callCount == 1 ? 1 : null;
@@ -860,6 +881,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockCanvas.saveViewport(any())).thenAnswer((_) async {});
 
@@ -913,6 +935,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
 
         int nextId = 100;
@@ -979,6 +1002,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
 
         final Map<int, int> exportToNewId = <int, int>{};
@@ -1062,6 +1086,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
 
         when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
@@ -1099,6 +1124,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
 
         final ImportResult result = await sutFull.importFromXcoll(xcoll);
@@ -1138,6 +1164,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
 
         final ImportResult result = await sutFull.importFromXcoll(xcoll);
@@ -1188,6 +1215,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockCanvas.saveViewport(any())).thenAnswer((_) async {});
         when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
@@ -1251,6 +1279,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1258,6 +1287,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 50);
         when(() => mockCanvas.saveGameCanvasViewport(any(), any()))
             .thenAnswer((_) async {});
@@ -1339,6 +1369,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1346,6 +1377,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 51);
 
         int nextCanvasId = 200;
@@ -1443,6 +1475,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1450,6 +1483,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 52);
 
         int nextId = 300;
@@ -1534,6 +1568,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1541,6 +1576,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutNoCanvas.importFromXcoll(xcoll);
@@ -1607,6 +1643,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1614,6 +1651,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 53);
 
         when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
@@ -1695,6 +1733,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1702,6 +1741,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 10);
         when(() => mockCanvas.getGameCanvasItems(any()))
             .thenAnswer((_) async => <CanvasItem>[]);
@@ -1926,6 +1966,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             )).thenAnswer((_) async => createdCollection);
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1933,6 +1974,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
         when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
         when(() => mockMovieDao.upsertMovies(any())).thenAnswer((_) async {});
@@ -1991,6 +2033,7 @@ void main() {
               platformId: any(named: 'platformId'),
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final XcollFile xcoll = XcollFile(
@@ -2496,6 +2539,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(
@@ -2509,6 +2553,7 @@ void main() {
               name: any(named: 'name'),
               author: any(named: 'author'),
               type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
             ));
       });
 
@@ -2569,6 +2614,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => null);
         when(() => mockRepo.findItem(
               collectionId: any(named: 'collectionId'),
@@ -2625,6 +2671,7 @@ void main() {
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
         when(() => mockDb.setItemOverrideName(any(), any()))
             .thenAnswer((_) async {});
@@ -2669,6 +2716,7 @@ void main() {
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
         when(() => mockDb.updateItemUserRating(any(), any()))
             .thenAnswer((_) async {});
@@ -2792,6 +2840,7 @@ void main() {
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
 
         final ImportResult result = await sutV2.importFromXcoll(
@@ -2826,6 +2875,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
 
         final ImportResult result = await sutV2.importFromXcoll(
@@ -2846,6 +2896,7 @@ void main() {
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => null);
         when(() => mockRepo.findItem(
               collectionId: any(named: 'collectionId'),
@@ -2943,6 +2994,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
 
         final ImportResult result = await sutV2.importFromXcoll(
@@ -2966,6 +3018,7 @@ void main() {
               platformId: any(named: 'platformId'),
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
 
         final ImportResult result = await sutV2.importFromXcoll(
@@ -2974,6 +3027,77 @@ void main() {
         );
 
         expect(result.success, isTrue);
+        verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+      });
+
+      test('should restore marks for kitsu anime', () async {
+        final MockAnimeDao animeDao = MockAnimeDao();
+        when(() => mockDb.animeDao).thenReturn(animeDao);
+        when(() => animeDao.upsertAnime(any())).thenAnswer((_) async {});
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
+            )).thenAnswer((_) async => 42);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 244,
+              'source': 'kitsu',
+              '_watched_episodes': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'season': 2,
+                  'episode': 21,
+                  'watched_at': 1700000000,
+                },
+              ],
+            },
+          ]),
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockTvShowDao.markEpisodeWatchedAt(
+            5, DataSource.kitsu, 244, 2, 21, 1700000000 * 1000)).called(1);
+      });
+
+      test('should ignore _watched_episodes on anilist anime', () async {
+        final MockAnimeDao animeDao = MockAnimeDao();
+        when(() => mockDb.animeDao).thenReturn(animeDao);
+        when(() => animeDao.upsertAnime(any())).thenAnswer((_) async {});
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
+            )).thenAnswer((_) async => 42);
+
+        await sutV2.importFromXcoll(
+          xcollWith(userData: true, items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'anime',
+              'external_id': 600,
+              'source': 'anilist',
+              '_watched_episodes': <Map<String, dynamic>>[
+                <String, dynamic>{'season': 1, 'episode': 1},
+              ],
+            },
+          ]),
+          collectionId: 5,
+        );
+
         verifyNever(() => mockTvShowDao.markEpisodeWatchedAt(
             any(), any(), any(), any(), any(), any()));
       });
@@ -2992,6 +3116,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
 
         final ImportResult result = await sutV2.importFromXcoll(
@@ -3022,6 +3147,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 42);
 
         final ImportResult result = await sutV2.importFromXcoll(
@@ -3045,6 +3171,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => null);
         when(() => mockRepo.findItem(
               collectionId: any(named: 'collectionId'),
@@ -3116,6 +3243,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => null);
         when(() => mockRepo.findItem(
               collectionId: any(named: 'collectionId'),
@@ -3184,6 +3312,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((Invocation invocation) async =>
             invocation.namedArguments[const Symbol('source')] ==
                     DataSource.kitsu
@@ -3269,6 +3398,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((Invocation invocation) async =>
             invocation.namedArguments[const Symbol('source')] ==
                     DataSource.kitsu
@@ -3314,6 +3444,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 11);
         when(() => mockTagDao.resolveOrCreateAll(any())).thenAnswer(
             (_) async => <String, int>{GlobalTagDao.nameKey('Fav'): 1});
@@ -3369,6 +3500,7 @@ void main() {
               source: any(named: 'source'),
               authorComment: any(named: 'authorComment'),
               status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
             )).thenAnswer((_) async => 1);
 
         sutLight = ImportService(

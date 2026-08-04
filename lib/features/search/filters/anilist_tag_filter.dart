@@ -1,9 +1,9 @@
+import 'package:core/models/anilist_tag.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../data/repositories/anilist_tags_repository.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/anilist_tag.dart';
 import '../models/search_source.dart';
 import '../widgets/anilist_tag_picker.dart';
 

@@ -1,22 +1,21 @@
 import 'dart:ui' show ImageFilter;
 
+import 'package:core/models/anime.dart';
+import 'package:core/models/book.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/visual_novel.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 
 import '../../../shared/widgets/copyable_text.dart';
 import '../../../shared/widgets/gyroscope_parallax_image.dart';
-
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/game.dart';
-import '../../../shared/models/anime.dart';
-import '../../../shared/models/book.dart';
-import '../../../shared/models/manga.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/utils/cover_image_id.dart';
 import '../../../shared/utils/url_launch.dart';
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/tv_show.dart';
-import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';

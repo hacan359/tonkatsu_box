@@ -1,12 +1,12 @@
+import 'package:core/models/movie.dart';
+import 'package:core/models/tmdb_review.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
-import 'package:tonkatsu_box/shared/models/tmdb_review.dart';
-import 'package:tonkatsu_box/shared/models/tv_episode.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
 

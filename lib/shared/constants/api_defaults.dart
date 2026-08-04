@@ -21,6 +21,9 @@ abstract final class ApiDefaults {
   /// `softname` is sent with every ScreenScraper request to identify the app.
   static const String screenScraperSoftname = 'tonkatsuBox';
 
+  /// Simkl OAuth client id (PIN flow needs no secret in the build).
+  static const String simklClientId = String.fromEnvironment('SIMKL_CLIENT_ID');
+
   static bool get hasTmdbKey => tmdbApiKey.isNotEmpty;
 
   static bool get hasSteamGridDbKey => steamGridDbApiKey.isNotEmpty;
@@ -30,4 +33,6 @@ abstract final class ApiDefaults {
 
   static bool get hasScreenScraperDevCreds =>
       screenScraperDevId.isNotEmpty && screenScraperDevPassword.isNotEmpty;
+
+  static bool get hasSimklClientId => simklClientId.isNotEmpty;
 }

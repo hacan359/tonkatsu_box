@@ -1,6 +1,6 @@
+import 'package:core/models/steamgriddb_game.dart';
 import 'package:dio/dio.dart';
 
-import '../../../shared/models/steamgriddb_game.dart';
 import 'steamgriddb_http_client.dart';
 import 'steamgriddb_types.dart';
 

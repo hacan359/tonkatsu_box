@@ -1,4 +1,4 @@
-import '../../../shared/models/book.dart';
+import 'package:core/models/book.dart';
 
 class HardcoverApiException implements Exception {
   const HardcoverApiException(this.message, {this.statusCode, this.detail});

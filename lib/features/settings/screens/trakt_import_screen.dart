@@ -1,4 +1,3 @@
-// Экран импорта данных из оффлайн-выгрузки Trakt.tv.
 
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,6 @@ import '../content/trakt_import_content.dart';
 /// Тонкая обёртка вокруг [TraktImportContent] с Scaffold/AppBar.
 /// Используется при push-навигации на мобильных устройствах.
 class TraktImportScreen extends StatelessWidget {
-  /// Создаёт [TraktImportScreen].
   const TraktImportScreen({super.key});
 
   @override

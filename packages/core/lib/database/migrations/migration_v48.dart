@@ -1,15 +1,9 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// Gives books the same source-aware collection identity as manga.
-///
-/// Books fell under the generic `idx_ci_*_other` unique indexes, keyed on
-/// `(collection_id, media_type, external_id)` without `source`. Because an
-/// OpenLibrary and a Fantlab work can share a numeric id, the second one hit a
-/// false unique conflict ("already in collection"). This carves `book` out of
-/// the `*_other` indexes into dedicated `*_book` indexes that include `source`,
-/// mirroring the manga indexes added in v44.
+/// Carves `book` out of the generic `*_other` unique indexes into `*_book` ones
+/// that include `source` — two providers can legally share a numeric id.
 class MigrationV48 extends Migration {
   @override
   int get version => 48;

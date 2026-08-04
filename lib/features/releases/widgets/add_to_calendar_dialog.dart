@@ -1,7 +1,7 @@
+import 'package:core/models/calendar_recurrence.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/calendar_recurrence.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../../../shared/widgets/segmented_pill.dart';

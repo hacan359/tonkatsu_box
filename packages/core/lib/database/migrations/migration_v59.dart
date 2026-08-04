@@ -1,10 +1,9 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// SQLite-backed cache of the MangaDex tag catalog (`/manga/tag`), mirroring
-/// `mangabaka_tags`. `tag_group` is one of genre / theme / format / content;
-/// `id` is the tag UUID.
+/// Caches the MangaDex tag catalog, mirroring `mangabaka_tags`. `tag_group` is
+/// genre / theme / format / content; `id` is the tag UUID.
 class MigrationV59 extends Migration {
   @override
   int get version => 59;

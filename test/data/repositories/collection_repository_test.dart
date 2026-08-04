@@ -1,7 +1,7 @@
+import 'package:core/models/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
 
 import '../../helpers/test_helpers.dart';
 

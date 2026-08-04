@@ -1,21 +1,22 @@
 // Episode Tracker section: season/episode watch progress.
 
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_mark.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/data_source.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/models/item_mark.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../providers/episode_tracker_provider.dart';
@@ -668,6 +669,8 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
           Expanded(
             child: Text(
               seasonTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTypography.body.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -689,6 +692,8 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
         children: <Widget>[
           Text(
             subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -787,6 +792,7 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
                 trackerArg: trackerArg,
                 itemId: itemId,
                 accentColor: accentColor,
+                seasonPosterUrl: season.posterUrl,
               ))
         else if (episodes != null && episodes.isEmpty)
           Padding(
@@ -813,11 +819,15 @@ class EpisodeTile extends ConsumerStatefulWidget {
     required this.itemId,
     required this.accentColor,
     this.watchedAt,
+    this.seasonPosterUrl,
     super.key,
   });
 
   /// Episode data.
   final TvEpisode episode;
+
+  /// Stands in when the episode has no still of its own.
+  final String? seasonPosterUrl;
 
   /// Whether the episode has been watched.
   final bool isWatched;
@@ -878,6 +888,16 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
 
     final String? overview = episode.overview;
 
+    // Kitsu ships stills for some episodes only; the season poster keeps the
+    // rows aligned instead of leaving a ragged gap where a still is missing.
+    final bool hasOwnStill = episode.stillUrl != null;
+    final String? stillUrl = episode.stillUrl ?? widget.seasonPosterUrl;
+
+    // A 96px still eats a third of a phone row and long titles/synopses then
+    // wrap into tall uneven blocks — give the text the width back on mobile.
+    final double stillWidth = kIsMobile ? 72 : 96;
+    final double stillHeight = kIsMobile ? 40 : 54;
+
     void toggle() {
       ref
           .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
@@ -894,7 +914,7 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (episode.stillUrl != null) ...<Widget>[
+            if (stillUrl != null) ...<Widget>[
               // Watched episodes get a dimmed still with a check badge,
               // matching the struck-through title; the row tap toggles.
               Stack(
@@ -905,12 +925,21 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                       child: CachedImage(
                         imageType: ImageType.tvEpisodeStill,
-                        imageId: '${widget.trackerArg.source.name}_'
-                            '${episode.tmdbShowId}_'
-                            's${episode.seasonNumber}e${episode.episodeNumber}',
-                        remoteUrl: episode.stillUrl!,
-                        width: 96,
-                        height: 54,
+                        // Keyed by what is actually shown: a season poster
+                        // standing in for a still must not be cached under the
+                        // episode's own id, or it would stick once the real
+                        // still appears.
+                        imageId: hasOwnStill
+                            ? '${widget.trackerArg.source.name}_'
+                                '${episode.tmdbShowId}_'
+                                's${episode.seasonNumber}'
+                                'e${episode.episodeNumber}'
+                            : '${widget.trackerArg.source.name}_'
+                                '${episode.tmdbShowId}_'
+                                's${episode.seasonNumber}_poster',
+                        remoteUrl: stillUrl,
+                        width: stillWidth,
+                        height: stillHeight,
                         fit: BoxFit.cover,
                         memCacheWidth: 192,
                         placeholder:
@@ -942,6 +971,8 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: AppTypography.bodySmall.copyWith(
                               decoration: isWatched
                                   ? TextDecoration.lineThrough
@@ -966,6 +997,8 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                   if (subtitleParts.isNotEmpty)
                     Text(
                       subtitleParts.join(' \u2022 '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTypography.caption.copyWith(
                         color: AppColors.textSecondary,
                       ),

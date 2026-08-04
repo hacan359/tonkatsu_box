@@ -1,17 +1,17 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/universal_import_result.dart';
+import 'package:core/models/wishlist_item.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/import/sources/kinorium/kinorium_import_service.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/movie.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
-import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
-import 'package:tonkatsu_box/shared/models/wishlist_item.dart';
 
 import '../../../../helpers/test_helpers.dart';
 
@@ -81,9 +81,10 @@ void main() {
         .thenAnswer((_) async => <CollectionItem>[]);
     when(() => mockMovieDao.upsertMovies(any())).thenAnswer((_) async {});
     when(() => mockTvShowDao.upsertTvShows(any())).thenAnswer((_) async {});
-    when(() => mockRepo.addItemsBatch(any(), any()))
-        .thenAnswer((Invocation inv) async =>
-            (inv.positionalArguments[1] as List<dynamic>).length);
+    when(() => mockRepo.addItemsBatchReturningIds(any(), any()))
+        .thenAnswer((Invocation inv) async => List<int?>.generate(
+            (inv.positionalArguments[1] as List<dynamic>).length,
+            (int index) => index + 1));
     when(() => mockRepo.updateItemFieldsBatch(any()))
         .thenAnswer((_) async {});
     when(() => mockWishlist.getAll(
@@ -105,7 +106,7 @@ void main() {
   }
 
   List<Map<String, dynamic>> capturedItemRows() =>
-      verify(() => mockRepo.addItemsBatch(any(), captureAny()))
+      verify(() => mockRepo.addItemsBatchReturningIds(any(), captureAny()))
           .captured
           .single as List<Map<String, dynamic>>;
 

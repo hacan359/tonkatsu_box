@@ -1,4 +1,5 @@
-import '../../../shared/models/book.dart';
+import 'package:core/models/book.dart';
+
 import 'hardcover_graphql_client.dart';
 import 'hardcover_queries.dart';
 import 'hardcover_types.dart';

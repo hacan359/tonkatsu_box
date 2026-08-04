@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/logo_loader.dart';
 import '../facet_value.dart';
 import '../genre_cloud_layout.dart';
 
@@ -62,7 +63,10 @@ Size measureGenreWord(
     textDirection: TextDirection.ltr,
     maxLines: 1,
   )..layout();
-  return Size(painter.width, painter.height);
+  final Size size = Size(painter.width, painter.height);
+  // Free the native paragraph now; layout passes measure thousands of words.
+  painter.dispose();
+  return size;
 }
 
 /// Paints a preference cloud. Word size scales with frequency rank; colour
@@ -127,7 +131,6 @@ class _GenreCloudViewState extends State<GenreCloudView> {
 
   // Deferred (post-frame) layout bookkeeping; see _scheduleLayout.
   bool _layoutPending = false;
-  Size? _pendingViewport;
 
   // Canvas the view is currently centred for; re-centre only when it changes so
   // the user's own panning survives rebuilds.
@@ -150,11 +153,34 @@ class _GenreCloudViewState extends State<GenreCloudView> {
     if (home != null) _controller.value = home;
   }
 
+  /// Measurement memo shared by every pass of one layout run: auto-fit and
+  /// growth passes re-ask for the same (word, fontSize) pairs many times over.
+  MeasureWord _memoizedMeasure() {
+    final Map<String, Size> cache = <String, Size>{};
+    final bool showCount = widget.showCount;
+    return (FacetValue word, double fontSize) => cache.putIfAbsent(
+          '${word.label}|${word.count}|$fontSize',
+          () => measureGenreWord(word, fontSize, showCount: showCount),
+        );
+  }
+
   GenreCloudLayout _compute(Size canvas) => layoutGenreCloud(
         words: widget.words,
         canvasSize: canvas,
-        measure: (FacetValue word, double fontSize) =>
-            measureGenreWord(word, fontSize, showCount: widget.showCount),
+        measure: _memoizedMeasure(),
+        minFontSize: widget.minFontSize,
+        maxFontSize: widget.maxFontSize,
+      );
+
+  Future<GenreCloudLayout> _computeAsync(
+    Size canvas,
+    List<FacetValue> words,
+    MeasureWord measure,
+  ) =>
+      layoutGenreCloudAsync(
+        words: words,
+        canvasSize: canvas,
+        measure: measure,
         minFontSize: widget.minFontSize,
         maxFontSize: widget.maxFontSize,
       );
@@ -170,44 +196,52 @@ class _GenreCloudViewState extends State<GenreCloudView> {
     return null;
   }
 
-  GenreCloudLayout _computeWithGrowth(Size viewport) {
+  Future<GenreCloudLayout> _computeWithGrowth(
+    Size viewport,
+    List<FacetValue> words,
+  ) async {
     Size canvas = viewport;
-    GenreCloudLayout layout = _compute(canvas);
+    final MeasureWord measure = _memoizedMeasure();
+    GenreCloudLayout layout = await _computeAsync(canvas, words, measure);
     // Grow the canvas (keeping fonts readable) until everything fits, so the
     // pan/zoom can reach every word.
     int pass = 0;
     while (layout.hidden > 0 && pass < _maxGrowthPasses) {
       canvas = Size(canvas.width * 1.4, canvas.height * 1.4);
-      layout = _compute(canvas);
+      layout = await _computeAsync(canvas, words, measure);
       pass++;
     }
     return layout;
   }
 
-  /// Defers the expensive placement past the current frame so the screen
-  /// paints (with a progress indicator) before the layout blocks the UI
-  /// thread, instead of freezing navigation for the whole computation.
-  void _scheduleLayout() {
+  /// Defers the expensive placement past the current frame, then runs it
+  /// cooperatively (the async layout yields between words), so the loading
+  /// indicator keeps animating instead of freezing on its first frame.
+  void _scheduleLayout(Size viewport) {
     if (_layoutPending) return;
     _layoutPending = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        _layoutPending = false;
-        return;
-      }
-      final Size? viewport = _pendingViewport;
-      if (viewport == null) {
-        _layoutPending = false;
-        return;
-      }
-      final GenreCloudLayout layout = _computeWithGrowth(viewport);
+      _runLayout(viewport);
+    });
+  }
+
+  Future<void> _runLayout(Size viewport) async {
+    try {
+      if (!mounted) return;
+      // Snapshot the inputs: if words change mid-computation the result is
+      // stored against this snapshot, the next build's cache check misses and
+      // a fresh pass is scheduled.
+      final List<FacetValue> words = List<FacetValue>.of(widget.words);
+      final GenreCloudLayout layout = await _computeWithGrowth(viewport, words);
+      if (!mounted) return;
       setState(() {
         _layout = layout;
-        _laidOutWords = List<FacetValue>.of(widget.words);
+        _laidOutWords = words;
         _laidOutViewport = viewport;
-        _layoutPending = false;
       });
-    });
+    } finally {
+      _layoutPending = false;
+    }
   }
 
   void _maybeRecenter(Size viewport, Size canvas) {
@@ -236,9 +270,8 @@ class _GenreCloudViewState extends State<GenreCloudView> {
           // instantly with a spinner instead of a frozen frame.
           final GenreCloudLayout? cached = _cachedLayout(viewport);
           if (cached == null) {
-            _pendingViewport = viewport;
-            _scheduleLayout();
-            return const Center(child: CircularProgressIndicator());
+            _scheduleLayout(viewport);
+            return const Center(child: LogoLoader());
           }
           layout = cached;
         } else {

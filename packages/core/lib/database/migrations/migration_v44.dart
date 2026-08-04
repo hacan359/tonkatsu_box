@@ -1,18 +1,10 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import '../schema.dart';
 import 'migration.dart';
 
-/// Adds MangaBaka as a second manga provider.
-///
-/// Manga identity becomes `(external_id, source)`:
-/// - `manga_cache` is rebuilt with a composite primary key `(id, source)` so
-///   an AniList and a MangaBaka entry sharing a numeric id coexist;
-/// - `collection_items` gains a nullable `source` column (filled only for
-///   manga) and manga-specific unique indexes that include it.
-///
-/// Also creates the MangaBaka genre / tag catalog tables and seeds the fixed
-/// genre enum.
+/// Adds MangaBaka as a second manga provider: manga identity becomes
+/// `(external_id, source)`, plus the MangaBaka genre / tag catalog tables.
 class MigrationV44 extends Migration {
   @override
   int get version => 44;

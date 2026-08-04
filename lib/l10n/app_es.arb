@@ -1,14 +1,11 @@
 {
   "@@locale": "es",
-
   "appName": "Tonkatsu Box",
-
   "navMain": "Inicio",
   "navCollections": "Colecciones",
   "navWishlist": "Deseados",
   "navSettings": "Ajustes",
   "navReleases": "Lanzamientos",
-
   "releasesEmpty": "Aún no hay series seguidas",
   "releasesEmptyHint": "Toca la campana en una serie o anime para seguir los nuevos episodios.",
   "releasesTrackShow": "Seguir estrenos",
@@ -35,7 +32,6 @@
   "recurrenceOnce": "Una vez",
   "recurrenceWeekly": "Cada semana",
   "recurrenceMonthly": "Cada mes",
-
   "statusNotStarted": "Sin empezar",
   "statusPlaying": "Jugando",
   "statusWatching": "Viendo",
@@ -50,7 +46,6 @@
   "statusRewatching": "Volviendo a ver",
   "statusRereading": "Releyendo",
   "all": "Todo",
-
   "mediaTypeGame": "Videojuego",
   "mediaTypeMovie": "Película",
   "mediaTypeTvShow": "Serie",
@@ -60,7 +55,6 @@
   "mediaTypeAnime": "Anime",
   "mediaTypeBook": "Libro",
   "mediaTypeCustom": "Personalizado",
-
   "sortManualDisplay": "Manual",
   "sortManualDesc": "Orden personalizado",
   "sortDateDisplay": "Fecha de adición",
@@ -81,16 +75,13 @@
   "sortStartDateShort": "Empezado",
   "sortCompletionDateDisplay": "Fecha de finalización",
   "sortCompletionDateShort": "Terminado",
-
   "sortDateOldest": "Más antiguos primero",
   "sortStatusFinished": "Terminados primero",
   "sortRatingLowest": "Menor primero",
   "sortFavoriteLast": "Favoritos al final",
-
   "searchSortRelevanceShort": "Rel.",
   "searchSortRatingShort": "Val",
   "searchSortRatingDisplay": "Valoración",
-
   "cancel": "Cancelar",
   "confirm": "Aceptar",
   "restore": "Restaurar",
@@ -188,7 +179,6 @@
   "close": "Cerrar",
   "keep": "Mantener",
   "change": "Cambiar",
-
   "settingsProfile": "Perfil de autor",
   "settingsProfileSubtitle": "Nombre del autor para tus colecciones",
   "settingsAuthorName": "Nombre del autor",
@@ -289,7 +279,6 @@
       "size": {"type": "String"}
     }
   },
-
   "credentialsTitle": "Credenciales",
   "credentialsWelcome": "¡Te damos la bienvenida a Tonkatsu Box!",
   "credentialsWelcomeHint": "Para empezar, configura tus credenciales de la API de IGDB. Obtén el Client ID y el Client Secret en la consola de desarrollador de Twitch.",
@@ -356,7 +345,6 @@
   "credentialsEnterSteamGridDbKeyError": "Introduce una clave API de SteamGridDB",
   "credentialsEnterTmdbKeyError": "Introduce una clave API de TMDB",
   "credentialsTmdbKeySaved": "Clave API de TMDB guardada",
-
   "timeAgo": "hace {value} {unit}",
   "@timeAgo": {
     "placeholders": {
@@ -383,7 +371,6 @@
     }
   },
   "timeJustNow": "Ahora mismo",
-
   "cacheTitle": "Caché",
   "cacheImageCache": "Caché de imágenes",
   "cacheOfflineMode": "Modo sin conexión",
@@ -409,7 +396,6 @@
       "size": {"type": "String"}
     }
   },
-
   "databaseTitle": "Base de datos",
   "databaseConfiguration": "Configuración",
   "databaseConfigSubtitle": "Exporta o importa tus claves API y ajustes.",
@@ -428,7 +414,6 @@
   },
   "databaseConfigImported": "Configuración importada correctamente",
   "databaseReset": "La base de datos se ha restablecido",
-
   "storageLocationTitle": "Ubicación de los datos",
   "storageLocationSubtitle": "Carpeta que almacena la base de datos y los perfiles. Evita carpetas que un servicio en la nube sincroniza en vivo (OneDrive, Syncthing): la base de datos puede corromperse a mitad de escritura. Para mover datos entre dispositivos, usa la exportación.",
   "storageLocationDangerWarning": "Atención: cambiar la carpeta de datos puede provocar pérdida de datos. Lo haces bajo tu propia responsabilidad.",
@@ -464,7 +449,6 @@
   "storageLocationRestartMessage": "La nueva carpeta de datos se usará tras reiniciar. ¿Reiniciar ahora?",
   "storageLocationRestartNow": "Reiniciar",
   "storageLocationRestartLater": "El cambio se aplicará tras reiniciar",
-
   "backupRestoreTile": "Restaurar la base de datos anterior",
   "backupNone": "Aún no hay copia",
   "backupRestoreConfirmTitle": "¿Restaurar la base de datos anterior?",
@@ -477,7 +461,6 @@
   "backupRestored": "Base de datos restaurada",
   "backupRestoreError": "No se pudo restaurar la copia",
   "backupRestartMessage": "Los datos restaurados se usarán tras reiniciar. ¿Reiniciar ahora?",
-
   "lanSyncTitle": "Sincronización en red",
   "lanSyncOpenTile": "Dispositivos cercanos",
   "lanSyncTileSubtitle": "Transfiere datos directamente entre dispositivos en la misma red Wi-Fi",
@@ -528,7 +511,6 @@
   "lanSyncImagesWarning": "Base de datos recibida, pero no se pudieron transferir las imágenes",
   "lanSyncRestartMessage": "Los datos recibidos se usarán tras reiniciar. ¿Reiniciar ahora?",
   "lanSyncFirewallNote": "Windows puede pedir permiso del cortafuegos en el primer inicio: permite el acceso en redes privadas.",
-
   "folderPickerNewFolder": "Nueva carpeta",
   "folderPickerVolumeList": "Dispositivos de almacenamiento",
   "folderPickerInternalStorage": "Almacenamiento interno",
@@ -538,7 +520,6 @@
   "folderPickerEmpty": "Sin subcarpetas",
   "folderPickerReadError": "No se puede leer esta carpeta",
   "folderPickerCreateError": "No se pudo crear la carpeta",
-
   "traktTitle": "Importación de Trakt",
   "traktImportFrom": "Importar desde Trakt.tv",
   "traktImportDescription": "Descarga tus datos desde trakt.tv/users/YOU/data y selecciona el archivo ZIP abajo.",
@@ -569,7 +550,6 @@
   "importStart": "Iniciar importación",
   "traktRequiresOwnTmdbKey": "La importación de Trakt requiere tu propia clave API de TMDB. Añádela en Ajustes → Credenciales.",
   "traktInvalidExport": "Exportación de Trakt no válida",
-
   "kinoriumImportFrom": "Importar de Kinorium",
   "kinoriumImportDescription": "Exporta tu lista desde Kinorium (llega por correo como CSV) y selecciona el archivo abajo.",
   "kinoriumSelectCsvFile": "Seleccionar archivo CSV",
@@ -601,7 +581,6 @@
     }
   },
   "traktImporting": "Importando desde Trakt",
-
   "creditsTitle": "Créditos",
   "creditsDataProviders": "Proveedores de datos",
   "creditsTmdbAttribution": "Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.",
@@ -622,7 +601,6 @@
   "creditsOpenSourceDesc": "Tonkatsu Box es software libre y de código abierto, publicado bajo la licencia MIT.",
   "creditsViewLicenses": "Ver licencias de código abierto",
   "creditsDiscord": "Unirse al Discord",
-
   "collectionsImportCollection": "Importar colección",
   "collectionsNoCollectionsYet": "Aún no hay colecciones",
   "collectionsNoCollectionsHint": "Toca + para crear tu primera colección y empezar\na organizar tu biblioteca.",
@@ -669,7 +647,6 @@
     }
   },
   "collectionsImporting": "Importando colección",
-
   "importTargetTitle": "Importar en...",
   "importCreateNew": "Crear nueva colección",
   "importUseExisting": "Añadir a una colección existente",
@@ -725,7 +702,6 @@
       "error": {"type": "String"}
     }
   },
-
   "collectionNotFound": "Colección no encontrada",
   "collectionAddItems": "Añadir elementos",
   "collectionSwitchToList": "Cambiar a lista",
@@ -874,7 +850,6 @@
   "collectionFilterDescending": "Descendente",
   "collectionFilterFilters": "Filtros",
   "collectionFilterClearAll": "Limpiar todo",
-
   "collectionItemMovedTo": "{name} movido a {collection}",
   "@collectionItemMovedTo": {
     "placeholders": {
@@ -895,12 +870,10 @@
       "name": {"type": "String"}
     }
   },
-
   "boardTab": "Tablero",
   "imageAddedToBoard": "Imagen añadida al tablero",
   "mapAddedToBoard": "Mapa añadido al tablero",
   "loading": "Cargando...",
-
   "gameNotFound": "Juego no encontrado",
   "movieNotFound": "Película no encontrada",
   "tvShowNotFound": "Serie no encontrada",
@@ -925,7 +898,6 @@
   },
   "animatedMovie": "Película animada",
   "animatedSeries": "Serie animada",
-
   "runtimeHoursMinutes": "{hours}h {minutes}m",
   "@runtimeHoursMinutes": {
     "placeholders": {
@@ -945,7 +917,6 @@
       "minutes": {"type": "int"}
     }
   },
-
   "totalSeasons": "{count, plural, =1{1 temporada} other{{count} temporadas}}",
   "@totalSeasons": {
     "placeholders": {
@@ -997,7 +968,6 @@
       "date": {"type": "String"}
     }
   },
-
   "createCollectionTitle": "Nueva colección",
   "createCollectionNameLabel": "Nombre de la colección",
   "createCollectionNameHint": "p. ej. Clásicos de SNES",
@@ -1011,7 +981,6 @@
       "name": {"type": "String"}
     }
   },
-
   "canvasAddText": "Añadir texto",
   "canvasAddImage": "Añadir imagen",
   "canvasAddLink": "Añadir enlace",
@@ -1025,7 +994,6 @@
   "canvasDeleteElement": "Eliminar elemento",
   "canvasDeleteElementMessage": "¿Seguro que quieres eliminar este elemento?",
   "canvasAddToBoard": "Añadir al tablero",
-
   "editTextTitle": "Editar texto",
   "textContentLabel": "Contenido del texto",
   "fontSizeLabel": "Tamaño de fuente",
@@ -1033,7 +1001,6 @@
   "fontSizeMedium": "Mediano",
   "fontSizeLarge": "Grande",
   "fontSizeTitle": "Título",
-
   "editImageTitle": "Editar imagen",
   "imageFromUrl": "Desde URL",
   "imageFromFile": "Desde archivo",
@@ -1041,17 +1008,14 @@
   "imageUrlHint": "https://example.com/image.png",
   "imageChooseFile": "Elegir archivo",
   "imageChooseAnother": "Elegir otra",
-
   "editLinkTitle": "Editar enlace",
   "linkLabelOptional": "Etiqueta (opcional)",
   "linkLabelHint": "Mi enlace",
-
   "connectionLabelHint": "p. ej. depende de, relacionado con...",
   "connectionStyleLabel": "Estilo",
   "connectionStyleSolid": "Continua",
   "connectionStyleDashed": "Discontinua",
   "connectionStyleArrow": "Flecha",
-
   "searchTabTv": "TV",
   "searchHintMovies": "Buscar películas...",
   "searchHintTv": "Buscar series...",
@@ -1123,6 +1087,16 @@
   "goToSettings": "Ir a Ajustes",
   "searchMinCharsHint": "Escribe al menos 2 caracteres y pulsa Intro",
   "searchNoResults": "Sin resultados",
+  "searchWhatToFind": "Qué buscar",
+  "searchSortNeedsSingleSource": "La ordenación está disponible con una sola fuente",
+  "searchSortUnavailableInSearch": "Esta fuente no ordena los resultados de búsqueda",
+  "searchSourcesLabel": "Fuentes",
+  "searchTextOnlyHint": "Solo búsqueda por texto",
+  "searchSourceNoResponse": "no respondió",
+  "searchCommonFilters": "Comunes",
+  "searchShowAll": "todos",
+  "searchNarrowedBySource": "limitado por el filtro de esta fuente",
+  "searchSourceLacksValue": "no admite el valor seleccionado",
   "searchNothingFoundFor": "No se encontró nada para \"{query}\"",
   "@searchNothingFoundFor": {
     "placeholders": {
@@ -1138,7 +1112,6 @@
   "errorDetailsShow": "Detalles",
   "showMore": "Más…",
   "showLess": "Contraer",
-
   "platformFilterTitle": "Seleccionar plataformas",
   "platformFilterClearAll": "Limpiar todo",
   "platformFilterSearchHint": "Buscar plataformas...",
@@ -1163,7 +1136,6 @@
   },
   "platformFilterNone": "No se encontraron plataformas",
   "platformFilterTryDifferent": "Prueba con otro término de búsqueda",
-
   "wishlistHideResolved": "Ocultar resueltos",
   "wishlistShowResolved": "Mostrar resueltos",
   "wishlistClearResolved": "Borrar resueltos",
@@ -1184,14 +1156,12 @@
   },
   "wishlistMarkResolved": "Marcar como resuelto",
   "wishlistUnresolve": "Marcar como no resuelto",
-
   "wishlistTitleHint": "Nombre del juego, película o serie...",
   "wishlistTitleMinChars": "Al menos 2 caracteres",
   "wishlistTypeOptional": "Tipo (opcional)",
   "any": "Cualquiera",
   "wishlistNoteOptional": "Nota (opcional)",
   "wishlistNoteHint": "Plataforma, año, quién lo recomendó...",
-
   "wishlistTagOptional": "Etiqueta (opcional)",
   "wishlistTagHint": "Agrupa entradas — p. ej. un lote de importación o una fuente",
   "wishlistTagUntagged": "Sin etiqueta",
@@ -1227,16 +1197,13 @@
     }
   },
   "apply": "Aplicar",
-
   "welcomeStepWelcome": "Bienvenida",
   "welcomeStepReady": "¡Listo!",
-
   "welcomeNameTitle": "¿Cómo te llamas?",
   "welcomeNameSubtitle": "Este nombre aparecerá como autor en las colecciones que crees",
   "welcomeChangeLaterHint": "Puedes cambiarlo más tarde en Ajustes",
   "welcomeLanguageTitle": "Elige tu idioma",
   "welcomeLanguageSubtitle": "Selecciona el idioma de la interfaz",
-
   "welcomeTitle": "Te damos la bienvenida a Tonkatsu Box",
   "welcomeSubtitle": "Organiza tus colecciones de juegos, películas,\nseries, anime, novelas visuales, manga y libros",
   "welcomeWhatYouCanDo": "Qué puedes hacer",
@@ -1256,7 +1223,6 @@
   "welcomeChipAnime": "Anime (TMDB)",
   "welcomeChipVisualNovels": "Novelas visuales (VNDB)",
   "welcomeChipManga": "Manga (AniList)",
-
   "welcomeApiTitle": "Obtener claves API",
   "welcomeApiFreeHint": "Registro gratuito, 2-3 minutos cada una",
   "welcomeApiIgdbTag": "IGDB",
@@ -1275,7 +1241,6 @@
   "welcomeApiOwnKeyHint": "Puedes añadir tu propia clave más tarde en Ajustes para límites más altos",
   "welcomeApiEnterKeysHint": "Introduce las claves en Ajustes → Credenciales tras la configuración",
   "welcomeApiRateLimitHint": "Las claves integradas se comparten entre todos los usuarios y tienen límites de uso. Para la mejor experiencia usa tus propias claves: es gratis y solo tarda unos minutos.",
-
   "welcomeHowTitle": "Cómo funciona",
   "welcomeHowAppStructure": "Estructura de la aplicación",
   "welcomeHowMainDesc": "Todos los elementos de todas las colecciones en una vista. Filtra por tipo, ordena por valoración.",
@@ -1298,16 +1263,13 @@
   "welcomeHowSharingDesc1": "Exporta colecciones como ",
   "welcomeHowSharingDesc2": " (ligero, solo metadatos) o ",
   "welcomeHowSharingDesc3": " (completo, con imágenes y tablero — funciona sin conexión). Importa de amigos — ¡sin API!",
-
   "welcomeReadyTitle": "¡Todo listo!",
   "welcomeReadyMessage": "Ve a Ajustes → Credenciales para introducir tus claves API, o empieza importando una colección.",
   "welcomeReadySkip": "Omitir — exploraré por mi cuenta",
   "welcomeReadyReturnHint": "Siempre puedes volver aquí desde Ajustes",
-
   "welcomeStepSources": "Fuentes",
   "welcomeStepTour": "Recorrido",
   "welcomeChipBooks": "Libros (OpenLibrary, Fantlab)",
-
   "welcomeSourcesTitle": "De dónde vienen los datos",
   "welcomeSourcesSubtitle": "Estos proveedores alimentan la búsqueda en toda la aplicación. La mayoría funciona de inmediato — solo un par pide una clave gratuita.",
   "welcomeSourcesNoKeyNeeded": "SIN CLAVE",
@@ -1315,7 +1277,6 @@
   "welcomeSourcesGetKey": "Obtener clave",
   "welcomeSourcesKeyOptionalHint": "Opcional — tu propia clave sube los límites de uso. La búsqueda funciona sin ella.",
   "welcomeSourcesHardcoverTokenHint": "Obligatorio — sin él la búsqueda y la importación quedan deshabilitadas. Los tokens caducan cada 1 de enero.",
-
   "welcomeSourceDescTmdb": "Películas, series y animación.",
   "welcomeSourceDescTvMaze": "Series de TV.",
   "welcomeSourceDescIgdb": "Videojuegos de todas las plataformas.",
@@ -1329,12 +1290,10 @@
   "welcomeSourceDescComicVine": "Un enorme catálogo de cómics y novelas gráficas.",
   "welcomeSourceDescGoogleBooks": "Millones de ediciones del catálogo de libros de Google, con búsqueda por título, autor o ISBN.",
   "welcomeSourceDescHardcover": "Catálogo comunitario de libros con series, géneros, estados de ánimo y valoraciones. Requiere un token personal gratuito.",
-
   "welcomeTourTitle": "Conoce el menú",
   "welcomeTourSubtitle": "Un recorrido rápido por la navegación principal — toca Siguiente para avanzar.",
   "welcomeTourStart": "Empezar a explorar",
   "welcomeHowReleasesDesc": "Nuevos episodios y lanzamientos de las series y juegos que sigues.",
-
   "updateAvailable": "Actualización disponible: v{version}",
   "@updateAvailable": {
     "placeholders": {
@@ -1350,10 +1309,8 @@
   "updateWarningTitle": "Antes de actualizar",
   "updateWarningBody": "Esta aplicación está en desarrollo activo. Las actualizaciones pueden incluir migraciones de la base de datos que cambian el formato de los datos.\n\nCrea una copia de seguridad antes de actualizar (Ajustes → Copia de seguridad). Así podrás restaurar tus datos si algo sale mal.",
   "updateWarningProceed": "Ir a la nueva versión",
-
   "chooseCollection": "Elegir colección",
   "withoutCollection": "Sin colección",
-
   "detailMyRating": "Mi valoración",
   "detailRatingValue": "{rating}/10",
   "@detailRatingValue": {
@@ -1373,7 +1330,6 @@
   "detailWriteNotesHint": "Escribe tus notas personales...",
   "detailNoNotesYet": "Aún no hay notas. Toca Editar para añadir tus notas personales.",
   "detailNoNotesReadonly": "No hay notas del autor.",
-
   "unknownGame": "Juego desconocido",
   "unknownMovie": "Película desconocida",
   "unknownTvShow": "Serie desconocida",
@@ -1383,14 +1339,12 @@
   "unknownCustom": "Elemento personalizado desconocido",
   "unknownPlatform": "Plataforma desconocida",
   "defaultAuthor": "Usuario",
-
   "errorPrefix": "Error: {error}",
   "@errorPrefix": {
     "placeholders": {
       "error": {"type": "String"}
     }
   },
-
   "allItemsRatingAsc": "Valoración ↑",
   "allItemsRatingDesc": "Valoración ↓",
   "allItemsNoItems": "Aún no hay elementos",
@@ -1399,7 +1353,6 @@
   "allItemsFailedToLoad": "No se pudieron cargar los elementos",
   "allPlatforms": "Todas las plataformas",
   "allItemsFilterPlatformsTitle": "Filtrar por plataforma",
-
   "debugIgdbMedia": "IGDB Media",
   "debugGamepad": "Mando",
   "debugClearLogs": "Borrar registros",
@@ -1439,7 +1392,6 @@
     }
   },
   "debugNoImagesFound": "No se encontraron imágenes",
-
   "collectionTileStats": "{count, plural, =1{1 elemento} other{{count} elementos}} · {percent} completado",
   "@collectionTileStats": {
     "placeholders": {
@@ -1448,7 +1400,6 @@
     }
   },
   "collectionTileError": "Error al cargar las estadísticas",
-
   "activityDatesTitle": "Fechas de actividad",
   "activityDatesAdded": "Añadido",
   "activityDatesStarted": "Empezado",
@@ -1482,7 +1433,6 @@
   "@durationMonths": { "placeholders": { "count": { "type": "int" } } },
   "durationYears": "{count} años",
   "@durationYears": { "placeholders": { "count": { "type": "String" } } },
-
   "canvasFailedToLoad": "No se pudo cargar el tablero",
   "canvasBoardEmpty": "El tablero está vacío",
   "canvasBoardEmptyHint": "Añade primero elementos a la colección",
@@ -1490,7 +1440,6 @@
   "canvasResetPositions": "Restablecer posiciones",
   "canvasVgmapsBrowser": "Navegador VGMaps",
   "canvasSteamGridDbImages": "Imágenes de SteamGridDB",
-
   "steamGridDbPanelTitle": "SteamGridDB",
   "closePanel": "Cerrar panel",
   "steamGridDbSearchHint": "Buscar juego...",
@@ -1501,7 +1450,6 @@
   "steamGridDbLogos": "Logos",
   "steamGridDbIcons": "Iconos",
   "steamGridDbSearchFirst": "Busca primero un juego",
-
   "vgmapsBack": "Atrás",
   "vgmapsForward": "Adelante",
   "vgmapsHome": "Inicio",
@@ -1515,7 +1463,6 @@
       "error": {"type": "String"}
     }
   },
-
   "discoverTitle": "Descubrir",
   "discoverCustomize": "Personalizar",
   "discoverTrending": "Tendencias de la semana",
@@ -1529,9 +1476,7 @@
   "discoverAlreadyInCollection": "Ya en la colección",
   "discoverShowWithBadge": "Mostrar con insignia",
   "discoverHideCompletely": "Ocultar por completo",
-
   "recommendationsTitle": "Recomendaciones",
-
   "reviewsTitle": "Reseñas",
   "reviewsShowAll": "Mostrar las {count} reseñas",
   "@reviewsShowAll": {
@@ -1541,7 +1486,6 @@
   },
   "reviewsReadMore": "Leer más",
   "reviewsInEnglish": "Reseñas en inglés",
-
   "settingsShowRecommendationsSubtitle": "Películas y series similares en las páginas de detalle",
   "settingsHideEmptyMediaTypeChevrons": "Ocultar filtros de tipos vacíos",
   "settingsHideEmptyMediaTypeChevronsSubtitle": "Oculta los selectores de tipo de medio (Juegos, Películas, etc.) cuando no hay elementos de ese tipo",
@@ -1566,7 +1510,6 @@
   "settingsDiscordRpcSubtitle": "Muestra el elemento que estás viendo en tu estado de Discord",
   "settingsDiscordRaSync": "Sincronizar RetroAchievements",
   "settingsDiscordRaSyncSubtitle": "Muestra en su lugar tu actividad de RetroAchievements en Discord",
-
   "uncategorizedBanner": "Añádelo a una colección para desbloquear el tablero y el seguimiento de episodios",
   "uncategorizedDeprecationNotice": "Esta colección del sistema se eliminará pronto. Crea tu propia colección y mueve a ella todos los elementos de esta.",
   "@uncategorizedDeprecationNotice": {
@@ -1576,7 +1519,6 @@
   "@uncategorizedDeprecationBadge": {
     "description": "Short warning shown on the Uncategorized collection card/tile that it will be removed."
   },
-
   "browseFilterGenre": "Género",
   "browseFilterLength": "Duración",
   "vndbLengthVeryShort": "Muy corta",
@@ -1655,15 +1597,12 @@
   "browseEmptyFilters": "Elige un filtro o busca",
   "browseBackToBrowse": "Volver a explorar",
   "browseSortDisabledHint": "Orden no disponible durante la búsqueda de texto",
-
   "animeStatusAiring": "En emisión",
   "animeStatusFinished": "Finalizado",
   "animeStatusNotYetAired": "Aún sin emitir",
   "animeStatusCancelled": "Cancelado",
-
   "typeToFilterHint": "Filtrar...",
   "appBarSearchHint": "Empieza a escribir para buscar",
-
   "insertLink": "Insertar enlace",
   "linkText": "Texto",
   "linkHint": "Guía",
@@ -1672,7 +1611,6 @@
   "markdownBold": "Negrita",
   "markdownItalic": "Cursiva",
   "insert": "Insertar",
-
   "navTierLists": "Tier Lists",
   "tierListCreate": "Nueva tier list",
   "tierListCreateFromCollection": "Crear tier list",
@@ -1716,7 +1654,6 @@
       "count": { "type": "int" }
     }
   },
-
   "settingsSteamImport": "Biblioteca de Steam",
   "settingsSteamImportSubtitle": "Importa juegos vía Steam Web API",
   "settingsIgdbImport": "Lista de IGDB",
@@ -1787,7 +1724,6 @@
   "steamImportPlaytimeComment": "El tiempo de juego se guarda en los comentarios",
   "openCollection": "Abrir colección",
   "steamImportRememberCredentials": "Recordar credenciales",
-
   "collectionListSortCreatedDate": "Fecha de creación",
   "collectionListSortAlphabeticalAZ": "De la A a la Z",
   "collectionListSortAlphabeticalZA": "De la Z a la A",
@@ -1795,13 +1731,10 @@
   "collectionListViewList": "Vista de lista",
   "collectionListViewTable": "Vista de tabla",
   "collectionTableExternalRating": "Externa",
-
   "collectionCopyToCollection": "Copiar a colección",
   "collectionItemCopiedTo": "{name} copiado a {collection}",
   "collectionItemAlreadyInTarget": "{name} ya está en {collection}",
-
   "openInCollection": "Abrir en la colección",
-
   "importResultTitle": "Resultados de la importación",
   "importResultComplete": "¡Importación de {source} completada!",
   "@importResultComplete": {
@@ -1834,7 +1767,6 @@
   "importResultOpenCollection": "Abrir colección",
   "importResultWishlistHint": "Los elementos no encontrados en la base de datos se guardaron en tu lista de deseos.",
   "importResultSourceCollectionFile": "Archivo de colección",
-
   "settingsBrowseCollections": "Explorar colecciones",
   "settingsBrowseCollectionsSubtitle": "Descarga colecciones ya preparadas",
   "browseCollectionsSummary": "{count} colecciones, {items} elementos",
@@ -1867,7 +1799,6 @@
   "browseCollectionsNewCollection": "Nueva colección",
   "browseCollectionsExistingCollection": "Colección existente",
   "noCollectionsYet": "Aún no hay colecciones",
-
   "settingsRaImport": "RetroAchievements",
   "settingsRaImportSubtitle": "Importa juegos de RetroAchievements",
   "raImportTitle": "Importación de RetroAchievements",
@@ -1917,7 +1848,6 @@
       "date": {"type": "String"}
     }
   },
-
   "raRefresh": "Actualizar logros",
   "raOpenOnRa": "Abrir en RA ↗",
   "raHardcore": "Hardcore",
@@ -1955,7 +1885,6 @@
   "raStatsWorth": "por valor de",
   "raStatsPoints": "puntos",
   "raStatsUnlocked": "Desbloqueados",
-
   "copyAsText": "Copiar como texto…",
   "copiedToClipboard": "{count} elementos copiados al portapapeles",
   "@copiedToClipboard": {
@@ -1981,7 +1910,6 @@
   "tableFilterCondEndsWith": "Termina en",
   "tableFilterCondAtLeast": "Al menos (≥)",
   "tableFilterCondAtMost": "Como máximo (≤)",
-
   "profiles": "Perfiles de la aplicación",
   "currentProfile": "Actual: {name}",
   "@currentProfile": {
@@ -2015,11 +1943,9 @@
   "appWillRestart": "La aplicación se reiniciará para aplicar los cambios.",
   "profileCreated": "Perfil creado",
   "profileDeleted": "Perfil eliminado",
-
   "settingsIntegrations": "Integraciones",
   "settingsKodiSubtitle": "Sincronización de visionados desde el reproductor Kodi",
   "settingsOn": "Activado",
-
   "kodiConnectionTitle": "Conexión",
   "kodiConnectionSubtitle": "Kodi HTTP JSON-RPC (Ajustes → Servicios → Control)",
   "kodiHost": "Host",
@@ -2036,7 +1962,6 @@
       "name": {"type": "String"}
     }
   },
-
   "kodiSyncTitle": "Sincronización",
   "kodiTargetCollectionSubtitle": "Todas las películas de Kodi se sincronizan aquí",
   "kodiTargetNotSelected": "Sin seleccionar",
@@ -2054,7 +1979,6 @@
   "kodiCreateSubCollectionsSubtitle": "P. ej. \"Harry Potter Collection (kodi)\"",
   "kodiImportRatings": "Importar valoraciones de Kodi",
   "kodiImportRatingsSubtitle": "Copia el userrating de Kodi (1–10)",
-
   "kodiCollectionLibraryName": "Biblioteca de Kodi",
   "kodiCollectionCreated": "Creada \"{name}\"",
   "@kodiCollectionCreated": {
@@ -2063,7 +1987,6 @@
     }
   },
   "kodiTargetDeletedSnack": "Colección de destino eliminada — sincronización detenida",
-
   "kodiSyncStatus": "Estado de la sincronización",
   "kodiSyncRunning": "En ejecución",
   "kodiSyncStopped": "Detenida",
@@ -2071,7 +1994,6 @@
   "kodiClearLastSync": "Borrar la marca de última sincronización",
   "kodiClearLastSyncSubtitle": "La próxima sincronización obtendrá todos los elementos vistos",
   "kodiLastSyncCleared": "Marca de última sincronización borrada",
-
   "kodiRequestLog": "Registro de solicitudes ({count})",
   "@kodiRequestLog": {
     "placeholders": {
@@ -2082,7 +2004,6 @@
   "kodiLogCopied": "Registro copiado",
   "kodiClearLog": "Borrar registro",
   "kodiNoRequests": "Aún no hay solicitudes",
-
   "kodiRawJsonRpc": "JSON-RPC directo",
   "kodiMethod": "Método",
   "kodiParams": "Parámetros (JSON)",
@@ -2102,7 +2023,6 @@
       "message": {"type": "String"}
     }
   },
-
   "settingsMalImport": "MyAnimeList",
   "settingsMalImportSubtitle": "Importa listas de anime/manga desde una exportación XML",
   "malImportTitle": "Importación de MyAnimeList",
@@ -2155,7 +2075,6 @@
       "count": {"type": "int"}
     }
   },
-
   "settingsAniListImport": "AniList",
   "settingsAniListImportSubtitle": "Importa listas de anime/manga por nombre de usuario público",
   "settingsHardcoverImportSubtitle": "Importa una biblioteca de libros de hardcover.app por nombre de usuario",
@@ -2189,7 +2108,6 @@
   },
   "aniListImportEmptyUsername": "Introduce tu nombre de usuario de AniList",
   "aniListImportSelectAtLeastOne": "Selecciona anime o manga para importar",
-
   "settingsCustomCardsImport": "Tarjetas personalizadas",
   "settingsCustomCardsImportSubtitle": "Importa tarjetas desde un archivo JSON o CSV",
   "customImportTitle": "Importar tarjetas personalizadas",
@@ -2271,7 +2189,6 @@
       "value": {"type": "String"}
     }
   },
-
   "moodGridCreate": "Crear Mood Grid",
   "moodGridCreateTitle": "Nuevo Mood Grid",
   "moodGridPresetAboutMe": "Sobre mí: Tonkatsu Box",
@@ -2360,7 +2277,6 @@
       "count": {"type": "int"}
     }
   },
-
   "itemMarkLike": "Me gusta",
   "itemMarkNote": "Nota",
   "itemMarkNoteHint": "Escribe una nota…",
@@ -2432,5 +2348,80 @@
   "shortcutClearOrBack": "Limpiar / atrás",
   "shortcutRunSearch": "Ejecutar búsqueda",
   "debugKeyEvents": "Eventos de los botones",
-  "settingsGamepadDebugSubtitle": "Captura los códigos de los botones del mando"
+  "settingsGamepadDebugSubtitle": "Captura los códigos de los botones del mando",
+  "statsTabTitle": "Estadísticas",
+  "statsPeriodAllTime": "Todo el tiempo",
+  "statsLede": "Un total de {items} elementos en tu colección",
+  "statsMetricMoviesWatched": "películas vistas",
+  "statsMetricMangaChapters": "capítulos de manga",
+  "statsMetricBookPages": "páginas de libros",
+  "statsMetricEpisodes": "episodios",
+  "statsMetricHours": "vistos y jugados",
+  "statsMetricAvgRating": "nota media",
+  "statsMetricReplays": "repeticiones",
+  "statsMetricLikedUnits": "episodios con me gusta",
+  "statsHoursShort": "{hours} h",
+  "statsHoursBreakdown": "horas: manual {manual} h · trackers {tracker} h · estimado {estimated} h",
+  "statsMonthsTitle": "Tu año, mes a mes",
+  "statsMonthsTitleAllTime": "Este año, mes a mes",
+  "statsMonthsHint": "portada: el título mejor valorado del mes",
+  "statsPeakLabel": "pico",
+  "statsMonthCounts": "{items} añadidos · {episodes} ep.",
+  "statsVersusTitle": "Lo mejor y lo peor",
+  "statsVersusHint": "según tus propias notas",
+  "statsBest": "Mejor",
+  "statsWorst": "Peor",
+  "statsPlatformsSummary": "{hours} h · {games} juegos",
+  "statsPlatformNone": "Sin plataforma",
+  "statsPlatformsShowAll": "Mostrar todas ({count})",
+  "statsPlatformsCollapse": "Contraer",
+  "statsHoursUnit": "h",
+  "statsTypesTitle": "Biblioteca por tipo",
+  "statsTypesHint": "desglose por estado para cada tipo de medio",
+  "statsCompletedPercent": "{percent}% completado",
+  "@statsCompletedPercent": {"placeholders": {"percent": {"type": "int"}}},
+  "statsPlatformMostPlayed": "más jugados",
+  "statsFormatsHint": "el formato proviene de los datos de la fuente",
+  "statsSubgenresTitle": "Subgéneros y etiquetas",
+  "statsSubgenresHint": "las etiquetas de la fuente se muestran por tipo",
+  "statsCrowdTitle": "Yo contra todos",
+  "statsCrowdHint": "donde mi nota difiere más de la fuente",
+  "statsCrowdHigher": "Yo puntúo más alto",
+  "statsCrowdLower": "Yo puntúo más bajo",
+  "statsCrowdMyRating": "mi nota",
+  "statsCrowdSource": "fuente",
+  "statsTopTitle": "Mejor valorados",
+  "statsTopHint": "los {count} mejores",
+  "statsEmptyTitle": "Aún no hay estadísticas",
+  "statsEmptyBody": "Añade elementos a tu biblioteca y aparecerán aquí en cifras.",
+  "statsExportTitle": "Exportar tarjeta",
+  "statsExportFailed": "No se pudo guardar la imagen",
+  "statsShareTitleYear": "Mi {year}",
+  "statsShareTitleAllTime": "Mi biblioteca",
+  "statsShareLede": "{items} elementos · {completed} completados · {rating} de media",
+  "statsShareBest": "{title} · {rating} — lo mejor del periodo",
+  "simklImportTitle": "Importación de Simkl",
+  "settingsSimklImportSubtitle": "Películas, series y anime desde tu cuenta de Simkl",
+  "simklImportSubtitle": "Conecta tu cuenta de Simkl con un código corto: películas, series y anime llegan en una sola importación, junto con el historial de episodios",
+  "simklClientIdLabel": "Clave de la app de Simkl (client_id)",
+  "simklGetClientId": "Obtener un client_id en simkl.com",
+  "simklRememberClientId": "Recordar la clave de la app",
+  "simklGetPin": "Obtener código",
+  "simklGetNewPin": "Obtener un código nuevo",
+  "simklPinPrompt": "Introduce este código en simkl.com/pin:",
+  "simklOpenPinPage": "Abrir simkl.com/pin",
+  "simklWaitingConfirmation": "Esperando confirmación…",
+  "simklPinExpired": "El código ha caducado.",
+  "simklConnectedAs": "Cuenta conectada: {name}",
+  "simklCheckingAccount": "Comprobando la cuenta…",
+  "simklRememberToken": "Mantener la conexión en este dispositivo",
+  "simklRememberTokenSubtitle": "El token de acceso se guarda en los ajustes; sin la casilla se pedirá el código de nuevo",
+  "simklDisconnect": "Desconectar",
+  "simklImportFetching": "Obteniendo la biblioteca de Simkl…",
+  "simklImportFetchingDetails": "Obteniendo fichas…",
+  "simklImportWatchHistory": "Restaurando el historial de visualización…",
+  "simklImportNewCollectionDefault": "Simkl: {name}",
+  "simklImportModeOverwriteSubtitle": "Actualizar estado, nota y comentario de los existentes",
+  "simklClientIdRequired": "La importación necesita una clave de la app de Simkl: introduce tu client_id",
+  "simklImportRateLimitWait": "Límite de peticiones alcanzado: reintento en {seconds} s (intento {attempt}/{max})"
 }

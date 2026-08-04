@@ -1,6 +1,6 @@
+import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
 
-import '../../../shared/models/canvas_item.dart';
 import '../../../shared/utils/url_launch.dart';
 
 /// Data lives in CanvasItem.data: {url: String, label: String}.

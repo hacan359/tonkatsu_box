@@ -1,4 +1,3 @@
-// Виджет для горизонтального скролла мышкой на десктопе.
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -8,14 +7,12 @@ import 'package:flutter/material.dart';
 ///
 /// На мобильных устройствах свайп работает как обычно.
 class HorizontalMouseScroll extends StatelessWidget {
-  /// Создаёт [HorizontalMouseScroll].
   const HorizontalMouseScroll({
     required this.controller,
     required this.child,
     super.key,
   });
 
-  /// Контроллер горизонтального списка.
   final ScrollController controller;
 
   /// Дочерний виджет (горизонтальный ListView).

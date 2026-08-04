@@ -1,0 +1,261 @@
+import '../../models/tier_definition.dart';
+import '../../models/tier_list.dart';
+import '../../models/tier_list_entry.dart';
+import 'package:sqflite_common/sqlite_api.dart';
+
+class TierListDao {
+  const TierListDao(this._getDatabase);
+
+  final Future<Database> Function() _getDatabase;
+
+  Future<List<TierList>> getAllTierLists() async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tier_lists',
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(TierList.fromDb).toList();
+  }
+
+  Future<List<TierList>> getTierListsByCollection(int collectionId) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tier_lists',
+      where: 'collection_id = ?',
+      whereArgs: <Object?>[collectionId],
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(TierList.fromDb).toList();
+  }
+
+  Future<TierList?> getTierListById(int id) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tier_lists',
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return TierList.fromDb(rows.first);
+  }
+
+  Future<TierList> createTierList(
+    String name, {
+    int? collectionId,
+  }) async {
+    final Database db = await _getDatabase();
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    final int id = await db.insert(
+      'tier_lists',
+      <String, dynamic>{
+        'name': name,
+        'collection_id': collectionId,
+        'created_at': now,
+      },
+    );
+
+    return TierList(
+      id: id,
+      name: name,
+      collectionId: collectionId,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+    );
+  }
+
+  Future<void> renameTierList(int id, String name) async {
+    final Database db = await _getDatabase();
+    await db.update(
+      'tier_lists',
+      <String, dynamic>{'name': name},
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  Future<void> deleteTierList(int id) async {
+    final Database db = await _getDatabase();
+    await db.delete(
+      'tier_lists',
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  Future<List<TierDefinition>> getTierDefinitions(int tierListId) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tier_definitions',
+      where: 'tier_list_id = ?',
+      whereArgs: <Object?>[tierListId],
+      orderBy: 'sort_order ASC',
+    );
+    return rows.map(TierDefinition.fromDb).toList();
+  }
+
+  Future<void> saveTierDefinitions(
+    int tierListId,
+    List<TierDefinition> definitions,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      await txn.delete(
+        'tier_definitions',
+        where: 'tier_list_id = ?',
+        whereArgs: <Object?>[tierListId],
+      );
+      for (final TierDefinition def in definitions) {
+        await txn.insert('tier_definitions', def.toDb(tierListId));
+      }
+    });
+  }
+
+  Future<List<TierListEntry>> getTierListEntries(int tierListId) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tier_list_entries',
+      where: 'tier_list_id = ?',
+      whereArgs: <Object?>[tierListId],
+      orderBy: 'sort_order ASC',
+    );
+    return rows.map(TierListEntry.fromDb).toList();
+  }
+
+  Future<void> setItemTier(
+    int tierListId,
+    int collectionItemId,
+    String tierKey,
+    int sortOrder,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.delete(
+      'tier_list_entries',
+      where: 'tier_list_id = ? AND collection_item_id = ?',
+      whereArgs: <Object?>[tierListId, collectionItemId],
+    );
+    await db.insert(
+      'tier_list_entries',
+      <String, dynamic>{
+        'tier_list_id': tierListId,
+        'collection_item_id': collectionItemId,
+        'tier_key': tierKey,
+        'sort_order': sortOrder,
+      },
+    );
+  }
+
+  /// Moves an item into [tierKey], rewriting the whole tier's sort orders
+  /// contiguously in one transaction so removals can't leave collisions.
+  Future<void> setItemTierOrdered(
+    int tierListId,
+    int collectionItemId,
+    String tierKey,
+    List<int> orderedItemIds,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      await txn.delete(
+        'tier_list_entries',
+        where: 'tier_list_id = ? AND collection_item_id = ?',
+        whereArgs: <Object?>[tierListId, collectionItemId],
+      );
+      // Placeholder order; the renumber pass below assigns the real value.
+      await txn.insert(
+        'tier_list_entries',
+        <String, dynamic>{
+          'tier_list_id': tierListId,
+          'collection_item_id': collectionItemId,
+          'tier_key': tierKey,
+          'sort_order': 0,
+        },
+      );
+      await _writeContiguousOrders(txn, tierListId, tierKey, orderedItemIds);
+    });
+  }
+
+  Future<void> removeItemFromTier(
+    int tierListId,
+    int collectionItemId,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.delete(
+      'tier_list_entries',
+      where: 'tier_list_id = ? AND collection_item_id = ?',
+      whereArgs: <Object?>[tierListId, collectionItemId],
+    );
+  }
+
+  Future<void> reorderTierItems(
+    int tierListId,
+    String tierKey,
+    List<int> itemIds,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      await _writeContiguousOrders(txn, tierListId, tierKey, itemIds);
+    });
+  }
+
+  Future<void> _writeContiguousOrders(
+    DatabaseExecutor txn,
+    int tierListId,
+    String tierKey,
+    List<int> itemIds,
+  ) async {
+    for (int i = 0; i < itemIds.length; i++) {
+      await txn.update(
+        'tier_list_entries',
+        <String, dynamic>{'sort_order': i},
+        where: 'tier_list_id = ? AND collection_item_id = ? AND tier_key = ?',
+        whereArgs: <Object?>[tierListId, itemIds[i], tierKey],
+      );
+    }
+  }
+
+  Future<void> clearTierListEntries(int tierListId) async {
+    final Database db = await _getDatabase();
+    await db.delete(
+      'tier_list_entries',
+      where: 'tier_list_id = ?',
+      whereArgs: <Object?>[tierListId],
+    );
+  }
+
+  /// Wipes a collection item from tier lists of its old collection on move —
+  /// otherwise it lingers as a ghost entry referencing a foreign collection.
+  Future<void> removeItemFromCollectionTierLists(
+    int collectionItemId,
+    int collectionId,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.rawDelete(
+      'DELETE FROM tier_list_entries '
+      'WHERE collection_item_id = ? '
+      'AND tier_list_id IN '
+      '(SELECT id FROM tier_lists WHERE collection_id = ?)',
+      <Object?>[collectionItemId, collectionId],
+    );
+  }
+
+  Future<List<int>> getTierListIdsForItem(int collectionItemId) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT DISTINCT tier_list_id FROM tier_list_entries '
+      'WHERE collection_item_id = ?',
+      <Object?>[collectionItemId],
+    );
+    return rows
+        .map((Map<String, dynamic> r) => r['tier_list_id'] as int)
+        .toList();
+  }
+
+  Future<int> getRankedCount(int tierListId) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM tier_list_entries WHERE tier_list_id = ?',
+      <Object?>[tierListId],
+    );
+    return result.first['count'] as int;
+  }
+}

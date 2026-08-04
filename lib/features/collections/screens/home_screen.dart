@@ -1,15 +1,15 @@
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_list_sort_mode.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
-import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

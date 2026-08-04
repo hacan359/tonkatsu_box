@@ -1,10 +1,10 @@
 // IGDB platform filter.
 
+import 'package:core/models/platform.dart' as app_platform;
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../core/database/database_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/platform.dart' as app_platform;
 import '../models/search_source.dart';
 
 /// Filter by IGDB game platform.

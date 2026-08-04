@@ -1,13 +1,13 @@
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/game.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../services/search_collection_adder.dart';

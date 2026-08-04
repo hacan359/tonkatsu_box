@@ -1,3 +1,6 @@
+import 'package:core/models/collection.dart';
+import 'package:core/models/kodi_application_info.dart';
+import 'package:core/models/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,15 +10,12 @@ import 'package:tonkatsu_box/core/api/kodi_api.dart';
 import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/kodi_settings_provider.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/features/settings/screens/kodi_screen.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_group.dart';
-import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_tile.dart';
-import 'package:tonkatsu_box/shared/models/kodi_application_info.dart';
-import 'package:tonkatsu_box/shared/models/profile.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 
 import '../../../helpers/test_helpers.dart';
 

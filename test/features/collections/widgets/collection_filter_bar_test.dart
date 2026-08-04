@@ -1,3 +1,10 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/collection_sort_mode.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart' as p;
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,13 +13,6 @@ import 'package:tonkatsu_box/features/collections/providers/collections_provider
 import 'package:tonkatsu_box/features/collections/widgets/collection_filter_bar.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/collection_sort_mode.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/tag.dart';
-import 'package:tonkatsu_box/shared/models/manga.dart';
-import 'package:tonkatsu_box/shared/models/platform.dart' as p;
 import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
 import 'package:tonkatsu_box/shared/widgets/filter_subfilter_bar.dart';
 

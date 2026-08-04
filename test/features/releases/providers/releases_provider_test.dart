@@ -1,3 +1,10 @@
+import 'package:core/models/calendar_entry.dart';
+import 'package:core/models/calendar_recurrence.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tracked_release.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -5,13 +12,6 @@ import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/releases/models/release_event.dart';
 import 'package:tonkatsu_box/features/releases/providers/releases_provider.dart';
-import 'package:tonkatsu_box/shared/models/calendar_entry.dart';
-import 'package:tonkatsu_box/shared/models/calendar_recurrence.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/tracked_release.dart';
-import 'package:tonkatsu_box/shared/models/tv_episode.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
 
 import '../../../helpers/test_helpers.dart';
 

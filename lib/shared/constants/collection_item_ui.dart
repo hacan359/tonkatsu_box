@@ -1,8 +1,8 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../models/collection_item.dart';
-import '../models/media_type.dart';
 import 'media_type_theme.dart';
 
 /// Presentation extras for [CollectionItem].

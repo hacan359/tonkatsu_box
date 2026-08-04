@@ -1,11 +1,11 @@
+import 'package:core/models/book.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/openlibrary_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/book.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 import '../filters/openlibrary_language_filter.dart';
 import '../filters/openlibrary_scope_filter.dart';
 import '../models/search_source.dart';

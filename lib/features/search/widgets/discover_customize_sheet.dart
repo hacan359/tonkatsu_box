@@ -1,3 +1,4 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,13 +8,12 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/discover_provider.dart';
 
-/// Shows only sections available for the current [sourceId]; sizing comes
+/// Shows only sections available for the current [mediaType]; sizing comes
 /// from the `constraints` the caller passes to [showModalBottomSheet].
 class DiscoverCustomizeSheet extends ConsumerWidget {
-  const DiscoverCustomizeSheet({required this.sourceId, super.key});
+  const DiscoverCustomizeSheet({required this.mediaType, super.key});
 
-  /// Current source id: movies, tv, or anime.
-  final String sourceId;
+  final MediaType mediaType;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -138,7 +138,7 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
     required DiscoverSettings settings,
   }) {
     final Set<DiscoverSectionId> available =
-        discoverSectionsPerSource[sourceId] ?? <DiscoverSectionId>{};
+        discoverSectionsPerMediaType[mediaType] ?? <DiscoverSectionId>{};
 
     return <Widget>[
       for (final DiscoverSectionId section in available)

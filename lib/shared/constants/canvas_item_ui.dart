@@ -1,7 +1,7 @@
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 
-import '../models/canvas_item.dart';
-import '../models/media_type.dart';
 import 'media_type_theme.dart';
 
 /// Presentation extras for [CanvasItem].

@@ -1,3 +1,9 @@
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,20 +12,16 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/tag.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/platform.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/utils/media_format.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
+import '../../../shared/widgets/logo_loader.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
@@ -104,7 +106,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               return _buildGridView(
                   visibleItems, collectionNames, tagsMap, itemTags);
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: LogoLoader()),
             error: (Object error, StackTrace stack) =>
                 _buildErrorState(error),
           ),
@@ -461,7 +463,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     } else {
       final int baseCount;
@@ -476,7 +478,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     }
 
@@ -557,6 +559,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       tagColor: tag?.color,
                       tagTextColor: tag?.textColor,
                       tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
+                      source: item.dataSource,
+                      onSourceTap: openUrlCallback(item.externalUrl),
                       onTap: selection.isEmpty
                           ? () => _showItemDetails(item, collectionNames)
                           : () => ref

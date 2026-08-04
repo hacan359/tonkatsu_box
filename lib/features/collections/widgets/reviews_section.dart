@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tmdb_review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/tmdb_review.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

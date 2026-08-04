@@ -1,8 +1,8 @@
+import 'package:core/models/manga.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/mangadex_api.dart';
-import 'package:tonkatsu_box/shared/models/manga.dart';
 
 import '../../helpers/test_helpers.dart';
 

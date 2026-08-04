@@ -1,46 +1,47 @@
 import 'dart:io';
 
+import 'package:core/database/dao/anilist_tag_dao.dart';
+import 'package:core/database/dao/anime_dao.dart';
+import 'package:core/database/dao/book_dao.dart';
+import 'package:core/database/dao/calendar_entry_dao.dart';
+import 'package:core/database/dao/canvas_dao.dart';
+import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/database/dao/custom_media_dao.dart';
+import 'package:core/database/dao/game_dao.dart';
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/database/dao/item_mark_dao.dart';
+import 'package:core/database/dao/manga_dao.dart';
+import 'package:core/database/dao/mangabaka_genre_dao.dart';
+import 'package:core/database/dao/mangabaka_tag_dao.dart';
+import 'package:core/database/dao/mangadex_tag_dao.dart';
+import 'package:core/database/dao/mood_grid_dao.dart';
+import 'package:core/database/dao/movie_dao.dart';
+import 'package:core/database/dao/stats_dao.dart';
+import 'package:core/database/dao/tier_list_dao.dart';
+import 'package:core/database/dao/tracked_release_dao.dart';
+import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/database/dao/tv_show_dao.dart';
+import 'package:core/database/dao/visual_novel_dao.dart';
+import 'package:core/database/dao/wishlist_dao.dart';
+import 'package:core/database/database_opener.dart';
 import 'package:core/database/migrations/migration.dart';
-import 'package:core/database/migrations/migration_registry.dart';
 import 'package:core/database/migrations/migration_runner.dart';
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/cover_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/profile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../../shared/models/collected_item_info.dart';
-import '../../shared/models/profile.dart';
 import '../services/profile_service.dart';
 import '../services/storage_root.dart';
-import '../../shared/models/collection.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/cover_info.dart';
-import '../../shared/models/data_source.dart';
-import '../../shared/models/item_status.dart';
-import '../../shared/models/media_type.dart';
-import 'dao/anilist_tag_dao.dart';
-import 'dao/canvas_dao.dart';
-import 'dao/collection_dao.dart';
-import 'dao/custom_media_dao.dart';
-import 'dao/anime_dao.dart';
-import 'dao/book_dao.dart';
-import 'dao/game_dao.dart';
-import 'dao/item_mark_dao.dart';
-import 'dao/movie_dao.dart';
-import 'dao/global_tag_dao.dart';
-import 'dao/tv_show_dao.dart';
-import 'dao/manga_dao.dart';
-import 'dao/mangabaka_genre_dao.dart';
-import 'dao/mangabaka_tag_dao.dart';
-import 'dao/mangadex_tag_dao.dart';
-import 'dao/visual_novel_dao.dart';
-import 'dao/mood_grid_dao.dart';
-import 'dao/tier_list_dao.dart';
-import 'dao/calendar_entry_dao.dart';
-import 'dao/tracked_release_dao.dart';
-import 'dao/tracker_dao.dart';
-import 'dao/wishlist_dao.dart';
 
 final Provider<DatabaseService> databaseServiceProvider =
     Provider<DatabaseService>((Ref ref) {
@@ -145,6 +146,10 @@ final Provider<CalendarEntryDao> calendarEntryDaoProvider =
   return ref.watch(databaseServiceProvider).calendarEntryDao;
 });
 
+final Provider<StatsDao> statsDaoProvider = Provider<StatsDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).statsDao;
+});
+
 class DatabaseService {
   static final Logger _log = Logger('DatabaseService');
 
@@ -224,6 +229,8 @@ class DatabaseService {
 
   late final ItemMarkDao itemMarkDao = ItemMarkDao(() => database);
 
+  late final StatsDao statsDao = StatsDao(() => database);
+
   Future<Database> _initDatabase() async {
     final String basePath = (await StorageRoot.resolve()).path;
 
@@ -254,55 +261,16 @@ class DatabaseService {
       'Database path: $dbPath (${kReleaseMode ? 'release' : 'debug'} mode)',
     );
 
-    return databaseFactory.openDatabase(
-      dbPath,
-      options: OpenDatabaseOptions(
-        version: 60,
-        onCreate: _onCreate,
-        onUpgrade: _onUpgrade,
-        onConfigure: (Database db) async {
-          await db.execute('PRAGMA foreign_keys = ON');
-          // WAL + NORMAL: SQLite-recommended durable-but-fast combo;
-          // commits batch into one fsync per checkpoint instead of
-          // one per write. `journal_mode` returns the resulting mode,
-          // so Android's SQLiteDatabase rejects it via `execute()` —
-          // use `rawQuery` cross-platform.
-          await db.rawQuery('PRAGMA journal_mode = WAL');
-          await db.execute('PRAGMA synchronous = NORMAL');
-        },
-      ),
-    );
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    _log.info('Creating database schema v$version');
-    // Single source of truth: a fresh DB is built by running the whole
-    // migration chain (v1..N) in order, exactly like an upgrade from zero.
-    await MigrationRunner.run(
-      db,
-      MigrationRegistry.all,
-      fromVersion: 0,
-      toVersion: version,
-      onFailure: _logMigrationFailure,
-    );
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    _log.info('Upgrading database from v$oldVersion to v$newVersion');
-    await MigrationRunner.run(
-      db,
-      MigrationRegistry.pending(oldVersion),
-      fromVersion: oldVersion,
-      toVersion: newVersion,
-      onStart: (Migration m) =>
+    return openAppDatabase(
+      factory: databaseFactory,
+      path: dbPath,
+      onInfo: _log.info,
+      onMigrationStart: (Migration m) =>
           _log.fine('Running migration v${m.version}: ${m.description}'),
-      onFailure: _logMigrationFailure,
+      onMigrationFailure: (MigrationFailure failure, StackTrace stack) =>
+          _log.severe('Migration v${failure.version} failed', failure, stack),
     );
-    _log.info('Database upgrade complete');
   }
-
-  void _logMigrationFailure(MigrationFailure failure, StackTrace stack) =>
-      _log.severe('Migration v${failure.version} failed', failure, stack);
 
   Future<List<Collection>> getAllCollections() =>
       collectionDao.getAllCollections();
@@ -332,6 +300,7 @@ class DatabaseService {
     String? originalSnapshot,
     String? forkedFromAuthor,
     String? forkedFromName,
+    DateTime? createdAt,
   }) =>
       collectionDao.createCollection(
         name: name,
@@ -340,6 +309,7 @@ class DatabaseService {
         originalSnapshot: originalSnapshot,
         forkedFromAuthor: forkedFromAuthor,
         forkedFromName: forkedFromName,
+        createdAt: createdAt,
       );
 
   Future<void> updateCollection(
@@ -430,6 +400,7 @@ class DatabaseService {
     DataSource? source,
     String? authorComment,
     ItemStatus status = ItemStatus.notStarted,
+    DateTime? addedAt,
   }) =>
       collectionDao.addItemToCollection(
         collectionId: collectionId,
@@ -439,6 +410,7 @@ class DatabaseService {
         source: source,
         authorComment: authorComment,
         status: status,
+        addedAt: addedAt,
       );
 
   Future<int> getNextSortOrder(int? collectionId) =>

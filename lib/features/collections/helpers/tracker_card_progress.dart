@@ -1,6 +1,6 @@
+import 'package:core/models/collection_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/models/collection_item.dart';
 import '../../../shared/utils/item_card_progress.dart';
 import '../providers/episode_tracker_provider.dart';
 
@@ -10,7 +10,7 @@ import '../providers/episode_tracker_provider.dart';
 ItemCardProgress? trackerCardProgress(WidgetRef ref, CollectionItem item) {
   final int? collectionId = item.collectionId;
   if (collectionId == null) return null;
-  if (!item.mediaType.isTvBacked) return null;
+  if (!item.usesEpisodeTracker) return null;
   final EpisodeTrackerState trackerState =
       ref.watch(episodeTrackerNotifierProvider((
     collectionId: collectionId,
@@ -19,7 +19,8 @@ ItemCardProgress? trackerCardProgress(WidgetRef ref, CollectionItem item) {
   )));
   final int watched = trackerState.totalWatchedCount;
   if (watched == 0) return null;
-  final int cachedTotal = item.tvShow?.totalEpisodes ?? 0;
+  final int cachedTotal =
+      item.tvShow?.totalEpisodes ?? item.anime?.episodes ?? 0;
   final int total =
       cachedTotal > 0 ? cachedTotal : trackerState.totalEpisodes ?? 0;
   return ItemCardProgress(

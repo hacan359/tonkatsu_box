@@ -1,3 +1,8 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/collection_sort_mode.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -5,15 +10,11 @@ import 'package:logging/logging.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/item_card_progress.dart';
+import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../helpers/collection_actions.dart';
@@ -239,7 +240,7 @@ class CollectionItemsView extends ConsumerWidget {
         maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * settings.cardScale,
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     } else {
       final int baseCount;
@@ -254,7 +255,7 @@ class CollectionItemsView extends ConsumerWidget {
         crossAxisCount: AppSpacing.scaledColumns(baseCount, settings.cardScale),
         crossAxisSpacing: crossSpacing,
         mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterAspectRatio,
+        childAspectRatio: AppSpacing.posterCardAspectRatio,
       );
     }
 
@@ -409,6 +410,8 @@ class CollectionItemsView extends ConsumerWidget {
       tagTextColor: tag?.textColor,
       tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
       tagGlow: tagGlow,
+      source: item.dataSource,
+      onSourceTap: openUrlCallback(item.externalUrl),
       onTagTap: canEdit
           ? (Offset pos) => _editItemTags(context, ref, item.id)
           : null,

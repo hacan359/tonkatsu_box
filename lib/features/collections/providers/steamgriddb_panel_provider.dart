@@ -1,8 +1,8 @@
+import 'package:core/models/steamgriddb_game.dart';
+import 'package:core/models/steamgriddb_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/steamgriddb_api.dart';
-import '../../../shared/models/steamgriddb_game.dart';
-import '../../../shared/models/steamgriddb_image.dart';
 import '../../settings/providers/settings_provider.dart';
 
 /// SteamGridDB image kind shown by the side panel.

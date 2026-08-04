@@ -1,9 +1,10 @@
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/item_detail/item_detail_media_config.dart';
 import 'package:tonkatsu_box/shared/constants/media_type_theme.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../../helpers/test_helpers.dart';
 
@@ -99,6 +100,39 @@ void main() {
       expect(c.hasAnimeProgress, isTrue);
       expect(c.hasMangaProgress, isFalse);
       expect(c.hasEpisodeTracker, isFalse);
+    });
+
+    testWidgets('anilist anime keeps the flat counter', (WidgetTester t) async {
+      final ItemDetailMediaConfig c = await buildConfig(
+        t,
+        createTestCollectionItem(
+          mediaType: MediaType.anime,
+          externalId: 6,
+          anime: createTestAnime(id: 6, episodes: 24),
+        ),
+      );
+
+      expect(c.hasAnimeProgress, isTrue);
+      expect(c.hasEpisodeTracker, isFalse);
+    });
+
+    testWidgets('kitsu anime swaps the counter for the episode tracker',
+        (WidgetTester t) async {
+      final ItemDetailMediaConfig c = await buildConfig(
+        t,
+        createTestCollectionItem(
+          mediaType: MediaType.anime,
+          externalId: 7442,
+          anime: createTestAnime(
+            id: 7442,
+            source: DataSource.kitsu,
+            episodes: 25,
+          ),
+        ),
+      );
+
+      expect(c.hasEpisodeTracker, isTrue);
+      expect(c.hasAnimeProgress, isFalse);
     });
   });
 }

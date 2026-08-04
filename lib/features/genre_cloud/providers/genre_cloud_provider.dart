@@ -1,8 +1,8 @@
 // Riverpod glue: the whole library's items for the preference cloud to aggregate.
 
+import 'package:core/models/collection_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/models/collection_item.dart';
 import '../../home/providers/all_items_provider.dart';
 
 /// Items the preference cloud is built from (the whole library). Aggregation and

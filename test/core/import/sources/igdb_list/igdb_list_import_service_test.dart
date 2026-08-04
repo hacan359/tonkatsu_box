@@ -1,15 +1,15 @@
 import 'dart:io';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/universal_import_result.dart';
+import 'package:core/models/wishlist_item.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/import/sources/igdb_list/igdb_list_import_service.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
-import 'package:tonkatsu_box/shared/models/universal_import_result.dart';
-import 'package:tonkatsu_box/shared/models/wishlist_item.dart';
 
 import '../../../../helpers/test_helpers.dart';
 
@@ -57,9 +57,10 @@ void main() {
         .thenAnswer((_) async => createTestCollection());
     when(() => mockRepo.getItems(any()))
         .thenAnswer((_) async => <CollectionItem>[]);
-    when(() => mockRepo.addItemsBatch(any(), any())).thenAnswer(
-        (Invocation inv) async =>
-            (inv.positionalArguments[1] as List<dynamic>).length);
+    when(() => mockRepo.addItemsBatchReturningIds(any(), any())).thenAnswer(
+        (Invocation inv) async => List<int?>.generate(
+            (inv.positionalArguments[1] as List<dynamic>).length,
+            (int index) => index + 1));
     when(() => mockRepo.updateItemFieldsBatch(any())).thenAnswer((_) async {});
     when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
     when(() => mockWishlist.getAll(
@@ -99,7 +100,7 @@ void main() {
       );
 
   List<Map<String, dynamic>> capturedItemRows() =>
-      verify(() => mockRepo.addItemsBatch(any(), captureAny())).captured.single
+      verify(() => mockRepo.addItemsBatchReturningIds(any(), captureAny())).captured.single
           as List<Map<String, dynamic>>;
 
   List<(int, Map<String, dynamic>)> capturedUpdates() =>

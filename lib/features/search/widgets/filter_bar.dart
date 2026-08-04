@@ -1,26 +1,29 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/models/data_source.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../models/common_filter.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
-import '../sources/search_sources.dart';
+import '../providers/discover_provider.dart';
 import '../utils/filter_ui.dart';
-import 'filter_dropdown.dart';
+import 'filter_bar_compact.dart';
+import 'filter_control.dart';
+import 'media_type_chevron.dart';
 import 'filter_sheet.dart';
 
-/// Pinned so the row doesn't jiggle when the source label width changes.
-const double _kSourceWidth = 160;
+/// Pinned so the row doesn't jiggle when the media-type label width changes.
+const double kMediaTypeSegmentWidth = 160;
 
 const double _kCustomizeWidth = 44;
 
-/// Single-row chevron bar for Browse mode:
-/// `[Source ▾][Filter1 ▾][Filter2 ▾][Sort ▾][Customize?][×?]`.
+/// Media-type-first filter bar. Narrow screens get a separate layout — see
+/// [CompactFilterBar].
 class FilterBar extends ConsumerWidget {
   const FilterBar({
     this.onBeforeFilterChange,
@@ -30,35 +33,40 @@ class FilterBar extends ConsumerWidget {
 
   final VoidCallback? onBeforeFilterChange;
 
-  /// Opens Discover Customize (TMDB sources, no active query). Hidden when null.
+  /// Opens Discover Customize (TMDB feeds, no active query). Hidden when null.
   final VoidCallback? onDiscoverCustomize;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final BrowseState browseState = ref.watch(browseProvider);
-    final SearchSource source = browseState.source;
-    final List<SearchFilter> filters = source.filters;
-    final bool hasSort = source.sortOptions.isNotEmpty;
-    final bool hasActiveFilters = browseState.filterValues.values
-        .any((Object? v) => v != null);
-    // Customize controls the feed itself, so active filters do NOT hide it
-    // — only a text query does, since that turns the feed into search results.
+    final BrowseState state = ref.watch(browseProvider);
+    final Color accent = filterAccentForType(state.mediaType);
     final bool showCustomize = onDiscoverCustomize != null &&
-        !browseState.hasSearchQuery &&
-        source.dataSource == DataSource.tmdb;
-    final Color accent = filterAccentForType(source.outputMediaType);
+        !state.hasSearchQuery &&
+        discoverMediaTypes.contains(state.mediaType);
 
     if (isCompactScreen(context)) {
-      return _CompactBar(
-        source: source,
+      return CompactFilterBar(
+        state: state,
         accent: accent,
-        activeFilterCount: _countActive(browseState.filterValues),
-        onSourceChanged: (String id) =>
-            ref.read(browseProvider.notifier).setSource(id),
-        onOpenFilters: () => showFilterSheet(context),
         onDiscoverCustomize: showCustomize ? onDiscoverCustomize : null,
       );
     }
+
+    final MediaTypeFilters filters = state.filters;
+    final bool single = state.sources.length == 1;
+    final List<SearchFilter> barFilters = single
+        ? filters.own[state.sources.first.id] ?? const <SearchFilter>[]
+        : filters.common;
+    final bool showSheetButton = !single && filters.ownCount > 0;
+    // Options must come from the provider the sort applies to: `SCORE_DESC`
+    // means nothing to MangaDex.
+    final List<BrowseSortOption> sortOptions =
+        state.sortSource?.sortOptions ?? const <BrowseSortOption>[];
+
+    int trailingCount = 0;
+    if (sortOptions.isNotEmpty) trailingCount++;
+    if (showSheetButton) trailingCount++;
+    if (showCustomize) trailingCount++;
 
     return ColoredBox(
       color: AppColors.surface,
@@ -67,48 +75,52 @@ class FilterBar extends ConsumerWidget {
         child: Row(
           children: <Widget>[
             SizedBox(
-              width: _kSourceWidth,
-              child: _SourceDropdownChevron(
-                source: source,
+              width: kMediaTypeSegmentWidth,
+              child: MediaTypeChevron(
+                mediaType: state.mediaType,
                 accentColor: accent,
-                isLast: filters.isEmpty && !hasSort && !showCustomize,
-                onSourceChanged: (String id) {
-                  ref.read(browseProvider.notifier).setSource(id);
-                },
+                isLast: barFilters.isEmpty && trailingCount == 0,
+                onChanged: (MediaType type) =>
+                    ref.read(browseProvider.notifier).setMediaType(type),
               ),
             ),
-            for (int i = 0; i < filters.length; i++)
+            for (int i = 0; i < barFilters.length; i++)
               Expanded(
-                child: _FilterDropdownChevron(
+                child: FilterChevron(
                   key: ValueKey<String>(
-                    '${source.id}_${filters[i].cacheKey}',
+                    '${state.mediaType.name}_${barFilters[i].cacheKey}',
                   ),
-                  filter: filters[i],
-                  value: browseState.filterValues[filters[i].key],
+                  filter: barFilters[i],
+                  value: _valueOf(state, barFilters[i]),
                   accentColor: accent,
-                  isLast: !hasSort &&
-                      !showCustomize &&
-                      i == filters.length - 1,
-                  onChanged: (Object? value) {
+                  isLast: trailingCount == 0 && i == barFilters.length - 1,
+                  onPick: (Object? value, CommonSelection? selection) {
                     onBeforeFilterChange?.call();
-                    ref
-                        .read(browseProvider.notifier)
-                        .setFilter(filters[i].key, value);
+                    _apply(ref, state, barFilters[i], value, selection);
                   },
                 ),
               ),
-            if (hasSort)
+            if (showSheetButton)
+              SizedBox(
+                width: 132,
+                child: _SheetButton(
+                  accent: accent,
+                  count: state.ownFilterCount,
+                  total: filters.ownCount,
+                  isLast: sortOptions.isEmpty && !showCustomize,
+                  onTap: () => showFilterSheet(context),
+                ),
+              ),
+            if (sortOptions.isNotEmpty)
               Expanded(
-                child: _SortDropdownChevron(
-                  options: source.sortOptions,
-                  current: browseState.effectiveSortBy,
-                  enabled: !browseState.hasSearchQuery ||
-                      source.supportsSortDuringSearch,
+                child: _SortChevron(
+                  options: sortOptions,
+                  current: state.effectiveSortBy,
+                  disabledReason: _sortDisabledReason(state, S.of(context)),
                   accentColor: accent,
                   isLast: !showCustomize,
-                  onChanged: (String sortBy) {
-                    ref.read(browseProvider.notifier).setSort(sortBy);
-                  },
+                  onChanged: (String sortBy) =>
+                      ref.read(browseProvider.notifier).setSort(sortBy),
                 ),
               ),
             if (showCustomize)
@@ -126,10 +138,9 @@ class FilterBar extends ConsumerWidget {
                   compact: true,
                 ),
               ),
-            if (hasActiveFilters)
+            if (state.hasFilters)
               _ClearButton(
-                onTap: () =>
-                    ref.read(browseProvider.notifier).clearFilters(),
+                onTap: () => ref.read(browseProvider.notifier).clearFilters(),
               ),
           ],
         ),
@@ -137,108 +148,61 @@ class FilterBar extends ConsumerWidget {
     );
   }
 
-  static int _countActive(Map<String, Object?> values) {
-    int n = 0;
-    for (final Object? v in values.values) {
-      if (v == null) continue;
-      if (v is List<Object> && v.isEmpty) continue;
-      n++;
+  static Object? _valueOf(BrowseState state, SearchFilter filter) {
+    if (filter is CommonFilter) {
+      return state.commonSelections[filter.key]?.semantic;
     }
-    return n;
+    return state.ownFilterValues[state.sources.first.id]?[filter.key];
+  }
+
+  static void _apply(
+    WidgetRef ref,
+    BrowseState state,
+    SearchFilter filter,
+    Object? value,
+    CommonSelection? selection,
+  ) {
+    final BrowseNotifier notifier = ref.read(browseProvider.notifier);
+    if (filter is CommonFilter) {
+      notifier.setCommonFilter(filter.key, selection);
+      return;
+    }
+    notifier.setOwnFilter(state.sources.first.id, filter.key, value);
+  }
+
+  static String? _sortDisabledReason(BrowseState state, S l) {
+    if (state.canSort) return null;
+    return state.sortIgnoredDuringSearch
+        ? l.searchSortUnavailableInSearch
+        : l.searchSortNeedsSingleSource;
   }
 }
 
-/// Narrow-screen variant of [FilterBar]: `[Source ▾][Filters (N)][Customize?]`.
-class _CompactBar extends StatelessWidget {
-  const _CompactBar({
-    required this.source,
-    required this.accent,
-    required this.activeFilterCount,
-    required this.onSourceChanged,
-    required this.onOpenFilters,
-    required this.onDiscoverCustomize,
-  });
-
-  final SearchSource source;
-  final Color accent;
-  final int activeFilterCount;
-  final ValueChanged<String> onSourceChanged;
-  final VoidCallback onOpenFilters;
-  final VoidCallback? onDiscoverCustomize;
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-    final bool showCustomize = onDiscoverCustomize != null;
-    return ColoredBox(
-      color: AppColors.surface,
-      child: SizedBox(
-        height: 40,
-        child: Row(
-          children: <Widget>[
-            SizedBox(
-              width: _kSourceWidth,
-              child: _SourceDropdownChevron(
-                source: source,
-                accentColor: accent,
-                isLast: false,
-                onSourceChanged: onSourceChanged,
-              ),
-            ),
-            Expanded(
-              child: _FiltersChevronButton(
-                accent: accent,
-                count: activeFilterCount,
-                label: l.collectionFilterFilters,
-                isLast: !showCustomize,
-                onTap: onOpenFilters,
-              ),
-            ),
-            if (showCustomize)
-              SizedBox(
-                width: _kCustomizeWidth,
-                child: ChevronSegment(
-                  label: l.discoverCustomize,
-                  icon: Icons.tune,
-                  selected: false,
-                  accentColor: accent,
-                  isFirst: false,
-                  isLast: true,
-                  onTap: onDiscoverCustomize!,
-                  tintWhenInactive: true,
-                  compact: true,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// "Filters (N)" chevron — the middle segment of the compact bar.
-class _FiltersChevronButton extends StatelessWidget {
-  const _FiltersChevronButton({
+/// "Filters (N)" segment opening the per-source sheet.
+class _SheetButton extends StatelessWidget {
+  const _SheetButton({
     required this.accent,
     required this.count,
-    required this.label,
+    required this.total,
     required this.isLast,
     required this.onTap,
   });
 
   final Color accent;
   final int count;
-  final String label;
+  final int total;
   final bool isLast;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final bool active = count > 0;
+    final S l = S.of(context);
     return ChevronSegment(
-      label: count > 0 ? '$label ($count)' : label,
+      label: count > 0
+          ? '${l.collectionFilterFilters} ($count)'
+          : '${l.collectionFilterFilters} · $total',
       icon: Icons.tune,
-      selected: active,
+      selected: count > 0,
       accentColor: accent,
       isFirst: false,
       isLast: isLast,
@@ -247,10 +211,6 @@ class _FiltersChevronButton extends StatelessWidget {
     );
   }
 }
-
-// =========================================================================
-// Clear button
-// =========================================================================
 
 class _ClearButton extends StatelessWidget {
   const _ClearButton({required this.onTap});
@@ -266,337 +226,18 @@ class _ClearButton extends StatelessWidget {
         child: const SizedBox(
           width: 36,
           height: 40,
-          child: Icon(
-            Icons.close,
-            size: 18,
-            color: AppColors.error,
-          ),
+          child: Icon(Icons.close, size: 18, color: AppColors.error),
         ),
       ),
     );
   }
 }
 
-// =========================================================================
-// Source dropdown chevron
-// =========================================================================
-
-class _SourceDropdownChevron extends StatelessWidget {
-  const _SourceDropdownChevron({
-    required this.source,
-    required this.accentColor,
-    required this.isLast,
-    required this.onSourceChanged,
-  });
-
-  final SearchSource source;
-  final Color accentColor;
-  final bool isLast;
-  final ValueChanged<String> onSourceChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-
-    return DropdownChevronSegment<Object>(
-      label: source.label(l),
-      subtitle: source.groupName,
-      icon: source.icon,
-      selected: true,
-      accentColor: accentColor,
-      isFirst: true,
-      isLast: isLast,
-      menuBuilder: (BuildContext ctx) => _buildGroupedItems(l),
-      onSelected: (Object? value) {
-        if (value is String) onSourceChanged(value);
-      },
-    );
-  }
-
-  List<PopupMenuEntry<Object>> _buildGroupedItems(S l) {
-    final List<PopupMenuEntry<Object>> items = <PopupMenuEntry<Object>>[];
-
-    for (final SourceGroupEntry group in groupedSearchSources) {
-      if (items.isNotEmpty) {
-        items.add(const PopupMenuDivider(height: 8));
-      }
-      items.add(PopupMenuItem<Object>(
-        enabled: false,
-        height: 28,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            if (group.groupIconAsset != null)
-              Image.asset(
-                group.groupIconAsset!,
-                width: 20,
-                height: 20,
-                filterQuality: FilterQuality.medium,
-              )
-            else
-              Icon(group.groupIcon, size: 14, color: AppColors.textTertiary),
-            const SizedBox(width: 6),
-            Text(
-              group.groupName,
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textTertiary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ));
-
-      for (final SearchSource s in group.sources) {
-        final bool isSelected = s.id == source.id;
-        items.add(PopupMenuItem<Object>(
-          value: s.id,
-          height: 36,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20),
-            child: Text(
-              s.label(l),
-              style: AppTypography.body.copyWith(
-                color: isSelected
-                    ? filterAccentForType(s.outputMediaType)
-                    : AppColors.textPrimary,
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ),
-        ));
-      }
-    }
-
-    return items;
-  }
-}
-
-// =========================================================================
-// Filter dropdown chevron
-// =========================================================================
-
-class _FilterDropdownChevron extends ConsumerStatefulWidget {
-  const _FilterDropdownChevron({
-    required this.filter,
-    required this.value,
-    required this.accentColor,
-    required this.isLast,
-    required this.onChanged,
-    super.key,
-  });
-
-  final SearchFilter filter;
-  final Object? value;
-  final Color accentColor;
-  final bool isLast;
-  final ValueChanged<Object?> onChanged;
-
-  @override
-  ConsumerState<_FilterDropdownChevron> createState() =>
-      _FilterDropdownChevronState();
-}
-
-class _FilterDropdownChevronState
-    extends ConsumerState<_FilterDropdownChevron> {
-  List<FilterOption>? _options;
-  bool _isLoading = false;
-  bool _initialLoadDone = false;
-  int _loadGeneration = 0;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialLoadDone) {
-      _initialLoadDone = true;
-      _loadOptions();
-    }
-  }
-
-  @override
-  void didUpdateWidget(_FilterDropdownChevron oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.filter.cacheKey != widget.filter.cacheKey) {
-      _options = null;
-      _initialLoadDone = false;
-      _loadOptions();
-    }
-  }
-
-  Future<void> _loadOptions() async {
-    if (_isLoading) return;
-    final int gen = ++_loadGeneration;
-    setState(() => _isLoading = true);
-    try {
-      final S l = S.of(context);
-      final List<FilterOption> opts =
-          await widget.filter.options(ref, l);
-      if (_loadGeneration != gen || !mounted) return;
-      setState(() {
-        _options = opts;
-        _isLoading = false;
-      });
-    } on Exception {
-      if (_loadGeneration != gen || !mounted) return;
-      setState(() => _isLoading = false);
-    }
-  }
-
-  String _getLabel(S l) {
-    if (widget.value == null) return widget.filter.placeholder(l);
-    if (widget.filter.multiSelect && widget.value is List<Object>) {
-      final List<Object> sel = widget.value! as List<Object>;
-      if (sel.isEmpty) return widget.filter.placeholder(l);
-      return '${widget.filter.placeholder(l)} (${sel.length})';
-    }
-    if (_options == null) return '...';
-    for (final FilterOption opt in _options!) {
-      if (opt.value == widget.value) return opt.label;
-    }
-    return widget.value.toString();
-  }
-
-  bool get _isActive {
-    if (widget.filter.multiSelect) {
-      return widget.value is List<Object> &&
-          (widget.value! as List<Object>).isNotEmpty;
-    }
-    return widget.value != null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-
-    final String? sub = _isActive ? widget.filter.placeholder(l) : null;
-
-    final Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?
-        customPicker = widget.filter.openCustomPicker;
-    if (customPicker != null) {
-      return ChevronSegment(
-        label: _getLabel(l),
-        subtitle: sub,
-        icon: Icons.filter_list,
-        selected: _isActive,
-        accentColor: widget.accentColor,
-        isFirst: false,
-        isLast: widget.isLast,
-        onTap: () async {
-          final Object? result =
-              await customPicker(context, ref, l, widget.value);
-          if (!mounted) return;
-          widget.onChanged(result == kFilterResetSentinel ? null : result);
-        },
-      );
-    }
-
-    if (widget.filter.searchable) {
-      return ChevronSegment(
-        label: _getLabel(l),
-        subtitle: sub,
-        icon: Icons.filter_list,
-        selected: _isActive,
-        accentColor: widget.accentColor,
-        isFirst: false,
-        isLast: widget.isLast,
-        onTap: () => _showSearchableDialog(l),
-      );
-    }
-
-    return DropdownChevronSegment<Object>(
-      label: _getLabel(l),
-      subtitle: sub,
-      icon: Icons.filter_list,
-      selected: _isActive,
-      accentColor: widget.accentColor,
-      isFirst: false,
-      isLast: widget.isLast,
-      menuBuilder: (BuildContext ctx) => _buildFilterItems(l),
-      onSelected: (Object? value) {
-        widget.onChanged(value == kFilterResetSentinel ? null : value);
-      },
-    );
-  }
-
-  List<PopupMenuEntry<Object>> _buildFilterItems(S l) {
-    if (_options == null || _isLoading) {
-      return <PopupMenuEntry<Object>>[
-        const PopupMenuItem<Object>(
-          enabled: false,
-          child: Center(
-            child: SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-        ),
-      ];
-    }
-
-    return <PopupMenuEntry<Object>>[
-      PopupMenuItem<Object>(
-        value: kFilterResetSentinel,
-        height: 36,
-        child: Text(
-          l.all,
-          style: AppTypography.body.copyWith(
-            color: widget.value == null
-                ? widget.accentColor
-                : AppColors.textSecondary,
-            fontWeight:
-                widget.value == null ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-      ),
-      const PopupMenuDivider(height: 1),
-      for (final FilterOption opt in _options!)
-        if (opt.value != null)
-          PopupMenuItem<Object>(
-            value: opt.value,
-            height: 36,
-            child: Text(
-              opt.label,
-              style: AppTypography.body.copyWith(
-                color: opt.value == widget.value
-                    ? widget.accentColor
-                    : AppColors.textPrimary,
-                fontWeight: opt.value == widget.value
-                    ? FontWeight.w600
-                    : FontWeight.normal,
-              ),
-            ),
-          ),
-    ];
-  }
-
-  Future<void> _showSearchableDialog(S l) async {
-    final Object? result = await showDialog<Object>(
-      context: context,
-      builder: (BuildContext context) => SearchableFilterDialog(
-        title: widget.filter.placeholder(l),
-        options: _options,
-        isLoading: _isLoading,
-        currentValue: widget.value,
-        allLabel: l.all,
-        multiSelect: widget.filter.multiSelect,
-      ),
-    );
-    if (result == null) return;
-    widget.onChanged(result == kFilterResetSentinel ? null : result);
-  }
-}
-
-// =========================================================================
-// Sort dropdown chevron
-// =========================================================================
-
-class _SortDropdownChevron extends StatelessWidget {
-  const _SortDropdownChevron({
+class _SortChevron extends StatelessWidget {
+  const _SortChevron({
     required this.options,
     required this.current,
-    required this.enabled,
+    required this.disabledReason,
     required this.accentColor,
     required this.isLast,
     required this.onChanged,
@@ -604,7 +245,10 @@ class _SortDropdownChevron extends StatelessWidget {
 
   final List<BrowseSortOption> options;
   final String current;
-  final bool enabled;
+
+  /// Why sorting is off, shown as a tooltip; null means it is available.
+  final String? disabledReason;
+
   final Color accentColor;
   final bool isLast;
   final ValueChanged<String> onChanged;
@@ -614,23 +258,27 @@ class _SortDropdownChevron extends StatelessWidget {
     final S l = S.of(context);
 
     String currentLabel = l.sort;
-    for (final BrowseSortOption opt in options) {
-      if (opt.apiValue == current) {
-        currentLabel = opt.label(l);
+    for (final BrowseSortOption option in options) {
+      if (option.apiValue == current) {
+        currentLabel = option.label(l);
         break;
       }
     }
 
-    if (!enabled) {
-      return ChevronSegment(
-        label: currentLabel,
-        subtitle: l.sort,
-        icon: Icons.sort,
-        selected: false,
-        accentColor: accentColor,
-        isFirst: false,
-        isLast: isLast,
-        onTap: () {},
+    final String? reason = disabledReason;
+    if (reason != null) {
+      return Tooltip(
+        message: reason,
+        child: ChevronSegment(
+          label: currentLabel,
+          subtitle: l.sort,
+          icon: Icons.sort,
+          selected: false,
+          accentColor: accentColor,
+          isFirst: false,
+          isLast: isLast,
+          onTap: () {},
+        ),
       );
     }
 
@@ -645,17 +293,17 @@ class _SortDropdownChevron extends StatelessWidget {
       menuBuilder: (BuildContext ctx) {
         final S menuL = S.of(ctx);
         return <PopupMenuEntry<Object>>[
-          for (final BrowseSortOption opt in options)
+          for (final BrowseSortOption option in options)
             PopupMenuItem<Object>(
-              value: opt.apiValue,
+              value: option.apiValue,
               height: 36,
               child: Text(
-                opt.label(menuL),
+                option.label(menuL),
                 style: AppTypography.body.copyWith(
-                  color: opt.apiValue == current
+                  color: option.apiValue == current
                       ? accentColor
                       : AppColors.textPrimary,
-                  fontWeight: opt.apiValue == current
+                  fontWeight: option.apiValue == current
                       ? FontWeight.w600
                       : FontWeight.normal,
                 ),

@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:core/models/sync_manifest.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
-import '../../shared/models/sync_manifest.dart';
 import 'config_service.dart';
 import 'db_sync_service.dart';
 

@@ -4280,6 +4280,66 @@ abstract class S {
   /// **'No results found'**
   String get searchNoResults;
 
+  /// No description provided for @searchWhatToFind.
+  ///
+  /// In en, this message translates to:
+  /// **'What to find'**
+  String get searchWhatToFind;
+
+  /// No description provided for @searchSortNeedsSingleSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting is available with a single source'**
+  String get searchSortNeedsSingleSource;
+
+  /// No description provided for @searchSortUnavailableInSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'This source does not sort search results'**
+  String get searchSortUnavailableInSearch;
+
+  /// No description provided for @searchSourcesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources'**
+  String get searchSourcesLabel;
+
+  /// No description provided for @searchTextOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Text search only'**
+  String get searchTextOnlyHint;
+
+  /// No description provided for @searchSourceNoResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'did not respond'**
+  String get searchSourceNoResponse;
+
+  /// No description provided for @searchCommonFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get searchCommonFilters;
+
+  /// No description provided for @searchShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'all'**
+  String get searchShowAll;
+
+  /// No description provided for @searchNarrowedBySource.
+  ///
+  /// In en, this message translates to:
+  /// **'narrowed by this source\'s filter'**
+  String get searchNarrowedBySource;
+
+  /// No description provided for @searchSourceLacksValue.
+  ///
+  /// In en, this message translates to:
+  /// **'does not support the selected value'**
+  String get searchSourceLacksValue;
+
   /// No description provided for @searchNothingFoundFor.
   ///
   /// In en, this message translates to:
@@ -9211,6 +9271,450 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Capture controller button codes'**
   String get settingsGamepadDebugSubtitle;
+
+  /// No description provided for @statsTabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statsTabTitle;
+
+  /// No description provided for @statsPeriodAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get statsPeriodAllTime;
+
+  /// No description provided for @statsLede.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {items} items in your collection'**
+  String statsLede(String items);
+
+  /// No description provided for @statsMetricMoviesWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'movies watched'**
+  String get statsMetricMoviesWatched;
+
+  /// No description provided for @statsMetricMangaChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'manga chapters'**
+  String get statsMetricMangaChapters;
+
+  /// No description provided for @statsMetricBookPages.
+  ///
+  /// In en, this message translates to:
+  /// **'book pages'**
+  String get statsMetricBookPages;
+
+  /// No description provided for @statsMetricEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'episodes'**
+  String get statsMetricEpisodes;
+
+  /// No description provided for @statsMetricHours.
+  ///
+  /// In en, this message translates to:
+  /// **'watched & played'**
+  String get statsMetricHours;
+
+  /// No description provided for @statsMetricAvgRating.
+  ///
+  /// In en, this message translates to:
+  /// **'average rating'**
+  String get statsMetricAvgRating;
+
+  /// No description provided for @statsMetricReplays.
+  ///
+  /// In en, this message translates to:
+  /// **'replays'**
+  String get statsMetricReplays;
+
+  /// No description provided for @statsMetricLikedUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'liked episodes'**
+  String get statsMetricLikedUnits;
+
+  /// No description provided for @statsHoursShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h'**
+  String statsHoursShort(String hours);
+
+  /// No description provided for @statsHoursBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'hours: manual {manual}h · trackers {tracker}h · estimated {estimated}h'**
+  String statsHoursBreakdown(int manual, int tracker, int estimated);
+
+  /// No description provided for @statsMonthsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your year, month by month'**
+  String get statsMonthsTitle;
+
+  /// No description provided for @statsMonthsTitleAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'This year, month by month'**
+  String get statsMonthsTitleAllTime;
+
+  /// No description provided for @statsMonthsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'cover — the highest rated title of the month'**
+  String get statsMonthsHint;
+
+  /// No description provided for @statsPeakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'peak'**
+  String get statsPeakLabel;
+
+  /// No description provided for @statsMonthCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{items} added · {episodes} ep.'**
+  String statsMonthCounts(int items, int episodes);
+
+  /// No description provided for @statsVersusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Best and worst'**
+  String get statsVersusTitle;
+
+  /// No description provided for @statsVersusHint.
+  ///
+  /// In en, this message translates to:
+  /// **'by your own ratings'**
+  String get statsVersusHint;
+
+  /// No description provided for @statsBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get statsBest;
+
+  /// No description provided for @statsWorst.
+  ///
+  /// In en, this message translates to:
+  /// **'Worst'**
+  String get statsWorst;
+
+  /// No description provided for @statsPlatformsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h · {games} games'**
+  String statsPlatformsSummary(String hours, int games);
+
+  /// No description provided for @statsPlatformNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No platform'**
+  String get statsPlatformNone;
+
+  /// No description provided for @statsPlatformsShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ({count})'**
+  String statsPlatformsShowAll(int count);
+
+  /// No description provided for @statsPlatformsCollapse.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get statsPlatformsCollapse;
+
+  /// No description provided for @statsHoursUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get statsHoursUnit;
+
+  /// No description provided for @statsTypesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Library by type'**
+  String get statsTypesTitle;
+
+  /// No description provided for @statsTypesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'live status breakdown for each media type'**
+  String get statsTypesHint;
+
+  /// No description provided for @statsCompletedPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% completed'**
+  String statsCompletedPercent(int percent);
+
+  /// No description provided for @statsPlatformMostPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'most played'**
+  String get statsPlatformMostPlayed;
+
+  /// No description provided for @statsFormatsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'format comes from the source data'**
+  String get statsFormatsHint;
+
+  /// No description provided for @statsSubgenresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subgenres and tags'**
+  String get statsSubgenresTitle;
+
+  /// No description provided for @statsSubgenresHint.
+  ///
+  /// In en, this message translates to:
+  /// **'source tags are shown per type'**
+  String get statsSubgenresHint;
+
+  /// No description provided for @statsCrowdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Me vs the crowd'**
+  String get statsCrowdTitle;
+
+  /// No description provided for @statsCrowdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'where my rating differs most from the source'**
+  String get statsCrowdHint;
+
+  /// No description provided for @statsCrowdHigher.
+  ///
+  /// In en, this message translates to:
+  /// **'I rate them higher'**
+  String get statsCrowdHigher;
+
+  /// No description provided for @statsCrowdLower.
+  ///
+  /// In en, this message translates to:
+  /// **'I rate them lower'**
+  String get statsCrowdLower;
+
+  /// No description provided for @statsCrowdMyRating.
+  ///
+  /// In en, this message translates to:
+  /// **'my rating'**
+  String get statsCrowdMyRating;
+
+  /// No description provided for @statsCrowdSource.
+  ///
+  /// In en, this message translates to:
+  /// **'source'**
+  String get statsCrowdSource;
+
+  /// No description provided for @statsTopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated'**
+  String get statsTopTitle;
+
+  /// No description provided for @statsTopHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} highest rated'**
+  String statsTopHint(int count);
+
+  /// No description provided for @statsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No statistics yet'**
+  String get statsEmptyTitle;
+
+  /// No description provided for @statsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items to your library and they will show up here in numbers.'**
+  String get statsEmptyBody;
+
+  /// No description provided for @statsExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export share card'**
+  String get statsExportTitle;
+
+  /// No description provided for @statsExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the image'**
+  String get statsExportFailed;
+
+  /// No description provided for @statsShareTitleYear.
+  ///
+  /// In en, this message translates to:
+  /// **'My {year}'**
+  String statsShareTitleYear(int year);
+
+  /// No description provided for @statsShareTitleAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'My library'**
+  String get statsShareTitleAllTime;
+
+  /// No description provided for @statsShareLede.
+  ///
+  /// In en, this message translates to:
+  /// **'{items} items · {completed} completed · {rating} average'**
+  String statsShareLede(String items, String completed, String rating);
+
+  /// No description provided for @statsShareBest.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} · {rating} — best of the period'**
+  String statsShareBest(String title, String rating);
+
+  /// No description provided for @simklImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Simkl Import'**
+  String get simklImportTitle;
+
+  /// No description provided for @settingsSimklImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies, TV shows and anime from your Simkl account'**
+  String get settingsSimklImportSubtitle;
+
+  /// No description provided for @simklImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your Simkl account with a short code — movies, TV shows and anime arrive in one import, together with the episode watch history'**
+  String get simklImportSubtitle;
+
+  /// No description provided for @simklClientIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Simkl app key (client_id)'**
+  String get simklClientIdLabel;
+
+  /// No description provided for @simklGetClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a client_id at simkl.com'**
+  String get simklGetClientId;
+
+  /// No description provided for @simklRememberClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember the app key'**
+  String get simklRememberClientId;
+
+  /// No description provided for @simklGetPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Get code'**
+  String get simklGetPin;
+
+  /// No description provided for @simklGetNewPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a new code'**
+  String get simklGetNewPin;
+
+  /// No description provided for @simklPinPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this code at simkl.com/pin:'**
+  String get simklPinPrompt;
+
+  /// No description provided for @simklOpenPinPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open simkl.com/pin'**
+  String get simklOpenPinPage;
+
+  /// No description provided for @simklWaitingConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for confirmation…'**
+  String get simklWaitingConfirmation;
+
+  /// No description provided for @simklPinExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The code has expired.'**
+  String get simklPinExpired;
+
+  /// No description provided for @simklConnectedAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected account: {name}'**
+  String simklConnectedAs(String name);
+
+  /// No description provided for @simklCheckingAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking account…'**
+  String get simklCheckingAccount;
+
+  /// No description provided for @simklRememberToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay connected on this device'**
+  String get simklRememberToken;
+
+  /// No description provided for @simklRememberTokenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The access token is stored in settings; uncheck to be asked for a code next time'**
+  String get simklRememberTokenSubtitle;
+
+  /// No description provided for @simklDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get simklDisconnect;
+
+  /// No description provided for @simklImportFetching.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching the Simkl library…'**
+  String get simklImportFetching;
+
+  /// No description provided for @simklImportFetchingDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching details…'**
+  String get simklImportFetchingDetails;
+
+  /// No description provided for @simklImportWatchHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring watch history…'**
+  String get simklImportWatchHistory;
+
+  /// No description provided for @simklImportNewCollectionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Simkl: {name}'**
+  String simklImportNewCollectionDefault(String name);
+
+  /// No description provided for @simklImportModeOverwriteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update status, rating and note on existing items'**
+  String get simklImportModeOverwriteSubtitle;
+
+  /// No description provided for @simklClientIdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'The import needs a Simkl app key — enter your client_id'**
+  String get simklClientIdRequired;
+
+  /// No description provided for @simklImportRateLimitWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate limit reached — retrying in {seconds}s (attempt {attempt}/{max})'**
+  String simklImportRateLimitWait(int seconds, int attempt, int max);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

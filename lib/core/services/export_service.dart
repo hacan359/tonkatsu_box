@@ -2,32 +2,32 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_mark.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/platform.dart' as model;
+import 'package:core/models/tag.dart';
+import 'package:core/models/tier_definition.dart';
+import 'package:core/models/tier_list.dart';
+import 'package:core/models/tier_list_entry.dart';
+import 'package:core/models/tracker_game_data.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../data/repositories/canvas_repository.dart';
-import '../../shared/models/canvas_connection.dart';
-import '../../shared/models/canvas_item.dart';
-import '../../shared/models/canvas_viewport.dart';
-import '../../shared/models/collection.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/data_source.dart';
-import '../../shared/models/item_mark.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/tracker_game_data.dart';
-import '../../shared/models/platform.dart' as model;
-import '../../shared/models/tv_episode.dart';
-import '../../shared/models/tv_season.dart';
-import '../../shared/models/tier_definition.dart';
-import '../../shared/models/tag.dart';
-import '../../shared/models/tier_list.dart';
-import '../../shared/models/tier_list_entry.dart';
-import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
-import 'xcoll_file.dart';
 
 final Provider<ExportService> exportServiceProvider =
     Provider<ExportService>((Ref ref) {
@@ -336,7 +336,7 @@ class ExportService {
     if (db == null) return;
     for (int i = 0; i < items.length; i++) {
       final CollectionItem item = items[i];
-      if (!item.mediaType.isTvBacked) continue;
+      if (!item.usesEpisodeTracker) continue;
       // Resolve the source exactly like import will: parsed items carry no
       // joined show, so their dataSource collapses to the raw column.
       final DataSource source = item.source ?? DataSource.tmdb;

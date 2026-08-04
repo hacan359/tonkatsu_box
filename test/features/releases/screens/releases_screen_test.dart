@@ -1,10 +1,10 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/releases/models/release_event.dart';
 import 'package:tonkatsu_box/features/releases/providers/releases_provider.dart';
 import 'package:tonkatsu_box/features/releases/screens/releases_screen.dart';
 import 'package:tonkatsu_box/features/releases/widgets/releases_empty_state.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 

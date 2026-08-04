@@ -1,71 +1,73 @@
 import 'dart:async';
 
+import 'package:core/database/dao/anilist_tag_dao.dart';
+import 'package:core/database/dao/anime_dao.dart';
+import 'package:core/database/dao/book_dao.dart';
+import 'package:core/database/dao/calendar_entry_dao.dart';
+import 'package:core/database/dao/canvas_dao.dart';
+import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/database/dao/custom_media_dao.dart';
+import 'package:core/database/dao/game_dao.dart';
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/database/dao/item_mark_dao.dart';
+import 'package:core/database/dao/manga_dao.dart';
+import 'package:core/database/dao/mangadex_tag_dao.dart';
+import 'package:core/database/dao/mood_grid_dao.dart';
+import 'package:core/database/dao/movie_dao.dart';
+import 'package:core/database/dao/stats_dao.dart';
+import 'package:core/database/dao/tier_list_dao.dart';
+import 'package:core/database/dao/tracked_release_dao.dart';
+import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/database/dao/tv_show_dao.dart';
+import 'package:core/database/dao/visual_novel_dao.dart';
+import 'package:core/database/dao/wishlist_dao.dart';
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/game.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:tonkatsu_box/core/api/anilist/anilist_graphql_client.dart';
+import 'package:tonkatsu_box/core/api/anilist_api.dart';
 import 'package:tonkatsu_box/core/api/fantlab_api.dart';
-import 'package:tonkatsu_box/core/api/mangabaka_api.dart';
 import 'package:tonkatsu_box/core/api/google_books_api.dart';
 import 'package:tonkatsu_box/core/api/hardcover_api.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
 import 'package:tonkatsu_box/core/api/kitsu_api.dart';
 import 'package:tonkatsu_box/core/api/kodi_api.dart';
+import 'package:tonkatsu_box/core/api/mangabaka_api.dart';
 import 'package:tonkatsu_box/core/api/mangadex_api.dart';
 import 'package:tonkatsu_box/core/api/openlibrary_api.dart';
-import 'package:tonkatsu_box/core/database/dao/mangadex_tag_dao.dart';
+import 'package:tonkatsu_box/core/api/ra_api.dart';
+import 'package:tonkatsu_box/core/api/simkl_api.dart';
+import 'package:tonkatsu_box/core/api/steam_api.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
-import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
-import 'package:tonkatsu_box/core/api/anilist/anilist_graphql_client.dart';
-import 'package:tonkatsu_box/core/api/anilist_api.dart';
-import 'package:tonkatsu_box/core/database/dao/anilist_tag_dao.dart';
 import 'package:tonkatsu_box/core/api/vndb_api.dart';
-import 'package:tonkatsu_box/core/database/dao/canvas_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/collection_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/game_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/item_mark_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/movie_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/tracked_release_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/calendar_entry_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/custom_media_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/anime_dao.dart';
-import 'package:tonkatsu_box/core/services/discord_rpc_service.dart';
-import 'package:tonkatsu_box/core/database/dao/book_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/visual_novel_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/global_tag_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/mood_grid_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/tier_list_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/tracker_dao.dart';
-import 'package:tonkatsu_box/core/database/dao/wishlist_dao.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/core/import/sources/kinorium/kinorium_import_service.dart';
+import 'package:tonkatsu_box/core/import/sources/steam/steam_import_service.dart';
+import 'package:tonkatsu_box/core/import/sources/trakt/trakt_import_service.dart';
 import 'package:tonkatsu_box/core/services/config_service.dart';
+import 'package:tonkatsu_box/core/services/discord_rpc_service.dart';
 import 'package:tonkatsu_box/core/services/export_service.dart';
 import 'package:tonkatsu_box/core/services/gamepad_service.dart';
-import 'package:tonkatsu_box/core/services/import_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/core/services/import_service.dart';
+import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/core/services/profile_service.dart';
-import 'package:tonkatsu_box/core/api/steam_api.dart';
-import 'package:tonkatsu_box/core/import/sources/steam/steam_import_service.dart';
-import 'package:tonkatsu_box/core/api/ra_api.dart';
 import 'package:tonkatsu_box/core/services/ra_to_igdb_mapper.dart';
-import 'package:tonkatsu_box/core/import/sources/kinorium/kinorium_import_service.dart';
-import 'package:tonkatsu_box/core/import/sources/trakt/trakt_import_service.dart';
 import 'package:tonkatsu_box/data/repositories/canvas_repository.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/data/repositories/game_repository.dart';
 import 'package:tonkatsu_box/data/repositories/wishlist_repository.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/models/canvas_connection.dart';
-import 'package:tonkatsu_box/shared/models/canvas_item.dart';
-import 'package:tonkatsu_box/shared/models/canvas_viewport.dart';
-import 'package:tonkatsu_box/shared/models/collection_item.dart';
-import 'package:tonkatsu_box/shared/models/game.dart';
 
 class MockDio extends Mock implements Dio {}
 
@@ -129,6 +131,8 @@ class MockCustomMediaDao extends Mock implements CustomMediaDao {}
 
 class MockCollectionDao extends Mock implements CollectionDao {}
 
+class MockStatsDao extends Mock implements StatsDao {}
+
 class MockCanvasDao extends Mock implements CanvasDao {}
 
 class MockTierListDao extends Mock implements TierListDao {}
@@ -177,6 +181,8 @@ class MockOpenLibraryApi extends Mock implements OpenLibraryApi {}
 class MockMangaDexTagDao extends Mock implements MangaDexTagDao {}
 
 class MockKitsuApi extends Mock implements KitsuApi {}
+
+class MockSimklApi extends Mock implements SimklApi {}
 
 class MockKodiApi extends Mock implements KodiApi {}
 

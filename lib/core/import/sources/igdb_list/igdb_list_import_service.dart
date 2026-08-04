@@ -1,25 +1,25 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/universal_import_result.dart';
+import 'package:core/models/wishlist_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
-import '../../../../shared/models/collection.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/data_source.dart';
-import '../../../../shared/models/game.dart';
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/item_status_logic.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/universal_import_result.dart';
-import '../../../../shared/models/wishlist_tag.dart';
 import '../../../api/api_error_extract.dart';
 import '../../../api/igdb_api.dart';
 import '../../../database/database_service.dart';
-import '../../../services/import_service.dart';
 import '../../import_columns.dart';
+import '../../import_progress.dart';
 import '../../import_source.dart';
 import '../../import_writer.dart';
 import 'igdb_list_csv_parser.dart';

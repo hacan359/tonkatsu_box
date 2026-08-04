@@ -1,23 +1,24 @@
 import 'dart:io';
+import 'dart:isolate';
 
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/universal_import_result.dart';
+import 'package:core/models/wishlist_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
-import '../../../../shared/models/collection.dart';
-import '../../../../shared/models/collection_item.dart';
-import '../../../../shared/models/data_source.dart';
-import '../../../../shared/models/item_status.dart';
-import '../../../../shared/models/media_type.dart';
-import '../../../../shared/models/movie.dart';
-import '../../../../shared/models/tv_show.dart';
-import '../../../../shared/models/universal_import_result.dart';
-import '../../../../shared/models/wishlist_tag.dart';
 import '../../../api/api_error_extract.dart';
 import '../../../api/tmdb_api.dart';
 import '../../../database/database_service.dart';
-import '../../../services/import_service.dart';
+import '../../import_progress.dart';
 import '../../import_source.dart';
 import '../../import_writer.dart';
 import '../../tmdb_matcher.dart';
@@ -138,8 +139,13 @@ class KinoriumImportService implements ImportSource {
         );
       }
 
-      final List<KinoriumEntry> entries =
-          _parser.parseBytes(await file.readAsBytes());
+      // Parse off the UI isolate (a big CSV would freeze the dialog); local
+      // copies keep the closure from capturing non-sendable `this`.
+      final KinoriumCsvParser parser = _parser;
+      final String filePath = options.filePath;
+      final List<KinoriumEntry> entries = await Isolate.run(
+        () => parser.parseBytes(File(filePath).readAsBytesSync()),
+      );
       if (entries.isEmpty) {
         return const UniversalImportResult.failure(
           sourceName: 'Kinorium',

@@ -1,10 +1,10 @@
+import 'package:core/models/cover_info.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/providers/collection_covers_provider.dart';
-import 'package:tonkatsu_box/shared/models/cover_info.dart';
-import 'package:tonkatsu_box/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 

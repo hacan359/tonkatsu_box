@@ -1,7 +1,7 @@
+import 'package:core/database/dao/manga_dao.dart';
+import 'package:core/models/manga.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:tonkatsu_box/core/database/dao/manga_dao.dart';
-import 'package:tonkatsu_box/shared/models/manga.dart';
 
 import '../../../helpers/mocks.dart';
 

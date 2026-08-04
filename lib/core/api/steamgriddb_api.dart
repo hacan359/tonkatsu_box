@@ -1,13 +1,12 @@
+import 'package:core/models/steamgriddb_game.dart';
+import 'package:core/models/steamgriddb_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/steamgriddb_game.dart';
-import '../../shared/models/steamgriddb_image.dart';
 import '../services/api_key_initializer.dart';
 import 'steamgriddb/steamgriddb_games_api.dart';
 import 'steamgriddb/steamgriddb_http_client.dart';
 import 'steamgriddb/steamgriddb_images_api.dart';
-
 export 'steamgriddb/steamgriddb_types.dart';
 
 final Provider<SteamGridDbApi> steamGridDbApiProvider =

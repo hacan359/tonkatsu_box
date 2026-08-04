@@ -1,9 +1,9 @@
 // VNDB tags (genres) provider, backed by static data in the DB.
 
+import 'package:core/models/visual_novel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/visual_novel.dart';
 
 /// VNDB tags provider (the "content" category, i.e. genres).
 ///

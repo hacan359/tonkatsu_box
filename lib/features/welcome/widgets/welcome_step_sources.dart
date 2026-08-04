@@ -1,3 +1,5 @@
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,8 +9,6 @@ import '../../../features/settings/widgets/inline_text_field.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/source_catalog.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';

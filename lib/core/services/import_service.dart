@@ -1,6 +1,32 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/database/dao/global_tag_dao.dart';
+import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/models/anime.dart';
+import 'package:core/models/book.dart';
+import 'package:core/models/canvas_connection.dart';
+import 'package:core/models/canvas_item.dart';
+import 'package:core/models/canvas_viewport.dart';
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_mark.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/tag.dart';
+import 'package:core/models/tier_definition.dart';
+import 'package:core/models/tier_list.dart';
+import 'package:core/models/tracker_game_data.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:core/models/visual_novel.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,30 +34,7 @@ import 'package:logging/logging.dart';
 
 import '../../data/repositories/canvas_repository.dart';
 import '../../data/repositories/collection_repository.dart';
-import '../../shared/models/canvas_connection.dart';
-import '../../shared/models/canvas_item.dart';
-import '../../shared/models/canvas_viewport.dart';
-import '../../shared/models/collection.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/custom_media.dart';
-import '../../shared/models/item_mark.dart';
-import '../../shared/models/item_status.dart';
-import '../../shared/models/tier_definition.dart';
-import '../../shared/models/tier_list.dart';
-import '../../shared/models/game.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/movie.dart';
-import '../../shared/models/platform.dart' as model;
-import '../../shared/models/tv_episode.dart';
-import '../../shared/models/tv_season.dart';
-import '../../shared/models/tv_show.dart';
-import '../../shared/models/anime.dart';
-import '../../shared/models/book.dart';
-import '../../shared/models/manga.dart';
-import '../../shared/models/tag.dart';
-import '../../shared/models/tracker_game_data.dart';
-import '../../shared/models/visual_novel.dart';
-import '../../shared/models/data_source.dart';
+import 'package:core/models/platform.dart' as model;
 import '../api/anilist_api.dart';
 import '../api/comicvine_api.dart';
 import '../api/fantlab_api.dart';
@@ -45,12 +48,14 @@ import '../api/openlibrary_api.dart';
 import '../api/tmdb_api.dart';
 import '../api/tvmaze_api.dart';
 import '../api/vndb_api.dart';
-import '../database/dao/global_tag_dao.dart';
-import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
+import '../import/import_progress.dart';
 import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
-import 'xcoll_file.dart';
+
+// Progress types moved to the import layer; re-exported so the many existing
+// `services/import_service.dart` importers keep compiling.
+export '../import/import_progress.dart';
 
 final Provider<ImportService> importServiceProvider =
     Provider<ImportService>((Ref ref) {
@@ -118,83 +123,6 @@ class ImportResult {
   final String? error;
 
   bool get isCancelled => !success && error == null;
-}
-
-typedef ImportProgressCallback = void Function(ImportProgress progress);
-
-class ImportProgress {
-  const ImportProgress({
-    required this.stage,
-    required this.current,
-    required this.total,
-    this.message,
-    this.currentItem,
-    this.imported = 0,
-    this.updated = 0,
-    this.wishlisted = 0,
-    this.retryWaitSeconds,
-    this.retryAttempt,
-    this.retryMaxAttempts,
-  });
-
-  final ImportStage stage;
-
-  final int current;
-
-  final int total;
-
-  final String? message;
-
-  /// Title of the item currently being processed (raw data, not localized).
-  final String? currentItem;
-
-  /// Running tallies for the source-import progress UIs.
-  final int imported;
-  final int updated;
-  final int wishlisted;
-
-  /// Rate-limit back-off info, set only while a source waits out a 429 window.
-  final int? retryWaitSeconds;
-  final int? retryAttempt;
-  final int? retryMaxAttempts;
-
-  double get progress => total > 0 ? current / total : 0;
-}
-
-enum ImportStage {
-  reading('Reading file...'),
-
-  fetchingGames('Fetching game data...'),
-
-  fetchingMovies('Fetching movie data...'),
-
-  fetchingTvShows('Fetching TV show data...'),
-
-  fetchingVisualNovels('Fetching visual novel data...'),
-
-  fetchingManga('Fetching manga data...'),
-
-  fetchingAnime('Fetching anime data...'),
-
-  fetchingBooks('Fetching book data...'),
-
-  cachingMedia('Caching media...'),
-
-  creatingCollection('Creating collection...'),
-
-  addingItems('Adding items...'),
-
-  importingCanvas('Importing board...'),
-
-  restoringMedia('Restoring media data...'),
-
-  importingImages('Restoring images...'),
-
-  completed('Import completed');
-
-  const ImportStage(this.description);
-
-  final String description;
 }
 
 class ImportService {
@@ -378,10 +306,13 @@ class ImportService {
           total: 1,
         ));
 
+        // Keep the original creation date: a backup restore must not collapse
+        // the collection's history onto the restore day.
         collection = await _repository.create(
           name: xcoll.name,
           author: xcoll.author,
           type: CollectionType.own,
+          createdAt: xcoll.created,
         );
 
         await _restoreCollectionPersonalization(collection, xcoll);
@@ -417,6 +348,9 @@ class ImportService {
           source: parsed.source,
           authorComment: parsed.authorComment,
           status: xcoll.includesUserData ? parsed.status : ItemStatus.notStarted,
+          // Keep the exported added date, otherwise a backup restore collapses
+          // the whole "added by month" timeline onto the restore day.
+          addedAt: xcoll.includesUserData ? parsed.addedAt : null,
         );
 
         if (itemId != null) {
@@ -610,10 +544,8 @@ class ImportService {
         mediaType: parsed.mediaType,
       );
     }
-    // After the status restore: a transition into `completed` bumps
-    // rewatch_count, and the file value must win over that bump. `null` is
-    // never applied — it would wipe a locally tracked counter on re-import
-    // of an older export.
+    // The file value must win over the bump a `completed` transition just
+    // made; `null` is never applied — it would wipe a local counter.
     if (parsed.rewatchCount != null) {
       await _database.updateItemRewatchCount(itemId, parsed.rewatchCount);
     }
@@ -885,10 +817,8 @@ class ImportService {
     }
   }
 
-  /// Online fallback for light exports or legacy full exports without an
-  /// embedded `media` section. Items are grouped by (media type, source) and
-  /// each group is refetched from the provider that owns it: sending a TVmaze
-  /// show id to TMDB caches a different show under that id.
+  /// Online fallback for exports without an embedded `media` section; items
+  /// refetch grouped by (media type, source) — ids are not portable across providers.
   Future<void> _fetchMediaFromApi(
     List<Map<String, dynamic>> items, {
     ImportProgressCallback? onProgress,
@@ -1123,9 +1053,8 @@ class ImportService {
     }
   }
 
-  /// AniList resolves its ids in one batched query; every other provider only
-  /// answers per id, so they go one by one. Shared by manga and anime, whose
-  /// progress accounting and rate-limit reporting must not drift apart.
+  /// AniList ids resolve in one batched query, all other providers per id.
+  /// Shared by manga and anime so progress/rate-limit reporting can't drift.
   Future<List<T>> _fetchByRefs<T>(
     List<_MediaRef> refs, {
     required ImportStage stage,
@@ -1250,9 +1179,8 @@ class ImportService {
   }
 
   Future<Book?> _fetchOneBook(_MediaRef ref) async {
-    // Every book provider is keyed by its own string id; external_id is
-    // derived from it and can't be turned back, so files written before
-    // native_id existed leave their books unresolved.
+    // external_id derives from the provider's string id and can't be turned
+    // back, so files predating native_id leave their books unresolved.
     final String? nativeId = ref.nativeId;
     if (nativeId == null) return null;
 
@@ -1305,10 +1233,8 @@ class ImportService {
       final ImageType? imageType = _imageTypeFromFolder(folder);
       if (imageType == null) continue;
 
-      // Backward-compat: legacy backups stored manga / anime covers under the
-      // bare numeric id before those media went source-namespaced. Legacy rows
-      // were always AniList, so remap to keep the cover instead of forcing a
-      // network re-download. New backups already carry the source prefix.
+      // Legacy backups stored manga/anime covers under the bare numeric id;
+      // those rows were always AniList, so remap instead of re-downloading.
       if ((imageType == ImageType.mangaCover ||
               imageType == ImageType.animeCover) &&
           int.tryParse(imageId) != null) {
@@ -1467,15 +1393,14 @@ class ImportService {
     await _database.itemMarkDao.insertMarks(marks);
   }
 
-  /// Restores watch marks nested under the item's `_watched_episodes` key,
-  /// re-scoped to the target collection. Older exports lack the key; rows
-  /// already marked stay untouched (insert is conflict-ignoring).
+  /// Restores watch marks under `_watched_episodes`, re-scoped to the target
+  /// collection; already-marked rows stay (insert is conflict-ignoring).
   Future<void> _importWatchedEpisodes(
     Map<String, dynamic> itemData,
     int collectionId,
     CollectionItem parsed,
   ) async {
-    if (!parsed.mediaType.isTvBacked) return;
+    if (!parsed.usesEpisodeTracker) return;
     final List<dynamic>? raw =
         itemData['_watched_episodes'] as List<dynamic>?;
     if (raw == null || raw.isEmpty) return;
@@ -1556,10 +1481,8 @@ class ImportService {
     }
   }
 
-  /// Restores tags into the global set: names resolve case-insensitively to
-  /// existing global tags, missing ones are created with the exported colors.
-  /// Accepts both the multi-tag `tag_names` array and the legacy single
-  /// `tag_name` string on items.
+  /// Restores tags globally: names resolve case-insensitively, missing ones
+  /// are created. Accepts `tag_names` arrays and the legacy `tag_name` string.
   Future<void> _importTags(
     List<Map<String, dynamic>> tagsData,
     List<Map<String, dynamic>> exportedItems,
@@ -1626,10 +1549,8 @@ class ImportService {
     }
   }
 
-  /// Keys an imported item is filed under so tier-list and tag entries can
-  /// find it. `exact` qualifies by provider, without which an AniList and a
-  /// Kitsu title sharing a numeric id collapse onto one item; `shared` keys
-  /// stay for legacy exports whose entries carry no source.
+  /// Keys an item is filed under for tier-list/tag lookup: `exact` qualifies
+  /// by provider (ids collide across providers), `shared` serves legacy exports.
   static ({List<String> exact, List<String> shared}) _itemMappingKeys({
     required String mediaType,
     required int externalId,
@@ -1744,9 +1665,8 @@ class ImportService {
   }
 }
 
-/// One item's media reference from an export file. [nativeId] is the
-/// provider's own string id, carried by light exports for sources whose API
-/// can't be reached with the numeric [externalId].
+/// One item's media reference from an export file; [nativeId] is the
+/// provider's own string id for APIs unreachable via the numeric [externalId].
 class _MediaRef {
   const _MediaRef({
     required this.externalId,

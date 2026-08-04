@@ -1,376 +1,601 @@
+import 'package:core/models/media_type.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tonkatsu_box/features/search/models/common_filter.dart';
+import 'package:tonkatsu_box/features/search/models/search_source.dart';
 import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
-import 'package:tonkatsu_box/features/search/sources/tmdb_movies_source.dart';
+import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+
+/// Shared pick that only AniList and MangaDex can answer, standing in for a
+/// value MangaBaka and Kitsu do not have (e.g. "cancelled").
+CommonSelection _partialStatus() => const CommonSelection(
+      semantic: FilterSemantic.statusCancelled,
+      targets: <String, CommonFilterTarget>{
+        'manga': (filterKey: 'status', value: 'CANCELLED'),
+        'mangadex': (filterKey: 'status', value: 'cancelled'),
+      },
+    );
 
 void main() {
   group('BrowseSettingsKeys', () {
-    test('sourceId constant value', () {
+    test('keeps the legacy key so pre-0.41 installs can be migrated', () {
       expect(BrowseSettingsKeys.sourceId, 'browse_source_id');
+      expect(BrowseSettingsKeys.mediaType, 'browse_media_type');
     });
   });
 
   group('BrowseState', () {
-    group('constructor', () {
-      test('creates with default values', () {
-        const BrowseState state = BrowseState(sourceId: 'movies');
+    test('defaults to every source of the type being active', () {
+      const BrowseState state = BrowseState(mediaType: MediaType.manga);
 
-        expect(state.sourceId, 'movies');
-        expect(state.filterValues, isEmpty);
-        expect(state.sortBy, isNull);
-        expect(state.items, isEmpty);
-        expect(state.isLoading, isFalse);
-        expect(state.isLoadingMore, isFalse);
-        expect(state.currentPage, 1);
-        expect(state.hasMore, isFalse);
-        expect(state.error, isNull);
-        expect(state.searchQuery, isEmpty);
-      });
-
-      test('creates with all fields', () {
-        const BrowseState state = BrowseState(
-          sourceId: 'games',
-          filterValues: <String, Object?>{'genre': 12},
-          sortBy: 'rating desc',
-          items: <Object>['a', 'b'],
-          isLoading: true,
-          isLoadingMore: true,
-          currentPage: 3,
-          hasMore: true,
-          error: 'fail',
-          searchQuery: 'zelda',
-        );
-
-        expect(state.sourceId, 'games');
-        expect(state.filterValues, <String, Object?>{'genre': 12});
-        expect(state.sortBy, 'rating desc');
-        expect(state.items, hasLength(2));
-        expect(state.isLoading, isTrue);
-        expect(state.isLoadingMore, isTrue);
-        expect(state.currentPage, 3);
-        expect(state.hasMore, isTrue);
-        expect(state.error, 'fail');
-        expect(state.searchQuery, 'zelda');
-      });
+      expect(state.sources, hasLength(4));
+      expect(state.activeSources, hasLength(4));
+      expect(state.disabledSourceIds, isEmpty);
+      expect(state.hasFilters, isFalse);
+      expect(state.hasActiveQuery, isFalse);
+      expect(state.items, isEmpty);
+      expect(state.isEmpty, isTrue);
     });
 
-    group('hasFilters', () {
-      test('returns false for empty filterValues', () {
-        const BrowseState state = BrowseState(sourceId: 'movies');
-        expect(state.hasFilters, isFalse);
-      });
+    test('a disabled source drops out of activeSources', () {
+      const BrowseState state = BrowseState(
+        mediaType: MediaType.manga,
+        disabledSourceIds: <String>{'mangadex'},
+      );
 
-      test('returns false when all values are null', () {
-        const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          filterValues: <String, Object?>{'genre': null, 'year': null},
-        );
-        expect(state.hasFilters, isFalse);
-      });
+      expect(
+        state.activeSources.map((SearchSource s) => s.id),
+        isNot(contains('mangadex')),
+      );
+      expect(state.activeSources, hasLength(3));
+    });
 
-      test('returns true when at least one value is not null', () {
+    group('own filters narrow the query to their owner', () {
+      test('one owner leaves only that source', () {
         const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          filterValues: <String, Object?>{'genre': 28, 'year': null},
+          mediaType: MediaType.manga,
+          ownFilterValues: <String, Map<String, Object?>>{
+            'mangadex': <String, Object?>{'publicationDemographic': 'seinen'},
+          },
         );
+
+        expect(state.ownFilterOwners, <String>{'mangadex'});
+        expect(state.activeSources.map((SearchSource s) => s.id), <String>[
+          'mangadex',
+        ]);
         expect(state.hasFilters, isTrue);
       });
 
-      test('returns true when all values are not null', () {
+      test('an empty multi-select value does not count as set', () {
         const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          filterValues: <String, Object?>{'genre': 28, 'year': 2024},
+          mediaType: MediaType.manga,
+          ownFilterValues: <String, Map<String, Object?>>{
+            'mangadex': <String, Object?>{'tag': <Object>[]},
+          },
         );
-        expect(state.hasFilters, isTrue);
+
+        expect(state.ownFilterOwners, isEmpty);
+        expect(state.activeSources, hasLength(4));
+        expect(state.hasFilters, isFalse);
       });
     });
 
-    group('hasSearchQuery', () {
-      test('returns false for empty query', () {
-        const BrowseState state = BrowseState(sourceId: 'movies');
-        expect(state.hasSearchQuery, isFalse);
+    group('shared filters', () {
+      test('sources without the picked value drop out and are reported', () {
+        final BrowseState state = BrowseState(
+          mediaType: MediaType.manga,
+          commonSelections: <String, CommonSelection>{
+            'status': _partialStatus(),
+          },
+        );
+
+        expect(
+          state.activeSources.map((SearchSource s) => s.id).toSet(),
+          <String>{'manga', 'mangadex'},
+        );
+        expect(state.unsupportedSourceIds, <String>{'mangabaka', 'kitsu_manga'});
+        expect(state.hasFilters, isTrue);
       });
 
-      test('returns false for single character query', () {
+      test('each source gets the value spelled its own way', () {
+        final BrowseState state = BrowseState(
+          mediaType: MediaType.manga,
+          commonSelections: <String, CommonSelection>{
+            'status': _partialStatus(),
+          },
+        );
+
+        expect(state.filterValuesFor('manga'), <String, Object?>{
+          'status': 'CANCELLED',
+        });
+        expect(state.filterValuesFor('mangadex'), <String, Object?>{
+          'status': 'cancelled',
+        });
+        // Cannot answer it, so it gets nothing rather than a wrong value.
+        expect(state.filterValuesFor('mangabaka'), isEmpty);
+      });
+
+      test('a shared pick merges with the source\'s own filters', () {
+        final BrowseState state = BrowseState(
+          mediaType: MediaType.manga,
+          ownFilterValues: <String, Map<String, Object?>>{
+            'mangadex': <String, Object?>{'publicationDemographic': 'seinen'},
+          },
+          commonSelections: <String, CommonSelection>{
+            'status': _partialStatus(),
+          },
+        );
+
+        expect(state.filterValuesFor('mangadex'), <String, Object?>{
+          'publicationDemographic': 'seinen',
+          'status': 'cancelled',
+        });
+      });
+    });
+
+    group('query state', () {
+      test('a query under two characters is not active', () {
         const BrowseState state = BrowseState(
-          sourceId: 'movies',
+          mediaType: MediaType.manga,
           searchQuery: 'a',
         );
+
         expect(state.hasSearchQuery, isFalse);
-      });
-
-      test('returns true for query with 2+ characters', () {
-        const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          searchQuery: 'ab',
-        );
-        expect(state.hasSearchQuery, isTrue);
-      });
-
-      test('returns false for whitespace-only query', () {
-        const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          searchQuery: '  ',
-        );
-        expect(state.hasSearchQuery, isFalse);
-      });
-    });
-
-    group('hasActiveQuery', () {
-      test('returns false when no query and no filters', () {
-        const BrowseState state = BrowseState(sourceId: 'movies');
         expect(state.hasActiveQuery, isFalse);
       });
 
-      test('returns true when has search query', () {
+      test('two characters or more counts', () {
         const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          searchQuery: 'zelda',
+          mediaType: MediaType.manga,
+          searchQuery: 'ab',
         );
-        expect(state.hasActiveQuery, isTrue);
-      });
 
-      test('returns true when has filters', () {
-        const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          filterValues: <String, Object?>{'genre': 28},
-        );
-        expect(state.hasActiveQuery, isTrue);
-      });
-
-      test('returns true when has both', () {
-        const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          searchQuery: 'zelda',
-          filterValues: <String, Object?>{'genre': 28},
-        );
+        expect(state.hasSearchQuery, isTrue);
         expect(state.hasActiveQuery, isTrue);
       });
     });
 
-    group('isEmpty', () {
-      test('returns true when items empty and not loading', () {
-        const BrowseState state = BrowseState(sourceId: 'movies');
-        expect(state.isEmpty, isTrue);
+    test('items are flattened in active-source order', () {
+      const BrowseState state = BrowseState(
+        mediaType: MediaType.manga,
+        itemsBySource: <String, List<Object>>{
+          'mangadex': <Object>['d1', 'd2'],
+          'manga': <Object>['a1'],
+        },
+      );
+
+      // Registration order, not insertion order of the map.
+      expect(state.items, <Object>['a1', 'd1', 'd2']);
+    });
+
+    test('items of a disabled source are not shown', () {
+      const BrowseState state = BrowseState(
+        mediaType: MediaType.manga,
+        disabledSourceIds: <String>{'mangadex'},
+        itemsBySource: <String, List<Object>>{
+          'mangadex': <Object>['d1'],
+          'manga': <Object>['a1'],
+        },
+      );
+
+      expect(state.items, <Object>['a1']);
+    });
+
+    group('sorting', () {
+      test('is offered only while a single source answers', () {
+        const BrowseState many = BrowseState(mediaType: MediaType.manga);
+        expect(many.canSort, isFalse);
+
+        const BrowseState one = BrowseState(mediaType: MediaType.game);
+        expect(one.canSort, isTrue);
       });
 
-      test('returns false when items not empty', () {
+      test('a picked value is ignored while several sources answer', () {
         const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          items: <Object>['item'],
+          mediaType: MediaType.manga,
+          sortBy: 'SCORE_DESC',
         );
-        expect(state.isEmpty, isFalse);
+
+        final SearchSource first = state.sources.first;
+        expect(state.sortByFor(first), first.defaultSort.apiValue);
       });
 
-      test('returns false when loading', () {
+      test('speaks the vocabulary of the source it applies to', () {
+        final BrowseState state = BrowseState(
+          mediaType: MediaType.manga,
+          disabledSourceIds: <String>{
+            for (final SearchSource s in searchSourcesFor(MediaType.manga))
+              if (s.id != 'mangadex') s.id,
+          },
+        );
+
+        // Not AniList's, even though AniList is the type's primary source.
+        expect(state.sortSource?.id, 'mangadex');
+        expect(state.effectiveSortBy, 'relevance');
+      });
+
+      test('is off while the source ignores sort on a search response', () {
+        const BrowseState browsing = BrowseState(mediaType: MediaType.movie);
+        const BrowseState searching = BrowseState(
+          mediaType: MediaType.movie,
+          searchQuery: 'dune',
+        );
+
+        expect(browsing.canSort, isTrue);
+        expect(searching.isSingleSource, isTrue);
+        expect(searching.sortIgnoredDuringSearch, isTrue);
+        expect(searching.canSort, isFalse);
+      });
+
+      test('stays on for a source that does sort search results', () {
+        final BrowseState state = BrowseState(
+          mediaType: MediaType.manga,
+          searchQuery: 'berserk',
+          disabledSourceIds: <String>{
+            for (final SearchSource s in searchSourcesFor(MediaType.manga))
+              if (s.id != 'manga') s.id,
+          },
+        );
+
+        expect(state.sortIgnoredDuringSearch, isFalse);
+        expect(state.canSort, isTrue);
+      });
+
+      test('a picked value applies once narrowed to one source', () {
+        final BrowseState state = BrowseState(
+          mediaType: MediaType.manga,
+          sortBy: 'SCORE_DESC',
+          disabledSourceIds: <String>{
+            for (final SearchSource s in searchSourcesFor(MediaType.manga))
+              if (s.id != 'manga') s.id,
+          },
+        );
+
+        expect(state.canSort, isTrue);
+        expect(state.effectiveSortBy, 'SCORE_DESC');
+      });
+    });
+
+    group('loading', () {
+      test('is reported per source, not as one flag', () {
         const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          isLoading: true,
+          mediaType: MediaType.manga,
+          loadingSourceIds: <String>{'kitsu_manga'},
+          itemsBySource: <String, List<Object>>{
+            'manga': <Object>['a'],
+          },
         );
-        expect(state.isEmpty, isFalse);
+
+        expect(state.isSourceLoading('kitsu_manga'), isTrue);
+        // Already answered, so it must not shimmer while Kitsu is pending.
+        expect(state.isSourceLoading('manga'), isFalse);
+        expect(state.isLoading, isTrue);
+      });
+
+      test('nothing pending means nothing is loading', () {
+        const BrowseState state = BrowseState(mediaType: MediaType.manga);
+
+        expect(state.isLoading, isFalse);
+        expect(state.isSourceLoading('manga'), isFalse);
       });
     });
 
-    group('source', () {
-      test('returns TmdbMoviesSource for "movies"', () {
-        const BrowseState state = BrowseState(sourceId: 'movies');
-        expect(state.source, isA<TmdbMoviesSource>());
+    group('filter counts', () {
+      test('count only values that are actually set', () {
+        final BrowseState state = BrowseState(
+          mediaType: MediaType.manga,
+          ownFilterValues: const <String, Map<String, Object?>>{
+            'mangadex': <String, Object?>{
+              'publicationDemographic': 'seinen',
+              'tag': <Object>[],
+              'contentRating': null,
+            },
+            'manga': <String, Object?>{'year': 1989},
+          },
+          commonSelections: <String, CommonSelection>{
+            'status': _partialStatus(),
+          },
+        );
+
+        expect(state.ownFilterCount, 2);
+        expect(state.activeFilterCount, 3);
       });
 
-      test('returns default source for unknown id', () {
-        const BrowseState state = BrowseState(sourceId: 'unknown');
-        // getSearchSourceById returns first source for unknown
-        expect(state.source.id, 'movies');
+      test('are zero with nothing picked', () {
+        const BrowseState state = BrowseState(mediaType: MediaType.manga);
+
+        expect(state.ownFilterCount, 0);
+        expect(state.activeFilterCount, 0);
       });
     });
 
-    group('effectiveSortBy', () {
-      test('returns sortBy when set', () {
-        const BrowseState state = BrowseState(
-          sourceId: 'movies',
-          sortBy: 'custom_sort',
-        );
-        expect(state.effectiveSortBy, 'custom_sort');
-      });
+    test('books cannot browse on filters alone', () {
+      const BrowseState books = BrowseState(mediaType: MediaType.book);
+      const BrowseState manga = BrowseState(mediaType: MediaType.manga);
 
-      test('returns default sort when sortBy is null', () {
-        const BrowseState state = BrowseState(sourceId: 'movies');
-        // TmdbMoviesSource defaultSort is 'popularity.desc'
-        expect(state.effectiveSortBy, 'popularity.desc');
-      });
+      expect(books.textQueryOnly, isTrue);
+      expect(manga.textQueryOnly, isFalse);
     });
 
-    group('copyWith', () {
-      test('copies all fields when specified', () {
-        const BrowseState original = BrowseState(sourceId: 'movies');
+    test('copyWith clears the sort value on request', () {
+      const BrowseState state = BrowseState(
+        mediaType: MediaType.manga,
+        sortBy: 'SCORE_DESC',
+      );
 
-        final BrowseState copied = original.copyWith(
-          sourceId: 'games',
-          filterValues: const <String, Object?>{'key': 'val'},
-          sortBy: 'rating',
-          items: const <Object>['x'],
-          isLoading: true,
-          isLoadingMore: true,
-          currentPage: 5,
-          hasMore: true,
-          error: 'err',
-          searchQuery: 'query',
-        );
+      expect(state.copyWith(clearSortBy: true).sortBy, isNull);
+      expect(state.copyWith().sortBy, 'SCORE_DESC');
+    });
+  });
 
-        expect(copied.sourceId, 'games');
-        expect(copied.filterValues, <String, Object?>{'key': 'val'});
-        expect(copied.sortBy, 'rating');
-        expect(copied.items, <Object>['x']);
-        expect(copied.isLoading, isTrue);
-        expect(copied.isLoadingMore, isTrue);
-        expect(copied.currentPage, 5);
-        expect(copied.hasMore, isTrue);
-        expect(copied.error, 'err');
-        expect(copied.searchQuery, 'query');
-      });
+  group('BrowseNotifier', () {
+    Future<ProviderContainer> containerWith(
+      Map<String, Object> initialPrefs,
+    ) async {
+      SharedPreferences.setMockInitialValues(initialPrefs);
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final ProviderContainer container = ProviderContainer(
+        overrides: <Override>[
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
 
-      test('preserves original values when not specified', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'games',
-          sortBy: 'rating',
-          isLoading: true,
-          currentPage: 3,
-          error: 'old error',
-        );
+    void seedLoaded(BrowseNotifier notifier) {
+      notifier.state = notifier.state.copyWith(
+        searchQuery: 'berserk',
+        itemsBySource: <String, List<Object>>{
+          'manga': <Object>['a'],
+          'mangadex': <Object>['d'],
+        },
+        disabledSourceIds: const <String>{'mangabaka', 'kitsu_manga'},
+      );
+      notifier.state = notifier.state.copyWith(
+        loadedSignatures: <String, String>{
+          'manga': notifier.signatureOf('manga'),
+          'mangadex': notifier.signatureOf('mangadex'),
+        },
+      );
+    }
 
-        final BrowseState copied = original.copyWith(isLoading: false);
+    test('restores the saved media type', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
 
-        expect(copied.sourceId, 'games');
-        expect(copied.sortBy, 'rating');
-        expect(copied.isLoading, isFalse);
-        expect(copied.currentPage, 3);
-        expect(copied.error, 'old error');
-      });
-
-      test('clearError sets error to null', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          error: 'some error',
-        );
-
-        final BrowseState copied = original.copyWith(clearError: true);
-
-        expect(copied.error, isNull);
-      });
-
-      test('clearError does not clear when false', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          error: 'some error',
-        );
-
-        final BrowseState copied = original.copyWith(clearError: false);
-
-        expect(copied.error, 'some error');
-      });
-
-      test('clearSortBy sets sortBy to null', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          sortBy: 'custom',
-        );
-
-        final BrowseState copied = original.copyWith(clearSortBy: true);
-
-        expect(copied.sortBy, isNull);
-      });
-
-      test('clearSortBy does not clear when false', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          sortBy: 'custom',
-        );
-
-        final BrowseState copied = original.copyWith(clearSortBy: false);
-
-        expect(copied.sortBy, 'custom');
-      });
-
-      test('new error overrides when clearError is false', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          error: 'old',
-        );
-
-        final BrowseState copied =
-            original.copyWith(error: 'new', clearError: false);
-
-        expect(copied.error, 'new');
-      });
-
-      test('new sortBy overrides when clearSortBy is false', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          sortBy: 'old',
-        );
-
-        final BrowseState copied =
-            original.copyWith(sortBy: 'new', clearSortBy: false);
-
-        expect(copied.sortBy, 'new');
-      });
-
-      test('clearSortBy takes precedence over sortBy', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          sortBy: 'old',
-        );
-
-        final BrowseState copied =
-            original.copyWith(sortBy: 'new', clearSortBy: true);
-
-        expect(copied.sortBy, isNull);
-      });
-
-      test('clearError takes precedence over error', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'movies',
-          error: 'old',
-        );
-
-        final BrowseState copied =
-            original.copyWith(error: 'new', clearError: true);
-
-        expect(copied.error, isNull);
-      });
+      expect(container.read(browseProvider).mediaType, MediaType.manga);
     });
 
-    group('setSearchQuery via copyWith', () {
-      test('updates searchQuery without changing other fields', () {
-        const BrowseState original = BrowseState(
-          sourceId: 'games',
-          filterValues: <String, Object?>{'platform': 48},
-          items: <Object>['existing'],
-        );
+    test('migrates a pre-0.41 source id to its media type', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.sourceId: 'kitsu_anime'},
+      );
 
-        final BrowseState updated = original.copyWith(searchQuery: 'mario');
+      final BrowseState state = container.read(browseProvider);
+      expect(state.mediaType, MediaType.anime);
+      // Every source of the type comes on — that is the point of the migration.
+      expect(state.activeSources, hasLength(2));
+    });
 
-        expect(updated.searchQuery, 'mario');
-        expect(updated.filterValues, <String, Object?>{'platform': 48});
-        expect(updated.items, <Object>['existing']);
-        expect(updated.sourceId, 'games');
-      });
+    test('setMediaType keeps the typed query but drops filters', () async {
+      final ProviderContainer container =
+          await containerWith(<String, Object>{});
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
 
-      test('preserves searchQuery when filter changes', () {
-        const BrowseState withQuery = BrowseState(
-          sourceId: 'games',
-          searchQuery: 'zelda',
-        );
+      // Seeded rather than set through the notifier so the test stays offline —
+      // setOwnFilter would fire a real request.
+      notifier.state = notifier.state.copyWith(
+        searchQuery: 'b',
+        ownFilterValues: const <String, Map<String, Object?>>{
+          'manga': <String, Object?>{'year': 1989},
+        },
+      );
+      notifier.setMediaType(MediaType.anime);
 
-        final BrowseState updated = withQuery.copyWith(
-          filterValues: const <String, Object?>{'platform': 48},
-          items: const <Object>[],
-          currentPage: 1,
-          hasMore: false,
-        );
+      final BrowseState state = container.read(browseProvider);
+      expect(state.mediaType, MediaType.anime);
+      expect(state.searchQuery, 'b');
+      expect(state.hasFilters, isFalse);
+    });
 
-        expect(updated.searchQuery, 'zelda');
-        expect(updated.filterValues, <String, Object?>{'platform': 48});
-      });
+    test('setSearchQuery drops the stale query when the box is emptied',
+        () async {
+      final ProviderContainer container =
+          await containerWith(<String, Object>{});
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+      notifier.state = notifier.state.copyWith(searchQuery: 'berserk');
+
+      notifier.setSearchQuery('b');
+
+      expect(container.read(browseProvider).searchQuery, isEmpty);
+      expect(container.read(browseProvider).hasSearchQuery, isFalse);
+    });
+
+    test('setSearchQuery below the threshold with no prior query is a no-op',
+        () async {
+      final ProviderContainer container =
+          await containerWith(<String, Object>{});
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+      final BrowseState before = container.read(browseProvider);
+
+      notifier.setSearchQuery('b');
+
+      expect(identical(container.read(browseProvider), before), isTrue);
+    });
+
+    test('setSource narrows to that one provider', () async {
+      final ProviderContainer container =
+          await containerWith(<String, Object>{});
+
+      container.read(browseProvider.notifier).setSource('kitsu_manga');
+
+      final BrowseState state = container.read(browseProvider);
+      expect(state.mediaType, MediaType.manga);
+      expect(state.activeSources.map((SearchSource s) => s.id), <String>[
+        'kitsu_manga',
+      ]);
+    });
+
+    test('narrowTo leaves a single source active', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+
+      await container.read(browseProvider.notifier).narrowTo('mangadex');
+
+      expect(
+        container.read(browseProvider).activeSources.map(
+              (SearchSource s) => s.id,
+            ),
+        <String>['mangadex'],
+      );
+    });
+
+    test('the last enabled source cannot be switched off', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      await notifier.narrowTo('mangadex');
+      await notifier.toggleSource('mangadex');
+
+      expect(container.read(browseProvider).activeSources, hasLength(1));
+    });
+
+    test('a sort value never leaks into another provider\'s request', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      await notifier.narrowTo('manga');
+      await notifier.setSort('SCORE_DESC');
+      await notifier.toggleSource('mangadex');
+
+      final BrowseState state = container.read(browseProvider);
+      final SearchSource anilist =
+          state.sources.firstWhere((SearchSource s) => s.id == 'manga');
+      final SearchSource mangadex =
+          state.sources.firstWhere((SearchSource s) => s.id == 'mangadex');
+
+      expect(state.sortByFor(anilist), 'SCORE_DESC');
+      expect(state.sortByFor(mangadex), mangadex.defaultSort.apiValue);
+    });
+
+    test('clearing filters drops the marks of a discarded request', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      // Stand in for a request in flight with no query left to re-run it.
+      notifier.state = notifier.state.copyWith(
+        loadingSourceIds: const <String>{'kitsu_manga'},
+      );
+      notifier.clearFilters();
+
+      // Otherwise that source shimmers forever — nothing will ever answer it.
+      expect(container.read(browseProvider).isLoading, isFalse);
+    });
+
+    test('clearing the search drops the marks of a discarded request', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      notifier.state = notifier.state.copyWith(
+        searchQuery: 'berserk',
+        loadingSourceIds: const <String>{'kitsu_manga'},
+      );
+      notifier.clearSearch();
+
+      expect(container.read(browseProvider).isLoading, isFalse);
+    });
+
+    test('clearing filters resets a load-more left in flight', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      // Stand in for a page-2 request whose completion the generation bump
+      // will discard — the flag must not stay up or loadMore is blocked.
+      notifier.state = notifier.state.copyWith(isLoadingMore: true);
+      notifier.clearFilters();
+
+      expect(container.read(browseProvider).isLoadingMore, isFalse);
+    });
+
+    test('clearing the search resets a load-more left in flight', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      notifier.state = notifier.state.copyWith(
+        searchQuery: 'berserk',
+        isLoadingMore: true,
+      );
+      notifier.clearSearch();
+
+      expect(container.read(browseProvider).isLoadingMore, isFalse);
+    });
+
+    test('setSort is refused when the source ignores sort on search', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'movie'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      notifier.state = notifier.state.copyWith(searchQuery: 'dune');
+      await notifier.setSort('vote_average.desc');
+
+      // Rejected rather than sent to an endpoint that would ignore it.
+      expect(container.read(browseProvider).sortBy, isNull);
+      expect(container.read(browseProvider).sortSourceId, isNull);
+    });
+
+    test('hiding a provider keeps its results and asks nobody', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      // Stand in for a query that already produced results for two providers.
+      seedLoaded(notifier);
+
+      await notifier.toggleSource('mangadex');
+
+      final BrowseState hidden = container.read(browseProvider);
+      expect(hidden.items, <Object>['a']);
+      // Kept, so switching it back on needs no request.
+      expect(hidden.itemsBySource['mangadex'], <Object>['d']);
+      expect(hidden.isLoading, isFalse);
+
+      await notifier.toggleSource('mangadex');
+      final BrowseState shown = container.read(browseProvider);
+      expect(shown.items, <Object>['a', 'd']);
+      expect(shown.isLoading, isFalse);
+    });
+
+    test('narrowing to one provider and back asks nobody', () async {
+      final ProviderContainer container = await containerWith(
+        <String, Object>{BrowseSettingsKeys.mediaType: 'manga'},
+      );
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+
+      seedLoaded(notifier);
+
+      await notifier.narrowTo('mangadex');
+
+      expect(container.read(browseProvider).items, <Object>['d']);
+      expect(container.read(browseProvider).isLoading, isFalse);
     });
   });
 }

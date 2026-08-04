@@ -1,13 +1,13 @@
 import 'dart:convert';
 
+import 'package:core/models/kodi_application_info.dart';
+import 'package:core/models/kodi_episode.dart';
+import 'package:core/models/kodi_movie.dart';
+import 'package:core/models/kodi_tv_show.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/kodi_api.dart';
-import 'package:tonkatsu_box/shared/models/kodi_application_info.dart';
-import 'package:tonkatsu_box/shared/models/kodi_episode.dart';
-import 'package:tonkatsu_box/shared/models/kodi_movie.dart';
-import 'package:tonkatsu_box/shared/models/kodi_tv_show.dart';
 
 import '../../helpers/test_helpers.dart';
 

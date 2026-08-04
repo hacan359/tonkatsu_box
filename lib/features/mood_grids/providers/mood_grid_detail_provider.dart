@@ -1,11 +1,11 @@
+import 'package:core/database/dao/mood_grid_dao.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/mood_grid.dart';
+import 'package:core/models/mood_grid_cell.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/dao/mood_grid_dao.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/mood_grid.dart';
-import '../../../shared/models/mood_grid_cell.dart';
 import '../services/mood_grid_caption.dart';
 import '../widgets/mood_grid_cell_media.dart';
 import 'mood_grids_provider.dart';

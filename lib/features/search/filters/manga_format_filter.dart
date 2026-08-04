@@ -14,6 +14,10 @@ class MangaFormatFilter extends SearchFilter {
   String placeholder(S l) => l.format;
 
   @override
+  FilterSemanticFamily? get semanticFamily =>
+      FilterSemanticFamily.format;
+
+  @override
   FilterOption get allOption => const FilterOption(
         id: 'any',
         label: 'All',
@@ -27,16 +31,19 @@ class MangaFormatFilter extends SearchFilter {
         id: 'manga',
         label: l.mediaTypeManga,
         value: 'MANGA',
+        semantic: FilterSemantic.typeManga,
       ),
       FilterOption(
         id: 'novel',
         label: l.mangaFormatNovel,
         value: 'NOVEL',
+        semantic: FilterSemantic.typeNovel,
       ),
       FilterOption(
         id: 'one_shot',
         label: l.mangaFormatOneShot,
         value: 'ONE_SHOT',
+        semantic: FilterSemantic.typeOneShot,
       ),
     ];
   }

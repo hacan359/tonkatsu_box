@@ -1,7 +1,7 @@
 
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 
-import '../models/media_type.dart';
 import '../theme/app_colors.dart';
 
 /// Colors and icons that visually distinguish media types.
@@ -48,6 +48,18 @@ abstract final class MediaTypeTheme {
         MediaType.book => Icons.menu_book,
         MediaType.custom => Icons.dashboard_customize,
       };
+
+  /// Accents ordered around the colour wheel, first repeated at the end to
+  /// close a [SweepGradient]. Sorted by hue so a new type places itself.
+  static final List<Color> rainbowSweep = () {
+    final List<Color> colors = MediaType.values.map(colorFor).toList()
+      ..sort(
+        (Color a, Color b) => HSVColor.fromColor(a)
+            .hue
+            .compareTo(HSVColor.fromColor(b).hue),
+      );
+    return List<Color>.unmodifiable(<Color>[...colors, colors.first]);
+  }();
 
   static Color colorFor(MediaType type) => switch (type) {
         MediaType.game => gameColor,

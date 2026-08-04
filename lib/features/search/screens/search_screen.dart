@@ -1,5 +1,11 @@
 import 'dart:async';
 
+import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,12 +13,6 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/movie.dart';
-import '../../../shared/models/platform.dart';
-import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -20,11 +20,16 @@ import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../handlers/media_handlers.dart';
 import '../providers/browse_provider.dart';
+import '../providers/discover_provider.dart';
 import '../widgets/browse_grid.dart';
+import '../widgets/browse_sections.dart';
+import '../widgets/browse_sections_compact.dart';
 import '../widgets/collection_chips_row.dart';
 import '../widgets/discover_customize_sheet.dart';
 import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
+import '../widgets/source_chips_row.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/platform_ui.dart';
 
 /// Search and browse screen — two modes: Browse (filter bar + Discover/Grid)
@@ -224,8 +229,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   void _onItemTap(Object item, MediaType mediaType) {
-    final String sourceId = ref.read(browseProvider).sourceId;
-    _handlers.onTap(context, item, mediaType, sourceId: sourceId);
+    final BrowseState state = ref.read(browseProvider);
+    // A source-specific handler override only makes sense while one provider
+    // answers; with several, the item's own model carries its source.
+    _handlers.onTap(
+      context,
+      item,
+      mediaType,
+      sourceId: state.isSingleSource ? state.activeSources.first.id : null,
+    );
   }
 
   void _showDiscoverCustomizeSheet() {
@@ -239,7 +251,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         maxHeight: screenSize.height * 0.85,
       ),
       builder: (BuildContext _) => DiscoverCustomizeSheet(
-        sourceId: ref.read(browseProvider).sourceId,
+        mediaType: ref.read(browseProvider).mediaType,
       ),
     );
   }
@@ -258,6 +270,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           onBeforeFilterChange: _syncSearchText,
           onDiscoverCustomize: _showDiscoverCustomizeSheet,
         ),
+        if (!isCompactScreen(context)) const SourceChipsRow(),
         const CollectionChipsRow(),
         const SizedBox(height: AppSpacing.xs),
         Expanded(child: _buildContent(browseState)),
@@ -269,11 +282,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   Widget _buildContent(BrowseState browseState) {
     if (!browseState.hasActiveQuery) {
-      final String sourceId = browseState.sourceId;
-      if (sourceId == 'movies' || sourceId == 'tv' || sourceId == 'anime') {
-        final MediaType outputMediaType = browseState.source.outputMediaType;
+      if (discoverMediaTypes.contains(browseState.mediaType)) {
+        final MediaType outputMediaType = browseState.mediaType;
         return DiscoverFeed(
-          sourceId: sourceId,
+          mediaType: outputMediaType,
           onAddMovie: (Movie movie) => _handlers.addToAnyCollection(
             context,
             movie,
@@ -289,10 +301,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       return _buildEmptyFilterState();
     }
 
-    return BrowseGrid(
+    // One provider answering means one honest order, so the flat grid stays.
+    // Several answer per source instead — see the ADR in the layout widgets.
+    if (browseState.activeSources.length <= 1) {
+      return BrowseGrid(
+        onItemTap: _onItemTap,
+        onOpenInCollection: _openItemInCollection,
+        platformMap: _platformMap,
+      );
+    }
+
+    if (isCompactScreen(context)) {
+      return BrowseSectionsCompact(
+        onItemTap: _onItemTap,
+        onOpenInCollection: _openItemInCollection,
+        platformMap: _platformMap,
+      );
+    }
+
+    return BrowseSections(
       onItemTap: _onItemTap,
       onOpenInCollection: _openItemInCollection,
-      clientFilter: '',
       platformMap: _platformMap,
     );
   }

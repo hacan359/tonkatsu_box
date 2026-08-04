@@ -1,9 +1,9 @@
+import 'package:core/models/game.dart';
+import 'package:core/models/search_sort.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/game_repository.dart';
-import '../../../shared/models/game.dart';
-import '../../../shared/models/search_sort.dart';
 
 const int _gamePageSize = 50;
 

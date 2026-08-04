@@ -1,3 +1,4 @@
+import 'package:core/models/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +8,6 @@ import '../../../core/logging/startup_error.dart';
 import '../../../features/settings/providers/profile_provider.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/welcome/screens/welcome_screen.dart';
-import '../../../shared/models/profile.dart';
 import 'profile_picker_screen.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/app_shell.dart';

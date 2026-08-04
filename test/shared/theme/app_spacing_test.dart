@@ -1,5 +1,7 @@
+import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/theme/app_spacing.dart';
+import 'package:tonkatsu_box/shared/theme/app_typography.dart';
 
 void main() {
   group('AppSpacing', () {
@@ -86,6 +88,92 @@ void main() {
       test('результат ограничен диапазоном 2..8', () {
         expect(AppSpacing.scaledColumns(3, 10.0), equals(2));
         expect(AppSpacing.scaledColumns(8, 0.1), equals(8));
+      });
+    });
+
+    group('cardTitleBlockHeight', () {
+      test('должен складывать отступ и высоту текстового блока', () {
+        expect(
+          AppSpacing.cardTitleBlockHeight(
+            compact: false,
+            textScaler: TextScaler.noScaling,
+          ),
+          equals(
+            AppSpacing.cardTitleBlockGap(compact: false) +
+                AppTypography.posterTextBlockHeight(
+                  compact: false,
+                  textScaler: TextScaler.noScaling,
+                ),
+          ),
+        );
+      });
+
+      test('компактная карточка ниже обычной', () {
+        expect(
+          AppSpacing.cardTitleBlockHeight(
+            compact: true,
+            textScaler: TextScaler.noScaling,
+          ),
+          lessThan(
+            AppSpacing.cardTitleBlockHeight(
+              compact: false,
+              textScaler: TextScaler.noScaling,
+            ),
+          ),
+        );
+      });
+
+      test('должен расти вместе с системным масштабом шрифта', () {
+        expect(
+          AppSpacing.cardTitleBlockHeight(
+            compact: false,
+            textScaler: const TextScaler.linear(2),
+          ),
+          greaterThan(
+            AppSpacing.cardTitleBlockHeight(
+              compact: false,
+              textScaler: TextScaler.noScaling,
+            ),
+          ),
+        );
+      });
+    });
+
+    group('posterRowHeight', () {
+      test('должен складывать постер 2:3, блок названия и паддинги списка', () {
+        expect(
+          AppSpacing.posterRowHeight(
+            posterWidth: 130,
+            compact: false,
+            textScaler: TextScaler.noScaling,
+          ),
+          closeTo(
+            130 / AppSpacing.posterAspectRatio +
+                AppSpacing.cardTitleBlockHeight(
+                  compact: false,
+                  textScaler: TextScaler.noScaling,
+                ) +
+                2 * AppSpacing.posterRowVerticalPadding,
+            0.001,
+          ),
+        );
+      });
+
+      test('более широкий постер даёт более высокий ряд', () {
+        expect(
+          AppSpacing.posterRowHeight(
+            posterWidth: 130,
+            compact: false,
+            textScaler: TextScaler.noScaling,
+          ),
+          greaterThan(
+            AppSpacing.posterRowHeight(
+              posterWidth: 100,
+              compact: false,
+              textScaler: TextScaler.noScaling,
+            ),
+          ),
+        );
       });
     });
   });

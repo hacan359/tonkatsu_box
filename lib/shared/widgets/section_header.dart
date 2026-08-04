@@ -1,4 +1,3 @@
-// Заголовок секции с опциональным действием.
 
 import 'package:flutter/material.dart';
 
@@ -13,7 +12,6 @@ import '../theme/app_typography.dart';
 ///
 /// Если [actionLabel] и [onAction] заданы — показывает текстовую кнопку справа.
 class SectionHeader extends StatelessWidget {
-  /// Создаёт [SectionHeader].
   const SectionHeader({
     required this.title,
     this.actionLabel,
@@ -21,13 +19,11 @@ class SectionHeader extends StatelessWidget {
     super.key,
   });
 
-  /// Текст заголовка.
   final String title;
 
   /// Текст кнопки действия (например, "See all", "Sort").
   final String? actionLabel;
 
-  /// Callback при нажатии на кнопку действия.
   final VoidCallback? onAction;
 
   @override

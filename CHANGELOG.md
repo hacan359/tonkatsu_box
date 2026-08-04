@@ -7,6 +7,622 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Source logo on poster cards, linking to the item's page**
+
+  Every card in a collection, in search results and in the recommendation and
+  discover rows now opens its meta line with the logo of the source the entry
+  came from — AniList, MangaDex, IGDB, TMDB and the rest — so it is clear at a
+  glance where a title is tracked. Clicking the logo opens that title's page on
+  the source in a browser; entries without a link (local and custom items) keep
+  the logo as a plain marker. Hovering it shows the source name. The bundled
+  brand logos were also trimmed of their empty margins and brought to one
+  256×256 canvas, so they read at the small sizes a card uses.
+
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.source,
+    MediaPosterCard.onSourceTap, _MediaPosterCardState._buildSubtitleRow,
+    _MediaPosterCardState._buildMetaText, _SourceLogoLink): New. The logo sits
+    in a Row beside the meta text rather than in a WidgetSpan, which would grow
+    the text line past the title block's fixed height.
+  * lib/shared/utils/url_launch.dart (openUrlCallback): New. Returns a tap
+    handler, or null when the item has no external page.
+  * lib/features/recommendations/providers/recommendations_provider.dart
+    (RecommendedItem.externalUrl): New getter resolving the page of the
+    underlying Movie / TvShow.
+  * lib/features/search/widgets/discover_row.dart (DiscoverItem.externalUrl),
+    lib/features/collections/widgets/recommendations_section.dart
+    (_RecItem.source, _RecItem.externalUrl): New fields carrying the link to
+    the card.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView), lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState), lib/features/search/widgets/browse_grid.dart
+    (_BrowseGridState._buildCard),
+    lib/features/collections/widgets/manga_similars_section.dart (_MangaRow),
+    lib/features/search/widgets/discover_feed.dart (DiscoverFeed),
+    lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget), lib/shared/widgets/book_carousel.dart
+    (BookCarousel): Pass the source and its page link to every poster card.
+  * assets/images/: 24 brand logos cropped to their content and normalised to
+    a 256×256 canvas; icon_myanimelist_color.png and icon_simkl_color.png keep
+    their opaque brand background.
+  * test/shared/utils/url_launch_test.dart,
+    test/features/recommendations/recommended_item_test.dart: New.
+    test/shared/widgets/media_poster_card_test.dart,
+    test/features/search/widgets/browse_grid_test.dart: Logo rendering, tap
+    callback, inert logo without a link, and source pass-through.
+
+- **Simkl import — movies, TV shows and anime from one account**
+
+  A new import source in Settings → Import. Sign-in is a short code: the app
+  shows a 5-character PIN, you confirm it at simkl.com/pin — no password and
+  no API token to paste — and the screen shows which account got connected
+  before anything is imported, with an optional "stay connected" toggle for
+  next time. One import brings the whole Simkl library: movies, TV shows and
+  anime arrive together with statuses, ratings and notes. Episode history
+  comes over episode-by-episode with the original watch dates, so the episode
+  tracker and the card progress match Simkl right away; the progress panel
+  reports that pass title by title, since a large account takes a while.
+  Anime is matched by
+  id against the anime catalog (no title guessing) and lands with the full
+  episode tracker; Simkl's "on hold" entries arrive as planned with an
+  `on-hold` tag. The usual import controls apply — "only new" or "overwrite"
+  mode, a new or existing target collection — and anything that cannot be
+  matched is kept in the wishlist under the import tag instead of being
+  dropped.
+
+  * lib/core/api/simkl_api.dart (SimklApi, simklApiProvider): New. PIN flow
+    (requestPin, pollPin), getUserSettings, getAllItems.
+  * lib/core/api/simkl/simkl_http_client.dart (SimklHttpClient): New.
+    Transport with app-key + bearer headers, typed 412/401 handling.
+  * lib/core/api/simkl/simkl_types.dart (SimklPin, SimklUser, SimklIds,
+    SimklEntry, SimklSeason, SimklEpisodeMark, SimklAllItems,
+    SimklApiException): New.
+  * lib/core/import/sources/simkl/simkl_import_service.dart
+    (SimklImportService, SimklImportOptions, simklImportServiceProvider,
+    kSimklOnHoldTag): New. TMDB enrichment for movies/shows, Kitsu id
+    resolution for anime, per-episode marks via markEpisodesWatchedAt.
+  * lib/core/api/kitsu/kitsu_mapping_api.dart (KitsuMappingApi): New.
+    /mappings lookup by MyAnimeList / AniDB ids, batched, card included.
+  * lib/core/api/kitsu/kitsu_anime_api.dart (KitsuAnimeApi.getByIds): batched
+    filter[id] card fetch.
+  * lib/core/api/kitsu_api.dart (KitsuApi.getAnimeByIds, getAnimeByMalIds,
+    getAnimeByAnidbIds): New facade methods.
+  * lib/core/api/api_error_extract.dart (extractApiError): SimklApiException
+    case.
+  * lib/core/database/dao/tv_show_dao.dart (TvShowDao.markEpisodesWatchedAt):
+    New. Batched per-episode marks with individual timestamps, one transaction
+    per title instead of a commit per episode.
+  * lib/core/import/import_progress.dart (ImportProgress, ImportStage,
+    ImportProgressCallback): New. Moved out of core/services/import_service.dart
+    (which re-exports them) so the import layer no longer depends on the
+    collection-file importer.
+  * lib/core/import/import_writer.dart (ImportWriteResult.itemIdsByKey,
+    ImportWriteResult.idFor, ImportWriteResult.idsWhere,
+    ImportWriter.writeItems): Return the row ids the write resolved to, so an
+    adapter can tag written items without re-reading the collection.
+  * lib/core/import/sources/hardcover/hardcover_import_service.dart
+    (HardcoverImportService._applyOwnedTag): Take the owned-tag ids from the
+    write result instead of re-reading every item in the collection.
+  * lib/core/import/import_source.dart,
+    lib/core/import/sources/anilist/anilist_import_service.dart,
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart,
+    lib/core/import/sources/igdb_list/igdb_list_import_service.dart,
+    lib/core/import/sources/kinorium/kinorium_import_service.dart,
+    lib/core/import/sources/mal/mal_import_service.dart,
+    lib/core/import/sources/ra/ra_import_service.dart,
+    lib/core/import/sources/steam/steam_import_service.dart,
+    lib/core/import/sources/trakt/trakt_import_service.dart: Import the
+    progress types from the layer, not from core/services/import_service.dart.
+  * lib/features/settings/screens/simkl_import_screen.dart
+    (SimklImportScreen): New.
+  * lib/features/settings/content/simkl_import_content.dart
+    (SimklImportContent): New. PIN block with polling and expiry, connected
+    account row, remember toggles, mode/collection sections, inline progress.
+  * lib/features/settings/screens/settings_screen.dart: Simkl tile in the
+    Import group.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.simklAccessToken, simklRememberToken, simklClientId,
+    simklRememberClientId): New keys.
+  * lib/core/services/config_service.dart: Simkl keys in the config backup
+    round-trip.
+  * lib/shared/constants/api_defaults.dart (ApiDefaults.simklClientId,
+    hasSimklClientId): New.
+  * lib/shared/theme/app_assets.dart (AppAssets.iconSimklColor),
+    assets/images/icon_simkl_color.png: New icon.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb: Simkl strings.
+  * .github/workflows/release.yml: SIMKL_CLIENT_ID dart-define in both build
+    jobs.
+  * docs/ARCHITECTURE.md, lib/core/import/README.md,
+    lib/core/import/sources/simkl/README.md: Simkl on the import layer, the
+    shared progress vocabulary and the written-row ids.
+
+- **Library statistics page — "my library in numbers" — in the personalization hub**
+
+  The personalization hub (centre nav button) opens on a new statistics view,
+  next to the genre cloud and recommendations. A dropdown across from the
+  headline switches between all time and a calendar year. The hero shows the
+  item total over a cover wall, library-wide consumption counters (episodes, chapters, pages, hours
+  split into manual / tracker / runtime-estimated, average rating, replays,
+  liked episodes), then the page breaks the library down block by block:
+  per-media-type cards with a live status bar and completion percent, a
+  month-by-month activity ribbon with each month's best-rated cover and a
+  per-week drill-down dialog, best-vs-worst pairs per media type, game cards
+  per platform (game count, hours, status split, most-played covers), anime
+  and manga cards per source format (TV/OVA/Movie, manga/novel/one-shot) with
+  top-rated covers, anime/manga subgenre chip cards side by side, "me vs the
+  crowd" rating deltas, and a shareable PNG summary card. Everything is
+  computed in SQL over the local timezone — no window functions, so it runs
+  on old Android SQLite — and only the few dozen items that show covers are
+  hydrated.
+
+  The page has a phone layout of its own rather than a squeezed desktop one:
+  wide and narrow build the same sections from the same models but out of
+  separate files, so each can lay them out its own way. On a phone the hero
+  metrics form a two-column grid instead of a ragged wrap, the activity ribbon
+  loses its hover arrows and bleeds to the screen edges, gaps and card padding
+  tighten, and the platform and format cards trade their cover strips for a
+  second column. On desktop the page fills the window instead of a centred
+  1240px column, and the section grids gain columns as the window grows
+  instead of inflating their cards. Sections with no data are dropped outright
+  rather than collapsing to zero height and leaving their gap behind.
+
+  * lib/core/database/dao/stats_dao.dart (StatsDao): New. SQL aggregates:
+    getTypeStatusCounts, getGamePlatformStatusCounts, getRewatchSum,
+    getAverageRating, getEpisodeSplit, getProgressCounterSums,
+    getLikedUnitsByType, getManualMinutes, getTrackerMinutes,
+    getEstimatedMinutes, getAddedByMonth, getEpisodesByMonth,
+    getBestItemByMonth, getGamePlatformRows, getTrackerMinutesByPlatform,
+    getTopGamesByPlatform, getSourceFormatStatusCounts, getTopItemsByFormat,
+    getSourceTagCounts, getRatedItemIds, getMonthAddedByDayType,
+    getAvailableYears.
+  * lib/features/statistics/models/library_stats.dart (LibraryStats,
+    LibraryTotals, UnitsWatched, StatsHours, StatsPeriod, MonthActivity,
+    MonthDetail, PlatformStats, FormatStats, TagCount, SubgenreGroup,
+    VersusPair, RatingDelta): New pure-Dart payload models.
+  * lib/features/statistics/providers/statistics_provider.dart
+    (libraryStatsProvider, statsPeriodProvider, monthDetailProvider): New.
+    Fetches the independent aggregates in parallel batches, then hydrates
+    covers in one pass.
+  * lib/features/statistics/screens/statistics_screen.dart (StatisticsScreen,
+    _StatisticsScreenState._buildPage, _StatisticsScreenState._buildPeriodPicker):
+    New. Owns the provider, the period picker and the PNG export, and picks the
+    wide or the phone page by measured content width — a LayoutBuilder rather
+    than MediaQuery, because the nav shell makes the window width overstate the
+    room the sections get.
+  * lib/features/statistics/views/statistics_view_desktop.dart
+    (StatisticsViewDesktop), statistics_view_mobile.dart
+    (StatisticsViewMobile), stats_sections.dart (statsSectionsAfterMonths):
+    New. One file per form factor, sharing the section list that does not
+    differ between them.
+  * lib/features/statistics/layout/stats_layout.dart (StatsLayout),
+    stats_layout_desktop.dart (kStatsLayoutDesktop), stats_layout_mobile.dart
+    (kStatsLayoutMobile), stats_layout_scope.dart (StatsLayoutScope,
+    kStatsMobileBreakpoint): New. The numbers a section cannot derive from its
+    own constraints — gaps, card padding, grid column bounds, whether cards
+    show their cover strip — with one file per form factor.
+  * lib/features/statistics/widgets/stats_hero_common.dart (StatsHeroMetric,
+    statsHeroMetrics, StatsHeroWall, StatsHeroMetricTile, StatsHoursBreakdown),
+    stats_hero_desktop.dart (StatsHeroDesktop), stats_hero_mobile.dart
+    (StatsHeroMobile), stats_months_common.dart (StatsMonthColumn,
+    statsMonthsPeak, statsMonthRowHeight), stats_months_ribbon_desktop.dart
+    (StatsMonthsRibbonDesktop), stats_months_ribbon_mobile.dart
+    (StatsMonthsRibbonMobile): New, replacing stats_hero.dart and
+    stats_months_ribbon.dart. The headline count sits in a FittedBox, so a
+    narrow phone scales it down instead of ellipsizing it away.
+  * lib/features/statistics/widgets/stats_period_picker.dart
+    (StatsPeriodPicker, StatsPeriodPickerData): New. A dropdown in the hero
+    across from the headline; a tab row cost a whole band of the page and grew
+    with every year in the library.
+  * lib/features/statistics/widgets/stats_types_section.dart
+    (StatsTypesSection), stats_month_detail_dialog.dart
+    (StatsMonthDetailDialog), stats_platforms_section.dart
+    (StatsPlatformsSection), stats_formats_section.dart (StatsFormatsSection),
+    stats_subgenres_section.dart (StatsSubgenresSection),
+    stats_versus_section.dart (StatsVersusSection), stats_crowd_section.dart
+    (StatsCrowdSection), stats_share_card.dart (StatsShareCard),
+    stats_poster.dart (StatsPoster), stats_section_header.dart
+    (StatsSectionHeader), stats_cards.dart (StatsCard, StatusSplitBar,
+    StatsTopCoversRow, StatsLegendDot): New section widgets; the grid sections
+    and the card shell take their column bounds and padding from StatsLayout.
+  * lib/features/statistics/models/library_stats.dart
+    (LibraryStats.hasTypeBreakdown, LibraryStats.hasMonthActivity,
+    LibraryStats.hasCrowdDeltas, LibraryStats.hasFormats): New presence checks
+    so the page can leave an empty section out instead of mounting one that
+    collapses and still takes the gap after it.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.getItemsWithDataByRowIds): New hydration of items by row
+    ids, so aggregate screens load only what they show.
+  * lib/core/database/database_service.dart (statsDaoProvider,
+    DatabaseService.statsDao): Wire up the DAO.
+  * lib/features/personalization/screens/personalization_screen.dart
+    (PersonalizationScreen): Statistics becomes the hub's default view; the
+    view switcher is a full-width FlatTabBar splitting the header into equal
+    blocks, replacing a rounded pill that hugged its content and read as a
+    fragment of an empty band.
+  * lib/shared/widgets/flat_tab_bar.dart (FlatTabBar, FlatTabOption): New.
+    Edge-to-edge switcher with no container of its own, for a page's own tab
+    row — unlike SegmentedPill, which suits a toolbar beside other controls.
+  * lib/shared/constants/media_type_ui.dart (MediaTypeUi.localizedPluralLabel):
+    New plural type labels reused as section titles.
+  * lib/l10n/app_en.arb, app_ru.arb, app_zh.arb, app_es.arb, app_fr.arb,
+    app_pt.arb: New stats* keys in every locale.
+
+- **Kitsu anime run on the season-and-episode tracker, like TV series**
+
+  A Kitsu anime opens the same season accordion TV shows use: episode tiles with
+  a preview frame, title, air date, runtime and synopsis, a watched checkbox,
+  likes and per-episode notes. Marking an episode moves the item to In progress,
+  marking every episode completes it, and the card badge shows watched of total.
+  Episodes without a preview frame borrow the season poster.
+
+  Seasons come from Kitsu's own episode data, so long titles keep their real
+  structure (Bleach: 16 seasons, 366 episodes) instead of one flat list.
+  Episode numbering stays absolute the way anime is usually counted. AniList
+  anime keep the flat counter — only Kitsu ships per-episode metadata.
+
+  * lib/core/api/kitsu/kitsu_episode_api.dart (KitsuEpisodeApi.getAllEpisodes,
+    KitsuEpisodeApi.getEpisodeCount): New. Kitsu caps a page at 20 episodes and
+    has no season filter, so the full list is fetched — page one carries
+    `meta.count` and the rest go out in parallel batches.
+  * lib/core/api/kitsu_api.dart (KitsuApi.getAnimeEpisodes,
+    KitsuApi.getAnimeEpisodeCount): Expose the episode API on the facade.
+  * lib/core/api/episode_source/kitsu_episode_source.dart (KitsuEpisodeSource):
+    New. Groups episodes into real seasons, falls back to a single synthesized
+    season when the list is unavailable, and memoizes both the anime record and
+    the episode list per show.
+  * lib/core/api/episode_source/tv_episode_source.dart
+    (tvEpisodeSourceResolverProvider): Route `DataSource.kitsu` to the new source.
+  * lib/shared/models/tv_episode.dart (TvEpisode.tryFromKitsu): New factory;
+    Kitsu's synopsis is plain text, so no HTML stripping.
+  * lib/shared/models/collection_item.dart (CollectionItem.usesEpisodeTracker,
+    CollectionItem.usesEpisodeTrackerFor): New single definition of "progress
+    lives in the episode tracker", replacing the condition that was spelled out
+    separately in the detail config and the card badge.
+  * lib/shared/models/media_type.dart (MediaType.mayUseEpisodeTracker): New
+    coarse check for callers that only know the type, such as cache invalidation.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (ItemDetailMediaConfig.from): Kitsu anime get the tracker section instead of
+    the flat progress widget.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (EpisodeTile.seasonPosterUrl): Stand-in image when an episode has no still
+    of its own; cached under the season's id so it is not mistaken for the
+    episode's own frame.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier._updateAutoStatus): Find the item through
+    `usesEpisodeTracker` and read the episode total from the anime record, so
+    status updates work without a cached show row.
+  * lib/features/collections/helpers/tracker_card_progress.dart
+    (trackerCardProgress): Same predicate, plus the anime episode count as the
+    total.
+  * lib/shared/utils/item_card_progress.dart (itemCardProgress): Kitsu anime
+    fall through to the tracker badge instead of the item counter.
+  * lib/core/services/export_service.dart (ExportService._attachWatchedEpisodes),
+    lib/core/services/import_service.dart
+    (ImportService._importWatchedEpisodes): Backups carry and restore watched
+    episodes for Kitsu anime, which the tv-only gate skipped.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao._loadItemMeta,
+    CollectionDao._transferWatchedEpisodes, CollectionDao._hasTvSibling): Moving
+    a Kitsu anime between collections carries its marks; `_loadItemMeta` now
+    selects `platform_id`, which the animated-series check needs.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier._invalidateEpisodeTrackers),
+    lib/features/collections/helpers/bulk_operations.dart
+    (BulkOperations._invalidateAfterMutation): Refresh live trackers after an
+    anime move too.
+  * test/helpers/fallbacks.dart (registerAllFallbacks): Register an `Anime`
+    fallback for mocktail.
+
+- **Branded loading indicator: the app logo pulses and rotates instead of the
+  Material spinner**
+
+  Long operations now show the Tonkatsu Box logo breathing (85%→105% scale)
+  and turning a quarter revolution per pulse: the blocking overlay, import
+  progress dialogs (Trakt, Kinorium, collections), Trakt archive validation,
+  the genre cloud and recommendations loading states, and the All Items
+  reload. Small inline spinners (collection pickers, image placeholders) keep
+  the stock indicator.
+
+  * lib/shared/widgets/logo_loader.dart (LogoLoader): New. Pure widget code —
+    no dart:io or isolates — so the planned selfhost web target renders it
+    unchanged.
+  * lib/shared/widgets/loading_overlay.dart (withBlockingSpinner),
+    lib/features/collections/widgets/import_progress_dialog.dart
+    (ImportProgressDialog), lib/features/settings/content/trakt_import_content.dart,
+    lib/features/settings/content/kinorium_import_content.dart,
+    lib/features/genre_cloud/screens/genre_cloud_screen.dart,
+    lib/features/genre_cloud/widgets/genre_cloud_view.dart,
+    lib/features/recommendations/screens/recommendations_screen.dart,
+    lib/features/home/screens/all_items_screen.dart: Replace the centred
+    CircularProgressIndicator with LogoLoader.
+  * test/shared/widgets/logo_loader_test.dart: New.
+
+### Changed
+
+- **Search asks what you are looking for, not which provider to ask**
+
+  The first segment of the filter bar is now the media type, and every provider
+  of that type answers at once: a manga search reaches AniList, MangaDex,
+  MangaBaka and Kitsu in one go instead of one at a time. Providers are listed
+  underneath and can be switched off individually; with several answering, the
+  results are laid out one block per provider, and "all →" narrows to a single
+  one, where the flat grid, its paging and sorting take over. A failing
+  provider now reports its own error inline while the others keep their
+  results, instead of blanking the screen. Each provider also shows its own
+  progress: AniList answers instantly and Kitsu takes seconds, so the slow one
+  holds a shimmering block (and a spinner on its chip) until it lands, rather
+  than looking like a provider that found nothing.
+
+  Filters that mean the same thing in several providers — status and format —
+  are merged into one control, so "Publishing" is picked once and each provider
+  receives its own spelling of it (`RELEASING`, `ongoing`, `releasing`,
+  `current`). A provider that has no word for the picked value drops out of the
+  query and says so on its chip rather than silently returning nothing.
+  Provider-specific filters (genres, tags, year, content rating, demographic)
+  stay theirs and live in the filter sheet, grouped under the provider's logo.
+
+  * lib/features/search/models/common_filter.dart (CommonFilter,
+    CommonFilterOptions, CommonFilterMember, CommonFilterTarget,
+    MediaTypeFilters, filtersForMediaType): New. Joins filters by
+    [FilterSemantic] and keeps a family shared only when two or more providers
+    know it — one provider's filter stays its own, so it never loses its owner.
+  * lib/features/search/models/search_source.dart (FilterSemantic,
+    FilterSemanticFamily, FilterOption.semantic, SearchFilter.semanticFamily):
+    New. Cross-provider identity of an option, since ids and labels diverge.
+  * lib/features/search/filters/anilist_anime_format_filter.dart
+    (AniListAnimeFormatFilter), anilist_anime_status_filter.dart
+    (AniListAnimeStatusFilter), anilist_manga_status_filter.dart
+    (AniListMangaStatusFilter), kitsu_anime_status_filter.dart
+    (KitsuAnimeStatusFilter), kitsu_anime_subtype_filter.dart
+    (KitsuAnimeSubtypeFilter), kitsu_manga_status_filter.dart
+    (KitsuMangaStatusFilter), kitsu_manga_subtype_filter.dart
+    (KitsuMangaSubtypeFilter), manga_format_filter.dart (MangaFormatFilter),
+    mangabaka_status_filter.dart (MangaBakaStatusFilter),
+    mangabaka_type_filter.dart (MangaBakaTypeFilter),
+    mangadex_status_filter.dart (MangaDexStatusFilter): Declare a semantic
+    family and tag each option with its semantic. Raw API values untouched.
+  * lib/features/search/providers/browse_provider.dart (BrowseState,
+    BrowseNotifier, CommonSelection, BrowseSettingsKeys): Hold a media type and
+    a per-provider slice of results, filter values, pages and errors instead of
+    one active source. `BrowseState.loadingSourceIds` /
+    `BrowseState.isSourceLoading` replace the single `isLoading` flag, which
+    `isLoading` now derives from — one flag could not say which provider is
+    still answering. Per-provider request signatures mean hiding a provider
+    and bringing it back costs no requests. Sort belongs to the provider it was
+    picked for, so it cannot leak into another's request. A saved pre-0.41
+    source id is migrated to that source's media type.
+  * lib/features/search/sources/search_sources.dart (searchSourcesByMediaType,
+    searchableMediaTypes, searchSourcesFor, primarySearchSourceFor): New.
+    Providers grouped by output media type, registration order preserved.
+  * lib/features/search/widgets/filter_bar.dart (FilterBar, _SheetButton,
+    _SortChevron), filter_bar_compact.dart (CompactFilterBar),
+    media_type_chevron.dart (MediaTypeChevron), filter_control.dart
+    (FilterOptionsLoader, FilterChevron, FilterPick), filter_sheet.dart
+    (FilterSheet): Media type first, shared filters in the bar, per-provider
+    filters and the provider switches in the sheet.
+  * lib/features/search/widgets/browse_sections.dart (BrowseSections),
+    browse_sections_compact.dart (BrowseSectionsCompact), browse_card.dart
+    (BrowseCard, CollectedIds, collectedIdsProvider, extractTitle,
+    buildPlatformLabel), source_chips_row.dart (SourceChipsRow),
+    source_error_strip.dart (SourceErrorStrip): New. Per-provider result
+    blocks, provider chips and the inline per-provider error.
+  * lib/features/search/widgets/browse_grid.dart (BrowseGrid): Keeps the flat
+    grid for a single answering provider; card branches moved to BrowseCard.
+    The viewport-fill check also runs on first build — narrowing hands the grid
+    a page already in state, and a page too short to scroll on a tall window
+    could otherwise never ask for the next one.
+  * lib/features/search/providers/discover_provider.dart
+    (discoverSectionsPerMediaType, discoverMediaTypes),
+    lib/features/search/widgets/discover_feed.dart (DiscoverFeed.mediaType),
+    lib/features/search/widgets/discover_customize_sheet.dart
+    (DiscoverCustomizeSheet.mediaType): Key the TMDB feeds by media type.
+  * lib/shared/navigation/search_providers.dart (SearchTabRequest.mediaType),
+    lib/shared/navigation/app_shell.dart (_AppShellState),
+    lib/features/wishlist/screens/wishlist_screen.dart
+    (wishlistMediaTypeFor): A wishlist note opens the Search tab on its media
+    type with every provider on, replacing the hand-written hint-to-source map.
+  * lib/shared/theme/app_typography.dart (AppTypography.posterSourceLogoScale,
+    AppTypography.posterTextBlockHeight),
+    lib/shared/widgets/media_poster_card.dart
+    (_MediaPosterCardState._buildTitleBlock,
+    _MediaPosterCardState._buildMetaText): Budget the subtitle row for the
+    source logo, and pin the title and meta line heights with
+    `forceStrutHeight` — the rating star and CJK titles come from fallback
+    fonts whose taller lines burst the block budgeted as fontSize×height.
+  * lib/l10n/app_*.arb: searchWhatToFind, searchSourcesLabel,
+    searchCommonFilters, searchShowAll, searchSourceNoResponse,
+    searchSourceLacksValue, searchNarrowedBySource, searchTextOnlyHint,
+    searchSortNeedsSingleSource, searchSortUnavailableInSearch.
+
+- **Rainbow highlight on the centre navigation button**
+
+  The centre button opens the whole library — statistics, genre cloud and
+  recommendations — but its highlight was the same flat orange as every other
+  tab, so it did not read as different. It now fills with the media-type
+  accents run around the circle.
+
+  * lib/shared/constants/media_type_theme.dart (MediaTypeTheme.rainbowSweep):
+    New. Every accent sorted by hue with the first repeated at the end, since
+    a SweepGradient meets a hard seam otherwise. Sorted rather than written
+    out by hand so a new media type places itself.
+  * lib/shared/navigation/liquid_indicator.dart (LiquidIndicator.rainbow,
+    _LiquidIndicatorState.build): Paint the sweep instead of the flat brand
+    fill, cross-faded over the same slide so the colour does not snap halfway
+    between the centre button and a tab. Russian comments translated.
+  * lib/shared/navigation/app_sidebar.dart (AppSidebar),
+    lib/shared/navigation/app_bottom_bar.dart (AppBottomBar): Turn the rainbow
+    on while the centre button is the active destination.
+  * test/shared/constants/media_type_theme_test.dart: Sweep closes the loop,
+    covers every media type, and runs in hue order.
+
+- **Genre cloud legends fit on one scrolling row**
+
+  The facet and media-type legends wrapped, so on a phone every extra media
+  type stole another line from the cloud itself. They are one fixed-height row
+  each now, scrolled by swipe on mobile and by the usual hover arrows, wheel
+  or click-drag on desktop, and they run to the screen edges.
+
+  * lib/features/genre_cloud/screens/genre_cloud_screen.dart (_ChipRow,
+    _ChipRowState): Wrap replaced by ScrollableRowWithArrows, matching the
+    collection chips and subfilter rows. The page inset moved into the scroll
+    view's content padding so the chips scroll out to the edges.
+  * test/features/genre_cloud/genre_cloud_screen_test.dart: The cloud's top
+    edge does not move as media types are added.
+
+- **Move DAO query infrastructure and pure-Dart utils into the `core` package**
+
+  Second wave of the selfhost-web extraction (after the migrations): the
+  chunked-query and sparse-upsert helpers every DAO uses, the SQLite health
+  checks, and the six dependency-free utils the models rely on now live in
+  `packages/core`, ready for the selfhost server. No behaviour change — files
+  moved verbatim, only import paths in the app were updated.
+
+  * packages/core/lib/database/query_chunk.dart (queryByIdsInChunks),
+    packages/core/lib/database/sparse_upsert.dart,
+    packages/core/lib/database/sqlite_health.dart (readUserVersion,
+    quickCheckOk): Moved from lib/core/database/.
+  * packages/core/lib/utils/anime_manga_title_language.dart,
+    packages/core/lib/utils/bbcode.dart, packages/core/lib/utils/html_text.dart,
+    packages/core/lib/utils/kitsu_status.dart,
+    packages/core/lib/utils/stable_id.dart,
+    packages/core/lib/utils/tvmaze_json.dart: Moved from lib/shared/utils/.
+  * lib/, test/: Import paths rewritten to `package:core/...` across the DAOs,
+    models, services and tests that consume the moved files.
+
+- **Loading indicators no longer freeze during heavy operations**
+
+  The spinner used to stand still because heavy work ran synchronously on the
+  UI thread. The genre cloud layout now computes cooperatively (yielding to
+  the event loop on a time budget, so it also works on the future web target),
+  and the Trakt / Kinorium imports unzip and parse their exports on a
+  background isolate. Animations keep running through personalization loads
+  and import parsing.
+
+  * lib/features/genre_cloud/genre_cloud_layout.dart (layoutGenreCloudAsync,
+    _placeAllChunked, _placeWord): New chunked layout entry point producing
+    results identical to the synchronous layoutGenreCloud (kept for export
+    views).
+  * lib/features/genre_cloud/widgets/genre_cloud_view.dart
+    (_GenreCloudViewState._runLayout, _GenreCloudViewState._memoizedMeasure,
+    measureGenreWord): Drive the deferred layout through the async entry
+    point; memoize word measurements across auto-fit and growth passes and
+    dispose TextPainters after measuring.
+  * lib/core/import/sources/trakt/trakt_import_service.dart
+    (TraktImportService.validateZip, TraktImportService._readAndParseArchive,
+    _TraktParsedArchive): Read, unzip and JSON-parse the export via
+    Isolate.run; parse helpers became static so the isolate closure carries no
+    API/DB handles.
+  * lib/core/import/sources/kinorium/kinorium_import_service.dart
+    (KinoriumImportService.import): Read and parse the CSV via Isolate.run.
+  * test/features/genre_cloud/genre_cloud_layout_test.dart: Async layout
+    equivalence tests.
+
+- **Poster cards show the title under the artwork instead of over it**
+
+  Grid and carousel cards no longer cover the bottom of the poster with a
+  translucent title banner. The artwork stays clear, and the title plus its
+  meta line (rating, platform, year, type, genre) sit below it in a block of
+  fixed height, so cards in a row stay aligned however long the titles are and
+  a one-line title keeps its meta line right underneath. What stays on the
+  poster is a thin strip carrying the status and tag on the left and the
+  episode count on the right — and it disappears entirely for items that have
+  none of them. Hovering no longer expands the title; the full name comes up as
+  a tooltip. Loading skeletons now reserve the same title block, so posters do
+  not jump when the real cards arrive.
+
+  * lib/shared/widgets/media_poster_card.dart
+    (_MediaPosterCardState._buildGridVariant,
+    _MediaPosterCardState._buildTitleBlock,
+    _MediaPosterCardState._buildGridPoster,
+    _MediaPosterCardState._buildStatsStrip,
+    _MediaPosterCardState._buildSubtitleRow): Title and subtitle moved out of
+    the poster into a fixed-height block with a hover-only tooltip (the default
+    long-press trigger would take the card's context menu on Android); the
+    former bottom banner is now a stats strip that puts the status and tag left
+    and the progress label right, and collapses when the item has none of them.
+  * lib/features/settings/screens/card_banner_debug_screen.dart
+    (CardBannerDebugScreen, _StatsStripBanner, _StatusStripeBanner,
+    _SplitMetaBanner, _MetaLine, _EpisodeCount): Laboratory keeps only the
+    three variants still in play (D, F, G), each showing the source logo and
+    the episode count on the right; the gradient, solid, frosted, inline-slash
+    and progress-label mockups are gone.
+  * lib/shared/theme/app_typography.dart (AppTypography.posterTitleFor,
+    AppTypography.posterSubtitleFor, AppTypography.posterTextBlockHeight): New.
+    Poster text styles per card variant, plus the height of two title lines and
+    one subtitle line derived from those styles and the system font scale.
+  * lib/shared/theme/app_spacing.dart (AppSpacing.posterCardAspectRatio,
+    AppSpacing.posterRowVerticalPadding, AppSpacing.cardTitleBlockGap,
+    AppSpacing.cardTitleBlockHeight, AppSpacing.posterRowHeight): New. One
+    source of truth for the grid cell ratio and the carousel row height.
+  * lib/shared/widgets/shimmer_loading.dart (ShimmerPosterCard,
+    ShimmerPosterGrid): Skeleton card reserves the same title block and gained
+    a compact variant; the grid skeleton takes its ratio from AppSpacing.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView), lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState), lib/features/search/widgets/browse_grid.dart
+    (_BrowseGridState): Grid cells use AppSpacing.posterCardAspectRatio.
+  * lib/shared/widgets/book_carousel.dart (BookCarousel, BookCarouselShimmer),
+    lib/features/search/widgets/discover_row.dart (DiscoverRow),
+    lib/features/search/widgets/discover_feed.dart (DiscoverFeed),
+    lib/features/collections/widgets/recommendations_section.dart
+    (_RecommendationRow, _RecommendationShimmer),
+    lib/features/collections/widgets/manga_similars_section.dart (_MangaRow,
+    _MangaRowShimmer), lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget): Row height via AppSpacing.posterRowHeight, and
+    the loading rows reuse ShimmerPosterCard instead of four hand-rolled
+    copies of the same placeholder.
+  * test/shared/theme/app_typography_test.dart: New.
+    test/shared/theme/app_spacing_test.dart,
+    test/shared/widgets/media_poster_card_test.dart,
+    test/shared/widgets/shimmer_loading_test.dart: Title-block metrics, layout
+    of the title and meta line, and a render check at double font scale.
+
+### Fixed
+
+- **Episode watch marks no longer stay behind for a look-alike sibling**
+
+  Moving a series between collections deletes its old watch marks unless
+  another item can still use them. The sibling check now counts only items
+  that actually carry marks — an animated movie sharing the same TMDB id
+  (movie and TV ids overlap numerically) no longer keeps orphaned rows alive.
+
+  * packages/core/lib/database/dao/collection_dao.dart (CollectionDao._hasTvSibling):
+    Mirror CollectionItem.usesEpisodeTrackerFor — require platform_id for
+    animation and source kitsu for anime instead of any media-type match.
+  * packages/core/test/database/dao/collection_dao_watched_transfer_test.dart:
+    Regression test with an animated-movie and an AniList-anime sibling.
+
+- **Backup restore keeps collection creation and item added dates**
+
+  Restoring a full backup used to stamp every collection and item with the
+  restore day, collapsing the whole "added by month" history. The exported
+  dates now survive the round trip (user-data exports only).
+
+  * lib/core/services/import_service.dart (ImportService): Pass the exported
+    collection `created` date and per-item added date through the restore.
+  * lib/core/database/dao/collection_dao.dart
+    (CollectionDao.createCollection, CollectionDao.addItemToCollection):
+    Optional createdAt / addedAt overrides, defaulting to now.
+  * lib/core/database/database_service.dart (DatabaseService.createCollection,
+    DatabaseService.addItemToCollection), lib/data/repositories/collection_repository.dart
+    (CollectionRepository.create, CollectionRepository.addItemToCollection):
+    Plumb the new parameters through.
+  * test/core/services/import_service_test.dart: Restore-date regression tests.
+
+- **Tier list card labels no longer overflow under Android font scaling**
+
+  The compact card label reserves exactly two lines of caption text; with a
+  system font scale above 1.0 the text grew past that and threw a RenderFlex
+  overflow. The tiny caption now opts out of system text scaling — the full
+  name stays available in the tooltip.
+
+  * lib/features/tier_lists/widgets/tier_item_card.dart (TierItemCard._buildCard):
+    Pin the label to TextScaler.noScaling and drop the single-child Column
+    that produced the overflowing RenderFlex.
+  * test/features/tier_lists/widgets/tier_item_card_test.dart: Regression test
+    at text scale 1.3.
+
 ## [0.40.0] - 2026-07-26
 
 ### Added

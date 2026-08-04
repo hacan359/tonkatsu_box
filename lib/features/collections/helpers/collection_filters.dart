@@ -1,8 +1,9 @@
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/media_type.dart';
-import '../../../shared/models/tag.dart';
-import '../../../shared/utils/anime_manga_title_language.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/tag.dart';
+import 'package:core/utils/anime_manga_title_language.dart';
+
 import '../../../shared/utils/media_format.dart';
 
 class CollectionFilters {

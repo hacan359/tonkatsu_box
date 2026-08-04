@@ -1,4 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+/// Tap handler opening [url], or null when there is nothing to open — lets a
+/// widget stay non-interactive for items without an external page.
+VoidCallback? openUrlCallback(String? url) =>
+    url == null || url.isEmpty ? null : () => launchExternalUrl(url);
 
 /// Best-effort open of [url] in the external browser/app; failures are
 /// swallowed since a dead link is non-critical.

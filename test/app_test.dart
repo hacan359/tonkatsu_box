@@ -1,3 +1,4 @@
+import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,7 +9,6 @@ import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/core/services/update_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
-import 'package:tonkatsu_box/shared/models/collection.dart';
 import 'package:tonkatsu_box/features/splash/screens/splash_screen.dart';
 import 'package:tonkatsu_box/features/welcome/screens/welcome_screen.dart';
 import 'package:tonkatsu_box/shared/navigation/app_bottom_bar.dart';

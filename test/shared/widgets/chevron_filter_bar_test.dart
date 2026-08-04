@@ -1,6 +1,6 @@
+import 'package:core/models/item_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tonkatsu_box/shared/models/item_status.dart';
 import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
 
 import '../../helpers/test_helpers.dart';

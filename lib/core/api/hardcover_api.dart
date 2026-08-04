@@ -1,14 +1,13 @@
+import 'package:core/models/book.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/models/book.dart';
 import '../services/api_key_initializer.dart';
 import 'hardcover/hardcover_graphql_client.dart';
 import 'hardcover/hardcover_queries.dart';
 import 'hardcover/hardcover_search_api.dart';
 import 'hardcover/hardcover_types.dart';
 import 'hardcover/hardcover_user_library_api.dart';
-
 export 'hardcover/hardcover_types.dart';
 
 /// Wires [HardcoverApi] with the user's personal token. Hardcover has no

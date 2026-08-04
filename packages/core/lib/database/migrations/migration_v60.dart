@@ -1,10 +1,9 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// Anime identity becomes `(id, source)`: `anime_cache` is rebuilt with a
-/// composite PK, the old `source` column (source material) becomes
-/// `source_material`, and anime gets source-aware collection indexes.
+/// Anime identity becomes `(id, source)`; the old `source` column (source
+/// material) becomes `source_material`.
 class MigrationV60 extends Migration {
   @override
   int get version => 60;

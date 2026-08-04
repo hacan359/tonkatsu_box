@@ -6,7 +6,7 @@ High-level map of the project. Specific files and signatures live in the code �
 
 ## Overview
 
-Cross-platform Flutter app for managing collections of retro games, movies, TV shows, anime, manga, visual novels, and user-authored custom items. Integrates with IGDB, TMDB, SteamGridDB, VNDB, AniList, RetroAchievements, MyAnimeList, Steam, Trakt, and Kodi.
+Cross-platform Flutter app for managing collections of retro games, movies, TV shows, anime, manga, visual novels, and user-authored custom items. Integrates with IGDB, TMDB, SteamGridDB, VNDB, AniList, RetroAchievements, MyAnimeList, Steam, Trakt, Simkl, and Kodi.
 
 | Layer    | Stack |
 |----------|-------|
@@ -87,7 +87,7 @@ lib/
 - **`api/`** — Dio-based HTTP clients. Each client is its own class exposed through a `Provider`. Auth (Twitch OAuth for IGDB, Bearer for TMDB / SteamGridDB, etc.) lives inside the client. Errors are normalized into custom `*ApiException` types via `api_error_extract.dart`.
 - **`database/`** — `DatabaseService` (singleton via `databaseServiceProvider`) delegates CRUD to DAOs. Schema is declared in `schema.dart` (`DatabaseSchema.create*Table`). Migrations are incremental: one file per version under `migrations/`, registered in `MigrationRegistry.all`. **Never edit historical migration SQL** — add a new version instead.
 - **`services/`** — anything that's not an API client and not raw CRUD: `.xcoll` / `.xcollx` import/export, tracker sync (RA, Steam, Trakt, Kodi, MAL, AniList), Discord RPC, update checker, image cache, config.
-- **`import/`** — library import layer (ports & adapters). The `ImportSource` port with one adapter per source under `sources/<name>/`, plus shared domain pieces (`ImportWriter` for collection write, `TmdbMatcher`, `RateLimitedRetry`). **Kinorium, Steam, Trakt, RetroAchievements, MyAnimeList and AniList** are all adapters on the layer, each implementing `ImportSource` and writing through `ImportWriter`. The `.xcoll` / `.xcollx` collection-file import (`services/import_service.dart`) stays separate by design — it restores a snapshot rather than resolving titles against an external catalog. See [core/import/README.md](../lib/core/import/README.md).
+- **`import/`** — library import layer (ports & adapters). The `ImportSource` port with one adapter per source under `sources/<name>/`, plus shared domain pieces (`ImportWriter` for collection write, `TmdbMatcher`, `RateLimitedRetry`). **Kinorium, Steam, Trakt, Simkl, RetroAchievements, MyAnimeList and AniList** are all adapters on the layer, each implementing `ImportSource` and writing through `ImportWriter`. The `.xcoll` / `.xcollx` collection-file import (`services/import_service.dart`) stays separate by design — it restores a snapshot rather than resolving titles against an external catalog. See [core/import/README.md](../lib/core/import/README.md).
 - **`logging/`** — wrapper around `package:logging`. `print` is forbidden in production code.
 
 ### `data/`
@@ -102,15 +102,24 @@ Each feature is a self-contained folder with three subdirectories:
 - `providers/` — Riverpod notifiers and `FutureProvider`s scoped to the feature.
 - `widgets/` — feature-local reusable widgets.
 
-Current features: `collections` (main module — collection screens, ItemDetail, canvas, panels), `search` (universal search via `SearchSource` over 7 backends), `tier_lists` (Tier list + Mood Grid), `wishlist`, `home` (All Items), `settings` (19 screens: credentials, imports, debug), `welcome` (6-step onboarding), `splash`.
+A feature may add folders when it needs them: `statistics` also has `models/`, plus `views/` and `layout/` for its per-form-factor split. Where desktop and mobile lay a page out differently enough that one widget tree with branches inside would be harder to read than two, each form factor gets its own file (`statistics_view_desktop.dart` / `statistics_view_mobile.dart`, `stats_hero_desktop.dart` / `stats_hero_mobile.dart`), the parts that do not differ stay in a shared `*_common.dart`, and the numbers each layout feeds its sections live in an immutable spec (`StatsLayout`) with one `const` per form factor, published to the sections through an `InheritedWidget`. The page picks the file by measured content width via `LayoutBuilder`, not `MediaQuery` — the nav shell makes the window width overstate the room the content gets.
+
+Current features: `collections` (main module — collection screens, ItemDetail, canvas, panels), `search` (universal search via `SearchSource` over 7 backends), `tier_lists` (Tier list + Mood Grid), `wishlist`, `home` (All Items), `personalization` (hub over `statistics`, `genre_cloud`, `recommendations`), `statistics` ("my library in numbers": SQL aggregates via `StatsDao`, share card), `settings` (19 screens: credentials, imports, debug), `welcome` (6-step onboarding), `splash`.
 
 ### `shared/`
 
-- **`models/`** — immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls lib/shared/models/`. Pure Dart only: no `package:flutter` / `dart:ui` / l10n imports — presentation (colors, icons, localized labels) lives in `shared/constants/*_ui.dart` extensions.
 - **`widgets/`** — shared widgets: `ScreenAppBar`, `CachedImage`, `MediaPosterCard`, `SourceBadge`, `StarRatingBar`, etc.
 - **`theme/`** — `AppColors`, `AppTypography`, `AppSpacing`, `AppTheme` (Material 3 dark).
 - **`navigation/`** — `NavigationShell` (Rail on desktop, BottomBar on mobile).
 - **`gamepad/`** — gamepad events, `InputMode`, `GamepadListener`. See [GAMEPAD.md](GAMEPAD.md).
+
+### `packages/core/`
+
+A pure-Dart package (no Flutter dependency) holding the data layer the app shares with the planned selfhost server, imported as `package:core/...`:
+
+- **`models/`** — all immutable models with `fromJson` / `fromDb` constructors and `toDb` / `copyWith` methods. List them with `ls packages/core/lib/models/`. Purity is enforced by construction: `core` does not depend on Flutter, so `dart analyze` inside the package rejects any `package:flutter` / `dart:ui` / l10n import. Presentation (colors, icons, localized labels) lives in `lib/shared/constants/*_ui.dart` extensions on the app side.
+- **`database/`** — `schema.dart` DDL helpers and `migrations/` (see [Database](#database)).
+- **`utils/`** — pure helpers the models need: `bbcode`, `html_text`, `stable_id`, `cover_image_id`, `tvmaze_json`, `kitsu_status`, `anime_manga_title_language`.
 
 ---
 
@@ -179,7 +188,7 @@ Navigation is imperative `Navigator.push(MaterialPageRoute(...))`. No `go_router
 
 ## Key patterns
 
-1. **Immutable models.** Every model in `shared/models/` has `final` fields and a `copyWith()`. Direct mutation is forbidden — state changes go through Riverpod notifiers.
+1. **Immutable models.** Every model in `packages/core/lib/models/` has `final` fields and a `copyWith()`. Direct mutation is forbidden — state changes go through Riverpod notifiers.
 2. **Factory constructors.** Each model: `fromJson` (API), `fromDb` (SQLite), `toDb` (serialisation). Models that ship in `.xcoll` exports also implement the `Exportable` mixin with `toExport()`.
 3. **`SearchSource` abstraction.** Universal search (`features/search/sources/`) gives features one interface over 7 different backends — no per-source `switch` in the UI.
 4. **DB-first lookup-data cache.** Genre maps (TMDB / IGDB) and VNDB tags are seeded into SQLite by migration v24 and read locally. The network is only hit when the local row is missing — losing internet **does not break the filter UI**.

@@ -1,6 +1,5 @@
+import 'package:core/utils/anime_manga_title_language.dart';
 import 'package:flutter/foundation.dart';
-
-import '../utils/anime_manga_title_language.dart';
 
 /// TMDB content locale: the `language=` request value and its native name.
 @immutable

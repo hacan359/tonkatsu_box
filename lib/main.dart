@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:core/models/profile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,15 +18,12 @@ import 'core/services/collection_hero_service.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
-import 'shared/models/profile.dart';
 
-/// Глобальные данные инициализации, перечитываемые при перезапуске.
 late SharedPreferences _prefs;
 late ApiKeys _apiKeys;
 late ProfilesData _profilesData;
 late String _heroDir;
 
-/// Точка входа в приложение.
 Future<void> main() async {
   AppLogger.init();
 
@@ -35,15 +33,13 @@ Future<void> main() async {
       AppLogger.setupErrorHandlers();
       HttpOverrides.global = AppHttpOverrides();
 
-      // Инициализация SQLite FFI для Windows/Linux/macOS
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
         sqfliteFfiInit();
         databaseFactory = databaseFactoryFfi;
       }
 
-      // SharedPreferences.setPrefix должен вызываться строго до первого
-      // getInstance() и ровно один раз за процесс, иначе StateError при
-      // рестарте через AppRestartScope.
+      // setPrefix must run before the first getInstance() and exactly once
+      // per process — otherwise a restart via AppRestartScope hits StateError.
       if (!kReleaseMode) {
         SharedPreferences.setPrefix('flutter_dev.');
       }
@@ -69,7 +65,6 @@ Future<void> main() async {
   );
 }
 
-/// Загружает SharedPreferences, API keys и профильные данные.
 Future<void> _loadAppState() async {
   _prefs = await SharedPreferences.getInstance();
   _apiKeys = ApiKeys.fromPrefs(_prefs);
@@ -81,18 +76,14 @@ Future<void> _loadAppState() async {
   _heroDir = await CollectionHeroService.resolveRoot();
 }
 
-/// Обёртка для перезапуска приложения на мобильных платформах.
-///
-/// Меняет [Key] у [ProviderScope], что пересоздаёт все провайдеры с нуля.
-/// На десктопе перезапуск происходит через `Process.start + exit(0)`.
+/// In-process restart for mobile: swaps the [ProviderScope]'s [Key] to rebuild
+/// every provider from scratch. Desktop restarts via `Process.start + exit(0)`.
 class AppRestartScope extends StatefulWidget {
-  /// Создаёт [AppRestartScope].
   const AppRestartScope({required this.child, super.key});
 
-  /// Дочерний виджет (обычно [TonkatsuBoxApp]).
   final Widget child;
 
-  /// Перезапускает приложение: перечитывает профили и пересоздаёт ProviderScope.
+  /// Reloads profiles and recreates the ProviderScope.
   static Future<void> restart(BuildContext context) async {
     final _AppRestartScopeState? state =
         context.findAncestorStateOfType<_AppRestartScopeState>();

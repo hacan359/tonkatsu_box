@@ -1,4 +1,4 @@
-import '../../../core/services/xcoll_file.dart';
+import 'package:core/models/xcoll_file.dart';
 
 /// Platform from the collections catalog.
 class RemotePlatform {

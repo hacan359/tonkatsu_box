@@ -1,9 +1,9 @@
+import 'package:core/models/collection_sort_mode.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/tag.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';

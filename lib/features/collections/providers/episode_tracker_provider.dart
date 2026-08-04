@@ -2,18 +2,18 @@
 
 import 'dart:async';
 
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/item_status_logic.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/data_source.dart';
-import '../../../shared/models/item_status.dart';
-import '../../../shared/models/item_status_logic.dart';
-import '../../../shared/models/tv_episode.dart';
-import '../../../shared/models/tv_season.dart';
-import '../../../shared/models/tv_show.dart';
 import 'collections_provider.dart';
 
 /// Episode tracker state.
@@ -397,17 +397,22 @@ class EpisodeTrackerNotifier
     for (final CollectionItem ci in items) {
       if (ci.externalId == _showId &&
           ci.dataSource == _source &&
-          ci.mediaType.isTvBacked) {
+          ci.usesEpisodeTracker) {
         targetItem = ci;
         break;
       }
     }
     if (targetItem == null) return;
 
+    // Kitsu anime have no cached `tvShow` row, but the anime record already
+    // carries the episode count — that spares a request on every toggle.
     int totalInShow = _cachedTotalEpisodes ??
-        targetItem.tvShow?.totalEpisodes ?? 0;
+        targetItem.tvShow?.totalEpisodes ??
+        targetItem.anime?.episodes ??
+        0;
     int totalSeasons = _cachedTotalSeasons ??
-        targetItem.tvShow?.totalSeasons ?? 0;
+        targetItem.tvShow?.totalSeasons ??
+        0;
 
     // Fetch missing totals from the source API once per session, so a
     // toggle doesn't turn into a network call every time.
@@ -436,6 +441,23 @@ class EpisodeTrackerNotifier
         totalSeasons > 0 &&
         loadedRegularSeasons >= totalSeasons) {
       totalInShow = state.totalEpisodeCount;
+    }
+
+    // Kitsu carries no totals for an ongoing anime, but the tracker section
+    // cached its synthesized seasons with aired counts — sum those.
+    if (totalInShow == 0) {
+      try {
+        final List<TvSeason> seasons =
+            await _db.tvShowDao.getTvSeasonsByShowId(_source, _showId);
+        for (final TvSeason season in seasons) {
+          if (season.seasonNumber > 0) {
+            totalInShow += season.episodeCount ?? 0;
+          }
+        }
+        if (totalInShow > 0) _cachedTotalEpisodes = totalInShow;
+      } on Exception catch (_) {
+        // Totals stay unknown; auto-status keeps the current status.
+      }
     }
 
     // Publish resolved totals so progress badges can render "x/y" even when

@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:core/models/xcoll_file.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../features/collections/models/collections_index.dart';
-import 'xcoll_file.dart';
 
 /// Raw GitHub content base URL for the collections repo.
 const String _kRepoBaseUrl =

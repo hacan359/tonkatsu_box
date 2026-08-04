@@ -1,4 +1,3 @@
-// Виджет отображения ошибки API с кнопкой копирования деталей.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,22 +8,17 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Виджет для отображения ошибки API.
-///
-/// Показывает иконку ошибки, сообщение и кнопку "Скопировать детали",
-/// если доступна подробная отладочная информация.
+/// Shows the error plus a "copy details" button when debug info is available.
 class ApiErrorDisplay extends StatelessWidget {
-  /// Создаёт [ApiErrorDisplay].
   const ApiErrorDisplay({
     required this.message,
     this.detail,
     super.key,
   });
 
-  /// User-friendly сообщение об ошибке.
   final String message;
 
-  /// Подробная отладочная информация (URL, метод, причина).
+  /// Redacted debug string: URL, method, reason.
   final String? detail;
 
   @override

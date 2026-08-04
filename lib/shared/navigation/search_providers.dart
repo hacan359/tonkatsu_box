@@ -5,6 +5,7 @@
 // (which provider to listen to, which hint to show), or null when the tab does
 // not support search.
 
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -61,12 +62,20 @@ final StateProvider<Set<int>> searchTargetCollectionsProvider =
 /// screen; consumed and reset to `null` by [AppShell].
 class SearchTabRequest {
   /// Creates a [SearchTabRequest].
-  const SearchTabRequest({this.query, this.sourceId, this.collectionId});
+  const SearchTabRequest({
+    this.query,
+    this.mediaType,
+    this.sourceId,
+    this.collectionId,
+  });
 
   /// Query to prefill (and run). When null/empty the Search tab opens empty.
   final String? query;
 
-  /// Browse source to preselect (e.g. `games`), or null to keep the current.
+  /// Media type to preselect, with every source of it active.
+  final MediaType? mediaType;
+
+  /// Narrows to one provider instead of the whole [mediaType]. Null keeps all.
   final String? sourceId;
 
   /// Collection to add results into; preselected in

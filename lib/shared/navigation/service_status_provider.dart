@@ -1,9 +1,3 @@
-// Провайдер реактивного состояния фоновых сервисов (Kodi sync, Discord RPC).
-//
-// Использует polling (ref.read) вместо ref.watch, чтобы обновления
-// kodiSettingsProvider / settingsNotifierProvider не инвалидировали
-// стрим и не вызывали мигание бейджей в шапке.
-
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,9 +7,7 @@ import '../../core/services/kodi_sync_service.dart';
 import '../../features/settings/providers/kodi_settings_provider.dart';
 import '../../shared/constants/platform_features.dart';
 
-/// Снимок состояния фоновых сервисов.
 class ServiceStatus {
-  /// Создаёт [ServiceStatus].
   const ServiceStatus({
     this.kodiConfigured = false,
     this.kodiRunning = false,
@@ -25,34 +17,28 @@ class ServiceStatus {
     this.discordRaSyncActive = false,
   });
 
-  /// Kodi sync настроен (host + target collection) — бейдж видим.
+  /// Host and target collection are set, so the badge is visible.
   final bool kodiConfigured;
 
-  /// Kodi sync таймер тикает (бейдж цветной).
+  /// The sync timer is ticking, so the badge is coloured.
   final bool kodiRunning;
 
-  /// Kodi sync цикл идёт прямо сейчас (пульсация).
+  /// A sync cycle is running right now, so the badge pulses.
   final bool kodiSyncing;
 
-  /// Discord RPC доступен на платформе (бейдж всегда видим на десктопе).
+  /// Platform supports Discord RPC; the badge always shows on desktop.
   final bool discordEnabled;
 
-  /// Discord RPC подключён к IPC (бейдж цветной).
+  /// Connected to the Discord IPC socket, so the badge is coloured.
   final bool discordConnected;
 
-  /// Discord RA Sync активен.
   final bool discordRaSyncActive;
 
-  /// Есть ли хотя бы один сервис, для которого нужен бейдж.
   bool get hasActiveServices => kodiConfigured || discordEnabled;
 }
 
-/// Провайдер состояния фоновых сервисов.
-///
-/// Polling каждые 2 секунды через `ref.read` (не `ref.watch`),
-/// чтобы обновления `kodiSettingsProvider.lastSyncTimestamp` и прочие
-/// изменения настроек не инвалидировали стрим и не вызывали
-/// мигание/исчезание бейджей.
+/// Polls every 2s through `ref.read`, not `ref.watch`: watching
+/// `kodiSettingsProvider` would invalidate the stream and make badges flicker.
 final AutoDisposeStreamProvider<ServiceStatus> serviceStatusProvider =
     StreamProvider.autoDispose<ServiceStatus>((Ref ref) {
   final KodiSyncService kodiSync = ref.read(kodiSyncServiceProvider);

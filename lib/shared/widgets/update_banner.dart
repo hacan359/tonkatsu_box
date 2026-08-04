@@ -1,4 +1,3 @@
-// Баннер уведомления о доступном обновлении приложения.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +15,6 @@ import '../theme/app_typography.dart';
 /// более новая версия. Можно закрыть крестиком — баннер исчезает
 /// до следующего запуска приложения.
 class UpdateBanner extends ConsumerWidget {
-  /// Создаёт баннер обновления.
   const UpdateBanner({super.key});
 
   @override

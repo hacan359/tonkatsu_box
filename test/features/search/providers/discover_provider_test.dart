@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/features/search/providers/discover_provider.dart';
@@ -119,10 +120,10 @@ void main() {
     });
   });
 
-  group('discoverSectionsPerSource', () {
+  group('discoverSectionsPerMediaType', () {
     test('movies содержит trending, topRatedMovies и upcoming', () {
       final Set<DiscoverSectionId>? sections =
-          discoverSectionsPerSource['movies'];
+          discoverSectionsPerMediaType[MediaType.movie];
 
       expect(sections, isNotNull);
       expect(sections!.length, equals(3));
@@ -133,7 +134,7 @@ void main() {
 
     test('tv содержит trending, popularTvShows и topRatedTvShows', () {
       final Set<DiscoverSectionId>? sections =
-          discoverSectionsPerSource['tv'];
+          discoverSectionsPerMediaType[MediaType.tvShow];
 
       expect(sections, isNotNull);
       expect(sections!.length, equals(3));
@@ -144,7 +145,7 @@ void main() {
 
     test('anime содержит trending и anime', () {
       final Set<DiscoverSectionId>? sections =
-          discoverSectionsPerSource['anime'];
+          discoverSectionsPerMediaType[MediaType.animation];
 
       expect(sections, isNotNull);
       expect(sections!.length, equals(2));
@@ -153,11 +154,11 @@ void main() {
     });
 
     test('trending доступен на всех TMDB вкладках', () {
-      for (final String sourceId in discoverSectionsPerSource.keys) {
+      for (final MediaType type in discoverSectionsPerMediaType.keys) {
         expect(
-          discoverSectionsPerSource[sourceId],
+          discoverSectionsPerMediaType[type],
           contains(DiscoverSectionId.trending),
-          reason: '$sourceId should contain trending',
+          reason: '$type should contain trending',
         );
       }
     });
@@ -165,7 +166,7 @@ void main() {
     test('все не-trending секции покрыты маппингом без пересечений', () {
       final Set<DiscoverSectionId> allNonTrending = <DiscoverSectionId>{};
       for (final Set<DiscoverSectionId> sections
-          in discoverSectionsPerSource.values) {
+          in discoverSectionsPerMediaType.values) {
         final Set<DiscoverSectionId> nonTrending = sections
             .where(
               (DiscoverSectionId s) => s != DiscoverSectionId.trending,
@@ -187,10 +188,10 @@ void main() {
       expect(allNonTrending, equals(allNonTrendingExpected));
     });
 
-    test('неизвестный sourceId возвращает null', () {
-      expect(discoverSectionsPerSource['games'], isNull);
-      expect(discoverSectionsPerSource['vn'], isNull);
-      expect(discoverSectionsPerSource['manga'], isNull);
+    test('тип без ленты возвращает null', () {
+      expect(discoverSectionsPerMediaType[MediaType.game], isNull);
+      expect(discoverSectionsPerMediaType[MediaType.visualNovel], isNull);
+      expect(discoverSectionsPerMediaType[MediaType.manga], isNull);
     });
   });
 

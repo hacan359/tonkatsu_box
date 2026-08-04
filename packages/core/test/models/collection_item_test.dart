@@ -1,0 +1,3307 @@
+import 'package:core/models/anime.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/game.dart';
+import 'package:core/models/item_status.dart';
+import 'package:core/models/manga.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
+import 'package:core/models/platform.dart';
+import 'package:core/models/tv_show.dart';
+import 'package:test/test.dart';
+
+import 'package:core/testing/builders.dart';
+
+void main() {
+  group('CollectionItem', () {
+    final DateTime testAddedAt = DateTime(2024, 1, 15, 12, 0, 0);
+    final int testAddedAtUnix = testAddedAt.millisecondsSinceEpoch ~/ 1000;
+
+    const Game testGame = Game(
+      id: 1942,
+      name: 'The Witcher 3: Wild Hunt',
+      coverUrl: 'https://example.com/witcher3.jpg',
+    );
+
+    const Movie testMovie = Movie(
+      tmdbId: 550,
+      title: 'Fight Club',
+      posterUrl: 'https://example.com/fightclub.jpg',
+    );
+
+    const TvShow testTvShow = TvShow(
+      tmdbId: 1399,
+      title: 'Breaking Bad',
+      posterUrl: 'https://example.com/breakingbad.jpg',
+    );
+
+    const Platform testPlatform = Platform(
+      id: 48,
+      name: 'PlayStation 4',
+      abbreviation: 'PS4',
+    );
+
+    group('userRating type', () {
+      Map<String, dynamic> baseRow(Object? userRating) => <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'media_type': 'game',
+            'external_id': 1942,
+            'status': 'completed',
+            'added_at': testAddedAtUnix,
+            'user_rating': userRating,
+          };
+
+      test('fromDb reads legacy integer rating as double', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(8));
+        expect(item.userRating, 8.0);
+      });
+
+      test('fromDb reads fractional REAL rating', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(8.5));
+        expect(item.userRating, 8.5);
+      });
+
+      test('fromDb null rating stays null', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(null));
+        expect(item.userRating, isNull);
+      });
+
+      test('fromExport reads both int (v2) and double (v3) ratings', () {
+        final CollectionItem v2 = CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'user_rating': 7,
+        });
+        final CollectionItem v3 = CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'user_rating': 7.3,
+        });
+        expect(v2.userRating, 7.0);
+        expect(v3.userRating, 7.3);
+      });
+
+      test('toDb / toExport carry the fractional rating', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(6.4));
+        expect(item.toDb()['user_rating'], 6.4);
+        expect(item.toExport()['user_rating'], 6.4);
+      });
+    });
+
+    group('isFavorite', () {
+      Map<String, dynamic> baseRow(Object? isFavorite) => <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'media_type': 'game',
+            'external_id': 1942,
+            'status': 'completed',
+            'added_at': testAddedAtUnix,
+            'is_favorite': isFavorite,
+          };
+
+      test('fromDb reads 1 as true, 0 and null as false', () {
+        expect(CollectionItem.fromDb(baseRow(1)).isFavorite, isTrue);
+        expect(CollectionItem.fromDb(baseRow(0)).isFavorite, isFalse);
+        expect(CollectionItem.fromDb(baseRow(null)).isFavorite, isFalse);
+      });
+
+      test('toDb writes 1 / 0', () {
+        expect(CollectionItem.fromDb(baseRow(1)).toDb()['is_favorite'], 1);
+        expect(CollectionItem.fromDb(baseRow(0)).toDb()['is_favorite'], 0);
+      });
+
+      test('toExport carries is_favorite only with user data', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(1));
+        expect(item.toExport(includeUserData: true)['is_favorite'], 1);
+        expect(item.toExport().containsKey('is_favorite'), isFalse);
+      });
+
+      test('fromExport reads is_favorite, defaulting to false when absent', () {
+        final CollectionItem present =
+            CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'is_favorite': 1,
+        });
+        final CollectionItem absent =
+            CollectionItem.fromExport(<String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+        });
+        expect(present.isFavorite, isTrue);
+        expect(absent.isFavorite, isFalse);
+      });
+
+      test('copyWith updates the flag', () {
+        final CollectionItem item = CollectionItem.fromDb(baseRow(0));
+        expect(item.copyWith(isFavorite: true).isFavorite, isTrue);
+        expect(item.isFavorite, isFalse);
+      });
+    });
+
+    group('fromDb', () {
+      test('should create CollectionItem из полной записи БД', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'current_season': 0,
+          'current_episode': 0,
+          'status': 'completed',
+          'author_comment': 'Шедевр RPG',
+          'user_comment': 'Прошёл на 100%',
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+
+        expect(item.id, 1);
+        expect(item.collectionId, 10);
+        expect(item.mediaType, MediaType.game);
+        expect(item.externalId, 1942);
+        expect(item.platformId, 48);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+        expect(item.status, ItemStatus.completed);
+        expect(item.authorComment, 'Шедевр RPG');
+        expect(item.userComment, 'Прошёл на 100%');
+        expect(item.addedAt.year, testAddedAt.year);
+        expect(item.addedAt.month, testAddedAt.month);
+        expect(item.addedAt.day, testAddedAt.day);
+      });
+
+      test('should create CollectionItem из минимальной записи БД', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 2,
+          'collection_id': 10,
+          'media_type': 'movie',
+          'external_id': 550,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+
+        expect(item.id, 2);
+        expect(item.collectionId, 10);
+        expect(item.mediaType, MediaType.movie);
+        expect(item.externalId, 550);
+        expect(item.platformId, isNull);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+        expect(item.status, ItemStatus.notStarted);
+        expect(item.authorComment, isNull);
+        expect(item.userComment, isNull);
+      });
+
+      test('fromDb должен делегировать в fromDbWithJoins', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'current_season': 2,
+          'current_episode': 5,
+          'sort_order': 3,
+          'status': 'completed',
+          'author_comment': 'Шедевр RPG',
+          'user_comment': 'Прошёл на 100%',
+          'user_rating': 9,
+          'added_at': testAddedAtUnix,
+          'started_at': testAddedAtUnix,
+          'completed_at': testAddedAtUnix,
+          'last_activity_at': testAddedAtUnix,
+        };
+
+        final CollectionItem fromDb = CollectionItem.fromDb(row);
+        final CollectionItem fromJoins = CollectionItem.fromDbWithJoins(row);
+
+        expect(fromDb.id, fromJoins.id);
+        expect(fromDb.collectionId, fromJoins.collectionId);
+        expect(fromDb.mediaType, fromJoins.mediaType);
+        expect(fromDb.externalId, fromJoins.externalId);
+        expect(fromDb.platformId, fromJoins.platformId);
+        expect(fromDb.currentSeason, fromJoins.currentSeason);
+        expect(fromDb.currentEpisode, fromJoins.currentEpisode);
+        expect(fromDb.sortOrder, fromJoins.sortOrder);
+        expect(fromDb.status, fromJoins.status);
+        expect(fromDb.authorComment, fromJoins.authorComment);
+        expect(fromDb.userComment, fromJoins.userComment);
+        expect(fromDb.userRating, fromJoins.userRating);
+        expect(fromDb.addedAt, fromJoins.addedAt);
+        expect(fromDb.startedAt, fromJoins.startedAt);
+        expect(fromDb.completedAt, fromJoins.completedAt);
+        expect(fromDb.lastActivityAt, fromJoins.lastActivityAt);
+        expect(fromDb.game, isNull);
+        expect(fromDb.movie, isNull);
+        expect(fromDb.tvShow, isNull);
+        expect(fromDb.platform, isNull);
+      });
+
+      test('should handle null в необязательных полях', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 3,
+          'collection_id': 10,
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'in_progress',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+
+        expect(item.platformId, isNull);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+        expect(item.authorComment, isNull);
+        expect(item.userComment, isNull);
+        expect(item.game, isNull);
+        expect(item.movie, isNull);
+        expect(item.tvShow, isNull);
+        expect(item.platform, isNull);
+      });
+
+    });
+
+    group('fromDbWithJoins', () {
+      test('should create CollectionItem с объектом Game', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'completed',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDbWithJoins(
+          row,
+          game: testGame,
+          platform: testPlatform,
+        );
+
+        expect(item.game, testGame);
+        expect(item.platform, testPlatform);
+        expect(item.movie, isNull);
+        expect(item.tvShow, isNull);
+      });
+
+      test('should create CollectionItem с объектом Movie', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 2,
+          'collection_id': 10,
+          'media_type': 'movie',
+          'external_id': 550,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'completed',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDbWithJoins(
+          row,
+          movie: testMovie,
+        );
+
+        expect(item.movie, testMovie);
+        expect(item.game, isNull);
+        expect(item.tvShow, isNull);
+        expect(item.platform, isNull);
+      });
+
+      test('should create CollectionItem с объектом TvShow', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 3,
+          'collection_id': 10,
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          'platform_id': null,
+          'current_season': 3,
+          'current_episode': 5,
+          'status': 'in_progress',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDbWithJoins(
+          row,
+          tvShow: testTvShow,
+        );
+
+        expect(item.tvShow, testTvShow);
+        expect(item.currentSeason, 3);
+        expect(item.currentEpisode, 5);
+        expect(item.game, isNull);
+        expect(item.movie, isNull);
+      });
+
+      test('should create CollectionItem с объектом Platform', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDbWithJoins(
+          row,
+          platform: testPlatform,
+        );
+
+        expect(item.platform, testPlatform);
+        expect(item.platformName, 'PS4');
+      });
+    });
+
+    group('toDb', () {
+      test('должен конвертировать полный элемент в Map для БД', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          platformId: 48,
+          currentSeason: 0,
+          currentEpisode: 0,
+          status: ItemStatus.completed,
+          authorComment: 'Шедевр',
+          userComment: 'Отлично',
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db['id'], 1);
+        expect(db['collection_id'], 10);
+        expect(db['media_type'], 'game');
+        expect(db['external_id'], 1942);
+        expect(db['platform_id'], 48);
+        expect(db['current_season'], 0);
+        expect(db['current_episode'], 0);
+        expect(db['status'], 'completed');
+        expect(db['author_comment'], 'Шедевр');
+        expect(db['user_comment'], 'Отлично');
+        expect(db['added_at'], testAddedAtUnix);
+      });
+
+      test('должен конвертировать минимальный элемент в Map для БД', () {
+        final CollectionItem item = CollectionItem(
+          id: 2,
+          collectionId: 10,
+          mediaType: MediaType.movie,
+          externalId: 550,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db['id'], 2);
+        expect(db['collection_id'], 10);
+        expect(db['media_type'], 'movie');
+        expect(db['external_id'], 550);
+        expect(db['platform_id'], isNull);
+        expect(db['current_season'], 0);
+        expect(db['current_episode'], 0);
+        expect(db['status'], 'not_started');
+        expect(db['author_comment'], isNull);
+        expect(db['user_comment'], isNull);
+      });
+
+      test('should use status.value для game inProgress', () {
+        final CollectionItem item = CollectionItem(
+          id: 3,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db['status'], 'in_progress');
+      });
+
+      test('should use status.value для movie inProgress', () {
+        final CollectionItem item = CollectionItem(
+          id: 4,
+          collectionId: 10,
+          mediaType: MediaType.movie,
+          externalId: 550,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db['status'], 'in_progress');
+      });
+    });
+
+    group('toExport', () {
+      test('книга несёт native_id — без него её не перезапросить', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.book,
+          externalId: 8193465,
+          source: DataSource.openLibrary,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          book: createTestBook(id: '8193465', nativeId: 'OL8193465W'),
+        );
+
+        expect(item.toExport()['native_id'], 'OL8193465W');
+      });
+
+      test('манга MangaDex несёт UUID, у остальных источников поля нет', () {
+        final CollectionItem mangaDex = CollectionItem(
+          id: 2,
+          collectionId: 10,
+          mediaType: MediaType.manga,
+          externalId: 3151439834073630622,
+          source: DataSource.mangadex,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          manga: createTestManga(
+            id: 3151439834073630622,
+            source: DataSource.mangadex,
+            externalUrl: 'https://mangadex.org/title/uuid-1',
+          ),
+        );
+        final CollectionItem aniList = CollectionItem(
+          id: 3,
+          collectionId: 10,
+          mediaType: MediaType.manga,
+          externalId: 97700,
+          source: DataSource.anilist,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          manga: createTestManga(id: 97700),
+        );
+
+        expect(mangaDex.toExport()['native_id'], 'uuid-1');
+        expect(aniList.toExport().containsKey('native_id'), isFalse);
+      });
+
+      test('должен конвертировать game элемент в JSON', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          platformId: 48,
+          status: ItemStatus.completed,
+          authorComment: 'Шедевр',
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> json = item.toExport();
+
+        expect(json['media_type'], 'game');
+        expect(json['external_id'], 1942);
+        expect(json['platform_id'], 48);
+        expect(json['comment'], 'Шедевр');
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
+      });
+
+      test('должен конвертировать movie элемент в JSON', () {
+        final CollectionItem item = CollectionItem(
+          id: 2,
+          collectionId: 10,
+          mediaType: MediaType.movie,
+          externalId: 550,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> json = item.toExport();
+
+        expect(json['media_type'], 'movie');
+        expect(json['external_id'], 550);
+        expect(json['platform_id'], isNull);
+        expect(json['comment'], isNull);
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
+      });
+
+      test('должен конвертировать tvShow элемент в JSON без status/season/episode', () {
+        final CollectionItem item = CollectionItem(
+          id: 3,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          currentSeason: 3,
+          currentEpisode: 5,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> json = item.toExport();
+
+        expect(json['media_type'], 'tv_show');
+        expect(json['external_id'], 1399);
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
+      });
+
+      test('должен включать platform_id как null если не задан', () {
+        final CollectionItem item = CollectionItem(
+          id: 4,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> json = item.toExport();
+
+        expect(json.containsKey('platform_id'), isTrue);
+        expect(json['platform_id'], isNull);
+      });
+
+      test('должен включать comment как null если authorComment null', () {
+        final CollectionItem item = CollectionItem(
+          id: 5,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> json = item.toExport();
+
+        expect(json.containsKey('comment'), isTrue);
+        expect(json['comment'], isNull);
+      });
+
+      test('должен включать user data при includeUserData = true', () {
+        final DateTime startedAt = DateTime(2024, 2, 1);
+        final DateTime completedAt = DateTime(2024, 3, 15);
+        final DateTime lastActivity = DateTime(2024, 3, 15);
+        final CollectionItem item = CollectionItem(
+          id: 6,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          currentSeason: 3,
+          currentEpisode: 5,
+          status: ItemStatus.inProgress,
+          authorComment: 'Отличный сериал',
+          userComment: 'Мои заметки',
+          userRating: 9,
+          sortOrder: 2,
+          addedAt: testAddedAt,
+          startedAt: startedAt,
+          completedAt: completedAt,
+          lastActivityAt: lastActivity,
+        );
+
+        final Map<String, dynamic> json =
+            item.toExport(includeUserData: true);
+
+        expect(json['media_type'], 'tv_show');
+        expect(json['external_id'], 1399);
+        expect(json['comment'], 'Отличный сериал');
+        expect(json['user_rating'], 9);
+
+        expect(json['status'], 'in_progress');
+        expect(json['user_comment'], 'Мои заметки');
+        expect(json['current_season'], 3);
+        expect(json['current_episode'], 5);
+        expect(json['sort_order'], 2);
+        expect(json['added_at'], testAddedAtUnix);
+        expect(
+          json['started_at'],
+          startedAt.millisecondsSinceEpoch ~/ 1000,
+        );
+        expect(
+          json['completed_at'],
+          completedAt.millisecondsSinceEpoch ~/ 1000,
+        );
+        expect(
+          json['last_activity_at'],
+          lastActivity.millisecondsSinceEpoch ~/ 1000,
+        );
+      });
+
+      test('не должен включать user data при includeUserData = false', () {
+        final CollectionItem item = CollectionItem(
+          id: 7,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          userComment: 'Заметки',
+          addedAt: testAddedAt,
+          startedAt: DateTime(2024, 1, 1),
+        );
+
+        final Map<String, dynamic> json = item.toExport();
+
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('user_comment'), isFalse);
+        expect(json.containsKey('started_at'), isFalse);
+        expect(json.containsKey('completed_at'), isFalse);
+        expect(json.containsKey('last_activity_at'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
+        expect(json.containsKey('added_at'), isFalse);
+        expect(json.containsKey('sort_order'), isFalse);
+      });
+
+      test('should handle null даты при includeUserData = true', () {
+        final CollectionItem item = CollectionItem(
+          id: 8,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> json =
+            item.toExport(includeUserData: true);
+
+        expect(json['started_at'], isNull);
+        expect(json['completed_at'], isNull);
+        expect(json['last_activity_at'], isNull);
+        expect(json['user_comment'], isNull);
+      });
+
+      test('round-trip: toExport(includeUserData) → fromExport сохраняет все данные', () {
+        final DateTime startedAt = DateTime(2024, 2, 1);
+        final DateTime completedAt = DateTime(2024, 3, 15);
+        final CollectionItem original = CollectionItem(
+          id: 9,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          currentSeason: 3,
+          currentEpisode: 5,
+          status: ItemStatus.completed,
+          authorComment: 'Рецензия',
+          userComment: 'Мои заметки',
+          userRating: 8,
+          sortOrder: 3,
+          addedAt: testAddedAt,
+          startedAt: startedAt,
+          completedAt: completedAt,
+        );
+
+        final Map<String, dynamic> exported =
+            original.toExport(includeUserData: true);
+        final CollectionItem restored = CollectionItem.fromExport(exported);
+
+        expect(restored.mediaType, original.mediaType);
+        expect(restored.externalId, original.externalId);
+        expect(restored.status, original.status);
+        expect(restored.authorComment, original.authorComment);
+        expect(restored.userComment, original.userComment);
+        expect(restored.userRating, original.userRating);
+        expect(restored.currentSeason, original.currentSeason);
+        expect(restored.currentEpisode, original.currentEpisode);
+        expect(restored.sortOrder, original.sortOrder);
+        // Compare dates at second precision (unix timestamp).
+        expect(
+          restored.addedAt.millisecondsSinceEpoch ~/ 1000,
+          original.addedAt.millisecondsSinceEpoch ~/ 1000,
+        );
+        expect(
+          restored.startedAt?.millisecondsSinceEpoch,
+          startedAt.millisecondsSinceEpoch ~/ 1000 * 1000,
+        );
+        expect(
+          restored.completedAt?.millisecondsSinceEpoch,
+          completedAt.millisecondsSinceEpoch ~/ 1000 * 1000,
+        );
+      });
+    });
+
+    group('fromExport', () {
+      test('should create CollectionItem из полных экспортных данных', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'comment': 'Шедевр RPG',
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(
+          json,
+          id: 1,
+          collectionId: 10,
+        );
+
+        expect(item.id, 1);
+        expect(item.collectionId, 10);
+        expect(item.mediaType, MediaType.game);
+        expect(item.externalId, 1942);
+        expect(item.platformId, 48);
+        expect(item.authorComment, 'Шедевр RPG');
+        expect(item.status, ItemStatus.notStarted);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+      });
+
+      test('should create CollectionItem из минимальных экспортных данных', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'movie',
+          'external_id': 550,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.id, 0);
+        expect(item.collectionId, isNull);
+        expect(item.mediaType, MediaType.movie);
+        expect(item.externalId, 550);
+        expect(item.platformId, isNull);
+        expect(item.authorComment, isNull);
+        expect(item.status, ItemStatus.notStarted);
+      });
+
+      test('should use дефолтный статус notStarted когда status отсутствует', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 100,
+          'platform_id': null,
+          'comment': null,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.status, ItemStatus.notStarted);
+      });
+
+      test('должен корректно парсить status из JSON для обратной совместимости', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'comment': 'Шедевр',
+          'status': 'completed',
+          'current_season': 0,
+          'current_episode': 0,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.status, ItemStatus.completed);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+      });
+
+      test('should parse все значения status для обратной совместимости', () {
+        for (final ItemStatus status in ItemStatus.values) {
+          final Map<String, dynamic> json = <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 100,
+            'status': status.value,
+          };
+
+          final CollectionItem item = CollectionItem.fromExport(json);
+
+          expect(
+            item.status,
+            status,
+            reason: 'status ${status.value} должен быть корректно распарсен',
+          );
+        }
+      });
+
+      test('should parse tvShow с season/episode для обратной совместимости', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          'status': 'in_progress',
+          'current_season': 3,
+          'current_episode': 5,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.mediaType, MediaType.tvShow);
+        expect(item.status, ItemStatus.inProgress);
+        expect(item.currentSeason, 3);
+        expect(item.currentEpisode, 5);
+      });
+
+      test('should use переданный addedAt', () {
+        final DateTime customDate = DateTime(2023, 6, 15);
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'movie',
+          'external_id': 550,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(
+          json,
+          addedAt: customDate,
+        );
+
+        expect(item.addedAt, customDate);
+      });
+
+      test('should parse user data поля из экспорта', () {
+        final int startedAtUnix = DateTime(2024, 2, 1).millisecondsSinceEpoch ~/ 1000;
+        final int completedAtUnix = DateTime(2024, 3, 15).millisecondsSinceEpoch ~/ 1000;
+        final int lastActivityUnix = DateTime(2024, 3, 15).millisecondsSinceEpoch ~/ 1000;
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          'comment': 'Рецензия',
+          'user_comment': 'Мои заметки',
+          'user_rating': 9,
+          'status': 'completed',
+          'current_season': 5,
+          'current_episode': 16,
+          'sort_order': 7,
+          'added_at': testAddedAtUnix,
+          'started_at': startedAtUnix,
+          'completed_at': completedAtUnix,
+          'last_activity_at': lastActivityUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.authorComment, 'Рецензия');
+        expect(item.userComment, 'Мои заметки');
+        expect(item.userRating, 9);
+        expect(item.status, ItemStatus.completed);
+        expect(item.currentSeason, 5);
+        expect(item.currentEpisode, 16);
+        expect(item.sortOrder, 7);
+        expect(
+          item.addedAt.millisecondsSinceEpoch ~/ 1000,
+          testAddedAtUnix,
+        );
+        expect(
+          item.startedAt?.millisecondsSinceEpoch,
+          startedAtUnix * 1000,
+        );
+        expect(
+          item.completedAt?.millisecondsSinceEpoch,
+          completedAtUnix * 1000,
+        );
+        expect(
+          item.lastActivityAt?.millisecondsSinceEpoch,
+          lastActivityUnix * 1000,
+        );
+      });
+
+      test('should use дефолты для отсутствующих user data полей', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 100,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.userComment, isNull);
+        expect(item.sortOrder, 0);
+        expect(item.startedAt, isNull);
+        expect(item.completedAt, isNull);
+        expect(item.lastActivityAt, isNull);
+      });
+
+      test('added_at из файла имеет приоритет над параметром addedAt', () {
+        final int fileAddedAtUnix = DateTime(2023, 1, 1).millisecondsSinceEpoch ~/ 1000;
+        final DateTime paramAddedAt = DateTime(2025, 1, 1);
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 100,
+          'added_at': fileAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(
+          json,
+          addedAt: paramAddedAt,
+        );
+
+        expect(
+          item.addedAt.millisecondsSinceEpoch ~/ 1000,
+          fileAddedAtUnix,
+        );
+      });
+    });
+
+    group('copyWith', () {
+      test('should create копию с изменёнными полями', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          platformId: 48,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          status: ItemStatus.completed,
+          userComment: 'Пройдено!',
+        );
+
+        expect(copy.id, 1);
+        expect(copy.collectionId, 10);
+        expect(copy.mediaType, MediaType.game);
+        expect(copy.externalId, 1942);
+        expect(copy.platformId, 48);
+        expect(copy.status, ItemStatus.completed);
+        expect(copy.userComment, 'Пройдено!');
+        expect(copy.addedAt, testAddedAt);
+      });
+
+      test('should preserve неизменённые поля', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          currentSeason: 2,
+          currentEpisode: 8,
+          status: ItemStatus.inProgress,
+          authorComment: 'Отличный сериал',
+          addedAt: testAddedAt,
+          tvShow: testTvShow,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          currentEpisode: 9,
+        );
+
+        expect(copy.id, original.id);
+        expect(copy.collectionId, original.collectionId);
+        expect(copy.mediaType, original.mediaType);
+        expect(copy.externalId, original.externalId);
+        expect(copy.currentSeason, original.currentSeason);
+        expect(copy.currentEpisode, 9);
+        expect(copy.status, original.status);
+        expect(copy.authorComment, original.authorComment);
+        expect(copy.addedAt, original.addedAt);
+        expect(copy.tvShow, original.tvShow);
+      });
+
+      test('должен очищать authorComment через clearAuthorComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          authorComment: 'Отличная игра',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearAuthorComment: true);
+
+        expect(copy.authorComment, isNull);
+        expect(copy.id, original.id);
+      });
+
+      test('должен очищать userComment через clearUserComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          userComment: 'Мои заметки',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearUserComment: true);
+
+        expect(copy.userComment, isNull);
+        expect(copy.id, original.id);
+      });
+
+      test('clearAuthorComment должен иметь приоритет над authorComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          authorComment: 'Старый',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          authorComment: 'Новый',
+          clearAuthorComment: true,
+        );
+
+        expect(copy.authorComment, isNull);
+      });
+
+      test('clearUserComment должен иметь приоритет над userComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          userComment: 'Старые заметки',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          userComment: 'Новые заметки',
+          clearUserComment: true,
+        );
+
+        expect(copy.userComment, isNull);
+      });
+
+      test('должен очищать startedAt через clearStartedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+          startedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearStartedAt: true);
+
+        expect(copy.startedAt, isNull);
+        expect(copy.id, original.id);
+      });
+
+      test('должен очищать completedAt через clearCompletedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: testAddedAt,
+          completedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearCompletedAt: true);
+
+        expect(copy.completedAt, isNull);
+        expect(copy.startedAt, original.startedAt);
+        expect(copy.id, original.id);
+      });
+
+      test('clearStartedAt должен иметь приоритет над startedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+          startedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          startedAt: DateTime(2025),
+          clearStartedAt: true,
+        );
+
+        expect(copy.startedAt, isNull);
+      });
+
+      test('clearCompletedAt должен иметь приоритет над completedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          completedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          completedAt: DateTime(2025),
+          clearCompletedAt: true,
+        );
+
+        expect(copy.completedAt, isNull);
+      });
+
+      test('должен позволять изменять joined объекты', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          game: testGame,
+          platform: testPlatform,
+        );
+
+        expect(copy.game, testGame);
+        expect(copy.platform, testPlatform);
+      });
+    });
+
+    group('rewatchCount', () {
+      CollectionItem baseItem({int? rewatchCount, ItemStatus? status}) =>
+          CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: status ?? ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            rewatchCount: rewatchCount,
+          );
+
+      test('fromDb читает rewatch_count, null остаётся null', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 1942,
+          'status': 'completed',
+          'added_at': testAddedAtUnix,
+          'rewatch_count': 3,
+        };
+        expect(CollectionItem.fromDb(row).rewatchCount, 3);
+
+        row['rewatch_count'] = null;
+        expect(CollectionItem.fromDb(row).rewatchCount, isNull);
+      });
+
+      test('toDb пишет rewatch_count как есть (включая null и 0)', () {
+        expect(baseItem(rewatchCount: 2).toDb()['rewatch_count'], 2);
+        expect(baseItem(rewatchCount: 0).toDb()['rewatch_count'], 0);
+        expect(baseItem().toDb()['rewatch_count'], isNull);
+      });
+
+      test('toExport выдаёт rewatch_count только с includeUserData', () {
+        final CollectionItem item = baseItem(rewatchCount: 2);
+        expect(
+          item.toExport().containsKey('rewatch_count'),
+          isFalse,
+        );
+        expect(
+          item.toExport(includeUserData: true)['rewatch_count'],
+          2,
+        );
+      });
+
+      test('fromExport: отсутствие поля → null (старые файлы)', () {
+        final CollectionItem parsed = CollectionItem.fromExport(
+          <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 1942,
+          },
+        );
+        expect(parsed.rewatchCount, isNull);
+      });
+
+      test('round-trip toExport → fromExport сохраняет значение', () {
+        final CollectionItem parsed = CollectionItem.fromExport(
+          baseItem(rewatchCount: 5).toExport(includeUserData: true),
+        );
+        expect(parsed.rewatchCount, 5);
+      });
+
+      test('copyWith меняет и чистит счётчик', () {
+        final CollectionItem item = baseItem(rewatchCount: 1);
+        expect(item.copyWith(rewatchCount: 7).rewatchCount, 7);
+        expect(item.copyWith().rewatchCount, 1);
+        expect(
+          item.copyWith(clearRewatchCount: true).rewatchCount,
+          isNull,
+        );
+      });
+
+      group('withStatus инкремент', () {
+        test('переход в completed: null → 0', () {
+          final CollectionItem updated =
+              baseItem(status: ItemStatus.inProgress)
+                  .withStatus(ItemStatus.completed);
+          expect(updated.rewatchCount, 0);
+        });
+
+        test('replaying → completed: +1', () {
+          final CollectionItem updated =
+              baseItem(rewatchCount: 0, status: ItemStatus.replaying)
+                  .withStatus(ItemStatus.completed);
+          expect(updated.rewatchCount, 1);
+        });
+
+        test('completed → completed: без изменений', () {
+          final CollectionItem updated =
+              baseItem(rewatchCount: 2, status: ItemStatus.completed)
+                  .withStatus(ItemStatus.completed);
+          expect(updated.rewatchCount, 2);
+        });
+
+        test('переход в replaying не меняет счётчик и даты', () {
+          final DateTime started = DateTime(2024, 2, 1);
+          final DateTime completed = DateTime(2024, 3, 1);
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.completed,
+            addedAt: testAddedAt,
+            startedAt: started,
+            completedAt: completed,
+            rewatchCount: 1,
+          );
+
+          final CollectionItem updated =
+              item.withStatus(ItemStatus.replaying);
+          expect(updated.status, ItemStatus.replaying);
+          expect(updated.rewatchCount, 1);
+          expect(updated.startedAt, started);
+          expect(updated.completedAt, completed);
+        });
+      });
+    });
+
+    group('equality', () {
+      test('should be equal другому CollectionItem с тем же id', () {
+        final CollectionItem item1 = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+        final CollectionItem item2 = CollectionItem(
+          id: 1,
+          collectionId: 20,
+          mediaType: MediaType.movie,
+          externalId: 550,
+          status: ItemStatus.completed,
+          addedAt: DateTime(2025, 6, 1),
+        );
+
+        expect(item1, equals(item2));
+        expect(item1.hashCode, equals(item2.hashCode));
+      });
+
+      test('не should be equal CollectionItem с другим id', () {
+        final CollectionItem item1 = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+        final CollectionItem item2 = CollectionItem(
+          id: 2,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item1, isNot(equals(item2)));
+      });
+
+      test('should be equal самому себе (identical)', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item == item, isTrue);
+      });
+
+      test('не should be equal объекту другого типа', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item == Object(), isFalse);
+      });
+    });
+
+    group('toString', () {
+      test('should return читаемое строковое представление', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+        );
+
+        final String result = item.toString();
+
+        expect(result, contains('CollectionItem'));
+        expect(result, contains('id: 1'));
+        expect(result, contains('type: game'));
+        expect(result, contains('externalId: 1942'));
+        expect(result, contains('status: completed'));
+      });
+    });
+
+    group('геттеры', () {
+      group('igdbId', () {
+        test('should return externalId', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.igdbId, 1942);
+          expect(item.igdbId, item.externalId);
+        });
+      });
+
+      group('externalUrl', () {
+        test('should return url активной медиа', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 1942,
+              name: 'The Witcher 3: Wild Hunt',
+              externalUrl: 'https://www.igdb.com/games/the-witcher-3',
+            ),
+          );
+
+          expect(
+            item.externalUrl,
+            'https://www.igdb.com/games/the-witcher-3',
+          );
+        });
+
+        test('should выбрать tvShow для animation с AnimationSource.tvShow',
+            () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            platformId: AnimationSource.tvShow,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Arcane',
+              externalUrl: 'https://www.themoviedb.org/tv/1399',
+            ),
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Wrong',
+              externalUrl: 'https://www.themoviedb.org/movie/550',
+            ),
+          );
+
+          expect(item.externalUrl, 'https://www.themoviedb.org/tv/1399');
+        });
+
+        test('should выбрать movie для animation с AnimationSource.movie',
+            () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            platformId: AnimationSource.movie,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Spirited Away',
+              externalUrl: 'https://www.themoviedb.org/movie/550',
+            ),
+          );
+
+          expect(item.externalUrl, 'https://www.themoviedb.org/movie/550');
+        });
+
+        test('should return собственную ссылку кастома', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.custom,
+            externalId: 1,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            customMedia: const CustomMedia(
+              id: 1,
+              title: 'My Item',
+              externalUrl: 'https://example.com/my-item',
+            ),
+          );
+
+          expect(item.externalUrl, 'https://example.com/my-item');
+        });
+
+        test('should return null когда медиа отсутствует', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.externalUrl, isNull);
+        });
+      });
+
+      group('itemName', () {
+        test('should return имя игры когда game присутствует', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: testGame,
+          );
+
+          expect(item.itemName, 'The Witcher 3: Wild Hunt');
+        });
+
+        test('should return "Unknown Game" когда game null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemName, 'Unknown Game');
+        });
+
+        test('should return название фильма когда movie присутствует', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.itemName, 'Fight Club');
+        });
+
+        test('should return "Unknown Movie" когда movie null', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemName, 'Unknown Movie');
+        });
+
+        test('should return название сериала когда tvShow присутствует', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.itemName, 'Breaking Bad');
+        });
+
+        test('should return "Unknown TV Show" когда tvShow null', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemName, 'Unknown TV Show');
+        });
+
+        test('should return название фильма для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.itemName, 'Fight Club');
+        });
+
+        test('should return название сериала для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.itemName, 'Breaking Bad');
+        });
+
+        test('should return "Unknown Animation" когда movie null для анимации movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 6,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemName, 'Unknown Animation');
+        });
+
+        test('should return "Unknown Animation" когда tvShow null для анимации tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 7,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemName, 'Unknown Animation');
+        });
+      });
+
+      group('platformName', () {
+        test('should return displayName платформы когда platform присутствует', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            platformId: 48,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            platform: testPlatform,
+          );
+
+          expect(item.platformName, 'PS4');
+        });
+
+        test('should return "Unknown Platform" когда platform null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.platformName, 'Unknown Platform');
+        });
+      });
+
+      group('coverUrl', () {
+        test('should return coverUrl игры', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: testGame,
+          );
+
+          expect(item.coverUrl, 'https://example.com/witcher3.jpg');
+        });
+
+        test('should return posterUrl фильма', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.coverUrl, 'https://example.com/fightclub.jpg');
+        });
+
+        test('should return posterUrl сериала', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.coverUrl, 'https://example.com/breakingbad.jpg');
+        });
+
+        test('should return null когда joined объект отсутствует', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.coverUrl, isNull);
+        });
+
+        test('should return posterUrl фильма для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.coverUrl, 'https://example.com/fightclub.jpg');
+        });
+
+        test('should return posterUrl сериала для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.coverUrl, 'https://example.com/breakingbad.jpg');
+        });
+      });
+
+      group('thumbnailUrl', () {
+        test('should return posterThumbUrl фильма для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.thumbnailUrl, testMovie.posterThumbUrl);
+        });
+
+        test('should return posterThumbUrl сериала для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.thumbnailUrl, testTvShow.posterThumbUrl);
+        });
+
+        test('should return null когда movie null для анимации movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 6,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.thumbnailUrl, isNull);
+        });
+
+        test('should return null когда tvShow null для анимации tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 7,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.thumbnailUrl, isNull);
+        });
+      });
+
+      group('apiRating', () {
+        test('should return rating/10 для game', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 1942,
+              name: 'The Witcher 3',
+              coverUrl: '',
+              rating: 85.0,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(8.5, 0.001));
+        });
+
+        test('should return null когда game null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('should return null когда game.rating null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: testGame,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('should return rating фильма as-is', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Fight Club',
+              posterUrl: '',
+              rating: 8.4,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(8.4, 0.001));
+        });
+
+        test('should return null когда movie null', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('should return rating сериала as-is', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Breaking Bad',
+              posterUrl: '',
+              rating: 9.5,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(9.5, 0.001));
+        });
+
+        test('should return null когда tvShow null', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('should return rating tvShow для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Anime Series',
+              posterUrl: '',
+              rating: 8.0,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(8.0, 0.001));
+        });
+
+        test('should return rating movie для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Anime Movie',
+              posterUrl: '',
+              rating: 7.2,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(7.2, 0.001));
+        });
+
+        test('should return 0.0 для game с rating 0', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 100,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 100,
+              name: 'No Rating Game',
+              coverUrl: '',
+              rating: 0.0,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(0.0, 0.001));
+        });
+      });
+
+      group('itemDescription', () {
+        test('should return summary для game', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 1942,
+              name: 'The Witcher 3',
+              coverUrl: '',
+              summary: 'An open-world RPG.',
+            ),
+          );
+
+          expect(item.itemDescription, 'An open-world RPG.');
+        });
+
+        test('should return null когда game null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('should return null когда game.summary null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: testGame,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('should return overview для movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Fight Club',
+              posterUrl: '',
+              overview: 'A depressed man meets Tyler Durden.',
+            ),
+          );
+
+          expect(item.itemDescription, 'A depressed man meets Tyler Durden.');
+        });
+
+        test('should return null когда movie null', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('should return overview для tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Breaking Bad',
+              posterUrl: '',
+              overview: 'A chemistry teacher turns to crime.',
+            ),
+          );
+
+          expect(item.itemDescription, 'A chemistry teacher turns to crime.');
+        });
+
+        test('should return null когда tvShow null', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('should return overview tvShow для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Anime Series',
+              posterUrl: '',
+              overview: 'An anime series overview.',
+            ),
+          );
+
+          expect(item.itemDescription, 'An anime series overview.');
+        });
+
+        test('should return overview movie для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Anime Movie',
+              posterUrl: '',
+              overview: 'An anime movie overview.',
+            ),
+          );
+
+          expect(item.itemDescription, 'An anime movie overview.');
+        });
+
+        test('should return null когда movie null для анимации movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 6,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('should return null когда tvShow null для анимации tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 7,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+      });
+
+      group('hasAuthorComment', () {
+        test('should return true когда authorComment не пустой', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            authorComment: 'Отличная игра',
+            addedAt: testAddedAt,
+          );
+
+          expect(item.hasAuthorComment, isTrue);
+        });
+
+        test('should return false когда authorComment null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.hasAuthorComment, isFalse);
+        });
+
+        test('should return false когда authorComment пустая строка', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            authorComment: '',
+            addedAt: testAddedAt,
+          );
+
+          expect(item.hasAuthorComment, isFalse);
+        });
+      });
+
+      group('hasUserComment', () {
+        test('should return true когда userComment не пустой', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            userComment: 'Моё мнение',
+            addedAt: testAddedAt,
+          );
+
+          expect(item.hasUserComment, isTrue);
+        });
+
+        test('should return false когда userComment null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.hasUserComment, isFalse);
+        });
+
+        test('should return false когда userComment пустая строка', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            userComment: '',
+            addedAt: testAddedAt,
+          );
+
+          expect(item.hasUserComment, isFalse);
+        });
+      });
+
+      group('isCompleted', () {
+        test('should return true когда статус completed', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.completed,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.isCompleted, isTrue);
+        });
+
+        test('should return false когда статус не completed', () {
+          for (final ItemStatus status in ItemStatus.values) {
+            if (status == ItemStatus.completed) continue;
+
+            final CollectionItem item = CollectionItem(
+              id: 1,
+              collectionId: 10,
+              mediaType: MediaType.game,
+              externalId: 1942,
+              status: status,
+              addedAt: testAddedAt,
+            );
+
+            expect(
+              item.isCompleted,
+              isFalse,
+              reason: '${status.name} не должен быть isCompleted',
+            );
+          }
+        });
+      });
+    });
+
+    group('isUncategorized', () {
+      test('should return true когда collectionId null', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.isUncategorized, isTrue);
+        expect(item.collectionId, isNull);
+      });
+
+      test('should return false когда collectionId задан', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.isUncategorized, isFalse);
+        expect(item.collectionId, 10);
+      });
+
+      test('fromDb should create uncategorized при collection_id null', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': null,
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+
+        expect(item.isUncategorized, isTrue);
+        expect(item.collectionId, isNull);
+      });
+
+      test('toDb should preserve null collection_id', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db['collection_id'], isNull);
+      });
+
+      test('copyWith clearCollectionId should set null', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = item.copyWith(clearCollectionId: true);
+
+        expect(copy.collectionId, isNull);
+        expect(copy.isUncategorized, isTrue);
+      });
+
+      test('copyWith clearCollectionId должен иметь приоритет над collectionId', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = item.copyWith(
+          collectionId: 20,
+          clearCollectionId: true,
+        );
+
+        expect(copy.collectionId, isNull);
+      });
+
+      test('copyWith должен позволять установить collectionId на uncategorized item', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.isUncategorized, isTrue);
+
+        final CollectionItem copy = item.copyWith(collectionId: 5);
+
+        expect(copy.collectionId, 5);
+        expect(copy.isUncategorized, isFalse);
+      });
+
+      test('toDb/fromDb round-trip с null collectionId', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          platformId: 48,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = original.toDb();
+        final CollectionItem restored = CollectionItem.fromDb(db);
+
+        expect(restored.collectionId, isNull);
+        expect(restored.isUncategorized, isTrue);
+        expect(restored.externalId, original.externalId);
+        expect(restored.status, original.status);
+      });
+
+      test('fromExport без collectionId should create uncategorized', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'movie',
+          'external_id': 550,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.collectionId, isNull);
+        expect(item.isUncategorized, isTrue);
+      });
+    });
+
+    group('toDb/fromDb round-trip', () {
+      test('should preserve данные game элемента при round-trip', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          platformId: 48,
+          currentSeason: 0,
+          currentEpisode: 0,
+          status: ItemStatus.completed,
+          authorComment: 'Шедевр RPG',
+          userComment: 'Прошёл на 100%',
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = original.toDb();
+        final CollectionItem restored = CollectionItem.fromDb(db);
+
+        expect(restored.id, original.id);
+        expect(restored.collectionId, original.collectionId);
+        expect(restored.mediaType, original.mediaType);
+        expect(restored.externalId, original.externalId);
+        expect(restored.platformId, original.platformId);
+        expect(restored.currentSeason, original.currentSeason);
+        expect(restored.currentEpisode, original.currentEpisode);
+        expect(restored.status, original.status);
+        expect(restored.authorComment, original.authorComment);
+        expect(restored.userComment, original.userComment);
+      });
+
+      test('should preserve данные movie элемента при round-trip', () {
+        final CollectionItem original = CollectionItem(
+          id: 2,
+          collectionId: 10,
+          mediaType: MediaType.movie,
+          externalId: 550,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = original.toDb();
+        final CollectionItem restored = CollectionItem.fromDb(db);
+
+        expect(restored.id, original.id);
+        expect(restored.mediaType, original.mediaType);
+        expect(restored.externalId, original.externalId);
+        expect(restored.status, original.status);
+      });
+
+      test('should preserve данные tvShow элемента при round-trip', () {
+        final CollectionItem original = CollectionItem(
+          id: 3,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          currentSeason: 5,
+          currentEpisode: 16,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = original.toDb();
+        final CollectionItem restored = CollectionItem.fromDb(db);
+
+        expect(restored.id, original.id);
+        expect(restored.mediaType, original.mediaType);
+        expect(restored.externalId, original.externalId);
+        expect(restored.currentSeason, original.currentSeason);
+        expect(restored.currentEpisode, original.currentEpisode);
+        expect(restored.status, original.status);
+      });
+
+      test('должен корректно обработать game inProgress при round-trip', () {
+        final CollectionItem original = CollectionItem(
+          id: 4,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = original.toDb();
+        expect(db['status'], 'in_progress');
+
+        final CollectionItem restored = CollectionItem.fromDb(db);
+        expect(restored.status, ItemStatus.inProgress);
+      });
+    });
+
+    group('sortOrder', () {
+      test('должен иметь sortOrder по умолчанию 0', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.sortOrder, 0);
+      });
+
+      test('should createся с кастомным sortOrder', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 5,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.sortOrder, 5);
+      });
+
+      test('fromDb должен читать sort_order', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 100,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'sort_order': 3,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+        expect(item.sortOrder, 3);
+      });
+
+      test('fromDb should use 0 при отсутствии sort_order', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 100,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+        expect(item.sortOrder, 0);
+      });
+
+      test('toDb должен включать sort_order', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 7,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+        expect(db['sort_order'], 7);
+      });
+
+      test('copyWith должен изменять sortOrder', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 2,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = item.copyWith(sortOrder: 8);
+        expect(copy.sortOrder, 8);
+        expect(item.sortOrder, 2);
+      });
+
+      test('sort_order должен быть в internalDbFields', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.internalDbFields, contains('sort_order'));
+      });
+
+      test('status, current_season, current_episode должны быть в internalDbFields', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.internalDbFields, contains('status'));
+        expect(item.internalDbFields, contains('current_season'));
+        expect(item.internalDbFields, contains('current_episode'));
+      });
+
+      test('toExport не should contain sort_order, status, current_season, current_episode', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 5,
+          currentSeason: 2,
+          currentEpisode: 3,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> exported = item.toExport();
+        expect(exported.containsKey('sort_order'), isFalse);
+        expect(exported.containsKey('status'), isFalse);
+        expect(exported.containsKey('current_season'), isFalse);
+        expect(exported.containsKey('current_episode'), isFalse);
+      });
+    });
+
+    group('completionTime', () {
+      test('should return duration when both dates set', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: DateTime(2025, 1, 1),
+          completedAt: DateTime(2025, 1, 15),
+        );
+        expect(item.completionTime, equals(const Duration(days: 14)));
+      });
+
+      test('should return Duration.zero when same day', () {
+        final DateTime date = DateTime(2025, 3, 1);
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.movie,
+          externalId: 200,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: date,
+          completedAt: date,
+        );
+        expect(item.completionTime, equals(Duration.zero));
+      });
+
+      test('should return null when startedAt missing', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          completedAt: DateTime(2025, 1, 15),
+        );
+        expect(item.completionTime, isNull);
+      });
+
+      test('should return null when completedAt missing', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+          startedAt: DateTime(2025, 1, 1),
+        );
+        expect(item.completionTime, isNull);
+      });
+
+      test('should return null when completedAt before startedAt', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: DateTime(2025, 1, 15),
+          completedAt: DateTime(2025, 1, 1),
+        );
+        expect(item.completionTime, isNull);
+      });
+    });
+
+    group('overrideName', () {
+      const Game ff7 = Game(
+        id: 100,
+        name: 'Final Fantasy VII Remake Intergrade',
+      );
+
+      test('itemName returns override when set', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        expect(item.itemName, 'FF7R');
+        expect(item.cachedName, 'Final Fantasy VII Remake Intergrade');
+      });
+
+      test('itemName falls back to cached name when override is null', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+        );
+        expect(item.itemName, 'Final Fantasy VII Remake Intergrade');
+      });
+
+      test('copyWith sets a new override and clears via clearOverrideName',
+          () {
+        final CollectionItem base = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+        );
+        final CollectionItem renamed = base.copyWith(overrideName: 'FF7R');
+        expect(renamed.overrideName, 'FF7R');
+        final CollectionItem cleared = renamed.copyWith(
+          clearOverrideName: true,
+        );
+        expect(cleared.overrideName, isNull);
+      });
+
+      test('copyWith without override args preserves the existing override',
+          () {
+        final CollectionItem base = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        final CollectionItem copy = base.copyWith(userRating: 9);
+        expect(copy.overrideName, 'FF7R');
+      });
+
+      test('toDb writes override_name (including null)', () {
+        final CollectionItem withOverride = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        expect(withOverride.toDb()['override_name'], 'FF7R');
+        final CollectionItem withoutOverride = withOverride.copyWith(
+          clearOverrideName: true,
+        );
+        expect(withoutOverride.toDb()['override_name'], isNull);
+      });
+
+      test('fromDb reads override_name', () {
+        final CollectionItem fromDb = CollectionItem.fromDb(
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 1,
+            'media_type': 'game',
+            'external_id': 100,
+            'status': 'not_started',
+            'added_at': testAddedAt.millisecondsSinceEpoch ~/ 1000,
+            'override_name': 'FF7R',
+          },
+        );
+        expect(fromDb.overrideName, 'FF7R');
+      });
+
+      test('toExport emits override_name only with includeUserData', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        final Map<String, dynamic> bare = item.toExport();
+        expect(bare.containsKey('override_name'), isFalse);
+        final Map<String, dynamic> full =
+            item.toExport(includeUserData: true);
+        expect(full['override_name'], 'FF7R');
+      });
+
+      test('toExport omits override_name when null even with user data', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+        );
+        final Map<String, dynamic> full =
+            item.toExport(includeUserData: true);
+        expect(full.containsKey('override_name'), isFalse);
+      });
+
+      test('fromExport reads override_name when present', () {
+        final CollectionItem item = CollectionItem.fromExport(
+          <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 100,
+            'status': 'not_started',
+            'override_name': 'FF7R',
+          },
+        );
+        expect(item.overrideName, 'FF7R');
+      });
+
+      test('fromExport defaults override_name to null when absent', () {
+        final CollectionItem item = CollectionItem.fromExport(
+          <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 100,
+            'status': 'not_started',
+          },
+        );
+        expect(item.overrideName, isNull);
+      });
+    });
+
+    group('displayName', () {
+      const Anime anime = Anime(
+        id: 10,
+        title: 'Romaji',
+        titleEnglish: 'English',
+        titleNative: 'ネイティブ',
+      );
+      const Manga manga = Manga(
+        id: 20,
+        title: 'M Romaji',
+        titleEnglish: 'M English',
+        titleNative: 'M ネイティブ',
+      );
+      final DateTime now = DateTime(2025);
+
+      CollectionItem makeAnime({String? override}) => CollectionItem(
+            id: 1,
+            collectionId: null,
+            mediaType: MediaType.anime,
+            externalId: 10,
+            anime: anime,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+            overrideName: override,
+          );
+
+      CollectionItem makeManga({String? override}) => CollectionItem(
+            id: 2,
+            collectionId: null,
+            mediaType: MediaType.manga,
+            externalId: 20,
+            manga: manga,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+            overrideName: override,
+          );
+
+      test('override wins regardless of language setting', () {
+        final CollectionItem item = makeAnime(override: 'Custom');
+        expect(item.displayName('romaji'), 'Custom');
+        expect(item.displayName('english'), 'Custom');
+        expect(item.displayName('native'), 'Custom');
+      });
+
+      test('anime without override uses titleByLanguage', () {
+        final CollectionItem item = makeAnime();
+        expect(item.displayName('romaji'), 'Romaji');
+        expect(item.displayName('english'), 'English');
+        expect(item.displayName('native'), 'ネイティブ');
+      });
+
+      test('manga without override uses titleByLanguage', () {
+        final CollectionItem item = makeManga();
+        expect(item.displayName('english'), 'M English');
+        expect(item.displayName('native'), 'M ネイティブ');
+      });
+
+      test('non anime/manga media types ignore lang and use itemName', () {
+        const Game game = Game(id: 5, name: 'Some Game');
+        final CollectionItem item = CollectionItem(
+          id: 3,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 5,
+          game: game,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.displayName('english'), 'Some Game');
+        expect(item.displayName('native'), 'Some Game');
+      });
+
+      test('falls back to itemName when anime media is null', () {
+        final CollectionItem item = CollectionItem(
+          id: 4,
+          collectionId: null,
+          mediaType: MediaType.anime,
+          externalId: 99,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.displayName('english'), 'Unknown Anime');
+      });
+    });
+
+    group('formatLabel', () {
+      final DateTime now = DateTime(2024);
+
+      test('returns the manga format label for manga items', () {
+        const Manga manga = Manga(id: 1, title: 'M', format: 'MANHWA');
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.manga,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          manga: manga,
+        );
+        expect(item.formatLabel, 'Manhwa');
+      });
+
+      test('returns the anime format label for anime items', () {
+        const Anime anime = Anime(id: 1, title: 'A', format: 'OVA');
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.anime,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          anime: anime,
+        );
+        expect(item.formatLabel, 'OVA');
+      });
+
+      test('is null for non manga/anime media types', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.formatLabel, isNull);
+      });
+
+      test('is null when the manga model is absent', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.manga,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+        );
+        expect(item.formatLabel, isNull);
+      });
+
+      test('uses the custom item format when masquerading as manga', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.custom,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          customMedia: const CustomMedia(
+            id: 1,
+            title: 'Homebrew',
+            displayType: MediaType.manga,
+            format: 'MANHWA',
+          ),
+        );
+        expect(item.formatLabel, 'Manhwa');
+      });
+    });
+
+    group('custom masquerade getters', () {
+      final DateTime now = DateTime(2024);
+
+      CollectionItem customItem({
+        MediaType? displayType,
+        int? platformId,
+        String? format,
+        int? unitTotal,
+        int? unitGroupTotal,
+      }) {
+        return CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.custom,
+          externalId: 1,
+          status: ItemStatus.notStarted,
+          addedAt: now,
+          customMedia: CustomMedia(
+            id: 1,
+            title: 'Custom',
+            displayType: displayType,
+            platformId: platformId,
+            format: format,
+            unitTotal: unitTotal,
+            unitGroupTotal: unitGroupTotal,
+          ),
+        );
+      }
+
+      group('filterTypeBuckets', () {
+        test('puts a masquerading custom item under both its display type and '
+            'Custom', () {
+          final List<MediaType> buckets =
+              customItem(displayType: MediaType.anime).filterTypeBuckets;
+          expect(buckets, containsAll(<MediaType>[
+            MediaType.anime,
+            MediaType.custom,
+          ]));
+          expect(buckets.length, 2);
+        });
+
+        test('puts a plain custom item under Custom only', () {
+          expect(
+            customItem().filterTypeBuckets,
+            <MediaType>[MediaType.custom],
+          );
+        });
+
+        test('puts a non-custom item under its own type only', () {
+          final CollectionItem game = CollectionItem(
+            id: 2,
+            collectionId: 1,
+            mediaType: MediaType.game,
+            externalId: 2,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+          );
+          expect(game.filterTypeBuckets, <MediaType>[MediaType.game]);
+        });
+      });
+
+      group('matchesTypeFilter', () {
+        test('a custom anime matches both the Anime and Custom filters', () {
+          final CollectionItem item =
+              customItem(displayType: MediaType.anime);
+          expect(item.matchesTypeFilter(<MediaType>{MediaType.anime}), isTrue);
+          expect(item.matchesTypeFilter(<MediaType>{MediaType.custom}), isTrue);
+          expect(item.matchesTypeFilter(<MediaType>{MediaType.game}), isFalse);
+        });
+      });
+
+      group('effectivePlatformId', () {
+        test('resolves through the custom item when masquerading as a game', () {
+          expect(
+            customItem(displayType: MediaType.game, platformId: 48)
+                .effectivePlatformId,
+            48,
+          );
+        });
+
+        test('ignores the custom platform for a non-game display type', () {
+          expect(
+            customItem(displayType: MediaType.anime, platformId: 48)
+                .effectivePlatformId,
+            isNull,
+          );
+        });
+
+        test('falls back to the joined platformId for a real game', () {
+          final CollectionItem game = CollectionItem(
+            id: 2,
+            collectionId: 1,
+            mediaType: MediaType.game,
+            externalId: 2,
+            platformId: 7,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+          );
+          expect(game.effectivePlatformId, 7);
+        });
+      });
+
+      group('formatCode', () {
+        test('reads the custom format for a custom manga', () {
+          expect(
+            customItem(displayType: MediaType.manga, format: 'MANHWA')
+                .formatCode,
+            'MANHWA',
+          );
+        });
+
+        test('is null for a display type without a format', () {
+          expect(customItem(displayType: MediaType.game).formatCode, isNull);
+        });
+      });
+
+      group('customUnitTotal / customUnitGroupTotal', () {
+        test('expose the totals stored on the custom item', () {
+          final CollectionItem item = customItem(
+            displayType: MediaType.tvShow,
+            unitTotal: 24,
+            unitGroupTotal: 2,
+          );
+          expect(item.customUnitTotal, 24);
+          expect(item.customUnitGroupTotal, 2);
+        });
+
+        test('are null for a non-custom item', () {
+          final CollectionItem game = CollectionItem(
+            id: 2,
+            collectionId: 1,
+            mediaType: MediaType.game,
+            externalId: 2,
+            status: ItemStatus.notStarted,
+            addedAt: now,
+          );
+          expect(game.customUnitTotal, isNull);
+          expect(game.customUnitGroupTotal, isNull);
+        });
+      });
+
+      group('usesEpisodeTracker', () {
+        CollectionItem itemOf({
+          required MediaType mediaType,
+          int? platformId,
+          Anime? anime,
+        }) =>
+            CollectionItem(
+              id: 1,
+              collectionId: 1,
+              mediaType: mediaType,
+              externalId: 1,
+              status: ItemStatus.notStarted,
+              addedAt: now,
+              platformId: platformId,
+              anime: anime,
+            );
+
+        test('true for TV shows', () {
+          expect(itemOf(mediaType: MediaType.tvShow).usesEpisodeTracker,
+              isTrue);
+        });
+
+        test('animation only when it is the TV-show source', () {
+          expect(
+            itemOf(
+              mediaType: MediaType.animation,
+              platformId: AnimationSource.tvShow,
+            ).usesEpisodeTracker,
+            isTrue,
+          );
+          expect(
+            itemOf(
+              mediaType: MediaType.animation,
+              platformId: AnimationSource.movie,
+            ).usesEpisodeTracker,
+            isFalse,
+          );
+        });
+
+        test('anime only from kitsu — anilist keeps the flat counter', () {
+          expect(
+            itemOf(
+              mediaType: MediaType.anime,
+              anime: const Anime(
+                id: 1,
+                source: DataSource.kitsu,
+                title: 'K',
+              ),
+            ).usesEpisodeTracker,
+            isTrue,
+          );
+          expect(
+            itemOf(
+              mediaType: MediaType.anime,
+              anime: const Anime(
+                id: 1,
+                source: DataSource.anilist,
+                title: 'A',
+              ),
+            ).usesEpisodeTracker,
+            isFalse,
+          );
+        });
+
+        test('false for every other type', () {
+          for (final MediaType type in <MediaType>[
+            MediaType.game,
+            MediaType.movie,
+            MediaType.visualNovel,
+            MediaType.manga,
+            MediaType.book,
+            MediaType.custom,
+          ]) {
+            expect(itemOf(mediaType: type).usesEpisodeTracker, isFalse,
+                reason: type.name);
+          }
+        });
+      });
+    });
+  });
+}

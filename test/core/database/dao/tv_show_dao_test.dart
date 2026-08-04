@@ -1,11 +1,11 @@
+import 'package:core/database/dao/tv_show_dao.dart';
+import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_episode.dart';
+import 'package:core/models/tv_season.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:tonkatsu_box/core/database/dao/tv_show_dao.dart';
-import 'package:tonkatsu_box/shared/models/data_source.dart';
-import 'package:tonkatsu_box/shared/models/tv_episode.dart';
-import 'package:tonkatsu_box/shared/models/tv_season.dart';
-import 'package:tonkatsu_box/shared/models/tv_show.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -38,7 +38,6 @@ void main() {
   }
 
   group('TvShowDao', () {
-    // ==================== TV Shows ====================
 
     group('getTvShowByTmdbId', () {
       test('returns null when not found', () async {
@@ -160,7 +159,6 @@ void main() {
       });
     });
 
-    // ==================== TV Seasons ====================
 
     group('getTvSeasonsByShowId', () {
       test('returns seasons ordered by number', () async {
@@ -229,7 +227,6 @@ void main() {
       });
     });
 
-    // ==================== TV Episodes ====================
 
     group('getEpisodesByShowId', () {
       test('returns episodes ordered by season and number', () async {
@@ -332,7 +329,6 @@ void main() {
       });
     });
 
-    // ==================== Watched Episodes ====================
 
     group('getWatchedEpisodes', () {
       test('returns map of watched episodes', () async {
@@ -436,6 +432,57 @@ void main() {
         expect(data['watched_at'], 1705320000000);
         expect(data['collection_id'], 1);
         expect(data['show_id'], 200);
+      });
+    });
+
+    group('markEpisodesWatchedAt', () {
+      test('opens no transaction for an empty list', () async {
+        // The fake throws when transaction() runs unstubbed.
+        await expectLater(
+          dao.markEpisodesWatchedAt(
+            1,
+            DataSource.tmdb,
+            200,
+            const <(int, int, int?)>[],
+          ),
+          completes,
+        );
+      });
+
+      test('batches every row in one transaction', () async {
+        stubTransaction();
+
+        await dao.markEpisodesWatchedAt(
+          1,
+          DataSource.kitsu,
+          6448,
+          const <(int, int, int?)>[
+            (1, 1, 1705320000000),
+            (3, 42, null),
+          ],
+        );
+
+        final VerificationResult captured = verify(
+          () => mockBatch.insert(
+            'watched_episodes',
+            captureAny(),
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          ),
+        );
+        captured.called(2);
+        final Map<String, dynamic> first =
+            captured.captured[0] as Map<String, dynamic>;
+        final Map<String, dynamic> second =
+            captured.captured[1] as Map<String, dynamic>;
+        expect(first['source'], DataSource.kitsu.name);
+        expect(first['show_id'], 6448);
+        expect(first['season_number'], 1);
+        expect(first['episode_number'], 1);
+        expect(first['watched_at'], 1705320000000);
+        expect(second['season_number'], 3);
+        expect(second['episode_number'], 42);
+        expect(second['watched_at'], isNull);
+        verify(() => mockBatch.commit(noResult: true)).called(1);
       });
     });
 

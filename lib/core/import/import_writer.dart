@@ -1,16 +1,13 @@
+import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
+import 'package:core/models/wishlist_item.dart';
+
 import '../../data/repositories/collection_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
-import '../../shared/models/collection.dart';
-import '../../shared/models/collection_item.dart';
-import '../../shared/models/media_type.dart';
-import '../../shared/models/wishlist_item.dart';
 
-/// One item an adapter wants written to the target collection.
-///
-/// [insertRow] is the full column map for a fresh insert. [changedFields]
-/// returns the columns to update when the item is already present (an empty map
-/// means "leave untouched"), so each source keeps its own re-sync merge policy
-/// while the batch plumbing stays shared.
+/// One item an adapter wants written: [insertRow] for a fresh insert,
+/// [changedFields] for an existing item (empty map = leave untouched).
 class ImportCandidate {
   const ImportCandidate({
     required this.mediaType,
@@ -54,12 +51,14 @@ class WishlistCandidate {
   final String? note;
 }
 
-/// Per-type tallies for one collection write.
+/// Per-type tallies for one collection write, plus the resolved row ids so an
+/// adapter can act on written items without re-reading the whole collection.
 class ImportWriteResult {
   const ImportWriteResult({
     required this.importedByType,
     required this.updatedByType,
     required this.skipped,
+    this.itemIdsByKey = const <String, int>{},
   });
 
   final Map<MediaType, int> importedByType;
@@ -67,16 +66,27 @@ class ImportWriteResult {
 
   /// Items dropped as in-batch duplicates or as unchanged existing items.
   final int skipped;
+
+  /// `collection_items.id` for every candidate that ended up in the collection,
+  /// inserted and already-present alike, keyed by [ImportWriter.itemKey].
+  final Map<String, int> itemIdsByKey;
+
+  /// The row id for one written item, or `null` when it was not written
+  /// (unresolved insert, e.g. a unique-constraint collision).
+  int? idFor(MediaType mediaType, int externalId, int? platformId) =>
+      itemIdsByKey[ImportWriter.itemKey(mediaType, externalId, platformId)];
+
+  /// Row ids of every candidate matching [test]; the common case is "all the
+  /// items this import touched, filtered by some source-side flag".
+  List<int> idsWhere(bool Function(String key) test) => <int>[
+        for (final MapEntry<String, int> e in itemIdsByKey.entries)
+          if (test(e.key)) e.value,
+      ];
 }
 
-/// Shared write-side for importers: resolves the target collection,
-/// batch-writes items (new inserts plus selective updates of existing ones,
-/// de-duplicated within the batch), and batch-writes wishlist fallbacks.
-///
-/// Goes through the repositories, never the DAOs directly, so the data-access
-/// boundary stays in one place (per the app's repository-as-source-of-truth
-/// rule). Media-cache upsert is intentionally left to the adapter — it is
-/// media-type specific (movie / tv / game / anime / manga DAOs).
+/// Shared write-side for importers: target collection, batched item writes and
+/// wishlist fallbacks. Goes through repositories; media-cache upsert stays
+/// with the adapter (media-type specific).
 class ImportWriter {
   const ImportWriter({
     required CollectionRepository collections,
@@ -105,9 +115,8 @@ class ImportWriter {
     return _collections.create(name: newCollectionName, author: author);
   }
 
-  /// Writes [candidates] to [collectionId]: new items are batch-inserted,
-  /// already-present items get the fields their [ImportCandidate.changedFields]
-  /// reports (skipped when empty), and in-batch duplicates are dropped.
+  /// Writes [candidates] to [collectionId]: inserts, [ImportCandidate.changedFields]
+  /// updates for already-present items, in-batch duplicates dropped.
   Future<ImportWriteResult> writeItems({
     required int collectionId,
     required List<ImportCandidate> candidates,
@@ -121,6 +130,9 @@ class ImportWriter {
     final Map<MediaType, int> importedByType = <MediaType, int>{};
     final Map<MediaType, int> updatedByType = <MediaType, int>{};
     final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[];
+    // Keys aligned with [rows], to pair inserted ids back to their candidates.
+    final List<String> insertedKeys = <String>[];
+    final Map<String, int> itemIdsByKey = <String, int>{};
     final List<(int, Map<String, dynamic>)> updates =
         <(int, Map<String, dynamic>)>[];
     final Set<String> seen = <String>{};
@@ -146,10 +158,12 @@ class ImportWriter {
       final CollectionItem? current = existing[key];
       if (current == null) {
         rows.add(candidate.insertRow);
+        insertedKeys.add(key);
         importedByType[candidate.mediaType] =
             (importedByType[candidate.mediaType] ?? 0) + 1;
         importedRunning++;
       } else {
+        itemIdsByKey[key] = current.id;
         final Map<String, dynamic> changed = candidate.changedFields(current);
         if (changed.isEmpty) {
           skipped++;
@@ -165,12 +179,18 @@ class ImportWriter {
           updatedRunning, candidate.label);
     }
 
-    await _collections.addItemsBatch(collectionId, rows);
+    final List<int?> insertedIds =
+        await _collections.addItemsBatchReturningIds(collectionId, rows);
+    for (int i = 0; i < insertedKeys.length && i < insertedIds.length; i++) {
+      final int? id = insertedIds[i];
+      if (id != null) itemIdsByKey[insertedKeys[i]] = id;
+    }
     await _collections.updateItemFieldsBatch(updates);
     return ImportWriteResult(
       importedByType: importedByType,
       updatedByType: updatedByType,
       skipped: skipped,
+      itemIdsByKey: itemIdsByKey,
     );
   }
 

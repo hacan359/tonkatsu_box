@@ -1,10 +1,9 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// TV show identity becomes `(source, show id)`. SQLite can't alter
-/// constraints in place, so the four tv tables are rebuilt with a `source`
-/// discriminator in their keys and existing rows backfilled as `'tmdb'`.
+/// TV show identity becomes `(source, show id)`. SQLite can't alter constraints
+/// in place, so the four tv tables are rebuilt and backfilled as `tmdb`.
 class MigrationV57 extends Migration {
   @override
   int get version => 57;
@@ -72,9 +71,8 @@ class MigrationV57 extends Migration {
     // unique indexes that include source.
     await db.execute('DROP INDEX IF EXISTS idx_ci_coll_other');
     await db.execute('DROP INDEX IF EXISTS idx_ci_uncat_other');
-    // Keep 'book' excluded (source-aware since v48): re-including it here
-    // would make this CREATE UNIQUE INDEX throw on legal cross-source book
-    // duplicates and roll back the whole upgrade.
+    // 'book' stays excluded (source-aware since v48); re-including it would make
+    // this index throw on legal cross-source duplicates and roll the upgrade back.
     await db.execute('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_ci_coll_other
       ON collection_items(collection_id, media_type, external_id)
@@ -168,11 +166,8 @@ class MigrationV57 extends Migration {
   }
 
   Future<void> _rebuildWatchedEpisodes(Database db) async {
-    // The rebuild re-inserts every row under the same foreign key, and the app
-    // runs with `PRAGMA foreign_keys = ON`: a row left pointing at a deleted
-    // collection would fail the insert and roll the whole upgrade back, on
-    // every launch. Such rows are unreachable in the app anyway — every read is
-    // scoped by collection — so they go instead of the upgrade.
+    // With `PRAGMA foreign_keys = ON` a row pointing at a deleted collection would
+    // fail the rebuild insert on every launch. Such rows are unreachable anyway.
     await db.execute(
       'DELETE FROM watched_episodes WHERE NOT EXISTS ('
       'SELECT 1 FROM collections WHERE collections.id = '

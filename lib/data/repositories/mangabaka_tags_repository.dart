@@ -1,9 +1,9 @@
+import 'package:core/database/dao/mangabaka_tag_dao.dart';
+import 'package:core/models/mangabaka_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/mangabaka_api.dart';
-import '../../core/database/dao/mangabaka_tag_dao.dart';
 import '../../core/database/database_service.dart';
-import '../../shared/models/mangabaka_tag.dart';
 
 /// Loads the MangaBaka tag catalog with a SQLite-backed cache.
 ///

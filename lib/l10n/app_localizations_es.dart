@@ -2444,6 +2444,38 @@ class SEs extends S {
   String get searchNoResults => 'Sin resultados';
 
   @override
+  String get searchWhatToFind => 'Qué buscar';
+
+  @override
+  String get searchSortNeedsSingleSource =>
+      'La ordenación está disponible con una sola fuente';
+
+  @override
+  String get searchSortUnavailableInSearch =>
+      'Esta fuente no ordena los resultados de búsqueda';
+
+  @override
+  String get searchSourcesLabel => 'Fuentes';
+
+  @override
+  String get searchTextOnlyHint => 'Solo búsqueda por texto';
+
+  @override
+  String get searchSourceNoResponse => 'no respondió';
+
+  @override
+  String get searchCommonFilters => 'Comunes';
+
+  @override
+  String get searchShowAll => 'todos';
+
+  @override
+  String get searchNarrowedBySource => 'limitado por el filtro de esta fuente';
+
+  @override
+  String get searchSourceLacksValue => 'no admite el valor seleccionado';
+
+  @override
   String searchNothingFoundFor(String query) {
     return 'No se encontró nada para \"$query\"';
   }
@@ -5268,4 +5300,263 @@ class SEs extends S {
   @override
   String get settingsGamepadDebugSubtitle =>
       'Captura los códigos de los botones del mando';
+
+  @override
+  String get statsTabTitle => 'Estadísticas';
+
+  @override
+  String get statsPeriodAllTime => 'Todo el tiempo';
+
+  @override
+  String statsLede(String items) {
+    return 'Un total de $items elementos en tu colección';
+  }
+
+  @override
+  String get statsMetricMoviesWatched => 'películas vistas';
+
+  @override
+  String get statsMetricMangaChapters => 'capítulos de manga';
+
+  @override
+  String get statsMetricBookPages => 'páginas de libros';
+
+  @override
+  String get statsMetricEpisodes => 'episodios';
+
+  @override
+  String get statsMetricHours => 'vistos y jugados';
+
+  @override
+  String get statsMetricAvgRating => 'nota media';
+
+  @override
+  String get statsMetricReplays => 'repeticiones';
+
+  @override
+  String get statsMetricLikedUnits => 'episodios con me gusta';
+
+  @override
+  String statsHoursShort(String hours) {
+    return '$hours h';
+  }
+
+  @override
+  String statsHoursBreakdown(int manual, int tracker, int estimated) {
+    return 'horas: manual $manual h · trackers $tracker h · estimado $estimated h';
+  }
+
+  @override
+  String get statsMonthsTitle => 'Tu año, mes a mes';
+
+  @override
+  String get statsMonthsTitleAllTime => 'Este año, mes a mes';
+
+  @override
+  String get statsMonthsHint => 'portada: el título mejor valorado del mes';
+
+  @override
+  String get statsPeakLabel => 'pico';
+
+  @override
+  String statsMonthCounts(int items, int episodes) {
+    return '$items añadidos · $episodes ep.';
+  }
+
+  @override
+  String get statsVersusTitle => 'Lo mejor y lo peor';
+
+  @override
+  String get statsVersusHint => 'según tus propias notas';
+
+  @override
+  String get statsBest => 'Mejor';
+
+  @override
+  String get statsWorst => 'Peor';
+
+  @override
+  String statsPlatformsSummary(String hours, int games) {
+    return '$hours h · $games juegos';
+  }
+
+  @override
+  String get statsPlatformNone => 'Sin plataforma';
+
+  @override
+  String statsPlatformsShowAll(int count) {
+    return 'Mostrar todas ($count)';
+  }
+
+  @override
+  String get statsPlatformsCollapse => 'Contraer';
+
+  @override
+  String get statsHoursUnit => 'h';
+
+  @override
+  String get statsTypesTitle => 'Biblioteca por tipo';
+
+  @override
+  String get statsTypesHint => 'desglose por estado para cada tipo de medio';
+
+  @override
+  String statsCompletedPercent(int percent) {
+    return '$percent% completado';
+  }
+
+  @override
+  String get statsPlatformMostPlayed => 'más jugados';
+
+  @override
+  String get statsFormatsHint =>
+      'el formato proviene de los datos de la fuente';
+
+  @override
+  String get statsSubgenresTitle => 'Subgéneros y etiquetas';
+
+  @override
+  String get statsSubgenresHint =>
+      'las etiquetas de la fuente se muestran por tipo';
+
+  @override
+  String get statsCrowdTitle => 'Yo contra todos';
+
+  @override
+  String get statsCrowdHint => 'donde mi nota difiere más de la fuente';
+
+  @override
+  String get statsCrowdHigher => 'Yo puntúo más alto';
+
+  @override
+  String get statsCrowdLower => 'Yo puntúo más bajo';
+
+  @override
+  String get statsCrowdMyRating => 'mi nota';
+
+  @override
+  String get statsCrowdSource => 'fuente';
+
+  @override
+  String get statsTopTitle => 'Mejor valorados';
+
+  @override
+  String statsTopHint(int count) {
+    return 'los $count mejores';
+  }
+
+  @override
+  String get statsEmptyTitle => 'Aún no hay estadísticas';
+
+  @override
+  String get statsEmptyBody =>
+      'Añade elementos a tu biblioteca y aparecerán aquí en cifras.';
+
+  @override
+  String get statsExportTitle => 'Exportar tarjeta';
+
+  @override
+  String get statsExportFailed => 'No se pudo guardar la imagen';
+
+  @override
+  String statsShareTitleYear(int year) {
+    return 'Mi $year';
+  }
+
+  @override
+  String get statsShareTitleAllTime => 'Mi biblioteca';
+
+  @override
+  String statsShareLede(String items, String completed, String rating) {
+    return '$items elementos · $completed completados · $rating de media';
+  }
+
+  @override
+  String statsShareBest(String title, String rating) {
+    return '$title · $rating — lo mejor del periodo';
+  }
+
+  @override
+  String get simklImportTitle => 'Importación de Simkl';
+
+  @override
+  String get settingsSimklImportSubtitle =>
+      'Películas, series y anime desde tu cuenta de Simkl';
+
+  @override
+  String get simklImportSubtitle =>
+      'Conecta tu cuenta de Simkl con un código corto: películas, series y anime llegan en una sola importación, junto con el historial de episodios';
+
+  @override
+  String get simklClientIdLabel => 'Clave de la app de Simkl (client_id)';
+
+  @override
+  String get simklGetClientId => 'Obtener un client_id en simkl.com';
+
+  @override
+  String get simklRememberClientId => 'Recordar la clave de la app';
+
+  @override
+  String get simklGetPin => 'Obtener código';
+
+  @override
+  String get simklGetNewPin => 'Obtener un código nuevo';
+
+  @override
+  String get simklPinPrompt => 'Introduce este código en simkl.com/pin:';
+
+  @override
+  String get simklOpenPinPage => 'Abrir simkl.com/pin';
+
+  @override
+  String get simklWaitingConfirmation => 'Esperando confirmación…';
+
+  @override
+  String get simklPinExpired => 'El código ha caducado.';
+
+  @override
+  String simklConnectedAs(String name) {
+    return 'Cuenta conectada: $name';
+  }
+
+  @override
+  String get simklCheckingAccount => 'Comprobando la cuenta…';
+
+  @override
+  String get simklRememberToken => 'Mantener la conexión en este dispositivo';
+
+  @override
+  String get simklRememberTokenSubtitle =>
+      'El token de acceso se guarda en los ajustes; sin la casilla se pedirá el código de nuevo';
+
+  @override
+  String get simklDisconnect => 'Desconectar';
+
+  @override
+  String get simklImportFetching => 'Obteniendo la biblioteca de Simkl…';
+
+  @override
+  String get simklImportFetchingDetails => 'Obteniendo fichas…';
+
+  @override
+  String get simklImportWatchHistory =>
+      'Restaurando el historial de visualización…';
+
+  @override
+  String simklImportNewCollectionDefault(String name) {
+    return 'Simkl: $name';
+  }
+
+  @override
+  String get simklImportModeOverwriteSubtitle =>
+      'Actualizar estado, nota y comentario de los existentes';
+
+  @override
+  String get simklClientIdRequired =>
+      'La importación necesita una clave de la app de Simkl: introduce tu client_id';
+
+  @override
+  String simklImportRateLimitWait(int seconds, int attempt, int max) {
+    return 'Límite de peticiones alcanzado: reintento en $seconds s (intento $attempt/$max)';
+  }
 }
