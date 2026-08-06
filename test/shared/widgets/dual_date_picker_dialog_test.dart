@@ -95,6 +95,77 @@ void main() {
       await t.pump();
       expect(okEnabled(t), isTrue);
     });
+
+    group('allowClear', () {
+      Future<DualDateResult?> openResultAndGet(
+        WidgetTester tester, {
+        required bool allowClear,
+        required Future<void> Function(WidgetTester tester) interact,
+      }) async {
+        DualDateResult? result;
+        bool done = false;
+        await tester.pumpApp(
+          Builder(
+            builder: (BuildContext context) => ElevatedButton(
+              onPressed: () async {
+                result = await showDualDatePickerResult(
+                  context: context,
+                  initialDate: initial,
+                  firstDate: first,
+                  lastDate: last,
+                  allowClear: allowClear,
+                );
+                done = true;
+              },
+              child: const Text('open'),
+            ),
+          ),
+          wrapInScaffold: true,
+        );
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+        await interact(tester);
+        await tester.pumpAndSettle();
+        expect(done, isTrue, reason: 'dialog should have been dismissed');
+        return result;
+      }
+
+      testWidgets('hides the clear action by default', (WidgetTester t) async {
+        await _open(t, initial, first, last);
+        expect(find.text('No date'), findsNothing);
+      });
+
+      testWidgets('clear action returns a cleared result', (WidgetTester t) async {
+        final DualDateResult? r = await openResultAndGet(
+          t,
+          allowClear: true,
+          interact: (WidgetTester t) async => t.tap(find.text('No date')),
+        );
+        expect(r, isNotNull);
+        expect(r!.cleared, isTrue);
+        expect(r.date, isNull);
+      });
+
+      testWidgets('confirm still returns the picked date', (WidgetTester t) async {
+        final DualDateResult? r = await openResultAndGet(
+          t,
+          allowClear: true,
+          interact: (WidgetTester t) async => t.tap(find.text('OK')),
+        );
+        expect(r, isNotNull);
+        expect(r!.cleared, isFalse);
+        expect(r.date, DateTime(2024, 3, 15));
+      });
+
+      testWidgets('cancel returns null result', (WidgetTester t) async {
+        final DualDateResult? r = await openResultAndGet(
+          t,
+          allowClear: true,
+          interact: (WidgetTester t) async => t.tap(find.text('Cancel')),
+        );
+        expect(r, isNull);
+      });
+    });
   });
 }
 

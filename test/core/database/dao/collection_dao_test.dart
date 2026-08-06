@@ -1256,6 +1256,61 @@ void main() {
           ),
         );
       });
+
+      test('writes explicit NULLs when the clear flags are set', () async {
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.updateItemActivityDates(
+          1,
+          clearStartedAt: true,
+          clearCompletedAt: true,
+        );
+
+        verify(
+          () => mockDb.update(
+            'collection_items',
+            <String, dynamic>{
+              'started_at': null,
+              'completed_at': null,
+            },
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+      });
+
+      test('clear flag wins over a supplied date for the same field', () async {
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.updateItemActivityDates(
+          1,
+          completedAt: DateTime(2024, 6, 15),
+          clearCompletedAt: true,
+        );
+
+        verify(
+          () => mockDb.update(
+            'collection_items',
+            <String, dynamic>{'completed_at': null},
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+      });
     });
 
     group('updateItemProgress', () {

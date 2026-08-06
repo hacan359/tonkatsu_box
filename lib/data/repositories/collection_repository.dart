@@ -288,12 +288,16 @@ class CollectionRepository {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    bool clearStartedAt = false,
+    bool clearCompletedAt = false,
   }) async {
     await _db.updateItemActivityDates(
       id,
       startedAt: startedAt,
       completedAt: completedAt,
       lastActivityAt: lastActivityAt,
+      clearStartedAt: clearStartedAt,
+      clearCompletedAt: clearCompletedAt,
     );
   }
 

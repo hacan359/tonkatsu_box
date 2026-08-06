@@ -61,6 +61,8 @@ void main() {
           startedAt: any(named: 'startedAt'),
           completedAt: any(named: 'completedAt'),
           lastActivityAt: any(named: 'lastActivityAt'),
+          clearStartedAt: any(named: 'clearStartedAt'),
+          clearCompletedAt: any(named: 'clearCompletedAt'),
         )).thenAnswer((_) async {});
   });
 

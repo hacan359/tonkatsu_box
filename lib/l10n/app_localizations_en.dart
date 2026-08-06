@@ -3195,6 +3195,9 @@ class SEn extends S {
   String get settingsAnimeMangaTitleLanguageNative => 'Native';
 
   @override
+  String get dualDatePickerNoDate => 'No date';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Enter a date';
 
   @override

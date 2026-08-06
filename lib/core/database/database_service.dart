@@ -443,12 +443,16 @@ class DatabaseService {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    bool clearStartedAt = false,
+    bool clearCompletedAt = false,
   }) =>
       collectionDao.updateItemActivityDates(
         id,
         startedAt: startedAt,
         completedAt: completedAt,
         lastActivityAt: lastActivityAt,
+        clearStartedAt: clearStartedAt,
+        clearCompletedAt: clearCompletedAt,
       );
 
   Future<List<({int id, int? collectionId, int? platformId})>>

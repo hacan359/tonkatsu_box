@@ -911,50 +911,56 @@ class CollectionItemsNotifier
     await _db.reorderItems(_collectionId, orderedIds);
   }
 
-  /// Auto-syncs status:
-  /// - setting [completedAt] forces `completed` from any state;
-  /// - setting [startedAt] promotes `notStarted`/`planned` to `inProgress`
-  ///   (others unchanged).
+  /// Setting a date auto-syncs status (completedAt forces `completed`,
+  /// startedAt promotes to `inProgress`); the `clear*` flags bypass that sync.
   Future<void> updateActivityDates(
     int id, {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    bool clearStartedAt = false,
+    bool clearCompletedAt = false,
   }) async {
+    final List<CollectionItem>? items = state.valueOrNull;
+    ItemStatus? newStatus;
+    MediaType? mediaType;
+
+    if (items != null && (completedAt != null || startedAt != null)) {
+      final CollectionItem? target =
+          items.where((CollectionItem i) => i.id == id).firstOrNull;
+      if (target != null) {
+        mediaType = target.mediaType;
+        newStatus = computeStatusForDates(
+          currentStatus: target.status,
+          newCompletedAt: completedAt,
+          newStartedAt: startedAt,
+        );
+      }
+    }
+
+    if (newStatus != null && mediaType != null) {
+      await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
+    }
+
+    // Strictly after the status write: the completed transition stamps
+    // completed_at = now, which must not clobber an explicit user date.
     await _repository.updateItemActivityDates(
       id,
       startedAt: startedAt,
       completedAt: completedAt,
       lastActivityAt: lastActivityAt,
+      clearStartedAt: clearStartedAt,
+      clearCompletedAt: clearCompletedAt,
     );
 
-    final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
-      ItemStatus? newStatus;
-      MediaType? mediaType;
-
-      if (completedAt != null || startedAt != null) {
-        final CollectionItem? target =
-            items.where((CollectionItem i) => i.id == id).firstOrNull;
-        if (target != null) {
-          mediaType = target.mediaType;
-          newStatus = computeStatusForDates(
-            currentStatus: target.status,
-            newCompletedAt: completedAt,
-            newStartedAt: startedAt,
-          );
-        }
-      }
-
-      if (newStatus != null && mediaType != null) {
-        await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
-      }
-
       _patchItem(
         id,
         (CollectionItem i) => i.copyWith(
           startedAt: startedAt ?? i.startedAt,
           completedAt: completedAt ?? i.completedAt,
+          clearStartedAt: clearStartedAt,
+          clearCompletedAt: clearCompletedAt,
           lastActivityAt: lastActivityAt ?? i.lastActivityAt,
           status: newStatus ?? i.status,
           rewatchCount: computeRewatchCountForStatus(

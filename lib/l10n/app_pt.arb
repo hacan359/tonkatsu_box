@@ -1663,6 +1663,7 @@
   "settingsAnimeMangaTitleLanguageRomaji": "Romaji",
   "settingsAnimeMangaTitleLanguageEnglish": "Inglês",
   "settingsAnimeMangaTitleLanguageNative": "Nativo",
+  "dualDatePickerNoDate": "Sem data",
   "dualDatePickerErrorEmpty": "Digite uma data",
   "dualDatePickerErrorFormat": "Use o formato yyyy-MM-dd",
   "dualDatePickerErrorRange": "Data fora do intervalo",
