@@ -15,6 +15,7 @@ import '../../../core/import/sources/custom_file/custom_cards_import_service.dar
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -358,11 +359,13 @@ class _CreateCustomItemDialogState
           style: AppTypography.h2,
         ),
         actions: <Widget>[
-          IconButton(
-            onPressed: _fillFromFile,
-            icon: const Icon(Icons.upload_file),
-            tooltip: l.customItemFillFromFile,
-          ),
+          // Prefill reads a local JSON/CSV file — no filesystem on web.
+          if (!kIsWebBuild)
+            IconButton(
+              onPressed: _fillFromFile,
+              icon: const Icon(Icons.upload_file),
+              tooltip: l.customItemFillFromFile,
+            ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: TextButton(

@@ -10,6 +10,7 @@ export 'package:core/models/image_type.dart';
 import 'package:core/models/image_type.dart';
 import 'package:core/models/profile.dart';
 
+import '../../shared/constants/platform_features.dart';
 import 'profile_service.dart';
 import 'storage_root.dart';
 
@@ -39,10 +40,10 @@ class ImageCacheService {
 
     final String basePath = (await StorageRoot.resolve()).path;
 
-    // If the profile system is initialized, the cache lives in the profile folder
-    final File profilesFile =
-        File(p.join(basePath, StorageRoot.profilesFileName));
-    if (profilesFile.existsSync()) {
+    // If the profile system is initialized, the cache lives in the profile
+    // folder. Web cannot stat files — profiles always exist there.
+    if (kIsWebBuild ||
+        File(p.join(basePath, StorageRoot.profilesFileName)).existsSync()) {
       final ProfileService profileService = ProfileService();
       final ProfilesData data = await profileService.loadProfiles();
       return p.join(
@@ -72,6 +73,9 @@ class ImageCacheService {
   }
 
   Future<bool> isCacheEnabled() async {
+    // No filesystem on web — images always come from the network (phase 5
+    // will route them through the server proxy/cache).
+    if (kIsWebBuild) return false;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
   }
@@ -88,6 +92,7 @@ class ImageCacheService {
 
   /// Returns null if the file does not exist or is empty.
   Future<Uint8List?> readImageBytes(ImageType type, String imageId) async {
+    if (kIsWebBuild) return null;
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     if (!file.existsSync() || file.lengthSync() == 0) {
@@ -103,7 +108,7 @@ class ImageCacheService {
     String imageId,
     Uint8List bytes,
   ) async {
-    if (bytes.isEmpty) return false;
+    if (bytes.isEmpty || kIsWebBuild) return false;
     try {
       final String path = await getLocalImagePath(type, imageId);
       final File file = File(path);
@@ -120,6 +125,7 @@ class ImageCacheService {
   }
 
   Future<bool> isImageCached(ImageType type, String imageId) async {
+    if (kIsWebBuild) return false;
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     return file.existsSync() && _isValidImageFile(file);
@@ -127,6 +133,7 @@ class ImageCacheService {
 
   /// Tolerates files locked by another process on Windows.
   Future<void> deleteImage(ImageType type, String imageId) async {
+    if (kIsWebBuild) return;
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     if (file.existsSync()) {

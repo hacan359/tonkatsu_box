@@ -7,6 +7,68 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Experimental web build (selfhost, phase 2)**
+
+  The app now compiles and boots in the browser. Data lives in an in-browser
+  SQLite database and starts empty — server-backed storage arrives in a later
+  phase. Features that need a local filesystem are hidden on web: collection
+  import/export, backups, the data folder, LAN sync, PNG export, cover/hero
+  file picking and the disk image cache. The browser tab and PWA icons use the
+  brand logo.
+
+  * web/: New. Flutter web bootstrap (index.html, manifest.json), the
+    sqflite_common_ffi_web worker (sqflite_sw.js, sqlite3.wasm), favicon and
+    icons generated from assets/icon/icon.png.
+  * lib/core/services/platform_init_io.dart,
+    lib/core/services/platform_init_web.dart (initPlatform): New. Per-target
+    startup seam — HttpOverrides + ffi database factory on desktop, the
+    in-browser factory on web.
+  * lib/main.dart (main): Platform setup goes through the initPlatform
+    conditional import instead of inline dart:io checks.
+  * lib/core/services/discord_presence_shim.dart,
+    discord_presence_shim_io.dart, discord_presence_shim_web.dart (DiscordRPC,
+    DiscordPresence, DiscordAsset, DiscordTimestamps): New. Facade over
+    dart_discord_presence, which pulls dart:ffi the web compile cannot import.
+  * packages/core/lib/utils/stable_id.dart, stable_id_io.dart,
+    stable_id_web.dart (fnv1a64): Split per target — native keeps raw 64-bit
+    int math, dart2js gets exact BigInt wrap math; values are bit-identical.
+  * lib/shared/constants/platform_features.dart (kIsWebBuild): Now a
+    compile-time const so dart2js tree-shakes desktop-only screens.
+  * lib/core/services/profile_service.dart (ProfileService.loadProfiles,
+    _saveProfiles, migrateIfNeeded, getProfileStats, restartApp): Profiles are
+    stored in SharedPreferences on web; profile folders and pre-profile
+    migration are skipped.
+  * lib/core/services/storage_root.dart (StorageRoot.defaultPath,
+    StorageRoot.resolve): Web uses a fixed virtual root; custom data folders
+    stay a desktop concept.
+  * lib/core/database/database_service.dart (DatabaseService._initDatabase),
+    lib/core/services/backup_service.dart, db_sync_service.dart: Import the
+    pure sqflite_common API instead of sqflite_common_ffi so the files compile
+    for web.
+  * lib/core/services/image_cache_service.dart (ImageCacheService),
+    collection_hero_service.dart (CollectionHeroService),
+    screenscraper_cache_service.dart (ScreenScraperCacheService): Disk caches
+    are no-ops on web; images come straight from the network.
+  * lib/core/services/export_service.dart (ExportService.exportCollection),
+    import_service.dart (ImportService.pickAndParseFile): Web backstops for
+    shortcut paths whose menu entries are already hidden.
+  * lib/features/settings/screens/settings_screen.dart,
+    lib/features/settings/content/database_content.dart,
+    lib/features/collections/screens/home_screen.dart,
+    lib/features/collections/widgets/bulk_action_bar.dart,
+    collection_screen_fab.dart, create_custom_item_dialog.dart,
+    edit_collection_dialog.dart: Filesystem-bound actions hidden behind
+    !kIsWebBuild.
+  * lib/core/services/gamepad_mappings.dart
+    (GamepadMapping.forCurrentPlatform): Returns an inert mapping on web
+    before touching Platform.
+  * pubspec.yaml: Add sqflite_common, sqflite_common_ffi_web; web section in
+    the flutter_launcher_icons config.
+  * packages/core/test/utils/stable_id_test.dart: New. Golden vectors pin the
+    id contract; io and web variants must agree.
+
 ## [0.41.0] - 2026-08-04
 
 ### Added

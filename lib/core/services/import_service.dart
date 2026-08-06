@@ -34,6 +34,7 @@ import 'package:logging/logging.dart';
 
 import '../../data/repositories/canvas_repository.dart';
 import '../../data/repositories/collection_repository.dart';
+import '../../shared/constants/platform_features.dart';
 import 'package:core/models/platform.dart' as model;
 import '../api/anilist_api.dart';
 import '../api/comicvine_api.dart';
@@ -196,6 +197,12 @@ class ImportService {
 
   /// Returns null if the user cancelled. Throws [FormatException] on invalid file.
   Future<XcollFile?> pickAndParseFile() async {
+    // Backstop for shortcut paths: the menu entries are already hidden.
+    if (kIsWebBuild) {
+      throw UnsupportedError(
+        'Import from a file is not available in the web build yet',
+      );
+    }
     // Android's FileType.custom does not filter custom extensions.
     final bool useAny = Platform.isAndroid;
     final FilePickerResult? result = await FilePicker.platform.pickFiles(

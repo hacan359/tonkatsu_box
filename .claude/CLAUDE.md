@@ -451,6 +451,42 @@ new `dart:io` import is a file the web build cannot compile. Add a flag instead.
 `defaultTargetPlatform` is not a substitute: it reports android in tests running
 on Windows.
 
+### Web build (selfhost, phase 2 — in progress)
+
+The app compiles and boots in the browser. This is a stopgap: SQLite runs
+**in-browser** via `sqflite_common_ffi_web` with an empty DB
+(`platform_init_web.dart`); the real backend is the DAO-RPC server (phase 3),
+image caching goes through the server proxy in phase 5.
+
+```bash
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter run -d chrome"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter build web"
+```
+
+How web is kept compilable — three seams, in order of preference:
+
+1. **A `platform_features` flag** (`kIsWebBuild` & co) for behavior switches —
+   e.g. `ImageCacheService` returns "not cached" on web instead of touching `File`.
+2. **Conditional import of an `initPlatform()`-style pair**
+   (`platform_init_io.dart` / `platform_init_web.dart` in `main.dart`) when the
+   io side needs imports web cannot even parse (`dart:ffi`, `sqflite_common_ffi`).
+3. **A shim facade over an ffi-pulling package** — `discord_presence_shim.dart`
+   exports `_io`/`_web` variants; the web one is a no-op with the same API.
+
+Rules while the web phase is in flight:
+
+- Any change must keep **all three** targets green: Windows, Android, web.
+  `flutter analyze` does not catch web-only breaks — a `dart:io` import in a
+  newly reachable file only fails at `flutter build web`.
+- `web/sqflite_sw.js` and `web/sqlite3.wasm` are **generated** by
+  `dart run sqflite_common_ffi_web:setup` — never hand-edit; regenerate after
+  upgrading `sqflite_common_ffi_web`.
+- Web icons (`web/favicon.png`, `web/icons/*`) are generated from
+  `assets/icon/icon.png` by `dart run flutter_launcher_icons` (config in
+  `pubspec.yaml`) — regenerate, don't hand-edit.
+- Imports in shared code: `package:sqflite_common/sqflite.dart` (pure API),
+  never `sqflite_common_ffi` outside `platform_init_io.dart`.
+
 ### Gamepad support (D-pad navigation)
 
 D-pad and the A button are handled globally in `NavigationShell` via

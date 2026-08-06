@@ -4,7 +4,7 @@
 # This file should be version controlled and should not be manually edited.
 
 version:
-  revision: "67323de285b00232883f53b84095eb72be97d35c"
+  revision: "058e0af2c2b57e369d905a03ac9748b0ebf543c6"
   channel: "stable"
 
 project_type: app
@@ -21,6 +21,9 @@ migration:
     - platform: linux
       create_revision: 67323de285b00232883f53b84095eb72be97d35c
       base_revision: 67323de285b00232883f53b84095eb72be97d35c
+    - platform: web
+      create_revision: 058e0af2c2b57e369d905a03ac9748b0ebf543c6
+      base_revision: 058e0af2c2b57e369d905a03ac9748b0ebf543c6
 
   # User provided section
 

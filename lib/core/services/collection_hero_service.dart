@@ -12,6 +12,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../shared/constants/platform_features.dart';
 import 'storage_root.dart';
 
 /// Overridden in `main.dart` with the value resolved at app startup.
@@ -43,6 +44,8 @@ class CollectionHeroService {
     final StorageRootResolution root = await StorageRoot.resolve();
     final String newDir =
         p.join(root.path, StorageRoot.collectionsFolderName);
+    // No filesystem on web: the dir is virtual and legacy migration moot.
+    if (kIsWebBuild) return newDir;
     await Directory(newDir).create(recursive: true);
 
     final Directory appDir = await getApplicationSupportDirectory();
@@ -148,7 +151,7 @@ class CollectionHeroService {
   }
 
   Future<void> delete(String? fileName) async {
-    if (fileName == null || fileName.isEmpty) return;
+    if (fileName == null || fileName.isEmpty || kIsWebBuild) return;
     final File f = File(absolutePathFor(fileName));
     if (f.existsSync()) {
       try {
@@ -161,6 +164,7 @@ class CollectionHeroService {
 
   /// Used for backups.
   List<File> listAll() {
+    if (kIsWebBuild) return <File>[];
     final Directory d = Directory(_rootDir);
     if (!d.existsSync()) return <File>[];
     return d

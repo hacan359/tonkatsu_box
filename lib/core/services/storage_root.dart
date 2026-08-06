@@ -8,7 +8,9 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqflite.dart';
+
+import '../../shared/constants/platform_features.dart';
 
 /// Verdict on whether a data directory's database can be opened by this
 /// build.
@@ -88,11 +90,16 @@ class StorageRoot {
     final Future<String> Function()? override = defaultPathProvider;
     if (override != null) return override();
 
+    const String folderName =
+        kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
+
+    // On web the path is only a key for the in-browser stub DB (phase 3
+    // moves storage server-side), so a fixed virtual root suffices.
+    if (kIsWebBuild) return '/$folderName';
+
     // AppSupport rather than Documents: Documents may sit under OneDrive,
     // which blocks file creation (PathAccessException).
     final Directory appDir = await getApplicationSupportDirectory();
-    const String folderName =
-        kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
     return p.join(appDir.path, folderName);
   }
 
@@ -128,7 +135,9 @@ class StorageRoot {
   /// data loss), and a database that fails [validateDataDir] — e.g. a
   /// sync client delivered a newer-schema or half-written file.
   static Future<StorageRootResolution> resolve() async {
-    final String? custom = await customDir();
+    // Custom data folders are a desktop concept; web always uses the
+    // virtual default root.
+    final String? custom = kIsWebBuild ? null : await customDir();
     if (custom == null) {
       return StorageRootResolution(path: await defaultPath());
     }

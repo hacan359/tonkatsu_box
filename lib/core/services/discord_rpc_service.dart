@@ -5,12 +5,12 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/ra_user_profile.dart';
 import 'package:core/models/tracker_game_data.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
-import 'package:dart_discord_presence/dart_discord_presence.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../api/ra_api.dart';
 import '../../shared/constants/platform_features.dart';
+import 'discord_presence_shim.dart';
 
 /// Application ID from the Discord Developer Portal.
 const String _kApplicationId = '1492141877456015491';

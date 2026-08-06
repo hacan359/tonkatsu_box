@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/collection_hero_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -181,38 +182,41 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
                     ? null
                     : _descriptionController.text.trim(),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                l.collectionEditHeroImageHint,
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textTertiary,
+              // The hero picker reads a local image file — no filesystem on
+              // web until the server proxy phase.
+              if (!kIsWebBuild) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l.collectionEditHeroImageHint,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _saving ? null : _pickImage,
-                      icon: const Icon(Icons.image_outlined, size: 18),
-                      label: Text(
-                        heroAbsPath != null
-                            ? l.collectionEditHeroReplace
-                            : l.collectionEditHeroPick,
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _saving ? null : _pickImage,
+                        icon: const Icon(Icons.image_outlined, size: 18),
+                        label: Text(
+                          heroAbsPath != null
+                              ? l.collectionEditHeroReplace
+                              : l.collectionEditHeroPick,
+                        ),
                       ),
                     ),
-                  ),
-                  if (heroAbsPath != null) ...<Widget>[
-                    const SizedBox(width: AppSpacing.sm),
-                    IconButton.outlined(
-                      onPressed: _saving ? null : _removeImage,
-                      icon: const Icon(Icons.delete_outline, size: 18),
-                      tooltip: l.collectionEditHeroRemove,
-                    ),
+                    if (heroAbsPath != null) ...<Widget>[
+                      const SizedBox(width: AppSpacing.sm),
+                      IconButton.outlined(
+                        onPressed: _saving ? null : _removeImage,
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        tooltip: l.collectionEditHeroRemove,
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.lg),
 
               TextFormField(

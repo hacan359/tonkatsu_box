@@ -38,8 +38,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqflite.dart';
 
+import '../../shared/constants/platform_features.dart';
 import '../services/profile_service.dart';
 import '../services/storage_root.dart';
 
@@ -234,11 +235,11 @@ class DatabaseService {
   Future<Database> _initDatabase() async {
     final String basePath = (await StorageRoot.resolve()).path;
 
-    // If profile system is initialised, use the per-profile path.
+    // If profile system is initialised, use the per-profile path. Web has no
+    // filesystem to probe — profiles come from prefs and always exist.
     final String dbDir;
-    final File profilesFile =
-        File(p.join(basePath, StorageRoot.profilesFileName));
-    if (profilesFile.existsSync()) {
+    if (kIsWebBuild ||
+        File(p.join(basePath, StorageRoot.profilesFileName)).existsSync()) {
       final ProfileService profileService = ProfileService();
       final ProfilesData data = await profileService.loadProfiles();
       dbDir = p.join(
@@ -252,9 +253,11 @@ class DatabaseService {
 
     final String dbPath = p.join(dbDir, StorageRoot.dbFileName);
 
-    final Directory dir = Directory(dbDir);
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
+    if (!kIsWebBuild) {
+      final Directory dir = Directory(dbDir);
+      if (!dir.existsSync()) {
+        await dir.create(recursive: true);
+      }
     }
 
     _log.info(

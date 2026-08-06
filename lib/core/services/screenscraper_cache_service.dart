@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../shared/constants/platform_features.dart';
 import '../api/screenscraper_api.dart';
 
 final Provider<ScreenScraperCacheService> screenScraperCacheServiceProvider =
@@ -64,6 +65,8 @@ class ScreenScraperCacheService {
   }
 
   Future<void> writeGame(String key, SsGame game) async {
+    // The disk cache is off on web; reads fail soft via their catch-alls.
+    if (kIsWebBuild) return;
     final File f = await _fileFor(key);
     final Map<String, dynamic> payload = <String, dynamic>{
       'id': game.id,
@@ -83,6 +86,7 @@ class ScreenScraperCacheService {
   }
 
   Future<void> writeNotFound(String key) async {
+    if (kIsWebBuild) return;
     final File f = await _fileFor(key);
     await f.writeAsString(jsonEncode(<String, bool>{'_notFound': true}));
   }

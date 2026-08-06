@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/config_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -32,85 +33,88 @@ class DatabaseContent extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        SettingsGroup(
-          title: l10n.databaseConfiguration,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: Text(
-                l10n.databaseConfigSubtitle,
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+        // Config files, data folders, LAN sync and backups all need a local
+        // filesystem — web only keeps the danger zone (pure SQL).
+        if (!kIsWebBuild) ...<Widget>[
+          SettingsGroup(
+            title: l10n.databaseConfiguration,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                child: Text(
+                  l10n.databaseConfigSubtitle,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: LayoutBuilder(
-                builder:
-                    (BuildContext context, BoxConstraints constraints) {
-                  final Widget exportButton = OutlinedButton.icon(
-                    onPressed: () => _exportConfig(context, ref),
-                    icon: const Icon(Icons.upload, size: 18),
-                    label: Text(l10n.databaseExportConfig),
-                  );
-                  final Widget importButton = OutlinedButton.icon(
-                    onPressed: () => _importConfig(context, ref),
-                    icon: const Icon(Icons.download, size: 18),
-                    label: Text(l10n.databaseImportConfig),
-                  );
-                  if (constraints.maxWidth < 400) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                child: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final Widget exportButton = OutlinedButton.icon(
+                      onPressed: () => _exportConfig(context, ref),
+                      icon: const Icon(Icons.upload, size: 18),
+                      label: Text(l10n.databaseExportConfig),
+                    );
+                    final Widget importButton = OutlinedButton.icon(
+                      onPressed: () => _importConfig(context, ref),
+                      icon: const Icon(Icons.download, size: 18),
+                      label: Text(l10n.databaseImportConfig),
+                    );
+                    if (constraints.maxWidth < 400) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          exportButton,
+                          const SizedBox(height: AppSpacing.sm),
+                          importButton,
+                        ],
+                      );
+                    }
+                    return Row(
                       children: <Widget>[
-                        exportButton,
-                        const SizedBox(height: AppSpacing.sm),
-                        importButton,
+                        Expanded(child: exportButton),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(child: importButton),
                       ],
                     );
-                  }
-                  return Row(
-                    children: <Widget>[
-                      Expanded(child: exportButton),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(child: importButton),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-
-        const StorageLocationSection(),
-        const SizedBox(height: AppSpacing.md),
-
-        SettingsGroup(
-          title: l10n.lanSyncTitle,
-          children: <Widget>[
-            SettingsTile(
-              title: l10n.lanSyncOpenTile,
-              subtitle: l10n.lanSyncTileSubtitle,
-              leadingIcon: Icons.devices,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) => const LanSyncScreen(),
+                  },
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-        const BackupSection(),
-        const SizedBox(height: AppSpacing.md),
+          const StorageLocationSection(),
+          const SizedBox(height: AppSpacing.md),
+
+          SettingsGroup(
+            title: l10n.lanSyncTitle,
+            children: <Widget>[
+              SettingsTile(
+                title: l10n.lanSyncOpenTile,
+                subtitle: l10n.lanSyncTileSubtitle,
+                leadingIcon: Icons.devices,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const LanSyncScreen(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          const BackupSection(),
+          const SizedBox(height: AppSpacing.md),
+        ],
 
         SettingsGroup(
           title: l10n.databaseDangerZone,
@@ -152,8 +156,9 @@ class DatabaseContent extends ConsumerWidget {
   }
 
   Future<void> _exportConfig(BuildContext context, WidgetRef ref) async {
-    final SettingsNotifier notifier =
-        ref.read(settingsNotifierProvider.notifier);
+    final SettingsNotifier notifier = ref.read(
+      settingsNotifierProvider.notifier,
+    );
     final ConfigResult result = await notifier.exportConfig();
 
     if (!context.mounted) return;
@@ -169,8 +174,9 @@ class DatabaseContent extends ConsumerWidget {
   }
 
   Future<void> _importConfig(BuildContext context, WidgetRef ref) async {
-    final SettingsNotifier notifier =
-        ref.read(settingsNotifierProvider.notifier);
+    final SettingsNotifier notifier = ref.read(
+      settingsNotifierProvider.notifier,
+    );
     final ConfigResult result = await notifier.importConfig();
 
     if (!context.mounted) return;
@@ -195,8 +201,9 @@ class DatabaseContent extends ConsumerWidget {
     );
 
     if (confirm && context.mounted) {
-      final SettingsNotifier notifier =
-          ref.read(settingsNotifierProvider.notifier);
+      final SettingsNotifier notifier = ref.read(
+        settingsNotifierProvider.notifier,
+      );
       await notifier.flushDatabase();
 
       ref.invalidate(collectionsProvider);
@@ -214,14 +221,9 @@ class DatabaseContent extends ConsumerWidget {
       ref.invalidate(releasesProvider);
 
       if (context.mounted) {
-        context.showSnack(
-          S.of(context).databaseReset,
-          type: SnackType.success,
-        );
+        context.showSnack(S.of(context).databaseReset, type: SnackType.success);
         Navigator.of(context, rootNavigator: true).pushReplacement(
-          MaterialPageRoute<void>(
-            builder: (_) => const AppShell(),
-          ),
+          MaterialPageRoute<void>(builder: (_) => const AppShell()),
         );
       }
     }

@@ -7,6 +7,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+import '../constants/platform_features.dart';
+
 /// Max parallax offset in pixels.
 const double _kMaxOffset = 20.0;
 
@@ -67,7 +69,7 @@ class _GyroscopeParallaxImageState extends State<GyroscopeParallaxImage>
   void initState() {
     super.initState();
     final Stream<GyroscopeEvent>? stream = widget.gyroscopeStream ??
-        (Platform.isAndroid
+        (!kIsWebBuild && Platform.isAndroid
             ? gyroscopeEventStream(
                 samplingPeriod: const Duration(milliseconds: 16),
               )
