@@ -1137,6 +1137,7 @@
   "settingsAnimeMangaTitleLanguageRomaji": "Romaji",
   "settingsAnimeMangaTitleLanguageEnglish": "English",
   "settingsAnimeMangaTitleLanguageNative": "Native",
+  "dualDatePickerNoDate": "Без даты",
   "dualDatePickerErrorEmpty": "Введите дату",
   "dualDatePickerErrorFormat": "Формат: yyyy-MM-dd",
   "dualDatePickerErrorRange": "Дата вне диапазона",

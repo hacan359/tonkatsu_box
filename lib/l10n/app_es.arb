@@ -1413,6 +1413,7 @@
   "settingsAnimeMangaTitleLanguageRomaji": "Romaji",
   "settingsAnimeMangaTitleLanguageEnglish": "Inglés",
   "settingsAnimeMangaTitleLanguageNative": "Nativo",
+  "dualDatePickerNoDate": "Sin fecha",
   "dualDatePickerErrorEmpty": "Introduce una fecha",
   "dualDatePickerErrorFormat": "Usa el formato yyyy-MM-dd",
   "dualDatePickerErrorRange": "La fecha está fuera de rango",

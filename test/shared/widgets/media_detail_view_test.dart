@@ -674,7 +674,7 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (String type, DateTime date) async {},
+          onActivityDateChanged: (String type, DateTime? date) async {},
         ));
         await tester.pumpAndSettle();
 
@@ -695,12 +695,50 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (String type, DateTime date) async {},
+          onActivityDateChanged: (String type, DateTime? date) async {},
         ));
         await tester.pumpAndSettle();
 
         final Finder inkWells = find.byType(InkWell);
         expect(inkWells, findsAtLeast(2));
+      });
+
+      testWidgets(
+          'should pass null to the callback when the set date is cleared',
+          (WidgetTester tester) async {
+        String? clearedType;
+        DateTime? clearedDate = DateTime(2099);
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          completedAt: DateTime(2025, 2, 1),
+          onActivityDateChanged: (String type, DateTime? date) async {
+            clearedType = type;
+            clearedDate = date;
+          },
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Completed'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('No date'));
+        await tester.pumpAndSettle();
+
+        expect(clearedType, 'completed');
+        expect(clearedDate, isNull);
+      });
+
+      testWidgets('should not offer clearing while the date is unset',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          onActivityDateChanged: (String type, DateTime? date) async {},
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Completed'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('No date'), findsNothing);
       });
 
       testWidgets('should display completion time when set',

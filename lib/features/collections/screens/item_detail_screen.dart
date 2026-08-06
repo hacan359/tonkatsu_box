@@ -679,7 +679,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       lastActivityAt: item.lastActivityAt,
       completionTime: item.completionTime,
       onActivityDateChanged: widget.isEditable
-          ? (String type, DateTime date) =>
+          ? (String type, DateTime? date) =>
               _updateActivityDate(item.id, type, date)
           : null,
       tagWidget: widget.collectionId != null
@@ -1158,22 +1158,20 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         .updateStatus(id, status, mediaType);
   }
 
-  Future<void> _updateActivityDate(int id, String type, DateTime date) async {
-    final CollectionItemsNotifier notifier =
-        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
-    if (type == 'started') {
-      await notifier.updateActivityDates(
-        id,
-        startedAt: date,
-        lastActivityAt: DateTime.now(),
-      );
-    } else {
-      await notifier.updateActivityDates(
-        id,
-        completedAt: date,
-        lastActivityAt: DateTime.now(),
-      );
-    }
+  /// A null [date] clears the field ("unknown date"); the status is left
+  /// untouched on purpose — only setting a date drives the status sync.
+  Future<void> _updateActivityDate(int id, String type, DateTime? date) async {
+    final bool started = type == 'started';
+    await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .updateActivityDates(
+          id,
+          startedAt: started ? date : null,
+          completedAt: started ? null : date,
+          clearStartedAt: started && date == null,
+          clearCompletedAt: !started && date == null,
+          lastActivityAt: DateTime.now(),
+        );
   }
 
   Future<void> _saveAuthorComment(int id, String? text) async {

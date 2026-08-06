@@ -3232,6 +3232,9 @@ class SPt extends S {
   String get settingsAnimeMangaTitleLanguageNative => 'Nativo';
 
   @override
+  String get dualDatePickerNoDate => 'Sem data';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Digite uma data';
 
   @override

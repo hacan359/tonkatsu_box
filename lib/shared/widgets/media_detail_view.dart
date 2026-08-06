@@ -30,9 +30,10 @@ import 'media_detail/user_rating_section.dart';
 import 'mini_markdown_text.dart';
 export 'media_detail/media_detail_chip.dart' show MediaDetailChip;
 
-/// `type` is either 'started' or 'completed'.
+/// `type` is either 'started' or 'completed'; a null [date] clears the field
+/// ("unknown date") without touching the item's status.
 typedef OnActivityDateChanged =
-    Future<void> Function(String type, DateTime date);
+    Future<void> Function(String type, DateTime? date);
 
 /// Shared layout for game / movie / TV detail screens. Type-specific blocks
 /// are injected via [extraSections].
@@ -525,7 +526,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     final DateTime firstDate = DateTime(1980);
     final DateTime lastDate = DateTime.now().add(const Duration(days: 365));
 
-    final DateTime? picked = await showDualDatePicker(
+    final DualDateResult? picked = await showDualDatePickerResult(
       context: context,
       initialDate: initialDate,
       firstDate: firstDate,
@@ -533,10 +534,12 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       helpText: type == 'started'
           ? S.of(context).activityDatesSelectStart
           : S.of(context).activityDatesSelectCompletion,
+      // Nothing to clear while the field is still empty.
+      allowClear: current != null,
     );
 
     if (picked != null && context.mounted) {
-      await widget.onActivityDateChanged!(type, picked);
+      await widget.onActivityDateChanged!(type, picked.date);
     }
   }
 

@@ -3251,6 +3251,9 @@ class SFr extends S {
   String get settingsAnimeMangaTitleLanguageNative => 'Original';
 
   @override
+  String get dualDatePickerNoDate => 'Sans date';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Entrez une date';
 
   @override

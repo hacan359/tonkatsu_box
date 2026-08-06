@@ -3261,6 +3261,9 @@ class SRu extends S {
   String get settingsAnimeMangaTitleLanguageNative => 'Native';
 
   @override
+  String get dualDatePickerNoDate => 'Без даты';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Введите дату';
 
   @override

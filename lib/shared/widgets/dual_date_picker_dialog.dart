@@ -7,20 +7,53 @@ import '../theme/app_spacing.dart';
 
 const String _isoPattern = 'yyyy-MM-dd';
 
+/// Distinguishes "clear the date" from a picked date; a dismissed dialog
+/// yields no result at all (null from the show function).
+class DualDateResult {
+  const DualDateResult.picked(DateTime this.date) : cleared = false;
+
+  const DualDateResult.cleared()
+      : date = null,
+        cleared = true;
+
+  final DateTime? date;
+  final bool cleared;
+}
+
 Future<DateTime?> showDualDatePicker({
   required BuildContext context,
   required DateTime initialDate,
   required DateTime firstDate,
   required DateTime lastDate,
   String? helpText,
+}) async {
+  final DualDateResult? result = await showDualDatePickerResult(
+    context: context,
+    initialDate: initialDate,
+    firstDate: firstDate,
+    lastDate: lastDate,
+    helpText: helpText,
+  );
+  return result?.date;
+}
+
+/// [allowClear] adds a "No date" action so an already-set date can be erased.
+Future<DualDateResult?> showDualDatePickerResult({
+  required BuildContext context,
+  required DateTime initialDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+  String? helpText,
+  bool allowClear = false,
 }) {
-  return showDialog<DateTime>(
+  return showDialog<DualDateResult>(
     context: context,
     builder: (BuildContext ctx) => DualDatePickerDialog(
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
       helpText: helpText,
+      allowClear: allowClear,
     ),
   );
 }
@@ -31,6 +64,7 @@ class DualDatePickerDialog extends StatefulWidget {
     required this.firstDate,
     required this.lastDate,
     this.helpText,
+    this.allowClear = false,
     super.key,
   });
 
@@ -38,6 +72,7 @@ class DualDatePickerDialog extends StatefulWidget {
   final DateTime firstDate;
   final DateTime lastDate;
   final String? helpText;
+  final bool allowClear;
 
   @override
   State<DualDatePickerDialog> createState() => _DualDatePickerDialogState();
@@ -200,8 +235,14 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
               Expanded(child: body),
               const SizedBox(height: AppSpacing.sm),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
+                  if (widget.allowClear)
+                    TextButton(
+                      onPressed: () => Navigator.of(context)
+                          .pop(const DualDateResult.cleared()),
+                      child: Text(l.dualDatePickerNoDate),
+                    ),
+                  const Spacer(),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(l.cancel),
@@ -209,7 +250,8 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
                   const SizedBox(width: AppSpacing.sm),
                   TextButton(
                     onPressed: _errorKey == null
-                        ? () => Navigator.of(context).pop(_selected)
+                        ? () => Navigator.of(context)
+                            .pop(DualDateResult.picked(_selected))
                         : null,
                     child: Text(l.confirm),
                   ),

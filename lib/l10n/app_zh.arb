@@ -1408,6 +1408,7 @@
   "settingsAnimeMangaTitleLanguageRomaji": "罗马字",
   "settingsAnimeMangaTitleLanguageEnglish": "英文",
   "settingsAnimeMangaTitleLanguageNative": "原生语言",
+  "dualDatePickerNoDate": "无日期",
   "dualDatePickerErrorEmpty": "请输入日期",
   "dualDatePickerErrorFormat": "请使用 yyyy-MM-dd 格式",
   "dualDatePickerErrorRange": "日期超出范围",

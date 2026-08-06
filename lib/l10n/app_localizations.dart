@@ -5636,6 +5636,12 @@ abstract class S {
   /// **'Native'**
   String get settingsAnimeMangaTitleLanguageNative;
 
+  /// No description provided for @dualDatePickerNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get dualDatePickerNoDate;
+
   /// No description provided for @dualDatePickerErrorEmpty.
   ///
   /// In en, this message translates to:

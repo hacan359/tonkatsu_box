@@ -78,6 +78,8 @@ void main() {
           startedAt: any(named: 'startedAt'),
           completedAt: any(named: 'completedAt'),
           lastActivityAt: any(named: 'lastActivityAt'),
+          clearStartedAt: any(named: 'clearStartedAt'),
+          clearCompletedAt: any(named: 'clearCompletedAt'),
         )).thenAnswer((_) async {});
 
     when(() => mockRepository.updateItemStatus(
@@ -312,6 +314,197 @@ void main() {
         expect(items, isNotNull);
         expect(items!.first.completedAt, completeDate);
         expect(items.first.status, ItemStatus.completed);
+      });
+    });
+
+    // Regression: the DAO stamps completed_at = now on the completed
+    // transition, so the explicit user date must be written strictly after it.
+    group('порядок записи в репозиторий', () {
+      test('should write the explicit watched date after the status auto-update', () async {
+        final CollectionItem item = _makeItem(
+          mediaType: MediaType.movie,
+          status: ItemStatus.notStarted,
+        );
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+        final DateTime pastDate = DateTime(2023, 2, 14);
+
+        await notifier.updateActivityDates(1, completedAt: pastDate, lastActivityAt: DateTime.now());
+
+        verifyInOrder(<void Function()>[
+          () => mockRepository.updateItemStatus(
+                1,
+                ItemStatus.completed,
+                mediaType: MediaType.movie,
+              ),
+          () => mockRepository.updateItemActivityDates(
+                1,
+                startedAt: null,
+                completedAt: pastDate,
+                lastActivityAt: any(named: 'lastActivityAt'),
+              ),
+        ]);
+      });
+
+      test('should write the date without a status update when already completed', () async {
+        final CollectionItem item = _makeItem(
+          mediaType: MediaType.movie,
+          status: ItemStatus.completed,
+          startedAt: DateTime(2024, 1, 1),
+          completedAt: DateTime(2024, 5, 1),
+        );
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+        final DateTime pastDate = DateTime(2023, 2, 14);
+
+        await notifier.updateActivityDates(1, completedAt: pastDate, lastActivityAt: DateTime.now());
+
+        verifyNever(() => mockRepository.updateItemStatus(
+              any(),
+              any(),
+              mediaType: any(named: 'mediaType'),
+            ));
+        verify(() => mockRepository.updateItemActivityDates(
+              1,
+              startedAt: null,
+              completedAt: pastDate,
+              lastActivityAt: any(named: 'lastActivityAt'),
+            )).called(1);
+      });
+
+      test('should write dates even when the items state is not loaded', () async {
+        when(() => mockRepository.getItemsWithData(testCollectionId))
+            .thenAnswer((_) async => <CollectionItem>[]);
+        final ProviderContainer container = ProviderContainer(
+          overrides: <Override>[
+            collectionRepositoryProvider.overrideWithValue(mockRepository),
+            sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+        final DateTime pastDate = DateTime(2023, 2, 14);
+
+        // No waitForLoad: state is still AsyncLoading at this point.
+        await notifier.updateActivityDates(1, completedAt: pastDate, lastActivityAt: DateTime.now());
+
+        verify(() => mockRepository.updateItemActivityDates(
+              1,
+              startedAt: null,
+              completedAt: pastDate,
+              lastActivityAt: any(named: 'lastActivityAt'),
+            )).called(1);
+        verifyNever(() => mockRepository.updateItemStatus(
+              any(),
+              any(),
+              mediaType: any(named: 'mediaType'),
+            ));
+      });
+    });
+
+    // Clearing a date ("unknown date") must bypass the status sync entirely:
+    // the status stays, only the date column goes to NULL.
+    group('очистка дат', () {
+      test('should clear completedAt without touching the status', () async {
+        final CollectionItem item = _makeItem(
+          mediaType: MediaType.movie,
+          status: ItemStatus.completed,
+          startedAt: DateTime(2024, 1, 1),
+          completedAt: DateTime(2024, 5, 1),
+        );
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+
+        await notifier.updateActivityDates(
+          1,
+          clearCompletedAt: true,
+          lastActivityAt: DateTime.now(),
+        );
+
+        verifyNever(() => mockRepository.updateItemStatus(
+              any(),
+              any(),
+              mediaType: any(named: 'mediaType'),
+            ));
+        verify(() => mockRepository.updateItemActivityDates(
+              1,
+              startedAt: null,
+              completedAt: null,
+              lastActivityAt: any(named: 'lastActivityAt'),
+              clearStartedAt: false,
+              clearCompletedAt: true,
+            )).called(1);
+
+        final List<CollectionItem>? items =
+            container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
+        expect(items, isNotNull);
+        expect(items!.first.completedAt, isNull);
+        expect(items.first.startedAt, DateTime(2024, 1, 1));
+        expect(items.first.status, ItemStatus.completed);
+      });
+
+      test('should clear startedAt without touching the status', () async {
+        final CollectionItem item = _makeItem(
+          status: ItemStatus.inProgress,
+          startedAt: DateTime(2024, 1, 1),
+        );
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+
+        await notifier.updateActivityDates(
+          1,
+          clearStartedAt: true,
+          lastActivityAt: DateTime.now(),
+        );
+
+        verifyNever(() => mockRepository.updateItemStatus(
+              any(),
+              any(),
+              mediaType: any(named: 'mediaType'),
+            ));
+
+        final List<CollectionItem>? items =
+            container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
+        expect(items, isNotNull);
+        expect(items!.first.startedAt, isNull);
+        expect(items.first.status, ItemStatus.inProgress);
+      });
+
+      test('should keep rewatchCount when a date is cleared', () async {
+        final CollectionItem item = _makeItem(
+          mediaType: MediaType.movie,
+          status: ItemStatus.completed,
+          completedAt: DateTime(2024, 5, 1),
+        ).copyWith(rewatchCount: 2);
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+
+        await notifier.updateActivityDates(
+          1,
+          clearCompletedAt: true,
+          lastActivityAt: DateTime.now(),
+        );
+
+        final List<CollectionItem>? items =
+            container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
+        expect(items!.first.rewatchCount, 2);
       });
     });
 

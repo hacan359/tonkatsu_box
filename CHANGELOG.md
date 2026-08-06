@@ -9,6 +9,43 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **"No date" option for the started / completed dates**
+
+  An already-set date can now be erased from the date picker — for media
+  consumed long ago whose dates nobody remembers. Clearing a date never
+  touches the item's status (a film stays completed with an unknown watch
+  date), and the usual automation is intact: setting a date still syncs the
+  status, and status changes still fill the dates.
+
+  * lib/shared/widgets/dual_date_picker_dialog.dart (DualDateResult,
+    showDualDatePickerResult, DualDatePickerDialog.allowClear): New result
+    wrapper distinguishing "cleared" from "cancelled"; the "No date" action
+    shows only when the dialog is opened over an existing date. The original
+    showDualDatePicker contract is unchanged for its other callers.
+  * lib/shared/widgets/media_detail_view.dart (OnActivityDateChanged,
+    _MediaDetailViewState._pickActivityDate): The callback date is nullable —
+    null means "clear the field".
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._updateActivityDate): Routes a null date into the
+    clear flags.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateActivityDates),
+    lib/data/repositories/collection_repository.dart,
+    lib/core/database/database_service.dart,
+    packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.updateItemActivityDates): New clearStartedAt /
+    clearCompletedAt flags — a plain null still means "leave unchanged";
+    clearing bypasses the date→status sync on purpose.
+  * lib/l10n/app_en.arb, app_es.arb, app_fr.arb, app_pt.arb, app_ru.arb,
+    app_zh.arb (dualDatePickerNoDate): New.
+  * test/shared/widgets/dual_date_picker_dialog_test.dart,
+    test/shared/widgets/media_detail_view_test.dart,
+    test/features/collections/providers/collections_provider_test.dart,
+    test/core/database/dao/collection_dao_test.dart,
+    packages/core/test/database/dao/collection_dao_status_dates_test.dart:
+    Clear-flow coverage — the button appears only over a set date, clearing
+    writes NULL and never calls updateItemStatus.
+
 - **Experimental web build (selfhost, phase 2)**
 
   The app now compiles and boots in the browser. Data lives in an in-browser
@@ -68,6 +105,26 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     the flutter_launcher_icons config.
   * packages/core/test/utils/stable_id_test.dart: New. Golden vectors pin the
     id contract; io and web variants must agree.
+
+### Fixed
+
+- **Watched Date set in the past was overwritten with the current date**
+
+  Setting a Watched/Completed date on an item that was not yet completed
+  auto-promoted its status, and the completed transition stamped
+  `completed_at = now` over the just-saved user date. The UI kept showing the
+  chosen date until the list reloaded (e.g. after adding another film), which
+  made the overwrite look like it happened on add.
+
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateActivityDates): The status auto-update is
+    written strictly before the explicit dates, so the user's date always
+    lands last.
+  * test/features/collections/providers/collections_provider_test.dart:
+    Regression group pinning the repository write order.
+  * packages/core/test/database/dao/collection_dao_status_dates_test.dart:
+    New. Documents the DAO semantics (completed transition stamps now) that
+    make the ordering mandatory.
 
 ## [0.41.0] - 2026-08-04
 

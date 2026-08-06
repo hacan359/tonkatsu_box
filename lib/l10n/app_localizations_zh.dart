@@ -2994,6 +2994,9 @@ class SZh extends S {
   String get settingsAnimeMangaTitleLanguageNative => '原生语言';
 
   @override
+  String get dualDatePickerNoDate => '无日期';
+
+  @override
   String get dualDatePickerErrorEmpty => '请输入日期';
 
   @override

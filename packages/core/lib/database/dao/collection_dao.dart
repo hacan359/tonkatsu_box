@@ -761,18 +761,26 @@ class CollectionDao {
     );
   }
 
+  /// The `clear*` flags erase a date: a plain `null` means "leave unchanged",
+  /// mirroring [CollectionItem.copyWith]. Status is deliberately not touched.
   Future<void> updateItemActivityDates(
     int id, {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    bool clearStartedAt = false,
+    bool clearCompletedAt = false,
   }) async {
     final Database db = await _getDatabase();
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (startedAt != null) {
+    if (clearStartedAt) {
+      data['started_at'] = null;
+    } else if (startedAt != null) {
       data['started_at'] = startedAt.millisecondsSinceEpoch ~/ 1000;
     }
-    if (completedAt != null) {
+    if (clearCompletedAt) {
+      data['completed_at'] = null;
+    } else if (completedAt != null) {
       data['completed_at'] = completedAt.millisecondsSinceEpoch ~/ 1000;
     }
     if (lastActivityAt != null) {
