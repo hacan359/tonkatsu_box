@@ -25,6 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../data/repositories/canvas_repository.dart';
+import '../../shared/constants/platform_features.dart';
 import '../database/database_service.dart';
 import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
@@ -639,6 +640,12 @@ class ExportService {
     ExportFormat format = ExportFormat.light,
     bool includeUserData = false,
   }) async {
+    // Backstop for shortcut paths: the menu entries are already hidden.
+    if (kIsWebBuild) {
+      return const ExportResult.failure(
+        'Export is not available in the web build yet',
+      );
+    }
     try {
       final XcollFile xcoll;
       final String extension;

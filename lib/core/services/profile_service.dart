@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqflite.dart';
 
 import '../../main.dart' show AppRestartScope;
 import '../../shared/constants/platform_features.dart';
@@ -25,6 +25,9 @@ class ProfileService {
 
   static const String _imageCacheFolderName = 'image_cache';
 
+  /// Web keeps profiles.json content in prefs — there is no filesystem.
+  static const String _webProfilesPrefsKey = 'web_profiles_json';
+
   String? _basePath;
 
   Future<String> getBasePath() async {
@@ -35,6 +38,13 @@ class ProfileService {
 
   /// Creates a default profile when `profiles.json` does not exist yet.
   Future<ProfilesData> loadProfiles() async {
+    if (kIsWebBuild) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? stored = prefs.getString(_webProfilesPrefsKey);
+      if (stored != null) return ProfilesData.fromJsonString(stored);
+      return _createDefaultProfiles();
+    }
+
     final String basePath = await getBasePath();
     final File file = File(p.join(basePath, StorageRoot.profilesFileName));
 
@@ -43,17 +53,24 @@ class ProfileService {
       return ProfilesData.fromJsonString(content);
     }
 
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String authorName =
-        prefs.getString('default_author') ?? 'Default';
+    return _createDefaultProfiles();
+  }
 
-    final ProfilesData data =
-        ProfilesData.defaultData(authorName: authorName);
+  Future<ProfilesData> _createDefaultProfiles() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final ProfilesData data = ProfilesData.defaultData(
+      authorName: prefs.getString('default_author') ?? 'Default',
+    );
     await _saveProfiles(data);
     return data;
   }
 
   Future<void> _saveProfiles(ProfilesData data) async {
+    if (kIsWebBuild) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_webProfilesPrefsKey, data.toJsonString());
+      return;
+    }
     final String basePath = await getBasePath();
     final Directory baseDir = Directory(basePath);
     if (!baseDir.existsSync()) {
@@ -75,8 +92,10 @@ class ProfileService {
       createdAt: now,
     );
 
-    final String profileDir = await getProfileDir(id);
-    await Directory(profileDir).create(recursive: true);
+    if (!kIsWebBuild) {
+      final String profileDir = await getProfileDir(id);
+      await Directory(profileDir).create(recursive: true);
+    }
 
     final ProfilesData updated = data.copyWith(
       profiles: <Profile>[...data.profiles, profile],
@@ -96,10 +115,12 @@ class ProfileService {
       throw StateError('Cannot delete the last profile');
     }
 
-    final String profileDir = await getProfileDir(profileId);
-    final Directory dir = Directory(profileDir);
-    if (await dir.exists()) {
-      await dir.delete(recursive: true);
+    if (!kIsWebBuild) {
+      final String profileDir = await getProfileDir(profileId);
+      final Directory dir = Directory(profileDir);
+      if (await dir.exists()) {
+        await dir.delete(recursive: true);
+      }
     }
 
     final List<Profile> remaining = data.profiles
@@ -155,6 +176,8 @@ class ProfileService {
   /// Migrates pre-profile data into the default profile. Runs only when an
   /// old database exists and the profiles/ folder does not.
   Future<bool> migrateIfNeeded() async {
+    // Nothing predates the web build, so there is nothing to migrate.
+    if (kIsWebBuild) return false;
     final String basePath = await getBasePath();
     final File oldDb = File(p.join(basePath, StorageRoot.dbFileName));
     final Directory profilesDir =
@@ -197,9 +220,9 @@ class ProfileService {
     DatabaseService? currentDb,
   }) async {
     final String dbPath = await getDatabasePath(profileId);
-    final File dbFile = File(dbPath);
-
-    if (!dbFile.existsSync()) return ProfileStats.empty;
+    // Web cannot stat files; a missing DB falls through to the open attempt,
+    // whose failure is caught below and reads as empty stats.
+    if (!kIsWebBuild && !File(dbPath).existsSync()) return ProfileStats.empty;
 
     try {
       if (currentDb != null) {
@@ -241,7 +264,7 @@ class ProfileService {
   /// and exits. Android: closes the DB and recreates [ProviderScope] via
   /// [AppRestartScope], which resets all providers and shows the SplashScreen.
   static Future<void> restartApp(BuildContext context, WidgetRef ref) async {
-    if (kIsMobile) {
+    if (kIsMobile || kIsWebBuild) {
       // The DB must be closed before ProviderScope is recreated
       final DatabaseService db = ref.read(databaseServiceProvider);
       await db.close();

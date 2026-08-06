@@ -241,27 +241,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       gap,
 
       // Data group sits above Appearance per user feedback.
-      SettingsGroup(
-        title: l.settingsBackup,
-        subtitle: l.settingsBackupSubtitle,
-        titleIcon: Icons.cloud_outlined,
-        children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.cloud_upload_outlined,
-            leadingColor: _kBackupColor,
-            title: l.settingsBackupAll,
-            subtitle: l.settingsBackupAllSubtitle,
-            onTap: () => _handleBackup(context, ref, l),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.cloud_download_outlined,
-            leadingColor: _kBackupColor,
-            title: l.settingsRestoreBackup,
-            subtitle: l.settingsRestoreBackupSubtitle,
-            onTap: () => _handleRestore(context, ref, l),
-          ),
-        ],
-      ),
+      // Backup archives live on the local filesystem — desktop/mobile only.
+      if (!kIsWebBuild)
+        SettingsGroup(
+          title: l.settingsBackup,
+          subtitle: l.settingsBackupSubtitle,
+          titleIcon: Icons.cloud_outlined,
+          children: <Widget>[
+            SettingsTile(
+              leadingIcon: Icons.cloud_upload_outlined,
+              leadingColor: _kBackupColor,
+              title: l.settingsBackupAll,
+              subtitle: l.settingsBackupAllSubtitle,
+              onTap: () => _handleBackup(context, ref, l),
+            ),
+            SettingsTile(
+              leadingIcon: Icons.cloud_download_outlined,
+              leadingColor: _kBackupColor,
+              title: l.settingsRestoreBackup,
+              subtitle: l.settingsRestoreBackupSubtitle,
+              onTap: () => _handleRestore(context, ref, l),
+            ),
+          ],
+        ),
       gap,
       SettingsGroup(
         title: l.settingsImport,
@@ -275,13 +277,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsBrowseCollectionsSubtitle,
             onTap: () => _pushScreen(const BrowseCollectionsScreen()),
           ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconTraktColor,
-            leadingAssetColored: true,
-            title: l.traktTitle,
-            subtitle: l.settingsTraktImportSubtitle,
-            onTap: () => _pushScreen(const TraktImportScreen()),
-          ),
+          // File-based importers read from the local filesystem; hidden on
+          // web until the bytes-based flow (phase 5 of selfhost-web).
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconTraktColor,
+              leadingAssetColored: true,
+              title: l.traktTitle,
+              subtitle: l.settingsTraktImportSubtitle,
+              onTap: () => _pushScreen(const TraktImportScreen()),
+            ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconSimklColor,
             leadingAssetColored: true,
@@ -289,13 +294,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsSimklImportSubtitle,
             onTap: () => _pushScreen(const SimklImportScreen()),
           ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconKinoriumColor,
-            leadingAssetColored: true,
-            title: l.settingsKinoriumImport,
-            subtitle: l.settingsKinoriumImportSubtitle,
-            onTap: () => _pushScreen(const KinoriumImportScreen()),
-          ),
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconKinoriumColor,
+              leadingAssetColored: true,
+              title: l.settingsKinoriumImport,
+              subtitle: l.settingsKinoriumImportSubtitle,
+              onTap: () => _pushScreen(const KinoriumImportScreen()),
+            ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconSteamColor,
             leadingAssetColored: true,
@@ -303,13 +309,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsSteamImportSubtitle,
             onTap: () => _pushScreen(const SteamImportScreen()),
           ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconIgdbColor,
-            leadingAssetColored: true,
-            title: l.settingsIgdbImport,
-            subtitle: l.settingsIgdbImportSubtitle,
-            onTap: () => _pushScreen(const IgdbListImportScreen()),
-          ),
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconIgdbColor,
+              leadingAssetColored: true,
+              title: l.settingsIgdbImport,
+              subtitle: l.settingsIgdbImportSubtitle,
+              onTap: () => _pushScreen(const IgdbListImportScreen()),
+            ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconRaColor,
             leadingAssetColored: true,
@@ -317,13 +324,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsRaImportSubtitle,
             onTap: () => _pushScreen(const RaImportScreen()),
           ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconMalColor,
-            leadingAssetColored: true,
-            title: l.settingsMalImport,
-            subtitle: l.settingsMalImportSubtitle,
-            onTap: () => _pushScreen(const MalImportScreen()),
-          ),
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconMalColor,
+              leadingAssetColored: true,
+              title: l.settingsMalImport,
+              subtitle: l.settingsMalImportSubtitle,
+              onTap: () => _pushScreen(const MalImportScreen()),
+            ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconAnilistColor,
             leadingAssetColored: true,
@@ -338,12 +346,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsHardcoverImportSubtitle,
             onTap: () => _pushScreen(const HardcoverImportScreen()),
           ),
-          SettingsTile(
-            leadingIcon: Icons.upload_file,
-            title: l.settingsCustomCardsImport,
-            subtitle: l.settingsCustomCardsImportSubtitle,
-            onTap: () => _pushScreen(const CustomCardsImportScreen()),
-          ),
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingIcon: Icons.upload_file,
+              title: l.settingsCustomCardsImport,
+              subtitle: l.settingsCustomCardsImportSubtitle,
+              onTap: () => _pushScreen(const CustomCardsImportScreen()),
+            ),
         ],
       ),
       gap,
@@ -352,13 +361,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         subtitle: l.settingsStorageSubtitle,
         titleIcon: Icons.storage_outlined,
         children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.image_outlined,
-            leadingColor: _kStorageColor,
-            title: l.cacheTitle,
-            subtitle: l.settingsCacheSubtitle,
-            onTap: () => _pushScreen(const CacheScreen()),
-          ),
+          // The disk image cache does not exist on web (always network).
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingIcon: Icons.image_outlined,
+              leadingColor: _kStorageColor,
+              title: l.cacheTitle,
+              subtitle: l.settingsCacheSubtitle,
+              onTap: () => _pushScreen(const CacheScreen()),
+            ),
           SettingsTile(
             leadingIcon: Icons.dataset_outlined,
             leadingColor: _kStorageColor,

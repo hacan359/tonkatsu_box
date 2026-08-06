@@ -1,0 +1,35 @@
+{
+    "name": "Tonkatsu Box",
+    "short_name": "Tonkatsu Box",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0A0A0A",
+    "theme_color": "#0A0A0A",
+    "description": "Tonkatsu Box — media collection manager.",
+    "orientation": "any",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

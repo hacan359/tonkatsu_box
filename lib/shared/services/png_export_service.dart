@@ -6,6 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 
+import '../constants/platform_features.dart';
+
 /// Result of an export attempt.
 enum BulkExportStatus { saved, cancelled, failed }
 
@@ -49,6 +51,11 @@ Future<BulkExportResult> saveBoundaryAsPng({
   required String saveDialogTitle,
   double pixelRatio = 2.0,
 }) async {
+  // saveFile is unimplemented in file_picker's web backend; callers surface
+  // the failed status, and the entry points are hidden on web anyway.
+  if (kIsWebBuild) {
+    return const BulkExportResult(BulkExportStatus.failed);
+  }
   try {
     final RenderRepaintBoundary? boundary = repaintKey.currentContext
         ?.findRenderObject() as RenderRepaintBoundary?;

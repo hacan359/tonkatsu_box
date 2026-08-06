@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:core/models/profile.dart';
 import 'package:flutter/foundation.dart';
@@ -7,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app.dart';
 import 'core/logging/app_logger.dart';
 import 'core/logging/startup_error.dart';
 import 'core/services/api_key_initializer.dart';
-import 'core/services/app_http_overrides.dart';
 import 'core/services/collection_hero_service.dart';
+import 'core/services/platform_init_io.dart'
+    if (dart.library.js_interop) 'core/services/platform_init_web.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
@@ -31,12 +30,7 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
       AppLogger.setupErrorHandlers();
-      HttpOverrides.global = AppHttpOverrides();
-
-      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        sqfliteFfiInit();
-        databaseFactory = databaseFactoryFfi;
-      }
+      initPlatform();
 
       // setPrefix must run before the first getInstance() and exactly once
       // per process — otherwise a restart via AppRestartScope hits StateError.
