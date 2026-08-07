@@ -353,7 +353,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
               child: Row(
                 children: <Widget>[
                   if (mode == currentSort)
-                    const Icon(Icons.check, size: 16, color: AppColors.brand)
+                    Icon(Icons.check, size: 16, color: AppColors.brand)
                   else
                     const SizedBox(width: 16),
                   const SizedBox(width: 8),

@@ -37,7 +37,7 @@ class ReleasesEmptyState extends StatelessWidget {
               Text(
                 hint!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textTertiary),
+                style: TextStyle(color: AppColors.textTertiary),
               ),
             ],
           ],

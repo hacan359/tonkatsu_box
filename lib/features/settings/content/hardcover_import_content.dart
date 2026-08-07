@@ -107,7 +107,7 @@ class _HardcoverImportContentState
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.key_off,
                   size: 16,
                   color: AppColors.statusDropped,

@@ -77,7 +77,7 @@ class StatusSplitBar extends StatelessWidget {
       child: SizedBox(
         height: 4,
         child: segments.isEmpty
-            ? const ColoredBox(color: AppColors.surfaceLight)
+            ? ColoredBox(color: AppColors.surfaceLight)
             : Row(
                 children: <Widget>[
                   for (final MapEntry<ItemStatus, int> entry in segments)

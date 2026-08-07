@@ -230,7 +230,7 @@ class _FanMenuRoute extends PopupRoute<void> {
   final double fabSize;
 
   @override
-  Color? get barrierColor => Colors.black38;
+  Color? get barrierColor => AppColors.scrim.withAlpha(0x61);
 
   @override
   bool get barrierDismissible => true;
@@ -456,7 +456,7 @@ class _PillButtonState extends State<_PillButton> {
             ),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Colors.black.withAlpha(70),
+                color: AppColors.shadow.withAlpha(70),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -468,7 +468,7 @@ class _PillButtonState extends State<_PillButton> {
               Flexible(
                 child: Text(
                   widget.item.label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w500,

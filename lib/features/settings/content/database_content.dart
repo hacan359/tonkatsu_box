@@ -142,7 +142,7 @@ class DatabaseContent extends ConsumerWidget {
                   onPressed: () => _resetDatabase(context, ref),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
+                    side: BorderSide(color: AppColors.error),
                   ),
                   icon: const Icon(Icons.delete_forever, size: 18),
                   label: Text(l10n.databaseResetDatabase),

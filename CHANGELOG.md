@@ -9,6 +9,45 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Sakura theme — a soft light theme, switchable in Settings → Appearance**
+
+  The app is no longer dark-only: a Theme picker offers Dark (unchanged) and
+  Sakura — a light pink palette with darkened media-type accents, its own
+  rose-tinted background wallpaper, and pink counter badges. The whole design
+  now lives in one palette file; every widget reads colors through theme-aware
+  tokens, so future themes are a single palette definition. Switching applies
+  instantly and returns the app to the home screen.
+
+  * lib/shared/theme/app_palette.dart (AppPalette, AppPalette.dark,
+    AppPalette.sakura): New — every color of a theme in one place, plus
+    semantic tokens (scrim, onOverlay, onBrand, shadow, barrier, badge,
+    ratingGold, rowFade) and the wallpaper tile (tileAsset, tileOpacity,
+    tileImage).
+  * lib/shared/theme/app_colors.dart (AppColors): Static consts became getters
+    delegating to the active palette.
+  * lib/shared/theme/app_theme.dart (AppTheme.build): ThemeData is built from
+    a palette; badge and error colors follow it.
+  * lib/shared/theme/app_theme_id.dart (AppThemeId): New — theme registry and
+    SharedPreferences id.
+  * lib/shared/theme/app_typography.dart (AppTypography): Styles became
+    getters so text colors follow a theme switch.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setAppTheme, SettingsState.appTheme): Theme setting.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._showThemePicker,
+    _SettingsScreenState._showChoicePicker): Theme tile in Appearance; the
+    five choice dialogs share one generic picker.
+  * lib/app.dart (TonkatsuBoxApp): Swaps the palette and rebuilds the
+    MaterialApp subtree on theme change.
+  * assets/images/background_tile_sakura.png: New — the wallpaper tile
+    recolored to sakura rose.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (settingsTheme, settingsThemeSubtitle, settingsThemeDark,
+    settingsThemeSakura): New keys.
+  * ~140 widget files: hardcoded Colors.* / Color(0x...) replaced with the
+    semantic palette tokens above; `const` dropped where color expressions are
+    no longer compile-time constants.
+
 - **Anime and manga recommendations — in the item card and on the Personalization tab**
 
   An anime's detail page now shows a "Similar" carousel: AniList's community

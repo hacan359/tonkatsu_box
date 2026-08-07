@@ -190,7 +190,7 @@ class CreditsContent extends StatelessWidget {
                 label: Text(l10n.creditsViewLicenses),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.surfaceBorder),
+                  side: BorderSide(color: AppColors.surfaceBorder),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
@@ -233,7 +233,7 @@ class CreditsContent extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(width: AppSpacing.xs),
-            const Icon(Icons.open_in_new, size: 14, color: AppColors.brand),
+            Icon(Icons.open_in_new, size: 14, color: AppColors.brand),
           ],
         ),
       ),

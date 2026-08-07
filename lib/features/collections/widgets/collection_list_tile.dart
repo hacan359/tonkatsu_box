@@ -79,7 +79,7 @@ class CollectionListTile extends ConsumerWidget {
           : null,
       child: ListTile(
         leading:
-            const Icon(Icons.folder_rounded, color: AppColors.textSecondary),
+            Icon(Icons.folder_rounded, color: AppColors.textSecondary),
         title: Text(
           collection.name,
           maxLines: 1,
@@ -111,7 +111,7 @@ class UncategorizedListTile extends StatelessWidget {
 
     return ListTile(
       isThreeLine: true,
-      leading: const Icon(Icons.inbox_rounded, color: AppColors.brand),
+      leading: Icon(Icons.inbox_rounded, color: AppColors.brand),
       title: Text(
         l.collectionsUncategorized,
         maxLines: 1,
@@ -132,7 +132,7 @@ class UncategorizedListTile extends StatelessWidget {
             padding: const EdgeInsets.only(top: 2),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.warning_amber_rounded,
                   color: AppColors.error,
                   size: 16,

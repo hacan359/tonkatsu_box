@@ -81,7 +81,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
         ),
         child: Row(
           children: <Widget>[
-            const Icon(Icons.warning_amber_rounded,
+            Icon(Icons.warning_amber_rounded,
                 color: AppColors.warning, size: 20),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
@@ -126,7 +126,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
             ),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: AppColors.statusCompleted,
                   size: 20,

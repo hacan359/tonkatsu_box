@@ -117,7 +117,7 @@ class UncategorizedCard extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      const Icon(
+                      Icon(
                         Icons.warning_amber_rounded,
                         color: AppColors.error,
                         size: 48,

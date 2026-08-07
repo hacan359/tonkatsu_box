@@ -125,7 +125,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
           PopupMenuButton<ItemDetailMenuAction>(
             iconSize: kScreenAppBarIconSize - 2,
             padding: const EdgeInsets.all(AppSpacing.xs),
-            icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+            icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
             onSelected: onMenuSelected,
             itemBuilder: (BuildContext context) =>
                 <PopupMenuEntry<ItemDetailMenuAction>>[

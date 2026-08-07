@@ -353,7 +353,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
                         padding: const EdgeInsets.only(bottom: 2),
                         child: Text(
                           '${_formatTime(entry.time)}  ${entry.text}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 11,
                             color: AppColors.textSecondary,

@@ -468,13 +468,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         PopupMenuItem<String>(
           value: 'delete',
           child: ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.delete,
               color: AppColors.error,
             ),
             title: Text(
               l.delete,
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: AppColors.error),
             ),
             contentPadding: EdgeInsets.zero,
           ),

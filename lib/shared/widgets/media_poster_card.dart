@@ -436,7 +436,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                           vertical: _isCompact ? 1 : 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(170),
+                          color: AppColors.scrim.withAlpha(170),
                           borderRadius:
                               BorderRadius.circular(AppSpacing.radiusXs),
                         ),
@@ -446,14 +446,14 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                             Icon(
                               Icons.schedule,
                               size: _isCompact ? 8 : 11,
-                              color: Colors.white,
+                              color: AppColors.onOverlay,
                             ),
                             SizedBox(width: _isCompact ? 1 : 2),
                             Text(
                               S.of(context).runtimeHours(
                                   widget.timeToBeatHours!),
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.onOverlay,
                                 fontSize: _isCompact ? 7 : 9,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -492,13 +492,13 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                           )
                         : Container(
                             padding: EdgeInsets.all(_isCompact ? 2 : 4),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.success,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.check,
-                              color: Colors.white,
+                              color: AppColors.onOverlay,
                               size: _isCompact ? 8 : 12,
                             ),
                           )
@@ -517,7 +517,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                       child: Text(
                         widget.platformLabel!,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.onOverlay,
                           fontSize: _isCompact ? 7 : 9,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.3,
@@ -559,7 +559,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       animation: _hoverController!,
       builder: (BuildContext context, Widget? child) {
         return ColoredBox(
-          color: Colors.black.withValues(
+          color: AppColors.scrim.withValues(
             alpha: 0.55 + 0.25 * _hoverController!.value,
           ),
           child: child,
@@ -583,7 +583,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                     child: Icon(
                       widget.status!.materialIcon,
                       size: _isCompact ? 7 : 10,
-                      color: Colors.white,
+                      color: AppColors.onOverlay,
                     ),
                   ),
                   SizedBox(width: _isCompact ? 2 : 4),
@@ -633,7 +633,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             SizedBox(
               height: _isCompact ? 2 : 3,
               child: ColoredBox(
-                color: Colors.black.withAlpha(120),
+                color: AppColors.scrim.withAlpha(120),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
                   widthFactor: widget.progress!.fraction,
@@ -724,8 +724,6 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     // Part after the type: genre/subtitle.
     final String? afterText = widget.subtitle;
 
-    const Color ratingColor = Color(0xFFFFD700); // gold
-
     if (widget.mediaType == null) {
       final List<String> all = <String>[...before];
       if (afterText != null) all.add(afterText);
@@ -743,7 +741,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
           children: <InlineSpan>[
             TextSpan(
               text: leadingRating,
-              style: baseStyle.copyWith(color: ratingColor),
+              style: baseStyle.copyWith(color: AppColors.ratingGold),
             ),
             if (all.isNotEmpty)
               TextSpan(text: ' \u00b7 ${all.join(' \u00b7 ')}', style: baseStyle),
@@ -765,7 +763,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
           if (leadingRating != null)
             TextSpan(
               text: '$leadingRating \u00b7 ',
-              style: baseStyle.copyWith(color: ratingColor),
+              style: baseStyle.copyWith(color: AppColors.ratingGold),
             ),
           if (beforeText.isNotEmpty)
             TextSpan(text: '$beforeText \u00b7 ', style: baseStyle),
@@ -1003,7 +1001,7 @@ class _ProgressLabel extends StatelessWidget {
     return Text(
       label,
       style: TextStyle(
-        color: Colors.white,
+        color: AppColors.onOverlay,
         fontSize: compact ? 7 : 9,
         fontWeight: FontWeight.w700,
       ),
@@ -1037,7 +1035,7 @@ class _TagBadge extends StatelessWidget {
         : AppColors.textSecondary;
     final bool hasTag = tagName != null;
     final Color labelColor =
-        tagTextColor != null ? Color(tagTextColor!) : Colors.white;
+        tagTextColor != null ? Color(tagTextColor!) : AppColors.onOverlay;
     final String label =
         moreCount > 0 ? '$tagName +$moreCount' : (tagName ?? '');
 
@@ -1146,14 +1144,14 @@ class _FavoriteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget badge = Material(
-      color: isFavorite ? AppColors.favorite : Colors.black.withAlpha(160),
+      color: isFavorite ? AppColors.favorite : AppColors.scrim.withAlpha(160),
       shape: const CircleBorder(),
       elevation: 2,
       child: Padding(
         padding: EdgeInsets.all(compact ? 2 : 4),
         child: Icon(
           isFavorite ? Icons.favorite : Icons.heart_broken,
-          color: Colors.white,
+          color: AppColors.onOverlay,
           size: compact ? 10 : 13,
         ),
       ),
@@ -1200,7 +1198,7 @@ class _InCollectionButton extends StatelessWidget {
           padding: EdgeInsets.all(compact ? 2 : 4),
           child: Icon(
             Icons.open_in_new,
-            color: Colors.white,
+            color: AppColors.onOverlay,
             size: compact ? 8 : 12,
           ),
         ),

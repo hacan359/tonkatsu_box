@@ -285,7 +285,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
                           style: AppTypography.body,
                         ),
                         const SizedBox(width: AppSpacing.xs),
-                        const Icon(
+                        Icon(
                           Icons.arrow_drop_down,
                           size: 18,
                           color: AppColors.textSecondary,

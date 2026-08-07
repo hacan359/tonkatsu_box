@@ -2,6 +2,7 @@ import 'package:core/models/canvas_connection.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/color_picker_dialog.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
@@ -133,7 +134,8 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
                     decoration: BoxDecoration(
                       color: _selectedColorValue,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withAlpha(40)),
+                      border:
+                          Border.all(color: AppColors.textPrimary.withAlpha(40)),
                     ),
                   ),
                   const SizedBox(width: 12),

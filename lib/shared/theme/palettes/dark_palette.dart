@@ -1,0 +1,48 @@
+import 'package:flutter/material.dart';
+
+import '../app_assets.dart';
+import '../app_palette.dart';
+
+/// The original dark theme — values are bit-exact with the pre-palette era.
+const AppPalette darkPalette = AppPalette(
+  brightness: Brightness.dark,
+  background: Color(0xFF0A0A0A),
+  surface: Color(0xFF141414),
+  surfaceLight: Color(0xFF1E1E1E),
+  surfaceBorder: Color(0xFF2A2A2A),
+  textPrimary: Color(0xFFFFFFFF),
+  textSecondary: Color(0xFFB0B0B0),
+  textTertiary: Color(0xFF707070),
+  brand: Color(0xFFEF7B44),
+  onBrand: Color(0xFF0A0A0A),
+  gameAccent: Color(0xFF707DD2),
+  movieAccent: Color(0xFFEF7B44),
+  tvShowAccent: Color(0xFFB1E140),
+  animationAccent: Color(0xFFA86ED4),
+  visualNovelAccent: Color(0xFF2A5FC1),
+  mangaAccent: Color(0xFF3DB4F2),
+  animeAccent: Color(0xFFE85D75),
+  bookAccent: Color(0xFF9B6A4F),
+  customAccent: Color(0xFF26A69A),
+  success: Color(0xFF66BB6A),
+  warning: Color(0xFFFFA726),
+  error: Color(0xFFEF5350),
+  favorite: Color(0xFFFF4D6D),
+  statusInProgress: Color(0xFF42A5F5),
+  statusPlanned: Color(0xFF8B5CF6),
+  statusReplaying: Color(0xFF26C6DA),
+  ratingStar: Color(0xFFF59E0B),
+  ratingHigh: Color(0xFF22C55E),
+  ratingMedium: Color(0xFFFBBF24),
+  ratingLow: Color(0xFFEF4444),
+  ratingGold: Color(0xFFFFD700),
+  scrim: Color(0xFF000000),
+  onOverlay: Color(0xFFFFFFFF),
+  barrier: Color(0x8A000000),
+  shadow: Color(0xFF000000),
+  rowFade: Color(0xFF1A1A2E),
+  badge: Color(0xFFEF5350),
+  onBadge: Color(0xFFFFFFFF),
+  tileAsset: AppAssets.backgroundTile,
+  tileOpacity: 0.03,
+);

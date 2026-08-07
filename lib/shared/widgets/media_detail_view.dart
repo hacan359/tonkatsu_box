@@ -82,7 +82,7 @@ class MediaDetailView extends ConsumerStatefulWidget {
     this.embedded = false,
     this.cacheImageType,
     this.cacheImageId,
-    this.accentColor = AppColors.brand,
+    this.accentColor,
     this.platformOverlayAsset,
     this.onCardLinkTap,
     super.key,
@@ -151,7 +151,9 @@ class MediaDetailView extends ConsumerStatefulWidget {
   /// instead of a plain network one for offline support.
   final ImageType? cacheImageType;
   final String? cacheImageId;
-  final Color accentColor;
+  // Nullable so the const constructor needs no non-const default;
+  // null falls back to AppColors.brand at use sites.
+  final Color? accentColor;
 
   /// Platform-overlay asset path (PNG 600×900).
   final String? platformOverlayAsset;
@@ -429,7 +431,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       source: widget.source,
       typeIcon: widget.typeIcon,
       typeLabel: widget.typeLabel,
-      accentColor: widget.accentColor,
+      accentColor: widget.accentColor ?? AppColors.brand,
       infoChips: widget.infoChips,
       externalUrl: widget.externalUrl,
       raBadge: widget.raBadge,
@@ -618,7 +620,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       children: <Widget>[
         CommentSectionHeader(
           icon: Icons.note_alt_outlined,
-          iconColor: widget.accentColor,
+          iconColor: widget.accentColor ?? AppColors.brand,
           title: l.detailMyNotes,
           isEditing: isEditing,
           onToggleEdit: isEditing
@@ -627,7 +629,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         ),
         const SizedBox(height: 6),
         CommentContainer(
-          accentColor: widget.accentColor,
+          accentColor: widget.accentColor ?? AppColors.brand,
           isEditing: isEditing,
           controller: _userController,
           hint: l.detailWriteNotesHint,

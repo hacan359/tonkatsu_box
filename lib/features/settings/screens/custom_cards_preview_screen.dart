@@ -156,7 +156,7 @@ class _CustomCardsPreviewScreenState
     if (!row.isValid) {
       return ListTile(
         dense: true,
-        leading: const Icon(
+        leading: Icon(
           Icons.error_outline,
           color: AppColors.statusDropped,
         ),

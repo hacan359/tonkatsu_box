@@ -580,6 +580,18 @@ class SRu extends S {
   String get settingsAppearanceSubtitle => 'Язык, отображение и контент';
 
   @override
+  String get settingsTheme => 'Тема';
+
+  @override
+  String get settingsThemeSubtitle => 'Цветовая тема приложения';
+
+  @override
+  String get settingsThemeDark => 'Тёмная';
+
+  @override
+  String get settingsThemeSakura => 'Сакура';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Язык интерфейса';
 
   @override

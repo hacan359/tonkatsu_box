@@ -23,6 +23,7 @@ import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_theme_id.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../core/services/update_service.dart';
 import '../providers/kodi_settings_provider.dart';
@@ -215,7 +216,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Icon(
                       Icons.drive_file_rename_outline,
                       size: iconSize,
-                      color: Colors.white,
+                      color: AppColors.onOverlay,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
@@ -386,6 +387,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         subtitle: l.settingsAppearanceSubtitle,
         titleIcon: Icons.palette_outlined,
         children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.color_lens_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsTheme,
+            subtitle: l.settingsThemeSubtitle,
+            value: _themeLabel(l, settings.appTheme),
+            onTap: () => _showThemePicker(settings),
+          ),
           SettingsTile(
             leadingIcon: Icons.language,
             leadingColor: _kAppearanceColor,
@@ -750,34 +759,69 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _apiKeysAllSet(SettingsState settings) =>
       _apiKeyStates(settings).every((bool isSet) => isSet);
 
-  void _showLanguagePicker(SettingsState settings) {
+  void _showChoicePicker<T>({
+    required String title,
+    required List<T> values,
+    required bool Function(T value) isSelected,
+    required String Function(T value) label,
+    required void Function(T value) onSelected,
+  }) {
     showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(S.of(context).settingsAppLanguage),
+        title: Text(title),
         children: <Widget>[
-          for (final MapEntry<String, String> lang
-              in _kAppLanguageNames.entries)
+          for (final T value in values)
             SimpleDialogOption(
+              // Pop before applying: a theme switch remounts the whole
+              // MaterialApp, taking this dialog's navigator with it.
               onPressed: () {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setAppLanguage(lang.key);
                 Navigator.pop(dialogContext);
+                onSelected(value);
               },
               child: Row(
                 children: <Widget>[
-                  if (settings.appLanguage == lang.key)
-                    const Icon(Icons.check, size: 18, color: AppColors.brand)
+                  if (isSelected(value))
+                    Icon(Icons.check, size: 18, color: AppColors.brand)
                   else
                     const SizedBox(width: 18),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(lang.value),
+                  Text(label(value)),
                 ],
               ),
             ),
         ],
       ),
+    );
+  }
+
+  void _showLanguagePicker(SettingsState settings) {
+    _showChoicePicker<MapEntry<String, String>>(
+      title: S.of(context).settingsAppLanguage,
+      values: _kAppLanguageNames.entries.toList(),
+      isSelected: (MapEntry<String, String> lang) =>
+          settings.appLanguage == lang.key,
+      label: (MapEntry<String, String> lang) => lang.value,
+      onSelected: (MapEntry<String, String> lang) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setAppLanguage(lang.key),
+    );
+  }
+
+  String _themeLabel(S l, AppThemeId theme) => switch (theme) {
+        AppThemeId.dark => l.settingsThemeDark,
+        AppThemeId.sakura => l.settingsThemeSakura,
+      };
+
+  void _showThemePicker(SettingsState settings) {
+    final S l = S.of(context);
+    _showChoicePicker<AppThemeId>(
+      title: l.settingsTheme,
+      values: AppThemeId.values,
+      isSelected: (AppThemeId theme) => settings.appTheme == theme,
+      label: (AppThemeId theme) => _themeLabel(l, theme),
+      onSelected: (AppThemeId theme) =>
+          ref.read(settingsNotifierProvider.notifier).setAppTheme(theme),
     );
   }
 
@@ -789,32 +833,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showContentLanguagePicker(SettingsState settings) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(S.of(context).settingsContentLanguage),
-        children: <Widget>[
-          for (final TmdbContentLanguage lang in kTmdbContentLanguages)
-            SimpleDialogOption(
-              onPressed: () {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setTmdbLanguage(lang.code);
-                Navigator.pop(dialogContext);
-              },
-              child: Row(
-                children: <Widget>[
-                  if (settings.tmdbLanguage == lang.code)
-                    const Icon(Icons.check, size: 18, color: AppColors.brand)
-                  else
-                    const SizedBox(width: 18),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(lang.nativeName),
-                ],
-              ),
-            ),
-        ],
-      ),
+    _showChoicePicker<TmdbContentLanguage>(
+      title: S.of(context).settingsContentLanguage,
+      values: kTmdbContentLanguages,
+      isSelected: (TmdbContentLanguage lang) =>
+          settings.tmdbLanguage == lang.code,
+      label: (TmdbContentLanguage lang) => lang.nativeName,
+      onSelected: (TmdbContentLanguage lang) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setTmdbLanguage(lang.code),
     );
   }
 
@@ -828,37 +855,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showDateFormatPicker(SettingsState settings) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final String localeName =
-            Localizations.localeOf(context).toLanguageTag();
-        final DateTime sample = DateTime(2026, 5, 25);
-        return SimpleDialog(
-          title: Text(S.of(context).settingsDateFormat),
-          children: <Widget>[
-            for (final DateFormatPreset preset in DateFormatPreset.values)
-              SimpleDialogOption(
-                onPressed: () {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setDateFormat(preset.id);
-                  Navigator.pop(dialogContext);
-                },
-                child: Row(
-                  children: <Widget>[
-                    if (settings.dateFormat == preset.id)
-                      const Icon(Icons.check, size: 18, color: AppColors.brand)
-                    else
-                      const SizedBox(width: 18),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(preset.format(sample, locale: localeName)),
-                  ],
-                ),
-              ),
-          ],
-        );
-      },
+    final String localeName = Localizations.localeOf(context).toLanguageTag();
+    final DateTime sample = DateTime(2026, 5, 25);
+    _showChoicePicker<DateFormatPreset>(
+      title: S.of(context).settingsDateFormat,
+      values: DateFormatPreset.values,
+      isSelected: (DateFormatPreset preset) =>
+          settings.dateFormat == preset.id,
+      label: (DateFormatPreset preset) =>
+          preset.format(sample, locale: localeName),
+      onSelected: (DateFormatPreset preset) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setDateFormat(preset.id),
     );
   }
 
@@ -874,35 +882,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showAnimeMangaTitleLanguagePicker(SettingsState settings) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final S l = S.of(context);
-        return SimpleDialog(
-          title: Text(l.settingsAnimeMangaTitleLanguage),
-          children: <Widget>[
-            for (final AnimeMangaTitleLanguage v in AnimeMangaTitleLanguage.values)
-              SimpleDialogOption(
-                onPressed: () {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setAnimeMangaTitleLanguage(v.id);
-                  Navigator.pop(dialogContext);
-                },
-                child: Row(
-                  children: <Widget>[
-                    if (settings.animeMangaTitleLanguage == v.id)
-                      const Icon(Icons.check, size: 18, color: AppColors.brand)
-                    else
-                      const SizedBox(width: 18),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(_animeMangaTitleLanguageLabel(l, v.id)),
-                  ],
-                ),
-              ),
-          ],
-        );
-      },
+    final S l = S.of(context);
+    _showChoicePicker<AnimeMangaTitleLanguage>(
+      title: l.settingsAnimeMangaTitleLanguage,
+      values: AnimeMangaTitleLanguage.values,
+      isSelected: (AnimeMangaTitleLanguage v) =>
+          settings.animeMangaTitleLanguage == v.id,
+      label: (AnimeMangaTitleLanguage v) =>
+          _animeMangaTitleLanguageLabel(l, v.id),
+      onSelected: (AnimeMangaTitleLanguage v) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setAnimeMangaTitleLanguage(v.id),
     );
   }
 
@@ -934,7 +924,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (BuildContext ctx) => AlertDialog(
         title: Row(
           children: <Widget>[
-            const Icon(Icons.warning_amber_rounded,
+            Icon(Icons.warning_amber_rounded,
                 color: AppColors.warning, size: 24),
             const SizedBox(width: 8),
             Expanded(child: Text(l.updateWarningTitle)),
@@ -1177,7 +1167,7 @@ class _RestoreProgressDialog extends StatelessWidget {
               children: <Widget>[
                 Text(
                   l.restoreProgressWarning,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 LinearProgressIndicator(value: value),
@@ -1187,7 +1177,7 @@ class _RestoreProgressDialog extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     p!.collectionName!,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

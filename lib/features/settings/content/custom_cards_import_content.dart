@@ -77,7 +77,7 @@ class _CustomCardsImportContentState
             ),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: AppColors.statusCompleted,
                   size: 20,

@@ -299,10 +299,10 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
           PopupMenuItem<String>(
             value: 'clear',
             child: ListTile(
-              leading: const Icon(Icons.clear, color: AppColors.error),
+              leading: Icon(Icons.clear, color: AppColors.error),
               title: Text(
                 l.moodGridClearItem,
-                style: const TextStyle(color: AppColors.error),
+                style: TextStyle(color: AppColors.error),
               ),
               contentPadding: EdgeInsets.zero,
             ),

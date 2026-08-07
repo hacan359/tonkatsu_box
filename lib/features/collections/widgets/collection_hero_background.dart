@@ -43,7 +43,7 @@ class CollectionHeroBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color bg = AppColors.background;
+    final Color bg = AppColors.background;
     final double leftStop = isMobile ? 0.75 : 0.55;
     final double bottomStop = isMobile ? 0.70 : 0.55;
     final double leftDark = strength.leftDarkOpacity;
@@ -64,7 +64,7 @@ class CollectionHeroBackground extends StatelessWidget {
             filterQuality: FilterQuality.medium,
             cacheWidth: effectiveCacheWidth,
             errorBuilder: (_, _, _) =>
-                const ColoredBox(color: AppColors.surface),
+                ColoredBox(color: AppColors.surface),
           ),
 
           // Dark on the left fading to transparent on the right.

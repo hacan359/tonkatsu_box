@@ -624,7 +624,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Icon(
+          Icon(
             Icons.info_outline,
             size: 16,
             color: AppColors.textTertiary,
@@ -926,7 +926,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 Text(
                   _ssQuotaError!,
                   style: AppTypography.caption
-                      .copyWith(color: Colors.redAccent),
+                      .copyWith(color: AppColors.error),
                 ),
               ],
               if (_ssQuota != null) ...<Widget>[

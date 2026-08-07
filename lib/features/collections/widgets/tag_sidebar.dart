@@ -37,7 +37,7 @@ class TagSidebar extends StatelessWidget {
 
     return Container(
       width: width,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           left: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
         ),

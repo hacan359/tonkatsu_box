@@ -427,7 +427,7 @@ class _GetKeyLink extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(Icons.open_in_new, size: 13, color: AppColors.brand),
+            Icon(Icons.open_in_new, size: 13, color: AppColors.brand),
             const SizedBox(width: 6),
             Text(
               l.welcomeSourcesGetKey,

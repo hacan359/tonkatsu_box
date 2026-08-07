@@ -115,7 +115,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.warning_amber, color: AppColors.statusDropped),
+          Icon(Icons.warning_amber, color: AppColors.statusDropped),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -191,7 +191,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
           ),
           child: Row(
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.public,
                 size: 16,
                 color: AppColors.textTertiary,

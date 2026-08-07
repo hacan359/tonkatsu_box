@@ -235,7 +235,7 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.brand.withAlpha(120)),
         ),
-        child: const Icon(Icons.add, size: 16, color: AppColors.brand),
+        child: Icon(Icons.add, size: 16, color: AppColors.brand),
       ),
       title: Text(
         l.tagCreateNamed(query),

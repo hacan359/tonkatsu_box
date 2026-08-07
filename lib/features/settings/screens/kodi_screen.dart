@@ -213,7 +213,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
               child: Row(
                 children: <Widget>[
                   if (settings.syncIntervalSeconds == seconds)
-                    const Icon(Icons.check, size: 18, color: AppColors.brand)
+                    Icon(Icons.check, size: 18, color: AppColors.brand)
                   else
                     const SizedBox(width: 18),
                   const SizedBox(width: AppSpacing.sm),
@@ -544,7 +544,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             onPressed: () => Navigator.pop(dialogContext, 'create_new'),
             child: Row(
               children: <Widget>[
-                const Icon(Icons.add, size: 18, color: AppColors.brand),
+                Icon(Icons.add, size: 18, color: AppColors.brand),
                 const SizedBox(width: AppSpacing.sm),
                 Text(S.of(context).importCreateNew),
               ],
@@ -559,7 +559,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
               child: Row(
                 children: <Widget>[
                   if (c.id == settings.targetCollectionId)
-                    const Icon(Icons.check, size: 18, color: AppColors.brand)
+                    Icon(Icons.check, size: 18, color: AppColors.brand)
                   else
                     const SizedBox(width: 18),
                   const SizedBox(width: AppSpacing.sm),
@@ -795,12 +795,12 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                 child: FilledButton.icon(
                   onPressed: _isSendingRaw ? null : _sendRawRequest,
                   icon: _isSendingRaw
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: AppColors.onOverlay,
                           ),
                         )
                       : const Icon(Icons.send, size: 16),

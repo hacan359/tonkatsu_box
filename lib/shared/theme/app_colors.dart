@@ -1,104 +1,134 @@
-// Application color palette.
-
 import 'package:flutter/material.dart';
 
-/// Application color palette (dark theme).
+import 'app_palette.dart';
+
+export 'app_palette.dart';
+
+/// Application color tokens, backed by the active [AppPalette].
 ///
-/// All colors are static constants for consistency across widgets.
+/// Getters (not consts) so the whole app re-skins when [palette] is swapped;
+/// the MaterialApp subtree is remounted on switch to flush stale consts.
 abstract final class AppColors {
+  /// The active palette; swapped by the app root on theme change.
+  static AppPalette palette = AppPalette.dark;
+
   /// Main app background.
-  static const Color background = Color(0xFF0A0A0A);
+  static Color get background => palette.background;
 
   /// Surface background (cards, panels).
-  static const Color surface = Color(0xFF141414);
+  static Color get surface => palette.surface;
 
   /// Elevated surface background (hover, selected items).
-  static const Color surfaceLight = Color(0xFF1E1E1E);
+  static Color get surfaceLight => palette.surfaceLight;
 
   /// Surface border.
-  static const Color surfaceBorder = Color(0xFF2A2A2A);
-
+  static Color get surfaceBorder => palette.surfaceBorder;
 
   /// Primary text.
-  static const Color textPrimary = Color(0xFFFFFFFF);
+  static Color get textPrimary => palette.textPrimary;
 
   /// Secondary text (subtitles, captions).
-  static const Color textSecondary = Color(0xFFB0B0B0);
+  static Color get textSecondary => palette.textSecondary;
 
   /// Tertiary text (disabled items, hints).
-  static const Color textTertiary = Color(0xFF707070);
+  static Color get textTertiary => palette.textTertiary;
 
+  /// Main app accent color.
+  static Color get brand => palette.brand;
 
-  /// Main app accent color (orange).
-  static const Color brand = Color(0xFFEF7B44);
+  /// Text/icons on top of [brand]-filled controls.
+  static Color get onBrand => palette.onBrand;
 
+  /// Accent for games.
+  static Color get gameAccent => palette.gameAccent;
 
-  /// Accent for games (indigo).
-  static const Color gameAccent = Color(0xFF707DD2);
+  /// Accent for movies.
+  static Color get movieAccent => palette.movieAccent;
 
-  /// Accent for movies (orange).
-  static const Color movieAccent = Color(0xFFEF7B44);
+  /// Accent for TV shows.
+  static Color get tvShowAccent => palette.tvShowAccent;
 
-  /// Accent for TV shows (lime).
-  static const Color tvShowAccent = Color(0xFFB1E140);
+  /// Accent for animation.
+  static Color get animationAccent => palette.animationAccent;
 
-  /// Accent for animation (purple).
-  static const Color animationAccent = Color(0xFFA86ED4);
+  /// Accent for visual novels.
+  static Color get visualNovelAccent => palette.visualNovelAccent;
 
-  /// Accent for visual novels (blue).
-  static const Color visualNovelAccent = Color(0xFF2A5FC1);
+  /// Accent for manga.
+  static Color get mangaAccent => palette.mangaAccent;
 
-  /// Accent for manga (AniList light blue).
-  static const Color mangaAccent = Color(0xFF3DB4F2);
+  /// Accent for anime.
+  static Color get animeAccent => palette.animeAccent;
 
-  /// Accent for anime (AniList pink).
-  static const Color animeAccent = Color(0xFFE85D75);
+  /// Accent for books.
+  static Color get bookAccent => palette.bookAccent;
 
-  /// Accent for books (OpenLibrary brown).
-  static const Color bookAccent = Color(0xFF9B6A4F);
-
-  /// Accent for custom items (teal).
-  static const Color customAccent = Color(0xFF26A69A);
-
+  /// Accent for custom items.
+  static Color get customAccent => palette.customAccent;
 
   /// Success (completed, done).
-  static const Color success = Color(0xFF66BB6A);
+  static Color get success => palette.success;
 
   /// Warning (on hold, paused).
-  static const Color warning = Color(0xFFFFA726);
+  static Color get warning => palette.warning;
 
   /// Error.
-  static const Color error = Color(0xFFEF5350);
+  static Color get error => palette.error;
 
   /// Favorite heart (filled).
-  static const Color favorite = Color(0xFFFF4D6D);
-
+  static Color get favorite => palette.favorite;
 
   /// "In Progress" status (playing/watching).
-  static const Color statusInProgress = Color(0xFF42A5F5);
+  static Color get statusInProgress => palette.statusInProgress;
 
   /// "Completed" status.
-  static const Color statusCompleted = success;
+  static Color get statusCompleted => palette.statusCompleted;
 
   /// "Dropped" status.
-  static const Color statusDropped = error;
+  static Color get statusDropped => palette.statusDropped;
 
   /// "Planned" status (backlog, wishlist).
-  static const Color statusPlanned = Color(0xFF8B5CF6);
+  static Color get statusPlanned => palette.statusPlanned;
 
   /// "Replay" status (replaying / rewatching / rereading).
-  static const Color statusReplaying = Color(0xFF26C6DA);
+  static Color get statusReplaying => palette.statusReplaying;
 
-
-  /// Rating star icon (amber).
-  static const Color ratingStar = Color(0xFFF59E0B);
+  /// Rating star icon.
+  static Color get ratingStar => palette.ratingStar;
 
   /// High rating (>= 8.0).
-  static const Color ratingHigh = Color(0xFF22C55E);
+  static Color get ratingHigh => palette.ratingHigh;
 
   /// Medium rating (>= 6.0).
-  static const Color ratingMedium = Color(0xFFFBBF24);
+  static Color get ratingMedium => palette.ratingMedium;
 
   /// Low rating (< 6.0).
-  static const Color ratingLow = Color(0xFFEF4444);
+  static Color get ratingLow => palette.ratingLow;
+
+  /// Community-rating gold in card meta lines.
+  static Color get ratingGold => palette.ratingGold;
+
+  /// Base for gradients/dimming over poster art (`withAlpha` at call site).
+  static Color get scrim => palette.scrim;
+
+  /// Text/icons drawn over [scrim]-dimmed images.
+  static Color get onOverlay => palette.onOverlay;
+
+  /// Modal barrier behind dialogs and fullscreen viewers.
+  static Color get barrier => palette.barrier;
+
+  /// Drop shadows (cards, floating panels).
+  static Color get shadow => palette.shadow;
+
+  /// Edge-fade base of horizontally scrollable rows.
+  static Color get rowFade => palette.rowFade;
+
+  /// Counter badge fill (nav bell / wishlist counts).
+  static Color get badge => palette.badge;
+
+  /// Counter badge text on [badge].
+  static Color get onBadge => palette.onBadge;
+
+  /// Tiled wallpaper image of the active palette.
+  static DecorationImage get tileImage => palette.tileImage;
 }

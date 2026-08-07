@@ -16,7 +16,6 @@ import '../../../shared/widgets/gyroscope_parallax_image.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/url_launch.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -366,19 +365,14 @@ class ItemDetailsSheet extends StatelessWidget {
         return Material(
           color: AppColors.background,
           elevation: 16,
-          shadowColor: Colors.black,
+          shadowColor: AppColors.shadow,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppSpacing.radiusLg),
           ),
           clipBehavior: Clip.antiAlias,
           child: DecoratedBox(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(AppAssets.backgroundTile),
-                repeat: ImageRepeat.repeat,
-                opacity: 0.03,
-                scale: 0.667,
-              ),
+            decoration: BoxDecoration(
+              image: AppColors.tileImage,
             ),
             child: Stack(
               children: <Widget>[
@@ -501,7 +495,7 @@ class ItemDetailsSheet extends StatelessWidget {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(80),
+                    color: AppColors.textPrimary.withAlpha(80),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
                   ),
                 ),
@@ -642,7 +636,7 @@ class ItemDetailsSheet extends StatelessWidget {
             ),
             if (rating != null) ...<Widget>[
               const SizedBox(width: AppSpacing.sm),
-              const Icon(Icons.star,
+              Icon(Icons.star,
                   size: 14, color: AppColors.ratingStar),
               const SizedBox(width: 2),
               Text(rating!, style: AppTypography.bodySmall),
@@ -854,11 +848,11 @@ class _AddButtonState extends State<_AddButton> {
           child: InkWell(
             onTap: widget.onPressed,
             customBorder: const CircleBorder(),
-            splashColor: Colors.white.withAlpha(40),
-            child: const SizedBox(
+            splashColor: AppColors.onOverlay.withAlpha(40),
+            child: SizedBox(
               width: 44,
               height: 44,
-              child: Icon(Icons.add, color: Colors.white, size: 24),
+              child: Icon(Icons.add, color: AppColors.onOverlay, size: 24),
             ),
           ),
         ),

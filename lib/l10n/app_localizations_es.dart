@@ -570,6 +570,18 @@ class SEs extends S {
   String get settingsAppearanceSubtitle => 'Idioma, visualización y contenido';
 
   @override
+  String get settingsTheme => 'Tema';
+
+  @override
+  String get settingsThemeSubtitle => 'Tema de color de la aplicación';
+
+  @override
+  String get settingsThemeDark => 'Oscuro';
+
+  @override
+  String get settingsThemeSakura => 'Sakura';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Idioma de la interfaz';
 
   @override

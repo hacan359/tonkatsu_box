@@ -354,14 +354,14 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
                     hintStyle: AppTypography.body.copyWith(
                       color: AppColors.textTertiary,
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
                       size: 18,
                       color: AppColors.textTertiary,
                     ),
                     suffixIcon: _query.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close,
                               size: 16,
                               color: AppColors.textTertiary,

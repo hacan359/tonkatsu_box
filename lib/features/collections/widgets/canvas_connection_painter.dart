@@ -6,6 +6,7 @@ import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class CanvasConnectionPainter extends CustomPainter {
   CanvasConnectionPainter({
@@ -80,7 +81,7 @@ class CanvasConnectionPainter extends CustomPainter {
         from,
         mousePosition!,
         Paint()
-          ..color = Colors.blue.withAlpha(180)
+          ..color = AppColors.statusInProgress.withAlpha(180)
           ..strokeWidth = _lineWidth
           ..style = PaintingStyle.stroke,
       );
@@ -152,12 +153,14 @@ class CanvasConnectionPainter extends CustomPainter {
     );
   }
 
+  // Field, not a per-call literal: _drawLabel runs per connection per paint.
+  late final TextStyle _fallbackLabelStyle = TextStyle(
+    fontSize: 11,
+    color: AppColors.scrim.withAlpha(0xDE),
+  );
+
   void _drawLabel(Canvas canvas, Offset from, Offset to, String label) {
-    final TextStyle style = labelStyle ??
-        const TextStyle(
-          fontSize: 11,
-          color: Colors.black87,
-        );
+    final TextStyle style = labelStyle ?? _fallbackLabelStyle;
 
     final TextPainter painter = TextPainter(
       text: TextSpan(text: label, style: style),
@@ -170,7 +173,7 @@ class CanvasConnectionPainter extends CustomPainter {
     );
 
     final Color bgColor = labelBackgroundColor ??
-        Colors.white.withAlpha(220);
+        AppColors.onOverlay.withAlpha(220);
     final Rect bgRect = Rect.fromLTWH(
       mid.dx - 4,
       mid.dy - 2,
@@ -246,7 +249,7 @@ class CanvasConnectionPainter extends CustomPainter {
     } on FormatException {
       // Invalid hex falls through to the default color.
     }
-    return const Color(0xFF666666);
+    return AppColors.textTertiary;
   }
 
   /// Returns the id of the connection within [hitTestThreshold] of [point],

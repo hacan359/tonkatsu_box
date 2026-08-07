@@ -148,7 +148,7 @@ class _AnimatedSidePanel extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         border: isOpen
-            ? const Border(left: BorderSide(color: AppColors.surfaceBorder))
+            ? Border(left: BorderSide(color: AppColors.surfaceBorder))
             : null,
       ),
       child: isOpen

@@ -25,7 +25,7 @@ class UserRatingSection extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            const Icon(Icons.star, size: 18, color: AppColors.ratingStar),
+            Icon(Icons.star, size: 18, color: AppColors.ratingStar),
             const SizedBox(width: 6),
             Text(
               S.of(context).detailMyRating,

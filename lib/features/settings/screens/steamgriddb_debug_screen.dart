@@ -197,7 +197,7 @@ class _SteamGridDbDebugScreenState
               ? Center(
                   child: Text(
                     l.debugEnterGameNameHint,
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: AppColors.textTertiary),
                   ),
                 )
               : ListView.builder(
@@ -217,8 +217,8 @@ class _SteamGridDbDebugScreenState
                         ].join(' | '),
                       ),
                       trailing: game.verified
-                          ? const Icon(Icons.verified,
-                              color: Colors.blue, size: 20)
+                          ? Icon(Icons.verified,
+                              color: AppColors.statusInProgress, size: 20)
                           : null,
                       onTap: () {
                         _gameIdController.text = game.id.toString();
@@ -272,12 +272,12 @@ class _SteamGridDbDebugScreenState
                   onPressed:
                       _isLoadingImages ? null : () => _loadImages(tabIndex),
                   icon: _isLoadingImages
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: AppColors.onOverlay,
                           ),
                         )
                       : const Icon(Icons.download),
@@ -294,14 +294,14 @@ class _SteamGridDbDebugScreenState
               ? Center(
                   child: Text(
                     l.debugEnterGameIdHint(tabName),
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: AppColors.textTertiary),
                   ),
                 )
               : _images.isEmpty && !_isLoadingImages
                   ? Center(
                       child: Text(
                         l.debugNoImagesFound,
-                        style: const TextStyle(color: Colors.grey),
+                        style: TextStyle(color: AppColors.textTertiary),
                       ),
                     )
                   : _lastImageTab == tabIndex
@@ -322,7 +322,7 @@ class _SteamGridDbDebugScreenState
                       : Center(
                           child: Text(
                             l.debugEnterGameIdHint(tabName),
-                            style: const TextStyle(color: Colors.grey),
+                            style: TextStyle(color: AppColors.textTertiary),
                           ),
                         ),
         ),
@@ -345,8 +345,12 @@ class _SteamGridDbDebugScreenState
                 Object error,
                 StackTrace? stackTrace,
               ) {
-                return const Center(
-                  child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                return Center(
+                  child: Icon(
+                    Icons.broken_image,
+                    size: 48,
+                    color: AppColors.textTertiary,
+                  ),
                 );
               },
               loadingBuilder: (
@@ -377,7 +381,7 @@ class _SteamGridDbDebugScreenState
                   '${image.style} | Score: ${image.score}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey.shade600,
+                    color: AppColors.textTertiary,
                   ),
                 ),
                 if (image.author != null)
@@ -385,7 +389,7 @@ class _SteamGridDbDebugScreenState
                     'by ${image.author}',
                     style: TextStyle(
                       fontSize: 10,
-                      color: Colors.grey.shade500,
+                      color: AppColors.textTertiary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

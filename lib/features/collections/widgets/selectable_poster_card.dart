@@ -49,7 +49,7 @@ class _SelectablePosterCardState extends State<SelectablePosterCard> {
               child: IgnorePointer(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(120),
+                    color: AppColors.scrim.withAlpha(120),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
                 ),
@@ -102,20 +102,20 @@ class _CheckCircle extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.brand
-                : Colors.black.withAlpha(140),
+                : AppColors.scrim.withAlpha(140),
             shape: BoxShape.circle,
             border: Border.all(
               color: isSelected
                   ? AppColors.brand
-                  : Colors.white.withAlpha(200),
+                  : AppColors.onOverlay.withAlpha(200),
               width: 1.5,
             ),
           ),
           child: isSelected
-              ? const Icon(
+              ? Icon(
                   Icons.check_rounded,
                   size: 14,
-                  color: Colors.white,
+                  color: AppColors.onOverlay,
                 )
               : null,
         ),

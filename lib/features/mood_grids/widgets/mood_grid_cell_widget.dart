@@ -97,7 +97,7 @@ class MoodGridCellWidget extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: Container(
         color: AppColors.surfaceLight,
-        child: const Center(
+        child: Center(
           child: Icon(
             Icons.add,
             size: 32,

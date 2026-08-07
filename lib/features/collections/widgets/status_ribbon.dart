@@ -5,6 +5,7 @@ import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 
 import '../../../shared/constants/item_status_ui.dart';
+import '../../../shared/theme/app_colors.dart';
 
 /// Hidden for [ItemStatus.notStarted]. Must be placed in a [Stack] inside
 /// a widget with `clipBehavior: Clip.antiAlias` (e.g. [Card]).
@@ -48,7 +49,7 @@ class StatusRibbon extends StatelessWidget {
           child: Icon(
             status.materialIcon,
             size: 12,
-            color: Colors.white,
+            color: AppColors.onOverlay,
           ),
         ),
       ),

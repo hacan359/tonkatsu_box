@@ -84,7 +84,7 @@ class _SteamGridDbSidePanel extends ConsumerWidget {
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         border: isPanelOpen
-            ? const Border(
+            ? Border(
                 left: BorderSide(
                   color: AppColors.surfaceBorder,
                 ),
@@ -128,7 +128,7 @@ class _VgMapsSidePanel extends ConsumerWidget {
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         border: isPanelOpen
-            ? const Border(
+            ? Border(
                 left: BorderSide(
                   color: AppColors.surfaceBorder,
                 ),

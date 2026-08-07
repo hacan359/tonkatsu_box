@@ -78,7 +78,7 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
     return Container(
       height: 52,
       padding: const EdgeInsets.only(left: AppSpacing.md, right: AppSpacing.xs),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
         ),

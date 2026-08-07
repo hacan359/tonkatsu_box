@@ -520,6 +520,18 @@ class SZh extends S {
   String get settingsAppearanceSubtitle => '语言、显示和内容';
 
   @override
+  String get settingsTheme => '主题';
+
+  @override
+  String get settingsThemeSubtitle => '应用配色主题';
+
+  @override
+  String get settingsThemeDark => '深色';
+
+  @override
+  String get settingsThemeSakura => '樱花';
+
+  @override
   String get settingsAppLanguageSubtitle => '界面语言';
 
   @override

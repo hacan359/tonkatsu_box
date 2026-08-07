@@ -3,6 +3,10 @@ abstract final class AppAssets {
 
   static const String backgroundTile = 'assets/images/background_tile.png';
 
+  /// [backgroundTile] recolored to sakura rose for the light theme.
+  static const String backgroundTileSakura =
+      'assets/images/background_tile_sakura.png';
+
   static const String iconDiscord = 'assets/images/icon_discord.svg';
   static const String iconDiscordColor = 'assets/images/icon_discord_color.png';
 

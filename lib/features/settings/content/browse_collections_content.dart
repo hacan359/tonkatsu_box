@@ -77,7 +77,7 @@ class _BrowseCollectionsContentState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(Icons.cloud_off, size: 48, color: AppColors.textSecondary),
+            Icon(Icons.cloud_off, size: 48, color: AppColors.textSecondary),
             const SizedBox(height: AppSpacing.md),
             Text(
               l.browseCollectionsLoadError,
@@ -634,14 +634,14 @@ class _SearchablePickerDialogState extends State<_SearchablePickerDialog> {
                     hintStyle: AppTypography.body.copyWith(
                       color: AppColors.textTertiary,
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
                       size: 18,
                       color: AppColors.textTertiary,
                     ),
                     suffixIcon: _query.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close,
                               size: 16,
                               color: AppColors.textTertiary,

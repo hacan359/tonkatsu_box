@@ -127,7 +127,9 @@ class _ProfileColorPickerButton extends StatelessWidget {
               decoration: BoxDecoration(
                 color: color,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withAlpha(40)),
+                border: Border.all(
+                  color: AppColors.textPrimary.withAlpha(40),
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),

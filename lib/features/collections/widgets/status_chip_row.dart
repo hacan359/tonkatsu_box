@@ -36,7 +36,7 @@ List<PopupMenuEntry<String>> statusChipPopupMenuEntries({
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Text(
         l.status.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.6,

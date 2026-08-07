@@ -2,166 +2,170 @@
 
 import 'package:flutter/material.dart';
 
-import 'app_assets.dart';
-import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// Centralized dark application theme.
-///
-/// All Material components are styled through [AppColors].
-/// Dark theme is forced — light theme is not supported.
+/// Centralized application theme, built from an [AppPalette].
 abstract final class AppTheme {
-  /// The app's dark theme.
-  static final ThemeData darkTheme = ThemeData(
-    brightness: Brightness.dark,
-    useMaterial3: true,
-    fontFamily: AppTypography.fontFamily,
-    colorScheme: const ColorScheme.dark(
-      primary: AppColors.brand,
-      onPrimary: AppColors.background,
-      secondary: AppColors.movieAccent,
-      onSecondary: AppColors.background,
-      tertiary: AppColors.tvShowAccent,
-      surface: AppColors.surface,
-      onSurface: AppColors.textPrimary,
-      surfaceContainerHighest: AppColors.surfaceLight,
-      outline: AppColors.surfaceBorder,
-      outlineVariant: AppColors.surfaceBorder,
-      error: AppColors.error,
-      onError: AppColors.textPrimary,
-    ),
-    scaffoldBackgroundColor: Colors.transparent,
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: <TargetPlatform, PageTransitionsBuilder>{
-        TargetPlatform.windows: _OpaquePageTransitionsBuilder(),
-        TargetPlatform.android: _OpaquePageTransitionsBuilder(),
-      },
-    ),
-    appBarTheme: const AppBarTheme(
-      centerTitle: false,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      backgroundColor: AppColors.background,
-      foregroundColor: AppColors.textPrimary,
-      surfaceTintColor: Colors.transparent,
-    ),
-    cardTheme: CardThemeData(
-      elevation: 2,
-      shadowColor: Colors.black26,
-      color: AppColors.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: AppColors.surfaceLight,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        borderSide: const BorderSide(color: AppColors.surfaceBorder),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        borderSide: const BorderSide(color: AppColors.surfaceBorder),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        borderSide: const BorderSide(color: AppColors.brand),
-      ),
-      labelStyle: const TextStyle(color: AppColors.textSecondary),
-      hintStyle: const TextStyle(color: AppColors.textTertiary),
-    ),
-    dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-      ),
-      // Without these M3 falls back to headlineSmall (24px) titles and
-      // 24px action insets — dialogs read bloated next to the app's type
-      // scale.
-      titleTextStyle: AppTypography.h2,
-      contentTextStyle: AppTypography.body.copyWith(
-        color: AppColors.textSecondary,
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        0,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
-    ),
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: AppColors.surface,
-      surfaceTintColor: Colors.transparent,
-      modalBarrierColor: Colors.black54,
-    ),
-    chipTheme: ChipThemeData(
-      backgroundColor: AppColors.surfaceLight,
-      selectedColor: AppColors.brand.withAlpha(51),
-      side: const BorderSide(color: AppColors.surfaceBorder),
-      labelStyle: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 12,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-      ),
-    ),
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+  /// The original dark theme — kept as the default for tests and tooling.
+  static final ThemeData darkTheme = build(AppPalette.dark);
+
+  static ThemeData build(AppPalette p) => ThemeData(
+        brightness: p.brightness,
+        useMaterial3: true,
+        fontFamily: AppTypography.fontFamily,
+        colorScheme: ColorScheme(
+          brightness: p.brightness,
+          primary: p.brand,
+          onPrimary: p.onBrand,
+          secondary: p.movieAccent,
+          onSecondary: p.onBrand,
+          tertiary: p.tvShowAccent,
+          onTertiary: p.onBrand,
+          surface: p.surface,
+          onSurface: p.textPrimary,
+          surfaceContainerHighest: p.surfaceLight,
+          outline: p.surfaceBorder,
+          outlineVariant: p.surfaceBorder,
+          error: p.error,
+          onError: p.onOverlay,
         ),
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
-        side: const BorderSide(color: AppColors.surfaceBorder),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        scaffoldBackgroundColor: Colors.transparent,
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: <TargetPlatform, PageTransitionsBuilder>{
+            TargetPlatform.windows: _OpaquePageTransitionsBuilder(p),
+            TargetPlatform.android: _OpaquePageTransitionsBuilder(p),
+          },
         ),
-      ),
-    ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: AppColors.brand,
-      ),
-    ),
-    dividerTheme: const DividerThemeData(
-      color: AppColors.surfaceBorder,
-      thickness: 1,
-    ),
-    snackBarTheme: const SnackBarThemeData(
-      behavior: SnackBarBehavior.floating,
-      elevation: 4,
-    ),
-    popupMenuTheme: PopupMenuThemeData(
-      color: AppColors.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-    ),
-    navigationRailTheme: const NavigationRailThemeData(
-      backgroundColor: AppColors.surface,
-      selectedIconTheme: IconThemeData(color: AppColors.textPrimary),
-      unselectedIconTheme: IconThemeData(color: AppColors.textTertiary),
-      indicatorColor: AppColors.surfaceLight,
-    ),
-    progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: AppColors.brand,
-    ),
-    tabBarTheme: const TabBarThemeData(
-      labelColor: AppColors.textPrimary,
-      unselectedLabelColor: AppColors.textTertiary,
-      indicatorColor: AppColors.brand,
-    ),
-  );
+        appBarTheme: AppBarTheme(
+          centerTitle: false,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: p.background,
+          foregroundColor: p.textPrimary,
+          surfaceTintColor: Colors.transparent,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shadowColor: p.shadow.withAlpha(66),
+          color: p.surface,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: p.surfaceLight,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            borderSide: BorderSide(color: p.surfaceBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            borderSide: BorderSide(color: p.surfaceBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            borderSide: BorderSide(color: p.brand),
+          ),
+          labelStyle: TextStyle(color: p.textSecondary),
+          hintStyle: TextStyle(color: p.textTertiary),
+        ),
+        dialogTheme: DialogThemeData(
+          backgroundColor: p.surface,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+          // Without these M3 falls back to headlineSmall (24px) titles and
+          // 24px action insets — dialogs read bloated next to the app's type
+          // scale.
+          titleTextStyle: AppTypography.h2,
+          contentTextStyle: AppTypography.body.copyWith(
+            color: p.textSecondary,
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.sm,
+          ),
+        ),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: p.surface,
+          surfaceTintColor: Colors.transparent,
+          modalBarrierColor: p.barrier,
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: p.surfaceLight,
+          selectedColor: p.brand.withAlpha(51),
+          side: BorderSide(color: p.surfaceBorder),
+          labelStyle: TextStyle(
+            color: p.textPrimary,
+            fontSize: 12,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
+            side: BorderSide(color: p.surfaceBorder),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            ),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: p.brand,
+          ),
+        ),
+        dividerTheme: DividerThemeData(
+          color: p.surfaceBorder,
+          thickness: 1,
+        ),
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          elevation: 4,
+        ),
+        popupMenuTheme: PopupMenuThemeData(
+          color: p.surface,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          ),
+        ),
+        navigationRailTheme: NavigationRailThemeData(
+          backgroundColor: p.surface,
+          selectedIconTheme: IconThemeData(color: p.textPrimary),
+          unselectedIconTheme: IconThemeData(color: p.textTertiary),
+          indicatorColor: p.surfaceLight,
+        ),
+        progressIndicatorTheme: ProgressIndicatorThemeData(
+          color: p.brand,
+        ),
+        tabBarTheme: TabBarThemeData(
+          labelColor: p.textPrimary,
+          unselectedLabelColor: p.textTertiary,
+          indicatorColor: p.brand,
+        ),
+        badgeTheme: BadgeThemeData(
+          backgroundColor: p.badge,
+          textColor: p.onBadge,
+        ),
+      );
 }
 
 /// Wrapper around [ZoomPageTransitionsBuilder] that makes every page opaque.
@@ -170,20 +174,17 @@ abstract final class AppTheme {
 /// this keeps the two pages' content from showing through each other during
 /// a transition (scaffolds are transparent to expose the builder background).
 class _OpaquePageTransitionsBuilder extends PageTransitionsBuilder {
-  const _OpaquePageTransitionsBuilder();
+  // Decoration is prebuilt: buildTransitions runs every transition frame.
+  _OpaquePageTransitionsBuilder(AppPalette palette)
+      : _tiledDecoration = BoxDecoration(
+          color: palette.background,
+          image: palette.tileImage,
+        );
+
+  final BoxDecoration _tiledDecoration;
 
   static const ZoomPageTransitionsBuilder _delegate =
       ZoomPageTransitionsBuilder();
-
-  static const BoxDecoration _tiledDecoration = BoxDecoration(
-    color: AppColors.background,
-    image: DecorationImage(
-      image: AssetImage(AppAssets.backgroundTile),
-      repeat: ImageRepeat.repeat,
-      opacity: 0.03,
-      scale: 0.667,
-    ),
-  );
 
   @override
   Widget buildTransitions<T>(

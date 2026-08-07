@@ -28,7 +28,7 @@ extension SnackBarExtension on BuildContext {
     messenger.hideCurrentSnackBar();
 
     final Widget leadingIcon = loading
-        ? const SizedBox(
+        ? SizedBox(
             width: 16,
             height: 16,
             child: CircularProgressIndicator(
@@ -66,7 +66,7 @@ extension SnackBarExtension on BuildContext {
             Flexible(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 13,
                 ),

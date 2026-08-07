@@ -571,6 +571,18 @@ class SFr extends S {
   String get settingsAppearanceSubtitle => 'Langue, affichage et contenu';
 
   @override
+  String get settingsTheme => 'Thème';
+
+  @override
+  String get settingsThemeSubtitle => 'Thème de couleur de l\'application';
+
+  @override
+  String get settingsThemeDark => 'Sombre';
+
+  @override
+  String get settingsThemeSakura => 'Sakura';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Langue de l\'interface';
 
   @override

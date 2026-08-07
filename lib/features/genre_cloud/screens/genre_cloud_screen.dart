@@ -121,7 +121,7 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
       height: 44,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
         ),

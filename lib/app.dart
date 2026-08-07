@@ -10,7 +10,9 @@ import 'features/settings/providers/settings_provider.dart';
 import 'features/splash/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'shared/gamepad/gamepad_provider.dart';
+import 'shared/theme/app_colors.dart';
 import 'shared/theme/app_theme.dart';
+import 'shared/theme/app_theme_id.dart';
 
 /// Root app widget. A top-level [Listener] watches mouse movement to switch
 /// [InputMode] (gamepad ↔ mouse).
@@ -48,8 +50,18 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
 
   @override
   Widget build(BuildContext context) {
-    final String appLanguage =
-        ref.watch(settingsNotifierProvider).appLanguage;
+    // select() so per-tick settings writes (e.g. the card-scale slider)
+    // don't rebuild the ThemeData.
+    final String appLanguage = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.appLanguage),
+    );
+    final AppThemeId themeId = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.appTheme),
+    );
+    // AppColors getters read a static palette, so it must be swapped before
+    // the subtree builds; the ValueKey below remounts everything on switch.
+    AppColors.palette = themeId.palette;
+    final ThemeData theme = AppTheme.build(themeId.palette);
 
     // Kodi sync provider is lazy — a read is required to start it.
     ref.read(kodiSettingsProvider);
@@ -59,11 +71,10 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
         ref.read(inputModeProvider.notifier).setMouseMode();
       },
       child: MaterialApp(
+        key: ValueKey<AppThemeId>(themeId),
         title: 'Tonkatsu Box',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.dark,
+        theme: theme,
         locale: Locale(appLanguage),
         supportedLocales: S.supportedLocales,
         localizationsDelegates: S.localizationsDelegates,

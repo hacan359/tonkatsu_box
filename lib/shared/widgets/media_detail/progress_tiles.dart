@@ -65,7 +65,7 @@ class ProgressTile extends StatelessWidget {
               ),
               if (onTap != null) ...<Widget>[
                 const SizedBox(width: 4),
-                const Icon(
+                Icon(
                   Icons.edit_outlined,
                   size: 12,
                   color: AppColors.brand,

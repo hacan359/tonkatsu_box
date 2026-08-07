@@ -80,7 +80,7 @@ class BulkPosterMosaicView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            const Divider(height: 1, color: AppColors.surfaceBorder),
+            Divider(height: 1, color: AppColors.surfaceBorder),
             const SizedBox(height: AppSpacing.sm),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,

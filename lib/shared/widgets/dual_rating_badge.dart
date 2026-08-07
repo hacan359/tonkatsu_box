@@ -65,7 +65,7 @@ class DualRatingBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: BoxDecoration(
-        color: const Color(0xCC000000),
+        color: AppColors.scrim.withAlpha(0xCC),
         borderRadius: BorderRadius.circular(compact ? 4 : 6),
       ),
       child: Row(
@@ -80,7 +80,7 @@ class DualRatingBadge extends StatelessWidget {
           Text(
             formattedRating,
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.onOverlay,
               fontSize: fontSize,
               fontWeight: FontWeight.bold,
               height: 1.2,
@@ -95,7 +95,7 @@ class DualRatingBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Icon(
+        Icon(
           Icons.star,
           size: 14,
           color: AppColors.ratingStar,
@@ -103,7 +103,7 @@ class DualRatingBadge extends StatelessWidget {
         const SizedBox(width: 2),
         Text(
           formattedRating,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w500,

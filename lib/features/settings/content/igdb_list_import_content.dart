@@ -103,7 +103,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.warning_amber, color: AppColors.statusDropped),
+          Icon(Icons.warning_amber, color: AppColors.statusDropped),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -143,7 +143,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
             ),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: AppColors.statusCompleted,
                   size: 20,
@@ -333,7 +333,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
-          const Icon(Icons.chevron_right, size: 18,
+          Icon(Icons.chevron_right, size: 18,
               color: AppColors.textTertiary),
         ],
       ),
