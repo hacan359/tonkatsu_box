@@ -1,5 +1,7 @@
 import 'package:core/models/collection.dart';
+import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
@@ -22,7 +24,8 @@ RecommendedItem _item(String title) => RecommendedItem(
       tasteId: 'movie:$title',
       media: Object(),
       mediaType: MediaType.movie,
-      tmdbId: 1,
+      source: DataSource.tmdb,
+      externalId: 1,
       title: title,
       posterUrl: null,
       year: 2000,
@@ -112,6 +115,43 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(RecommendationsEmptyState), findsNothing);
       expect(find.byType(RecommendationRowWidget), findsNWidgets(2));
+    });
+
+    testWidgets('refresh recomputes and shows the loader while reloading', (
+      WidgetTester tester,
+    ) async {
+      int runs = 0;
+      await tester.pumpApp(
+        const RecommendationsScreen(),
+        overrides: <Override>[
+          collectionsProvider
+              .overrideWith(() => _FakeCollectionsNotifier(<Collection>[])),
+          recommendationsProvider.overrideWith((Ref ref) async {
+            runs++;
+            // A real recompute takes time; without a turnaround the refresh
+            // would resolve within the same frame and never show the loader.
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+            return RecommendationResult(
+              status: RecommendationStatus.ready,
+              rows: <RecommendationRowUi>[_row('A')],
+            );
+          }),
+          collectedRecommendationIdsProvider
+              .overrideWith((Ref ref) async => <String>{}),
+        ],
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(RecommendationRowWidget), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.pump();
+
+      // The pipeline re-ran and the old rows gave way to the loader.
+      expect(runs, 2);
+      expect(find.byType(RecommendationRowWidget), findsNothing);
+
+      await tester.pumpAndSettle();
+      expect(find.byType(RecommendationRowWidget), findsOneWidget);
     });
   });
 }

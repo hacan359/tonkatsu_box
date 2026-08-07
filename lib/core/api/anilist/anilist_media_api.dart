@@ -120,6 +120,63 @@ class AniListMediaApi {
     return Anime.fromJson(media);
   }
 
+  // AniList caps a nested connection's perPage at 25 (50 elsewhere).
+  static const int _recommendationsPerPage = 25;
+
+  Future<List<Anime>> getAnimeRecommendations(int id) async =>
+      (await getAnimeRecommendationsBatch(<int>[id]))[id] ?? const <Anime>[];
+
+  Future<List<Manga>> getMangaRecommendations(int id) async =>
+      (await getMangaRecommendationsBatch(<int>[id]))[id] ?? const <Manga>[];
+
+  /// Recommendations for every seed in one aliased request (see
+  /// [AniListQueries.recommendationsBatch]), retried on a 429.
+  Future<Map<int, List<Anime>>> getAnimeRecommendationsBatch(
+    List<int> ids,
+  ) async {
+    if (ids.isEmpty) return const <int, List<Anime>>{};
+    final Map<String, dynamic>? data = await _postRecommendationsBatch(
+      ids: ids,
+      anime: true,
+      errorContext: 'Failed to fetch anime recommendations',
+    );
+    return AniListMediaParser.recommendedAnimeBatch(data, ids);
+  }
+
+  Future<Map<int, List<Manga>>> getMangaRecommendationsBatch(
+    List<int> ids,
+  ) async {
+    if (ids.isEmpty) return const <int, List<Manga>>{};
+    final Map<String, dynamic>? data = await _postRecommendationsBatch(
+      ids: ids,
+      anime: false,
+      errorContext: 'Failed to fetch manga recommendations',
+    );
+    return AniListMediaParser.recommendedMangaBatch(data, ids);
+  }
+
+  Future<Map<String, dynamic>?> _postRecommendationsBatch({
+    required List<int> ids,
+    required bool anime,
+    required String errorContext,
+  }) async {
+    final String query =
+        AniListQueries.recommendationsBatch(ids: ids, anime: anime);
+    for (int attempt = 1; ; attempt++) {
+      try {
+        final Map<String, dynamic> body = await _client.post(
+          query: query,
+          variables: <String, dynamic>{'perPage': _recommendationsPerPage},
+          errorContext: errorContext,
+        );
+        return _client.unwrapData(body);
+      } on AniListRateLimitException catch (e) {
+        if (attempt >= _maxRateLimitRetries) rethrow;
+        await Future<void>.delayed(e.retryAfter);
+      }
+    }
+  }
+
   /// Maximum retries per batch on a 429 before that batch is skipped.
   static const int _maxRateLimitRetries = 3;
 
@@ -135,10 +192,8 @@ class AniListMediaApi {
   }) =>
       _fetchByIdsResilient<Anime>(ids, _fetchAnimeBatch, onRateLimit);
 
-  /// Fetches in batches, retrying each batch on a 429 and tolerating failures:
-  /// a batch that keeps rate-limiting or hard-errors is skipped, keeping the
-  /// partial result instead of discarding everything. This is what lets a
-  /// large import cache as much as it can (mirrors the tolerant MAL lookup).
+  /// Batched fetch that retries a batch on a 429 and skips it on repeated
+  /// failure — a large import keeps its partial result instead of nothing.
   Future<List<T>> _fetchByIdsResilient<T>(
     List<int> ids,
     Future<List<T>> Function(List<int>) fetchBatch,

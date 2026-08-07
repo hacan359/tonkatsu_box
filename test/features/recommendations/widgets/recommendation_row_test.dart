@@ -1,3 +1,4 @@
+import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/recommendations/providers/recommendations_provider.dart';
@@ -10,7 +11,8 @@ RecommendedItem _item(String title) => RecommendedItem(
   tasteId: 'movie:$title',
   media: Object(),
   mediaType: MediaType.movie,
-  tmdbId: 1,
+  source: DataSource.tmdb,
+  externalId: 1,
   title: title,
   posterUrl: null,
   year: 2000,

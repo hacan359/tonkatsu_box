@@ -706,6 +706,108 @@ void main() {
       });
     });
 
+    group('recommendations', () {
+      Map<String, dynamic> recommendationsResponse(
+        Map<String, List<Map<String, dynamic>>> recsByAlias,
+      ) =>
+          <String, dynamic>{
+            'data': <String, dynamic>{
+              for (final MapEntry<String, List<Map<String, dynamic>>> e
+                  in recsByAlias.entries)
+                e.key: <String, dynamic>{
+                  'recommendations': <String, dynamic>{
+                    'nodes': <Map<String, dynamic>>[
+                      for (final Map<String, dynamic> rec in e.value)
+                        <String, dynamic>{'mediaRecommendation': rec},
+                    ],
+                  },
+                },
+            },
+          };
+
+      test('should inline the seed ids and pass the 25 perPage cap', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(
+            recommendationsResponse(<String, List<Map<String, dynamic>>>{}),
+          ),
+        );
+
+        await api.getAnimeRecommendationsBatch(<int>[21, 20]);
+
+        final Map<String, dynamic> body = verify(() => mockDio.post<dynamic>(
+              any(),
+              data: captureAny(named: 'data'),
+            )).captured.single as Map<String, dynamic>;
+        final String query = body['query'] as String;
+        expect(query, contains('s0: Media(id: 21, type: ANIME)'));
+        expect(query, contains('s1: Media(id: 20, type: ANIME)'));
+        final Map<String, dynamic> variables =
+            body['variables'] as Map<String, dynamic>;
+        expect(variables['perPage'], 25);
+      });
+
+      test('should map a single-seed call through the batch', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(
+            recommendationsResponse(<String, List<Map<String, dynamic>>>{
+              's0': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'type': 'ANIME',
+                  'id': 11061,
+                  'title': <String, dynamic>{'romaji': 'Hunter x Hunter'},
+                },
+              ],
+            }),
+          ),
+        );
+
+        final List<Anime> results = await api.getAnimeRecommendations(21);
+
+        expect(results, hasLength(1));
+        expect(results.single.id, 11061);
+      });
+
+      test('should map manga recommendations through the MANGA query',
+          () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(
+            recommendationsResponse(<String, List<Map<String, dynamic>>>{
+              's0': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'type': 'MANGA',
+                  'id': 30642,
+                  'title': <String, dynamic>{'romaji': 'Vinland Saga'},
+                },
+              ],
+            }),
+          ),
+        );
+
+        final Map<int, List<Manga>> results =
+            await api.getMangaRecommendationsBatch(<int>[30002]);
+
+        expect(results[30002], hasLength(1));
+        expect(results[30002]!.single.id, 30642);
+      });
+
+      test('an empty seed list makes no request', () async {
+        expect(await api.getAnimeRecommendationsBatch(<int>[]), isEmpty);
+        verifyNever(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            ));
+      });
+    });
+
     group('dispose', () {
       test('должен закрыть Dio клиент', () {
         when(() => mockDio.close()).thenReturn(null);

@@ -98,6 +98,21 @@ class AniListApi {
 
   Future<Anime?> getAnimeById(int id) => _media.getAnimeById(id);
 
+  /// Titles similar to [id] via `Media.recommendations`, rating-sorted,
+  /// seed excluded server-side. Keyless; up to 25 entries.
+  Future<List<Anime>> getAnimeRecommendations(int id) =>
+      _media.getAnimeRecommendations(id);
+
+  Future<List<Manga>> getMangaRecommendations(int id) =>
+      _media.getMangaRecommendations(id);
+
+  /// Per-seed recommendations for a whole seed set in one aliased request.
+  Future<Map<int, List<Anime>>> getAnimeRecommendationsBatch(List<int> ids) =>
+      _media.getAnimeRecommendationsBatch(ids);
+
+  Future<Map<int, List<Manga>>> getMangaRecommendationsBatch(List<int> ids) =>
+      _media.getMangaRecommendationsBatch(ids);
+
   Future<List<Manga>> getMangaByIds(
     List<int> ids, {
     void Function(Duration wait, int attempt)? onRateLimit,

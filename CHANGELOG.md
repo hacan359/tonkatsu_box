@@ -9,6 +9,75 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Anime and manga recommendations — in the item card and on the Personalization tab**
+
+  An anime's detail page now shows a "Similar" carousel: AniList's community
+  recommendations rendered as Kitsu titles, so an added pick keeps seasons and
+  the episode tracker. The manga "Similar" carousel, previously limited to
+  MangaBaka and MangaDex entries, now also works for manga added from AniList
+  and Kitsu. The Personalization → Recommendations tab learns two new taste
+  domains next to movies/TV: anime (from completed AniList titles) and manga
+  (per source — MangaBaka, MangaDex, AniList), each with its own "because you
+  liked" rows. All new sources are keyless — no API key required.
+
+  * lib/core/api/anilist/anilist_queries.dart
+    (AniListQueries.recommendationsBatch, AniListQueries.recommendationAlias):
+    New Media.recommendations query, rating-sorted, capped at AniList's nested
+    perPage of 25; one aliased block per seed so a whole seed set costs a
+    single request against the 30/min rate limit.
+  * lib/core/api/anilist/anilist_media_parser.dart
+    (AniListMediaParser.recommendedAnimeBatch,
+    AniListMediaParser.recommendedMangaBatch): Map recommendation nodes per
+    seed, dropping deleted media and cross-type entries.
+  * lib/core/api/anilist/anilist_media_api.dart, lib/core/api/anilist_api.dart
+    (AniListApi.getAnimeRecommendations, AniListApi.getMangaRecommendations,
+    AniListApi.getAnimeRecommendationsBatch,
+    AniListApi.getMangaRecommendationsBatch): New; retried on a 429.
+  * lib/core/api/kitsu/kitsu_mapping_api.dart (KitsuMappingApi.getAniListId,
+    KitsuMappingApi.siteAniListAnime, KitsuMappingApi.siteAniListManga),
+    lib/core/api/kitsu_api.dart (KitsuApi.getAniListAnimeId,
+    KitsuApi.getAniListMangaId, KitsuApi.getAnimeByAniListIds): Kitsu↔AniList
+    id bridges over the mappings endpoints, both directions.
+  * lib/features/collections/widgets/anime_similars_section.dart
+    (AnimeSimilarsSection): New. AniList seed queried directly, Kitsu seed
+    bridged first; candidates resolved back to Kitsu entities, unmapped ones
+    dropped.
+  * lib/features/collections/widgets/manga_similars_section.dart
+    (mangaSimilarsSources, MangaSimilarsSection): AniList and Kitsu seed
+    routing; owned badge matches the candidates' source.
+  * lib/features/collections/widgets/similars_poster_row.dart
+    (SimilarsPosterRow, SimilarsPosterRowShimmer, SimilarCardData): New shared
+    carousel replacing the per-section row/shimmer copies.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._addAnimeFromSimilars): New add-to-collection
+    handler; anime/manga similars gating.
+  * lib/features/recommendations/anime_taste_input.dart (animeTasteId,
+    tasteTitleFromAnimeItem, tasteTitleFromAnime, ownedAnimeTasteIds),
+    lib/features/recommendations/manga_taste_input.dart (mangaTasteId,
+    mangaTasteSources, tasteTitleFromMangaItem, tasteTitleFromManga,
+    ownedMangaTasteIds), lib/features/recommendations/taste_features.dart
+    (buildNameFeatureTitle): New engine adapters; genres+tags matched by
+    source-native names, vocabularies never mixed across sources.
+  * lib/features/recommendations/providers/recommendations_provider.dart
+    (recommendationsProvider, RecommendedItem, RecommendationStatus,
+    collectedRecommendationIdsProvider): Split into independent concurrent
+    domains (movie/TV, anime, manga); a domain with nothing to say contributes
+    no rows; the TMDB key gates only the movie/TV domain. RecommendedItem
+    carries source + externalId instead of a TMDB-only id.
+  * lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget): Poster cache type/id, placeholder icon and
+    source badge follow the item's media type and source.
+  * test/core/api/anilist/anilist_media_parser_test.dart,
+    test/core/api/anilist_api_test.dart,
+    test/core/api/kitsu/kitsu_mapping_api_test.dart,
+    test/features/collections/widgets/anime_similars_section_test.dart,
+    test/features/collections/widgets/manga_similars_section_test.dart,
+    test/features/recommendations/anime_taste_input_test.dart,
+    test/features/recommendations/manga_taste_input_test.dart,
+    test/features/recommendations/providers/recommendations_provider_test.dart:
+    New coverage — batch parser mapping, bridges, per-source routing, owned
+    matching, adapters, multi-domain partial results and status precedence.
+
 - **"No date" option for the started / completed dates**
 
   An already-set date can now be erased from the date picker — for media

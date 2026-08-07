@@ -1,10 +1,3 @@
-// Recommendations tab: content-based movie/TV suggestions learned from the
-// user's completed, rated and favorited titles. Rows are grouped by taste
-// cluster. A pinned collection-chips row lets the user pick target collections;
-// tapping a card then adds it straight into the selection, or — with nothing
-// selected — opens the same details sheet Search uses, so the pick can be added
-// without leaving the tab.
-
 import 'package:core/models/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,18 +25,15 @@ class RecommendationsScreen extends ConsumerStatefulWidget {
 class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
   late final MediaHandlers _handlers;
 
-  /// Titles added to a collection from this screen this session — marked
-  /// locally so only the tapped card flips to "added". Driving this from the
-  /// library instead would blank every mark while the library reloads through
-  /// AsyncLoading on each add.
+  /// Titles added from this screen this session, marked locally — the library
+  /// blanks through AsyncLoading on each add and would flash every mark off.
   final Set<String> _added = <String>{};
 
   @override
   void initState() {
     super.initState();
-    // Recs only surface movies/TV, so the platform map (used only by the game
-    // handler) stays empty. The add target is read live from the recs-specific
-    // selection so a tap resolves the current chips at tap time.
+    // Recs never surface games, so the game handler's platform map stays
+    // empty; the add target is read live so a tap resolves current chips.
     _handlers = MediaHandlers(
       ref: ref,
       platformMap: () => const <int, Platform>{},
@@ -55,9 +45,8 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    // Mark a card once its title lands in any collection — covers adds made
-    // through the details sheet, where the add happens out of band. Sticky
-    // union (never removes), so a collected-id reload can't blank a mark.
+    // Marks cards whose add happened out of band (details sheet). Sticky
+    // union — never removes — so a collected-id reload can't blank a mark.
     ref.listen<AsyncValue<Set<String>>>(collectedRecommendationIdsProvider, (
       AsyncValue<Set<String>>? _,
       AsyncValue<Set<String>> next,
@@ -135,6 +124,9 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
     AsyncValue<RecommendationResult> async,
   ) {
     return async.when(
+      // The refresh button invalidates the provider; without this the old
+      // rows keep showing through the reload and the tap looks like a no-op.
+      skipLoadingOnRefresh: false,
       loading: () => const Center(child: LogoLoader()),
       error: (Object error, StackTrace _) => Center(
         child: Padding(
@@ -206,14 +198,11 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
     );
   }
 
-  /// Routes the tap through the Search handlers: with target collections
-  /// selected it adds the pick straight in; otherwise it opens the details
-  /// sheet (the same window Search shows), where the user can add it.
+  /// With target collections selected the tap adds straight in; otherwise it
+  /// opens the same details sheet Search shows, where the user can add it.
   void _onItemTap(BuildContext context, RecommendedItem item) {
-    // A non-empty target selection means the tap adds straight in (see
-    // SimpleMediaHandler.onTap), so mark this one card locally. With nothing
-    // selected the tap opens the details sheet, where the add (if any) happens
-    // out of band — that card marks on the next refresh instead.
+    // Direct adds mark the card locally; a sheet add happens out of band and
+    // marks on the next collected-id refresh instead.
     final bool addsDirectly = ref
         .read(recommendationTargetCollectionsProvider)
         .isNotEmpty;

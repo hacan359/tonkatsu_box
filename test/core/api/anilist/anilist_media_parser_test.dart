@@ -95,4 +95,96 @@ void main() {
       );
     });
   });
+
+  Map<String, dynamic> recommendationsMedia(List<Map<String, dynamic>?> nodes) =>
+      <String, dynamic>{
+        'recommendations': <String, dynamic>{
+          'nodes': <Map<String, dynamic>?>[
+            for (final Map<String, dynamic>? rec in nodes)
+              <String, dynamic>{'mediaRecommendation': rec},
+          ],
+        },
+      };
+
+  Map<String, dynamic> recMedia(int id, String type, String title) =>
+      <String, dynamic>{
+        'type': type,
+        'id': id,
+        'title': <String, dynamic>{'romaji': title},
+      };
+
+  group('AniListMediaParser.recommendedAnimeBatch', () {
+    test('maps nodes per seed preserving order', () {
+      final Map<int, List<Anime>> r = AniListMediaParser.recommendedAnimeBatch(
+        <String, dynamic>{
+          's0': recommendationsMedia(<Map<String, dynamic>?>[
+            recMedia(11061, 'ANIME', 'Hunter x Hunter'),
+            recMedia(20, 'ANIME', 'Naruto'),
+          ]),
+          's1': recommendationsMedia(<Map<String, dynamic>?>[
+            recMedia(1, 'ANIME', 'Cowboy Bebop'),
+          ]),
+        },
+        <int>[21, 205],
+      );
+      expect(r[21]!.map((Anime a) => a.id), <int>[11061, 20]);
+      expect(r[21]!.first.title, 'Hunter x Hunter');
+      expect(r[205]!.single.id, 1);
+    });
+
+    test('drops null mediaRecommendation (deleted media)', () {
+      final Map<int, List<Anime>> r = AniListMediaParser.recommendedAnimeBatch(
+        <String, dynamic>{
+          's0': recommendationsMedia(<Map<String, dynamic>?>[
+            null,
+            recMedia(20, 'ANIME', 'Naruto'),
+          ]),
+        },
+        <int>[21],
+      );
+      expect(r[21]!.map((Anime a) => a.id), <int>[20]);
+    });
+
+    test('drops cross-type entries (a manga recommended for an anime)', () {
+      final Map<int, List<Anime>> r = AniListMediaParser.recommendedAnimeBatch(
+        <String, dynamic>{
+          's0': recommendationsMedia(<Map<String, dynamic>?>[
+            recMedia(30002, 'MANGA', 'Berserk'),
+            recMedia(20, 'ANIME', 'Naruto'),
+          ]),
+        },
+        <int>[21],
+      );
+      expect(r[21]!.map((Anime a) => a.id), <int>[20]);
+    });
+
+    test('null data or a deleted seed yields empty lists per seed', () {
+      expect(
+        AniListMediaParser.recommendedAnimeBatch(null, <int>[21])[21],
+        isEmpty,
+      );
+      // Seed s0 deleted server-side: its Media comes back null.
+      final Map<int, List<Anime>> r = AniListMediaParser.recommendedAnimeBatch(
+        <String, dynamic>{'s0': null},
+        <int>[21],
+      );
+      expect(r[21], isEmpty);
+    });
+  });
+
+  group('AniListMediaParser.recommendedMangaBatch', () {
+    test('maps nodes and keeps only MANGA entries', () {
+      final Map<int, List<Manga>> r = AniListMediaParser.recommendedMangaBatch(
+        <String, dynamic>{
+          's0': recommendationsMedia(<Map<String, dynamic>?>[
+            recMedia(30642, 'MANGA', 'Vinland Saga'),
+            recMedia(20, 'ANIME', 'Naruto'),
+            recMedia(30656, 'MANGA', 'Vagabond'),
+          ]),
+        },
+        <int>[30002],
+      );
+      expect(r[30002]!.map((Manga m) => m.id), <int>[30642, 30656]);
+    });
+  });
 }
