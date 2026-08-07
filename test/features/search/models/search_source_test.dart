@@ -254,16 +254,7 @@ class _TestSource extends SearchSource {
   MediaType get outputMediaType => MediaType.game;
 
   @override
-  String get groupId => 'test';
-
-  @override
   DataSource get dataSource => DataSource.igdb;
-
-  @override
-  String get groupName => 'Test';
-
-  @override
-  IconData get groupIcon => Icons.star;
 
   @override
   String label(dynamic l) => 'Test Source';

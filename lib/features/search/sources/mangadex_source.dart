@@ -32,9 +32,6 @@ class MangaDexSource extends SearchSource {
   DataSource get dataSource => DataSource.mangadex;
 
   @override
-  IconData get groupIcon => Icons.menu_book_outlined;
-
-  @override
   String label(S l) => l.mediaTypeManga;
 
   @override

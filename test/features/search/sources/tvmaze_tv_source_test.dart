@@ -20,9 +20,8 @@ void main() {
   });
 
   group('properties', () {
-    test('id, group and browse support', () {
+    test('id and browse support', () {
       expect(source.id, 'tvmaze_tv');
-      expect(source.groupId, 'tvmaze');
       expect(source.outputMediaType, MediaType.tvShow);
       expect(source.supportsBrowse, isFalse);
       expect(source.iconAsset, isNotNull);

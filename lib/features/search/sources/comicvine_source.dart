@@ -11,11 +11,10 @@ import '../models/search_source.dart';
 // Short comic titles are common, so keep the floor at 2 chars.
 const int _comicVineMinQuery = 2;
 
-/// SearchSource backed by ComicVine, a comics / graphic-novel catalog. Its own
-/// provider group; items are stamped [MediaType.book] and carry
-/// `DataSource.comicVine` + `BookKind.comic` (set inside
-/// [Book.fromComicVineVolume]), so comics share the books tab while staying
-/// separable.
+/// SearchSource backed by ComicVine, a comics / graphic-novel catalog. Items
+/// are stamped [MediaType.book] and carry `DataSource.comicVine` +
+/// `BookKind.comic` (set inside [Book.fromComicVineVolume]), so comics share
+/// the books tab while staying separable.
 ///
 /// Two query paths: the default "Relevance" sort hits `/search` (a single
 /// relevance-ranked page — `offset` is ignored there), while any other sort
@@ -31,9 +30,6 @@ class ComicVineSource extends SearchSource {
 
   @override
   DataSource get dataSource => DataSource.comicVine;
-
-  @override
-  IconData get groupIcon => Icons.auto_stories;
 
   @override
   String label(S l) => l.searchSourceComics;

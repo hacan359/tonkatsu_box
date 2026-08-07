@@ -106,6 +106,43 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * packages/core/test/utils/stable_id_test.dart: New. Golden vectors pin the
     id contract; io and web variants must agree.
 
+### Removed
+
+- **Drop orphaned widgets left behind by earlier redesigns**
+
+  `ActivityDatesSection` was superseded by the dates row inside
+  `MediaDetailView`, and the grouped `SourceDropdown` by the search source
+  tabs; both had no remaining call sites. The source-grouping metadata that
+  existed only for the dropdown goes with it, and the activity-date callback
+  contract the section shared becomes a proper enum instead of a raw string.
+
+  * lib/features/collections/widgets/activity_dates_section.dart
+    (ActivityDatesSection, _DateRow): Removed.
+  * lib/features/search/widgets/source_dropdown.dart (SourceDropdown,
+    _sourceGlyph): Removed.
+  * lib/features/search/sources/search_sources.dart (groupedSearchSources,
+    SourceGroupEntry): Removed with their only consumer.
+  * lib/features/search/models/search_source.dart (SearchSource.groupId,
+    SearchSource.groupName, SearchSource.groupIcon): Removed — DataSource.key
+    and DataSource.label already carry the provider identity.
+  * lib/features/search/sources/anilist_anime_source.dart,
+    anilist_manga_source.dart, comicvine_source.dart, fantlab_source.dart,
+    google_books_source.dart, hardcover_source.dart, igdb_games_source.dart,
+    kitsu_anime_source.dart, kitsu_manga_source.dart, mangabaka_source.dart,
+    mangadex_source.dart, openlibrary_source.dart, tmdb_anime_source.dart,
+    tmdb_movies_source.dart, tmdb_tv_source.dart, tvmaze_tv_source.dart,
+    vndb_source.dart: Drop the groupIcon override.
+  * lib/shared/widgets/media_detail_view.dart (ActivityDateField,
+    OnActivityDateChanged),
+    lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._updateActivityDate): The started / completed
+    selector in the activity-date callback is the new ActivityDateField enum
+    instead of a 'started' / 'completed' string.
+  * test/features/collections/widgets/activity_dates_section_test.dart,
+    test/features/search/widgets/source_dropdown_test.dart,
+    test/features/search/sources/search_sources_grouping_test.dart: Removed
+    with the widgets.
+
 ### Fixed
 
 - **Watched Date set in the past was overwritten with the current date**

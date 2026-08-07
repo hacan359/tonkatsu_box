@@ -14,9 +14,9 @@ import '../models/search_source.dart';
 const int _fantlabMinQuery = 2;
 
 /// SearchSource backed by Fantlab, a community book catalog with detailed
-/// metadata (ratings, awards, series, editions). Its own provider group (like
-/// the other sources); items are stamped [MediaType.book] and carry
-/// `DataSource.fantlab` (set inside the `Book.fromFantlab*` factories).
+/// metadata (ratings, awards, series, editions). Items are stamped
+/// [MediaType.book] and carry `DataSource.fantlab` (set inside the
+/// `Book.fromFantlab*` factories).
 ///
 /// `/search-works` accepts only `q` / `page`, so ordering is relevance-only and
 /// the one filter (work type) is applied client-side by matching `name_eng` —
@@ -30,9 +30,6 @@ class FantlabSource extends SearchSource {
 
   @override
   DataSource get dataSource => DataSource.fantlab;
-
-  @override
-  IconData get groupIcon => Icons.menu_book;
 
   @override
   String label(S l) => l.collectionFilterBooks;

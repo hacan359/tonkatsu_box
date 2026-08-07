@@ -674,7 +674,7 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (String type, DateTime? date) async {},
+          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
         ));
         await tester.pumpAndSettle();
 
@@ -695,7 +695,7 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (String type, DateTime? date) async {},
+          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
         ));
         await tester.pumpAndSettle();
 
@@ -706,13 +706,13 @@ void main() {
       testWidgets(
           'should pass null to the callback when the set date is cleared',
           (WidgetTester tester) async {
-        String? clearedType;
+        ActivityDateField? clearedField;
         DateTime? clearedDate = DateTime(2099);
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
           completedAt: DateTime(2025, 2, 1),
-          onActivityDateChanged: (String type, DateTime? date) async {
-            clearedType = type;
+          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {
+            clearedField = field;
             clearedDate = date;
           },
         ));
@@ -723,7 +723,7 @@ void main() {
         await tester.tap(find.text('No date'));
         await tester.pumpAndSettle();
 
-        expect(clearedType, 'completed');
+        expect(clearedField, ActivityDateField.completed);
         expect(clearedDate, isNull);
       });
 
@@ -731,7 +731,7 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (String type, DateTime? date) async {},
+          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
         ));
         await tester.pumpAndSettle();
 

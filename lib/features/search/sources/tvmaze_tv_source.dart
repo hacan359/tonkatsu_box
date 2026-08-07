@@ -23,9 +23,6 @@ class TvMazeTvSource extends SearchSource {
   DataSource get dataSource => DataSource.tvmaze;
 
   @override
-  IconData get groupIcon => Icons.tv_outlined;
-
-  @override
   String label(S l) => l.collectionFilterTvShows;
 
   @override

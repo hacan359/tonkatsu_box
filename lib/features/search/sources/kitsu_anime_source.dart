@@ -24,9 +24,6 @@ class KitsuAnimeSource extends SearchSource {
   DataSource get dataSource => DataSource.kitsu;
 
   @override
-  IconData get groupIcon => Icons.auto_stories_outlined;
-
-  @override
   String label(S l) => l.mediaTypeAnime;
 
   @override
