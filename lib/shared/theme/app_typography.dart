@@ -19,7 +19,7 @@ abstract final class AppTypography {
   static final double _bump = kIsMobile ? 1 : 0;
 
   /// Large heading (app name, screen title).
-  static final TextStyle h1 = TextStyle(
+  static TextStyle get h1 => TextStyle(
     fontFamily: fontFamily,
     fontSize: 26 + _bump,
     fontWeight: FontWeight.bold,
@@ -29,7 +29,7 @@ abstract final class AppTypography {
   );
 
   /// Section heading.
-  static final TextStyle h2 = TextStyle(
+  static TextStyle get h2 => TextStyle(
     fontFamily: fontFamily,
     fontSize: 18 + _bump,
     fontWeight: FontWeight.w600,
@@ -39,7 +39,7 @@ abstract final class AppTypography {
   );
 
   /// Subheading (card title, list item).
-  static final TextStyle h3 = TextStyle(
+  static TextStyle get h3 => TextStyle(
     fontFamily: fontFamily,
     fontSize: 14 + _bump,
     fontWeight: FontWeight.w600,
@@ -48,7 +48,7 @@ abstract final class AppTypography {
   );
 
   /// Body text.
-  static final TextStyle body = TextStyle(
+  static TextStyle get body => TextStyle(
     fontFamily: fontFamily,
     fontSize: 13 + _bump,
     fontWeight: FontWeight.normal,
@@ -57,7 +57,7 @@ abstract final class AppTypography {
   );
 
   /// Small text (dates, meta information).
-  static final TextStyle bodySmall = TextStyle(
+  static TextStyle get bodySmall => TextStyle(
     fontFamily: fontFamily,
     fontSize: 12 + _bump,
     fontWeight: FontWeight.normal,
@@ -66,7 +66,7 @@ abstract final class AppTypography {
   );
 
   /// Caption (badge, chip, label).
-  static final TextStyle caption = TextStyle(
+  static TextStyle get caption => TextStyle(
     fontFamily: fontFamily,
     fontSize: 11 + _bump,
     fontWeight: FontWeight.w500,
@@ -75,7 +75,7 @@ abstract final class AppTypography {
   );
 
   /// Title on a poster card.
-  static final TextStyle posterTitle = TextStyle(
+  static TextStyle get posterTitle => TextStyle(
     fontFamily: fontFamily,
     fontSize: 13 + _bump,
     fontWeight: FontWeight.w600,
@@ -84,7 +84,7 @@ abstract final class AppTypography {
   );
 
   /// Subtitle on a poster card (year, genre).
-  static final TextStyle posterSubtitle = TextStyle(
+  static TextStyle get posterSubtitle => TextStyle(
     fontFamily: fontFamily,
     fontSize: 11 + _bump,
     fontWeight: FontWeight.w400,
@@ -129,7 +129,7 @@ abstract final class AppTypography {
   }
 
   /// Title on a grid card.
-  static final TextStyle cardTitle = TextStyle(
+  static TextStyle get cardTitle => TextStyle(
     fontFamily: fontFamily,
     fontSize: 13 + _bump,
     fontWeight: FontWeight.w600,
@@ -138,7 +138,7 @@ abstract final class AppTypography {
   );
 
   /// Subtitle on a grid card.
-  static final TextStyle cardSubtitle = TextStyle(
+  static TextStyle get cardSubtitle => TextStyle(
     fontFamily: fontFamily,
     fontSize: 11 + _bump,
     fontWeight: FontWeight.w400,

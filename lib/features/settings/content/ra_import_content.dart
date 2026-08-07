@@ -110,7 +110,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.warning_amber, color: AppColors.statusDropped),
+          Icon(Icons.warning_amber, color: AppColors.statusDropped),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

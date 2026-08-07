@@ -68,7 +68,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
 
     return async.when(
       loading: () => const ShimmerList(),
-      error: (Object _, StackTrace _) => const Center(
+      error: (Object _, StackTrace _) => Center(
         child: Icon(Icons.error_outline,
             size: 48, color: AppColors.textTertiary),
       ),
@@ -177,7 +177,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         return Column(
           children: <Widget>[
             _navBar(l),
-            const Divider(height: 1, color: AppColors.surfaceBorder),
+            Divider(height: 1, color: AppColors.surfaceBorder),
             Expanded(
               child: MonthView<Object?>(
                 key: _monthKey,
@@ -250,7 +250,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.refresh, color: AppColors.textSecondary),
+                : Icon(Icons.refresh, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -370,7 +370,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       padding: const EdgeInsets.only(top: 2, left: 3),
       child: Text(
         '+$count',
-        style: const TextStyle(fontSize: 10, color: AppColors.textTertiary),
+        style: TextStyle(fontSize: 10, color: AppColors.textTertiary),
       ),
     );
   }
@@ -380,17 +380,17 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       return Container(
         width: 18,
         height: 18,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.brand,
           shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
         child: Text(
           '${date.day}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: AppColors.onOverlay,
           ),
         ),
       );
@@ -470,7 +470,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     return Column(
       children: <Widget>[
         _navBar(l),
-        const Divider(height: 1, color: AppColors.surfaceBorder),
+        Divider(height: 1, color: AppColors.surfaceBorder),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _refresh,
@@ -612,7 +612,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       padding: const EdgeInsets.fromLTRB(0, AppSpacing.md, 0, AppSpacing.xs),
       child: Text(
         _fmtDate(day),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.4,
@@ -673,7 +673,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
                         const SizedBox(height: 3),
                         Text(
                           l.releasesEpisode(e.season!, e.episode!),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,
                           ),
@@ -693,7 +693,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
                           const SizedBox(width: 6),
                           Text(
                             _fmtDate(e.airDate),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               color: AppColors.textTertiary,
                             ),
@@ -720,7 +720,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
               size: 48, color: AppColors.textTertiary.withAlpha(120)),
           const SizedBox(height: AppSpacing.sm),
           Text(l.releasesNoEpisodes,
-              style: const TextStyle(color: AppColors.textTertiary)),
+              style: TextStyle(color: AppColors.textTertiary)),
         ],
       ),
     );
@@ -842,7 +842,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         .toUpperCase();
     return Container(
       height: 34,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceLight,
         border: Border(
           bottom: BorderSide(color: AppColors.surfaceBorder),
@@ -852,7 +852,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       alignment: Alignment.center,
       child: Text(
         name,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.6,

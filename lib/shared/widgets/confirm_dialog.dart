@@ -65,7 +65,7 @@ class ConfirmDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(true),
           child: Text(
             confirmLabel,
-            style: destructive ? const TextStyle(color: AppColors.error) : null,
+            style: destructive ? TextStyle(color: AppColors.error) : null,
           ),
         ),
       ],

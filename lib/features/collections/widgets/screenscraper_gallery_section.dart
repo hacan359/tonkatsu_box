@@ -87,7 +87,7 @@ class ScreenScraperGallerySection extends ConsumerWidget {
       ),
       child: Text(
         l.screenScraperError(message),
-        style: AppTypography.caption.copyWith(color: Colors.redAccent),
+        style: AppTypography.caption.copyWith(color: AppColors.error),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
@@ -202,7 +202,7 @@ class ScreenScraperGallerySection extends ConsumerWidget {
     Navigator.of(context).push(
       PageRouteBuilder<void>(
         opaque: false,
-        barrierColor: Colors.black87,
+        barrierColor: AppColors.scrim.withAlpha(0xDE),
         pageBuilder: (_, _, _) =>
             _FullscreenViewer(entries: entries, initialIndex: initialIndex),
       ),
@@ -255,7 +255,7 @@ class _Thumbnail extends StatelessWidget {
                 errorWidget: (_, _, _) => Container(
                   color: AppColors.surface,
                   alignment: Alignment.center,
-                  child: const Icon(
+                  child: Icon(
                     Icons.broken_image_outlined,
                     color: AppColors.textTertiary,
                   ),
@@ -452,7 +452,7 @@ class _FullscreenViewerState extends State<_FullscreenViewer> {
                 top: 16,
                 right: 16,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(Icons.close, color: AppColors.onOverlay),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -467,12 +467,12 @@ class _FullscreenViewerState extends State<_FullscreenViewer> {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black54,
+                      color: AppColors.scrim.withAlpha(0x8A),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                     ),
                     child: Text(
                       '${widget.entries[_current].label}   ${_current + 1} / ${widget.entries.length}',
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppColors.onOverlay),
                     ),
                   ),
                 ),
@@ -494,7 +494,7 @@ class _NavArrow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black45,
+      color: AppColors.scrim.withAlpha(0x73),
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -503,7 +503,7 @@ class _NavArrow extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: Icon(
             left ? Icons.chevron_left : Icons.chevron_right,
-            color: Colors.white,
+            color: AppColors.onOverlay,
             size: 32,
           ),
         ),

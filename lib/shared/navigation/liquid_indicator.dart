@@ -94,6 +94,11 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
   Widget build(BuildContext context) {
     if (widget.selectedIndex < 0) return const SizedBox.shrink();
 
+    // Hoisted out of the AnimatedBuilder: the getters allocate decorations
+    // and the builder runs every animation frame.
+    final BoxDecoration brandBlob = _brandBlob;
+    final BoxDecoration rainbowBlob = _rainbowBlob;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (BuildContext context, Widget? child) {
@@ -146,12 +151,12 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
                 if (rainbowT < 1)
                   Opacity(
                     opacity: 1 - rainbowT,
-                    child: DecoratedBox(decoration: _brandBlob),
+                    child: DecoratedBox(decoration: brandBlob),
                   ),
                 if (rainbowT > 0)
                   Opacity(
                     opacity: rainbowT,
-                    child: DecoratedBox(decoration: _rainbowBlob),
+                    child: DecoratedBox(decoration: rainbowBlob),
                   ),
               ],
             ),
@@ -166,7 +171,8 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
 const int _kBlobAlpha = 180;
 
 /// Flat brand fill, used by the regular menu items.
-final BoxDecoration _brandBlob = BoxDecoration(
+/// Getter, not `final`: must re-read the palette after a theme switch.
+BoxDecoration get _brandBlob => BoxDecoration(
   color: AppColors.brand.withAlpha(_kBlobAlpha),
   shape: BoxShape.circle,
   boxShadow: <BoxShadow>[
@@ -175,7 +181,7 @@ final BoxDecoration _brandBlob = BoxDecoration(
 );
 
 /// Media-type accents run around the circle.
-final BoxDecoration _rainbowBlob = BoxDecoration(
+BoxDecoration get _rainbowBlob => BoxDecoration(
   shape: BoxShape.circle,
   gradient: SweepGradient(
     colors: <Color>[

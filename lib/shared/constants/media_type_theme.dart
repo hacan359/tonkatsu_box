@@ -6,23 +6,23 @@ import '../theme/app_colors.dart';
 
 /// Colors and icons that visually distinguish media types.
 abstract final class MediaTypeTheme {
-  static const Color gameColor = AppColors.gameAccent;
+  static Color get gameColor => AppColors.gameAccent;
 
-  static const Color movieColor = AppColors.movieAccent;
+  static Color get movieColor => AppColors.movieAccent;
 
-  static const Color tvShowColor = AppColors.tvShowAccent;
+  static Color get tvShowColor => AppColors.tvShowAccent;
 
-  static const Color animationColor = AppColors.animationAccent;
+  static Color get animationColor => AppColors.animationAccent;
 
-  static const Color visualNovelColor = AppColors.visualNovelAccent;
+  static Color get visualNovelColor => AppColors.visualNovelAccent;
 
-  static const Color mangaColor = AppColors.mangaAccent;
+  static Color get mangaColor => AppColors.mangaAccent;
 
-  static const Color animeColor = AppColors.animeAccent;
+  static Color get animeColor => AppColors.animeAccent;
 
-  static const Color bookColor = AppColors.bookAccent;
+  static Color get bookColor => AppColors.bookAccent;
 
-  static const Color customColor = AppColors.customAccent;
+  static Color get customColor => AppColors.customAccent;
 
   static IconData iconFor(MediaType type) => switch (type) {
         MediaType.game => Icons.videogame_asset,
@@ -49,17 +49,25 @@ abstract final class MediaTypeTheme {
         MediaType.custom => Icons.dashboard_customize,
       };
 
+  static AppPalette? _sweepPalette;
+  static List<Color> _sweepCache = const <Color>[];
+
   /// Accents ordered around the colour wheel, first repeated at the end to
   /// close a [SweepGradient]. Sorted by hue so a new type places itself.
-  static final List<Color> rainbowSweep = () {
+  static List<Color> get rainbowSweep {
+    // Memoized per palette: callers read this every animation frame, and the
+    // hue sort does HSV conversions per comparison.
+    if (identical(_sweepPalette, AppColors.palette)) return _sweepCache;
     final List<Color> colors = MediaType.values.map(colorFor).toList()
       ..sort(
         (Color a, Color b) => HSVColor.fromColor(a)
             .hue
             .compareTo(HSVColor.fromColor(b).hue),
       );
-    return List<Color>.unmodifiable(<Color>[...colors, colors.first]);
-  }();
+    _sweepPalette = AppColors.palette;
+    _sweepCache = List<Color>.unmodifiable(<Color>[...colors, colors.first]);
+    return _sweepCache;
+  }
 
   static Color colorFor(MediaType type) => switch (type) {
         MediaType.game => gameColor,

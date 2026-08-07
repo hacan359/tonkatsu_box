@@ -38,7 +38,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: <Widget>[
-          const Icon(Icons.keyboard, color: AppColors.textSecondary),
+          Icon(Icons.keyboard, color: AppColors.textSecondary),
           const SizedBox(width: AppSpacing.sm),
           Text(
             l.shortcutsDialogTitle,

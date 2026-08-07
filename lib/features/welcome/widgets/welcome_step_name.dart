@@ -72,7 +72,7 @@ class _WelcomeStepNameState extends ConsumerState<WelcomeStepName> {
                       style: AppTypography.h3,
                       decoration: InputDecoration(
                         hintText: l.defaultAuthor,
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.person_outline,
                           size: 18,
                           color: AppColors.textTertiary,

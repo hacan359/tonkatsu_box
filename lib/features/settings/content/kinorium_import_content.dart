@@ -74,7 +74,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
         ),
         child: Row(
           children: <Widget>[
-            const Icon(Icons.info_outline, color: AppColors.brand, size: 20),
+            Icon(Icons.info_outline, color: AppColors.brand, size: 20),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
@@ -114,7 +114,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
             ),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: AppColors.statusCompleted,
                   size: 20,

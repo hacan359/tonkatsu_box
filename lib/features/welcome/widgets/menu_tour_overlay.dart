@@ -176,7 +176,7 @@ class _SpotlightPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Rect full = Offset.zero & size;
-    final Paint dim = Paint()..color = Colors.black.withAlpha(_scrimAlpha);
+    final Paint dim = Paint()..color = AppColors.scrim.withAlpha(_scrimAlpha);
 
     final Rect? spot = this.spot;
     if (spot == null) {
@@ -341,7 +341,7 @@ class _TourCard extends StatelessWidget {
                 onPressed: onNext,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.brand,
-                  foregroundColor: Colors.black,
+                  foregroundColor: AppColors.onBrand,
                   // The theme makes FilledButtons full-width; pin a content
                   // min so this one fits inside the Row.
                   minimumSize: const Size(0, AppSpacing.buttonHeightCompact),

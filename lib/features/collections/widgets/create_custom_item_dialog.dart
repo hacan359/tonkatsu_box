@@ -658,7 +658,7 @@ class _CreateCustomItemDialogState
             hintText: l.customItemGenresHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: const BorderSide(color: AppColors.surfaceBorder),
+              borderSide: BorderSide(color: AppColors.surfaceBorder),
             ),
             filled: true,
             fillColor: AppColors.surfaceLight,
@@ -805,7 +805,7 @@ class _CreateCustomItemDialogState
         labelText: label,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.surfaceBorder),
+          borderSide: BorderSide(color: AppColors.surfaceBorder),
         ),
         filled: true,
         fillColor: AppColors.surfaceLight,
@@ -833,7 +833,7 @@ class _CreateCustomItemDialogState
             hintText: l.customItemDescriptionHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: const BorderSide(color: AppColors.surfaceBorder),
+              borderSide: BorderSide(color: AppColors.surfaceBorder),
             ),
             filled: true,
             fillColor: AppColors.surfaceLight,
@@ -863,7 +863,7 @@ class _CreateCustomItemDialogState
             hintText: l.customItemMyNoteHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: const BorderSide(color: AppColors.surfaceBorder),
+              borderSide: BorderSide(color: AppColors.surfaceBorder),
             ),
             filled: true,
             fillColor: AppColors.surfaceLight,
@@ -892,7 +892,7 @@ class _CreateCustomItemDialogState
             hintText: l.customItemTagsHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: const BorderSide(color: AppColors.surfaceBorder),
+              borderSide: BorderSide(color: AppColors.surfaceBorder),
             ),
             filled: true,
             fillColor: AppColors.surfaceLight,
@@ -912,7 +912,7 @@ class _CreateCustomItemDialogState
         prefixIcon: const Icon(Icons.link),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.surfaceBorder),
+          borderSide: BorderSide(color: AppColors.surfaceBorder),
         ),
         filled: true,
         fillColor: AppColors.surfaceLight,

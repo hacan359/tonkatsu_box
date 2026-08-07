@@ -42,7 +42,7 @@ class RatingBadge extends StatelessWidget {
       child: Text(
         rating.toStringAsFixed(1),
         style: TextStyle(
-          color: Colors.white,
+          color: AppColors.onOverlay,
           fontSize: compact ? 8 : 12,
           fontWeight: FontWeight.bold,
           height: 1.2,

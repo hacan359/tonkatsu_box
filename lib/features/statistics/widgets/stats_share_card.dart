@@ -151,7 +151,7 @@ class StatsShareCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.lg),
                   Container(
                     padding: const EdgeInsets.only(top: AppSpacing.sm),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       border: Border(
                         top: BorderSide(
                           color: AppColors.surfaceBorder,

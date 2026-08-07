@@ -132,7 +132,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                     decoration: BoxDecoration(
                       color: _currentColor,
                       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                      border: Border.all(color: Colors.white.withAlpha(40)),
+                      border: Border.all(color: AppColors.textPrimary.withAlpha(40)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -251,8 +251,9 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border:
-                isActive ? Border.all(color: Colors.white, width: 2.5) : null,
+            border: isActive
+                ? Border.all(color: AppColors.onOverlay, width: 2.5)
+                : null,
             boxShadow: isActive
                 ? <BoxShadow>[
                     BoxShadow(color: color.withAlpha(120), blurRadius: 6),
@@ -260,7 +261,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                 : null,
           ),
           child: isActive
-              ? const Icon(Icons.check, size: 16, color: Colors.white)
+              ? Icon(Icons.check, size: 16, color: AppColors.onOverlay)
               : null,
         ),
       ),
@@ -305,7 +306,7 @@ class _HslSlider extends StatelessWidget {
             data: SliderThemeData(
               trackHeight: 10,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-              thumbColor: Colors.white,
+              thumbColor: AppColors.onOverlay,
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
               overlayColor: activeColor.withAlpha(40),
               trackShape: _GradientTrackShape(gradient: gradient),

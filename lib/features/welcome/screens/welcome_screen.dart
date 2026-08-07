@@ -134,7 +134,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
               onTap: () => _goToPage(_totalSteps - 1),
               child: Text(
                 l.skip,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   color: AppColors.textTertiary,
                 ),
@@ -151,7 +151,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       child: LinearProgressIndicator(
         value: (_currentPage + 1) / _totalSteps,
         backgroundColor: AppColors.surfaceBorder,
-        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.brand),
+        valueColor: AlwaysStoppedAnimation<Color>(AppColors.brand),
       ),
     );
   }
@@ -230,14 +230,14 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 children: <Widget>[
                   Text(
                     l.next,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: AppColors.onBrand,
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.arrow_forward, size: 14, color: Colors.black),
+                  Icon(Icons.arrow_forward, size: 14, color: AppColors.onBrand),
                 ],
               ),
             ),

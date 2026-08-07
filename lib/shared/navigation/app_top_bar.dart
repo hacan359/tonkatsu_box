@@ -128,7 +128,7 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
 
     return Container(
       height: kAppTopBarHeight + statusBarHeight,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(
           bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),

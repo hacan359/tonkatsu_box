@@ -191,7 +191,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                         ? profile.name[0].toUpperCase()
                         : '?',
                     style: AppTypography.h2.copyWith(
-                      color: Colors.white,
+                      color: AppColors.onOverlay,
                     ),
                   ),
                 ),

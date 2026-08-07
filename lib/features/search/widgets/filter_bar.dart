@@ -223,7 +223,7 @@ class _ClearButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        child: const SizedBox(
+        child: SizedBox(
           width: 36,
           height: 40,
           child: Icon(Icons.close, size: 18, color: AppColors.error),

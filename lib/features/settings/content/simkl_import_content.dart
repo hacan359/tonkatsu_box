@@ -198,7 +198,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
           if (_clientIdController.text.trim().isEmpty) ...<Widget>[
             Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.key_off,
                   size: 16,
                   color: AppColors.warning,
@@ -235,7 +235,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.open_in_new,
                     size: 13,
                     color: AppColors.brand,
@@ -353,7 +353,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.open_in_new,
                     size: 13,
                     color: AppColors.brand,
@@ -399,7 +399,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           else
-            const Icon(
+            Icon(
               Icons.check_circle,
               size: 16,
               color: AppColors.statusCompleted,

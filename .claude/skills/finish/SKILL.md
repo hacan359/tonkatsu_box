@@ -128,6 +128,16 @@ The project is headed for a selfhost web build (`dev/backlog/selfhost-web/`): sa
 
 Fix: route the platform check through a flag, move raw SQL into a DAO method, move the HTTP call into the API client. Flag (don't silently accept) anything that would force the selfhost phases to redesign the new code.
 
+**R2e — theme awareness (mandatory)**
+
+The app has switchable themes (`AppPalette.dark` / `AppPalette.sakura`, selected in Settings → Appearance). Every color decision must survive both a near-black and a near-white background. Check the diff for:
+
+- **No hardcoded colors in UI code.** No `Colors.*` (except `Colors.transparent`) and no inline `Color(0x...)` in widgets — every color goes through an `AppColors` token, which reads the active palette. Semantic tokens for the common traps: over poster/image art use `AppColors.scrim` (+`withAlpha` at the call site) and `AppColors.onOverlay`; text/icons on brand-filled controls use `AppColors.onBrand`; drop shadows `AppColors.shadow`; modal barriers `AppColors.barrier` or `scrim.withAlpha(...)`. Never assume "white text reads fine" — the background may be `#FDF2F4`.
+- **Allowed exceptions** (do NOT flag): external-brand colors (`platform_ui.dart`, `service_badges.dart`, RA/Discord brand constants, the settings capsule `_k*Color`s), color-picker swatch palettes (user content), luminance-based black/white contrast picks (`luminance > 0.5 ? black : white`), pure alpha masks (`[white, transparent]` shader gradients).
+- **No cached theme colors.** Never store anything derived from `AppColors.*` / `AppTypography.*` / `MediaTypeTheme.*` in a `static final`, `static const`, top-level `final`, or a const constructor default — the value freezes on the palette active at first access and survives a theme switch. Use a getter (`static Color get x => AppColors.y;`) or compute inside `build()`. Grep the diff for `static final`/top-level `final` whose initializer mentions those classes.
+- **New color = new palette entry.** A genuinely new color goes into `AppPalette` as a field with a value for **every** palette (dark AND sakura — pick a sakura shade with real contrast on the light background, usually a darkened variant), plus a delegating `AppColors` getter. Never add a color that exists in only one theme.
+- **New screens/widgets** in the diff: reason through (or run) both themes — what does every used token render to in sakura? Pale-on-light and white-on-white are the recurring regressions.
+
 **R3 — localisation**
 - Every UI string uses `S.of(context).key` or `final S l = S.of(context);`.
 - ARB: every key exists in **every** `lib/l10n/app_*.arb` locale file (glob them — the set grows over time: en, ru, zh, …); placeholder names match across all of them; Russian plurals use ICU `=0` / `=1` / `few` / `other`. Languages without plural forms (e.g. Chinese) may render an ICU-plural key as a single flat string (`{count} 项`) as long as they keep the same placeholders.

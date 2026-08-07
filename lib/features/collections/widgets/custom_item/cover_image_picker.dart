@@ -177,7 +177,7 @@ class _CoverPlaceholder extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        const Icon(
+        Icon(
           Icons.add_photo_alternate_outlined,
           size: 32,
           color: AppColors.textTertiary,

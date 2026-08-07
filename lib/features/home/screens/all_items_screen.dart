@@ -783,7 +783,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+          Icon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: AppSpacing.md),
           Text(
             S.of(context).allItemsFailedToLoad,

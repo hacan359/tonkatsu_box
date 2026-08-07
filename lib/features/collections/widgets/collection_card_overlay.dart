@@ -45,11 +45,16 @@ class CollectionCardOverlay extends StatelessWidget {
                 Text(
                   name,
                   style: AppTypography.h3.copyWith(
+                    // The bottom scrim is background-tinted, so standard text
+                    // colors keep contrast in both themes.
                     color: AppColors.textPrimary,
                     fontSize: m.nameSize,
                     height: 1.1,
-                    shadows: const <Shadow>[
-                      Shadow(color: Colors.black54, blurRadius: 6),
+                    shadows: <Shadow>[
+                      Shadow(
+                        color: AppColors.background.withAlpha(0x8A),
+                        blurRadius: 6,
+                      ),
                     ],
                   ),
                   maxLines: 2,
@@ -62,8 +67,11 @@ class CollectionCardOverlay extends StatelessWidget {
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                       fontSize: m.descSize,
-                      shadows: const <Shadow>[
-                        Shadow(color: Colors.black87, blurRadius: 4),
+                      shadows: <Shadow>[
+                        Shadow(
+                          color: AppColors.background.withAlpha(0xDE),
+                          blurRadius: 4,
+                        ),
                       ],
                     ),
                     maxLines: m.descLines,
@@ -80,8 +88,11 @@ class CollectionCardOverlay extends StatelessWidget {
                     style: AppTypography.caption.copyWith(
                       color: AppColors.textTertiary,
                       fontSize: m.statsSize,
-                      shadows: const <Shadow>[
-                        Shadow(color: Colors.black87, blurRadius: 4),
+                      shadows: <Shadow>[
+                        Shadow(
+                          color: AppColors.background.withAlpha(0xDE),
+                          blurRadius: 4,
+                        ),
                       ],
                     ),
                     maxLines: 1,
@@ -178,10 +189,12 @@ class CollectionCardBottomScrim extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+            // Background-tinted, not black: the veil must read as "the card
+            // fading into the page" in both the dark and light themes.
             colors: <Color>[
               Colors.transparent,
-              Colors.black.withValues(alpha: 0.45),
-              Colors.black.withValues(alpha: 0.85),
+              AppColors.background.withValues(alpha: 0.45),
+              AppColors.background.withValues(alpha: 0.85),
             ],
             stops: const <double>[0.45, 0.70, 1.0],
           ),

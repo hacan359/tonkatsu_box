@@ -16,7 +16,7 @@ class UncategorizedBanner extends StatelessWidget {
       color: AppColors.surfaceLight,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        side: const BorderSide(color: AppColors.surfaceBorder),
+        side: BorderSide(color: AppColors.surfaceBorder),
       ),
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Padding(
@@ -26,7 +26,7 @@ class UncategorizedBanner extends StatelessWidget {
         ),
         child: Row(
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.info_outline,
               color: AppColors.textSecondary,
               size: 20,
@@ -35,7 +35,7 @@ class UncategorizedBanner extends StatelessWidget {
             Expanded(
               child: Text(
                 l.uncategorizedBanner,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
                 ),

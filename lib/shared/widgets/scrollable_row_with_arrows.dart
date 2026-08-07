@@ -145,9 +145,9 @@ class _ArrowButton extends StatelessWidget {
         gradient: LinearGradient(
           begin: isLeft ? Alignment.centerLeft : Alignment.centerRight,
           end: isLeft ? Alignment.centerRight : Alignment.centerLeft,
-          colors: const <Color>[
-            Color(0xDD1A1A2E),
-            Color(0x001A1A2E),
+          colors: <Color>[
+            AppColors.rowFade.withAlpha(0xDD),
+            AppColors.rowFade.withAlpha(0x00),
           ],
         ),
       ),

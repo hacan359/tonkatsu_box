@@ -334,7 +334,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.filter_alt_outlined,
               size: 48,
               color: AppColors.textTertiary,

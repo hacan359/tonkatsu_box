@@ -8,19 +8,22 @@ import '../../../shared/theme/app_spacing.dart';
 class WelcomeCard extends StatelessWidget {
   const WelcomeCard({
     required this.child,
-    this.accent = AppColors.brand,
+    this.accent,
     this.padding = const EdgeInsets.all(14),
     this.onTap,
     super.key,
   });
 
   final Widget child;
-  final Color accent;
+
+  /// Defaults to [AppColors.brand] (not constant, so it cannot be a default).
+  final Color? accent;
   final EdgeInsets padding;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final Color accent = this.accent ?? AppColors.brand;
     final BorderRadius radius = BorderRadius.circular(AppSpacing.radiusMd);
 
     final Widget content = DecoratedBox(

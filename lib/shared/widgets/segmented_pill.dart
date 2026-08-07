@@ -30,7 +30,7 @@ class SegmentedPill<T> extends StatelessWidget {
     required this.options,
     required this.selected,
     required this.onChanged,
-    this.selectedColor = AppColors.brand,
+    this.selectedColor,
     this.expand = false,
     super.key,
   });
@@ -38,7 +38,9 @@ class SegmentedPill<T> extends StatelessWidget {
   final List<SegmentedPillOption<T>> options;
   final T selected;
   final ValueChanged<T> onChanged;
-  final Color selectedColor;
+
+  /// Active-segment tint; null falls back to [AppColors.brand].
+  final Color? selectedColor;
 
   /// When true, segments share the available width equally (for narrow,
   /// full-width containers like side panels). Otherwise they size to content.
@@ -62,7 +64,7 @@ class SegmentedPill<T> extends StatelessWidget {
                 child: _Segment<T>(
                   option: o,
                   isSelected: o.value == selected,
-                  selectedColor: selectedColor,
+                  selectedColor: selectedColor ?? AppColors.brand,
                   expand: true,
                   onTap: () => onChanged(o.value),
                 ),
@@ -71,7 +73,7 @@ class SegmentedPill<T> extends StatelessWidget {
               _Segment<T>(
                 option: o,
                 isSelected: o.value == selected,
-                selectedColor: selectedColor,
+                selectedColor: selectedColor ?? AppColors.brand,
                 onTap: () => onChanged(o.value),
               ),
         ],

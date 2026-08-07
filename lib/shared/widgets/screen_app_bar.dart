@@ -48,7 +48,7 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
     final bool canPop = Navigator.of(context).canPop();
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
             color: AppColors.surfaceBorder,

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/constants/api_defaults.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/theme/app_theme_id.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
@@ -118,6 +119,9 @@ abstract class SettingsKeys {
   static const String animeMangaTitleLanguageDefault =
       AnimeMangaTitleLanguage.defaultId;
 
+  /// App theme id (see [AppThemeId]).
+  static const String appTheme = 'app_theme';
+
   /// Grid card size multiplier.
   static const String cardScale = 'card_scale';
 
@@ -159,6 +163,7 @@ class SettingsState {
     this.dateFormat = SettingsKeys.dateFormatDefault,
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
     this.cardScale = SettingsKeys.cardScaleDefault,
+    this.appTheme = AppThemeId.dark,
   });
 
   final String? clientId;
@@ -233,6 +238,9 @@ class SettingsState {
 
   /// Grid card size multiplier (1.0 = default size).
   final double cardScale;
+
+  /// Selected app theme.
+  final AppThemeId appTheme;
 
   String? resolveOverlay({
     String? platformOverlay,
@@ -329,6 +337,7 @@ class SettingsState {
     String? dateFormat,
     String? animeMangaTitleLanguage,
     double? cardScale,
+    AppThemeId? appTheme,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -365,6 +374,7 @@ class SettingsState {
       animeMangaTitleLanguage:
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
       cardScale: cardScale ?? this.cardScale,
+      appTheme: appTheme ?? this.appTheme,
     );
   }
 }
@@ -512,6 +522,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final double cardScale = (_prefs.getDouble(SettingsKeys.cardScale) ??
             SettingsKeys.cardScaleDefault)
         .clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
+    final AppThemeId appTheme =
+        AppThemeId.fromId(_prefs.getString(SettingsKeys.appTheme));
 
     // Valid token → connected immediately (skip verify);
     // expired with credentials → trigger auto-verify below.
@@ -549,6 +561,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       dateFormat: dateFormat,
       animeMangaTitleLanguage: animeMangaTitleLanguage,
       cardScale: cardScale,
+      appTheme: appTheme,
     );
 
     // API keys already wired by apiKeysProvider; only the request-time language param is set here.
@@ -853,6 +866,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(animeMangaTitleLanguage: lang);
   }
 
+  Future<void> setAppTheme(AppThemeId theme) async {
+    await _prefs.setString(SettingsKeys.appTheme, theme.id);
+    state = state.copyWith(appTheme: theme);
+  }
+
   /// Set [persist] to false for live slider preview; the final value must be
   /// saved with a persisting call.
   Future<void> setCardScale(double scale, {bool persist = true}) async {
@@ -996,6 +1014,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.dateFormat);
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
     await _prefs.remove(SettingsKeys.cardScale);
+    await _prefs.remove(SettingsKeys.appTheme);
     await _prefs.remove(SettingsKeys.raUsername);
     await _prefs.remove(SettingsKeys.raApiKey);
 

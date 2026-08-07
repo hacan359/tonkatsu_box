@@ -1,6 +1,8 @@
 import 'package:core/models/canvas_item.dart';
 import 'package:flutter/material.dart';
 
+import '../../../shared/theme/app_colors.dart';
+
 /// Data lives in CanvasItem.data: {content: String, fontSize: double}.
 class CanvasTextItem extends StatelessWidget {
   const CanvasTextItem({required this.item, super.key});
@@ -21,7 +23,7 @@ class CanvasTextItem extends StatelessWidget {
         content,
         style: TextStyle(
           fontSize: fontSize,
-          color: Colors.white,
+          color: AppColors.textPrimary,
         ),
         overflow: TextOverflow.clip,
       ),

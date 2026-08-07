@@ -14,7 +14,7 @@ class SystemMetaInfoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: const Icon(
+      icon: Icon(
         Icons.info_outline,
         size: 16,
         color: AppColors.textTertiary,

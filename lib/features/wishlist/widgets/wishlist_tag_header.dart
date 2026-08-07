@@ -193,10 +193,10 @@ class _TagPickerSegment extends StatelessWidget {
         PopupMenuItem<_TagMenuChoice>(
           value: const _TagMenuChoice.deleteTag(),
           child: ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
+            leading: Icon(Icons.delete, color: AppColors.error),
             title: Text(
               l.wishlistTagDelete,
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: AppColors.error),
             ),
             contentPadding: EdgeInsets.zero,
             dense: true,
@@ -323,10 +323,10 @@ class _BulkActionsSegment extends StatelessWidget {
           PopupMenuItem<WishlistBulkAction>(
             value: WishlistBulkAction.delete,
             child: ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: Icon(Icons.delete, color: AppColors.error),
               title: Text(
                 sl.wishlistBulkDelete,
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: AppColors.error),
               ),
               contentPadding: EdgeInsets.zero,
               dense: true,

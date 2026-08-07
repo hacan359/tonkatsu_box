@@ -568,6 +568,18 @@ class SEn extends S {
   String get settingsAppearanceSubtitle => 'Language, display and content';
 
   @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeSubtitle => 'App color theme';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsThemeSakura => 'Sakura';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Interface language';
 
   @override

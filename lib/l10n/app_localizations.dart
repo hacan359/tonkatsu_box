@@ -1071,6 +1071,30 @@ abstract class S {
   /// **'Language, display and content'**
   String get settingsAppearanceSubtitle;
 
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsThemeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App color theme'**
+  String get settingsThemeSubtitle;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsThemeSakura.
+  ///
+  /// In en, this message translates to:
+  /// **'Sakura'**
+  String get settingsThemeSakura;
+
   /// No description provided for @settingsAppLanguageSubtitle.
   ///
   /// In en, this message translates to:

@@ -40,7 +40,7 @@ class SeasonsInfo extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Text(
             buf.toString(),
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
             ),

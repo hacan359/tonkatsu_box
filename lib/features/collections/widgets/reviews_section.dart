@@ -190,7 +190,7 @@ class _ReviewCardState extends State<_ReviewCard> {
                 ),
               ),
               if (widget.review.authorRating != null) ...<Widget>[
-                const Icon(
+                Icon(
                   Icons.star,
                   size: 14,
                   color: AppColors.ratingStar,

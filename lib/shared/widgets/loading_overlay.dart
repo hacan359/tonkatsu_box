@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'logo_loader.dart';
 
 /// Runs [action] behind a modal, non-dismissible loader so the user sees that
@@ -16,7 +17,7 @@ Future<T> withBlockingSpinner<T>(
     DialogRoute<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black54,
+      barrierColor: AppColors.barrier,
       builder: (BuildContext _) => const PopScope<Object?>(
         canPop: false,
         child: Center(child: LogoLoader(size: 96)),

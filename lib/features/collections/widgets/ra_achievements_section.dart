@@ -178,9 +178,9 @@ class _RaAchievementsSectionState
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withAlpha(6),
+          color: AppColors.textPrimary.withAlpha(6),
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          border: Border.all(color: Colors.white.withAlpha(10)),
+          border: Border.all(color: AppColors.textPrimary.withAlpha(10)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +188,7 @@ class _RaAchievementsSectionState
             // Title
             Text(
               S.of(context).raBeatenProgress,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,

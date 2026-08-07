@@ -185,13 +185,13 @@ class _RaLinkDialogState extends ConsumerState<_RaLinkDialog> {
                     hintText: l.raLinkSearchHint,
                     hintStyle: AppTypography.bodySmall
                         .copyWith(color: AppColors.textTertiary),
-                    prefixIcon: const Icon(Icons.search, size: 16,
+                    prefixIcon: Icon(Icons.search, size: 16,
                         color: AppColors.textTertiary),
                     prefixIconConstraints:
                         const BoxConstraints(minWidth: 32, minHeight: 32),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.close, size: 14,
+                            icon: Icon(Icons.close, size: 14,
                                 color: AppColors.textTertiary),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
@@ -285,7 +285,7 @@ class _RaLinkDialogState extends ConsumerState<_RaLinkDialog> {
                   remoteUrl: game.imageUrl!,
                   fit: BoxFit.cover,
                 )
-              : const Icon(Icons.videogame_asset,
+              : Icon(Icons.videogame_asset,
                   color: AppColors.textTertiary, size: 20),
         ),
       ),

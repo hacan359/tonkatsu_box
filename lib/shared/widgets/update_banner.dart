@@ -64,7 +64,7 @@ class _UpdateBannerContentState extends State<_UpdateBannerContent> {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.system_update, color: AppColors.brand, size: 20),
+          Icon(Icons.system_update, color: AppColors.brand, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(

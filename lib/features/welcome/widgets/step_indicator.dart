@@ -92,13 +92,13 @@ class StepIndicator extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: isDone
-          ? const Icon(Icons.check, size: 13, color: Colors.black)
+          ? Icon(Icons.check, size: 13, color: AppColors.onBrand)
           : Text(
               '$number',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Colors.black,
+                color: AppColors.onBrand,
               ),
             ),
     );

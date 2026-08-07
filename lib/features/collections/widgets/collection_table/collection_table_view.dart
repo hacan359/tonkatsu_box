@@ -175,7 +175,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
             ),
-            side: const BorderSide(color: AppColors.textTertiary, width: 1.5),
+            side: BorderSide(color: AppColors.textTertiary, width: 1.5),
             visualDensity: VisualDensity.compact,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),

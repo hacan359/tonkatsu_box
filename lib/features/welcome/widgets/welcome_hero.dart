@@ -12,7 +12,7 @@ class WelcomeHero extends StatelessWidget {
     this.asset,
     this.icon,
     this.subtitle,
-    this.accent = AppColors.brand,
+    this.accent,
     this.compact = false,
     super.key,
   }) : assert(asset != null || icon != null, 'provide an asset or an icon');
@@ -21,11 +21,14 @@ class WelcomeHero extends StatelessWidget {
   final IconData? icon;
   final String title;
   final String? subtitle;
-  final Color accent;
+
+  /// Defaults to [AppColors.brand] (not constant, so it cannot be a default).
+  final Color? accent;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final Color accent = this.accent ?? AppColors.brand;
     final double emblem = compact ? 56 : 76;
     final double halo = emblem * 2.0;
 

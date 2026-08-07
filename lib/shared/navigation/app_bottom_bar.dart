@@ -67,7 +67,7 @@ class AppBottomBar extends ConsumerWidget {
     return SizedBox(
       height: kAppBottomBarHeight + MediaQuery.paddingOf(context).bottom,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border(
             top: BorderSide(color: AppColors.surfaceBorder, width: 1),

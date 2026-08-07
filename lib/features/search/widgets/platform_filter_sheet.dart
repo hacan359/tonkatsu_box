@@ -229,7 +229,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                 color: AppColors.surface,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withAlpha(26),
+                    color: AppColors.scrim.withAlpha(26),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),

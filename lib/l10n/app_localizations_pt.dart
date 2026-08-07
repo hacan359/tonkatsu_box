@@ -570,6 +570,18 @@ class SPt extends S {
   String get settingsAppearanceSubtitle => 'Idioma, exibição e conteúdo';
 
   @override
+  String get settingsTheme => 'Tema';
+
+  @override
+  String get settingsThemeSubtitle => 'Tema de cores do aplicativo';
+
+  @override
+  String get settingsThemeDark => 'Escuro';
+
+  @override
+  String get settingsThemeSakura => 'Sakura';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Idioma da interface';
 
   @override

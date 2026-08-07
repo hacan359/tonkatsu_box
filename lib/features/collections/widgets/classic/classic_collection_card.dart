@@ -77,7 +77,10 @@ class ClassicCollectionCard extends ConsumerWidget {
             builder: (BuildContext context, Widget? child) {
               return IgnorePointer(
                 child: ColoredBox(
-                  color: Colors.black.withAlpha((dim.value * 255).round()),
+                  // Hover dim fades toward the page background, not black —
+                  // a black veil looks dirty on light themes.
+                  color:
+                      AppColors.background.withAlpha((dim.value * 255).round()),
                 ),
               );
             },
@@ -96,17 +99,18 @@ class _CoverMosaic extends StatelessWidget {
 
   static final BorderRadius _cellBorderRadius =
       BorderRadius.circular(ClassicCollectionCard._cellRadius);
-  static final BoxDecoration _emptyCellDecoration = BoxDecoration(
-    gradient: const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: <Color>[
-        AppColors.surface,
-        AppColors.surfaceLight,
-      ],
-    ),
-    borderRadius: _cellBorderRadius,
-  );
+  // Getter: AppColors reads the switchable palette, so no static caching.
+  static BoxDecoration get _emptyCellDecoration => BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            AppColors.surface,
+            AppColors.surfaceLight,
+          ],
+        ),
+        borderRadius: _cellBorderRadius,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +213,7 @@ class _CoverImage extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: _borderRadius,
-        border: Border.all(color: Colors.black, width: 0.5),
+        border: Border.all(color: AppColors.scrim, width: 0.5),
       ),
       clipBehavior: Clip.antiAlias,
       child: CachedImage(

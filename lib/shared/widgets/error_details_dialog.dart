@@ -34,7 +34,7 @@ Future<void> showErrorDetailsDialog(
       return AlertDialog(
         title: Row(
           children: <Widget>[
-            const Icon(Icons.error_outline, color: AppColors.error, size: 22),
+            Icon(Icons.error_outline, color: AppColors.error, size: 22),
             const SizedBox(width: AppSpacing.sm),
             Expanded(child: Text(title ?? l.errorDetailsTitle)),
           ],

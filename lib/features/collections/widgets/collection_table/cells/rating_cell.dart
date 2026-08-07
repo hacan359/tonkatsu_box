@@ -30,7 +30,7 @@ class RatingCell extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.star_rounded,
                 size: 14,
                 color: AppColors.ratingStar,

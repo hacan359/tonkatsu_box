@@ -101,7 +101,7 @@ class SettingsGroup extends StatelessWidget {
               children: <Widget>[
                 for (int i = 0; i < children.length; i++) ...<Widget>[
                   if (i > 0)
-                    const Divider(
+                    Divider(
                       height: 1,
                       thickness: 1,
                       color: AppColors.surfaceBorder,

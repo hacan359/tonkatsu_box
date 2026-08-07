@@ -309,8 +309,11 @@ class _HeroPreview extends StatelessWidget {
                                 color: AppColors.textPrimary,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
-                                shadows: const <Shadow>[
-                                  Shadow(color: Colors.black87, blurRadius: 10),
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    color: AppColors.scrim.withAlpha(0xDE),
+                                    blurRadius: 10,
+                                  ),
                                 ],
                               ),
                               maxLines: 2,
@@ -322,9 +325,9 @@ class _HeroPreview extends StatelessWidget {
                                 description!,
                                 style: AppTypography.caption.copyWith(
                                   color: AppColors.textSecondary,
-                                  shadows: const <Shadow>[
+                                  shadows: <Shadow>[
                                     Shadow(
-                                      color: Colors.black87,
+                                      color: AppColors.scrim.withAlpha(0xDE),
                                       blurRadius: 6,
                                     ),
                                   ],
@@ -354,7 +357,7 @@ class _EmptyPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: <Color>[AppColors.surface, AppColors.surfaceLight],
@@ -366,7 +369,7 @@ class _EmptyPreview extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.image_outlined,
               color: AppColors.textTertiary,
               size: 40,
