@@ -10,6 +10,7 @@ import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
+import 'package:core/models/anime.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/manga.dart';
@@ -47,6 +48,7 @@ import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/book_progress_section.dart';
+import '../widgets/anime_similars_section.dart';
 import '../widgets/book_similars_section.dart';
 import '../widgets/manga_similars_section.dart';
 import '../widgets/custom_progress_section.dart';
@@ -790,15 +792,23 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             book: item.book!,
             onAddBook: _addBookFromSimilars,
           ),
-        // Similar manga — MangaBaka and MangaDex each have a native
-        // recommendations endpoint seeded by the current title.
+        // Similar manga — MangaBaka and MangaDex have native recommendation
+        // endpoints; AniList / Kitsu seeds go through AniList's.
         if (settings.showRecommendations &&
             item.mediaType == MediaType.manga &&
-            (item.manga?.source == DataSource.mangabaka ||
-                item.manga?.source == DataSource.mangadex))
+            mangaSimilarsSources.contains(item.manga?.source))
           MangaSimilarsSection(
             seed: item.manga!,
             onAddManga: _addMangaFromSimilars,
+          ),
+        // Similar anime — AniList recommendations shown as Kitsu titles;
+        // a Kitsu seed is bridged to its AniList id first.
+        if (settings.showRecommendations &&
+            item.mediaType == MediaType.anime &&
+            item.anime != null)
+          AnimeSimilarsSection(
+            seed: item.anime!,
+            onAddAnime: _addAnimeFromSimilars,
           ),
       ],
       authorComment: item.authorComment,
@@ -1136,6 +1146,63 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           mediaType: MediaType.manga,
           externalId: manga.id,
           source: manga.source,
+        );
+
+    if (!mounted) return;
+
+    context.showSnack(
+      success
+          ? l.searchAddedToNamed(title, collectionName)
+          : l.searchAlreadyInNamed(title, collectionName),
+      type: success ? SnackType.success : SnackType.info,
+    );
+  }
+
+  /// Adds an anime tapped in the "Similar" row to a chosen collection,
+  /// caching the full record first. Similars are always Kitsu entities.
+  Future<void> _addAnimeFromSimilars(Anime anime) async {
+    final Map<int, List<CollectedItemInfo>> ownMap =
+        await ref.read(collectedAnimeIdsProvider.future);
+    final Set<int?> alreadyIn = <CollectedItemInfo>[
+      ...?ownMap[anime.id],
+    ]
+        .where((CollectedItemInfo i) => i.source == anime.source)
+        .map((CollectedItemInfo i) => i.collectionId)
+        .toSet();
+
+    if (!mounted) return;
+    final S l = S.of(context);
+    final String title = anime.titleByLanguage(
+      ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+    );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).animeDao.upsertAnime(anime);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.anime,
+          externalId: anime.id,
+          source: anime.source,
         );
 
     if (!mounted) return;

@@ -1,53 +1,65 @@
-import '../../../shared/constants/platform_features.dart';
-
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
+import 'package:core/models/image_type.dart';
 import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/anilist_api.dart';
+import '../../../core/api/kitsu_api.dart';
 import '../../../core/api/mangabaka_api.dart';
 import '../../../core/api/mangadex_api.dart';
-import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/theme/app_typography.dart';
-import '../../../shared/utils/url_launch.dart';
-import '../../../shared/widgets/media_poster_card.dart';
-import '../../../shared/widgets/scrollable_row_with_arrows.dart';
-import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/constants/media_type_theme.dart';
 import '../../search/widgets/item_details_sheet.dart';
 import '../../settings/providers/settings_provider.dart'
     show settingsNotifierProvider;
 import '../providers/collections_provider.dart';
+import 'similars_poster_row.dart';
 
-/// Recommendations for a seed, routed by its source. `autoDispose` evicts the
-/// entry when the card is left (and a first-fetch failure is not cached
-/// forever); the record key carries `source` so same-`id`/different-source
-/// seeds never collide.
+/// Manga sources the similars row supports; gates the section in the item
+/// detail screen.
+const Set<DataSource> mangaSimilarsSources = <DataSource>{
+  DataSource.mangabaka,
+  DataSource.mangadex,
+  DataSource.anilist,
+  DataSource.kitsu,
+};
+
+/// Recommendations for a seed, routed by its source; the record key carries
+/// `source` so same-`id`/different-source seeds never collide.
 final AutoDisposeFutureProviderFamily<List<Manga>, _MangaSeedKey>
     _mangaRecProvider =
     FutureProvider.autoDispose.family<List<Manga>, _MangaSeedKey>(
-  (Ref ref, _MangaSeedKey seed) {
+  (Ref ref, _MangaSeedKey seed) async {
     switch (seed.source) {
       case DataSource.mangadex:
-        if (seed.uuid.isEmpty) return Future<List<Manga>>.value(<Manga>[]);
+        if (seed.uuid.isEmpty) return <Manga>[];
         return ref.watch(mangaDexApiProvider).getRecommendations(seed.uuid);
-      default:
+      case DataSource.anilist:
+        return ref.watch(aniListApiProvider).getMangaRecommendations(seed.id);
+      case DataSource.kitsu:
+        // Both clients are read before the await: touching an autoDispose ref
+        // after the card unmounts mid-fetch would throw.
+        final KitsuApi kitsu = ref.watch(kitsuApiProvider);
+        final AniListApi aniList = ref.watch(aniListApiProvider);
+        final int? aniListId = await kitsu.getAniListMangaId(seed.id);
+        if (aniListId == null) return <Manga>[];
+        return aniList.getMangaRecommendations(aniListId);
+      case DataSource.mangabaka:
         return ref.watch(mangaBakaApiProvider).getRecommendations(seed.id);
+      default:
+        return <Manga>[];
     }
   },
 );
 
 typedef _MangaSeedKey = ({DataSource source, int id, String uuid});
 
-/// "Similar manga" row on a manga's detail page, seeded by the current title.
-/// MangaBaka uses `/series/mix`, MangaDex uses `/manga/{id}/recommendation`;
-/// mirrors the TMDB [RecommendationsSection]. Hidden while loading, on failure
-/// or when nothing comes back.
+/// "Similar manga" row on a manga's detail page, seeded by the current title;
+/// hidden while loading, on failure or when nothing comes back.
 class MangaSimilarsSection extends ConsumerWidget {
   const MangaSimilarsSection({
     required this.seed,
@@ -75,11 +87,13 @@ class MangaSimilarsSection extends ConsumerWidget {
     final Map<int, List<CollectedItemInfo>> ownedMap =
         ref.watch(collectedMangaIdsProvider).valueOrNull ??
             const <int, List<CollectedItemInfo>>{};
-    // Recommendations all share the seed's source, so match owned by source too
-    // (a MangaBaka id can equal a MangaDex hash id).
+    // Recommendations all share one source (AniList for a Kitsu seed), so
+    // match owned by it (a MangaBaka id can equal a MangaDex hash id).
+    final DataSource recSource =
+        seed.source == DataSource.kitsu ? DataSource.anilist : seed.source;
     final Set<int> ownedIds = <int>{
       for (final MapEntry<int, List<CollectedItemInfo>> e in ownedMap.entries)
-        if (e.value.any((CollectedItemInfo i) => i.source == seed.source))
+        if (e.value.any((CollectedItemInfo i) => i.source == recSource))
           e.key,
     };
     final String titleLanguage =
@@ -88,15 +102,32 @@ class MangaSimilarsSection extends ConsumerWidget {
     return async.when(
       data: (List<Manga> mangas) {
         if (mangas.isEmpty) return const SizedBox.shrink();
-        return _MangaRow(
+        return SimilarsPosterRow(
           title: S.of(context).recommendationsTitle,
-          mangas: mangas,
-          ownedIds: ownedIds,
-          titleLanguage: titleLanguage,
-          onTap: (Manga m) => _showManga(context, ref, m),
+          cards: <SimilarCardData>[
+            for (final Manga manga in mangas)
+              (
+                title: manga.titleByLanguage(titleLanguage),
+                imageUrl: manga.coverUrl ?? '',
+                cacheImageType: ImageType.mangaCover,
+                cacheImageId: coverImageId(
+                  mediaType: MediaType.manga,
+                  externalId: manga.id,
+                  source: manga.source,
+                ),
+                year: manga.releaseYear,
+                apiRating: manga.rating10,
+                isOwned: ownedIds.contains(manga.id),
+                placeholderIcon:
+                    MediaTypeTheme.placeholderIconFor(MediaType.manga),
+                source: manga.source,
+                externalUrl: manga.externalUrl,
+                onTap: () => _showManga(context, ref, manga),
+              ),
+          ],
         );
       },
-      loading: () => const _MangaRowShimmer(),
+      loading: () => const SimilarsPosterRowShimmer(),
       error: (_, _) => const SizedBox.shrink(),
     );
   }
@@ -111,147 +142,6 @@ class MangaSimilarsSection extends ConsumerWidget {
         animeMangaTitleLanguage:
             ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
-    );
-  }
-}
-
-class _MangaRow extends StatefulWidget {
-  const _MangaRow({
-    required this.title,
-    required this.mangas,
-    required this.ownedIds,
-    required this.titleLanguage,
-    required this.onTap,
-  });
-
-  final String title;
-  final List<Manga> mangas;
-  final Set<int> ownedIds;
-  final String titleLanguage;
-  final void Function(Manga manga) onTap;
-
-  @override
-  State<_MangaRow> createState() => _MangaRowState();
-}
-
-class _MangaRowState extends State<_MangaRow> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bool compact = isCompactScreen(context);
-    final double posterWidth = compact ? 100 : 130;
-    final double rowHeight = AppSpacing.posterRowHeight(
-      posterWidth: posterWidth,
-      compact: compact,
-      textScaler: MediaQuery.textScalerOf(context),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          widget.title,
-          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          height: rowHeight,
-          child: ScrollableRowWithArrows(
-            controller: _scrollController,
-            height: rowHeight,
-            child: ListView.separated(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              padding: const EdgeInsets.symmetric(
-                vertical: AppSpacing.posterRowVerticalPadding,
-              ),
-              itemCount: widget.mangas.length,
-              separatorBuilder: (_, _) =>
-                  const SizedBox(width: AppSpacing.sm),
-              itemBuilder: (BuildContext context, int index) {
-                final Manga manga = widget.mangas[index];
-                return SizedBox(
-                  width: posterWidth,
-                  child: MediaPosterCard(
-                    variant:
-                        compact ? CardVariant.compact : CardVariant.grid,
-                    title: manga.titleByLanguage(widget.titleLanguage),
-                    imageUrl: manga.coverUrl ?? '',
-                    cacheImageType: ImageType.mangaCover,
-                    cacheImageId: coverImageId(
-                      mediaType: MediaType.manga,
-                      externalId: manga.id,
-                      source: manga.source,
-                    ),
-                    year: manga.releaseYear,
-                    apiRating: manga.rating10,
-                    splitRatings: true,
-                    isInCollection: widget.ownedIds.contains(manga.id),
-                    placeholderIcon: Icons.auto_stories,
-                    source: manga.source,
-                    onSourceTap: openUrlCallback(manga.externalUrl),
-                    onTap: () => widget.onTap(manga),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MangaRowShimmer extends StatelessWidget {
-  const _MangaRowShimmer();
-
-  @override
-  Widget build(BuildContext context) {
-    final bool compact = isCompactScreen(context);
-    final double posterWidth = compact ? 100 : 130;
-    final double rowHeight = AppSpacing.posterRowHeight(
-      posterWidth: posterWidth,
-      compact: compact,
-      textScaler: MediaQuery.textScalerOf(context),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Container(
-          width: 150,
-          height: 20,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          height: rowHeight,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.posterRowVerticalPadding,
-            ),
-            itemCount: 5,
-            separatorBuilder: (_, _) =>
-                const SizedBox(width: AppSpacing.sm),
-            itemBuilder: (_, _) => SizedBox(
-              width: posterWidth,
-              child: ShimmerPosterCard(compact: compact),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

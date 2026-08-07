@@ -228,4 +228,95 @@ void main() {
           ));
     });
   });
+
+  group('getAnimeByAniListIds', () {
+    test('filters mappings by the AniList anime site', () async {
+      stubGet(<Response<dynamic>>[
+        makeResponse(<String, dynamic>{
+          'data': <Map<String, dynamic>>[mapping('21', '12')],
+          'included': <Map<String, dynamic>>[animeResource('12')],
+        }),
+      ]);
+
+      final Map<int, Anime> result = await api.getAnimeByAniListIds(<int>[21]);
+
+      expect(result[21]?.id, 12);
+      final Map<String, dynamic> query = capturedQueries().single;
+      expect(query['filter[externalSite]'], 'anilist/anime');
+    });
+  });
+
+  group('getAniListId', () {
+    Map<String, dynamic> titleMapping(String site, String externalId) =>
+        <String, dynamic>{
+          'id': 'm-$externalId',
+          'type': 'mappings',
+          'attributes': <String, dynamic>{
+            'externalSite': site,
+            'externalId': externalId,
+          },
+        };
+
+    List<String> capturedPaths() => verify(() => mockDio.get<dynamic>(
+          captureAny(),
+          queryParameters: any(named: 'queryParameters'),
+          options: any(named: 'options'),
+        )).captured.cast<String>();
+
+    test('returns the AniList id from an anime mappings list', () async {
+      stubGet(<Response<dynamic>>[
+        makeResponse(<String, dynamic>{
+          'data': <Map<String, dynamic>>[
+            titleMapping('myanimelist/anime', '21'),
+            titleMapping('anilist/anime', '21'),
+            titleMapping('anidb', '69'),
+          ],
+        }),
+      ]);
+
+      final int? id = await api.getAniListAnimeId(12);
+
+      expect(id, 21);
+      expect(capturedPaths().single, 'anime/12/mappings');
+    });
+
+    test('uses the manga endpoint and site for a manga title', () async {
+      stubGet(<Response<dynamic>>[
+        makeResponse(<String, dynamic>{
+          'data': <Map<String, dynamic>>[
+            titleMapping('anilist/manga', '30008'),
+          ],
+        }),
+      ]);
+
+      final int? id = await api.getAniListMangaId(24);
+
+      expect(id, 30008);
+      expect(capturedPaths().single, 'manga/24/mappings');
+    });
+
+    test('returns null when the title has no AniList mapping', () async {
+      stubGet(<Response<dynamic>>[
+        makeResponse(<String, dynamic>{
+          'data': <Map<String, dynamic>>[
+            titleMapping('myanimelist/anime', '21'),
+          ],
+        }),
+      ]);
+
+      expect(await api.getAniListAnimeId(12), isNull);
+    });
+
+    test('ignores the anime site when looking up a manga', () async {
+      stubGet(<Response<dynamic>>[
+        makeResponse(<String, dynamic>{
+          'data': <Map<String, dynamic>>[
+            titleMapping('anilist/anime', '21'),
+          ],
+        }),
+      ]);
+
+      expect(await api.getAniListMangaId(12), isNull);
+    });
+  });
 }

@@ -1,3 +1,4 @@
+import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/recommendations/providers/recommendations_provider.dart';
@@ -9,7 +10,8 @@ void main() {
         tasteId: 'taste:1',
         media: media,
         mediaType: mediaType,
-        tmdbId: 1,
+        source: DataSource.tmdb,
+        externalId: 1,
         title: 'Dune',
         posterUrl: null,
         year: null,

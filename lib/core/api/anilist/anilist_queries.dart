@@ -265,6 +265,76 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 }
 ''';
 
+  // `mediaRecommendation.type` is selected because recommendations can cross
+  // media types (a manga recommended for an anime) — the parser filters on it.
+  static const String _animeRecommendationFields = '''
+type
+id
+title { romaji english native }
+coverImage { extraLarge large medium }
+bannerImage
+description(asHtml: false)
+genres
+tags { name }
+averageScore
+status
+startDate { year month day }
+episodes
+duration
+format
+source
+studios(isMain: true) { nodes { name } }
+nextAiringEpisode { episode }
+''';
+
+  static const String _mangaRecommendationFields = '''
+type
+id
+title { romaji english native }
+coverImage { extraLarge large medium }
+bannerImage
+description(asHtml: false)
+genres
+tags { name }
+averageScore
+status
+startDate { year month day }
+chapters
+volumes
+format
+staff(sort: RELEVANCE, perPage: 5) {
+  edges {
+    node { name { full } }
+    role
+  }
+}
+''';
+
+  /// One aliased `Media` block per seed — a whole seed set costs one request
+  /// against the 30/min limit. Ids are inlined (internal ints, never user text).
+  static String recommendationsBatch({
+    required List<int> ids,
+    required bool anime,
+  }) {
+    final String type = anime ? 'ANIME' : 'MANGA';
+    final String fields =
+        anime ? _animeRecommendationFields : _mangaRecommendationFields;
+    final StringBuffer buf = StringBuffer('query (\$perPage: Int) {\n');
+    for (int i = 0; i < ids.length; i++) {
+      buf
+        ..write('${recommendationAlias(i)}: Media(id: ${ids[i]}, type: $type) ')
+        ..write('{ recommendations(sort: RATING_DESC, perPage: \$perPage) ')
+        ..write('{ nodes { mediaRecommendation {\n')
+        ..write(fields)
+        ..write('} } } }\n');
+    }
+    buf.write('}');
+    return buf.toString();
+  }
+
+  /// Alias of the [i]-th seed's block in a [recommendationsBatch] response.
+  static String recommendationAlias(int i) => 's$i';
+
   // MediaListCollection returns every list (Watching/Completed/…) for a user
   // in a single response — no pagination at this level.
   static const String userAnimeList = r'''
