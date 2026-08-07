@@ -679,8 +679,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       lastActivityAt: item.lastActivityAt,
       completionTime: item.completionTime,
       onActivityDateChanged: widget.isEditable
-          ? (String type, DateTime? date) =>
-              _updateActivityDate(item.id, type, date)
+          ? (ActivityDateField field, DateTime? date) =>
+              _updateActivityDate(item.id, field, date)
           : null,
       tagWidget: widget.collectionId != null
           ? ItemTagsSection(
@@ -1160,8 +1160,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   /// A null [date] clears the field ("unknown date"); the status is left
   /// untouched on purpose — only setting a date drives the status sync.
-  Future<void> _updateActivityDate(int id, String type, DateTime? date) async {
-    final bool started = type == 'started';
+  Future<void> _updateActivityDate(
+    int id,
+    ActivityDateField field,
+    DateTime? date,
+  ) async {
+    final bool started = field == ActivityDateField.started;
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateActivityDates(

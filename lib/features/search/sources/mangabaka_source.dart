@@ -33,9 +33,6 @@ class MangaBakaSource extends SearchSource {
   DataSource get dataSource => DataSource.mangabaka;
 
   @override
-  IconData get groupIcon => Icons.local_library_outlined;
-
-  @override
   String label(S l) => l.mediaTypeManga;
 
   @override

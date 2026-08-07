@@ -30,10 +30,14 @@ import 'media_detail/user_rating_section.dart';
 import 'mini_markdown_text.dart';
 export 'media_detail/media_detail_chip.dart' show MediaDetailChip;
 
-/// `type` is either 'started' or 'completed'; a null [date] clears the field
-/// ("unknown date") without touching the item's status.
+/// Which activity date an edit targets — distinct from [ItemStatus] even
+/// though the names overlap.
+enum ActivityDateField { started, completed }
+
+/// A null [date] clears the field ("unknown date") without touching the
+/// item's status.
 typedef OnActivityDateChanged =
-    Future<void> Function(String type, DateTime? date);
+    Future<void> Function(ActivityDateField field, DateTime? date);
 
 /// Shared layout for game / movie / TV detail screens. Type-specific blocks
 /// are injected via [extraSections].
@@ -449,7 +453,11 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         value: widget.startedAt != null ? fmt(widget.startedAt!) : '—',
         hasValue: widget.startedAt != null,
         onTap: editableDates
-            ? () => _pickActivityDate(context, 'started', widget.startedAt)
+            ? () => _pickActivityDate(
+                  context,
+                  ActivityDateField.started,
+                  widget.startedAt,
+                )
             : null,
       ),
       ProgressTile(
@@ -461,7 +469,11 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
             ? formatCompletionTime(widget.completionTime!, l)
             : null,
         onTap: editableDates
-            ? () => _pickActivityDate(context, 'completed', widget.completedAt)
+            ? () => _pickActivityDate(
+                  context,
+                  ActivityDateField.completed,
+                  widget.completedAt,
+                )
             : null,
       ),
       if (widget.onTimeSpentTap != null)
@@ -519,7 +531,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
 
   Future<void> _pickActivityDate(
     BuildContext context,
-    String type,
+    ActivityDateField field,
     DateTime? current,
   ) async {
     final DateTime initialDate = current ?? DateTime.now();
@@ -531,7 +543,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: type == 'started'
+      helpText: field == ActivityDateField.started
           ? S.of(context).activityDatesSelectStart
           : S.of(context).activityDatesSelectCompletion,
       // Nothing to clear while the field is still empty.
@@ -539,7 +551,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     );
 
     if (picked != null && context.mounted) {
-      await widget.onActivityDateChanged!(type, picked.date);
+      await widget.onActivityDateChanged!(field, picked.date);
     }
   }
 
