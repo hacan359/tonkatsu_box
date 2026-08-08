@@ -10,6 +10,7 @@ import '../../shared/constants/api_defaults.dart';
 class ApiKeys {
   const ApiKeys({
     this.tmdbApiKey,
+    this.tvdbApiKey,
     this.steamGridDbApiKey,
     this.igdbClientId,
     this.igdbClientSecret,
@@ -29,6 +30,12 @@ class ApiKeys {
         (userTmdbKey != null && userTmdbKey.isNotEmpty)
             ? userTmdbKey
             : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
+
+    // TheTVDB: user key → built-in → null
+    final String? userTvdbKey = prefs.getString(SettingsKeys.tvdbApiKey);
+    final String? tvdbApiKey = (userTvdbKey != null && userTvdbKey.isNotEmpty)
+        ? userTvdbKey
+        : (ApiDefaults.hasTvdbKey ? ApiDefaults.tvdbApiKey : null);
 
     // SteamGridDB: user key → built-in → null
     final String? userSteamGridDbKey =
@@ -73,6 +80,7 @@ class ApiKeys {
 
     return ApiKeys(
       tmdbApiKey: tmdbApiKey,
+      tvdbApiKey: tvdbApiKey,
       steamGridDbApiKey: steamGridDbApiKey,
       igdbClientId: igdbClientId,
       igdbClientSecret: igdbClientSecret,
@@ -99,6 +107,8 @@ class ApiKeys {
   }
 
   final String? tmdbApiKey;
+
+  final String? tvdbApiKey;
 
   final String? steamGridDbApiKey;
 

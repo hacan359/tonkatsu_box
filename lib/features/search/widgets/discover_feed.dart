@@ -26,11 +26,11 @@ final FutureProvider<Set<int>> _existingTmdbIdsProvider =
       await ref.watch(collectedTvShowIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> animations =
       await ref.watch(collectedAnimationIdsProvider.future);
-  // Every card in the feed comes from TMDB, so a TVmaze show sharing a numeric
-  // id with a TMDB one must not badge it as owned. Movies and animation are
-  // TMDB-only, their keys need no narrowing.
+  // Every card in the feed comes from TMDB, so a TVmaze or TheTVDB title
+  // sharing a numeric id with a TMDB one must not badge it as owned. Animation
+  // is TMDB-only, its keys need no narrowing.
   return <int>{
-    ...movies.keys,
+    ...movies.idsFromSource(DataSource.tmdb),
     ...tvShows.idsFromSource(DataSource.tmdb),
     ...animations.keys,
   };

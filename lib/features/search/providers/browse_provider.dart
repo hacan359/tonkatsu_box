@@ -1,9 +1,11 @@
+import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/api_error_extract.dart';
+import '../../../shared/constants/api_defaults.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/common_filter.dart';
 import '../models/search_source.dart';
@@ -249,7 +251,25 @@ class BrowseNotifier extends Notifier<BrowseState> {
   @override
   BrowseState build() {
     _prefs = ref.watch(sharedPreferencesProvider);
-    return BrowseState(mediaType: _restoreMediaType());
+    final MediaType type = _restoreMediaType();
+    return BrowseState(
+      mediaType: type,
+      disabledSourceIds: _keylessSourceIds(type),
+    );
+  }
+
+  /// A source missing its mandatory key can only answer with an error, so it
+  /// starts switched off; the chip stays visible and toggleable. Read straight
+  /// from prefs rather than through SettingsNotifier — this screen has no other
+  /// reason to depend on the whole settings graph.
+  Set<String> _keylessSourceIds(MediaType type) {
+    final String? tvdbKey = _prefs.getString(SettingsKeys.tvdbApiKey);
+    final bool hasTvdbKey =
+        (tvdbKey != null && tvdbKey.isNotEmpty) || ApiDefaults.hasTvdbKey;
+    return <String>{
+      for (final SearchSource source in searchSourcesFor(type))
+        if (source.dataSource == DataSource.tvdb && !hasTvdbKey) source.id,
+    };
   }
 
   MediaType _restoreMediaType() {
@@ -271,7 +291,11 @@ class BrowseNotifier extends Notifier<BrowseState> {
   void setMediaType(MediaType type) {
     _generation++;
     final String preservedQuery = state.searchQuery;
-    state = BrowseState(mediaType: type, searchQuery: preservedQuery);
+    state = BrowseState(
+      mediaType: type,
+      searchQuery: preservedQuery,
+      disabledSourceIds: _keylessSourceIds(type),
+    );
     _prefs.setString(BrowseSettingsKeys.mediaType, type.name);
     if (state.hasSearchQuery) _fetch();
   }

@@ -174,6 +174,21 @@ class SEs extends S {
   String get status => 'Estado';
 
   @override
+  String get movieStatusReleased => 'Estrenada';
+
+  @override
+  String get movieStatusCompleted => 'Completada';
+
+  @override
+  String get movieStatusPostProduction => 'Rodaje / posproducción';
+
+  @override
+  String get movieStatusPreProduction => 'Preproducción';
+
+  @override
+  String get movieStatusAnnounced => 'Anunciada';
+
+  @override
   String get sortStatusDesc => 'Activos primero';
 
   @override
@@ -767,7 +782,14 @@ class SEs extends S {
   String get credentialsTmdbSection => 'API de TMDB (películas y series)';
 
   @override
+  String get credentialsTvdbSection => 'API de TheTVDB (películas y series)';
+
+  @override
   String get credentialsEnterTmdbKey => 'Introduce tu clave API de TMDB (v3)';
+
+  @override
+  String get credentialsEnterTvdbKey =>
+      'Introduce tu clave de API de TheTVDB (v4)';
 
   @override
   String get credentialsComicVineSection => 'API de ComicVine (cómics)';
@@ -857,6 +879,13 @@ class SEs extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'La clave API de TMDB no es válida';
+
+  @override
+  String get credentialsTvdbKeyValid => 'La clave de API de TheTVDB es válida';
+
+  @override
+  String get credentialsTvdbKeyInvalid =>
+      'La clave de API de TheTVDB no es válida';
 
   @override
   String get credentialsComicVineKeyValid =>
@@ -1438,6 +1467,10 @@ class SEs extends S {
   @override
   String get creditsTmdbAttribution =>
       'Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.';
+
+  @override
+  String get creditsTvdbAttribution =>
+      'Metadatos proporcionados por TheTVDB. Considera completar datos o suscribirte.';
 
   @override
   String get creditsTvMazeAttribution =>
@@ -2802,6 +2835,9 @@ class SEs extends S {
   String get welcomeApiTmdbDesc => 'Películas, series y anime';
 
   @override
+  String get welcomeApiTvdbDesc => 'Películas y series, episodios propios';
+
+  @override
   String get welcomeApiComicVineDesc => 'Cómics y novelas gráficas';
 
   @override
@@ -2959,6 +2995,10 @@ class SEs extends S {
 
   @override
   String get welcomeSourceDescTvMaze => 'Series de TV.';
+
+  @override
+  String get welcomeSourceDescTvdb =>
+      'Películas y series, con sus propios episodios.';
 
   @override
   String get welcomeSourceDescIgdb => 'Videojuegos de todas las plataformas.';

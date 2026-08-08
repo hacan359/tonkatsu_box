@@ -9,6 +9,10 @@ enum DataSource {
   /// TVmaze — keyless TV series database with season / episode data.
   tvmaze('TVmaze', 0xFF3C5C8C),
 
+  /// TheTVDB — movie and TV database with its own season / episode data.
+  /// Carries no user rating, only a popularity score.
+  tvdb('TheTVDB', 0xFF6CD591),
+
   /// SteamGridDB — Steam artwork.
   steamGridDb('SGDB', 0xFF3A9BDC, brandName: 'SteamGridDB'),
 

@@ -22,7 +22,7 @@ import '../../collections/providers/collections_provider.dart';
 /// are keyed by `(source, id)` — providers hand out colliding numeric ids, so
 /// an id alone would badge the wrong card.
 typedef CollectedIds = ({
-  Set<int> tmdbIds,
+  Set<(DataSource, int)> movieKeys,
   Set<(DataSource, int)> tvKeys,
   Set<int> gameIds,
   Set<int> vnIds,
@@ -32,7 +32,7 @@ typedef CollectedIds = ({
 });
 
 const CollectedIds kNoCollected = (
-  tmdbIds: <int>{},
+  movieKeys: <(DataSource, int)>{},
   tvKeys: <(DataSource, int)>{},
   gameIds: <int>{},
   vnIds: <int>{},
@@ -61,7 +61,10 @@ final FutureProvider<CollectedIds> collectedIdsProvider =
       await ref.watch(collectedBookIdsProvider.future);
 
   return (
-    tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
+    movieKeys: <(DataSource, int)>{
+      ...movies.sourceKeys,
+      ...animations.sourceKeys,
+    },
     tvKeys: <(DataSource, int)>{
       ...tvShows.sourceKeys,
       ...animations.sourceKeys,
@@ -135,21 +138,27 @@ class BrowseCard extends StatelessWidget {
     final Object entry = item;
 
     if (entry is Movie) {
-      final bool inColl = collected.tmdbIds.contains(entry.tmdbId);
+      final bool inColl =
+          collected.movieKeys.contains((entry.source, entry.tmdbId));
       return MediaPosterCard(
         variant: variant,
         title: entry.title,
         imageUrl: entry.posterUrl ?? '',
         cacheImageType: ImageType.moviePoster,
-        cacheImageId: entry.tmdbId.toString(),
+        cacheImageId: coverImageId(
+          mediaType: mediaType,
+          externalId: entry.tmdbId,
+          source: entry.source,
+        ),
         apiRating: entry.rating,
         year: entry.releaseYear,
         mediaType: mediaType,
         isInCollection: inColl,
-        source: fallbackSource,
+        source: entry.source,
         onSourceTap: openUrlCallback(entry.externalUrl),
         onTap: () => onTap(entry, mediaType),
-        onOpenInCollection: _openCallback(entry.tmdbId, inColl),
+        onOpenInCollection:
+            _openCallback(entry.tmdbId, inColl, source: entry.source),
       );
     }
 

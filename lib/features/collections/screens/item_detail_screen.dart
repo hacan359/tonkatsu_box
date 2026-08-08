@@ -1001,8 +1001,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         await ref.read(ownMapProvider.future);
     final Map<int, List<CollectedItemInfo>> collectedAnimations =
         await ref.read(collectedAnimationIdsProvider.future);
+    // TMDB-only rows, so placements from another provider sharing the numeric
+    // id must not grey out a collection in the picker.
     final Set<int?> alreadyIn = <CollectedItemInfo>[
-      ...ownMap[tmdbId] ?? <CollectedItemInfo>[],
+      ...?ownMap[tmdbId]?.forSource(mediaType, DataSource.tmdb),
       ...collectedAnimations[tmdbId] ?? <CollectedItemInfo>[],
     ].map((CollectedItemInfo i) => i.collectionId).toSet();
 
@@ -1032,7 +1034,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
-        .addItem(mediaType: mediaType, externalId: tmdbId);
+        .addItem(
+          mediaType: mediaType,
+          externalId: tmdbId,
+          source: DataSource.tmdb,
+        );
 
     if (success && afterAdd != null) {
       unawaited(afterAdd());

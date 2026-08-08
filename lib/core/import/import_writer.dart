@@ -1,5 +1,6 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/wishlist_item.dart';
 
@@ -16,11 +17,16 @@ class ImportCandidate {
     required this.insertRow,
     required this.changedFields,
     this.label,
+    this.source,
   });
 
   final MediaType mediaType;
   final int externalId;
   final int? platformId;
+
+  /// Provider of [externalId]; null means the media type's default. Must match
+  /// the `source` [insertRow] writes, or a re-import fails to find its own row.
+  final DataSource? source;
   final Map<String, dynamic> insertRow;
   final Map<String, dynamic> Function(CollectionItem existing) changedFields;
 
@@ -73,8 +79,14 @@ class ImportWriteResult {
 
   /// The row id for one written item, or `null` when it was not written
   /// (unresolved insert, e.g. a unique-constraint collision).
-  int? idFor(MediaType mediaType, int externalId, int? platformId) =>
-      itemIdsByKey[ImportWriter.itemKey(mediaType, externalId, platformId)];
+  int? idFor(
+    MediaType mediaType,
+    int externalId,
+    int? platformId, [
+    DataSource? source,
+  ]) =>
+      itemIdsByKey[
+          ImportWriter.itemKey(mediaType, externalId, platformId, source)];
 
   /// Row ids of every candidate matching [test]; the common case is "all the
   /// items this import touched, filtered by some source-side flag".
@@ -98,9 +110,16 @@ class ImportWriter {
   final WishlistRepository _wishlist;
 
   /// Identity of a collection item across sources: a re-import of the same
-  /// logical title resolves to the same key.
-  static String itemKey(MediaType type, int externalId, int? platformId) =>
-      '${type.value}:$externalId:$platformId';
+  /// logical title resolves to the same key. The provider is part of it —
+  /// TMDB and TheTVDB (like AniList and MangaBaka) reuse numeric ids.
+  static String itemKey(
+    MediaType type,
+    int externalId,
+    int? platformId, [
+    DataSource? source,
+  ]) =>
+      '${type.value}:$externalId:$platformId:'
+      '${(source ?? type.defaultSource).name}';
 
   /// Returns the target collection: the existing one when [collectionId] is
   /// given, otherwise a freshly created [newCollectionName] / [author] one.
@@ -124,7 +143,12 @@ class ImportWriter {
   }) async {
     final Map<String, CollectionItem> existing = <String, CollectionItem>{};
     for (final CollectionItem item in await _collections.getItems(collectionId)) {
-      existing[itemKey(item.mediaType, item.externalId, item.platformId)] = item;
+      existing[itemKey(
+        item.mediaType,
+        item.externalId,
+        item.platformId,
+        item.source,
+      )] = item;
     }
 
     final Map<MediaType, int> importedByType = <MediaType, int>{};
@@ -147,6 +171,7 @@ class ImportWriter {
         candidate.mediaType,
         candidate.externalId,
         candidate.platformId,
+        candidate.source,
       );
       if (!seen.add(key)) {
         skipped++;

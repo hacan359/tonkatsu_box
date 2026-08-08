@@ -9,6 +9,136 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **TheTVDB as a source for movies and TV series**
+
+  Two new providers in search and browse, backed by your own TheTVDB v4 key
+  (Settings → Credentials, with a Test button and reset to the built-in key).
+  Both support search and filtered browse by genre and year, and series bring
+  their own seasons and episodes to the episode tracker. TheTVDB publishes no
+  user rating, so its titles carry no rating badge. Without a key the two chips
+  start switched off instead of failing every request.
+
+  Movies became multi-source in the process: provider id spaces overlap, so a
+  TheTVDB movie would have replaced the TMDB movie with the same number in the
+  cache. Every read path that resolves a film — collection lists, cover
+  mosaics, mood grids, statistics, export — now carries the provider alongside
+  the id. Movie cover files are namespaced by provider too, so cached posters
+  are re-downloaded once after the upgrade.
+
+  * packages/core/lib/database/migrations/migration_v62.dart (MigrationV62):
+    New — rebuilds `movies_cache` with `PRIMARY KEY (tmdb_id, source)` and
+    re-scopes the `collection_items` indexes so one film can come from two
+    providers.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers MigrationV62.
+  * packages/core/lib/models/data_source.dart (DataSource.tvdb): New source.
+  * packages/core/lib/models/movie.dart (Movie.source, Movie.fromTvdb,
+    Movie.fromDb, Movie.toDb, Movie.copyWith, Movie.posterThumbUrl): Identity is
+    now `(source, id)`; TheTVDB posters use the `_t` thumbnail suffix.
+  * packages/core/lib/models/media_type.dart (MediaType.isMultiSource): Includes
+    movie.
+  * packages/core/lib/models/collection_item.dart (CollectionItem._resolvedMedia):
+    Reads the movie's own source instead of assuming TMDB.
+  * packages/core/lib/models/tv_show.dart (TvShow.fromTvdb),
+    tv_season.dart (TvSeason.fromTvdb), tv_episode.dart (TvEpisode.tryFromTvdb):
+    New factories.
+  * packages/core/lib/utils/tvdb_json.dart (tvdbNumericId, tvdbTranslation,
+    tvdbTranslationContainers, tvdbImageUrl, tvdbThumbUrl, tvdbRemoteId,
+    tvdbNames, tvdbYear, tvdbCodesFor, tvdbRecordUrl): New — TheTVDB never
+    localizes a response, and `/filter` returns bare image paths while
+    `/search` returns absolute URLs.
+  * packages/core/lib/database/sparse_upsert.dart (buildPreservingUpsert): New
+    — a cache upsert that keeps columns a sparser payload left null.
+  * lib/features/search/filters/tvdb_status_filter.dart (TvdbStatusFilter):
+    New; lib/l10n/app_*.arb (movieStatusReleased, movieStatusCompleted,
+    movieStatusPostProduction, movieStatusPreProduction,
+    movieStatusAnnounced): Movie production-status labels.
+  * packages/core/lib/database/dao/movie_dao.dart (MovieDao.getMovieByTmdbId,
+    MovieDao.upsertMovie, MovieDao.upsertMovies): Keyed by id and source, with a
+    preserving upsert so a search hit cannot blank a cached runtime or overview.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionCovers, CollectionDao._loadJoinedData),
+    packages/core/lib/database/dao/stats_dao.dart
+    (StatsDao.getEstimatedMinutes): Source-qualified `movies_cache` joins — an
+    unqualified one matched both providers' rows, duplicating a cover and
+    double-counting a film's runtime.
+  * lib/core/services/export_service.dart
+    (ExportService._collectMediaData): Keys exported movies by `source:id` so
+    two providers' films both survive a full export.
+  * lib/features/mood_grids/widgets/mood_grid_cell_media.dart,
+    lib/data/repositories/canvas_repository.dart
+    (CanvasRepository._loadMediaData),
+    packages/core/lib/models/canvas_item.dart (CanvasItem.mediaCacheId),
+    lib/features/recommendations/widgets/recommendation_row.dart: Resolve and
+    cache a film by provider, not by id alone.
+  * lib/core/import/import_writer.dart (ImportWriter.itemKey,
+    ImportWriteResult.idFor, ImportCandidate.source),
+    lib/core/import/sources/hardcover/hardcover_import_service.dart,
+    lib/core/import/sources/simkl/simkl_import_service.dart: Import identity
+    includes the provider, matching the unique index — a re-import no longer
+    updates another provider's row that shares the numeric id.
+  * lib/core/services/kodi_sync_service.dart (KodiSyncService._doSync,
+    KodiSyncService._syncItemToCollection): Kodi resolves to TMDB ids, so its
+    lookups and inserts are pinned to TMDB.
+  * lib/features/collections/widgets/recommendations_section.dart,
+    lib/features/search/widgets/discover_feed.dart,
+    lib/features/recommendations/providers/recommendations_provider.dart
+    (collectedRecommendationIdsProvider),
+    lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._addRecommendation): The "already in collection"
+    mark on a TMDB recommendation only counts TMDB placements.
+  * lib/core/api/tvdb/tvdb_http_client.dart (TvdbHttpClient): New — exchanges the
+    key for a bearer token, re-logs in once on 401 and retries.
+  * lib/core/api/tvdb/tvdb_search_api.dart (TvdbSearchApi),
+    tvdb_movies_api.dart (TvdbMoviesApi), tvdb_series_api.dart (TvdbSeriesApi),
+    tvdb_types.dart (TvdbApiException): New.
+  * lib/core/api/tvdb_api.dart (TvdbApi, tvdbApiProvider): New facade.
+  * lib/core/api/episode_source/tvdb_episode_source.dart (TvdbEpisodeSource):
+    New; lib/core/api/episode_source/tv_episode_source.dart
+    (tvEpisodeSourceResolverProvider): Routes TheTVDB items to it.
+  * lib/features/search/sources/tvdb_movies_source.dart (TvdbMoviesSource),
+    tvdb_series_source.dart (TvdbSeriesSource),
+    lib/features/search/filters/tvdb_genre_filter.dart (TvdbGenreFilter,
+    tvdbGenresProvider): New; search_sources.dart (searchSources): Registers
+    both after TMDB so TMDB stays primary.
+  * lib/features/search/providers/browse_provider.dart
+    (BrowseNotifier._keylessSourceIds): A provider without its mandatory key
+    starts switched off.
+  * lib/features/search/handlers/movie_handler.dart (MovieHandler): Passes the
+    source through and namespaces the cover id.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.tvdbApiKey, SettingsState.tvdbApiKey, SettingsState.hasTvdbKey,
+    SettingsState.isTvdbKeyBuiltIn, SettingsNotifier.setTvdbApiKey,
+    SettingsNotifier.validateTvdbKey,
+    SettingsNotifier.resetTvdbApiKeyToDefault, SettingsNotifier.setAppLanguage):
+    Key storage and validation; the app language picks which TheTVDB
+    translation titles and overviews come from.
+  * lib/features/settings/content/credentials_content.dart
+    (_CredentialsContentState._buildTvdbSection): Key field, Test and reset.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._apiKeyStates): Counts TheTVDB.
+  * lib/core/services/config_service.dart (ConfigService._settingsKeys): The key
+    travels with settings sync and backup.
+  * lib/core/services/api_key_initializer.dart (ApiKeys.tvdbApiKey),
+    lib/shared/constants/api_defaults.dart (ApiDefaults.tvdbApiKey,
+    ApiDefaults.hasTvdbKey): Built-in key via `--dart-define=TVDB_API_KEY`.
+  * lib/core/services/import_service.dart (ImportService._fetchMovie,
+    ImportService._fetchTvShow): Imported items are fetched from the provider
+    they were exported from.
+  * lib/features/collections/helpers/collection_actions.dart
+    (refreshItemFromApi): Refreshes a movie through its own provider.
+  * lib/core/services/kodi_sync_service.dart
+    (KodiSyncService._resolveTmdbId): Falls back to the tvdb id, which Kodi's
+    TVDB scraper leaves on libraries with no TMDB or IMDB id.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
+    lib/features/settings/content/credits_content.dart (CreditsContent),
+    lib/features/welcome/widgets/welcome_step_sources.dart: Attribution card
+    (required by the free tier licence) and wizard entry.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (credentialsTvdbSection, credentialsEnterTvdbKey,
+    credentialsTvdbKeyValid, credentialsTvdbKeyInvalid, welcomeApiTvdbDesc,
+    welcomeSourceDescTvdb, creditsTvdbAttribution): New keys.
+
 - **Hidden collections — keep a collection out of sight without deleting it**
 
   A collection can be marked hidden through right-click / long-press on its

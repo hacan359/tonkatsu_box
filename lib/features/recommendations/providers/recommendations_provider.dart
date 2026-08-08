@@ -869,8 +869,11 @@ final AutoDisposeFutureProvider<Set<String>>
     ref.watch(collectedAnimeIdsProvider.future),
     ref.watch(collectedMangaIdsProvider.future),
   ).wait;
+  // Candidates all come from TMDB discover, so only TMDB placements count —
+  // a TheTVDB film sharing a numeric id is a different film.
   return <String>{
-    for (final int id in movies.keys) movieTasteId(id),
+    for (final int id in movies.idsFromSource(DataSource.tmdb))
+      movieTasteId(id),
     for (final int id in tv.keys) tvTasteId(id),
     for (final MapEntry<int, List<CollectedItemInfo>> e in anime.entries)
       for (final CollectedItemInfo info in e.value)

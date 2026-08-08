@@ -71,6 +71,7 @@ class ConfigService {
     SettingsKeys.lastSync,
     SettingsKeys.steamGridDbApiKey,
     SettingsKeys.tmdbApiKey,
+    SettingsKeys.tvdbApiKey,
     SettingsKeys.comicVineApiKey,
     SettingsKeys.googleBooksApiKey,
     SettingsKeys.hardcoverApiKey,

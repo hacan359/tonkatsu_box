@@ -1,5 +1,6 @@
 import 'data_source.dart';
 import '../utils/html_text.dart';
+import '../utils/tvdb_json.dart';
 import '../utils/tvmaze_json.dart';
 
 /// One episode of a TV show season.
@@ -74,6 +75,30 @@ class TvEpisode {
       stillUrl: tvMazeImageUrl(json['image']),
       runtime: json['runtime'] as int?,
       source: DataSource.tvmaze,
+    );
+  }
+
+  /// From a TheTVDB `/series/{id}/episodes/...` entry; null when the episode
+  /// number is missing. Localized episode names are sparse upstream, so the
+  /// English `name` is used as-is.
+  static TvEpisode? tryFromTvdb(
+    Map<String, dynamic> json, {
+    required int showId,
+  }) {
+    final int? number = json['number'] as int?;
+    if (number == null) return null;
+
+    final String? aired = json['aired'] as String?;
+    return TvEpisode(
+      tmdbShowId: showId,
+      seasonNumber: json['seasonNumber'] as int? ?? 0,
+      episodeNumber: number,
+      name: json['name'] as String? ?? '',
+      overview: json['overview'] as String?,
+      airDate: (aired == null || aired.isEmpty) ? null : aired,
+      stillUrl: tvdbImageUrl(json['image']),
+      runtime: json['runtime'] as int?,
+      source: DataSource.tvdb,
     );
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/data_source.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/item_status_logic.dart';
 import 'package:core/models/kodi_movie.dart';
@@ -218,10 +219,13 @@ class KodiSyncService {
           final String comment = _buildComment(movie);
           final ItemStatus status = _resolveStatus(movie);
 
+          // Kodi always resolves to a TMDB id, so a TheTVDB film sharing the
+          // number is a different film and must not be updated in its place.
           final CollectionItem? existingInMain = await _db.findCollectionItem(
             collectionId: targetCollectionId,
             mediaType: MediaType.movie,
             externalId: tmdbId,
+            source: DataSource.tmdb,
           );
 
           if (existingInMain != null) {
@@ -240,6 +244,7 @@ class KodiSyncService {
               collectionId: targetCollectionId,
               mediaType: MediaType.movie,
               externalId: tmdbId,
+              source: DataSource.tmdb,
               status: status,
             );
             if (itemId != null) {
@@ -328,6 +333,7 @@ class KodiSyncService {
       collectionId: collectionId,
       mediaType: MediaType.movie,
       externalId: tmdbId,
+      source: DataSource.tmdb,
     );
 
     if (existing != null) {
@@ -339,6 +345,7 @@ class KodiSyncService {
       collectionId: collectionId,
       mediaType: MediaType.movie,
       externalId: tmdbId,
+      source: DataSource.tmdb,
       status: status,
     );
 
@@ -390,6 +397,17 @@ class KodiSyncService {
         if (result.movies.isNotEmpty) return result.movies.first.tmdbId;
       } on TmdbApiException catch (e) {
         _log.fine('findByImdbId failed for ${movie.title}: $e');
+      }
+    }
+
+    // Kodi's TVDB scraper leaves only a tvdb id on some libraries.
+    if (movie.uniqueIds.tvdbId != null) {
+      try {
+        final TmdbFindResult result =
+            await _tmdbApi.findByTvdbId(movie.uniqueIds.tvdbId!);
+        if (result.movies.isNotEmpty) return result.movies.first.tmdbId;
+      } on TmdbApiException catch (e) {
+        _log.fine('findByTvdbId failed for ${movie.title}: $e');
       }
     }
 

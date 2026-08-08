@@ -1,5 +1,6 @@
 import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,7 +11,7 @@ import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
 import 'media_action_handler.dart';
 
-/// Movie source handler (TMDB).
+/// Movie source handler (TMDB, TheTVDB).
 ///
 /// Handles both [MediaType.movie] and [MediaType.animation]
 /// (with `platformId = AnimationSource.movie`). The "already in" check
@@ -55,6 +56,7 @@ class MovieHandler implements MediaActionHandler {
       movie.tmdbId,
       collectedMovieIdsProvider,
       collectedAnimationIdsProvider,
+      source: movie.source,
     );
     if (!context.mounted) return;
 
@@ -73,10 +75,15 @@ class MovieHandler implements MediaActionHandler {
       platformId: mediaType == MediaType.animation
           ? AnimationSource.movie
           : null,
+      source: movie.source,
       title: movie.title,
       upsert: () => _ref.read(movieDaoProvider).upsertMovie(movie),
       imageType: ImageType.moviePoster,
-      imageId: movie.tmdbId.toString(),
+      imageId: coverImageId(
+        mediaType: mediaType,
+        externalId: movie.tmdbId,
+        source: movie.source,
+      ),
       imageUrl: movie.posterUrl,
     );
   }
@@ -110,10 +117,15 @@ class MovieHandler implements MediaActionHandler {
       platformId: mediaType == MediaType.animation
           ? AnimationSource.movie
           : null,
+      source: movie.source,
       title: movie.title,
       upsert: () => _ref.read(movieDaoProvider).upsertMovie(movie),
       imageType: ImageType.moviePoster,
-      imageId: movie.tmdbId.toString(),
+      imageId: coverImageId(
+        mediaType: mediaType,
+        externalId: movie.tmdbId,
+        source: movie.source,
+      ),
       imageUrl: movie.posterUrl,
     );
   }

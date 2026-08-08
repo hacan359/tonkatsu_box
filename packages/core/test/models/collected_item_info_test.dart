@@ -111,10 +111,10 @@ void main() {
     });
 
     test('should keep every placement for a single-source type', () {
-      // Movies come from TMDB alone, so their ids never need narrowing.
+      // Visual novels come from VNDB alone, so their ids never need narrowing.
       final List<CollectedItemInfo> result = bothProviders.forSource(
-        MediaType.movie,
-        DataSource.tmdb,
+        MediaType.visualNovel,
+        DataSource.vndb,
       );
 
       expect(result, bothProviders);

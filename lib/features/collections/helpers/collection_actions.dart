@@ -30,6 +30,7 @@ import '../../../core/api/mangabaka_api.dart';
 import '../../../core/api/mangadex_api.dart';
 import '../../../core/api/openlibrary_api.dart';
 import '../../../core/api/tmdb_api.dart';
+import '../../../core/api/tvdb_api.dart';
 import '../../../core/api/vndb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/export_service.dart';
@@ -643,8 +644,9 @@ class CollectionActions {
           if (game == null) return _RefreshOutcome.notFound();
           await db.gameDao.upsertGame(game);
         case MediaType.movie:
-          final Movie? movie =
-              await ref.read(tmdbApiProvider).getMovie(item.externalId);
+          final Movie? movie = item.source == DataSource.tvdb
+              ? await ref.read(tvdbApiProvider).getMovie(item.externalId)
+              : await ref.read(tmdbApiProvider).getMovie(item.externalId);
           if (movie == null) return _RefreshOutcome.notFound();
           await db.movieDao.upsertMovie(movie);
         case MediaType.tvShow:

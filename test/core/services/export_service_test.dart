@@ -572,7 +572,7 @@ void main() {
             )).thenAnswer((_) async => gameBytes);
         when(() => mockImageCache.readImageBytes(
               ImageType.moviePoster,
-              '200',
+              'tmdb_200',
             )).thenAnswer((_) async => movieBytes);
         when(() => mockImageCache.readImageBytes(
               ImageType.tvShowPoster,
@@ -613,7 +613,7 @@ void main() {
 
         expect(xcoll.images.length, equals(3));
         expect(xcoll.images.containsKey('game_covers/100'), isTrue);
-        expect(xcoll.images.containsKey('movie_posters/200'), isTrue);
+        expect(xcoll.images.containsKey('movie_posters/tmdb_200'), isTrue);
         expect(xcoll.images.containsKey('tv_show_posters/tmdb_300'), isTrue);
       });
 
@@ -1162,6 +1162,52 @@ void main() {
         expect(movieData['tmdb_id'], equals(550));
         expect(movieData['title'], equals('Fight Club'));
         expect(movieData.containsKey('cached_at'), isFalse);
+      });
+
+      test('exports both providers of a shared movie id', () async {
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+        );
+
+        const Movie tmdbMovie = Movie(tmdbId: 113, title: 'TMDB film');
+        const Movie tvdbMovie = Movie(
+          tmdbId: 113,
+          title: 'TheTVDB film',
+          source: DataSource.tvdb,
+        );
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestCollectionItem(
+            id: 1,
+            mediaType: MediaType.movie,
+            externalId: 113,
+            platformId: null,
+            source: DataSource.tmdb,
+            movie: tmdbMovie,
+          ),
+          createTestCollectionItem(
+            id: 2,
+            mediaType: MediaType.movie,
+            externalId: 113,
+            platformId: null,
+            source: DataSource.tvdb,
+            movie: tvdbMovie,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        final List<dynamic> movies = xcoll.media['movies'] as List<dynamic>;
+        expect(movies.length, equals(2));
+        expect(
+          movies
+              .map((dynamic m) => (m as Map<String, dynamic>)['source'])
+              .toSet(),
+          equals(<String>{'tmdb', 'tvdb'}),
+        );
       });
 
       test('должен включить tv_show данные через toDb()', () async {

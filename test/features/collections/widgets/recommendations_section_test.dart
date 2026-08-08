@@ -1,6 +1,5 @@
-// Widget tests for RecommendationsSection — owned badge (check_circle).
-
 import 'package:core/models/collected_item_info.dart';
+import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
@@ -168,6 +167,33 @@ void main() {
 
         await tester.pumpWidget(
           buildWidget(mediaType: MediaType.movie),
+        );
+
+        await pumpUntilResolved(tester);
+
+        expect(find.byIcon(Icons.check), findsNothing);
+      });
+
+      testWidgets('a TheTVDB placement does not badge a TMDB recommendation',
+          (WidgetTester tester) async {
+        when(() => mockTmdbApi.getMovieRecommendations(any(),
+                page: any(named: 'page')))
+            .thenAnswer((_) async => <Movie>[movieOwned, movieNotOwned]);
+
+        await tester.pumpWidget(
+          buildWidget(
+            mediaType: MediaType.movie,
+            movieIds: <int, List<CollectedItemInfo>>{
+              100: <CollectedItemInfo>[
+                const CollectedItemInfo(
+                  recordId: 1,
+                  collectionId: 1,
+                  collectionName: 'Favorites',
+                  source: DataSource.tvdb,
+                ),
+              ],
+            },
+          ),
         );
 
         await pumpUntilResolved(tester);

@@ -146,13 +146,15 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                   itemBuilder: (BuildContext context, int index) {
                     final RecommendedItem item = widget.items[index];
                     final bool isOwned = widget.ownedIds.contains(item.tasteId);
-                    // Movies cache by a bare id string for historical reasons;
-                    // every other type uses the shared coverImageId scheme.
                     final ({ImageType type, String id}) cache =
                         switch (item.mediaType) {
                           MediaType.movie => (
                             type: ImageType.moviePoster,
-                            id: item.externalId.toString(),
+                            id: coverImageId(
+                              mediaType: MediaType.movie,
+                              externalId: item.externalId,
+                              source: item.source,
+                            ),
                           ),
                           MediaType.anime => (
                             type: ImageType.animeCover,

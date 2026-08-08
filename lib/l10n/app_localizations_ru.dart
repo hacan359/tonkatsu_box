@@ -174,6 +174,21 @@ class SRu extends S {
   String get status => 'Статус';
 
   @override
+  String get movieStatusReleased => 'Вышел';
+
+  @override
+  String get movieStatusCompleted => 'Завершён';
+
+  @override
+  String get movieStatusPostProduction => 'Съёмки / постпродакшн';
+
+  @override
+  String get movieStatusPreProduction => 'Препродакшн';
+
+  @override
+  String get movieStatusAnnounced => 'Анонсирован';
+
+  @override
   String get sortStatusDesc => 'Сначала активные';
 
   @override
@@ -770,7 +785,13 @@ class SRu extends S {
   String get credentialsTmdbSection => 'TMDB API (фильмы и сериалы)';
 
   @override
+  String get credentialsTvdbSection => 'TheTVDB API (фильмы и сериалы)';
+
+  @override
   String get credentialsEnterTmdbKey => 'Введите ваш ключ TMDB API (v3)';
+
+  @override
+  String get credentialsEnterTvdbKey => 'Введите ваш ключ TheTVDB API (v4)';
 
   @override
   String get credentialsComicVineSection => 'ComicVine API (комиксы)';
@@ -855,6 +876,12 @@ class SRu extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'Ключ TMDB API недействителен';
+
+  @override
+  String get credentialsTvdbKeyValid => 'Ключ TheTVDB API действителен';
+
+  @override
+  String get credentialsTvdbKeyInvalid => 'Ключ TheTVDB API недействителен';
 
   @override
   String get credentialsComicVineKeyValid => 'Ключ ComicVine API действителен';
@@ -1433,6 +1460,10 @@ class SRu extends S {
   @override
   String get creditsTmdbAttribution =>
       'Приложение использует TMDB API, но не одобрено и не сертифицировано TMDB.';
+
+  @override
+  String get creditsTvdbAttribution =>
+      'Метаданные предоставлены TheTVDB. Поддержите проект: дополняйте данные или оформите подписку.';
 
   @override
   String get creditsTvMazeAttribution =>
@@ -2823,6 +2854,9 @@ class SRu extends S {
   String get welcomeApiTmdbDesc => 'Фильмы, сериалы и аниме';
 
   @override
+  String get welcomeApiTvdbDesc => 'Фильмы и сериалы, свои эпизоды';
+
+  @override
   String get welcomeApiComicVineDesc => 'Комиксы и графические романы';
 
   @override
@@ -2980,6 +3014,9 @@ class SRu extends S {
 
   @override
   String get welcomeSourceDescTvMaze => 'Сериалы.';
+
+  @override
+  String get welcomeSourceDescTvdb => 'Фильмы и сериалы, со своими эпизодами.';
 
   @override
   String get welcomeSourceDescIgdb => 'Видеоигры на любой платформе.';

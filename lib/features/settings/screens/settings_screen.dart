@@ -744,6 +744,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         settings.hasCredentials && !settings.isIgdbKeyBuiltIn,
         settings.hasSteamGridDbKey && !settings.isSteamGridDbKeyBuiltIn,
         settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
+        settings.hasTvdbKey && !settings.isTvdbKeyBuiltIn,
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
         settings.hasHardcoverKey,

@@ -1,4 +1,5 @@
 import 'data_source.dart';
+import '../utils/tvdb_json.dart';
 import '../utils/tvmaze_json.dart';
 
 /// One season of a TV show.
@@ -41,6 +42,23 @@ class TvSeason {
       posterUrl: tvMazeImageUrl(json['image']),
       airDate: json['premiereDate'] as String?,
       source: DataSource.tvmaze,
+    );
+  }
+
+  /// From a season inside `/series/{id}/extended`. TheTVDB carries no episode
+  /// count there, so [episodeCount] is filled by the caller if it knows it.
+  factory TvSeason.fromTvdb(
+    Map<String, dynamic> json, {
+    required int showId,
+    int? episodeCount,
+  }) {
+    return TvSeason(
+      tmdbShowId: showId,
+      seasonNumber: json['number'] as int? ?? 0,
+      name: json['name'] as String?,
+      episodeCount: episodeCount,
+      posterUrl: tvdbImageUrl(json['image']),
+      source: DataSource.tvdb,
     );
   }
 

@@ -142,12 +142,11 @@ class _DiscoverRowState extends State<DiscoverRow> {
                     cacheImageType: item.isMovie
                         ? ImageType.moviePoster
                         : ImageType.tvShowPoster,
-                    cacheImageId: item.isMovie
-                        ? item.tmdbId.toString()
-                        : coverImageId(
-                            mediaType: MediaType.tvShow,
-                            externalId: item.tmdbId,
-                          ),
+                    cacheImageId: coverImageId(
+                      mediaType:
+                          item.isMovie ? MediaType.movie : MediaType.tvShow,
+                      externalId: item.tmdbId,
+                    ),
                     year: item.year,
                     apiRating: double.tryParse(item.rating ?? ''),
                     isInCollection: item.isOwned,

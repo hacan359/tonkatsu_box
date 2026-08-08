@@ -259,7 +259,8 @@ class SimklImportService implements ImportSource {
         simklUrl: _simklUrl(entry, 'anime'),
         mode: options.mode,
       ));
-      _trackHold(held, entry, MediaType.anime, anime.id, null);
+      _trackHold(held, entry, MediaType.anime, anime.id, null,
+          DataSource.kitsu);
       if (entry.hasEpisodeMarks || entry.isCompleted) {
         episodeMarks.add(_EpisodeMarks.forAnime(
           entry,
@@ -471,6 +472,7 @@ class SimklImportService implements ImportSource {
       mediaType: mediaType,
       externalId: externalId,
       platformId: platformId,
+      source: source,
       label: entry.title.isNotEmpty ? entry.title : '#$externalId',
       insertRow: _insertRow(entry, status,
           mediaType: mediaType,
@@ -607,10 +609,11 @@ class SimklImportService implements ImportSource {
     SimklEntry entry,
     MediaType mediaType,
     int externalId,
-    int? platformId,
-  ) {
+    int? platformId, [
+    DataSource? source,
+  ]) {
     if (entry.isOnHold) {
-      held.add(_HeldItem(mediaType, externalId, platformId));
+      held.add(_HeldItem(mediaType, externalId, platformId, source));
     }
   }
 
@@ -745,7 +748,7 @@ class SimklImportService implements ImportSource {
     try {
       final List<int> itemIds = <int>[
         for (final _HeldItem h in held)
-          ?write.idFor(h.mediaType, h.externalId, h.platformId),
+          ?write.idFor(h.mediaType, h.externalId, h.platformId, h.source),
       ];
       if (itemIds.isEmpty) return;
       final int tagId =
@@ -800,11 +803,17 @@ class _MappingLane {
 }
 
 class _HeldItem {
-  const _HeldItem(this.mediaType, this.externalId, this.platformId);
+  const _HeldItem(
+    this.mediaType,
+    this.externalId,
+    this.platformId,
+    this.source,
+  );
 
   final MediaType mediaType;
   final int externalId;
   final int? platformId;
+  final DataSource? source;
 }
 
 class _EpisodeMarks {

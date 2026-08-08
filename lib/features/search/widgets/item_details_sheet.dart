@@ -75,8 +75,13 @@ class ItemDetailsSheet extends StatelessWidget {
       extraInfoIcon: icon,
       posterUrl: movie.posterUrl,
       cacheImageType: ImageType.moviePoster,
-      cacheImageId: movie.tmdbId.toString(),
+      cacheImageId: coverImageId(
+        mediaType: isAnimation ? MediaType.animation : MediaType.movie,
+        externalId: movie.tmdbId,
+        source: movie.source,
+      ),
       externalUrl: movie.externalUrl,
+      dataSource: movie.source,
       backdropUrl: movie.backdropUrl,
       onAddToCollection: onAddToCollection,
     );
