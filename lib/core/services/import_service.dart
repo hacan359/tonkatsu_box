@@ -47,6 +47,7 @@ import '../api/mangabaka_api.dart';
 import '../api/mangadex_api.dart';
 import '../api/openlibrary_api.dart';
 import '../api/tmdb_api.dart';
+import '../api/tvdb_api.dart';
 import '../api/tvmaze_api.dart';
 import '../api/vndb_api.dart';
 import '../database/database_service.dart';
@@ -67,6 +68,7 @@ final Provider<ImportService> importServiceProvider =
     vndbApi: ref.watch(vndbApiProvider),
     aniListApi: ref.watch(aniListApiProvider),
     tvMazeApi: ref.watch(tvMazeApiProvider),
+    tvdbApi: ref.watch(tvdbApiProvider),
     kitsuApi: ref.watch(kitsuApiProvider),
     mangaBakaApi: ref.watch(mangaBakaApiProvider),
     mangaDexApi: ref.watch(mangaDexApiProvider),
@@ -147,12 +149,14 @@ class ImportService {
     ImageCacheService? imageCacheService,
     TrackerDao? trackerDao,
     CollectionHeroService? heroService,
+    TvdbApi? tvdbApi,
   })  : _repository = repository,
         _igdbApi = igdbApi,
         _tmdbApi = tmdbApi,
         _vndbApi = vndbApi,
         _aniListApi = aniListApi,
         _tvMazeApi = tvMazeApi,
+        _tvdbApi = tvdbApi,
         _kitsuApi = kitsuApi,
         _mangaBakaApi = mangaBakaApi,
         _mangaDexApi = mangaDexApi,
@@ -173,6 +177,7 @@ class ImportService {
   final VndbApi? _vndbApi;
   final AniListApi? _aniListApi;
   final TvMazeApi? _tvMazeApi;
+  final TvdbApi? _tvdbApi;
   final KitsuApi? _kitsuApi;
   final MangaBakaApi? _mangaBakaApi;
   final MangaDexApi? _mangaDexApi;
@@ -831,7 +836,7 @@ class ImportService {
     ImportProgressCallback? onProgress,
   }) async {
     final List<int> gameIds = <int>[];
-    final List<int> movieIds = <int>[];
+    final List<_MediaRef> movieRefs = <_MediaRef>[];
     final List<String> vnIds = <String>[];
     final List<_MediaRef> tvRefs = <_MediaRef>[];
     final List<_MediaRef> mangaRefs = <_MediaRef>[];
@@ -857,7 +862,7 @@ class ImportService {
         case MediaType.game:
           gameIds.add(externalId);
         case MediaType.movie:
-          movieIds.add(externalId);
+          movieRefs.add(ref);
         case MediaType.tvShow:
           tvRefs.add(ref);
         case MediaType.animation:
@@ -865,7 +870,7 @@ class ImportService {
           if ((item['platform_id'] as int?) == AnimationSource.tvShow) {
             tvRefs.add(ref);
           } else {
-            movieIds.add(externalId);
+            movieRefs.add(ref);
           }
         case MediaType.visualNovel:
           vnIds.add('v$externalId');
@@ -893,28 +898,21 @@ class ImportService {
     }
 
     final List<Movie> movies = <Movie>[];
-    if (movieIds.isNotEmpty && _tmdbApi != null) {
-      final TmdbApi tmdbApi = _tmdbApi;
+    if (movieRefs.isNotEmpty) {
       onProgress?.call(ImportProgress(
         stage: ImportStage.fetchingMovies,
         current: 0,
-        total: movieIds.length,
-        message: 'Fetching ${movieIds.length} movies from TMDB...',
+        total: movieRefs.length,
+        message: 'Fetching ${movieRefs.length} movies...',
       ));
 
-      for (int i = 0; i < movieIds.length; i++) {
-        try {
-          final Movie? movie = await tmdbApi.getMovie(movieIds[i]);
-          if (movie != null) {
-            movies.add(movie);
-          }
-        } on TmdbApiException {
-          // Skip unavailable movies so one failure doesn't abort the batch.
-        }
+      for (int i = 0; i < movieRefs.length; i++) {
+        final Movie? movie = await _fetchMovie(movieRefs[i]);
+        if (movie != null) movies.add(movie);
         onProgress?.call(ImportProgress(
           stage: ImportStage.fetchingMovies,
           current: i + 1,
-          total: movieIds.length,
+          total: movieRefs.length,
         ));
       }
     }
@@ -1046,10 +1044,27 @@ class ImportService {
     }
   }
 
+  Future<Movie?> _fetchMovie(_MediaRef ref) async {
+    try {
+      if (ref.source == DataSource.tvdb) {
+        return await _tvdbApi?.getMovie(ref.externalId);
+      }
+      return await _tmdbApi?.getMovie(ref.externalId);
+    } on Exception catch (e) {
+      // One unavailable movie must not abort the batch.
+      _log.warning('Failed to fetch movie ${ref.externalId} '
+          'from ${ref.source.name}: $e');
+      return null;
+    }
+  }
+
   Future<TvShow?> _fetchTvShow(_MediaRef ref) async {
     try {
       if (ref.source == DataSource.tvmaze) {
         return await _tvMazeApi?.getShow(ref.externalId);
+      }
+      if (ref.source == DataSource.tvdb) {
+        return await _tvdbApi?.getSeries(ref.externalId);
       }
       return await _tmdbApi?.getTvShow(ref.externalId);
     } on Exception catch (e) {

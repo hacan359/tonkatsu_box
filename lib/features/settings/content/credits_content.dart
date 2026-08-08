@@ -52,6 +52,12 @@ class CreditsContent extends StatelessWidget {
         url: 'https://www.tvmaze.com/',
       ),
       (
+        source: DataSource.tvdb,
+        description: l10n.creditsTvdbAttribution,
+        linkLabel: 'thetvdb.com',
+        url: 'https://thetvdb.com/',
+      ),
+      (
         source: DataSource.igdb,
         description: l10n.creditsIgdbAttribution,
         linkLabel: 'igdb.com',

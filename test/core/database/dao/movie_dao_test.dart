@@ -2,7 +2,6 @@ import 'package:core/database/dao/movie_dao.dart';
 import 'package:core/models/movie.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -22,13 +21,7 @@ void main() {
   void stubTransaction() {
     mockDb.stubTransaction(mockTxn);
     when(() => mockTxn.batch()).thenReturn(mockBatch);
-    when(
-      () => mockBatch.insert(
-        any(),
-        any(),
-        conflictAlgorithm: any(named: 'conflictAlgorithm'),
-      ),
-    ).thenReturn(null);
+    when(() => mockBatch.rawInsert(any(), any())).thenReturn(null);
     when(() => mockBatch.commit(noResult: true))
         .thenAnswer((_) async => <Object?>[]);
   }
@@ -39,8 +32,8 @@ void main() {
         when(
           () => mockDb.query(
             'movies_cache',
-            where: 'tmdb_id = ?',
-            whereArgs: <Object?>[999],
+            where: 'tmdb_id = ? AND source = ?',
+            whereArgs: <Object?>[999, 'tmdb'],
             limit: 1,
           ),
         ).thenAnswer((_) async => <Map<String, dynamic>>[]);
@@ -66,8 +59,8 @@ void main() {
         when(
           () => mockDb.query(
             'movies_cache',
-            where: 'tmdb_id = ?',
-            whereArgs: <Object?>[550],
+            where: 'tmdb_id = ? AND source = ?',
+            whereArgs: <Object?>[550, 'tmdb'],
             limit: 1,
           ),
         ).thenAnswer((_) async => <Map<String, dynamic>>[row]);
@@ -81,25 +74,18 @@ void main() {
     });
 
     group('upsertMovie', () {
-      test('inserts with replace', () async {
+      test('writes an upsert keyed by id and source', () async {
         const Movie movie = Movie(tmdbId: 1, title: 'Test');
-        when(
-          () => mockDb.insert(
-            'movies_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).thenAnswer((_) async => 1);
+        final List<String> sql = <String>[];
+        when(() => mockDb.rawInsert(any(), any())).thenAnswer((Invocation i) {
+          sql.add(i.positionalArguments.first as String);
+          return Future<int>.value(1);
+        });
 
         await dao.upsertMovie(movie);
 
-        verify(
-          () => mockDb.insert(
-            'movies_cache',
-            movie.toDb(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(1);
+        expect(sql.single, contains('INSERT OR REPLACE INTO movies_cache'));
+        expect(sql.single, contains('source'));
       });
     });
 
@@ -118,13 +104,7 @@ void main() {
           Movie(tmdbId: 2, title: 'M2'),
         ]);
 
-        verify(
-          () => mockBatch.insert(
-            'movies_cache',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(2);
+        verify(() => mockBatch.rawInsert(any(), any())).called(2);
         verify(() => mockBatch.commit(noResult: true)).called(1);
       });
     });

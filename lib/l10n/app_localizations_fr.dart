@@ -174,6 +174,21 @@ class SFr extends S {
   String get status => 'Statut';
 
   @override
+  String get movieStatusReleased => 'Sorti';
+
+  @override
+  String get movieStatusCompleted => 'Terminé';
+
+  @override
+  String get movieStatusPostProduction => 'Tournage / post-production';
+
+  @override
+  String get movieStatusPreProduction => 'Pré-production';
+
+  @override
+  String get movieStatusAnnounced => 'Annoncé';
+
+  @override
   String get sortStatusDesc => 'Actif (↓)';
 
   @override
@@ -765,7 +780,13 @@ class SFr extends S {
   String get credentialsTmdbSection => 'API TMDB (Films et TV)';
 
   @override
+  String get credentialsTvdbSection => 'API TheTVDB (films et séries)';
+
+  @override
   String get credentialsEnterTmdbKey => 'Entrez votre clé API TMDB (v3)';
+
+  @override
+  String get credentialsEnterTvdbKey => 'Saisissez votre clé API TheTVDB (v4)';
 
   @override
   String get credentialsComicVineSection => 'API ComicVine (Comics)';
@@ -853,6 +874,12 @@ class SFr extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'La clé API TMDB est invalide';
+
+  @override
+  String get credentialsTvdbKeyValid => 'La clé API TheTVDB est valide';
+
+  @override
+  String get credentialsTvdbKeyInvalid => 'La clé API TheTVDB est invalide';
 
   @override
   String get credentialsComicVineKeyValid => 'La clé API ComicVine est valide';
@@ -1431,6 +1458,10 @@ class SFr extends S {
   @override
   String get creditsTmdbAttribution =>
       'Ce produit utilise l\'API de TMDB mais n\'est ni approuvé ni certifié par TMDB.';
+
+  @override
+  String get creditsTvdbAttribution =>
+      'Métadonnées fournies par TheTVDB. Pensez à compléter les données ou à vous abonner.';
 
   @override
   String get creditsTvMazeAttribution =>
@@ -2803,6 +2834,9 @@ class SFr extends S {
   String get welcomeApiTmdbDesc => 'Films, séries et animes';
 
   @override
+  String get welcomeApiTvdbDesc => 'Films et séries, épisodes propres';
+
+  @override
   String get welcomeApiComicVineDesc => 'Comics et romans graphiques';
 
   @override
@@ -2962,6 +2996,10 @@ class SFr extends S {
 
   @override
   String get welcomeSourceDescTvMaze => 'Séries.';
+
+  @override
+  String get welcomeSourceDescTvdb =>
+      'Films et séries, avec ses propres épisodes.';
 
   @override
   String get welcomeSourceDescIgdb =>

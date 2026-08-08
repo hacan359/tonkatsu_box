@@ -113,8 +113,8 @@ Future<Map<int, MoodGridCellMedia>> resolveMoodGridCellMediaBatch(
   final Map<int, Game> games = <int, Game>{
     for (final Game g in await gamesF) g.id: g,
   };
-  final Map<int, Movie> movies = <int, Movie>{
-    for (final Movie m in await moviesF) m.tmdbId: m,
+  final Map<(int, DataSource), Movie> movies = <(int, DataSource), Movie>{
+    for (final Movie m in await moviesF) (m.tmdbId, m.source): m,
   };
   final Map<(int, DataSource), TvShow> tvShows = <(int, DataSource), TvShow>{
     for (final TvShow t in await tvShowsF) (t.tmdbId, t.source): t,
@@ -142,7 +142,10 @@ Future<Map<int, MoodGridCellMedia>> resolveMoodGridCellMediaBatch(
       case MediaType.game:
         return _gameMedia(games[id]);
       case MediaType.movie:
-        return _movieMedia(movies[id], placeholderIcon: Icons.movie_outlined);
+        return _movieMedia(
+          movies[(id, cell.source ?? DataSource.tmdb)],
+          placeholderIcon: Icons.movie_outlined,
+        );
       case MediaType.tvShow:
         return _tvShowMedia(
           tvShows[(id, cell.source ?? DataSource.tmdb)],
@@ -155,7 +158,10 @@ Future<Map<int, MoodGridCellMedia>> resolveMoodGridCellMediaBatch(
             placeholderIcon: Icons.animation,
           );
         }
-        return _movieMedia(movies[id], placeholderIcon: Icons.animation);
+        return _movieMedia(
+          movies[(id, cell.source ?? DataSource.tmdb)],
+          placeholderIcon: Icons.animation,
+        );
       case MediaType.visualNovel:
         return _visualNovelMedia(vns[id]);
       case MediaType.anime:

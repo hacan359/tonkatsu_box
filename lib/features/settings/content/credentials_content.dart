@@ -40,6 +40,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   String _clientSecret = '';
   String _steamGridDbApiKey = '';
   String _tmdbApiKey = '';
+
+  String _tvdbApiKey = '';
   String _comicVineApiKey = '';
   String _googleBooksApiKey = '';
   String _hardcoverApiKey = '';
@@ -51,11 +53,15 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   StatusType? _sgdbValidated;
   StatusType? _tmdbValidated;
+
+  StatusType? _tvdbValidated;
   StatusType? _comicVineValidated;
   StatusType? _googleBooksValidated;
   StatusType? _hardcoverValidated;
   bool _sgdbValidating = false;
   bool _tmdbValidating = false;
+
+  bool _tvdbValidating = false;
   bool _comicVineValidating = false;
   bool _googleBooksValidating = false;
   bool _hardcoverValidating = false;
@@ -71,6 +77,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         settings.isSteamGridDbKeyBuiltIn ? '' : (settings.steamGridDbApiKey ?? '');
     _tmdbApiKey =
         settings.isTmdbKeyBuiltIn ? '' : (settings.tmdbApiKey ?? '');
+    _tvdbApiKey =
+        settings.isTvdbKeyBuiltIn ? '' : (settings.tvdbApiKey ?? '');
     _comicVineApiKey = settings.comicVineApiKey ?? '';
     _googleBooksApiKey = settings.googleBooksApiKey ?? '';
     _hardcoverApiKey = settings.hardcoverApiKey ?? '';
@@ -95,6 +103,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSteamGridDbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildTmdbSection(settings, compact),
+        _buildTvdbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildComicVineSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
@@ -334,6 +343,73 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                         !settings.isTmdbKeyBuiltIn &&
                         ApiDefaults.hasTmdbKey)
                     ? _resetTmdbKey
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  Widget _buildTvdbSection(SettingsState settings, bool compact) {
+    return SettingsGroup(
+      title: S.of(context).credentialsTvdbSection,
+      children: <Widget>[
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconTvdbColor,
+          description: S.of(context).welcomeApiTvdbDesc,
+          sourceName: DataSource.tvdb.brandName,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            children: <Widget>[
+              InlineTextField(
+                label: S.of(context).credentialsApiKey,
+                value: _tvdbApiKey,
+                placeholder: settings.isTvdbKeyBuiltIn
+                    ? S.of(context).credentialsUsingBuiltInKey
+                    : S.of(context).credentialsEnterTvdbKey,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() {
+                    _tvdbApiKey = value;
+                    _tvdbValidated = null;
+                  });
+                  if (value.trim().isNotEmpty) {
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setTvdbApiKey(value.trim());
+                  }
+                },
+              ),
+              if (settings.isTvdbKeyBuiltIn) _buildOwnKeyHint(),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCredentialStatus(
+                compact: compact,
+                statusType: _keyStatusType(
+                  hasKey: settings.hasTvdbKey,
+                  isBuiltIn: settings.isTvdbKeyBuiltIn,
+                  validated: _tvdbValidated,
+                ),
+                statusLabel: _keyStatusLabel(
+                  hasKey: settings.hasTvdbKey,
+                  isBuiltIn: settings.isTvdbKeyBuiltIn,
+                  validated: _tvdbValidated,
+                ),
+                actionTooltip: S.of(context).test,
+                isLoading: _tvdbValidating,
+                onAction: settings.hasTvdbKey ? _validateTvdbKey : null,
+                onReset: (settings.hasTvdbKey &&
+                        !settings.isTvdbKeyBuiltIn &&
+                        ApiDefaults.hasTvdbKey)
+                    ? _resetTvdbKey
                     : null,
               ),
             ],
@@ -840,6 +916,33 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         .read(settingsNotifierProvider.notifier)
         .resetSteamGridDbApiKeyToDefault();
     setState(() => _steamGridDbApiKey = '');
+    context.showSnack(
+      S.of(context).credentialsResetToBuiltIn,
+      type: SnackType.success,
+    );
+  }
+
+  Future<void> _validateTvdbKey() async {
+    setState(() => _tvdbValidating = true);
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    final bool valid = await notifier.validateTvdbKey();
+    if (!mounted) return;
+    setState(() {
+      _tvdbValidating = false;
+      _tvdbValidated = valid ? StatusType.success : StatusType.error;
+    });
+    context.showSnack(
+      valid
+          ? S.of(context).credentialsTvdbKeyValid
+          : S.of(context).credentialsTvdbKeyInvalid,
+      type: valid ? SnackType.success : SnackType.error,
+    );
+  }
+
+  void _resetTvdbKey() {
+    ref.read(settingsNotifierProvider.notifier).resetTvdbApiKeyToDefault();
+    setState(() => _tvdbApiKey = '');
     context.showSnack(
       S.of(context).credentialsResetToBuiltIn,
       type: SnackType.success,

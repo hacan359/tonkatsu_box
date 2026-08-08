@@ -95,8 +95,13 @@ class RecommendationsSection extends ConsumerWidget {
     final AsyncValue<List<Movie>> asyncRecs =
         ref.watch(_getMovieRecProvider(tmdbId));
 
+    // TMDB recommendations, so only TMDB placements count: a TheTVDB movie with
+    // the same numeric id is a different film.
     final Set<int> ownedIds = <int>{
-      ...ref.watch(collectedMovieIdsProvider).valueOrNull?.keys ?? <int>[],
+      ...?ref
+          .watch(collectedMovieIdsProvider)
+          .valueOrNull
+          ?.idsFromSource(DataSource.tmdb),
       ...ref.watch(collectedAnimationIdsProvider).valueOrNull?.keys ?? <int>[],
     };
 
@@ -114,7 +119,10 @@ class RecommendationsSection extends ConsumerWidget {
                   apiRating: m.rating,
                   icon: Icons.movie_outlined,
                   cacheImageType: ImageType.moviePoster,
-                  cacheImageId: m.tmdbId.toString(),
+                  cacheImageId: coverImageId(
+                    mediaType: MediaType.movie,
+                    externalId: m.tmdbId,
+                  ),
                   onAddToCollection: () => _showMovieDetails(context, m),
                   isOwned: ownedIds.contains(m.tmdbId),
                   source: DataSource.tmdb,

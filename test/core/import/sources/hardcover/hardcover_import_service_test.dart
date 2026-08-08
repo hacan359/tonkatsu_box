@@ -277,11 +277,13 @@ void main() {
               id: 11,
               mediaType: MediaType.book,
               externalId: 1,
+              source: DataSource.hardcover,
             ),
             createTestCollectionItem(
               id: 12,
               mediaType: MediaType.book,
               externalId: 2,
+              source: DataSource.hardcover,
             ),
           ]);
 
@@ -307,6 +309,7 @@ void main() {
               id: 7,
               mediaType: MediaType.book,
               externalId: 312460,
+              source: DataSource.hardcover,
             ),
           ]);
 
@@ -327,6 +330,7 @@ void main() {
               id: 7,
               mediaType: MediaType.book,
               externalId: 312460,
+              source: DataSource.hardcover,
               status: ItemStatus.completed,
               userRating: 7,
             ),

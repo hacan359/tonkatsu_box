@@ -268,9 +268,15 @@ class CanvasRepository {
     final Map<int, Game> gamesMap = <int, Game>{
       for (final Game g in results[0] as List<Game>) g.id: g,
     };
-    final Map<int, Movie> moviesMap = <int, Movie>{
-      for (final Movie m in results[1] as List<Movie>) m.tmdbId: m,
-    };
+    // Canvas items carry no movie source, so a numeric id can match rows from
+    // several providers. TMDB wins to keep resolution deterministic.
+    final Map<int, Movie> moviesMap = <int, Movie>{};
+    for (final Movie m in results[1] as List<Movie>) {
+      final Movie? existing = moviesMap[m.tmdbId];
+      if (existing == null || m.source == DataSource.tmdb) {
+        moviesMap[m.tmdbId] = m;
+      }
+    }
     // Like manga, canvas items carry no show source, so a numeric id can
     // match rows from several providers. TMDB wins to keep behaviour
     // deterministic.

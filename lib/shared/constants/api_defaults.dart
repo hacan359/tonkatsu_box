@@ -3,6 +3,8 @@
 abstract final class ApiDefaults {
   static const String tmdbApiKey = String.fromEnvironment('TMDB_API_KEY');
 
+  static const String tvdbApiKey = String.fromEnvironment('TVDB_API_KEY');
+
   static const String steamGridDbApiKey =
       String.fromEnvironment('STEAMGRIDDB_API_KEY');
 
@@ -25,6 +27,8 @@ abstract final class ApiDefaults {
   static const String simklClientId = String.fromEnvironment('SIMKL_CLIENT_ID');
 
   static bool get hasTmdbKey => tmdbApiKey.isNotEmpty;
+
+  static bool get hasTvdbKey => tvdbApiKey.isNotEmpty;
 
   static bool get hasSteamGridDbKey => steamGridDbApiKey.isNotEmpty;
 

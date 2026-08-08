@@ -125,6 +125,7 @@ class _SourceCard extends ConsumerWidget {
   String _description(S l, DataSource source) => switch (source) {
         DataSource.tmdb => l.welcomeSourceDescTmdb,
         DataSource.tvmaze => l.welcomeSourceDescTvMaze,
+        DataSource.tvdb => l.welcomeSourceDescTvdb,
         DataSource.igdb => l.welcomeSourceDescIgdb,
         DataSource.anilist => l.welcomeSourceDescAniList,
         DataSource.mangabaka => l.welcomeSourceDescMangaBaka,
@@ -377,6 +378,14 @@ class _KeyBadge extends StatelessWidget {
       case SourceKeyRequirement.none:
         return (l.welcomeSourcesNoKeyNeeded, AppColors.success);
       case SourceKeyRequirement.mandatory:
+        if (info.source == DataSource.tvdb) {
+          if (settings.isTvdbKeyBuiltIn) {
+            return (l.welcomeApiBuiltInKey, AppColors.success);
+          }
+          return settings.hasTvdbKey
+              ? (l.welcomeSourcesKeySaved, AppColors.success)
+              : (l.welcomeApiRequired, AppColors.brand);
+        }
         if (info.source == DataSource.hardcover) {
           return settings.hasHardcoverKey
               ? (l.welcomeSourcesKeySaved, AppColors.success)

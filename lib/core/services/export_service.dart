@@ -445,8 +445,10 @@ class ExportService {
     List<CollectionItem> items,
   ) async {
     final Map<int, Map<String, dynamic>> games = <int, Map<String, dynamic>>{};
-    final Map<int, Map<String, dynamic>> movies =
-        <int, Map<String, dynamic>>{};
+    // Keyed by `source:externalId` — TMDB and TheTVDB movie ids can collide,
+    // and an int key would drop one of them from the export.
+    final Map<String, Map<String, dynamic>> movies =
+        <String, Map<String, dynamic>>{};
     // Keyed by `source:externalId` — show ids from different providers can
     // share a numeric id, like manga.
     final Map<String, Map<String, dynamic>> tvShows =
@@ -480,10 +482,12 @@ class ExportService {
             }
           }
         case MediaType.movie:
-          if (item.movie != null && !movies.containsKey(item.externalId)) {
+          final String movieKey =
+              '${(item.source ?? DataSource.tmdb).name}:${item.externalId}';
+          if (item.movie != null && !movies.containsKey(movieKey)) {
             final Map<String, dynamic> data = item.movie!.toDb();
             data.remove('cached_at');
-            movies[item.externalId] = data;
+            movies[movieKey] = data;
           }
         case MediaType.tvShow:
           final String tvKey =
@@ -505,10 +509,12 @@ class ExportService {
             }
             tvShowKeys.add((item.source ?? DataSource.tmdb, item.externalId));
           } else {
-            if (item.movie != null && !movies.containsKey(item.externalId)) {
+            final String animMovieKey =
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}';
+            if (item.movie != null && !movies.containsKey(animMovieKey)) {
               final Map<String, dynamic> data = item.movie!.toDb();
               data.remove('cached_at');
-              movies[item.externalId] = data;
+              movies[animMovieKey] = data;
             }
           }
         case MediaType.visualNovel:

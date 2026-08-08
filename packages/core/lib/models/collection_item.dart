@@ -307,7 +307,7 @@ class CollectionItem with Exportable {
           genresString: movie?.genresString,
           genres: movie?.genres,
           mediaStatus: null,
-          source: DataSource.tmdb,
+          source: movie?.source ?? source ?? DataSource.tmdb,
           imageType: ImageType.moviePoster,
         );
       case MediaType.tvShow:
@@ -363,7 +363,7 @@ class CollectionItem with Exportable {
           genresString: movie?.genresString,
           genres: movie?.genres,
           mediaStatus: null,
-          source: DataSource.tmdb,
+          source: movie?.source ?? source ?? DataSource.tmdb,
           imageType: ImageType.moviePoster,
         );
       case MediaType.visualNovel:

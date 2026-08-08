@@ -174,6 +174,21 @@ class SPt extends S {
   String get status => 'Status';
 
   @override
+  String get movieStatusReleased => 'Lançado';
+
+  @override
+  String get movieStatusCompleted => 'Concluído';
+
+  @override
+  String get movieStatusPostProduction => 'Filmagem / pós-produção';
+
+  @override
+  String get movieStatusPreProduction => 'Pré-produção';
+
+  @override
+  String get movieStatusAnnounced => 'Anunciado';
+
+  @override
   String get sortStatusDesc => 'Ativos primeiro';
 
   @override
@@ -764,7 +779,14 @@ class SPt extends S {
   String get credentialsTmdbSection => 'API do TMDB (Filmes e séries)';
 
   @override
+  String get credentialsTvdbSection => 'API do TheTVDB (filmes e séries)';
+
+  @override
   String get credentialsEnterTmdbKey => 'Digite sua chave de API do TMDB (v3)';
+
+  @override
+  String get credentialsEnterTvdbKey =>
+      'Insira sua chave de API do TheTVDB (v4)';
 
   @override
   String get credentialsComicVineSection => 'API do ComicVine (Quadrinhos)';
@@ -851,6 +873,13 @@ class SPt extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'A chave de API do TMDB é inválida';
+
+  @override
+  String get credentialsTvdbKeyValid => 'A chave de API do TheTVDB é válida';
+
+  @override
+  String get credentialsTvdbKeyInvalid =>
+      'A chave de API do TheTVDB é inválida';
 
   @override
   String get credentialsComicVineKeyValid =>
@@ -1429,6 +1458,10 @@ class SPt extends S {
   @override
   String get creditsTmdbAttribution =>
       'Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.';
+
+  @override
+  String get creditsTvdbAttribution =>
+      'Metadados fornecidos pelo TheTVDB. Considere completar dados ou assinar.';
 
   @override
   String get creditsTvMazeAttribution =>
@@ -2792,6 +2825,9 @@ class SPt extends S {
   String get welcomeApiTmdbDesc => 'Filmes, séries e anime';
 
   @override
+  String get welcomeApiTvdbDesc => 'Filmes e séries, episódios próprios';
+
+  @override
   String get welcomeApiComicVineDesc => 'Quadrinhos e graphic novels';
 
   @override
@@ -2949,6 +2985,10 @@ class SPt extends S {
 
   @override
   String get welcomeSourceDescTvMaze => 'Séries de TV.';
+
+  @override
+  String get welcomeSourceDescTvdb =>
+      'Filmes e séries, com episódios próprios.';
 
   @override
   String get welcomeSourceDescIgdb => 'Jogos de todas as plataformas.';

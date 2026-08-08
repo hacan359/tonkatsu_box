@@ -217,10 +217,20 @@ void main() {
       });
 
       test('is off while the source ignores sort on a search response', () {
-        const BrowseState browsing = BrowseState(mediaType: MediaType.movie);
-        const BrowseState searching = BrowseState(
+        // Narrowed to TMDB explicitly: movie has more than one provider now,
+        // and this test is about the single-source case.
+        final Set<String> onlyTmdb = <String>{
+          for (final SearchSource s in searchSourcesFor(MediaType.movie))
+            if (s.id != 'movies') s.id,
+        };
+        final BrowseState browsing = BrowseState(
+          mediaType: MediaType.movie,
+          disabledSourceIds: onlyTmdb,
+        );
+        final BrowseState searching = BrowseState(
           mediaType: MediaType.movie,
           searchQuery: 'dune',
+          disabledSourceIds: onlyTmdb,
         );
 
         expect(browsing.canSort, isTrue);

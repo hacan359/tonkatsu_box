@@ -1172,6 +1172,7 @@ class CollectionDao {
           ON ci.media_type = 'game' AND ci.external_id = g.id
         LEFT JOIN movies_cache m
           ON ci.media_type = 'movie' AND ci.external_id = m.tmdb_id
+          AND m.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN tv_shows_cache t
           ON ci.media_type = 'tv_show' AND ci.external_id = t.tmdb_id
           AND t.source = COALESCE(ci.source, 'tmdb')
@@ -1182,6 +1183,7 @@ class CollectionDao {
         LEFT JOIN movies_cache m2
           ON ci.media_type = 'animation' AND ci.platform_id != 1
           AND ci.external_id = m2.tmdb_id
+          AND m2.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN visual_novels_cache vn
           ON ci.media_type = 'visual_novel' AND ci.external_id = vn.numeric_id
         LEFT JOIN manga_cache mc
@@ -1332,8 +1334,10 @@ class CollectionDao {
     final Map<int, Game> gamesMap = <int, Game>{
       for (final Game g in games) g.id: g,
     };
-    final Map<int, Movie> moviesMap = <int, Movie>{
-      for (final Movie m in resolvedMovies) m.tmdbId: m,
+    // Movies are keyed by `(source, id)` — TMDB and TheTVDB can share a
+    // numeric id, so a plain id-keyed map would collapse them.
+    final Map<String, Movie> moviesMap = <String, Movie>{
+      for (final Movie m in resolvedMovies) '${m.source.name}:${m.tmdbId}': m,
     };
     // TV shows are keyed by `(source, id)` — ids from different providers
     // can collide numerically.
@@ -1371,7 +1375,10 @@ class CollectionDao {
                 : null,
           );
         case MediaType.movie:
-          return item.copyWith(movie: moviesMap[item.externalId]);
+          return item.copyWith(
+            movie: moviesMap[
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+          );
         case MediaType.tvShow:
           return item.copyWith(
             tvShow: tvShowsMap[
@@ -1384,7 +1391,10 @@ class CollectionDao {
                   '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
             );
           }
-          return item.copyWith(movie: moviesMap[item.externalId]);
+          return item.copyWith(
+            movie: moviesMap[
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+          );
         case MediaType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.externalId]);
         case MediaType.anime:

@@ -66,7 +66,7 @@ void main() {
 
       final File keptGame = await writeCacheFile(ImageType.gameCover, '100');
       final File keptMovie =
-          await writeCacheFile(ImageType.moviePoster, '200');
+          await writeCacheFile(ImageType.moviePoster, 'tmdb_200');
       final File orphanGame = await writeCacheFile(ImageType.gameCover, '999');
       final File orphanMovie =
           await writeCacheFile(ImageType.moviePoster, '888');

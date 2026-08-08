@@ -45,7 +45,6 @@ void main() {
 
       test('omits src for single-source media types', () {
         for (final MediaType type in <MediaType>[
-          MediaType.movie,
           MediaType.game,
           MediaType.animation,
           MediaType.visualNovel,

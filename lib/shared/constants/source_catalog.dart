@@ -45,6 +45,12 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     url: 'https://www.tvmaze.com/',
   ),
   SourceInfo(
+    source: DataSource.tvdb,
+    mediaTypes: <MediaType>[MediaType.movie, MediaType.tvShow],
+    url: 'https://thetvdb.com/',
+    keyRequirement: SourceKeyRequirement.mandatory,
+  ),
+  SourceInfo(
     source: DataSource.igdb,
     mediaTypes: <MediaType>[MediaType.game],
     url: 'https://www.igdb.com/',

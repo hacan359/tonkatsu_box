@@ -173,6 +173,21 @@ class SZh extends S {
   String get status => '状态';
 
   @override
+  String get movieStatusReleased => '已上映';
+
+  @override
+  String get movieStatusCompleted => '已完成';
+
+  @override
+  String get movieStatusPostProduction => '拍摄 / 后期制作';
+
+  @override
+  String get movieStatusPreProduction => '前期筹备';
+
+  @override
+  String get movieStatusAnnounced => '已公布';
+
+  @override
   String get sortStatusDesc => '活跃优先';
 
   @override
@@ -707,7 +722,13 @@ class SZh extends S {
   String get credentialsTmdbSection => 'TMDB API（电影和电视剧）';
 
   @override
+  String get credentialsTvdbSection => 'TheTVDB API（电影与剧集）';
+
+  @override
   String get credentialsEnterTmdbKey => '输入您的 TMDB API 密钥（v3）';
+
+  @override
+  String get credentialsEnterTvdbKey => '输入你的 TheTVDB API 密钥（v4）';
 
   @override
   String get credentialsComicVineSection => 'ComicVine API（漫画）';
@@ -785,6 +806,12 @@ class SZh extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'TMDB API 密钥无效';
+
+  @override
+  String get credentialsTvdbKeyValid => 'TheTVDB API 密钥有效';
+
+  @override
+  String get credentialsTvdbKeyInvalid => 'TheTVDB API 密钥无效';
 
   @override
   String get credentialsComicVineKeyValid => 'ComicVine API 密钥有效';
@@ -1312,6 +1339,9 @@ class SZh extends S {
 
   @override
   String get creditsTmdbAttribution => '本产品使用 TMDB API，但未经 TMDB 认可或认证。';
+
+  @override
+  String get creditsTvdbAttribution => '元数据由 TheTVDB 提供。欢迎补充缺失信息或订阅支持。';
 
   @override
   String get creditsTvMazeAttribution => '电视剧数据由 TVmaze 提供。';
@@ -2593,6 +2623,9 @@ class SZh extends S {
   String get welcomeApiTmdbDesc => '电影、电视剧和动漫';
 
   @override
+  String get welcomeApiTvdbDesc => '电影与剧集，自带分集数据';
+
+  @override
   String get welcomeApiComicVineDesc => '漫画和图像小说';
 
   @override
@@ -2731,6 +2764,9 @@ class SZh extends S {
 
   @override
   String get welcomeSourceDescTvMaze => '电视剧。';
+
+  @override
+  String get welcomeSourceDescTvdb => '电影与剧集，自带分集数据。';
 
   @override
   String get welcomeSourceDescIgdb => '涵盖所有平台的电子游戏。';

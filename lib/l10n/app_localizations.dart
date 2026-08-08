@@ -429,6 +429,36 @@ abstract class S {
   /// **'Status'**
   String get status;
 
+  /// No description provided for @movieStatusReleased.
+  ///
+  /// In en, this message translates to:
+  /// **'Released'**
+  String get movieStatusReleased;
+
+  /// No description provided for @movieStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get movieStatusCompleted;
+
+  /// No description provided for @movieStatusPostProduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Filming / Post-production'**
+  String get movieStatusPostProduction;
+
+  /// No description provided for @movieStatusPreProduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-production'**
+  String get movieStatusPreProduction;
+
+  /// No description provided for @movieStatusAnnounced.
+  ///
+  /// In en, this message translates to:
+  /// **'Announced'**
+  String get movieStatusAnnounced;
+
   /// No description provided for @sortStatusDesc.
   ///
   /// In en, this message translates to:
@@ -1419,11 +1449,23 @@ abstract class S {
   /// **'TMDB API (Movies & TV)'**
   String get credentialsTmdbSection;
 
+  /// No description provided for @credentialsTvdbSection.
+  ///
+  /// In en, this message translates to:
+  /// **'TheTVDB API (Movies & TV)'**
+  String get credentialsTvdbSection;
+
   /// No description provided for @credentialsEnterTmdbKey.
   ///
   /// In en, this message translates to:
   /// **'Enter your TMDB API key (v3)'**
   String get credentialsEnterTmdbKey;
+
+  /// No description provided for @credentialsEnterTvdbKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your TheTVDB API key (v4)'**
+  String get credentialsEnterTvdbKey;
 
   /// No description provided for @credentialsComicVineSection.
   ///
@@ -1574,6 +1616,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'TMDB API key is invalid'**
   String get credentialsTmdbKeyInvalid;
+
+  /// No description provided for @credentialsTvdbKeyValid.
+  ///
+  /// In en, this message translates to:
+  /// **'TheTVDB API key is valid'**
+  String get credentialsTvdbKeyValid;
+
+  /// No description provided for @credentialsTvdbKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'TheTVDB API key is invalid'**
+  String get credentialsTvdbKeyInvalid;
 
   /// No description provided for @credentialsComicVineKeyValid.
   ///
@@ -2527,6 +2581,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'This product uses the TMDB API but is not endorsed or certified by TMDB.'**
   String get creditsTmdbAttribution;
+
+  /// No description provided for @creditsTvdbAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Metadata provided by TheTVDB. Please consider adding missing information or subscribing.'**
+  String get creditsTvdbAttribution;
 
   /// No description provided for @creditsTvMazeAttribution.
   ///
@@ -4880,6 +4940,12 @@ abstract class S {
   /// **'Movies, TV & Anime'**
   String get welcomeApiTmdbDesc;
 
+  /// No description provided for @welcomeApiTvdbDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies & TV, own episode data'**
+  String get welcomeApiTvdbDesc;
+
   /// No description provided for @welcomeApiComicVineDesc.
   ///
   /// In en, this message translates to:
@@ -5155,6 +5221,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'TV series.'**
   String get welcomeSourceDescTvMaze;
+
+  /// No description provided for @welcomeSourceDescTvdb.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies and TV series, with its own episode data.'**
+  String get welcomeSourceDescTvdb;
 
   /// No description provided for @welcomeSourceDescIgdb.
   ///
