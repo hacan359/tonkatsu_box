@@ -34,6 +34,7 @@ class Collection with Exportable {
     this.forkedFromName,
     this.heroImagePath,
     this.description,
+    this.isHidden = false,
   });
 
   factory Collection.fromDb(Map<String, dynamic> row) {
@@ -50,6 +51,7 @@ class Collection with Exportable {
       forkedFromName: row['forked_from_name'] as String?,
       heroImagePath: row['hero_image_path'] as String?,
       description: row['description'] as String?,
+      isHidden: (row['is_hidden'] as int?) == 1,
     );
   }
 
@@ -94,6 +96,10 @@ class Collection with Exportable {
   /// Tagline for the rich hero.
   final String? description;
 
+  /// Keeps the collection in the list but stops it from showing its content:
+  /// no cover mosaic on the card, no items in the All Items selection.
+  final bool isHidden;
+
   /// Always true — imported collections behave like ordinary ones.
   bool get isEditable => true;
 
@@ -108,6 +114,9 @@ class Collection with Exportable {
         // The local path is not exported; the binary rides in the `.xcollx`
         // `images` section instead.
         'hero_image_path',
+        // A local preference: the receiver of a shared collection has no
+        // reason to inherit that it was hidden here.
+        'is_hidden',
       };
 
   @override
@@ -127,6 +136,7 @@ class Collection with Exportable {
       'forked_from_name': forkedFromName,
       'hero_image_path': heroImagePath,
       'description': description,
+      'is_hidden': isHidden ? 1 : 0,
     };
   }
 
@@ -151,6 +161,7 @@ class Collection with Exportable {
     String? forkedFromName,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) {
@@ -166,6 +177,7 @@ class Collection with Exportable {
       heroImagePath:
           clearHeroImage ? null : (heroImagePath ?? this.heroImagePath),
       description: clearDescription ? null : (description ?? this.description),
+      isHidden: isHidden ?? this.isHidden,
     );
   }
 

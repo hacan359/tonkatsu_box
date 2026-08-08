@@ -2043,6 +2043,18 @@ class SZh extends S {
   String get createCollectionNameTooShort => '名称至少需要 2 个字符';
 
   @override
+  String get createCollectionHiddenLabel => '隐藏收藏';
+
+  @override
+  String get createCollectionHiddenHint => '卡片不显示封面，其条目也不会出现在「全部条目」中';
+
+  @override
+  String get collectionHide => '隐藏收藏';
+
+  @override
+  String get collectionUnhide => '取消隐藏';
+
+  @override
   String get renameCollectionTitle => '重命名收藏';
 
   @override

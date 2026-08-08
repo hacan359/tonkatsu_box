@@ -2203,6 +2203,19 @@ class SFr extends S {
       'Le nom doit contenir au moins 2 caractères';
 
   @override
+  String get createCollectionHiddenLabel => 'Collection masquée';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'Aucune jaquette sur la carte, et ses éléments restent hors de Tous les éléments';
+
+  @override
+  String get collectionHide => 'Masquer la collection';
+
+  @override
+  String get collectionUnhide => 'Afficher la collection';
+
+  @override
   String get renameCollectionTitle => 'Renommer la collection';
 
   @override

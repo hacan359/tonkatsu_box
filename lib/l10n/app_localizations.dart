@@ -3848,6 +3848,30 @@ abstract class S {
   /// **'Name must be at least 2 characters'**
   String get createCollectionNameTooShort;
 
+  /// No description provided for @createCollectionHiddenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden collection'**
+  String get createCollectionHiddenLabel;
+
+  /// No description provided for @createCollectionHiddenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No covers on the card, and its items stay out of All Items'**
+  String get createCollectionHiddenHint;
+
+  /// No description provided for @collectionHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide collection'**
+  String get collectionHide;
+
+  /// No description provided for @collectionUnhide.
+  ///
+  /// In en, this message translates to:
+  /// **'Unhide collection'**
+  String get collectionUnhide;
+
   /// No description provided for @renameCollectionTitle.
   ///
   /// In en, this message translates to:

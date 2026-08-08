@@ -2168,6 +2168,19 @@ class SEn extends S {
       'Name must be at least 2 characters';
 
   @override
+  String get createCollectionHiddenLabel => 'Hidden collection';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'No covers on the card, and its items stay out of All Items';
+
+  @override
+  String get collectionHide => 'Hide collection';
+
+  @override
+  String get collectionUnhide => 'Unhide collection';
+
+  @override
   String get renameCollectionTitle => 'Rename Collection';
 
   @override

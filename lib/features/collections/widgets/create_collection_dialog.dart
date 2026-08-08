@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
+import 'hidden_collection_checkbox.dart';
+
+class CreateCollectionResult {
+  const CreateCollectionResult({required this.name, required this.isHidden});
+
+  final String name;
+
+  final bool isHidden;
+}
 
 class CreateCollectionDialog extends StatefulWidget {
   const CreateCollectionDialog({super.key});
 
-  static Future<String?> show(BuildContext context) {
-    return showDialog<String>(
+  static Future<CreateCollectionResult?> show(BuildContext context) {
+    return showDialog<CreateCollectionResult>(
       context: context,
       builder: (BuildContext context) => const CreateCollectionDialog(),
     );
@@ -20,6 +29,7 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _nameFocus = FocusNode();
+  bool _isHidden = false;
 
   @override
   void initState() {
@@ -38,7 +48,12 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      Navigator.of(context).pop(_nameController.text.trim());
+      Navigator.of(context).pop(
+        CreateCollectionResult(
+          name: _nameController.text.trim(),
+          isHidden: _isHidden,
+        ),
+      );
     }
   }
 
@@ -50,25 +65,34 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
       scrollable: true,
       content: Form(
         key: _formKey,
-        child: TextFormField(
-          controller: _nameController,
-          focusNode: _nameFocus,
-          decoration: InputDecoration(
-            labelText: l.createCollectionNameLabel,
-            hintText: l.createCollectionNameHint,
-            border: const OutlineInputBorder(),
-          ),
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => _submit(),
-          validator: (String? value) {
-            if (value == null || value.trim().isEmpty) {
-              return l.createCollectionEnterName;
-            }
-            if (value.trim().length < 2) {
-              return l.createCollectionNameTooShort;
-            }
-            return null;
-          },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextFormField(
+              controller: _nameController,
+              focusNode: _nameFocus,
+              decoration: InputDecoration(
+                labelText: l.createCollectionNameLabel,
+                hintText: l.createCollectionNameHint,
+                border: const OutlineInputBorder(),
+              ),
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _submit(),
+              validator: (String? value) {
+                if (value == null || value.trim().isEmpty) {
+                  return l.createCollectionEnterName;
+                }
+                if (value.trim().length < 2) {
+                  return l.createCollectionNameTooShort;
+                }
+                return null;
+              },
+            ),
+            HiddenCollectionCheckbox(
+              value: _isHidden,
+              onChanged: (bool value) => setState(() => _isHidden = value),
+            ),
+          ],
         ),
       ),
       actions: <Widget>[

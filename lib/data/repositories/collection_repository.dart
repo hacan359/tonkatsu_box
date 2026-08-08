@@ -93,12 +93,14 @@ class CollectionRepository {
     required String author,
     CollectionType type = CollectionType.own,
     DateTime? createdAt,
+    bool isHidden = false,
   }) async {
     return _db.createCollection(
       name: name,
       author: author,
       type: type,
       createdAt: createdAt,
+      isHidden: isHidden,
     );
   }
 
@@ -106,11 +108,16 @@ class CollectionRepository {
     await _db.updateCollection(id, name: name);
   }
 
+  Future<void> setHidden(int id, {required bool isHidden}) async {
+    await _db.updateCollection(id, isHidden: isHidden);
+  }
+
   Future<void> updatePersonalization(
     int id, {
     String? name,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) async {
@@ -119,6 +126,7 @@ class CollectionRepository {
       name: name,
       heroImagePath: heroImagePath,
       description: description,
+      isHidden: isHidden,
       clearHeroImage: clearHeroImage,
       clearDescription: clearDescription,
     );

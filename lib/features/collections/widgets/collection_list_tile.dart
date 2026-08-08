@@ -78,8 +78,12 @@ class CollectionListTile extends ConsumerWidget {
               onSecondaryTap!(details.globalPosition)
           : null,
       child: ListTile(
-        leading:
-            Icon(Icons.folder_rounded, color: AppColors.textSecondary),
+        leading: Icon(
+          collection.isHidden
+              ? Icons.visibility_off_outlined
+              : Icons.folder_rounded,
+          color: AppColors.textSecondary,
+        ),
         title: Text(
           collection.name,
           maxLines: 1,

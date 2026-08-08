@@ -36,6 +36,7 @@ Collection createTestCollection({
   String? originalSnapshot,
   String? forkedFromAuthor,
   String? forkedFromName,
+  bool isHidden = false,
 }) {
   return Collection(
     id: id,
@@ -46,6 +47,7 @@ Collection createTestCollection({
     originalSnapshot: originalSnapshot,
     forkedFromAuthor: forkedFromAuthor,
     forkedFromName: forkedFromName,
+    isHidden: isHidden,
   );
 }
 

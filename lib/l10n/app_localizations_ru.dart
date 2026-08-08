@@ -2213,6 +2213,19 @@ class SRu extends S {
       'Название должно содержать минимум 2 символа';
 
   @override
+  String get createCollectionHiddenLabel => 'Скрытая коллекция';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'Без обложек на карточке, элементы не попадают во «Все элементы»';
+
+  @override
+  String get collectionHide => 'Скрыть коллекцию';
+
+  @override
+  String get collectionUnhide => 'Показывать коллекцию';
+
+  @override
   String get renameCollectionTitle => 'Переименовать коллекцию';
 
   @override

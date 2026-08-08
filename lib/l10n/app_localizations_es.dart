@@ -2206,6 +2206,19 @@ class SEs extends S {
       'El nombre debe tener al menos 2 caracteres';
 
   @override
+  String get createCollectionHiddenLabel => 'Colección oculta';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'Sin portadas en la tarjeta, y sus elementos quedan fuera de Todos los elementos';
+
+  @override
+  String get collectionHide => 'Ocultar colección';
+
+  @override
+  String get collectionUnhide => 'Mostrar colección';
+
+  @override
   String get renameCollectionTitle => 'Renombrar colección';
 
   @override
