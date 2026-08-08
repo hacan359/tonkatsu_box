@@ -171,7 +171,7 @@ final AutoDisposeFutureProvider<RecommendationResult> recommendationsProvider =
   // Read once, don't watch: watching would re-run the whole fetch+score
   // pipeline on every add. Refresh re-runs it on demand.
   final List<CollectionItem> library =
-      ref.read(allItemsNotifierProvider).valueOrNull ??
+      ref.read(visibleAllItemsProvider).valueOrNull ??
           const <CollectionItem>[];
 
   // Watch only what should recompute the tab: anime/manga titles render in

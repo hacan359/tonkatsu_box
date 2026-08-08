@@ -2195,6 +2195,19 @@ class SPt extends S {
       'O nome deve ter pelo menos 2 caracteres';
 
   @override
+  String get createCollectionHiddenLabel => 'Coleção oculta';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'Sem capas no cartão, e seus itens ficam fora de Todos os itens';
+
+  @override
+  String get collectionHide => 'Ocultar coleção';
+
+  @override
+  String get collectionUnhide => 'Mostrar coleção';
+
+  @override
   String get renameCollectionTitle => 'Renomear coleção';
 
   @override

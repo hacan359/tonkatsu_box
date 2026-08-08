@@ -48,8 +48,10 @@ class ClassicCollectionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<CollectionStats> statsAsync =
         ref.watch(collectionStatsProvider(collection.id));
-    final AsyncValue<List<CoverInfo>> coversAsync =
-        ref.watch(collectionCoversProvider(collection.id));
+    // A hidden collection must not even fetch its covers.
+    final AsyncValue<List<CoverInfo>>? coversAsync = collection.isHidden
+        ? null
+        : ref.watch(collectionCoversProvider(collection.id));
 
     return CollectionCardShell(
       onTap: onTap,
@@ -61,10 +63,12 @@ class ClassicCollectionCard extends ConsumerWidget {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(_mosaicPadding),
-            child: _CoverMosaic(
-              covers: coversAsync,
-              totalCount: statsAsync.valueOrNull?.total ?? 0,
-            ),
+            child: coversAsync == null
+                ? const _HiddenPlaceholder()
+                : _CoverMosaic(
+                    covers: coversAsync,
+                    totalCount: statsAsync.valueOrNull?.total ?? 0,
+                  ),
           ),
           const CollectionCardBottomScrim(),
           CollectionCardOverlay(
@@ -86,6 +90,27 @@ class ClassicCollectionCard extends ConsumerWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HiddenPlaceholder extends StatelessWidget {
+  const _HiddenPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(ClassicCollectionCard._cellRadius),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.visibility_off_outlined,
+          size: 40,
+          color: AppColors.textTertiary,
+        ),
       ),
     );
   }

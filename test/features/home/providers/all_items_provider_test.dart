@@ -30,7 +30,7 @@ CollectionItem _makeItem({
   DateTime? addedAt,
   double? userRating,
   ItemStatus status = ItemStatus.notStarted,
-  int collectionId = 1,
+  int? collectionId = 1,
   int? platformId,
 }) {
   return CollectionItem(
@@ -521,6 +521,142 @@ void main() {
             .isFavorite,
         isTrue,
       );
+    });
+  });
+
+  group('visibleAllItemsProvider', () {
+    Collection makeCollection(int id, {bool isHidden = false}) => Collection(
+          id: id,
+          name: 'Collection $id',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026),
+          isHidden: isHidden,
+        );
+
+    /// Two collections plus one uncategorized item; [hiddenIds] start hidden.
+    Future<ProviderContainer> setUpLibrary({
+      Set<int> hiddenIds = const <int>{},
+    }) async {
+      when(() => mockRepo.getAll()).thenAnswer((_) async => <Collection>[
+            makeCollection(1, isHidden: hiddenIds.contains(1)),
+            makeCollection(2, isHidden: hiddenIds.contains(2)),
+          ]);
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => <CollectionItem>[
+                _makeItem(id: 1, collectionId: 1),
+                _makeItem(id: 2, collectionId: 2),
+                _makeItem(id: 3, collectionId: null),
+              ]);
+      when(() => mockRepo.setHidden(any(), isHidden: any(named: 'isHidden')))
+          .thenAnswer((_) async {});
+      when(() => mockRepo.updateName(any(), any())).thenAnswer((_) async {});
+
+      final ProviderContainer container = createContainer();
+      container.read(visibleAllItemsProvider);
+      await _pump();
+      return container;
+    }
+
+    List<int> idsOf(ProviderContainer container) =>
+        (container.read(visibleAllItemsProvider).valueOrNull ??
+                <CollectionItem>[])
+            .map((CollectionItem i) => i.id)
+            .toList();
+
+    test('should return every item when no collection is hidden', () async {
+      final ProviderContainer container = await setUpLibrary();
+
+      expect(idsOf(container), unorderedEquals(<int>[1, 2, 3]));
+    });
+
+    test('should drop items of a hidden collection', () async {
+      final ProviderContainer container =
+          await setUpLibrary(hiddenIds: <int>{1});
+
+      expect(idsOf(container), unorderedEquals(<int>[2, 3]));
+    });
+
+    test('should keep uncategorized items when everything else is hidden',
+        () async {
+      final ProviderContainer container =
+          await setUpLibrary(hiddenIds: <int>{1, 2});
+
+      expect(idsOf(container), unorderedEquals(<int>[3]));
+    });
+
+    test('should hide and restore items without re-reading the database',
+        () async {
+      final ProviderContainer container = await setUpLibrary();
+
+      await container.read(collectionsProvider.notifier).setHidden(
+            1,
+            isHidden: true,
+          );
+      await _pump();
+      expect(idsOf(container), unorderedEquals(<int>[2, 3]));
+
+      await container.read(collectionsProvider.notifier).setHidden(
+            1,
+            isHidden: false,
+          );
+      await _pump();
+      expect(idsOf(container), unorderedEquals(<int>[1, 2, 3]));
+
+      verify(() => mockRepo.getAllItemsWithData()).called(1);
+    });
+
+    test('should not rebuild the list when an unrelated collection is renamed',
+        () async {
+      final ProviderContainer container = await setUpLibrary();
+      final List<CollectionItem>? before =
+          container.read(visibleAllItemsProvider).valueOrNull;
+
+      await container.read(collectionsProvider.notifier).rename(2, 'Renamed');
+      await _pump();
+
+      expect(
+        identical(
+          container.read(visibleAllItemsProvider).valueOrNull,
+          before,
+        ),
+        true,
+      );
+      verify(() => mockRepo.getAllItemsWithData()).called(1);
+    });
+  });
+
+  group('hiddenCollectionIdsProvider', () {
+    test('should report the ids the user flagged hidden', () async {
+      when(() => mockRepo.getAll()).thenAnswer((_) async => <Collection>[
+            Collection(
+              id: 1,
+              name: 'Plain',
+              author: 'User',
+              type: CollectionType.own,
+              createdAt: DateTime(2026),
+            ),
+            Collection(
+              id: 7,
+              name: 'Secret',
+              author: 'User',
+              type: CollectionType.own,
+              createdAt: DateTime(2026),
+              isHidden: true,
+            ),
+          ]);
+
+      final ProviderContainer container = createContainer();
+      container.read(collectionsProvider);
+      await _pump();
+
+      expect(container.read(hiddenCollectionIdsProvider), <int>{7});
+    });
+
+    test('should be empty while collections are still loading', () {
+      final ProviderContainer container = createContainer();
+
+      expect(container.read(hiddenCollectionIdsProvider), isEmpty);
     });
   });
 

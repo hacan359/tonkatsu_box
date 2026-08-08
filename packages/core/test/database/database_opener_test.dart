@@ -99,7 +99,12 @@ void main() {
       );
       addTearDown(db.close);
 
-      expect(ran, <int>[59, 60]);
+      expect(ran.first, from + 1);
+      expect(ran.last, MigrationRegistry.latestVersion);
+      expect(
+        ran,
+        MigrationRegistry.pending(from).map((Migration m) => m.version).toList(),
+      );
       expect(await db.getVersion(), MigrationRegistry.latestVersion);
     });
   });

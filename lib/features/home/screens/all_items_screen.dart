@@ -59,7 +59,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.watch(allItemsNotifierProvider);
+        ref.watch(visibleAllItemsProvider);
+    // Hiding a collection mid-selection would leave ids of now invisible
+    // items in the set.
+    ref.listen<Set<int>>(
+      hiddenCollectionIdsProvider,
+      (Set<int>? previous, Set<int> next) =>
+          ref.read(allItemsSelectionProvider.notifier).clear(),
+    );
     final Map<int, String> collectionNames =
         ref.watch(collectionNamesProvider);
     final Map<int, Tag> tagsMap = ref.watch(allTagsMapProvider);

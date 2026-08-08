@@ -16,6 +16,7 @@ Collection _makeCollection({
   int id = 1,
   String name = 'Test Collection',
   CollectionType type = CollectionType.own,
+  bool isHidden = false,
 }) {
   return Collection(
     id: id,
@@ -23,6 +24,7 @@ Collection _makeCollection({
     author: 'Author',
     type: type,
     createdAt: DateTime(2024),
+    isHidden: isHidden,
   );
 }
 
@@ -590,6 +592,68 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('CollectionCard hidden', () {
+    testWidgets('should not request covers for a hidden collection',
+        (WidgetTester tester) async {
+      final Collection collection = _makeCollection(isHidden: true);
+      int coverRequests = 0;
+
+      await tester.pumpWidget(_buildTestApp(
+        overrides: <Override>[
+          collectionStatsProvider(collection.id)
+              .overrideWith((Ref ref) async => _gameStats),
+          collectionCoversProvider(collection.id).overrideWith((Ref ref) async {
+            coverRequests++;
+            return _testCovers;
+          }),
+        ],
+        child: CollectionCard(collection: collection),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(coverRequests, 0);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('should request covers once the collection is visible again',
+        (WidgetTester tester) async {
+      final Collection collection = _makeCollection();
+      int coverRequests = 0;
+
+      await tester.pumpWidget(_buildTestApp(
+        overrides: <Override>[
+          collectionStatsProvider(collection.id)
+              .overrideWith((Ref ref) async => _gameStats),
+          collectionCoversProvider(collection.id).overrideWith((Ref ref) async {
+            coverRequests++;
+            return _testCovers;
+          }),
+        ],
+        child: CollectionCard(collection: collection),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(coverRequests, 1);
+    });
+
+    testWidgets('should still show the name of a hidden collection',
+        (WidgetTester tester) async {
+      final Collection collection =
+          _makeCollection(name: 'Secret Stash', isHidden: true);
+
+      await tester.pumpWidget(_buildTestApp(
+        overrides: <Override>[
+          collectionStatsProvider(collection.id)
+              .overrideWith((Ref ref) async => _gameStats),
+        ],
+        child: CollectionCard(collection: collection),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Secret Stash'), findsOneWidget);
     });
   });
 }

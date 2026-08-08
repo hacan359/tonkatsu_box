@@ -45,7 +45,9 @@ class CollectionCard extends ConsumerWidget {
     final String? heroFile = collection.heroImagePath;
 
     String? heroAbsPath;
-    if (richEnabled && heroFile != null) {
+    // The hero is a preview too, so a hidden collection always falls back to
+    // the classic card and its placeholder.
+    if (richEnabled && heroFile != null && !collection.isHidden) {
       try {
         heroAbsPath =
             ref.watch(collectionHeroServiceProvider).resolve(heroFile);

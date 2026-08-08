@@ -10,5 +10,5 @@ import '../../home/providers/all_items_provider.dart';
 /// without re-reading.
 final Provider<AsyncValue<List<CollectionItem>>> genreCloudItemsProvider =
     Provider<AsyncValue<List<CollectionItem>>>(
-  (Ref ref) => ref.watch(allItemsNotifierProvider),
+  (Ref ref) => ref.watch(visibleAllItemsProvider),
 );

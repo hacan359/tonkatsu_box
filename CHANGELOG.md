@@ -9,6 +9,75 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Hidden collections — keep a collection out of sight without deleting it**
+
+  A collection can be marked hidden through right-click / long-press on its
+  card, the checkbox in the New Collection dialog, or the Edit dialog. It stays
+  in the list under its own name and count, but its card shows a placeholder
+  instead of the cover mosaic, and its titles drop out of the All Items screen
+  and the preference cloud. Everything else behaves normally: the collection
+  opens as usual, stays a target in every collection picker, still counts in
+  Statistics, and exports without the flag. Toggling applies instantly, in both
+  directions, without re-reading the database.
+
+  * packages/core/lib/database/migrations/migration_v61.dart (MigrationV61):
+    New — adds the `is_hidden` column to `collections`.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers MigrationV61.
+  * packages/core/lib/models/collection.dart (Collection.isHidden,
+    Collection.fromDb, Collection.toDb, Collection.copyWith,
+    Collection.internalDbFields): Stores the flag as INTEGER 0/1 and keeps it
+    out of the export payload — a shared collection is not hidden for its
+    receiver.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.createCollection, CollectionDao.updateCollection): Writes
+    and toggles the flag.
+  * lib/core/database/database_service.dart (DatabaseService.createCollection,
+    DatabaseService.updateCollection),
+    lib/data/repositories/collection_repository.dart
+    (CollectionRepository.create, CollectionRepository.setHidden,
+    CollectionRepository.updatePersonalization): Pass the flag through.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionsNotifier.create, CollectionsNotifier.setHidden,
+    CollectionsNotifier.updatePersonalization): Writes the flag and patches the
+    in-memory list so the card updates without a reload.
+  * lib/features/home/providers/all_items_provider.dart
+    (hiddenCollectionIdsProvider, visibleAllItemsProvider): New — filters the
+    loaded library above AllItemsNotifier, so toggling never hits the database
+    and CacheCleanupService still sees every item.
+  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState.build):
+    Reads visibleAllItemsProvider and clears the bulk selection when the hidden
+    set changes.
+  * lib/features/genre_cloud/providers/genre_cloud_provider.dart
+    (genreCloudItemsProvider),
+    lib/features/recommendations/providers/recommendations_provider.dart
+    (recommendationsProvider): Read the filtered library.
+  * lib/features/collections/widgets/collection_card.dart (CollectionCard.build):
+    A hidden collection never renders the rich hero card.
+  * lib/features/collections/widgets/classic/classic_collection_card.dart
+    (ClassicCollectionCard.build, _HiddenPlaceholder): Skips the cover query and
+    draws a placeholder.
+  * lib/features/collections/widgets/collection_list_tile.dart
+    (CollectionListTile.build): Hidden collections get a different leading icon.
+  * lib/features/collections/widgets/hidden_collection_checkbox.dart
+    (HiddenCollectionCheckbox): New — shared by the create and edit dialogs.
+  * lib/features/collections/widgets/create_collection_dialog.dart
+    (CreateCollectionResult, CreateCollectionDialog.show,
+    _CreateCollectionDialogState._submit): The dialog returns name plus flag
+    instead of a bare name.
+  * lib/features/collections/widgets/edit_collection_dialog.dart
+    (_EditCollectionDialogState._save): Saves the flag when it changed.
+  * lib/features/collections/screens/home_screen.dart
+    (_HomeScreenState._createCollection,
+    _HomeScreenState._showCollectionContextMenu,
+    _HomeScreenState._showCollectionOptions): Hide / Unhide in the right-click
+    menu and the long-press sheet.
+  * packages/core/lib/testing/builders.dart (createTestCollection): Accepts
+    isHidden.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (createCollectionHiddenLabel, createCollectionHiddenHint,
+    collectionHide, collectionUnhide): New keys.
+
 - **Sakura theme — a soft light theme, switchable in Settings → Appearance**
 
   The app is no longer dark-only: a Theme picker offers Dark (unchanged) and

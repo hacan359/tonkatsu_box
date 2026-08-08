@@ -243,6 +243,47 @@ void main() {
       });
     });
 
+    group('isHidden', () {
+      test('should default to false when the column is absent', () {
+        final Collection collection = Collection.fromDb(<String, dynamic>{
+          'id': 1,
+          'name': 'Test',
+          'author': 'Author',
+          'type': 'own',
+          'created_at': testTimestamp,
+        });
+
+        expect(collection.isHidden, false);
+      });
+
+      test('should round-trip through toDb and fromDb', () {
+        final Collection hidden = createTestCollection(isHidden: true);
+
+        final Collection restored = Collection.fromDb(hidden.toDb());
+
+        expect(hidden.toDb()['is_hidden'], 1);
+        expect(restored.isHidden, true);
+      });
+
+      test('should store 0 when the collection is visible', () {
+        expect(createTestCollection().toDb()['is_hidden'], 0);
+      });
+
+      test('should stay out of the export payload', () {
+        final Collection hidden = createTestCollection(isHidden: true);
+
+        expect(hidden.toExport().containsKey('is_hidden'), false);
+        expect(hidden.internalDbFields, contains('is_hidden'));
+      });
+
+      test('copyWith should flip the flag and keep it otherwise', () {
+        final Collection hidden = createTestCollection(isHidden: true);
+
+        expect(hidden.copyWith(isHidden: false).isHidden, false);
+        expect(hidden.copyWith(name: 'Renamed').isHidden, true);
+      });
+    });
+
     group('toString', () {
       test('should return корректную строку', () {
         final Collection collection = createTestCollection(

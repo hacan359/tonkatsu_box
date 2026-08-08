@@ -111,6 +111,7 @@ class CollectionDao {
     String? forkedFromAuthor,
     String? forkedFromName,
     DateTime? createdAt,
+    bool isHidden = false,
   }) async {
     final Database db = await _getDatabase();
     final int timestamp =
@@ -126,6 +127,7 @@ class CollectionDao {
         'original_snapshot': originalSnapshot,
         'forked_from_author': forkedFromAuthor,
         'forked_from_name': forkedFromName,
+        'is_hidden': isHidden ? 1 : 0,
       },
     );
 
@@ -138,6 +140,7 @@ class CollectionDao {
       originalSnapshot: originalSnapshot,
       forkedFromAuthor: forkedFromAuthor,
       forkedFromName: forkedFromName,
+      isHidden: isHidden,
     );
   }
 
@@ -148,6 +151,7 @@ class CollectionDao {
     String? name,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) async {
@@ -157,6 +161,7 @@ class CollectionDao {
     if (clearHeroImage) values['hero_image_path'] = null;
     if (description != null) values['description'] = description;
     if (clearDescription) values['description'] = null;
+    if (isHidden != null) values['is_hidden'] = isHidden ? 1 : 0;
     if (values.isEmpty) return;
 
     final Database db = await _getDatabase();

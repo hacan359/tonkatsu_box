@@ -304,6 +304,7 @@ class DatabaseService {
     String? forkedFromAuthor,
     String? forkedFromName,
     DateTime? createdAt,
+    bool isHidden = false,
   }) =>
       collectionDao.createCollection(
         name: name,
@@ -313,6 +314,7 @@ class DatabaseService {
         forkedFromAuthor: forkedFromAuthor,
         forkedFromName: forkedFromName,
         createdAt: createdAt,
+        isHidden: isHidden,
       );
 
   Future<void> updateCollection(
@@ -320,6 +322,7 @@ class DatabaseService {
     String? name,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) =>
@@ -328,6 +331,7 @@ class DatabaseService {
         name: name,
         heroImagePath: heroImagePath,
         description: description,
+        isHidden: isHidden,
         clearHeroImage: clearHeroImage,
         clearDescription: clearDescription,
       );

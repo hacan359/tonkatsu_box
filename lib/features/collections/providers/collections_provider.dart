@@ -65,10 +65,12 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
   Future<Collection> create({
     required String name,
     required String author,
+    bool isHidden = false,
   }) async {
     final Collection collection = await _repository.create(
       name: name,
       author: author,
+      isHidden: isHidden,
     );
 
     final List<Collection> current = state.valueOrNull ?? <Collection>[];
@@ -91,11 +93,23 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     );
   }
 
+  Future<void> setHidden(int id, {required bool isHidden}) async {
+    await _repository.setHidden(id, isHidden: isHidden);
+
+    final List<Collection> current = state.valueOrNull ?? <Collection>[];
+    state = AsyncData<List<Collection>>(
+      current
+          .map((Collection c) => c.id == id ? c.copyWith(isHidden: isHidden) : c)
+          .toList(),
+    );
+  }
+
   Future<void> updatePersonalization(
     int id, {
     String? name,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) async {
@@ -104,6 +118,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
       name: name,
       heroImagePath: heroImagePath,
       description: description,
+      isHidden: isHidden,
       clearHeroImage: clearHeroImage,
       clearDescription: clearDescription,
     );
@@ -116,6 +131,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
           name: name,
           heroImagePath: heroImagePath,
           description: description,
+          isHidden: isHidden,
           clearHeroImage: clearHeroImage,
           clearDescription: clearDescription,
         );

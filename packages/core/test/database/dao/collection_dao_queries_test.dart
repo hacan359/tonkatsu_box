@@ -215,6 +215,68 @@ void main() {
       });
     });
 
+    group('isHidden', () {
+      test('defaults to false for a new collection', () async {
+        final Collection created =
+            await dao.createCollection(name: 'Plain', author: 'me');
+
+        expect(created.isHidden, false);
+        expect((await dao.getCollectionById(created.id))?.isHidden, false);
+      });
+
+      test('persists the flag passed to createCollection', () async {
+        final Collection created = await dao.createCollection(
+          name: 'Secret',
+          author: 'me',
+          isHidden: true,
+        );
+
+        expect(created.isHidden, true);
+        expect((await dao.getCollectionById(created.id))?.isHidden, true);
+      });
+
+      test('updateCollection toggles the flag both ways', () async {
+        final int id = await newCollection('Toggling');
+
+        await dao.updateCollection(id, isHidden: true);
+        expect((await dao.getCollectionById(id))?.isHidden, true);
+
+        await dao.updateCollection(id, isHidden: false);
+        expect((await dao.getCollectionById(id))?.isHidden, false);
+      });
+
+      test('updateCollection leaves the flag alone when it is not passed',
+          () async {
+        final Collection created = await dao.createCollection(
+          name: 'Secret',
+          author: 'me',
+          isHidden: true,
+        );
+
+        await dao.updateCollection(created.id, name: 'Renamed');
+
+        expect((await dao.getCollectionById(created.id))?.isHidden, true);
+      });
+
+      test('getAllCollections reports the flag', () async {
+        await dao.createCollection(name: 'Plain', author: 'me');
+        await dao.createCollection(
+          name: 'Secret',
+          author: 'me',
+          isHidden: true,
+        );
+
+        final List<Collection> all = await dao.getAllCollections();
+
+        expect(
+          <String, bool>{
+            for (final Collection c in all) c.name: c.isHidden,
+          },
+          <String, bool>{'Plain': false, 'Secret': true},
+        );
+      });
+    });
+
     group('deleteCollection', () {
       test('cascades to its items', () async {
         final int id = await newCollection('Doomed');

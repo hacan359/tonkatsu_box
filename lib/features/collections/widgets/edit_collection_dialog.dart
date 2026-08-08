@@ -10,6 +10,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/collections_provider.dart';
 import 'collection_hero_background.dart';
+import 'hidden_collection_checkbox.dart';
 
 /// Persists changes directly through `collectionsProvider.notifier`.
 /// Pops `true` if the user pressed Save and the changes were applied.
@@ -47,9 +48,12 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
 
   bool _saving = false;
 
+  late bool _isHidden;
+
   @override
   void initState() {
     super.initState();
+    _isHidden = widget.collection.isHidden;
     _nameController = TextEditingController(text: widget.collection.name);
     _descriptionController = TextEditingController(
       text: widget.collection.description ?? '',
@@ -123,6 +127,7 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
           name: nameChanged ? newName : null,
           heroImagePath: _pendingHeroFile,
           description: descChanged && !descEmpty ? newDescription : null,
+          isHidden: _isHidden != widget.collection.isHidden ? _isHidden : null,
           clearHeroImage: _clearHero,
           clearDescription: descChanged && descEmpty,
         );
@@ -251,6 +256,10 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
                 maxLength: 240,
                 textInputAction: TextInputAction.done,
                 onChanged: (_) => setState(() {}),
+              ),
+              HiddenCollectionCheckbox(
+                value: _isHidden,
+                onChanged: (bool value) => setState(() => _isHidden = value),
               ),
             ],
           ),
