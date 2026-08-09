@@ -1,0 +1,19 @@
+services:
+  tonkatsu:
+    build: .
+    image: tonkatsu-box:local
+    ports:
+      - "8080:8080"
+    volumes:
+      # Database, snapshots and keys.json live here and survive the container.
+      - tonkatsu-data:/data
+    environment:
+      # Anything in keys.json can be overridden without editing the file.
+      # TONKATSU_KEY_TMDB: "…"
+      # TONKATSU_KEY_IGDB_CLIENT_ID: "…"
+      # TONKATSU_KEY_IGDB_CLIENT_SECRET: "…"
+      TONKATSU_PORT: "8080"
+    restart: unless-stopped
+
+volumes:
+  tonkatsu-data:

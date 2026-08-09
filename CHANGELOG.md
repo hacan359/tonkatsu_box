@@ -353,22 +353,64 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     Clear-flow coverage — the button appears only over a set date, clearing
     writes NULL and never calls updateItemStatus.
 
-- **Experimental web build (selfhost, phase 2)**
+- **Selfhost: run Tonkatsu Box in a browser against your own server**
 
-  The app now compiles and boots in the browser. Data lives in an in-browser
-  SQLite database and starts empty — server-backed storage arrives in a later
-  phase. Features that need a local filesystem are hidden on web: collection
+  `docker compose up` builds an image that serves the web client and owns the
+  database. The browser keeps no data of its own — every read and write is a
+  call to the server, so a phone and a desktop see the same collections, and
+  the database survives recreating the container. External APIs are reached
+  through the server too, which is what makes search work from a browser at all
+  and keeps every API key off the page; the key screen on web says so instead
+  of offering fields. Features that need a local filesystem stay hidden there:
   import/export, backups, the data folder, LAN sync, PNG export, cover/hero
-  file picking and the disk image cache. The browser tab and PWA icons use the
-  brand logo.
+  file picking, the disk image cache and profile switching.
 
-  * web/: New. Flutter web bootstrap (index.html, manifest.json), the
-    sqflite_common_ffi_web worker (sqflite_sw.js, sqlite3.wasm), favicon and
+  Covers are not in yet — the browser shows titles without artwork.
+
+  * Dockerfile, docker-compose.yml, .dockerignore: New. Builds the web client
+    and the server in one go, so neither Flutter nor Dart is needed on the
+    machine doing the build; data lives in the `/data` volume.
+  * server/lib/src/proxy_handler.dart (ApiProxy, ProxyCredentialException),
+    upstream_client.dart (UpstreamClient, HttpUpstreamClient),
+    api_credentials.dart (ApiCredentials, ApiCredentialsException): New.
+    `/proxy/<slug>/<path>` forwards to an allowlisted upstream with the
+    server's User-Agent and credentials; IGDB's Twitch token is exchanged and
+    cached here so the client secret never reaches a browser.
+  * packages/core/lib/api/proxy_targets.dart (ProxyTarget, proxyTargetForHost,
+    proxyTargetForSlug), credential_names.dart (CredentialNames): New. One
+    allowlist shared by both ends, so the browser's rewrite and the server's
+    refusal cannot drift apart.
+  * lib/core/api/proxy_rewrite_interceptor.dart (ProxyRewriteInterceptor):
+    New. On web, rewrites the resolved request URI of any allowlisted host to
+    the server's proxy — covers both clients with a baseUrl and those building
+    a full URL per request.
+  * lib/core/api/api_dio.dart (createApiDio): Installs the interceptor on web.
+  * lib/core/rpc/dio_rpc_transport.dart (DioRpcTransport): New. Carries the
+    generated DAO stubs to `/rpc`, one method per round trip.
+  * lib/core/selfhost/server_origin.dart (kServerBaseUrl, serverBaseUrl),
+    server_managed_keys.dart (kServerManagedKey,
+    fetchServerCredentialAvailability): New. The server's address, and which
+    credentials it holds — presence only, never a value.
+  * lib/core/database/database_service.dart (DatabaseService, DatabaseService.
+    warmUp): Web hands out the generated RemoteDaoSet instead of local DAOs;
+    touching the local database there throws rather than silently collecting
+    writes the server never sees.
+  * packages/core/tool/generate_rpc.dart (generateRpcSources): Also emits
+    RemoteDaoSet, so a new DAO reaches the client without a hand edit.
+  * lib/main.dart (main), lib/core/services/api_key_initializer.dart
+    (ApiKeys.serverManaged): Web seeds the key store from the server instead of
+    SharedPreferences.
+  * lib/features/settings/content/credentials_content.dart
+    (CredentialsContent.build): Web shows "keys are managed by the server".
+  * lib/features/settings/screens/settings_screen.dart,
+    lib/features/splash/screens/splash_screen.dart: Profile switching is hidden
+    on web — the server owns one database.
+  * web/: New. Flutter web bootstrap (index.html, manifest.json), favicon and
     icons generated from assets/icon/icon.png.
   * lib/core/services/platform_init_io.dart,
     lib/core/services/platform_init_web.dart (initPlatform): New. Per-target
-    startup seam — HttpOverrides + ffi database factory on desktop, the
-    in-browser factory on web.
+    startup seam — HttpOverrides + ffi database factory on desktop, nothing on
+    web.
   * lib/main.dart (main): Platform setup goes through the initPlatform
     conditional import instead of inline dart:io checks.
   * lib/core/services/discord_presence_shim.dart,
@@ -408,7 +450,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/services/gamepad_mappings.dart
     (GamepadMapping.forCurrentPlatform): Returns an inert mapping on web
     before touching Platform.
-  * pubspec.yaml: Add sqflite_common, sqflite_common_ffi_web; web section in
+  * pubspec.yaml: Add sqflite_common; web section in
     the flutter_launcher_icons config.
   * packages/core/test/utils/stable_id_test.dart: New. Golden vectors pin the
     id contract; io and web variants must agree.

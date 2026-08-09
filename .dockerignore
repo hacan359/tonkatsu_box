@@ -1,0 +1,16 @@
+.git
+.dart_tool
+build
+*/build
+packages/*/.dart_tool
+server/.dart_tool
+server/build
+android
+ios
+linux
+macos
+windows
+dev
+docs
+test
+coverage

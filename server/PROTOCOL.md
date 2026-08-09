@@ -9,10 +9,16 @@ SQLite's writer lock.
 server ship in the same image, so a mismatch only means a stale browser tab —
 the client is told to reload rather than negotiating.
 
-Status: implemented for all 23 DAOs (266 methods).
-`packages/core/tool/generate_rpc.dart` emits the stubs, the per-DAO dispatchers
-and the name→dispatcher table; `--survey` type-checks the whole surface without
-writing anything.
+Status: implemented and wired on both ends for all 23 DAOs (266 methods).
+`packages/core/tool/generate_rpc.dart` emits the stubs, the per-DAO dispatchers,
+the name→dispatcher table and `RemoteDaoSet`; `--survey` type-checks the whole
+surface without writing anything.
+
+The browser reaches the server through `DioRpcTransport`
+(`lib/core/rpc/dio_rpc_transport.dart`), which posts to the page's own origin.
+A `flutter run -d chrome` session serves the page from somewhere else, so it
+needs `--dart-define=SERVER_BASE_URL=http://localhost:8080` — the same define
+also points `/proxy` (below) at that server.
 
 ## Request
 

@@ -481,16 +481,28 @@ new `dart:io` import is a file the web build cannot compile. Add a flag instead.
 `defaultTargetPlatform` is not a substitute: it reports android in tests running
 on Windows.
 
-### Web build (selfhost, phase 2 — in progress)
+### Web build (selfhost, phase 3 — in progress)
 
-The app compiles and boots in the browser. This is a stopgap: SQLite runs
-**in-browser** via `sqflite_common_ffi_web` with an empty DB
-(`platform_init_web.dart`); the real backend is the DAO-RPC server (phase 3),
-image caching goes through the server proxy in phase 5.
+The browser holds **no database at all**: `databaseServiceProvider` hands out
+the generated `RemoteDaoSet` (`packages/core/lib/rpc/generated/`), so every DAO
+call is one POST to the server's `/rpc` next to the real file. Touching
+`DatabaseService.database` on web throws — a local database there would quietly
+collect writes the server never sees. Image caching moves to the server proxy in
+phase 5.
+
+External APIs are unreachable from a browser (no CORS header, a stripped
+`User-Agent`, keys that must not ship to a tab), so on web `createApiDio`
+installs `ProxyRewriteInterceptor`: any host in `kProxyTargets`
+(`packages/core/lib/api/proxy_targets.dart`) is rewritten to
+`/proxy/<slug>/…` on the server, which adds the agent and the real credentials.
+That table is shared by both ends on purpose — a second copy would drift and
+turn the route into an open relay. Adding an API means adding a row there, and
+a keyed one also needs a case in `ApiProxy._authorize`.
 
 ```bash
-powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter run -d chrome"
 powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter build web"
+# dev, page and server on different ports:
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter run -d chrome --dart-define=SERVER_BASE_URL=http://localhost:8080"
 ```
 
 How web is kept compilable — three seams, in order of preference:
@@ -508,9 +520,6 @@ Rules while the web phase is in flight:
 - Any change must keep **all three** targets green: Windows, Android, web.
   `flutter analyze` does not catch web-only breaks — a `dart:io` import in a
   newly reachable file only fails at `flutter build web`.
-- `web/sqflite_sw.js` and `web/sqlite3.wasm` are **generated** by
-  `dart run sqflite_common_ffi_web:setup` — never hand-edit; regenerate after
-  upgrading `sqflite_common_ffi_web`.
 - Web icons (`web/favicon.png`, `web/icons/*`) are generated from
   `assets/icon/icon.png` by `dart run flutter_launcher_icons` (config in
   `pubspec.yaml`) — regenerate, don't hand-edit.
@@ -567,4 +576,5 @@ Full docs: `docs/GAMEPAD.md`.
 | `analysis_options.yaml` | Strict lint rules |
 | `server/` | Selfhost server: boot, migrations, static, `/rpc`; `PROTOCOL.md` = contract |
 | `packages/core/tool/generate_rpc.dart` | Emits the RPC stubs + dispatcher from DAO signatures |
+| `lib/core/rpc/dio_rpc_transport.dart` | The app's `/rpc` client — the one seam web DAOs go through |
 | `docs/` | ARCHITECTURE, CODESTYLE, COMMITS, GAMEPAD, RCOLL_FORMAT… |
