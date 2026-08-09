@@ -1,5 +1,6 @@
 import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -58,6 +59,32 @@ void main() {
   S loc(WidgetTester tester) =>
       S.of(tester.element(find.byType(SimklImportContent)));
 
+  /// Drives the client-id form until the PIN block is on screen.
+  Future<SharedPreferences> pumpPinBlock(WidgetTester tester) async {
+    when(() => mockSimkl.requestPin()).thenAnswer((_) async => const SimklPin(
+          userCode: 'AB12C',
+          verificationUrl: 'https://simkl.com/pin',
+          expiresIn: 900,
+          // Long enough that no poll tick fires during the test.
+          interval: 600,
+        ));
+    final SharedPreferences prefs = await pumpContent(tester);
+
+    await tester.enterText(
+      find.ancestor(
+        of: find.text(loc(tester).simklClientIdLabel),
+        matching: find.byType(TextField),
+      ),
+      'my-client-id',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(loc(tester).simklGetPin));
+    // The PIN block spins an indeterminate bar, so it never settles.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    return prefs;
+  }
+
   group('SimklImportContent', () {
     testWidgets('renders the disconnected form without exceptions',
         (WidgetTester tester) async {
@@ -90,27 +117,7 @@ void main() {
 
     testWidgets('shows the PIN code once the user supplies a client id',
         (WidgetTester tester) async {
-      when(() => mockSimkl.requestPin()).thenAnswer((_) async => const SimklPin(
-            userCode: 'AB12C',
-            verificationUrl: 'https://simkl.com/pin',
-            expiresIn: 900,
-            // Long enough that no poll tick fires during the test.
-            interval: 600,
-          ));
-      final SharedPreferences prefs = await pumpContent(tester);
-
-      await tester.enterText(
-        find.ancestor(
-          of: find.text(loc(tester).simklClientIdLabel),
-          matching: find.byType(TextField),
-        ),
-        'my-client-id',
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(loc(tester).simklGetPin));
-      // The PIN block spins an indeterminate bar, so it never settles.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      final SharedPreferences prefs = await pumpPinBlock(tester);
 
       expect(find.text('AB12C'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -119,6 +126,37 @@ void main() {
       expect(prefs.getString(SettingsKeys.simklClientId), 'my-client-id');
 
       // Dispose the tree so the poll timer is cancelled before teardown.
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('copies the PIN code when the copy button is tapped',
+        (WidgetTester tester) async {
+      final List<MethodCall> platformCalls = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (MethodCall call) async {
+          platformCalls.add(call);
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      await pumpPinBlock(tester);
+
+      await tester.tap(find.byTooltip(loc(tester).copy));
+      await tester.pump();
+
+      final Iterable<MethodCall> copies = platformCalls
+          .where((MethodCall call) => call.method == 'Clipboard.setData');
+      expect(copies, hasLength(1));
+      expect(
+        (copies.first.arguments as Map<Object?, Object?>)['text'],
+        'AB12C',
+      );
+      expect(tester.takeException(), isNull);
+
       await tester.pumpWidget(const SizedBox.shrink());
     });
 

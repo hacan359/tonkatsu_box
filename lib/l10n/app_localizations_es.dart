@@ -5574,6 +5574,9 @@ class SEs extends S {
   String get simklPinPrompt => 'Introduce este código en simkl.com/pin:';
 
   @override
+  String get simklPinCopied => 'Código copiado';
+
+  @override
   String get simklOpenPinPage => 'Abrir simkl.com/pin';
 
   @override

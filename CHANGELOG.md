@@ -413,6 +413,20 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * packages/core/test/utils/stable_id_test.dart: New. Golden vectors pin the
     id contract; io and web variants must agree.
 
+### Changed
+
+- **Copy the Simkl pairing code with one tap**
+
+  The code block on the Simkl import screen gets a copy button, so the code no
+  longer has to be retyped by hand into simkl.com/pin.
+
+  * lib/features/settings/content/simkl_import_content.dart
+    (_SimklImportContentState._buildPinBlock,
+    _SimklImportContentState._copyPin): Copy button next to the code, with a
+    confirmation snack.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (simklPinCopied): New string.
+
 ### Removed
 
 - **Drop orphaned widgets left behind by earlier redesigns**

@@ -5503,6 +5503,9 @@ class SEn extends S {
   String get simklPinPrompt => 'Enter this code at simkl.com/pin:';
 
   @override
+  String get simklPinCopied => 'Code copied';
+
+  @override
   String get simklOpenPinPage => 'Open simkl.com/pin';
 
   @override

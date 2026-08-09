@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:core/models/collection.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -334,14 +335,28 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               border: Border.all(color: AppColors.surfaceBorder),
             ),
-            child: Center(
-              child: SelectableText(
-                pin.userCode,
-                style: AppTypography.h3.copyWith(
-                  fontFamily: 'monospace',
-                  letterSpacing: 8,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Flexible(
+                  child: SelectableText(
+                    pin.userCode,
+                    style: AppTypography.h3.copyWith(
+                      fontFamily: 'monospace',
+                      letterSpacing: 8,
+                    ),
+                  ),
                 ),
-              ),
+                IconButton(
+                  onPressed: () => _copyPin(pin.userCode),
+                  icon: const Icon(Icons.copy, size: 18),
+                  tooltip: l.copy,
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(AppSpacing.xs),
+                  color: AppColors.textSecondary,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -663,6 +678,12 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
         ],
       ),
     );
+  }
+
+
+  void _copyPin(String userCode) {
+    Clipboard.setData(ClipboardData(text: userCode));
+    context.showSnack(S.of(context).simklPinCopied);
   }
 
 

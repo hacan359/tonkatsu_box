@@ -5555,6 +5555,9 @@ class SPt extends S {
   String get simklPinPrompt => 'Digite este código em simkl.com/pin:';
 
   @override
+  String get simklPinCopied => 'Código copiado';
+
+  @override
   String get simklOpenPinPage => 'Abrir simkl.com/pin';
 
   @override
