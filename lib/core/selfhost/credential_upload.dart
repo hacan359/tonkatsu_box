@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:core/api/credential_names.dart';
 import 'package:core/api/proxy_targets.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../shared/constants/platform_features.dart';
 
 import 'server_origin.dart';
 
@@ -22,6 +25,11 @@ const Map<String, String> kConfigKeyToCredential = <String, String>{
   'simkl_client_id': CredentialNames.simklClientId,
 };
 
+final Map<String, String> kCredentialToConfigKey = <String, String>{
+  for (final MapEntry<String, String> e in kConfigKeyToCredential.entries)
+    e.value: e.key,
+};
+
 /// Pulls the credentials out of an exported config, ignoring everything else
 /// in it — theme and language are the browser's business, not the server's.
 Map<String, String> credentialsFromConfig(List<int> bytes) {
@@ -33,6 +41,18 @@ Map<String, String> credentialsFromConfig(List<int> bytes) {
       if (decoded[pair.key] case final String value when value.isNotEmpty)
         pair.value: value,
   };
+}
+
+/// Pushes everything the prefs hold, for the screens that write a credential
+/// straight to SharedPreferences instead of going through SettingsNotifier.
+Future<void> syncCredentialsToServer(SharedPreferences prefs) async {
+  if (!kIsWebBuild) return;
+  final Map<String, String> credentials = <String, String>{
+    for (final MapEntry<String, String> e in kConfigKeyToCredential.entries)
+      if (prefs.getString(e.key) case final String value when value.isNotEmpty)
+        e.value: value,
+  };
+  if (credentials.isNotEmpty) await uploadCredentials(credentials);
 }
 
 /// Hands them to the server and returns what it now holds. They pass through

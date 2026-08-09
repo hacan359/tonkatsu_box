@@ -21,6 +21,7 @@ import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../../../core/selfhost/credential_upload.dart';
 import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
@@ -421,6 +422,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString(SettingsKeys.raUsername, username);
       await prefs.setString(SettingsKeys.raApiKey, apiKey);
+      await syncCredentialsToServer(prefs);
       ref.read(raApiProvider).setCredentials(
             username: username,
             apiKey: apiKey,
@@ -514,6 +516,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(SettingsKeys.raUsername, username);
     await prefs.setString(SettingsKeys.raApiKey, apiKey);
+    await syncCredentialsToServer(prefs);
 
     setState(() {
       _isImporting = true;

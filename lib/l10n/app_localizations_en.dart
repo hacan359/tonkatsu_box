@@ -572,11 +572,11 @@ class SEn extends S {
   String get settingsApiKeys => 'API Keys';
 
   @override
-  String get credentialsServerManagedTitle => 'Keys are managed by the server';
+  String get credentialsServerManagedTitle => 'Keys are stored on the server';
 
   @override
   String get credentialsServerManagedBody =>
-      'This browser never holds API secrets — the selfhost server adds them to every outgoing request. Configure them in its keys.json or TONKATSU_KEY_* variables.';
+      'Anything entered below is saved on the selfhost server, not in this browser — that is where requests to the APIs are made from. You can also load them from a config file exported on desktop.';
 
   @override
   String get credentialsUploadFromConfig => 'Load keys from a config file';

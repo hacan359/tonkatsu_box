@@ -66,14 +66,19 @@ class ApiCredentials {
 
   bool has(String name) => this[name] != null;
 
-  /// Unknown names are dropped: the keys file stays a closed vocabulary.
+  /// Unknown names are dropped — the keys file stays a closed vocabulary — and
+  /// an empty value clears one, which is how the settings screen deletes a key.
   ApiCredentials merge(Map<String, String> updates) {
-    return ApiCredentials(<String, String>{
-      ..._values,
-      for (final MapEntry<String, String> e in updates.entries)
-        if (CredentialNames.all.contains(e.key) && e.value.isNotEmpty)
-          e.key: e.value,
-    });
+    final Map<String, String> next = <String, String>{..._values};
+    for (final MapEntry<String, String> e in updates.entries) {
+      if (!CredentialNames.all.contains(e.key)) continue;
+      if (e.value.isEmpty) {
+        next.remove(e.key);
+      } else {
+        next[e.key] = e.value;
+      }
+    }
+    return ApiCredentials(next);
   }
 
   /// Writes what a later boot will read back, so an upload outlives the
@@ -87,8 +92,10 @@ class ApiCredentials {
     );
   }
 
-  /// What `/proxy/keys` answers: presence only, never a value.
-  Map<String, bool> get availability => <String, bool>{
-        for (final String name in CredentialNames.all) name: has(name),
+  /// What `/proxy/keys` answers. The browser is the same person who set them,
+  /// and the settings screen shows and edits them exactly as on desktop.
+  Map<String, String> get values => <String, String>{
+        for (final String name in CredentialNames.all)
+          if (this[name] case final String value) name: value,
       };
 }

@@ -43,19 +43,20 @@ class ApiProxy {
 
   ApiCredentials credentials;
 
-  /// Replaces the live set so a key starts working without a restart, and
-  /// drops the IGDB token in case its credentials just changed.
-  Map<String, bool> applyCredentials(Map<String, String> updates) {
-    credentials = credentials.merge(updates);
-    _igdbToken = null;
-    final String? dir = dataDir;
-    if (dir != null) credentials.saveTo(dir);
-    return credentials.availability;
-  }
   final UpstreamClient _upstream;
   final DateTime Function() _now;
 
   _CachedToken? _igdbToken;
+
+  /// Replaces the live set so a key starts working without a restart, and
+  /// drops the IGDB token in case its credentials just changed.
+  Map<String, String> applyCredentials(Map<String, String> updates) {
+    credentials = credentials.merge(updates);
+    _igdbToken = null;
+    final String? dir = dataDir;
+    if (dir != null) credentials.saveTo(dir);
+    return credentials.values;
+  }
 
   Handler get handler => (Request request) async {
         // url is relative to the app root, so segment 0 is the `/proxy` prefix.

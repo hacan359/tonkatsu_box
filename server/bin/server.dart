@@ -50,10 +50,7 @@ Future<void> main(List<String> args) async {
     exitCode = 1;
     return;
   }
-  final List<String> configured = credentials.availability.entries
-      .where((MapEntry<String, bool> e) => e.value)
-      .map((MapEntry<String, bool> e) => e.key)
-      .toList();
+  final List<String> configured = credentials.values.keys.toList();
   stdout.writeln(
     configured.isEmpty
         ? 'No API credentials configured — the proxy will answer 503 for them'

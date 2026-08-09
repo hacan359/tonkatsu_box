@@ -575,11 +575,11 @@ class SEs extends S {
 
   @override
   String get credentialsServerManagedTitle =>
-      'Las claves las gestiona el servidor';
+      'Las claves se guardan en el servidor';
 
   @override
   String get credentialsServerManagedBody =>
-      'Este navegador nunca guarda secretos de API: el servidor selfhost los añade a cada petición saliente. Configúralos en su keys.json o en las variables TONKATSU_KEY_*.';
+      'Lo que introduzcas abajo se guarda en el servidor selfhost, no en este navegador: desde allí se hacen las peticiones a las API. También puedes cargarlas desde un archivo de configuración exportado en el escritorio.';
 
   @override
   String get credentialsUploadFromConfig =>

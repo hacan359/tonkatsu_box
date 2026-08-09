@@ -307,8 +307,8 @@ void main() {
 
       final Map<String, Object?> body =
           jsonDecode(await response.readAsString()) as Map<String, Object?>;
-      expect(body[CredentialNames.hardcover], isTrue);
-      expect(body[CredentialNames.tmdb], isTrue);
+      expect(body[CredentialNames.hardcover], 'kept');
+      expect(body[CredentialNames.tmdb], 'new');
     });
 
     test('should reject a body that is not an object', () async {
@@ -325,16 +325,18 @@ void main() {
   });
 
   group('GET /proxy/keys', () {
-    test('should report presence and never a value', () async {
+    test('should return what is set and omit what is not', () async {
       final Handler handler =
-          handlerWith(<String, String>{CredentialNames.tmdb: 'tmdb-secret'});
+          handlerWith(<String, String>{CredentialNames.tmdb: 'tmdb-key'});
 
       final Response response = await get(handler, '/proxy/keys');
-      final String body = await response.readAsString();
+      final Object? body = jsonDecode(await response.readAsString());
 
-      expect(jsonDecode(body), containsPair(CredentialNames.tmdb, true));
-      expect(jsonDecode(body), containsPair(CredentialNames.hardcover, false));
-      expect(body, isNot(contains('tmdb-secret')));
+      expect(body, containsPair(CredentialNames.tmdb, 'tmdb-key'));
+      expect(
+        (body! as Map<String, Object?>).containsKey(CredentialNames.hardcover),
+        isFalse,
+      );
     });
   });
 }

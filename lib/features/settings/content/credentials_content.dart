@@ -13,6 +13,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/api/screenscraper_api.dart';
 import '../../../core/selfhost/credential_upload.dart';
+import '../../../main.dart' show AppRestartScope;
 import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
@@ -90,10 +91,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   @override
   Widget build(BuildContext context) {
-    // Editing a key here would write it into the browser — the one place the
-    // selfhost design keeps secrets out of.
-    if (kIsWebBuild) return _buildServerManagedSection();
-
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final bool compact = isCompactScreen(context);
 
@@ -102,6 +99,12 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       children: <Widget>[
         if (widget.isInitialSetup) ...<Widget>[
           _buildWelcomeSection(),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        // Web has no config-import entry of its own yet, so the fast path to a
+        // filled-in screen lives here.
+        if (kIsWebBuild) ...<Widget>[
+          _buildServerManagedSection(),
           const SizedBox(height: AppSpacing.md),
         ],
         _buildIgdbSection(settings, compact),
@@ -775,9 +778,11 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       }
 
       final Map<String, bool> stored = await uploadCredentials(credentials);
-      if (mounted) {
-        context.showSnack(S.of(context).credentialsUploadDone(stored.length));
-      }
+      if (!mounted) return;
+      context.showSnack(S.of(context).credentialsUploadDone(stored.length));
+      // The key store is built once at boot from /proxy/keys, so the tab keeps
+      // saying "no key" until it reloads.
+      await AppRestartScope.restart(context);
     } on Object catch (e) {
       if (mounted) context.showSnack('$e', type: SnackType.error);
     } finally {

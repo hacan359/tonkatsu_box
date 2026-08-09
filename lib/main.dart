@@ -14,6 +14,7 @@ import 'core/services/api_key_initializer.dart';
 import 'core/services/collection_hero_service.dart';
 import 'core/services/platform_init_io.dart'
     if (dart.library.js_interop) 'core/services/platform_init_web.dart';
+import 'core/selfhost/credential_upload.dart';
 import 'core/selfhost/server_managed_keys.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
@@ -63,9 +64,16 @@ Future<void> main() async {
 
 Future<void> _loadAppState() async {
   _prefs = await SharedPreferences.getInstance();
-  _apiKeys = kIsWebBuild
-      ? ApiKeys.serverManaged(await fetchServerCredentialAvailability())
-      : ApiKeys.fromPrefs(_prefs);
+  // Web keeps the same prefs-backed reads as desktop; the server is where the
+  // values live, so they are copied in before anything reads them.
+  if (kIsWebBuild) {
+    final Map<String, String> fromServer = await fetchServerCredentials();
+    for (final MapEntry<String, String> e in fromServer.entries) {
+      final String? prefKey = kCredentialToConfigKey[e.key];
+      if (prefKey != null) await _prefs.setString(prefKey, e.value);
+    }
+  }
+  _apiKeys = ApiKeys.fromPrefs(_prefs);
 
   final ProfileService profileService = ProfileService();
   await profileService.migrateIfNeeded();

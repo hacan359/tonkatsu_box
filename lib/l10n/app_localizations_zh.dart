@@ -524,11 +524,11 @@ class SZh extends S {
   String get settingsApiKeys => 'API 密钥';
 
   @override
-  String get credentialsServerManagedTitle => '密钥由服务器管理';
+  String get credentialsServerManagedTitle => '密钥保存在服务器上';
 
   @override
   String get credentialsServerManagedBody =>
-      '浏览器不会保存任何 API 密钥——自托管服务器会在每个外发请求中注入它们。请在服务器的 keys.json 或 TONKATSU_KEY_* 环境变量中配置。';
+      '下面填写的内容会保存到自托管服务器，而不是这个浏览器——对 API 的请求正是从那里发出的。你也可以从桌面端导出的配置文件加载它们。';
 
   @override
   String get credentialsUploadFromConfig => '从配置文件加载密钥';

@@ -4,13 +4,9 @@ import 'package:dio/dio.dart';
 
 import 'server_origin.dart';
 
-/// Stands in for a secret the browser may not hold: the API clients gate on
-/// "is a key configured", and the proxy swaps this for the real one.
-const String kServerManagedKey = 'server-managed';
-
-/// Presence only, never a value. An unreachable server yields an empty map, so
-/// the app boots with search disabled rather than not at all.
-Future<Map<String, bool>> fetchServerCredentialAvailability({Dio? dio}) async {
+/// The keys the server holds. An unreachable server yields an empty map, so the
+/// app boots with search disabled rather than not at all.
+Future<Map<String, String>> fetchServerCredentials({Dio? dio}) async {
   final Dio client = dio ??
       Dio(BaseOptions(
         baseUrl: serverBaseUrl(),
@@ -22,13 +18,14 @@ Future<Map<String, bool>> fetchServerCredentialAvailability({Dio? dio}) async {
     final Response<Object?> response =
         await client.get<Object?>('$kProxyPathPrefix/keys');
     final Object? data = response.data;
-    if (data is! Map<String, Object?>) return const <String, bool>{};
+    if (data is! Map<String, Object?>) return const <String, String>{};
 
-    return <String, bool>{
+    return <String, String>{
       for (final String name in CredentialNames.all)
-        if (data[name] == true) name: true,
+        if (data[name] case final String value when value.isNotEmpty)
+          name: value,
     };
   } on Object {
-    return const <String, bool>{};
+    return const <String, String>{};
   }
 }
