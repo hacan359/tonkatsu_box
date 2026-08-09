@@ -579,6 +579,17 @@ class SEn extends S {
       'This browser never holds API secrets — the selfhost server adds them to every outgoing request. Configure them in its keys.json or TONKATSU_KEY_* variables.';
 
   @override
+  String get credentialsUploadFromConfig => 'Load keys from a config file';
+
+  @override
+  String get credentialsUploadNoKeys => 'No API keys in that file';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count keys stored on the server';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

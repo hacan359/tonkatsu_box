@@ -582,6 +582,18 @@ class SEs extends S {
       'Este navegador nunca guarda secretos de API: el servidor selfhost los añade a cada petición saliente. Configúralos en su keys.json o en las variables TONKATSU_KEY_*.';
 
   @override
+  String get credentialsUploadFromConfig =>
+      'Cargar claves desde un archivo de configuración';
+
+  @override
+  String get credentialsUploadNoKeys => 'Ese archivo no contiene claves de API';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count claves guardadas en el servidor';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

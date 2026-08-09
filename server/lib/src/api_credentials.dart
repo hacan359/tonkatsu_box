@@ -66,6 +66,27 @@ class ApiCredentials {
 
   bool has(String name) => this[name] != null;
 
+  /// Unknown names are dropped: the keys file stays a closed vocabulary.
+  ApiCredentials merge(Map<String, String> updates) {
+    return ApiCredentials(<String, String>{
+      ..._values,
+      for (final MapEntry<String, String> e in updates.entries)
+        if (CredentialNames.all.contains(e.key) && e.value.isNotEmpty)
+          e.key: e.value,
+    });
+  }
+
+  /// Writes what a later boot will read back, so an upload outlives the
+  /// container.
+  void saveTo(String dataDir) {
+    final File file = File(p.join(dataDir, 'keys.json'));
+    file.parent.createSync(recursive: true);
+    file.writeAsStringSync(
+      const JsonEncoder.withIndent('  ').convert(_values),
+      flush: true,
+    );
+  }
+
   /// What `/proxy/keys` answers: presence only, never a value.
   Map<String, bool> get availability => <String, bool>{
         for (final String name in CredentialNames.all) name: has(name),

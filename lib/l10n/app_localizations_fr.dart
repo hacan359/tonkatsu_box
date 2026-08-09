@@ -583,6 +583,18 @@ class SFr extends S {
       'Ce navigateur ne conserve aucun secret d\'API : le serveur selfhost les ajoute à chaque requête sortante. Configurez-les dans son keys.json ou via les variables TONKATSU_KEY_*.';
 
   @override
+  String get credentialsUploadFromConfig =>
+      'Charger les clés depuis un fichier de configuration';
+
+  @override
+  String get credentialsUploadNoKeys => 'Aucune clé API dans ce fichier';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count clés enregistrées sur le serveur';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

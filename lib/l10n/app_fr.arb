@@ -214,6 +214,10 @@
   "settingsApiKeys": "Clés API",
   "credentialsServerManagedTitle": "Les clés sont gérées par le serveur",
   "credentialsServerManagedBody": "Ce navigateur ne conserve aucun secret d'API : le serveur selfhost les ajoute à chaque requête sortante. Configurez-les dans son keys.json ou via les variables TONKATSU_KEY_*.",
+  "credentialsUploadFromConfig": "Charger les clés depuis un fichier de configuration",
+  "credentialsUploadNoKeys": "Aucune clé API dans ce fichier",
+  "credentialsUploadDone": "{count} clés enregistrées sur le serveur",
+  "@credentialsUploadDone": {"placeholders": {"count": {"type": "int"}}},
   "settingsApiKeysValue": "{active}/{total}",
   "@settingsApiKeysValue": {
     "placeholders": {

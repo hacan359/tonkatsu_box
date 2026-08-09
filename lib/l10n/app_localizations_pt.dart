@@ -582,6 +582,18 @@ class SPt extends S {
       'Este navegador nunca guarda segredos de API — o servidor selfhost adiciona-os a cada pedido enviado. Configure-os no keys.json dele ou nas variáveis TONKATSU_KEY_*.';
 
   @override
+  String get credentialsUploadFromConfig =>
+      'Carregar chaves de um ficheiro de configuração';
+
+  @override
+  String get credentialsUploadNoKeys => 'Esse ficheiro não tem chaves de API';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count chaves guardadas no servidor';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

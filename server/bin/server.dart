@@ -64,7 +64,7 @@ Future<void> main(List<String> args) async {
     buildAppHandler(
       schemaVersion: bootstrap.schemaVersion,
       daos: DaoRegistry(bootstrap.db),
-      proxy: ApiProxy(credentials: credentials),
+      proxy: ApiProxy(credentials: credentials, dataDir: config.dataDir),
       images: ImageCache(dataDir: config.dataDir),
       webRoot: config.webRoot,
     ),

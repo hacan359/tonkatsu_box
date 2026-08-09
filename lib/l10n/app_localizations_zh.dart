@@ -531,6 +531,17 @@ class SZh extends S {
       '浏览器不会保存任何 API 密钥——自托管服务器会在每个外发请求中注入它们。请在服务器的 keys.json 或 TONKATSU_KEY_* 环境变量中配置。';
 
   @override
+  String get credentialsUploadFromConfig => '从配置文件加载密钥';
+
+  @override
+  String get credentialsUploadNoKeys => '该文件中没有 API 密钥';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '已在服务器上保存 $count 个密钥';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

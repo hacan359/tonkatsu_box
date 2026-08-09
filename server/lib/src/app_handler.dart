@@ -53,6 +53,26 @@ Handler buildAppHandler({
     });
     // Both shapes: AniList and friends are posted to the bare host, so the
     // rewritten path can end at the slug.
+    // The browser has no keys file to edit, so it hands the server the
+    // credentials out of an exported config and forgets them again.
+    api.post('$kProxyPathPrefix/keys', (Request request) async {
+      final Object? body = jsonDecode(await request.readAsString());
+      if (body is! Map<String, Object?>) {
+        return Response(HttpStatus.badRequest,
+            body: jsonEncode(<String, Object?>{'ok': false}));
+      }
+      final Map<String, bool> availability =
+          proxy.applyCredentials(<String, String>{
+        for (final MapEntry<String, Object?> e in body.entries)
+          if (e.value is String) e.key: e.value! as String,
+      });
+      return Response.ok(
+        jsonEncode(availability),
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+      );
+    });
     api.all('$kProxyPathPrefix/<slug>', proxy.handler);
     api.all('$kProxyPathPrefix/<slug>/<rest|.*>', proxy.handler);
   }

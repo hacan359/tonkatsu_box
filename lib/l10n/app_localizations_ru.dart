@@ -591,6 +591,17 @@ class SRu extends S {
       'Браузер не хранит секреты API — селфхост-сервер подставляет их в каждый исходящий запрос. Настраиваются в его keys.json или переменных TONKATSU_KEY_*.';
 
   @override
+  String get credentialsUploadFromConfig => 'Загрузить ключи из файла конфига';
+
+  @override
+  String get credentialsUploadNoKeys => 'В этом файле нет API-ключей';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return 'На сервере сохранено ключей: $count';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

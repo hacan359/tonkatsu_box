@@ -214,6 +214,10 @@
   "settingsApiKeys": "API 密钥",
   "credentialsServerManagedTitle": "密钥由服务器管理",
   "credentialsServerManagedBody": "浏览器不会保存任何 API 密钥——自托管服务器会在每个外发请求中注入它们。请在服务器的 keys.json 或 TONKATSU_KEY_* 环境变量中配置。",
+  "credentialsUploadFromConfig": "从配置文件加载密钥",
+  "credentialsUploadNoKeys": "该文件中没有 API 密钥",
+  "credentialsUploadDone": "已在服务器上保存 {count} 个密钥",
+  "@credentialsUploadDone": {"placeholders": {"count": {"type": "int"}}},
   "settingsApiKeysValue": "{active}/{total}",
   "@settingsApiKeysValue": {
     "placeholders": {
