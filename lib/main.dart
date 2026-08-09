@@ -14,8 +14,7 @@ import 'core/services/api_key_initializer.dart';
 import 'core/services/collection_hero_service.dart';
 import 'core/services/platform_init_io.dart'
     if (dart.library.js_interop) 'core/services/platform_init_web.dart';
-import 'core/selfhost/credential_upload.dart';
-import 'core/selfhost/server_managed_keys.dart';
+import 'core/selfhost/server_credentials.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';

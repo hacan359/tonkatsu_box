@@ -21,7 +21,7 @@ import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
-import '../../../core/selfhost/credential_upload.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/constants/api_defaults.dart';
-import '../../../core/selfhost/credential_upload.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_theme_id.dart';
 import '../../../core/services/discord_rpc_service.dart';

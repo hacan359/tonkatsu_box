@@ -12,7 +12,7 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/api/screenscraper_api.dart';
-import '../../../core/selfhost/credential_upload.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../../../main.dart' show AppRestartScope;
 import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
@@ -777,7 +777,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         return;
       }
 
-      final Map<String, bool> stored = await uploadCredentials(credentials);
+      final Map<String, String> stored = await uploadCredentials(credentials);
       if (!mounted) return;
       context.showSnack(S.of(context).credentialsUploadDone(stored.length));
       // The key store is built once at boot from /proxy/keys, so the tab keeps
