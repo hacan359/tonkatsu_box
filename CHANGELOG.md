@@ -365,7 +365,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   import/export, backups, the data folder, LAN sync, PNG export, cover/hero
   file picking, the disk image cache and profile switching.
 
-  Covers are not in yet — the browser shows titles without artwork.
+  Covers show up, but each browser still downloads them straight from the
+  source instead of from a cache on the server.
 
   * Dockerfile, docker-compose.yml, .dockerignore: New. Builds the web client
     and the server in one go, so neither Flutter nor Dart is needed on the
