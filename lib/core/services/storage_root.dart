@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core/database/db_file.dart';
 import 'package:core/database/migrations/migration_registry.dart';
 import 'package:core/database/sqlite_health.dart';
 import 'package:core/models/profile.dart';
@@ -59,7 +60,7 @@ class StorageRoot {
   static const String prefsKey = 'custom_storage_dir';
 
   /// Database file name inside the data root / a profile folder.
-  static const String dbFileName = 'tonkatsu_box.db';
+  static const String dbFileName = kDatabaseFileName;
 
   /// Profile metadata file at the data root.
   static const String profilesFileName = 'profiles.json';

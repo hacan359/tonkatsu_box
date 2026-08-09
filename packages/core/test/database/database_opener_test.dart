@@ -46,6 +46,17 @@ void main() {
       expect((journal.first.values.first as String).toLowerCase(), 'wal');
     });
 
+    test('should give a writer a busy timeout instead of failing instantly',
+        () async {
+      final Database db = await open();
+      addTearDown(db.close);
+
+      final List<Map<String, Object?>> timeout =
+          await db.rawQuery('PRAGMA busy_timeout');
+
+      expect(timeout.first.values.first, kBusyTimeoutMs);
+    });
+
     test('should cascade a delete, proving foreign keys are enforced',
         () async {
       final Database db = await open();
