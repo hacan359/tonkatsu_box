@@ -4,9 +4,8 @@ Pure-Dart server for the selfhost web build. It is **not** part of the Flutter
 build graph: the app never imports it, and it never imports the app. Both sides
 share `packages/core` — models, DAOs and the one migration chain.
 
-Status: phase 3 skeleton — boots, owns the database, serves the web client.
-`/rpc` (DAO dispatch) is the next slice; its wire contract is already specified
-in [`PROTOCOL.md`](PROTOCOL.md).
+Status: boots, owns the database, serves the web client, and dispatches all 23
+DAOs over `/rpc`. Wire contract: [`PROTOCOL.md`](PROTOCOL.md).
 
 ## Run
 
@@ -26,6 +25,10 @@ Command line wins over the environment. A missing or unbuilt `--web-root` is not
 fatal — the server then answers `/health` only.
 
 `GET /health` → `{"status":"ok","schemaVersion":N,"protocolVersion":1}`.
+
+`POST /rpc` → `{protocol, dao, method, args}`; answers `{ok:true, result}` or
+`{ok:false, error:{kind, message}}`. A DAO-level failure still answers 200 —
+only a malformed request is a 4xx.
 
 ## Database
 

@@ -1,8 +1,10 @@
 name: Tests
 
 on:
+  # Release branches take direct pushes, so watching only PRs would let a
+  # stale generated layer through unchecked.
   push:
-    branches: [main]
+    branches: [main, 'release/**']
   pull_request:
     branches: [main, 'release/**']
 
@@ -25,6 +27,14 @@ jobs:
           flutter pub get
           dart pub get --directory packages/core
           dart pub get --directory server
+
+      # A stale stub still compiles until a signature changes, so the layer is
+      # regenerated here and required to come out byte-identical.
+      - name: Check the RPC layer is up to date
+        working-directory: packages/core
+        run: |
+          dart run tool/generate_rpc.dart
+          git diff --exit-code -- lib/rpc/generated
 
       - name: Analyze code
         run: flutter analyze --fatal-infos --fatal-warnings

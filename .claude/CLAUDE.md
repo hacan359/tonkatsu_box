@@ -371,6 +371,27 @@ dart test  # from packages/core
 dart test  # from server, when the change touches it
 ```
 
+Touching a DAO **or any model one returns** changes the wire format, so the
+RPC layer has to be regenerated and the result committed:
+
+```bash
+dart run tool/generate_rpc.dart  # from packages/core
+```
+
+Forgetting is caught, not trusted to memory:
+
+- a changed signature stops the stub satisfying `implements <Name>Dao` —
+  `flutter analyze` fails;
+- a new DAO adds a required parameter to `buildDaoDispatchTable` — the server
+  stops compiling;
+- a changed **model** touches no signature at all and would silently drop a
+  field on the wire; `packages/core/test/rpc/generated_up_to_date_test.dart`
+  regenerates in memory and diffs against the committed files, so `dart test`
+  fails locally and in CI.
+
+The server holds exactly one `Database` per process — never a pool, or a
+dispatched transaction stops being atomic.
+
 ## Forbidden
 
 - `print()` in production code — use the logger
@@ -544,5 +565,6 @@ Full docs: `docs/GAMEPAD.md`.
 | `lib/shared/theme/app_theme.dart` | Centralized theme (dark Material 3) |
 | `test/helpers/test_helpers.dart` | Shared mocks, builders, `pumpApp` |
 | `analysis_options.yaml` | Strict lint rules |
-| `server/` | Selfhost server: boot, migrations, static; `PROTOCOL.md` = RPC contract |
+| `server/` | Selfhost server: boot, migrations, static, `/rpc`; `PROTOCOL.md` = contract |
+| `packages/core/tool/generate_rpc.dart` | Emits the RPC stubs + dispatcher from DAO signatures |
 | `docs/` | ARCHITECTURE, CODESTYLE, COMMITS, GAMEPAD, RCOLL_FORMAT… |

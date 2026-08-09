@@ -47,6 +47,24 @@ class CollectionDao {
         _bookDao = bookDao,
         _customMediaDao = customMediaDao;
 
+  /// The media DAOs are always the same eight over the same connection, so
+  /// every host (app, server, tests) would otherwise repeat the wiring.
+  factory CollectionDao.withMediaDaos(
+    Future<Database> Function() getDatabase,
+  ) {
+    return CollectionDao(
+      getDatabase,
+      gameDao: GameDao(getDatabase),
+      movieDao: MovieDao(getDatabase),
+      tvShowDao: TvShowDao(getDatabase),
+      visualNovelDao: VisualNovelDao(getDatabase),
+      animeDao: AnimeDao(getDatabase),
+      mangaDao: MangaDao(getDatabase),
+      bookDao: BookDao(getDatabase),
+      customMediaDao: CustomMediaDao(getDatabase),
+    );
+  }
+
   final Future<Database> Function() _getDatabase;
   final GameDao _gameDao;
   final MovieDao _movieDao;

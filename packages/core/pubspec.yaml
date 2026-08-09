@@ -14,7 +14,14 @@ dependencies:
   sqflite_common: ^2.5.0
 
 dev_dependencies:
+  # Reads the DAO signatures for tool/generate_rpc.dart. Dev-only: nothing in
+  # lib/ imports it, so it never reaches an app or server build.
+  analyzer: ^8.0.0
+  # Formats the generator's output; emitting pre-wrapped code by hand would
+  # make the emitter unreadable and the result worse.
+  dart_style: ^3.0.0
   lints: ^5.0.0
+  path: ^1.9.0
   # Tests need a real engine: they open in-memory databases.
   sqflite_common_ffi: ^2.3.0
   test: ^1.25.0
