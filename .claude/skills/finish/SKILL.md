@@ -106,7 +106,7 @@ Allowed exceptions (do NOT flag these):
 
 **R2c — model purity (mandatory)**
 
-`lib/shared/models/**` stays pure Dart: no `package:flutter`, no `dart:ui`, no l10n imports — direct or transitive through other model files. Models hold data only (ARGB colors as `int`, hex colors as `String`, stored enum values); presentation (`Color`, `IconData`, localized labels) lives in `extension <Model>Ui` files under `lib/shared/constants/*_ui.dart`, hex⇄Color codecs in `lib/shared/utils/color_hex.dart`. Rationale: the model layer is slated for extraction into a pure-Dart core package shared with the selfhost server (`dev/backlog/selfhost-web/`), and `dart:ui` does not exist in a plain Dart VM.
+`lib/shared/models/**` stays pure Dart: no `package:flutter`, no `dart:ui`, no l10n imports — direct or transitive through other model files. Models hold data only (ARGB colors as `int`, hex colors as `String`, stored enum values); presentation (`Color`, `IconData`, localized labels) lives in `extension <Model>Ui` files under `lib/shared/constants/*_ui.dart`, hex⇄Color codecs in `lib/shared/utils/color_hex.dart`. Rationale: the model layer is slated for extraction into a pure-Dart core package shared with the selfhost server, and `dart:ui` does not exist in a plain Dart VM.
 
 How to check (must return nothing):
 
@@ -118,7 +118,7 @@ Fix: move the offending getter/method into the model's `*_ui.dart` extension (cr
 
 **R2d — web readiness (mandatory)**
 
-The project is headed for a selfhost web build (`dev/backlog/selfhost-web/`): same branch, web as one more build target, DAO calls become the client↔server RPC boundary, external APIs go through a server proxy. New code must not create rework for that plan. Check the diff for:
+The project is headed for a selfhost web build: same branch, web as one more build target, DAO calls become the client↔server RPC boundary, external APIs go through a server proxy. New code must not create rework for that plan. Check the diff for:
 
 - **No new unguarded `dart:io`** (`Platform.is*`, `File`, `Directory`, `Process`) in `lib/features/` or `lib/shared/`. Platform branching goes through `platform_features.dart` flags; intrinsic file I/O (export/import, disk cache) stays behind existing service boundaries or a flag so web can stub it. `dart:io` inside `lib/core/services/` that a web build will conditionally replace is acceptable; a `Platform.isWindows` inline in a widget is not.
 - **DB access only through DAO methods.** No raw SQL or `db.rawQuery` outside `lib/core/database/dao/` — every DAO method is a future RPC endpoint, so the UI/provider layer must call `dao.method(...)`, never touch the `Database` handle. New DAO method signatures must be JSON-serialisable at the boundary: arguments and returns built from primitives, enums (sent as `.name`/`.value`), `DateTime`, models with `toDb`/`fromDb`, and collections thereof — no callbacks other than the established `_getDatabase` injection, no `Database`/`Transaction` parameters in public signatures, no returning raw `Map` rows where a typed record/model is feasible.

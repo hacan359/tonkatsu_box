@@ -123,7 +123,7 @@ A pure-Dart package (no Flutter dependency) holding the data layer the app share
 
 ### `server/`
 
-The selfhost server (pure Dart, shelf), outside the Flutter build graph — the app never imports it and it never imports the app; both depend on `packages/core`. It owns the database file in a volume, replays the same migration chain on boot, and serves the `flutter build web` output. The `/rpc` DAO dispatcher is the next slice; the wire contract is specified in `server/PROTOCOL.md`. See `server/README.md` and `dev/backlog/selfhost-web/`.
+The selfhost server (pure Dart, shelf), outside the Flutter build graph — the app never imports it and it never imports the app; both depend on `packages/core`. It owns the database file in a volume, replays the same migration chain on boot, and serves the `flutter build web` output. The `/rpc` DAO dispatcher is the next slice; the wire contract is specified in `server/PROTOCOL.md`. See `server/README.md`.
 
 ---
 

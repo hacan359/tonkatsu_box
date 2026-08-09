@@ -5,9 +5,8 @@ build graph: the app never imports it, and it never imports the app. Both sides
 share `packages/core` — models, DAOs and the one migration chain.
 
 Status: phase 3 skeleton — boots, owns the database, serves the web client.
-`/rpc` (DAO dispatch) is the next slice; see
-[`dev/backlog/selfhost-web/03-server-dao-rpc.md`](../dev/backlog/selfhost-web/03-server-dao-rpc.md)
-and the wire contract in [`PROTOCOL.md`](PROTOCOL.md).
+`/rpc` (DAO dispatch) is the next slice; its wire contract is already specified
+in [`PROTOCOL.md`](PROTOCOL.md).
 
 ## Run
 

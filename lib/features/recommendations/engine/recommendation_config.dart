@@ -1,8 +1,5 @@
-/// Tuning constants for the recommendation engine.
-///
-/// See `dev/backlog/recommendation_v1_movies.md` for the rationale behind each
-/// value. Kept in one place so the algorithm stays tweakable without hunting
-/// through the code.
+/// Tuning constants for the recommendation engine, kept in one place so the
+/// algorithm stays tweakable without hunting through the code.
 abstract final class RecommendationConfig {
   /// Weight of a present genre in a title's raw feature map (pre-IDF). Binary
   /// for v1: a genre is either present (this value) or absent.

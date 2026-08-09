@@ -379,6 +379,11 @@ dart test  # from server, when the change touches it
 - Ignoring lint warnings
 - Committing commented-out code
 - `setState` in complex widgets — use Riverpod
+- Referencing a file git does not track — the link is dead for everyone who
+  clones. Verify with `git ls-files <path>` before writing a path into a
+  committed file. Specs, notes and scratch work are untracked on purpose and
+  stay that way. More generally, skip "see X" pointers altogether: state the
+  constraint where it matters, or leave it out.
 
 ## Flutter practices
 
