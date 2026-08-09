@@ -2460,6 +2460,7 @@
   "simklGetPin": "Get code",
   "simklGetNewPin": "Get a new code",
   "simklPinPrompt": "Enter this code at simkl.com/pin:",
+  "simklPinCopied": "Code copied",
   "simklOpenPinPage": "Open simkl.com/pin",
   "simklWaitingConfirmation": "Waiting for confirmation…",
   "simklPinExpired": "The code has expired.",

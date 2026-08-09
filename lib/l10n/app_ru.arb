@@ -2091,6 +2091,7 @@
   "simklGetPin": "Получить код",
   "simklGetNewPin": "Получить новый код",
   "simklPinPrompt": "Введите этот код на simkl.com/pin:",
+  "simklPinCopied": "Код скопирован",
   "simklOpenPinPage": "Открыть simkl.com/pin",
   "simklWaitingConfirmation": "Ждём подтверждения…",
   "simklPinExpired": "Срок действия кода истёк.",

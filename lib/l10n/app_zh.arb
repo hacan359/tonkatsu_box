@@ -2425,6 +2425,7 @@
   "simklGetPin": "获取代码",
   "simklGetNewPin": "获取新代码",
   "simklPinPrompt": "在 simkl.com/pin 输入此代码：",
+  "simklPinCopied": "代码已复制",
   "simklOpenPinPage": "打开 simkl.com/pin",
   "simklWaitingConfirmation": "等待确认…",
   "simklPinExpired": "代码已过期。",

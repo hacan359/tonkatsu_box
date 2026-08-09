@@ -5599,6 +5599,9 @@ class SRu extends S {
   String get simklPinPrompt => 'Введите этот код на simkl.com/pin:';
 
   @override
+  String get simklPinCopied => 'Код скопирован';
+
+  @override
   String get simklOpenPinPage => 'Открыть simkl.com/pin';
 
   @override

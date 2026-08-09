@@ -9752,6 +9752,12 @@ abstract class S {
   /// **'Enter this code at simkl.com/pin:'**
   String get simklPinPrompt;
 
+  /// No description provided for @simklPinCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied'**
+  String get simklPinCopied;
+
   /// No description provided for @simklOpenPinPage.
   ///
   /// In en, this message translates to:

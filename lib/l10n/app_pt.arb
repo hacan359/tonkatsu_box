@@ -2857,6 +2857,7 @@
   "simklGetPin": "Obter código",
   "simklGetNewPin": "Obter um novo código",
   "simklPinPrompt": "Digite este código em simkl.com/pin:",
+  "simklPinCopied": "Código copiado",
   "simklOpenPinPage": "Abrir simkl.com/pin",
   "simklWaitingConfirmation": "Aguardando confirmação…",
   "simklPinExpired": "O código expirou.",

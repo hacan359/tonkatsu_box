@@ -2430,6 +2430,7 @@
   "simklGetPin": "Obtenir le code",
   "simklGetNewPin": "Obtenir un nouveau code",
   "simklPinPrompt": "Saisissez ce code sur simkl.com/pin :",
+  "simklPinCopied": "Code copié",
   "simklOpenPinPage": "Ouvrir simkl.com/pin",
   "simklWaitingConfirmation": "En attente de confirmation…",
   "simklPinExpired": "Le code a expiré.",

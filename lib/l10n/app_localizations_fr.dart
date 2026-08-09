@@ -5591,6 +5591,9 @@ class SFr extends S {
   String get simklPinPrompt => 'Saisissez ce code sur simkl.com/pin :';
 
   @override
+  String get simklPinCopied => 'Code copié';
+
+  @override
   String get simklOpenPinPage => 'Ouvrir simkl.com/pin';
 
   @override

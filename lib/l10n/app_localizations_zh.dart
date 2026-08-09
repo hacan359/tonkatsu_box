@@ -5223,6 +5223,9 @@ class SZh extends S {
   String get simklPinPrompt => '在 simkl.com/pin 输入此代码：';
 
   @override
+  String get simklPinCopied => '代码已复制';
+
+  @override
   String get simklOpenPinPage => '打开 simkl.com/pin';
 
   @override
