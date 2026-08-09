@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/api/image_proxy.dart';
 import 'package:core/api/proxy_targets.dart';
 import 'package:core/rpc/protocol.dart';
 import 'package:path/path.dart' as p;
@@ -8,6 +9,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
 
+import 'image_handler.dart';
 import 'proxy_handler.dart';
 import 'rpc_handler.dart';
 
@@ -20,6 +22,7 @@ Handler buildAppHandler({
   required int schemaVersion,
   DaoRegistry? daos,
   ApiProxy? proxy,
+  ImageCache? images,
   String? webRoot,
   Middleware? logger,
 }) {
@@ -53,6 +56,9 @@ Handler buildAppHandler({
     api.all('$kProxyPathPrefix/<slug>', proxy.handler);
     api.all('$kProxyPathPrefix/<slug>/<rest|.*>', proxy.handler);
   }
+  if (images != null) {
+    api.get('$kImagePathPrefix/<folder>/<id|.*>', images.handler);
+  }
 
   final Handler? web = _webHandler(webRoot);
   final Handler handler = web == null ? api.call : _withWebFallback(api, web);
@@ -69,7 +75,8 @@ Handler _withWebFallback(Router api, Handler web) {
     final String path = '/${request.url.path}';
     final bool isApi = path == _kHealthPath ||
         path == _kRpcPath ||
-        path.startsWith('$kProxyPathPrefix/');
+        path.startsWith('$kProxyPathPrefix/') ||
+        path.startsWith('$kImagePathPrefix/');
     if (isApi) return api.call(request);
 
     final Response response = await api.call(request);

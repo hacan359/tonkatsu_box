@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_server/src/api_credentials.dart';
 import 'package:tonkatsu_server/src/app_handler.dart';
 import 'package:tonkatsu_server/src/database_bootstrap.dart';
+import 'package:tonkatsu_server/src/image_handler.dart';
 import 'package:tonkatsu_server/src/proxy_handler.dart';
 import 'package:tonkatsu_server/src/rpc_handler.dart';
 import 'package:tonkatsu_server/src/server_config.dart';
@@ -64,6 +65,7 @@ Future<void> main(List<String> args) async {
       schemaVersion: bootstrap.schemaVersion,
       daos: DaoRegistry(bootstrap.db),
       proxy: ApiProxy(credentials: credentials),
+      images: ImageCache(dataDir: config.dataDir),
       webRoot: config.webRoot,
     ),
     config.address,
