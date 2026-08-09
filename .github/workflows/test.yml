@@ -18,12 +18,13 @@ jobs:
           channel: stable
           cache: true
 
-      # packages/core resolves separately: the root package_config has no `test`
-      # entry, so without this its test/ files fail to analyze.
+      # packages/core and server resolve separately: the root package_config has
+      # no `test` entry, so without this their test/ files fail to analyze.
       - name: Install dependencies
         run: |
           flutter pub get
           dart pub get --directory packages/core
+          dart pub get --directory server
 
       - name: Analyze code
         run: flutter analyze --fatal-infos --fatal-warnings
@@ -46,6 +47,7 @@ jobs:
         run: |
           flutter pub get
           dart pub get --directory packages/core
+          dart pub get --directory server
 
       # Model tests live in the package now, so its lines only reach the report
       # through this run. --base-directory makes the paths repo-relative so they
@@ -66,6 +68,12 @@ jobs:
       # core lines and have to be unioned, not concatenated.
       - name: Run tests with coverage
         run: flutter test --coverage --coverage-package='tonkatsu_box|core'
+
+      # The selfhost server ships separately from the app bundle, so its lines
+      # stay out of the app coverage report.
+      - name: Run server tests
+        working-directory: server
+        run: dart test
 
       - name: Merge core coverage into the app report
         run: |

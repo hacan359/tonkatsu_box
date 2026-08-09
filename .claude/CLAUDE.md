@@ -33,21 +33,24 @@ and use PowerShell's `--%` stop-parsing token.
 
 ### Workspace layout
 
-The repo is a Flutter app plus two path packages:
+The repo is a Flutter app plus three sibling Dart packages:
 
 | Path | What |
 |------|------|
 | `lib/` | The Flutter app |
 | `packages/core/` | Pure-Dart shared layer (models, DB, utils), no Flutter |
 | `packages/gamepads_windows_stub/` | Stub overriding the crashing `gamepads_windows` plugin |
+| `server/` | Selfhost server (pure Dart, shelf) — outside the app's build graph |
 
-`packages/core` resolves its own dependencies. A root `flutter pub get` does
-**not** create `packages/core/.dart_tool/package_config.json`, so its `test/`
-files fail to analyze (`package:test` is only in *its* dev_dependencies). CI and
+`packages/core` and `server` resolve their own dependencies. A root
+`flutter pub get` does **not** create their `.dart_tool/package_config.json`, so
+their `test/` files fail to analyze (`package:test` is only in *their*
+dev_dependencies) — and root `flutter analyze` does cover both trees. CI and
 fresh clones need:
 
 ```bash
 dart pub get --directory packages/core
+dart pub get --directory server
 ```
 
 Coverage has the same trap: `flutter test --coverage` defaults
@@ -365,6 +368,7 @@ sane? Does it match the surrounding style?
 flutter analyze --fatal-infos --fatal-warnings  # must match CI
 flutter test
 dart test  # from packages/core
+dart test  # from server, when the change touches it
 ```
 
 ## Forbidden
@@ -535,4 +539,5 @@ Full docs: `docs/GAMEPAD.md`.
 | `lib/shared/theme/app_theme.dart` | Centralized theme (dark Material 3) |
 | `test/helpers/test_helpers.dart` | Shared mocks, builders, `pumpApp` |
 | `analysis_options.yaml` | Strict lint rules |
+| `server/` | Selfhost server: boot, migrations, static; `PROTOCOL.md` = RPC contract |
 | `docs/` | ARCHITECTURE, CODESTYLE, COMMITS, GAMEPAD, RCOLL_FORMAT… |
