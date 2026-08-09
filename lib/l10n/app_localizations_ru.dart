@@ -584,6 +584,13 @@ class SRu extends S {
   String get settingsApiKeys => 'API ключи';
 
   @override
+  String get credentialsServerManagedTitle => 'Ключами управляет сервер';
+
+  @override
+  String get credentialsServerManagedBody =>
+      'Браузер не хранит секреты API — селфхост-сервер подставляет их в каждый исходящий запрос. Настраиваются в его keys.json или переменных TONKATSU_KEY_*.';
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

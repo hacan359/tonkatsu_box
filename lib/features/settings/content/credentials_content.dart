@@ -88,6 +88,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   @override
   Widget build(BuildContext context) {
+    // Editing a key here would write it into the browser — the one place the
+    // selfhost design keeps secrets out of.
+    if (kIsWebBuild) return _buildServerManagedSection();
+
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final bool compact = isCompactScreen(context);
 
@@ -716,6 +720,22 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildServerManagedSection() {
+    final S l = S.of(context);
+    return SettingsGroup(
+      title: l.credentialsServerManagedTitle,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Text(
+            l.credentialsServerManagedBody,
+            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 

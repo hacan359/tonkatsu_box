@@ -574,6 +574,14 @@ class SEs extends S {
   String get settingsApiKeys => 'Claves API';
 
   @override
+  String get credentialsServerManagedTitle =>
+      'Las claves las gestiona el servidor';
+
+  @override
+  String get credentialsServerManagedBody =>
+      'Este navegador nunca guarda secretos de API: el servidor selfhost los añade a cada petición saliente. Configúralos en su keys.json o en las variables TONKATSU_KEY_*.';
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

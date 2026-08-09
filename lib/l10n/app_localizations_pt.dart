@@ -574,6 +574,14 @@ class SPt extends S {
   String get settingsApiKeys => 'Chaves de API';
 
   @override
+  String get credentialsServerManagedTitle =>
+      'As chaves são geridas pelo servidor';
+
+  @override
+  String get credentialsServerManagedBody =>
+      'Este navegador nunca guarda segredos de API — o servidor selfhost adiciona-os a cada pedido enviado. Configure-os no keys.json dele ou nas variáveis TONKATSU_KEY_*.';
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

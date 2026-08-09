@@ -187,13 +187,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: l.profiles,
         titleIcon: Icons.person_outline,
         children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.switch_account,
-            leadingColor: _kProfileColor,
-            title: l.currentProfile(currentProfile.name),
-            value: '',
-            onTap: () => _pushScreen(const ProfilesScreen()),
-          ),
+          // The server owns one database, so a profile switch in the browser
+          // would rename the label and change nothing else.
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingIcon: Icons.switch_account,
+              leadingColor: _kProfileColor,
+              title: l.currentProfile(currentProfile.name),
+              value: '',
+              onTap: () => _pushScreen(const ProfilesScreen()),
+            ),
           Builder(builder: (BuildContext ctx) {
             final bool compact = isCompactScreen(ctx);
             final double bubble = compact ? 24 : 28;

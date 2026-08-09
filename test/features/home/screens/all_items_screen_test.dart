@@ -126,7 +126,7 @@ void main() {
         .thenAnswer((_) async => CollectionStats.empty);
 
     mockDb = MockDatabaseService();
-    when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
+    when(mockDb.warmUp).thenAnswer((_) async {});
     // TV cards spin up a real episode tracker for the progress badge.
     final MockTvShowDao mockTvShowDao = MockTvShowDao();
     when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);

@@ -4,8 +4,9 @@ Pure-Dart server for the selfhost web build. It is **not** part of the Flutter
 build graph: the app never imports it, and it never imports the app. Both sides
 share `packages/core` — models, DAOs and the one migration chain.
 
-Status: boots, owns the database, serves the web client, and dispatches all 23
-DAOs over `/rpc`. Wire contract: [`PROTOCOL.md`](PROTOCOL.md).
+Status: boots, owns the database, serves the web client, dispatches all 23 DAOs
+over `/rpc` and proxies the external APIs. Wire contract:
+[`PROTOCOL.md`](PROTOCOL.md).
 
 ## Run
 
@@ -29,6 +30,34 @@ fatal — the server then answers `/health` only.
 `POST /rpc` → `{protocol, dao, method, args}`; answers `{ok:true, result}` or
 `{ok:false, error:{kind, message}}`. A DAO-level failure still answers 200 —
 only a malformed request is a 4xx.
+
+## API proxy
+
+`ANY /proxy/<slug>/<path>` forwards to the upstream that `slug` names in
+`packages/core/lib/api/proxy_targets.dart`. Anything not in that table is a 404
+before a byte leaves the machine — it is an allowlist, not an open relay. Every
+call goes out with a real `User-Agent` (browsers strip theirs, and AniList
+answers 403 without one) and with the server's credentials attached; an
+`Authorization` header from the caller is dropped rather than forwarded.
+
+`GET /proxy/keys` answers which credentials are configured — booleans only. The
+browser needs it to know a search is possible; the values stay here.
+
+Credentials come from `<data-dir>/keys.json`, overridden by
+`TONKATSU_KEY_<NAME>` in the environment:
+
+```json
+{ "tmdb": "…", "igdb_client_id": "…", "igdb_client_secret": "…" }
+```
+
+Names: `tmdb`, `tvdb`, `steamgriddb`, `igdb_client_id`, `igdb_client_secret`,
+`ra_username`, `ra`, `comicvine`, `googlebooks`, `hardcover`,
+`simkl_client_id`. A request needing one that is missing answers **503** — a
+configuration problem, not a client one. IGDB's Twitch token is exchanged and
+cached here, so the client secret never reaches a browser.
+
+Not wired yet: ScreenScraper (four separate credentials) and Kodi (a host on the
+user's own LAN, which an allowlist cannot cover).
 
 ## Database
 
