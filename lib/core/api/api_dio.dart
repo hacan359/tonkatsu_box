@@ -3,6 +3,10 @@ import 'package:dio/dio.dart';
 import '../../shared/constants/platform_features.dart';
 import 'proxy_rewrite_interceptor.dart';
 
+/// The browser adapter collapses connect and receive into one flat budget, and
+/// a proxied call is two hops — 5s aborts an import the server did finish.
+const Duration _kWebTimeoutFloor = Duration(seconds: 60);
+
 /// The single place every API client gets its [Dio] from — the one seam where
 /// the web build routes calls through the selfhost server's proxy.
 Dio createApiDio({
@@ -15,8 +19,8 @@ Dio createApiDio({
   final Dio dio = Dio(
     BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: connectTimeout,
-      receiveTimeout: receiveTimeout,
+      connectTimeout: kIsWebBuild ? _atLeastFloor(connectTimeout) : connectTimeout,
+      receiveTimeout: kIsWebBuild ? _atLeastFloor(receiveTimeout) : receiveTimeout,
       // The browser refuses to let a page set User-Agent and logs an error for
       // every request; on web the proxy is the one that sends it anyway.
       headers: kIsWebBuild ? _withoutUserAgent(headers) : headers,
@@ -28,6 +32,9 @@ Dio createApiDio({
   if (kIsWebBuild) dio.interceptors.add(ProxyRewriteInterceptor());
   return dio;
 }
+
+Duration _atLeastFloor(Duration value) =>
+    value < _kWebTimeoutFloor ? _kWebTimeoutFloor : value;
 
 Map<String, String>? _withoutUserAgent(Map<String, String>? headers) {
   if (headers == null) return null;

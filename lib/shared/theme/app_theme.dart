@@ -32,10 +32,13 @@ abstract final class AppTheme {
           onError: p.onOverlay,
         ),
         scaffoldBackgroundColor: Colors.transparent,
+        // Every platform, not the two we ship: the scaffold is transparent, so
+        // a target without a builder here shows white through every route. A
+        // browser reports whatever OS it runs on.
         pageTransitionsTheme: PageTransitionsTheme(
           builders: <TargetPlatform, PageTransitionsBuilder>{
-            TargetPlatform.windows: _OpaquePageTransitionsBuilder(p),
-            TargetPlatform.android: _OpaquePageTransitionsBuilder(p),
+            for (final TargetPlatform target in TargetPlatform.values)
+              target: _OpaquePageTransitionsBuilder(p),
           },
         ),
         appBarTheme: AppBarTheme(
