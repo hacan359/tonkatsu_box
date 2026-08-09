@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/rpc/protocol.dart';
 import 'package:core/rpc/rpc_codec.dart';
 import 'package:shelf/shelf.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
 import 'package:tonkatsu_server/src/app_handler.dart';
 import 'package:tonkatsu_server/src/database_bootstrap.dart';
-import 'package:tonkatsu_server/src/protocol.dart';
 import 'package:tonkatsu_server/src/rpc_handler.dart';
 
 void main() {

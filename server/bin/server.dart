@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:tonkatsu_server/src/api_credentials.dart';
 import 'package:tonkatsu_server/src/app_handler.dart';
 import 'package:tonkatsu_server/src/database_bootstrap.dart';
+import 'package:tonkatsu_server/src/proxy_handler.dart';
 import 'package:tonkatsu_server/src/rpc_handler.dart';
 import 'package:tonkatsu_server/src/server_config.dart';
 
@@ -36,10 +38,32 @@ Future<void> main(List<String> args) async {
     '${bootstrap.wasCreated ? ' (created)' : ''}',
   );
 
+  final ApiCredentials credentials;
+  try {
+    credentials = ApiCredentials.load(
+      env: Platform.environment,
+      dataDir: config.dataDir,
+    );
+  } on ApiCredentialsException catch (e) {
+    stderr.writeln(e.message);
+    exitCode = 1;
+    return;
+  }
+  final List<String> configured = credentials.availability.entries
+      .where((MapEntry<String, bool> e) => e.value)
+      .map((MapEntry<String, bool> e) => e.key)
+      .toList();
+  stdout.writeln(
+    configured.isEmpty
+        ? 'No API credentials configured — the proxy will answer 503 for them'
+        : 'API credentials: ${configured.join(', ')}',
+  );
+
   final HttpServer server = await shelf_io.serve(
     buildAppHandler(
       schemaVersion: bootstrap.schemaVersion,
       daos: DaoRegistry(bootstrap.db),
+      proxy: ApiProxy(credentials: credentials),
       webRoot: config.webRoot,
     ),
     config.address,

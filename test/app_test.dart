@@ -33,7 +33,7 @@ void main() {
       mockDb = MockDatabaseService();
       mockGameDao = MockGameDao();
       when(() => mockDb.gameDao).thenReturn(mockGameDao);
-      when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
+      when(mockDb.warmUp).thenAnswer((_) async {});
       when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
     });
 

@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:core/rpc/generated/dao_dispatch.rpc.dart';
+import 'package:core/rpc/protocol.dart';
 import 'package:core/rpc/rpc_codec.dart';
 import 'package:shelf/shelf.dart';
 import 'package:sqflite_common/sqlite_api.dart';
-
-import 'protocol.dart';
 
 /// One [Database] per process is deliberate: sqflite serialises through it,
 /// which is what keeps a dispatched transaction atomic. Never pool.

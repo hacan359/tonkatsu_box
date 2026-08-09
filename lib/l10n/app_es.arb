@@ -212,6 +212,8 @@
   "settingsAppLanguage": "Idioma de la aplicación",
   "settingsConnections": "Conexiones",
   "settingsApiKeys": "Claves API",
+  "credentialsServerManagedTitle": "Las claves las gestiona el servidor",
+  "credentialsServerManagedBody": "Este navegador nunca guarda secretos de API: el servidor selfhost los añade a cada petición saliente. Configúralos en su keys.json o en las variables TONKATSU_KEY_*.",
   "settingsApiKeysValue": "{active}/{total}",
   "@settingsApiKeysValue": {
     "placeholders": {

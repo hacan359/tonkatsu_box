@@ -524,6 +524,13 @@ class SZh extends S {
   String get settingsApiKeys => 'API 密钥';
 
   @override
+  String get credentialsServerManagedTitle => '密钥由服务器管理';
+
+  @override
+  String get credentialsServerManagedBody =>
+      '浏览器不会保存任何 API 密钥——自托管服务器会在每个外发请求中注入它们。请在服务器的 keys.json 或 TONKATSU_KEY_* 环境变量中配置。';
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

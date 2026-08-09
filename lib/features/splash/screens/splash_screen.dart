@@ -77,12 +77,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _controller.forward();
 
     final DatabaseService db = ref.read(databaseServiceProvider);
-    db.database.then((_) {
+    db.warmUp().then((_) {
       _dbDone = true;
       _tryNavigate();
     }).catchError((Object error, StackTrace stack) {
-      // DB open/migration failed (e.g. v27→v32 upgrade). Without this the
-      // future just rejects, _dbDone stays false and the splash hangs forever.
+      // A failed migration, or on web a server that did not answer. Without
+      // this the future just rejects and the splash hangs forever.
       recordStartupError('database', error, stack);
     });
   }
@@ -107,7 +107,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         prefs.remove('skip_picker_once');
       }
 
-      if (data.profiles.length > 1 && !skipPicker && !skipOnce) {
+      // Profiles are a native concept: the server hands out one database.
+      if (!kIsWebBuild && data.profiles.length > 1 && !skipPicker && !skipOnce) {
         _navigateToProfilePicker();
       } else {
         _navigateToHome();

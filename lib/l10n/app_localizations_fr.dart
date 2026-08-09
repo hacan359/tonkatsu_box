@@ -575,6 +575,14 @@ class SFr extends S {
   String get settingsApiKeys => 'Clés API';
 
   @override
+  String get credentialsServerManagedTitle =>
+      'Les clés sont gérées par le serveur';
+
+  @override
+  String get credentialsServerManagedBody =>
+      'Ce navigateur ne conserve aucun secret d\'API : le serveur selfhost les ajoute à chaque requête sortante. Configurez-les dans son keys.json ou via les variables TONKATSU_KEY_*.';
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }

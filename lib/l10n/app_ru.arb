@@ -212,6 +212,8 @@
   "settingsAppLanguage": "Язык приложения",
   "settingsConnections": "Подключения",
   "settingsApiKeys": "API ключи",
+  "credentialsServerManagedTitle": "Ключами управляет сервер",
+  "credentialsServerManagedBody": "Браузер не хранит секреты API — селфхост-сервер подставляет их в каждый исходящий запрос. Настраиваются в его keys.json или переменных TONKATSU_KEY_*.",
   "settingsApiKeysValue": "{active}/{total}",
   "@settingsApiKeysValue": {
     "placeholders": {

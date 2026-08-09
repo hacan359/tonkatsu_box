@@ -1,11 +1,35 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/rpc/protocol.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
+import 'package:tonkatsu_server/src/api_credentials.dart';
 import 'package:tonkatsu_server/src/app_handler.dart';
-import 'package:tonkatsu_server/src/protocol.dart';
+import 'package:tonkatsu_server/src/proxy_handler.dart';
+import 'package:tonkatsu_server/src/upstream_client.dart';
+
+/// Answers everything with an empty 200, so a test can watch what the proxy
+/// decided without reaching the network.
+class _SilentUpstream implements UpstreamClient {
+  final List<Uri> sent = <Uri>[];
+
+  @override
+  Future<UpstreamResponse> send({
+    required String method,
+    required Uri url,
+    required Map<String, String> headers,
+    List<int>? body,
+  }) async {
+    sent.add(url);
+    return const UpstreamResponse(
+      status: 200,
+      contentType: 'application/json',
+      body: <int>[],
+    );
+  }
+}
 
 void main() {
   late Directory webRoot;
@@ -104,6 +128,44 @@ void main() {
       final Map<String, Object?> body =
           jsonDecode(await response.readAsString()) as Map<String, Object?>;
       expect(body['schemaVersion'], 5);
+    });
+
+    test('should not answer an unknown upstream with the web client', () async {
+      // A 200 full of HTML reads as success to the caller and buries the typo.
+      File(p.join(webRoot.path, 'index.html')).writeAsStringSync('<html>');
+      final Handler handler = buildAppHandler(
+        schemaVersion: 1,
+        proxy: ApiProxy(
+          credentials: const ApiCredentials(<String, String>{}),
+          upstream: _SilentUpstream(),
+        ),
+        webRoot: webRoot.path,
+        logger: silent(),
+      );
+
+      final Response response = await get(handler, '/proxy/nope/thing');
+
+      expect(response.statusCode, HttpStatus.notFound);
+    });
+
+    test('should proxy a request whose path ends at the slug', () async {
+      // AniList and Hardcover are posted to the bare host, so the rewritten
+      // path carries no segment after the slug.
+      final _SilentUpstream upstream = _SilentUpstream();
+      final Handler handler = buildAppHandler(
+        schemaVersion: 1,
+        proxy: ApiProxy(
+          credentials: const ApiCredentials(<String, String>{}),
+          upstream: upstream,
+        ),
+        webRoot: webRoot.path,
+        logger: silent(),
+      );
+
+      final Response response = await get(handler, '/proxy/anilist');
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(upstream.sent.single.host, 'graphql.anilist.co');
     });
   });
 }
