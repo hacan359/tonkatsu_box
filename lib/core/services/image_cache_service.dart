@@ -238,6 +238,8 @@ class ImageCacheService {
     required String imageId,
     required String remoteUrl,
   }) async {
+    // The browser has no disk cache: the server holds one for every client.
+    if (kIsWebBuild) return false;
     try {
       final String localPath = await getLocalImagePath(type, imageId);
       final File file = File(localPath);
@@ -273,6 +275,7 @@ class ImageCacheService {
     required List<ImageDownloadTask> tasks,
     void Function(int current, int total)? onProgress,
   }) async {
+    if (kIsWebBuild) return 0;
     int downloaded = 0;
     for (int i = 0; i < tasks.length; i++) {
       final ImageDownloadTask task = tasks[i];
@@ -288,6 +291,7 @@ class ImageCacheService {
   }
 
   Future<void> clearCacheForType(ImageType type) async {
+    if (kIsWebBuild) return;
     final String cachePath = await getCachePath(type);
     final Directory dir = Directory(cachePath);
 
@@ -306,6 +310,9 @@ class ImageCacheService {
   Future<CacheCleanupResult> removeOrphans(
     Map<ImageType, Set<String>> keep,
   ) async {
+    if (kIsWebBuild) {
+      return const CacheCleanupResult(deletedCount: 0, freedBytes: 0);
+    }
     int deletedCount = 0;
     int freedBytes = 0;
 
@@ -339,6 +346,7 @@ class ImageCacheService {
   }
 
   Future<int> getCacheSize() async {
+    if (kIsWebBuild) return 0;
     final String basePath = await getBaseCachePath();
     final Directory dir = Directory(basePath);
 
@@ -354,6 +362,7 @@ class ImageCacheService {
   }
 
   Future<int> getCachedCount() async {
+    if (kIsWebBuild) return 0;
     final String basePath = await getBaseCachePath();
     final Directory dir = Directory(basePath);
 

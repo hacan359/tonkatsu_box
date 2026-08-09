@@ -17,7 +17,9 @@ Dio createApiDio({
       baseUrl: baseUrl,
       connectTimeout: connectTimeout,
       receiveTimeout: receiveTimeout,
-      headers: headers,
+      // The browser refuses to let a page set User-Agent and logs an error for
+      // every request; on web the proxy is the one that sends it anyway.
+      headers: kIsWebBuild ? _withoutUserAgent(headers) : headers,
       responseType: responseType,
     ),
   );
@@ -25,4 +27,12 @@ Dio createApiDio({
   // with a baseUrl and one that builds a full URL per request.
   if (kIsWebBuild) dio.interceptors.add(ProxyRewriteInterceptor());
   return dio;
+}
+
+Map<String, String>? _withoutUserAgent(Map<String, String>? headers) {
+  if (headers == null) return null;
+  return <String, String>{
+    for (final MapEntry<String, String> e in headers.entries)
+      if (e.key.toLowerCase() != 'user-agent') e.key: e.value,
+  };
 }

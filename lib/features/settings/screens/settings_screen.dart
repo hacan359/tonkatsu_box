@@ -555,22 +555,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: l.settingsIntegrations,
         titleIcon: Icons.link,
         children: <Widget>[
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconKodiColor,
-            leadingAssetColored: true,
-            title: 'Kodi', // proper noun
-            subtitle: l.settingsKodiSubtitle,
-            statusDotColor: ref.watch(kodiSettingsProvider).enabled
-                ? AppColors.success
-                : null,
-            value: ref.watch(kodiSettingsProvider).enabled
-                ? l.settingsOn
-                : '',
-            valueColor: ref.watch(kodiSettingsProvider).enabled
-                ? AppColors.success
-                : null,
-            onTap: () => _pushScreen(const KodiScreen()),
-          ),
+          // Kodi sits on the user's own LAN, which the browser reaches through
+          // nothing — the proxy allowlist cannot cover an arbitrary host.
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconKodiColor,
+              leadingAssetColored: true,
+              title: 'Kodi', // proper noun
+              subtitle: l.settingsKodiSubtitle,
+              statusDotColor: ref.watch(kodiSettingsProvider).enabled
+                  ? AppColors.success
+                  : null,
+              value: ref.watch(kodiSettingsProvider).enabled
+                  ? l.settingsOn
+                  : '',
+              valueColor: ref.watch(kodiSettingsProvider).enabled
+                  ? AppColors.success
+                  : null,
+              onTap: () => _pushScreen(const KodiScreen()),
+            ),
           if (kDiscordRpcAvailable)
             SettingsTile(
               leadingAssetPath: AppAssets.iconDiscordColor,
