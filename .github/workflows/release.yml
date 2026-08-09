@@ -25,6 +25,14 @@ jobs:
           dart pub get --directory packages/core
           dart pub get --directory server
 
+      # Catches the one drift no compiler can: a model field added without
+      # regenerating, which the stubs would silently drop on the wire.
+      - name: Check the RPC layer is up to date
+        working-directory: packages/core
+        run: |
+          dart run tool/generate_rpc.dart
+          git diff --exit-code -- lib/rpc/generated
+
       - name: Analyze code
         run: flutter analyze --fatal-infos --fatal-warnings
 

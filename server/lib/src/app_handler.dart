@@ -7,11 +7,13 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
 
 import 'protocol.dart';
+import 'rpc_handler.dart';
 
 /// Builds the request pipeline: `/health`, then the web client if one is built.
 /// A missing or unbuilt [webRoot] is not fatal — the API answers regardless.
 Handler buildAppHandler({
   required int schemaVersion,
+  DaoRegistry? daos,
   String? webRoot,
   Middleware? logger,
 }) {
@@ -28,6 +30,7 @@ Handler buildAppHandler({
         },
       );
     });
+  if (daos != null) api.post('/rpc', buildRpcHandler(daos));
 
   final Handler? web = _webHandler(webRoot);
   final Handler handler = web == null

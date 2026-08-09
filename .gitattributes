@@ -1,0 +1,6 @@
+# Emitted by packages/core/tool/generate_rpc.dart — collapsed in PR diffs,
+# still ordinary tracked files everywhere else.
+packages/core/lib/rpc/generated/*.rpc.dart linguist-generated=true
+# generated_up_to_date_test compares them byte for byte against what the
+# generator emits, so CRLF in a working tree would fail it spuriously.
+packages/core/lib/rpc/generated/*.rpc.dart text eol=lf

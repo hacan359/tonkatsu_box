@@ -116,6 +116,31 @@ grep -rln "package:flutter\|dart:ui\|l10n/" lib/shared/models/
 
 Fix: move the offending getter/method into the model's `*_ui.dart` extension (create it if missing), store the raw value in the model, and add the extension import at call sites. Never "fix" by re-adding a Flutter type to a model.
 
+**R2c-rpc — regenerate the RPC layer (mandatory when the diff touches a DAO or a model)**
+
+`packages/core/tool/generate_rpc.dart` emits the browser-side stubs, the
+per-DAO dispatchers and the dispatch table from the DAO signatures **and every
+model those signatures reach**. So a field added to `Collection`, `Game`,
+`CollectionItem` — anything a DAO returns — changes the wire format while
+changing no signature at all: nothing in the type system sees it, and the
+stale stub silently drops the field.
+
+If the diff touches `packages/core/lib/database/dao/**` or
+`packages/core/lib/models/**`, regenerate and commit the result:
+
+```bash
+powershell.exe -Command "cd '$(wslpath -w "$PWD")/packages/core'; dart run tool/generate_rpc.dart"
+```
+
+Do not hand-edit anything under `packages/core/lib/rpc/generated/`. The Phase 5
+gate proves it: `packages/core/test/rpc/generated_up_to_date_test.dart`
+regenerates in memory and diffs against the committed files, so a forgotten run
+fails `dart test`.
+
+New wire shape the generator refuses (`No wire rule for X`)? Teach it a rule in
+`_encode` / `_decode` and cover it with a round-trip test in
+`packages/core/test/rpc/` — never work around it by degrading the DAO signature.
+
 **R2d — web readiness (mandatory)**
 
 The project is headed for a selfhost web build: same branch, web as one more build target, DAO calls become the client↔server RPC boundary, external APIs go through a server proxy. New code must not create rework for that plan. Check the diff for:
@@ -231,7 +256,12 @@ Language per file: most are Russian. Keep each in its current language. Preserve
 ```bash
 powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter analyze --fatal-infos --fatal-warnings"
 powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter test"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")/packages/core'; dart test"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")/server'; dart test"
 ```
+
+`packages/core` and `server` resolve separately, so a change there is invisible
+to `flutter test` — run all four.
 
 Follow the failure-recovery rules below. When green, STOP — report what changed and wait for an explicit commit/push instruction.
 
@@ -244,6 +274,7 @@ Follow the failure-recovery rules below. When green, STOP — report what change
 | **Test fails — existing test** | **Default: the test is right, the production code is wrong.** Do not edit the test yet. First, re-read the test and the code paths it covers. Ask: *"Was this specific behaviour something I deliberately changed as part of the task?"* Answer this honestly before touching anything. **→ If NO** (surprise failure, behaviour change you didn't plan): back to **Phase 1** — the code is wrong, fix the code, then Phase 3 for the affected area, then re-gate. **→ If YES** (the old assertion contradicts the intended new behaviour, and the new behaviour is in the spec/user request): update the test, rerun tests. Document the behaviour change in the final report so the user sees what shifted. **If unsure, default to NO.** |
 | **Review (Phase 1-2) needs a code change** | Fix inline. If the fix touches production code (not just comments/docstrings), add/update tests in Phase 3 before re-gating. |
 | **R3 reveals missing ARB keys** | Add the key to **every** `lib/l10n/app_*.arb` locale file (glob them, don't assume a fixed set), run `powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter gen-l10n"`, re-run analyzer. |
+| **`generated_up_to_date_test` fails** | The RPC layer is stale — regenerate (`dart run tool/generate_rpc.dart` in `packages/core`) and commit the output. Never edit the generated files to make it pass. |
 | **Flaky test** | Retry the affected test file once via `flutter test path/to/test.dart`. If it still fails, treat it as real. |
 
 **Anti-loop rule** — if the same error has been attempted twice with different fixes and still fails, STOP and report to the user. Do not keep hacking.
