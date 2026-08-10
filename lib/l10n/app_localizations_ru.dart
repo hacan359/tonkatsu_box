@@ -3024,6 +3024,10 @@ class SRu extends S {
       'Необязательно — свой ключ повышает лимиты. Поиск работает и без него.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Обязателен — без ключа поиск в TheTVDB отключён.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Обязателен — без него поиск и импорт не работают. Токены сбрасываются каждое 1 января.';
 

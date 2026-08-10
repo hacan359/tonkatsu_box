@@ -103,9 +103,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final bool skipPicker =
           prefs.getBool(kSkipProfilePickerKey) ?? false;
       final bool skipOnce =
-          prefs.getBool('skip_picker_once') ?? false;
+          prefs.getBool(SettingsKeys.skipPickerOnce) ?? false;
       if (skipOnce) {
-        prefs.remove('skip_picker_once');
+        prefs.remove(SettingsKeys.skipPickerOnce);
       }
 
       // Profiles are a native concept: the server hands out one database.

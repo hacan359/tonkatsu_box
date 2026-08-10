@@ -26,6 +26,8 @@ abstract class SettingsKeys {
   static const String accessToken = 'igdb_access_token';
   static const String tokenExpires = 'igdb_token_expires';
   static const String lastSync = 'igdb_last_sync';
+  // One-shot: consumed by the splash to land on home after an app remount.
+  static const String skipPickerOnce = 'skip_picker_once';
 
   static const String steamGridDbApiKey = 'steamgriddb_api_key';
 
@@ -926,6 +928,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   Future<void> setAppTheme(AppThemeId theme) async {
     await _prefs.setString(SettingsKeys.appTheme, theme.id);
+    // The theme ValueKey remounts the app through the splash — don't let
+    // that replay surface the profile picker.
+    await _prefs.setBool(SettingsKeys.skipPickerOnce, true);
     state = state.copyWith(appTheme: theme);
   }
 
@@ -1075,6 +1080,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.lastSync);
     await _writeCredential(SettingsKeys.steamGridDbApiKey, '');
     await _writeCredential(SettingsKeys.tmdbApiKey, '');
+    await _writeCredential(SettingsKeys.tvdbApiKey, '');
     await _writeCredential(SettingsKeys.comicVineApiKey, '');
     await _writeCredential(SettingsKeys.googleBooksApiKey, '');
     await _writeCredential(SettingsKeys.hardcoverApiKey, '');
@@ -1099,6 +1105,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _igdbApi.clearCredentials();
     _steamGridDbApi.clearApiKey();
     _tmdbApi.clearApiKey();
+    _tvdbApi.clearApiKey();
     _comicVineApi.clearApiKey();
     _googleBooksApi.clearApiKey();
     _hardcoverApi.clearApiKey();

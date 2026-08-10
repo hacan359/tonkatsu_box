@@ -21,7 +21,9 @@ class TvdbSeriesApi {
 
   Future<TvShow?> getSeries(int id, {required String locale}) async {
     try {
-      final Map<String, dynamic>? data = await _loadExtended(id);
+      // Refresh here: the cache only bridges the seasons call that follows,
+      // it must not pin a series to its first-ever fetch for the app's life.
+      final Map<String, dynamic>? data = await _loadExtended(id, refresh: true);
       if (data == null) return null;
       return TvShow.fromTvdb(data, locale: locale);
     } on DioException catch (e) {
@@ -30,8 +32,9 @@ class TvdbSeriesApi {
     }
   }
 
-  Future<Map<String, dynamic>?> _loadExtended(int id) async {
-    if (_extendedId == id && _extended != null) return _extended;
+  Future<Map<String, dynamic>?> _loadExtended(int id,
+      {bool refresh = false}) async {
+    if (!refresh && _extendedId == id && _extended != null) return _extended;
     final Response<dynamic> response = await _client.get(
       'series/$id/extended',
       queryParameters: <String, dynamic>{

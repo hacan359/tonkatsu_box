@@ -156,6 +156,7 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
   String _clientId = '';
   String _clientSecret = '';
   String _tmdbKey = '';
+  String _tvdbKey = '';
   String _comicVineKey = '';
   String _googleBooksKey = '';
   String _hardcoverKey = '';
@@ -245,6 +246,39 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
             const SizedBox(height: 6),
             Text(
               l.welcomeSourcesKeyOptionalHint,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ],
+        );
+      case DataSource.tvdb:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            InlineTextField(
+              label: l.credentialsApiKey,
+              value: _tvdbKey,
+              placeholder: settings.isTvdbKeyBuiltIn
+                  ? l.credentialsUsingBuiltInKey
+                  : l.credentialsEnterTvdbKey,
+              obscureText: true,
+              compact: compact,
+              onChanged: (String v) {
+                setState(() => _tvdbKey = v);
+                final String key = v.trim();
+                if (key.isNotEmpty) {
+                  ref
+                      .read(settingsNotifierProvider.notifier)
+                      .setTvdbApiKey(key);
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _GetKeyLink(url: widget.info.url),
+            const SizedBox(height: 6),
+            Text(
+              l.welcomeSourcesTvdbKeyHint,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textTertiary,
               ),

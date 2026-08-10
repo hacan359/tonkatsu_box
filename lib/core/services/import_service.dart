@@ -203,15 +203,15 @@ class ImportService {
   /// Returns null if the user cancelled. Throws [FormatException] on invalid file.
   Future<XcollFile?> pickAndParseFile() async {
     // Android's FileType.custom does not filter custom extensions.
-    final bool useAny = !kIsWebBuild && Platform.isAndroid;
-    // withData: the browser only ever hands out bytes, and reading them at
-    // pick time keeps one code path for every platform.
+    final bool useAny = kIsMobile;
+    // withData only on web: the browser has no paths; desktop/Android keep
+    // reading from the path so a large pick is never held in memory twice.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: 'Import Collection',
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : _allowedExtensions,
       allowMultiple: false,
-      withData: true,
+      withData: kIsWebBuild,
     );
 
     if (result == null || result.files.isEmpty) {
@@ -219,13 +219,16 @@ class ImportService {
     }
 
     final PlatformFile picked = result.files.first;
-    // Android's picker filters nothing and the browser's accept is advisory.
-    final String ext = picked.name.split('.').last.toLowerCase();
-    if (!_allowedExtensions.contains(ext)) {
-      throw FormatException(
-        'Unsupported file type: .$ext. '
-        'Expected: ${_allowedExtensions.join(', ')}',
-      );
+    // Android's picker filters nothing and the browser's accept is advisory;
+    // the desktop picker already filtered, so don't re-judge its filename.
+    if (useAny || kIsWebBuild) {
+      final String ext = picked.name.split('.').last.toLowerCase();
+      if (!_allowedExtensions.contains(ext)) {
+        throw FormatException(
+          'Unsupported file type: .$ext. '
+          'Expected: ${_allowedExtensions.join(', ')}',
+        );
+      }
     }
 
     final Uint8List? bytes = picked.bytes;

@@ -5234,6 +5234,12 @@ abstract class S {
   /// **'Optional — your own key raises rate limits. Search works without it.'**
   String get welcomeSourcesKeyOptionalHint;
 
+  /// No description provided for @welcomeSourcesTvdbKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Required — TheTVDB search stays off without a key.'**
+  String get welcomeSourcesTvdbKeyHint;
+
   /// No description provided for @welcomeSourcesHardcoverTokenHint.
   ///
   /// In en, this message translates to:

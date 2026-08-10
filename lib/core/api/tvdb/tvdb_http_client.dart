@@ -21,6 +21,7 @@ class TvdbHttpClient {
 
   String? _apiKey;
   String? _token;
+  Future<String>? _loginInFlight;
 
   bool get hasApiKey => _apiKey != null && _apiKey!.isNotEmpty;
 
@@ -28,11 +29,13 @@ class TvdbHttpClient {
   void setApiKey(String apiKey) {
     _apiKey = apiKey;
     _token = null;
+    _loginInFlight = null;
   }
 
   void clearApiKey() {
     _apiKey = null;
     _token = null;
+    _loginInFlight = null;
   }
 
   /// A successful login is the validation: the endpoint rejects a bad key.
@@ -73,7 +76,7 @@ class TvdbHttpClient {
       throw const TvdbApiException('TheTVDB API key is not set');
     }
 
-    _token ??= await _login(apiKey);
+    _token ??= await _sharedLogin(apiKey);
     try {
       return await _send(path, queryParameters);
     } on DioException catch (e) {
@@ -81,6 +84,14 @@ class TvdbHttpClient {
       _token = await _login(apiKey);
       return _send(path, queryParameters);
     }
+  }
+
+  // Concurrent first requests (movies + series browse) must share one
+  // /login round-trip — the endpoint is rate-limited.
+  Future<String> _sharedLogin(String apiKey) {
+    return _loginInFlight ??= _login(apiKey).whenComplete(() {
+      _loginInFlight = null;
+    });
   }
 
   Future<Response<dynamic>> _send(

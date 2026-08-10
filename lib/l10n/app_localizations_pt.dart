@@ -2997,6 +2997,10 @@ class SPt extends S {
       'Opcional — sua própria chave aumenta os limites de uso. A busca funciona sem ela.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Obrigatória — sem chave, a busca no TheTVDB fica desativada.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Obrigatório — busca e importação ficam desabilitadas sem ele. Tokens expiram todo 1º de janeiro.';
 

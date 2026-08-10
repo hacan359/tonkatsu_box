@@ -1065,6 +1065,7 @@
   "welcomeSourcesKeySaved": "Ключ сохранён",
   "welcomeSourcesGetKey": "Получить ключ",
   "welcomeSourcesKeyOptionalHint": "Необязательно — свой ключ повышает лимиты. Поиск работает и без него.",
+  "welcomeSourcesTvdbKeyHint": "Обязателен — без ключа поиск в TheTVDB отключён.",
   "welcomeSourcesHardcoverTokenHint": "Обязателен — без него поиск и импорт не работают. Токены сбрасываются каждое 1 января.",
   "welcomeSourceDescTmdb": "Фильмы, сериалы и анимация.",
   "welcomeSourceDescTvMaze": "Сериалы.",

@@ -3008,6 +3008,10 @@ class SFr extends S {
       'Optionnel — votre clé augmente la limite d\'utilisation. La recherche fonctionne sans.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Obligatoire — sans clé, la recherche TheTVDB reste désactivée.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Requis — la recherche et l\'import sont désactivés par défaut. Les tokens expirent chaque 1er janvier.';
 

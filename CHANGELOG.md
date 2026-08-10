@@ -148,7 +148,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   and the preference cloud. Everything else behaves normally: the collection
   opens as usual, stays a target in every collection picker, still counts in
   Statistics, and exports without the flag. Toggling applies instantly, in both
-  directions, without re-reading the database.
+  directions, without re-reading the database. A full backup remembers which
+  collections were hidden and re-hides them on restore.
 
   * packages/core/lib/database/migrations/migration_v61.dart (MigrationV61):
     New — adds the `is_hidden` column to `collections`.
@@ -204,6 +205,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     menu and the long-press sheet.
   * packages/core/lib/testing/builders.dart (createTestCollection): Accepts
     isHidden.
+  * lib/core/services/backup_service.dart (BackupManifest.hiddenCollections,
+    BackupService.createBackup, BackupService.restoreFromBackup): The manifest
+    lists hidden collections; restore re-applies the flag after import.
   * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
     app_zh.arb (createCollectionHiddenLabel, createCollectionHiddenHint,
     collectionHide, collectionUnhide): New keys.

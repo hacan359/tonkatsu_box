@@ -1301,6 +1301,7 @@
   "welcomeSourcesKeySaved": "Clave guardada",
   "welcomeSourcesGetKey": "Obtener clave",
   "welcomeSourcesKeyOptionalHint": "Opcional — tu propia clave sube los límites de uso. La búsqueda funciona sin ella.",
+  "welcomeSourcesTvdbKeyHint": "Obligatoria — sin clave, la búsqueda en TheTVDB permanece desactivada.",
   "welcomeSourcesHardcoverTokenHint": "Obligatorio — sin él la búsqueda y la importación quedan deshabilitadas. Los tokens caducan cada 1 de enero.",
   "welcomeSourceDescTmdb": "Películas, series y animación.",
   "welcomeSourceDescTvMaze": "Series de TV.",

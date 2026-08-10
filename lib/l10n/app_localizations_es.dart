@@ -3007,6 +3007,10 @@ class SEs extends S {
       'Opcional — tu propia clave sube los límites de uso. La búsqueda funciona sin ella.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Obligatoria — sin clave, la búsqueda en TheTVDB permanece desactivada.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Obligatorio — sin él la búsqueda y la importación quedan deshabilitadas. Los tokens caducan cada 1 de enero.';
 

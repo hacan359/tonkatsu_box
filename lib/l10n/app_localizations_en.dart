@@ -2959,6 +2959,10 @@ class SEn extends S {
       'Optional — your own key raises rate limits. Search works without it.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Required — TheTVDB search stays off without a key.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Required — search and import stay disabled without it. Tokens expire every January 1st.';
 

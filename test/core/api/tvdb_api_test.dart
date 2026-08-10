@@ -69,6 +69,26 @@ void main() {
           .called(1);
     });
 
+    test('should share one login between concurrent first requests', () async {
+      when(() => mockDio.post<dynamic>(any(), data: any(named: 'data')))
+          .thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        return ok(<String, dynamic>{'token': 'jwt-1'});
+      });
+      when(() => mockDio.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+          )).thenAnswer(
+              (_) async => ok(<String, dynamic>{'id': 1, 'name': 'x'}));
+      sut.setApiKey('key');
+
+      await Future.wait(<Future<void>>[sut.getMovie(1), sut.getMovie(2)]);
+
+      verify(() => mockDio.post<dynamic>(any(), data: any(named: 'data')))
+          .called(1);
+    });
+
     test('should re-login once and retry when the token expired', () async {
       stubLogin();
       bool firstCall = true;
@@ -252,6 +272,29 @@ void main() {
 
       expect(seasons, hasLength(1));
       expect(calls, 1);
+    });
+
+    test('getSeries should refetch instead of pinning the first record',
+        () async {
+      int calls = 0;
+      when(() => mockDio.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+          )).thenAnswer((_) async {
+        calls++;
+        return ok(<String, dynamic>{
+          'id': 81189,
+          'name': 'Breaking Bad',
+          'defaultSeasonType': 1,
+          'seasons': <dynamic>[],
+        });
+      });
+
+      await sut.getSeries(81189);
+      await sut.getSeries(81189);
+
+      expect(calls, 2);
     });
 
     test('getAllEpisodes should follow pagination until links.next is null',

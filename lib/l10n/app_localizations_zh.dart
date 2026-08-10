@@ -2774,6 +2774,9 @@ class SZh extends S {
   String get welcomeSourcesKeyOptionalHint => '可选——使用自己的密钥可提高速率限制。无需密钥也可搜索。';
 
   @override
+  String get welcomeSourcesTvdbKeyHint => '必填——没有密钥时 TheTVDB 搜索保持关闭。';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       '必填——没有令牌无法搜索和导入。令牌每年 1 月 1 日重置。';
 

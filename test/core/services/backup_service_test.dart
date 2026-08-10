@@ -30,6 +30,7 @@ void main() {
         'includes_config': true,
         'profile_name': 'Main',
         'app_version': '1.2.3',
+        'hidden_collections': <String>['collections/0002_secret.xcollx'],
       });
 
       expect(m.version, 2);
@@ -39,6 +40,7 @@ void main() {
       expect(m.includesConfig, isTrue);
       expect(m.profileName, 'Main');
       expect(m.appVersion, '1.2.3');
+      expect(m.hiddenCollections, <String>['collections/0002_secret.xcollx']);
     });
 
     test('applies defaults for missing fields', () {
@@ -52,6 +54,7 @@ void main() {
       expect(m.wishlistCount, 0);
       expect(m.includesConfig, isFalse);
       expect(m.profileName, isNull);
+      expect(m.hiddenCollections, isEmpty);
     });
   });
 
@@ -203,6 +206,25 @@ void main() {
             tag: any(named: 'tag'),
           )).called(1);
       verifyNever(() => configService.applySettings(any()));
+    });
+
+    test('re-hides collections listed in the manifest', () async {
+      stubImportOk();
+      when(() =>
+              collectionRepo.setHidden(any(), isHidden: any(named: 'isHidden')))
+          .thenAnswer((_) async {});
+      final Uint8List path = writeZip(<String, String>{
+        'manifest.json': '{"version":3,"created":"2025-02-02T12:00:00Z",'
+            '"hidden_collections":["collections/000_secret.xcollx"]}',
+        'collections/000_secret.xcollx': collectionXcoll,
+        'collections/001_visible.xcollx': collectionXcoll,
+      });
+
+      final RestoreResult r =
+          await makeService().restoreFromBackup(zipBytes: path);
+
+      expect(r.success, isTrue);
+      verify(() => collectionRepo.setHidden(any(), isHidden: true)).called(1);
     });
 
     test('applies settings only when restoreSettings is true', () async {

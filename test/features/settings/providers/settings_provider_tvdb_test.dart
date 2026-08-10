@@ -66,5 +66,22 @@ void main() {
 
       expect(state.tvdbApiKey, 'my-tvdb-key');
     });
+
+    test('should drop the key from prefs and state when settings are cleared',
+        () async {
+      SharedPreferences.setMockInitialValues(const <String, Object>{});
+      prefs = await SharedPreferences.getInstance();
+
+      final ProviderContainer container = createContainer();
+      await container
+          .read(settingsNotifierProvider.notifier)
+          .setTvdbApiKey('my-tvdb-key');
+
+      await container.read(settingsNotifierProvider.notifier).clearSettings();
+
+      expect(prefs.getString(SettingsKeys.tvdbApiKey), isNull);
+      final SettingsState state = container.read(settingsNotifierProvider);
+      expect(state.hasTvdbKey, isFalse);
+    });
   });
 }

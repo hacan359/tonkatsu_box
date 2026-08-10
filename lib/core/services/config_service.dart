@@ -201,7 +201,7 @@ class ConfigService {
       }
 
       // On Android/iOS FileType.custom doesn't support custom extensions.
-      final bool useAny = Platform.isAndroid || Platform.isIOS;
+      final bool useAny = kIsMobile;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Configuration',
         fileName: 'tonkatsu-box-config.json',
@@ -216,7 +216,7 @@ class ConfigService {
 
       // On Android/iOS file_picker writes the bytes via SAF;
       // on desktop the file must be written manually.
-      if (!Platform.isAndroid && !Platform.isIOS) {
+      if (!kIsMobile) {
         final String finalPath =
             outputPath.endsWith('.json') ? outputPath : '$outputPath.json';
 
@@ -237,7 +237,7 @@ class ConfigService {
   Future<ConfigResult> importFromFile() async {
     try {
       // On Android FileType.custom doesn't support custom extensions.
-      final bool useAny = !kIsWebBuild && Platform.isAndroid;
+      final bool useAny = kIsMobile;
       // withData: the browser only ever hands out bytes, and reading them at
       // pick time keeps one code path for every platform.
       final FilePickerResult? result = await FilePicker.platform.pickFiles(

@@ -62,5 +62,14 @@ void main() {
       expect(theme.colorScheme.onPrimary, AppPalette.sakura.onBrand);
       expect(theme.colorScheme.surface, AppPalette.sakura.surface);
     });
+
+    test('производные роли следуют за палитрой, как в 0.41', () {
+      // Both ColorScheme() and the 0.41 ColorScheme.dark(...) leave the
+      // derived roles null, so the getters resolve them from our overrides.
+      final ColorScheme scheme = AppTheme.darkTheme.colorScheme;
+      expect(scheme.primaryContainer, AppPalette.dark.brand);
+      expect(scheme.errorContainer, AppPalette.dark.error);
+      expect(scheme.onSurfaceVariant, AppPalette.dark.textPrimary);
+    });
   });
 }

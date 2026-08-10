@@ -1321,6 +1321,7 @@
   "welcomeSourcesKeySaved": "Key saved",
   "welcomeSourcesGetKey": "Get a key",
   "welcomeSourcesKeyOptionalHint": "Optional — your own key raises rate limits. Search works without it.",
+  "welcomeSourcesTvdbKeyHint": "Required — TheTVDB search stays off without a key.",
   "welcomeSourcesHardcoverTokenHint": "Required — search and import stay disabled without it. Tokens expire every January 1st.",
   "welcomeSourceDescTmdb": "Movies, TV shows and animation.",
   "welcomeSourceDescTvMaze": "TV series.",

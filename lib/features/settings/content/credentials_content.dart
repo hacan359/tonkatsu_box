@@ -112,6 +112,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSteamGridDbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildTmdbSection(settings, compact),
+        const SizedBox(height: AppSpacing.md),
         _buildTvdbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildComicVineSection(settings, compact),

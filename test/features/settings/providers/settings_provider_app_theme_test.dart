@@ -76,6 +76,17 @@ void main() {
         expect(state.appTheme, AppThemeId.sakura);
         expect(prefs.getString('app_theme'), AppThemeId.sakura.id);
       });
+
+      test('взводит одноразовый skip_picker_once — ремоунт через сплеш '
+          'не должен показать пикер профилей', () async {
+        final ProviderContainer container = await createContainer();
+
+        await container
+            .read(settingsNotifierProvider.notifier)
+            .setAppTheme(AppThemeId.sakura);
+
+        expect(prefs.getBool(SettingsKeys.skipPickerOnce), isTrue);
+      });
     });
 
     group('_loadFromPrefs', () {
