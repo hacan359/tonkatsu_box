@@ -1,10 +1,8 @@
-import 'package:core/api/credential_names.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
 import '../../shared/constants/api_defaults.dart';
-import '../selfhost/server_managed_keys.dart';
 
 /// API key data loaded from SharedPreferences + ApiDefaults.
 ///
@@ -105,29 +103,6 @@ class ApiKeys {
           (hardcoverApiKey != null && hardcoverApiKey.isNotEmpty)
               ? hardcoverApiKey
               : null,
-    );
-  }
-
-  /// Web: the server holds the secrets, so every key it reports as configured
-  /// becomes a placeholder the proxy substitutes on its way out.
-  factory ApiKeys.serverManaged(Map<String, bool> availability) {
-    String? managed(String name) =>
-        availability[name] == true ? kServerManagedKey : null;
-
-    return ApiKeys(
-      tmdbApiKey: managed(CredentialNames.tmdb),
-      tvdbApiKey: managed(CredentialNames.tvdb),
-      steamGridDbApiKey: managed(CredentialNames.steamGridDb),
-      igdbClientId: managed(CredentialNames.igdbClientId),
-      igdbClientSecret: managed(CredentialNames.igdbClientSecret),
-      // Non-null keeps the client from running the Twitch exchange itself; the
-      // proxy attaches the token it holds.
-      igdbAccessToken: managed(CredentialNames.igdbClientId),
-      raUsername: managed(CredentialNames.raUsername),
-      raApiKey: managed(CredentialNames.ra),
-      comicVineApiKey: managed(CredentialNames.comicVine),
-      googleBooksApiKey: managed(CredentialNames.googleBooks),
-      hardcoverApiKey: managed(CredentialNames.hardcover),
     );
   }
 

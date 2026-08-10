@@ -232,8 +232,12 @@
   "settingsAppLanguage": "App Language",
   "settingsConnections": "Connections",
   "settingsApiKeys": "API Keys",
-  "credentialsServerManagedTitle": "Keys are managed by the server",
-  "credentialsServerManagedBody": "This browser never holds API secrets — the selfhost server adds them to every outgoing request. Configure them in its keys.json or TONKATSU_KEY_* variables.",
+  "credentialsServerManagedTitle": "Keys are stored on the server",
+  "credentialsServerManagedBody": "Anything entered below is saved on the selfhost server, not in this browser — that is where requests to the APIs are made from. You can also load them from a config file exported on desktop.",
+  "credentialsUploadFromConfig": "Load keys from a config file",
+  "credentialsUploadNoKeys": "No API keys in that file",
+  "credentialsUploadDone": "{count} keys stored on the server",
+  "@credentialsUploadDone": {"placeholders": {"count": {"type": "int"}}},
   "settingsApiKeysValue": "{active}/{total}",
   "@settingsApiKeysValue": {
     "placeholders": {

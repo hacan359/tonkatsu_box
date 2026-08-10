@@ -26,7 +26,7 @@ void main() {
           ApiCredentials.load(dataDir: dataDir.path);
 
       expect(credentials.has(CredentialNames.tmdb), isFalse);
-      expect(credentials.availability.values.any((bool v) => v), isFalse);
+      expect(credentials.values, isEmpty);
     });
 
     test('should read values from the keys file', () {
@@ -76,14 +76,13 @@ void main() {
       );
     });
 
-    test('should never leak a value through availability', () {
+    test('should expose a stored value so the settings screen can show it', () {
       writeKeys(jsonEncode(<String, String>{CredentialNames.tmdb: 'tmdb-value-42'}));
 
       final ApiCredentials credentials =
           ApiCredentials.load(dataDir: dataDir.path);
 
-      expect(credentials.availability[CredentialNames.tmdb], isTrue);
-      expect(jsonEncode(credentials.availability), isNot(contains('tmdb-value-42')));
+      expect(credentials.values[CredentialNames.tmdb], 'tmdb-value-42');
     });
   });
 }

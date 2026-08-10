@@ -365,9 +365,34 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   import/export, backups, the data folder, LAN sync, PNG export, cover/hero
   file picking, the disk image cache and profile switching.
 
-  Covers show up, but each browser still downloads them straight from the
-  source instead of from a cache on the server.
+  API keys are entered in Settings exactly as on desktop; the values are kept
+  on the server, where the requests are actually made from, and can also be
+  loaded in one step from a config file exported on desktop.
 
+  * server/lib/src/image_handler.dart (ImageCache),
+    packages/core/lib/api/image_proxy.dart (imageProxyPath, imageTypeForFolder):
+    New. `/img/<folder>/<id>` caches covers in the volume for every client —
+    also the only way some providers work at all, since CanvasKit fetches image
+    bytes over XHR and their CDNs answer without a CORS header.
+  * lib/core/selfhost/server_credentials.dart (fetchServerCredentials,
+    uploadCredentials, syncCredentialsToServer, credentialsFromConfig): New.
+    Keys travel between the browser's SharedPreferences and the server, which
+    keeps every existing read path on web identical to desktop.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier._writeCredential): Every credential write goes through
+    one place, so a change reaches the proxy instead of stopping in the tab.
+  * lib/shared/theme/app_theme.dart (AppTheme.darkTheme): Register the opaque
+    tiled page background for every TargetPlatform — with a transparent
+    scaffold, an unlisted target rendered white.
+  * lib/core/api/api_dio.dart (createApiDio): Raise the web timeout floor (the
+    browser adapter collapses connect and receive, and a proxied call is two
+    hops) and drop User-Agent, which the browser refuses to let a page set.
+  * lib/core/services/image_cache_service.dart (ImageCacheService.
+    downloadImage, downloadImages, clearCacheForType, removeOrphans,
+    getCacheSize, getCachedCount): Guarded on web — downloadImage ran on the
+    add-to-collection path and killed the screen with a dart:io failure.
+  * lib/core/services/platform_init_web.dart (initPlatform): Disable the
+    browser context menu so right-click opens the app's own.
   * Dockerfile, docker-compose.yml, .dockerignore: New. Builds the web client
     and the server in one go, so neither Flutter nor Dart is needed on the
     machine doing the build; data lives in the `/data` volume.

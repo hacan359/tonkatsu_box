@@ -238,8 +238,12 @@
   "settingsAppLanguage": "Idioma do app",
   "settingsConnections": "Conexões",
   "settingsApiKeys": "Chaves de API",
-  "credentialsServerManagedTitle": "As chaves são geridas pelo servidor",
-  "credentialsServerManagedBody": "Este navegador nunca guarda segredos de API — o servidor selfhost adiciona-os a cada pedido enviado. Configure-os no keys.json dele ou nas variáveis TONKATSU_KEY_*.",
+  "credentialsServerManagedTitle": "As chaves ficam guardadas no servidor",
+  "credentialsServerManagedBody": "O que introduzir abaixo é guardado no servidor selfhost, não neste navegador — é de lá que partem os pedidos às APIs. Também as pode carregar de um ficheiro de configuração exportado no ambiente de trabalho.",
+  "credentialsUploadFromConfig": "Carregar chaves de um ficheiro de configuração",
+  "credentialsUploadNoKeys": "Esse ficheiro não tem chaves de API",
+  "credentialsUploadDone": "{count} chaves guardadas no servidor",
+  "@credentialsUploadDone": {"placeholders": {"count": {"type": "int"}}},
   "settingsApiKeysValue": "{active}/{total}",
   "@settingsApiKeysValue": {
     "placeholders": {

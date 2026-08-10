@@ -1,4 +1,5 @@
 import 'package:core/models/data_source.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,8 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/api/screenscraper_api.dart';
+import '../../../core/selfhost/server_credentials.dart';
+import '../../../main.dart' show AppRestartScope;
 import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
@@ -88,10 +91,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   @override
   Widget build(BuildContext context) {
-    // Editing a key here would write it into the browser — the one place the
-    // selfhost design keeps secrets out of.
-    if (kIsWebBuild) return _buildServerManagedSection();
-
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final bool compact = isCompactScreen(context);
 
@@ -100,6 +99,12 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       children: <Widget>[
         if (widget.isInitialSetup) ...<Widget>[
           _buildWelcomeSection(),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        // Web has no config-import entry of its own yet, so the fast path to a
+        // filled-in screen lives here.
+        if (kIsWebBuild) ...<Widget>[
+          _buildServerManagedSection(),
           const SizedBox(height: AppSpacing.md),
         ],
         _buildIgdbSection(settings, compact),
@@ -730,13 +735,59 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
-          child: Text(
-            l.credentialsServerManagedBody,
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                l.credentialsServerManagedBody,
+                style:
+                    AppTypography.body.copyWith(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              OutlinedButton.icon(
+                onPressed: _uploading ? null : _uploadKeysFromConfig,
+                icon: const Icon(Icons.upload_file, size: 18),
+                label: Text(l.credentialsUploadFromConfig),
+              ),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  bool _uploading = false;
+
+  /// Reads the exported config in the tab and hands only its credentials to
+  /// the server — nothing is written to this browser.
+  Future<void> _uploadKeysFromConfig() async {
+    setState(() => _uploading = true);
+    try {
+      final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: <String>['json'],
+        withData: true,
+      );
+      final Uint8List? bytes = picked?.files.single.bytes;
+      if (bytes == null) return;
+
+      final Map<String, String> credentials = credentialsFromConfig(bytes);
+      if (credentials.isEmpty) {
+        if (mounted) context.showSnack(S.of(context).credentialsUploadNoKeys);
+        return;
+      }
+
+      final Map<String, String> stored = await uploadCredentials(credentials);
+      if (!mounted) return;
+      context.showSnack(S.of(context).credentialsUploadDone(stored.length));
+      // The key store is built once at boot from /proxy/keys, so the tab keeps
+      // saying "no key" until it reloads.
+      await AppRestartScope.restart(context);
+    } on Object catch (e) {
+      if (mounted) context.showSnack('$e', type: SnackType.error);
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   Widget _buildErrorSection(String errorMessage) {

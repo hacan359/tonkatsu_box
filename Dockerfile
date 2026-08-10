@@ -40,6 +40,8 @@ RUN apt-get update \
 
 COPY --from=server /src/server/build/cli/linux_x64/bundle /opt/tonkatsu
 COPY --from=web /src/build/web /srv/web
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENV TONKATSU_DATA_DIR=/data \
     TONKATSU_WEB_ROOT=/srv/web \
@@ -49,4 +51,10 @@ ENV TONKATSU_DATA_DIR=/data \
 VOLUME /data
 EXPOSE 8080
 
-ENTRYPOINT ["/opt/tonkatsu/bin/server"]
+# bash /dev/tcp because the slim image ships no wget/curl and one HTTP probe
+# is not worth installing them.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/${TONKATSU_PORT} && printf 'GET /health HTTP/1.0\\r\\n\\r\\n' >&3 && head -1 <&3 | grep -q ' 200 '"]
+
+# The entrypoint chowns the data dir to PUID/PGID and drops root before exec.
+ENTRYPOINT ["/entrypoint.sh"]

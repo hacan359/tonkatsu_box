@@ -584,11 +584,22 @@ class SRu extends S {
   String get settingsApiKeys => 'API ключи';
 
   @override
-  String get credentialsServerManagedTitle => 'Ключами управляет сервер';
+  String get credentialsServerManagedTitle => 'Ключи хранятся на сервере';
 
   @override
   String get credentialsServerManagedBody =>
-      'Браузер не хранит секреты API — селфхост-сервер подставляет их в каждый исходящий запрос. Настраиваются в его keys.json или переменных TONKATSU_KEY_*.';
+      'Всё, что введено ниже, сохраняется на селфхост-сервере, а не в браузере — именно оттуда уходят запросы к API. Можно также загрузить их из файла конфига, выгруженного на десктопе.';
+
+  @override
+  String get credentialsUploadFromConfig => 'Загрузить ключи из файла конфига';
+
+  @override
+  String get credentialsUploadNoKeys => 'В этом файле нет API-ключей';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return 'На сервере сохранено ключей: $count';
+  }
 
   @override
   String settingsApiKeysValue(int active, int total) {

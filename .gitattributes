@@ -4,3 +4,5 @@ packages/core/lib/rpc/generated/*.rpc.dart linguist-generated=true
 # generated_up_to_date_test compares them byte for byte against what the
 # generator emits, so CRLF in a working tree would fail it spuriously.
 packages/core/lib/rpc/generated/*.rpc.dart text eol=lf
+# Runs inside the Linux image — a CRLF checkout would break its shebang.
+docker/entrypoint.sh text eol=lf

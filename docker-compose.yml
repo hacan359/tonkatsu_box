@@ -3,17 +3,26 @@ services:
     build: .
     image: tonkatsu-box:local
     ports:
-      - "8080:8080"
+      - "${TONKATSU_PORT:-8080}:8080"
     volumes:
-      # Database, snapshots and keys.json live here and survive the container.
-      - tonkatsu-data:/data
+      # Database, covers cache, snapshots and keys.json — back up by copying
+      # this one folder. Configure the host side in .env (see .env.example).
+      - ${TONKATSU_DATA_PATH:-./data}:/data
     environment:
-      # Anything in keys.json can be overridden without editing the file.
-      # TONKATSU_KEY_TMDB: "…"
-      # TONKATSU_KEY_IGDB_CLIENT_ID: "…"
-      # TONKATSU_KEY_IGDB_CLIENT_SECRET: "…"
-      TONKATSU_PORT: "8080"
+      # Everything under the data folder is chowned to this host user.
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      # API keys from .env; an empty value reads as absent, and a set one
+      # overrides the same key in keys.json.
+      TONKATSU_KEY_TMDB: ${TONKATSU_KEY_TMDB:-}
+      TONKATSU_KEY_TVDB: ${TONKATSU_KEY_TVDB:-}
+      TONKATSU_KEY_IGDB_CLIENT_ID: ${TONKATSU_KEY_IGDB_CLIENT_ID:-}
+      TONKATSU_KEY_IGDB_CLIENT_SECRET: ${TONKATSU_KEY_IGDB_CLIENT_SECRET:-}
+      TONKATSU_KEY_STEAMGRIDDB: ${TONKATSU_KEY_STEAMGRIDDB:-}
+      TONKATSU_KEY_COMICVINE: ${TONKATSU_KEY_COMICVINE:-}
+      TONKATSU_KEY_GOOGLEBOOKS: ${TONKATSU_KEY_GOOGLEBOOKS:-}
+      TONKATSU_KEY_HARDCOVER: ${TONKATSU_KEY_HARDCOVER:-}
+      TONKATSU_KEY_RA_USERNAME: ${TONKATSU_KEY_RA_USERNAME:-}
+      TONKATSU_KEY_RA: ${TONKATSU_KEY_RA:-}
+      TONKATSU_KEY_SIMKL_CLIENT_ID: ${TONKATSU_KEY_SIMKL_CLIENT_ID:-}
     restart: unless-stopped
-
-volumes:
-  tonkatsu-data:

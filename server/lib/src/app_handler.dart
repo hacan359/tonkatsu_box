@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/api/image_proxy.dart';
 import 'package:core/api/proxy_targets.dart';
 import 'package:core/rpc/protocol.dart';
 import 'package:path/path.dart' as p;
@@ -8,6 +9,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
 
+import 'image_handler.dart';
 import 'proxy_handler.dart';
 import 'rpc_handler.dart';
 
@@ -20,6 +22,7 @@ Handler buildAppHandler({
   required int schemaVersion,
   DaoRegistry? daos,
   ApiProxy? proxy,
+  ImageCache? images,
   String? webRoot,
   Middleware? logger,
 }) {
@@ -38,11 +41,28 @@ Handler buildAppHandler({
     });
   if (daos != null) api.post(_kRpcPath, buildRpcHandler(daos));
   if (proxy != null) {
-    // Presence, never values — enough for the browser to know a call is worth
-    // making, and nothing more.
     api.get('$kProxyPathPrefix/keys', (Request request) {
       return Response.ok(
-        jsonEncode(proxy.credentials.availability),
+        jsonEncode(proxy.credentials.values),
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+      );
+    });
+    // The browser has no keys file to edit, so it sets them here instead.
+    api.post('$kProxyPathPrefix/keys', (Request request) async {
+      final Object? body = jsonDecode(await request.readAsString());
+      if (body is! Map<String, Object?>) {
+        return Response(HttpStatus.badRequest,
+            body: jsonEncode(<String, Object?>{'ok': false}));
+      }
+      final Map<String, String> stored =
+          proxy.applyCredentials(<String, String>{
+        for (final MapEntry<String, Object?> e in body.entries)
+          if (e.value is String) e.key: e.value! as String,
+      });
+      return Response.ok(
+        jsonEncode(stored),
         headers: <String, String>{
           HttpHeaders.contentTypeHeader: 'application/json',
         },
@@ -52,6 +72,9 @@ Handler buildAppHandler({
     // rewritten path can end at the slug.
     api.all('$kProxyPathPrefix/<slug>', proxy.handler);
     api.all('$kProxyPathPrefix/<slug>/<rest|.*>', proxy.handler);
+  }
+  if (images != null) {
+    api.get('$kImagePathPrefix/<folder>/<id|.*>', images.handler);
   }
 
   final Handler? web = _webHandler(webRoot);
@@ -69,7 +92,8 @@ Handler _withWebFallback(Router api, Handler web) {
     final String path = '/${request.url.path}';
     final bool isApi = path == _kHealthPath ||
         path == _kRpcPath ||
-        path.startsWith('$kProxyPathPrefix/');
+        path.startsWith('$kProxyPathPrefix/') ||
+        path.startsWith('$kImagePathPrefix/');
     if (isApi) return api.call(request);
 
     final Response response = await api.call(request);

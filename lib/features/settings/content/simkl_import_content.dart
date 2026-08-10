@@ -26,6 +26,7 @@ import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
@@ -794,7 +795,8 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
   void _persistClientId(String clientId) {
     final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
     if (_rememberClientId && clientId.isNotEmpty) {
-      unawaited(prefs.setString(SettingsKeys.simklClientId, clientId));
+      unawaited(prefs.setString(SettingsKeys.simklClientId, clientId)
+          .then((_) => syncCredentialsToServer(prefs)));
     } else {
       unawaited(prefs.remove(SettingsKeys.simklClientId));
     }

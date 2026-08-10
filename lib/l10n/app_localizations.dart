@@ -1086,14 +1086,32 @@ abstract class S {
   /// No description provided for @credentialsServerManagedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Keys are managed by the server'**
+  /// **'Keys are stored on the server'**
   String get credentialsServerManagedTitle;
 
   /// No description provided for @credentialsServerManagedBody.
   ///
   /// In en, this message translates to:
-  /// **'This browser never holds API secrets — the selfhost server adds them to every outgoing request. Configure them in its keys.json or TONKATSU_KEY_* variables.'**
+  /// **'Anything entered below is saved on the selfhost server, not in this browser — that is where requests to the APIs are made from. You can also load them from a config file exported on desktop.'**
   String get credentialsServerManagedBody;
+
+  /// No description provided for @credentialsUploadFromConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Load keys from a config file'**
+  String get credentialsUploadFromConfig;
+
+  /// No description provided for @credentialsUploadNoKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'No API keys in that file'**
+  String get credentialsUploadNoKeys;
+
+  /// No description provided for @credentialsUploadDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} keys stored on the server'**
+  String credentialsUploadDone(int count);
 
   /// No description provided for @settingsApiKeysValue.
   ///

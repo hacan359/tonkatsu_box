@@ -4,6 +4,10 @@
 # Browser-automation session artifacts (screenshots, logs)
 .playwright-cli/
 
+# Selfhost: per-machine compose settings and the default data folder
+.env
+/data/
+
 # Miscellaneous
 *.class
 *.log

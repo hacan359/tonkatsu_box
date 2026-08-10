@@ -25,6 +25,28 @@ dart run server/bin/server.dart --data-dir ./data --web-root ./build/web
 Command line wins over the environment. A missing or unbuilt `--web-root` is not
 fatal — the server then answers `/health` only.
 
+## Docker
+
+```bash
+cp .env.example .env   # optional — edit the data folder, port, PUID/PGID
+docker compose up --build
+```
+
+Everything the server stores lives in **one host folder** — the database, the
+covers cache, migration snapshots and `keys.json`. It defaults to `./data` next
+to `docker-compose.yml` and is set with `TONKATSU_DATA_PATH` in `.env`. Backing
+up the app is copying that folder while the container is stopped; restoring is
+copying it back.
+
+The entrypoint chowns the folder to `PUID`/`PGID` (default 1000:1000) and drops
+root before starting the server, so the files are editable by the host user.
+
+Docker Desktop on Windows: a folder on a Windows drive works on current
+versions (virtiofs file sharing — WAL and integrity verified), just slower
+than a WSL-native path like `/home/<user>/tonkatsu-data`. Either way, never
+open the live database in another tool — locking across the Windows boundary
+is not to be trusted.
+
 `GET /health` → `{"status":"ok","schemaVersion":N,"protocolVersion":1}`.
 
 `POST /rpc` → `{protocol, dao, method, args}`; answers `{ok:true, result}` or
@@ -40,8 +62,10 @@ call goes out with a real `User-Agent` (browsers strip theirs, and AniList
 answers 403 without one) and with the server's credentials attached; an
 `Authorization` header from the caller is dropped rather than forwarded.
 
-`GET /proxy/keys` answers which credentials are configured — booleans only. The
-browser needs it to know a search is possible; the values stay here.
+`GET /proxy/keys` answers the configured credentials — values included, so the
+settings screen in the browser shows and edits them exactly as on desktop.
+`POST /proxy/keys` stores changes into `<data-dir>/keys.json`; an empty value
+clears a key.
 
 Credentials come from `<data-dir>/keys.json`, overridden by
 `TONKATSU_KEY_<NAME>` in the environment:

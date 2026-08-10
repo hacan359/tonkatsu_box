@@ -575,11 +575,23 @@ class SPt extends S {
 
   @override
   String get credentialsServerManagedTitle =>
-      'As chaves são geridas pelo servidor';
+      'As chaves ficam guardadas no servidor';
 
   @override
   String get credentialsServerManagedBody =>
-      'Este navegador nunca guarda segredos de API — o servidor selfhost adiciona-os a cada pedido enviado. Configure-os no keys.json dele ou nas variáveis TONKATSU_KEY_*.';
+      'O que introduzir abaixo é guardado no servidor selfhost, não neste navegador — é de lá que partem os pedidos às APIs. Também as pode carregar de um ficheiro de configuração exportado no ambiente de trabalho.';
+
+  @override
+  String get credentialsUploadFromConfig =>
+      'Carregar chaves de um ficheiro de configuração';
+
+  @override
+  String get credentialsUploadNoKeys => 'Esse ficheiro não tem chaves de API';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count chaves guardadas no servidor';
+  }
 
   @override
   String settingsApiKeysValue(int active, int total) {

@@ -212,8 +212,12 @@
   "settingsAppLanguage": "Язык приложения",
   "settingsConnections": "Подключения",
   "settingsApiKeys": "API ключи",
-  "credentialsServerManagedTitle": "Ключами управляет сервер",
-  "credentialsServerManagedBody": "Браузер не хранит секреты API — селфхост-сервер подставляет их в каждый исходящий запрос. Настраиваются в его keys.json или переменных TONKATSU_KEY_*.",
+  "credentialsServerManagedTitle": "Ключи хранятся на сервере",
+  "credentialsServerManagedBody": "Всё, что введено ниже, сохраняется на селфхост-сервере, а не в браузере — именно оттуда уходят запросы к API. Можно также загрузить их из файла конфига, выгруженного на десктопе.",
+  "credentialsUploadFromConfig": "Загрузить ключи из файла конфига",
+  "credentialsUploadNoKeys": "В этом файле нет API-ключей",
+  "credentialsUploadDone": "На сервере сохранено ключей: {count}",
+  "@credentialsUploadDone": {"placeholders": {"count": {"type": "int"}}},
   "settingsApiKeysValue": "{active}/{total}",
   "@settingsApiKeysValue": {
     "placeholders": {

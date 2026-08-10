@@ -576,11 +576,23 @@ class SFr extends S {
 
   @override
   String get credentialsServerManagedTitle =>
-      'Les clés sont gérées par le serveur';
+      'Les clés sont stockées sur le serveur';
 
   @override
   String get credentialsServerManagedBody =>
-      'Ce navigateur ne conserve aucun secret d\'API : le serveur selfhost les ajoute à chaque requête sortante. Configurez-les dans son keys.json ou via les variables TONKATSU_KEY_*.';
+      'Ce que vous saisissez ci-dessous est enregistré sur le serveur selfhost, pas dans ce navigateur : les appels aux API partent de là. Vous pouvez aussi les charger depuis un fichier de configuration exporté sur le bureau.';
+
+  @override
+  String get credentialsUploadFromConfig =>
+      'Charger les clés depuis un fichier de configuration';
+
+  @override
+  String get credentialsUploadNoKeys => 'Aucune clé API dans ce fichier';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count clés enregistrées sur le serveur';
+  }
 
   @override
   String settingsApiKeysValue(int active, int total) {
