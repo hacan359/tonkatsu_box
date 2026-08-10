@@ -353,133 +353,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     Clear-flow coverage — the button appears only over a set date, clearing
     writes NULL and never calls updateItemStatus.
 
-- **Selfhost: run Tonkatsu Box in a browser against your own server**
+- **Selfhost: run Tonkatsu Box in a browser via Docker**
 
-  `docker compose up` builds an image that serves the web client and owns the
-  database. The browser keeps no data of its own — every read and write is a
-  call to the server, so a phone and a desktop see the same collections, and
-  the database survives recreating the container. External APIs are reached
-  through the server too, which is what makes search work from a browser at all
-  and keeps every API key off the page; the key screen on web says so instead
-  of offering fields. Features that need a local filesystem stay hidden there:
-  import/export, backups, the data folder, LAN sync, PNG export, cover/hero
-  file picking, the disk image cache and profile switching.
+  `docker compose up -d --build` on your own machine or home server, then open
+  `http://<server-ip>:8080` from any device. It is the same app, in a browser:
+  the database, cover cache and API keys live on the server, so every device
+  works with the same library. Setup, configuration, HTTPS and backups are
+  described in README → Self-Hosting.
 
-  API keys are entered in Settings exactly as on desktop; the values are kept
-  on the server, where the requests are actually made from, and can also be
-  loaded in one step from a config file exported on desktop.
-
-  * server/lib/src/image_handler.dart (ImageCache),
-    packages/core/lib/api/image_proxy.dart (imageProxyPath, imageTypeForFolder):
-    New. `/img/<folder>/<id>` caches covers in the volume for every client —
-    also the only way some providers work at all, since CanvasKit fetches image
-    bytes over XHR and their CDNs answer without a CORS header.
-  * lib/core/selfhost/server_credentials.dart (fetchServerCredentials,
-    uploadCredentials, syncCredentialsToServer, credentialsFromConfig): New.
-    Keys travel between the browser's SharedPreferences and the server, which
-    keeps every existing read path on web identical to desktop.
-  * lib/features/settings/providers/settings_provider.dart
-    (SettingsNotifier._writeCredential): Every credential write goes through
-    one place, so a change reaches the proxy instead of stopping in the tab.
-  * lib/shared/theme/app_theme.dart (AppTheme.darkTheme): Register the opaque
-    tiled page background for every TargetPlatform — with a transparent
-    scaffold, an unlisted target rendered white.
-  * lib/core/api/api_dio.dart (createApiDio): Raise the web timeout floor (the
-    browser adapter collapses connect and receive, and a proxied call is two
-    hops) and drop User-Agent, which the browser refuses to let a page set.
-  * lib/core/services/image_cache_service.dart (ImageCacheService.
-    downloadImage, downloadImages, clearCacheForType, removeOrphans,
-    getCacheSize, getCachedCount): Guarded on web — downloadImage ran on the
-    add-to-collection path and killed the screen with a dart:io failure.
-  * lib/core/services/platform_init_web.dart (initPlatform): Disable the
-    browser context menu so right-click opens the app's own.
-  * Dockerfile, docker-compose.yml, .dockerignore: New. Builds the web client
-    and the server in one go, so neither Flutter nor Dart is needed on the
-    machine doing the build; data lives in the `/data` volume.
-  * server/lib/src/proxy_handler.dart (ApiProxy, ProxyCredentialException),
-    upstream_client.dart (UpstreamClient, HttpUpstreamClient),
-    api_credentials.dart (ApiCredentials, ApiCredentialsException): New.
-    `/proxy/<slug>/<path>` forwards to an allowlisted upstream with the
-    server's User-Agent and credentials; IGDB's Twitch token is exchanged and
-    cached here so the client secret never reaches a browser.
-  * packages/core/lib/api/proxy_targets.dart (ProxyTarget, proxyTargetForHost,
-    proxyTargetForSlug), credential_names.dart (CredentialNames): New. One
-    allowlist shared by both ends, so the browser's rewrite and the server's
-    refusal cannot drift apart.
-  * lib/core/api/proxy_rewrite_interceptor.dart (ProxyRewriteInterceptor):
-    New. On web, rewrites the resolved request URI of any allowlisted host to
-    the server's proxy — covers both clients with a baseUrl and those building
-    a full URL per request.
-  * lib/core/api/api_dio.dart (createApiDio): Installs the interceptor on web.
-  * lib/core/rpc/dio_rpc_transport.dart (DioRpcTransport): New. Carries the
-    generated DAO stubs to `/rpc`, one method per round trip.
-  * lib/core/selfhost/server_origin.dart (kServerBaseUrl, serverBaseUrl),
-    server_managed_keys.dart (kServerManagedKey,
-    fetchServerCredentialAvailability): New. The server's address, and which
-    credentials it holds — presence only, never a value.
-  * lib/core/database/database_service.dart (DatabaseService, DatabaseService.
-    warmUp): Web hands out the generated RemoteDaoSet instead of local DAOs;
-    touching the local database there throws rather than silently collecting
-    writes the server never sees.
-  * packages/core/tool/generate_rpc.dart (generateRpcSources): Also emits
-    RemoteDaoSet, so a new DAO reaches the client without a hand edit.
-  * lib/main.dart (main), lib/core/services/api_key_initializer.dart
-    (ApiKeys.serverManaged): Web seeds the key store from the server instead of
-    SharedPreferences.
-  * lib/features/settings/content/credentials_content.dart
-    (CredentialsContent.build): Web shows "keys are managed by the server".
-  * lib/features/settings/screens/settings_screen.dart,
-    lib/features/splash/screens/splash_screen.dart: Profile switching is hidden
-    on web — the server owns one database.
-  * web/: New. Flutter web bootstrap (index.html, manifest.json), favicon and
-    icons generated from assets/icon/icon.png.
-  * lib/core/services/platform_init_io.dart,
-    lib/core/services/platform_init_web.dart (initPlatform): New. Per-target
-    startup seam — HttpOverrides + ffi database factory on desktop, nothing on
-    web.
-  * lib/main.dart (main): Platform setup goes through the initPlatform
-    conditional import instead of inline dart:io checks.
-  * lib/core/services/discord_presence_shim.dart,
-    discord_presence_shim_io.dart, discord_presence_shim_web.dart (DiscordRPC,
-    DiscordPresence, DiscordAsset, DiscordTimestamps): New. Facade over
-    dart_discord_presence, which pulls dart:ffi the web compile cannot import.
-  * packages/core/lib/utils/stable_id.dart, stable_id_io.dart,
-    stable_id_web.dart (fnv1a64): Split per target — native keeps raw 64-bit
-    int math, dart2js gets exact BigInt wrap math; values are bit-identical.
-  * lib/shared/constants/platform_features.dart (kIsWebBuild): Now a
-    compile-time const so dart2js tree-shakes desktop-only screens.
-  * lib/core/services/profile_service.dart (ProfileService.loadProfiles,
-    _saveProfiles, migrateIfNeeded, getProfileStats, restartApp): Profiles are
-    stored in SharedPreferences on web; profile folders and pre-profile
-    migration are skipped.
-  * lib/core/services/storage_root.dart (StorageRoot.defaultPath,
-    StorageRoot.resolve): Web uses a fixed virtual root; custom data folders
-    stay a desktop concept.
-  * lib/core/database/database_service.dart (DatabaseService._initDatabase),
-    lib/core/services/backup_service.dart, db_sync_service.dart: Import the
-    pure sqflite_common API instead of sqflite_common_ffi so the files compile
-    for web.
-  * lib/core/services/image_cache_service.dart (ImageCacheService),
-    collection_hero_service.dart (CollectionHeroService),
-    screenscraper_cache_service.dart (ScreenScraperCacheService): Disk caches
-    are no-ops on web; images come straight from the network.
-  * lib/core/services/export_service.dart (ExportService.exportCollection),
-    import_service.dart (ImportService.pickAndParseFile): Web backstops for
-    shortcut paths whose menu entries are already hidden.
-  * lib/features/settings/screens/settings_screen.dart,
-    lib/features/settings/content/database_content.dart,
-    lib/features/collections/screens/home_screen.dart,
-    lib/features/collections/widgets/bulk_action_bar.dart,
-    collection_screen_fab.dart, create_custom_item_dialog.dart,
-    edit_collection_dialog.dart: Filesystem-bound actions hidden behind
-    !kIsWebBuild.
-  * lib/core/services/gamepad_mappings.dart
-    (GamepadMapping.forCurrentPlatform): Returns an inert mapping on web
-    before touching Platform.
-  * pubspec.yaml: Add sqflite_common; web section in
-    the flutter_launcher_icons config.
-  * packages/core/test/utils/stable_id_test.dart: New. Golden vectors pin the
-    id contract; io and web variants must agree.
+  Not available in the browser: VGMaps, Discord Rich Presence, Kodi, gamepad,
+  LAN sync, profiles, the data folder and collection hero images. Everything
+  else works as in the desktop app.
 
 ### Changed
 

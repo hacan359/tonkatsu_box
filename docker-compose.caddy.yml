@@ -1,0 +1,19 @@
+# HTTPS + HTTP/2 via Caddy. Run together with the base file:
+#   docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
+# Keep TONKATSU_PORT at its 8080 default — Caddy owns host ports 80/443.
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates and the local CA live next to the app data, so trusting
+      # the root once survives container recreation.
+      - ${TONKATSU_DATA_PATH:-./data}/caddy:/data
+    environment:
+      TONKATSU_DOMAIN: ${TONKATSU_DOMAIN:-tonkatsu.box}
+    depends_on:
+      - tonkatsu
