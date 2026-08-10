@@ -646,12 +646,6 @@ class ExportService {
     ExportFormat format = ExportFormat.light,
     bool includeUserData = false,
   }) async {
-    // Backstop for shortcut paths: the menu entries are already hidden.
-    if (kIsWebBuild) {
-      return const ExportResult.failure(
-        'Export is not available in the web build yet',
-      );
-    }
     try {
       final XcollFile xcoll;
       final String extension;
@@ -681,6 +675,17 @@ class ExportService {
       final String json = xcoll.toJsonString();
       final Uint8List jsonBytes = Uint8List.fromList(utf8.encode(json));
       final String suggestedName = _sanitizeFileName(collection.name);
+      final String downloadName = '$suggestedName.$extension';
+
+      // Web: saveFile hands the bytes to the browser as a download and
+      // returns null — there is no cancel to observe.
+      if (kIsWebBuild) {
+        await FilePicker.platform.saveFile(
+          fileName: downloadName,
+          bytes: jsonBytes,
+        );
+        return ExportResult.success(downloadName);
+      }
 
       // On Android FileType.custom doesn't support custom extensions.
       final bool useAny = Platform.isAndroid || Platform.isIOS;

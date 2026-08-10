@@ -31,6 +31,12 @@
 
   <title>Tonkatsu Box</title>
   <link rel="manifest" href="manifest.json">
+  <!-- The app's scaffolds are transparent by design; without this the page
+       root shows through white before the first frame and behind splash
+       routes. Matches theme_color in manifest.json. -->
+  <style>
+    html, body { background: #0A0A0A; }
+  </style>
 </head>
 <body>
   <!--

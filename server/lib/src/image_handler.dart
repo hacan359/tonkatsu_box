@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:core/api/image_proxy.dart';
 import 'package:core/models/image_type.dart';
@@ -24,23 +25,17 @@ class ImageCache {
   final UpstreamClient _upstream;
 
   Handler get handler => (Request request) async {
-        final List<String> segments = request.url.pathSegments;
-        if (segments.length < 3) {
+        final (ImageType, String)? target = _target(request);
+        if (target == null) {
           return _error(HttpStatus.notFound, 'No image in the path');
         }
-
-        final ImageType? type = imageTypeForFolder(segments[1]);
-        if (type == null) {
-          return _error(HttpStatus.notFound, 'Unknown image type');
-        }
-
-        final String imageId = segments.skip(2).join('/');
+        final (ImageType type, String imageId) = target;
         // A traversal would land the write outside the cache directory.
         if (imageId.isEmpty || imageId.contains('..')) {
           return _error(HttpStatus.badRequest, 'Bad image id');
         }
 
-        final File file = File(p.join(dataDir, 'images', type.folder, imageId));
+        final File file = _fileFor(type, imageId);
         if (file.existsSync() && file.lengthSync() > 0) {
           return _image(await file.readAsBytes(), _contentTypeOf(imageId));
         }
@@ -74,19 +69,73 @@ class ImageCache {
           );
         }
 
-        // Write through a temporary name: a half-written file would be served
-        // as a valid cache hit forever after.
-        final File temp = File('${file.path}.part');
-        await temp.parent.create(recursive: true);
-        await temp.writeAsBytes(response.body, flush: true);
-        await temp.rename(file.path);
+        await _writeAtomically(file, response.body);
 
         return _image(
           response.body,
           response.contentType ?? _contentTypeOf(imageId),
         );
       };
+
+  /// `POST /img/<folder>/<id>` with the raw bytes as the body — the web
+  /// build's stand-in for the desktop's local cache write: a user-picked
+  /// cover has no upstream URL the GET route could fetch.
+  Handler get uploadHandler => (Request request) async {
+        final (ImageType, String)? target = _target(request);
+        if (target == null) {
+          return _error(HttpStatus.notFound, 'No image in the path');
+        }
+        final (ImageType type, String imageId) = target;
+        // A traversal would land the write outside the cache directory.
+        if (imageId.isEmpty || imageId.contains('..')) {
+          return _error(HttpStatus.badRequest, 'Bad image id');
+        }
+
+        final BytesBuilder body = BytesBuilder(copy: false);
+        await for (final List<int> chunk in request.read()) {
+          body.add(chunk);
+          if (body.length > _kMaxUploadBytes) {
+            return _error(HttpStatus.requestEntityTooLarge, 'Image too large');
+          }
+        }
+        if (body.isEmpty) {
+          return _error(HttpStatus.badRequest, 'Empty body');
+        }
+
+        await _writeAtomically(_fileFor(type, imageId), body.takeBytes());
+        return Response.ok(
+          jsonEncode(<String, Object?>{'ok': true}),
+          headers: <String, String>{
+            HttpHeaders.contentTypeHeader: 'application/json',
+          },
+        );
+      };
+
+  /// Folder + id from `/img/<folder>/<id>`, or null when the path is not an
+  /// image.
+  (ImageType, String)? _target(Request request) {
+    final List<String> segments = request.url.pathSegments;
+    if (segments.length < 3) return null;
+    final ImageType? type = imageTypeForFolder(segments[1]);
+    if (type == null) return null;
+    return (type, segments.skip(2).join('/'));
+  }
+
+  File _fileFor(ImageType type, String imageId) =>
+      File(p.join(dataDir, 'images', type.folder, imageId));
+
+  /// Write through a temporary name: a half-written file would be served as a
+  /// valid cache hit forever after.
+  Future<void> _writeAtomically(File file, List<int> bytes) async {
+    final File temp = File('${file.path}.part');
+    await temp.parent.create(recursive: true);
+    await temp.writeAsBytes(bytes, flush: true);
+    await temp.rename(file.path);
+  }
 }
+
+/// Covers are hundreds of KB; anything bigger than this is not a cover.
+const int _kMaxUploadBytes = 20 * 1024 * 1024;
 
 String _contentTypeOf(String name) {
   switch (p.extension(name).toLowerCase()) {

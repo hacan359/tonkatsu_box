@@ -76,12 +76,17 @@ Credentials come from `<data-dir>/keys.json`, overridden by
 
 Names: `tmdb`, `tvdb`, `steamgriddb`, `igdb_client_id`, `igdb_client_secret`,
 `ra_username`, `ra`, `comicvine`, `googlebooks`, `hardcover`,
-`simkl_client_id`. A request needing one that is missing answers **503** — a
+`simkl_client_id`, `ss_dev_id`, `ss_dev_password`, `ss_ssid`,
+`ss_sspassword`. A request needing one that is missing answers **503** — a
 configuration problem, not a client one. IGDB's Twitch token is exchanged and
 cached here, so the client secret never reaches a browser.
 
-Not wired yet: ScreenScraper (four separate credentials) and Kodi (a host on the
-user's own LAN, which an allowlist cannot cover).
+ScreenScraper needs its dev pair (`ss_dev_id`/`ss_dev_password`) set by the
+operator — it is never baked into the image. The user pair comes from the
+app's settings screen like every other key.
+
+Not wired: Kodi (a host on the user's own LAN, which an allowlist cannot
+cover).
 
 ## Database
 

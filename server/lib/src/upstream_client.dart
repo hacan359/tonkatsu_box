@@ -23,13 +23,29 @@ abstract class UpstreamClient {
 }
 
 class HttpUpstreamClient implements UpstreamClient {
-  HttpUpstreamClient({Duration timeout = const Duration(seconds: 30)})
-      : _client = HttpClient()..connectionTimeout = timeout;
+  HttpUpstreamClient({Duration deadline = const Duration(seconds: 15)})
+      : _deadline = deadline,
+        _client = HttpClient()..connectionTimeout = deadline;
+
+  /// Whole-request budget. connectionTimeout alone lets an accepted-but-
+  /// silent upstream hold the line for minutes — and every hanging /img
+  /// pins one of the browser's six connections, freezing the whole app.
+  final Duration _deadline;
 
   final HttpClient _client;
 
   @override
   Future<UpstreamResponse> send({
+    required String method,
+    required Uri url,
+    required Map<String, String> headers,
+    List<int>? body,
+  }) {
+    return _send(method: method, url: url, headers: headers, body: body)
+        .timeout(_deadline);
+  }
+
+  Future<UpstreamResponse> _send({
     required String method,
     required Uri url,
     required Map<String, String> headers,

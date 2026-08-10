@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:core/models/collection.dart';
@@ -144,8 +144,7 @@ void main() {
   late MockWishlistRepository mockWishlist;
   late TraktImportService sut;
 
-  late Directory tempDir;
-  late String zipPath;
+  late Uint8List zipBytes;
 
   setUpAll(() {
     registerAllFallbacks();
@@ -169,18 +168,10 @@ void main() {
       wishlistRepository: mockWishlist,
     );
 
-    tempDir = Directory.systemTemp.createTempSync('trakt_test');
-    zipPath = '${tempDir.path}/test.zip';
-  });
-
-  tearDown(() {
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
   });
 
   void writeZip(List<int> bytes) {
-    File(zipPath).writeAsBytesSync(bytes);
+    zipBytes = Uint8List.fromList(bytes);
   }
 
   group('TraktZipInfo', () {
@@ -258,11 +249,11 @@ void main() {
   group('TraktImportOptions', () {
     group('constructor', () {
       test('should create экземпляр с обязательными параметрами', () {
-        const TraktImportOptions options = TraktImportOptions(
-          zipPath: '/path/to/file.zip',
+        final TraktImportOptions options = TraktImportOptions(
+          bytes: Uint8List(0),
         );
 
-        expect(options.zipPath, equals('/path/to/file.zip'));
+        expect(options.bytes, isEmpty);
         expect(options.collectionId, isNull);
         expect(options.importWatched, isTrue);
         expect(options.importRatings, isTrue);
@@ -270,15 +261,15 @@ void main() {
       });
 
       test('должен принимать все параметры', () {
-        const TraktImportOptions options = TraktImportOptions(
-          zipPath: '/path.zip',
+        final TraktImportOptions options = TraktImportOptions(
+          bytes: Uint8List(0),
           collectionId: 42,
           importWatched: false,
           importRatings: false,
           importWatchlist: false,
         );
 
-        expect(options.zipPath, equals('/path.zip'));
+        expect(options.bytes, isEmpty);
         expect(options.collectionId, equals(42));
         expect(options.importWatched, isFalse);
         expect(options.importRatings, isFalse);
@@ -300,7 +291,7 @@ void main() {
           watchlistJson: watchlistEntryJson(),
         ));
 
-        final TraktZipInfo info = await sut.validateZip(zipPath);
+        final TraktZipInfo info = await sut.validateZip(zipBytes);
 
         expect(info.isValid, isTrue);
         expect(info.username, equals('alice'));
@@ -360,7 +351,7 @@ void main() {
           watchlistJson: threeWatchlist,
         ));
 
-        final TraktZipInfo info = await sut.validateZip(zipPath);
+        final TraktZipInfo info = await sut.validateZip(zipBytes);
 
         expect(info.isValid, isTrue);
         expect(info.watchedMovieCount, equals(2));
@@ -377,7 +368,7 @@ void main() {
           watchedMoviesJson: watchedMovieJson(),
         ));
 
-        final TraktZipInfo info = await sut.validateZip(zipPath);
+        final TraktZipInfo info = await sut.validateZip(zipBytes);
 
         expect(info.username, equals('my_trakt_user'));
       });
@@ -389,16 +380,16 @@ void main() {
         final List<int> bytes = ZipEncoder().encode(archive);
         writeZip(bytes);
 
-        final TraktZipInfo info = await sut.validateZip(zipPath);
+        final TraktZipInfo info = await sut.validateZip(zipBytes);
 
         expect(info.isValid, isFalse);
         expect(info.error, equals('No JSON files found in archive'));
       });
 
       test('should return invalid для не-ZIP файла', () async {
-        File(zipPath).writeAsBytesSync(<int>[0, 1, 2, 3, 4, 5]);
+        writeZip(<int>[0, 1, 2, 3, 4, 5]);
 
-        final TraktZipInfo info = await sut.validateZip(zipPath);
+        final TraktZipInfo info = await sut.validateZip(zipBytes);
 
         expect(info.isValid, isFalse);
       });
@@ -409,7 +400,7 @@ void main() {
         final List<int> bytes = ZipEncoder().encode(archive);
         writeZip(bytes);
 
-        final TraktZipInfo info = await sut.validateZip(zipPath);
+        final TraktZipInfo info = await sut.validateZip(zipBytes);
 
         expect(info.isValid, isFalse);
       });
@@ -424,15 +415,14 @@ void main() {
           watchlistJson: '[]',
         ));
 
-        final TraktZipInfo info = await sut.validateZip(zipPath);
+        final TraktZipInfo info = await sut.validateZip(zipBytes);
 
         expect(info.isValid, isFalse);
         expect(info.totalItems, equals(0));
       });
 
-      test('should return invalid для несуществующего файла', () async {
-        final TraktZipInfo info =
-            await sut.validateZip('/nonexistent/path.zip');
+      test('should return invalid for empty bytes', () async {
+        final TraktZipInfo info = await sut.validateZip(Uint8List(0));
 
         expect(info.isValid, isFalse);
       });
@@ -527,7 +517,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -547,7 +537,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             collectionId: 42,
           ),
         );
@@ -572,7 +562,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             collectionId: 999,
           ),
         );
@@ -593,7 +583,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -616,7 +606,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final Map<String, dynamic> row = capturedItemRows().single;
         expect(row['completed_at'], isNotNull);
@@ -645,7 +635,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -674,7 +664,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final Map<String, dynamic> row = capturedItemRows().single;
         expect(row['media_type'], equals(MediaType.animation.value));
@@ -708,7 +698,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final Map<String, dynamic> row = capturedItemRows().single;
         expect(row['media_type'], equals(MediaType.animation.value));
@@ -728,7 +718,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -751,7 +741,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -789,7 +779,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -825,7 +815,7 @@ void main() {
 
         await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -854,7 +844,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -887,7 +877,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -927,7 +917,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         // inProgress is lower priority than completed → no status change.
         final List<(int, Map<String, dynamic>)> updates = capturedUpdates();
@@ -957,7 +947,7 @@ void main() {
           watchedMoviesJson: watchedMovieJson(tmdbId: 100),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         // dropped is protected: merge returns null → no status column.
         final List<(int, Map<String, dynamic>)> updates = capturedUpdates();
@@ -991,7 +981,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final (int, Map<String, dynamic>) update = capturedUpdates().single;
         expect(update.$1, equals(95));
@@ -1029,7 +1019,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         verify(() =>
                 mockTvShowDao.markEpisodeWatched(any(), any(), 200, any(), any()))
@@ -1053,7 +1043,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
             importRatings: false,
           ),
@@ -1081,7 +1071,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
             importRatings: false,
           ),
@@ -1108,7 +1098,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
             importRatings: false,
           ),
@@ -1145,7 +1135,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
             importRatings: false,
           ),
@@ -1172,7 +1162,7 @@ void main() {
 
         final List<ImportStage> stages = <ImportStage>[];
         await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
           onProgress: (ImportProgress progress) {
             if (!stages.contains(progress.stage)) {
               stages.add(progress.stage);
@@ -1199,7 +1189,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -1227,7 +1217,7 @@ void main() {
 
         await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importRatings: false,
           ),
         );
@@ -1252,7 +1242,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
             importRatings: false,
             importWatchlist: false,
@@ -1264,15 +1254,16 @@ void main() {
         expect(capturedItemRows(), isEmpty);
       });
 
-      test('should return failure для ошибки чтения файла', () async {
+      test('should return failure for bytes that are not a ZIP', () async {
+        // ZipDecoder answers garbage with an empty archive, not a throw.
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: '${tempDir.path}/nonexistent.zip',
+            bytes: Uint8List.fromList(<int>[0, 1, 2, 3]),
           ),
         );
 
         expect(result.success, isFalse);
-        expect(result.fatalError, contains('Import failed'));
+        expect(result.fatalError, equals('No data found in archive'));
       });
 
       test('should return failure для пустого архива', () async {
@@ -1281,7 +1272,7 @@ void main() {
         writeZip(ZipEncoder().encode(archive));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isFalse);
@@ -1301,7 +1292,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final Map<String, dynamic> row = capturedItemRows().single;
         expect(row['media_type'], equals(MediaType.tvShow.value));
@@ -1326,7 +1317,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final Map<String, dynamic> row = capturedItemRows().single;
         expect(row['external_id'], equals(200));
@@ -1344,7 +1335,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         // The fetch failed → no data → fall back to wishlist, counted skipped.
@@ -1373,7 +1364,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -1405,7 +1396,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
             importRatings: false,
           ),
@@ -1467,7 +1458,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -1486,7 +1477,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -1504,7 +1495,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -1531,7 +1522,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         verifyNever(
             () => mockTvShowDao.markEpisodeWatched(any(), any(), any(), any(), any()));
@@ -1550,7 +1541,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -1593,7 +1584,7 @@ void main() {
 
         await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -1636,7 +1627,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final (int, Map<String, dynamic>) update = capturedUpdates().single;
         expect(update.$1, equals(96));
@@ -1664,7 +1655,7 @@ void main() {
 
         final UniversalImportResult result = await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
             importRatings: false,
           ),
@@ -1707,7 +1698,7 @@ void main() {
         writeZip(createTestZip(watchedMoviesJson: twoSame));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -1729,7 +1720,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -1755,7 +1746,7 @@ void main() {
 
         await sut.import(
           TraktImportOptions(
-            zipPath: zipPath,
+            bytes: zipBytes,
             importWatched: false,
           ),
         );
@@ -1790,7 +1781,7 @@ void main() {
         ));
 
         final UniversalImportResult result = await sut.import(
-          TraktImportOptions(zipPath: zipPath),
+          TraktImportOptions(bytes: zipBytes),
         );
 
         expect(result.success, isTrue);
@@ -1811,7 +1802,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final Map<String, dynamic> row = capturedItemRows().single;
         expect(row['status'], equals(ItemStatus.completed.value));
@@ -1839,7 +1830,7 @@ void main() {
           ),
         ));
 
-        await sut.import(TraktImportOptions(zipPath: zipPath));
+        await sut.import(TraktImportOptions(bytes: zipBytes));
 
         final Map<String, dynamic> row = capturedItemRows().single;
         expect(row['status'], equals(ItemStatus.inProgress.value));

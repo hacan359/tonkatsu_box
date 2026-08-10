@@ -47,12 +47,14 @@ class ApiProxy {
   final DateTime Function() _now;
 
   _CachedToken? _igdbToken;
+  _CachedToken? _tvdbToken;
 
   /// Replaces the live set so a key starts working without a restart, and
-  /// drops the IGDB token in case its credentials just changed.
+  /// drops the cached tokens in case their credentials just changed.
   Map<String, String> applyCredentials(Map<String, String> updates) {
     credentials = credentials.merge(updates);
     _igdbToken = null;
+    _tvdbToken = null;
     final String? dir = dataDir;
     if (dir != null) credentials.saveTo(dir);
     return credentials.values;
@@ -164,6 +166,24 @@ class ApiProxy {
             'apikey': _require(CredentialNames.tvdb, target),
           }));
         }
+        // The proxy strips the caller's Authorization, so the JWT the client
+        // obtained through its own login never arrives — without this every
+        // request after login answers 401 in an endless login loop.
+        headers[HttpHeaders.authorizationHeader] = 'Bearer ${await _tvdb()}';
+      case ProxyTarget.screenscraper:
+        // The dev pair never ships to a browser; the user pair is overridden
+        // only when the server holds one, else the client's own rides along.
+        query['devid'] = <String>[_require(CredentialNames.ssDevId, target)];
+        query['devpassword'] = <String>[
+          _require(CredentialNames.ssDevPassword, target),
+        ];
+        if (credentials[CredentialNames.ssSsid] case final String ssid) {
+          query['ssid'] = <String>[ssid];
+        }
+        if (credentials[CredentialNames.ssSspassword]
+            case final String sspassword) {
+          query['sspassword'] = <String>[sspassword];
+        }
       // Keyless: the proxy is still the only way there from a browser.
       case ProxyTarget.anilist:
       case ProxyTarget.fantlab:
@@ -174,11 +194,46 @@ class ApiProxy {
       case ProxyTarget.steam:
       case ProxyTarget.tvmaze:
       case ProxyTarget.vndb:
-      // Four separate credentials, not wired yet — see server/README.md.
-      case ProxyTarget.screenscraper:
         break;
     }
     return body;
+  }
+
+  /// TheTVDB logins are a JWT valid for about a month; a day of cache keeps
+  /// one login per boot instead of one per request.
+  Future<String> _tvdb() async {
+    final DateTime now = _now();
+    final _CachedToken? cached = _tvdbToken;
+    if (cached != null && cached.isValidAt(now)) return cached.value;
+
+    final UpstreamResponse response = await _upstream.send(
+      method: 'POST',
+      url: Uri.https(ProxyTarget.tvdb.host, '/v4/login'),
+      headers: <String, String>{
+        HttpHeaders.userAgentHeader: kProxyUserAgent,
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: utf8.encode(jsonEncode(<String, Object?>{
+        'apikey': _require(CredentialNames.tvdb, ProxyTarget.tvdb),
+      })),
+    );
+    if (response.status != HttpStatus.ok) {
+      throw ProxyCredentialException(
+        'TheTVDB refused the API key (${response.status})',
+      );
+    }
+
+    final Object? decoded = jsonDecode(utf8.decode(response.body));
+    final Object? data =
+        decoded is Map<String, Object?> ? decoded['data'] : null;
+    final Object? token =
+        data is Map<String, Object?> ? data['token'] : null;
+    if (token is! String) {
+      throw const ProxyCredentialException('TheTVDB returned no token');
+    }
+
+    _tvdbToken = _CachedToken(token, now.add(const Duration(days: 1)));
+    return token;
   }
 
   Future<String> _igdb() async {

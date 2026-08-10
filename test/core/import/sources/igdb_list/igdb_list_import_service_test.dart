@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/game.dart';
@@ -21,8 +22,7 @@ void main() {
   late MockCollectionRepository mockRepo;
   late MockWishlistRepository mockWishlist;
 
-  late Directory tempDir;
-  late String csvPath;
+  late Uint8List csvBytes;
 
   setUpAll(() {
     registerAllFallbacks();
@@ -46,8 +46,6 @@ void main() {
       wishlistRepository: mockWishlist,
     );
 
-    tempDir = Directory.systemTemp.createTempSync('igdb_list_test');
-    csvPath = '${tempDir.path}/list.csv';
 
     when(() => mockRepo.create(
           name: any(named: 'name'),
@@ -71,14 +69,8 @@ void main() {
             (inv.positionalArguments[0] as List<dynamic>).length);
   });
 
-  tearDown(() {
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
-  });
-
   void writeCsv(String content) {
-    File(csvPath).writeAsStringSync(content);
+    csvBytes = Uint8List.fromList(utf8.encode(content));
   }
 
   void setupMatches(List<Game> games) {
@@ -91,7 +83,7 @@ void main() {
     int platformId = 6,
   }) =>
       IgdbListImportOptions(
-        filePath: csvPath,
+        bytes: csvBytes,
         author: 'me',
         status: status,
         platformId: platformId,

@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:core/models/collection.dart';
@@ -18,6 +18,7 @@ import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
+import '../../../../shared/constants/platform_features.dart';
 import '../../../api/api_error_extract.dart';
 import '../../../api/tmdb_api.dart';
 import '../../../database/database_service.dart';
@@ -67,14 +68,15 @@ class TraktZipInfo {
 
 class TraktImportOptions extends ImportOptions {
   const TraktImportOptions({
-    required this.zipPath,
+    required this.bytes,
     super.collectionId,
     this.importWatched = true,
     this.importRatings = true,
     this.importWatchlist = true,
   });
 
-  final String zipPath;
+  /// The archive is read at pick time — the browser never has a path.
+  final Uint8List bytes;
 
   final bool importWatched;
   final bool importRatings;
@@ -219,16 +221,18 @@ class TraktImportService implements ImportSource {
   @override
   String get displayName => 'Trakt';
 
-  Future<TraktZipInfo> validateZip(String zipPath) {
+  Future<TraktZipInfo> validateZip(Uint8List zipBytes) async {
     // Unzip + JSON decode of a large export blocks for seconds — run it on a
     // background isolate so the UI (and its loader animation) keeps running.
-    return Isolate.run(() => _validateZipSync(zipPath));
+    // The web has no isolates, so it validates inline.
+    if (kIsWebBuild) return _validateZipSync(zipBytes);
+    return Isolate.run(() => _validateZipSync(zipBytes));
   }
 
-  static TraktZipInfo _validateZipSync(String zipPath) {
+  static TraktZipInfo _validateZipSync(Uint8List zipBytes) {
     try {
       final ({Map<String, String> files, String username}) archive =
-          _readArchiveSync(zipPath);
+          _readArchiveSync(zipBytes);
       if (archive.files.isEmpty) {
         return const TraktZipInfo.invalid('No JSON files found in archive');
       }
@@ -301,8 +305,6 @@ class TraktImportService implements ImportSource {
       return const TraktZipInfo.invalid('Invalid ZIP archive');
     } on FormatException {
       return const TraktZipInfo.invalid('Invalid JSON in archive');
-    } on FileSystemException {
-      return const TraktZipInfo.invalid('Cannot read file');
     } on Exception catch (e) {
       return TraktZipInfo.invalid('Error: $e');
     }
@@ -322,15 +324,16 @@ class TraktImportService implements ImportSource {
       ));
 
       // Unzip + JSON parse of the whole export runs on a background isolate:
-      // done synchronously it freezes the progress dialog for seconds.
-      final _TraktParsedArchive parsed = await Isolate.run(
-        () => _readAndParseArchive(
-          zipPath: options.zipPath,
-          importWatched: options.importWatched,
-          importRatings: options.importRatings,
-          importWatchlist: options.importWatchlist,
-        ),
-      );
+      // done synchronously it freezes the progress dialog for seconds. The
+      // web has no isolates, so it parses inline.
+      _TraktParsedArchive parse() => _readAndParseArchive(
+            zipBytes: options.bytes,
+            importWatched: options.importWatched,
+            importRatings: options.importRatings,
+            importWatchlist: options.importWatchlist,
+          );
+      final _TraktParsedArchive parsed =
+          kIsWebBuild ? parse() : await Isolate.run(parse);
       if (parsed.hasNoJsonFiles) {
         return const UniversalImportResult.failure(
           sourceName: 'Trakt',
@@ -739,13 +742,13 @@ class TraktImportService implements ImportSource {
   /// run on a background isolate via [Isolate.run] without capturing `this`
   /// (the service holds non-sendable handles: API client, database).
   static _TraktParsedArchive _readAndParseArchive({
-    required String zipPath,
+    required Uint8List zipBytes,
     required bool importWatched,
     required bool importRatings,
     required bool importWatchlist,
   }) {
     final ({Map<String, String> files, String username}) archive =
-        _readArchiveSync(zipPath);
+        _readArchiveSync(zipBytes);
     final Map<String, String> files = archive.files;
     return _TraktParsedArchive(
       username: archive.username,
@@ -779,9 +782,8 @@ class TraktImportService implements ImportSource {
 
   /// Reads JSON files and username in a single pass.
   static ({Map<String, String> files, String username}) _readArchiveSync(
-      String zipPath) {
-    final List<int> bytes = File(zipPath).readAsBytesSync();
-    final Archive archive = ZipDecoder().decodeBytes(bytes);
+      Uint8List zipBytes) {
+    final Archive archive = ZipDecoder().decodeBytes(zipBytes);
     final Map<String, String> files = <String, String>{};
     String username = 'Unknown';
 

@@ -10,6 +10,7 @@ import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/welcome/screens/welcome_screen.dart';
 import 'profile_picker_screen.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_durations.dart';
@@ -133,7 +134,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Animation<double> secondaryAnimation,
           Widget child,
         ) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: _withBackdrop(child),
+          );
         },
         transitionDuration: Duration(
           milliseconds: kIsMobile ? 200 : 500,
@@ -160,10 +164,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Animation<double> secondaryAnimation,
           Widget child,
         ) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: _withBackdrop(child),
+          );
         },
         transitionDuration: Duration(milliseconds: kIsMobile ? 200 : 500),
       ),
+    );
+  }
+
+
+  /// PageRouteBuilder skips PageTransitionsTheme, so on web the route paints
+  /// the tiled backdrop itself — the browser's page root is white; native isn't.
+  Widget _withBackdrop(Widget child) {
+    if (!kIsWebBuild) return child;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        image: AppColors.tileImage,
+      ),
+      child: child,
     );
   }
 
@@ -185,7 +206,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Animation<double> secondaryAnimation,
           Widget child,
         ) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: _withBackdrop(child),
+          );
         },
         transitionDuration: AppDurations.slower,
       ),

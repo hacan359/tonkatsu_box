@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:core/models/calendar_entry.dart';
@@ -63,7 +64,6 @@ void main() {
     late MockCollectionRepository collectionRepo;
     late MockWishlistRepository wishlistRepo;
     late Directory tmp;
-    int seq = 0;
 
     setUpAll(() {
       registerAllFallbacks();
@@ -109,16 +109,13 @@ void main() {
           wishlistRepo: wishlistRepo,
         );
 
-    String writeZip(Map<String, String> files) {
+    Uint8List writeZip(Map<String, String> files) {
       final Archive archive = Archive();
       files.forEach((String name, String content) {
         final List<int> b = utf8.encode(content);
         archive.addFile(ArchiveFile(name, b.length, b));
       });
-      final List<int> zip = ZipEncoder().encode(archive);
-      final File f = File('${tmp.path}/backup_${seq++}.zip')
-        ..writeAsBytesSync(zip);
-      return f.path;
+      return Uint8List.fromList(ZipEncoder().encode(archive));
     }
 
     const String collectionXcoll =
@@ -155,9 +152,9 @@ void main() {
     }
 
     test('readManifest returns the parsed manifest from a ZIP', () async {
-      final String path = writeZip(<String, String>{'manifest.json': manifestJson});
+      final Uint8List path = writeZip(<String, String>{'manifest.json': manifestJson});
 
-      final BackupManifest? m = await makeService().readManifest(path);
+      final BackupManifest? m = makeService().readManifest(path);
 
       expect(m, isNotNull);
       expect(m!.collectionsCount, 1);
@@ -166,31 +163,31 @@ void main() {
     });
 
     test('readManifest returns null when manifest is absent', () async {
-      final String path =
+      final Uint8List path =
           writeZip(<String, String>{'collections/001_a.xcollx': collectionXcoll});
 
-      expect(await makeService().readManifest(path), isNull);
+      expect(makeService().readManifest(path), isNull);
     });
 
-    test('readManifest returns null for a non-ZIP file', () async {
-      final File f = File('${tmp.path}/not-a-zip.zip')
-        ..writeAsBytesSync(<int>[1, 2, 3, 4, 5]);
-
-      expect(await makeService().readManifest(f.path), isNull);
+    test('readManifest returns null for bytes that are not a ZIP', () async {
+      expect(
+        makeService().readManifest(Uint8List.fromList(<int>[1, 2, 3, 4, 5])),
+        isNull,
+      );
     });
 
     test('restores collections and dedups wishlist, skips settings by default',
         () async {
       stubImportOk();
       stubWishlist();
-      final String path = writeZip(<String, String>{
+      final Uint8List path = writeZip(<String, String>{
         'manifest.json': manifestJson,
         'collections/001_my-coll.xcollx': collectionXcoll,
         'wishlist.json': wishlistJson,
         'config.json': '{"theme":"dark"}',
       });
 
-      final RestoreResult r = await makeService().restoreFromBackup(zipPath: path);
+      final RestoreResult r = await makeService().restoreFromBackup(zipBytes: path);
 
       expect(r.success, isTrue);
       expect(r.collectionsRestored, 1);
@@ -212,14 +209,14 @@ void main() {
       stubImportOk();
       stubWishlist();
       when(() => configService.applySettings(any())).thenAnswer((_) async => 2);
-      final String path = writeZip(<String, String>{
+      final Uint8List path = writeZip(<String, String>{
         'manifest.json': manifestJson,
         'collections/001_my-coll.xcollx': collectionXcoll,
         'config.json': '{"theme":"dark"}',
       });
 
       final RestoreResult r = await makeService()
-          .restoreFromBackup(zipPath: path, restoreSettings: true);
+          .restoreFromBackup(zipBytes: path, restoreSettings: true);
 
       expect(r.settingsRestored, isTrue);
       verify(() => configService.applySettings(any())).called(1);
@@ -227,13 +224,13 @@ void main() {
 
     test('does not touch wishlist when restoreWishlist is false', () async {
       stubImportOk();
-      final String path = writeZip(<String, String>{
+      final Uint8List path = writeZip(<String, String>{
         'manifest.json': manifestJson,
         'wishlist.json': wishlistJson,
       });
 
       final RestoreResult r = await makeService()
-          .restoreFromBackup(zipPath: path, restoreWishlist: false);
+          .restoreFromBackup(zipBytes: path, restoreWishlist: false);
 
       expect(r.wishlistRestored, 0);
       verifyNever(() => wishlistRepo.findUnresolved(any()));
@@ -247,7 +244,7 @@ void main() {
 
     test('returns failure when the backup file cannot be read', () async {
       final RestoreResult r = await makeService()
-          .restoreFromBackup(zipPath: '${tmp.path}/does-not-exist.zip');
+          .restoreFromBackup(zipBytes: Uint8List.fromList(<int>[0, 1]));
 
       expect(r.success, isFalse);
     });
@@ -256,12 +253,12 @@ void main() {
         () async {
       when(() => importService.importFromXcoll(any()))
           .thenAnswer((_) async => const ImportResult.failure('boom'));
-      final String path = writeZip(<String, String>{
+      final Uint8List path = writeZip(<String, String>{
         'manifest.json': manifestJson,
         'collections/001_my-coll.xcollx': collectionXcoll,
       });
 
-      final RestoreResult r = await makeService().restoreFromBackup(zipPath: path);
+      final RestoreResult r = await makeService().restoreFromBackup(zipBytes: path);
 
       expect(r.success, isTrue);
       expect(r.collectionsRestored, 0); // import failed → not counted
@@ -284,10 +281,10 @@ void main() {
           '"calendar_entries":[{"external_id":2,"source":"igdb",'
           '"media_type":"game","start_date":"2026-07-01",'
           '"recurrence":"weekly","created_at":1}]}';
-      final String path =
+      final Uint8List path =
           writeZip(<String, String>{'calendar.json': calendarJson});
 
-      await makeService().restoreFromBackup(zipPath: path);
+      await makeService().restoreFromBackup(zipBytes: path);
 
       verify(() => trackedDao.subscribe(1, DataSource.tmdb, MediaType.tvShow))
           .called(1);
@@ -328,11 +325,11 @@ void main() {
       const String watchedJson =
           '[{"show_id":200,"season_number":1,"episode_number":4,'
           '"watched_at":1705320000000}]';
-      final String path = writeZip(
+      final Uint8List path = writeZip(
         <String, String>{'watched_episodes.json': watchedJson},
       );
 
-      await makeService().restoreFromBackup(zipPath: path);
+      await makeService().restoreFromBackup(zipBytes: path);
 
       verify(() => tvDao.markEpisodeWatchedAt(
               7, DataSource.tmdb, 200, 1, 4, 1705320000000))
@@ -376,11 +373,11 @@ void main() {
           '"watched_at":1},'
           '{"show_id":200,"season_number":1,"episode_number":2,'
           '"watched_at":2}]';
-      final String path = writeZip(
+      final Uint8List path = writeZip(
         <String, String>{'watched_episodes.json': watchedJson},
       );
 
-      await makeService().restoreFromBackup(zipPath: path);
+      await makeService().restoreFromBackup(zipBytes: path);
 
       verify(() => collDao.findAllCollectionItems(
             mediaType: MediaType.tvShow,
@@ -434,7 +431,7 @@ void main() {
           '{"position":0,"label":"Fav","media_type":"game","external_id":7},'
           '{"position":1}'
           ']}]';
-      final String path =
+      final Uint8List path =
           writeZip(<String, String>{'mood_grids.json': moodGridsJson});
 
       final BackupService service = BackupService(
@@ -446,7 +443,7 @@ void main() {
         wishlistRepo: wishlistRepo,
         moodGridDao: moodDao,
       );
-      await service.restoreFromBackup(zipPath: path);
+      await service.restoreFromBackup(zipBytes: path);
 
       verify(() => moodDao.setCaptionTemplate(5, '{{name}}')).called(1);
       verify(() => moodDao.setCellLabelTemplate(5, '{{name}} {{year}}'))

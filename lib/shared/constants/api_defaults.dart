@@ -1,3 +1,5 @@
+import 'platform_features.dart';
+
 /// Built-in API credentials injected at build time via `--dart-define`.
 /// Empty string when not provided. Lookup order is user setting → built-in → null.
 abstract final class ApiDefaults {
@@ -35,8 +37,11 @@ abstract final class ApiDefaults {
   static bool get hasIgdbKey =>
       igdbClientId.isNotEmpty && igdbClientSecret.isNotEmpty;
 
+  // On web the dev pair lives on the server and the proxy injects it; the
+  // dart-defines never reach main.dart.js on purpose.
   static bool get hasScreenScraperDevCreds =>
-      screenScraperDevId.isNotEmpty && screenScraperDevPassword.isNotEmpty;
+      kIsWebBuild ||
+      (screenScraperDevId.isNotEmpty && screenScraperDevPassword.isNotEmpty);
 
   static bool get hasSimklClientId => simklClientId.isNotEmpty;
 }

@@ -96,12 +96,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onTap: () => _createCollection(context, ref),
             ),
             primaryItems: <DraggableFabItem>[
-              if (!kIsWebBuild)
-                DraggableFabItem(
-                  icon: Icons.file_download_outlined,
-                  label: l.collectionsImportCollection,
-                  onTap: () => _importCollection(context, ref),
-                ),
+              DraggableFabItem(
+                icon: Icons.file_download_outlined,
+                label: l.collectionsImportCollection,
+                onTap: () => _importCollection(context, ref),
+              ),
               DraggableFabItem(
                 icon: isGridView ? Icons.view_list : Icons.grid_view,
                 label: isGridView

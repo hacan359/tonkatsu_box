@@ -638,7 +638,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addCustomItem(
           customMedia,
-          localCoverPath: data.localCoverPath,
+          coverBytes: data.coverBytes,
           userComment: data.comment,
           tags: data.tags,
         );

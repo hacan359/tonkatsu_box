@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
@@ -36,7 +35,7 @@ final Provider<IgdbListImportService> igdbListImportServiceProvider =
 
 class IgdbListImportOptions extends ImportOptions {
   const IgdbListImportOptions({
-    required this.filePath,
+    required this.bytes,
     required this.author,
     required this.platformId,
     this.status = ItemStatus.notStarted,
@@ -44,7 +43,8 @@ class IgdbListImportOptions extends ImportOptions {
     super.collectionId,
   });
 
-  final String filePath;
+  /// The CSV is read at pick time — the browser never has a path.
+  final Uint8List bytes;
   final String author;
 
   /// Status applied to every matched game: the export carries no per-game
@@ -96,9 +96,8 @@ class IgdbListImportService implements ImportSource {
         total: 0,
       ));
 
-      final Uint8List bytes = await File(options.filePath).readAsBytes();
       final List<IgdbListEntry> entries =
-          const IgdbListCsvParser().parseBytes(bytes);
+          const IgdbListCsvParser().parseBytes(options.bytes);
 
       if (entries.isEmpty) {
         return UniversalImportResult.failure(

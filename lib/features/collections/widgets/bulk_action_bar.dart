@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -174,13 +173,11 @@ class BulkActionBar extends ConsumerWidget {
             tooltip: l.bulkRemoveTags,
             onTap: () => _handleTags(context, ref, add: false),
           ),
-          // PNG export saves through a file dialog — hidden on web.
-          if (!kIsWebBuild)
-            _BarAction(
-              icon: Icons.image_outlined,
-              tooltip: l.bulkExportPngTitle,
-              onTap: () => _handleExportPng(context),
-            ),
+          _BarAction(
+            icon: Icons.image_outlined,
+            tooltip: l.bulkExportPngTitle,
+            onTap: () => _handleExportPng(context),
+          ),
           if (isManualSort) ...<Widget>[
             const _BarDivider(),
             _BarAction(

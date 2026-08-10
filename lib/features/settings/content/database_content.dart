@@ -33,65 +33,65 @@ class DatabaseContent extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        // Config files, data folders, LAN sync and backups all need a local
-        // filesystem — web only keeps the danger zone (pure SQL).
-        if (!kIsWebBuild) ...<Widget>[
-          SettingsGroup(
-            title: l10n.databaseConfiguration,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                child: Text(
-                  l10n.databaseConfigSubtitle,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+        SettingsGroup(
+          title: l10n.databaseConfiguration,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Text(
+                l10n.databaseConfigSubtitle,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    final Widget exportButton = OutlinedButton.icon(
-                      onPressed: () => _exportConfig(context, ref),
-                      icon: const Icon(Icons.upload, size: 18),
-                      label: Text(l10n.databaseExportConfig),
-                    );
-                    final Widget importButton = OutlinedButton.icon(
-                      onPressed: () => _importConfig(context, ref),
-                      icon: const Icon(Icons.download, size: 18),
-                      label: Text(l10n.databaseImportConfig),
-                    );
-                    if (constraints.maxWidth < 400) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          exportButton,
-                          const SizedBox(height: AppSpacing.sm),
-                          importButton,
-                        ],
-                      );
-                    }
-                    return Row(
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final Widget exportButton = OutlinedButton.icon(
+                    onPressed: () => _exportConfig(context, ref),
+                    icon: const Icon(Icons.upload, size: 18),
+                    label: Text(l10n.databaseExportConfig),
+                  );
+                  final Widget importButton = OutlinedButton.icon(
+                    onPressed: () => _importConfig(context, ref),
+                    icon: const Icon(Icons.download, size: 18),
+                    label: Text(l10n.databaseImportConfig),
+                  );
+                  if (constraints.maxWidth < 400) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        Expanded(child: exportButton),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(child: importButton),
+                        exportButton,
+                        const SizedBox(height: AppSpacing.sm),
+                        importButton,
                       ],
                     );
-                  },
-                ),
+                  }
+                  return Row(
+                    children: <Widget>[
+                      Expanded(child: exportButton),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(child: importButton),
+                    ],
+                  );
+                },
               ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
 
+        // Data folders, LAN sync and backups move whole directories around —
+        // meaningless in a browser, where the server owns the files.
+        if (!kIsWebBuild) ...<Widget>[
           const StorageLocationSection(),
           const SizedBox(height: AppSpacing.md),
 

@@ -57,7 +57,7 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 
 ## Contents
 
-[Languages](#languages) · [Screenshots](#screenshots) · [Features](#features) · [Download](#download) · [Quick Start](#quick-start) · [Ready-made Collections](#ready-made-collections) · [Import Your Data](#import-your-data) · [Sync & Backup](#sync--backup) · [Data Sources](#data-sources) · [Platform Support](#platform-support) · [Building from Source](#building-from-source) · [Contributing](#contributing)
+[Languages](#languages) · [Screenshots](#screenshots) · [Features](#features) · [Download](#download) · [Quick Start](#quick-start) · [Ready-made Collections](#ready-made-collections) · [Import Your Data](#import-your-data) · [Sync & Backup](#sync--backup) · [Data Sources](#data-sources) · [Platform Support](#platform-support) · [Self-Hosting](#self-hosting-web) · [Building from Source](#building-from-source) · [Contributing](#contributing)
 
 ## Languages
 
@@ -264,6 +264,98 @@ When you pick an empty folder, the app copies your current data there. When you 
 | VGMaps browser | ✅ | — | — | — |
 | Gamepad | ✅ | ✅ | ✅ | ✅ |
 | Discord Rich Presence | ✅ | ✅ | ✅ | — |
+
+## Self-Hosting (Web)
+
+Run Tonkatsu Box as a web app on your own machine or home server. One Docker
+container serves the app in the browser and keeps the database on the server,
+so every device on your network works with the same library.
+
+### Requirements
+
+- Docker with Docker Compose
+
+### Install and run
+
+```bash
+git clone https://github.com/hacan359/tonkatsu_box.git
+cd tonkatsu_box
+docker compose up -d --build
+```
+
+The first build takes several minutes (it compiles the web app inside Docker —
+no Flutter needed on your machine). Then open:
+
+```
+http://<server-ip>:8080
+```
+
+### Configuration (optional)
+
+Copy `.env.example` to `.env` next to `docker-compose.yml` and uncomment what
+you need. Without a `.env` everything uses defaults.
+
+| Variable | Default | What it does |
+|----------|---------|--------------|
+| `TONKATSU_DATA_PATH` | `./data` | Host folder with all server data |
+| `TONKATSU_PORT` | `8080` | Port the web UI answers on |
+| `PUID` / `PGID` | `1000` / `1000` | Owner of the files in the data folder |
+| `TONKATSU_KEY_*` | — | API keys (e.g. `TONKATSU_KEY_TMDB`) |
+
+API keys can also be entered in the app itself (**Settings → API Keys**) —
+they are stored on the server in `data/keys.json`. Keys set via `.env`
+override `keys.json`.
+
+### Files
+
+| Path | What |
+|------|------|
+| `.env` | Your local configuration (not committed) |
+| `data/tonkatsu_box.db` | The database |
+| `data/keys.json` | API keys entered in the app |
+| `data/images/` | Cover cache |
+| `data/snapshots/` | Automatic DB snapshots taken before migrations |
+
+### Backup
+
+Copy the `data/` folder while the container is stopped — that is the whole
+backup. There is also **Settings → Backup** in the web UI, which downloads a
+portable archive to whatever device you are browsing from.
+
+### Update
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+Pending database migrations run on start; a snapshot of the old database is
+saved to `data/snapshots/` first.
+
+### HTTPS and a custom domain (optional)
+
+Caddy in front gives `https://tonkatsu.box`, HTTP/2 and PWA install support:
+
+```bash
+# .env: TONKATSU_DOMAIN=tonkatsu.box (default), keep TONKATSU_PORT at 8080
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
+```
+
+1. Point the domain at the server: an entry in the router's DNS, or in
+   `hosts` (`<server-ip> tonkatsu.box`) on each device.
+2. Trust Caddy's local root certificate once per device — the file is
+   `data/caddy/caddy/pki/authorities/local/root.crt` (on Windows:
+   double-click → Install Certificate → Trusted Root Certification
+   Authorities).
+
+Plain HTTP keeps working without any of this — Caddy is an add-on, not a
+requirement.
+
+### Notes
+
+- The web build has no accounts or passwords — expose it to your LAN only.
+- Desktop-only features (VGMaps, Discord Rich Presence, Kodi, gamepad, LAN
+  sync) are hidden in the browser.
 
 ## Documentation
 

@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
+import '../../shared/constants/platform_features.dart';
 
 const int configFormatVersion = 1;
 
@@ -189,6 +190,16 @@ class ConfigService {
       final String json = const JsonEncoder.withIndent('  ').convert(config);
       final Uint8List jsonBytes = Uint8List.fromList(utf8.encode(json));
 
+      // Web: saveFile hands the bytes to the browser as a download and
+      // returns null — there is no cancel to observe.
+      if (kIsWebBuild) {
+        await FilePicker.platform.saveFile(
+          fileName: 'tonkatsu-box-config.json',
+          bytes: jsonBytes,
+        );
+        return const ConfigResult.success('tonkatsu-box-config.json');
+      }
+
       // On Android/iOS FileType.custom doesn't support custom extensions.
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
@@ -226,25 +237,32 @@ class ConfigService {
   Future<ConfigResult> importFromFile() async {
     try {
       // On Android FileType.custom doesn't support custom extensions.
-      final bool useAny = Platform.isAndroid;
+      final bool useAny = !kIsWebBuild && Platform.isAndroid;
+      // withData: the browser only ever hands out bytes, and reading them at
+      // pick time keeps one code path for every platform.
       final FilePickerResult? result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Import Configuration',
         type: useAny ? FileType.any : FileType.custom,
         allowedExtensions: useAny ? null : <String>['json'],
         allowMultiple: false,
+        withData: true,
       );
 
       if (result == null || result.files.isEmpty) {
         return const ConfigResult.cancelled();
       }
 
+      final Uint8List? bytes = result.files.first.bytes;
       final String? filePath = result.files.first.path;
-      if (filePath == null) {
+      final String sourceName = result.files.first.name;
+      final String content;
+      if (bytes != null) {
+        content = utf8.decode(bytes);
+      } else if (filePath != null) {
+        content = await File(filePath).readAsString();
+      } else {
         return const ConfigResult.failure('Could not access file');
       }
-
-      final File file = File(filePath);
-      final String content = await file.readAsString();
 
       final Object? decoded = jsonDecode(content);
       if (decoded is! Map<String, Object?>) {
@@ -264,7 +282,7 @@ class ConfigService {
         return const ConfigResult.failure('No settings found in config file');
       }
 
-      return ConfigResult.success(filePath);
+      return ConfigResult.success(sourceName);
     } on FormatException {
       return const ConfigResult.failure('Invalid JSON format');
     } on FileSystemException catch (e) {

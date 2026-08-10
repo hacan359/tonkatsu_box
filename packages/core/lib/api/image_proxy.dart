@@ -8,14 +8,17 @@ const String kImagePathPrefix = '/img';
 const String kImageSourceParam = 'src';
 
 /// `/img/<folder>/<id>?src=…` — a cache the server fills on the first miss.
+/// Without [sourceUrl] the path only addresses what the cache already holds.
 String imageProxyPath({
   required ImageType type,
   required String imageId,
-  required String sourceUrl,
+  String? sourceUrl,
 }) {
   return Uri(
     path: '$kImagePathPrefix/${type.folder}/$imageId',
-    queryParameters: <String, String>{kImageSourceParam: sourceUrl},
+    queryParameters: sourceUrl == null
+        ? null
+        : <String, String>{kImageSourceParam: sourceUrl},
   ).toString();
 }
 

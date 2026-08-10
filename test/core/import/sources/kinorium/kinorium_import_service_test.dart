@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/models/collection_item.dart';
@@ -44,8 +43,7 @@ void main() {
   late MockTvShowDao mockTvShowDao;
   late KinoriumImportService sut;
 
-  late Directory tempDir;
-  late String csvPath;
+  late Uint8List csvBytes;
 
   setUpAll(() {
     registerAllFallbacks();
@@ -70,8 +68,6 @@ void main() {
       database: mockDb,
     );
 
-    tempDir = Directory.systemTemp.createTempSync('kinorium_test');
-    csvPath = '${tempDir.path}/list.csv';
 
     when(() => mockRepo.create(
           name: any(named: 'name'),
@@ -95,14 +91,8 @@ void main() {
             (inv.positionalArguments[0] as List<dynamic>).length);
   });
 
-  tearDown(() {
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
-  });
-
   void writeCsv(String content) {
-    File(csvPath).writeAsBytesSync(_utf16le(content));
+    csvBytes = _utf16le(content);
   }
 
   List<Map<String, dynamic>> capturedItemRows() =>
@@ -127,7 +117,7 @@ void main() {
               (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 1999)]);
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       expect(result.totalImported, 1);
@@ -152,7 +142,7 @@ void main() {
               (_) async => <Movie>[createTestMovie(tmdbId: 7, releaseYear: 1997)]);
 
       final UniversalImportResult result = await sut.import(
-        KinoriumImportOptions(filePath: csvPath, isWishlist: true),
+        KinoriumImportOptions(bytes: csvBytes, isWishlist: true),
       );
 
       expect(result.success, isTrue);
@@ -172,7 +162,7 @@ void main() {
               (_) async => <Movie>[createTestMovie(tmdbId: 88, releaseYear: 1992)]);
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       expect(result.totalImported, 1);
@@ -199,7 +189,7 @@ void main() {
           ]);
 
       final UniversalImportResult result = await sut.import(
-        KinoriumImportOptions(filePath: csvPath, collectionId: 1),
+        KinoriumImportOptions(bytes: csvBytes, collectionId: 1),
       );
 
       expect(result.success, isTrue);
@@ -237,7 +227,7 @@ void main() {
           ]);
 
       final UniversalImportResult result = await sut.import(
-        KinoriumImportOptions(filePath: csvPath, collectionId: 1),
+        KinoriumImportOptions(bytes: csvBytes, collectionId: 1),
       );
 
       expect(result.success, isTrue);
@@ -255,7 +245,7 @@ void main() {
           .thenAnswer((_) async => <Movie>[]);
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       expect(result.totalImported, 0);
@@ -282,7 +272,7 @@ void main() {
           .thenThrow(const TmdbApiException('boom'));
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       expect(result.totalWishlisted, 1);
@@ -290,9 +280,9 @@ void main() {
           contains('TMDB error or rate limit'));
     });
 
-    test('missing file → failure result', () async {
+    test('empty bytes → failure result', () async {
       final UniversalImportResult result = await sut.import(
-        const KinoriumImportOptions(filePath: '/no/such/file.csv'),
+        KinoriumImportOptions(bytes: Uint8List(0)),
       );
       expect(result.success, isFalse);
       expect(result.fatalError, isNotNull);
@@ -310,7 +300,7 @@ void main() {
               <TvShow>[createTestTvShow(tmdbId: 1396, firstAirYear: 2026)]);
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       expect(result.totalImported, 1);
@@ -333,7 +323,7 @@ void main() {
               (_) async => <Movie>[createTestMovie(tmdbId: 129, releaseYear: 2026)]);
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       final Map<String, dynamic> row = capturedItemRows().single;
@@ -353,7 +343,7 @@ void main() {
               <TvShow>[createTestTvShow(tmdbId: 219, firstAirYear: 2024)]);
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       final Map<String, dynamic> row = capturedItemRows().single;
@@ -378,7 +368,7 @@ void main() {
               (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 2025)]);
 
       final UniversalImportResult result = await sut.import(
-        KinoriumImportOptions(filePath: csvPath, importNotes: true),
+        KinoriumImportOptions(bytes: csvBytes, importNotes: true),
       );
 
       expect(result.success, isTrue);
@@ -402,7 +392,7 @@ void main() {
               (_) async => <Movie>[createTestMovie(tmdbId: 603, releaseYear: 1989)]);
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       expect(result.totalImported, 1);
@@ -421,7 +411,7 @@ void main() {
       ]));
 
       final UniversalImportResult result =
-          await sut.import(KinoriumImportOptions(filePath: csvPath));
+          await sut.import(KinoriumImportOptions(bytes: csvBytes));
 
       expect(result.success, isTrue);
       expect(result.totalImported, 0);

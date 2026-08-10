@@ -11,6 +11,7 @@ import 'package:shelf_static/shelf_static.dart';
 
 import 'image_handler.dart';
 import 'proxy_handler.dart';
+import 'request_log.dart';
 import 'rpc_handler.dart';
 
 const String _kHealthPath = '/health';
@@ -75,13 +76,14 @@ Handler buildAppHandler({
   }
   if (images != null) {
     api.get('$kImagePathPrefix/<folder>/<id|.*>', images.handler);
+    api.post('$kImagePathPrefix/<folder>/<id|.*>', images.uploadHandler);
   }
 
   final Handler? web = _webHandler(webRoot);
   final Handler handler = web == null ? api.call : _withWebFallback(api, web);
 
   return const Pipeline()
-      .addMiddleware(logger ?? logRequests())
+      .addMiddleware(logger ?? sanitizedLogRequests())
       .addHandler(handler);
 }
 
@@ -117,14 +119,33 @@ Handler? _webHandler(String? webRoot) {
     defaultDocument: 'index.html',
   );
 
+  // no-cache = revalidate every time (a 304 when unchanged). Without it the
+  // browser caches main.dart.js heuristically and an updated image keeps
+  // serving the old app until the cache expires on its own.
+  const String cacheControl = 'no-cache';
+
   return (Request request) async {
     final Response response = await files(request);
-    if (response.statusCode != HttpStatus.notFound) return response;
+    if (response.statusCode != HttpStatus.notFound) {
+      // Only the app shell revalidates; fonts, wasm and assets would cost a
+      // conditional round trip each on every page load for nothing.
+      if (!_isAppShell(request.url.path)) return response;
+      return response.change(headers: <String, String>{
+        HttpHeaders.cacheControlHeader: cacheControl,
+      });
+    }
     return Response.ok(
       await index.readAsBytes(),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'text/html; charset=utf-8',
+        HttpHeaders.cacheControlHeader: cacheControl,
       },
     );
   };
+}
+
+/// The files that decide which app version the browser runs.
+bool _isAppShell(String path) {
+  if (path.isEmpty || path.endsWith('/')) return true;
+  return path.endsWith('.html') || path.endsWith('.js') || path.endsWith('.json');
 }

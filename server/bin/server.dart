@@ -9,6 +9,7 @@ import 'package:tonkatsu_server/src/image_handler.dart';
 import 'package:tonkatsu_server/src/proxy_handler.dart';
 import 'package:tonkatsu_server/src/rpc_handler.dart';
 import 'package:tonkatsu_server/src/server_config.dart';
+import 'package:tonkatsu_server/src/upstream_client.dart';
 
 Future<void> main(List<String> args) async {
   if (args.contains('--help') || args.contains('-h')) {
@@ -62,7 +63,13 @@ Future<void> main(List<String> args) async {
       schemaVersion: bootstrap.schemaVersion,
       daos: DaoRegistry(bootstrap.db),
       proxy: ApiProxy(credentials: credentials, dataDir: config.dataDir),
-      images: ImageCache(dataDir: config.dataDir),
+      // Covers come from CDNs that answer in milliseconds when healthy — a
+      // short deadline frees the browser's six connection slots fast, so a
+      // sick CDN costs broken thumbnails instead of a frozen app.
+      images: ImageCache(
+        dataDir: config.dataDir,
+        upstream: HttpUpstreamClient(deadline: const Duration(seconds: 8)),
+      ),
       webRoot: config.webRoot,
     ),
     config.address,

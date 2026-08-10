@@ -1,0 +1,9 @@
+# Optional HTTPS front for the selfhost server — see README "Self-Hosting".
+# `tls internal` signs with Caddy's own local CA; trust its root certificate
+# once per device (data/caddy/caddy/pki/authorities/local/root.crt).
+# localhost rides along so https works before any hosts/DNS setup.
+{$TONKATSU_DOMAIN:tonkatsu.box}, localhost {
+	tls internal
+	encode zstd gzip
+	reverse_proxy tonkatsu:8080
+}
