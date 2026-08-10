@@ -14,3 +14,5 @@ dev
 docs
 test
 coverage
+data
+.env
