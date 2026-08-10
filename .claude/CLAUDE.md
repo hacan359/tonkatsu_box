@@ -476,8 +476,9 @@ are Windows-only. Long-press context menus are Android; right-click is Windows.
 
 The flags are defined once there; only the OS detection is per-target, behind a
 conditional import (`platform_features_io.dart` /
-`platform_features_web.dart`). Never reach for `Platform.is*` in a feature — a
-new `dart:io` import is a file the web build cannot compile. Add a flag instead.
+`platform_features_web.dart`). Never reach for `Platform.is*` in a feature — on
+web every `Platform` getter throws at runtime, and no build says so beforehand
+(see the web section below). Add a flag instead.
 `defaultTargetPlatform` is not a substitute: it reports android in tests running
 on Windows.
 
@@ -518,8 +519,16 @@ How web is kept compilable — three seams, in order of preference:
 Rules while the web phase is in flight:
 
 - Any change must keep **all three** targets green: Windows, Android, web.
-  `flutter analyze` does not catch web-only breaks — a `dart:io` import in a
-  newly reachable file only fails at `flutter build web`.
+  **No build catches a web-only break.** `dart:io` compiles for web as a stub, so
+  `flutter build web` is green with `File`/`Directory`/`Platform` all over `lib/`;
+  the call throws `Unsupported operation: _Namespace` in the browser instead. So
+  a guard is always a runtime `if (kIsWebBuild)`, never the import, and the only
+  gate is clicking through the page.
+- **`File(path)` throws in its constructor**, before any IO. An `errorBuilder` on
+  `Image.file` therefore never runs, and a `try` around the *caller* of a widget
+  does not help either — the throw happens in the child's `build`. A widget that
+  renders a path out of the database needs the guard in itself, not at an entry
+  point that can be hidden.
 - Web icons (`web/favicon.png`, `web/icons/*`) are generated from
   `assets/icon/icon.png` by `dart run flutter_launcher_icons` (config in
   `pubspec.yaml`) — regenerate, don't hand-edit.
