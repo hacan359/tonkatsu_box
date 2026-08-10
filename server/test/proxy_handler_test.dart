@@ -172,6 +172,60 @@ void main() {
       expect(upstream.sent, isEmpty);
     });
 
+    test('should replace the ScreenScraper dev pair and keep client user creds',
+        () async {
+      final Handler handler = handlerWith(<String, String>{
+        CredentialNames.ssDevId: 'dev-id',
+        CredentialNames.ssDevPassword: 'dev-pass',
+      });
+
+      await get(
+        handler,
+        '/proxy/screenscraper/api2/jeuRecherche.php'
+        '?devid=&devpassword=&ssid=user&sspassword=pw&recherche=mario',
+      );
+
+      expect(upstream.sent.single.url.queryParameters, <String, String>{
+        'devid': 'dev-id',
+        'devpassword': 'dev-pass',
+        'ssid': 'user',
+        'sspassword': 'pw',
+        'recherche': 'mario',
+      });
+    });
+
+    test('should prefer the server-held ScreenScraper user pair', () async {
+      final Handler handler = handlerWith(<String, String>{
+        CredentialNames.ssDevId: 'dev-id',
+        CredentialNames.ssDevPassword: 'dev-pass',
+        CredentialNames.ssSsid: 'server-user',
+        CredentialNames.ssSspassword: 'server-pw',
+      });
+
+      await get(
+        handler,
+        '/proxy/screenscraper/api2/ssuserInfos.php?ssid=stale&sspassword=old',
+      );
+
+      final Map<String, String> query =
+          upstream.sent.single.url.queryParameters;
+      expect(query['ssid'], 'server-user');
+      expect(query['sspassword'], 'server-pw');
+    });
+
+    test('should answer 503 when the ScreenScraper dev pair is missing',
+        () async {
+      final Handler handler = handlerWith(<String, String>{
+        CredentialNames.ssSsid: 'user',
+      });
+
+      final Response response =
+          await get(handler, '/proxy/screenscraper/api2/jeuRecherche.php');
+
+      expect(response.statusCode, HttpStatus.serviceUnavailable);
+      expect(upstream.sent, isEmpty);
+    });
+
     test('should exchange IGDB credentials for a token and cache it', () async {
       final Handler handler = handlerWith(
         <String, String>{
@@ -237,6 +291,46 @@ void main() {
       );
 
       final Response response = await get(handler, '/proxy/igdb/v4/games');
+
+      expect(response.statusCode, HttpStatus.serviceUnavailable);
+    });
+
+    test('should attach a server-side TheTVDB token to non-login requests',
+        () async {
+      final Handler handler = handlerWith(
+        <String, String>{CredentialNames.tvdb: 'tvdb-key'},
+        script: <UpstreamResponse>[
+          _json(<String, Object?>{
+            'data': <String, Object?>{'token': 'jwt-1'},
+          }),
+        ],
+      );
+
+      await get(handler, '/proxy/tvdb/v4/search?query=fox');
+      await get(handler, '/proxy/tvdb/v4/genres');
+
+      // One login (cached token), then the two real calls with the Bearer.
+      expect(upstream.sent, hasLength(3));
+      expect(upstream.sent.first.url.path, '/v4/login');
+      expect(
+        upstream.sent[1].headers[HttpHeaders.authorizationHeader],
+        'Bearer jwt-1',
+      );
+      expect(
+        upstream.sent[2].headers[HttpHeaders.authorizationHeader],
+        'Bearer jwt-1',
+      );
+    });
+
+    test('should report TheTVDB refusing the key as a server problem',
+        () async {
+      final Handler handler = handlerWith(
+        <String, String>{CredentialNames.tvdb: 'bad-key'},
+        script: <UpstreamResponse>[_json(<String, Object?>{}, status: 401)],
+      );
+
+      final Response response =
+          await get(handler, '/proxy/tvdb/v4/search?query=fox');
 
       expect(response.statusCode, HttpStatus.serviceUnavailable);
     });

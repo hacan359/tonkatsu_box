@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:core/api/credential_names.dart';
 import 'package:core/api/proxy_targets.dart';
 import 'package:dio/dio.dart';
+import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/constants/platform_features.dart';
@@ -22,6 +23,8 @@ const Map<String, String> kConfigKeyToCredential = <String, String>{
   'google_books_api_key': CredentialNames.googleBooks,
   'hardcover_api_key': CredentialNames.hardcover,
   'simkl_client_id': CredentialNames.simklClientId,
+  'screenscraper_ssid': CredentialNames.ssSsid,
+  'screenscraper_sspassword': CredentialNames.ssSspassword,
 };
 
 final Map<String, String> kCredentialToConfigKey = <String, String>{
@@ -78,7 +81,14 @@ Future<void> syncCredentialsToServer(SharedPreferences prefs) async {
       if (prefs.getString(e.key) case final String value when value.isNotEmpty)
         e.value: value,
   };
-  if (credentials.isNotEmpty) await uploadCredentials(credentials);
+  if (credentials.isEmpty) return;
+  try {
+    await uploadCredentials(credentials);
+  } on Object catch (e) {
+    // Best effort: the import/restore that triggered the sync has already
+    // committed, so a failed upload must not abort its success path.
+    Logger('ServerCredentials').warning('Failed to sync credentials', e);
+  }
 }
 
 /// Hands them to the server, which is where the proxy reads them from, and

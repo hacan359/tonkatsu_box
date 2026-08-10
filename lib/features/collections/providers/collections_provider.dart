@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:core/database/dao/collection_dao.dart';
 import 'package:core/database/dao/global_tag_dao.dart';
@@ -616,12 +615,13 @@ class CollectionItemsNotifier
     return true;
   }
 
-  /// When [localCoverPath] != null, copies the file into image cache.
-  /// [userComment] and [tags] are personal fields written onto the created
-  /// collection item; missing tags are created automatically.
+  /// When [coverBytes] != null, writes them into the cover cache (local on
+  /// desktop, the server's on web). [userComment] and [tags] are personal
+  /// fields written onto the created collection item; missing tags are
+  /// created automatically.
   Future<bool> addCustomItem(
     CustomMedia customMedia, {
-    String? localCoverPath,
+    Uint8List? coverBytes,
     String? userComment,
     List<String> tags = const <String>[],
   }) async {
@@ -629,22 +629,18 @@ class CollectionItemsNotifier
       final int customId = await _db.customMediaDao.create(customMedia);
       final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
-      if (localCoverPath != null) {
-        final File sourceFile = File(localCoverPath);
-        if (sourceFile.existsSync()) {
-          final Uint8List bytes = await sourceFile.readAsBytes();
-          final bool saved = await cache.saveImageBytes(
-            ImageType.customCover,
-            customId.toString(),
-            bytes,
+      if (coverBytes != null) {
+        final bool saved = await cache.saveImageBytes(
+          ImageType.customCover,
+          customId.toString(),
+          coverBytes,
+        );
+        // Marker in cover_url: CachedImage sees non-empty imageUrl and
+        // resolves from cache without hitting the network.
+        if (saved) {
+          await _db.customMediaDao.update(
+            customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
           );
-          // Marker in cover_url: CachedImage sees non-empty imageUrl and
-          // resolves from cache without hitting the network.
-          if (saved) {
-            await _db.customMediaDao.update(
-              customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
-            );
-          }
         }
       } else if (customMedia.coverUrl != null &&
           customMedia.coverUrl!.isNotEmpty) {

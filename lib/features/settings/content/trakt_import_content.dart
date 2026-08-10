@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:core/models/collection.dart';
 import 'package:core/models/universal_import_result.dart';
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/import/sources/trakt/trakt_import_service.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -35,7 +36,8 @@ class TraktImportContent extends ConsumerStatefulWidget {
 
 class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   TraktZipInfo? _zipInfo;
-  String? _zipPath;
+  Uint8List? _zipBytes;
+  String? _zipName;
   bool _importWatched = true;
   bool _importRatings = true;
   bool _importWatchlist = true;
@@ -118,7 +120,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
             padding: EdgeInsets.all(AppSpacing.md),
             child: Center(child: LogoLoader()),
           )
-        else if (_zipPath != null && _zipInfo != null && _zipInfo!.isValid)
+        else if (_zipBytes != null && _zipInfo != null && _zipInfo!.isValid)
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -134,7 +136,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _zipPath!.split(Platform.pathSeparator).last,
+                    _zipName ?? '',
                     style: AppTypography.body,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -386,29 +388,34 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   }
 
   Future<void> _pickFile() async {
-    final bool useAny = Platform.isAndroid;
+    // Android's FileType.custom does not filter custom extensions.
+    final bool useAny = kIsMobile;
+    // withData: the browser only ever hands out bytes, and reading them at
+    // pick time keeps one code path for every platform.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: S.of(context).traktSelectZipExport,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['zip'],
       allowMultiple: false,
+      withData: true,
     );
 
     if (result == null || result.files.isEmpty) return;
 
-    final String? path = result.files.single.path;
-    if (path == null) return;
+    final PlatformFile picked = result.files.single;
+    final Uint8List? bytes = picked.bytes;
+    if (bytes == null) return;
 
     setState(() {
       _isValidating = true;
       _validationError = null;
       _zipInfo = null;
-      _zipPath = null;
+      _zipBytes = null;
     });
 
     final TraktImportService service =
         ref.read(traktImportServiceProvider);
-    final TraktZipInfo info = await service.validateZip(path);
+    final TraktZipInfo info = await service.validateZip(bytes);
 
     if (!mounted) return;
 
@@ -416,11 +423,12 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
       _isValidating = false;
       if (info.isValid) {
         _zipInfo = info;
-        _zipPath = path;
+        _zipBytes = bytes;
+        _zipName = picked.name;
         _validationError = null;
       } else {
         _zipInfo = null;
-        _zipPath = null;
+        _zipBytes = null;
         _validationError = info.error ?? S.of(context).traktInvalidExport;
       }
     });
@@ -437,7 +445,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
     final Future<UniversalImportResult> importFuture = service.import(
       TraktImportOptions(
-        zipPath: _zipPath!,
+        bytes: _zipBytes!,
         collectionId: _useNewCollection ? null : _selectedCollectionId,
         importWatched: _importWatched,
         importRatings: _importRatings,

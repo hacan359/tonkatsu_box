@@ -94,6 +94,9 @@ class CollectionHeroService {
 
   String? resolve(String? fileName) {
     if (fileName == null || fileName.isEmpty) return null;
+    // Hero images are files on the desktop's disk; a browser has neither the
+    // file nor File() — null makes every hero site fall back cleanly.
+    if (kIsWebBuild) return null;
     return p.join(_rootDir, fileName);
   }
 

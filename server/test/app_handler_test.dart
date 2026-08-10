@@ -98,6 +98,9 @@ void main() {
       final Response response = await get(handler, '/main.dart.js');
 
       expect(response.statusCode, HttpStatus.ok);
+      // Without revalidation an updated image keeps serving the old app
+      // from the browser's heuristic cache.
+      expect(response.headers[HttpHeaders.cacheControlHeader], 'no-cache');
       expect(await response.readAsString(), 'console;');
     });
 

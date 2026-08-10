@@ -116,15 +116,12 @@ class CollectionScreenFab extends StatelessWidget {
         label: l.copyAsText,
         onTap: () => onMenuAction(CollectionMenuAction.copyAsText),
       ),
-      // xcoll files live on the local filesystem; the web build gets a
-      // bytes-based flow in phase 5 of selfhost-web.
-      if (!kIsWebBuild)
-        DraggableFabItem(
-          icon: Icons.file_upload_outlined,
-          label: l.collectionExport,
-          onTap: () => onMenuAction(CollectionMenuAction.export),
-        ),
-      if (isCollectionEditable && !kIsWebBuild)
+      DraggableFabItem(
+        icon: Icons.file_upload_outlined,
+        label: l.collectionExport,
+        onTap: () => onMenuAction(CollectionMenuAction.export),
+      ),
+      if (isCollectionEditable)
         DraggableFabItem(
           icon: Icons.file_download_outlined,
           label: l.collectionsImportCollection,

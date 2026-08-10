@@ -19,6 +19,8 @@
 // file-pick -> preview -> import -> result, then simulate the gear's
 // `popUntil(isFirst)` and assert the sentinel ROOT route is never popped away.
 
+import 'dart:typed_data';
+
 import 'package:core/models/collection.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/universal_import_result.dart';
@@ -49,6 +51,10 @@ class _StubFilePicker extends FilePicker {
 
   final String path;
 
+  /// The import contents read bytes at pick time now, so the stub must
+  /// hand some out or the pick silently no-ops.
+  static final Uint8List _bytes = Uint8List.fromList(<int>[1, 2, 3]);
+
   @override
   Future<FilePickerResult?> pickFiles({
     String? dialogTitle,
@@ -65,7 +71,12 @@ class _StubFilePicker extends FilePicker {
     bool readSequential = false,
   }) async {
     return FilePickerResult(<PlatformFile>[
-      PlatformFile(name: path.split('/').last, size: 0, path: path),
+      PlatformFile(
+        name: path.split('/').last,
+        size: _bytes.length,
+        path: path,
+        bytes: _bytes,
+      ),
     ]);
   }
 }
@@ -96,6 +107,8 @@ void main() {
   setUpAll(() {
     registerFallbackValue(_FakeTraktImportOptions());
     registerFallbackValue(_FakeKinoriumImportOptions());
+    // validateZip takes the picked bytes now.
+    registerFallbackValue(Uint8List(0));
   });
 
   FilePicker? originalPicker;

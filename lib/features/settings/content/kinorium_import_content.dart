@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:core/models/collection.dart';
 import 'package:core/models/universal_import_result.dart';
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/import_service.dart';
 import '../../../core/import/sources/kinorium/kinorium_import_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -33,7 +34,8 @@ class KinoriumImportContent extends ConsumerStatefulWidget {
 }
 
 class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
-  String? _csvPath;
+  Uint8List? _csvBytes;
+  String? _csvName;
   bool _isWishlist = false;
   bool _importNotes = false;
   bool _useNewCollection = true;
@@ -50,7 +52,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
       children: <Widget>[
         if (!hasOwnTmdbKey) _buildTmdbKeyHint(context),
         _buildFilePickerSection(context),
-        if (_csvPath != null) ...<Widget>[
+        if (_csvBytes != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildOptionsSection(context),
           const SizedBox(height: AppSpacing.md),
@@ -106,7 +108,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
             ),
           ),
         ),
-        if (_csvPath != null)
+        if (_csvBytes != null)
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -122,7 +124,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _csvPath!.split(Platform.pathSeparator).last,
+                    _csvName ?? '',
                     style: AppTypography.body,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -273,20 +275,28 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
   }
 
   Future<void> _pickFile() async {
-    final bool useAny = Platform.isAndroid;
+    // Android's FileType.custom does not filter custom extensions.
+    final bool useAny = kIsMobile;
+    // withData: the browser only ever hands out bytes, and reading them at
+    // pick time keeps one code path for every platform.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: S.of(context).kinoriumSelectCsvExport,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['csv'],
       allowMultiple: false,
+      withData: true,
     );
 
     if (result == null || result.files.isEmpty) return;
 
-    final String? path = result.files.single.path;
-    if (path == null) return;
+    final PlatformFile picked = result.files.single;
+    final Uint8List? bytes = picked.bytes;
+    if (bytes == null) return;
 
-    setState(() => _csvPath = path);
+    setState(() {
+      _csvBytes = bytes;
+      _csvName = picked.name;
+    });
   }
 
   Future<void> _startImport() async {
@@ -301,7 +311,7 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
 
     final Future<UniversalImportResult> importFuture = service.import(
       KinoriumImportOptions(
-        filePath: _csvPath!,
+        bytes: _csvBytes!,
         collectionId: _useNewCollection ? null : _selectedCollectionId,
         isWishlist: _isWishlist,
         importNotes: _importNotes,

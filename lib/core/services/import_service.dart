@@ -202,41 +202,40 @@ class ImportService {
 
   /// Returns null if the user cancelled. Throws [FormatException] on invalid file.
   Future<XcollFile?> pickAndParseFile() async {
-    // Backstop for shortcut paths: the menu entries are already hidden.
-    if (kIsWebBuild) {
-      throw UnsupportedError(
-        'Import from a file is not available in the web build yet',
-      );
-    }
     // Android's FileType.custom does not filter custom extensions.
-    final bool useAny = Platform.isAndroid;
+    final bool useAny = !kIsWebBuild && Platform.isAndroid;
+    // withData: the browser only ever hands out bytes, and reading them at
+    // pick time keeps one code path for every platform.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: 'Import Collection',
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : _allowedExtensions,
       allowMultiple: false,
+      withData: true,
     );
 
     if (result == null || result.files.isEmpty) {
       return null;
     }
 
-    final String? filePath = result.files.first.path;
+    final PlatformFile picked = result.files.first;
+    // Android's picker filters nothing and the browser's accept is advisory.
+    final String ext = picked.name.split('.').last.toLowerCase();
+    if (!_allowedExtensions.contains(ext)) {
+      throw FormatException(
+        'Unsupported file type: .$ext. '
+        'Expected: ${_allowedExtensions.join(', ')}',
+      );
+    }
+
+    final Uint8List? bytes = picked.bytes;
+    if (bytes != null) {
+      return XcollFile.fromJsonString(utf8.decode(bytes));
+    }
+    final String? filePath = picked.path;
     if (filePath == null) {
       throw const FormatException('Could not read file path');
     }
-
-    // Android: validate extension manually since picker doesn't filter.
-    if (useAny) {
-      final String ext = filePath.split('.').last.toLowerCase();
-      if (!_allowedExtensions.contains(ext)) {
-        throw FormatException(
-          'Unsupported file type: .$ext. '
-          'Expected: ${_allowedExtensions.join(', ')}',
-        );
-      }
-    }
-
     return parseFile(File(filePath));
   }
 
@@ -1645,7 +1644,9 @@ class ImportService {
     XcollFile xcoll,
   ) async {
     String? heroFileName;
-    if (_heroService != null) {
+    // Hero images live as files next to the desktop database; the web build
+    // imports the collection and drops the hero.
+    if (_heroService != null && !kIsWebBuild) {
       MapEntry<String, String>? heroEntry;
       for (final MapEntry<String, String> entry in xcoll.images.entries) {
         if (entry.key.startsWith('collection_hero/')) {

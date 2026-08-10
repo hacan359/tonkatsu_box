@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/database/dao/global_tag_dao.dart';
@@ -53,11 +52,10 @@ class CustomCardsImportService {
   final CollectionRepository _repository;
   final ImageCacheService _imageCache;
 
-  /// Parses and validates [filePath] without writing anything.
-  Future<List<CustomCardRow>> parseFile(String filePath) async {
-    final Uint8List bytes = await File(filePath).readAsBytes();
-    return const CustomCardsParser()
-        .parseBytes(bytes, fileName: filePath);
+  /// Parses and validates the picked file without writing anything. The
+  /// bytes are read at pick time — the browser never has a path.
+  List<CustomCardRow> parseFile(Uint8List bytes, {required String fileName}) {
+    return const CustomCardsParser().parseBytes(bytes, fileName: fileName);
   }
 
   /// Indexes of rows that duplicate an item already in the target collection

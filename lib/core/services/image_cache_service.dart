@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/api/image_proxy.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -11,6 +12,7 @@ import 'package:core/models/image_type.dart';
 import 'package:core/models/profile.dart';
 
 import '../../shared/constants/platform_features.dart';
+import '../selfhost/server_origin.dart';
 import 'profile_service.dart';
 import 'storage_root.dart';
 
@@ -108,7 +110,27 @@ class ImageCacheService {
     String imageId,
     Uint8List bytes,
   ) async {
-    if (bytes.isEmpty || kIsWebBuild) return false;
+    if (bytes.isEmpty) return false;
+    // On web the cover cache lives on the server: one POST puts the bytes
+    // where every client's GET /img already looks.
+    if (kIsWebBuild) {
+      try {
+        await _dio.post<Object?>(
+          '${serverBaseUrl()}${imageProxyPath(type: type, imageId: imageId)}',
+          data: Stream<List<int>>.value(bytes),
+          options: Options(
+            headers: <String, Object?>{
+              Headers.contentLengthHeader: bytes.length,
+            },
+            contentType: 'application/octet-stream',
+          ),
+        );
+        return true;
+      } on DioException catch (e) {
+        _log.warning('Failed to upload image bytes: $imageId', e);
+        return false;
+      }
+    }
     try {
       final String path = await getLocalImagePath(type, imageId);
       final File file = File(path);

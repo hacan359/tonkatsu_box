@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:core/database/dao/calendar_entry_dao.dart';
 import 'package:core/database/dao/tracked_release_dao.dart';
@@ -478,21 +477,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
     if (data == null || !mounted) return;
 
-    // Cache local files and mark coverUrl so the renderer reads from disk.
+    // Cache picked bytes and mark coverUrl so the renderer reads the cache.
     String? newCoverUrl = data.coverUrl;
-    if (data.localCoverPath != null) {
-      final File sourceFile = File(data.localCoverPath!);
-      if (sourceFile.existsSync()) {
-        final ImageCacheService cache = ref.read(imageCacheServiceProvider);
-        final Uint8List bytes = await sourceFile.readAsBytes();
-        final bool saved = await cache.saveImageBytes(
-          ImageType.customCover,
-          item.externalId.toString(),
-          bytes,
-        );
-        if (saved) {
-          newCoverUrl = CustomMedia.localCoverMarker;
-        }
+    if (data.coverBytes != null) {
+      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+      final bool saved = await cache.saveImageBytes(
+        ImageType.customCover,
+        item.externalId.toString(),
+        data.coverBytes!,
+      );
+      if (saved) {
+        newCoverUrl = CustomMedia.localCoverMarker;
       }
     }
 

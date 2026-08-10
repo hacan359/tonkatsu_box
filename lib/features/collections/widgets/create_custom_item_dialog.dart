@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core/api/image_proxy.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as model;
@@ -10,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../core/selfhost/server_origin.dart';
 import '../../../core/import/sources/custom_file/custom_card_entry.dart';
 import '../../../core/import/sources/custom_file/custom_cards_import_service.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -80,8 +82,10 @@ class _CreateCustomItemDialogState
   int? _selectedYear;
   int? _selectedPlatformId;
   String? _selectedFormat;
-  String? _localCoverPath;
-  String? _cachedCoverPath;
+  Uint8List? _coverBytes;
+
+  /// A `file:` path on desktop, the server's `/img` URL on web.
+  Uri? _cachedCoverUri;
 
   List<model.Platform> _platforms = <model.Platform>[];
   List<String> _allGenres = <String>[];
@@ -117,6 +121,18 @@ class _CreateCustomItemDialogState
   }
 
   Future<void> _loadCachedCover() async {
+    if (kIsWebBuild) {
+      // The web build's cover cache is the server's, but only an uploaded
+      // cover is guaranteed there — a URL cover previews via the url branch.
+      if (!CustomMedia.isLocalCover(widget.existing?.coverUrl ?? '')) return;
+      final String url = serverBaseUrl() +
+          imageProxyPath(
+            type: ImageType.customCover,
+            imageId: '${widget.existing!.id}',
+          );
+      setState(() => _cachedCoverUri = Uri.parse(url));
+      return;
+    }
     final ImageCacheService cache = ref.read(imageCacheServiceProvider);
     final String path = await cache.getLocalImagePath(
       ImageType.customCover,
@@ -124,7 +140,7 @@ class _CreateCustomItemDialogState
     );
     final File file = File(path);
     if (await file.exists() && mounted) {
-      setState(() => _cachedCoverPath = path);
+      setState(() => _cachedCoverUri = Uri.file(path));
     }
   }
 
@@ -188,7 +204,7 @@ class _CreateCustomItemDialogState
       coverUrl: _coverUrlController.text.trim().isNotEmpty
           ? _coverUrlController.text.trim()
           : null,
-      localCoverPath: _localCoverPath,
+      coverBytes: _coverBytes,
       genres: _genresController.text.trim().isNotEmpty
           ? _genresController.text.trim()
           : null,
@@ -221,22 +237,26 @@ class _CreateCustomItemDialogState
   Future<void> _fillFromFile() async {
     final S l = S.of(context);
     // Mobile pickers don't reliably filter custom extensions (SAF/UTI).
-    final bool useAny = Platform.isAndroid || Platform.isIOS;
+    final bool useAny = kIsMobile;
+    // withData: the browser only ever hands out bytes, and reading them at
+    // pick time keeps one code path for every platform.
     final FilePickerResult? picked = await FilePicker.platform.pickFiles(
       dialogTitle: l.customItemFillFromFile,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['json', 'csv'],
       allowMultiple: false,
+      withData: true,
     );
     if (picked == null || picked.files.isEmpty) return;
-    final String? path = picked.files.single.path;
-    if (path == null || !mounted) return;
+    final PlatformFile file = picked.files.single;
+    final Uint8List? bytes = file.bytes;
+    if (bytes == null || !mounted) return;
 
     final List<CustomCardRow> rows;
     try {
-      rows = await ref
+      rows = ref
           .read(customCardsImportServiceProvider)
-          .parseFile(path);
+          .parseFile(bytes, fileName: file.name);
     } on CustomCardsParseException catch (e) {
       if (!mounted) return;
       context.showErrorSnack(localizedParseError(S.of(context), e.code));
@@ -293,7 +313,7 @@ class _CreateCustomItemDialogState
       }
       if (entry.coverUrl != null) {
         _coverUrlController.text = entry.coverUrl!;
-        _localCoverPath = null;
+        _coverBytes = null;
       }
       if (entry.link != null) {
         _externalUrlController.text = entry.link!;
@@ -359,13 +379,11 @@ class _CreateCustomItemDialogState
           style: AppTypography.h2,
         ),
         actions: <Widget>[
-          // Prefill reads a local JSON/CSV file — no filesystem on web.
-          if (!kIsWebBuild)
-            IconButton(
-              onPressed: _fillFromFile,
-              icon: const Icon(Icons.upload_file),
-              tooltip: l.customItemFillFromFile,
-            ),
+          IconButton(
+            onPressed: _fillFromFile,
+            icon: const Icon(Icons.upload_file),
+            tooltip: l.customItemFillFromFile,
+          ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: TextButton(
@@ -414,8 +432,8 @@ class _CreateCustomItemDialogState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         CustomCoverPreview(
-          localPath: _localCoverPath,
-          cachedPath: _cachedCoverPath,
+          bytes: _coverBytes,
+          cachedUri: _cachedCoverUri,
           url: _coverUrlController.text.trim(),
           onTap: _pickCover,
         ),
@@ -507,12 +525,12 @@ class _CreateCustomItemDialogState
     );
     if (result == null || !mounted) return;
     setState(() {
-      if (result.localPath != null) {
-        _localCoverPath = result.localPath;
+      if (result.bytes != null) {
+        _coverBytes = result.bytes;
         _coverUrlController.clear();
       } else if (result.url != null) {
         _coverUrlController.text = result.url!;
-        _localCoverPath = null;
+        _coverBytes = null;
       }
     });
   }

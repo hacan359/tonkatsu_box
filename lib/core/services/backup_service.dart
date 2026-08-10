@@ -26,6 +26,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../data/repositories/collection_repository.dart';
+import '../../shared/constants/platform_features.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import '../database/database_service.dart';
 import 'config_service.dart';
@@ -466,6 +467,23 @@ class BackupService {
 
       // 10. Save the file.
       final String dateSuffix = _dateSuffix();
+      final String downloadName =
+          'tonkatsu-backup-v$appVersion-$dateSuffix.zip';
+
+      // Web: saveFile hands the bytes to the browser as a download and
+      // returns null — there is no cancel to observe.
+      if (kIsWebBuild) {
+        await FilePicker.platform.saveFile(
+          fileName: downloadName,
+          bytes: Uint8List.fromList(zipBytes),
+        );
+        return BackupResult.success(
+          downloadName,
+          collections: collections.length,
+          items: totalItems,
+        );
+      }
+
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Save Backup',
@@ -506,10 +524,9 @@ class BackupService {
   }
 
   /// Reads the manifest from a ZIP backup without importing anything.
-  Future<BackupManifest?> readManifest(String zipPath) async {
+  BackupManifest? readManifest(Uint8List zipBytes) {
     try {
-      final List<int> bytes = File(zipPath).readAsBytesSync();
-      final Archive archive = ZipDecoder().decodeBytes(bytes);
+      final Archive archive = ZipDecoder().decodeBytes(zipBytes);
 
       for (final ArchiveFile file in archive) {
         if (file.name == 'manifest.json' && file.isFile) {
@@ -528,14 +545,17 @@ class BackupService {
   }
 
   Future<RestoreResult> restoreFromBackup({
-    required String zipPath,
+    required Uint8List zipBytes,
     bool restoreSettings = false,
     bool restoreWishlist = true,
     BackupProgressCallback? onProgress,
   }) async {
     try {
-      final List<int> bytes = File(zipPath).readAsBytesSync();
-      final Archive archive = ZipDecoder().decodeBytes(bytes);
+      final Archive archive = ZipDecoder().decodeBytes(zipBytes);
+      // Garbage bytes decode to an empty archive rather than throwing.
+      if (archive.isEmpty) {
+        return const RestoreResult.failure('Not a backup archive');
+      }
 
       final Map<String, String> collectionFiles = <String, String>{};
       String? wishlistContent;

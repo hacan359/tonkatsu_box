@@ -1050,6 +1050,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final ConfigResult result = await configService.importFromFile();
 
     if (result.success) {
+      // The config lands in prefs; on web the proxy reads keys on the server,
+      // so they have to travel there too.
+      await syncCredentialsToServer(_prefs);
       state = _loadFromPrefs();
       _syncApiClients();
       await _loadPlatformCount();

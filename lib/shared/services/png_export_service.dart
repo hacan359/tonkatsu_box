@@ -51,11 +51,6 @@ Future<BulkExportResult> saveBoundaryAsPng({
   required String saveDialogTitle,
   double pixelRatio = 2.0,
 }) async {
-  // saveFile is unimplemented in file_picker's web backend; callers surface
-  // the failed status, and the entry points are hidden on web anyway.
-  if (kIsWebBuild) {
-    return const BulkExportResult(BulkExportStatus.failed);
-  }
   try {
     final RenderRepaintBoundary? boundary = repaintKey.currentContext
         ?.findRenderObject() as RenderRepaintBoundary?;
@@ -70,6 +65,17 @@ Future<BulkExportResult> saveBoundaryAsPng({
       return const BulkExportResult(BulkExportStatus.failed);
     }
     final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+    // Web: saveFile hands the bytes to the browser as a download and returns
+    // null — there is no cancel to observe.
+    if (kIsWebBuild) {
+      final String downloadName = ensurePngExtension(suggestedFileName);
+      await FilePicker.platform.saveFile(
+        fileName: downloadName,
+        bytes: pngBytes,
+      );
+      return BulkExportResult(BulkExportStatus.saved, path: downloadName);
+    }
 
     final bool mobile = Platform.isAndroid || Platform.isIOS;
     final String? outputPath = await FilePicker.platform.saveFile(

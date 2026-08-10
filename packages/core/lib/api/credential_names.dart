@@ -13,6 +13,13 @@ abstract final class CredentialNames {
   static const String hardcover = 'hardcover';
   static const String simklClientId = 'simkl_client_id';
 
+  // ScreenScraper needs four: the dev pair comes from the operator's env or
+  // keys.json, the user pair from the settings screen.
+  static const String ssDevId = 'ss_dev_id';
+  static const String ssDevPassword = 'ss_dev_password';
+  static const String ssSsid = 'ss_ssid';
+  static const String ssSspassword = 'ss_sspassword';
+
   static const List<String> all = <String>[
     tmdb,
     tvdb,
@@ -25,5 +32,9 @@ abstract final class CredentialNames {
     googleBooks,
     hardcover,
     simklClientId,
+    ssDevId,
+    ssDevPassword,
+    ssSsid,
+    ssSspassword,
   ];
 }

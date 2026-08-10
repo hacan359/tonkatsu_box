@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -15,6 +15,7 @@ import 'package:logging/logging.dart';
 
 import '../../../../data/repositories/collection_repository.dart';
 import '../../../../data/repositories/wishlist_repository.dart';
+import '../../../../shared/constants/platform_features.dart';
 import '../../../api/api_error_extract.dart';
 import '../../../api/tmdb_api.dart';
 import '../../../database/database_service.dart';
@@ -37,14 +38,15 @@ final Provider<KinoriumImportService> kinoriumImportServiceProvider =
 
 class KinoriumImportOptions extends ImportOptions {
   const KinoriumImportOptions({
-    required this.filePath,
+    required this.bytes,
     super.collectionId,
     this.isWishlist = false,
     this.importNotes = false,
     this.reasons = const KinoriumWishlistReasons.english(),
   });
 
-  final String filePath;
+  /// The CSV is read at pick time — the browser never has a path to defer to.
+  final Uint8List bytes;
 
   /// The "Watchlist" (Kinorium's «Буду смотреть» list) toggle. `true` imports
   /// every row as [ItemStatus.planned]; `false` imports as
@@ -131,21 +133,14 @@ class KinoriumImportService implements ImportSource {
         total: 1,
       ));
 
-      final File file = File(options.filePath);
-      if (!await file.exists()) {
-        return const UniversalImportResult.failure(
-          sourceName: 'Kinorium',
-          error: 'File not found',
-        );
-      }
-
       // Parse off the UI isolate (a big CSV would freeze the dialog); local
-      // copies keep the closure from capturing non-sendable `this`.
+      // copies keep the closure from capturing non-sendable `this`. The web
+      // has no isolates, so it parses inline.
       final KinoriumCsvParser parser = _parser;
-      final String filePath = options.filePath;
-      final List<KinoriumEntry> entries = await Isolate.run(
-        () => parser.parseBytes(File(filePath).readAsBytesSync()),
-      );
+      final Uint8List bytes = options.bytes;
+      final List<KinoriumEntry> entries = kIsWebBuild
+          ? parser.parseBytes(bytes)
+          : await Isolate.run(() => parser.parseBytes(bytes));
       if (entries.isEmpty) {
         return const UniversalImportResult.failure(
           sourceName: 'Kinorium',

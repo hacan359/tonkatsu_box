@@ -15,6 +15,7 @@ import '../../../core/api/ra_api.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/whats_new_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
@@ -245,29 +246,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       gap,
 
       // Data group sits above Appearance per user feedback.
-      // Backup archives live on the local filesystem — desktop/mobile only.
-      if (!kIsWebBuild)
-        SettingsGroup(
-          title: l.settingsBackup,
-          subtitle: l.settingsBackupSubtitle,
-          titleIcon: Icons.cloud_outlined,
-          children: <Widget>[
-            SettingsTile(
-              leadingIcon: Icons.cloud_upload_outlined,
-              leadingColor: _kBackupColor,
-              title: l.settingsBackupAll,
-              subtitle: l.settingsBackupAllSubtitle,
-              onTap: () => _handleBackup(context, ref, l),
-            ),
-            SettingsTile(
-              leadingIcon: Icons.cloud_download_outlined,
-              leadingColor: _kBackupColor,
-              title: l.settingsRestoreBackup,
-              subtitle: l.settingsRestoreBackupSubtitle,
-              onTap: () => _handleRestore(context, ref, l),
-            ),
-          ],
-        ),
+      SettingsGroup(
+        title: l.settingsBackup,
+        subtitle: l.settingsBackupSubtitle,
+        titleIcon: Icons.cloud_outlined,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.cloud_upload_outlined,
+            leadingColor: _kBackupColor,
+            title: l.settingsBackupAll,
+            subtitle: l.settingsBackupAllSubtitle,
+            onTap: () => _handleBackup(context, ref, l),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.cloud_download_outlined,
+            leadingColor: _kBackupColor,
+            title: l.settingsRestoreBackup,
+            subtitle: l.settingsRestoreBackupSubtitle,
+            onTap: () => _handleRestore(context, ref, l),
+          ),
+        ],
+      ),
       gap,
       SettingsGroup(
         title: l.settingsImport,
@@ -281,16 +280,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsBrowseCollectionsSubtitle,
             onTap: () => _pushScreen(const BrowseCollectionsScreen()),
           ),
-          // File-based importers read from the local filesystem; hidden on
-          // web until the bytes-based flow (phase 5 of selfhost-web).
-          if (!kIsWebBuild)
-            SettingsTile(
-              leadingAssetPath: AppAssets.iconTraktColor,
-              leadingAssetColored: true,
-              title: l.traktTitle,
-              subtitle: l.settingsTraktImportSubtitle,
-              onTap: () => _pushScreen(const TraktImportScreen()),
-            ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconTraktColor,
+            leadingAssetColored: true,
+            title: l.traktTitle,
+            subtitle: l.settingsTraktImportSubtitle,
+            onTap: () => _pushScreen(const TraktImportScreen()),
+          ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconSimklColor,
             leadingAssetColored: true,
@@ -298,14 +294,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsSimklImportSubtitle,
             onTap: () => _pushScreen(const SimklImportScreen()),
           ),
-          if (!kIsWebBuild)
-            SettingsTile(
-              leadingAssetPath: AppAssets.iconKinoriumColor,
-              leadingAssetColored: true,
-              title: l.settingsKinoriumImport,
-              subtitle: l.settingsKinoriumImportSubtitle,
-              onTap: () => _pushScreen(const KinoriumImportScreen()),
-            ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconKinoriumColor,
+            leadingAssetColored: true,
+            title: l.settingsKinoriumImport,
+            subtitle: l.settingsKinoriumImportSubtitle,
+            onTap: () => _pushScreen(const KinoriumImportScreen()),
+          ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconSteamColor,
             leadingAssetColored: true,
@@ -313,14 +308,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsSteamImportSubtitle,
             onTap: () => _pushScreen(const SteamImportScreen()),
           ),
-          if (!kIsWebBuild)
-            SettingsTile(
-              leadingAssetPath: AppAssets.iconIgdbColor,
-              leadingAssetColored: true,
-              title: l.settingsIgdbImport,
-              subtitle: l.settingsIgdbImportSubtitle,
-              onTap: () => _pushScreen(const IgdbListImportScreen()),
-            ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconIgdbColor,
+            leadingAssetColored: true,
+            title: l.settingsIgdbImport,
+            subtitle: l.settingsIgdbImportSubtitle,
+            onTap: () => _pushScreen(const IgdbListImportScreen()),
+          ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconRaColor,
             leadingAssetColored: true,
@@ -328,14 +322,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsRaImportSubtitle,
             onTap: () => _pushScreen(const RaImportScreen()),
           ),
-          if (!kIsWebBuild)
-            SettingsTile(
-              leadingAssetPath: AppAssets.iconMalColor,
-              leadingAssetColored: true,
-              title: l.settingsMalImport,
-              subtitle: l.settingsMalImportSubtitle,
-              onTap: () => _pushScreen(const MalImportScreen()),
-            ),
+          SettingsTile(
+            leadingAssetPath: AppAssets.iconMalColor,
+            leadingAssetColored: true,
+            title: l.settingsMalImport,
+            subtitle: l.settingsMalImportSubtitle,
+            onTap: () => _pushScreen(const MalImportScreen()),
+          ),
           SettingsTile(
             leadingAssetPath: AppAssets.iconAnilistColor,
             leadingAssetColored: true,
@@ -350,13 +343,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsHardcoverImportSubtitle,
             onTap: () => _pushScreen(const HardcoverImportScreen()),
           ),
-          if (!kIsWebBuild)
-            SettingsTile(
-              leadingIcon: Icons.upload_file,
-              title: l.settingsCustomCardsImport,
-              subtitle: l.settingsCustomCardsImportSubtitle,
-              onTap: () => _pushScreen(const CustomCardsImportScreen()),
-            ),
+          SettingsTile(
+            leadingIcon: Icons.upload_file,
+            title: l.settingsCustomCardsImport,
+            subtitle: l.settingsCustomCardsImportSubtitle,
+            onTap: () => _pushScreen(const CustomCardsImportScreen()),
+          ),
         ],
       ),
       gap,
@@ -551,13 +543,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
       gap,
-      SettingsGroup(
-        title: l.settingsIntegrations,
-        titleIcon: Icons.link,
-        children: <Widget>[
-          // Kodi sits on the user's own LAN, which the browser reaches through
-          // nothing — the proxy allowlist cannot cover an arbitrary host.
-          if (!kIsWebBuild)
+      // Kodi is LAN-only and Discord RPC is desktop-only, so on web the group
+      // would render as a bare header.
+      if (!kIsWebBuild)
+        SettingsGroup(
+          title: l.settingsIntegrations,
+          titleIcon: Icons.link,
+          children: <Widget>[
             SettingsTile(
               leadingAssetPath: AppAssets.iconKodiColor,
               leadingAssetColored: true,
@@ -995,22 +987,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     WidgetRef ref,
     S l,
   ) async {
-    // 1. Pick the file.
-    final bool useAny = defaultTargetPlatform == TargetPlatform.android;
+    // 1. Pick the file. withData: the browser only ever hands out bytes,
+    // and reading them at pick time keeps one code path for every platform.
+    final bool useAny = kIsMobile;
     final FilePickerResult? picked = await FilePicker.platform.pickFiles(
       dialogTitle: l.settingsRestoreBackup,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['zip'],
       allowMultiple: false,
+      withData: true,
     );
 
     if (picked == null || picked.files.isEmpty) return;
-    final String? zipPath = picked.files.first.path;
-    if (zipPath == null) return;
+    final Uint8List? zipBytes = picked.files.first.bytes;
+    if (zipBytes == null) return;
 
     // 2. Read the manifest.
     final BackupService service = ref.read(backupServiceProvider);
-    final BackupManifest? manifest = await service.readManifest(zipPath);
+    final BackupManifest? manifest = service.readManifest(zipBytes);
 
     if (manifest == null) {
       if (context.mounted) {
@@ -1108,7 +1102,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     RestoreResult result;
     try {
       result = await service.restoreFromBackup(
-        zipPath: zipPath,
+        zipBytes: zipBytes,
         restoreWishlist: options.restoreWishlist,
         restoreSettings: options.restoreSettings,
         onProgress: (BackupProgress p) => progressNotifier.value = p,
@@ -1117,6 +1111,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.read(restoreInProgressProvider.notifier).state = false;
       if (navigator.canPop()) navigator.pop();
       progressNotifier.dispose();
+    }
+
+    if (result.success) {
+      // A restored config lands in prefs; on web the proxy reads keys on the
+      // server, so they have to travel there too (no-op on native).
+      await syncCredentialsToServer(ref.read(sharedPreferencesProvider));
     }
 
     if (!context.mounted) return;

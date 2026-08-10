@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/models/collection_item.dart';
@@ -25,7 +25,6 @@ void main() {
   late MockCollectionRepository mockRepo;
   late MockImageCacheService mockImageCache;
 
-  late Directory tempDir;
 
   setUpAll(() {
     registerAllFallbacks();
@@ -55,7 +54,6 @@ void main() {
       imageCache: mockImageCache,
     );
 
-    tempDir = Directory.systemTemp.createTempSync('custom_cards_test');
 
     when(() => mockGameDao.getAllPlatforms()).thenAnswer(
       (_) async => <model.Platform>[
@@ -86,12 +84,6 @@ void main() {
           imageId: any(named: 'imageId'),
           remoteUrl: any(named: 'remoteUrl'),
         )).thenAnswer((_) async => true);
-  });
-
-  tearDown(() {
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
   });
 
   CustomCardEntry entry({
@@ -132,20 +124,20 @@ void main() {
 
   group('CustomCardsImportService', () {
     group('parseFile', () {
-      test('parses a JSON file from disk', () async {
-        final String path = '${tempDir.path}/cards.json';
-        File(path).writeAsStringSync('[{"title": "A", "type": "game"}]');
-
-        final List<CustomCardRow> rows = await sut.parseFile(path);
+      test('parses JSON bytes', () {
+        final List<CustomCardRow> rows = sut.parseFile(
+          utf8.encode('[{"title": "A", "type": "game"}]'),
+          fileName: 'cards.json',
+        );
 
         expect(rows.single.isValid, isTrue);
       });
 
-      test('parses a CSV file from disk', () async {
-        final String path = '${tempDir.path}/cards.csv';
-        File(path).writeAsStringSync('title,type\nA,book\n');
-
-        final List<CustomCardRow> rows = await sut.parseFile(path);
+      test('parses CSV bytes', () {
+        final List<CustomCardRow> rows = sut.parseFile(
+          utf8.encode('title,type\nA,book\n'),
+          fileName: 'cards.csv',
+        );
 
         expect(rows.single.entry!.type, MediaType.book);
       });

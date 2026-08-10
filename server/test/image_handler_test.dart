@@ -134,4 +134,52 @@ void main() {
       expect((body! as Map<String, Object?>)['ok'], isFalse);
     });
   });
+
+  group('ImageCache.uploadHandler', () {
+    Future<Response> post(String path, List<int> body) async =>
+        build()(Request('POST', Uri.parse('http://localhost$path'),
+            body: body));
+
+    test('should store the body and serve it back on GET', () async {
+      final Response posted =
+          await post('/img/custom_covers/42', <int>[9, 8, 7]);
+      expect(posted.statusCode, HttpStatus.ok);
+
+      final Response got = await get('/img/custom_covers/42');
+      expect(got.statusCode, HttpStatus.ok);
+      expect(await got.read().expand((List<int> c) => c).toList(),
+          <int>[9, 8, 7]);
+      expect(upstream.sent, isEmpty);
+    });
+
+    test('should overwrite an existing image', () async {
+      await post('/img/custom_covers/42', <int>[1]);
+      await post('/img/custom_covers/42', <int>[2, 2]);
+
+      final Response got = await get('/img/custom_covers/42');
+      expect(await got.read().expand((List<int> c) => c).toList(),
+          <int>[2, 2]);
+    });
+
+    test('should refuse an empty body', () async {
+      final Response response = await post('/img/custom_covers/42', <int>[]);
+
+      expect(response.statusCode, HttpStatus.badRequest);
+    });
+
+    test('should refuse an unknown folder', () async {
+      final Response response = await post('/img/not_a_folder/42', <int>[1]);
+
+      expect(response.statusCode, HttpStatus.notFound);
+    });
+
+    test('should refuse a traversal id', () async {
+      final Response response =
+          await post('/img/custom_covers/..%2Fescape', <int>[1]);
+
+      expect(response.statusCode, HttpStatus.badRequest);
+      expect(File(p.join(dataDir.path, 'images', 'escape')).existsSync(),
+          isFalse);
+    });
+  });
 }

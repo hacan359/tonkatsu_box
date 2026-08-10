@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
 import 'package:core/models/universal_import_result.dart';
@@ -10,6 +11,7 @@ import '../../../core/api/api_error_extract.dart';
 import '../../../core/import/sources/mal/mal_import_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -388,20 +390,26 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
     final S l = S.of(context);
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: l.malImportPickFiles,
-      type: Platform.isAndroid ? FileType.any : FileType.custom,
-      allowedExtensions: Platform.isAndroid ? null : <String>['xml'],
+      // Android's FileType.custom does not filter custom extensions.
+      type: kIsMobile ? FileType.any : FileType.custom,
+      allowedExtensions: kIsMobile ? null : <String>['xml'],
       allowMultiple: false,
+      // withData: the browser only ever hands out bytes, and reading them at
+      // pick time keeps one code path for every platform.
+      withData: true,
     );
 
     if (result == null || result.files.isEmpty) return;
-    final String? path = result.files.first.path;
-    if (path == null) return;
+    final Uint8List? bytes = result.files.first.bytes;
+    if (bytes == null) return;
 
-    final File file = File(path);
     final String fileName = result.files.first.name;
     try {
+      // Inside the try: a non-UTF8 pick (e.g. MAL's gzipped export) must land
+      // in the invalid-file snackbar, not escape as an uncaught exception.
+      final String xml = utf8.decode(bytes);
       final MalImportService service = ref.read(malImportServiceProvider);
-      final MalParsedFile parsed = await service.parseFile(file);
+      final MalParsedFile parsed = service.parseString(xml);
 
       if (parsed.kind != expectedKind) {
         if (!mounted) return;
@@ -415,7 +423,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
       setState(() {
         final _PickedFile pickedFile = _PickedFile(
-          file: file,
+          xml: xml,
           fileName: fileName,
           entryCount: parsed.entries.length,
         );
@@ -449,8 +457,8 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
       final UniversalImportResult result = await service.import(
         MalImportOptions(
-          animeFile: _animePicked?.file,
-          mangaFile: _mangaPicked?.file,
+          animeXml: _animePicked?.xml,
+          mangaXml: _mangaPicked?.xml,
           author: authorName,
           newCollectionName: _newNameController.text.trim(),
           overwriteExistingItems: _overwriteExisting,
@@ -505,12 +513,12 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
 class _PickedFile {
   const _PickedFile({
-    required this.file,
+    required this.xml,
     required this.fileName,
     required this.entryCount,
   });
 
-  final File file;
+  final String xml;
   final String fileName;
   final int entryCount;
 }
