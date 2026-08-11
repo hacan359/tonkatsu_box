@@ -1,4 +1,5 @@
 import 'package:core/models/collection.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
@@ -116,6 +117,106 @@ void main() {
 
       test('should return 0% для пустой коллекции', () {
         expect(CollectionStats.empty.completionPercentFormatted, '0%');
+      });
+    });
+
+    group('mediaTypeCounts', () {
+      test('should map every media type to its count field', () {
+        const CollectionStats stats = CollectionStats(
+          total: 6,
+          completed: 0,
+          inProgress: 0,
+          notStarted: 6,
+          dropped: 0,
+          planned: 0,
+          gameCount: 1,
+          movieCount: 2,
+          tvShowCount: 3,
+          animationCount: 4,
+          visualNovelCount: 5,
+          mangaCount: 6,
+          animeCount: 7,
+          bookCount: 8,
+          customCount: 9,
+        );
+
+        expect(stats.mediaTypeCounts, <MediaType, int>{
+          MediaType.game: 1,
+          MediaType.movie: 2,
+          MediaType.tvShow: 3,
+          MediaType.animation: 4,
+          MediaType.visualNovel: 5,
+          MediaType.manga: 6,
+          MediaType.anime: 7,
+          MediaType.book: 8,
+          MediaType.custom: 9,
+        });
+      });
+
+      test('should cover all MediaType values', () {
+        expect(
+          CollectionStats.empty.mediaTypeCounts.keys,
+          containsAll(MediaType.values),
+        );
+      });
+    });
+
+    group('presentMediaTypes', () {
+      test('should return empty list when no items', () {
+        expect(CollectionStats.empty.presentMediaTypes, isEmpty);
+      });
+
+      test('should order dominant type first', () {
+        const CollectionStats stats = CollectionStats(
+          total: 10,
+          completed: 0,
+          inProgress: 0,
+          notStarted: 10,
+          dropped: 0,
+          planned: 0,
+          gameCount: 2,
+          bookCount: 7,
+          movieCount: 1,
+        );
+
+        expect(stats.presentMediaTypes, <MediaType>[
+          MediaType.book,
+          MediaType.game,
+          MediaType.movie,
+        ]);
+      });
+
+      test('should skip types with zero items', () {
+        const CollectionStats stats = CollectionStats(
+          total: 3,
+          completed: 0,
+          inProgress: 0,
+          notStarted: 3,
+          dropped: 0,
+          planned: 0,
+          animeCount: 3,
+        );
+
+        expect(stats.presentMediaTypes, <MediaType>[MediaType.anime]);
+      });
+
+      test('should break count ties by enum order', () {
+        const CollectionStats stats = CollectionStats(
+          total: 4,
+          completed: 0,
+          inProgress: 0,
+          notStarted: 4,
+          dropped: 0,
+          planned: 0,
+          mangaCount: 2,
+          movieCount: 2,
+        );
+
+        // movie precedes manga in the MediaType declaration order.
+        expect(stats.presentMediaTypes, <MediaType>[
+          MediaType.movie,
+          MediaType.manga,
+        ]);
       });
     });
 

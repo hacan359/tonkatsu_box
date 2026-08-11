@@ -11,6 +11,7 @@ import 'package:tonkatsu_box/features/collections/providers/collection_covers_pr
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_card.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/media_type_theme.dart';
 
 Collection _makeCollection({
   int id = 1,
@@ -201,10 +202,10 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.style_outlined), findsOneWidget);
     });
 
-    testWidgets('should show +N при total > 6',
+    testWidgets('should badge +N for items beyond the visible covers',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -219,27 +220,27 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // total=10, 6 cells, remaining 4 shown as "+4".
-      expect(find.text('+4'), findsOneWidget);
+      // total=10, 4 covers in the pile, so the top card reads "+6".
+      expect(find.text('+6'), findsOneWidget);
     });
 
-    testWidgets('не should show +N при total <= 6',
+    testWidgets('should not badge +N when every item is a visible cover',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
-      const CollectionStats sixItemStats = CollectionStats(
-        total: 6,
-        completed: 3,
+      const CollectionStats fourItemStats = CollectionStats(
+        total: 4,
+        completed: 2,
         inProgress: 1,
-        notStarted: 2,
+        notStarted: 1,
         dropped: 0,
         planned: 0,
-        gameCount: 6,
+        gameCount: 4,
       );
 
       await tester.pumpWidget(_buildTestApp(
         overrides: <Override>[
           collectionStatsProvider(collection.id)
-              .overrideWith((Ref ref) async => sixItemStats),
+              .overrideWith((Ref ref) async => fourItemStats),
           collectionCoversProvider(collection.id)
               .overrideWith((Ref ref) async => _testCovers),
         ],
@@ -266,6 +267,36 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(LinearProgressIndicator), findsNothing);
+    });
+
+    testWidgets('should show one media-type dot per present type',
+        (WidgetTester tester) async {
+      final Collection collection = _makeCollection();
+
+      await tester.pumpWidget(_buildTestApp(
+        overrides: <Override>[
+          collectionStatsProvider(collection.id)
+              .overrideWith((Ref ref) async => _gameStats),
+          collectionCoversProvider(collection.id)
+              .overrideWith((Ref ref) async => <CoverInfo>[]),
+        ],
+        child: CollectionCard(collection: collection),
+      ));
+      await tester.pumpAndSettle();
+
+      // _gameStats has games and movies only.
+      expect(
+        find.byIcon(MediaTypeTheme.iconFor(MediaType.game)),
+        findsOneWidget,
+      );
+      expect(
+        find.byIcon(MediaTypeTheme.iconFor(MediaType.movie)),
+        findsOneWidget,
+      );
+      expect(
+        find.byIcon(MediaTypeTheme.iconFor(MediaType.book)),
+        findsNothing,
+      );
     });
 
     testWidgets('should use акцент по доминирующему медиа-типу (movie)',
@@ -325,7 +356,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.style_outlined), findsOneWidget);
     });
 
     testWidgets('should show SizedBox при loading статистики',
@@ -369,7 +400,7 @@ void main() {
       expect(find.textContaining('Error'), findsOneWidget);
     });
 
-    testWidgets('должен отрендерить все 6 обложек в мозаике',
+    testWidgets('should render six covers and badge the rest',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -385,6 +416,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(CollectionCard), findsOneWidget);
+      // total=10, 6 covers visible -> "+4" on the top card.
       expect(find.text('+4'), findsOneWidget);
     });
 

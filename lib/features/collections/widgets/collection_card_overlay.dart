@@ -1,7 +1,7 @@
 // The scrim background is NOT drawn here — that is the parent's job:
-// rich cards get it from `CollectionHeroBackground`, classic cards put
-// `CollectionCardBottomScrim` underneath the overlay.
+// rich cards get it from `CollectionHeroBackground`.
 
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +9,7 @@ import '../../../data/repositories/collection_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
+import 'media_type_dots.dart';
 
 class CollectionCardOverlay extends StatelessWidget {
   const CollectionCardOverlay({
@@ -27,91 +28,106 @@ class CollectionCardOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasDescription =
-        description != null && description!.isNotEmpty;
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final _OverlayMetrics m = _metricsFor(constraints.maxWidth);
+        final CollectionStats? stats = statsAsync.valueOrNull;
+        final List<MediaType> mediaTypes =
+            stats?.presentMediaTypes ?? const <MediaType>[];
 
-        return Align(
-          alignment: Alignment.bottomLeft,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(m.hPad, 0, m.hPad, m.bPad),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  name,
-                  style: AppTypography.h3.copyWith(
-                    // The bottom scrim is background-tinted, so standard text
-                    // colors keep contrast in both themes.
-                    color: AppColors.textPrimary,
-                    fontSize: m.nameSize,
-                    height: 1.1,
-                    shadows: <Shadow>[
-                      Shadow(
-                        color: AppColors.background.withAlpha(0x8A),
-                        blurRadius: 6,
-                      ),
-                    ],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (hasDescription) ...<Widget>[
-                  SizedBox(height: m.gapDesc),
-                  Text(
-                    description!,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: m.descSize,
-                      shadows: <Shadow>[
-                        Shadow(
-                          color: AppColors.background.withAlpha(0xDE),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                    maxLines: m.descLines,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                SizedBox(height: m.gapStats),
-                statsAsync.when(
-                  data: (CollectionStats s) => Text(
-                    S.of(context).collectionTileStats(
-                          s.total,
-                          s.completionPercentFormatted,
-                        ),
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textTertiary,
-                      fontSize: m.statsSize,
-                      shadows: <Shadow>[
-                        Shadow(
-                          color: AppColors.background.withAlpha(0xDE),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  loading: () => const SizedBox(height: 14),
-                  error: (Object error, StackTrace stack) => Text(
-                    S.of(context).collectionTileError,
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.error,
-                      fontSize: m.statsSize,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        return Stack(
+          children: <Widget>[
+            if (mediaTypes.isNotEmpty)
+              Positioned(
+                top: m.bPad,
+                right: m.hPad,
+                child: MediaTypeDots(types: mediaTypes, dotSize: m.dotSize),
+              ),
+            _bottomInfo(context, m),
+          ],
         );
       },
+    );
+  }
+
+  Widget _bottomInfo(BuildContext context, _OverlayMetrics m) {
+    final bool hasDescription = description != null && description!.isNotEmpty;
+
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(m.hPad, 0, m.hPad, m.bPad),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              name,
+              style: AppTypography.h3.copyWith(
+                // The bottom scrim is background-tinted, so standard text
+                // colors keep contrast in both themes.
+                color: AppColors.textPrimary,
+                fontSize: m.nameSize,
+                height: 1.1,
+                shadows: <Shadow>[
+                  Shadow(
+                    color: AppColors.background.withAlpha(0x8A),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (hasDescription) ...<Widget>[
+              SizedBox(height: m.gapDesc),
+              Text(
+                description!,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: m.descSize,
+                  shadows: <Shadow>[
+                    Shadow(
+                      color: AppColors.background.withAlpha(0xDE),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                maxLines: m.descLines,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            SizedBox(height: m.gapStats),
+            statsAsync.when(
+              data: (CollectionStats s) => Text(
+                S
+                    .of(context)
+                    .collectionTileStats(s.total, s.completionPercentFormatted),
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textTertiary,
+                  fontSize: m.statsSize,
+                  shadows: <Shadow>[
+                    Shadow(
+                      color: AppColors.background.withAlpha(0xDE),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              loading: () => const SizedBox(height: 14),
+              error: (Object error, StackTrace stack) => Text(
+                S.of(context).collectionTileError,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.error,
+                  fontSize: m.statsSize,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -126,6 +142,7 @@ class _OverlayMetrics {
     required this.gapDesc,
     required this.gapStats,
     required this.descLines,
+    required this.dotSize,
   });
 
   final double nameSize;
@@ -136,6 +153,7 @@ class _OverlayMetrics {
   final double gapDesc;
   final double gapStats;
   final int descLines;
+  final double dotSize;
 }
 
 // Presets: xs — 3 columns on mobile, sm — 4 columns on tablet, default — desktop.
@@ -148,6 +166,7 @@ const _OverlayMetrics _metricsXs = _OverlayMetrics(
   gapDesc: 2,
   gapStats: 3,
   descLines: 1,
+  dotSize: 20,
 );
 const _OverlayMetrics _metricsSm = _OverlayMetrics(
   nameSize: 15,
@@ -158,6 +177,7 @@ const _OverlayMetrics _metricsSm = _OverlayMetrics(
   gapDesc: 4,
   gapStats: 6,
   descLines: 2,
+  dotSize: 22,
 );
 const _OverlayMetrics _metricsDefault = _OverlayMetrics(
   nameSize: 17,
@@ -168,39 +188,11 @@ const _OverlayMetrics _metricsDefault = _OverlayMetrics(
   gapDesc: 4,
   gapStats: 6,
   descLines: 2,
+  dotSize: 24,
 );
 
 _OverlayMetrics _metricsFor(double cardWidth) {
   if (cardWidth < 150) return _metricsXs;
   if (cardWidth < 210) return _metricsSm;
   return _metricsDefault;
-}
-
-/// Covers the bottom ~55% of the card so the top row of mosaic posters
-/// stays clean while the bottom row is dimmed for text readability.
-class CollectionCardBottomScrim extends StatelessWidget {
-  const CollectionCardBottomScrim({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            // Background-tinted, not black: the veil must read as "the card
-            // fading into the page" in both the dark and light themes.
-            colors: <Color>[
-              Colors.transparent,
-              AppColors.background.withValues(alpha: 0.45),
-              AppColors.background.withValues(alpha: 0.85),
-            ],
-            stops: const <double>[0.45, 0.70, 1.0],
-          ),
-        ),
-        child: const SizedBox.expand(),
-      ),
-    );
-  }
 }
