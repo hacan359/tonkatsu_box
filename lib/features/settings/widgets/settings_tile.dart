@@ -198,7 +198,10 @@ class _LeadingBubble extends StatelessWidget {
                     height: iconSize * 1.8,
                     colorFilter: assetColored
                         ? null
-                        : const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        : ColorFilter.mode(
+                            AppColors.onOverlay,
+                            BlendMode.srcIn,
+                          ),
                   )
                 : Image.asset(
                     assetPath!,
@@ -206,7 +209,7 @@ class _LeadingBubble extends StatelessWidget {
                     height: iconSize * 1.8,
                     filterQuality: FilterQuality.medium,
                   ))
-          : Icon(icon, size: iconSize, color: Colors.white),
+          : Icon(icon, size: iconSize, color: AppColors.onOverlay),
     );
   }
 }

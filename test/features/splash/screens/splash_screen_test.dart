@@ -18,7 +18,7 @@ void main() {
   setUp(() {
     mockDb = MockDatabaseService();
 
-    when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
+    when(mockDb.warmUp).thenAnswer((_) async {});
   });
 
   Widget buildTestWidget() {
@@ -70,7 +70,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      verify(() => mockDb.database).called(1);
+      verify(mockDb.warmUp).called(1);
     });
 
     testWidgets('повторный pump не дублирует вызовы DB',
@@ -79,7 +79,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      verify(() => mockDb.database).called(1);
+      verify(mockDb.warmUp).called(1);
     });
 
     testWidgets('не навигирует до завершения анимации',

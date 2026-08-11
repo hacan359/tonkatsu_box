@@ -227,16 +227,16 @@ class _InlineTextFieldState extends State<InlineTextField> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                const Icon(
+                                Icon(
                                   Icons.check,
                                   size: 16,
-                                  color: Colors.white,
+                                  color: AppColors.onOverlay,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   S.of(context).save,
                                   style: AppTypography.bodySmall.copyWith(
-                                    color: Colors.white,
+                                    color: AppColors.onOverlay,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

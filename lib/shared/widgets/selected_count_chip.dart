@@ -17,7 +17,7 @@ class SelectedCountChip extends StatelessWidget {
     required this.count,
     required this.onClear,
     required this.clearTooltip,
-    this.accent = AppColors.brand,
+    this.accent,
     super.key,
   });
 
@@ -30,8 +30,8 @@ class SelectedCountChip extends StatelessWidget {
   /// Localized label for the tooltip and screen readers (e.g. "Clear selection").
   final String clearTooltip;
 
-  /// Pill background; defaults to the app brand accent.
-  final Color accent;
+  /// Pill background; null falls back to the app brand accent.
+  final Color? accent;
 
   @override
   Widget build(BuildContext context) {
@@ -51,22 +51,22 @@ class SelectedCountChip extends StatelessWidget {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                color: accent,
+                color: accent ?? AppColors.brand,
                 borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.check,
                     size: 14,
-                    color: AppColors.background,
+                    color: AppColors.onBrand,
                   ),
                   const SizedBox(width: 3),
                   Text(
                     '$count',
                     style: AppTypography.caption.copyWith(
-                      color: AppColors.background,
+                      color: AppColors.onBrand,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

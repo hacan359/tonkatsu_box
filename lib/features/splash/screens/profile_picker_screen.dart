@@ -191,7 +191,7 @@ class _ProfileCard extends StatelessWidget {
                       ? profile.name[0].toUpperCase()
                       : '?',
                   style: AppTypography.h1.copyWith(
-                    color: Colors.white,
+                    color: AppColors.onOverlay,
                     fontSize: 22,
                   ),
                 ),
@@ -239,11 +239,11 @@ class _AddProfileCard extends StatelessWidget {
             Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.surfaceLight,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.add,
                 color: AppColors.textSecondary,
               ),

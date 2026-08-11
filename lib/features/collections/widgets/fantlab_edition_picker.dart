@@ -155,7 +155,7 @@ class _FantlabEditionsSectionState
                 ),
                 child: Row(
                   children: <Widget>[
-                    const Icon(Icons.menu_book,
+                    Icon(Icons.menu_book,
                         color: AppColors.brand, size: 22),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
@@ -348,12 +348,12 @@ class _EditionCard extends StatelessWidget {
                   children: <Widget>[
                     _cover(),
                     if (selected)
-                      const ColoredBox(color: Color(0x33000000)),
+                      ColoredBox(color: AppColors.scrim.withAlpha(0x33)),
                     if (selected)
-                      const Align(
+                      Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(4),
                           child: Icon(Icons.check_circle,
                               color: AppColors.brand, size: 22),
                         ),
@@ -387,7 +387,7 @@ class _EditionCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => const ColoredBox(
+  Widget _placeholder() => ColoredBox(
         color: AppColors.surfaceLight,
         child: Center(
           child: Icon(Icons.menu_book, color: AppColors.textTertiary),

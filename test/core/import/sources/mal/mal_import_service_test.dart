@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:core/models/anime.dart';
 import 'package:core/models/collection_item.dart';
@@ -310,8 +309,8 @@ void main() {
             ));
       }
 
-      MalImportOptions opts(String path) => MalImportOptions(
-            animeFile: File(path),
+      MalImportOptions opts(String xml) => MalImportOptions(
+            animeXml: xml,
             author: 'me',
             newCollectionName: 'MAL',
             collectionId: 1,
@@ -336,8 +335,8 @@ void main() {
 
         final List<Map<String, dynamic>>? rows = await _runWithTempFile(
           singleAnimeXml,
-          (String path) async {
-            await sut.import(opts(path));
+          (String xml) async {
+            await sut.import(opts(xml));
             return verify(() => mockWishlist.addWishlistItemsBatch(captureAny()))
                 .captured
                 .single as List<Map<String, dynamic>>;
@@ -358,8 +357,8 @@ void main() {
           5114: Anime(id: 999, title: 'FMA', episodes: 64),
         });
 
-        await _runWithTempFile(singleAnimeXml, (String path) async {
-          await sut.import(opts(path));
+        await _runWithTempFile(singleAnimeXml, (String xml) async {
+          await sut.import(opts(xml));
           return null;
         });
 
@@ -387,8 +386,8 @@ void main() {
           5114: Anime(id: 999, title: 'FMA', episodes: 64),
         });
 
-        await _runWithTempFile(rewatchXml, (String path) async {
-          await sut.import(opts(path));
+        await _runWithTempFile(rewatchXml, (String xml) async {
+          await sut.import(opts(xml));
           return null;
         });
 
@@ -416,8 +415,8 @@ void main() {
           5114: Anime(id: 999, title: 'FMA', episodes: 64),
         });
 
-        await _runWithTempFile(plannedXml, (String path) async {
-          await sut.import(opts(path));
+        await _runWithTempFile(plannedXml, (String xml) async {
+          await sut.import(opts(xml));
           return null;
         });
 
@@ -441,10 +440,10 @@ void main() {
               ),
             ]);
 
-        await _runWithTempFile(singleAnimeXml, (String path) async {
+        await _runWithTempFile(singleAnimeXml, (String xml) async {
           final UniversalImportResult result = await sut.import(
             MalImportOptions(
-              animeFile: File(path),
+              animeXml: xml,
               author: 'me',
               newCollectionName: 'MAL',
               collectionId: 1,
@@ -475,8 +474,8 @@ void main() {
               ),
             ]);
 
-        await _runWithTempFile(singleAnimeXml, (String path) async {
-          final UniversalImportResult result = await sut.import(opts(path));
+        await _runWithTempFile(singleAnimeXml, (String xml) async {
+          final UniversalImportResult result = await sut.import(opts(xml));
           expect(result.totalImported, 0);
           expect(result.totalUpdated, 0);
           expect(result.totalWishlisted, 0);
@@ -495,8 +494,8 @@ void main() {
       test('failed lookup пропускается, не падает в wishlist', () async {
         stubAnimeLookup(failedIds: const <int>[5114]);
 
-        await _runWithTempFile(singleAnimeXml, (String path) async {
-          final UniversalImportResult result = await sut.import(opts(path));
+        await _runWithTempFile(singleAnimeXml, (String xml) async {
+          final UniversalImportResult result = await sut.import(opts(xml));
           expect(result.totalImported, 0);
           expect(result.totalWishlisted, 0);
           expect(result.skipped, greaterThanOrEqualTo(1));
@@ -510,16 +509,11 @@ void main() {
   });
 }
 
+// The options carry the XML itself now; the helper survives so the call
+// sites stay diffable against their pre-bytes shape.
 Future<T?> _runWithTempFile<T>(
   String xml,
-  Future<T?> Function(String path) body,
+  Future<T?> Function(String xml) body,
 ) async {
-  final Directory dir = await Directory.systemTemp.createTemp('mal_test_');
-  final File file = File('${dir.path}/test.xml');
-  await file.writeAsString(xml);
-  try {
-    return await body(file.path);
-  } finally {
-    await dir.delete(recursive: true);
-  }
+  return body(xml);
 }

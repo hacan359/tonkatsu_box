@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:core/database/dao/collection_dao.dart';
 import 'package:core/database/dao/global_tag_dao.dart';
@@ -65,10 +64,12 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
   Future<Collection> create({
     required String name,
     required String author,
+    bool isHidden = false,
   }) async {
     final Collection collection = await _repository.create(
       name: name,
       author: author,
+      isHidden: isHidden,
     );
 
     final List<Collection> current = state.valueOrNull ?? <Collection>[];
@@ -91,11 +92,23 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     );
   }
 
+  Future<void> setHidden(int id, {required bool isHidden}) async {
+    await _repository.setHidden(id, isHidden: isHidden);
+
+    final List<Collection> current = state.valueOrNull ?? <Collection>[];
+    state = AsyncData<List<Collection>>(
+      current
+          .map((Collection c) => c.id == id ? c.copyWith(isHidden: isHidden) : c)
+          .toList(),
+    );
+  }
+
   Future<void> updatePersonalization(
     int id, {
     String? name,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) async {
@@ -104,6 +117,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
       name: name,
       heroImagePath: heroImagePath,
       description: description,
+      isHidden: isHidden,
       clearHeroImage: clearHeroImage,
       clearDescription: clearDescription,
     );
@@ -116,6 +130,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
           name: name,
           heroImagePath: heroImagePath,
           description: description,
+          isHidden: isHidden,
           clearHeroImage: clearHeroImage,
           clearDescription: clearDescription,
         );
@@ -600,12 +615,13 @@ class CollectionItemsNotifier
     return true;
   }
 
-  /// When [localCoverPath] != null, copies the file into image cache.
-  /// [userComment] and [tags] are personal fields written onto the created
-  /// collection item; missing tags are created automatically.
+  /// When [coverBytes] != null, writes them into the cover cache (local on
+  /// desktop, the server's on web). [userComment] and [tags] are personal
+  /// fields written onto the created collection item; missing tags are
+  /// created automatically.
   Future<bool> addCustomItem(
     CustomMedia customMedia, {
-    String? localCoverPath,
+    Uint8List? coverBytes,
     String? userComment,
     List<String> tags = const <String>[],
   }) async {
@@ -613,22 +629,18 @@ class CollectionItemsNotifier
       final int customId = await _db.customMediaDao.create(customMedia);
       final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
-      if (localCoverPath != null) {
-        final File sourceFile = File(localCoverPath);
-        if (sourceFile.existsSync()) {
-          final Uint8List bytes = await sourceFile.readAsBytes();
-          final bool saved = await cache.saveImageBytes(
-            ImageType.customCover,
-            customId.toString(),
-            bytes,
+      if (coverBytes != null) {
+        final bool saved = await cache.saveImageBytes(
+          ImageType.customCover,
+          customId.toString(),
+          coverBytes,
+        );
+        // Marker in cover_url: CachedImage sees non-empty imageUrl and
+        // resolves from cache without hitting the network.
+        if (saved) {
+          await _db.customMediaDao.update(
+            customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
           );
-          // Marker in cover_url: CachedImage sees non-empty imageUrl and
-          // resolves from cache without hitting the network.
-          if (saved) {
-            await _db.customMediaDao.update(
-              customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
-            );
-          }
         }
       } else if (customMedia.coverUrl != null &&
           customMedia.coverUrl!.isNotEmpty) {
@@ -911,50 +923,56 @@ class CollectionItemsNotifier
     await _db.reorderItems(_collectionId, orderedIds);
   }
 
-  /// Auto-syncs status:
-  /// - setting [completedAt] forces `completed` from any state;
-  /// - setting [startedAt] promotes `notStarted`/`planned` to `inProgress`
-  ///   (others unchanged).
+  /// Setting a date auto-syncs status (completedAt forces `completed`,
+  /// startedAt promotes to `inProgress`); the `clear*` flags bypass that sync.
   Future<void> updateActivityDates(
     int id, {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    bool clearStartedAt = false,
+    bool clearCompletedAt = false,
   }) async {
+    final List<CollectionItem>? items = state.valueOrNull;
+    ItemStatus? newStatus;
+    MediaType? mediaType;
+
+    if (items != null && (completedAt != null || startedAt != null)) {
+      final CollectionItem? target =
+          items.where((CollectionItem i) => i.id == id).firstOrNull;
+      if (target != null) {
+        mediaType = target.mediaType;
+        newStatus = computeStatusForDates(
+          currentStatus: target.status,
+          newCompletedAt: completedAt,
+          newStartedAt: startedAt,
+        );
+      }
+    }
+
+    if (newStatus != null && mediaType != null) {
+      await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
+    }
+
+    // Strictly after the status write: the completed transition stamps
+    // completed_at = now, which must not clobber an explicit user date.
     await _repository.updateItemActivityDates(
       id,
       startedAt: startedAt,
       completedAt: completedAt,
       lastActivityAt: lastActivityAt,
+      clearStartedAt: clearStartedAt,
+      clearCompletedAt: clearCompletedAt,
     );
 
-    final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
-      ItemStatus? newStatus;
-      MediaType? mediaType;
-
-      if (completedAt != null || startedAt != null) {
-        final CollectionItem? target =
-            items.where((CollectionItem i) => i.id == id).firstOrNull;
-        if (target != null) {
-          mediaType = target.mediaType;
-          newStatus = computeStatusForDates(
-            currentStatus: target.status,
-            newCompletedAt: completedAt,
-            newStartedAt: startedAt,
-          );
-        }
-      }
-
-      if (newStatus != null && mediaType != null) {
-        await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
-      }
-
       _patchItem(
         id,
         (CollectionItem i) => i.copyWith(
           startedAt: startedAt ?? i.startedAt,
           completedAt: completedAt ?? i.completedAt,
+          clearStartedAt: clearStartedAt,
+          clearCompletedAt: clearCompletedAt,
           lastActivityAt: lastActivityAt ?? i.lastActivityAt,
           status: newStatus ?? i.status,
           rewatchCount: computeRewatchCountForStatus(

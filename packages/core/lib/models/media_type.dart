@@ -47,6 +47,7 @@ enum MediaType {
       this == MediaType.manga ||
       this == MediaType.anime ||
       this == MediaType.tvShow ||
+      this == MediaType.movie ||
       this == MediaType.book;
 
   /// Fallback source for rows whose `source` column is NULL.

@@ -23,9 +23,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../data/repositories/collection_repository.dart';
+import '../../shared/constants/platform_features.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import '../database/database_service.dart';
 import 'config_service.dart';
@@ -185,6 +186,7 @@ class BackupManifest {
     required this.includesConfig,
     this.profileName,
     this.appVersion,
+    this.hiddenCollections = const <String>[],
   });
 
   factory BackupManifest.fromJson(Map<String, dynamic> json) {
@@ -197,6 +199,11 @@ class BackupManifest {
       includesConfig: json['includes_config'] as bool? ?? false,
       profileName: json['profile_name'] as String?,
       appVersion: json['app_version'] as String?,
+      hiddenCollections: <String>[
+        for (final Object? name
+            in json['hidden_collections'] as List<dynamic>? ?? <dynamic>[])
+          if (name is String) name,
+      ],
     );
   }
 
@@ -215,6 +222,10 @@ class BackupManifest {
   final String? profileName;
 
   final String? appVersion;
+
+  /// Archive paths of collections that were hidden when the backup was made.
+  /// `is_hidden` is a local preference kept out of the shared `.xcollx` body.
+  final List<String> hiddenCollections;
 }
 
 /// Full backup and restore of app data.
@@ -262,6 +273,7 @@ class BackupService {
       // 2. Full export of each collection.
       final Archive archive = Archive();
       int totalItems = 0;
+      final List<String> hiddenCollectionFiles = <String>[];
 
       for (int i = 0; i < collections.length; i++) {
         final Collection collection = collections[i];
@@ -291,6 +303,9 @@ class BackupService {
           jsonBytes.length,
           jsonBytes,
         ));
+        if (collection.isHidden) {
+          hiddenCollectionFiles.add('collections/$fileName');
+        }
       }
 
       // 3. Wishlist.
@@ -445,6 +460,9 @@ class BackupService {
         'wishlist_count': wishlistItems.length,
         'includes_config': true,
         'app_version': appVersion,
+        // is_hidden stays out of the shared .xcollx body; a full backup must
+        // still bring the flag home, so it rides in the manifest.
+        'hidden_collections': hiddenCollectionFiles,
       };
       final String manifestStr =
           const JsonEncoder.withIndent('  ').convert(manifest);
@@ -466,6 +484,23 @@ class BackupService {
 
       // 10. Save the file.
       final String dateSuffix = _dateSuffix();
+      final String downloadName =
+          'tonkatsu-backup-v$appVersion-$dateSuffix.zip';
+
+      // Web: saveFile hands the bytes to the browser as a download and
+      // returns null — there is no cancel to observe.
+      if (kIsWebBuild) {
+        await FilePicker.platform.saveFile(
+          fileName: downloadName,
+          bytes: Uint8List.fromList(zipBytes),
+        );
+        return BackupResult.success(
+          downloadName,
+          collections: collections.length,
+          items: totalItems,
+        );
+      }
+
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Save Backup',
@@ -506,10 +541,9 @@ class BackupService {
   }
 
   /// Reads the manifest from a ZIP backup without importing anything.
-  Future<BackupManifest?> readManifest(String zipPath) async {
+  BackupManifest? readManifest(Uint8List zipBytes) {
     try {
-      final List<int> bytes = File(zipPath).readAsBytesSync();
-      final Archive archive = ZipDecoder().decodeBytes(bytes);
+      final Archive archive = ZipDecoder().decodeBytes(zipBytes);
 
       for (final ArchiveFile file in archive) {
         if (file.name == 'manifest.json' && file.isFile) {
@@ -528,16 +562,20 @@ class BackupService {
   }
 
   Future<RestoreResult> restoreFromBackup({
-    required String zipPath,
+    required Uint8List zipBytes,
     bool restoreSettings = false,
     bool restoreWishlist = true,
     BackupProgressCallback? onProgress,
   }) async {
     try {
-      final List<int> bytes = File(zipPath).readAsBytesSync();
-      final Archive archive = ZipDecoder().decodeBytes(bytes);
+      final Archive archive = ZipDecoder().decodeBytes(zipBytes);
+      // Garbage bytes decode to an empty archive rather than throwing.
+      if (archive.isEmpty) {
+        return const RestoreResult.failure('Not a backup archive');
+      }
 
       final Map<String, String> collectionFiles = <String, String>{};
+      String? manifestContent;
       String? wishlistContent;
       String? tagsContent;
       String? configContent;
@@ -553,6 +591,8 @@ class BackupService {
         if (file.name.startsWith('collections/') &&
             file.name.endsWith('.xcollx')) {
           collectionFiles[file.name] = content;
+        } else if (file.name == 'manifest.json') {
+          manifestContent = content;
         } else if (file.name == 'wishlist.json') {
           wishlistContent = content;
         } else if (file.name == 'tags.json') {
@@ -578,6 +618,12 @@ class BackupService {
 
       int collectionsRestored = 0;
       int itemsRestored = 0;
+      final Set<String> hiddenFiles = <String>{
+        if (manifestContent != null)
+          ...BackupManifest.fromJson(
+            jsonDecode(manifestContent) as Map<String, dynamic>,
+          ).hiddenCollections,
+      };
       final List<String> sortedKeys = collectionFiles.keys.toList()..sort();
 
       for (int i = 0; i < sortedKeys.length; i++) {
@@ -602,6 +648,10 @@ class BackupService {
           if (result.success) {
             collectionsRestored++;
             itemsRestored += result.itemsImported ?? 0;
+            final Collection? restored = result.collection;
+            if (restored != null && hiddenFiles.contains(fileName)) {
+              await _collectionRepo.setHidden(restored.id, isHidden: true);
+            }
           }
         } catch (e) {
           _log.warning('Failed to import $fileName', e);

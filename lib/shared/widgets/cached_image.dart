@@ -1,9 +1,12 @@
 import 'dart:io';
 
+import 'package:core/api/image_proxy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/selfhost/server_origin.dart';
 import '../../core/services/image_cache_service.dart';
+import '../constants/platform_features.dart';
 
 /// Image widget that picks the source (network or local cache) based on
 /// [ImageCacheService] state. The fetch [Future] is captured in [State] so
@@ -167,8 +170,18 @@ class _CachedImageState extends ConsumerState<CachedImage> {
     if (imageUrl.isEmpty) {
       return _buildError(context);
     }
+    // CanvasKit fetches image bytes over XHR, which the provider CDNs answer
+    // without a CORS header — going through our own origin removes the
+    // question and fills the server's cache on the way.
+    final String url = kIsWebBuild
+        ? '${serverBaseUrl()}${imageProxyPath(
+            type: widget.imageType,
+            imageId: widget.imageId,
+            sourceUrl: imageUrl,
+          )}'
+        : imageUrl;
     return Image.network(
-      imageUrl,
+      url,
       width: widget.width,
       height: widget.height,
       fit: widget.fit,

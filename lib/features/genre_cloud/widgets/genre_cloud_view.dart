@@ -57,7 +57,7 @@ Size measureGenreWord(
     text: genreWordSpan(
       word,
       fontSize,
-      const Color(0xFFFFFFFF),
+      AppColors.textPrimary,
       showCount: showCount,
     ),
     textDirection: TextDirection.ltr,
@@ -322,9 +322,9 @@ class _GenreCloudViewState extends State<GenreCloudView> {
                 bottom: 8,
                 child: Text(
                   widget.hiddenLabel!(layout.hidden),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF707070),
+                    color: AppColors.textTertiary,
                   ),
                 ),
               ),
@@ -346,14 +346,14 @@ class _RecenterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget button = Material(
       color: AppColors.surface,
-      shape: const CircleBorder(
+      shape: CircleBorder(
         side: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
       ),
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
           child: Icon(
             Icons.filter_center_focus,
             size: 20,

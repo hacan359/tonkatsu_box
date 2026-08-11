@@ -125,6 +125,7 @@ class _SourceCard extends ConsumerWidget {
   String _description(S l, DataSource source) => switch (source) {
         DataSource.tmdb => l.welcomeSourceDescTmdb,
         DataSource.tvmaze => l.welcomeSourceDescTvMaze,
+        DataSource.tvdb => l.welcomeSourceDescTvdb,
         DataSource.igdb => l.welcomeSourceDescIgdb,
         DataSource.anilist => l.welcomeSourceDescAniList,
         DataSource.mangabaka => l.welcomeSourceDescMangaBaka,
@@ -155,6 +156,7 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
   String _clientId = '';
   String _clientSecret = '';
   String _tmdbKey = '';
+  String _tvdbKey = '';
   String _comicVineKey = '';
   String _googleBooksKey = '';
   String _hardcoverKey = '';
@@ -244,6 +246,39 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
             const SizedBox(height: 6),
             Text(
               l.welcomeSourcesKeyOptionalHint,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ],
+        );
+      case DataSource.tvdb:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            InlineTextField(
+              label: l.credentialsApiKey,
+              value: _tvdbKey,
+              placeholder: settings.isTvdbKeyBuiltIn
+                  ? l.credentialsUsingBuiltInKey
+                  : l.credentialsEnterTvdbKey,
+              obscureText: true,
+              compact: compact,
+              onChanged: (String v) {
+                setState(() => _tvdbKey = v);
+                final String key = v.trim();
+                if (key.isNotEmpty) {
+                  ref
+                      .read(settingsNotifierProvider.notifier)
+                      .setTvdbApiKey(key);
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _GetKeyLink(url: widget.info.url),
+            const SizedBox(height: 6),
+            Text(
+              l.welcomeSourcesTvdbKeyHint,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textTertiary,
               ),
@@ -377,6 +412,14 @@ class _KeyBadge extends StatelessWidget {
       case SourceKeyRequirement.none:
         return (l.welcomeSourcesNoKeyNeeded, AppColors.success);
       case SourceKeyRequirement.mandatory:
+        if (info.source == DataSource.tvdb) {
+          if (settings.isTvdbKeyBuiltIn) {
+            return (l.welcomeApiBuiltInKey, AppColors.success);
+          }
+          return settings.hasTvdbKey
+              ? (l.welcomeSourcesKeySaved, AppColors.success)
+              : (l.welcomeApiRequired, AppColors.brand);
+        }
         if (info.source == DataSource.hardcover) {
           return settings.hasHardcoverKey
               ? (l.welcomeSourcesKeySaved, AppColors.success)
@@ -427,7 +470,7 @@ class _GetKeyLink extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(Icons.open_in_new, size: 13, color: AppColors.brand),
+            Icon(Icons.open_in_new, size: 13, color: AppColors.brand),
             const SizedBox(width: 6),
             Text(
               l.welcomeSourcesGetKey,

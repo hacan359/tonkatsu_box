@@ -18,11 +18,6 @@ void main() {
         expect(source.id, 'googlebooks');
       });
 
-      test('is its own provider group (source-first)', () {
-        expect(source.groupId, 'googlebooks');
-        expect(source.groupName, 'Google Books');
-      });
-
       test('outputs MediaType.book', () {
         expect(source.outputMediaType, MediaType.book);
       });
@@ -62,8 +57,7 @@ void main() {
     });
 
     group('icons', () {
-      test('group and tab icons are set', () {
-        expect(source.groupIcon, isA<IconData>());
+      test('tab icon is set', () {
         expect(source.icon, isA<IconData>());
       });
     });

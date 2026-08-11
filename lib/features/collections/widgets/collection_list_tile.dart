@@ -1,4 +1,5 @@
 import 'package:core/models/collection.dart';
+import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +9,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/collections_provider.dart';
 import '../providers/rich_collections_provider.dart';
+import 'media_type_dots.dart';
 
 class CollectionListTile extends ConsumerWidget {
   const CollectionListTile({
@@ -29,12 +31,16 @@ class CollectionListTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<CollectionStats> statsAsync =
-        ref.watch(collectionStatsProvider(collection.id));
+    final AsyncValue<CollectionStats> statsAsync = ref.watch(
+      collectionStatsProvider(collection.id),
+    );
     final bool richEnabled = ref.watch(richCollectionsEnabledProvider);
-    final bool showDescription = richEnabled &&
+    final bool showDescription =
+        richEnabled &&
         collection.description != null &&
         collection.description!.isNotEmpty;
+    final List<MediaType> mediaTypes =
+        statsAsync.valueOrNull?.presentMediaTypes ?? const <MediaType>[];
 
     final Widget subtitle = Column(
       mainAxisSize: MainAxisSize.min,
@@ -42,10 +48,9 @@ class CollectionListTile extends ConsumerWidget {
       children: <Widget>[
         statsAsync.when(
           data: (CollectionStats s) => Text(
-            S.of(context).collectionTileStats(
-                  s.total,
-                  s.completionPercentFormatted,
-                ),
+            S
+                .of(context)
+                .collectionTileStats(s.total, s.completionPercentFormatted),
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -74,12 +79,15 @@ class CollectionListTile extends ConsumerWidget {
 
     return GestureDetector(
       onSecondaryTapUp: onSecondaryTap != null
-          ? (TapUpDetails details) =>
-              onSecondaryTap!(details.globalPosition)
+          ? (TapUpDetails details) => onSecondaryTap!(details.globalPosition)
           : null,
       child: ListTile(
-        leading:
-            const Icon(Icons.folder_rounded, color: AppColors.textSecondary),
+        leading: Icon(
+          collection.isHidden
+              ? Icons.visibility_off_outlined
+              : Icons.folder_rounded,
+          color: AppColors.textSecondary,
+        ),
         title: Text(
           collection.name,
           maxLines: 1,
@@ -87,6 +95,9 @@ class CollectionListTile extends ConsumerWidget {
           style: AppTypography.h3,
         ),
         subtitle: subtitle,
+        trailing: mediaTypes.isEmpty
+            ? null
+            : MediaTypeDots(types: mediaTypes, dotSize: 22),
         onTap: onTap,
         onLongPress: onLongPress,
       ),
@@ -95,11 +106,7 @@ class CollectionListTile extends ConsumerWidget {
 }
 
 class UncategorizedListTile extends StatelessWidget {
-  const UncategorizedListTile({
-    required this.count,
-    this.onTap,
-    super.key,
-  });
+  const UncategorizedListTile({required this.count, this.onTap, super.key});
 
   final int count;
 
@@ -111,7 +118,7 @@ class UncategorizedListTile extends StatelessWidget {
 
     return ListTile(
       isThreeLine: true,
-      leading: const Icon(Icons.inbox_rounded, color: AppColors.brand),
+      leading: Icon(Icons.inbox_rounded, color: AppColors.brand),
       title: Text(
         l.collectionsUncategorized,
         maxLines: 1,
@@ -132,7 +139,7 @@ class UncategorizedListTile extends StatelessWidget {
             padding: const EdgeInsets.only(top: 2),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.warning_amber_rounded,
                   color: AppColors.error,
                   size: 16,

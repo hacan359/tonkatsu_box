@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'data_source.dart';
 import '../utils/html_text.dart';
+import '../utils/tvdb_json.dart';
 import '../utils/tvmaze_json.dart';
 
 /// A TV show with catalog metadata.
@@ -126,6 +127,56 @@ class TvShow {
       externalUrl: json['url'] as String?,
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       source: DataSource.tvmaze,
+    );
+  }
+
+  /// Accepts both TheTVDB shapes: a `/search` hit and a
+  /// `/series/{id}/extended?meta=translations` record. TheTVDB has no user
+  /// rating, only a popularity score, so [rating] stays null.
+  factory TvShow.fromTvdb(
+    Map<String, dynamic> json, {
+    String locale = 'en',
+  }) {
+    final int id = tvdbNumericId(json) ?? 0;
+    final ({Object? names, Object? overviews}) t =
+        tvdbTranslationContainers(json);
+
+    final Object? rawStatus = json['status'];
+    final String? status = rawStatus is Map<String, dynamic>
+        ? rawStatus['name'] as String?
+        : rawStatus as String?;
+
+    final Object? seasons = json['seasons'];
+    int? totalSeasons;
+    if (seasons is List<dynamic>) {
+      // Season 0 is the specials bucket and is not a season of the show.
+      totalSeasons = seasons
+          .whereType<Map<String, dynamic>>()
+          .where((Map<String, dynamic> s) =>
+              (s['type'] as Map<String, dynamic>?)?['id'] == 1 &&
+              (s['number'] as int? ?? 0) > 0)
+          .length;
+      if (totalSeasons == 0) totalSeasons = null;
+    }
+
+    return TvShow(
+      tmdbId: id,
+      title: tvdbTranslation(t.names, 'name', locale) ??
+          json['name'] as String? ??
+          '',
+      originalTitle: json['name'] as String?,
+      posterUrl: tvdbImageUrl(json['image'] ?? json['image_url']),
+      overview: tvdbTranslation(t.overviews, 'overview', locale) ??
+          json['overview'] as String?,
+      genres: tvdbNames(json['genres']),
+      firstAirYear:
+          tvdbYear(json['year']) ?? tvdbYear(json['firstAired']) ??
+              tvdbYear(json['first_air_time']),
+      totalSeasons: totalSeasons,
+      status: status,
+      externalUrl: tvdbRecordUrl('series', json['slug'], id),
+      cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      source: DataSource.tvdb,
     );
   }
 

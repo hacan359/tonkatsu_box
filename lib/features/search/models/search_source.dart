@@ -166,17 +166,9 @@ class BrowseResult {
 abstract class SearchSource {
   String get id;
 
-  /// External data provider backing this source. Single source of truth for
-  /// [groupId], [groupName] and [iconAsset].
+  /// External data provider backing this source. Single source of truth
+  /// for [iconAsset].
   DataSource get dataSource;
-
-  /// Logical group used to cluster sources in the picker popup; defaults to
-  /// the provider's [DataSource.key] ('tmdb', 'igdb', 'anilist', ...).
-  String get groupId => dataSource.key;
-
-  /// Brand name shown in the picker; defaults to [dataSource]'s label.
-  String get groupName => dataSource.label;
-  IconData get groupIcon;
 
   /// Localised label.
   String label(S l);

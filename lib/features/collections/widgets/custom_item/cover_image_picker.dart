@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:core/models/custom_media.dart';
 import 'package:file_picker/file_picker.dart';
@@ -9,13 +10,14 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 
-/// Result of [pickCustomCoverImage]. Either a local file path or a URL —
-/// never both, since picking one path clears the other.
+/// Result of [pickCustomCoverImage]. Either picked bytes or a URL — never
+/// both, since picking one clears the other.
 class CoverPickResult {
-  const CoverPickResult.file(this.localPath) : url = null;
-  const CoverPickResult.url(this.url) : localPath = null;
+  const CoverPickResult.file(this.bytes) : url = null;
+  const CoverPickResult.url(this.url) : bytes = null;
 
-  final String? localPath;
+  /// Read at pick time — the browser never has a path to defer to.
+  final Uint8List? bytes;
   final String? url;
 }
 
@@ -65,11 +67,12 @@ Future<CoverPickResult?> pickCustomCoverImage(
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: false,
+      withData: true,
     );
     if (result == null || result.files.isEmpty) return null;
-    final String? path = result.files.first.path;
-    if (path == null) return null;
-    return CoverPickResult.file(path);
+    final Uint8List? bytes = result.files.first.bytes;
+    if (bytes == null) return null;
+    return CoverPickResult.file(bytes);
   }
 
   if (choice == 'url') {
@@ -110,18 +113,20 @@ Future<CoverPickResult?> pickCustomCoverImage(
 }
 
 /// Visual preview that picks the best available cover source in order:
-/// freshly picked local file → cached file from previous edit → URL.
+/// freshly picked bytes → cached cover from a previous edit → URL.
 class CustomCoverPreview extends StatelessWidget {
   const CustomCoverPreview({
-    required this.localPath,
-    required this.cachedPath,
+    required this.bytes,
+    required this.cachedUri,
     required this.url,
     required this.onTap,
     super.key,
   });
 
-  final String? localPath;
-  final String? cachedPath;
+  final Uint8List? bytes;
+
+  /// A `file:` path on desktop, the server's `/img` URL on web.
+  final Uri? cachedUri;
   final String url;
   final VoidCallback onTap;
 
@@ -142,17 +147,23 @@ class CustomCoverPreview extends StatelessWidget {
   }
 
   Widget _buildPreview(BuildContext context) {
-    if (localPath != null) {
-      return Image.file(
-        File(localPath!),
+    if (bytes != null) {
+      return Image.memory(
+        bytes!,
         fit: BoxFit.cover,
         errorBuilder: (_, Object e, StackTrace? s) =>
             _CoverPlaceholder(),
       );
     }
-    if (cachedPath != null) {
-      return Image.file(
-        File(cachedPath!),
+    final Uri? cached = cachedUri;
+    if (cached != null) {
+      // The File branch is unreachable on web, where cachedUri is always the
+      // server's /img URL — dart:io's stub never gets touched.
+      final ImageProvider provider = cached.isScheme('file')
+          ? FileImage(File(cached.toFilePath()))
+          : NetworkImage(cached.toString()) as ImageProvider;
+      return Image(
+        image: provider,
         fit: BoxFit.cover,
         errorBuilder: (_, Object e, StackTrace? s) =>
             _CoverPlaceholder(),
@@ -177,7 +188,7 @@ class _CoverPlaceholder extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        const Icon(
+        Icon(
           Icons.add_photo_alternate_outlined,
           size: 32,
           color: AppColors.textTertiary,

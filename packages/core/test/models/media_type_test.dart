@@ -49,13 +49,14 @@ void main() {
     });
 
     group('isMultiSource', () {
-      test('true only for manga, anime, tvShow and book', () {
+      test('true only for manga, anime, tvShow, movie and book', () {
         for (final MediaType type in MediaType.values) {
           expect(
             type.isMultiSource,
             type == MediaType.manga ||
                 type == MediaType.anime ||
                 type == MediaType.tvShow ||
+                type == MediaType.movie ||
                 type == MediaType.book,
             reason: type.name,
           );

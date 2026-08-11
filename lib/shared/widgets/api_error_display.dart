@@ -30,7 +30,7 @@ class ApiErrorDisplay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 48,
               color: AppColors.textTertiary,

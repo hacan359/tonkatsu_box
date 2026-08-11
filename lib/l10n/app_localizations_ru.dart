@@ -174,6 +174,21 @@ class SRu extends S {
   String get status => 'Статус';
 
   @override
+  String get movieStatusReleased => 'Вышел';
+
+  @override
+  String get movieStatusCompleted => 'Завершён';
+
+  @override
+  String get movieStatusPostProduction => 'Съёмки / постпродакшн';
+
+  @override
+  String get movieStatusPreProduction => 'Препродакшн';
+
+  @override
+  String get movieStatusAnnounced => 'Анонсирован';
+
+  @override
   String get sortStatusDesc => 'Сначала активные';
 
   @override
@@ -569,6 +584,24 @@ class SRu extends S {
   String get settingsApiKeys => 'API ключи';
 
   @override
+  String get credentialsServerManagedTitle => 'Ключи хранятся на сервере';
+
+  @override
+  String get credentialsServerManagedBody =>
+      'Всё, что введено ниже, сохраняется на селфхост-сервере, а не в браузере — именно оттуда уходят запросы к API. Можно также загрузить их из файла конфига, выгруженного на десктопе.';
+
+  @override
+  String get credentialsUploadFromConfig => 'Загрузить ключи из файла конфига';
+
+  @override
+  String get credentialsUploadNoKeys => 'В этом файле нет API-ключей';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return 'На сервере сохранено ключей: $count';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }
@@ -578,6 +611,18 @@ class SRu extends S {
 
   @override
   String get settingsAppearanceSubtitle => 'Язык, отображение и контент';
+
+  @override
+  String get settingsTheme => 'Тема';
+
+  @override
+  String get settingsThemeSubtitle => 'Цветовая тема приложения';
+
+  @override
+  String get settingsThemeDark => 'Тёмная';
+
+  @override
+  String get settingsThemeSakura => 'Сакура';
 
   @override
   String get settingsAppLanguageSubtitle => 'Язык интерфейса';
@@ -758,7 +803,13 @@ class SRu extends S {
   String get credentialsTmdbSection => 'TMDB API (фильмы и сериалы)';
 
   @override
+  String get credentialsTvdbSection => 'TheTVDB API (фильмы и сериалы)';
+
+  @override
   String get credentialsEnterTmdbKey => 'Введите ваш ключ TMDB API (v3)';
+
+  @override
+  String get credentialsEnterTvdbKey => 'Введите ваш ключ TheTVDB API (v4)';
 
   @override
   String get credentialsComicVineSection => 'ComicVine API (комиксы)';
@@ -843,6 +894,12 @@ class SRu extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'Ключ TMDB API недействителен';
+
+  @override
+  String get credentialsTvdbKeyValid => 'Ключ TheTVDB API действителен';
+
+  @override
+  String get credentialsTvdbKeyInvalid => 'Ключ TheTVDB API недействителен';
 
   @override
   String get credentialsComicVineKeyValid => 'Ключ ComicVine API действителен';
@@ -1421,6 +1478,10 @@ class SRu extends S {
   @override
   String get creditsTmdbAttribution =>
       'Приложение использует TMDB API, но не одобрено и не сертифицировано TMDB.';
+
+  @override
+  String get creditsTvdbAttribution =>
+      'Метаданные предоставлены TheTVDB. Поддержите проект: дополняйте данные или оформите подписку.';
 
   @override
   String get creditsTvMazeAttribution =>
@@ -2201,6 +2262,19 @@ class SRu extends S {
       'Название должно содержать минимум 2 символа';
 
   @override
+  String get createCollectionHiddenLabel => 'Скрытая коллекция';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'Без обложек на карточке, элементы не попадают во «Все элементы»';
+
+  @override
+  String get collectionHide => 'Скрыть коллекцию';
+
+  @override
+  String get collectionUnhide => 'Показывать коллекцию';
+
+  @override
   String get renameCollectionTitle => 'Переименовать коллекцию';
 
   @override
@@ -2798,6 +2872,9 @@ class SRu extends S {
   String get welcomeApiTmdbDesc => 'Фильмы, сериалы и аниме';
 
   @override
+  String get welcomeApiTvdbDesc => 'Фильмы и сериалы, свои эпизоды';
+
+  @override
   String get welcomeApiComicVineDesc => 'Комиксы и графические романы';
 
   @override
@@ -2947,6 +3024,10 @@ class SRu extends S {
       'Необязательно — свой ключ повышает лимиты. Поиск работает и без него.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Обязателен — без ключа поиск в TheTVDB отключён.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Обязателен — без него поиск и импорт не работают. Токены сбрасываются каждое 1 января.';
 
@@ -2955,6 +3036,9 @@ class SRu extends S {
 
   @override
   String get welcomeSourceDescTvMaze => 'Сериалы.';
+
+  @override
+  String get welcomeSourceDescTvdb => 'Фильмы и сериалы, со своими эпизодами.';
 
   @override
   String get welcomeSourceDescIgdb => 'Видеоигры на любой платформе.';
@@ -3259,6 +3343,9 @@ class SRu extends S {
 
   @override
   String get settingsAnimeMangaTitleLanguageNative => 'Native';
+
+  @override
+  String get dualDatePickerNoDate => 'Без даты';
 
   @override
   String get dualDatePickerErrorEmpty => 'Введите дату';
@@ -5532,6 +5619,9 @@ class SRu extends S {
 
   @override
   String get simklPinPrompt => 'Введите этот код на simkl.com/pin:';
+
+  @override
+  String get simklPinCopied => 'Код скопирован';
 
   @override
   String get simklOpenPinPage => 'Открыть simkl.com/pin';

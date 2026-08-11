@@ -30,8 +30,8 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
       // the fill. Brand fill + white tick reads in both header and rows.
       cellActiveColor: AppColors.brand,
       columnActiveColor: AppColors.brand,
-      cellCheckedColor: Colors.white,
-      columnCheckedColor: Colors.white,
+      cellCheckedColor: AppColors.onOverlay,
+      columnCheckedColor: AppColors.onOverlay,
       cellColorInReadOnlyState: Colors.transparent,
       borderColor: AppColors.surfaceBorder.withAlpha(40),
       enableColumnBorderVertical: false,

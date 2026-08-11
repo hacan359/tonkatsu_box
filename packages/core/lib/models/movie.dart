@@ -1,6 +1,9 @@
 
 import 'dart:convert';
 
+import '../utils/tvdb_json.dart';
+import 'data_source.dart';
+
 class Movie {
   const Movie({
     required this.tmdbId,
@@ -15,6 +18,7 @@ class Movie {
     this.runtime,
     this.externalUrl,
     this.cachedAt,
+    this.source = DataSource.tmdb,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -66,6 +70,37 @@ class Movie {
     );
   }
 
+  /// Accepts both TheTVDB shapes: a `/search` hit and a
+  /// `/movies/{id}/extended?meta=translations` record. [locale] picks the
+  /// title and overview; TheTVDB exposes no user rating, so [rating] stays null.
+  factory Movie.fromTvdb(
+    Map<String, dynamic> json, {
+    String locale = 'en',
+  }) {
+    final int id = tvdbNumericId(json) ?? 0;
+    final ({Object? names, Object? overviews}) t =
+        tvdbTranslationContainers(json);
+
+    return Movie(
+      tmdbId: id,
+      title: tvdbTranslation(t.names, 'name', locale) ??
+          json['name'] as String? ??
+          '',
+      originalTitle: json['name'] as String?,
+      posterUrl: tvdbImageUrl(json['image'] ?? json['image_url']),
+      overview: tvdbTranslation(t.overviews, 'overview', locale) ??
+          json['overview'] as String?,
+      genres: tvdbNames(json['genres']),
+      releaseYear: tvdbYear(json['year']) ??
+          tvdbYear((json['first_release'] as Map<String, dynamic>?)?['date']) ??
+          tvdbYear(json['first_air_time']),
+      runtime: json['runtime'] as int?,
+      externalUrl: tvdbRecordUrl('movies', json['slug'], id),
+      cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      source: DataSource.tvdb,
+    );
+  }
+
   factory Movie.fromDb(Map<String, dynamic> row) {
     List<String>? genres;
     if (row['genres'] != null && (row['genres'] as String).isNotEmpty) {
@@ -87,10 +122,14 @@ class Movie {
       runtime: row['runtime'] as int?,
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
+      source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
     );
   }
 
+  /// Movie id in the [source] provider's namespace; the name is historical.
   final int tmdbId;
+
+  final DataSource source;
 
   /// Localised by the TMDB request language.
   final String title;
@@ -107,7 +146,7 @@ class Movie {
 
   final int? releaseYear;
 
-  /// TMDB scale is already 0–10.
+  /// 0–10. Null for providers that expose no user rating (TheTVDB).
   final double? rating;
 
   final int? runtime;
@@ -117,9 +156,10 @@ class Movie {
   /// Cache timestamp, Unix seconds.
   final int? cachedAt;
 
-  /// w154 poster for thumbnails.
+  /// w154 poster for thumbnails; TheTVDB uses a `_t` suffix instead.
   String? get posterThumbUrl {
     if (posterUrl == null) return null;
+    if (source == DataSource.tvdb) return tvdbThumbUrl(posterUrl);
     return posterUrl!.replaceFirst(RegExp(r'/w\d+'), '/w154');
   }
 
@@ -150,6 +190,7 @@ class Movie {
       'runtime': runtime,
       'external_url': externalUrl,
       'cached_at': cachedAt,
+      'source': source.name,
     };
   }
 
@@ -166,6 +207,7 @@ class Movie {
     int? runtime,
     String? externalUrl,
     int? cachedAt,
+    DataSource? source,
   }) {
     return Movie(
       tmdbId: tmdbId ?? this.tmdbId,
@@ -180,18 +222,20 @@ class Movie {
       runtime: runtime ?? this.runtime,
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
+      source: source ?? this.source,
     );
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is Movie && other.tmdbId == tmdbId;
+    return other is Movie && other.tmdbId == tmdbId && other.source == source;
   }
 
   @override
-  int get hashCode => tmdbId.hashCode;
+  int get hashCode => Object.hash(tmdbId, source);
 
   @override
-  String toString() => 'Movie(tmdbId: $tmdbId, title: $title)';
+  String toString() =>
+      'Movie(tmdbId: $tmdbId, title: $title, source: ${source.name})';
 }

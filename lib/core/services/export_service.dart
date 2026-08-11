@@ -25,6 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../data/repositories/canvas_repository.dart';
+import '../../shared/constants/platform_features.dart';
 import '../database/database_service.dart';
 import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
@@ -444,8 +445,10 @@ class ExportService {
     List<CollectionItem> items,
   ) async {
     final Map<int, Map<String, dynamic>> games = <int, Map<String, dynamic>>{};
-    final Map<int, Map<String, dynamic>> movies =
-        <int, Map<String, dynamic>>{};
+    // Keyed by `source:externalId` — TMDB and TheTVDB movie ids can collide,
+    // and an int key would drop one of them from the export.
+    final Map<String, Map<String, dynamic>> movies =
+        <String, Map<String, dynamic>>{};
     // Keyed by `source:externalId` — show ids from different providers can
     // share a numeric id, like manga.
     final Map<String, Map<String, dynamic>> tvShows =
@@ -479,10 +482,12 @@ class ExportService {
             }
           }
         case MediaType.movie:
-          if (item.movie != null && !movies.containsKey(item.externalId)) {
+          final String movieKey =
+              '${(item.source ?? DataSource.tmdb).name}:${item.externalId}';
+          if (item.movie != null && !movies.containsKey(movieKey)) {
             final Map<String, dynamic> data = item.movie!.toDb();
             data.remove('cached_at');
-            movies[item.externalId] = data;
+            movies[movieKey] = data;
           }
         case MediaType.tvShow:
           final String tvKey =
@@ -504,10 +509,12 @@ class ExportService {
             }
             tvShowKeys.add((item.source ?? DataSource.tmdb, item.externalId));
           } else {
-            if (item.movie != null && !movies.containsKey(item.externalId)) {
+            final String animMovieKey =
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}';
+            if (item.movie != null && !movies.containsKey(animMovieKey)) {
               final Map<String, dynamic> data = item.movie!.toDb();
               data.remove('cached_at');
-              movies[item.externalId] = data;
+              movies[animMovieKey] = data;
             }
           }
         case MediaType.visualNovel:
@@ -668,6 +675,17 @@ class ExportService {
       final String json = xcoll.toJsonString();
       final Uint8List jsonBytes = Uint8List.fromList(utf8.encode(json));
       final String suggestedName = _sanitizeFileName(collection.name);
+      final String downloadName = '$suggestedName.$extension';
+
+      // Web: saveFile hands the bytes to the browser as a download and
+      // returns null — there is no cancel to observe.
+      if (kIsWebBuild) {
+        await FilePicker.platform.saveFile(
+          fileName: downloadName,
+          bytes: jsonBytes,
+        );
+        return ExportResult.success(downloadName);
+      }
 
       // On Android FileType.custom doesn't support custom extensions.
       final bool useAny = Platform.isAndroid || Platform.isIOS;

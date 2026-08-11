@@ -30,9 +30,6 @@ class VndbSource extends SearchSource {
   DataSource get dataSource => DataSource.vndb;
 
   @override
-  IconData get groupIcon => Icons.menu_book_outlined;
-
-  @override
   String label(S l) => l.searchSourceVisualNovels;
 
   @override

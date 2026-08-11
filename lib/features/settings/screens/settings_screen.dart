@@ -1,6 +1,7 @@
 // Settings hub screen with a single grouped-list layout.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:core/models/profile.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
@@ -15,6 +16,7 @@ import '../../../core/api/ra_api.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/whats_new_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
@@ -23,6 +25,7 @@ import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_theme_id.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../core/services/update_service.dart';
 import '../providers/kodi_settings_provider.dart';
@@ -186,13 +189,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: l.profiles,
         titleIcon: Icons.person_outline,
         children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.switch_account,
-            leadingColor: _kProfileColor,
-            title: l.currentProfile(currentProfile.name),
-            value: '',
-            onTap: () => _pushScreen(const ProfilesScreen()),
-          ),
+          // The server owns one database, so a profile switch in the browser
+          // would rename the label and change nothing else.
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingIcon: Icons.switch_account,
+              leadingColor: _kProfileColor,
+              title: l.currentProfile(currentProfile.name),
+              value: '',
+              onTap: () => _pushScreen(const ProfilesScreen()),
+            ),
           Builder(builder: (BuildContext ctx) {
             final bool compact = isCompactScreen(ctx);
             final double bubble = compact ? 24 : 28;
@@ -215,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Icon(
                       Icons.drive_file_rename_outline,
                       size: iconSize,
-                      color: Colors.white,
+                      color: AppColors.onOverlay,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
@@ -352,13 +358,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         subtitle: l.settingsStorageSubtitle,
         titleIcon: Icons.storage_outlined,
         children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.image_outlined,
-            leadingColor: _kStorageColor,
-            title: l.cacheTitle,
-            subtitle: l.settingsCacheSubtitle,
-            onTap: () => _pushScreen(const CacheScreen()),
-          ),
+          // The disk image cache does not exist on web (always network).
+          if (!kIsWebBuild)
+            SettingsTile(
+              leadingIcon: Icons.image_outlined,
+              leadingColor: _kStorageColor,
+              title: l.cacheTitle,
+              subtitle: l.settingsCacheSubtitle,
+              onTap: () => _pushScreen(const CacheScreen()),
+            ),
           SettingsTile(
             leadingIcon: Icons.dataset_outlined,
             leadingColor: _kStorageColor,
@@ -375,6 +383,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         subtitle: l.settingsAppearanceSubtitle,
         titleIcon: Icons.palette_outlined,
         children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.color_lens_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsTheme,
+            subtitle: l.settingsThemeSubtitle,
+            value: _themeLabel(l, settings.appTheme),
+            onTap: () => _showThemePicker(settings),
+          ),
           SettingsTile(
             leadingIcon: Icons.language,
             leadingColor: _kAppearanceColor,
@@ -528,26 +544,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
       gap,
-      SettingsGroup(
-        title: l.settingsIntegrations,
-        titleIcon: Icons.link,
-        children: <Widget>[
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconKodiColor,
-            leadingAssetColored: true,
-            title: 'Kodi', // proper noun
-            subtitle: l.settingsKodiSubtitle,
-            statusDotColor: ref.watch(kodiSettingsProvider).enabled
-                ? AppColors.success
-                : null,
-            value: ref.watch(kodiSettingsProvider).enabled
-                ? l.settingsOn
-                : '',
-            valueColor: ref.watch(kodiSettingsProvider).enabled
-                ? AppColors.success
-                : null,
-            onTap: () => _pushScreen(const KodiScreen()),
-          ),
+      // Kodi is LAN-only and Discord RPC is desktop-only, so on web the group
+      // would render as a bare header.
+      if (!kIsWebBuild)
+        SettingsGroup(
+          title: l.settingsIntegrations,
+          titleIcon: Icons.link,
+          children: <Widget>[
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconKodiColor,
+              leadingAssetColored: true,
+              title: 'Kodi', // proper noun
+              subtitle: l.settingsKodiSubtitle,
+              statusDotColor: ref.watch(kodiSettingsProvider).enabled
+                  ? AppColors.success
+                  : null,
+              value: ref.watch(kodiSettingsProvider).enabled
+                  ? l.settingsOn
+                  : '',
+              valueColor: ref.watch(kodiSettingsProvider).enabled
+                  ? AppColors.success
+                  : null,
+              onTap: () => _pushScreen(const KodiScreen()),
+            ),
           if (kDiscordRpcAvailable)
             SettingsTile(
               leadingAssetPath: AppAssets.iconDiscordColor,
@@ -724,6 +743,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         settings.hasCredentials && !settings.isIgdbKeyBuiltIn,
         settings.hasSteamGridDbKey && !settings.isSteamGridDbKeyBuiltIn,
         settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
+        settings.hasTvdbKey && !settings.isTvdbKeyBuiltIn,
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
         settings.hasHardcoverKey,
@@ -739,34 +759,69 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _apiKeysAllSet(SettingsState settings) =>
       _apiKeyStates(settings).every((bool isSet) => isSet);
 
-  void _showLanguagePicker(SettingsState settings) {
+  void _showChoicePicker<T>({
+    required String title,
+    required List<T> values,
+    required bool Function(T value) isSelected,
+    required String Function(T value) label,
+    required void Function(T value) onSelected,
+  }) {
     showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(S.of(context).settingsAppLanguage),
+        title: Text(title),
         children: <Widget>[
-          for (final MapEntry<String, String> lang
-              in _kAppLanguageNames.entries)
+          for (final T value in values)
             SimpleDialogOption(
+              // Pop before applying: a theme switch remounts the whole
+              // MaterialApp, taking this dialog's navigator with it.
               onPressed: () {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setAppLanguage(lang.key);
                 Navigator.pop(dialogContext);
+                onSelected(value);
               },
               child: Row(
                 children: <Widget>[
-                  if (settings.appLanguage == lang.key)
-                    const Icon(Icons.check, size: 18, color: AppColors.brand)
+                  if (isSelected(value))
+                    Icon(Icons.check, size: 18, color: AppColors.brand)
                   else
                     const SizedBox(width: 18),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(lang.value),
+                  Text(label(value)),
                 ],
               ),
             ),
         ],
       ),
+    );
+  }
+
+  void _showLanguagePicker(SettingsState settings) {
+    _showChoicePicker<MapEntry<String, String>>(
+      title: S.of(context).settingsAppLanguage,
+      values: _kAppLanguageNames.entries.toList(),
+      isSelected: (MapEntry<String, String> lang) =>
+          settings.appLanguage == lang.key,
+      label: (MapEntry<String, String> lang) => lang.value,
+      onSelected: (MapEntry<String, String> lang) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setAppLanguage(lang.key),
+    );
+  }
+
+  String _themeLabel(S l, AppThemeId theme) => switch (theme) {
+        AppThemeId.dark => l.settingsThemeDark,
+        AppThemeId.sakura => l.settingsThemeSakura,
+      };
+
+  void _showThemePicker(SettingsState settings) {
+    final S l = S.of(context);
+    _showChoicePicker<AppThemeId>(
+      title: l.settingsTheme,
+      values: AppThemeId.values,
+      isSelected: (AppThemeId theme) => settings.appTheme == theme,
+      label: (AppThemeId theme) => _themeLabel(l, theme),
+      onSelected: (AppThemeId theme) =>
+          ref.read(settingsNotifierProvider.notifier).setAppTheme(theme),
     );
   }
 
@@ -778,32 +833,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showContentLanguagePicker(SettingsState settings) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(S.of(context).settingsContentLanguage),
-        children: <Widget>[
-          for (final TmdbContentLanguage lang in kTmdbContentLanguages)
-            SimpleDialogOption(
-              onPressed: () {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setTmdbLanguage(lang.code);
-                Navigator.pop(dialogContext);
-              },
-              child: Row(
-                children: <Widget>[
-                  if (settings.tmdbLanguage == lang.code)
-                    const Icon(Icons.check, size: 18, color: AppColors.brand)
-                  else
-                    const SizedBox(width: 18),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(lang.nativeName),
-                ],
-              ),
-            ),
-        ],
-      ),
+    _showChoicePicker<TmdbContentLanguage>(
+      title: S.of(context).settingsContentLanguage,
+      values: kTmdbContentLanguages,
+      isSelected: (TmdbContentLanguage lang) =>
+          settings.tmdbLanguage == lang.code,
+      label: (TmdbContentLanguage lang) => lang.nativeName,
+      onSelected: (TmdbContentLanguage lang) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setTmdbLanguage(lang.code),
     );
   }
 
@@ -817,37 +855,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showDateFormatPicker(SettingsState settings) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final String localeName =
-            Localizations.localeOf(context).toLanguageTag();
-        final DateTime sample = DateTime(2026, 5, 25);
-        return SimpleDialog(
-          title: Text(S.of(context).settingsDateFormat),
-          children: <Widget>[
-            for (final DateFormatPreset preset in DateFormatPreset.values)
-              SimpleDialogOption(
-                onPressed: () {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setDateFormat(preset.id);
-                  Navigator.pop(dialogContext);
-                },
-                child: Row(
-                  children: <Widget>[
-                    if (settings.dateFormat == preset.id)
-                      const Icon(Icons.check, size: 18, color: AppColors.brand)
-                    else
-                      const SizedBox(width: 18),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(preset.format(sample, locale: localeName)),
-                  ],
-                ),
-              ),
-          ],
-        );
-      },
+    final String localeName = Localizations.localeOf(context).toLanguageTag();
+    final DateTime sample = DateTime(2026, 5, 25);
+    _showChoicePicker<DateFormatPreset>(
+      title: S.of(context).settingsDateFormat,
+      values: DateFormatPreset.values,
+      isSelected: (DateFormatPreset preset) =>
+          settings.dateFormat == preset.id,
+      label: (DateFormatPreset preset) =>
+          preset.format(sample, locale: localeName),
+      onSelected: (DateFormatPreset preset) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setDateFormat(preset.id),
     );
   }
 
@@ -863,35 +882,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showAnimeMangaTitleLanguagePicker(SettingsState settings) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final S l = S.of(context);
-        return SimpleDialog(
-          title: Text(l.settingsAnimeMangaTitleLanguage),
-          children: <Widget>[
-            for (final AnimeMangaTitleLanguage v in AnimeMangaTitleLanguage.values)
-              SimpleDialogOption(
-                onPressed: () {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setAnimeMangaTitleLanguage(v.id);
-                  Navigator.pop(dialogContext);
-                },
-                child: Row(
-                  children: <Widget>[
-                    if (settings.animeMangaTitleLanguage == v.id)
-                      const Icon(Icons.check, size: 18, color: AppColors.brand)
-                    else
-                      const SizedBox(width: 18),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(_animeMangaTitleLanguageLabel(l, v.id)),
-                  ],
-                ),
-              ),
-          ],
-        );
-      },
+    final S l = S.of(context);
+    _showChoicePicker<AnimeMangaTitleLanguage>(
+      title: l.settingsAnimeMangaTitleLanguage,
+      values: AnimeMangaTitleLanguage.values,
+      isSelected: (AnimeMangaTitleLanguage v) =>
+          settings.animeMangaTitleLanguage == v.id,
+      label: (AnimeMangaTitleLanguage v) =>
+          _animeMangaTitleLanguageLabel(l, v.id),
+      onSelected: (AnimeMangaTitleLanguage v) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setAnimeMangaTitleLanguage(v.id),
     );
   }
 
@@ -923,7 +924,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (BuildContext ctx) => AlertDialog(
         title: Row(
           children: <Widget>[
-            const Icon(Icons.warning_amber_rounded,
+            Icon(Icons.warning_amber_rounded,
                 color: AppColors.warning, size: 24),
             const SizedBox(width: 8),
             Expanded(child: Text(l.updateWarningTitle)),
@@ -987,22 +988,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     WidgetRef ref,
     S l,
   ) async {
-    // 1. Pick the file.
-    final bool useAny = defaultTargetPlatform == TargetPlatform.android;
+    // withData only on web: the browser has no paths; desktop/Android read
+    // from the path so a large archive is never held in memory twice.
+    final bool useAny = kIsMobile;
     final FilePickerResult? picked = await FilePicker.platform.pickFiles(
       dialogTitle: l.settingsRestoreBackup,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['zip'],
       allowMultiple: false,
+      withData: kIsWebBuild,
     );
 
     if (picked == null || picked.files.isEmpty) return;
-    final String? zipPath = picked.files.first.path;
-    if (zipPath == null) return;
+    final PlatformFile pickedFile = picked.files.first;
+    final Uint8List? zipBytes = kIsWebBuild
+        ? pickedFile.bytes
+        : (pickedFile.path == null
+            ? null
+            : await File(pickedFile.path!).readAsBytes());
+    if (zipBytes == null) return;
 
     // 2. Read the manifest.
     final BackupService service = ref.read(backupServiceProvider);
-    final BackupManifest? manifest = await service.readManifest(zipPath);
+    final BackupManifest? manifest = service.readManifest(zipBytes);
 
     if (manifest == null) {
       if (context.mounted) {
@@ -1100,7 +1108,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     RestoreResult result;
     try {
       result = await service.restoreFromBackup(
-        zipPath: zipPath,
+        zipBytes: zipBytes,
         restoreWishlist: options.restoreWishlist,
         restoreSettings: options.restoreSettings,
         onProgress: (BackupProgress p) => progressNotifier.value = p,
@@ -1109,6 +1117,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.read(restoreInProgressProvider.notifier).state = false;
       if (navigator.canPop()) navigator.pop();
       progressNotifier.dispose();
+    }
+
+    if (result.success) {
+      // A restored config lands in prefs; on web the proxy reads keys on the
+      // server, so they have to travel there too (no-op on native).
+      await syncCredentialsToServer(ref.read(sharedPreferencesProvider));
     }
 
     if (!context.mounted) return;
@@ -1166,7 +1180,7 @@ class _RestoreProgressDialog extends StatelessWidget {
               children: <Widget>[
                 Text(
                   l.restoreProgressWarning,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 LinearProgressIndicator(value: value),
@@ -1176,7 +1190,7 @@ class _RestoreProgressDialog extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     p!.collectionName!,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

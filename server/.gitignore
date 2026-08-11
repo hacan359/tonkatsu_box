@@ -1,0 +1,3 @@
+# Build hooks and the test runner's cache land here; the root ignore only
+# anchors /build at the repo top.
+build/

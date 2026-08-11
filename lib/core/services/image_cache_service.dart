@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:core/api/image_proxy.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -10,6 +11,8 @@ export 'package:core/models/image_type.dart';
 import 'package:core/models/image_type.dart';
 import 'package:core/models/profile.dart';
 
+import '../../shared/constants/platform_features.dart';
+import '../selfhost/server_origin.dart';
 import 'profile_service.dart';
 import 'storage_root.dart';
 
@@ -39,10 +42,10 @@ class ImageCacheService {
 
     final String basePath = (await StorageRoot.resolve()).path;
 
-    // If the profile system is initialized, the cache lives in the profile folder
-    final File profilesFile =
-        File(p.join(basePath, StorageRoot.profilesFileName));
-    if (profilesFile.existsSync()) {
+    // If the profile system is initialized, the cache lives in the profile
+    // folder. Web cannot stat files — profiles always exist there.
+    if (kIsWebBuild ||
+        File(p.join(basePath, StorageRoot.profilesFileName)).existsSync()) {
       final ProfileService profileService = ProfileService();
       final ProfilesData data = await profileService.loadProfiles();
       return p.join(
@@ -72,6 +75,9 @@ class ImageCacheService {
   }
 
   Future<bool> isCacheEnabled() async {
+    // No filesystem on web — images always come from the network (phase 5
+    // will route them through the server proxy/cache).
+    if (kIsWebBuild) return false;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
   }
@@ -88,6 +94,7 @@ class ImageCacheService {
 
   /// Returns null if the file does not exist or is empty.
   Future<Uint8List?> readImageBytes(ImageType type, String imageId) async {
+    if (kIsWebBuild) return null;
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     if (!file.existsSync() || file.lengthSync() == 0) {
@@ -104,6 +111,26 @@ class ImageCacheService {
     Uint8List bytes,
   ) async {
     if (bytes.isEmpty) return false;
+    // On web the cover cache lives on the server: one POST puts the bytes
+    // where every client's GET /img already looks.
+    if (kIsWebBuild) {
+      try {
+        await _dio.post<Object?>(
+          '${serverBaseUrl()}${imageProxyPath(type: type, imageId: imageId)}',
+          data: Stream<List<int>>.value(bytes),
+          options: Options(
+            headers: <String, Object?>{
+              Headers.contentLengthHeader: bytes.length,
+            },
+            contentType: 'application/octet-stream',
+          ),
+        );
+        return true;
+      } on DioException catch (e) {
+        _log.warning('Failed to upload image bytes: $imageId', e);
+        return false;
+      }
+    }
     try {
       final String path = await getLocalImagePath(type, imageId);
       final File file = File(path);
@@ -120,6 +147,7 @@ class ImageCacheService {
   }
 
   Future<bool> isImageCached(ImageType type, String imageId) async {
+    if (kIsWebBuild) return false;
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     return file.existsSync() && _isValidImageFile(file);
@@ -127,6 +155,7 @@ class ImageCacheService {
 
   /// Tolerates files locked by another process on Windows.
   Future<void> deleteImage(ImageType type, String imageId) async {
+    if (kIsWebBuild) return;
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     if (file.existsSync()) {
@@ -231,6 +260,8 @@ class ImageCacheService {
     required String imageId,
     required String remoteUrl,
   }) async {
+    // The browser has no disk cache: the server holds one for every client.
+    if (kIsWebBuild) return false;
     try {
       final String localPath = await getLocalImagePath(type, imageId);
       final File file = File(localPath);
@@ -266,6 +297,7 @@ class ImageCacheService {
     required List<ImageDownloadTask> tasks,
     void Function(int current, int total)? onProgress,
   }) async {
+    if (kIsWebBuild) return 0;
     int downloaded = 0;
     for (int i = 0; i < tasks.length; i++) {
       final ImageDownloadTask task = tasks[i];
@@ -281,6 +313,7 @@ class ImageCacheService {
   }
 
   Future<void> clearCacheForType(ImageType type) async {
+    if (kIsWebBuild) return;
     final String cachePath = await getCachePath(type);
     final Directory dir = Directory(cachePath);
 
@@ -299,6 +332,9 @@ class ImageCacheService {
   Future<CacheCleanupResult> removeOrphans(
     Map<ImageType, Set<String>> keep,
   ) async {
+    if (kIsWebBuild) {
+      return const CacheCleanupResult(deletedCount: 0, freedBytes: 0);
+    }
     int deletedCount = 0;
     int freedBytes = 0;
 
@@ -332,6 +368,7 @@ class ImageCacheService {
   }
 
   Future<int> getCacheSize() async {
+    if (kIsWebBuild) return 0;
     final String basePath = await getBaseCachePath();
     final Directory dir = Directory(basePath);
 
@@ -347,6 +384,7 @@ class ImageCacheService {
   }
 
   Future<int> getCachedCount() async {
+    if (kIsWebBuild) return 0;
     final String basePath = await getBaseCachePath();
     final Directory dir = Directory(basePath);
 

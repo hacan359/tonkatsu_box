@@ -138,7 +138,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                       decoration: BoxDecoration(
                         color: ColorHex.fromHex(_selectedColor),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withAlpha(40)),
+                        border: Border.all(
+                          color: AppColors.textPrimary.withAlpha(40),
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -157,16 +159,16 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _confirmDelete,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
                     color: AppColors.error,
                   ),
                   label: Text(
                     l.deleteProfile,
-                    style: const TextStyle(color: AppColors.error),
+                    style: TextStyle(color: AppColors.error),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.error),
+                    side: BorderSide(color: AppColors.error),
                   ),
                 ),
               ),

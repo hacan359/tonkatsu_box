@@ -1,10 +1,10 @@
-import 'dart:io';
-
 import 'package:core/models/collection.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as model;
 import 'package:core/models/universal_import_result.dart';
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +13,7 @@ import '../../../core/database/database_service.dart';
 import '../../../core/import/sources/igdb_list/igdb_list_import_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -41,7 +42,8 @@ class IgdbListImportContent extends ConsumerStatefulWidget {
 }
 
 class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
-  String? _csvPath;
+  Uint8List? _csvBytes;
+  String? _csvName;
   ItemStatus _status = ItemStatus.notStarted;
   int? _platformId;
   String? _platformName;
@@ -85,7 +87,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
           const SizedBox(height: AppSpacing.md),
         ],
         _buildFilePickerSection(context),
-        if (_csvPath != null) ...<Widget>[
+        if (_csvBytes != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildOptionsSection(context),
         ],
@@ -103,7 +105,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.warning_amber, color: AppColors.statusDropped),
+          Icon(Icons.warning_amber, color: AppColors.statusDropped),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -135,7 +137,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
             ),
           ),
         ),
-        if (_csvPath != null)
+        if (_csvBytes != null)
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -143,7 +145,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
             ),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: AppColors.statusCompleted,
                   size: 20,
@@ -151,7 +153,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _csvPath!.split(Platform.pathSeparator).last,
+                    _csvName ?? '',
                     style: AppTypography.body,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -333,7 +335,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
-          const Icon(Icons.chevron_right, size: 18,
+          Icon(Icons.chevron_right, size: 18,
               color: AppColors.textTertiary),
         ],
       ),
@@ -383,22 +385,28 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
   }
 
   Future<void> _pickFile() async {
-    final bool useAny = Platform.isAndroid;
+    // Android's FileType.custom does not filter custom extensions.
+    final bool useAny = kIsMobile;
+    // withData: the browser only ever hands out bytes, and reading them at
+    // pick time keeps one code path for every platform.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: S.of(context).igdbImportSelectCsvExport,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['csv'],
       allowMultiple: false,
+      withData: true,
     );
 
     if (result == null || result.files.isEmpty) return;
 
-    final String? path = result.files.single.path;
-    if (path == null) return;
+    final PlatformFile picked = result.files.single;
+    final Uint8List? bytes = picked.bytes;
+    if (bytes == null) return;
 
     setState(() {
-      _csvPath = path;
-      _status = _statusFromFileName(path);
+      _csvBytes = bytes;
+      _csvName = picked.name;
+      _status = _statusFromFileName(picked.name);
     });
   }
 
@@ -415,7 +423,7 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
 
     final Future<UniversalImportResult> importFuture = service.import(
       IgdbListImportOptions(
-        filePath: _csvPath!,
+        bytes: _csvBytes!,
         author: authorName,
         status: _status,
         platformId: _platformId!,
@@ -472,8 +480,8 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
 
   /// Guesses the default status from the export file name (IGDB names each
   /// list export after the list: `played.csv`, `playing.csv`, …).
-  ItemStatus _statusFromFileName(String path) {
-    final String name = path.split(Platform.pathSeparator).last.toLowerCase();
+  ItemStatus _statusFromFileName(String fileName) {
+    final String name = fileName.toLowerCase();
     if (name.contains('want')) return ItemStatus.planned;
     if (name.contains('playing')) return ItemStatus.inProgress;
     if (name.contains('played')) return ItemStatus.completed;

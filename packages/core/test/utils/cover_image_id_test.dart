@@ -146,8 +146,8 @@ void main() {
     test('single-source types keep the bare external id', () {
       for (final MediaType type in <MediaType>[
         MediaType.game,
-        MediaType.movie,
         MediaType.visualNovel,
+        MediaType.custom,
       ]) {
         expect(
           coverImageId(mediaType: type, externalId: 42),

@@ -109,9 +109,9 @@ class WishlistTile extends StatelessWidget {
         PopupMenuItem<_TileAction>(
           value: _TileAction.delete,
           child: ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
+            leading: Icon(Icons.delete, color: AppColors.error),
             title:
-                Text(l.delete, style: const TextStyle(color: Colors.red)),
+                Text(l.delete, style: TextStyle(color: AppColors.error)),
             contentPadding: EdgeInsets.zero,
             dense: true,
           ),
@@ -156,7 +156,7 @@ class WishlistTile extends StatelessWidget {
           onPressed: onEdit,
         ),
         IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
+          icon: Icon(Icons.delete, color: AppColors.error),
           tooltip: l.delete,
           iconSize: 20,
           visualDensity: VisualDensity.compact,
@@ -173,7 +173,7 @@ class WishlistTile extends StatelessWidget {
         color: MediaTypeTheme.colorFor(item.mediaTypeHint!),
       );
     }
-    return const Icon(Icons.bookmark_border, color: AppColors.textTertiary);
+    return Icon(Icons.bookmark_border, color: AppColors.textTertiary);
   }
 
   Widget? _buildSubtitle(BuildContext context) {

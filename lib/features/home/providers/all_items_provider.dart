@@ -219,6 +219,43 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
 }
 
 
+/// A `Set` compares by identity, so only a String key lets `select` swallow an
+/// unrelated collection edit instead of churning every item list.
+String _hiddenCollectionsKey(AsyncValue<List<Collection>> collections) {
+  final List<int> ids = <int>[
+    for (final Collection c in collections.valueOrNull ?? <Collection>[])
+      if (c.isHidden) c.id,
+  ]..sort();
+  return ids.join(',');
+}
+
+/// Ids of collections the user flagged hidden.
+final Provider<Set<int>> hiddenCollectionIdsProvider =
+    Provider<Set<int>>((Ref ref) {
+  final String key = ref.watch(
+    collectionsProvider.select(_hiddenCollectionsKey),
+  );
+  if (key.isEmpty) return const <int>{};
+  return <int>{for (final String id in key.split(',')) int.parse(id)};
+});
+
+/// Filtering above [AllItemsNotifier] keeps toggling off the database, and
+/// leaves `CacheCleanupService` seeing every item — else it deletes the covers.
+final Provider<AsyncValue<List<CollectionItem>>> visibleAllItemsProvider =
+    Provider<AsyncValue<List<CollectionItem>>>((Ref ref) {
+  final AsyncValue<List<CollectionItem>> all =
+      ref.watch(allItemsNotifierProvider);
+  final Set<int> hidden = ref.watch(hiddenCollectionIdsProvider);
+  if (hidden.isEmpty) return all;
+  return all.whenData(
+    (List<CollectionItem> items) => items
+        .where((CollectionItem i) =>
+            i.collectionId == null || !hidden.contains(i.collectionId))
+        .toList(),
+  );
+});
+
+
 /// Unique platforms from games in collections, for filtering.
 ///
 /// Pulls platformId from every game item and loads the [Platform] models

@@ -7,6 +7,471 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **TheTVDB as a source for movies and TV series**
+
+  Two new providers in search and browse, backed by your own TheTVDB v4 key
+  (Settings → Credentials, with a Test button and reset to the built-in key).
+  Both support search and filtered browse by genre and year, and series bring
+  their own seasons and episodes to the episode tracker. TheTVDB publishes no
+  user rating, so its titles carry no rating badge. Without a key the two chips
+  start switched off instead of failing every request.
+
+  Movies became multi-source in the process: provider id spaces overlap, so a
+  TheTVDB movie would have replaced the TMDB movie with the same number in the
+  cache. Every read path that resolves a film — collection lists, cover
+  mosaics, mood grids, statistics, export — now carries the provider alongside
+  the id. Movie cover files are namespaced by provider too, so cached posters
+  are re-downloaded once after the upgrade.
+
+  * packages/core/lib/database/migrations/migration_v62.dart (MigrationV62):
+    New — rebuilds `movies_cache` with `PRIMARY KEY (tmdb_id, source)` and
+    re-scopes the `collection_items` indexes so one film can come from two
+    providers.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers MigrationV62.
+  * packages/core/lib/models/data_source.dart (DataSource.tvdb): New source.
+  * packages/core/lib/models/movie.dart (Movie.source, Movie.fromTvdb,
+    Movie.fromDb, Movie.toDb, Movie.copyWith, Movie.posterThumbUrl): Identity is
+    now `(source, id)`; TheTVDB posters use the `_t` thumbnail suffix.
+  * packages/core/lib/models/media_type.dart (MediaType.isMultiSource): Includes
+    movie.
+  * packages/core/lib/models/collection_item.dart (CollectionItem._resolvedMedia):
+    Reads the movie's own source instead of assuming TMDB.
+  * packages/core/lib/models/tv_show.dart (TvShow.fromTvdb),
+    tv_season.dart (TvSeason.fromTvdb), tv_episode.dart (TvEpisode.tryFromTvdb):
+    New factories.
+  * packages/core/lib/utils/tvdb_json.dart (tvdbNumericId, tvdbTranslation,
+    tvdbTranslationContainers, tvdbImageUrl, tvdbThumbUrl, tvdbRemoteId,
+    tvdbNames, tvdbYear, tvdbCodesFor, tvdbRecordUrl): New — TheTVDB never
+    localizes a response, and `/filter` returns bare image paths while
+    `/search` returns absolute URLs.
+  * packages/core/lib/database/sparse_upsert.dart (buildPreservingUpsert): New
+    — a cache upsert that keeps columns a sparser payload left null.
+  * lib/features/search/filters/tvdb_status_filter.dart (TvdbStatusFilter):
+    New; lib/l10n/app_*.arb (movieStatusReleased, movieStatusCompleted,
+    movieStatusPostProduction, movieStatusPreProduction,
+    movieStatusAnnounced): Movie production-status labels.
+  * packages/core/lib/database/dao/movie_dao.dart (MovieDao.getMovieByTmdbId,
+    MovieDao.upsertMovie, MovieDao.upsertMovies): Keyed by id and source, with a
+    preserving upsert so a search hit cannot blank a cached runtime or overview.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionCovers, CollectionDao._loadJoinedData),
+    packages/core/lib/database/dao/stats_dao.dart
+    (StatsDao.getEstimatedMinutes): Source-qualified `movies_cache` joins — an
+    unqualified one matched both providers' rows, duplicating a cover and
+    double-counting a film's runtime.
+  * lib/core/services/export_service.dart
+    (ExportService._collectMediaData): Keys exported movies by `source:id` so
+    two providers' films both survive a full export.
+  * lib/features/mood_grids/widgets/mood_grid_cell_media.dart,
+    lib/data/repositories/canvas_repository.dart
+    (CanvasRepository._loadMediaData),
+    packages/core/lib/models/canvas_item.dart (CanvasItem.mediaCacheId),
+    lib/features/recommendations/widgets/recommendation_row.dart: Resolve and
+    cache a film by provider, not by id alone.
+  * lib/core/import/import_writer.dart (ImportWriter.itemKey,
+    ImportWriteResult.idFor, ImportCandidate.source),
+    lib/core/import/sources/hardcover/hardcover_import_service.dart,
+    lib/core/import/sources/simkl/simkl_import_service.dart: Import identity
+    includes the provider, matching the unique index — a re-import no longer
+    updates another provider's row that shares the numeric id.
+  * lib/core/services/kodi_sync_service.dart (KodiSyncService._doSync,
+    KodiSyncService._syncItemToCollection): Kodi resolves to TMDB ids, so its
+    lookups and inserts are pinned to TMDB.
+  * lib/features/collections/widgets/recommendations_section.dart,
+    lib/features/search/widgets/discover_feed.dart,
+    lib/features/recommendations/providers/recommendations_provider.dart
+    (collectedRecommendationIdsProvider),
+    lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._addRecommendation): The "already in collection"
+    mark on a TMDB recommendation only counts TMDB placements.
+  * lib/core/api/tvdb/tvdb_http_client.dart (TvdbHttpClient): New — exchanges the
+    key for a bearer token, re-logs in once on 401 and retries.
+  * lib/core/api/tvdb/tvdb_search_api.dart (TvdbSearchApi),
+    tvdb_movies_api.dart (TvdbMoviesApi), tvdb_series_api.dart (TvdbSeriesApi),
+    tvdb_types.dart (TvdbApiException): New.
+  * lib/core/api/tvdb_api.dart (TvdbApi, tvdbApiProvider): New facade.
+  * lib/core/api/episode_source/tvdb_episode_source.dart (TvdbEpisodeSource):
+    New; lib/core/api/episode_source/tv_episode_source.dart
+    (tvEpisodeSourceResolverProvider): Routes TheTVDB items to it.
+  * lib/features/search/sources/tvdb_movies_source.dart (TvdbMoviesSource),
+    tvdb_series_source.dart (TvdbSeriesSource),
+    lib/features/search/filters/tvdb_genre_filter.dart (TvdbGenreFilter,
+    tvdbGenresProvider): New; search_sources.dart (searchSources): Registers
+    both after TMDB so TMDB stays primary.
+  * lib/features/search/providers/browse_provider.dart
+    (BrowseNotifier._keylessSourceIds): A provider without its mandatory key
+    starts switched off.
+  * lib/features/search/handlers/movie_handler.dart (MovieHandler): Passes the
+    source through and namespaces the cover id.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.tvdbApiKey, SettingsState.tvdbApiKey, SettingsState.hasTvdbKey,
+    SettingsState.isTvdbKeyBuiltIn, SettingsNotifier.setTvdbApiKey,
+    SettingsNotifier.validateTvdbKey,
+    SettingsNotifier.resetTvdbApiKeyToDefault, SettingsNotifier.setAppLanguage):
+    Key storage and validation; the app language picks which TheTVDB
+    translation titles and overviews come from.
+  * lib/features/settings/content/credentials_content.dart
+    (_CredentialsContentState._buildTvdbSection): Key field, Test and reset.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._apiKeyStates): Counts TheTVDB.
+  * lib/core/services/config_service.dart (ConfigService._settingsKeys): The key
+    travels with settings sync and backup.
+  * lib/core/services/api_key_initializer.dart (ApiKeys.tvdbApiKey),
+    lib/shared/constants/api_defaults.dart (ApiDefaults.tvdbApiKey,
+    ApiDefaults.hasTvdbKey): Built-in key via `--dart-define=TVDB_API_KEY`.
+  * lib/core/services/import_service.dart (ImportService._fetchMovie,
+    ImportService._fetchTvShow): Imported items are fetched from the provider
+    they were exported from.
+  * lib/features/collections/helpers/collection_actions.dart
+    (refreshItemFromApi): Refreshes a movie through its own provider.
+  * lib/core/services/kodi_sync_service.dart
+    (KodiSyncService._resolveTmdbId): Falls back to the tvdb id, which Kodi's
+    TVDB scraper leaves on libraries with no TMDB or IMDB id.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
+    lib/features/settings/content/credits_content.dart (CreditsContent),
+    lib/features/welcome/widgets/welcome_step_sources.dart: Attribution card
+    (required by the free tier licence) and wizard entry.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (credentialsTvdbSection, credentialsEnterTvdbKey,
+    credentialsTvdbKeyValid, credentialsTvdbKeyInvalid, welcomeApiTvdbDesc,
+    welcomeSourceDescTvdb, creditsTvdbAttribution): New keys.
+
+- **Hidden collections — keep a collection out of sight without deleting it**
+
+  A collection can be marked hidden through right-click / long-press on its
+  card, the checkbox in the New Collection dialog, or the Edit dialog. It stays
+  in the list under its own name and count, but its card shows a placeholder
+  instead of the cover mosaic, and its titles drop out of the All Items screen
+  and the preference cloud. Everything else behaves normally: the collection
+  opens as usual, stays a target in every collection picker, still counts in
+  Statistics, and exports without the flag. Toggling applies instantly, in both
+  directions, without re-reading the database. A full backup remembers which
+  collections were hidden and re-hides them on restore.
+
+  * packages/core/lib/database/migrations/migration_v61.dart (MigrationV61):
+    New — adds the `is_hidden` column to `collections`.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers MigrationV61.
+  * packages/core/lib/models/collection.dart (Collection.isHidden,
+    Collection.fromDb, Collection.toDb, Collection.copyWith,
+    Collection.internalDbFields): Stores the flag as INTEGER 0/1 and keeps it
+    out of the export payload — a shared collection is not hidden for its
+    receiver.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.createCollection, CollectionDao.updateCollection): Writes
+    and toggles the flag.
+  * lib/core/database/database_service.dart (DatabaseService.createCollection,
+    DatabaseService.updateCollection),
+    lib/data/repositories/collection_repository.dart
+    (CollectionRepository.create, CollectionRepository.setHidden,
+    CollectionRepository.updatePersonalization): Pass the flag through.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionsNotifier.create, CollectionsNotifier.setHidden,
+    CollectionsNotifier.updatePersonalization): Writes the flag and patches the
+    in-memory list so the card updates without a reload.
+  * lib/features/home/providers/all_items_provider.dart
+    (hiddenCollectionIdsProvider, visibleAllItemsProvider): New — filters the
+    loaded library above AllItemsNotifier, so toggling never hits the database
+    and CacheCleanupService still sees every item.
+  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState.build):
+    Reads visibleAllItemsProvider and clears the bulk selection when the hidden
+    set changes.
+  * lib/features/genre_cloud/providers/genre_cloud_provider.dart
+    (genreCloudItemsProvider),
+    lib/features/recommendations/providers/recommendations_provider.dart
+    (recommendationsProvider): Read the filtered library.
+  * lib/features/collections/widgets/collection_card.dart (CollectionCard.build):
+    A hidden collection never renders the rich hero card.
+  * lib/features/collections/widgets/classic/classic_collection_card.dart
+    (ClassicCollectionCard.build, _HiddenPlaceholder): Skips the cover query and
+    draws a placeholder.
+  * lib/features/collections/widgets/collection_list_tile.dart
+    (CollectionListTile.build): Hidden collections get a different leading icon.
+  * lib/features/collections/widgets/hidden_collection_checkbox.dart
+    (HiddenCollectionCheckbox): New — shared by the create and edit dialogs.
+  * lib/features/collections/widgets/create_collection_dialog.dart
+    (CreateCollectionResult, CreateCollectionDialog.show,
+    _CreateCollectionDialogState._submit): The dialog returns name plus flag
+    instead of a bare name.
+  * lib/features/collections/widgets/edit_collection_dialog.dart
+    (_EditCollectionDialogState._save): Saves the flag when it changed.
+  * lib/features/collections/screens/home_screen.dart
+    (_HomeScreenState._createCollection,
+    _HomeScreenState._showCollectionContextMenu,
+    _HomeScreenState._showCollectionOptions): Hide / Unhide in the right-click
+    menu and the long-press sheet.
+  * packages/core/lib/testing/builders.dart (createTestCollection): Accepts
+    isHidden.
+  * lib/core/services/backup_service.dart (BackupManifest.hiddenCollections,
+    BackupService.createBackup, BackupService.restoreFromBackup): The manifest
+    lists hidden collections; restore re-applies the flag after import.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (createCollectionHiddenLabel, createCollectionHiddenHint,
+    collectionHide, collectionUnhide): New keys.
+
+- **Sakura theme — a soft light theme, switchable in Settings → Appearance**
+
+  The app is no longer dark-only: a Theme picker offers Dark (unchanged) and
+  Sakura — a light pink palette with darkened media-type accents, its own
+  rose-tinted background wallpaper, and pink counter badges. The whole design
+  now lives in one palette file; every widget reads colors through theme-aware
+  tokens, so future themes are a single palette definition. Switching applies
+  instantly and returns the app to the home screen.
+
+  * lib/shared/theme/app_palette.dart (AppPalette, AppPalette.dark,
+    AppPalette.sakura): New — every color of a theme in one place, plus
+    semantic tokens (scrim, onOverlay, onBrand, shadow, barrier, badge,
+    ratingGold, rowFade) and the wallpaper tile (tileAsset, tileOpacity,
+    tileImage).
+  * lib/shared/theme/app_colors.dart (AppColors): Static consts became getters
+    delegating to the active palette.
+  * lib/shared/theme/app_theme.dart (AppTheme.build): ThemeData is built from
+    a palette; badge and error colors follow it.
+  * lib/shared/theme/app_theme_id.dart (AppThemeId): New — theme registry and
+    SharedPreferences id.
+  * lib/shared/theme/app_typography.dart (AppTypography): Styles became
+    getters so text colors follow a theme switch.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setAppTheme, SettingsState.appTheme): Theme setting.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._showThemePicker,
+    _SettingsScreenState._showChoicePicker): Theme tile in Appearance; the
+    five choice dialogs share one generic picker.
+  * lib/app.dart (TonkatsuBoxApp): Swaps the palette and rebuilds the
+    MaterialApp subtree on theme change.
+  * assets/images/background_tile_sakura.png: New — the wallpaper tile
+    recolored to sakura rose.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (settingsTheme, settingsThemeSubtitle, settingsThemeDark,
+    settingsThemeSakura): New keys.
+  * ~140 widget files: hardcoded Colors.* / Color(0x...) replaced with the
+    semantic palette tokens above; `const` dropped where color expressions are
+    no longer compile-time constants.
+
+- **Anime and manga recommendations — in the item card and on the Personalization tab**
+
+  An anime's detail page now shows a "Similar" carousel: AniList's community
+  recommendations rendered as Kitsu titles, so an added pick keeps seasons and
+  the episode tracker. The manga "Similar" carousel, previously limited to
+  MangaBaka and MangaDex entries, now also works for manga added from AniList
+  and Kitsu. The Personalization → Recommendations tab learns two new taste
+  domains next to movies/TV: anime (from completed AniList titles) and manga
+  (per source — MangaBaka, MangaDex, AniList), each with its own "because you
+  liked" rows. All new sources are keyless — no API key required.
+
+  * lib/core/api/anilist/anilist_queries.dart
+    (AniListQueries.recommendationsBatch, AniListQueries.recommendationAlias):
+    New Media.recommendations query, rating-sorted, capped at AniList's nested
+    perPage of 25; one aliased block per seed so a whole seed set costs a
+    single request against the 30/min rate limit.
+  * lib/core/api/anilist/anilist_media_parser.dart
+    (AniListMediaParser.recommendedAnimeBatch,
+    AniListMediaParser.recommendedMangaBatch): Map recommendation nodes per
+    seed, dropping deleted media and cross-type entries.
+  * lib/core/api/anilist/anilist_media_api.dart, lib/core/api/anilist_api.dart
+    (AniListApi.getAnimeRecommendations, AniListApi.getMangaRecommendations,
+    AniListApi.getAnimeRecommendationsBatch,
+    AniListApi.getMangaRecommendationsBatch): New; retried on a 429.
+  * lib/core/api/kitsu/kitsu_mapping_api.dart (KitsuMappingApi.getAniListId,
+    KitsuMappingApi.siteAniListAnime, KitsuMappingApi.siteAniListManga),
+    lib/core/api/kitsu_api.dart (KitsuApi.getAniListAnimeId,
+    KitsuApi.getAniListMangaId, KitsuApi.getAnimeByAniListIds): Kitsu↔AniList
+    id bridges over the mappings endpoints, both directions.
+  * lib/features/collections/widgets/anime_similars_section.dart
+    (AnimeSimilarsSection): New. AniList seed queried directly, Kitsu seed
+    bridged first; candidates resolved back to Kitsu entities, unmapped ones
+    dropped.
+  * lib/features/collections/widgets/manga_similars_section.dart
+    (mangaSimilarsSources, MangaSimilarsSection): AniList and Kitsu seed
+    routing; owned badge matches the candidates' source.
+  * lib/features/collections/widgets/similars_poster_row.dart
+    (SimilarsPosterRow, SimilarsPosterRowShimmer, SimilarCardData): New shared
+    carousel replacing the per-section row/shimmer copies.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._addAnimeFromSimilars): New add-to-collection
+    handler; anime/manga similars gating.
+  * lib/features/recommendations/anime_taste_input.dart (animeTasteId,
+    tasteTitleFromAnimeItem, tasteTitleFromAnime, ownedAnimeTasteIds),
+    lib/features/recommendations/manga_taste_input.dart (mangaTasteId,
+    mangaTasteSources, tasteTitleFromMangaItem, tasteTitleFromManga,
+    ownedMangaTasteIds), lib/features/recommendations/taste_features.dart
+    (buildNameFeatureTitle): New engine adapters; genres+tags matched by
+    source-native names, vocabularies never mixed across sources.
+  * lib/features/recommendations/providers/recommendations_provider.dart
+    (recommendationsProvider, RecommendedItem, RecommendationStatus,
+    collectedRecommendationIdsProvider): Split into independent concurrent
+    domains (movie/TV, anime, manga); a domain with nothing to say contributes
+    no rows; the TMDB key gates only the movie/TV domain. RecommendedItem
+    carries source + externalId instead of a TMDB-only id.
+  * lib/features/recommendations/widgets/recommendation_row.dart
+    (RecommendationRowWidget): Poster cache type/id, placeholder icon and
+    source badge follow the item's media type and source.
+  * test/core/api/anilist/anilist_media_parser_test.dart,
+    test/core/api/anilist_api_test.dart,
+    test/core/api/kitsu/kitsu_mapping_api_test.dart,
+    test/features/collections/widgets/anime_similars_section_test.dart,
+    test/features/collections/widgets/manga_similars_section_test.dart,
+    test/features/recommendations/anime_taste_input_test.dart,
+    test/features/recommendations/manga_taste_input_test.dart,
+    test/features/recommendations/providers/recommendations_provider_test.dart:
+    New coverage — batch parser mapping, bridges, per-source routing, owned
+    matching, adapters, multi-domain partial results and status precedence.
+
+- **"No date" option for the started / completed dates**
+
+  An already-set date can now be erased from the date picker — for media
+  consumed long ago whose dates nobody remembers. Clearing a date never
+  touches the item's status (a film stays completed with an unknown watch
+  date), and the usual automation is intact: setting a date still syncs the
+  status, and status changes still fill the dates.
+
+  * lib/shared/widgets/dual_date_picker_dialog.dart (DualDateResult,
+    showDualDatePickerResult, DualDatePickerDialog.allowClear): New result
+    wrapper distinguishing "cleared" from "cancelled"; the "No date" action
+    shows only when the dialog is opened over an existing date. The original
+    showDualDatePicker contract is unchanged for its other callers.
+  * lib/shared/widgets/media_detail_view.dart (OnActivityDateChanged,
+    _MediaDetailViewState._pickActivityDate): The callback date is nullable —
+    null means "clear the field".
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._updateActivityDate): Routes a null date into the
+    clear flags.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateActivityDates),
+    lib/data/repositories/collection_repository.dart,
+    lib/core/database/database_service.dart,
+    packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.updateItemActivityDates): New clearStartedAt /
+    clearCompletedAt flags — a plain null still means "leave unchanged";
+    clearing bypasses the date→status sync on purpose.
+  * lib/l10n/app_en.arb, app_es.arb, app_fr.arb, app_pt.arb, app_ru.arb,
+    app_zh.arb (dualDatePickerNoDate): New.
+  * test/shared/widgets/dual_date_picker_dialog_test.dart,
+    test/shared/widgets/media_detail_view_test.dart,
+    test/features/collections/providers/collections_provider_test.dart,
+    test/core/database/dao/collection_dao_test.dart,
+    packages/core/test/database/dao/collection_dao_status_dates_test.dart:
+    Clear-flow coverage — the button appears only over a set date, clearing
+    writes NULL and never calls updateItemStatus.
+
+- **Selfhost: run Tonkatsu Box in a browser via Docker**
+
+  `docker compose up -d --build` on your own machine or home server, then open
+  `http://<server-ip>:8080` from any device. It is the same app, in a browser:
+  the database, cover cache and API keys live on the server, so every device
+  works with the same library. Setup, configuration, HTTPS and backups are
+  described in README → Self-Hosting.
+
+  Not available in the browser: VGMaps, Discord Rich Presence, Kodi, gamepad,
+  LAN sync, profiles, the data folder and collection hero images. Everything
+  else works as in the desktop app.
+
+### Changed
+
+- **Collection cards redesigned: a pile of covers with media-type badges**
+
+  A grid card now throws up to eight covers into a casual pile — every
+  collection keeps its own stable arrangement — and the pile gathers into a
+  neat cascaded deck on hover or gamepad focus. The top card carries a "+N"
+  badge for items beyond the visible covers. Colored dots in the corner mark
+  the media types inside (dominant first, "+N" overflow past five), and a thin
+  spectrum strip under the stats shows the type proportions, like a language
+  bar. Rich cards and the list view get the same dots.
+
+  * lib/features/collections/widgets/deck/deck_collection_card.dart
+    (DeckCollectionCard, _CoverPile, _FanPoster, _StatsLine): New — replaces
+    the 3+3 cover mosaic as the grid card.
+  * lib/features/collections/widgets/classic/classic_collection_card.dart
+    (ClassicCollectionCard): Removed together with the mosaic design.
+  * lib/features/collections/widgets/media_type_dots.dart (MediaTypeDots):
+    New — avatar-stack of circular per-type badges.
+  * lib/features/collections/widgets/media_type_spectrum_bar.dart
+    (MediaTypeSpectrumBar): New — proportional per-type accent strip.
+  * lib/data/repositories/collection_repository.dart
+    (CollectionStats.mediaTypeCounts, CollectionStats.presentMediaTypes):
+    New getters — per-type counts and dominant-first present types.
+  * lib/features/collections/widgets/collection_card.dart
+    (CollectionCard.build): Dispatches to DeckCollectionCard.
+  * lib/features/collections/widgets/collection_card_overlay.dart
+    (CollectionCardOverlay.build): Dots in the top-right corner of rich
+    cards; CollectionCardBottomScrim removed with the mosaic.
+  * lib/features/collections/widgets/collection_list_tile.dart
+    (CollectionListTile.build): Dots as the trailing widget.
+  * lib/features/collections/providers/collection_covers_provider.dart
+    (collectionCoversProvider): Cover limit 6 → 9 so the pile has depth.
+
+- **Copy the Simkl pairing code with one tap**
+
+  The code block on the Simkl import screen gets a copy button, so the code no
+  longer has to be retyped by hand into simkl.com/pin.
+
+  * lib/features/settings/content/simkl_import_content.dart
+    (_SimklImportContentState._buildPinBlock,
+    _SimklImportContentState._copyPin): Copy button next to the code, with a
+    confirmation snack.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb (simklPinCopied): New string.
+
+### Removed
+
+- **Drop orphaned widgets left behind by earlier redesigns**
+
+  `ActivityDatesSection` was superseded by the dates row inside
+  `MediaDetailView`, and the grouped `SourceDropdown` by the search source
+  tabs; both had no remaining call sites. The source-grouping metadata that
+  existed only for the dropdown goes with it, and the activity-date callback
+  contract the section shared becomes a proper enum instead of a raw string.
+
+  * lib/features/collections/widgets/activity_dates_section.dart
+    (ActivityDatesSection, _DateRow): Removed.
+  * lib/features/search/widgets/source_dropdown.dart (SourceDropdown,
+    _sourceGlyph): Removed.
+  * lib/features/search/sources/search_sources.dart (groupedSearchSources,
+    SourceGroupEntry): Removed with their only consumer.
+  * lib/features/search/models/search_source.dart (SearchSource.groupId,
+    SearchSource.groupName, SearchSource.groupIcon): Removed — DataSource.key
+    and DataSource.label already carry the provider identity.
+  * lib/features/search/sources/anilist_anime_source.dart,
+    anilist_manga_source.dart, comicvine_source.dart, fantlab_source.dart,
+    google_books_source.dart, hardcover_source.dart, igdb_games_source.dart,
+    kitsu_anime_source.dart, kitsu_manga_source.dart, mangabaka_source.dart,
+    mangadex_source.dart, openlibrary_source.dart, tmdb_anime_source.dart,
+    tmdb_movies_source.dart, tmdb_tv_source.dart, tvmaze_tv_source.dart,
+    vndb_source.dart: Drop the groupIcon override.
+  * lib/shared/widgets/media_detail_view.dart (ActivityDateField,
+    OnActivityDateChanged),
+    lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._updateActivityDate): The started / completed
+    selector in the activity-date callback is the new ActivityDateField enum
+    instead of a 'started' / 'completed' string.
+  * test/features/collections/widgets/activity_dates_section_test.dart,
+    test/features/search/widgets/source_dropdown_test.dart,
+    test/features/search/sources/search_sources_grouping_test.dart: Removed
+    with the widgets.
+
+### Fixed
+
+- **Watched Date set in the past was overwritten with the current date**
+
+  Setting a Watched/Completed date on an item that was not yet completed
+  auto-promoted its status, and the completed transition stamped
+  `completed_at = now` over the just-saved user date. The UI kept showing the
+  chosen date until the list reloaded (e.g. after adding another film), which
+  made the overwrite look like it happened on add.
+
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.updateActivityDates): The status auto-update is
+    written strictly before the explicit dates, so the user's date always
+    lands last.
+  * test/features/collections/providers/collections_provider_test.dart:
+    Regression group pinning the repository write order.
+  * packages/core/test/database/dao/collection_dao_status_dates_test.dart:
+    New. Documents the DAO semantics (completed transition stamps now) that
+    make the ordering mandatory.
+
 ## [0.41.0] - 2026-08-04
 
 ### Added
@@ -7369,7 +7834,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 - **Search source grouping** — `SearchSource` now declares `groupId`, `groupName`, `groupIcon` for visual grouping in the source picker popup. `SourceDropdown` displays grouped items with section headers (TMDB, IGDB, AniList, VNDB) and dividers. `groupedSearchSources` helper in `search_sources.dart` auto-groups sources by `groupId`. No new providers — `browseProvider` remains the single source of truth. Adding a new source only requires implementing `SearchSource` and appending to the registry (`search_source.dart`, `source_dropdown.dart`, `search_sources.dart`, all 6 source files)
-- **AniList Anime source (dormant)** — `Anime` model with `fromJson`/`fromDb`/`toDb`/`copyWith`, `AniListApi.browseAnime()`/`getAnimeById()`/`getAnimeByIds()` with GraphQL queries, `AniListAnimeSource` with genre and status filters. Source is not yet registered in `searchSources` — pending DB table, DAO, DetailsSheet, and browse_grid/search_screen integration (see `dev/unwork/anime_metadata.md`). 7 localization keys EN+RU (`anime.dart`, `anilist_api.dart`, `anilist_anime_source.dart`, `anilist_anime_genre_filter.dart`, `anilist_anime_status_filter.dart`)
+- **AniList Anime source (dormant)** — `Anime` model with `fromJson`/`fromDb`/`toDb`/`copyWith`, `AniListApi.browseAnime()`/`getAnimeById()`/`getAnimeByIds()` with GraphQL queries, `AniListAnimeSource` with genre and status filters. Source is not yet registered in `searchSources` — pending DB table, DAO, DetailsSheet, and browse_grid/search_screen integration. 7 localization keys EN+RU (`anime.dart`, `anilist_api.dart`, `anilist_anime_source.dart`, `anilist_anime_genre_filter.dart`, `anilist_anime_status_filter.dart`)
 - **"Trending" sort option** — `BrowseSortOption.label()` now maps `'trending'` to localized "Trending" / "В тренде" (`search_source.dart`, `app_en.arb`, `app_ru.arb`)
 - **Status filter on All Items screen** — dropdown chip in the media type chips row filters items by status (In Progress, Planned, Not Started, Completed, Dropped). Default: In Progress. Selection persisted in SharedPreferences via `homeStatusFilterProvider`. Replaces the previous Rating sort chip. Status icons and colors match item detail cards. `CollectionDao.getCollectionIdsWithStatus()` added for future collection-level filtering (`all_items_screen.dart`, `collections_provider.dart`, `collection_dao.dart`, `app_en.arb`, `app_ru.arb`)
 - **User profiles** — multi-profile system with isolated databases and image caches per profile. `Profile` model (`id`, `name`, `color`, `createdAt`) stored in `profiles.json`. `ProfileService` handles CRUD, migration from legacy single-DB layout, profile stats (readonly DB query). `ProfilesScreen` in Settings for managing profiles (create/edit/delete with color picker, switch with app restart confirmation, per-profile collection/item stats). `ProfilePickerScreen` at startup when multiple profiles exist ("Who's playing today?") with "Don't ask again" option. Profile indicator (colored circle with initial) in NavigationRail and BottomBar. Profile-aware database and image cache paths (`database_service.dart`, `image_cache_service.dart`). `AppRestartScope` widget in `main.dart` for seamless profile switching on Android (recreates `ProviderScope` with fresh providers via key change); desktop uses process restart. Sealed `EditProfileResult` for type-safe dialog returns. 18 predefined profile colors. `Profile.hexToColor()` static utility. 30+ localization keys EN+RU (`profile.dart`, `profile_service.dart`, `profile_provider.dart`, `profiles_screen.dart`, `profile_picker_screen.dart`, `create_profile_dialog.dart`, `edit_profile_dialog.dart`, `main.dart`, `navigation_shell.dart`, `settings_screen.dart`, `splash_screen.dart`)

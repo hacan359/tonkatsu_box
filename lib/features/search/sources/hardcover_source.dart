@@ -26,9 +26,6 @@ class HardcoverSource extends SearchSource {
   DataSource get dataSource => DataSource.hardcover;
 
   @override
-  IconData get groupIcon => Icons.book;
-
-  @override
   String label(S l) => l.collectionFilterBooks;
 
   @override

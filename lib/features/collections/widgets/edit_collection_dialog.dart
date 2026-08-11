@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/collection_hero_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/collections_provider.dart';
 import 'collection_hero_background.dart';
+import 'hidden_collection_checkbox.dart';
 
 /// Persists changes directly through `collectionsProvider.notifier`.
 /// Pops `true` if the user pressed Save and the changes were applied.
@@ -46,9 +48,12 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
 
   bool _saving = false;
 
+  late bool _isHidden;
+
   @override
   void initState() {
     super.initState();
+    _isHidden = widget.collection.isHidden;
     _nameController = TextEditingController(text: widget.collection.name);
     _descriptionController = TextEditingController(
       text: widget.collection.description ?? '',
@@ -122,6 +127,7 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
           name: nameChanged ? newName : null,
           heroImagePath: _pendingHeroFile,
           description: descChanged && !descEmpty ? newDescription : null,
+          isHidden: _isHidden != widget.collection.isHidden ? _isHidden : null,
           clearHeroImage: _clearHero,
           clearDescription: descChanged && descEmpty,
         );
@@ -181,38 +187,41 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
                     ? null
                     : _descriptionController.text.trim(),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                l.collectionEditHeroImageHint,
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textTertiary,
+              // The hero picker reads a local image file — no filesystem on
+              // web until the server proxy phase.
+              if (!kIsWebBuild) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l.collectionEditHeroImageHint,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _saving ? null : _pickImage,
-                      icon: const Icon(Icons.image_outlined, size: 18),
-                      label: Text(
-                        heroAbsPath != null
-                            ? l.collectionEditHeroReplace
-                            : l.collectionEditHeroPick,
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _saving ? null : _pickImage,
+                        icon: const Icon(Icons.image_outlined, size: 18),
+                        label: Text(
+                          heroAbsPath != null
+                              ? l.collectionEditHeroReplace
+                              : l.collectionEditHeroPick,
+                        ),
                       ),
                     ),
-                  ),
-                  if (heroAbsPath != null) ...<Widget>[
-                    const SizedBox(width: AppSpacing.sm),
-                    IconButton.outlined(
-                      onPressed: _saving ? null : _removeImage,
-                      icon: const Icon(Icons.delete_outline, size: 18),
-                      tooltip: l.collectionEditHeroRemove,
-                    ),
+                    if (heroAbsPath != null) ...<Widget>[
+                      const SizedBox(width: AppSpacing.sm),
+                      IconButton.outlined(
+                        onPressed: _saving ? null : _removeImage,
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        tooltip: l.collectionEditHeroRemove,
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.lg),
 
               TextFormField(
@@ -247,6 +256,10 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
                 maxLength: 240,
                 textInputAction: TextInputAction.done,
                 onChanged: (_) => setState(() {}),
+              ),
+              HiddenCollectionCheckbox(
+                value: _isHidden,
+                onChanged: (bool value) => setState(() => _isHidden = value),
               ),
             ],
           ),
@@ -305,8 +318,11 @@ class _HeroPreview extends StatelessWidget {
                                 color: AppColors.textPrimary,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
-                                shadows: const <Shadow>[
-                                  Shadow(color: Colors.black87, blurRadius: 10),
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    color: AppColors.scrim.withAlpha(0xDE),
+                                    blurRadius: 10,
+                                  ),
                                 ],
                               ),
                               maxLines: 2,
@@ -318,9 +334,9 @@ class _HeroPreview extends StatelessWidget {
                                 description!,
                                 style: AppTypography.caption.copyWith(
                                   color: AppColors.textSecondary,
-                                  shadows: const <Shadow>[
+                                  shadows: <Shadow>[
                                     Shadow(
-                                      color: Colors.black87,
+                                      color: AppColors.scrim.withAlpha(0xDE),
                                       blurRadius: 6,
                                     ),
                                   ],
@@ -350,7 +366,7 @@ class _EmptyPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: <Color>[AppColors.surface, AppColors.surfaceLight],
@@ -362,7 +378,7 @@ class _EmptyPreview extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.image_outlined,
               color: AppColors.textTertiary,
               size: 40,

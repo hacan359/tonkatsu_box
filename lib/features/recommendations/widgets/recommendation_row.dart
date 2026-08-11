@@ -1,9 +1,9 @@
-import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -13,11 +13,8 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../providers/recommendations_provider.dart';
 
-/// A self-contained section card for one "because you liked …" group: a
-/// two-tier header (an uppercase reason label over the driver titles), the
-/// cluster's genres as chips, and a horizontal carousel of recommended titles.
-/// Each card shows the predicted personal rating (top-left badge) and the TMDB
-/// rating (subtitle). Tapping a card runs [onTap].
+/// Section card for one "because you liked …" group: reason header, the
+/// cluster's genre chips and a horizontal carousel of recommended titles.
 class RecommendationRowWidget extends StatefulWidget {
   /// Creates a recommendation row.
   const RecommendationRowWidget({
@@ -127,72 +124,100 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            height: rowHeight,
-            child: ScrollableRowWithArrows(
-              controller: _scrollController,
+          // Clip.none inside lets hover scale / shadows use the row padding;
+          // this rect stops cards sliding out over the sidebar mid-scroll.
+          ClipRect(
+            child: SizedBox(
               height: rowHeight,
-              child: ListView.separated(
+              child: ScrollableRowWithArrows(
                 controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.posterRowVerticalPadding,
-                ),
-                itemCount: widget.items.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(width: AppSpacing.md),
-                itemBuilder: (BuildContext context, int index) {
-                  final RecommendedItem item = widget.items[index];
-                  final bool isMovie = item.mediaType == MediaType.movie;
-                  final bool isOwned = widget.ownedIds.contains(item.tasteId);
-                  // Wrapper shape stays constant whether or not the item is
-                  // owned: toggling Opacity/IgnorePointer structurally would
-                  // re-parent the poster and reload its image. Opacity(1.0) is
-                  // a no-op paint, so non-owned cards pay nothing.
-                  return SizedBox(
-                    key: ValueKey<String>(item.tasteId),
-                    width: posterWidth,
-                    child: Opacity(
-                      opacity: isOwned ? 0.45 : 1.0,
-                      child: IgnorePointer(
-                        ignoring: isOwned,
-                        child: MediaPosterCard(
-                          variant: compact
-                              ? CardVariant.compact
-                              : CardVariant.grid,
-                          title: item.title,
-                          imageUrl: item.posterUrl ?? '',
-                          cacheImageType: isMovie
-                              ? ImageType.moviePoster
-                              : ImageType.tvShowPoster,
-                          cacheImageId: isMovie
-                              ? item.tmdbId.toString()
-                              : coverImageId(
-                                  mediaType: MediaType.tvShow,
-                                  externalId: item.tmdbId,
-                                ),
-                          mediaType: item.mediaType,
-                          year: item.year,
-                          // Predicted personal rating in the badge; TMDB rating
-                          // in the subtitle.
-                          userRating: item.predictedRating,
-                          apiRating: item.apiRating,
-                          splitRatings: true,
-                          // Already added: show the standard in-collection check.
-                          isInCollection: isOwned,
-                          placeholderIcon: isMovie
-                              ? Icons.movie_outlined
-                              : Icons.tv_outlined,
-                          source: DataSource.tmdb,
-                          onSourceTap: openUrlCallback(item.externalUrl),
-                          onTap: () => widget.onTap(item),
+                height: rowHeight,
+                child: ListView.separated(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.posterRowVerticalPadding,
+                  ),
+                  itemCount: widget.items.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(width: AppSpacing.md),
+                  itemBuilder: (BuildContext context, int index) {
+                    final RecommendedItem item = widget.items[index];
+                    final bool isOwned = widget.ownedIds.contains(item.tasteId);
+                    final ({ImageType type, String id}) cache =
+                        switch (item.mediaType) {
+                          MediaType.movie => (
+                            type: ImageType.moviePoster,
+                            id: coverImageId(
+                              mediaType: MediaType.movie,
+                              externalId: item.externalId,
+                              source: item.source,
+                            ),
+                          ),
+                          MediaType.anime => (
+                            type: ImageType.animeCover,
+                            id: coverImageId(
+                              mediaType: MediaType.anime,
+                              externalId: item.externalId,
+                              source: item.source,
+                            ),
+                          ),
+                          MediaType.manga => (
+                            type: ImageType.mangaCover,
+                            id: coverImageId(
+                              mediaType: MediaType.manga,
+                              externalId: item.externalId,
+                              source: item.source,
+                            ),
+                          ),
+                          _ => (
+                            type: ImageType.tvShowPoster,
+                            id: coverImageId(
+                              mediaType: MediaType.tvShow,
+                              externalId: item.externalId,
+                            ),
+                          ),
+                        };
+                    // Constant wrapper shape: toggling Opacity/IgnorePointer
+                    // structurally would re-parent and reload the poster.
+                    return SizedBox(
+                      key: ValueKey<String>(item.tasteId),
+                      width: posterWidth,
+                      child: Opacity(
+                        opacity: isOwned ? 0.45 : 1.0,
+                        child: IgnorePointer(
+                          ignoring: isOwned,
+                          child: MediaPosterCard(
+                            variant: compact
+                                ? CardVariant.compact
+                                : CardVariant.grid,
+                            title: item.title,
+                            imageUrl: item.posterUrl ?? '',
+                            cacheImageType: cache.type,
+                            cacheImageId: cache.id,
+                            mediaType: item.mediaType,
+                            year: item.year,
+                            // Predicted personal rating in the badge; the
+                            // source's rating in the subtitle.
+                            userRating: item.predictedRating,
+                            apiRating: item.apiRating,
+                            splitRatings: true,
+                            // Already added: show the standard in-collection check.
+                            isInCollection: isOwned,
+                            placeholderIcon: MediaTypeTheme.placeholderIconFor(
+                              item.mediaType,
+                            ),
+                            source: item.source,
+                            onSourceTap: openUrlCallback(item.externalUrl),
+                            onTap: () => widget.onTap(item),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),

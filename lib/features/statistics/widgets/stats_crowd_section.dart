@@ -225,7 +225,7 @@ class _DumbbellTrack extends StatelessWidget {
               Positioned(
                 left: external - 5,
                 top: 2,
-                child: const _Dot(color: AppColors.textTertiary),
+                child: _Dot(color: AppColors.textTertiary),
               ),
               Positioned(
                 left: mine - 5,

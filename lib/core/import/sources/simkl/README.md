@@ -2,8 +2,7 @@
 
 Imports the whole Simkl account — movies, shows and anime arrive in one
 `GET /sync/all-items` call (`extended=full`, `episode_watched_at=yes`,
-`memos=yes`). Spec with the verified API behavior:
-`dev/backlog/release_41/tz-simkl.md`.
+`memos=yes`).
 
 ## Auth
 

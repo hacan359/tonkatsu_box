@@ -697,6 +697,33 @@ void main() {
         expect(item.mediaCacheId, 'kitsu_123');
       });
 
+      test('mediaCacheId should namespace movie posters by source', () {
+        final CanvasItem tmdb = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.movie,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          movie: const Movie(tmdbId: 113, title: 'A'),
+        );
+        final CanvasItem tvdb = CanvasItem(
+          id: 2,
+          collectionId: 10,
+          itemType: CanvasItemType.movie,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          movie: const Movie(
+            tmdbId: 113,
+            title: 'B',
+            source: DataSource.tvdb,
+          ),
+        );
+        expect(tmdb.mediaCacheId, 'tmdb_113');
+        expect(tvdb.mediaCacheId, 'tvdb_113');
+      });
+
       test('mediaCacheId should use the anilist namespace by default', () {
         final CanvasItem item = CanvasItem(
           id: 1,

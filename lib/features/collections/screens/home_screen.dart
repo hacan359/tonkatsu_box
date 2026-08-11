@@ -349,16 +349,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _createCollection(BuildContext context, WidgetRef ref) async {
-    final String? name = await CreateCollectionDialog.show(context);
+    final CreateCollectionResult? result =
+        await CreateCollectionDialog.show(context);
 
-    if (name == null) return;
+    if (result == null) return;
 
     try {
       final String author = ref.read(settingsNotifierProvider).authorName;
       final Collection collection =
           await ref.read(collectionsProvider.notifier).create(
-                name: name,
+                name: result.name,
                 author: author,
+                isHidden: result.isHidden,
               );
 
       if (context.mounted) {
@@ -463,17 +465,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               contentPadding: EdgeInsets.zero,
             ),
           ),
+        PopupMenuItem<String>(
+          value: 'hide',
+          child: ListTile(
+            leading: Icon(
+              collection.isHidden
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+            ),
+            title: Text(
+              collection.isHidden ? l.collectionUnhide : l.collectionHide,
+            ),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
         const PopupMenuDivider(),
         PopupMenuItem<String>(
           value: 'delete',
           child: ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.delete,
               color: AppColors.error,
             ),
             title: Text(
               l.delete,
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: AppColors.error),
             ),
             contentPadding: EdgeInsets.zero,
           ),
@@ -487,6 +503,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _navigateToCollection(context, collection);
       case 'rename':
         await _renameCollection(context, ref, collection);
+      case 'hide':
+        await ref.read(collectionsProvider.notifier).setHidden(
+              collection.id,
+              isHidden: !collection.isHidden,
+            );
       case 'delete':
         await _deleteCollection(context, ref, collection);
     }
@@ -522,6 +543,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     await _renameCollection(context, ref, collection);
                   },
                 ),
+              ListTile(
+                leading: Icon(
+                  collection.isHidden
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                ),
+                title: Text(
+                  collection.isHidden ? l.collectionUnhide : l.collectionHide,
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await ref.read(collectionsProvider.notifier).setHidden(
+                        collection.id,
+                        isHidden: !collection.isHidden,
+                      );
+                },
+              ),
               ListTile(
                 leading: Icon(
                   Icons.delete,

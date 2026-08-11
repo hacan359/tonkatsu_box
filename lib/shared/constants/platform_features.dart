@@ -9,7 +9,8 @@ import 'platform_features_io.dart'
     as platform;
 
 /// Whether this is the selfhost web build (served from the container).
-bool get kIsWebBuild => platform.isWeb;
+/// Const so dart2js tree-shakes desktop-only screens behind `!kIsWebBuild`.
+const bool kIsWebBuild = platform.isWeb;
 
 /// Whether the Board (visual canvas) is available. Available on all platforms.
 bool get kCanvasEnabled => true;

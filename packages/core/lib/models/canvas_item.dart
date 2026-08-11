@@ -268,7 +268,11 @@ class CanvasItem with Exportable {
   String get mediaCacheId {
     return switch (itemType) {
       CanvasItemType.game => (game?.id ?? 0).toString(),
-      CanvasItemType.movie => (movie?.tmdbId ?? 0).toString(),
+      CanvasItemType.movie => cover_id.coverImageId(
+          mediaType: MediaType.movie,
+          externalId: movie?.tmdbId ?? 0,
+          source: movie?.source,
+        ),
       CanvasItemType.tvShow => cover_id.coverImageId(
           mediaType: MediaType.tvShow,
           externalId: tvShow?.tmdbId ?? 0,

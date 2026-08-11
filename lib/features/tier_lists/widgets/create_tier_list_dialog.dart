@@ -137,7 +137,7 @@ class _CreateTierListDialogState
                       if (collections.isEmpty) {
                         return Text(
                           l.importNoCollections,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                           ),
                         );

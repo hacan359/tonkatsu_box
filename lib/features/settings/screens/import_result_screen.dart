@@ -300,7 +300,7 @@ class _ErrorsCardState extends State<_ErrorsCard> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              const Icon(Icons.error_outline, size: 20, color: AppColors.error),
+              Icon(Icons.error_outline, size: 20, color: AppColors.error),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(

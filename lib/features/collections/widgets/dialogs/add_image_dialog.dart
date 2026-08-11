@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
@@ -49,7 +49,7 @@ class AddImageDialog extends StatefulWidget {
 class _AddImageDialogState extends State<AddImageDialog> {
   late final TextEditingController _urlController;
   _ImageSource _source = _ImageSource.url;
-  String? _filePath;
+  Uint8List? _pickedBytes;
   String? _fileName;
   String? _base64Data;
   String? _mimeType;
@@ -79,17 +79,19 @@ class _AddImageDialogState extends State<AddImageDialog> {
   }
 
   Future<void> _pickFile() async {
+    // withData: the browser only ever hands out bytes, and the canvas stores
+    // the image as base64 anyway.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
+      withData: true,
     );
 
     if (result == null || result.files.isEmpty) return;
 
     final PlatformFile file = result.files.first;
-    if (file.path == null) return;
+    final Uint8List? bytes = file.bytes;
+    if (bytes == null) return;
 
-    final File ioFile = File(file.path!);
-    final List<int> bytes = await ioFile.readAsBytes();
     final String base64String = base64Encode(bytes);
 
     // Infer the MIME type from the file extension
@@ -104,7 +106,7 @@ class _AddImageDialogState extends State<AddImageDialog> {
     };
 
     setState(() {
-      _filePath = file.path;
+      _pickedBytes = bytes;
       _fileName = file.name;
       _base64Data = base64String;
       _mimeType = mimeType;
@@ -203,12 +205,12 @@ class _AddImageDialogState extends State<AddImageDialog> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
-                if (_filePath != null)
+                if (_pickedBytes != null)
                   SizedBox(
                     height: 150,
                     child: Center(
-                      child: Image.file(
-                        File(_filePath!),
+                      child: Image.memory(
+                        _pickedBytes!,
                         fit: BoxFit.contain,
                         errorBuilder: (BuildContext context, Object error,
                                 StackTrace? stackTrace) =>

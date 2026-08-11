@@ -33,21 +33,24 @@ and use PowerShell's `--%` stop-parsing token.
 
 ### Workspace layout
 
-The repo is a Flutter app plus two path packages:
+The repo is a Flutter app plus three sibling Dart packages:
 
 | Path | What |
 |------|------|
 | `lib/` | The Flutter app |
 | `packages/core/` | Pure-Dart shared layer (models, DB, utils), no Flutter |
 | `packages/gamepads_windows_stub/` | Stub overriding the crashing `gamepads_windows` plugin |
+| `server/` | Selfhost server (pure Dart, shelf) — outside the app's build graph |
 
-`packages/core` resolves its own dependencies. A root `flutter pub get` does
-**not** create `packages/core/.dart_tool/package_config.json`, so its `test/`
-files fail to analyze (`package:test` is only in *its* dev_dependencies). CI and
+`packages/core` and `server` resolve their own dependencies. A root
+`flutter pub get` does **not** create their `.dart_tool/package_config.json`, so
+their `test/` files fail to analyze (`package:test` is only in *their*
+dev_dependencies) — and root `flutter analyze` does cover both trees. CI and
 fresh clones need:
 
 ```bash
 dart pub get --directory packages/core
+dart pub get --directory server
 ```
 
 Coverage has the same trap: `flutter test --coverage` defaults
@@ -365,7 +368,29 @@ sane? Does it match the surrounding style?
 flutter analyze --fatal-infos --fatal-warnings  # must match CI
 flutter test
 dart test  # from packages/core
+dart test  # from server, when the change touches it
 ```
+
+Touching a DAO **or any model one returns** changes the wire format, so the
+RPC layer has to be regenerated and the result committed:
+
+```bash
+dart run tool/generate_rpc.dart  # from packages/core
+```
+
+Forgetting is caught, not trusted to memory:
+
+- a changed signature stops the stub satisfying `implements <Name>Dao` —
+  `flutter analyze` fails;
+- a new DAO adds a required parameter to `buildDaoDispatchTable` — the server
+  stops compiling;
+- a changed **model** touches no signature at all and would silently drop a
+  field on the wire; `packages/core/test/rpc/generated_up_to_date_test.dart`
+  regenerates in memory and diffs against the committed files, so `dart test`
+  fails locally and in CI.
+
+The server holds exactly one `Database` per process — never a pool, or a
+dispatched transaction stops being atomic.
 
 ## Forbidden
 
@@ -375,6 +400,11 @@ dart test  # from packages/core
 - Ignoring lint warnings
 - Committing commented-out code
 - `setState` in complex widgets — use Riverpod
+- Referencing a file git does not track — the link is dead for everyone who
+  clones. Verify with `git ls-files <path>` before writing a path into a
+  committed file. Specs, notes and scratch work are untracked on purpose and
+  stay that way. More generally, skip "see X" pointers altogether: state the
+  constraint where it matters, or leave it out.
 
 ## Flutter practices
 
@@ -446,10 +476,64 @@ are Windows-only. Long-press context menus are Android; right-click is Windows.
 
 The flags are defined once there; only the OS detection is per-target, behind a
 conditional import (`platform_features_io.dart` /
-`platform_features_web.dart`). Never reach for `Platform.is*` in a feature — a
-new `dart:io` import is a file the web build cannot compile. Add a flag instead.
+`platform_features_web.dart`). Never reach for `Platform.is*` in a feature — on
+web every `Platform` getter throws at runtime, and no build says so beforehand
+(see the web section below). Add a flag instead.
 `defaultTargetPlatform` is not a substitute: it reports android in tests running
 on Windows.
+
+### Web build (selfhost, phase 3 — in progress)
+
+The browser holds **no database at all**: `databaseServiceProvider` hands out
+the generated `RemoteDaoSet` (`packages/core/lib/rpc/generated/`), so every DAO
+call is one POST to the server's `/rpc` next to the real file. Touching
+`DatabaseService.database` on web throws — a local database there would quietly
+collect writes the server never sees. Image caching moves to the server proxy in
+phase 5.
+
+External APIs are unreachable from a browser (no CORS header, a stripped
+`User-Agent`, keys that must not ship to a tab), so on web `createApiDio`
+installs `ProxyRewriteInterceptor`: any host in `kProxyTargets`
+(`packages/core/lib/api/proxy_targets.dart`) is rewritten to
+`/proxy/<slug>/…` on the server, which adds the agent and the real credentials.
+That table is shared by both ends on purpose — a second copy would drift and
+turn the route into an open relay. Adding an API means adding a row there, and
+a keyed one also needs a case in `ApiProxy._authorize`.
+
+```bash
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter build web"
+# dev, page and server on different ports:
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter run -d chrome --dart-define=SERVER_BASE_URL=http://localhost:8080"
+```
+
+How web is kept compilable — three seams, in order of preference:
+
+1. **A `platform_features` flag** (`kIsWebBuild` & co) for behavior switches —
+   e.g. `ImageCacheService` returns "not cached" on web instead of touching `File`.
+2. **Conditional import of an `initPlatform()`-style pair**
+   (`platform_init_io.dart` / `platform_init_web.dart` in `main.dart`) when the
+   io side needs imports web cannot even parse (`dart:ffi`, `sqflite_common_ffi`).
+3. **A shim facade over an ffi-pulling package** — `discord_presence_shim.dart`
+   exports `_io`/`_web` variants; the web one is a no-op with the same API.
+
+Rules while the web phase is in flight:
+
+- Any change must keep **all three** targets green: Windows, Android, web.
+  **No build catches a web-only break.** `dart:io` compiles for web as a stub, so
+  `flutter build web` is green with `File`/`Directory`/`Platform` all over `lib/`;
+  the call throws `Unsupported operation: _Namespace` in the browser instead. So
+  a guard is always a runtime `if (kIsWebBuild)`, never the import, and the only
+  gate is clicking through the page.
+- **`File(path)` throws in its constructor**, before any IO. An `errorBuilder` on
+  `Image.file` therefore never runs, and a `try` around the *caller* of a widget
+  does not help either — the throw happens in the child's `build`. A widget that
+  renders a path out of the database needs the guard in itself, not at an entry
+  point that can be hidden.
+- Web icons (`web/favicon.png`, `web/icons/*`) are generated from
+  `assets/icon/icon.png` by `dart run flutter_launcher_icons` (config in
+  `pubspec.yaml`) — regenerate, don't hand-edit.
+- Imports in shared code: `package:sqflite_common/sqflite.dart` (pure API),
+  never `sqflite_common_ffi` outside `platform_init_io.dart`.
 
 ### Gamepad support (D-pad navigation)
 
@@ -499,4 +583,7 @@ Full docs: `docs/GAMEPAD.md`.
 | `lib/shared/theme/app_theme.dart` | Centralized theme (dark Material 3) |
 | `test/helpers/test_helpers.dart` | Shared mocks, builders, `pumpApp` |
 | `analysis_options.yaml` | Strict lint rules |
+| `server/` | Selfhost server: boot, migrations, static, `/rpc`; `PROTOCOL.md` = contract |
+| `packages/core/tool/generate_rpc.dart` | Emits the RPC stubs + dispatcher from DAO signatures |
+| `lib/core/rpc/dio_rpc_transport.dart` | The app's `/rpc` client — the one seam web DAOs go through |
 | `docs/` | ARCHITECTURE, CODESTYLE, COMMITS, GAMEPAD, RCOLL_FORMAT… |

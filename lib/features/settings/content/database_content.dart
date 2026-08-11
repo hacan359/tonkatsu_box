@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/config_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -53,8 +54,7 @@ class DatabaseContent extends ConsumerWidget {
                 vertical: AppSpacing.sm,
               ),
               child: LayoutBuilder(
-                builder:
-                    (BuildContext context, BoxConstraints constraints) {
+                builder: (BuildContext context, BoxConstraints constraints) {
                   final Widget exportButton = OutlinedButton.icon(
                     onPressed: () => _exportConfig(context, ref),
                     icon: const Icon(Icons.upload, size: 18),
@@ -89,28 +89,32 @@ class DatabaseContent extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
 
-        const StorageLocationSection(),
-        const SizedBox(height: AppSpacing.md),
+        // Data folders, LAN sync and backups move whole directories around —
+        // meaningless in a browser, where the server owns the files.
+        if (!kIsWebBuild) ...<Widget>[
+          const StorageLocationSection(),
+          const SizedBox(height: AppSpacing.md),
 
-        SettingsGroup(
-          title: l10n.lanSyncTitle,
-          children: <Widget>[
-            SettingsTile(
-              title: l10n.lanSyncOpenTile,
-              subtitle: l10n.lanSyncTileSubtitle,
-              leadingIcon: Icons.devices,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) => const LanSyncScreen(),
+          SettingsGroup(
+            title: l10n.lanSyncTitle,
+            children: <Widget>[
+              SettingsTile(
+                title: l10n.lanSyncOpenTile,
+                subtitle: l10n.lanSyncTileSubtitle,
+                leadingIcon: Icons.devices,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const LanSyncScreen(),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-        const BackupSection(),
-        const SizedBox(height: AppSpacing.md),
+          const BackupSection(),
+          const SizedBox(height: AppSpacing.md),
+        ],
 
         SettingsGroup(
           title: l10n.databaseDangerZone,
@@ -138,7 +142,7 @@ class DatabaseContent extends ConsumerWidget {
                   onPressed: () => _resetDatabase(context, ref),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
+                    side: BorderSide(color: AppColors.error),
                   ),
                   icon: const Icon(Icons.delete_forever, size: 18),
                   label: Text(l10n.databaseResetDatabase),
@@ -152,8 +156,9 @@ class DatabaseContent extends ConsumerWidget {
   }
 
   Future<void> _exportConfig(BuildContext context, WidgetRef ref) async {
-    final SettingsNotifier notifier =
-        ref.read(settingsNotifierProvider.notifier);
+    final SettingsNotifier notifier = ref.read(
+      settingsNotifierProvider.notifier,
+    );
     final ConfigResult result = await notifier.exportConfig();
 
     if (!context.mounted) return;
@@ -169,8 +174,9 @@ class DatabaseContent extends ConsumerWidget {
   }
 
   Future<void> _importConfig(BuildContext context, WidgetRef ref) async {
-    final SettingsNotifier notifier =
-        ref.read(settingsNotifierProvider.notifier);
+    final SettingsNotifier notifier = ref.read(
+      settingsNotifierProvider.notifier,
+    );
     final ConfigResult result = await notifier.importConfig();
 
     if (!context.mounted) return;
@@ -195,8 +201,9 @@ class DatabaseContent extends ConsumerWidget {
     );
 
     if (confirm && context.mounted) {
-      final SettingsNotifier notifier =
-          ref.read(settingsNotifierProvider.notifier);
+      final SettingsNotifier notifier = ref.read(
+        settingsNotifierProvider.notifier,
+      );
       await notifier.flushDatabase();
 
       ref.invalidate(collectionsProvider);
@@ -214,14 +221,9 @@ class DatabaseContent extends ConsumerWidget {
       ref.invalidate(releasesProvider);
 
       if (context.mounted) {
-        context.showSnack(
-          S.of(context).databaseReset,
-          type: SnackType.success,
-        );
+        context.showSnack(S.of(context).databaseReset, type: SnackType.success);
         Navigator.of(context, rootNavigator: true).pushReplacement(
-          MaterialPageRoute<void>(
-            builder: (_) => const AppShell(),
-          ),
+          MaterialPageRoute<void>(builder: (_) => const AppShell()),
         );
       }
     }

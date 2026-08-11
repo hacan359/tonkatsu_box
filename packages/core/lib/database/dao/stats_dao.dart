@@ -206,7 +206,10 @@ class StatsDao {
     final List<Map<String, dynamic>> mv = await db.rawQuery(
       'SELECT SUM(mc.runtime * (1 + COALESCE(ci.rewatch_count, 0))) AS s '
       'FROM collection_items ci '
+      // Source-qualified: two providers can cache the same numeric id, and an
+      // unqualified join would count that film's runtime twice.
       'JOIN movies_cache mc ON mc.tmdb_id = ci.external_id '
+      "AND mc.source = COALESCE(ci.source, 'tmdb') "
       "${w.where('ci.added_at', seconds: true, extra: "ci.media_type = 'movie' AND ci.status = 'completed'")}",
       w.args,
     );

@@ -200,6 +200,7 @@ class HardcoverImportService implements ImportSource {
       mediaType: MediaType.book,
       externalId: entry.book.externalIdInt,
       platformId: null,
+      source: DataSource.hardcover,
       label: entry.book.title,
       insertRow: _insertRow(entry, status),
       changedFields: (CollectionItem existing) => mode == ImportMode.newOnly
@@ -312,7 +313,7 @@ class HardcoverImportService implements ImportSource {
     final int tagId = await _db.globalTagDao.resolveOrCreate(ownedTagName);
     final List<int> itemIds = <int>[
       for (final int externalId in ownedExternalIds)
-        ?write.idFor(MediaType.book, externalId, null),
+        ?write.idFor(MediaType.book, externalId, null, DataSource.hardcover),
     ];
     if (itemIds.isEmpty) return;
     await _db.globalTagDao.addTagToItems(itemIds, tagId);

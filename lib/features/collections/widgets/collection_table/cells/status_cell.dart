@@ -106,7 +106,7 @@ class StatusCell extends StatelessWidget {
               ),
               const Spacer(),
               if (s == status)
-                const Icon(
+                Icon(
                   Icons.check_rounded,
                   size: 16,
                   color: AppColors.brand,

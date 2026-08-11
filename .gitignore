@@ -1,6 +1,13 @@
 # Claude Code (ignore local settings, keep skills)
 .claude/settings.local.json
 
+# Browser-automation session artifacts (screenshots, logs)
+.playwright-cli/
+
+# Selfhost: per-machine compose settings and the default data folder
+.env
+/data/
+
 # Miscellaneous
 *.class
 *.log

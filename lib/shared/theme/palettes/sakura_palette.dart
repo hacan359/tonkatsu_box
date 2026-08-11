@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+
+import '../app_assets.dart';
+import '../app_palette.dart';
+
+/// Soft light theme. Accents are darkened versions of the dark theme's so
+/// they keep contrast on the near-white pink background.
+const AppPalette sakuraPalette = AppPalette(
+  brightness: Brightness.light,
+  background: Color(0xFFFDF2F4),
+  surface: Color(0xFFFFF9FA),
+  surfaceLight: Color(0xFFF9E7EC),
+  surfaceBorder: Color(0xFFEFD3DB),
+  textPrimary: Color(0xFF3D2B30),
+  textSecondary: Color(0xFF7A5C66),
+  textTertiary: Color(0xFFB08E9A),
+  brand: Color(0xFFD96A8A),
+  onBrand: Color(0xFFFFFFFF),
+  gameAccent: Color(0xFF5A68C0),
+  movieAccent: Color(0xFFD96A3F),
+  tvShowAccent: Color(0xFF7FA623),
+  animationAccent: Color(0xFF8E4FC0),
+  visualNovelAccent: Color(0xFF2A5FC1),
+  mangaAccent: Color(0xFF1D8FD1),
+  animeAccent: Color(0xFFD14361),
+  bookAccent: Color(0xFF8A5A3F),
+  customAccent: Color(0xFF1E8578),
+  success: Color(0xFF3E9D44),
+  warning: Color(0xFFE08900),
+  error: Color(0xFFD93B36),
+  favorite: Color(0xFFE63B5E),
+  statusInProgress: Color(0xFF1E88E5),
+  statusPlanned: Color(0xFF7C3AED),
+  statusReplaying: Color(0xFF00A5BC),
+  ratingStar: Color(0xFFD97706),
+  ratingHigh: Color(0xFF16A34A),
+  ratingMedium: Color(0xFFCA8A04),
+  ratingLow: Color(0xFFDC2626),
+  ratingGold: Color(0xFFB8860B),
+  scrim: Color(0xFF000000),
+  onOverlay: Color(0xFFFFFFFF),
+  barrier: Color(0x73000000),
+  shadow: Color(0xFF000000),
+  rowFade: Color(0xFFF6E3E8),
+  badge: Color(0xFFD96A8A),
+  onBadge: Color(0xFFFFFFFF),
+  tileAsset: AppAssets.backgroundTileSakura,
+  tileOpacity: 0.06,
+);

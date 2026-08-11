@@ -174,6 +174,21 @@ class SEn extends S {
   String get status => 'Status';
 
   @override
+  String get movieStatusReleased => 'Released';
+
+  @override
+  String get movieStatusCompleted => 'Completed';
+
+  @override
+  String get movieStatusPostProduction => 'Filming / Post-production';
+
+  @override
+  String get movieStatusPreProduction => 'Pre-production';
+
+  @override
+  String get movieStatusAnnounced => 'Announced';
+
+  @override
   String get sortStatusDesc => 'Active first';
 
   @override
@@ -557,6 +572,24 @@ class SEn extends S {
   String get settingsApiKeys => 'API Keys';
 
   @override
+  String get credentialsServerManagedTitle => 'Keys are stored on the server';
+
+  @override
+  String get credentialsServerManagedBody =>
+      'Anything entered below is saved on the selfhost server, not in this browser — that is where requests to the APIs are made from. You can also load them from a config file exported on desktop.';
+
+  @override
+  String get credentialsUploadFromConfig => 'Load keys from a config file';
+
+  @override
+  String get credentialsUploadNoKeys => 'No API keys in that file';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count keys stored on the server';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }
@@ -566,6 +599,18 @@ class SEn extends S {
 
   @override
   String get settingsAppearanceSubtitle => 'Language, display and content';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeSubtitle => 'App color theme';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsThemeSakura => 'Sakura';
 
   @override
   String get settingsAppLanguageSubtitle => 'Interface language';
@@ -747,7 +792,13 @@ class SEn extends S {
   String get credentialsTmdbSection => 'TMDB API (Movies & TV)';
 
   @override
+  String get credentialsTvdbSection => 'TheTVDB API (Movies & TV)';
+
+  @override
   String get credentialsEnterTmdbKey => 'Enter your TMDB API key (v3)';
+
+  @override
+  String get credentialsEnterTvdbKey => 'Enter your TheTVDB API key (v4)';
 
   @override
   String get credentialsComicVineSection => 'ComicVine API (Comics)';
@@ -830,6 +881,12 @@ class SEn extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'TMDB API key is invalid';
+
+  @override
+  String get credentialsTvdbKeyValid => 'TheTVDB API key is valid';
+
+  @override
+  String get credentialsTvdbKeyInvalid => 'TheTVDB API key is invalid';
 
   @override
   String get credentialsComicVineKeyValid => 'ComicVine API key is valid';
@@ -1400,6 +1457,10 @@ class SEn extends S {
   @override
   String get creditsTmdbAttribution =>
       'This product uses the TMDB API but is not endorsed or certified by TMDB.';
+
+  @override
+  String get creditsTvdbAttribution =>
+      'Metadata provided by TheTVDB. Please consider adding missing information or subscribing.';
 
   @override
   String get creditsTvMazeAttribution => 'TV series data provided by TVmaze.';
@@ -2156,6 +2217,19 @@ class SEn extends S {
       'Name must be at least 2 characters';
 
   @override
+  String get createCollectionHiddenLabel => 'Hidden collection';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'No covers on the card, and its items stay out of All Items';
+
+  @override
+  String get collectionHide => 'Hide collection';
+
+  @override
+  String get collectionUnhide => 'Unhide collection';
+
+  @override
   String get renameCollectionTitle => 'Rename Collection';
 
   @override
@@ -2735,6 +2809,9 @@ class SEn extends S {
   String get welcomeApiTmdbDesc => 'Movies, TV & Anime';
 
   @override
+  String get welcomeApiTvdbDesc => 'Movies & TV, own episode data';
+
+  @override
   String get welcomeApiComicVineDesc => 'Comics & graphic novels';
 
   @override
@@ -2882,6 +2959,10 @@ class SEn extends S {
       'Optional — your own key raises rate limits. Search works without it.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Required — TheTVDB search stays off without a key.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Required — search and import stay disabled without it. Tokens expire every January 1st.';
 
@@ -2890,6 +2971,10 @@ class SEn extends S {
 
   @override
   String get welcomeSourceDescTvMaze => 'TV series.';
+
+  @override
+  String get welcomeSourceDescTvdb =>
+      'Movies and TV series, with its own episode data.';
 
   @override
   String get welcomeSourceDescIgdb => 'Video games across every platform.';
@@ -3193,6 +3278,9 @@ class SEn extends S {
 
   @override
   String get settingsAnimeMangaTitleLanguageNative => 'Native';
+
+  @override
+  String get dualDatePickerNoDate => 'No date';
 
   @override
   String get dualDatePickerErrorEmpty => 'Enter a date';
@@ -5435,6 +5523,9 @@ class SEn extends S {
 
   @override
   String get simklPinPrompt => 'Enter this code at simkl.com/pin:';
+
+  @override
+  String get simklPinCopied => 'Code copied';
 
   @override
   String get simklOpenPinPage => 'Open simkl.com/pin';

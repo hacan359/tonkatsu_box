@@ -29,9 +29,6 @@ class OpenLibrarySource extends SearchSource {
   DataSource get dataSource => DataSource.openLibrary;
 
   @override
-  IconData get groupIcon => Icons.menu_book;
-
-  @override
   String label(S l) => l.collectionFilterBooks;
 
   @override

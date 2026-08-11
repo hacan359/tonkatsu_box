@@ -10,6 +10,7 @@ import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/welcome/screens/welcome_screen.dart';
 import 'profile_picker_screen.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_durations.dart';
@@ -77,12 +78,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _controller.forward();
 
     final DatabaseService db = ref.read(databaseServiceProvider);
-    db.database.then((_) {
+    db.warmUp().then((_) {
       _dbDone = true;
       _tryNavigate();
     }).catchError((Object error, StackTrace stack) {
-      // DB open/migration failed (e.g. v27→v32 upgrade). Without this the
-      // future just rejects, _dbDone stays false and the splash hangs forever.
+      // A failed migration, or on web a server that did not answer. Without
+      // this the future just rejects and the splash hangs forever.
       recordStartupError('database', error, stack);
     });
   }
@@ -102,12 +103,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final bool skipPicker =
           prefs.getBool(kSkipProfilePickerKey) ?? false;
       final bool skipOnce =
-          prefs.getBool('skip_picker_once') ?? false;
+          prefs.getBool(SettingsKeys.skipPickerOnce) ?? false;
       if (skipOnce) {
-        prefs.remove('skip_picker_once');
+        prefs.remove(SettingsKeys.skipPickerOnce);
       }
 
-      if (data.profiles.length > 1 && !skipPicker && !skipOnce) {
+      // Profiles are a native concept: the server hands out one database.
+      if (!kIsWebBuild && data.profiles.length > 1 && !skipPicker && !skipOnce) {
         _navigateToProfilePicker();
       } else {
         _navigateToHome();
@@ -132,7 +134,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Animation<double> secondaryAnimation,
           Widget child,
         ) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: _withBackdrop(child),
+          );
         },
         transitionDuration: Duration(
           milliseconds: kIsMobile ? 200 : 500,
@@ -159,10 +164,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Animation<double> secondaryAnimation,
           Widget child,
         ) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: _withBackdrop(child),
+          );
         },
         transitionDuration: Duration(milliseconds: kIsMobile ? 200 : 500),
       ),
+    );
+  }
+
+
+  /// PageRouteBuilder skips PageTransitionsTheme, so on web the route paints
+  /// the tiled backdrop itself — the browser's page root is white; native isn't.
+  Widget _withBackdrop(Widget child) {
+    if (!kIsWebBuild) return child;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        image: AppColors.tileImage,
+      ),
+      child: child,
     );
   }
 
@@ -184,7 +206,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Animation<double> secondaryAnimation,
           Widget child,
         ) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: _withBackdrop(child),
+          );
         },
         transitionDuration: AppDurations.slower,
       ),

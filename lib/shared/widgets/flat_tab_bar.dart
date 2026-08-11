@@ -47,7 +47,7 @@ class FlatTabBar<T> extends StatelessWidget {
       child: DecoratedBox(
         // Runs edge to edge, so the bar reads as a band of the page rather
         // than as a control sitting on it.
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
           ),

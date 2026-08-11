@@ -5,100 +5,21 @@ import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
 import 'package:tonkatsu_box/features/search/sources/tmdb_anime_source.dart';
 import 'package:tonkatsu_box/features/search/sources/tmdb_movies_source.dart';
 import 'package:tonkatsu_box/features/search/sources/tmdb_tv_source.dart';
-import 'package:tonkatsu_box/features/search/sources/tvmaze_tv_source.dart';
-import 'package:tonkatsu_box/features/search/sources/anilist_anime_source.dart';
 import 'package:tonkatsu_box/features/search/sources/anilist_manga_source.dart';
 import 'package:tonkatsu_box/features/search/sources/comicvine_source.dart';
-import 'package:tonkatsu_box/features/search/sources/fantlab_source.dart';
-import 'package:tonkatsu_box/features/search/sources/google_books_source.dart';
 import 'package:tonkatsu_box/features/search/sources/hardcover_source.dart';
-import 'package:tonkatsu_box/features/search/sources/kitsu_anime_source.dart';
-import 'package:tonkatsu_box/features/search/sources/kitsu_manga_source.dart';
-import 'package:tonkatsu_box/features/search/sources/mangabaka_source.dart';
-import 'package:tonkatsu_box/features/search/sources/mangadex_source.dart';
-import 'package:tonkatsu_box/features/search/sources/openlibrary_source.dart';
 import 'package:tonkatsu_box/features/search/sources/vndb_source.dart';
 
 void main() {
   group('searchSources', () {
-    test('contains 17 sources', () {
-      expect(searchSources, hasLength(17));
-    });
-
-    test('first source is TmdbMoviesSource', () {
-      expect(searchSources[0], isA<TmdbMoviesSource>());
-    });
-
-    test('second source is TmdbTvSource', () {
-      expect(searchSources[1], isA<TmdbTvSource>());
-    });
-
-    test('third source is TmdbAnimeSource', () {
-      expect(searchSources[2], isA<TmdbAnimeSource>());
-    });
-
-    test('fourth source is TvMazeTvSource', () {
-      expect(searchSources[3], isA<TvMazeTvSource>());
-    });
-
-    test('fifth source is IgdbGamesSource', () {
-      expect(searchSources[4], isA<IgdbGamesSource>());
-    });
-
-    test('sixth source is AniListAnimeSource', () {
-      expect(searchSources[5], isA<AniListAnimeSource>());
-    });
-
-    test('seventh source is AniListMangaSource', () {
-      expect(searchSources[6], isA<AniListMangaSource>());
-    });
-
-    test('eighth source is MangaBakaSource', () {
-      expect(searchSources[7], isA<MangaBakaSource>());
-    });
-
-    test('ninth source is MangaDexSource', () {
-      expect(searchSources[8], isA<MangaDexSource>());
-    });
-
-    test('tenth source is KitsuAnimeSource', () {
-      expect(searchSources[9], isA<KitsuAnimeSource>());
-    });
-
-    test('eleventh source is KitsuMangaSource', () {
-      expect(searchSources[10], isA<KitsuMangaSource>());
-    });
-
-    test('twelfth source is VndbSource', () {
-      expect(searchSources[11], isA<VndbSource>());
-    });
-
-    test('thirteenth source is OpenLibrarySource', () {
-      expect(searchSources[12], isA<OpenLibrarySource>());
-    });
-
-    test('fourteenth source is FantlabSource', () {
-      expect(searchSources[13], isA<FantlabSource>());
-    });
-
-    test('fifteenth source is GoogleBooksSource', () {
-      expect(searchSources[14], isA<GoogleBooksSource>());
-    });
-
-    test('sixteenth source is HardcoverSource', () {
-      expect(searchSources[15], isA<HardcoverSource>());
-    });
-
-    test('seventeenth source is ComicVineSource', () {
-      expect(searchSources[16], isA<ComicVineSource>());
-    });
-
     test('all sources have unique ids', () {
       final Set<String> ids =
           searchSources.map((SearchSource s) => s.id).toSet();
       expect(ids.length, searchSources.length);
     });
 
+    /// Registration order is load-bearing: it drives per-type primary and
+    /// fallback resolution.
     test('source ids match expected values', () {
       final List<String> ids =
           searchSources.map((SearchSource s) => s.id).toList();
@@ -107,6 +28,8 @@ void main() {
         'tv',
         'anime',
         'tvmaze_tv',
+        'tvdb_movies',
+        'tvdb_series',
         'games',
         'anilist_anime',
         'manga',

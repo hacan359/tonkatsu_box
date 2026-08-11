@@ -47,6 +47,24 @@ class CollectionDao {
         _bookDao = bookDao,
         _customMediaDao = customMediaDao;
 
+  /// The media DAOs are always the same eight over the same connection, so
+  /// every host (app, server, tests) would otherwise repeat the wiring.
+  factory CollectionDao.withMediaDaos(
+    Future<Database> Function() getDatabase,
+  ) {
+    return CollectionDao(
+      getDatabase,
+      gameDao: GameDao(getDatabase),
+      movieDao: MovieDao(getDatabase),
+      tvShowDao: TvShowDao(getDatabase),
+      visualNovelDao: VisualNovelDao(getDatabase),
+      animeDao: AnimeDao(getDatabase),
+      mangaDao: MangaDao(getDatabase),
+      bookDao: BookDao(getDatabase),
+      customMediaDao: CustomMediaDao(getDatabase),
+    );
+  }
+
   final Future<Database> Function() _getDatabase;
   final GameDao _gameDao;
   final MovieDao _movieDao;
@@ -111,6 +129,7 @@ class CollectionDao {
     String? forkedFromAuthor,
     String? forkedFromName,
     DateTime? createdAt,
+    bool isHidden = false,
   }) async {
     final Database db = await _getDatabase();
     final int timestamp =
@@ -126,6 +145,7 @@ class CollectionDao {
         'original_snapshot': originalSnapshot,
         'forked_from_author': forkedFromAuthor,
         'forked_from_name': forkedFromName,
+        'is_hidden': isHidden ? 1 : 0,
       },
     );
 
@@ -138,6 +158,7 @@ class CollectionDao {
       originalSnapshot: originalSnapshot,
       forkedFromAuthor: forkedFromAuthor,
       forkedFromName: forkedFromName,
+      isHidden: isHidden,
     );
   }
 
@@ -148,6 +169,7 @@ class CollectionDao {
     String? name,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) async {
@@ -157,6 +179,7 @@ class CollectionDao {
     if (clearHeroImage) values['hero_image_path'] = null;
     if (description != null) values['description'] = description;
     if (clearDescription) values['description'] = null;
+    if (isHidden != null) values['is_hidden'] = isHidden ? 1 : 0;
     if (values.isEmpty) return;
 
     final Database db = await _getDatabase();
@@ -761,18 +784,26 @@ class CollectionDao {
     );
   }
 
+  /// The `clear*` flags erase a date: a plain `null` means "leave unchanged",
+  /// mirroring [CollectionItem.copyWith]. Status is deliberately not touched.
   Future<void> updateItemActivityDates(
     int id, {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    bool clearStartedAt = false,
+    bool clearCompletedAt = false,
   }) async {
     final Database db = await _getDatabase();
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (startedAt != null) {
+    if (clearStartedAt) {
+      data['started_at'] = null;
+    } else if (startedAt != null) {
       data['started_at'] = startedAt.millisecondsSinceEpoch ~/ 1000;
     }
-    if (completedAt != null) {
+    if (clearCompletedAt) {
+      data['completed_at'] = null;
+    } else if (completedAt != null) {
       data['completed_at'] = completedAt.millisecondsSinceEpoch ~/ 1000;
     }
     if (lastActivityAt != null) {
@@ -1159,6 +1190,7 @@ class CollectionDao {
           ON ci.media_type = 'game' AND ci.external_id = g.id
         LEFT JOIN movies_cache m
           ON ci.media_type = 'movie' AND ci.external_id = m.tmdb_id
+          AND m.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN tv_shows_cache t
           ON ci.media_type = 'tv_show' AND ci.external_id = t.tmdb_id
           AND t.source = COALESCE(ci.source, 'tmdb')
@@ -1169,6 +1201,7 @@ class CollectionDao {
         LEFT JOIN movies_cache m2
           ON ci.media_type = 'animation' AND ci.platform_id != 1
           AND ci.external_id = m2.tmdb_id
+          AND m2.source = COALESCE(ci.source, 'tmdb')
         LEFT JOIN visual_novels_cache vn
           ON ci.media_type = 'visual_novel' AND ci.external_id = vn.numeric_id
         LEFT JOIN manga_cache mc
@@ -1319,8 +1352,10 @@ class CollectionDao {
     final Map<int, Game> gamesMap = <int, Game>{
       for (final Game g in games) g.id: g,
     };
-    final Map<int, Movie> moviesMap = <int, Movie>{
-      for (final Movie m in resolvedMovies) m.tmdbId: m,
+    // Movies are keyed by `(source, id)` — TMDB and TheTVDB can share a
+    // numeric id, so a plain id-keyed map would collapse them.
+    final Map<String, Movie> moviesMap = <String, Movie>{
+      for (final Movie m in resolvedMovies) '${m.source.name}:${m.tmdbId}': m,
     };
     // TV shows are keyed by `(source, id)` — ids from different providers
     // can collide numerically.
@@ -1358,7 +1393,10 @@ class CollectionDao {
                 : null,
           );
         case MediaType.movie:
-          return item.copyWith(movie: moviesMap[item.externalId]);
+          return item.copyWith(
+            movie: moviesMap[
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+          );
         case MediaType.tvShow:
           return item.copyWith(
             tvShow: tvShowsMap[
@@ -1371,7 +1409,10 @@ class CollectionDao {
                   '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
             );
           }
-          return item.copyWith(movie: moviesMap[item.externalId]);
+          return item.copyWith(
+            movie: moviesMap[
+                '${(item.source ?? DataSource.tmdb).name}:${item.externalId}'],
+          );
         case MediaType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.externalId]);
         case MediaType.anime:

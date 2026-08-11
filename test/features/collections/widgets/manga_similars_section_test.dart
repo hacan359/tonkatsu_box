@@ -1,5 +1,3 @@
-// Widget tests for MangaSimilarsSection — render / empty / error / owned badge.
-
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/manga.dart';
@@ -7,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/api/anilist_api.dart';
+import 'package:tonkatsu_box/core/api/kitsu_api.dart';
 import 'package:tonkatsu_box/core/api/mangabaka_api.dart';
 import 'package:tonkatsu_box/core/api/mangadex_api.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
@@ -19,10 +19,14 @@ void main() {
 
   late MockMangaBakaApi mockApi;
   late MockMangaDexApi mockDexApi;
+  late MockAniListApi mockAniList;
+  late MockKitsuApi mockKitsu;
 
   setUp(() {
     mockApi = MockMangaBakaApi();
     mockDexApi = MockMangaDexApi();
+    mockAniList = MockAniListApi();
+    mockKitsu = MockKitsuApi();
   });
 
   final Manga mangaBakaSeed =
@@ -41,6 +45,8 @@ void main() {
       overrides: <Override>[
         mangaBakaApiProvider.overrideWithValue(mockApi),
         mangaDexApiProvider.overrideWithValue(mockDexApi),
+        aniListApiProvider.overrideWithValue(mockAniList),
+        kitsuApiProvider.overrideWithValue(mockKitsu),
         collectedMangaIdsProvider.overrideWith((Ref ref) async => ownedIds),
       ],
     );
@@ -153,6 +159,88 @@ void main() {
       expect(find.text('Vagabond'), findsOneWidget);
       verify(() => mockDexApi.getRecommendations('the-uuid')).called(1);
       verifyNever(() => mockApi.getRecommendations(any()));
+    });
+
+    testWidgets('routes an AniList seed to AniList recommendations',
+        (WidgetTester tester) async {
+      when(() => mockAniList.getMangaRecommendations(30002)).thenAnswer(
+        (_) async => <Manga>[createTestManga(id: 30642, title: 'Vinland Saga')],
+      );
+
+      await pumpSection(
+        tester,
+        seed: createTestManga(id: 30002).copyWith(source: DataSource.anilist),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Vinland Saga'), findsOneWidget);
+      verify(() => mockAniList.getMangaRecommendations(30002)).called(1);
+      verifyNever(() => mockApi.getRecommendations(any()));
+      verifyNever(() => mockKitsu.getAniListMangaId(any()));
+    });
+
+    testWidgets('bridges a Kitsu seed to AniList recommendations',
+        (WidgetTester tester) async {
+      when(() => mockKitsu.getAniListMangaId(24))
+          .thenAnswer((_) async => 30008);
+      when(() => mockAniList.getMangaRecommendations(30008)).thenAnswer(
+        (_) async => <Manga>[createTestManga(id: 30013, title: 'One Piece')],
+      );
+
+      await pumpSection(
+        tester,
+        seed: createTestManga(id: 24).copyWith(source: DataSource.kitsu),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('One Piece'), findsOneWidget);
+      verify(() => mockKitsu.getAniListMangaId(24)).called(1);
+    });
+
+    testWidgets('hides itself when a Kitsu seed has no AniList mapping',
+        (WidgetTester tester) async {
+      when(() => mockKitsu.getAniListMangaId(24))
+          .thenAnswer((_) async => null);
+
+      await pumpSection(
+        tester,
+        seed: createTestManga(id: 24).copyWith(source: DataSource.kitsu),
+      );
+
+      expect(find.byType(ListView), findsNothing);
+      verifyNever(() => mockAniList.getMangaRecommendations(any()));
+    });
+
+    testWidgets(
+        'marks an AniList-owned manga as owned for a Kitsu seed',
+        (WidgetTester tester) async {
+      when(() => mockKitsu.getAniListMangaId(24))
+          .thenAnswer((_) async => 30008);
+      when(() => mockAniList.getMangaRecommendations(30008)).thenAnswer(
+        (_) async => <Manga>[
+          createTestManga(id: 30013, title: 'One Piece')
+              .copyWith(source: DataSource.anilist),
+        ],
+      );
+
+      await pumpSection(
+        tester,
+        seed: createTestManga(id: 24).copyWith(source: DataSource.kitsu),
+        ownedIds: <int, List<CollectedItemInfo>>{
+          // Candidates are AniList entities, so owned matches AniList — not
+          // the seed's Kitsu source.
+          30013: <CollectedItemInfo>[
+            const CollectedItemInfo(
+              recordId: 1,
+              collectionId: 1,
+              collectionName: 'Reading',
+              source: DataSource.anilist,
+            ),
+          ],
+        },
+      );
+
+      expect(find.byIcon(Icons.check), findsOneWidget);
     });
   });
 }

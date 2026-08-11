@@ -26,6 +26,7 @@ import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/database/database_opener.dart';
 import 'package:core/database/migrations/migration.dart';
 import 'package:core/database/migrations/migration_runner.dart';
+import 'package:core/rpc/generated/remote_daos.rpc.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -38,14 +39,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqflite.dart';
 
+import '../../shared/constants/platform_features.dart';
+import '../rpc/dio_rpc_transport.dart';
 import '../services/profile_service.dart';
 import '../services/storage_root.dart';
 
 final Provider<DatabaseService> databaseServiceProvider =
     Provider<DatabaseService>((Ref ref) {
-  return DatabaseService();
+  // The browser owns no database file: the DAOs run next to it on the server.
+  return DatabaseService(
+    remoteDaos: kIsWebBuild ? RemoteDaoSet(DioRpcTransport()) : null,
+  );
 });
 
 final Provider<GameDao> gameDaoProvider = Provider<GameDao>((Ref ref) {
@@ -151,7 +157,13 @@ final Provider<StatsDao> statsDaoProvider = Provider<StatsDao>((Ref ref) {
 });
 
 class DatabaseService {
+  DatabaseService({RemoteDaoSet? remoteDaos}) : _remote = remoteDaos;
+
   static final Logger _log = Logger('DatabaseService');
+
+  /// Non-null on web: every DAO getter below hands out the server-backed stub
+  /// instead of one bound to a local file.
+  final RemoteDaoSet? _remote;
 
   Database? _database;
   Future<Database>? _opening;
@@ -159,6 +171,11 @@ class DatabaseService {
   /// Single-flight: concurrent first-touch callers share one [_initDatabase]
   /// future so non-idempotent migrations (e.g. `ALTER TABLE ADD COLUMN`) can't race.
   Future<Database> get database {
+    // Loud on purpose: a silent local database on web would quietly collect
+    // writes the server never sees.
+    if (_remote != null) {
+      throw StateError('No local database on web — DAO calls go to the server');
+    }
     final Database? cached = _database;
     if (cached != null) return Future<Database>.value(cached);
     return _opening ??= () async {
@@ -172,73 +189,98 @@ class DatabaseService {
     }();
   }
 
-  late final GameDao gameDao = GameDao(() => database);
+  late final GameDao gameDao = _remote?.gameDao ?? GameDao(() => database);
 
-  late final MovieDao movieDao = MovieDao(() => database);
+  late final MovieDao movieDao = _remote?.movieDao ?? MovieDao(() => database);
 
-  late final TvShowDao tvShowDao = TvShowDao(() => database);
+  late final TvShowDao tvShowDao =
+      _remote?.tvShowDao ?? TvShowDao(() => database);
 
-  late final VisualNovelDao visualNovelDao = VisualNovelDao(() => database);
+  late final VisualNovelDao visualNovelDao =
+      _remote?.visualNovelDao ?? VisualNovelDao(() => database);
 
-  late final MangaDao mangaDao = MangaDao(() => database);
+  late final MangaDao mangaDao = _remote?.mangaDao ?? MangaDao(() => database);
 
-  late final BookDao bookDao = BookDao(() => database);
+  late final BookDao bookDao = _remote?.bookDao ?? BookDao(() => database);
 
-  late final AnimeDao animeDao = AnimeDao(() => database);
+  late final AnimeDao animeDao = _remote?.animeDao ?? AnimeDao(() => database);
 
-  late final CustomMediaDao customMediaDao = CustomMediaDao(() => database);
+  late final CustomMediaDao customMediaDao =
+      _remote?.customMediaDao ?? CustomMediaDao(() => database);
 
-  late final CollectionDao collectionDao = CollectionDao(
-    () => database,
-    gameDao: gameDao,
-    movieDao: movieDao,
-    tvShowDao: tvShowDao,
-    visualNovelDao: visualNovelDao,
-    animeDao: animeDao,
-    mangaDao: mangaDao,
-    bookDao: bookDao,
-    customMediaDao: customMediaDao,
-  );
+  late final CollectionDao collectionDao =
+      _remote?.collectionDao ??
+          CollectionDao(
+            () => database,
+            gameDao: gameDao,
+            movieDao: movieDao,
+            tvShowDao: tvShowDao,
+            visualNovelDao: visualNovelDao,
+            animeDao: animeDao,
+            mangaDao: mangaDao,
+            bookDao: bookDao,
+            customMediaDao: customMediaDao,
+          );
 
-  late final CanvasDao canvasDao = CanvasDao(() => database);
+  late final CanvasDao canvasDao =
+      _remote?.canvasDao ?? CanvasDao(() => database);
 
-  late final TierListDao tierListDao = TierListDao(() => database);
+  late final TierListDao tierListDao =
+      _remote?.tierListDao ?? TierListDao(() => database);
 
-  late final MoodGridDao moodGridDao = MoodGridDao(() => database);
+  late final MoodGridDao moodGridDao =
+      _remote?.moodGridDao ?? MoodGridDao(() => database);
 
-  late final TrackerDao trackerDao = TrackerDao(() => database);
+  late final TrackerDao trackerDao =
+      _remote?.trackerDao ?? TrackerDao(() => database);
 
-  late final GlobalTagDao globalTagDao = GlobalTagDao(() => database);
+  late final GlobalTagDao globalTagDao =
+      _remote?.globalTagDao ?? GlobalTagDao(() => database);
 
-  late final AniListTagDao aniListTagDao = AniListTagDao(() => database);
+  late final AniListTagDao aniListTagDao =
+      _remote?.aniListTagDao ?? AniListTagDao(() => database);
 
   late final MangaBakaGenreDao mangaBakaGenreDao =
-      MangaBakaGenreDao(() => database);
+      _remote?.mangaBakaGenreDao ?? MangaBakaGenreDao(() => database);
 
-  late final MangaBakaTagDao mangaBakaTagDao = MangaBakaTagDao(() => database);
+  late final MangaBakaTagDao mangaBakaTagDao =
+      _remote?.mangaBakaTagDao ?? MangaBakaTagDao(() => database);
 
-  late final MangaDexTagDao mangaDexTagDao = MangaDexTagDao(() => database);
+  late final MangaDexTagDao mangaDexTagDao =
+      _remote?.mangaDexTagDao ?? MangaDexTagDao(() => database);
 
-  late final WishlistDao wishlistDao = WishlistDao(() => database);
+  late final WishlistDao wishlistDao =
+      _remote?.wishlistDao ?? WishlistDao(() => database);
 
   late final TrackedReleaseDao trackedReleaseDao =
-      TrackedReleaseDao(() => database);
+      _remote?.trackedReleaseDao ?? TrackedReleaseDao(() => database);
 
   late final CalendarEntryDao calendarEntryDao =
-      CalendarEntryDao(() => database);
+      _remote?.calendarEntryDao ?? CalendarEntryDao(() => database);
 
-  late final ItemMarkDao itemMarkDao = ItemMarkDao(() => database);
+  late final ItemMarkDao itemMarkDao =
+      _remote?.itemMarkDao ?? ItemMarkDao(() => database);
 
-  late final StatsDao statsDao = StatsDao(() => database);
+  late final StatsDao statsDao = _remote?.statsDao ?? StatsDao(() => database);
+
+  /// Proves the data layer answers before the UI needs it: opening (and
+  /// migrating) the file on native, one round trip to the server on web.
+  Future<void> warmUp() async {
+    if (_remote != null) {
+      await collectionDao.getCollectionCount();
+      return;
+    }
+    await database;
+  }
 
   Future<Database> _initDatabase() async {
     final String basePath = (await StorageRoot.resolve()).path;
 
-    // If profile system is initialised, use the per-profile path.
+    // If profile system is initialised, use the per-profile path. Web has no
+    // filesystem to probe — profiles come from prefs and always exist.
     final String dbDir;
-    final File profilesFile =
-        File(p.join(basePath, StorageRoot.profilesFileName));
-    if (profilesFile.existsSync()) {
+    if (kIsWebBuild ||
+        File(p.join(basePath, StorageRoot.profilesFileName)).existsSync()) {
       final ProfileService profileService = ProfileService();
       final ProfilesData data = await profileService.loadProfiles();
       dbDir = p.join(
@@ -252,9 +294,11 @@ class DatabaseService {
 
     final String dbPath = p.join(dbDir, StorageRoot.dbFileName);
 
-    final Directory dir = Directory(dbDir);
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
+    if (!kIsWebBuild) {
+      final Directory dir = Directory(dbDir);
+      if (!dir.existsSync()) {
+        await dir.create(recursive: true);
+      }
     }
 
     _log.info(
@@ -301,6 +345,7 @@ class DatabaseService {
     String? forkedFromAuthor,
     String? forkedFromName,
     DateTime? createdAt,
+    bool isHidden = false,
   }) =>
       collectionDao.createCollection(
         name: name,
@@ -310,6 +355,7 @@ class DatabaseService {
         forkedFromAuthor: forkedFromAuthor,
         forkedFromName: forkedFromName,
         createdAt: createdAt,
+        isHidden: isHidden,
       );
 
   Future<void> updateCollection(
@@ -317,6 +363,7 @@ class DatabaseService {
     String? name,
     String? heroImagePath,
     String? description,
+    bool? isHidden,
     bool clearHeroImage = false,
     bool clearDescription = false,
   }) =>
@@ -325,6 +372,7 @@ class DatabaseService {
         name: name,
         heroImagePath: heroImagePath,
         description: description,
+        isHidden: isHidden,
         clearHeroImage: clearHeroImage,
         clearDescription: clearDescription,
       );
@@ -440,12 +488,16 @@ class DatabaseService {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    bool clearStartedAt = false,
+    bool clearCompletedAt = false,
   }) =>
       collectionDao.updateItemActivityDates(
         id,
         startedAt: startedAt,
         completedAt: completedAt,
         lastActivityAt: lastActivityAt,
+        clearStartedAt: clearStartedAt,
+        clearCompletedAt: clearCompletedAt,
       );
 
   Future<List<({int id, int? collectionId, int? platformId})>>

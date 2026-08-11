@@ -174,6 +174,21 @@ class SPt extends S {
   String get status => 'Status';
 
   @override
+  String get movieStatusReleased => 'Lançado';
+
+  @override
+  String get movieStatusCompleted => 'Concluído';
+
+  @override
+  String get movieStatusPostProduction => 'Filmagem / pós-produção';
+
+  @override
+  String get movieStatusPreProduction => 'Pré-produção';
+
+  @override
+  String get movieStatusAnnounced => 'Anunciado';
+
+  @override
   String get sortStatusDesc => 'Ativos primeiro';
 
   @override
@@ -559,6 +574,26 @@ class SPt extends S {
   String get settingsApiKeys => 'Chaves de API';
 
   @override
+  String get credentialsServerManagedTitle =>
+      'As chaves ficam guardadas no servidor';
+
+  @override
+  String get credentialsServerManagedBody =>
+      'O que introduzir abaixo é guardado no servidor selfhost, não neste navegador — é de lá que partem os pedidos às APIs. Também as pode carregar de um ficheiro de configuração exportado no ambiente de trabalho.';
+
+  @override
+  String get credentialsUploadFromConfig =>
+      'Carregar chaves de um ficheiro de configuração';
+
+  @override
+  String get credentialsUploadNoKeys => 'Esse ficheiro não tem chaves de API';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '$count chaves guardadas no servidor';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }
@@ -568,6 +603,18 @@ class SPt extends S {
 
   @override
   String get settingsAppearanceSubtitle => 'Idioma, exibição e conteúdo';
+
+  @override
+  String get settingsTheme => 'Tema';
+
+  @override
+  String get settingsThemeSubtitle => 'Tema de cores do aplicativo';
+
+  @override
+  String get settingsThemeDark => 'Escuro';
+
+  @override
+  String get settingsThemeSakura => 'Sakura';
 
   @override
   String get settingsAppLanguageSubtitle => 'Idioma da interface';
@@ -752,7 +799,14 @@ class SPt extends S {
   String get credentialsTmdbSection => 'API do TMDB (Filmes e séries)';
 
   @override
+  String get credentialsTvdbSection => 'API do TheTVDB (filmes e séries)';
+
+  @override
   String get credentialsEnterTmdbKey => 'Digite sua chave de API do TMDB (v3)';
+
+  @override
+  String get credentialsEnterTvdbKey =>
+      'Insira sua chave de API do TheTVDB (v4)';
 
   @override
   String get credentialsComicVineSection => 'API do ComicVine (Quadrinhos)';
@@ -839,6 +893,13 @@ class SPt extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'A chave de API do TMDB é inválida';
+
+  @override
+  String get credentialsTvdbKeyValid => 'A chave de API do TheTVDB é válida';
+
+  @override
+  String get credentialsTvdbKeyInvalid =>
+      'A chave de API do TheTVDB é inválida';
 
   @override
   String get credentialsComicVineKeyValid =>
@@ -1417,6 +1478,10 @@ class SPt extends S {
   @override
   String get creditsTmdbAttribution =>
       'Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.';
+
+  @override
+  String get creditsTvdbAttribution =>
+      'Metadados fornecidos pelo TheTVDB. Considere completar dados ou assinar.';
 
   @override
   String get creditsTvMazeAttribution =>
@@ -2183,6 +2248,19 @@ class SPt extends S {
       'O nome deve ter pelo menos 2 caracteres';
 
   @override
+  String get createCollectionHiddenLabel => 'Coleção oculta';
+
+  @override
+  String get createCollectionHiddenHint =>
+      'Sem capas no cartão, e seus itens ficam fora de Todos os itens';
+
+  @override
+  String get collectionHide => 'Ocultar coleção';
+
+  @override
+  String get collectionUnhide => 'Mostrar coleção';
+
+  @override
   String get renameCollectionTitle => 'Renomear coleção';
 
   @override
@@ -2767,6 +2845,9 @@ class SPt extends S {
   String get welcomeApiTmdbDesc => 'Filmes, séries e anime';
 
   @override
+  String get welcomeApiTvdbDesc => 'Filmes e séries, episódios próprios';
+
+  @override
   String get welcomeApiComicVineDesc => 'Quadrinhos e graphic novels';
 
   @override
@@ -2916,6 +2997,10 @@ class SPt extends S {
       'Opcional — sua própria chave aumenta os limites de uso. A busca funciona sem ela.';
 
   @override
+  String get welcomeSourcesTvdbKeyHint =>
+      'Obrigatória — sem chave, a busca no TheTVDB fica desativada.';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       'Obrigatório — busca e importação ficam desabilitadas sem ele. Tokens expiram todo 1º de janeiro.';
 
@@ -2924,6 +3009,10 @@ class SPt extends S {
 
   @override
   String get welcomeSourceDescTvMaze => 'Séries de TV.';
+
+  @override
+  String get welcomeSourceDescTvdb =>
+      'Filmes e séries, com episódios próprios.';
 
   @override
   String get welcomeSourceDescIgdb => 'Jogos de todas as plataformas.';
@@ -3230,6 +3319,9 @@ class SPt extends S {
 
   @override
   String get settingsAnimeMangaTitleLanguageNative => 'Nativo';
+
+  @override
+  String get dualDatePickerNoDate => 'Sem data';
 
   @override
   String get dualDatePickerErrorEmpty => 'Digite uma data';
@@ -5485,6 +5577,9 @@ class SPt extends S {
 
   @override
   String get simklPinPrompt => 'Digite este código em simkl.com/pin:';
+
+  @override
+  String get simklPinCopied => 'Código copiado';
 
   @override
   String get simklOpenPinPage => 'Abrir simkl.com/pin';

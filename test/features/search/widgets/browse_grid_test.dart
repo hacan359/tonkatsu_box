@@ -617,7 +617,7 @@ void main() {
       expect(gotSource, DataSource.kitsu);
     });
 
-    testWidgets('open-in-collection carries no source for a single-source type',
+    testWidgets('open-in-collection carries the source of a movie',
         (WidgetTester tester) async {
       DataSource? gotSource;
       bool called = false;
@@ -658,7 +658,9 @@ void main() {
       await tester.pump();
 
       expect(called, isTrue);
-      expect(gotSource, isNull);
+      // Movies come from several providers now, so the id alone would open the
+      // wrong entry.
+      expect(gotSource, DataSource.tmdb);
     });
 
     testWidgets('no collection mark when item not collected',

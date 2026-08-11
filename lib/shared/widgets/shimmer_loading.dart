@@ -62,7 +62,7 @@ class _ShimmerBoxState extends State<ShimmerBox>
             gradient: LinearGradient(
               begin: Alignment(-1.0 + 2.0 * _controller.value, 0),
               end: Alignment(-1.0 + 2.0 * _controller.value + 1.0, 0),
-              colors: const <Color>[
+              colors: <Color>[
                 AppColors.surface,
                 AppColors.surfaceLight,
                 AppColors.surface,
@@ -132,9 +132,9 @@ class ShimmerTierListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
+    return Card(
       color: AppColors.surfaceLight,
-      child: Padding(
+      child: const Padding(
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: <Widget>[

@@ -52,6 +52,12 @@ class CreditsContent extends StatelessWidget {
         url: 'https://www.tvmaze.com/',
       ),
       (
+        source: DataSource.tvdb,
+        description: l10n.creditsTvdbAttribution,
+        linkLabel: 'thetvdb.com',
+        url: 'https://thetvdb.com/',
+      ),
+      (
         source: DataSource.igdb,
         description: l10n.creditsIgdbAttribution,
         linkLabel: 'igdb.com',
@@ -190,7 +196,7 @@ class CreditsContent extends StatelessWidget {
                 label: Text(l10n.creditsViewLicenses),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.surfaceBorder),
+                  side: BorderSide(color: AppColors.surfaceBorder),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
@@ -233,7 +239,7 @@ class CreditsContent extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(width: AppSpacing.xs),
-            const Icon(Icons.open_in_new, size: 14, color: AppColors.brand),
+            Icon(Icons.open_in_new, size: 14, color: AppColors.brand),
           ],
         ),
       ),

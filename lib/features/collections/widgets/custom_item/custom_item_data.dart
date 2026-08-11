@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:core/models/media_type.dart';
 
 /// Result of the create / edit custom item form.
@@ -9,7 +11,7 @@ class CustomItemData {
     this.description,
     this.year,
     this.coverUrl,
-    this.localCoverPath,
+    this.coverBytes,
     this.genres,
     this.platform,
     this.platformId,
@@ -27,7 +29,10 @@ class CustomItemData {
   final String? description;
   final int? year;
   final String? coverUrl;
-  final String? localCoverPath;
+
+  /// A cover picked as a file, read at pick time. Written into the cover
+  /// cache (local on desktop, the server's on web) by the caller.
+  final Uint8List? coverBytes;
   final String? genres;
 
   /// Platform display name (only set for the game display type).

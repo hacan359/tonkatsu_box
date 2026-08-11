@@ -137,7 +137,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
 
     // Skip the picker on the next launch and go straight to home.
     final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool('skip_picker_once', true);
+    await prefs.setBool(SettingsKeys.skipPickerOnce, true);
 
     if (!mounted) return;
     await ProfileService.restartApp(context, ref);
@@ -191,7 +191,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                         ? profile.name[0].toUpperCase()
                         : '?',
                     style: AppTypography.h2.copyWith(
-                      color: Colors.white,
+                      color: AppColors.onOverlay,
                     ),
                   ),
                 ),

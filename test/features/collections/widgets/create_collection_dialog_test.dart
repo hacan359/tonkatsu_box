@@ -76,7 +76,7 @@ void main() {
 
     testWidgets('должен закрываться when pressed Cancel',
         (WidgetTester tester) async {
-      String? result;
+      CreateCollectionResult? result;
 
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -104,7 +104,7 @@ void main() {
 
     testWidgets('should return название при успешном создании',
         (WidgetTester tester) async {
-      String? result;
+      CreateCollectionResult? result;
 
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -128,12 +128,12 @@ void main() {
       await tester.tap(find.text('Create'));
       await tester.pumpAndSettle();
 
-      expect(result, 'My Collection');
+      expect(result?.name, 'My Collection');
     });
 
     testWidgets('должен обрезать пробелы в названии',
         (WidgetTester tester) async {
-      String? result;
+      CreateCollectionResult? result;
 
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -157,7 +157,7 @@ void main() {
       await tester.tap(find.text('Create'));
       await tester.pumpAndSettle();
 
-      expect(result, 'Trimmed Name');
+      expect(result?.name, 'Trimmed Name');
     });
   });
 

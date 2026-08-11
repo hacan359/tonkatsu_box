@@ -31,9 +31,6 @@ class GoogleBooksSource extends SearchSource {
   DataSource get dataSource => DataSource.googleBooks;
 
   @override
-  IconData get groupIcon => Icons.book;
-
-  @override
   String label(S l) => l.collectionFilterBooks;
 
   @override

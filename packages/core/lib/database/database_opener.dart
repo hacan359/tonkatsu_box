@@ -4,6 +4,10 @@ import 'migrations/migration.dart';
 import 'migrations/migration_registry.dart';
 import 'migrations/migration_runner.dart';
 
+/// How long a writer waits for the lock before `SQLITE_BUSY`. WAL still allows
+/// exactly one writer, and the default of 0 fails the loser instantly.
+const int kBusyTimeoutMs = 5000;
+
 /// Opens the app database at [path] and brings its schema up to date.
 ///
 /// Deciding *where* the file lives is the caller's job — the app resolves a
@@ -55,6 +59,7 @@ Future<Database> openAppDatabase({
         // `journal_mode` returns a row, so Android needs rawQuery.
         await db.rawQuery('PRAGMA journal_mode = WAL');
         await db.execute('PRAGMA synchronous = NORMAL');
+        await db.rawQuery('PRAGMA busy_timeout = $kBusyTimeoutMs');
       },
     ),
   );

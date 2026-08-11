@@ -324,7 +324,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.favorite, size: 13, color: AppColors.favorite),
+          Icon(Icons.favorite, size: 13, color: AppColors.favorite),
           const SizedBox(width: 2),
           Text(
             '$liked',
@@ -332,7 +332,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
                 .copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(width: AppSpacing.sm),
-          const Icon(Icons.sticky_note_2,
+          Icon(Icons.sticky_note_2,
               size: 13, color: AppColors.textSecondary),
           const SizedBox(width: 2),
           Text(
@@ -943,9 +943,9 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                         fit: BoxFit.cover,
                         memCacheWidth: 192,
                         placeholder:
-                            const ColoredBox(color: AppColors.surfaceLight),
+                            ColoredBox(color: AppColors.surfaceLight),
                         errorWidget:
-                            const ColoredBox(color: AppColors.surfaceLight),
+                            ColoredBox(color: AppColors.surfaceLight),
                       ),
                     ),
                   ),
@@ -1082,8 +1082,8 @@ class _SeasonLeading extends StatelessWidget {
               remoteUrl: posterUrl,
               fit: BoxFit.cover,
               memCacheWidth: 120,
-              placeholder: const ColoredBox(color: AppColors.surfaceLight),
-              errorWidget: const ColoredBox(color: AppColors.surfaceLight),
+              placeholder: ColoredBox(color: AppColors.surfaceLight),
+              errorWidget: ColoredBox(color: AppColors.surfaceLight),
             ),
           ),
           if (allWatched)

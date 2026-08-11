@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:core/models/collection.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +26,7 @@ import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
@@ -198,7 +200,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
           if (_clientIdController.text.trim().isEmpty) ...<Widget>[
             Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.key_off,
                   size: 16,
                   color: AppColors.warning,
@@ -235,7 +237,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.open_in_new,
                     size: 13,
                     color: AppColors.brand,
@@ -334,14 +336,28 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               border: Border.all(color: AppColors.surfaceBorder),
             ),
-            child: Center(
-              child: SelectableText(
-                pin.userCode,
-                style: AppTypography.h3.copyWith(
-                  fontFamily: 'monospace',
-                  letterSpacing: 8,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Flexible(
+                  child: SelectableText(
+                    pin.userCode,
+                    style: AppTypography.h3.copyWith(
+                      fontFamily: 'monospace',
+                      letterSpacing: 8,
+                    ),
+                  ),
                 ),
-              ),
+                IconButton(
+                  onPressed: () => _copyPin(pin.userCode),
+                  icon: const Icon(Icons.copy, size: 18),
+                  tooltip: l.copy,
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(AppSpacing.xs),
+                  color: AppColors.textSecondary,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -353,7 +369,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.open_in_new,
                     size: 13,
                     color: AppColors.brand,
@@ -399,7 +415,7 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           else
-            const Icon(
+            Icon(
               Icons.check_circle,
               size: 16,
               color: AppColors.statusCompleted,
@@ -666,6 +682,12 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
   }
 
 
+  void _copyPin(String userCode) {
+    Clipboard.setData(ClipboardData(text: userCode));
+    context.showSnack(S.of(context).simklPinCopied);
+  }
+
+
   Future<void> _requestPin() async {
     final String clientId = _needsClientId
         ? _clientIdController.text.trim()
@@ -773,7 +795,8 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
   void _persistClientId(String clientId) {
     final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
     if (_rememberClientId && clientId.isNotEmpty) {
-      unawaited(prefs.setString(SettingsKeys.simklClientId, clientId));
+      unawaited(prefs.setString(SettingsKeys.simklClientId, clientId)
+          .then((_) => syncCredentialsToServer(prefs)));
     } else {
       unawaited(prefs.remove(SettingsKeys.simklClientId));
     }

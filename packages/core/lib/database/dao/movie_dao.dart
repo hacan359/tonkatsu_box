@@ -1,5 +1,7 @@
 import '../query_chunk.dart';
+import '../../models/data_source.dart';
 import '../../models/movie.dart';
+import '../sparse_upsert.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// DAO for the `movies_cache` and `tmdb_genres` tables.
@@ -8,12 +10,15 @@ class MovieDao {
 
   final Future<Database> Function() _getDatabase;
 
-  Future<Movie?> getMovieByTmdbId(int tmdbId) async {
+  Future<Movie?> getMovieByTmdbId(
+    int tmdbId, {
+    DataSource source = DataSource.tmdb,
+  }) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
       'movies_cache',
-      where: 'tmdb_id = ?',
-      whereArgs: <Object?>[tmdbId],
+      where: 'tmdb_id = ? AND source = ?',
+      whereArgs: <Object?>[tmdbId, source.name],
       limit: 1,
     );
     if (rows.isEmpty) return null;
@@ -22,11 +27,8 @@ class MovieDao {
 
   Future<void> upsertMovie(Movie movie) async {
     final Database db = await _getDatabase();
-    await db.insert(
-      'movies_cache',
-      movie.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final ({String sql, List<Object?> args}) upsert = _movieUpsert(movie);
+    await db.rawInsert(upsert.sql, upsert.args);
   }
 
   Future<void> upsertMovies(List<Movie> movies) async {
@@ -36,16 +38,25 @@ class MovieDao {
     await db.transaction((Transaction txn) async {
       final Batch batch = txn.batch();
       for (final Movie movie in movies) {
-        batch.insert(
-          'movies_cache',
-          movie.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        final ({String sql, List<Object?> args}) upsert = _movieUpsert(movie);
+        batch.rawInsert(upsert.sql, upsert.args);
       }
       await batch.commit(noResult: true);
     });
   }
 
+  /// Search hits carry no runtime and no overview, so a later list refresh must
+  /// not blank what a detail fetch already cached.
+  ({String sql, List<Object?> args}) _movieUpsert(Movie movie) {
+    return buildPreservingUpsert(
+      table: 'movies_cache',
+      row: movie.toDb(),
+      conflictKey: <String>['tmdb_id', 'source'],
+      preserveWhenNull: <String>{'runtime', 'overview', 'backdrop_url'},
+    );
+  }
+
+  /// Returns hits from every source; callers disambiguate by [Movie.source].
   Future<List<Movie>> getMoviesByTmdbIds(List<int> tmdbIds) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(tmdbIds, (List<int> chunk) async {

@@ -1,6 +1,8 @@
 import 'package:core/models/anime.dart';
 import 'package:core/models/manga.dart';
 
+import 'anilist_queries.dart';
+
 class AniListMediaParser {
   const AniListMediaParser._();
 
@@ -32,6 +34,69 @@ class AniListMediaParser {
         .map((Map<String, dynamic> json) => Manga.fromJson(json))
         .toList();
     return (items, info.$1, info.$2);
+  }
+
+  // AniList's own GraphQL MediaType tokens as returned in `type` — not our
+  // MediaType enum (external-API namespace, translation boundary).
+  static const String _aniListTypeAnime = 'ANIME';
+  static const String _aniListTypeManga = 'MANGA';
+
+  /// Recommendations per seed from an aliased batch response; a seed whose
+  /// `Media` came back null (deleted) maps to an empty list.
+  static Map<int, List<Anime>> recommendedAnimeBatch(
+    Map<String, dynamic>? data,
+    List<int> seedIds,
+  ) =>
+      _recommendationBatch(
+        data,
+        seedIds,
+        _aniListTypeAnime,
+        (Map<String, dynamic> json) => Anime.fromJson(json),
+      );
+
+  static Map<int, List<Manga>> recommendedMangaBatch(
+    Map<String, dynamic>? data,
+    List<int> seedIds,
+  ) =>
+      _recommendationBatch(
+        data,
+        seedIds,
+        _aniListTypeManga,
+        (Map<String, dynamic> json) => Manga.fromJson(json),
+      );
+
+  static Map<int, List<T>> _recommendationBatch<T>(
+    Map<String, dynamic>? data,
+    List<int> seedIds,
+    String type,
+    T Function(Map<String, dynamic>) fromJson,
+  ) {
+    final Map<int, List<T>> out = <int, List<T>>{};
+    for (int i = 0; i < seedIds.length; i++) {
+      final Map<String, dynamic>? media =
+          data?[AniListQueries.recommendationAlias(i)] as Map<String, dynamic>?;
+      out[seedIds[i]] =
+          _recommendationMedia(media, type).map(fromJson).toList();
+    }
+    return out;
+  }
+
+  /// Recommendation nodes can point at deleted media (null) or cross media
+  /// types — both are dropped, keeping the server's rating order.
+  static List<Map<String, dynamic>> _recommendationMedia(
+    Map<String, dynamic>? media,
+    String type,
+  ) {
+    final Map<String, dynamic>? recommendations =
+        media?['recommendations'] as Map<String, dynamic>?;
+    final List<dynamic> nodes =
+        recommendations?['nodes'] as List<dynamic>? ?? <dynamic>[];
+    return <Map<String, dynamic>>[
+      for (final dynamic node in nodes)
+        if ((node as Map<String, dynamic>?)?['mediaRecommendation']
+            case final Map<String, dynamic> rec when rec['type'] == type)
+          rec,
+    ];
   }
 
   // AniList fuzzy dates: year is mandatory, month/day may be null/0.

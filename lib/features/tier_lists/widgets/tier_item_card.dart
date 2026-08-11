@@ -133,8 +133,8 @@ class TierItemCard extends StatelessWidget {
                           ),
                           child: Text(
                             item.platform!.displayName,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: AppColors.onOverlay,
                               fontSize: 7,
                               fontWeight: FontWeight.w700,
                             ),
@@ -149,9 +149,9 @@ class TierItemCard extends StatelessWidget {
               Container(
                 width: width,
                 height: labelHeight,
-                decoration: const BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: AppColors.scrim,
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(AppSpacing.radiusXs),
                     bottomRight: Radius.circular(AppSpacing.radiusXs),
                   ),
@@ -171,10 +171,10 @@ class TierItemCard extends StatelessWidget {
                   // pushes past that and overflows on Android, so this tiny
                   // caption opts out — the full name is in the tooltip.
                   textScaler: TextScaler.noScaling,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     height: 1.2,
-                    color: Colors.white,
+                    color: AppColors.onOverlay,
                   ),
                 ),
               ),
@@ -189,7 +189,7 @@ class TierItemCard extends StatelessWidget {
       width: width,
       height: height,
       color: AppColors.surfaceLight,
-      child: const Center(
+      child: Center(
         child: Icon(
           Icons.image_not_supported_outlined,
           color: AppColors.textTertiary,

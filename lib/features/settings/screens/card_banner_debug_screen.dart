@@ -235,7 +235,7 @@ class _VotePrompt extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: <Widget>[
-                const Icon(Icons.how_to_vote, color: AppColors.brand),
+                Icon(Icons.how_to_vote, color: AppColors.brand),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -256,7 +256,7 @@ class _VotePrompt extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                const Icon(
+                Icon(
                   Icons.open_in_new,
                   size: 16,
                   color: AppColors.brand,
@@ -392,8 +392,8 @@ class _HoverPosterCardState extends State<_HoverPosterCard> {
   Widget _posterImage() {
     final CollectionItem? item = widget.demo.item;
     if (item == null) {
-      return const DecoratedBox(
-        decoration: BoxDecoration(
+      return DecoratedBox(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -401,7 +401,11 @@ class _HoverPosterCardState extends State<_HoverPosterCard> {
           ),
         ),
         child: Center(
-          child: Icon(Icons.tv, size: 48, color: Colors.white38),
+          child: Icon(
+            Icons.tv,
+            size: 48,
+            color: AppColors.onOverlay.withAlpha(0x62),
+          ),
         ),
       );
     }
@@ -449,8 +453,8 @@ class _EpisodeCount extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: AppColors.onOverlay,
         fontSize: 9,
         fontWeight: FontWeight.w700,
       ),
@@ -470,7 +474,7 @@ class _StatusDot extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(icon ?? Icons.circle, size: 10, color: Colors.white),
+      child: Icon(icon ?? Icons.circle, size: 10, color: AppColors.onOverlay),
     );
   }
 }
@@ -492,8 +496,8 @@ class _TagChip extends StatelessWidget {
       ),
       child: Text(
         name,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: AppColors.onOverlay,
           fontSize: 9,
           fontWeight: FontWeight.w600,
         ),
@@ -514,11 +518,11 @@ class _ProgressEdge extends StatelessWidget {
     return SizedBox(
       height: 3,
       child: ColoredBox(
-        color: Colors.black.withValues(alpha: 0.45),
+        color: AppColors.scrim.withValues(alpha: 0.45),
         child: FractionallySizedBox(
           alignment: Alignment.centerLeft,
           widthFactor: fraction,
-          child: const ColoredBox(color: AppColors.tvShowAccent),
+          child: ColoredBox(color: AppColors.tvShowAccent),
         ),
       ),
     );
@@ -546,7 +550,7 @@ class _StatusStripeBanner extends StatelessWidget {
     return AnimatedContainer(
       duration: AppDurations.fast,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: hovered ? 0.85 : 0.6),
+        color: AppColors.scrim.withValues(alpha: hovered ? 0.85 : 0.6),
         border: Border(
           left: BorderSide(
             color: demo.statusColor ?? Colors.transparent,
@@ -589,7 +593,7 @@ class _StatusStripeBanner extends StatelessWidget {
                                     '★${demo.apiRating!.toStringAsFixed(1)}'
                                     '${demo.year != null ? ' · ' : ''}',
                                 style: base.copyWith(
-                                  color: const Color(0xFFFFD700),
+                                  color: AppColors.ratingGold,
                                 ),
                               ),
                             if (demo.year != null)
@@ -638,7 +642,7 @@ class _SplitMetaBanner extends StatelessWidget {
 
     return AnimatedContainer(
       duration: AppDurations.fast,
-      color: Colors.black.withValues(alpha: hovered ? 0.85 : 0.6),
+      color: AppColors.scrim.withValues(alpha: hovered ? 0.85 : 0.6),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -685,7 +689,7 @@ class _SplitMetaBanner extends StatelessWidget {
                                 text: '★${demo.apiRating!.toStringAsFixed(1)}'
                                     '${demo.year != null ? ' · ' : ''}',
                                 style: base.copyWith(
-                                  color: const Color(0xFFFFD700),
+                                  color: AppColors.ratingGold,
                                 ),
                               ),
                             if (demo.year != null)
@@ -732,7 +736,7 @@ class _StatsStripBanner extends StatelessWidget {
     }
     return AnimatedContainer(
       duration: AppDurations.fast,
-      color: Colors.black.withValues(alpha: hovered ? 0.8 : 0.55),
+      color: AppColors.scrim.withValues(alpha: hovered ? 0.8 : 0.55),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

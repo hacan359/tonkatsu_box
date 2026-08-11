@@ -198,7 +198,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       child: Center(
         child: Column(
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.insights_outlined,
               size: 48,
               color: AppColors.textTertiary,

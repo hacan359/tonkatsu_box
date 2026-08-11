@@ -336,7 +336,7 @@ class _TagRow extends StatelessWidget {
         children: <Widget>[
           ReorderableDragStartListener(
             index: index,
-            child: const Icon(
+            child: Icon(
               Icons.drag_indicator,
               size: 18,
               color: AppColors.textTertiary,
@@ -444,7 +444,7 @@ class _ColorDot extends StatelessWidget {
                   color: AppColors.textTertiary,
                 )
               : (icon != null
-                  ? Icon(icon, size: size * 0.6, color: Colors.white)
+                  ? Icon(icon, size: size * 0.6, color: AppColors.onOverlay)
                   : null),
         ),
       ),

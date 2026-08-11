@@ -261,7 +261,7 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
                 ),
                 child: Row(
                   children: <Widget>[
-                    const Icon(
+                    Icon(
                       Icons.search,
                       size: 18,
                       color: AppColors.textTertiary,

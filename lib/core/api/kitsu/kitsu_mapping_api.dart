@@ -16,6 +16,12 @@ class KitsuMappingApi {
   /// `filter[externalSite]` value for AniDB ids.
   static const String siteAniDb = 'anidb';
 
+  /// `filter[externalSite]` / `externalSite` value for AniList anime ids.
+  static const String siteAniListAnime = 'anilist/anime';
+
+  /// Same for AniList manga ids.
+  static const String siteAniListManga = 'anilist/manga';
+
   /// Kitsu rejects `page[limit]` above 20 with a 400.
   static const int _batchLimit = 20;
 
@@ -66,6 +72,35 @@ class KitsuMappingApi {
       return out;
     } on DioException catch (e) {
       throw _client.handleDioException(e, 'Failed to resolve Kitsu mappings');
+    }
+  }
+
+  /// AniList id of a Kitsu title via its own `mappings` list, or null when
+  /// the title has no AniList mapping.
+  Future<int?> getAniListId({
+    required int kitsuId,
+    required bool manga,
+  }) async {
+    final String kind = manga ? 'manga' : 'anime';
+    final String site = manga ? siteAniListManga : siteAniListAnime;
+    try {
+      final Response<dynamic> resp = await _client.get(
+        '$kind/$kitsuId/mappings',
+        queryParameters: <String, dynamic>{'page[limit]': _batchLimit},
+      );
+      final Map<String, dynamic> data =
+          (resp.data as Map<String, dynamic>?) ?? <String, dynamic>{};
+      for (final Map<String, dynamic> mapping
+          in ((data['data'] as List<dynamic>?) ?? <dynamic>[])
+              .whereType<Map<String, dynamic>>()) {
+        final Map<String, dynamic>? attrs =
+            mapping['attributes'] as Map<String, dynamic>?;
+        if (attrs?['externalSite'] != site) continue;
+        return int.tryParse((attrs?['externalId'] as String?) ?? '');
+      }
+      return null;
+    } on DioException catch (e) {
+      throw _client.handleDioException(e, 'Failed to load Kitsu mappings');
     }
   }
 

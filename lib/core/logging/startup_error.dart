@@ -78,7 +78,7 @@ class StartupErrorView extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.error_outline,
                     color: AppColors.error,
                     size: 26,
@@ -101,7 +101,7 @@ class StartupErrorView extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'source: ${info.source}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 12,
                 ),
@@ -114,7 +114,7 @@ class StartupErrorView extends StatelessWidget {
                     children: <Widget>[
                       SelectableText(
                         info.error,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.warning,
                           fontSize: 15,
                           height: 1.35,
@@ -124,7 +124,7 @@ class StartupErrorView extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
                       SelectableText(
                         info.stack,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11,
                           height: 1.4,

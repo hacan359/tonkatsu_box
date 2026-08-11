@@ -70,7 +70,7 @@ class AppSidebar extends ConsumerWidget {
         color: AppColors.surface,
         child: Stack(
           children: <Widget>[
-            const Positioned(
+            Positioned(
               top: 0,
               bottom: 0,
               right: 0,

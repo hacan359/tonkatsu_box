@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:core/models/data_source.dart';
 import 'package:core/models/movie.dart';
 import 'package:test/test.dart';
 
@@ -596,7 +597,8 @@ void main() {
     test('toString should return читаемое представление', () {
       const Movie movie = Movie(tmdbId: 27205, title: 'Inception');
 
-      expect(movie.toString(), 'Movie(tmdbId: 27205, title: Inception)');
+      expect(movie.toString(),
+          'Movie(tmdbId: 27205, title: Inception, source: tmdb)');
     });
 
     test('toString должен работать с Unicode в названии', () {
@@ -604,7 +606,104 @@ void main() {
           Movie(tmdbId: 100, title: 'Властелин Колец');
 
       expect(movie.toString(),
-          'Movie(tmdbId: 100, title: Властелин Колец)');
+          'Movie(tmdbId: 100, title: Властелин Колец, source: tmdb)');
+    });
+    group('fromTvdb', () {
+      Map<String, dynamic> searchHit() => <String, dynamic>{
+            'id': 'movie-113',
+            'tvdb_id': '113',
+            'name': 'Inception',
+            'slug': 'inception',
+            'image_url': 'https://artworks.thetvdb.com/banners/p.jpg',
+            'year': '2010',
+            'overview': 'A troubled thief…',
+            'genres': <String>['Action', 'Drama'],
+            'translations': <String, dynamic>{'rus': 'Начало'},
+            'overviews': <String, dynamic>{'rus': 'Кобб — талантливый вор'},
+          };
+
+      Map<String, dynamic> extended() => <String, dynamic>{
+            'id': 113,
+            'name': 'Inception',
+            'slug': 'inception',
+            'image': 'https://artworks.thetvdb.com/banners/p.jpg',
+            'year': '2010',
+            'runtime': 148,
+            'score': 1842440,
+            'genres': <dynamic>[
+              <String, dynamic>{'id': 19, 'name': 'Action'},
+            ],
+            'first_release': <String, dynamic>{'date': '2010-07-08'},
+            'translations': <String, dynamic>{
+              'nameTranslations': <dynamic>[
+                <String, dynamic>{'name': 'Начало', 'language': 'rus'},
+              ],
+              'overviewTranslations': <dynamic>[
+                <String, dynamic>{'overview': 'Кобб', 'language': 'rus'},
+              ],
+            },
+          };
+
+      test('should read a search hit', () {
+        final Movie movie = Movie.fromTvdb(searchHit());
+
+        expect(movie.tmdbId, 113);
+        expect(movie.title, 'Inception');
+        expect(movie.releaseYear, 2010);
+        expect(movie.genres, <String>['Action', 'Drama']);
+        expect(movie.source, DataSource.tvdb);
+      });
+
+      test('should read an extended record', () {
+        final Movie movie = Movie.fromTvdb(extended());
+
+        expect(movie.tmdbId, 113);
+        expect(movie.runtime, 148);
+        expect(movie.genres, <String>['Action']);
+      });
+
+      test('should localize the title and overview', () {
+        expect(Movie.fromTvdb(searchHit(), locale: 'ru').title, 'Начало');
+        expect(Movie.fromTvdb(extended(), locale: 'ru').title, 'Начало');
+        expect(Movie.fromTvdb(extended(), locale: 'ru').overview, 'Кобб');
+      });
+
+      test('should fall back to the base name for an untranslated locale', () {
+        expect(Movie.fromTvdb(extended(), locale: 'fr').title, 'Inception');
+      });
+
+      test('should leave rating null — TheTVDB has no user score', () {
+        expect(Movie.fromTvdb(extended()).rating, isNull);
+        expect(Movie.fromTvdb(extended()).formattedRating, isNull);
+      });
+
+      test('should take the release year from first_release when year is absent',
+          () {
+        final Map<String, dynamic> json = extended()..remove('year');
+
+        expect(Movie.fromTvdb(json).releaseYear, 2010);
+      });
+
+      test('should build the thumbnail with the _t suffix', () {
+        expect(
+          Movie.fromTvdb(extended()).posterThumbUrl,
+          'https://artworks.thetvdb.com/banners/p_t.jpg',
+        );
+      });
+
+      test('should not collide with a TMDB movie of the same id', () {
+        final Movie tvdb = Movie.fromTvdb(extended());
+        const Movie tmdb = Movie(tmdbId: 113, title: 'Something else');
+
+        expect(tvdb == tmdb, isFalse);
+        expect(tvdb.hashCode == tmdb.hashCode, isFalse);
+      });
+
+      test('should round-trip the source through the database map', () {
+        final Movie restored = Movie.fromDb(Movie.fromTvdb(extended()).toDb());
+
+        expect(restored.source, DataSource.tvdb);
+      });
     });
   });
 }

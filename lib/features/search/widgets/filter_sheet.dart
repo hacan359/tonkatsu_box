@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -58,19 +57,14 @@ class FilterSheet extends ConsumerWidget {
     return Material(
       color: AppColors.background,
       elevation: 16,
-      shadowColor: Colors.black,
+      shadowColor: AppColors.shadow,
       borderRadius: const BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusLg),
       ),
       clipBehavior: Clip.antiAlias,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(AppAssets.backgroundTile),
-            repeat: ImageRepeat.repeat,
-            opacity: 0.03,
-            scale: 0.667,
-          ),
+        decoration: BoxDecoration(
+          image: AppColors.tileImage,
         ),
         child: Stack(
           children: <Widget>[
@@ -145,7 +139,7 @@ class FilterSheet extends ConsumerWidget {
                                 width: 32,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withAlpha(80),
+                                  color: AppColors.textPrimary.withAlpha(80),
                                   borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
                                 ),
                               ),
@@ -410,7 +404,7 @@ class _FilterRowState extends ConsumerState<_FilterRow>
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               size: 18,
               color: AppColors.textTertiary,

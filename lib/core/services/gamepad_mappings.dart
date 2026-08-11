@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../../shared/constants/platform_features.dart';
+
 /// The `gamepads` package returns different axis/button key names per OS:
 /// Windows JOYINFOEX (`dwXpos`, `pov`, 0–65535); Linux and Android use
 /// `/dev/input/js*` style keys (`abs-x`, `abs-hat0x`, -32767–32767).
@@ -50,6 +52,8 @@ abstract class GamepadMapping {
   }
 
   static GamepadMapping forCurrentPlatform() {
+    // Web cannot touch Platform; the mapping is inert there (no gamepad).
+    if (kIsWebBuild) return const WindowsGamepadMapping();
     if (Platform.isWindows) return const WindowsGamepadMapping();
     if (Platform.isLinux) return const LinuxGamepadMapping();
     if (Platform.isAndroid) return const AndroidGamepadMapping();

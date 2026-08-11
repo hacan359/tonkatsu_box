@@ -31,7 +31,7 @@ class UncategorizedDeprecationBanner extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(
+          Icon(
             Icons.warning_amber_rounded,
             color: AppColors.warning,
             size: 20,

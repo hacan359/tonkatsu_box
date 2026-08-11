@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:core/models/media_type.dart';
-import 'package:flutter/widgets.dart';
 
 import '../models/search_source.dart';
 import 'anilist_anime_source.dart';
@@ -19,13 +18,13 @@ import 'openlibrary_source.dart';
 import 'tmdb_anime_source.dart';
 import 'tmdb_movies_source.dart';
 import 'tmdb_tv_source.dart';
+import 'tvdb_movies_source.dart';
+import 'tvdb_series_source.dart';
 import 'tvmaze_tv_source.dart';
 import 'vndb_source.dart';
 
-/// All registered search sources.
-///
-/// List order is the popup order, and sources of one group must be
-/// contiguous. Register a new source here, next to its group.
+/// All registered search sources. List order drives per-type primary /
+/// fallback resolution below; register a new source next to its provider.
 final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
   <SearchSource>[
     // TMDB
@@ -34,6 +33,9 @@ final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
     TmdbAnimeSource(),
     // TVmaze
     TvMazeTvSource(),
+    // TheTVDB
+    TvdbMoviesSource(),
+    TvdbSeriesSource(),
     // IGDB
     IgdbGamesSource(),
     // AniList
@@ -98,34 +100,3 @@ SearchSource? primarySearchSourceFor(MediaType? type) {
   final List<SearchSource> sources = searchSourcesFor(type);
   return sources.isEmpty ? null : sources.first;
 }
-
-typedef SourceGroupEntry = ({
-  String groupId,
-  String groupName,
-  IconData groupIcon,
-  String? groupIconAsset,
-  List<SearchSource> sources,
-});
-
-/// Sources grouped by [SearchSource.groupId], preserving list order.
-final List<SourceGroupEntry> groupedSearchSources = () {
-  final List<SourceGroupEntry> groups = <SourceGroupEntry>[];
-  String? currentGroupId;
-
-  for (final SearchSource source in searchSources) {
-    if (source.groupId != currentGroupId) {
-      currentGroupId = source.groupId;
-      groups.add((
-        groupId: source.groupId,
-        groupName: source.groupName,
-        groupIcon: source.groupIcon,
-        groupIconAsset: source.iconAsset,
-        sources: <SearchSource>[source],
-      ));
-    } else {
-      groups.last.sources.add(source);
-    }
-  }
-
-  return List<SourceGroupEntry>.unmodifiable(groups);
-}();

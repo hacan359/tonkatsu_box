@@ -38,6 +38,7 @@ dependencies:
   core:
     path: packages/core
   sqflite: ^2.4.0
+  sqflite_common: ^2.5.0
   sqflite_common_ffi: ^2.3.0
   path: ^1.8.3
   path_provider: ^2.1.1
@@ -156,3 +157,8 @@ flutter_launcher_icons:
     icon_size: 256
   macos:
     generate: true
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#0A0A0A"
+    theme_color: "#0A0A0A"

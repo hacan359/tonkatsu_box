@@ -207,10 +207,10 @@ class _TierListViewState extends ConsumerState<TierListView> {
               ),
               if (widget.state.definitions.length > 1)
                 ListTile(
-                  leading: const Icon(Icons.delete, color: AppColors.error),
+                  leading: Icon(Icons.delete, color: AppColors.error),
                   title: Text(
                     l.tierListDeleteTier,
-                    style: const TextStyle(color: AppColors.error),
+                    style: TextStyle(color: AppColors.error),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -456,13 +456,13 @@ class _SplitterHandle extends StatelessWidget {
           height: thickness,
           child: Row(
             children: <Widget>[
-              const Expanded(child: Divider(color: AppColors.surfaceBorder)),
+              Expanded(child: Divider(color: AppColors.surfaceBorder)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    const Icon(
+                    Icon(
                       Icons.drag_handle,
                       size: 16,
                       color: AppColors.textTertiary,
@@ -477,7 +477,7 @@ class _SplitterHandle extends StatelessWidget {
                   ],
                 ),
               ),
-              const Expanded(child: Divider(color: AppColors.surfaceBorder)),
+              Expanded(child: Divider(color: AppColors.surfaceBorder)),
             ],
           ),
         ),

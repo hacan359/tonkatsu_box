@@ -296,7 +296,7 @@ class _TierListCard extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.leaderboard,
                   color: AppColors.brand,
                   size: 32,
@@ -324,7 +324,7 @@ class _TierListCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right,
                   color: AppColors.textTertiary,
                 ),
@@ -363,10 +363,10 @@ class _TierListCard extends ConsumerWidget {
         PopupMenuItem<String>(
           value: 'delete',
           child: ListTile(
-            leading: const Icon(Icons.delete, color: AppColors.error),
+            leading: Icon(Icons.delete, color: AppColors.error),
             title: Text(
               l.delete,
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: AppColors.error),
             ),
             contentPadding: EdgeInsets.zero,
           ),
@@ -401,10 +401,10 @@ class _TierListCard extends ConsumerWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete, color: AppColors.error),
+                leading: Icon(Icons.delete, color: AppColors.error),
                 title: Text(
                   l.delete,
-                  style: const TextStyle(color: AppColors.error),
+                  style: TextStyle(color: AppColors.error),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -538,7 +538,7 @@ class _MoodGridCard extends ConsumerWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.grid_view,
                 color: AppColors.brand,
                 size: 32,
@@ -564,7 +564,7 @@ class _MoodGridCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+              Icon(Icons.chevron_right, color: AppColors.textTertiary),
             ],
           ),
         ),
@@ -590,10 +590,10 @@ class _MoodGridCard extends ConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.error),
+              leading: Icon(Icons.delete, color: AppColors.error),
               title: Text(
                 l.delete,
-                style: const TextStyle(color: AppColors.error),
+                style: TextStyle(color: AppColors.error),
               ),
               onTap: () {
                 Navigator.pop(ctx);
@@ -627,10 +627,10 @@ class _MoodGridCard extends ConsumerWidget {
         PopupMenuItem<String>(
           value: 'delete',
           child: ListTile(
-            leading: const Icon(Icons.delete, color: AppColors.error),
+            leading: Icon(Icons.delete, color: AppColors.error),
             title: Text(
               l.delete,
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: AppColors.error),
             ),
             contentPadding: EdgeInsets.zero,
           ),

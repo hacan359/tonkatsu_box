@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/constants/api_defaults.dart';
+import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/theme/app_theme_id.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
@@ -14,6 +16,7 @@ import '../../../core/api/ra_api.dart';
 import '../../../core/api/screenscraper_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
+import '../../../core/api/tvdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/config_service.dart';
 
@@ -23,10 +26,14 @@ abstract class SettingsKeys {
   static const String accessToken = 'igdb_access_token';
   static const String tokenExpires = 'igdb_token_expires';
   static const String lastSync = 'igdb_last_sync';
+  // One-shot: consumed by the splash to land on home after an app remount.
+  static const String skipPickerOnce = 'skip_picker_once';
 
   static const String steamGridDbApiKey = 'steamgriddb_api_key';
 
   static const String tmdbApiKey = 'tmdb_api_key';
+
+  static const String tvdbApiKey = 'tvdb_api_key';
 
   static const String comicVineApiKey = 'comicvine_api_key';
 
@@ -118,6 +125,9 @@ abstract class SettingsKeys {
   static const String animeMangaTitleLanguageDefault =
       AnimeMangaTitleLanguage.defaultId;
 
+  /// App theme id (see [AppThemeId]).
+  static const String appTheme = 'app_theme';
+
   /// Grid card size multiplier.
   static const String cardScale = 'card_scale';
 
@@ -140,6 +150,7 @@ class SettingsState {
     this.isLoading = false,
     this.steamGridDbApiKey,
     this.tmdbApiKey,
+    this.tvdbApiKey,
     this.comicVineApiKey,
     this.googleBooksApiKey,
     this.hardcoverApiKey,
@@ -159,6 +170,7 @@ class SettingsState {
     this.dateFormat = SettingsKeys.dateFormatDefault,
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
     this.cardScale = SettingsKeys.cardScaleDefault,
+    this.appTheme = AppThemeId.dark,
   });
 
   final String? clientId;
@@ -182,6 +194,8 @@ class SettingsState {
   final String? steamGridDbApiKey;
 
   final String? tmdbApiKey;
+
+  final String? tvdbApiKey;
 
   final String? comicVineApiKey;
 
@@ -234,6 +248,9 @@ class SettingsState {
   /// Grid card size multiplier (1.0 = default size).
   final double cardScale;
 
+  /// Selected app theme.
+  final AppThemeId appTheme;
+
   String? resolveOverlay({
     String? platformOverlay,
     String? mediaTypeOverlay,
@@ -256,6 +273,8 @@ class SettingsState {
 
   bool get hasTmdbKey => tmdbApiKey != null && tmdbApiKey!.isNotEmpty;
 
+  bool get hasTvdbKey => tvdbApiKey != null && tvdbApiKey!.isNotEmpty;
+
   bool get hasComicVineKey =>
       comicVineApiKey != null && comicVineApiKey!.isNotEmpty;
 
@@ -272,6 +291,11 @@ class SettingsState {
       hasTmdbKey &&
       ApiDefaults.hasTmdbKey &&
       tmdbApiKey == ApiDefaults.tmdbApiKey;
+
+  bool get isTvdbKeyBuiltIn =>
+      hasTvdbKey &&
+      ApiDefaults.hasTvdbKey &&
+      tvdbApiKey == ApiDefaults.tvdbApiKey;
 
   bool get isSteamGridDbKeyBuiltIn =>
       hasSteamGridDbKey &&
@@ -310,6 +334,7 @@ class SettingsState {
     bool clearError = false,
     String? steamGridDbApiKey,
     String? tmdbApiKey,
+    String? tvdbApiKey,
     String? comicVineApiKey,
     String? googleBooksApiKey,
     String? hardcoverApiKey,
@@ -329,6 +354,7 @@ class SettingsState {
     String? dateFormat,
     String? animeMangaTitleLanguage,
     double? cardScale,
+    AppThemeId? appTheme,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -341,6 +367,7 @@ class SettingsState {
       isLoading: isLoading ?? this.isLoading,
       steamGridDbApiKey: steamGridDbApiKey ?? this.steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
+      tvdbApiKey: tvdbApiKey ?? this.tvdbApiKey,
       comicVineApiKey: comicVineApiKey ?? this.comicVineApiKey,
       googleBooksApiKey: googleBooksApiKey ?? this.googleBooksApiKey,
       hardcoverApiKey: hardcoverApiKey ?? this.hardcoverApiKey,
@@ -365,6 +392,7 @@ class SettingsState {
       animeMangaTitleLanguage:
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
       cardScale: cardScale ?? this.cardScale,
+      appTheme: appTheme ?? this.appTheme,
     );
   }
 }
@@ -403,11 +431,27 @@ class SettingsNotifier extends Notifier<SettingsState> {
   late IgdbApi _igdbApi;
   late SteamGridDbApi _steamGridDbApi;
   late TmdbApi _tmdbApi;
+  late TvdbApi _tvdbApi;
   late ComicVineApi _comicVineApi;
   late GoogleBooksApi _googleBooksApi;
   late HardcoverApi _hardcoverApi;
   late ScreenScraperApi _screenScraperApi;
   late DatabaseService _dbService;
+
+  /// Web keeps no keys file: the proxy reads them on the server, so a change
+  /// here has to travel there or the next request goes out unauthenticated.
+  Future<void> _writeCredential(String prefKey, String value) async {
+    if (value.isEmpty) {
+      await _prefs.remove(prefKey);
+    } else {
+      await _prefs.setString(prefKey, value);
+    }
+    if (!kIsWebBuild) return;
+    final String? name = kConfigKeyToCredential[prefKey];
+    if (name != null) {
+      await uploadCredentials(<String, String>{name: value});
+    }
+  }
 
   @override
   SettingsState build() {
@@ -415,6 +459,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _igdbApi = ref.watch(igdbApiProvider);
     _steamGridDbApi = ref.watch(steamGridDbApiProvider);
     _tmdbApi = ref.watch(tmdbApiProvider);
+    _tvdbApi = ref.watch(tvdbApiProvider);
     _comicVineApi = ref.watch(comicVineApiProvider);
     _googleBooksApi = ref.watch(googleBooksApiProvider);
     _hardcoverApi = ref.watch(hardcoverApiProvider);
@@ -466,6 +511,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
         (userTmdbKey != null && userTmdbKey.isNotEmpty)
             ? userTmdbKey
             : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
+    // TheTVDB: user key → built-in key → null
+    final String? userTvdbKey = _prefs.getString(SettingsKeys.tvdbApiKey);
+    final String? tvdbApiKey = (userTvdbKey != null && userTvdbKey.isNotEmpty)
+        ? userTvdbKey
+        : (ApiDefaults.hasTvdbKey ? ApiDefaults.tvdbApiKey : null);
     // ComicVine: user key from prefs only, no built-in.
     final String? comicVineApiKey =
         _prefs.getString(SettingsKeys.comicVineApiKey);
@@ -512,6 +562,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final double cardScale = (_prefs.getDouble(SettingsKeys.cardScale) ??
             SettingsKeys.cardScaleDefault)
         .clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
+    final AppThemeId appTheme =
+        AppThemeId.fromId(_prefs.getString(SettingsKeys.appTheme));
 
     // Valid token → connected immediately (skip verify);
     // expired with credentials → trigger auto-verify below.
@@ -530,6 +582,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       connectionStatus: initialStatus,
       steamGridDbApiKey: steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey,
+      tvdbApiKey: tvdbApiKey,
       comicVineApiKey: comicVineApiKey,
       googleBooksApiKey: googleBooksApiKey,
       hardcoverApiKey: hardcoverApiKey,
@@ -549,10 +602,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
       dateFormat: dateFormat,
       animeMangaTitleLanguage: animeMangaTitleLanguage,
       cardScale: cardScale,
+      appTheme: appTheme,
     );
 
     // API keys already wired by apiKeysProvider; only the request-time language param is set here.
     _tmdbApi.setLanguage(tmdbLanguage);
+    // TheTVDB never localizes a response; the locale only picks which
+    // translation the mappers read, so it follows the app language.
+    _tvdbApi.setLocale(appLanguage);
     _screenScraperApi.setUserCredentials(
       ssid: screenScraperSsid ?? '',
       sspassword: screenScraperSspassword ?? '',
@@ -599,6 +656,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
     if (state.tmdbApiKey != null && state.tmdbApiKey!.isNotEmpty) {
       _tmdbApi.setApiKey(state.tmdbApiKey!);
+    }
+    if (state.tvdbApiKey != null && state.tvdbApiKey!.isNotEmpty) {
+      _tvdbApi.setApiKey(state.tvdbApiKey!);
     }
     if (state.comicVineApiKey != null && state.comicVineApiKey!.isNotEmpty) {
       _comicVineApi.setApiKey(state.comicVineApiKey!);
@@ -647,8 +707,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     required String clientId,
     required String clientSecret,
   }) async {
-    await _prefs.setString(SettingsKeys.clientId, clientId);
-    await _prefs.setString(SettingsKeys.clientSecret, clientSecret);
+    await _writeCredential(SettingsKeys.clientId, clientId);
+    await _writeCredential(SettingsKeys.clientSecret, clientSecret);
 
     state = state.copyWith(
       clientId: clientId,
@@ -707,10 +767,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   Future<void> setSteamGridDbApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
-      await _prefs.setString(SettingsKeys.steamGridDbApiKey, apiKey);
+      await _writeCredential(SettingsKeys.steamGridDbApiKey, apiKey);
       _steamGridDbApi.setApiKey(apiKey);
     } else {
-      await _prefs.remove(SettingsKeys.steamGridDbApiKey);
+      await _writeCredential(SettingsKeys.steamGridDbApiKey, '');
       _steamGridDbApi.clearApiKey();
     }
 
@@ -722,14 +782,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
     required String sspassword,
   }) async {
     if (ssid.isNotEmpty) {
-      await _prefs.setString(SettingsKeys.screenScraperSsid, ssid);
+      await _writeCredential(SettingsKeys.screenScraperSsid, ssid);
     } else {
-      await _prefs.remove(SettingsKeys.screenScraperSsid);
+      await _writeCredential(SettingsKeys.screenScraperSsid, '');
     }
     if (sspassword.isNotEmpty) {
-      await _prefs.setString(SettingsKeys.screenScraperSspassword, sspassword);
+      await _writeCredential(SettingsKeys.screenScraperSspassword, sspassword);
     } else {
-      await _prefs.remove(SettingsKeys.screenScraperSspassword);
+      await _writeCredential(SettingsKeys.screenScraperSspassword, '');
     }
     _screenScraperApi.setUserCredentials(ssid: ssid, sspassword: sspassword);
     state = state.copyWith(
@@ -740,22 +800,34 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   Future<void> setTmdbApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
-      await _prefs.setString(SettingsKeys.tmdbApiKey, apiKey);
+      await _writeCredential(SettingsKeys.tmdbApiKey, apiKey);
       _tmdbApi.setApiKey(apiKey);
     } else {
-      await _prefs.remove(SettingsKeys.tmdbApiKey);
+      await _writeCredential(SettingsKeys.tmdbApiKey, '');
       _tmdbApi.clearApiKey();
     }
 
     state = state.copyWith(tmdbApiKey: apiKey);
   }
 
+  Future<void> setTvdbApiKey(String apiKey) async {
+    if (apiKey.isNotEmpty) {
+      await _writeCredential(SettingsKeys.tvdbApiKey, apiKey);
+      _tvdbApi.setApiKey(apiKey);
+    } else {
+      await _writeCredential(SettingsKeys.tvdbApiKey, '');
+      _tvdbApi.clearApiKey();
+    }
+
+    state = state.copyWith(tvdbApiKey: apiKey);
+  }
+
   Future<void> setComicVineApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
-      await _prefs.setString(SettingsKeys.comicVineApiKey, apiKey);
+      await _writeCredential(SettingsKeys.comicVineApiKey, apiKey);
       _comicVineApi.setApiKey(apiKey);
     } else {
-      await _prefs.remove(SettingsKeys.comicVineApiKey);
+      await _writeCredential(SettingsKeys.comicVineApiKey, '');
       _comicVineApi.clearApiKey();
     }
 
@@ -764,10 +836,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   Future<void> setGoogleBooksApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
-      await _prefs.setString(SettingsKeys.googleBooksApiKey, apiKey);
+      await _writeCredential(SettingsKeys.googleBooksApiKey, apiKey);
       _googleBooksApi.setApiKey(apiKey);
     } else {
-      await _prefs.remove(SettingsKeys.googleBooksApiKey);
+      await _writeCredential(SettingsKeys.googleBooksApiKey, '');
       _googleBooksApi.clearApiKey();
     }
 
@@ -781,10 +853,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
         .replaceFirst(RegExp(r'^\s*Bearer\s+', caseSensitive: false), '')
         .trim();
     if (token.isNotEmpty) {
-      await _prefs.setString(SettingsKeys.hardcoverApiKey, token);
+      await _writeCredential(SettingsKeys.hardcoverApiKey, token);
       _hardcoverApi.setApiKey(token);
     } else {
-      await _prefs.remove(SettingsKeys.hardcoverApiKey);
+      await _writeCredential(SettingsKeys.hardcoverApiKey, '');
       _hardcoverApi.clearApiKey();
     }
 
@@ -800,6 +872,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   Future<void> setAppLanguage(String language) async {
     await _prefs.setString(SettingsKeys.appLanguage, language);
+    _tvdbApi.setLocale(language);
     state = state.copyWith(appLanguage: language);
   }
 
@@ -853,6 +926,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(animeMangaTitleLanguage: lang);
   }
 
+  Future<void> setAppTheme(AppThemeId theme) async {
+    // Same theme = no ValueKey remount, so the skip flag would leak into
+    // the next cold start and silently bypass the profile picker.
+    if (theme == state.appTheme) return;
+    await _prefs.setString(SettingsKeys.appTheme, theme.id);
+    // The theme ValueKey remounts the app through the splash — don't let
+    // that replay surface the profile picker.
+    await _prefs.setBool(SettingsKeys.skipPickerOnce, true);
+    state = state.copyWith(appTheme: theme);
+  }
+
   /// Set [persist] to false for live slider preview; the final value must be
   /// saved with a persisting call.
   Future<void> setCardScale(double scale, {bool persist = true}) async {
@@ -866,7 +950,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetTmdbApiKeyToDefault() async {
-    await _prefs.remove(SettingsKeys.tmdbApiKey);
+    await _writeCredential(SettingsKeys.tmdbApiKey, '');
     if (ApiDefaults.hasTmdbKey) {
       _tmdbApi.setApiKey(ApiDefaults.tmdbApiKey);
       state = state.copyWith(tmdbApiKey: ApiDefaults.tmdbApiKey);
@@ -876,10 +960,22 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
+  /// Falls back to built-in key if available, otherwise clears.
+  Future<void> resetTvdbApiKeyToDefault() async {
+    await _writeCredential(SettingsKeys.tvdbApiKey, '');
+    if (ApiDefaults.hasTvdbKey) {
+      _tvdbApi.setApiKey(ApiDefaults.tvdbApiKey);
+      state = state.copyWith(tvdbApiKey: ApiDefaults.tvdbApiKey);
+    } else {
+      _tvdbApi.clearApiKey();
+      state = state.copyWith(tvdbApiKey: '');
+    }
+  }
+
   /// Falls back to built-in credentials if available, otherwise clears.
   Future<void> resetIgdbCredentialsToDefault() async {
-    await _prefs.remove(SettingsKeys.clientId);
-    await _prefs.remove(SettingsKeys.clientSecret);
+    await _writeCredential(SettingsKeys.clientId, '');
+    await _writeCredential(SettingsKeys.clientSecret, '');
     await _prefs.remove(SettingsKeys.accessToken);
     await _prefs.remove(SettingsKeys.tokenExpires);
     if (ApiDefaults.hasIgdbKey) {
@@ -901,7 +997,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetSteamGridDbApiKeyToDefault() async {
-    await _prefs.remove(SettingsKeys.steamGridDbApiKey);
+    await _writeCredential(SettingsKeys.steamGridDbApiKey, '');
     if (ApiDefaults.hasSteamGridDbKey) {
       _steamGridDbApi.setApiKey(ApiDefaults.steamGridDbApiKey);
       state = state.copyWith(steamGridDbApiKey: ApiDefaults.steamGridDbApiKey);
@@ -924,6 +1020,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<bool> validateTmdbKey() async {
     if (!state.hasTmdbKey) return false;
     return _tmdbApi.validateApiKey(state.tmdbApiKey!);
+  }
+
+  Future<bool> validateTvdbKey() async {
+    if (!state.hasTvdbKey) return false;
+    return _tvdbApi.validateApiKey(state.tvdbApiKey!);
   }
 
   Future<bool> validateSteamGridDbKey() async {
@@ -957,6 +1058,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final ConfigResult result = await configService.importFromFile();
 
     if (result.success) {
+      // The config lands in prefs; on web the proxy reads keys on the server,
+      // so they have to travel there too.
+      await syncCredentialsToServer(_prefs);
       state = _loadFromPrefs();
       _syncApiClients();
       await _loadPlatformCount();
@@ -972,18 +1076,19 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<void> clearSettings() async {
-    await _prefs.remove(SettingsKeys.clientId);
-    await _prefs.remove(SettingsKeys.clientSecret);
+    await _writeCredential(SettingsKeys.clientId, '');
+    await _writeCredential(SettingsKeys.clientSecret, '');
     await _prefs.remove(SettingsKeys.accessToken);
     await _prefs.remove(SettingsKeys.tokenExpires);
     await _prefs.remove(SettingsKeys.lastSync);
-    await _prefs.remove(SettingsKeys.steamGridDbApiKey);
-    await _prefs.remove(SettingsKeys.tmdbApiKey);
-    await _prefs.remove(SettingsKeys.comicVineApiKey);
-    await _prefs.remove(SettingsKeys.googleBooksApiKey);
-    await _prefs.remove(SettingsKeys.hardcoverApiKey);
-    await _prefs.remove(SettingsKeys.screenScraperSsid);
-    await _prefs.remove(SettingsKeys.screenScraperSspassword);
+    await _writeCredential(SettingsKeys.steamGridDbApiKey, '');
+    await _writeCredential(SettingsKeys.tmdbApiKey, '');
+    await _writeCredential(SettingsKeys.tvdbApiKey, '');
+    await _writeCredential(SettingsKeys.comicVineApiKey, '');
+    await _writeCredential(SettingsKeys.googleBooksApiKey, '');
+    await _writeCredential(SettingsKeys.hardcoverApiKey, '');
+    await _writeCredential(SettingsKeys.screenScraperSsid, '');
+    await _writeCredential(SettingsKeys.screenScraperSspassword, '');
     await _prefs.remove(SettingsKeys.defaultAuthor);
     await _prefs.remove(SettingsKeys.showRecommendations);
     await _prefs.remove(SettingsKeys.showBlurayOverlay);
@@ -996,12 +1101,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.dateFormat);
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
     await _prefs.remove(SettingsKeys.cardScale);
-    await _prefs.remove(SettingsKeys.raUsername);
-    await _prefs.remove(SettingsKeys.raApiKey);
+    await _prefs.remove(SettingsKeys.appTheme);
+    await _writeCredential(SettingsKeys.raUsername, '');
+    await _writeCredential(SettingsKeys.raApiKey, '');
 
     _igdbApi.clearCredentials();
     _steamGridDbApi.clearApiKey();
     _tmdbApi.clearApiKey();
+    _tvdbApi.clearApiKey();
     _comicVineApi.clearApiKey();
     _googleBooksApi.clearApiKey();
     _hardcoverApi.clearApiKey();

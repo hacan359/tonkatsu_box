@@ -1,4 +1,5 @@
 import 'package:core/models/data_source.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,8 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/api/screenscraper_api.dart';
+import '../../../core/selfhost/server_credentials.dart';
+import '../../../main.dart' show AppRestartScope;
 import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
@@ -40,6 +43,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   String _clientSecret = '';
   String _steamGridDbApiKey = '';
   String _tmdbApiKey = '';
+
+  String _tvdbApiKey = '';
   String _comicVineApiKey = '';
   String _googleBooksApiKey = '';
   String _hardcoverApiKey = '';
@@ -51,11 +56,15 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   StatusType? _sgdbValidated;
   StatusType? _tmdbValidated;
+
+  StatusType? _tvdbValidated;
   StatusType? _comicVineValidated;
   StatusType? _googleBooksValidated;
   StatusType? _hardcoverValidated;
   bool _sgdbValidating = false;
   bool _tmdbValidating = false;
+
+  bool _tvdbValidating = false;
   bool _comicVineValidating = false;
   bool _googleBooksValidating = false;
   bool _hardcoverValidating = false;
@@ -71,6 +80,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         settings.isSteamGridDbKeyBuiltIn ? '' : (settings.steamGridDbApiKey ?? '');
     _tmdbApiKey =
         settings.isTmdbKeyBuiltIn ? '' : (settings.tmdbApiKey ?? '');
+    _tvdbApiKey =
+        settings.isTvdbKeyBuiltIn ? '' : (settings.tvdbApiKey ?? '');
     _comicVineApiKey = settings.comicVineApiKey ?? '';
     _googleBooksApiKey = settings.googleBooksApiKey ?? '';
     _hardcoverApiKey = settings.hardcoverApiKey ?? '';
@@ -90,11 +101,19 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           _buildWelcomeSection(),
           const SizedBox(height: AppSpacing.md),
         ],
+        // Web has no config-import entry of its own yet, so the fast path to a
+        // filled-in screen lives here.
+        if (kIsWebBuild) ...<Widget>[
+          _buildServerManagedSection(),
+          const SizedBox(height: AppSpacing.md),
+        ],
         _buildIgdbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildSteamGridDbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildTmdbSection(settings, compact),
+        const SizedBox(height: AppSpacing.md),
+        _buildTvdbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildComicVineSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
@@ -334,6 +353,73 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                         !settings.isTmdbKeyBuiltIn &&
                         ApiDefaults.hasTmdbKey)
                     ? _resetTmdbKey
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  Widget _buildTvdbSection(SettingsState settings, bool compact) {
+    return SettingsGroup(
+      title: S.of(context).credentialsTvdbSection,
+      children: <Widget>[
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconTvdbColor,
+          description: S.of(context).welcomeApiTvdbDesc,
+          sourceName: DataSource.tvdb.brandName,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            children: <Widget>[
+              InlineTextField(
+                label: S.of(context).credentialsApiKey,
+                value: _tvdbApiKey,
+                placeholder: settings.isTvdbKeyBuiltIn
+                    ? S.of(context).credentialsUsingBuiltInKey
+                    : S.of(context).credentialsEnterTvdbKey,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() {
+                    _tvdbApiKey = value;
+                    _tvdbValidated = null;
+                  });
+                  if (value.trim().isNotEmpty) {
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setTvdbApiKey(value.trim());
+                  }
+                },
+              ),
+              if (settings.isTvdbKeyBuiltIn) _buildOwnKeyHint(),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCredentialStatus(
+                compact: compact,
+                statusType: _keyStatusType(
+                  hasKey: settings.hasTvdbKey,
+                  isBuiltIn: settings.isTvdbKeyBuiltIn,
+                  validated: _tvdbValidated,
+                ),
+                statusLabel: _keyStatusLabel(
+                  hasKey: settings.hasTvdbKey,
+                  isBuiltIn: settings.isTvdbKeyBuiltIn,
+                  validated: _tvdbValidated,
+                ),
+                actionTooltip: S.of(context).test,
+                isLoading: _tvdbValidating,
+                onAction: settings.hasTvdbKey ? _validateTvdbKey : null,
+                onReset: (settings.hasTvdbKey &&
+                        !settings.isTvdbKeyBuiltIn &&
+                        ApiDefaults.hasTvdbKey)
+                    ? _resetTvdbKey
                     : null,
               ),
             ],
@@ -624,7 +710,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Icon(
+          Icon(
             Icons.info_outline,
             size: 16,
             color: AppColors.textTertiary,
@@ -641,6 +727,68 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         ],
       ),
     );
+  }
+
+  Widget _buildServerManagedSection() {
+    final S l = S.of(context);
+    return SettingsGroup(
+      title: l.credentialsServerManagedTitle,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                l.credentialsServerManagedBody,
+                style:
+                    AppTypography.body.copyWith(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              OutlinedButton.icon(
+                onPressed: _uploading ? null : _uploadKeysFromConfig,
+                icon: const Icon(Icons.upload_file, size: 18),
+                label: Text(l.credentialsUploadFromConfig),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  bool _uploading = false;
+
+  /// Reads the exported config in the tab and hands only its credentials to
+  /// the server — nothing is written to this browser.
+  Future<void> _uploadKeysFromConfig() async {
+    setState(() => _uploading = true);
+    try {
+      final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: <String>['json'],
+        withData: true,
+      );
+      final Uint8List? bytes = picked?.files.single.bytes;
+      if (bytes == null) return;
+
+      final Map<String, String> credentials = credentialsFromConfig(bytes);
+      if (credentials.isEmpty) {
+        if (mounted) context.showSnack(S.of(context).credentialsUploadNoKeys);
+        return;
+      }
+
+      final Map<String, String> stored = await uploadCredentials(credentials);
+      if (!mounted) return;
+      context.showSnack(S.of(context).credentialsUploadDone(stored.length));
+      // The key store is built once at boot from /proxy/keys, so the tab keeps
+      // saying "no key" until it reloads.
+      await AppRestartScope.restart(context);
+    } on Object catch (e) {
+      if (mounted) context.showSnack('$e', type: SnackType.error);
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   Widget _buildErrorSection(String errorMessage) {
@@ -846,6 +994,33 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
+  Future<void> _validateTvdbKey() async {
+    setState(() => _tvdbValidating = true);
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    final bool valid = await notifier.validateTvdbKey();
+    if (!mounted) return;
+    setState(() {
+      _tvdbValidating = false;
+      _tvdbValidated = valid ? StatusType.success : StatusType.error;
+    });
+    context.showSnack(
+      valid
+          ? S.of(context).credentialsTvdbKeyValid
+          : S.of(context).credentialsTvdbKeyInvalid,
+      type: valid ? SnackType.success : SnackType.error,
+    );
+  }
+
+  void _resetTvdbKey() {
+    ref.read(settingsNotifierProvider.notifier).resetTvdbApiKeyToDefault();
+    setState(() => _tvdbApiKey = '');
+    context.showSnack(
+      S.of(context).credentialsResetToBuiltIn,
+      type: SnackType.success,
+    );
+  }
+
   void _resetTmdbKey() {
     ref.read(settingsNotifierProvider.notifier).resetTmdbApiKeyToDefault();
     setState(() => _tmdbApiKey = '');
@@ -926,7 +1101,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 Text(
                   _ssQuotaError!,
                   style: AppTypography.caption
-                      .copyWith(color: Colors.redAccent),
+                      .copyWith(color: AppColors.error),
                 ),
               ],
               if (_ssQuota != null) ...<Widget>[

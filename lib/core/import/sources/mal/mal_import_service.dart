@@ -1,7 +1,5 @@
 // Imports anime/manga from MyAnimeList XML export.
 
-import 'dart:io';
-
 import 'package:core/models/anime.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -136,16 +134,17 @@ final Provider<MalImportService> malImportServiceProvider =
 
 class MalImportOptions extends ImportOptions {
   const MalImportOptions({
-    this.animeFile,
-    this.mangaFile,
+    this.animeXml,
+    this.mangaXml,
     required this.author,
     required this.newCollectionName,
     this.overwriteExistingItems = false,
     super.collectionId,
   });
 
-  final File? animeFile;
-  final File? mangaFile;
+  /// XML content, read at pick time — the browser never has a path.
+  final String? animeXml;
+  final String? mangaXml;
 
   /// Author / name for a freshly created collection.
   final String author;
@@ -186,12 +185,6 @@ class MalImportService implements ImportSource {
 
   @override
   String get displayName => 'MyAnimeList';
-
-  /// Parses a MAL export XML file. Throws [FormatException] on invalid XML.
-  Future<MalParsedFile> parseFile(File file) async {
-    final String content = await file.readAsString();
-    return parseString(content);
-  }
 
   /// Parses a MAL export XML string.
   MalParsedFile parseString(String content) {
@@ -333,7 +326,7 @@ class MalImportService implements ImportSource {
     covariant MalImportOptions options, {
     ImportProgressCallback? onProgress,
   }) async {
-    if (options.animeFile == null && options.mangaFile == null) {
+    if (options.animeXml == null && options.mangaXml == null) {
       throw ArgumentError('At least one file (anime or manga) must be provided');
     }
 
@@ -345,14 +338,14 @@ class MalImportService implements ImportSource {
 
     MalParsedFile? animeParsed;
     MalParsedFile? mangaParsed;
-    if (options.animeFile != null) {
-      animeParsed = await parseFile(options.animeFile!);
+    if (options.animeXml != null) {
+      animeParsed = parseString(options.animeXml!);
       if (animeParsed.kind != MalFileKind.anime) {
         throw const FormatException('Anime file does not contain anime entries');
       }
     }
-    if (options.mangaFile != null) {
-      mangaParsed = await parseFile(options.mangaFile!);
+    if (options.mangaXml != null) {
+      mangaParsed = parseString(options.mangaXml!);
       if (mangaParsed.kind != MalFileKind.manga) {
         throw const FormatException('Manga file does not contain manga entries');
       }

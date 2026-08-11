@@ -1,6 +1,5 @@
-// Dispatches to [ClassicCollectionCard] (3+3 mosaic) or [RichCollectionCard]
-// (full-card hero image) depending on the rich-mode setting and whether the
-// collection has a hero. Public API stays [CollectionCard]/[UncategorizedCard].
+// Dispatches to [DeckCollectionCard], or [RichCollectionCard] when rich mode
+// is on and a hero image exists. Public API stays [CollectionCard].
 
 import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +10,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/rich_collections_provider.dart';
-import 'classic/classic_collection_card.dart';
 import 'collection_card_shell.dart';
+import 'deck/deck_collection_card.dart';
 import 'rich/rich_collection_card.dart';
 
 class CollectionCard extends ConsumerWidget {
@@ -45,7 +44,9 @@ class CollectionCard extends ConsumerWidget {
     final String? heroFile = collection.heroImagePath;
 
     String? heroAbsPath;
-    if (richEnabled && heroFile != null) {
+    // The hero is a preview too, so a hidden collection always falls back to
+    // the classic card and its placeholder.
+    if (richEnabled && heroFile != null && !collection.isHidden) {
       try {
         heroAbsPath =
             ref.watch(collectionHeroServiceProvider).resolve(heroFile);
@@ -64,8 +65,8 @@ class CollectionCard extends ConsumerWidget {
         onFocusChanged: onFocusChanged,
       );
     }
-    // Rich mode without a hero: classic card with the description shown.
-    return ClassicCollectionCard(
+    // Rich mode without a hero: deck card with the description shown.
+    return DeckCollectionCard(
       collection: collection,
       onTap: onTap,
       onLongPress: onLongPress,
@@ -117,7 +118,7 @@ class UncategorizedCard extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      const Icon(
+                      Icon(
                         Icons.warning_amber_rounded,
                         color: AppColors.error,
                         size: 48,

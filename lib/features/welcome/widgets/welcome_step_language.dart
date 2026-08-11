@@ -228,7 +228,7 @@ class _ContentLanguageDropdown extends StatelessWidget {
             child: DropdownButton<String>(
               isExpanded: true,
               value: effectiveValue,
-              icon: const Icon(Icons.arrow_drop_down,
+              icon: Icon(Icons.arrow_drop_down,
                   color: AppColors.textTertiary),
               dropdownColor: AppColors.surface,
               style: AppTypography.body.copyWith(

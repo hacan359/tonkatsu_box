@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
 import 'package:file_picker/file_picker.dart';
@@ -10,6 +11,7 @@ import '../../../core/import/sources/custom_file/custom_card_entry.dart';
 import '../../../core/import/sources/custom_file/custom_cards_import_service.dart';
 import '../../../core/import/sources/custom_file/custom_cards_template.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -33,7 +35,7 @@ class CustomCardsImportContent extends ConsumerStatefulWidget {
 
 class _CustomCardsImportContentState
     extends ConsumerState<CustomCardsImportContent> {
-  String? _filePath;
+  String? _fileName;
   List<CustomCardRow>? _rows;
   bool _useNewCollection = true;
   int? _selectedCollectionId;
@@ -69,7 +71,7 @@ class _CustomCardsImportContentState
             ),
           ),
         ),
-        if (_filePath != null)
+        if (_fileName != null)
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -77,7 +79,7 @@ class _CustomCardsImportContentState
             ),
             child: Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: AppColors.statusCompleted,
                   size: 20,
@@ -85,7 +87,7 @@ class _CustomCardsImportContentState
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _filePath!.split(Platform.pathSeparator).last,
+                    _fileName ?? '',
                     style: AppTypography.body,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -250,25 +252,30 @@ class _CustomCardsImportContentState
   Future<void> _pickFile() async {
     final S l = S.of(context);
     // Android's SAF does not reliably filter custom extensions.
-    final bool useAny = Platform.isAndroid;
+    final bool useAny = kIsMobile;
+    // withData: the browser only ever hands out bytes, and reading them at
+    // pick time keeps one code path for every platform.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: l.customImportSelectFile,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['json', 'csv'],
       allowMultiple: false,
+      withData: true,
     );
 
     if (result == null || result.files.isEmpty) return;
-    final String? path = result.files.single.path;
-    if (path == null || !mounted) return;
+    final PlatformFile picked = result.files.single;
+    final Uint8List? bytes = picked.bytes;
+    if (bytes == null || !mounted) return;
 
     final CustomCardsImportService service =
         ref.read(customCardsImportServiceProvider);
     try {
-      final List<CustomCardRow> rows = await service.parseFile(path);
+      final List<CustomCardRow> rows =
+          service.parseFile(bytes, fileName: picked.name);
       if (!mounted) return;
       setState(() {
-        _filePath = path;
+        _fileName = picked.name;
         _rows = rows;
       });
     } on CustomCardsParseException catch (e) {
@@ -288,13 +295,18 @@ class _CustomCardsImportContentState
       fileName: fileName,
       type: FileType.custom,
       allowedExtensions: <String>[extension],
-      // On Android/iOS the picker writes the bytes itself.
+      // On Android/iOS the picker writes the bytes itself; on web this is a
+      // browser download that answers null.
       bytes: utf8.encode(content),
     );
+    if (kIsWebBuild) {
+      if (mounted) context.showSnack(l.customImportTemplateSaved);
+      return;
+    }
     if (path == null || !mounted) return;
 
     // On desktop saveFile only returns the path; write the content ourselves.
-    if (!Platform.isAndroid && !Platform.isIOS) {
+    if (!kIsMobile) {
       await File(path).writeAsString(content);
     }
     if (!mounted) return;

@@ -17,12 +17,21 @@ jobs:
           channel: stable
           cache: true
 
-      # packages/core resolves separately: the root package_config has no `test`
-      # entry, so without this its test/ files fail to analyze.
+      # packages/core and server resolve separately: the root package_config has
+      # no `test` entry, so without this their test/ files fail to analyze.
       - name: Install dependencies
         run: |
           flutter pub get
           dart pub get --directory packages/core
+          dart pub get --directory server
+
+      # Catches the one drift no compiler can: a model field added without
+      # regenerating, which the stubs would silently drop on the wire.
+      - name: Check the RPC layer is up to date
+        working-directory: packages/core
+        run: |
+          dart run tool/generate_rpc.dart
+          git diff --exit-code -- lib/rpc/generated
 
       - name: Analyze code
         run: flutter analyze --fatal-infos --fatal-warnings
@@ -30,6 +39,10 @@ jobs:
       - name: Run core package tests
         run: dart test
         working-directory: packages/core
+
+      - name: Run server tests
+        run: dart test
+        working-directory: server
 
       - name: Run tests
         run: flutter test
@@ -56,6 +69,7 @@ jobs:
         run: >
           flutter build windows --release
           --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          --dart-define=TVDB_API_KEY=${{ secrets.TVDB_API_KEY }}
           --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
           --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
@@ -113,6 +127,7 @@ jobs:
         run: |
           DEFINES=(
             --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+            --dart-define=TVDB_API_KEY=${{ secrets.TVDB_API_KEY }}
             --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
             --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
             --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
@@ -163,6 +178,7 @@ jobs:
         run: >
           flutter build linux --release
           --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          --dart-define=TVDB_API_KEY=${{ secrets.TVDB_API_KEY }}
           --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
           --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
@@ -201,6 +217,7 @@ jobs:
         run: >
           flutter build macos --release
           --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          --dart-define=TVDB_API_KEY=${{ secrets.TVDB_API_KEY }}
           --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
           --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}

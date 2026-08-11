@@ -30,9 +30,14 @@ import 'media_detail/user_rating_section.dart';
 import 'mini_markdown_text.dart';
 export 'media_detail/media_detail_chip.dart' show MediaDetailChip;
 
-/// `type` is either 'started' or 'completed'.
+/// Which activity date an edit targets — distinct from [ItemStatus] even
+/// though the names overlap.
+enum ActivityDateField { started, completed }
+
+/// A null [date] clears the field ("unknown date") without touching the
+/// item's status.
 typedef OnActivityDateChanged =
-    Future<void> Function(String type, DateTime date);
+    Future<void> Function(ActivityDateField field, DateTime? date);
 
 /// Shared layout for game / movie / TV detail screens. Type-specific blocks
 /// are injected via [extraSections].
@@ -77,7 +82,7 @@ class MediaDetailView extends ConsumerStatefulWidget {
     this.embedded = false,
     this.cacheImageType,
     this.cacheImageId,
-    this.accentColor = AppColors.brand,
+    this.accentColor,
     this.platformOverlayAsset,
     this.onCardLinkTap,
     super.key,
@@ -146,7 +151,9 @@ class MediaDetailView extends ConsumerStatefulWidget {
   /// instead of a plain network one for offline support.
   final ImageType? cacheImageType;
   final String? cacheImageId;
-  final Color accentColor;
+  // Nullable so the const constructor needs no non-const default;
+  // null falls back to AppColors.brand at use sites.
+  final Color? accentColor;
 
   /// Platform-overlay asset path (PNG 600×900).
   final String? platformOverlayAsset;
@@ -424,7 +431,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       source: widget.source,
       typeIcon: widget.typeIcon,
       typeLabel: widget.typeLabel,
-      accentColor: widget.accentColor,
+      accentColor: widget.accentColor ?? AppColors.brand,
       infoChips: widget.infoChips,
       externalUrl: widget.externalUrl,
       raBadge: widget.raBadge,
@@ -448,7 +455,11 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         value: widget.startedAt != null ? fmt(widget.startedAt!) : '—',
         hasValue: widget.startedAt != null,
         onTap: editableDates
-            ? () => _pickActivityDate(context, 'started', widget.startedAt)
+            ? () => _pickActivityDate(
+                  context,
+                  ActivityDateField.started,
+                  widget.startedAt,
+                )
             : null,
       ),
       ProgressTile(
@@ -460,7 +471,11 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
             ? formatCompletionTime(widget.completionTime!, l)
             : null,
         onTap: editableDates
-            ? () => _pickActivityDate(context, 'completed', widget.completedAt)
+            ? () => _pickActivityDate(
+                  context,
+                  ActivityDateField.completed,
+                  widget.completedAt,
+                )
             : null,
       ),
       if (widget.onTimeSpentTap != null)
@@ -518,25 +533,27 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
 
   Future<void> _pickActivityDate(
     BuildContext context,
-    String type,
+    ActivityDateField field,
     DateTime? current,
   ) async {
     final DateTime initialDate = current ?? DateTime.now();
     final DateTime firstDate = DateTime(1980);
     final DateTime lastDate = DateTime.now().add(const Duration(days: 365));
 
-    final DateTime? picked = await showDualDatePicker(
+    final DualDateResult? picked = await showDualDatePickerResult(
       context: context,
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: type == 'started'
+      helpText: field == ActivityDateField.started
           ? S.of(context).activityDatesSelectStart
           : S.of(context).activityDatesSelectCompletion,
+      // Nothing to clear while the field is still empty.
+      allowClear: current != null,
     );
 
     if (picked != null && context.mounted) {
-      await widget.onActivityDateChanged!(type, picked);
+      await widget.onActivityDateChanged!(field, picked.date);
     }
   }
 
@@ -603,7 +620,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       children: <Widget>[
         CommentSectionHeader(
           icon: Icons.note_alt_outlined,
-          iconColor: widget.accentColor,
+          iconColor: widget.accentColor ?? AppColors.brand,
           title: l.detailMyNotes,
           isEditing: isEditing,
           onToggleEdit: isEditing
@@ -612,7 +629,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         ),
         const SizedBox(height: 6),
         CommentContainer(
-          accentColor: widget.accentColor,
+          accentColor: widget.accentColor ?? AppColors.brand,
           isEditing: isEditing,
           controller: _userController,
           hint: l.detailWriteNotesHint,

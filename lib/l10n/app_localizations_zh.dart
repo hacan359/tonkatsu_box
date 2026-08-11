@@ -173,6 +173,21 @@ class SZh extends S {
   String get status => '状态';
 
   @override
+  String get movieStatusReleased => '已上映';
+
+  @override
+  String get movieStatusCompleted => '已完成';
+
+  @override
+  String get movieStatusPostProduction => '拍摄 / 后期制作';
+
+  @override
+  String get movieStatusPreProduction => '前期筹备';
+
+  @override
+  String get movieStatusAnnounced => '已公布';
+
+  @override
   String get sortStatusDesc => '活跃优先';
 
   @override
@@ -509,6 +524,24 @@ class SZh extends S {
   String get settingsApiKeys => 'API 密钥';
 
   @override
+  String get credentialsServerManagedTitle => '密钥保存在服务器上';
+
+  @override
+  String get credentialsServerManagedBody =>
+      '下面填写的内容会保存到自托管服务器，而不是这个浏览器——对 API 的请求正是从那里发出的。你也可以从桌面端导出的配置文件加载它们。';
+
+  @override
+  String get credentialsUploadFromConfig => '从配置文件加载密钥';
+
+  @override
+  String get credentialsUploadNoKeys => '该文件中没有 API 密钥';
+
+  @override
+  String credentialsUploadDone(int count) {
+    return '已在服务器上保存 $count 个密钥';
+  }
+
+  @override
   String settingsApiKeysValue(int active, int total) {
     return '$active/$total';
   }
@@ -518,6 +551,18 @@ class SZh extends S {
 
   @override
   String get settingsAppearanceSubtitle => '语言、显示和内容';
+
+  @override
+  String get settingsTheme => '主题';
+
+  @override
+  String get settingsThemeSubtitle => '应用配色主题';
+
+  @override
+  String get settingsThemeDark => '深色';
+
+  @override
+  String get settingsThemeSakura => '樱花';
 
   @override
   String get settingsAppLanguageSubtitle => '界面语言';
@@ -695,7 +740,13 @@ class SZh extends S {
   String get credentialsTmdbSection => 'TMDB API（电影和电视剧）';
 
   @override
+  String get credentialsTvdbSection => 'TheTVDB API（电影与剧集）';
+
+  @override
   String get credentialsEnterTmdbKey => '输入您的 TMDB API 密钥（v3）';
+
+  @override
+  String get credentialsEnterTvdbKey => '输入你的 TheTVDB API 密钥（v4）';
 
   @override
   String get credentialsComicVineSection => 'ComicVine API（漫画）';
@@ -773,6 +824,12 @@ class SZh extends S {
 
   @override
   String get credentialsTmdbKeyInvalid => 'TMDB API 密钥无效';
+
+  @override
+  String get credentialsTvdbKeyValid => 'TheTVDB API 密钥有效';
+
+  @override
+  String get credentialsTvdbKeyInvalid => 'TheTVDB API 密钥无效';
 
   @override
   String get credentialsComicVineKeyValid => 'ComicVine API 密钥有效';
@@ -1300,6 +1357,9 @@ class SZh extends S {
 
   @override
   String get creditsTmdbAttribution => '本产品使用 TMDB API，但未经 TMDB 认可或认证。';
+
+  @override
+  String get creditsTvdbAttribution => '元数据由 TheTVDB 提供。欢迎补充缺失信息或订阅支持。';
 
   @override
   String get creditsTvMazeAttribution => '电视剧数据由 TVmaze 提供。';
@@ -2031,6 +2091,18 @@ class SZh extends S {
   String get createCollectionNameTooShort => '名称至少需要 2 个字符';
 
   @override
+  String get createCollectionHiddenLabel => '隐藏收藏';
+
+  @override
+  String get createCollectionHiddenHint => '卡片不显示封面，其条目也不会出现在「全部条目」中';
+
+  @override
+  String get collectionHide => '隐藏收藏';
+
+  @override
+  String get collectionUnhide => '取消隐藏';
+
+  @override
   String get renameCollectionTitle => '重命名收藏';
 
   @override
@@ -2569,6 +2641,9 @@ class SZh extends S {
   String get welcomeApiTmdbDesc => '电影、电视剧和动漫';
 
   @override
+  String get welcomeApiTvdbDesc => '电影与剧集，自带分集数据';
+
+  @override
   String get welcomeApiComicVineDesc => '漫画和图像小说';
 
   @override
@@ -2699,6 +2774,9 @@ class SZh extends S {
   String get welcomeSourcesKeyOptionalHint => '可选——使用自己的密钥可提高速率限制。无需密钥也可搜索。';
 
   @override
+  String get welcomeSourcesTvdbKeyHint => '必填——没有密钥时 TheTVDB 搜索保持关闭。';
+
+  @override
   String get welcomeSourcesHardcoverTokenHint =>
       '必填——没有令牌无法搜索和导入。令牌每年 1 月 1 日重置。';
 
@@ -2707,6 +2785,9 @@ class SZh extends S {
 
   @override
   String get welcomeSourceDescTvMaze => '电视剧。';
+
+  @override
+  String get welcomeSourceDescTvdb => '电影与剧集，自带分集数据。';
 
   @override
   String get welcomeSourceDescIgdb => '涵盖所有平台的电子游戏。';
@@ -2992,6 +3073,9 @@ class SZh extends S {
 
   @override
   String get settingsAnimeMangaTitleLanguageNative => '原生语言';
+
+  @override
+  String get dualDatePickerNoDate => '无日期';
 
   @override
   String get dualDatePickerErrorEmpty => '请输入日期';
@@ -5158,6 +5242,9 @@ class SZh extends S {
 
   @override
   String get simklPinPrompt => '在 simkl.com/pin 输入此代码：';
+
+  @override
+  String get simklPinCopied => '代码已复制';
 
   @override
   String get simklOpenPinPage => '打开 simkl.com/pin';

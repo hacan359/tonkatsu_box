@@ -97,7 +97,7 @@ class _HeroImage extends StatelessWidget {
       fit: BoxFit.cover,
       alignment: Alignment.topCenter,
       filterQuality: FilterQuality.medium,
-      errorBuilder: (_, _, _) => const ColoredBox(color: AppColors.surface),
+      errorBuilder: (_, _, _) => ColoredBox(color: AppColors.surface),
     );
   }
 }
@@ -108,19 +108,19 @@ class _LeftScrim extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const IgnorePointer(
+    return IgnorePointer(
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: <Color>[
-              Color(0xEB000000),
-              Color(0xBF000000),
-              Color(0x66000000),
-              Color(0x00000000),
+              AppColors.scrim.withAlpha(0xEB),
+              AppColors.scrim.withAlpha(0xBF),
+              AppColors.scrim.withAlpha(0x66),
+              AppColors.scrim.withAlpha(0x00),
             ],
-            stops: <double>[0.0, 0.28, 0.50, 0.72],
+            stops: const <double>[0.0, 0.28, 0.50, 0.72],
           ),
         ),
       ),

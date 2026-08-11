@@ -429,6 +429,36 @@ abstract class S {
   /// **'Status'**
   String get status;
 
+  /// No description provided for @movieStatusReleased.
+  ///
+  /// In en, this message translates to:
+  /// **'Released'**
+  String get movieStatusReleased;
+
+  /// No description provided for @movieStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get movieStatusCompleted;
+
+  /// No description provided for @movieStatusPostProduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Filming / Post-production'**
+  String get movieStatusPostProduction;
+
+  /// No description provided for @movieStatusPreProduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-production'**
+  String get movieStatusPreProduction;
+
+  /// No description provided for @movieStatusAnnounced.
+  ///
+  /// In en, this message translates to:
+  /// **'Announced'**
+  String get movieStatusAnnounced;
+
   /// No description provided for @sortStatusDesc.
   ///
   /// In en, this message translates to:
@@ -1053,6 +1083,36 @@ abstract class S {
   /// **'API Keys'**
   String get settingsApiKeys;
 
+  /// No description provided for @credentialsServerManagedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keys are stored on the server'**
+  String get credentialsServerManagedTitle;
+
+  /// No description provided for @credentialsServerManagedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything entered below is saved on the selfhost server, not in this browser — that is where requests to the APIs are made from. You can also load them from a config file exported on desktop.'**
+  String get credentialsServerManagedBody;
+
+  /// No description provided for @credentialsUploadFromConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Load keys from a config file'**
+  String get credentialsUploadFromConfig;
+
+  /// No description provided for @credentialsUploadNoKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'No API keys in that file'**
+  String get credentialsUploadNoKeys;
+
+  /// No description provided for @credentialsUploadDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} keys stored on the server'**
+  String credentialsUploadDone(int count);
+
   /// No description provided for @settingsApiKeysValue.
   ///
   /// In en, this message translates to:
@@ -1070,6 +1130,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Language, display and content'**
   String get settingsAppearanceSubtitle;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsThemeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App color theme'**
+  String get settingsThemeSubtitle;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsThemeSakura.
+  ///
+  /// In en, this message translates to:
+  /// **'Sakura'**
+  String get settingsThemeSakura;
 
   /// No description provided for @settingsAppLanguageSubtitle.
   ///
@@ -1395,11 +1479,23 @@ abstract class S {
   /// **'TMDB API (Movies & TV)'**
   String get credentialsTmdbSection;
 
+  /// No description provided for @credentialsTvdbSection.
+  ///
+  /// In en, this message translates to:
+  /// **'TheTVDB API (Movies & TV)'**
+  String get credentialsTvdbSection;
+
   /// No description provided for @credentialsEnterTmdbKey.
   ///
   /// In en, this message translates to:
   /// **'Enter your TMDB API key (v3)'**
   String get credentialsEnterTmdbKey;
+
+  /// No description provided for @credentialsEnterTvdbKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your TheTVDB API key (v4)'**
+  String get credentialsEnterTvdbKey;
 
   /// No description provided for @credentialsComicVineSection.
   ///
@@ -1550,6 +1646,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'TMDB API key is invalid'**
   String get credentialsTmdbKeyInvalid;
+
+  /// No description provided for @credentialsTvdbKeyValid.
+  ///
+  /// In en, this message translates to:
+  /// **'TheTVDB API key is valid'**
+  String get credentialsTvdbKeyValid;
+
+  /// No description provided for @credentialsTvdbKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'TheTVDB API key is invalid'**
+  String get credentialsTvdbKeyInvalid;
 
   /// No description provided for @credentialsComicVineKeyValid.
   ///
@@ -2503,6 +2611,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'This product uses the TMDB API but is not endorsed or certified by TMDB.'**
   String get creditsTmdbAttribution;
+
+  /// No description provided for @creditsTvdbAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Metadata provided by TheTVDB. Please consider adding missing information or subscribing.'**
+  String get creditsTvdbAttribution;
 
   /// No description provided for @creditsTvMazeAttribution.
   ///
@@ -3824,6 +3938,30 @@ abstract class S {
   /// **'Name must be at least 2 characters'**
   String get createCollectionNameTooShort;
 
+  /// No description provided for @createCollectionHiddenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden collection'**
+  String get createCollectionHiddenLabel;
+
+  /// No description provided for @createCollectionHiddenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No covers on the card, and its items stay out of All Items'**
+  String get createCollectionHiddenHint;
+
+  /// No description provided for @collectionHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide collection'**
+  String get collectionHide;
+
+  /// No description provided for @collectionUnhide.
+  ///
+  /// In en, this message translates to:
+  /// **'Unhide collection'**
+  String get collectionUnhide;
+
   /// No description provided for @renameCollectionTitle.
   ///
   /// In en, this message translates to:
@@ -4832,6 +4970,12 @@ abstract class S {
   /// **'Movies, TV & Anime'**
   String get welcomeApiTmdbDesc;
 
+  /// No description provided for @welcomeApiTvdbDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies & TV, own episode data'**
+  String get welcomeApiTvdbDesc;
+
   /// No description provided for @welcomeApiComicVineDesc.
   ///
   /// In en, this message translates to:
@@ -5090,6 +5234,12 @@ abstract class S {
   /// **'Optional — your own key raises rate limits. Search works without it.'**
   String get welcomeSourcesKeyOptionalHint;
 
+  /// No description provided for @welcomeSourcesTvdbKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Required — TheTVDB search stays off without a key.'**
+  String get welcomeSourcesTvdbKeyHint;
+
   /// No description provided for @welcomeSourcesHardcoverTokenHint.
   ///
   /// In en, this message translates to:
@@ -5107,6 +5257,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'TV series.'**
   String get welcomeSourceDescTvMaze;
+
+  /// No description provided for @welcomeSourceDescTvdb.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies and TV series, with its own episode data.'**
+  String get welcomeSourceDescTvdb;
 
   /// No description provided for @welcomeSourceDescIgdb.
   ///
@@ -5635,6 +5791,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Native'**
   String get settingsAnimeMangaTitleLanguageNative;
+
+  /// No description provided for @dualDatePickerNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get dualDatePickerNoDate;
 
   /// No description provided for @dualDatePickerErrorEmpty.
   ///
@@ -9625,6 +9787,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Enter this code at simkl.com/pin:'**
   String get simklPinPrompt;
+
+  /// No description provided for @simklPinCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied'**
+  String get simklPinCopied;
 
   /// No description provided for @simklOpenPinPage.
   ///

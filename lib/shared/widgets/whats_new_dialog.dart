@@ -32,7 +32,7 @@ class WhatsNewDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: <Widget>[
-          const Icon(Icons.celebration_outlined, color: AppColors.brand),
+          Icon(Icons.celebration_outlined, color: AppColors.brand),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text("What's new in ${content.version}"),

@@ -11,9 +11,8 @@ import 'kitsu/kitsu_manga_api.dart';
 import 'kitsu/kitsu_mapping_api.dart';
 export 'kitsu/kitsu_types.dart';
 
-/// Kitsu JSON:API facade (`https://kitsu.io/api/edge`, no auth).
-///
-/// An anime + manga catalog; both carry `DataSource.kitsu`.
+/// Kitsu JSON:API facade (`https://kitsu.io/api/edge`, no auth) — an anime +
+/// manga catalog; both carry `DataSource.kitsu`.
 class KitsuApi {
   KitsuApi({Dio? dio}) : _client = KitsuHttpClient(dio: dio) {
     _manga = KitsuMangaApi(_client);
@@ -87,6 +86,22 @@ class KitsuApi {
         externalSite: KitsuMappingApi.siteAniDb,
         externalIds: anidbIds,
       );
+
+  /// Resolves AniList ids to Kitsu anime — used to show AniList-sourced
+  /// recommendations as Kitsu titles (seasons + episode tracker).
+  Future<Map<int, Anime>> getAnimeByAniListIds(List<int> aniListIds) =>
+      _mappings.resolveAnime(
+        externalSite: KitsuMappingApi.siteAniListAnime,
+        externalIds: aniListIds,
+      );
+
+  /// AniList id of a Kitsu anime, or null without a mapping.
+  Future<int?> getAniListAnimeId(int kitsuId) =>
+      _mappings.getAniListId(kitsuId: kitsuId, manga: false);
+
+  /// AniList id of a Kitsu manga, or null without a mapping.
+  Future<int?> getAniListMangaId(int kitsuId) =>
+      _mappings.getAniListId(kitsuId: kitsuId, manga: true);
 
   void dispose() => _client.dispose();
 }

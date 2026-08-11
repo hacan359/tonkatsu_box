@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:core/database/dao/calendar_entry_dao.dart';
 import 'package:core/database/dao/tracked_release_dao.dart';
@@ -10,6 +9,7 @@ import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
+import 'package:core/models/anime.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/manga.dart';
@@ -47,6 +47,7 @@ import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/book_progress_section.dart';
+import '../widgets/anime_similars_section.dart';
 import '../widgets/book_similars_section.dart';
 import '../widgets/manga_similars_section.dart';
 import '../widgets/custom_progress_section.dart';
@@ -476,21 +477,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
     if (data == null || !mounted) return;
 
-    // Cache local files and mark coverUrl so the renderer reads from disk.
+    // Cache picked bytes and mark coverUrl so the renderer reads the cache.
     String? newCoverUrl = data.coverUrl;
-    if (data.localCoverPath != null) {
-      final File sourceFile = File(data.localCoverPath!);
-      if (sourceFile.existsSync()) {
-        final ImageCacheService cache = ref.read(imageCacheServiceProvider);
-        final Uint8List bytes = await sourceFile.readAsBytes();
-        final bool saved = await cache.saveImageBytes(
-          ImageType.customCover,
-          item.externalId.toString(),
-          bytes,
-        );
-        if (saved) {
-          newCoverUrl = CustomMedia.localCoverMarker;
-        }
+    if (data.coverBytes != null) {
+      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+      final bool saved = await cache.saveImageBytes(
+        ImageType.customCover,
+        item.externalId.toString(),
+        data.coverBytes!,
+      );
+      if (saved) {
+        newCoverUrl = CustomMedia.localCoverMarker;
       }
     }
 
@@ -679,8 +676,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       lastActivityAt: item.lastActivityAt,
       completionTime: item.completionTime,
       onActivityDateChanged: widget.isEditable
-          ? (String type, DateTime date) =>
-              _updateActivityDate(item.id, type, date)
+          ? (ActivityDateField field, DateTime? date) =>
+              _updateActivityDate(item.id, field, date)
           : null,
       tagWidget: widget.collectionId != null
           ? ItemTagsSection(
@@ -790,15 +787,23 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             book: item.book!,
             onAddBook: _addBookFromSimilars,
           ),
-        // Similar manga — MangaBaka and MangaDex each have a native
-        // recommendations endpoint seeded by the current title.
+        // Similar manga — MangaBaka and MangaDex have native recommendation
+        // endpoints; AniList / Kitsu seeds go through AniList's.
         if (settings.showRecommendations &&
             item.mediaType == MediaType.manga &&
-            (item.manga?.source == DataSource.mangabaka ||
-                item.manga?.source == DataSource.mangadex))
+            mangaSimilarsSources.contains(item.manga?.source))
           MangaSimilarsSection(
             seed: item.manga!,
             onAddManga: _addMangaFromSimilars,
+          ),
+        // Similar anime — AniList recommendations shown as Kitsu titles;
+        // a Kitsu seed is bridged to its AniList id first.
+        if (settings.showRecommendations &&
+            item.mediaType == MediaType.anime &&
+            item.anime != null)
+          AnimeSimilarsSection(
+            seed: item.anime!,
+            onAddAnime: _addAnimeFromSimilars,
           ),
       ],
       authorComment: item.authorComment,
@@ -991,8 +996,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         await ref.read(ownMapProvider.future);
     final Map<int, List<CollectedItemInfo>> collectedAnimations =
         await ref.read(collectedAnimationIdsProvider.future);
+    // TMDB-only rows, so placements from another provider sharing the numeric
+    // id must not grey out a collection in the picker.
     final Set<int?> alreadyIn = <CollectedItemInfo>[
-      ...ownMap[tmdbId] ?? <CollectedItemInfo>[],
+      ...?ownMap[tmdbId]?.forSource(mediaType, DataSource.tmdb),
       ...collectedAnimations[tmdbId] ?? <CollectedItemInfo>[],
     ].map((CollectedItemInfo i) => i.collectionId).toSet();
 
@@ -1022,7 +1029,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
-        .addItem(mediaType: mediaType, externalId: tmdbId);
+        .addItem(
+          mediaType: mediaType,
+          externalId: tmdbId,
+          source: DataSource.tmdb,
+        );
 
     if (success && afterAdd != null) {
       unawaited(afterAdd());
@@ -1148,6 +1159,63 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
+  /// Adds an anime tapped in the "Similar" row to a chosen collection,
+  /// caching the full record first. Similars are always Kitsu entities.
+  Future<void> _addAnimeFromSimilars(Anime anime) async {
+    final Map<int, List<CollectedItemInfo>> ownMap =
+        await ref.read(collectedAnimeIdsProvider.future);
+    final Set<int?> alreadyIn = <CollectedItemInfo>[
+      ...?ownMap[anime.id],
+    ]
+        .where((CollectedItemInfo i) => i.source == anime.source)
+        .map((CollectedItemInfo i) => i.collectionId)
+        .toSet();
+
+    if (!mounted) return;
+    final S l = S.of(context);
+    final String title = anime.titleByLanguage(
+      ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+    );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
+      showUncategorized: false,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).animeDao.upsertAnime(anime);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.anime,
+          externalId: anime.id,
+          source: anime.source,
+        );
+
+    if (!mounted) return;
+
+    context.showSnack(
+      success
+          ? l.searchAddedToNamed(title, collectionName)
+          : l.searchAlreadyInNamed(title, collectionName),
+      type: success ? SnackType.success : SnackType.info,
+    );
+  }
+
   Future<void> _updateStatus(
     int id,
     ItemStatus status,
@@ -1158,22 +1226,24 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         .updateStatus(id, status, mediaType);
   }
 
-  Future<void> _updateActivityDate(int id, String type, DateTime date) async {
-    final CollectionItemsNotifier notifier =
-        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
-    if (type == 'started') {
-      await notifier.updateActivityDates(
-        id,
-        startedAt: date,
-        lastActivityAt: DateTime.now(),
-      );
-    } else {
-      await notifier.updateActivityDates(
-        id,
-        completedAt: date,
-        lastActivityAt: DateTime.now(),
-      );
-    }
+  /// A null [date] clears the field ("unknown date"); the status is left
+  /// untouched on purpose — only setting a date drives the status sync.
+  Future<void> _updateActivityDate(
+    int id,
+    ActivityDateField field,
+    DateTime? date,
+  ) async {
+    final bool started = field == ActivityDateField.started;
+    await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .updateActivityDates(
+          id,
+          startedAt: started ? date : null,
+          completedAt: started ? null : date,
+          clearStartedAt: started && date == null,
+          clearCompletedAt: !started && date == null,
+          lastActivityAt: DateTime.now(),
+        );
   }
 
   Future<void> _saveAuthorComment(int id, String? text) async {

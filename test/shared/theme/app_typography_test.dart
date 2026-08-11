@@ -17,13 +17,15 @@ void main() {
       });
 
       test('обычный вариант отдаёт базовые стили без изменений', () {
+        // Value equality, not identity: the styles are getters that build a
+        // fresh TextStyle from the active palette on every access.
         expect(
           AppTypography.posterTitleFor(compact: false),
-          same(AppTypography.posterTitle),
+          equals(AppTypography.posterTitle),
         );
         expect(
           AppTypography.posterSubtitleFor(compact: false),
-          same(AppTypography.posterSubtitle),
+          equals(AppTypography.posterSubtitle),
         );
       });
     });
