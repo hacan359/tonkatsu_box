@@ -87,6 +87,20 @@ void main() {
 
         expect(prefs.getBool(SettingsKeys.skipPickerOnce), isTrue);
       });
+
+      test('повторный выбор текущей темы — no-op: без ремоунта флаг '
+          'skip_picker_once дожил бы до следующего холодного старта', () async {
+        final ProviderContainer container = await createContainer();
+
+        await container
+            .read(settingsNotifierProvider.notifier)
+            .setAppTheme(AppThemeId.dark);
+
+        expect(prefs.getBool(SettingsKeys.skipPickerOnce), isNull);
+        expect(prefs.getString('app_theme'), isNull);
+        expect(container.read(settingsNotifierProvider).appTheme,
+            AppThemeId.dark);
+      });
     });
 
     group('_loadFromPrefs', () {

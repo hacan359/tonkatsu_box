@@ -927,6 +927,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<void> setAppTheme(AppThemeId theme) async {
+    // Same theme = no ValueKey remount, so the skip flag would leak into
+    // the next cold start and silently bypass the profile picker.
+    if (theme == state.appTheme) return;
     await _prefs.setString(SettingsKeys.appTheme, theme.id);
     // The theme ValueKey remounts the app through the splash — don't let
     // that replay surface the profile picker.

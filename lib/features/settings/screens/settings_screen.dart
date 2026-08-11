@@ -1,6 +1,7 @@
 // Settings hub screen with a single grouped-list layout.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:core/models/profile.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
@@ -987,19 +988,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     WidgetRef ref,
     S l,
   ) async {
-    // 1. Pick the file. withData: the browser only ever hands out bytes,
-    // and reading them at pick time keeps one code path for every platform.
+    // withData only on web: the browser has no paths; desktop/Android read
+    // from the path so a large archive is never held in memory twice.
     final bool useAny = kIsMobile;
     final FilePickerResult? picked = await FilePicker.platform.pickFiles(
       dialogTitle: l.settingsRestoreBackup,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['zip'],
       allowMultiple: false,
-      withData: true,
+      withData: kIsWebBuild,
     );
 
     if (picked == null || picked.files.isEmpty) return;
-    final Uint8List? zipBytes = picked.files.first.bytes;
+    final PlatformFile pickedFile = picked.files.first;
+    final Uint8List? zipBytes = kIsWebBuild
+        ? pickedFile.bytes
+        : (pickedFile.path == null
+            ? null
+            : await File(pickedFile.path!).readAsBytes());
     if (zipBytes == null) return;
 
     // 2. Read the manifest.
