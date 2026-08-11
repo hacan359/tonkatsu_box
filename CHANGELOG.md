@@ -371,6 +371,38 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Collection cards redesigned: a pile of covers with media-type badges**
+
+  A grid card now throws up to eight covers into a casual pile — every
+  collection keeps its own stable arrangement — and the pile gathers into a
+  neat cascaded deck on hover or gamepad focus. The top card carries a "+N"
+  badge for items beyond the visible covers. Colored dots in the corner mark
+  the media types inside (dominant first, "+N" overflow past five), and a thin
+  spectrum strip under the stats shows the type proportions, like a language
+  bar. Rich cards and the list view get the same dots.
+
+  * lib/features/collections/widgets/deck/deck_collection_card.dart
+    (DeckCollectionCard, _CoverPile, _FanPoster, _StatsLine): New — replaces
+    the 3+3 cover mosaic as the grid card.
+  * lib/features/collections/widgets/classic/classic_collection_card.dart
+    (ClassicCollectionCard): Removed together with the mosaic design.
+  * lib/features/collections/widgets/media_type_dots.dart (MediaTypeDots):
+    New — avatar-stack of circular per-type badges.
+  * lib/features/collections/widgets/media_type_spectrum_bar.dart
+    (MediaTypeSpectrumBar): New — proportional per-type accent strip.
+  * lib/data/repositories/collection_repository.dart
+    (CollectionStats.mediaTypeCounts, CollectionStats.presentMediaTypes):
+    New getters — per-type counts and dominant-first present types.
+  * lib/features/collections/widgets/collection_card.dart
+    (CollectionCard.build): Dispatches to DeckCollectionCard.
+  * lib/features/collections/widgets/collection_card_overlay.dart
+    (CollectionCardOverlay.build): Dots in the top-right corner of rich
+    cards; CollectionCardBottomScrim removed with the mosaic.
+  * lib/features/collections/widgets/collection_list_tile.dart
+    (CollectionListTile.build): Dots as the trailing widget.
+  * lib/features/collections/providers/collection_covers_provider.dart
+    (collectionCoversProvider): Cover limit 6 → 9 so the pile has depth.
+
 - **Copy the Simkl pairing code with one tap**
 
   The code block on the Simkl import screen gets a copy button, so the code no

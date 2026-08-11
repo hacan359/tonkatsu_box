@@ -9,10 +9,8 @@ import '../../core/database/database_service.dart';
 
 final Provider<CollectionRepository> collectionRepositoryProvider =
     Provider<CollectionRepository>((Ref ref) {
-  return CollectionRepository(
-    db: ref.watch(databaseServiceProvider),
-  );
-});
+      return CollectionRepository(db: ref.watch(databaseServiceProvider));
+    });
 
 class CollectionStats {
   const CollectionStats({
@@ -50,6 +48,31 @@ class CollectionStats {
   final int animeCount;
   final int bookCount;
   final int customCount;
+
+  Map<MediaType, int> get mediaTypeCounts => <MediaType, int>{
+    MediaType.game: gameCount,
+    MediaType.movie: movieCount,
+    MediaType.tvShow: tvShowCount,
+    MediaType.animation: animationCount,
+    MediaType.visualNovel: visualNovelCount,
+    MediaType.manga: mangaCount,
+    MediaType.anime: animeCount,
+    MediaType.book: bookCount,
+    MediaType.custom: customCount,
+  };
+
+  /// Types with at least one item, dominant first; ties keep enum order.
+  List<MediaType> get presentMediaTypes {
+    final Map<MediaType, int> counts = mediaTypeCounts;
+    final List<MediaType> present =
+        MediaType.values.where((MediaType t) => (counts[t] ?? 0) > 0).toList()
+          // sort() is not stable, so the tiebreaker is explicit.
+          ..sort((MediaType a, MediaType b) {
+            final int byCount = (counts[b] ?? 0).compareTo(counts[a] ?? 0);
+            return byCount != 0 ? byCount : a.index.compareTo(b.index);
+          });
+    return present;
+  }
 
   double get completionPercent {
     if (total == 0) return 0;
@@ -232,10 +255,7 @@ class CollectionRepository {
 
   /// Deep-copies an item into another collection. Returns the new id, or
   /// `null` if the target already holds the same logical item.
-  Future<int?> cloneItemToCollection(
-    int itemId,
-    int targetCollectionId,
-  ) async {
+  Future<int?> cloneItemToCollection(int itemId, int targetCollectionId) async {
     return _db.cloneItemToCollection(itemId, targetCollectionId);
   }
 
@@ -310,8 +330,7 @@ class CollectionRepository {
   }
 
   Future<CollectionStats> getStats(int? collectionId) async {
-    final Map<String, int> raw =
-        await _db.getCollectionItemStats(collectionId);
+    final Map<String, int> raw = await _db.getCollectionItemStats(collectionId);
     return CollectionStats(
       total: raw['total'] ?? 0,
       completed: raw['completed'] ?? 0,
