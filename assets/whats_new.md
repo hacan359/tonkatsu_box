@@ -1,22 +1,19 @@
-# 0.41.0
+# 0.42.0
 
-Hi everyone — the experiments continue! This time we reworked search: say what you are looking for, and every source of
-that type answers at once, giving you a much fuller picture. Searching a single source with all of its own filters still
-works as before.
+Hi everyone — the release we have been building towards for months is finally here: Tonkatsu Box can now run
+self-hosted and open right in the browser. One Docker container serves the app to every device on your network, and
+everything is built from the repository sources — you can inspect every file yourself, or tweak it to make the setup
+truly yours.
 
-- Simkl import: movies, TV shows and anime arrive with statuses, ratings and full episode history — sign in with a short
-  PIN, no tokens.
-- Library statistics: your library in numbers, from watch time and monthly activity to platform and format breakdowns,
-  with a shareable summary card.
-- Kitsu anime now run on the full season-and-episode tracker, like TV series.
-- Poster cards: the title moved below the artwork, and a source logo opens the title's page.
+The rest of the release, in short:
 
-We also finished a big but invisible chunk of the self-hosting groundwork — the web part. You will be able to run the
-service at home instead of the desktop app; the concept stays the same.
+- TheTVDB joins as a source for movies and TV series.
+- Sakura — a soft light theme, switchable in Settings → Appearance.
+- Hidden collections: keep a collection out of sight without deleting it.
+- Anime and manga recommendations — in the item card and on the Personalization tab.
+- Collection cards redesigned: a pile of covers with media-type badges.
+- Started / completed dates can be set explicitly — or cleared with the new "no date" option.
 
 A friendly reminder: our cozy [Discord](https://discord.gg/JZVNPF7cS2) server is where you can directly influence
 which features get built. And if you use the app but have not starred it on
 [GitHub](https://github.com/hacan359/tonkatsu_box) yet, now is a great moment — it matters for the project.
-
-*Coming next:* a rework of the file system, custom backgrounds and custom title logos, a brand-new music media type very
-soon — and, hopefully, self-hosting.

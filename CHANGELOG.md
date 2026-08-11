@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-08-11
+
 ### Added
 
 - **TheTVDB as a source for movies and TV series**

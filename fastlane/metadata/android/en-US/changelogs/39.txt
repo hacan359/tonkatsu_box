@@ -1,0 +1,7 @@
+v0.42.0
+
+* Self-hosting: run Tonkatsu Box in your browser from one Docker container.
+* TheTVDB as a new source for movies and TV series.
+* Sakura light theme, hidden collections, redesigned collection cards.
+* Anime and manga recommendations; clearable started/completed dates.
+* Fixed a past Watched Date being overwritten with the current date.
