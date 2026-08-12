@@ -92,6 +92,12 @@ Future<Object?> dispatchStatsDao(
             MapEntry<String, Object?>(encodeEnum(k), encodeInt(v)),
       );
 
+    case 'getListenedTrackTotal':
+      final int value = await dao.getListenedTrackTotal(
+        year: decodeIntOrNull(args['year']),
+      );
+      return encodeInt(value);
+
     case 'getManualMinutes':
       final int value = await dao.getManualMinutes(
         year: decodeIntOrNull(args['year']),

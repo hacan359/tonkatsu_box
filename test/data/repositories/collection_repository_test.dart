@@ -137,6 +137,7 @@ void main() {
           mangaCount: 6,
           animeCount: 7,
           bookCount: 8,
+          musicCount: 10,
           customCount: 9,
         );
 
@@ -149,6 +150,7 @@ void main() {
           MediaType.manga: 6,
           MediaType.anime: 7,
           MediaType.book: 8,
+          MediaType.music: 10,
           MediaType.custom: 9,
         });
       });

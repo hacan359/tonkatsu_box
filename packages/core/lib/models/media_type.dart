@@ -28,6 +28,9 @@ enum MediaType {
   /// Book (OpenLibrary / Fantlab).
   book('book'),
 
+  /// Music album — a MusicBrainz release-group.
+  music('music'),
+
   /// Custom user-created item.
   custom('custom');
 
@@ -60,6 +63,7 @@ enum MediaType {
         MediaType.manga => DataSource.anilist,
         MediaType.anime => DataSource.anilist,
         MediaType.book => DataSource.openLibrary,
+        MediaType.music => DataSource.musicBrainz,
         MediaType.custom => DataSource.local,
       };
 
@@ -100,6 +104,8 @@ enum MediaType {
         return 'Anime';
       case MediaType.book:
         return 'Book';
+      case MediaType.music:
+        return 'Music';
       case MediaType.custom:
         return 'Custom';
     }

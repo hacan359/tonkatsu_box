@@ -438,6 +438,20 @@ class BackupService {
         ));
       }
 
+      // 6c. Listened tracks — same aggregation for the music tracker.
+      final List<Map<String, Object?>> listened =
+          await _database.albumDao.getAllListenedTracks();
+      if (listened.isNotEmpty) {
+        final List<int> listenedBytes = utf8.encode(
+          const JsonEncoder.withIndent('  ').convert(listened),
+        );
+        archive.addFile(ArchiveFile(
+          'listened_tracks.json',
+          listenedBytes.length,
+          listenedBytes,
+        ));
+      }
+
       // 7. Settings.
       final Map<String, Object> config = _configService.collectSettings();
       final String configStr =
@@ -583,6 +597,7 @@ class BackupService {
       String? moodGridsContent;
       String? calendarContent;
       String? watchedContent;
+      String? listenedContent;
 
       for (final ArchiveFile file in archive) {
         if (!file.isFile) continue;
@@ -607,6 +622,8 @@ class BackupService {
           calendarContent = content;
         } else if (file.name == 'watched_episodes.json') {
           watchedContent = content;
+        } else if (file.name == 'listened_tracks.json') {
+          listenedContent = content;
         }
       }
 
@@ -722,6 +739,14 @@ class BackupService {
           await _restoreWatchedEpisodes(watchedContent);
         } catch (e) {
           _log.warning('Failed to restore watched episodes', e);
+        }
+      }
+
+      if (listenedContent != null) {
+        try {
+          await _restoreListenedTracks(listenedContent);
+        } catch (e) {
+          _log.warning('Failed to restore listened tracks', e);
         }
       }
 
@@ -970,6 +995,47 @@ class BackupService {
           season,
           episode,
           watchedAt,
+        );
+      }
+    }
+  }
+
+  /// Mirrors [_restoreWatchedEpisodes] for the music tracker: marks land on
+  /// every collection that holds the album.
+  Future<void> _restoreListenedTracks(String jsonContent) async {
+    final List<dynamic> list = jsonDecode(jsonContent) as List<dynamic>;
+    // Group per album so each (collection, album) lands as one batch write
+    // instead of an insert per track.
+    final Map<(DataSource, int), List<(int, int, int?)>> tracksByAlbum =
+        <(DataSource, int), List<(int, int, int?)>>{};
+    for (final dynamic raw in list) {
+      final Map<String, dynamic> m = raw as Map<String, dynamic>;
+      final int albumId = m['album_id'] as int;
+      final DataSource source =
+          DataSource.fromNameOr(m['source'] as String?, DataSource.musicBrainz);
+      (tracksByAlbum[(source, albumId)] ??= <(int, int, int?)>[]).add((
+        m['disc_number'] as int,
+        m['track_number'] as int,
+        m['listened_at'] as int?,
+      ));
+    }
+    for (final MapEntry<(DataSource, int), List<(int, int, int?)>> entry
+        in tracksByAlbum.entries) {
+      final (DataSource source, int albumId) = entry.key;
+      final List<CollectionItem> items =
+          await _database.collectionDao.findAllCollectionItems(
+        mediaType: MediaType.music,
+        externalId: albumId,
+        source: source,
+      );
+      for (final CollectionItem item in items) {
+        final int? collectionId = item.collectionId;
+        if (collectionId == null) continue;
+        await _database.albumDao.markTracksListenedAt(
+          collectionId,
+          source,
+          albumId,
+          entry.value,
         );
       }
     }

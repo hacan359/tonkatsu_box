@@ -40,6 +40,8 @@ extension MediaTypeUi on MediaType {
         return l.mediaTypeAnime;
       case MediaType.book:
         return l.mediaTypeBook;
+      case MediaType.music:
+        return l.mediaTypeMusic;
       case MediaType.custom:
         return l.mediaTypeCustom;
     }

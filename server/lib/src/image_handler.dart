@@ -7,6 +7,7 @@ import 'package:core/models/image_type.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
+import 'proxy_handler.dart' show kProxyUserAgent;
 import 'upstream_client.dart';
 
 /// A cover is immutable for a given id, so the browser can hold it as long as
@@ -56,7 +57,11 @@ class ImageCache {
           response = await _upstream.send(
             method: 'GET',
             url: sourceUri,
-            headers: <String, String>{},
+            // Cover hosts (Cover Art Archive among them) rate-limit or refuse
+            // agent-less clients; identify like the API proxy does.
+            headers: <String, String>{
+              HttpHeaders.userAgentHeader: kProxyUserAgent,
+            },
           );
         } on Object catch (e) {
           return _error(HttpStatus.badGateway, '$e');

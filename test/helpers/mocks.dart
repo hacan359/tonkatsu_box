@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:core/database/dao/album_dao.dart';
 import 'package:core/database/dao/anilist_tag_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
@@ -122,6 +123,8 @@ class MockVisualNovelDao extends Mock implements VisualNovelDao {}
 class MockMangaDao extends Mock implements MangaDao {}
 
 class MockBookDao extends Mock implements BookDao {}
+
+class MockAlbumDao extends Mock implements AlbumDao {}
 
 class MockAnimeDao extends Mock implements AnimeDao {}
 

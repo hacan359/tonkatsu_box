@@ -98,6 +98,9 @@ class SZh extends S {
   String get statusWatching => '观看中';
 
   @override
+  String get statusListening => '收听中';
+
+  @override
   String get statusInProgress => '进行中';
 
   @override
@@ -128,6 +131,9 @@ class SZh extends S {
   String get statusRereading => '重读中';
 
   @override
+  String get statusRelistening => '重听中';
+
+  @override
   String get all => '全部';
 
   @override
@@ -153,6 +159,9 @@ class SZh extends S {
 
   @override
   String get mediaTypeBook => '书籍';
+
+  @override
+  String get mediaTypeMusic => '音乐';
 
   @override
   String get mediaTypeCustom => '自定义';
@@ -1396,6 +1405,10 @@ class SZh extends S {
   String get creditsComicVineAttribution => '漫画数据来自 ComicVine（非商业用途）。';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      '音乐数据来自 MusicBrainz，封面来自 Cover Art Archive，收听数据来自 ListenBrainz。';
+
+  @override
   String get creditsGoogleBooksAttribution => '书籍数据来自 Google Books。';
 
   @override
@@ -2256,6 +2269,67 @@ class SZh extends S {
 
   @override
   String get searchHintComics => '搜索漫画...';
+
+  @override
+  String get searchSourceMusic => '音乐';
+
+  @override
+  String get searchHintMusic => '搜索专辑...';
+
+  @override
+  String get musicFilterAlbumsDefault => '专辑';
+
+  @override
+  String get musicFilterAllTypes => '所有类型';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => '单曲';
+
+  @override
+  String get musicFilterTypeBroadcast => '广播';
+
+  @override
+  String get musicFilterTypeOther => '其他';
+
+  @override
+  String get musicFilterEdition => '版本';
+
+  @override
+  String get musicFilterStudioOnly => '仅录音室专辑';
+
+  @override
+  String get musicSheetEditions => '版本';
+
+  @override
+  String get musicSheetTracks => '曲目';
+
+  @override
+  String musicSheetDisc(int number) {
+    return '碟 $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => '无法加载版本';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count 首曲目';
+  }
+
+  @override
+  String get musicTrackerNoTracks => '没有曲目列表';
+
+  @override
+  String get musicDiscoverFreshReleases => '新专辑';
+
+  @override
+  String get musicDiscoverUnavailable => '无法加载推荐';
+
+  @override
+  String get musicSearchArtist => '艺术家';
 
   @override
   String get language => '语言';
@@ -4925,6 +4999,9 @@ class SZh extends S {
   String get unitPart => '部分';
 
   @override
+  String get unitTrack => '曲目';
+
+  @override
   String get cardLinkCopy => '复制卡片链接';
 
   @override
@@ -5063,6 +5140,9 @@ class SZh extends S {
 
   @override
   String get statsMetricBookPages => '书籍页数';
+
+  @override
+  String get statsMetricTracks => '已听曲目';
 
   @override
   String get statsMetricEpisodes => '集';

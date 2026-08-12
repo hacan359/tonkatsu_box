@@ -20,6 +20,8 @@ enum ImageType {
 
   bookCover('book_covers'),
 
+  albumCover('album_covers'),
+
   customCover('custom_covers');
 
   const ImageType(this.folder);

@@ -99,6 +99,9 @@ class SEs extends S {
   String get statusWatching => 'Viendo';
 
   @override
+  String get statusListening => 'Escuchando';
+
+  @override
   String get statusInProgress => 'En curso';
 
   @override
@@ -129,6 +132,9 @@ class SEs extends S {
   String get statusRereading => 'Releyendo';
 
   @override
+  String get statusRelistening => 'Reescuchando';
+
+  @override
   String get all => 'Todo';
 
   @override
@@ -154,6 +160,9 @@ class SEs extends S {
 
   @override
   String get mediaTypeBook => 'Libro';
+
+  @override
+  String get mediaTypeMusic => 'Música';
 
   @override
   String get mediaTypeCustom => 'Personalizado';
@@ -1536,6 +1545,10 @@ class SEs extends S {
       'Datos de cómics de ComicVine (uso no comercial).';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      'Datos musicales de MusicBrainz, portadas de Cover Art Archive, escuchas de ListenBrainz.';
+
+  @override
   String get creditsGoogleBooksAttribution =>
       'Datos de libros de Google Books.';
 
@@ -2426,6 +2439,67 @@ class SEs extends S {
 
   @override
   String get searchHintComics => 'Buscar cómics...';
+
+  @override
+  String get searchSourceMusic => 'Música';
+
+  @override
+  String get searchHintMusic => 'Buscar álbumes...';
+
+  @override
+  String get musicFilterAlbumsDefault => 'Álbumes';
+
+  @override
+  String get musicFilterAllTypes => 'Todos los tipos';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => 'Sencillo';
+
+  @override
+  String get musicFilterTypeBroadcast => 'Emisión';
+
+  @override
+  String get musicFilterTypeOther => 'Otro';
+
+  @override
+  String get musicFilterEdition => 'Ediciones';
+
+  @override
+  String get musicFilterStudioOnly => 'Solo de estudio';
+
+  @override
+  String get musicSheetEditions => 'Ediciones';
+
+  @override
+  String get musicSheetTracks => 'Pistas';
+
+  @override
+  String musicSheetDisc(int number) {
+    return 'Disco $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => 'Ediciones no disponibles';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count pistas';
+  }
+
+  @override
+  String get musicTrackerNoTracks => 'Sin lista de pistas';
+
+  @override
+  String get musicDiscoverFreshReleases => 'Nuevos lanzamientos';
+
+  @override
+  String get musicDiscoverUnavailable => 'Discover no disponible';
+
+  @override
+  String get musicSearchArtist => 'Artista';
 
   @override
   String get language => 'Idioma';
@@ -5273,6 +5347,9 @@ class SEs extends S {
   String get unitPart => 'Parte';
 
   @override
+  String get unitTrack => 'Pista';
+
+  @override
   String get cardLinkCopy => 'Copiar enlace de la tarjeta';
 
   @override
@@ -5412,6 +5489,9 @@ class SEs extends S {
 
   @override
   String get statsMetricBookPages => 'páginas de libros';
+
+  @override
+  String get statsMetricTracks => 'pistas escuchadas';
 
   @override
   String get statsMetricEpisodes => 'episodios';

@@ -308,6 +308,10 @@ class DiscordRpcService {
           (false, final int count?) => 'Book · $count pages$yearSuffix',
           (false, _) => 'Book$yearSuffix',
         },
+      MediaType.music => switch (item.album?.trackCount) {
+          final int count? => 'Album · $count tracks$yearSuffix',
+          _ => 'Album$yearSuffix',
+        },
       MediaType.custom => 'Custom$yearSuffix',
     };
 
@@ -353,6 +357,7 @@ class DiscordRpcService {
         MediaType.anime =>
           'Watching',
         MediaType.manga || MediaType.visualNovel || MediaType.book => 'Reading',
+        MediaType.music => 'Listening to',
         MediaType.custom => 'Browsing',
       };
 }

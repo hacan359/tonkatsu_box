@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:core/models/album.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
@@ -19,9 +20,12 @@ import '../../../shared/theme/app_typography.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../handlers/media_handlers.dart';
+import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
 import '../providers/discover_provider.dart';
+import '../sources/search_sources.dart';
 import '../widgets/browse_grid.dart';
+import '../widgets/music_discover_feed.dart';
 import '../widgets/browse_sections.dart';
 import '../widgets/browse_sections_compact.dart';
 import '../widgets/collection_chips_row.dart';
@@ -103,11 +107,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       return;
     }
     if (query.length < 2) return;
-    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+    _searchDebounce = Timer(_activeDebounce(), () {
       if (mounted) {
         ref.read(browseProvider.notifier).search(query);
       }
     });
+  }
+
+  /// Strictest debounce among the enabled sources of the active type — a
+  /// rate-limited provider must not be hit on every few keystrokes.
+  Duration _activeDebounce() {
+    final BrowseState state = ref.read(browseProvider);
+    Duration debounce = SearchSource.defaultSearchDebounce;
+    for (final SearchSource source in searchSourcesFor(state.mediaType)) {
+      if (state.disabledSourceIds.contains(source.id)) continue;
+      if (source.searchDebounce > debounce) debounce = source.searchDebounce;
+    }
+    return debounce;
   }
 
   Future<void> _openItemInCollection(
@@ -207,6 +223,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         collected = await ref.read(collectedAnimeIdsProvider.future);
       case MediaType.book:
         collected = await ref.read(collectedBookIdsProvider.future);
+      case MediaType.music:
+        collected = await ref.read(collectedMusicIdsProvider.future);
       case MediaType.custom:
         return <CollectedItemInfo>[];
     }
@@ -282,6 +300,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   Widget _buildContent(BrowseState browseState) {
     if (!browseState.hasActiveQuery) {
+      if (browseState.mediaType == MediaType.music) {
+        return MusicDiscoverFeed(
+          onAlbumTap: (Album album) =>
+              _handlers.onTap(context, album, MediaType.music),
+        );
+      }
       if (discoverMediaTypes.contains(browseState.mediaType)) {
         final MediaType outputMediaType = browseState.mediaType;
         return DiscoverFeed(

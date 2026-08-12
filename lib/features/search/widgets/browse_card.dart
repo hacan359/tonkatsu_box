@@ -1,3 +1,4 @@
+import 'package:core/models/album.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/collected_item_info.dart';
@@ -29,6 +30,7 @@ typedef CollectedIds = ({
   Set<(DataSource, int)> mangaKeys,
   Set<(DataSource, int)> animeKeys,
   Set<(DataSource, int)> bookKeys,
+  Set<(DataSource, int)> albumKeys,
 });
 
 const CollectedIds kNoCollected = (
@@ -39,6 +41,7 @@ const CollectedIds kNoCollected = (
   mangaKeys: <(DataSource, int)>{},
   animeKeys: <(DataSource, int)>{},
   bookKeys: <(DataSource, int)>{},
+  albumKeys: <(DataSource, int)>{},
 );
 
 final FutureProvider<CollectedIds> collectedIdsProvider =
@@ -59,6 +62,8 @@ final FutureProvider<CollectedIds> collectedIdsProvider =
       await ref.watch(collectedAnimeIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> books =
       await ref.watch(collectedBookIdsProvider.future);
+  final Map<int, List<CollectedItemInfo>> albums =
+      await ref.watch(collectedMusicIdsProvider.future);
 
   return (
     movieKeys: <(DataSource, int)>{
@@ -74,6 +79,7 @@ final FutureProvider<CollectedIds> collectedIdsProvider =
     mangaKeys: mangas.sourceKeys,
     animeKeys: animes.sourceKeys,
     bookKeys: books.sourceKeys,
+    albumKeys: albums.sourceKeys,
   );
 });
 
@@ -301,6 +307,33 @@ class BrowseCard extends StatelessWidget {
         onTap: () => onTap(entry, mediaType),
         onOpenInCollection:
             _openCallback(externalId, inColl, source: entry.source),
+      );
+    }
+
+    if (entry is Album) {
+      final bool inColl =
+          collected.albumKeys.contains((entry.source, entry.id));
+      return MediaPosterCard(
+        variant: variant,
+        title: entry.title,
+        subtitle: entry.artistsString,
+        imageUrl: entry.coverUrl ?? '',
+        cacheImageType: ImageType.albumCover,
+        cacheImageId: coverImageId(
+          mediaType: MediaType.music,
+          externalId: entry.id,
+          source: entry.source,
+        ),
+        apiRating: entry.rating,
+        year: entry.releaseYear,
+        mediaType: mediaType,
+        placeholderIcon: Icons.album_outlined,
+        isInCollection: inColl,
+        source: entry.source,
+        onSourceTap: openUrlCallback(entry.externalUrl),
+        onTap: () => onTap(entry, mediaType),
+        onOpenInCollection:
+            _openCallback(entry.id, inColl, source: entry.source),
       );
     }
 

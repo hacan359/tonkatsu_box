@@ -52,6 +52,9 @@ enum DataSource {
   /// Feeds the `book` media type; graphic novels map to `BookKind.comic`.
   hardcover('Hardcover', 0xFF6366F1),
 
+  /// MusicBrainz — open keyless music database (albums as release-groups).
+  musicBrainz('MusicBrainz', 0xFFBA478F),
+
   /// Local source (custom items).
   local('Custom', 0xFF26A69A);
 

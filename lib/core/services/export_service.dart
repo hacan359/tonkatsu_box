@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/models/album_track.dart';
 import 'package:core/models/canvas_connection.dart';
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/canvas_viewport.dart';
@@ -165,6 +166,7 @@ class ExportService {
     if (includeUserData) {
       await _attachItemMarks(items, exportItems);
       await _attachWatchedEpisodes(collectionId, items, exportItems);
+      await _attachListenedTracks(collectionId, items, exportItems);
     }
 
     // Collect full media data for offline import (includes tv_seasons)
@@ -357,6 +359,35 @@ class ExportService {
     }
   }
 
+  /// Listened marks live in `listened_tracks`, not on the item — nest them
+  /// under `_listened_tracks` so music progress survives export/import.
+  Future<void> _attachListenedTracks(
+    int collectionId,
+    List<CollectionItem> items,
+    List<Map<String, dynamic>> exportItems,
+  ) async {
+    final DatabaseService? db = _database;
+    if (db == null) return;
+    for (int i = 0; i < items.length; i++) {
+      final CollectionItem item = items[i];
+      if (item.mediaType != MediaType.music) continue;
+      final DataSource source = item.source ?? DataSource.musicBrainz;
+      final Map<(int, int), DateTime?> listened = await db.albumDao
+          .getListenedTracks(collectionId, source, item.externalId);
+      if (listened.isEmpty) continue;
+      exportItems[i]['_listened_tracks'] = <Map<String, dynamic>>[
+        for (final MapEntry<(int, int), DateTime?> e in listened.entries)
+          <String, dynamic>{
+            'disc': e.key.$1,
+            'track': e.key.$2,
+            'listened_at': e.value != null
+                ? e.value!.millisecondsSinceEpoch ~/ 1000
+                : null,
+          },
+      ];
+    }
+  }
+
   /// Collects covers already present in the local cache (nothing is
   /// downloaded). Key is '{ImageType.folder}/{externalId}', value is base64.
   Future<Map<String, String>> _collectCachedImages(
@@ -465,9 +496,12 @@ class ExportService {
     // Keyed by `source:externalId` — ids from different providers can collide.
     final Map<String, Map<String, dynamic>> animes =
         <String, Map<String, dynamic>>{};
+    final Map<String, Map<String, dynamic>> albums =
+        <String, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> customItems =
         <int, Map<String, dynamic>>{};
     final Set<(DataSource, int)> tvShowKeys = <(DataSource, int)>{};
+    final Set<(DataSource, int)> albumKeys = <(DataSource, int)>{};
     final Set<int> platformIds = <int>{};
 
     for (final CollectionItem item in items) {
@@ -536,6 +570,17 @@ class ExportService {
           if (item.book != null && !books.containsKey(bookKey)) {
             books[bookKey] = item.book!.toExport();
           }
+        case MediaType.music:
+          final String albumKey =
+              '${(item.album?.source ?? DataSource.musicBrainz).name}:'
+              '${item.externalId}';
+          if (item.album != null && !albums.containsKey(albumKey)) {
+            albums[albumKey] = item.album!.toExport();
+          }
+          albumKeys.add((
+            item.album?.source ?? DataSource.musicBrainz,
+            item.externalId,
+          ));
         case MediaType.anime:
           final String animeKey =
               '${(item.anime?.source ?? DataSource.anilist).name}:'
@@ -579,6 +624,21 @@ class ExportService {
       }
     }
 
+    // Album track lists from the cache, so an offline import restores the
+    // song list (titles, lengths) without a MusicBrainz round-trip.
+    final List<Map<String, dynamic>> allTracks = <Map<String, dynamic>>[];
+    if (_database != null && albumKeys.isNotEmpty) {
+      for (final (DataSource source, int albumId) in albumKeys) {
+        final List<AlbumTrack> tracks =
+            await _database.albumDao.getAlbumTracks(albumId, source: source);
+        for (final AlbumTrack track in tracks) {
+          final Map<String, dynamic> data = track.toDb();
+          data.remove('cached_at');
+          allTracks.add(data);
+        }
+      }
+    }
+
     final List<Map<String, dynamic>> allPlatforms = <Map<String, dynamic>>[];
     if (_database != null && platformIds.isNotEmpty) {
       final List<model.Platform> platforms =
@@ -594,6 +654,8 @@ class ExportService {
         vns.isEmpty &&
         mangas.isEmpty &&
         books.isEmpty &&
+        albums.isEmpty &&
+        allTracks.isEmpty &&
         animes.isEmpty &&
         allSeasons.isEmpty &&
         allEpisodes.isEmpty &&
@@ -611,6 +673,8 @@ class ExportService {
       if (vns.isNotEmpty) 'visual_novels': vns.values.toList(),
       if (mangas.isNotEmpty) 'mangas': mangas.values.toList(),
       if (books.isNotEmpty) 'books': books.values.toList(),
+      if (albums.isNotEmpty) 'albums': albums.values.toList(),
+      if (allTracks.isNotEmpty) 'music_tracks': allTracks,
       if (animes.isNotEmpty) 'animes': animes.values.toList(),
       if (customItems.isNotEmpty)
         'custom_items': customItems.values.toList(),

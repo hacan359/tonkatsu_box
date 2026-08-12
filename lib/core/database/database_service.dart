@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core/database/dao/album_dao.dart';
 import 'package:core/database/dao/anilist_tag_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
@@ -77,6 +78,10 @@ final Provider<MangaDao> mangaDaoProvider = Provider<MangaDao>((Ref ref) {
 
 final Provider<BookDao> bookDaoProvider = Provider<BookDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).bookDao;
+});
+
+final Provider<AlbumDao> albumDaoProvider = Provider<AlbumDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).albumDao;
 });
 
 final Provider<AnimeDao> animeDaoProvider = Provider<AnimeDao>((Ref ref) {
@@ -203,6 +208,9 @@ class DatabaseService {
 
   late final BookDao bookDao = _remote?.bookDao ?? BookDao(() => database);
 
+  late final AlbumDao albumDao =
+      _remote?.albumDao ?? AlbumDao(() => database);
+
   late final AnimeDao animeDao = _remote?.animeDao ?? AnimeDao(() => database);
 
   late final CustomMediaDao customMediaDao =
@@ -219,6 +227,7 @@ class DatabaseService {
             animeDao: animeDao,
             mangaDao: mangaDao,
             bookDao: bookDao,
+            albumDao: albumDao,
             customMediaDao: customMediaDao,
           );
 

@@ -5,6 +5,7 @@ import 'image_type.dart';
 import 'media_type.dart';
 import '../utils/cover_image_id.dart' as cover_id;
 
+import 'album.dart';
 import 'book.dart';
 import 'custom_media.dart';
 import 'game.dart';
@@ -50,6 +51,7 @@ class CollectionItem with Exportable {
     this.anime,
     this.manga,
     this.book,
+    this.album,
     this.customMedia,
     this.platform,
   });
@@ -69,6 +71,7 @@ class CollectionItem with Exportable {
     Anime? anime,
     Manga? manga,
     Book? book,
+    Album? album,
     CustomMedia? customMedia,
     Platform? platform,
   }) {
@@ -118,6 +121,7 @@ class CollectionItem with Exportable {
       anime: anime,
       manga: manga,
       book: book,
+      album: album,
       customMedia: customMedia,
       platform: platform,
     );
@@ -237,7 +241,7 @@ class CollectionItem with Exportable {
   final DateTime? completedAt;
   final DateTime? lastActivityAt;
 
-  /// Joined media payloads — exactly one of the eight is non-null, picked by
+  /// Joined media payloads — exactly one of the nine is non-null, picked by
   /// [mediaType].
   final Game? game;
   final Movie? movie;
@@ -246,6 +250,7 @@ class CollectionItem with Exportable {
   final Anime? anime;
   final Manga? manga;
   final Book? book;
+  final Album? album;
   final CustomMedia? customMedia;
 
   /// Joined platform metadata for games / animation.
@@ -420,6 +425,24 @@ class CollectionItem with Exportable {
           source: book?.source ?? DataSource.openLibrary,
           imageType: ImageType.bookCover,
         );
+      case MediaType.music:
+        return (
+          name: album?.title,
+          coverUrl: album?.coverUrl,
+          thumbUrl: album?.coverUrl,
+          description: null,
+          rating: album?.rating,
+          formattedRating: album?.formattedRating,
+          releaseYear: album?.releaseYear,
+          runtime: album?.totalLengthMinutes,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: album?.genresString,
+          genres: album?.genres,
+          mediaStatus: null,
+          source: album?.source ?? source ?? DataSource.musicBrainz,
+          imageType: ImageType.albumCover,
+        );
       case MediaType.anime:
         return (
           name: anime?.title,
@@ -471,6 +494,7 @@ class CollectionItem with Exportable {
       MediaType.manga => 'Unknown Manga',
       MediaType.anime => 'Unknown Anime',
       MediaType.book => 'Unknown Book',
+      MediaType.music => 'Unknown Album',
       MediaType.custom => 'Unknown Custom Item',
     };
     return overrideName ?? _resolvedMedia.name ?? fallback;
@@ -520,11 +544,13 @@ class CollectionItem with Exportable {
         MediaType.tvShow => true,
         MediaType.animation => platformId == AnimationSource.tvShow,
         MediaType.anime => source == DataSource.kitsu,
+        // Music tracks its own listened_tracks table, not this tracker.
         MediaType.game ||
         MediaType.movie ||
         MediaType.visualNovel ||
         MediaType.manga ||
         MediaType.book ||
+        MediaType.music ||
         MediaType.custom =>
           false,
       };
@@ -542,6 +568,7 @@ class CollectionItem with Exportable {
         MediaType.manga => manga?.externalUrl,
         MediaType.anime => anime?.externalUrl,
         MediaType.book => book?.externalUrl,
+        MediaType.music => album?.externalUrl,
         MediaType.custom => customMedia?.externalUrl,
       };
 
@@ -690,6 +717,7 @@ class CollectionItem with Exportable {
   String? get exportNativeId {
     if (mediaType == MediaType.book) return book?.nativeId;
     if (mediaType == MediaType.manga) return manga?.mangaDexUuid;
+    if (mediaType == MediaType.music) return album?.mbid;
     return null;
   }
 
@@ -769,6 +797,7 @@ class CollectionItem with Exportable {
     Anime? anime,
     Manga? manga,
     Book? book,
+    Album? album,
     CustomMedia? customMedia,
     Platform? platform,
   }) {
@@ -807,6 +836,7 @@ class CollectionItem with Exportable {
       anime: anime ?? this.anime,
       manga: manga ?? this.manga,
       book: book ?? this.book,
+      album: album ?? this.album,
       customMedia: customMedia ?? this.customMedia,
       platform: platform ?? this.platform,
     );

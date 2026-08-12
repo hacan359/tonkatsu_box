@@ -99,6 +99,9 @@ class SEn extends S {
   String get statusWatching => 'Watching';
 
   @override
+  String get statusListening => 'Listening';
+
+  @override
   String get statusInProgress => 'In Progress';
 
   @override
@@ -129,6 +132,9 @@ class SEn extends S {
   String get statusRereading => 'Rereading';
 
   @override
+  String get statusRelistening => 'Relistening';
+
+  @override
   String get all => 'All';
 
   @override
@@ -154,6 +160,9 @@ class SEn extends S {
 
   @override
   String get mediaTypeBook => 'Book';
+
+  @override
+  String get mediaTypeMusic => 'Music';
 
   @override
   String get mediaTypeCustom => 'Custom';
@@ -1499,6 +1508,10 @@ class SEn extends S {
       'Comic data from ComicVine (non-commercial use).';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      'Music data from MusicBrainz, covers from the Cover Art Archive, listen counts from ListenBrainz.';
+
+  @override
   String get creditsGoogleBooksAttribution => 'Book data from Google Books.';
 
   @override
@@ -2384,6 +2397,67 @@ class SEn extends S {
 
   @override
   String get searchHintComics => 'Search comics...';
+
+  @override
+  String get searchSourceMusic => 'Music';
+
+  @override
+  String get searchHintMusic => 'Search albums...';
+
+  @override
+  String get musicFilterAlbumsDefault => 'Albums';
+
+  @override
+  String get musicFilterAllTypes => 'All types';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => 'Single';
+
+  @override
+  String get musicFilterTypeBroadcast => 'Broadcast';
+
+  @override
+  String get musicFilterTypeOther => 'Other';
+
+  @override
+  String get musicFilterEdition => 'Releases';
+
+  @override
+  String get musicFilterStudioOnly => 'Studio only';
+
+  @override
+  String get musicSheetEditions => 'Editions';
+
+  @override
+  String get musicSheetTracks => 'Tracks';
+
+  @override
+  String musicSheetDisc(int number) {
+    return 'Disc $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => 'Editions unavailable';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count tracks';
+  }
+
+  @override
+  String get musicTrackerNoTracks => 'No track list';
+
+  @override
+  String get musicDiscoverFreshReleases => 'New releases';
+
+  @override
+  String get musicDiscoverUnavailable => 'Discover is unavailable';
+
+  @override
+  String get musicSearchArtist => 'Artist';
 
   @override
   String get language => 'Language';
@@ -5203,6 +5277,9 @@ class SEn extends S {
   String get unitPart => 'Part';
 
   @override
+  String get unitTrack => 'Track';
+
+  @override
   String get cardLinkCopy => 'Copy card link';
 
   @override
@@ -5341,6 +5418,9 @@ class SEn extends S {
 
   @override
   String get statsMetricBookPages => 'book pages';
+
+  @override
+  String get statsMetricTracks => 'tracks listened';
 
   @override
   String get statsMetricEpisodes => 'episodes';

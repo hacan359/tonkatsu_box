@@ -1,5 +1,6 @@
 import 'dart:ui' show ImageFilter;
 
+import 'package:core/models/album.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/game.dart';
@@ -10,6 +11,7 @@ import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
 import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../shared/widgets/copyable_text.dart';
 import '../../../shared/widgets/gyroscope_parallax_image.dart';
@@ -310,6 +312,48 @@ class ItemDetailsSheet extends StatelessWidget {
       onAddToCollection: onAddToCollection,
     );
   }
+
+  factory ItemDetailsSheet.album(
+    Album album, {
+    required VoidCallback onAddToCollection,
+    Widget? editionsSection,
+  }) {
+    return ItemDetailsSheet(
+      editionsSection: editionsSection,
+      title: album.title,
+      icon: Icons.album,
+      year: album.releaseYear,
+      rating: album.formattedRating,
+      genres: album.genres.isNotEmpty ? album.genres : album.tags,
+      maxGenres: _defaultMaxChips,
+      subtitle: album.artistsString,
+      infoChips: <(IconData, String)>[
+        if (album.primaryType != null)
+          (
+            Icons.album_outlined,
+            <String>[album.primaryType!, ...album.secondaryTypes].join(' · '),
+          ),
+        if (album.label != null) (Icons.business, album.label!),
+        if (album.listenCount != null)
+          (Icons.headphones, _formatListenCount(album.listenCount!)),
+      ],
+      posterUrl: album.coverUrl,
+      cacheImageType: ImageType.albumCover,
+      cacheImageId: coverImageId(
+        mediaType: MediaType.music,
+        externalId: album.id,
+        source: album.source,
+      ),
+      externalUrl: album.externalUrl,
+      dataSource: album.source,
+      coverHeight: 150,
+      onAddToCollection: onAddToCollection,
+    );
+  }
+
+  /// `1032946` → `1M` — the raw count reads as noise on a chip.
+  static String _formatListenCount(int count) =>
+      NumberFormat.compact().format(count);
 
   static const int _defaultMaxChips = 8;
 

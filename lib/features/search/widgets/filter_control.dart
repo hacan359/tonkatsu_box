@@ -176,7 +176,7 @@ class FilterChevron extends ConsumerStatefulWidget {
 
 class _FilterChevronState extends ConsumerState<FilterChevron>
     with FilterOptionsLoader<FilterChevron> {
-  bool _initialLoadDone = false;
+  Locale? _loadedLocale;
 
   @override
   SearchFilter get filter => widget.filter;
@@ -184,8 +184,10 @@ class _FilterChevronState extends ConsumerState<FilterChevron>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialLoadDone) {
-      _initialLoadDone = true;
+    // Reload option labels when the app language changes (see FilterDropdown).
+    final Locale locale = Localizations.localeOf(context);
+    if (_loadedLocale != locale) {
+      _loadedLocale = locale;
       loadOptions();
     }
   }

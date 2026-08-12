@@ -1,3 +1,4 @@
+import 'package:core/models/album.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -43,6 +44,48 @@ void main() {
       mockVisualNovelDao = MockVisualNovelDao();
       when(() => mockDb.visualNovelDao).thenReturn(mockVisualNovelDao);
       repository = CanvasRepository(db: mockDb);
+    });
+
+    group('music hydration', () {
+      test('should join album data onto a music canvas item', () async {
+        final MockAlbumDao mockAlbumDao = MockAlbumDao();
+        when(() => mockDb.albumDao).thenReturn(mockAlbumDao);
+
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'item_type': 'music',
+            'item_ref_id': 777,
+            'x': 50.0,
+            'y': 100.0,
+            'width': 160.0,
+            'height': 220.0,
+            'z_index': 0,
+            'data': null,
+            'created_at': testTimestamp,
+          },
+        ];
+        final Album album = createTestAlbum(
+          id: 777,
+          title: 'Meddle',
+          coverUrl: 'https://coverartarchive.org/release-group/x/front-500',
+        );
+
+        when(() => mockCanvasDao.getCanvasItems(10))
+            .thenAnswer((_) async => rows);
+        when(() => mockAlbumDao.getAlbumsByIds(<int>[777]))
+            .thenAnswer((_) async => <Album>[album]);
+
+        final List<CanvasItem> result =
+            await repository.getItemsWithData(10);
+
+        expect(result.single.album, isNotNull);
+        expect(result.single.album!.title, 'Meddle');
+        // The cover flows to the card only through the joined album.
+        expect(result.single.mediaThumbnailUrl, album.coverUrl);
+        verify(() => mockAlbumDao.getAlbumsByIds(<int>[777])).called(1);
+      });
     });
 
     group('constants', () {
@@ -745,6 +788,7 @@ void main() {
           nativeId: 'OL800W',
           title: 'Dune',
         );
+        final Album testAlbum = createTestAlbum(id: 900, title: 'OK Computer');
 
         final List<CollectionItem> items = <CollectionItem>[
           CollectionItem(
@@ -819,10 +863,19 @@ void main() {
             addedAt: testDate,
             book: testBook,
           ),
+          CollectionItem(
+            id: 9,
+            collectionId: 10,
+            mediaType: MediaType.music,
+            externalId: 900,
+            status: ItemStatus.notStarted,
+            addedAt: testDate,
+            album: testAlbum,
+          ),
         ];
 
         when(() => mockCanvasDao.insertCanvasItemsBatch(any()))
-            .thenAnswer((_) async => <int>[1, 2, 3, 4, 5, 6, 7, 8]);
+            .thenAnswer((_) async => <int>[1, 2, 3, 4, 5, 6, 7, 8, 9]);
         when(() => mockCanvasDao.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
@@ -833,7 +886,7 @@ void main() {
         final List<CanvasItem> result =
             await repository.initializeCanvas(10, items);
 
-        expect(result.length, 8);
+        expect(result.length, 9);
         expect(result[0].game?.id, testGame.id);
         expect(result[1].movie?.tmdbId, testMovie.tmdbId);
         expect(result[2].tvShow?.tmdbId, testTvShow.tmdbId);
@@ -842,6 +895,7 @@ void main() {
         expect(result[5].anime?.id, testAnime.id);
         expect(result[6].customMedia?.id, testCustom.id);
         expect(result[7].book?.id, testBook.id);
+        expect(result[8].album?.id, testAlbum.id);
       });
 
       test('should handle empty games list', () async {

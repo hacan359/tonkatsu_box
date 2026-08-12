@@ -129,6 +129,12 @@ class CreditsContent extends StatelessWidget {
         linkLabel: 'hardcover.app',
         url: 'https://hardcover.app/',
       ),
+      (
+        source: DataSource.musicBrainz,
+        description: l10n.creditsMusicBrainzAttribution,
+        linkLabel: 'musicbrainz.org',
+        url: 'https://musicbrainz.org/',
+      ),
     ];
 
     return Column(

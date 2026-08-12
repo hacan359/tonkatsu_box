@@ -12,6 +12,7 @@ import 'package:core/models/image_type.dart';
 import 'package:core/models/profile.dart';
 
 import '../../shared/constants/platform_features.dart';
+import '../api/api_dio.dart';
 import '../selfhost/server_origin.dart';
 import 'profile_service.dart';
 import 'storage_root.dart';
@@ -29,8 +30,19 @@ final Provider<ImageCacheService> imageCacheServiceProvider =
 /// Caches images locally; when caching is enabled, cached files are served
 /// instead of the network so images keep working offline.
 class ImageCacheService {
+  // createApiDio: cover hosts (Cover Art Archive) refuse agent-less clients
+  // and need the per-host pacing; a bare Dio() hit both limits.
+  ImageCacheService({Dio? dio})
+      : _dio = dio ??
+            createApiDio(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 60),
+              headers: const <String, String>{'User-Agent': kAppUserAgent},
+            );
+
   static final Logger _log = Logger('ImageCacheService');
-  final Dio _dio = Dio();
+
+  final Dio _dio;
 
   Future<String> getBaseCachePath() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -255,6 +267,21 @@ class ImageCacheService {
     }
   }
 
+  // Covers that 404 (Cover Art Archive answers 404 for albums without art)
+  // would otherwise re-download on every rebuild of every card this session.
+  final Set<String> _failedDownloads = <String>{};
+
+  static const int _maxFailedDownloadEntries = 500;
+
+  // Only permanent failures go in: a timeout or a 429/5xx must stay
+  // retryable, or one throttled burst blanks a cover until restart.
+  void _markPermanentlyFailed(String failKey) {
+    if (_failedDownloads.length >= _maxFailedDownloadEntries) {
+      _failedDownloads.clear();
+    }
+    _failedDownloads.add(failKey);
+  }
+
   Future<bool> downloadImage({
     required ImageType type,
     required String imageId,
@@ -262,6 +289,8 @@ class ImageCacheService {
   }) async {
     // The browser has no disk cache: the server holds one for every client.
     if (kIsWebBuild) return false;
+    final String failKey = '${type.folder}/$imageId';
+    if (_failedDownloads.contains(failKey)) return false;
     try {
       final String localPath = await getLocalImagePath(type, imageId);
       final File file = File(localPath);
@@ -275,12 +304,16 @@ class ImageCacheService {
 
       if (!_isValidImageFile(file)) {
         await _tryDelete(file);
+        _markPermanentlyFailed(failKey);
         return false;
       }
 
       return true;
     } catch (e) {
       _log.warning('Failed to download image: $imageId', e);
+      if (e is DioException && e.response?.statusCode == 404) {
+        _markPermanentlyFailed(failKey);
+      }
       // Remove the invalid/partial file left by the failed download
       final String localPath = await getLocalImagePath(type, imageId);
       final File partial = File(localPath);

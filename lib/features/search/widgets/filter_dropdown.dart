@@ -31,14 +31,17 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
   List<FilterOption>? _options;
   Map<Object, String>? _labelCache;
   bool _isLoadingOptions = false;
-  bool _initialLoadDone = false;
+  Locale? _loadedLocale;
   int _loadGeneration = 0;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialLoadDone) {
-      _initialLoadDone = true;
+    // Reload when the app language changes so option labels follow it — the
+    // cached labels are localized and would otherwise stay in the old locale.
+    final Locale locale = Localizations.localeOf(context);
+    if (_loadedLocale != locale) {
+      _loadedLocale = locale;
       _loadOptions();
     }
   }

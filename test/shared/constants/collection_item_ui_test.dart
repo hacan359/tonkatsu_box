@@ -42,5 +42,52 @@ void main() {
         );
       });
     });
+
+    group('cardTitle', () {
+      test('should prefix the artist for a music item', () {
+        final String title = createTestCollectionItem(
+          mediaType: MediaType.music,
+          album: createTestAlbum(
+            title: 'The Dark Side of the Moon',
+            artists: <String>['Pink Floyd'],
+          ),
+        ).cardTitle('The Dark Side of the Moon');
+
+        expect(title, 'Pink Floyd — The Dark Side of the Moon');
+      });
+
+      test('should keep the plain name when the album has no artists', () {
+        final String title = createTestCollectionItem(
+          mediaType: MediaType.music,
+          album: createTestAlbum(title: 'Nameless', artists: const <String>[]),
+        ).cardTitle('Nameless');
+
+        expect(title, 'Nameless');
+      });
+
+      test('should keep the plain name when the album is not joined', () {
+        expect(
+          createTestCollectionItem(mediaType: MediaType.music).cardTitle('X'),
+          'X',
+        );
+      });
+
+      test('should not prefix a custom rename', () {
+        final String title = createTestCollectionItem(
+          mediaType: MediaType.music,
+          overrideName: 'My favourite',
+          album: createTestAlbum(artists: <String>['Pink Floyd']),
+        ).cardTitle('My favourite');
+
+        expect(title, 'My favourite');
+      });
+
+      test('should keep other media types untouched', () {
+        expect(
+          createTestCollectionItem(mediaType: MediaType.game).cardTitle('Doom'),
+          'Doom',
+        );
+      });
+    });
   });
 }

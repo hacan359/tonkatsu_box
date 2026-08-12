@@ -279,6 +279,12 @@ abstract class S {
   /// **'Watching'**
   String get statusWatching;
 
+  /// No description provided for @statusListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get statusListening;
+
   /// No description provided for @statusInProgress.
   ///
   /// In en, this message translates to:
@@ -339,6 +345,12 @@ abstract class S {
   /// **'Rereading'**
   String get statusRereading;
 
+  /// No description provided for @statusRelistening.
+  ///
+  /// In en, this message translates to:
+  /// **'Relistening'**
+  String get statusRelistening;
+
   /// No description provided for @all.
   ///
   /// In en, this message translates to:
@@ -392,6 +404,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Book'**
   String get mediaTypeBook;
+
+  /// No description provided for @mediaTypeMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get mediaTypeMusic;
 
   /// No description provided for @mediaTypeCustom.
   ///
@@ -2684,6 +2702,12 @@ abstract class S {
   /// **'Comic data from ComicVine (non-commercial use).'**
   String get creditsComicVineAttribution;
 
+  /// No description provided for @creditsMusicBrainzAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Music data from MusicBrainz, covers from the Cover Art Archive, listen counts from ListenBrainz.'**
+  String get creditsMusicBrainzAttribution;
+
   /// No description provided for @creditsGoogleBooksAttribution.
   ///
   /// In en, this message translates to:
@@ -4267,6 +4291,120 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Search comics...'**
   String get searchHintComics;
+
+  /// No description provided for @searchSourceMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get searchSourceMusic;
+
+  /// No description provided for @searchHintMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Search albums...'**
+  String get searchHintMusic;
+
+  /// No description provided for @musicFilterAlbumsDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get musicFilterAlbumsDefault;
+
+  /// No description provided for @musicFilterAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All types'**
+  String get musicFilterAllTypes;
+
+  /// No description provided for @musicFilterTypeEp.
+  ///
+  /// In en, this message translates to:
+  /// **'EP'**
+  String get musicFilterTypeEp;
+
+  /// No description provided for @musicFilterTypeSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Single'**
+  String get musicFilterTypeSingle;
+
+  /// No description provided for @musicFilterTypeBroadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast'**
+  String get musicFilterTypeBroadcast;
+
+  /// No description provided for @musicFilterTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get musicFilterTypeOther;
+
+  /// No description provided for @musicFilterEdition.
+  ///
+  /// In en, this message translates to:
+  /// **'Releases'**
+  String get musicFilterEdition;
+
+  /// No description provided for @musicFilterStudioOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio only'**
+  String get musicFilterStudioOnly;
+
+  /// No description provided for @musicSheetEditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Editions'**
+  String get musicSheetEditions;
+
+  /// No description provided for @musicSheetTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks'**
+  String get musicSheetTracks;
+
+  /// No description provided for @musicSheetDisc.
+  ///
+  /// In en, this message translates to:
+  /// **'Disc {number}'**
+  String musicSheetDisc(int number);
+
+  /// No description provided for @musicSheetEditionsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Editions unavailable'**
+  String get musicSheetEditionsUnavailable;
+
+  /// No description provided for @musicTracksCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tracks'**
+  String musicTracksCount(int count);
+
+  /// No description provided for @musicTrackerNoTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'No track list'**
+  String get musicTrackerNoTracks;
+
+  /// No description provided for @musicDiscoverFreshReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'New releases'**
+  String get musicDiscoverFreshReleases;
+
+  /// No description provided for @musicDiscoverUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover is unavailable'**
+  String get musicDiscoverUnavailable;
+
+  /// No description provided for @musicSearchArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get musicSearchArtist;
 
   /// No description provided for @language.
   ///
@@ -9194,6 +9332,12 @@ abstract class S {
   /// **'Part'**
   String get unitPart;
 
+  /// No description provided for @unitTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get unitTrack;
+
   /// No description provided for @cardLinkCopy.
   ///
   /// In en, this message translates to:
@@ -9469,6 +9613,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'book pages'**
   String get statsMetricBookPages;
+
+  /// No description provided for @statsMetricTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'tracks listened'**
+  String get statsMetricTracks;
 
   /// No description provided for @statsMetricEpisodes.
   ///

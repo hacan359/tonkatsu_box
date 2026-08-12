@@ -99,6 +99,9 @@ class SPt extends S {
   String get statusWatching => 'Assistindo';
 
   @override
+  String get statusListening => 'Ouvindo';
+
+  @override
   String get statusInProgress => 'Em andamento';
 
   @override
@@ -129,6 +132,9 @@ class SPt extends S {
   String get statusRereading => 'Relendo';
 
   @override
+  String get statusRelistening => 'Reouvindo';
+
+  @override
   String get all => 'Todos';
 
   @override
@@ -154,6 +160,9 @@ class SPt extends S {
 
   @override
   String get mediaTypeBook => 'Livro';
+
+  @override
+  String get mediaTypeMusic => 'Música';
 
   @override
   String get mediaTypeCustom => 'Personalizado';
@@ -1525,6 +1534,10 @@ class SPt extends S {
       'Dados de quadrinhos do ComicVine (uso não comercial).';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      'Dados musicais do MusicBrainz, capas do Cover Art Archive, reproduções do ListenBrainz.';
+
+  @override
   String get creditsGoogleBooksAttribution =>
       'Dados de livros do Google Books.';
 
@@ -2415,6 +2428,67 @@ class SPt extends S {
 
   @override
   String get searchHintComics => 'Buscar quadrinhos...';
+
+  @override
+  String get searchSourceMusic => 'Música';
+
+  @override
+  String get searchHintMusic => 'Buscar álbuns...';
+
+  @override
+  String get musicFilterAlbumsDefault => 'Álbuns';
+
+  @override
+  String get musicFilterAllTypes => 'Todos os tipos';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => 'Single';
+
+  @override
+  String get musicFilterTypeBroadcast => 'Transmissão';
+
+  @override
+  String get musicFilterTypeOther => 'Outro';
+
+  @override
+  String get musicFilterEdition => 'Edições';
+
+  @override
+  String get musicFilterStudioOnly => 'Somente estúdio';
+
+  @override
+  String get musicSheetEditions => 'Edições';
+
+  @override
+  String get musicSheetTracks => 'Faixas';
+
+  @override
+  String musicSheetDisc(int number) {
+    return 'Disco $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => 'Edições indisponíveis';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count faixas';
+  }
+
+  @override
+  String get musicTrackerNoTracks => 'Sem lista de faixas';
+
+  @override
+  String get musicDiscoverFreshReleases => 'Novos lançamentos';
+
+  @override
+  String get musicDiscoverUnavailable => 'Discover indisponível';
+
+  @override
+  String get musicSearchArtist => 'Artista';
 
   @override
   String get language => 'Idioma';
@@ -5255,6 +5329,9 @@ class SPt extends S {
   String get unitPart => 'Parte';
 
   @override
+  String get unitTrack => 'Faixa';
+
+  @override
   String get cardLinkCopy => 'Copiar link do card';
 
   @override
@@ -5394,6 +5471,9 @@ class SPt extends S {
 
   @override
   String get statsMetricBookPages => 'páginas de livros';
+
+  @override
+  String get statsMetricTracks => 'faixas ouvidas';
 
   @override
   String get statsMetricEpisodes => 'episódios';

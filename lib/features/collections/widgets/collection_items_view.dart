@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -382,7 +383,7 @@ class CollectionItemsView extends ConsumerWidget {
       variant: isLandscape || isCompactScreen(context)
           ? CardVariant.compact
           : CardVariant.grid,
-      title: ref.displayNameOf(item),
+      title: item.cardTitle(ref.displayNameOf(item)),
       imageUrl: item.thumbnailUrl ?? '',
       cacheImageType: item.imageType,
       cacheImageId: item.coverImageId,

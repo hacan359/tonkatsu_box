@@ -536,6 +536,7 @@ int? _totalCountFor(MediaType type, CollectionStats? stats) {
     MediaType.manga => stats.mangaCount,
     MediaType.anime => stats.animeCount,
     MediaType.book => stats.bookCount,
+    MediaType.music => stats.musicCount,
     MediaType.custom => stats.customCount,
   };
 }
