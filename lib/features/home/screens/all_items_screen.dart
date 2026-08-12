@@ -11,6 +11,7 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -166,10 +167,23 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               .contains(lowerQuery) ||
           _matchesTagName(item, tagsMap, lowerQuery) ||
           (item.userComment?.toLowerCase().contains(lowerQuery) ?? false) ||
-          (item.authorComment?.toLowerCase().contains(lowerQuery) ?? false);
+          (item.authorComment?.toLowerCase().contains(lowerQuery) ?? false) ||
+          _matchesCreator(item, lowerQuery);
       if (!match) return false;
     }
     return true;
+  }
+
+  /// Albums also match by artist, books by author — "pink floyd" should find
+  /// the album even though the query is not in its title.
+  static bool _matchesCreator(CollectionItem item, String lowerQuery) {
+    final List<String> creators = switch (item.mediaType) {
+      MediaType.music => item.album?.artists ?? const <String>[],
+      MediaType.book => item.book?.authors ?? const <String>[],
+      _ => const <String>[],
+    };
+    return creators
+        .any((String name) => name.toLowerCase().contains(lowerQuery));
   }
 
   /// Chevron bar: media types (multi-select) plus the status dropdown as
@@ -227,6 +241,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         type: MediaType.book,
         label: l.collectionFilterBooks,
         count: counts[MediaType.book] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.music,
+        label: l.mediaTypeMusic,
+        count: counts[MediaType.music] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.custom,
@@ -534,7 +553,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                               isCompactScreen(context)
                           ? CardVariant.compact
                           : CardVariant.grid,
-                      title: ref.displayNameOf(item),
+                      title: item.cardTitle(ref.displayNameOf(item)),
                       imageUrl: item.thumbnailUrl ?? '',
                       cacheImageType:
                           _imageTypeFor(item.mediaType, item.platformId),
@@ -942,6 +961,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.anime?.releaseYear;
       case MediaType.book:
         return item.book?.releaseYear;
+      case MediaType.music:
+        return item.album?.releaseYear;
       case MediaType.custom:
         return item.customMedia?.year;
     }
@@ -968,6 +989,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return ImageType.animeCover;
       case MediaType.book:
         return ImageType.bookCover;
+      case MediaType.music:
+        return ImageType.albumCover;
       case MediaType.custom:
         return ImageType.customCover;
     }

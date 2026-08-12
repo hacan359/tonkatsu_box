@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../utils/bbcode.dart';
+import '../utils/json_list.dart';
 import '../utils/stable_id.dart';
 import 'book_kind.dart';
 import 'data_source.dart';
@@ -43,19 +44,19 @@ class Book {
       nativeId: (row['native_id'] as String?) ?? row['id'] as String,
       title: row['title'] as String,
       originalTitle: row['original_title'] as String?,
-      authors: _decodeStringList(row['authors']),
+      authors: decodeJsonStringList(row['authors']),
       description: row['description'] as String?,
       coverUrl: row['cover_url'] as String?,
       pageCount: row['page_count'] as int?,
       publishYear: row['publish_year'] as int?,
-      publishers: _decodeStringList(row['publishers']),
+      publishers: decodeJsonStringList(row['publishers']),
       isbn10: row['isbn_10'] as String?,
       isbn13: row['isbn_13'] as String?,
-      languages: _decodeStringList(row['languages']),
-      subjects: _decodeStringList(row['subjects']),
+      languages: decodeJsonStringList(row['languages']),
+      subjects: decodeJsonStringList(row['subjects']),
       workType: row['work_type'] as String?,
       series: row['series'] as String?,
-      awards: _decodeStringList(row['awards']),
+      awards: decodeJsonStringList(row['awards']),
       rating: (row['rating'] as num?)?.toDouble(),
       ratingCount: row['rating_count'] as int?,
       externalUrl: row['external_url'] as String?,
@@ -595,20 +596,6 @@ class Book {
 
   @override
   String toString() => 'Book(id: $id, source: ${source.name}, title: $title)';
-
-  /// Decodes a JSON-array column into a list, tolerating null / malformed data.
-  static List<String> _decodeStringList(Object? value) {
-    if (value is! String || value.isEmpty) return const <String>[];
-    try {
-      final Object? decoded = jsonDecode(value);
-      if (decoded is List<dynamic>) {
-        return decoded.whereType<String>().toList();
-      }
-    } on FormatException {
-      return const <String>[];
-    }
-    return const <String>[];
-  }
 
   /// `-L` (large) cover URL for an OpenLibrary cover id. Redirects (302) to the
   /// CDN; Dio follows redirects by default.

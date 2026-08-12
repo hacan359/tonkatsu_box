@@ -99,6 +99,9 @@ class SRu extends S {
   String get statusWatching => 'Смотрю';
 
   @override
+  String get statusListening => 'Слушаю';
+
+  @override
   String get statusInProgress => 'В процессе';
 
   @override
@@ -129,6 +132,9 @@ class SRu extends S {
   String get statusRereading => 'Перечитываю';
 
   @override
+  String get statusRelistening => 'Переслушиваю';
+
+  @override
   String get all => 'Все';
 
   @override
@@ -154,6 +160,9 @@ class SRu extends S {
 
   @override
   String get mediaTypeBook => 'Книга';
+
+  @override
+  String get mediaTypeMusic => 'Музыка';
 
   @override
   String get mediaTypeCustom => 'Своё';
@@ -1525,6 +1534,10 @@ class SRu extends S {
       'Данные о комиксах из ComicVine (некоммерческое использование).';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      'Данные о музыке из MusicBrainz, обложки из Cover Art Archive, прослушивания из ListenBrainz.';
+
+  @override
   String get creditsGoogleBooksAttribution =>
       'Данные о книгах из Google Books.';
 
@@ -2429,6 +2442,67 @@ class SRu extends S {
 
   @override
   String get searchHintComics => 'Поиск комиксов...';
+
+  @override
+  String get searchSourceMusic => 'Музыка';
+
+  @override
+  String get searchHintMusic => 'Поиск альбомов...';
+
+  @override
+  String get musicFilterAlbumsDefault => 'Альбомы';
+
+  @override
+  String get musicFilterAllTypes => 'Все типы';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => 'Сингл';
+
+  @override
+  String get musicFilterTypeBroadcast => 'Трансляция';
+
+  @override
+  String get musicFilterTypeOther => 'Другое';
+
+  @override
+  String get musicFilterEdition => 'Издания';
+
+  @override
+  String get musicFilterStudioOnly => 'Только студийные';
+
+  @override
+  String get musicSheetEditions => 'Издания';
+
+  @override
+  String get musicSheetTracks => 'Треки';
+
+  @override
+  String musicSheetDisc(int number) {
+    return 'Диск $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => 'Издания недоступны';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count трек(ов)';
+  }
+
+  @override
+  String get musicTrackerNoTracks => 'Нет списка треков';
+
+  @override
+  String get musicDiscoverFreshReleases => 'Новые релизы';
+
+  @override
+  String get musicDiscoverUnavailable => 'Discover недоступен';
+
+  @override
+  String get musicSearchArtist => 'Исполнитель';
 
   @override
   String get language => 'Язык';
@@ -5298,6 +5372,9 @@ class SRu extends S {
   String get unitPart => 'Часть';
 
   @override
+  String get unitTrack => 'Трек';
+
+  @override
   String get cardLinkCopy => 'Скопировать ссылку на карточку';
 
   @override
@@ -5436,6 +5513,9 @@ class SRu extends S {
 
   @override
   String get statsMetricBookPages => 'страниц книг';
+
+  @override
+  String get statsMetricTracks => 'треков прослушано';
 
   @override
   String get statsMetricEpisodes => 'эпизодов';

@@ -35,6 +35,7 @@ class CacheCleanupService {
     ImageType.vnCover,
     ImageType.mangaCover,
     ImageType.bookCover,
+    ImageType.albumCover,
   };
 
   Future<CacheCleanupResult> removeOrphans() async {

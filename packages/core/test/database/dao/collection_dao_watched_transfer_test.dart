@@ -1,3 +1,4 @@
+import 'package:core/database/dao/album_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/collection_dao.dart';
@@ -45,6 +46,7 @@ void main() {
       animeDao: AnimeDao(getDb),
       mangaDao: MangaDao(getDb),
       bookDao: BookDao(getDb),
+      albumDao: AlbumDao(getDb),
       customMediaDao: CustomMediaDao(getDb),
     );
 
@@ -324,6 +326,103 @@ void main() {
       expect(ok, isFalse);
       expect(await watchedCount(1, 500), 1);
       expect(await watchedCount(2, 500), 0);
+    });
+  });
+
+  group('CollectionDao.updateItemCollectionId — listened transfer', () {
+    Future<void> insertListened({
+      required int collectionId,
+      required int albumId,
+      int disc = 1,
+      int track = 1,
+    }) async {
+      await db.insert('listened_tracks', <String, Object?>{
+        'collection_id': collectionId,
+        'source': DataSource.musicBrainz.name,
+        'album_id': albumId,
+        'disc_number': disc,
+        'track_number': track,
+        'listened_at': 1700000000,
+      });
+    }
+
+    Future<int> listenedCount(int collectionId, int albumId) async {
+      final List<Map<String, Object?>> rows = await db.rawQuery(
+        'SELECT COUNT(*) AS cnt FROM listened_tracks '
+        'WHERE collection_id = ? AND album_id = ?',
+        <Object?>[collectionId, albumId],
+      );
+      return rows.single['cnt']! as int;
+    }
+
+    test('should move listened marks to the target collection', () async {
+      await insertItem(
+        id: 10,
+        collectionId: 1,
+        mediaType: MediaType.music.value,
+        externalId: 900,
+        source: DataSource.musicBrainz.name,
+      );
+      await insertListened(collectionId: 1, albumId: 900, track: 1);
+      await insertListened(collectionId: 1, albumId: 900, track: 2);
+
+      final bool ok = await dao.updateItemCollectionId(10, 2);
+
+      expect(ok, isTrue);
+      expect(await listenedCount(1, 900), 0);
+      expect(await listenedCount(2, 900), 2);
+    });
+
+    test('should preserve listened_at on transfer', () async {
+      await insertItem(
+        id: 10,
+        collectionId: 1,
+        mediaType: MediaType.music.value,
+        externalId: 900,
+        source: DataSource.musicBrainz.name,
+      );
+      await insertListened(collectionId: 1, albumId: 900);
+
+      await dao.updateItemCollectionId(10, 2);
+
+      final List<Map<String, Object?>> rows = await db.query(
+        'listened_tracks',
+        where: 'collection_id = 2',
+      );
+      expect(rows.single['listened_at'], 1700000000);
+    });
+
+    test('moving to uncategorized leaves marks in the source', () async {
+      await insertItem(
+        id: 10,
+        collectionId: 1,
+        mediaType: MediaType.music.value,
+        externalId: 900,
+        source: DataSource.musicBrainz.name,
+      );
+      await insertListened(collectionId: 1, albumId: 900);
+
+      final bool ok = await dao.updateItemCollectionId(10, null);
+
+      expect(ok, isTrue);
+      expect(await listenedCount(1, 900), 1);
+    });
+
+    test('should not touch marks of another album', () async {
+      await insertItem(
+        id: 10,
+        collectionId: 1,
+        mediaType: MediaType.music.value,
+        externalId: 900,
+        source: DataSource.musicBrainz.name,
+      );
+      await insertListened(collectionId: 1, albumId: 900);
+      await insertListened(collectionId: 1, albumId: 901);
+
+      await dao.updateItemCollectionId(10, 2);
+
+      expect(await listenedCount(1, 901), 1);
+      expect(await listenedCount(2, 900), 1);
     });
   });
 }

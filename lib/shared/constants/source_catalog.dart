@@ -111,4 +111,9 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     url: 'https://comicvine.gamespot.com/api/',
     keyRequirement: SourceKeyRequirement.recommended,
   ),
+  SourceInfo(
+    source: DataSource.musicBrainz,
+    mediaTypes: <MediaType>[MediaType.music],
+    url: 'https://musicbrainz.org/',
+  ),
 ];

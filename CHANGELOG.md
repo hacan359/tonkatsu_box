@@ -7,6 +7,19 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Music as a new media type, backed by MusicBrainz**
+
+  Albums join the library as the tenth media type. Search, browse and
+  filters run against MusicBrainz (keyless, rate-limit friendly), covers
+  come from Cover Art Archive, popularity and the "New releases" discover
+  row from ListenBrainz. Locally we store the album cache (title, artist,
+  type, year, genres, rating, picked edition), the track list of that
+  edition, and per-collection listened-track marks with dates — so the
+  tracker, statistics, export/import and backup all work offline. Music
+  cards title as "Artist — Album".
+
 ## [0.42.0] - 2026-08-11
 
 ### Added

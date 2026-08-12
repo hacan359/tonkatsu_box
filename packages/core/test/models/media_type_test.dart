@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('should contain 9 значений', () {
-        expect(MediaType.values.length, 9);
+      test('should contain 10 values', () {
+        expect(MediaType.values.length, 10);
       });
 
       test('should contain game', () {
@@ -34,6 +34,10 @@ void main() {
 
       test('should contain anime', () {
         expect(MediaType.values.contains(MediaType.anime), isTrue);
+      });
+
+      test('should contain music', () {
+        expect(MediaType.values.contains(MediaType.music), isTrue);
       });
     });
 
@@ -166,6 +170,12 @@ void main() {
 
         expect(result, MediaType.anime);
       });
+
+      test('should return music when parsing "music"', () {
+        final MediaType result = MediaType.fromString('music');
+
+        expect(result, MediaType.music);
+      });
     });
 
     group('tryFromString', () {
@@ -209,6 +219,10 @@ void main() {
 
       test('anime должен отображаться как "Anime"', () {
         expect(MediaType.anime.displayLabel, 'Anime');
+      });
+
+      test('should display music as "Music"', () {
+        expect(MediaType.music.displayLabel, 'Music');
       });
     });
   });

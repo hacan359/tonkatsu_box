@@ -29,6 +29,7 @@ class CollectionStats {
     this.mangaCount = 0,
     this.animeCount = 0,
     this.bookCount = 0,
+    this.musicCount = 0,
     this.customCount = 0,
   });
 
@@ -47,6 +48,7 @@ class CollectionStats {
   final int mangaCount;
   final int animeCount;
   final int bookCount;
+  final int musicCount;
   final int customCount;
 
   Map<MediaType, int> get mediaTypeCounts => <MediaType, int>{
@@ -58,6 +60,7 @@ class CollectionStats {
     MediaType.manga: mangaCount,
     MediaType.anime: animeCount,
     MediaType.book: bookCount,
+    MediaType.music: musicCount,
     MediaType.custom: customCount,
   };
 
@@ -347,6 +350,7 @@ class CollectionRepository {
       mangaCount: raw['mangaCount'] ?? 0,
       animeCount: raw['animeCount'] ?? 0,
       bookCount: raw['bookCount'] ?? 0,
+      musicCount: raw['musicCount'] ?? 0,
       customCount: raw['customCount'] ?? 0,
     );
   }

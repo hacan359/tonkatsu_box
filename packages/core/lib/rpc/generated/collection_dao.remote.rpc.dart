@@ -2,6 +2,7 @@
 // Regenerate after any DAO signature change; CI checks the diff is empty.
 
 import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/models/album.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/book_kind.dart';
@@ -460,6 +461,49 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
+            album: decodeNullable<Album>(
+              asObject(e)['album'],
+              (Object? v) => Album(
+                id: decodeInt(asObject(v)['id']),
+                source: decodeEnum<DataSource>(
+                  asObject(v)['source'],
+                  DataSource.values,
+                ),
+                mbid: asObject(v)['mbid'] as String,
+                title: asObject(v)['title'] as String,
+                artists: asList(
+                  asObject(v)['artists'],
+                ).map((Object? e) => e as String).toList(),
+                artistMbids: asList(
+                  asObject(v)['artistMbids'],
+                ).map((Object? e) => e as String).toList(),
+                primaryType: asObject(v)['primaryType'] as String?,
+                secondaryTypes: asList(
+                  asObject(v)['secondaryTypes'],
+                ).map((Object? e) => e as String).toList(),
+                releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+                firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+                genres: asList(
+                  asObject(v)['genres'],
+                ).map((Object? e) => e as String).toList(),
+                tags: asList(
+                  asObject(v)['tags'],
+                ).map((Object? e) => e as String).toList(),
+                rating: (asObject(v)['rating'] as num?)?.toDouble(),
+                ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+                listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+                releaseMbid: asObject(v)['releaseMbid'] as String?,
+                releaseTitle: asObject(v)['releaseTitle'] as String?,
+                label: asObject(v)['label'] as String?,
+                format: asObject(v)['format'] as String?,
+                trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+                discCount: decodeIntOrNull(asObject(v)['discCount']),
+                totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+                coverUrl: asObject(v)['coverUrl'] as String?,
+                externalUrl: asObject(v)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
+              ),
+            ),
             customMedia: decodeNullable<CustomMedia>(
               asObject(e)['customMedia'],
               (Object? v) => CustomMedia(
@@ -829,6 +873,49 @@ class RemoteCollectionDao implements CollectionDao {
             kind: decodeEnum<BookKind>(asObject(v)['kind'], BookKind.values),
           ),
         ),
+        album: decodeNullable<Album>(
+          asObject(v)['album'],
+          (Object? v) => Album(
+            id: decodeInt(asObject(v)['id']),
+            source: decodeEnum<DataSource>(
+              asObject(v)['source'],
+              DataSource.values,
+            ),
+            mbid: asObject(v)['mbid'] as String,
+            title: asObject(v)['title'] as String,
+            artists: asList(
+              asObject(v)['artists'],
+            ).map((Object? e) => e as String).toList(),
+            artistMbids: asList(
+              asObject(v)['artistMbids'],
+            ).map((Object? e) => e as String).toList(),
+            primaryType: asObject(v)['primaryType'] as String?,
+            secondaryTypes: asList(
+              asObject(v)['secondaryTypes'],
+            ).map((Object? e) => e as String).toList(),
+            releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+            firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+            genres: asList(
+              asObject(v)['genres'],
+            ).map((Object? e) => e as String).toList(),
+            tags: asList(
+              asObject(v)['tags'],
+            ).map((Object? e) => e as String).toList(),
+            rating: (asObject(v)['rating'] as num?)?.toDouble(),
+            ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+            listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+            releaseMbid: asObject(v)['releaseMbid'] as String?,
+            releaseTitle: asObject(v)['releaseTitle'] as String?,
+            label: asObject(v)['label'] as String?,
+            format: asObject(v)['format'] as String?,
+            trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+            discCount: decodeIntOrNull(asObject(v)['discCount']),
+            totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+            coverUrl: asObject(v)['coverUrl'] as String?,
+            externalUrl: asObject(v)['externalUrl'] as String?,
+            cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
+          ),
+        ),
         customMedia: decodeNullable<CustomMedia>(
           asObject(v)['customMedia'],
           (Object? v) => CustomMedia(
@@ -1169,6 +1256,49 @@ class RemoteCollectionDao implements CollectionDao {
             kind: decodeEnum<BookKind>(asObject(v)['kind'], BookKind.values),
           ),
         ),
+        album: decodeNullable<Album>(
+          asObject(v)['album'],
+          (Object? v) => Album(
+            id: decodeInt(asObject(v)['id']),
+            source: decodeEnum<DataSource>(
+              asObject(v)['source'],
+              DataSource.values,
+            ),
+            mbid: asObject(v)['mbid'] as String,
+            title: asObject(v)['title'] as String,
+            artists: asList(
+              asObject(v)['artists'],
+            ).map((Object? e) => e as String).toList(),
+            artistMbids: asList(
+              asObject(v)['artistMbids'],
+            ).map((Object? e) => e as String).toList(),
+            primaryType: asObject(v)['primaryType'] as String?,
+            secondaryTypes: asList(
+              asObject(v)['secondaryTypes'],
+            ).map((Object? e) => e as String).toList(),
+            releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+            firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+            genres: asList(
+              asObject(v)['genres'],
+            ).map((Object? e) => e as String).toList(),
+            tags: asList(
+              asObject(v)['tags'],
+            ).map((Object? e) => e as String).toList(),
+            rating: (asObject(v)['rating'] as num?)?.toDouble(),
+            ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+            listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+            releaseMbid: asObject(v)['releaseMbid'] as String?,
+            releaseTitle: asObject(v)['releaseTitle'] as String?,
+            label: asObject(v)['label'] as String?,
+            format: asObject(v)['format'] as String?,
+            trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+            discCount: decodeIntOrNull(asObject(v)['discCount']),
+            totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+            coverUrl: asObject(v)['coverUrl'] as String?,
+            externalUrl: asObject(v)['externalUrl'] as String?,
+            cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
+          ),
+        ),
         customMedia: decodeNullable<CustomMedia>(
           asObject(v)['customMedia'],
           (Object? v) => CustomMedia(
@@ -1503,6 +1633,49 @@ class RemoteCollectionDao implements CollectionDao {
                   asObject(v)['kind'],
                   BookKind.values,
                 ),
+              ),
+            ),
+            album: decodeNullable<Album>(
+              asObject(e)['album'],
+              (Object? v) => Album(
+                id: decodeInt(asObject(v)['id']),
+                source: decodeEnum<DataSource>(
+                  asObject(v)['source'],
+                  DataSource.values,
+                ),
+                mbid: asObject(v)['mbid'] as String,
+                title: asObject(v)['title'] as String,
+                artists: asList(
+                  asObject(v)['artists'],
+                ).map((Object? e) => e as String).toList(),
+                artistMbids: asList(
+                  asObject(v)['artistMbids'],
+                ).map((Object? e) => e as String).toList(),
+                primaryType: asObject(v)['primaryType'] as String?,
+                secondaryTypes: asList(
+                  asObject(v)['secondaryTypes'],
+                ).map((Object? e) => e as String).toList(),
+                releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+                firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+                genres: asList(
+                  asObject(v)['genres'],
+                ).map((Object? e) => e as String).toList(),
+                tags: asList(
+                  asObject(v)['tags'],
+                ).map((Object? e) => e as String).toList(),
+                rating: (asObject(v)['rating'] as num?)?.toDouble(),
+                ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+                listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+                releaseMbid: asObject(v)['releaseMbid'] as String?,
+                releaseTitle: asObject(v)['releaseTitle'] as String?,
+                label: asObject(v)['label'] as String?,
+                format: asObject(v)['format'] as String?,
+                trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+                discCount: decodeIntOrNull(asObject(v)['discCount']),
+                totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+                coverUrl: asObject(v)['coverUrl'] as String?,
+                externalUrl: asObject(v)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
               ),
             ),
             customMedia: decodeNullable<CustomMedia>(
@@ -1840,6 +2013,49 @@ class RemoteCollectionDao implements CollectionDao {
                   asObject(v)['kind'],
                   BookKind.values,
                 ),
+              ),
+            ),
+            album: decodeNullable<Album>(
+              asObject(e)['album'],
+              (Object? v) => Album(
+                id: decodeInt(asObject(v)['id']),
+                source: decodeEnum<DataSource>(
+                  asObject(v)['source'],
+                  DataSource.values,
+                ),
+                mbid: asObject(v)['mbid'] as String,
+                title: asObject(v)['title'] as String,
+                artists: asList(
+                  asObject(v)['artists'],
+                ).map((Object? e) => e as String).toList(),
+                artistMbids: asList(
+                  asObject(v)['artistMbids'],
+                ).map((Object? e) => e as String).toList(),
+                primaryType: asObject(v)['primaryType'] as String?,
+                secondaryTypes: asList(
+                  asObject(v)['secondaryTypes'],
+                ).map((Object? e) => e as String).toList(),
+                releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+                firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+                genres: asList(
+                  asObject(v)['genres'],
+                ).map((Object? e) => e as String).toList(),
+                tags: asList(
+                  asObject(v)['tags'],
+                ).map((Object? e) => e as String).toList(),
+                rating: (asObject(v)['rating'] as num?)?.toDouble(),
+                ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+                listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+                releaseMbid: asObject(v)['releaseMbid'] as String?,
+                releaseTitle: asObject(v)['releaseTitle'] as String?,
+                label: asObject(v)['label'] as String?,
+                format: asObject(v)['format'] as String?,
+                trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+                discCount: decodeIntOrNull(asObject(v)['discCount']),
+                totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+                coverUrl: asObject(v)['coverUrl'] as String?,
+                externalUrl: asObject(v)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
               ),
             ),
             customMedia: decodeNullable<CustomMedia>(
@@ -2313,6 +2529,49 @@ class RemoteCollectionDao implements CollectionDao {
             kind: decodeEnum<BookKind>(asObject(v)['kind'], BookKind.values),
           ),
         ),
+        album: decodeNullable<Album>(
+          asObject(v)['album'],
+          (Object? v) => Album(
+            id: decodeInt(asObject(v)['id']),
+            source: decodeEnum<DataSource>(
+              asObject(v)['source'],
+              DataSource.values,
+            ),
+            mbid: asObject(v)['mbid'] as String,
+            title: asObject(v)['title'] as String,
+            artists: asList(
+              asObject(v)['artists'],
+            ).map((Object? e) => e as String).toList(),
+            artistMbids: asList(
+              asObject(v)['artistMbids'],
+            ).map((Object? e) => e as String).toList(),
+            primaryType: asObject(v)['primaryType'] as String?,
+            secondaryTypes: asList(
+              asObject(v)['secondaryTypes'],
+            ).map((Object? e) => e as String).toList(),
+            releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+            firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+            genres: asList(
+              asObject(v)['genres'],
+            ).map((Object? e) => e as String).toList(),
+            tags: asList(
+              asObject(v)['tags'],
+            ).map((Object? e) => e as String).toList(),
+            rating: (asObject(v)['rating'] as num?)?.toDouble(),
+            ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+            listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+            releaseMbid: asObject(v)['releaseMbid'] as String?,
+            releaseTitle: asObject(v)['releaseTitle'] as String?,
+            label: asObject(v)['label'] as String?,
+            format: asObject(v)['format'] as String?,
+            trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+            discCount: decodeIntOrNull(asObject(v)['discCount']),
+            totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+            coverUrl: asObject(v)['coverUrl'] as String?,
+            externalUrl: asObject(v)['externalUrl'] as String?,
+            cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
+          ),
+        ),
         customMedia: decodeNullable<CustomMedia>(
           asObject(v)['customMedia'],
           (Object? v) => CustomMedia(
@@ -2681,6 +2940,49 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
+            album: decodeNullable<Album>(
+              asObject(e)['album'],
+              (Object? v) => Album(
+                id: decodeInt(asObject(v)['id']),
+                source: decodeEnum<DataSource>(
+                  asObject(v)['source'],
+                  DataSource.values,
+                ),
+                mbid: asObject(v)['mbid'] as String,
+                title: asObject(v)['title'] as String,
+                artists: asList(
+                  asObject(v)['artists'],
+                ).map((Object? e) => e as String).toList(),
+                artistMbids: asList(
+                  asObject(v)['artistMbids'],
+                ).map((Object? e) => e as String).toList(),
+                primaryType: asObject(v)['primaryType'] as String?,
+                secondaryTypes: asList(
+                  asObject(v)['secondaryTypes'],
+                ).map((Object? e) => e as String).toList(),
+                releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+                firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+                genres: asList(
+                  asObject(v)['genres'],
+                ).map((Object? e) => e as String).toList(),
+                tags: asList(
+                  asObject(v)['tags'],
+                ).map((Object? e) => e as String).toList(),
+                rating: (asObject(v)['rating'] as num?)?.toDouble(),
+                ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+                listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+                releaseMbid: asObject(v)['releaseMbid'] as String?,
+                releaseTitle: asObject(v)['releaseTitle'] as String?,
+                label: asObject(v)['label'] as String?,
+                format: asObject(v)['format'] as String?,
+                trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+                discCount: decodeIntOrNull(asObject(v)['discCount']),
+                totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+                coverUrl: asObject(v)['coverUrl'] as String?,
+                externalUrl: asObject(v)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
+              ),
+            ),
             customMedia: decodeNullable<CustomMedia>(
               asObject(e)['customMedia'],
               (Object? v) => CustomMedia(
@@ -3020,6 +3322,49 @@ class RemoteCollectionDao implements CollectionDao {
                   asObject(v)['kind'],
                   BookKind.values,
                 ),
+              ),
+            ),
+            album: decodeNullable<Album>(
+              asObject(e)['album'],
+              (Object? v) => Album(
+                id: decodeInt(asObject(v)['id']),
+                source: decodeEnum<DataSource>(
+                  asObject(v)['source'],
+                  DataSource.values,
+                ),
+                mbid: asObject(v)['mbid'] as String,
+                title: asObject(v)['title'] as String,
+                artists: asList(
+                  asObject(v)['artists'],
+                ).map((Object? e) => e as String).toList(),
+                artistMbids: asList(
+                  asObject(v)['artistMbids'],
+                ).map((Object? e) => e as String).toList(),
+                primaryType: asObject(v)['primaryType'] as String?,
+                secondaryTypes: asList(
+                  asObject(v)['secondaryTypes'],
+                ).map((Object? e) => e as String).toList(),
+                releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+                firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+                genres: asList(
+                  asObject(v)['genres'],
+                ).map((Object? e) => e as String).toList(),
+                tags: asList(
+                  asObject(v)['tags'],
+                ).map((Object? e) => e as String).toList(),
+                rating: (asObject(v)['rating'] as num?)?.toDouble(),
+                ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+                listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+                releaseMbid: asObject(v)['releaseMbid'] as String?,
+                releaseTitle: asObject(v)['releaseTitle'] as String?,
+                label: asObject(v)['label'] as String?,
+                format: asObject(v)['format'] as String?,
+                trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+                discCount: decodeIntOrNull(asObject(v)['discCount']),
+                totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+                coverUrl: asObject(v)['coverUrl'] as String?,
+                externalUrl: asObject(v)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
               ),
             ),
             customMedia: decodeNullable<CustomMedia>(
@@ -3410,6 +3755,49 @@ class RemoteCollectionDao implements CollectionDao {
                   asObject(v)['kind'],
                   BookKind.values,
                 ),
+              ),
+            ),
+            album: decodeNullable<Album>(
+              asObject(e)['album'],
+              (Object? v) => Album(
+                id: decodeInt(asObject(v)['id']),
+                source: decodeEnum<DataSource>(
+                  asObject(v)['source'],
+                  DataSource.values,
+                ),
+                mbid: asObject(v)['mbid'] as String,
+                title: asObject(v)['title'] as String,
+                artists: asList(
+                  asObject(v)['artists'],
+                ).map((Object? e) => e as String).toList(),
+                artistMbids: asList(
+                  asObject(v)['artistMbids'],
+                ).map((Object? e) => e as String).toList(),
+                primaryType: asObject(v)['primaryType'] as String?,
+                secondaryTypes: asList(
+                  asObject(v)['secondaryTypes'],
+                ).map((Object? e) => e as String).toList(),
+                releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+                firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+                genres: asList(
+                  asObject(v)['genres'],
+                ).map((Object? e) => e as String).toList(),
+                tags: asList(
+                  asObject(v)['tags'],
+                ).map((Object? e) => e as String).toList(),
+                rating: (asObject(v)['rating'] as num?)?.toDouble(),
+                ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+                listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+                releaseMbid: asObject(v)['releaseMbid'] as String?,
+                releaseTitle: asObject(v)['releaseTitle'] as String?,
+                label: asObject(v)['label'] as String?,
+                format: asObject(v)['format'] as String?,
+                trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+                discCount: decodeIntOrNull(asObject(v)['discCount']),
+                totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+                coverUrl: asObject(v)['coverUrl'] as String?,
+                externalUrl: asObject(v)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
               ),
             ),
             customMedia: decodeNullable<CustomMedia>(
@@ -3813,6 +4201,49 @@ class RemoteCollectionDao implements CollectionDao {
                   asObject(v)['kind'],
                   BookKind.values,
                 ),
+              ),
+            ),
+            album: decodeNullable<Album>(
+              asObject(e)['album'],
+              (Object? v) => Album(
+                id: decodeInt(asObject(v)['id']),
+                source: decodeEnum<DataSource>(
+                  asObject(v)['source'],
+                  DataSource.values,
+                ),
+                mbid: asObject(v)['mbid'] as String,
+                title: asObject(v)['title'] as String,
+                artists: asList(
+                  asObject(v)['artists'],
+                ).map((Object? e) => e as String).toList(),
+                artistMbids: asList(
+                  asObject(v)['artistMbids'],
+                ).map((Object? e) => e as String).toList(),
+                primaryType: asObject(v)['primaryType'] as String?,
+                secondaryTypes: asList(
+                  asObject(v)['secondaryTypes'],
+                ).map((Object? e) => e as String).toList(),
+                releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
+                firstReleaseDate: asObject(v)['firstReleaseDate'] as String?,
+                genres: asList(
+                  asObject(v)['genres'],
+                ).map((Object? e) => e as String).toList(),
+                tags: asList(
+                  asObject(v)['tags'],
+                ).map((Object? e) => e as String).toList(),
+                rating: (asObject(v)['rating'] as num?)?.toDouble(),
+                ratingCount: decodeIntOrNull(asObject(v)['ratingCount']),
+                listenCount: decodeIntOrNull(asObject(v)['listenCount']),
+                releaseMbid: asObject(v)['releaseMbid'] as String?,
+                releaseTitle: asObject(v)['releaseTitle'] as String?,
+                label: asObject(v)['label'] as String?,
+                format: asObject(v)['format'] as String?,
+                trackCount: decodeIntOrNull(asObject(v)['trackCount']),
+                discCount: decodeIntOrNull(asObject(v)['discCount']),
+                totalLengthMs: decodeIntOrNull(asObject(v)['totalLengthMs']),
+                coverUrl: asObject(v)['coverUrl'] as String?,
+                externalUrl: asObject(v)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
               ),
             ),
             customMedia: decodeNullable<CustomMedia>(

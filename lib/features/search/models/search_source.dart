@@ -206,6 +206,12 @@ abstract class SearchSource {
   /// to `false` disables the sort dropdown while a query is active.
   bool get supportsSortDuringSearch => false;
 
+  static const Duration defaultSearchDebounce = Duration(milliseconds: 400);
+
+  /// Search-as-you-type gap; rate-limited providers (MusicBrainz: <1 req/s)
+  /// override it, and the screen takes the strictest enabled value.
+  Duration get searchDebounce => defaultSearchDebounce;
+
   String searchHint(S l);
 
   /// MediaType stamped onto items added from this source. May differ from

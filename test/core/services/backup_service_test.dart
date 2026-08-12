@@ -74,6 +74,7 @@ void main() {
         XcollFile(version: 3, name: 'x', author: 'x', created: DateTime(2025)),
       );
       registerFallbackValue(DataSource.tmdb);
+      registerFallbackValue(<(int, int, int?)>[]);
       registerFallbackValue(CalendarEntry(
         externalId: 0,
         source: DataSource.tmdb,
@@ -409,6 +410,51 @@ void main() {
       verify(() => tvDao.markEpisodeWatchedAt(
               any(), any(), any(), any(), any(), any()))
           .called(2);
+    });
+
+    test('restores listened tracks as one batch per collection and album',
+        () async {
+      final MockAlbumDao albumDao = MockAlbumDao();
+      final MockCollectionDao collDao = MockCollectionDao();
+      when(() => database.albumDao).thenReturn(albumDao);
+      when(() => database.collectionDao).thenReturn(collDao);
+      when(() => collDao.findAllCollectionItems(
+            mediaType: MediaType.music,
+            externalId: 1,
+            source: DataSource.musicBrainz,
+          )).thenAnswer((_) async => <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              collectionId: 7,
+              mediaType: MediaType.music,
+              externalId: 1,
+            ),
+          ]);
+      when(() => albumDao.markTracksListenedAt(any(), any(), any(), any()))
+          .thenAnswer((_) async {});
+
+      const String listenedJson =
+          '[{"album_id":1,"source":"musicBrainz","disc_number":1,'
+          '"track_number":1,"listened_at":1000},'
+          '{"album_id":1,"source":"musicBrainz","disc_number":1,'
+          '"track_number":2}]';
+      final Uint8List path = writeZip(
+        <String, String>{'listened_tracks.json': listenedJson},
+      );
+
+      await makeService().restoreFromBackup(zipBytes: path);
+
+      verify(() => albumDao.markTracksListenedAt(
+            7,
+            DataSource.musicBrainz,
+            1,
+            <(int, int, int?)>[(1, 1, 1000), (1, 2, null)],
+          )).called(1);
+      verify(() => collDao.findAllCollectionItems(
+            mediaType: MediaType.music,
+            externalId: 1,
+            source: DataSource.musicBrainz,
+          )).called(1);
     });
 
     test('restores mood grids with both templates and cell data', () async {

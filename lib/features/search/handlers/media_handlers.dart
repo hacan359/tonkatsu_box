@@ -1,3 +1,5 @@
+import 'package:core/models/album.dart';
+import 'package:core/models/album_track.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
@@ -14,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
+import '../../../core/api/musicbrainz_api.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/fantlab_api.dart';
 import '../../../core/api/openlibrary_api.dart';
@@ -26,6 +29,7 @@ import '../../collections/widgets/hardcover_edition_picker.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/fantlab_book_sheet.dart';
 import '../widgets/hardcover_book_sheet.dart';
+import '../widgets/musicbrainz_album_sheet.dart';
 import '../widgets/google_books_more_by_author_section.dart';
 import '../widgets/item_details_sheet.dart';
 import 'game_handler.dart';
@@ -222,6 +226,49 @@ class MediaHandlers {
       // already rich, so they stay instant and lazy-load only the description.
       enrichBeforeDetails: (Book b) => b.source == DataSource.fantlab,
     );
+    // Consumed by `enrich` so an add straight from the sheet re-fetches
+    // nothing; reset on each sheet open.
+    _PendingAlbumRelease? pendingAlbumRelease;
+    _byType[Album] = SimpleMediaHandler<Album>(
+      ref: ref,
+      adder: adder,
+      targetCollections: targetCollections,
+      mediaType: MediaType.music,
+      imageType: ImageType.albumCover,
+      collectedProvider: collectedMusicIdsProvider,
+      externalIdOf: (Album a) => a.id,
+      imageIdOf: (Album a) => coverImageId(
+        mediaType: MediaType.music,
+        externalId: a.id,
+        source: a.source,
+      ),
+      titleOf: (Album a) => a.title,
+      imageUrlOf: (Album a) => a.coverUrl,
+      upsert: (Album a) => ref.read(albumDaoProvider).upsertAlbum(a),
+      sourceOf: (Album a) => a.source,
+      sheetBuilder: (Album a, VoidCallback onAdd) => MusicBrainzAlbumSheet(
+        album: a,
+        onAddToCollection: onAdd,
+        onReleaseChanged: (
+          String mbid,
+          MusicBrainzRelease? release,
+          List<AlbumTrack>? tracks,
+        ) =>
+            pendingAlbumRelease = release == null
+                ? null
+                : (albumMbid: mbid, release: release, tracks: tracks),
+      ),
+      // On add: lookup extras plus the picked/default release's track list,
+      // cached so the collection tracker works offline.
+      enrich: (Album a) {
+        final _PendingAlbumRelease? pending = pendingAlbumRelease;
+        return _enrichAlbum(
+          ref,
+          a,
+          pending != null && pending.albumMbid == a.mbid ? pending : null,
+        );
+      },
+    );
   }
 
   final Map<Type, MediaActionHandler> _byType =
@@ -265,6 +312,62 @@ class MediaHandlers {
         forItem(item, sourceId: sourceId);
     if (handler == null) return;
     await handler.addToAnyCollection(context, item, mediaType);
+  }
+}
+
+/// Release picked in the sheet (auto or by hand) with its loaded tracks,
+/// tagged by the group MBID it belongs to.
+typedef _PendingAlbumRelease = ({
+  String albumMbid,
+  MusicBrainzRelease release,
+  List<AlbumTrack>? tracks,
+});
+
+/// Full lookup + picked/default release + cached track list for an album on
+/// its way into a collection. Any failure keeps what the search row had.
+Future<Album> _enrichAlbum(
+  WidgetRef ref,
+  Album album,
+  _PendingAlbumRelease? pending,
+) async {
+  final MusicBrainzApi api = ref.read(musicBrainzApiProvider);
+  Album enriched = album;
+  try {
+    final Album? full = await api.getReleaseGroup(album.mbid);
+    if (full != null) enriched = enriched.withLookupDetails(full);
+  } on Exception {
+    // Lookup extras are optional; the search row is already a valid album.
+  }
+  try {
+    final MusicBrainzRelease? release =
+        pending?.release ?? await api.getDefaultRelease(album.mbid);
+    if (release == null) return enriched;
+
+    // The sheet already fetched this release's tracks — don't pay the
+    // rate-limited round-trip twice on the same add.
+    final List<AlbumTrack> tracks = pending?.tracks ??
+        await api.getReleaseTracks(release.mbid, albumId: album.id);
+    await ref
+        .read(albumDaoProvider)
+        .replaceAlbumTracks(album.id, album.source, tracks);
+
+    int? totalLengthMs;
+    for (final AlbumTrack track in tracks) {
+      if (track.lengthMs != null) {
+        totalLengthMs = (totalLengthMs ?? 0) + track.lengthMs!;
+      }
+    }
+    return enriched.copyWith(
+      releaseMbid: release.mbid,
+      releaseTitle: release.title,
+      label: release.label,
+      format: release.format,
+      trackCount: tracks.isNotEmpty ? tracks.length : release.trackCount,
+      discCount: release.discCount,
+      totalLengthMs: totalLengthMs,
+    );
+  } on Exception {
+    return enriched;
   }
 }
 

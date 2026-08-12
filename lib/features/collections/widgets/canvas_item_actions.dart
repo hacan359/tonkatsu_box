@@ -98,6 +98,7 @@ class CanvasItemActions {
       case CanvasItemType.manga:
       case CanvasItemType.anime:
       case CanvasItemType.book:
+      case CanvasItemType.music:
       case CanvasItemType.custom:
         break;
     }

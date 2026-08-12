@@ -58,6 +58,7 @@ void main() {
         collectedMangaIdsProvider.overrideWith((_) async => <int, List<Never>>{}),
         collectedAnimeIdsProvider.overrideWith((_) async => <int, List<Never>>{}),
         collectedBookIdsProvider.overrideWith((_) async => <int, List<Never>>{}),
+        collectedMusicIdsProvider.overrideWith((_) async => <int, List<Never>>{}),
       ];
 
   Widget build(

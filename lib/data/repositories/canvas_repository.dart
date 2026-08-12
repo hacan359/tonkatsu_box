@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:core/models/album.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -227,6 +228,12 @@ class CanvasRepository {
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
+    final List<int> albumIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.music && item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
+
     if (gameIds.isEmpty &&
         movieTmdbIds.isEmpty &&
         tvShowTmdbIds.isEmpty &&
@@ -234,6 +241,7 @@ class CanvasRepository {
         mangaIds.isEmpty &&
         animeIds.isEmpty &&
         bookIds.isEmpty &&
+        albumIds.isEmpty &&
         customIds.isEmpty) {
       return items;
     }
@@ -263,6 +271,9 @@ class CanvasRepository {
       bookIds.isNotEmpty
           ? _db.bookDao.getBooksByIds(bookIds)
           : Future<List<Book>>.value(<Book>[]),
+      albumIds.isNotEmpty
+          ? _db.albumDao.getAlbumsByIds(albumIds)
+          : Future<List<Album>>.value(<Album>[]),
     ]);
 
     final Map<int, Game> gamesMap = <int, Game>{
@@ -324,6 +335,9 @@ class CanvasRepository {
         bookMap[b.externalIdInt] = b;
       }
     }
+    final Map<int, Album> albumMap = <int, Album>{
+      for (final Album a in results[8] as List<Album>) a.id: a,
+    };
 
     return items.map((CanvasItem item) {
       if (item.itemRefId == null) return item;
@@ -343,6 +357,8 @@ class CanvasRepository {
           return item.copyWith(tvShow: tvShowsMap[item.itemRefId]);
         case CanvasItemType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.itemRefId]);
+        case CanvasItemType.music:
+          return item.copyWith(album: albumMap[item.itemRefId]);
         case CanvasItemType.manga:
           return item.copyWith(manga: mangaMap[item.itemRefId]);
         case CanvasItemType.anime:
@@ -500,6 +516,7 @@ class CanvasRepository {
           manga: items[i].manga,
           anime: items[i].anime,
           book: items[i].book,
+          album: items[i].album,
           customMedia: items[i].customMedia,
         ),
     ];

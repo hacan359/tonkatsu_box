@@ -28,6 +28,8 @@ String unitTypeLabel(S l, String unitType) {
       return l.unitPage;
     case kUnitPart:
       return l.unitPart;
+    case kUnitTrack:
+      return l.unitTrack;
     default:
       return unitType;
   }

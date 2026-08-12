@@ -142,6 +142,16 @@ class RemoteStatsDao implements StatsDao {
   }
 
   @override
+  Future<int> getListenedTrackTotal({int? year}) async {
+    final Object? result = await _transport.call(
+      'StatsDao',
+      'getListenedTrackTotal',
+      <String, Object?>{'year': encodeIntOrNull(year)},
+    );
+    return decodeInt(result);
+  }
+
+  @override
   Future<int> getManualMinutes({int? year}) async {
     final Object? result = await _transport.call(
       'StatsDao',

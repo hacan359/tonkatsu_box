@@ -1,3 +1,5 @@
+import 'package:core/models/album.dart';
+import 'package:core/models/album_track.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -88,6 +90,7 @@ CollectionItem createTestCollectionItem({
   Manga? manga,
   Anime? anime,
   Book? book,
+  Album? album,
   Platform? platform,
   CustomMedia? customMedia,
 }) {
@@ -121,6 +124,7 @@ CollectionItem createTestCollectionItem({
     manga: manga,
     anime: anime,
     book: book,
+    album: album,
     platform: platform,
     customMedia: customMedia,
   );
@@ -337,6 +341,76 @@ Book createTestBook({
     ratingCount: ratingCount,
     externalUrl: externalUrl,
     cachedAt: cachedAt,
+  );
+}
+
+Album createTestAlbum({
+  int id = 12345,
+  DataSource source = DataSource.musicBrainz,
+  String mbid = 'f5093c06-23e3-404f-aeaa-40f72885ee3a',
+  String title = 'Test Album',
+  List<String> artists = const <String>['Test Artist'],
+  List<String> artistMbids = const <String>[],
+  String? primaryType = 'Album',
+  List<String> secondaryTypes = const <String>[],
+  int? releaseYear = 1973,
+  String? firstReleaseDate,
+  List<String> genres = const <String>[],
+  List<String> tags = const <String>[],
+  double? rating,
+  int? ratingCount,
+  int? listenCount,
+  String? releaseMbid,
+  int? trackCount,
+  int? discCount,
+  String? coverUrl,
+  String? externalUrl,
+  int? cachedAt,
+}) {
+  return Album(
+    id: id,
+    source: source,
+    mbid: mbid,
+    title: title,
+    artists: artists,
+    artistMbids: artistMbids,
+    primaryType: primaryType,
+    secondaryTypes: secondaryTypes,
+    releaseYear: releaseYear,
+    firstReleaseDate: firstReleaseDate,
+    genres: genres,
+    tags: tags,
+    rating: rating,
+    ratingCount: ratingCount,
+    listenCount: listenCount,
+    releaseMbid: releaseMbid,
+    trackCount: trackCount,
+    discCount: discCount,
+    coverUrl: coverUrl,
+    externalUrl: externalUrl,
+    cachedAt: cachedAt,
+  );
+}
+
+AlbumTrack createTestAlbumTrack({
+  int albumId = 12345,
+  int discNumber = 1,
+  int position = 1,
+  String title = 'Test Track',
+  String? recordingMbid,
+  int? lengthMs,
+  List<String> artists = const <String>[],
+  DataSource source = DataSource.musicBrainz,
+}) {
+  return AlbumTrack(
+    albumId: albumId,
+    discNumber: discNumber,
+    position: position,
+    title: title,
+    recordingMbid: recordingMbid,
+    lengthMs: lengthMs,
+    artists: artists,
+    source: source,
   );
 }
 

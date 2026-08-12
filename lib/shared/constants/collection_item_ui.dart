@@ -11,6 +11,16 @@ extension CollectionItemUi on CollectionItem {
   IconData get placeholderIcon =>
       MediaTypeTheme.placeholderIconFor(displayMediaType);
 
+  /// Music cards read as "Artist — Album"; a custom rename and every other
+  /// type keep [displayName] as is.
+  String cardTitle(String displayName) {
+    if (mediaType != MediaType.music || overrideName != null) {
+      return displayName;
+    }
+    final String? artists = album?.artistsString;
+    return artists == null ? displayName : '$artists — $displayName';
+  }
+
   /// Qualifier shown after the media type: platform for games, movie/TV for
   /// animation; `null` otherwise.
   String? cardSubcategoryLabel(S l) {

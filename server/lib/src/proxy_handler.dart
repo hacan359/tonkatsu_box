@@ -11,6 +11,46 @@ import 'upstream_client.dart';
 const String kProxyUserAgent =
     'TonkatsuBox/selfhost (+https://github.com/hacan359/tonkatsu_box)';
 
+/// MusicBrainz allows <1 req/s per client IP and silently throttles, then
+/// bans. The browser-side queue can't help here — requests from every tab
+/// leave with this server's IP, so the proxy is where the gap must hold.
+const Map<ProxyTarget, Duration> _minRequestGap = <ProxyTarget, Duration>{
+  ProxyTarget.musicbrainz: Duration(milliseconds: 1100),
+};
+
+class _UpstreamThrottle {
+  _UpstreamThrottle(this.minGap);
+
+  final Duration minGap;
+
+  Future<void> _tail = Future<void>.value();
+  DateTime _nextAllowed = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// FIFO slot at least [minGap] after the previous one; responses overlap.
+  Future<void> acquire() {
+    final Future<void> slot = _tail.then((_) async {
+      final Duration wait = _nextAllowed.difference(DateTime.now());
+      if (wait > Duration.zero) {
+        await Future<void>.delayed(wait);
+      }
+      _nextAllowed = DateTime.now().add(minGap);
+    });
+    _tail = slot;
+    return slot;
+  }
+}
+
+final Map<ProxyTarget, _UpstreamThrottle> _throttles =
+    <ProxyTarget, _UpstreamThrottle>{};
+
+Future<void> _throttleFor(ProxyTarget target) {
+  final Duration? gap = _minRequestGap[target];
+  if (gap == null) return Future<void>.value();
+  return _throttles
+      .putIfAbsent(target, () => _UpstreamThrottle(gap))
+      .acquire();
+}
+
 /// Everything else — auth, host, agent — is the server's, so a crafted request
 /// cannot borrow our keys for a target of its own.
 const Set<String> _forwardedRequestHeaders = <String>{
@@ -106,6 +146,7 @@ class ApiProxy {
         );
 
         try {
+          await _throttleFor(target);
           final UpstreamResponse response = await _upstream.send(
             method: request.method,
             url: url,
@@ -188,8 +229,10 @@ class ApiProxy {
       case ProxyTarget.anilist:
       case ProxyTarget.fantlab:
       case ProxyTarget.kitsu:
+      case ProxyTarget.listenbrainz:
       case ProxyTarget.mangabaka:
       case ProxyTarget.mangadex:
+      case ProxyTarget.musicbrainz:
       case ProxyTarget.openlibrary:
       case ProxyTarget.steam:
       case ProxyTarget.tvmaze:

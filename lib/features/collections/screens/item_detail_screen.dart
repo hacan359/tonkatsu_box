@@ -47,6 +47,7 @@ import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/book_progress_section.dart';
+import '../widgets/music_tracker_section.dart';
 import '../widgets/anime_similars_section.dart';
 import '../widgets/book_similars_section.dart';
 import '../widgets/manga_similars_section.dart';
@@ -287,6 +288,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       case MediaType.tvShow:
       case MediaType.animation:
       case MediaType.book:
+      case MediaType.music:
       case MediaType.custom:
         return item.releaseYear != null ? DateTime(item.releaseYear!) : null;
     }
@@ -744,6 +746,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             currentPage: item.currentEpisode,
             accentColor: config.accentColor,
           ),
+        if (config.hasMusicTracker && widget.collectionId != null)
+          MusicTrackerSection(
+            itemId: item.id,
+            collectionId: widget.collectionId,
+            album: config.album,
+            accentColor: config.accentColor,
+          ),
         if (config.hasCustomProgress && widget.collectionId != null)
           CustomProgressSection(
             itemId: item.id,
@@ -913,6 +922,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.manga => l.mangaNotFound,
       MediaType.anime => l.mediaTypeAnime,
       MediaType.book => l.mediaTypeBook,
+      MediaType.music => l.mediaTypeMusic,
       MediaType.custom => l.unknownCustom,
       null => l.gameNotFound,
     };

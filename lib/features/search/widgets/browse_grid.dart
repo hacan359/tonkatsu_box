@@ -10,6 +10,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/poster_grid_delegate.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart' show ShimmerPosterCard;
 import '../../settings/providers/settings_provider.dart';
@@ -219,26 +220,12 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   }
 
   SliverGridDelegate _buildGridDelegate(BuildContext context) {
-    final double width = MediaQuery.sizeOf(context).width;
     final double cardScale = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.cardScale),
     );
-    if (width >= 800) {
-      return SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-        crossAxisSpacing: AppSpacing.sm,
-        mainAxisSpacing: AppSpacing.sm,
-      );
-    }
-    final int baseCount = width >= 500
-        ? AppSpacing.gridColumnsTablet
-        : AppSpacing.gridColumnsMobile;
-    return SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
-      childAspectRatio: AppSpacing.posterCardAspectRatio,
-      crossAxisSpacing: AppSpacing.sm,
-      mainAxisSpacing: AppSpacing.sm,
+    return posterGridDelegate(
+      width: MediaQuery.sizeOf(context).width,
+      cardScale: cardScale,
     );
   }
 

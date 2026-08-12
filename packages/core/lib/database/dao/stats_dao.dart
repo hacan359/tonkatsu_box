@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../models/item_status.dart';
 import '../../models/media_type.dart';
+import '../../utils/json_list.dart';
 
 /// SQL aggregates for the statistics page. Schema date units: `added_at` is
 /// unix seconds, `watched_at`/`liked_at` milliseconds; bucketing is local time.
@@ -104,6 +103,19 @@ class StatsDao {
     final int anime = (rows.first['anime'] as int?) ?? 0;
     final int total = (rows.first['total'] as int?) ?? 0;
     return (tv: total - anime, anime: anime);
+  }
+
+  /// Listened track marks (the music tracker). All time includes undated
+  /// rows; a year window can only count dated ones.
+  Future<int> getListenedTrackTotal({int? year}) async {
+    final Database db = await _getDatabase();
+    final _Window w = _Window.year(year);
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM listened_tracks '
+      '${w.where('listened_at', seconds: false)}',
+      w.args,
+    );
+    return (rows.first['c'] as int?) ?? 0;
   }
 
   /// Flat `current_episode` counter sums: AniList anime episodes, manga
@@ -362,17 +374,7 @@ class StatsDao {
     final Map<String, int> counts = <String, int>{};
     int titles = 0;
     for (final Map<String, dynamic> row in rows) {
-      final String? raw = row['tags'] as String?;
-      if (raw == null || raw.isEmpty) continue;
-      List<String> tags;
-      try {
-        tags =
-            (jsonDecode(raw) as List<dynamic>).whereType<String>().toList();
-      } on FormatException {
-        continue;
-      } on TypeError {
-        continue;
-      }
+      final List<String> tags = decodeJsonStringList(row['tags']);
       if (tags.isEmpty) continue;
       titles++;
       for (final String tag in tags) {
