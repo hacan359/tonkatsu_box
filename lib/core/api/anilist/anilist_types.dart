@@ -15,11 +15,10 @@ class AniListApiException implements Exception {
 }
 
 class AniListRateLimitException extends AniListApiException {
-  const AniListRateLimitException(this.retryAfter, {String? detail})
+  const AniListRateLimitException(this.retryAfter, {super.detail})
       : super(
           'Rate limit exceeded. Please try again later',
           statusCode: 429,
-          detail: detail,
         );
 
   final Duration retryAfter;

@@ -517,7 +517,7 @@ class LanSyncService {
       final String body = await response.transform(utf8.decoder).join();
       final Object? decoded = jsonDecode(body);
       if (decoded is! Map<String, Object?>) return 0;
-      return _config.applySettings(decoded);
+      return await _config.applySettings(decoded);
     } finally {
       client.close(force: true);
     }
