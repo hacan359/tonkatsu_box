@@ -281,7 +281,7 @@ class ImportService {
         return const ImportResult.cancelled();
       }
 
-      return importFromXcoll(
+      return await importFromXcoll(
         xcoll,
         collectionId: collectionId,
         onProgress: onProgress,

@@ -62,9 +62,9 @@ class CollectionBrowserService {
 
     try {
       if (collection.file.endsWith('.zip')) {
-        return _downloadAndExtractZip(url, onProgress: onProgress);
+        return await _downloadAndExtractZip(url, onProgress: onProgress);
       }
-      return _downloadJson(url, onProgress: onProgress);
+      return await _downloadJson(url, onProgress: onProgress);
     } on DioException catch (e) {
       throw CollectionBrowserException(
         'Failed to download collection: ${collection.name}',

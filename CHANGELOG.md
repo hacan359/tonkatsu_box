@@ -30,6 +30,33 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   and backups. On the selfhost web build the server signs proxied requests
   itself, so the secret never reaches the browser.
 
+### Changed
+
+- **Tags on wide screens move from the vertical side rail to a horizontal chip bar**
+
+  The old right-edge rail drew every tag name rotated 90°, so a tag's height
+  grew with its name and a few dozen tags meant screens of vertical
+  scrolling. Tags are now a single chip row above the items grid: readable
+  horizontal labels with per-collection item counts, the same multi-select
+  toggling, a reset chip showing how many tags are active, and the "Group"
+  toggle first in the row. When the chips overflow, the row scrolls sideways
+  via edge-fade arrows (desktop), the mouse wheel, or touch/mouse drag —
+  the same pattern as the preference-cloud legend. Narrow screens keep the
+  tags-and-sorting sheet behind the filter-bar button.
+
+  * lib/features/collections/widgets/tag_top_bar.dart (TagTopBar): New —
+    chip row on ScrollableRowWithArrows.
+  * lib/features/collections/widgets/tag_sidebar.dart (TagSidebar): Deleted.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._buildListLayout, _CollectionScreenState._countItemTags,
+    _CollectionScreenState._handleTagToggled, _CollectionScreenState._handleGroupToggled):
+    Layout goes from a side-rail Row to a top-bar Column; per-tag counts are
+    computed here; the tag/group toggle handlers are shared between the
+    filter bar and the new top bar.
+  * lib/features/collections/widgets/collection_filter_bar.dart: Comment
+    update only.
+  * test/features/collections/widgets/tag_top_bar_test.dart: New.
+
 ### Fixed
 
 - **Import no longer stamps today's date into empty started/completed fields**

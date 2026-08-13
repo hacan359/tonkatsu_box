@@ -45,7 +45,7 @@ import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
 import '../widgets/rich/rich_collection_body.dart';
 import '../providers/rich_collections_provider.dart';
-import '../widgets/tag_sidebar.dart';
+import '../widgets/tag_top_bar.dart';
 import '../widgets/tag_management_dialog.dart';
 import '../../tier_lists/screens/tier_list_detail_screen.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
@@ -346,12 +346,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       groupByTags: _groupByTags,
       onFavoriteToggled: () =>
           setState(() => _filterFavoriteOnly = !_filterFavoriteOnly),
-      onGroupToggled: () {
-        setState(() {
-          _groupByTags = !_groupByTags;
-          _filterTagIds = <int>{};
-        });
-      },
+      onGroupToggled: _handleGroupToggled,
       onTypeToggled: (MediaType? type) {
         setState(() {
           if (type == null) {
@@ -409,21 +404,31 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           }
         });
       },
-      onTagToggled: (int? tagId) {
-        setState(() {
-          if (tagId == null) {
-            _filterTagIds = <int>{};
-          } else if (_filterTagIds.contains(tagId)) {
-            _filterTagIds = Set<int>.from(_filterTagIds)..remove(tagId);
-          } else {
-            _filterTagIds = Set<int>.from(_filterTagIds)..add(tagId);
-          }
-        });
-      },
+      onTagToggled: _handleTagToggled,
       onStatusChanged: (ItemStatus? status) {
         setState(() => _filterStatus = status);
       },
     );
+  }
+
+  void _handleGroupToggled() {
+    setState(() {
+      _groupByTags = !_groupByTags;
+      _filterTagIds = <int>{};
+    });
+  }
+
+  /// `null` clears the whole tag filter; an id toggles that tag.
+  void _handleTagToggled(int? tagId) {
+    setState(() {
+      if (tagId == null) {
+        _filterTagIds = <int>{};
+      } else if (_filterTagIds.contains(tagId)) {
+        _filterTagIds = Set<int>.from(_filterTagIds)..remove(tagId);
+      } else {
+        _filterTagIds = Set<int>.from(_filterTagIds)..add(tagId);
+      }
+    });
   }
 
   Widget _buildListLayout(
@@ -516,42 +521,41 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       ),
     );
 
-    final Widget? tagSidebar =
-        (tags.isNotEmpty && !isCompactScreen(context))
-            ? TagSidebar(
-                tags: tags,
-                selectedTagIds: _filterTagIds,
-                groupByTags: _groupByTags,
-                onGroupToggled: () {
-                  setState(() {
-                    _groupByTags = !_groupByTags;
-                    _filterTagIds = <int>{};
-                  });
-                },
-                onTagToggled: (int? tagId) {
-                  setState(() {
-                    if (tagId == null) {
-                      _filterTagIds = <int>{};
-                    } else if (_filterTagIds.contains(tagId)) {
-                      _filterTagIds = Set<int>.from(_filterTagIds)
-                        ..remove(tagId);
-                    } else {
-                      _filterTagIds = Set<int>.from(_filterTagIds)
-                        ..add(tagId);
-                    }
-                  });
-                },
-              )
-            : null;
+    // On narrow screens tags live in the filter-bar sheet instead.
+    final Widget? tagTopBar = (tags.isNotEmpty && !isCompactScreen(context))
+        ? TagTopBar(
+            tags: tags,
+            counts: _countItemTags(itemsAsync, itemTags),
+            selectedTagIds: _filterTagIds,
+            groupByTags: _groupByTags,
+            onGroupToggled: _handleGroupToggled,
+            onTagToggled: _handleTagToggled,
+          )
+        : null;
 
     // Rich vs classic now differ only by the presence of heroHeader inside
     // CollectionItemsView; the layout is identical.
-    return Row(
+    return Column(
       children: <Widget>[
+        ?tagTopBar,
         Expanded(child: itemsView),
-        ?tagSidebar,
       ],
     );
+  }
+
+  /// Per-tag item counts within this collection, shown on the bar's chips.
+  Map<int, int> _countItemTags(
+    AsyncValue<List<CollectionItem>> itemsAsync,
+    Map<int, List<int>> itemTags,
+  ) {
+    final Map<int, int> counts = <int, int>{};
+    for (final CollectionItem item
+        in itemsAsync.valueOrNull ?? const <CollectionItem>[]) {
+      for (final int tagId in itemTags[item.id] ?? const <int>[]) {
+        counts[tagId] = (counts[tagId] ?? 0) + 1;
+      }
+    }
+    return counts;
   }
 
   void _showItemDetails(CollectionItem item) {
