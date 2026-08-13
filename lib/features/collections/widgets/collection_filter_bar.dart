@@ -219,9 +219,9 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
             : entries;
     final bool compact =
         MediaQuery.sizeOf(context).width < _compactBreakpoint;
-    // On narrow screens the TagSidebar is hidden, so show a button that
+    // On narrow screens the TagTopBar is hidden, so show a button that
     // opens a sheet with tags and sorting. Wide screens keep the compact
-    // sort segment (tags are reachable via the TagSidebar on the right).
+    // sort segment (tags are reachable via the TagTopBar above the grid).
     final bool useTagSheetButton = isCompactScreen(context);
 
     return ColoredBox(
