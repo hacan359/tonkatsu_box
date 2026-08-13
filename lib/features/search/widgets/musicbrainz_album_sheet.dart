@@ -1,5 +1,5 @@
-import 'package:core/models/album.dart';
-import 'package:core/models/album_track.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,10 +8,10 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/album_track_row.dart';
+import '../../../shared/widgets/audio_track_row.dart';
 import 'item_details_sheet.dart';
 
-/// Album detail sheet: editions strip plus the selected edition's tracks,
+/// AudioItem detail sheet: editions strip plus the selected edition's tracks,
 /// reported via [onReleaseChanged] so an add saves them without re-fetching.
 class MusicBrainzAlbumSheet extends ConsumerStatefulWidget {
   const MusicBrainzAlbumSheet({
@@ -21,12 +21,12 @@ class MusicBrainzAlbumSheet extends ConsumerStatefulWidget {
     super.key,
   });
 
-  final Album album;
+  final AudioItem album;
   final VoidCallback onAddToCollection;
   final void Function(
     String albumMbid,
     MusicBrainzRelease? release,
-    List<AlbumTrack>? tracks,
+    List<AudioTrack>? tracks,
   ) onReleaseChanged;
 
   @override
@@ -37,13 +37,13 @@ class MusicBrainzAlbumSheet extends ConsumerStatefulWidget {
 class _MusicBrainzAlbumSheetState extends ConsumerState<MusicBrainzAlbumSheet> {
   List<MusicBrainzRelease>? _releases;
   MusicBrainzRelease? _selected;
-  List<AlbumTrack>? _tracks;
+  List<AudioTrack>? _tracks;
 
   @override
   void initState() {
     super.initState();
     // Clear any selection left over from a previously opened sheet.
-    widget.onReleaseChanged(widget.album.mbid, null, null);
+    widget.onReleaseChanged(widget.album.nativeId, null, null);
     _load();
   }
 
@@ -51,7 +51,7 @@ class _MusicBrainzAlbumSheetState extends ConsumerState<MusicBrainzAlbumSheet> {
     final MusicBrainzApi api = ref.read(musicBrainzApiProvider);
     try {
       final List<MusicBrainzRelease> releases =
-          await api.getReleasesOrAny(widget.album.mbid);
+          await api.getReleasesOrAny(widget.album.nativeId);
       if (!mounted) return;
       final MusicBrainzRelease? first =
           releases.isEmpty ? null : releases.first;
@@ -60,7 +60,7 @@ class _MusicBrainzAlbumSheetState extends ConsumerState<MusicBrainzAlbumSheet> {
         _selected = first;
       });
       if (first != null) {
-        widget.onReleaseChanged(widget.album.mbid, first, null);
+        widget.onReleaseChanged(widget.album.nativeId, first, null);
         await _loadTracks(first);
       }
     } on Object {
@@ -72,22 +72,22 @@ class _MusicBrainzAlbumSheetState extends ConsumerState<MusicBrainzAlbumSheet> {
   Future<void> _loadTracks(MusicBrainzRelease release) async {
     setState(() => _tracks = null);
     try {
-      final List<AlbumTrack> tracks = await ref
+      final List<AudioTrack> tracks = await ref
           .read(musicBrainzApiProvider)
-          .getReleaseTracks(release.mbid, albumId: widget.album.id);
+          .getReleaseTracks(release.mbid, audioId: widget.album.id);
       if (!mounted || _selected?.mbid != release.mbid) return;
       setState(() => _tracks = tracks);
-      widget.onReleaseChanged(widget.album.mbid, release, tracks);
+      widget.onReleaseChanged(widget.album.nativeId, release, tracks);
     } on Object {
       if (!mounted) return;
-      setState(() => _tracks = const <AlbumTrack>[]);
+      setState(() => _tracks = const <AudioTrack>[]);
     }
   }
 
   void _onReleasePicked(MusicBrainzRelease release) {
     if (_selected?.mbid == release.mbid) return;
     setState(() => _selected = release);
-    widget.onReleaseChanged(widget.album.mbid, release, null);
+    widget.onReleaseChanged(widget.album.nativeId, release, null);
     _loadTracks(release);
   }
 
@@ -154,7 +154,7 @@ class _MusicBrainzAlbumSheetState extends ConsumerState<MusicBrainzAlbumSheet> {
   }
 
   Widget _buildTrackList(S l) {
-    final List<AlbumTrack>? tracks = _tracks;
+    final List<AudioTrack>? tracks = _tracks;
     if (tracks == null) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
@@ -171,10 +171,10 @@ class _MusicBrainzAlbumSheetState extends ConsumerState<MusicBrainzAlbumSheet> {
           child: Text(l.musicSheetTracks, style: AppTypography.h3),
         ),
         const SizedBox(height: AppSpacing.xs),
-        ...buildAlbumTrackList(
+        ...buildAudioTrackList(
           tracks: tracks,
           discLabel: (int discNumber) => l.musicSheetDisc(discNumber),
-          rowBuilder: (AlbumTrack track) => AlbumTrackRow(
+          rowBuilder: (AudioTrack track) => AudioTrackRow(
             key: ValueKey<String>('${track.discNumber}_${track.position}'),
             track: track,
           ),

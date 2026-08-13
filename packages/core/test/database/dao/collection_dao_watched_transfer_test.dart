@@ -1,4 +1,4 @@
-import 'package:core/database/dao/album_dao.dart';
+import 'package:core/database/dao/audio_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/collection_dao.dart';
@@ -46,7 +46,7 @@ void main() {
       animeDao: AnimeDao(getDb),
       mangaDao: MangaDao(getDb),
       bookDao: BookDao(getDb),
-      albumDao: AlbumDao(getDb),
+      audioDao: AudioDao(getDb),
       customMediaDao: CustomMediaDao(getDb),
     );
 
@@ -332,25 +332,25 @@ void main() {
   group('CollectionDao.updateItemCollectionId — listened transfer', () {
     Future<void> insertListened({
       required int collectionId,
-      required int albumId,
+      required int audioId,
       int disc = 1,
       int track = 1,
     }) async {
       await db.insert('listened_tracks', <String, Object?>{
         'collection_id': collectionId,
         'source': DataSource.musicBrainz.name,
-        'album_id': albumId,
+        'audio_id': audioId,
         'disc_number': disc,
         'track_number': track,
         'listened_at': 1700000000,
       });
     }
 
-    Future<int> listenedCount(int collectionId, int albumId) async {
+    Future<int> listenedCount(int collectionId, int audioId) async {
       final List<Map<String, Object?>> rows = await db.rawQuery(
         'SELECT COUNT(*) AS cnt FROM listened_tracks '
-        'WHERE collection_id = ? AND album_id = ?',
-        <Object?>[collectionId, albumId],
+        'WHERE collection_id = ? AND audio_id = ?',
+        <Object?>[collectionId, audioId],
       );
       return rows.single['cnt']! as int;
     }
@@ -359,12 +359,12 @@ void main() {
       await insertItem(
         id: 10,
         collectionId: 1,
-        mediaType: MediaType.music.value,
+        mediaType: MediaType.audio.value,
         externalId: 900,
         source: DataSource.musicBrainz.name,
       );
-      await insertListened(collectionId: 1, albumId: 900, track: 1);
-      await insertListened(collectionId: 1, albumId: 900, track: 2);
+      await insertListened(collectionId: 1, audioId: 900, track: 1);
+      await insertListened(collectionId: 1, audioId: 900, track: 2);
 
       final bool ok = await dao.updateItemCollectionId(10, 2);
 
@@ -377,11 +377,11 @@ void main() {
       await insertItem(
         id: 10,
         collectionId: 1,
-        mediaType: MediaType.music.value,
+        mediaType: MediaType.audio.value,
         externalId: 900,
         source: DataSource.musicBrainz.name,
       );
-      await insertListened(collectionId: 1, albumId: 900);
+      await insertListened(collectionId: 1, audioId: 900);
 
       await dao.updateItemCollectionId(10, 2);
 
@@ -396,11 +396,11 @@ void main() {
       await insertItem(
         id: 10,
         collectionId: 1,
-        mediaType: MediaType.music.value,
+        mediaType: MediaType.audio.value,
         externalId: 900,
         source: DataSource.musicBrainz.name,
       );
-      await insertListened(collectionId: 1, albumId: 900);
+      await insertListened(collectionId: 1, audioId: 900);
 
       final bool ok = await dao.updateItemCollectionId(10, null);
 
@@ -412,12 +412,12 @@ void main() {
       await insertItem(
         id: 10,
         collectionId: 1,
-        mediaType: MediaType.music.value,
+        mediaType: MediaType.audio.value,
         externalId: 900,
         source: DataSource.musicBrainz.name,
       );
-      await insertListened(collectionId: 1, albumId: 900);
-      await insertListened(collectionId: 1, albumId: 901);
+      await insertListened(collectionId: 1, audioId: 900);
+      await insertListened(collectionId: 1, audioId: 901);
 
       await dao.updateItemCollectionId(10, 2);
 

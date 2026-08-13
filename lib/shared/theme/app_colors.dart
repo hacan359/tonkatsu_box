@@ -63,7 +63,7 @@ abstract final class AppColors {
   /// Accent for books.
   static Color get bookAccent => palette.bookAccent;
 
-  static Color get musicAccent => palette.musicAccent;
+  static Color get audioAccent => palette.audioAccent;
 
   /// Accent for custom items.
   static Color get customAccent => palette.customAccent;

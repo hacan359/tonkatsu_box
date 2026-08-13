@@ -1,4 +1,4 @@
-import 'package:core/database/dao/album_dao.dart';
+import 'package:core/database/dao/audio_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/collection_dao.dart';
@@ -46,7 +46,7 @@ void main() {
       animeDao: AnimeDao(getDb),
       mangaDao: MangaDao(getDb),
       bookDao: BookDao(getDb),
-      albumDao: AlbumDao(getDb),
+      audioDao: AudioDao(getDb),
       customMediaDao: CustomMediaDao(getDb),
     );
 

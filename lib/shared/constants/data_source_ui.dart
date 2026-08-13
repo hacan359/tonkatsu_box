@@ -27,6 +27,7 @@ extension DataSourceUi on DataSource {
         DataSource.hardcover => AppAssets.iconHardcoverColor,
         DataSource.tvdb => AppAssets.iconTvdbColor,
         DataSource.musicBrainz => AppAssets.iconMusicBrainzColor,
+        DataSource.podcastIndex => AppAssets.iconPodcastIndexColor,
         DataSource.vgMaps => null,
         DataSource.local => null,
       };

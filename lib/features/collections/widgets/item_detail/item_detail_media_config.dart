@@ -1,4 +1,4 @@
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/collection_item.dart';
@@ -32,7 +32,7 @@ class ItemDetailMediaConfig {
     required this.hasMangaProgress,
     required this.hasAnimeProgress,
     required this.hasBookProgress,
-    this.hasMusicTracker = false,
+    this.hasAudioTracker = false,
     required this.hasCustomProgress,
     this.externalUrl,
     this.backdropUrl,
@@ -40,7 +40,7 @@ class ItemDetailMediaConfig {
     this.manga,
     this.anime,
     this.book,
-    this.album,
+    this.audioItem,
   });
 
   factory ItemDetailMediaConfig.from(CollectionItem item, BuildContext context) {
@@ -53,7 +53,7 @@ class ItemDetailMediaConfig {
       MediaType.manga => item.manga?.externalUrl,
       MediaType.anime => item.anime?.externalUrl,
       MediaType.book => item.book?.externalUrl,
-      MediaType.music => item.album?.externalUrl,
+      MediaType.audio => item.audioItem?.externalUrl,
       MediaType.custom => item.customMedia?.externalUrl,
     };
 
@@ -77,7 +77,7 @@ class ItemDetailMediaConfig {
       hasAnimeProgress:
           item.mediaType == MediaType.anime && !item.usesEpisodeTracker,
       hasBookProgress: item.mediaType == MediaType.book,
-      hasMusicTracker: item.mediaType == MediaType.music,
+      hasAudioTracker: item.mediaType == MediaType.audio,
       hasCustomProgress: item.mediaType == MediaType.custom &&
           (item.customUnitTotal != null || item.customUnitGroupTotal != null),
       externalUrl: externalUrl,
@@ -90,7 +90,7 @@ class ItemDetailMediaConfig {
       manga: item.manga,
       anime: item.anime,
       book: item.book,
-      album: item.album,
+      audioItem: item.audioItem,
     );
   }
 
@@ -108,7 +108,7 @@ class ItemDetailMediaConfig {
   final bool hasMangaProgress;
   final bool hasAnimeProgress;
   final bool hasBookProgress;
-  final bool hasMusicTracker;
+  final bool hasAudioTracker;
   final bool hasCustomProgress;
   final String? externalUrl;
   final String? backdropUrl;
@@ -116,7 +116,7 @@ class ItemDetailMediaConfig {
   final Manga? manga;
   final Anime? anime;
   final Book? book;
-  final Album? album;
+  final AudioItem? audioItem;
 }
 
 String _typeLabel(CollectionItem item, BuildContext context) {
@@ -134,7 +134,7 @@ String _typeLabel(CollectionItem item, BuildContext context) {
     MediaType.book => l.mediaTypeBook,
     // Like games showing their platform: the artist is the album's own
     // identity line, not a chip lost among the metadata.
-    MediaType.music => item.album?.artistsString ?? l.mediaTypeMusic,
+    MediaType.audio => item.audioItem?.artistsString ?? l.mediaTypeAudio,
     MediaType.custom => item.customMedia?.platformName ?? l.mediaTypeCustom,
   };
 }
@@ -185,25 +185,39 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
       ));
     }
   }
-  if (item.mediaType == MediaType.music && item.album != null) {
-    final Album a = item.album!;
-    if (a.primaryType != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.category_outlined,
-        text: <String>[a.primaryType!, ...a.secondaryTypes].join(' · '),
-      ));
-    }
-    if (a.trackCount != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.queue_music,
-        text: l.musicTracksCount(a.trackCount!),
-      ));
-    }
-    if (a.label != null) {
-      chips.add(MediaDetailChip(icon: Icons.business, text: a.label!));
-    }
-    if (a.format != null) {
-      chips.add(MediaDetailChip(icon: Icons.album_outlined, text: a.format!));
+  if (item.mediaType == MediaType.audio && item.audioItem != null) {
+    final AudioItem a = item.audioItem!;
+    if (a.isPodcast) {
+      if (a.trackCount != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.podcasts,
+          text: l.podcastEpisodesCount(a.trackCount!),
+        ));
+      }
+      if (a.language != null) {
+        chips.add(MediaDetailChip(icon: Icons.language, text: a.language!));
+      }
+    } else {
+      if (a.primaryType != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.category_outlined,
+          text: <String>[a.primaryType!, ...a.secondaryTypes].join(' · '),
+        ));
+      }
+      if (a.trackCount != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.queue_music,
+          text: l.musicTracksCount(a.trackCount!),
+        ));
+      }
+      if (a.label != null) {
+        chips.add(MediaDetailChip(icon: Icons.business, text: a.label!));
+      }
+      if (a.format != null) {
+        chips.add(
+          MediaDetailChip(icon: Icons.album_outlined, text: a.format!),
+        );
+      }
     }
   }
   if (item.mediaType == MediaType.manga && item.manga != null) {

@@ -178,8 +178,8 @@ class _TypeCard extends StatelessWidget {
               '${l.statsMetricMangaChapters}',
         MediaType.book when units.bookPages > 0 =>
           '${numberFormat.format(units.bookPages)} ${l.statsMetricBookPages}',
-        MediaType.music when units.musicTracks > 0 =>
-          '${numberFormat.format(units.musicTracks)} ${l.statsMetricTracks}',
+        MediaType.audio when units.audioTracks > 0 =>
+          '${numberFormat.format(units.audioTracks)} ${l.statsMetricTracks}',
         _ => '',
       },
       if (liked > 0)

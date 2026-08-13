@@ -2685,6 +2685,129 @@ void main() {
         verify(() => mockDb.setItemOverrideName(42, 'FF7R')).called(1);
       });
 
+      test(
+          'should clear the dates the status write stamped when the export '
+          'has a completed item without them', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          includesUserData: true,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+            },
+          ],
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
+            )).thenAnswer((_) async => 42);
+        when(() => mockDb.updateItemStatus(any(), any(),
+            mediaType: any(named: 'mediaType'))).thenAnswer((_) async {});
+        when(() => mockDb.updateItemActivityDates(
+              any(),
+              startedAt: any(named: 'startedAt'),
+              completedAt: any(named: 'completedAt'),
+              lastActivityAt: any(named: 'lastActivityAt'),
+              clearStartedAt: any(named: 'clearStartedAt'),
+              clearCompletedAt: any(named: 'clearCompletedAt'),
+            )).thenAnswer((_) async {});
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        // The completed transition stamps "now" into both dates; the file's
+        // explicit nulls must win back.
+        verify(() => mockDb.updateItemActivityDates(
+              42,
+              startedAt: null,
+              completedAt: null,
+              lastActivityAt: null,
+              clearStartedAt: true,
+              clearCompletedAt: true,
+            )).called(1);
+      });
+
+      test('should keep exported activity dates verbatim', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          includesUserData: true,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+              'started_at': 1700000000,
+              'completed_at': 1710000000,
+            },
+          ],
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => createTestCollection(id: 5));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
+            )).thenAnswer((_) async => 42);
+        when(() => mockDb.updateItemStatus(any(), any(),
+            mediaType: any(named: 'mediaType'))).thenAnswer((_) async {});
+        when(() => mockDb.updateItemActivityDates(
+              any(),
+              startedAt: any(named: 'startedAt'),
+              completedAt: any(named: 'completedAt'),
+              lastActivityAt: any(named: 'lastActivityAt'),
+              clearStartedAt: any(named: 'clearStartedAt'),
+              clearCompletedAt: any(named: 'clearCompletedAt'),
+            )).thenAnswer((_) async {});
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.updateItemActivityDates(
+              42,
+              startedAt: DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000),
+              completedAt:
+                  DateTime.fromMillisecondsSinceEpoch(1710000000 * 1000),
+              lastActivityAt: null,
+              clearStartedAt: false,
+              clearCompletedAt: false,
+            )).called(1);
+      });
+
       test('should skip override_name restore when absent', () async {
         final XcollFile xcoll = XcollFile(
           version: 2,

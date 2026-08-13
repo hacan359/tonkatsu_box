@@ -162,7 +162,7 @@ class SPt extends S {
   String get mediaTypeBook => 'Livro';
 
   @override
-  String get mediaTypeMusic => 'Música';
+  String get mediaTypeAudio => 'Áudio';
 
   @override
   String get mediaTypeCustom => 'Personalizado';
@@ -5714,4 +5714,65 @@ class SPt extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return 'Limite de requisições atingido — tentando de novo em ${seconds}s (tentativa $attempt/$max)';
   }
+
+  @override
+  String get searchSourcePodcasts => 'Podcasts';
+
+  @override
+  String get searchHintPodcasts => 'Pesquisar podcasts...';
+
+  @override
+  String get podcastSheetEpisodes => 'Episódios';
+
+  @override
+  String get podcastSheetNoEpisodes => 'Lista de episódios indisponível';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count episódios';
+  }
+
+  @override
+  String get podcastDiscoverTrending => 'Podcasts em alta';
+
+  @override
+  String get credentialsPodcastIndexSection => 'API do Podcast Index';
+
+  @override
+  String get credentialsEnterPodcastIndexKey =>
+      'Insira sua chave de API do Podcast Index';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret =>
+      'Insira seu segredo de API do Podcast Index';
+
+  @override
+  String get credentialsPodcastIndexKeyValid =>
+      'As chaves do Podcast Index são válidas';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'O Podcast Index rejeitou as chaves. Verifique o par e o relógio do sistema';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      'Busca de podcasts e acompanhamento de episódios. Par chave/segredo gratuito em api.podcastindex.org.';
+
+  @override
+  String get welcomeSourceDescMusicBrainz =>
+      'Enciclopédia musical aberta: álbuns, artistas e edições. Não requer chave.';
+
+  @override
+  String get welcomeSourceDescPodcastIndex =>
+      'Catálogo aberto de podcasts com acompanhamento por episódio. Par chave/segredo gratuito.';
+
+  @override
+  String get creditsPodcastIndexAttribution =>
+      'Dados de podcasts do Podcast Index.';
+
+  @override
+  String get credentialsApiSecret => 'Segredo da API';
+
+  @override
+  String get markAllListened => 'Marcar tudo como ouvido';
 }

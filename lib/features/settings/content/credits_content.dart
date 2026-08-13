@@ -135,6 +135,12 @@ class CreditsContent extends StatelessWidget {
         linkLabel: 'musicbrainz.org',
         url: 'https://musicbrainz.org/',
       ),
+      (
+        source: DataSource.podcastIndex,
+        description: l10n.creditsPodcastIndexAttribution,
+        linkLabel: 'podcastindex.org',
+        url: 'https://podcastindex.org/',
+      ),
     ];
 
     return Column(

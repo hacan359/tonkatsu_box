@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
@@ -25,7 +25,7 @@ import '../providers/browse_provider.dart';
 import '../providers/discover_provider.dart';
 import '../sources/search_sources.dart';
 import '../widgets/browse_grid.dart';
-import '../widgets/music_discover_feed.dart';
+import '../widgets/audio_discover_feed.dart';
 import '../widgets/browse_sections.dart';
 import '../widgets/browse_sections_compact.dart';
 import '../widgets/collection_chips_row.dart';
@@ -223,8 +223,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         collected = await ref.read(collectedAnimeIdsProvider.future);
       case MediaType.book:
         collected = await ref.read(collectedBookIdsProvider.future);
-      case MediaType.music:
-        collected = await ref.read(collectedMusicIdsProvider.future);
+      case MediaType.audio:
+        collected = await ref.read(collectedAudioIdsProvider.future);
       case MediaType.custom:
         return <CollectedItemInfo>[];
     }
@@ -300,10 +300,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   Widget _buildContent(BrowseState browseState) {
     if (!browseState.hasActiveQuery) {
-      if (browseState.mediaType == MediaType.music) {
-        return MusicDiscoverFeed(
-          onAlbumTap: (Album album) =>
-              _handlers.onTap(context, album, MediaType.music),
+      if (browseState.mediaType == MediaType.audio) {
+        return AudioDiscoverFeed(
+          onItemTap: (AudioItem album) =>
+              _handlers.onTap(context, album, MediaType.audio),
         );
       }
       if (discoverMediaTypes.contains(browseState.mediaType)) {

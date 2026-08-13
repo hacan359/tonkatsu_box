@@ -48,7 +48,7 @@ extension ItemStatusUi on ItemStatus {
         return l.statusNotStarted;
       case ItemStatus.inProgress:
         if (mediaType == MediaType.game) return l.statusPlaying;
-        if (mediaType == MediaType.music) return l.statusListening;
+        if (mediaType == MediaType.audio) return l.statusListening;
         return l.statusWatching;
       case ItemStatus.completed:
         return l.statusCompleted;
@@ -64,7 +64,7 @@ extension ItemStatusUi on ItemStatus {
           case MediaType.manga:
           case MediaType.book:
             return l.statusRereading;
-          case MediaType.music:
+          case MediaType.audio:
             return l.statusRelistening;
           case MediaType.movie:
           case MediaType.tvShow:

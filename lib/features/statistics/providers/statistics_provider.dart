@@ -46,7 +46,7 @@ final AutoDisposeFutureProvider<LibraryStats> libraryStatsProvider =
     ({int tv, int anime}) episodeSplit,
     ({int animeEpisodes, int mangaChapters, int bookPages}) counters,
     Map<MediaType, int> likedByType,
-    int musicTracks,
+    int audioTracks,
   ) = await (
     stats.getAvailableYears(),
     stats.getTypeStatusCounts(year: year),
@@ -75,7 +75,7 @@ final AutoDisposeFutureProvider<LibraryStats> libraryStatsProvider =
     moviesWatched: typeStatus[MediaType.movie]?[ItemStatus.completed] ?? 0,
     mangaChapters: counters.mangaChapters,
     bookPages: counters.bookPages,
-    musicTracks: musicTracks,
+    audioTracks: audioTracks,
   );
 
   final LibraryTotals totals = LibraryTotals(

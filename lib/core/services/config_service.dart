@@ -75,6 +75,8 @@ class ConfigService {
     SettingsKeys.tvdbApiKey,
     SettingsKeys.comicVineApiKey,
     SettingsKeys.googleBooksApiKey,
+    SettingsKeys.podcastIndexApiKey,
+    SettingsKeys.podcastIndexApiSecret,
     SettingsKeys.hardcoverApiKey,
     SettingsKeys.hardcoverUsername,
     SettingsKeys.screenScraperSsid,

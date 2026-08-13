@@ -1,5 +1,5 @@
-import 'package:core/models/album.dart';
-import 'package:core/models/album_track.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
@@ -17,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
 import '../../../core/api/musicbrainz_api.dart';
+import '../../../core/api/podcast_index_api.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/fantlab_api.dart';
 import '../../../core/api/openlibrary_api.dart';
@@ -29,6 +30,7 @@ import '../../collections/widgets/hardcover_edition_picker.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/fantlab_book_sheet.dart';
 import '../widgets/hardcover_book_sheet.dart';
+import '../widgets/podcast_index_sheet.dart';
 import '../widgets/musicbrainz_album_sheet.dart';
 import '../widgets/google_books_more_by_author_section.dart';
 import '../widgets/item_details_sheet.dart';
@@ -229,43 +231,46 @@ class MediaHandlers {
     // Consumed by `enrich` so an add straight from the sheet re-fetches
     // nothing; reset on each sheet open.
     _PendingAlbumRelease? pendingAlbumRelease;
-    _byType[Album] = SimpleMediaHandler<Album>(
+    _byType[AudioItem] = SimpleMediaHandler<AudioItem>(
       ref: ref,
       adder: adder,
       targetCollections: targetCollections,
-      mediaType: MediaType.music,
-      imageType: ImageType.albumCover,
-      collectedProvider: collectedMusicIdsProvider,
-      externalIdOf: (Album a) => a.id,
-      imageIdOf: (Album a) => coverImageId(
-        mediaType: MediaType.music,
+      mediaType: MediaType.audio,
+      imageType: ImageType.audioCover,
+      collectedProvider: collectedAudioIdsProvider,
+      externalIdOf: (AudioItem a) => a.id,
+      imageIdOf: (AudioItem a) => coverImageId(
+        mediaType: MediaType.audio,
         externalId: a.id,
         source: a.source,
       ),
-      titleOf: (Album a) => a.title,
-      imageUrlOf: (Album a) => a.coverUrl,
-      upsert: (Album a) => ref.read(albumDaoProvider).upsertAlbum(a),
-      sourceOf: (Album a) => a.source,
-      sheetBuilder: (Album a, VoidCallback onAdd) => MusicBrainzAlbumSheet(
-        album: a,
-        onAddToCollection: onAdd,
-        onReleaseChanged: (
-          String mbid,
-          MusicBrainzRelease? release,
-          List<AlbumTrack>? tracks,
-        ) =>
-            pendingAlbumRelease = release == null
-                ? null
-                : (albumMbid: mbid, release: release, tracks: tracks),
-      ),
-      // On add: lookup extras plus the picked/default release's track list,
-      // cached so the collection tracker works offline.
-      enrich: (Album a) {
+      titleOf: (AudioItem a) => a.title,
+      imageUrlOf: (AudioItem a) => a.coverUrl,
+      upsert: (AudioItem a) => ref.read(audioDaoProvider).upsertAudioItem(a),
+      sourceOf: (AudioItem a) => a.source,
+      sheetBuilder: (AudioItem a, VoidCallback onAdd) => a.isPodcast
+          ? PodcastIndexSheet(podcast: a, onAddToCollection: onAdd)
+          : MusicBrainzAlbumSheet(
+              album: a,
+              onAddToCollection: onAdd,
+              onReleaseChanged: (
+                String mbid,
+                MusicBrainzRelease? release,
+                List<AudioTrack>? tracks,
+              ) =>
+                  pendingAlbumRelease = release == null
+                      ? null
+                      : (albumMbid: mbid, release: release, tracks: tracks),
+            ),
+      // On add: lookup extras plus the track/episode list, cached so the
+      // collection tracker works offline.
+      enrich: (AudioItem a) {
+        if (a.isPodcast) return _enrichPodcast(ref, a);
         final _PendingAlbumRelease? pending = pendingAlbumRelease;
         return _enrichAlbum(
           ref,
           a,
-          pending != null && pending.albumMbid == a.mbid ? pending : null,
+          pending != null && pending.albumMbid == a.nativeId ? pending : null,
         );
       },
     );
@@ -320,39 +325,39 @@ class MediaHandlers {
 typedef _PendingAlbumRelease = ({
   String albumMbid,
   MusicBrainzRelease release,
-  List<AlbumTrack>? tracks,
+  List<AudioTrack>? tracks,
 });
 
 /// Full lookup + picked/default release + cached track list for an album on
 /// its way into a collection. Any failure keeps what the search row had.
-Future<Album> _enrichAlbum(
+Future<AudioItem> _enrichAlbum(
   WidgetRef ref,
-  Album album,
+  AudioItem album,
   _PendingAlbumRelease? pending,
 ) async {
   final MusicBrainzApi api = ref.read(musicBrainzApiProvider);
-  Album enriched = album;
+  AudioItem enriched = album;
   try {
-    final Album? full = await api.getReleaseGroup(album.mbid);
+    final AudioItem? full = await api.getReleaseGroup(album.nativeId);
     if (full != null) enriched = enriched.withLookupDetails(full);
   } on Exception {
     // Lookup extras are optional; the search row is already a valid album.
   }
   try {
     final MusicBrainzRelease? release =
-        pending?.release ?? await api.getDefaultRelease(album.mbid);
+        pending?.release ?? await api.getDefaultRelease(album.nativeId);
     if (release == null) return enriched;
 
     // The sheet already fetched this release's tracks — don't pay the
     // rate-limited round-trip twice on the same add.
-    final List<AlbumTrack> tracks = pending?.tracks ??
-        await api.getReleaseTracks(release.mbid, albumId: album.id);
+    final List<AudioTrack> tracks = pending?.tracks ??
+        await api.getReleaseTracks(release.mbid, audioId: album.id);
     await ref
-        .read(albumDaoProvider)
-        .replaceAlbumTracks(album.id, album.source, tracks);
+        .read(audioDaoProvider)
+        .replaceAudioTracks(album.id, album.source, tracks);
 
     int? totalLengthMs;
-    for (final AlbumTrack track in tracks) {
+    for (final AudioTrack track in tracks) {
       if (track.lengthMs != null) {
         totalLengthMs = (totalLengthMs ?? 0) + track.lengthMs!;
       }
@@ -369,6 +374,34 @@ Future<Album> _enrichAlbum(
   } on Exception {
     return enriched;
   }
+}
+
+/// Full feed record plus the newest episodes (≤1000), cached so the episode
+/// tracker works offline. Any failure keeps what the search row had.
+Future<AudioItem> _enrichPodcast(WidgetRef ref, AudioItem podcast) async {
+  final PodcastIndexApi api = ref.read(podcastIndexApiProvider);
+  // Independent calls — fail-soft individually, no reason to pay two RTTs.
+  final (AudioItem? full, List<AudioTrack> episodes) = await (
+    api.getPodcast(podcast.id).onError((_, _) => null),
+    api
+        .getEpisodes(podcast.id)
+        .onError((_, _) => const <AudioTrack>[]),
+  ).wait;
+
+  AudioItem enriched =
+      full != null ? podcast.withLookupDetails(full) : podcast;
+  if (episodes.isEmpty) return enriched;
+  try {
+    // Upsert, never replace: episodes older than the API's 1000-newest
+    // window must survive in the cache once seen.
+    await ref.read(audioDaoProvider).upsertTracks(episodes);
+    enriched = enriched.copyWith(
+      trackCount: enriched.trackCount ?? episodes.length,
+    );
+  } on Exception {
+    // Cache write is best-effort; the tracker refetches on first open.
+  }
+  return enriched;
 }
 
 /// Loads the full-work description for [book] from its provider. Used by the

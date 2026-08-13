@@ -1,25 +1,27 @@
 import '../query_chunk.dart';
 import '../sparse_upsert.dart';
-import '../../models/album.dart';
-import '../../models/album_track.dart';
+import '../../models/audio_item.dart';
+import '../../models/audio_track.dart';
 import '../../models/data_source.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
-/// Albums, their track lists and the listened-track marks. Row identity is
-/// `(id, source)` where `id` is fnv1a64 of the release-group MBID.
-class AlbumDao {
-  const AlbumDao(this._getDatabase);
+/// Audio items (albums / podcasts), their track lists and the listened-track
+/// marks. Row identity is `(id, source)`.
+class AudioDao {
+  const AudioDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
 
   // Search rows carry no lookup extras (genres, rating) and no picked release;
   // an upsert from the grid must not wipe what the detail flow already saved.
-  static ({String sql, List<Object?> args}) _albumUpsert(Album album) =>
+  static ({String sql, List<Object?> args}) _audioUpsert(AudioItem item) =>
       buildPreservingUpsert(
-        table: 'music_albums_cache',
-        row: album.toDb(),
+        table: 'audio_cache',
+        row: item.toDb(),
         conflictKey: const <String>['id', 'source'],
         preserveWhenNull: const <String>{
+          'description',
+          'language',
           'genres',
           'rating',
           'rating_count',
@@ -34,72 +36,73 @@ class AlbumDao {
         },
       );
 
-  Future<void> upsertAlbum(Album album) async {
+  Future<void> upsertAudioItem(AudioItem item) async {
     final Database db = await _getDatabase();
-    final ({String sql, List<Object?> args}) upsert = _albumUpsert(album);
+    final ({String sql, List<Object?> args}) upsert = _audioUpsert(item);
     await db.rawInsert(upsert.sql, upsert.args);
   }
 
-  Future<void> upsertAlbums(List<Album> albums) async {
-    if (albums.isEmpty) return;
+  Future<void> upsertAudioItems(List<AudioItem> items) async {
+    if (items.isEmpty) return;
     final Database db = await _getDatabase();
     final Batch batch = db.batch();
-    for (final Album album in albums) {
-      final ({String sql, List<Object?> args}) upsert = _albumUpsert(album);
+    for (final AudioItem item in items) {
+      final ({String sql, List<Object?> args}) upsert = _audioUpsert(item);
       batch.rawInsert(upsert.sql, upsert.args);
     }
     await batch.commit(noResult: true);
   }
 
-  Future<Album?> getAlbum(int id, {required DataSource source}) async {
+  Future<AudioItem?> getAudioItem(int id, {required DataSource source}) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
-      'music_albums_cache',
+      'audio_cache',
       where: 'id = ? AND source = ?',
       whereArgs: <Object?>[id, source.name],
       limit: 1,
     );
     if (rows.isEmpty) return null;
-    return Album.fromDb(rows.first);
+    return AudioItem.fromDb(rows.first);
   }
 
-  Future<List<Album>> getAlbumsByIds(List<int> externalIds) async {
+  Future<List<AudioItem>> getAudioItemsByIds(List<int> externalIds) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(externalIds, (List<int> chunk) async {
       final String placeholders =
           List<String>.filled(chunk.length, '?').join(',');
       final List<Map<String, dynamic>> rows = await db.rawQuery(
-        'SELECT * FROM music_albums_cache WHERE id IN ($placeholders)',
+        'SELECT * FROM audio_cache WHERE id IN ($placeholders)',
         chunk,
       );
-      return rows.map(Album.fromDb).toList();
+      return rows.map(AudioItem.fromDb).toList();
     });
   }
 
-  Future<void> clearAlbums() async {
+  Future<void> clearAudioItems() async {
     final Database db = await _getDatabase();
-    await db.delete('music_albums_cache');
-    await db.delete('music_tracks_cache');
+    await db.delete('audio_cache');
+    await db.delete('audio_tracks_cache');
   }
 
   /// Replaces the cached track list — the picked release changed, so leftovers
-  /// from the previous edition must not survive.
-  Future<void> replaceAlbumTracks(
-    int albumId,
+  /// from the previous edition must not survive. Albums only; podcast episode
+  /// lists grow incrementally via [upsertTracks].
+  Future<void> replaceAudioTracks(
+    int audioId,
     DataSource source,
-    List<AlbumTrack> tracks,
+    List<AudioTrack> tracks,
   ) async {
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {
       await txn.delete(
-        'music_tracks_cache',
-        where: 'album_id = ? AND source = ?',
-        whereArgs: <Object?>[albumId, source.name],
+        'audio_tracks_cache',
+        where: 'audio_id = ? AND source = ?',
+        whereArgs: <Object?>[audioId, source.name],
       );
       final Batch batch = txn.batch();
-      for (final AlbumTrack track in tracks) {
+      for (final AudioTrack track in tracks) {
         batch.insert(
-          'music_tracks_cache',
+          'audio_tracks_cache',
           track.toDb(),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
@@ -108,15 +111,15 @@ class AlbumDao {
     });
   }
 
-  /// Bulk-inserts tracks across many albums in one batch (import / restore).
-  /// The natural UNIQUE key makes it idempotent.
-  Future<void> upsertTracks(List<AlbumTrack> tracks) async {
+  /// Bulk-inserts tracks across many items in one batch (import / restore /
+  /// podcast episode refresh). The natural UNIQUE key makes it idempotent.
+  Future<void> upsertTracks(List<AudioTrack> tracks) async {
     if (tracks.isEmpty) return;
     final Database db = await _getDatabase();
     final Batch batch = db.batch();
-    for (final AlbumTrack track in tracks) {
+    for (final AudioTrack track in tracks) {
       batch.insert(
-        'music_tracks_cache',
+        'audio_tracks_cache',
         track.toDb(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -124,32 +127,32 @@ class AlbumDao {
     await batch.commit(noResult: true);
   }
 
-  Future<List<AlbumTrack>> getAlbumTracks(
-    int albumId, {
+  Future<List<AudioTrack>> getAudioTracks(
+    int audioId, {
     required DataSource source,
   }) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
-      'music_tracks_cache',
-      where: 'album_id = ? AND source = ?',
-      whereArgs: <Object?>[albumId, source.name],
+      'audio_tracks_cache',
+      where: 'audio_id = ? AND source = ?',
+      whereArgs: <Object?>[audioId, source.name],
       orderBy: 'disc_number ASC, position ASC',
     );
-    return rows.map(AlbumTrack.fromDb).toList();
+    return rows.map(AudioTrack.fromDb).toList();
   }
 
   /// Keyed by (discNumber, trackNumber).
   Future<Map<(int, int), DateTime?>> getListenedTracks(
     int collectionId,
     DataSource source,
-    int albumId,
+    int audioId,
   ) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
       'listened_tracks',
       columns: <String>['disc_number', 'track_number', 'listened_at'],
-      where: 'collection_id = ? AND source = ? AND album_id = ?',
-      whereArgs: <Object?>[collectionId, source.name, albumId],
+      where: 'collection_id = ? AND source = ? AND audio_id = ?',
+      whereArgs: <Object?>[collectionId, source.name, audioId],
     );
     final Map<(int, int), DateTime?> result = <(int, int), DateTime?>{};
     for (final Map<String, dynamic> row in rows) {
@@ -164,21 +167,21 @@ class AlbumDao {
     return result;
   }
 
-  /// All listened marks deduped by source/album/disc/track
+  /// All listened marks deduped by source/item/disc/track
   /// (collection-agnostic), for backup. Keeps the latest `listened_at`.
   Future<List<Map<String, Object?>>> getAllListenedTracks() async {
     final Database db = await _getDatabase();
     return db.rawQuery(
-      'SELECT source, album_id, disc_number, track_number, '
+      'SELECT source, audio_id, disc_number, track_number, '
       'MAX(listened_at) AS listened_at FROM listened_tracks '
-      'GROUP BY source, album_id, disc_number, track_number',
+      'GROUP BY source, audio_id, disc_number, track_number',
     );
   }
 
   Future<void> markTrackListened(
     int collectionId,
     DataSource source,
-    int albumId,
+    int audioId,
     int discNumber,
     int trackNumber,
   ) async {
@@ -188,7 +191,7 @@ class AlbumDao {
       <String, dynamic>{
         'collection_id': collectionId,
         'source': source.name,
-        'album_id': albumId,
+        'audio_id': audioId,
         'disc_number': discNumber,
         'track_number': trackNumber,
         'listened_at': DateTime.now().millisecondsSinceEpoch,
@@ -197,12 +200,12 @@ class AlbumDao {
     );
   }
 
-  /// One transaction for the whole album — an import of a completed album
+  /// One transaction for the whole item — an import of a completed album
   /// would otherwise pay a commit per track.
   Future<void> markTracksListenedAt(
     int collectionId,
     DataSource source,
-    int albumId,
+    int audioId,
     List<(int discNumber, int trackNumber, int? listenedAtMs)> tracks,
   ) async {
     if (tracks.isEmpty) return;
@@ -216,7 +219,7 @@ class AlbumDao {
           <String, dynamic>{
             'collection_id': collectionId,
             'source': source.name,
-            'album_id': albumId,
+            'audio_id': audioId,
             'disc_number': disc,
             'track_number': track,
             'listened_at': listenedAtMs,
@@ -228,26 +231,50 @@ class AlbumDao {
     });
   }
 
+  /// One transaction for a whole span (a podcast year, a full album) — the
+  /// mirror of [markTracksListenedAt] for unmarking.
+  Future<void> markTracksUnlistened(
+    int collectionId,
+    DataSource source,
+    int audioId,
+    List<(int discNumber, int trackNumber)> tracks,
+  ) async {
+    if (tracks.isEmpty) return;
+
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final (int disc, int track) in tracks) {
+        batch.delete(
+          'listened_tracks',
+          where: 'collection_id = ? AND source = ? AND audio_id = ? '
+              'AND disc_number = ? AND track_number = ?',
+          whereArgs: <Object?>[collectionId, source.name, audioId, disc, track],
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   Future<void> markTrackUnlistened(
     int collectionId,
     DataSource source,
-    int albumId,
+    int audioId,
     int discNumber,
     int trackNumber,
   ) async {
     final Database db = await _getDatabase();
     await db.delete(
       'listened_tracks',
-      where: 'collection_id = ? AND source = ? AND album_id = ? '
+      where: 'collection_id = ? AND source = ? AND audio_id = ? '
           'AND disc_number = ? AND track_number = ?',
       whereArgs: <Object?>[
         collectionId,
         source.name,
-        albumId,
+        audioId,
         discNumber,
         trackNumber,
       ],
     );
   }
-
 }

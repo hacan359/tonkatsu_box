@@ -12,6 +12,8 @@ abstract final class CredentialNames {
   static const String googleBooks = 'googlebooks';
   static const String hardcover = 'hardcover';
   static const String simklClientId = 'simkl_client_id';
+  static const String podcastIndexKey = 'podcastindex_key';
+  static const String podcastIndexSecret = 'podcastindex_secret';
 
   // ScreenScraper needs four: the dev pair comes from the operator's env or
   // keys.json, the user pair from the settings screen.
@@ -32,6 +34,8 @@ abstract final class CredentialNames {
     googleBooks,
     hardcover,
     simklClientId,
+    podcastIndexKey,
+    podcastIndexSecret,
     ssDevId,
     ssDevPassword,
     ssSsid,

@@ -46,8 +46,8 @@ void main() {
     group('cardTitle', () {
       test('should prefix the artist for a music item', () {
         final String title = createTestCollectionItem(
-          mediaType: MediaType.music,
-          album: createTestAlbum(
+          mediaType: MediaType.audio,
+          audioItem: createTestAudioItem(
             title: 'The Dark Side of the Moon',
             artists: <String>['Pink Floyd'],
           ),
@@ -58,8 +58,8 @@ void main() {
 
       test('should keep the plain name when the album has no artists', () {
         final String title = createTestCollectionItem(
-          mediaType: MediaType.music,
-          album: createTestAlbum(title: 'Nameless', artists: const <String>[]),
+          mediaType: MediaType.audio,
+          audioItem: createTestAudioItem(title: 'Nameless', artists: const <String>[]),
         ).cardTitle('Nameless');
 
         expect(title, 'Nameless');
@@ -67,16 +67,16 @@ void main() {
 
       test('should keep the plain name when the album is not joined', () {
         expect(
-          createTestCollectionItem(mediaType: MediaType.music).cardTitle('X'),
+          createTestCollectionItem(mediaType: MediaType.audio).cardTitle('X'),
           'X',
         );
       });
 
       test('should not prefix a custom rename', () {
         final String title = createTestCollectionItem(
-          mediaType: MediaType.music,
+          mediaType: MediaType.audio,
           overrideName: 'My favourite',
-          album: createTestAlbum(artists: <String>['Pink Floyd']),
+          audioItem: createTestAudioItem(artists: <String>['Pink Floyd']),
         ).cardTitle('My favourite');
 
         expect(title, 'My favourite');

@@ -5,7 +5,8 @@ import 'image_type.dart';
 import 'media_type.dart';
 import '../utils/cover_image_id.dart' as cover_id;
 
-import 'album.dart';
+import 'audio_item.dart';
+import 'audio_kind.dart';
 import 'book.dart';
 import 'custom_media.dart';
 import 'game.dart';
@@ -51,7 +52,7 @@ class CollectionItem with Exportable {
     this.anime,
     this.manga,
     this.book,
-    this.album,
+    this.audioItem,
     this.customMedia,
     this.platform,
   });
@@ -71,7 +72,7 @@ class CollectionItem with Exportable {
     Anime? anime,
     Manga? manga,
     Book? book,
-    Album? album,
+    AudioItem? audioItem,
     CustomMedia? customMedia,
     Platform? platform,
   }) {
@@ -121,7 +122,7 @@ class CollectionItem with Exportable {
       anime: anime,
       manga: manga,
       book: book,
-      album: album,
+      audioItem: audioItem,
       customMedia: customMedia,
       platform: platform,
     );
@@ -250,7 +251,7 @@ class CollectionItem with Exportable {
   final Anime? anime;
   final Manga? manga;
   final Book? book;
-  final Album? album;
+  final AudioItem? audioItem;
   final CustomMedia? customMedia;
 
   /// Joined platform metadata for games / animation.
@@ -425,23 +426,23 @@ class CollectionItem with Exportable {
           source: book?.source ?? DataSource.openLibrary,
           imageType: ImageType.bookCover,
         );
-      case MediaType.music:
+      case MediaType.audio:
         return (
-          name: album?.title,
-          coverUrl: album?.coverUrl,
-          thumbUrl: album?.coverUrl,
-          description: null,
-          rating: album?.rating,
-          formattedRating: album?.formattedRating,
-          releaseYear: album?.releaseYear,
-          runtime: album?.totalLengthMinutes,
+          name: audioItem?.title,
+          coverUrl: audioItem?.coverUrl,
+          thumbUrl: audioItem?.coverUrl,
+          description: audioItem?.description,
+          rating: audioItem?.rating,
+          formattedRating: audioItem?.formattedRating,
+          releaseYear: audioItem?.releaseYear,
+          runtime: audioItem?.totalLengthMinutes,
           totalSeasons: null,
           totalEpisodes: null,
-          genresString: album?.genresString,
-          genres: album?.genres,
+          genresString: audioItem?.genresString,
+          genres: audioItem?.genres,
           mediaStatus: null,
-          source: album?.source ?? source ?? DataSource.musicBrainz,
-          imageType: ImageType.albumCover,
+          source: audioItem?.source ?? source ?? DataSource.musicBrainz,
+          imageType: ImageType.audioCover,
         );
       case MediaType.anime:
         return (
@@ -494,7 +495,9 @@ class CollectionItem with Exportable {
       MediaType.manga => 'Unknown Manga',
       MediaType.anime => 'Unknown Anime',
       MediaType.book => 'Unknown Book',
-      MediaType.music => 'Unknown Album',
+      MediaType.audio => audioItem?.kind == AudioKind.podcast
+          ? 'Unknown Podcast'
+          : 'Unknown Album',
       MediaType.custom => 'Unknown Custom Item',
     };
     return overrideName ?? _resolvedMedia.name ?? fallback;
@@ -550,7 +553,7 @@ class CollectionItem with Exportable {
         MediaType.visualNovel ||
         MediaType.manga ||
         MediaType.book ||
-        MediaType.music ||
+        MediaType.audio ||
         MediaType.custom =>
           false,
       };
@@ -568,7 +571,7 @@ class CollectionItem with Exportable {
         MediaType.manga => manga?.externalUrl,
         MediaType.anime => anime?.externalUrl,
         MediaType.book => book?.externalUrl,
-        MediaType.music => album?.externalUrl,
+        MediaType.audio => audioItem?.externalUrl,
         MediaType.custom => customMedia?.externalUrl,
       };
 
@@ -616,6 +619,7 @@ class CollectionItem with Exportable {
   String? get formatLabel => switch (displayMediaType) {
         MediaType.manga => Manga.mangaFormatLabel(formatCode),
         MediaType.anime => Anime.animeFormatLabel(formatCode),
+        MediaType.audio => audioItem?.kind.cardLabel,
         _ => null,
       };
 
@@ -717,7 +721,7 @@ class CollectionItem with Exportable {
   String? get exportNativeId {
     if (mediaType == MediaType.book) return book?.nativeId;
     if (mediaType == MediaType.manga) return manga?.mangaDexUuid;
-    if (mediaType == MediaType.music) return album?.mbid;
+    if (mediaType == MediaType.audio) return audioItem?.nativeId;
     return null;
   }
 
@@ -797,7 +801,7 @@ class CollectionItem with Exportable {
     Anime? anime,
     Manga? manga,
     Book? book,
-    Album? album,
+    AudioItem? audioItem,
     CustomMedia? customMedia,
     Platform? platform,
   }) {
@@ -836,7 +840,7 @@ class CollectionItem with Exportable {
       anime: anime ?? this.anime,
       manga: manga ?? this.manga,
       book: book ?? this.book,
-      album: album ?? this.album,
+      audioItem: audioItem ?? this.audioItem,
       customMedia: customMedia ?? this.customMedia,
       platform: platform ?? this.platform,
     );

@@ -1,5 +1,5 @@
-import 'package:core/models/album.dart';
-import 'package:core/models/album_track.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,7 +18,7 @@ class MusicBrainzApi {
   final MusicBrainzHttpClient _client;
   late final MusicBrainzReleaseGroupApi _releaseGroups;
 
-  Future<(List<Album>, bool hasMore, int total)> search({
+  Future<(List<AudioItem>, bool hasMore, int total)> search({
     String query = '',
     String? queryField,
     String? primaryType,
@@ -41,7 +41,7 @@ class MusicBrainzApi {
         perPage: perPage,
       );
 
-  Future<Album?> getReleaseGroup(String mbid) =>
+  Future<AudioItem?> getReleaseGroup(String mbid) =>
       _releaseGroups.getReleaseGroup(mbid);
 
   Future<List<MusicBrainzRelease>> getReleases(
@@ -56,11 +56,11 @@ class MusicBrainzApi {
   Future<MusicBrainzRelease?> getDefaultRelease(String releaseGroupMbid) =>
       _releaseGroups.getDefaultRelease(releaseGroupMbid);
 
-  Future<List<AlbumTrack>> getReleaseTracks(
+  Future<List<AudioTrack>> getReleaseTracks(
     String releaseMbid, {
-    required int albumId,
+    required int audioId,
   }) =>
-      _releaseGroups.getReleaseTracks(releaseMbid, albumId: albumId);
+      _releaseGroups.getReleaseTracks(releaseMbid, audioId: audioId);
 
   void dispose() => _client.dispose();
 }

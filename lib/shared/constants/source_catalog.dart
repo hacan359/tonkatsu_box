@@ -113,7 +113,14 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
   ),
   SourceInfo(
     source: DataSource.musicBrainz,
-    mediaTypes: <MediaType>[MediaType.music],
+    mediaTypes: <MediaType>[MediaType.audio],
     url: 'https://musicbrainz.org/',
+  ),
+  SourceInfo(
+    source: DataSource.podcastIndex,
+    mediaTypes: <MediaType>[MediaType.audio],
+    // "Get a key" link target: free registration hands out the key/secret pair.
+    url: 'https://api.podcastindex.org/',
+    keyRequirement: SourceKeyRequirement.recommended,
   ),
 ];

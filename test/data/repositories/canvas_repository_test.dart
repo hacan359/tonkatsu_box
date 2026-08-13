@@ -1,4 +1,4 @@
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -48,14 +48,14 @@ void main() {
 
     group('music hydration', () {
       test('should join album data onto a music canvas item', () async {
-        final MockAlbumDao mockAlbumDao = MockAlbumDao();
-        when(() => mockDb.albumDao).thenReturn(mockAlbumDao);
+        final MockAudioDao mockAudioDao = MockAudioDao();
+        when(() => mockDb.audioDao).thenReturn(mockAudioDao);
 
         final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
           <String, dynamic>{
             'id': 1,
             'collection_id': 10,
-            'item_type': 'music',
+            'item_type': 'audio',
             'item_ref_id': 777,
             'x': 50.0,
             'y': 100.0,
@@ -66,7 +66,7 @@ void main() {
             'created_at': testTimestamp,
           },
         ];
-        final Album album = createTestAlbum(
+        final AudioItem album = createTestAudioItem(
           id: 777,
           title: 'Meddle',
           coverUrl: 'https://coverartarchive.org/release-group/x/front-500',
@@ -74,17 +74,17 @@ void main() {
 
         when(() => mockCanvasDao.getCanvasItems(10))
             .thenAnswer((_) async => rows);
-        when(() => mockAlbumDao.getAlbumsByIds(<int>[777]))
-            .thenAnswer((_) async => <Album>[album]);
+        when(() => mockAudioDao.getAudioItemsByIds(<int>[777]))
+            .thenAnswer((_) async => <AudioItem>[album]);
 
         final List<CanvasItem> result =
             await repository.getItemsWithData(10);
 
-        expect(result.single.album, isNotNull);
-        expect(result.single.album!.title, 'Meddle');
+        expect(result.single.audioItem, isNotNull);
+        expect(result.single.audioItem!.title, 'Meddle');
         // The cover flows to the card only through the joined album.
         expect(result.single.mediaThumbnailUrl, album.coverUrl);
-        verify(() => mockAlbumDao.getAlbumsByIds(<int>[777])).called(1);
+        verify(() => mockAudioDao.getAudioItemsByIds(<int>[777])).called(1);
       });
     });
 
@@ -788,7 +788,7 @@ void main() {
           nativeId: 'OL800W',
           title: 'Dune',
         );
-        final Album testAlbum = createTestAlbum(id: 900, title: 'OK Computer');
+        final AudioItem testAlbum = createTestAudioItem(id: 900, title: 'OK Computer');
 
         final List<CollectionItem> items = <CollectionItem>[
           CollectionItem(
@@ -866,11 +866,11 @@ void main() {
           CollectionItem(
             id: 9,
             collectionId: 10,
-            mediaType: MediaType.music,
+            mediaType: MediaType.audio,
             externalId: 900,
             status: ItemStatus.notStarted,
             addedAt: testDate,
-            album: testAlbum,
+            audioItem: testAlbum,
           ),
         ];
 
@@ -895,7 +895,7 @@ void main() {
         expect(result[5].anime?.id, testAnime.id);
         expect(result[6].customMedia?.id, testCustom.id);
         expect(result[7].book?.id, testBook.id);
-        expect(result[8].album?.id, testAlbum.id);
+        expect(result[8].audioItem?.id, testAlbum.id);
       });
 
       test('should handle empty games list', () async {

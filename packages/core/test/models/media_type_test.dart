@@ -36,8 +36,8 @@ void main() {
         expect(MediaType.values.contains(MediaType.anime), isTrue);
       });
 
-      test('should contain music', () {
-        expect(MediaType.values.contains(MediaType.music), isTrue);
+      test('should contain audio', () {
+        expect(MediaType.values.contains(MediaType.audio), isTrue);
       });
     });
 
@@ -53,7 +53,7 @@ void main() {
     });
 
     group('isMultiSource', () {
-      test('true only for manga, anime, tvShow, movie and book', () {
+      test('true only for manga, anime, tvShow, movie, book and audio', () {
         for (final MediaType type in MediaType.values) {
           expect(
             type.isMultiSource,
@@ -61,7 +61,8 @@ void main() {
                 type == MediaType.anime ||
                 type == MediaType.tvShow ||
                 type == MediaType.movie ||
-                type == MediaType.book,
+                type == MediaType.book ||
+                type == MediaType.audio,
             reason: type.name,
           );
         }
@@ -171,10 +172,10 @@ void main() {
         expect(result, MediaType.anime);
       });
 
-      test('should return music when parsing "music"', () {
-        final MediaType result = MediaType.fromString('music');
+      test('should return audio when parsing "audio"', () {
+        final MediaType result = MediaType.fromString('audio');
 
-        expect(result, MediaType.music);
+        expect(result, MediaType.audio);
       });
     });
 
@@ -221,8 +222,8 @@ void main() {
         expect(MediaType.anime.displayLabel, 'Anime');
       });
 
-      test('should display music as "Music"', () {
-        expect(MediaType.music.displayLabel, 'Music');
+      test('should display audio as "Audio"', () {
+        expect(MediaType.audio.displayLabel, 'Audio');
       });
     });
   });

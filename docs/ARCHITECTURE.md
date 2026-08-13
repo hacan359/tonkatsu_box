@@ -136,11 +136,11 @@ The schema and the migration chain live in `packages/core`, a pure-Dart package 
 Key entities:
 
 - **`collections`** + **`collection_items`** — user collections and their members. `collection_id` is nullable; `NULL` means uncategorized.
-- **`collection_items.media_type`** — discriminator: `game` / `movie` / `tvShow` / `animation` / `anime` / `manga` / `visualNovel` / `book` / `music` / `custom`. `external_id` points at a row in the matching cache table.
-- **Media cache tables**: `games`, `movies_cache`, `tv_shows_cache` (+ `tv_seasons_cache`, `tv_episodes_cache`), `anime_cache`, `manga_cache`, `visual_novels_cache`, `books_cache`, `music_albums_cache` (+ `music_tracks_cache`), `custom_items`. These are local mirrors of API responses keyed by external id (IGDB / TMDB / AniList / VNDB / OpenLibrary / Fantlab). `manga_cache`, `books_cache` and `tv_shows_cache` (with its season/episode tables) use a composite key `(id, source)` since two providers can share a numeric id.
+- **`collection_items.media_type`** — discriminator: `game` / `movie` / `tvShow` / `animation` / `anime` / `manga` / `visualNovel` / `book` / `audio` / `custom`. `external_id` points at a row in the matching cache table.
+- **Media cache tables**: `games`, `movies_cache`, `tv_shows_cache` (+ `tv_seasons_cache`, `tv_episodes_cache`), `anime_cache`, `manga_cache`, `visual_novels_cache`, `books_cache`, `audio_cache` (+ `audio_tracks_cache`), `custom_items`. These are local mirrors of API responses keyed by external id (IGDB / TMDB / AniList / VNDB / OpenLibrary / Fantlab). `manga_cache`, `books_cache` and `tv_shows_cache` (with its season/episode tables) use a composite key `(id, source)` since two providers can share a numeric id.
 - **`canvas_items` / `canvas_connections` / `canvas_viewport`** — the Board. Lives at both the collection level and the per-item level (`game_canvas_viewport`).
 - **`watched_episodes`** — episode-watch marks for TV shows, keyed by `(collection_id, source, show_id, season, episode)`.
-- **`listened_tracks`** — the music tracker's marks, keyed by `(collection_id, source, album_id, disc, track)`; independent from `watched_episodes`.
+- **`listened_tracks`** — the audio tracker's marks, keyed by `(collection_id, source, audio_id, disc, track)`; podcast episodes use `disc = 0` and the Podcast Index episode id as `track`. Independent from `watched_episodes`.
 - **`wishlist`** — quick free-text "look it up later" notes.
 - **`collection_tags`** — sub-categories inside a collection.
 - **`tier_lists` / `tier_definitions` / `tier_list_entries`** — Tier list.

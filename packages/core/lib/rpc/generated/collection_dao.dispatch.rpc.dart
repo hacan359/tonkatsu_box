@@ -2,8 +2,8 @@
 // Regenerate after any DAO signature change; CI checks the diff is empty.
 
 import 'package:core/database/dao/collection_dao.dart';
-import 'package:core/models/album.dart';
 import 'package:core/models/anime.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/collection.dart';
@@ -315,15 +315,18 @@ Future<Object?> dispatchCollectionDao(
                   'kind': encodeEnum(v.kind),
                 },
               ),
-              'album': encodeNullable<Album>(
-                e.album,
-                (Album v) => <String, Object?>{
+              'audioItem': encodeNullable<AudioItem>(
+                e.audioItem,
+                (AudioItem v) => <String, Object?>{
                   'id': encodeInt(v.id),
                   'source': encodeEnum(v.source),
-                  'mbid': v.mbid,
+                  'nativeId': v.nativeId,
                   'title': v.title,
+                  'kind': encodeEnum(v.kind),
                   'artists': v.artists.map((String e) => e).toList(),
                   'artistMbids': v.artistMbids.map((String e) => e).toList(),
+                  'description': v.description,
+                  'language': v.language,
                   'primaryType': v.primaryType,
                   'secondaryTypes': v.secondaryTypes
                       .map((String e) => e)
@@ -611,15 +614,18 @@ Future<Object?> dispatchCollectionDao(
               'kind': encodeEnum(v.kind),
             },
           ),
-          'album': encodeNullable<Album>(
-            v.album,
-            (Album v) => <String, Object?>{
+          'audioItem': encodeNullable<AudioItem>(
+            v.audioItem,
+            (AudioItem v) => <String, Object?>{
               'id': encodeInt(v.id),
               'source': encodeEnum(v.source),
-              'mbid': v.mbid,
+              'nativeId': v.nativeId,
               'title': v.title,
+              'kind': encodeEnum(v.kind),
               'artists': v.artists.map((String e) => e).toList(),
               'artistMbids': v.artistMbids.map((String e) => e).toList(),
+              'description': v.description,
+              'language': v.language,
               'primaryType': v.primaryType,
               'secondaryTypes': v.secondaryTypes.map((String e) => e).toList(),
               'releaseYear': encodeIntOrNull(v.releaseYear),
@@ -883,15 +889,18 @@ Future<Object?> dispatchCollectionDao(
               'kind': encodeEnum(v.kind),
             },
           ),
-          'album': encodeNullable<Album>(
-            v.album,
-            (Album v) => <String, Object?>{
+          'audioItem': encodeNullable<AudioItem>(
+            v.audioItem,
+            (AudioItem v) => <String, Object?>{
               'id': encodeInt(v.id),
               'source': encodeEnum(v.source),
-              'mbid': v.mbid,
+              'nativeId': v.nativeId,
               'title': v.title,
+              'kind': encodeEnum(v.kind),
               'artists': v.artists.map((String e) => e).toList(),
               'artistMbids': v.artistMbids.map((String e) => e).toList(),
+              'description': v.description,
+              'language': v.language,
               'primaryType': v.primaryType,
               'secondaryTypes': v.secondaryTypes.map((String e) => e).toList(),
               'releaseYear': encodeIntOrNull(v.releaseYear),
@@ -1154,15 +1163,18 @@ Future<Object?> dispatchCollectionDao(
                   'kind': encodeEnum(v.kind),
                 },
               ),
-              'album': encodeNullable<Album>(
-                e.album,
-                (Album v) => <String, Object?>{
+              'audioItem': encodeNullable<AudioItem>(
+                e.audioItem,
+                (AudioItem v) => <String, Object?>{
                   'id': encodeInt(v.id),
                   'source': encodeEnum(v.source),
-                  'mbid': v.mbid,
+                  'nativeId': v.nativeId,
                   'title': v.title,
+                  'kind': encodeEnum(v.kind),
                   'artists': v.artists.map((String e) => e).toList(),
                   'artistMbids': v.artistMbids.map((String e) => e).toList(),
+                  'description': v.description,
+                  'language': v.language,
                   'primaryType': v.primaryType,
                   'secondaryTypes': v.secondaryTypes
                       .map((String e) => e)
@@ -1429,15 +1441,18 @@ Future<Object?> dispatchCollectionDao(
                   'kind': encodeEnum(v.kind),
                 },
               ),
-              'album': encodeNullable<Album>(
-                e.album,
-                (Album v) => <String, Object?>{
+              'audioItem': encodeNullable<AudioItem>(
+                e.audioItem,
+                (AudioItem v) => <String, Object?>{
                   'id': encodeInt(v.id),
                   'source': encodeEnum(v.source),
-                  'mbid': v.mbid,
+                  'nativeId': v.nativeId,
                   'title': v.title,
+                  'kind': encodeEnum(v.kind),
                   'artists': v.artists.map((String e) => e).toList(),
                   'artistMbids': v.artistMbids.map((String e) => e).toList(),
+                  'description': v.description,
+                  'language': v.language,
                   'primaryType': v.primaryType,
                   'secondaryTypes': v.secondaryTypes
                       .map((String e) => e)
@@ -1790,15 +1805,18 @@ Future<Object?> dispatchCollectionDao(
               'kind': encodeEnum(v.kind),
             },
           ),
-          'album': encodeNullable<Album>(
-            v.album,
-            (Album v) => <String, Object?>{
+          'audioItem': encodeNullable<AudioItem>(
+            v.audioItem,
+            (AudioItem v) => <String, Object?>{
               'id': encodeInt(v.id),
               'source': encodeEnum(v.source),
-              'mbid': v.mbid,
+              'nativeId': v.nativeId,
               'title': v.title,
+              'kind': encodeEnum(v.kind),
               'artists': v.artists.map((String e) => e).toList(),
               'artistMbids': v.artistMbids.map((String e) => e).toList(),
+              'description': v.description,
+              'language': v.language,
               'primaryType': v.primaryType,
               'secondaryTypes': v.secondaryTypes.map((String e) => e).toList(),
               'releaseYear': encodeIntOrNull(v.releaseYear),
@@ -2080,15 +2098,18 @@ Future<Object?> dispatchCollectionDao(
                   'kind': encodeEnum(v.kind),
                 },
               ),
-              'album': encodeNullable<Album>(
-                e.album,
-                (Album v) => <String, Object?>{
+              'audioItem': encodeNullable<AudioItem>(
+                e.audioItem,
+                (AudioItem v) => <String, Object?>{
                   'id': encodeInt(v.id),
                   'source': encodeEnum(v.source),
-                  'mbid': v.mbid,
+                  'nativeId': v.nativeId,
                   'title': v.title,
+                  'kind': encodeEnum(v.kind),
                   'artists': v.artists.map((String e) => e).toList(),
                   'artistMbids': v.artistMbids.map((String e) => e).toList(),
+                  'description': v.description,
+                  'language': v.language,
                   'primaryType': v.primaryType,
                   'secondaryTypes': v.secondaryTypes
                       .map((String e) => e)
@@ -2355,15 +2376,18 @@ Future<Object?> dispatchCollectionDao(
                   'kind': encodeEnum(v.kind),
                 },
               ),
-              'album': encodeNullable<Album>(
-                e.album,
-                (Album v) => <String, Object?>{
+              'audioItem': encodeNullable<AudioItem>(
+                e.audioItem,
+                (AudioItem v) => <String, Object?>{
                   'id': encodeInt(v.id),
                   'source': encodeEnum(v.source),
-                  'mbid': v.mbid,
+                  'nativeId': v.nativeId,
                   'title': v.title,
+                  'kind': encodeEnum(v.kind),
                   'artists': v.artists.map((String e) => e).toList(),
                   'artistMbids': v.artistMbids.map((String e) => e).toList(),
+                  'description': v.description,
+                  'language': v.language,
                   'primaryType': v.primaryType,
                   'secondaryTypes': v.secondaryTypes
                       .map((String e) => e)
@@ -2669,15 +2693,18 @@ Future<Object?> dispatchCollectionDao(
                   'kind': encodeEnum(v.kind),
                 },
               ),
-              'album': encodeNullable<Album>(
-                e.album,
-                (Album v) => <String, Object?>{
+              'audioItem': encodeNullable<AudioItem>(
+                e.audioItem,
+                (AudioItem v) => <String, Object?>{
                   'id': encodeInt(v.id),
                   'source': encodeEnum(v.source),
-                  'mbid': v.mbid,
+                  'nativeId': v.nativeId,
                   'title': v.title,
+                  'kind': encodeEnum(v.kind),
                   'artists': v.artists.map((String e) => e).toList(),
                   'artistMbids': v.artistMbids.map((String e) => e).toList(),
+                  'description': v.description,
+                  'language': v.language,
                   'primaryType': v.primaryType,
                   'secondaryTypes': v.secondaryTypes
                       .map((String e) => e)
@@ -2977,15 +3004,18 @@ Future<Object?> dispatchCollectionDao(
                   'kind': encodeEnum(v.kind),
                 },
               ),
-              'album': encodeNullable<Album>(
-                e.album,
-                (Album v) => <String, Object?>{
+              'audioItem': encodeNullable<AudioItem>(
+                e.audioItem,
+                (AudioItem v) => <String, Object?>{
                   'id': encodeInt(v.id),
                   'source': encodeEnum(v.source),
-                  'mbid': v.mbid,
+                  'nativeId': v.nativeId,
                   'title': v.title,
+                  'kind': encodeEnum(v.kind),
                   'artists': v.artists.map((String e) => e).toList(),
                   'artistMbids': v.artistMbids.map((String e) => e).toList(),
+                  'description': v.description,
+                  'language': v.language,
                   'primaryType': v.primaryType,
                   'secondaryTypes': v.secondaryTypes
                       .map((String e) => e)

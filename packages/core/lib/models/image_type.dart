@@ -20,7 +20,7 @@ enum ImageType {
 
   bookCover('book_covers'),
 
-  albumCover('album_covers'),
+  audioCover('audio_covers'),
 
   customCover('custom_covers');
 

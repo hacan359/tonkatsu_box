@@ -20,6 +20,8 @@ class ApiKeys {
     this.comicVineApiKey,
     this.googleBooksApiKey,
     this.hardcoverApiKey,
+    this.podcastIndexApiKey,
+    this.podcastIndexApiSecret,
   });
 
   /// Key precedence: user key → built-in (ApiDefaults) → null.
@@ -78,6 +80,27 @@ class ApiKeys {
     final String? hardcoverApiKey =
         prefs.getString(SettingsKeys.hardcoverApiKey);
 
+    // Podcast Index: user pair → built-in (CI secrets) → null. Key and secret
+    // resolve together — mixing a user key with the built-in secret can't work.
+    final String? userPodcastIndexKey =
+        prefs.getString(SettingsKeys.podcastIndexApiKey);
+    final String? userPodcastIndexSecret =
+        prefs.getString(SettingsKeys.podcastIndexApiSecret);
+    final bool hasUserPodcastIndexPair = userPodcastIndexKey != null &&
+        userPodcastIndexKey.isNotEmpty &&
+        userPodcastIndexSecret != null &&
+        userPodcastIndexSecret.isNotEmpty;
+    final String? podcastIndexApiKey = hasUserPodcastIndexPair
+        ? userPodcastIndexKey
+        : (ApiDefaults.hasPodcastIndexKey
+            ? ApiDefaults.podcastIndexApiKey
+            : null);
+    final String? podcastIndexApiSecret = hasUserPodcastIndexPair
+        ? userPodcastIndexSecret
+        : (ApiDefaults.hasPodcastIndexKey
+            ? ApiDefaults.podcastIndexApiSecret
+            : null);
+
     return ApiKeys(
       tmdbApiKey: tmdbApiKey,
       tvdbApiKey: tvdbApiKey,
@@ -103,6 +126,14 @@ class ApiKeys {
           (hardcoverApiKey != null && hardcoverApiKey.isNotEmpty)
               ? hardcoverApiKey
               : null,
+      podcastIndexApiKey:
+          (podcastIndexApiKey != null && podcastIndexApiKey.isNotEmpty)
+              ? podcastIndexApiKey
+              : null,
+      podcastIndexApiSecret:
+          (podcastIndexApiSecret != null && podcastIndexApiSecret.isNotEmpty)
+              ? podcastIndexApiSecret
+              : null,
     );
   }
 
@@ -127,6 +158,10 @@ class ApiKeys {
   final String? googleBooksApiKey;
 
   final String? hardcoverApiKey;
+
+  final String? podcastIndexApiKey;
+
+  final String? podcastIndexApiSecret;
 }
 
 /// Overridden in main() via `apiKeysProvider.overrideWithValue(...)`.

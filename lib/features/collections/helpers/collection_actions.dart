@@ -1,6 +1,6 @@
 // Helper action methods for CollectionScreen.
 
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/card_link.dart';
@@ -30,6 +30,7 @@ import '../../../core/api/kitsu_api.dart';
 import '../../../core/api/mangabaka_api.dart';
 import '../../../core/api/mangadex_api.dart';
 import '../../../core/api/musicbrainz_api.dart';
+import '../../../core/api/podcast_index_api.dart';
 import '../../../core/api/openlibrary_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/api/tvdb_api.dart';
@@ -701,16 +702,18 @@ class CollectionActions {
               .getVnById(item.externalId.toString());
           if (vn == null) return _RefreshOutcome.notFound();
           await db.visualNovelDao.upsertVisualNovel(vn);
-        case MediaType.music:
-          final Album? cached = item.album;
+        case MediaType.audio:
+          final AudioItem? cached = item.audioItem;
           if (cached == null) return _RefreshOutcome.unsupported();
-          final Album? full = await ref
-              .read(musicBrainzApiProvider)
-              .getReleaseGroup(cached.mbid);
+          final AudioItem? full = cached.isPodcast
+              ? await ref.read(podcastIndexApiProvider).getPodcast(cached.id)
+              : await ref
+                  .read(musicBrainzApiProvider)
+                  .getReleaseGroup(cached.nativeId);
           if (full == null) return _RefreshOutcome.notFound();
           // Overlay so the picked release (label, format, track list totals)
           // survives; the DAO's preserving upsert backs this up.
-          await db.albumDao.upsertAlbum(cached.withLookupDetails(full));
+          await db.audioDao.upsertAudioItem(cached.withLookupDetails(full));
         case MediaType.book:
           final Book? cached = item.book;
           if (cached == null) return _RefreshOutcome.unsupported();

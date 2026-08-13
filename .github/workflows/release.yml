@@ -75,6 +75,8 @@ jobs:
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
           --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
           --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+          --dart-define=PODCASTINDEX_API_KEY=${{ secrets.PODCASTINDEX_API_KEY }}
+          --dart-define=PODCASTINDEX_API_SECRET=${{ secrets.PODCASTINDEX_API_SECRET }}
           --dart-define=SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
 
       - name: Archive Windows build
@@ -133,6 +135,8 @@ jobs:
             --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
             --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
             --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+            --dart-define=PODCASTINDEX_API_KEY=${{ secrets.PODCASTINDEX_API_KEY }}
+            --dart-define=PODCASTINDEX_API_SECRET=${{ secrets.PODCASTINDEX_API_SECRET }}
             --dart-define=SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
           )
           flutter build apk --release "${DEFINES[@]}"
@@ -184,6 +188,8 @@ jobs:
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
           --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
           --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+          --dart-define=PODCASTINDEX_API_KEY=${{ secrets.PODCASTINDEX_API_KEY }}
+          --dart-define=PODCASTINDEX_API_SECRET=${{ secrets.PODCASTINDEX_API_SECRET }}
 
       - name: Archive Linux build
         run: |
@@ -223,6 +229,8 @@ jobs:
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
           --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
           --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
+          --dart-define=PODCASTINDEX_API_KEY=${{ secrets.PODCASTINDEX_API_KEY }}
+          --dart-define=PODCASTINDEX_API_SECRET=${{ secrets.PODCASTINDEX_API_SECRET }}
 
       # Unsigned/not notarized: Gatekeeper warns until an Apple Developer ID is set up.
       - name: Package macOS DMG

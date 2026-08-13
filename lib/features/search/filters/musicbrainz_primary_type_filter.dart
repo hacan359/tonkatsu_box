@@ -7,7 +7,7 @@ import '../models/search_source.dart';
 /// or the Single minted for every promo track would drown the results.
 const String kMusicBrainzAnyPrimaryType = '';
 
-/// MusicBrainz `primarytype:`. Unset means Album (see the sentinel above);
+/// MusicBrainz `primarytype:`. Unset means AudioItem (see the sentinel above);
 /// EPs and singles surface only on explicit request.
 class MusicBrainzPrimaryTypeFilter extends SearchFilter {
   @override

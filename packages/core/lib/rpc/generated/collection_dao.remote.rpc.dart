@@ -2,8 +2,9 @@
 // Regenerate after any DAO signature change; CI checks the diff is empty.
 
 import 'package:core/database/dao/collection_dao.dart';
-import 'package:core/models/album.dart';
 import 'package:core/models/anime.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_kind.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/book_kind.dart';
 import 'package:core/models/collected_item_info.dart';
@@ -461,22 +462,28 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
-            album: decodeNullable<Album>(
-              asObject(e)['album'],
-              (Object? v) => Album(
+            audioItem: decodeNullable<AudioItem>(
+              asObject(e)['audioItem'],
+              (Object? v) => AudioItem(
                 id: decodeInt(asObject(v)['id']),
                 source: decodeEnum<DataSource>(
                   asObject(v)['source'],
                   DataSource.values,
                 ),
-                mbid: asObject(v)['mbid'] as String,
+                nativeId: asObject(v)['nativeId'] as String,
                 title: asObject(v)['title'] as String,
+                kind: decodeEnum<AudioKind>(
+                  asObject(v)['kind'],
+                  AudioKind.values,
+                ),
                 artists: asList(
                   asObject(v)['artists'],
                 ).map((Object? e) => e as String).toList(),
                 artistMbids: asList(
                   asObject(v)['artistMbids'],
                 ).map((Object? e) => e as String).toList(),
+                description: asObject(v)['description'] as String?,
+                language: asObject(v)['language'] as String?,
                 primaryType: asObject(v)['primaryType'] as String?,
                 secondaryTypes: asList(
                   asObject(v)['secondaryTypes'],
@@ -873,22 +880,25 @@ class RemoteCollectionDao implements CollectionDao {
             kind: decodeEnum<BookKind>(asObject(v)['kind'], BookKind.values),
           ),
         ),
-        album: decodeNullable<Album>(
-          asObject(v)['album'],
-          (Object? v) => Album(
+        audioItem: decodeNullable<AudioItem>(
+          asObject(v)['audioItem'],
+          (Object? v) => AudioItem(
             id: decodeInt(asObject(v)['id']),
             source: decodeEnum<DataSource>(
               asObject(v)['source'],
               DataSource.values,
             ),
-            mbid: asObject(v)['mbid'] as String,
+            nativeId: asObject(v)['nativeId'] as String,
             title: asObject(v)['title'] as String,
+            kind: decodeEnum<AudioKind>(asObject(v)['kind'], AudioKind.values),
             artists: asList(
               asObject(v)['artists'],
             ).map((Object? e) => e as String).toList(),
             artistMbids: asList(
               asObject(v)['artistMbids'],
             ).map((Object? e) => e as String).toList(),
+            description: asObject(v)['description'] as String?,
+            language: asObject(v)['language'] as String?,
             primaryType: asObject(v)['primaryType'] as String?,
             secondaryTypes: asList(
               asObject(v)['secondaryTypes'],
@@ -1256,22 +1266,25 @@ class RemoteCollectionDao implements CollectionDao {
             kind: decodeEnum<BookKind>(asObject(v)['kind'], BookKind.values),
           ),
         ),
-        album: decodeNullable<Album>(
-          asObject(v)['album'],
-          (Object? v) => Album(
+        audioItem: decodeNullable<AudioItem>(
+          asObject(v)['audioItem'],
+          (Object? v) => AudioItem(
             id: decodeInt(asObject(v)['id']),
             source: decodeEnum<DataSource>(
               asObject(v)['source'],
               DataSource.values,
             ),
-            mbid: asObject(v)['mbid'] as String,
+            nativeId: asObject(v)['nativeId'] as String,
             title: asObject(v)['title'] as String,
+            kind: decodeEnum<AudioKind>(asObject(v)['kind'], AudioKind.values),
             artists: asList(
               asObject(v)['artists'],
             ).map((Object? e) => e as String).toList(),
             artistMbids: asList(
               asObject(v)['artistMbids'],
             ).map((Object? e) => e as String).toList(),
+            description: asObject(v)['description'] as String?,
+            language: asObject(v)['language'] as String?,
             primaryType: asObject(v)['primaryType'] as String?,
             secondaryTypes: asList(
               asObject(v)['secondaryTypes'],
@@ -1635,22 +1648,28 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
-            album: decodeNullable<Album>(
-              asObject(e)['album'],
-              (Object? v) => Album(
+            audioItem: decodeNullable<AudioItem>(
+              asObject(e)['audioItem'],
+              (Object? v) => AudioItem(
                 id: decodeInt(asObject(v)['id']),
                 source: decodeEnum<DataSource>(
                   asObject(v)['source'],
                   DataSource.values,
                 ),
-                mbid: asObject(v)['mbid'] as String,
+                nativeId: asObject(v)['nativeId'] as String,
                 title: asObject(v)['title'] as String,
+                kind: decodeEnum<AudioKind>(
+                  asObject(v)['kind'],
+                  AudioKind.values,
+                ),
                 artists: asList(
                   asObject(v)['artists'],
                 ).map((Object? e) => e as String).toList(),
                 artistMbids: asList(
                   asObject(v)['artistMbids'],
                 ).map((Object? e) => e as String).toList(),
+                description: asObject(v)['description'] as String?,
+                language: asObject(v)['language'] as String?,
                 primaryType: asObject(v)['primaryType'] as String?,
                 secondaryTypes: asList(
                   asObject(v)['secondaryTypes'],
@@ -2015,22 +2034,28 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
-            album: decodeNullable<Album>(
-              asObject(e)['album'],
-              (Object? v) => Album(
+            audioItem: decodeNullable<AudioItem>(
+              asObject(e)['audioItem'],
+              (Object? v) => AudioItem(
                 id: decodeInt(asObject(v)['id']),
                 source: decodeEnum<DataSource>(
                   asObject(v)['source'],
                   DataSource.values,
                 ),
-                mbid: asObject(v)['mbid'] as String,
+                nativeId: asObject(v)['nativeId'] as String,
                 title: asObject(v)['title'] as String,
+                kind: decodeEnum<AudioKind>(
+                  asObject(v)['kind'],
+                  AudioKind.values,
+                ),
                 artists: asList(
                   asObject(v)['artists'],
                 ).map((Object? e) => e as String).toList(),
                 artistMbids: asList(
                   asObject(v)['artistMbids'],
                 ).map((Object? e) => e as String).toList(),
+                description: asObject(v)['description'] as String?,
+                language: asObject(v)['language'] as String?,
                 primaryType: asObject(v)['primaryType'] as String?,
                 secondaryTypes: asList(
                   asObject(v)['secondaryTypes'],
@@ -2529,22 +2554,25 @@ class RemoteCollectionDao implements CollectionDao {
             kind: decodeEnum<BookKind>(asObject(v)['kind'], BookKind.values),
           ),
         ),
-        album: decodeNullable<Album>(
-          asObject(v)['album'],
-          (Object? v) => Album(
+        audioItem: decodeNullable<AudioItem>(
+          asObject(v)['audioItem'],
+          (Object? v) => AudioItem(
             id: decodeInt(asObject(v)['id']),
             source: decodeEnum<DataSource>(
               asObject(v)['source'],
               DataSource.values,
             ),
-            mbid: asObject(v)['mbid'] as String,
+            nativeId: asObject(v)['nativeId'] as String,
             title: asObject(v)['title'] as String,
+            kind: decodeEnum<AudioKind>(asObject(v)['kind'], AudioKind.values),
             artists: asList(
               asObject(v)['artists'],
             ).map((Object? e) => e as String).toList(),
             artistMbids: asList(
               asObject(v)['artistMbids'],
             ).map((Object? e) => e as String).toList(),
+            description: asObject(v)['description'] as String?,
+            language: asObject(v)['language'] as String?,
             primaryType: asObject(v)['primaryType'] as String?,
             secondaryTypes: asList(
               asObject(v)['secondaryTypes'],
@@ -2940,22 +2968,28 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
-            album: decodeNullable<Album>(
-              asObject(e)['album'],
-              (Object? v) => Album(
+            audioItem: decodeNullable<AudioItem>(
+              asObject(e)['audioItem'],
+              (Object? v) => AudioItem(
                 id: decodeInt(asObject(v)['id']),
                 source: decodeEnum<DataSource>(
                   asObject(v)['source'],
                   DataSource.values,
                 ),
-                mbid: asObject(v)['mbid'] as String,
+                nativeId: asObject(v)['nativeId'] as String,
                 title: asObject(v)['title'] as String,
+                kind: decodeEnum<AudioKind>(
+                  asObject(v)['kind'],
+                  AudioKind.values,
+                ),
                 artists: asList(
                   asObject(v)['artists'],
                 ).map((Object? e) => e as String).toList(),
                 artistMbids: asList(
                   asObject(v)['artistMbids'],
                 ).map((Object? e) => e as String).toList(),
+                description: asObject(v)['description'] as String?,
+                language: asObject(v)['language'] as String?,
                 primaryType: asObject(v)['primaryType'] as String?,
                 secondaryTypes: asList(
                   asObject(v)['secondaryTypes'],
@@ -3324,22 +3358,28 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
-            album: decodeNullable<Album>(
-              asObject(e)['album'],
-              (Object? v) => Album(
+            audioItem: decodeNullable<AudioItem>(
+              asObject(e)['audioItem'],
+              (Object? v) => AudioItem(
                 id: decodeInt(asObject(v)['id']),
                 source: decodeEnum<DataSource>(
                   asObject(v)['source'],
                   DataSource.values,
                 ),
-                mbid: asObject(v)['mbid'] as String,
+                nativeId: asObject(v)['nativeId'] as String,
                 title: asObject(v)['title'] as String,
+                kind: decodeEnum<AudioKind>(
+                  asObject(v)['kind'],
+                  AudioKind.values,
+                ),
                 artists: asList(
                   asObject(v)['artists'],
                 ).map((Object? e) => e as String).toList(),
                 artistMbids: asList(
                   asObject(v)['artistMbids'],
                 ).map((Object? e) => e as String).toList(),
+                description: asObject(v)['description'] as String?,
+                language: asObject(v)['language'] as String?,
                 primaryType: asObject(v)['primaryType'] as String?,
                 secondaryTypes: asList(
                   asObject(v)['secondaryTypes'],
@@ -3757,22 +3797,28 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
-            album: decodeNullable<Album>(
-              asObject(e)['album'],
-              (Object? v) => Album(
+            audioItem: decodeNullable<AudioItem>(
+              asObject(e)['audioItem'],
+              (Object? v) => AudioItem(
                 id: decodeInt(asObject(v)['id']),
                 source: decodeEnum<DataSource>(
                   asObject(v)['source'],
                   DataSource.values,
                 ),
-                mbid: asObject(v)['mbid'] as String,
+                nativeId: asObject(v)['nativeId'] as String,
                 title: asObject(v)['title'] as String,
+                kind: decodeEnum<AudioKind>(
+                  asObject(v)['kind'],
+                  AudioKind.values,
+                ),
                 artists: asList(
                   asObject(v)['artists'],
                 ).map((Object? e) => e as String).toList(),
                 artistMbids: asList(
                   asObject(v)['artistMbids'],
                 ).map((Object? e) => e as String).toList(),
+                description: asObject(v)['description'] as String?,
+                language: asObject(v)['language'] as String?,
                 primaryType: asObject(v)['primaryType'] as String?,
                 secondaryTypes: asList(
                   asObject(v)['secondaryTypes'],
@@ -4203,22 +4249,28 @@ class RemoteCollectionDao implements CollectionDao {
                 ),
               ),
             ),
-            album: decodeNullable<Album>(
-              asObject(e)['album'],
-              (Object? v) => Album(
+            audioItem: decodeNullable<AudioItem>(
+              asObject(e)['audioItem'],
+              (Object? v) => AudioItem(
                 id: decodeInt(asObject(v)['id']),
                 source: decodeEnum<DataSource>(
                   asObject(v)['source'],
                   DataSource.values,
                 ),
-                mbid: asObject(v)['mbid'] as String,
+                nativeId: asObject(v)['nativeId'] as String,
                 title: asObject(v)['title'] as String,
+                kind: decodeEnum<AudioKind>(
+                  asObject(v)['kind'],
+                  AudioKind.values,
+                ),
                 artists: asList(
                   asObject(v)['artists'],
                 ).map((Object? e) => e as String).toList(),
                 artistMbids: asList(
                   asObject(v)['artistMbids'],
                 ).map((Object? e) => e as String).toList(),
+                description: asObject(v)['description'] as String?,
+                language: asObject(v)['language'] as String?,
                 primaryType: asObject(v)['primaryType'] as String?,
                 secondaryTypes: asList(
                   asObject(v)['secondaryTypes'],

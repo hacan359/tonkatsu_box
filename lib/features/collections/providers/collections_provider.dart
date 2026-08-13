@@ -810,8 +810,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedAnimeIdsProvider);
       case MediaType.book:
         ref.invalidate(collectedBookIdsProvider);
-      case MediaType.music:
-        ref.invalidate(collectedMusicIdsProvider);
+      case MediaType.audio:
+        ref.invalidate(collectedAudioIdsProvider);
       case MediaType.custom:
         break; // Custom items have no collected-IDs provider.
     }
@@ -1321,10 +1321,10 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
 
 /// fnv1a64(mbid) -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
-    collectedMusicIdsProvider =
+    collectedAudioIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
-  return db.getCollectedItemInfos(MediaType.music);
+  return db.getCollectedItemInfos(MediaType.audio);
 });
 
 /// anilist_id -> collection entries.

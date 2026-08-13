@@ -5,7 +5,7 @@
 <h1 align="center">Tonkatsu Box</h1>
 
 <p align="center">
-  <b>Your personal collection manager for games, movies, TV shows, anime, visual novels, and manga</b>
+  <b>Your personal collection manager for games, movies, TV shows, anime, visual novels, manga, books, music and podcasts</b>
 </p>
 
 <p align="center">
@@ -35,14 +35,15 @@
 
 ---
 
-Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles across fourteen catalogs, track your progress episode by episode, rate everything, see your library in numbers, build visual boards, tier lists and mood grids, and bring in what you already track elsewhere.
+Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles across fifteen catalogs, track your progress episode by episode, rate everything, see your library in numbers, build visual boards, tier lists and mood grids, and bring in what you already track elsewhere.
 
-### Search fourteen catalogs
+### Search fifteen catalogs
 
 | | | | | | | |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | <img src="assets/images/icon_igdb_color.png" width="34" alt="IGDB"><br>IGDB | <img src="assets/images/icon_tmdb_color.png" width="34" alt="TMDB"><br>TMDB | <img src="assets/images/icon_twm_color.png" width="34" alt="TVmaze"><br>TVmaze | <img src="assets/images/icon_vndb_color.png" width="34" alt="VNDB"><br>VNDB | <img src="assets/images/icon_anilist_color.png" width="34" alt="AniList"><br>AniList | <img src="assets/images/icon_kitsu_color.png" width="34" alt="Kitsu"><br>Kitsu | <img src="assets/images/icon_mangabaka_color.png" width="34" alt="MangaBaka"><br>MangaBaka |
 | <img src="assets/images/icon_mangadex_color.png" width="34" alt="MangaDex"><br>MangaDex | <img src="assets/images/open_library_color.png" width="34" alt="OpenLibrary"><br>OpenLibrary | <img src="assets/images/icon_fantlab_color.png" width="34" alt="Fantlab"><br>Fantlab | <img src="assets/images/icon_google_book_color.png" width="34" alt="Google Books"><br>Google&nbsp;Books | <img src="assets/images/icon_hardcover_color.png" width="34" alt="Hardcover"><br>Hardcover | <img src="assets/images/comic_vine_color.png" width="34" alt="ComicVine"><br>ComicVine | <img src="assets/images/music_brainz_color.png" width="34" alt="MusicBrainz"><br>MusicBrainz |
+| <img src="assets/images/podcastindex_color.png" width="34" alt="Podcast Index"><br>Podcast&nbsp;Index | | | | | | |
 
 ### Bring your library from
 
@@ -99,7 +100,7 @@ The whole interface is localized with runtime switching. Pick your language in *
 | | | |
 |:-:|---|---|
 | 📦 | **Collections** | Organize by platform, genre, or any way you like. Grid, list, table and board views, manual drag-and-drop order, bulk actions over a selection |
-| 🔍 | **Search** | Fourteen catalogs behind one search field, each with its own filters and an empty-query browse mode. Add a result to several collections at once |
+| 🔍 | **Search** | Fifteen catalogs behind one search field, each with its own filters and an empty-query browse mode. Add a result to several collections at once |
 | ✅ | **Progress tracking** | Status, ratings 1-10, start and finish dates, replays, time spent. Reading progress by page for books, chapters for manga, a listened-track checklist for albums |
 | 📺 | **Episode tracker** | Season accordion with posters, episode stills, air dates and synopses. Mark an episode, a whole season, or the next unwatched one in a tap. TMDB, TVmaze and Kitsu titles |
 | ❤️ | **Likes & notes** | Like and annotate a single episode, season, chapter, volume or page, and filter the list down to what you starred |
@@ -244,6 +245,7 @@ When you pick an empty folder, the app copies your current data there. When you 
 | <img src="assets/images/icon_hardcover_color.png" width="28" alt="Hardcover"> | Books | [Hardcover](https://hardcover.app/) | Required (free token) |
 | <img src="assets/images/comic_vine_color.png" width="28" alt="ComicVine"> | Comics | [ComicVine](https://comicvine.gamespot.com/) | Required (free key) |
 | <img src="assets/images/music_brainz_color.png" width="28" alt="MusicBrainz"> | Music | [MusicBrainz](https://musicbrainz.org/) | Not required |
+| <img src="assets/images/podcastindex_color.png" width="28" alt="Podcast Index"> | Podcasts | [Podcast Index](https://podcastindex.org/) | Built-in |
 | <img src="assets/images/icon_steamgriddb_color.png" width="28" alt="SteamGridDB"> | Artwork | [SteamGridDB](https://www.steamgriddb.com/) | Built-in |
 | <img src="assets/images/icon_scrapper_color.png" width="28" alt="ScreenScraper"> | Retro media gallery | [ScreenScraper](https://www.screenscraper.fr/) | Required (user account) |
 | <img src="assets/images/ra_logo.png" width="28" alt="RetroAchievements"> | Achievements | [RetroAchievements](https://retroachievements.org/) | Required |
@@ -385,7 +387,7 @@ Contributions welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for build ins
 
 ## Credits
 
-Catalogs: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [TVmaze](https://www.tvmaze.com/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [MangaDex](https://mangadex.org/) · [Kitsu](https://kitsu.io/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MusicBrainz](https://musicbrainz.org/) · [Cover Art Archive](https://coverartarchive.org/) · [ListenBrainz](https://listenbrainz.org/)
+Catalogs: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [TVmaze](https://www.tvmaze.com/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [MangaDex](https://mangadex.org/) · [Kitsu](https://kitsu.io/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MusicBrainz](https://musicbrainz.org/) · [Cover Art Archive](https://coverartarchive.org/) · [ListenBrainz](https://listenbrainz.org/) · [Podcast Index](https://podcastindex.org/)
 
 Imports and extras: [Simkl](https://simkl.com/) · [Trakt.tv](https://trakt.tv/) · [Steam](https://store.steampowered.com/) · [Kinorium](https://kinorium.com/) · [MyAnimeList](https://myanimelist.net/) · [RetroAchievements](https://retroachievements.org/) · [SteamGridDB](https://www.steamgriddb.com/) · [ScreenScraper](https://www.screenscraper.fr/) · [Kodi](https://kodi.tv/)
 

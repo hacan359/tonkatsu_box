@@ -1,4 +1,4 @@
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/custom_media.dart';
@@ -71,7 +71,7 @@ Future<Map<int, MoodGridCellMedia>> resolveMoodGridCellMediaBatch(
   final List<int> mangaIds = _idsOf(filled, MediaType.manga);
   final List<int> vnIds = _idsOf(filled, MediaType.visualNovel);
   final List<int> bookIds = _idsOf(filled, MediaType.book);
-  final List<int> albumIds = _idsOf(filled, MediaType.music);
+  final List<int> albumIds = _idsOf(filled, MediaType.audio);
   final List<int> customIds = _idsOf(filled, MediaType.custom);
 
   // Animation cells resolve against movies or tv shows depending on their
@@ -109,8 +109,8 @@ Future<Map<int, MoodGridCellMedia>> resolveMoodGridCellMediaBatch(
       (List<int> ids) => db.visualNovelDao.getVisualNovelsByNumericIds(ids));
   final Future<List<Book>> booksF =
       _fetch(bookIds, (List<int> ids) => db.bookDao.getBooksByIds(ids));
-  final Future<List<Album>> albumsF =
-      _fetch(albumIds, (List<int> ids) => db.albumDao.getAlbumsByIds(ids));
+  final Future<List<AudioItem>> albumsF =
+      _fetch(albumIds, (List<int> ids) => db.audioDao.getAudioItemsByIds(ids));
   final Future<List<CustomMedia>> customsF =
       _fetch(customIds, (List<int> ids) => db.customMediaDao.getByIds(ids));
 
@@ -136,8 +136,8 @@ Future<Map<int, MoodGridCellMedia>> resolveMoodGridCellMediaBatch(
     for (final Book b in await booksF)
       if (int.tryParse(b.id) != null) (int.parse(b.id), b.source): b,
   };
-  final Map<(int, DataSource), Album> albums = <(int, DataSource), Album>{
-    for (final Album a in await albumsF) (a.id, a.source): a,
+  final Map<(int, DataSource), AudioItem> albums = <(int, DataSource), AudioItem>{
+    for (final AudioItem a in await albumsF) (a.id, a.source): a,
   };
   final Map<int, CustomMedia> customs = <int, CustomMedia>{
     for (final CustomMedia c in await customsF) c.id: c,
@@ -177,7 +177,7 @@ Future<Map<int, MoodGridCellMedia>> resolveMoodGridCellMediaBatch(
         return _mangaMedia(manga[(id, cell.source ?? DataSource.anilist)]);
       case MediaType.book:
         return _bookMedia(books[(id, cell.source ?? DataSource.openLibrary)]);
-      case MediaType.music:
+      case MediaType.audio:
         return _albumMedia(albums[(id, cell.source ?? DataSource.musicBrainz)]);
       case MediaType.custom:
         return _customMedia(customs[id]);
@@ -296,11 +296,11 @@ MoodGridCellMedia _bookMedia(Book? book) {
   );
 }
 
-MoodGridCellMedia _albumMedia(Album? album) {
+MoodGridCellMedia _albumMedia(AudioItem? album) {
   return MoodGridCellMedia(
     title: album?.title,
     coverUrl: album?.coverUrl,
-    imageType: ImageType.albumCover,
+    imageType: ImageType.audioCover,
     placeholderIcon: Icons.album_outlined,
     year: album?.releaseYear,
     genre: _joinGenres(album?.genres),

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -230,7 +230,7 @@ class CanvasRepository {
 
     final List<int> albumIds = items
         .where((CanvasItem item) =>
-            item.itemType == CanvasItemType.music && item.itemRefId != null)
+            item.itemType == CanvasItemType.audio && item.itemRefId != null)
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
@@ -272,8 +272,8 @@ class CanvasRepository {
           ? _db.bookDao.getBooksByIds(bookIds)
           : Future<List<Book>>.value(<Book>[]),
       albumIds.isNotEmpty
-          ? _db.albumDao.getAlbumsByIds(albumIds)
-          : Future<List<Album>>.value(<Album>[]),
+          ? _db.audioDao.getAudioItemsByIds(albumIds)
+          : Future<List<AudioItem>>.value(<AudioItem>[]),
     ]);
 
     final Map<int, Game> gamesMap = <int, Game>{
@@ -335,9 +335,16 @@ class CanvasRepository {
         bookMap[b.externalIdInt] = b;
       }
     }
-    final Map<int, Album> albumMap = <int, Album>{
-      for (final Album a in results[8] as List<Album>) a.id: a,
-    };
+    // Like manga, canvas audio carries no source, so a numeric id can match
+    // both a MusicBrainz and a Podcast Index row. MusicBrainz wins to keep
+    // resolution deterministic.
+    final Map<int, AudioItem> albumMap = <int, AudioItem>{};
+    for (final AudioItem a in results[8] as List<AudioItem>) {
+      final AudioItem? existing = albumMap[a.id];
+      if (existing == null || a.source == DataSource.musicBrainz) {
+        albumMap[a.id] = a;
+      }
+    }
 
     return items.map((CanvasItem item) {
       if (item.itemRefId == null) return item;
@@ -357,8 +364,8 @@ class CanvasRepository {
           return item.copyWith(tvShow: tvShowsMap[item.itemRefId]);
         case CanvasItemType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.itemRefId]);
-        case CanvasItemType.music:
-          return item.copyWith(album: albumMap[item.itemRefId]);
+        case CanvasItemType.audio:
+          return item.copyWith(audioItem: albumMap[item.itemRefId]);
         case CanvasItemType.manga:
           return item.copyWith(manga: mangaMap[item.itemRefId]);
         case CanvasItemType.anime:
@@ -516,7 +523,7 @@ class CanvasRepository {
           manga: items[i].manga,
           anime: items[i].anime,
           book: items[i].book,
-          album: items[i].album,
+          audioItem: items[i].audioItem,
           customMedia: items[i].customMedia,
         ),
     ];

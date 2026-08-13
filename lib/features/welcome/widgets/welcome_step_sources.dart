@@ -137,6 +137,8 @@ class _SourceCard extends ConsumerWidget {
         DataSource.comicVine => l.welcomeSourceDescComicVine,
         DataSource.googleBooks => l.welcomeSourceDescGoogleBooks,
         DataSource.hardcover => l.welcomeSourceDescHardcover,
+        DataSource.musicBrainz => l.welcomeSourceDescMusicBrainz,
+        DataSource.podcastIndex => l.welcomeSourceDescPodcastIndex,
         _ => '',
       };
 }
@@ -160,6 +162,18 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
   String _comicVineKey = '';
   String _googleBooksKey = '';
   String _hardcoverKey = '';
+  String _podcastIndexKey = '';
+  String _podcastIndexSecret = '';
+
+  // The signature needs both halves, so only persist once both are present.
+  void _savePodcastIndex() {
+    final String key = _podcastIndexKey.trim();
+    final String secret = _podcastIndexSecret.trim();
+    if (key.isEmpty || secret.isEmpty) return;
+    ref
+        .read(settingsNotifierProvider.notifier)
+        .setPodcastIndexKeys(key, secret);
+  }
 
   // IGDB needs both halves together, so only persist once both are present.
   void _saveIgdb() {
@@ -372,6 +386,49 @@ class _KeyEditorState extends ConsumerState<_KeyEditor> {
             ),
           ],
         );
+      case DataSource.podcastIndex:
+        final bool builtIn = settings.isPodcastIndexKeyBuiltIn;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            InlineTextField(
+              label: l.credentialsApiKey,
+              value: _podcastIndexKey,
+              placeholder: builtIn
+                  ? l.credentialsUsingBuiltInKey
+                  : l.credentialsEnterPodcastIndexKey,
+              obscureText: true,
+              compact: compact,
+              onChanged: (String v) {
+                setState(() => _podcastIndexKey = v);
+                _savePodcastIndex();
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            InlineTextField(
+              label: l.credentialsApiSecret,
+              value: _podcastIndexSecret,
+              placeholder: builtIn
+                  ? l.credentialsUsingBuiltInKey
+                  : l.credentialsEnterPodcastIndexSecret,
+              obscureText: true,
+              compact: compact,
+              onChanged: (String v) {
+                setState(() => _podcastIndexSecret = v);
+                _savePodcastIndex();
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _GetKeyLink(url: widget.info.url),
+            const SizedBox(height: 6),
+            Text(
+              l.welcomeSourcesKeyOptionalHint,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ],
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -437,9 +494,14 @@ class _KeyBadge extends StatelessWidget {
         if (info.source == DataSource.tmdb && settings.isTmdbKeyBuiltIn) {
           return (l.welcomeApiBuiltInKey, AppColors.success);
         }
+        if (info.source == DataSource.podcastIndex &&
+            settings.isPodcastIndexKeyBuiltIn) {
+          return (l.welcomeApiBuiltInKey, AppColors.success);
+        }
         final bool hasKey = switch (info.source) {
           DataSource.comicVine => settings.hasComicVineKey,
           DataSource.googleBooks => settings.hasGoogleBooksKey,
+          DataSource.podcastIndex => settings.hasPodcastIndexKeys,
           _ => settings.hasTmdbKey,
         };
         if (hasKey) {
