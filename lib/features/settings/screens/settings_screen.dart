@@ -747,6 +747,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
         settings.hasHardcoverKey,
+        settings.hasPodcastIndexKeys,
         settings.hasScreenScraperCreds,
       ];
 

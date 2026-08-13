@@ -1,4 +1,4 @@
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +21,7 @@ class MusicBrainzAlbumsSource extends SearchSource {
   String get id => 'musicbrainz';
 
   @override
-  MediaType get outputMediaType => MediaType.music;
+  MediaType get outputMediaType => MediaType.audio;
 
   @override
   DataSource get dataSource => DataSource.musicBrainz;
@@ -68,7 +68,7 @@ class MusicBrainzAlbumsSource extends SearchSource {
   }) async {
     final String text = query?.trim() ?? '';
 
-    // Unset type defaults to Album; the sentinel means "any type", picked
+    // Unset type defaults to AudioItem; the sentinel means "any type", picked
     // explicitly — promo singles would otherwise flood every search.
     final Object? rawType = filterValues['type'];
     final String? primaryType = switch (rawType) {
@@ -80,7 +80,7 @@ class MusicBrainzAlbumsSource extends SearchSource {
     final (int?, int?) years = _yearRange(filterValues['year']);
 
     final MusicBrainzApi api = ref.read(musicBrainzApiProvider);
-    final (List<Album> albums, bool hasMore, int total) = await api.search(
+    final (List<AudioItem> albums, bool hasMore, int total) = await api.search(
       query: text,
       queryField: filterValues['scope'] as String?,
       primaryType: primaryType,
@@ -93,7 +93,7 @@ class MusicBrainzAlbumsSource extends SearchSource {
 
     return BrowseResult(
       items: await _rerankByPopularity(ref, albums),
-      mediaType: MediaType.music,
+      mediaType: MediaType.audio,
       hasMore: hasMore,
       currentPage: page,
       totalPages: total == 0 ? 1 : ((total + 19) ~/ 20),
@@ -102,31 +102,31 @@ class MusicBrainzAlbumsSource extends SearchSource {
 
   /// Listen counts pinned onto the page, most-listened first — the real
   /// "Dark Side of the Moon" outweighs its Lucene-score-100 namesakes.
-  Future<List<Album>> _rerankByPopularity(Ref ref, List<Album> albums) async {
+  Future<List<AudioItem>> _rerankByPopularity(Ref ref, List<AudioItem> albums) async {
     if (albums.length < 2) return albums;
     final Map<String, int> counts = await ref
         .read(listenBrainzApiProvider)
         .getReleaseGroupPopularity(
-          albums.map((Album a) => a.mbid).toList(),
+          albums.map((AudioItem a) => a.nativeId).toList(),
         );
     if (counts.isEmpty) return albums;
 
-    final List<Album> withCounts = albums
-        .map((Album a) => counts.containsKey(a.mbid)
-            ? a.copyWith(listenCount: counts[a.mbid])
+    final List<AudioItem> withCounts = albums
+        .map((AudioItem a) => counts.containsKey(a.nativeId)
+            ? a.copyWith(listenCount: counts[a.nativeId])
             : a)
         .toList();
     // List.sort is not stable — the index tiebreaker keeps MusicBrainz
     // relevance order among equally-listened albums.
-    final List<(int, Album)> indexed = <(int, Album)>[
+    final List<(int, AudioItem)> indexed = <(int, AudioItem)>[
       for (int i = 0; i < withCounts.length; i++) (i, withCounts[i]),
     ];
-    indexed.sort(((int, Album) a, (int, Album) b) {
+    indexed.sort(((int, AudioItem) a, (int, AudioItem) b) {
       final int byCount =
           (b.$2.listenCount ?? 0).compareTo(a.$2.listenCount ?? 0);
       return byCount != 0 ? byCount : a.$1.compareTo(b.$1);
     });
-    return <Album>[for (final (int, Album) e in indexed) e.$2];
+    return <AudioItem>[for (final (int, AudioItem) e in indexed) e.$2];
   }
 
   /// YearFilter values are a single year (int) or a decade ((int, int)).

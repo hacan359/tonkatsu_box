@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/api/podcast_index_signature.dart';
 import 'package:core/api/proxy_targets.dart';
 import 'package:shelf/shelf.dart';
 
@@ -201,6 +202,17 @@ class ApiProxy {
       case ProxyTarget.simkl:
         headers['simkl-api-key'] =
             _require(CredentialNames.simklClientId, target);
+      case ProxyTarget.podcastindex:
+        // Signature embeds the timestamp and expires in minutes — computed
+        // per request, never cached.
+        final String key = _require(CredentialNames.podcastIndexKey, target);
+        final String secret =
+            _require(CredentialNames.podcastIndexSecret, target);
+        final int unixTime = _now().millisecondsSinceEpoch ~/ 1000;
+        headers['X-Auth-Date'] = '$unixTime';
+        headers['X-Auth-Key'] = key;
+        headers[HttpHeaders.authorizationHeader] =
+            podcastIndexSignature(key, secret, unixTime);
       case ProxyTarget.tvdb:
         if (path.endsWith('login')) {
           return utf8.encode(jsonEncode(<String, Object?>{

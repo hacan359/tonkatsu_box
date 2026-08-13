@@ -440,7 +440,7 @@ class BackupService {
 
       // 6c. Listened tracks — same aggregation for the music tracker.
       final List<Map<String, Object?>> listened =
-          await _database.albumDao.getAllListenedTracks();
+          await _database.audioDao.getAllListenedTracks();
       if (listened.isNotEmpty) {
         final List<int> listenedBytes = utf8.encode(
           const JsonEncoder.withIndent('  ').convert(listened),
@@ -1010,10 +1010,10 @@ class BackupService {
         <(DataSource, int), List<(int, int, int?)>>{};
     for (final dynamic raw in list) {
       final Map<String, dynamic> m = raw as Map<String, dynamic>;
-      final int albumId = m['album_id'] as int;
+      final int audioId = m['audio_id'] as int;
       final DataSource source =
           DataSource.fromNameOr(m['source'] as String?, DataSource.musicBrainz);
-      (tracksByAlbum[(source, albumId)] ??= <(int, int, int?)>[]).add((
+      (tracksByAlbum[(source, audioId)] ??= <(int, int, int?)>[]).add((
         m['disc_number'] as int,
         m['track_number'] as int,
         m['listened_at'] as int?,
@@ -1021,20 +1021,20 @@ class BackupService {
     }
     for (final MapEntry<(DataSource, int), List<(int, int, int?)>> entry
         in tracksByAlbum.entries) {
-      final (DataSource source, int albumId) = entry.key;
+      final (DataSource source, int audioId) = entry.key;
       final List<CollectionItem> items =
           await _database.collectionDao.findAllCollectionItems(
-        mediaType: MediaType.music,
-        externalId: albumId,
+        mediaType: MediaType.audio,
+        externalId: audioId,
         source: source,
       );
       for (final CollectionItem item in items) {
         final int? collectionId = item.collectionId;
         if (collectionId == null) continue;
-        await _database.albumDao.markTracksListenedAt(
+        await _database.audioDao.markTracksListenedAt(
           collectionId,
           source,
-          albumId,
+          audioId,
           entry.value,
         );
       }

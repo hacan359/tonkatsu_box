@@ -44,7 +44,7 @@ void main() {
 
       expect(
         await service.downloadImage(
-          type: ImageType.albumCover,
+          type: ImageType.audioCover,
           imageId: 'a1',
           remoteUrl: 'https://covers.example/a1',
         ),
@@ -52,7 +52,7 @@ void main() {
       );
       expect(
         await service.downloadImage(
-          type: ImageType.albumCover,
+          type: ImageType.audioCover,
           imageId: 'a1',
           remoteUrl: 'https://covers.example/a1',
         ),
@@ -71,12 +71,12 @@ void main() {
       );
 
       await service.downloadImage(
-        type: ImageType.albumCover,
+        type: ImageType.audioCover,
         imageId: 'a2',
         remoteUrl: 'https://covers.example/a2',
       );
       await service.downloadImage(
-        type: ImageType.albumCover,
+        type: ImageType.audioCover,
         imageId: 'a2',
         remoteUrl: 'https://covers.example/a2',
       );
@@ -89,12 +89,12 @@ void main() {
       when(() => dio.download(any(), any<dynamic>())).thenThrow(_statusError(503));
 
       await service.downloadImage(
-        type: ImageType.albumCover,
+        type: ImageType.audioCover,
         imageId: 'a3',
         remoteUrl: 'https://covers.example/a3',
       );
       await service.downloadImage(
-        type: ImageType.albumCover,
+        type: ImageType.audioCover,
         imageId: 'a3',
         remoteUrl: 'https://covers.example/a3',
       );
@@ -115,14 +115,14 @@ void main() {
 
       expect(
         await service.downloadImage(
-          type: ImageType.albumCover,
+          type: ImageType.audioCover,
           imageId: 'a4',
           remoteUrl: 'https://covers.example/a4',
         ),
         isFalse,
       );
       await service.downloadImage(
-        type: ImageType.albumCover,
+        type: ImageType.audioCover,
         imageId: 'a4',
         remoteUrl: 'https://covers.example/a4',
       );

@@ -308,9 +308,14 @@ class DiscordRpcService {
           (false, final int count?) => 'Book · $count pages$yearSuffix',
           (false, _) => 'Book$yearSuffix',
         },
-      MediaType.music => switch (item.album?.trackCount) {
-          final int count? => 'Album · $count tracks$yearSuffix',
-          _ => 'Album$yearSuffix',
+      MediaType.audio => switch ((
+          item.audioItem?.isPodcast ?? false,
+          item.audioItem?.trackCount,
+        )) {
+          (true, final int count?) => 'Podcast · $count episodes$yearSuffix',
+          (true, _) => 'Podcast$yearSuffix',
+          (false, final int count?) => 'Album · $count tracks$yearSuffix',
+          (false, _) => 'Album$yearSuffix',
         },
       MediaType.custom => 'Custom$yearSuffix',
     };
@@ -357,7 +362,7 @@ class DiscordRpcService {
         MediaType.anime =>
           'Watching',
         MediaType.manga || MediaType.visualNovel || MediaType.book => 'Reading',
-        MediaType.music => 'Listening to',
+        MediaType.audio => 'Listening to',
         MediaType.custom => 'Browsing',
       };
 }

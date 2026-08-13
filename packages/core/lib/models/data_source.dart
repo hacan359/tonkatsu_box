@@ -53,7 +53,12 @@ enum DataSource {
   hardcover('Hardcover', 0xFF6366F1),
 
   /// MusicBrainz — open keyless music database (albums as release-groups).
+  /// Feeds the `audio` media type with `AudioKind.album` records.
   musicBrainz('MusicBrainz', 0xFFBA478F),
+
+  /// Podcast Index — open podcast catalog (RSS feeds + episodes). Feeds the
+  /// `audio` media type with `AudioKind.podcast` records.
+  podcastIndex('Podcast Index', 0xFFF04438),
 
   /// Local source (custom items).
   local('Custom', 0xFF26A69A);

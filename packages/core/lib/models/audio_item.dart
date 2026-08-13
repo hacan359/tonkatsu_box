@@ -1,19 +1,25 @@
 import 'dart:convert';
 
+import '../utils/html_text.dart';
 import '../utils/json_list.dart';
 import '../utils/stable_id.dart';
+import 'audio_kind.dart';
 import 'data_source.dart';
 
-/// A MusicBrainz release-group ("the album as a work"). [id] is `fnv1a64`
-/// of the group MBID so the `external_id: int` contract holds.
-class Album {
-  const Album({
+/// An audio work: a MusicBrainz release-group ("the album as a work") or a
+/// Podcast Index feed, discriminated by [kind]. Albums hash their MBID into
+/// [id] (`fnv1a64`); podcast feed ids are small ints and are stored as-is.
+class AudioItem {
+  const AudioItem({
     required this.id,
     required this.source,
-    required this.mbid,
+    required this.nativeId,
     required this.title,
+    this.kind = AudioKind.album,
     this.artists = const <String>[],
     this.artistMbids = const <String>[],
+    this.description,
+    this.language,
     this.primaryType,
     this.secondaryTypes = const <String>[],
     this.releaseYear,
@@ -35,17 +41,20 @@ class Album {
     this.cachedAt,
   });
 
-  factory Album.fromDb(Map<String, dynamic> row) {
-    return Album(
+  factory AudioItem.fromDb(Map<String, dynamic> row) {
+    return AudioItem(
       id: row['id'] as int,
       source: DataSource.fromNameOr(
         row['source'] as String?,
         DataSource.musicBrainz,
       ),
-      mbid: row['mbid'] as String,
+      kind: AudioKind.fromName(row['kind'] as String?),
+      nativeId: row['native_id'] as String,
       title: row['title'] as String,
       artists: decodeJsonStringList(row['artists']),
       artistMbids: decodeJsonStringList(row['artist_mbids']),
+      description: row['description'] as String?,
+      language: row['language'] as String?,
       primaryType: row['primary_type'] as String?,
       secondaryTypes: decodeJsonStringList(row['secondary_types']),
       releaseYear: row['release_year'] as int?,
@@ -68,12 +77,14 @@ class Album {
     );
   }
 
-  /// Rebuilds an [Album] from a `.xcoll` payload (the output of [toExport]).
-  factory Album.fromExport(Map<String, dynamic> json) => Album.fromDb(json);
+  /// Rebuilds an [AudioItem] from a `.xcoll` payload (the output of
+  /// [toExport]).
+  factory AudioItem.fromExport(Map<String, dynamic> json) =>
+      AudioItem.fromDb(json);
 
   /// Shared by `/release-group?query=` search docs and `/release-group/{mbid}`
   /// lookups — the lookup adds `rating` and `genres`, absent in search rows.
-  factory Album.fromMusicBrainzReleaseGroup(Map<String, dynamic> json) {
+  factory AudioItem.fromMusicBrainzReleaseGroup(Map<String, dynamic> json) {
     final String mbid = json['id'] as String? ?? '';
     final String? firstReleaseDate =
         _nonEmpty(json['first-release-date'] as String?);
@@ -90,10 +101,10 @@ class Album {
       ratingCount = (ratingObj['votes-count'] as num?)?.toInt();
     }
 
-    return Album(
+    return AudioItem(
       id: fnv1a64(mbid),
       source: DataSource.musicBrainz,
-      mbid: mbid,
+      nativeId: mbid,
       title: json['title'] as String? ?? 'Unknown',
       artists: artists,
       artistMbids: artistMbids,
@@ -110,20 +121,60 @@ class Album {
     );
   }
 
+  /// From a Podcast Index feed object (`/search/byterm` rows,
+  /// `/podcasts/byfeedid` and `/podcasts/trending` share the shape).
+  factory AudioItem.fromPodcastIndexFeed(Map<String, dynamic> json) {
+    final int feedId = (json['id'] as num?)?.toInt() ?? 0;
+    final Object? categories = json['categories'];
+    return AudioItem(
+      id: feedId,
+      source: DataSource.podcastIndex,
+      kind: AudioKind.podcast,
+      nativeId:
+          _nonEmpty(json['podcastGuid'] as String?) ?? feedId.toString(),
+      title: json['title'] as String? ?? 'Unknown',
+      artists: <String>[
+        if (_nonEmpty(json['author'] as String?) case final String author)
+          author,
+      ],
+      description: stripHtmlText(json['description'] as String?),
+      language: _nonEmpty(json['language'] as String?),
+      genres: categories is Map<String, dynamic>
+          ? categories.values.whereType<String>().toList()
+          : const <String>[],
+      // The API caps the count at 1000; larger feeds just report 1000.
+      trackCount: (json['episodeCount'] as num?)?.toInt(),
+      coverUrl: _nonEmpty(json['artwork'] as String?) ??
+          _nonEmpty(json['image'] as String?),
+      externalUrl: podcastUrl(feedId),
+    );
+  }
+
   final int id;
 
-  /// Part of the cache identity `(id, source)`, [DataSource.musicBrainz] today.
+  /// Part of the cache identity `(id, source)` — [DataSource.musicBrainz] or
+  /// [DataSource.podcastIndex].
   final DataSource source;
 
-  /// Release-group MBID (UUID) — the provider-native id.
-  final String mbid;
+  /// Album vs. podcast. Lets Podcast Index feeds share the `audio` media type
+  /// while the UI branches on it.
+  final AudioKind kind;
+
+  /// Provider-native id: release-group MBID (UUID) or the feed's podcastGuid.
+  final String nativeId;
 
   final String title;
 
-  /// Artist-credit names in credit order.
+  /// Artist-credit names in credit order; the feed author for podcasts.
   final List<String> artists;
 
   final List<String> artistMbids;
+
+  /// Feed description — podcasts only, albums have none.
+  final String? description;
+
+  /// Feed language tag (`en`, `ru-ru`, …) — podcasts only.
+  final String? language;
 
   /// Album / Single / EP / Broadcast / Other.
   final String? primaryType;
@@ -136,7 +187,7 @@ class Album {
   /// "YYYY-MM-DD", possibly truncated to "YYYY-MM" or "YYYY".
   final String? firstReleaseDate;
 
-  /// Curated genre subset of [tags], vote-ordered.
+  /// Curated genre subset of [tags] (albums) or Podcast Index categories.
   final List<String> genres;
 
   final List<String> tags;
@@ -158,19 +209,22 @@ class Album {
   /// Medium format of the picked release: `12" Vinyl` / `CD` / `Digital Media`.
   final String? format;
 
+  /// Track count of the picked release, or the feed's episode count (≤1000).
   final int? trackCount;
   final int? discCount;
 
   /// Sum of the picked release's track lengths.
   final int? totalLengthMs;
 
-  /// Cover Art Archive front cover, built from [mbid] with no extra request.
+  /// Cover Art Archive front cover built from the MBID, or the feed artwork.
   final String? coverUrl;
 
   final String? externalUrl;
 
   /// Unix timestamp of when this row was cached; null on fresh / export data.
   final int? cachedAt;
+
+  bool get isPodcast => kind == AudioKind.podcast;
 
   String? get formattedRating => rating?.toStringAsFixed(1);
 
@@ -188,10 +242,13 @@ class Album {
     return <String, dynamic>{
       'id': id,
       'source': source.name,
-      'mbid': mbid,
+      'kind': kind.value,
+      'native_id': nativeId,
       'title': title,
       'artists': artists.isEmpty ? null : jsonEncode(artists),
       'artist_mbids': artistMbids.isEmpty ? null : jsonEncode(artistMbids),
+      'description': description,
+      'language': language,
       'primary_type': primaryType,
       'secondary_types':
           secondaryTypes.isEmpty ? null : jsonEncode(secondaryTypes),
@@ -222,13 +279,16 @@ class Album {
     return data;
   }
 
-  Album copyWith({
+  AudioItem copyWith({
     int? id,
     DataSource? source,
-    String? mbid,
+    AudioKind? kind,
+    String? nativeId,
     String? title,
     List<String>? artists,
     List<String>? artistMbids,
+    String? description,
+    String? language,
     String? primaryType,
     List<String>? secondaryTypes,
     int? releaseYear,
@@ -249,13 +309,16 @@ class Album {
     String? externalUrl,
     int? cachedAt,
   }) {
-    return Album(
+    return AudioItem(
       id: id ?? this.id,
       source: source ?? this.source,
-      mbid: mbid ?? this.mbid,
+      kind: kind ?? this.kind,
+      nativeId: nativeId ?? this.nativeId,
       title: title ?? this.title,
       artists: artists ?? this.artists,
       artistMbids: artistMbids ?? this.artistMbids,
+      description: description ?? this.description,
+      language: language ?? this.language,
       primaryType: primaryType ?? this.primaryType,
       secondaryTypes: secondaryTypes ?? this.secondaryTypes,
       releaseYear: releaseYear ?? this.releaseYear,
@@ -278,12 +341,14 @@ class Album {
     );
   }
 
-  /// Overlays a `/release-group/{mbid}` lookup onto a lightweight search row,
-  /// keeping the row's listen count and any picked release.
-  Album withLookupDetails(Album full) => copyWith(
+  /// Overlays a detail lookup onto a lightweight search row, keeping the
+  /// row's listen count and any picked release.
+  AudioItem withLookupDetails(AudioItem full) => copyWith(
         // Discover-feed rows may lack the credit; the lookup always has it.
         artists: artists.isNotEmpty ? artists : full.artists,
         artistMbids: artistMbids.isNotEmpty ? artistMbids : full.artistMbids,
+        description: description ?? full.description,
+        language: language ?? full.language,
         primaryType: primaryType ?? full.primaryType,
         releaseYear: releaseYear ?? full.releaseYear,
         firstReleaseDate: firstReleaseDate ?? full.firstReleaseDate,
@@ -291,12 +356,13 @@ class Album {
         tags: full.tags.isNotEmpty ? full.tags : tags,
         rating: rating ?? full.rating,
         ratingCount: ratingCount ?? full.ratingCount,
+        trackCount: trackCount ?? full.trackCount,
       );
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is Album && other.id == id && other.source == source;
+    return other is AudioItem && other.id == id && other.source == source;
   }
 
   @override
@@ -304,7 +370,8 @@ class Album {
 
   @override
   String toString() =>
-      'Album(id: $id, mbid: $mbid, title: $title)';
+      'AudioItem(id: $id, kind: ${kind.value}, nativeId: $nativeId, '
+      'title: $title)';
 
   /// Cover Art Archive front cover for a release group. Deterministic — no
   /// listing request needed; a missing cover just 404s into the placeholder.
@@ -318,6 +385,10 @@ class Album {
   /// The album's page on musicbrainz.org.
   static String releaseGroupUrl(String mbid) =>
       'https://musicbrainz.org/release-group/$mbid';
+
+  /// The podcast's page on podcastindex.org.
+  static String podcastUrl(int feedId) =>
+      'https://podcastindex.org/podcast/$feedId';
 
   /// Names and MBIDs from an `artist-credit` array, in credit order.
   static (List<String>, List<String>) artistCredit(Object? credit) {

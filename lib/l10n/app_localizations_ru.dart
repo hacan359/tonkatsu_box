@@ -162,7 +162,7 @@ class SRu extends S {
   String get mediaTypeBook => 'Книга';
 
   @override
-  String get mediaTypeMusic => 'Музыка';
+  String get mediaTypeAudio => 'Аудио';
 
   @override
   String get mediaTypeCustom => 'Своё';
@@ -5756,4 +5756,65 @@ class SRu extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return 'Достигнут лимит запросов — ждём $seconds сек (попытка $attempt/$max)';
   }
+
+  @override
+  String get searchSourcePodcasts => 'Подкасты';
+
+  @override
+  String get searchHintPodcasts => 'Поиск подкастов...';
+
+  @override
+  String get podcastSheetEpisodes => 'Эпизоды';
+
+  @override
+  String get podcastSheetNoEpisodes => 'Список эпизодов недоступен';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count эпизодов';
+  }
+
+  @override
+  String get podcastDiscoverTrending => 'Популярные подкасты';
+
+  @override
+  String get credentialsPodcastIndexSection => 'Podcast Index API';
+
+  @override
+  String get credentialsEnterPodcastIndexKey =>
+      'Введите API-ключ Podcast Index';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret =>
+      'Введите API-секрет Podcast Index';
+
+  @override
+  String get credentialsPodcastIndexKeyValid =>
+      'Ключи Podcast Index действительны';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'Podcast Index отклонил ключи. Проверьте пару и системные часы';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      'Поиск подкастов и трекинг эпизодов. Бесплатная пара ключей с api.podcastindex.org.';
+
+  @override
+  String get welcomeSourceDescMusicBrainz =>
+      'Открытая музыкальная энциклопедия: альбомы, исполнители, издания. Ключ не нужен.';
+
+  @override
+  String get welcomeSourceDescPodcastIndex =>
+      'Открытый каталог подкастов с трекингом по эпизодам. Бесплатная пара ключей.';
+
+  @override
+  String get creditsPodcastIndexAttribution =>
+      'Данные о подкастах — Podcast Index.';
+
+  @override
+  String get credentialsApiSecret => 'API-секрет';
+
+  @override
+  String get markAllListened => 'Отметить всё прослушанным';
 }

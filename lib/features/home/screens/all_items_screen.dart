@@ -178,7 +178,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   /// the album even though the query is not in its title.
   static bool _matchesCreator(CollectionItem item, String lowerQuery) {
     final List<String> creators = switch (item.mediaType) {
-      MediaType.music => item.album?.artists ?? const <String>[],
+      MediaType.audio => item.audioItem?.artists ?? const <String>[],
       MediaType.book => item.book?.authors ?? const <String>[],
       _ => const <String>[],
     };
@@ -243,9 +243,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         count: counts[MediaType.book] ?? 0,
       ),
       _MediaTypeEntry(
-        type: MediaType.music,
-        label: l.mediaTypeMusic,
-        count: counts[MediaType.music] ?? 0,
+        type: MediaType.audio,
+        label: l.mediaTypeAudio,
+        count: counts[MediaType.audio] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.custom,
@@ -961,8 +961,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.anime?.releaseYear;
       case MediaType.book:
         return item.book?.releaseYear;
-      case MediaType.music:
-        return item.album?.releaseYear;
+      case MediaType.audio:
+        return item.audioItem?.releaseYear;
       case MediaType.custom:
         return item.customMedia?.year;
     }
@@ -989,8 +989,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return ImageType.animeCover;
       case MediaType.book:
         return ImageType.bookCover;
-      case MediaType.music:
-        return ImageType.albumCover;
+      case MediaType.audio:
+        return ImageType.audioCover;
       case MediaType.custom:
         return ImageType.customCover;
     }

@@ -1,9 +1,12 @@
-import 'package:core/models/album_track.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+
+/// Width of the date cell in podcast episode rows (dd.mm.yyyy and friends).
+const double kEpisodeDateLeadingWidth = 76;
 
 /// `385000` → `6:25`.
 String formatTrackLength(int ms) {
@@ -13,15 +16,15 @@ String formatTrackLength(int ms) {
 }
 
 /// Track rows with disc headers interleaved when the album spans discs.
-List<Widget> buildAlbumTrackList({
-  required List<AlbumTrack> tracks,
+List<Widget> buildAudioTrackList({
+  required List<AudioTrack> tracks,
   required String Function(int discNumber) discLabel,
-  required Widget Function(AlbumTrack track) rowBuilder,
+  required Widget Function(AudioTrack track) rowBuilder,
 }) {
-  final bool multiDisc = tracks.any((AlbumTrack t) => t.discNumber > 1);
+  final bool multiDisc = tracks.any((AudioTrack t) => t.discNumber > 1);
   final List<Widget> rows = <Widget>[];
   for (int i = 0; i < tracks.length; i++) {
-    final AlbumTrack track = tracks[i];
+    final AudioTrack track = tracks[i];
     if (multiDisc &&
         (i == 0 || track.discNumber != tracks[i - 1].discNumber)) {
       rows.add(Padding(
@@ -43,22 +46,30 @@ List<Widget> buildAlbumTrackList({
 
 /// One track line — plain in the search sheet, checkable in the collection
 /// tracker when [listened] and [onTap] are set.
-class AlbumTrackRow extends StatelessWidget {
-  const AlbumTrackRow({
+class AudioTrackRow extends StatelessWidget {
+  const AudioTrackRow({
     required this.track,
     this.listened,
     this.onTap,
     this.accentColor,
+    this.positionLabel,
+    this.leadingWidth = 24,
     super.key,
   });
 
-  final AlbumTrack track;
+  final AudioTrack track;
 
   /// Null renders a plain row without a toggle mark.
   final bool? listened;
 
   final VoidCallback? onTap;
   final Color? accentColor;
+
+  /// Replaces the track number — podcast episodes show the publish date, the
+  /// raw [AudioTrack.position] there is a meaningless provider id.
+  final String? positionLabel;
+
+  final double leadingWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -80,9 +91,9 @@ class AlbumTrackRow extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
           ],
           SizedBox(
-            width: 24,
+            width: leadingWidth,
             child: Text(
-              '${track.position}',
+              positionLabel ?? '${track.position}',
               style: AppTypography.caption
                   .copyWith(color: AppColors.textTertiary),
             ),

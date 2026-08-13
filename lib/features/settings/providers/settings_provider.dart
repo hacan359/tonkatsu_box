@@ -12,6 +12,7 @@ import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/igdb_api.dart';
+import '../../../core/api/podcast_index_api.dart';
 import '../../../core/api/ra_api.dart';
 import '../../../core/api/screenscraper_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
@@ -36,6 +37,10 @@ abstract class SettingsKeys {
   static const String tvdbApiKey = 'tvdb_api_key';
 
   static const String comicVineApiKey = 'comicvine_api_key';
+
+  static const String podcastIndexApiKey = 'podcastindex_api_key';
+
+  static const String podcastIndexApiSecret = 'podcastindex_api_secret';
 
   static const String googleBooksApiKey = 'google_books_api_key';
 
@@ -154,6 +159,8 @@ class SettingsState {
     this.comicVineApiKey,
     this.googleBooksApiKey,
     this.hardcoverApiKey,
+    this.podcastIndexApiKey,
+    this.podcastIndexApiSecret,
     this.screenScraperSsid,
     this.screenScraperSspassword,
     this.defaultAuthor,
@@ -202,6 +209,10 @@ class SettingsState {
   final String? googleBooksApiKey;
 
   final String? hardcoverApiKey;
+
+  final String? podcastIndexApiKey;
+
+  final String? podcastIndexApiSecret;
 
   final String? screenScraperSsid;
 
@@ -278,6 +289,16 @@ class SettingsState {
   bool get hasComicVineKey =>
       comicVineApiKey != null && comicVineApiKey!.isNotEmpty;
 
+  bool get hasPodcastIndexKeys =>
+      podcastIndexApiKey != null &&
+      podcastIndexApiKey!.isNotEmpty &&
+      podcastIndexApiSecret != null &&
+      podcastIndexApiSecret!.isNotEmpty;
+
+  /// True when the built-in pair signs requests — the user entered nothing.
+  bool get isPodcastIndexKeyBuiltIn =>
+      !hasPodcastIndexKeys && ApiDefaults.hasPodcastIndexKey;
+
   bool get hasGoogleBooksKey =>
       googleBooksApiKey != null && googleBooksApiKey!.isNotEmpty;
 
@@ -338,6 +359,8 @@ class SettingsState {
     String? comicVineApiKey,
     String? googleBooksApiKey,
     String? hardcoverApiKey,
+    String? podcastIndexApiKey,
+    String? podcastIndexApiSecret,
     String? screenScraperSsid,
     String? screenScraperSspassword,
     String? defaultAuthor,
@@ -369,6 +392,9 @@ class SettingsState {
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
       tvdbApiKey: tvdbApiKey ?? this.tvdbApiKey,
       comicVineApiKey: comicVineApiKey ?? this.comicVineApiKey,
+      podcastIndexApiKey: podcastIndexApiKey ?? this.podcastIndexApiKey,
+      podcastIndexApiSecret:
+          podcastIndexApiSecret ?? this.podcastIndexApiSecret,
       googleBooksApiKey: googleBooksApiKey ?? this.googleBooksApiKey,
       hardcoverApiKey: hardcoverApiKey ?? this.hardcoverApiKey,
       screenScraperSsid: screenScraperSsid ?? this.screenScraperSsid,
@@ -433,6 +459,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   late TmdbApi _tmdbApi;
   late TvdbApi _tvdbApi;
   late ComicVineApi _comicVineApi;
+  late PodcastIndexApi _podcastIndexApi;
   late GoogleBooksApi _googleBooksApi;
   late HardcoverApi _hardcoverApi;
   late ScreenScraperApi _screenScraperApi;
@@ -461,6 +488,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi = ref.watch(tmdbApiProvider);
     _tvdbApi = ref.watch(tvdbApiProvider);
     _comicVineApi = ref.watch(comicVineApiProvider);
+    _podcastIndexApi = ref.watch(podcastIndexApiProvider);
     _googleBooksApi = ref.watch(googleBooksApiProvider);
     _hardcoverApi = ref.watch(hardcoverApiProvider);
     _screenScraperApi = ref.watch(screenScraperApiProvider);
@@ -519,6 +547,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // ComicVine: user key from prefs only, no built-in.
     final String? comicVineApiKey =
         _prefs.getString(SettingsKeys.comicVineApiKey);
+
+    // Podcast Index: user pair from prefs; the built-in pair stays invisible
+    // here so the credentials screen shows only what the user entered.
+    final String? podcastIndexApiKey =
+        _prefs.getString(SettingsKeys.podcastIndexApiKey);
+    final String? podcastIndexApiSecret =
+        _prefs.getString(SettingsKeys.podcastIndexApiSecret);
     // Google Books: optional user key from prefs only, no built-in.
     final String? googleBooksApiKey =
         _prefs.getString(SettingsKeys.googleBooksApiKey);
@@ -584,6 +619,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
       tmdbApiKey: tmdbApiKey,
       tvdbApiKey: tvdbApiKey,
       comicVineApiKey: comicVineApiKey,
+      podcastIndexApiKey: podcastIndexApiKey,
+      podcastIndexApiSecret: podcastIndexApiSecret,
       googleBooksApiKey: googleBooksApiKey,
       hardcoverApiKey: hardcoverApiKey,
       screenScraperSsid: screenScraperSsid,
@@ -662,6 +699,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
     if (state.comicVineApiKey != null && state.comicVineApiKey!.isNotEmpty) {
       _comicVineApi.setApiKey(state.comicVineApiKey!);
+    }
+    if (state.hasPodcastIndexKeys) {
+      _podcastIndexApi.setCredentials(
+        state.podcastIndexApiKey!,
+        state.podcastIndexApiSecret!,
+      );
     }
     if (state.googleBooksApiKey != null &&
         state.googleBooksApiKey!.isNotEmpty) {
@@ -832,6 +875,29 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     state = state.copyWith(comicVineApiKey: apiKey);
+  }
+
+  /// Key and secret land together — a signature needs both, so a lone half
+  /// falls back to the built-in pair.
+  Future<void> setPodcastIndexKeys(String apiKey, String apiSecret) async {
+    await _writeCredential(SettingsKeys.podcastIndexApiKey, apiKey);
+    await _writeCredential(SettingsKeys.podcastIndexApiSecret, apiSecret);
+    if (apiKey.isNotEmpty && apiSecret.isNotEmpty) {
+      _podcastIndexApi.setCredentials(apiKey, apiSecret);
+    } else {
+      _podcastIndexApi.clearCredentials();
+      if (ApiDefaults.hasPodcastIndexKey) {
+        _podcastIndexApi.setCredentials(
+          ApiDefaults.podcastIndexApiKey,
+          ApiDefaults.podcastIndexApiSecret,
+        );
+      }
+    }
+
+    state = state.copyWith(
+      podcastIndexApiKey: apiKey,
+      podcastIndexApiSecret: apiSecret,
+    );
   }
 
   Future<void> setGoogleBooksApiKey(String apiKey) async {
@@ -1037,6 +1103,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     return _comicVineApi.validateApiKey(state.comicVineApiKey!);
   }
 
+  /// Validates whatever pair the client currently signs with — the user's
+  /// or the built-in one.
+  Future<bool> validatePodcastIndexKeys() async {
+    if (!_podcastIndexApi.hasCredentials) return false;
+    return _podcastIndexApi.validateCredentials();
+  }
+
   Future<bool> validateGoogleBooksKey() async {
     if (!state.hasGoogleBooksKey) return false;
     return _googleBooksApi.validateApiKey(state.googleBooksApiKey!);
@@ -1087,6 +1160,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _writeCredential(SettingsKeys.comicVineApiKey, '');
     await _writeCredential(SettingsKeys.googleBooksApiKey, '');
     await _writeCredential(SettingsKeys.hardcoverApiKey, '');
+    await _writeCredential(SettingsKeys.podcastIndexApiKey, '');
+    await _writeCredential(SettingsKeys.podcastIndexApiSecret, '');
     await _writeCredential(SettingsKeys.screenScraperSsid, '');
     await _writeCredential(SettingsKeys.screenScraperSspassword, '');
     await _prefs.remove(SettingsKeys.defaultAuthor);
@@ -1112,6 +1187,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _comicVineApi.clearApiKey();
     _googleBooksApi.clearApiKey();
     _hardcoverApi.clearApiKey();
+    _podcastIndexApi.clearCredentials();
 
     state = const SettingsState();
   }

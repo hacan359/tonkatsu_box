@@ -1,6 +1,6 @@
 import 'package:sqflite_common/sqlite_api.dart';
 
-import '../../models/album.dart';
+import '../../models/audio_item.dart';
 import '../../models/anime.dart';
 import '../../models/book.dart';
 import '../../models/collected_item_info.dart';
@@ -19,7 +19,7 @@ import '../../models/platform.dart';
 import '../../models/tv_show.dart';
 import '../../models/visual_novel.dart';
 import '../query_chunk.dart';
-import 'album_dao.dart';
+import 'audio_dao.dart';
 import 'anime_dao.dart';
 import 'book_dao.dart';
 import 'custom_media_dao.dart';
@@ -39,7 +39,7 @@ class CollectionDao {
     required AnimeDao animeDao,
     required MangaDao mangaDao,
     required BookDao bookDao,
-    required AlbumDao albumDao,
+    required AudioDao audioDao,
     required CustomMediaDao customMediaDao,
   })  : _gameDao = gameDao,
         _movieDao = movieDao,
@@ -48,7 +48,7 @@ class CollectionDao {
         _animeDao = animeDao,
         _mangaDao = mangaDao,
         _bookDao = bookDao,
-        _albumDao = albumDao,
+        _audioDao = audioDao,
         _customMediaDao = customMediaDao;
 
   /// The media DAOs are always the same nine over the same connection, so
@@ -65,7 +65,7 @@ class CollectionDao {
       animeDao: AnimeDao(getDatabase),
       mangaDao: MangaDao(getDatabase),
       bookDao: BookDao(getDatabase),
-      albumDao: AlbumDao(getDatabase),
+      audioDao: AudioDao(getDatabase),
       customMediaDao: CustomMediaDao(getDatabase),
     );
   }
@@ -78,7 +78,7 @@ class CollectionDao {
   final AnimeDao _animeDao;
   final MangaDao _mangaDao;
   final BookDao _bookDao;
-  final AlbumDao _albumDao;
+  final AudioDao _audioDao;
   final CustomMediaDao _customMediaDao;
 
   Future<List<Collection>> getAllCollections() async {
@@ -724,7 +724,7 @@ class CollectionDao {
     Map<String, dynamic> movedItem,
     int? targetCollectionId,
   ) async {
-    if (movedItem['media_type'] != MediaType.music.value) return;
+    if (movedItem['media_type'] != MediaType.audio.value) return;
     final int? oldCollectionId = movedItem['collection_id'] as int?;
     if (oldCollectionId == targetCollectionId) return;
     if (oldCollectionId == null || targetCollectionId == null) return;
@@ -734,11 +734,11 @@ class CollectionDao {
 
     await db.rawInsert(
       'INSERT OR REPLACE INTO listened_tracks '
-      '(collection_id, source, album_id, disc_number, track_number, '
+      '(collection_id, source, audio_id, disc_number, track_number, '
       'listened_at) '
-      'SELECT ?, source, album_id, disc_number, track_number, listened_at '
+      'SELECT ?, source, audio_id, disc_number, track_number, listened_at '
       'FROM listened_tracks '
-      'WHERE collection_id = ? AND source = ? AND album_id = ?',
+      'WHERE collection_id = ? AND source = ? AND audio_id = ?',
       <Object?>[
         targetCollectionId,
         oldCollectionId,
@@ -748,7 +748,7 @@ class CollectionDao {
     );
     await db.delete(
       'listened_tracks',
-      where: 'collection_id = ? AND source = ? AND album_id = ?',
+      where: 'collection_id = ? AND source = ? AND audio_id = ?',
       whereArgs: <Object?>[oldCollectionId, source, externalId],
     );
   }
@@ -1098,7 +1098,7 @@ class CollectionDao {
       'mangaCount': 0,
       'animeCount': 0,
       'bookCount': 0,
-      'musicCount': 0,
+      'audioCount': 0,
       'customCount': 0,
     };
 
@@ -1116,7 +1116,7 @@ class CollectionDao {
         MediaType.manga => 'mangaCount',
         MediaType.anime => 'animeCount',
         MediaType.book => 'bookCount',
-        MediaType.music => 'musicCount',
+        MediaType.audio => 'audioCount',
         MediaType.custom => 'customCount',
         null => null,
       };
@@ -1228,7 +1228,7 @@ class CollectionDao {
             WHEN 'manga' THEN mc.cover_url
             WHEN 'anime' THEN ac.cover_url
             WHEN 'book' THEN bc.cover_url
-            WHEN 'music' THEN mus.cover_url
+            WHEN 'audio' THEN aud.cover_url
             WHEN 'custom' THEN cm.cover_url
           END AS thumbnail_url
         FROM collection_items ci
@@ -1260,9 +1260,9 @@ class CollectionDao {
           ON ci.media_type = 'book'
           AND ci.external_id = CAST(bc.id AS INTEGER)
           AND bc.source = ci.source
-        LEFT JOIN music_albums_cache mus
-          ON ci.media_type = 'music' AND ci.external_id = mus.id
-          AND mus.source = COALESCE(ci.source, 'musicBrainz')
+        LEFT JOIN audio_cache aud
+          ON ci.media_type = 'audio' AND ci.external_id = aud.id
+          AND aud.source = COALESCE(ci.source, 'musicBrainz')
         LEFT JOIN custom_items cm
           ON ci.media_type = 'custom' AND ci.external_id = cm.id
         WHERE $whereClause
@@ -1291,7 +1291,7 @@ class CollectionDao {
     final List<int> animeIds = <int>[];
     final List<int> mangaIds = <int>[];
     final List<int> bookIds = <int>[];
-    final List<int> albumIds = <int>[];
+    final List<int> audioIds = <int>[];
     final List<int> customIds = <int>[];
     final Set<int> platformIds = <int>{};
 
@@ -1320,8 +1320,8 @@ class CollectionDao {
           mangaIds.add(item.externalId);
         case MediaType.book:
           bookIds.add(item.externalId);
-        case MediaType.music:
-          albumIds.add(item.externalId);
+        case MediaType.audio:
+          audioIds.add(item.externalId);
         case MediaType.custom:
           customIds.add(item.externalId);
       }
@@ -1356,9 +1356,9 @@ class CollectionDao {
       bookIds.isNotEmpty
           ? _bookDao.getBooksByIds(bookIds)
           : Future<List<Book>>.value(<Book>[]),
-      albumIds.isNotEmpty
-          ? _albumDao.getAlbumsByIds(albumIds)
-          : Future<List<Album>>.value(<Album>[]),
+      audioIds.isNotEmpty
+          ? _audioDao.getAudioItemsByIds(audioIds)
+          : Future<List<AudioItem>>.value(<AudioItem>[]),
     ]);
 
     final List<Game> games = results[0] as List<Game>;
@@ -1370,7 +1370,7 @@ class CollectionDao {
     final List<CustomMedia> customMediaList = results[6] as List<CustomMedia>;
     final List<Platform> platforms = results[7] as List<Platform>;
     final List<Book> books = results[8] as List<Book>;
-    final List<Album> albums = results[9] as List<Album>;
+    final List<AudioItem> audioItems = results[9] as List<AudioItem>;
 
     final Map<int, Platform> platformsMap = <int, Platform>{
       for (final Platform p in platforms) p.id: p,
@@ -1431,8 +1431,8 @@ class CollectionDao {
     final Map<String, Book> bookMap = <String, Book>{
       for (final Book b in books) '${b.source.name}:${b.id}': b,
     };
-    final Map<String, Album> albumMap = <String, Album>{
-      for (final Album a in albums) '${a.source.name}:${a.id}': a,
+    final Map<String, AudioItem> audioMap = <String, AudioItem>{
+      for (final AudioItem a in audioItems) '${a.source.name}:${a.id}': a,
     };
     // Keyed by `(source, id)` — ids from different providers can collide.
     final Map<String, Anime> animeMap = <String, Anime>{
@@ -1489,9 +1489,9 @@ class CollectionDao {
             book: bookMap[
                 '${(item.source ?? DataSource.openLibrary).name}:${item.externalId}'],
           );
-        case MediaType.music:
+        case MediaType.audio:
           return item.copyWith(
-            album: albumMap[
+            audioItem: audioMap[
                 '${(item.source ?? DataSource.musicBrainz).name}:${item.externalId}'],
           );
         case MediaType.custom:
@@ -1625,8 +1625,8 @@ class CollectionDao {
       await txn.delete('manga_cache');
       await txn.delete('anime_cache');
       await txn.delete('books_cache');
-      await txn.delete('music_tracks_cache');
-      await txn.delete('music_albums_cache');
+      await txn.delete('audio_tracks_cache');
+      await txn.delete('audio_cache');
       await txn.delete('wishlist');
     });
   }

@@ -5,7 +5,7 @@ import 'image_type.dart';
 import 'media_type.dart';
 import '../utils/cover_image_id.dart' as cover_id;
 
-import 'album.dart';
+import 'audio_item.dart';
 import 'anime.dart';
 import 'book.dart';
 import 'custom_media.dart';
@@ -32,7 +32,7 @@ enum CanvasItemType {
 
   book('book'),
 
-  music('music'),
+  audio('audio'),
 
   custom('custom'),
 
@@ -71,8 +71,8 @@ enum CanvasItemType {
         return CanvasItemType.anime;
       case MediaType.book:
         return CanvasItemType.book;
-      case MediaType.music:
-        return CanvasItemType.music;
+      case MediaType.audio:
+        return CanvasItemType.audio;
       case MediaType.custom:
         return CanvasItemType.custom;
     }
@@ -87,7 +87,7 @@ enum CanvasItemType {
       this == manga ||
       this == anime ||
       this == book ||
-      this == music ||
+      this == audio ||
       this == custom;
 }
 
@@ -112,7 +112,7 @@ class CanvasItem with Exportable {
     this.anime,
     this.manga,
     this.book,
-    this.album,
+    this.audioItem,
     this.customMedia,
     this.overrideName,
   });
@@ -216,7 +216,7 @@ class CanvasItem with Exportable {
   final Book? book;
 
   /// Joined, not persisted in `canvas_items`.
-  final Album? album;
+  final AudioItem? audioItem;
 
   /// Joined, not persisted in `canvas_items`.
   final CustomMedia? customMedia;
@@ -236,7 +236,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => manga?.title,
       CanvasItemType.anime => anime?.title,
       CanvasItemType.book => book?.title,
-      CanvasItemType.music => album?.title,
+      CanvasItemType.audio => audioItem?.title,
       CanvasItemType.custom => customMedia?.title,
       _ => null,
     };
@@ -254,7 +254,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => manga?.coverUrl,
       CanvasItemType.anime => anime?.coverUrl,
       CanvasItemType.book => book?.coverUrl,
-      CanvasItemType.music => album?.coverUrl,
+      CanvasItemType.audio => audioItem?.coverUrl,
       CanvasItemType.custom => customMedia?.coverUrl,
       _ => null,
     };
@@ -272,7 +272,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => ImageType.mangaCover,
       CanvasItemType.anime => ImageType.animeCover,
       CanvasItemType.book => ImageType.bookCover,
-      CanvasItemType.music => ImageType.albumCover,
+      CanvasItemType.audio => ImageType.audioCover,
       CanvasItemType.custom => ImageType.customCover,
       _ => ImageType.gameCover,
     };
@@ -312,10 +312,10 @@ class CanvasItem with Exportable {
           source: book?.source,
           coverUrl: book?.coverUrl,
         ),
-      CanvasItemType.music => cover_id.coverImageId(
-          mediaType: MediaType.music,
-          externalId: album?.id ?? itemRefId ?? 0,
-          source: album?.source,
+      CanvasItemType.audio => cover_id.coverImageId(
+          mediaType: MediaType.audio,
+          externalId: audioItem?.id ?? itemRefId ?? 0,
+          source: audioItem?.source,
         ),
       CanvasItemType.custom => (customMedia?.id ?? 0).toString(),
       _ => '0',
@@ -333,7 +333,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => MediaType.manga,
       CanvasItemType.anime => MediaType.anime,
       CanvasItemType.book => MediaType.book,
-      CanvasItemType.music => MediaType.music,
+      CanvasItemType.audio => MediaType.audio,
       CanvasItemType.custom => customMedia?.displayType ?? MediaType.custom,
       _ => null,
     };
@@ -401,7 +401,7 @@ class CanvasItem with Exportable {
     Anime? anime,
     Manga? manga,
     Book? book,
-    Album? album,
+    AudioItem? audioItem,
     CustomMedia? customMedia,
     String? overrideName,
     bool clearOverrideName = false,
@@ -426,7 +426,7 @@ class CanvasItem with Exportable {
       anime: anime ?? this.anime,
       manga: manga ?? this.manga,
       book: book ?? this.book,
-      album: album ?? this.album,
+      audioItem: audioItem ?? this.audioItem,
       customMedia: customMedia ?? this.customMedia,
       overrideName:
           clearOverrideName ? null : (overrideName ?? this.overrideName),

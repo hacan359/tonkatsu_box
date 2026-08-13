@@ -1,4 +1,4 @@
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/utils/stable_id.dart';
 import 'package:dio/dio.dart';
@@ -29,19 +29,19 @@ class FreshRelease {
   final String? primaryType;
   final int? listenCount;
 
-  /// Minimal [Album] for the card grid; a tap enriches via MusicBrainz.
-  Album toAlbum() => Album(
+  /// Minimal [AudioItem] for the card grid; a tap enriches via MusicBrainz.
+  AudioItem toAlbum() => AudioItem(
         id: fnv1a64(releaseGroupMbid),
         source: DataSource.musicBrainz,
-        mbid: releaseGroupMbid,
+        nativeId: releaseGroupMbid,
         title: name,
         artists: artistName != null ? <String>[artistName!] : const <String>[],
         primaryType: primaryType,
-        releaseYear: Album.yearFromDate(releaseDate),
+        releaseYear: AudioItem.yearFromDate(releaseDate),
         firstReleaseDate: releaseDate,
         listenCount: listenCount,
-        coverUrl: Album.coverUrlForReleaseGroup(releaseGroupMbid),
-        externalUrl: Album.releaseGroupUrl(releaseGroupMbid),
+        coverUrl: AudioItem.coverUrlForReleaseGroup(releaseGroupMbid),
+        externalUrl: AudioItem.releaseGroupUrl(releaseGroupMbid),
       );
 }
 

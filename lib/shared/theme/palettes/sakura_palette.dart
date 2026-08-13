@@ -24,7 +24,7 @@ const AppPalette sakuraPalette = AppPalette(
   mangaAccent: Color(0xFF1D8FD1),
   animeAccent: Color(0xFFD14361),
   bookAccent: Color(0xFF8A5A3F),
-  musicAccent: Color(0xFFA23579),
+  audioAccent: Color(0xFFA23579),
   customAccent: Color(0xFF1E8578),
   success: Color(0xFF3E9D44),
   warning: Color(0xFFE08900),

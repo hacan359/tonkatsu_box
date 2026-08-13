@@ -28,6 +28,12 @@ abstract final class ApiDefaults {
   /// Simkl OAuth client id (PIN flow needs no secret in the build).
   static const String simklClientId = String.fromEnvironment('SIMKL_CLIENT_ID');
 
+  static const String podcastIndexApiKey =
+      String.fromEnvironment('PODCASTINDEX_API_KEY');
+
+  static const String podcastIndexApiSecret =
+      String.fromEnvironment('PODCASTINDEX_API_SECRET');
+
   static bool get hasTmdbKey => tmdbApiKey.isNotEmpty;
 
   static bool get hasTvdbKey => tvdbApiKey.isNotEmpty;
@@ -44,4 +50,10 @@ abstract final class ApiDefaults {
       (screenScraperDevId.isNotEmpty && screenScraperDevPassword.isNotEmpty);
 
   static bool get hasSimklClientId => simklClientId.isNotEmpty;
+
+  // On web the pair lives on the server and the proxy signs requests; the
+  // dart-defines never reach main.dart.js on purpose.
+  static bool get hasPodcastIndexKey =>
+      kIsWebBuild ||
+      (podcastIndexApiKey.isNotEmpty && podcastIndexApiSecret.isNotEmpty);
 }

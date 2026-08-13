@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/database/dao/tracker_dao.dart';
-import 'package:core/models/album_track.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:core/models/canvas_connection.dart';
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/canvas_viewport.dart';
@@ -370,9 +370,9 @@ class ExportService {
     if (db == null) return;
     for (int i = 0; i < items.length; i++) {
       final CollectionItem item = items[i];
-      if (item.mediaType != MediaType.music) continue;
+      if (item.mediaType != MediaType.audio) continue;
       final DataSource source = item.source ?? DataSource.musicBrainz;
-      final Map<(int, int), DateTime?> listened = await db.albumDao
+      final Map<(int, int), DateTime?> listened = await db.audioDao
           .getListenedTracks(collectionId, source, item.externalId);
       if (listened.isEmpty) continue;
       exportItems[i]['_listened_tracks'] = <Map<String, dynamic>>[
@@ -501,7 +501,7 @@ class ExportService {
     final Map<int, Map<String, dynamic>> customItems =
         <int, Map<String, dynamic>>{};
     final Set<(DataSource, int)> tvShowKeys = <(DataSource, int)>{};
-    final Set<(DataSource, int)> albumKeys = <(DataSource, int)>{};
+    final Set<(DataSource, int)> audioKeys = <(DataSource, int)>{};
     final Set<int> platformIds = <int>{};
 
     for (final CollectionItem item in items) {
@@ -570,15 +570,15 @@ class ExportService {
           if (item.book != null && !books.containsKey(bookKey)) {
             books[bookKey] = item.book!.toExport();
           }
-        case MediaType.music:
+        case MediaType.audio:
           final String albumKey =
-              '${(item.album?.source ?? DataSource.musicBrainz).name}:'
+              '${(item.audioItem?.source ?? DataSource.musicBrainz).name}:'
               '${item.externalId}';
-          if (item.album != null && !albums.containsKey(albumKey)) {
-            albums[albumKey] = item.album!.toExport();
+          if (item.audioItem != null && !albums.containsKey(albumKey)) {
+            albums[albumKey] = item.audioItem!.toExport();
           }
-          albumKeys.add((
-            item.album?.source ?? DataSource.musicBrainz,
+          audioKeys.add((
+            item.audioItem?.source ?? DataSource.musicBrainz,
             item.externalId,
           ));
         case MediaType.anime:
@@ -624,14 +624,14 @@ class ExportService {
       }
     }
 
-    // Album track lists from the cache, so an offline import restores the
+    // AudioItem track lists from the cache, so an offline import restores the
     // song list (titles, lengths) without a MusicBrainz round-trip.
     final List<Map<String, dynamic>> allTracks = <Map<String, dynamic>>[];
-    if (_database != null && albumKeys.isNotEmpty) {
-      for (final (DataSource source, int albumId) in albumKeys) {
-        final List<AlbumTrack> tracks =
-            await _database.albumDao.getAlbumTracks(albumId, source: source);
-        for (final AlbumTrack track in tracks) {
+    if (_database != null && audioKeys.isNotEmpty) {
+      for (final (DataSource source, int audioId) in audioKeys) {
+        final List<AudioTrack> tracks =
+            await _database.audioDao.getAudioTracks(audioId, source: source);
+        for (final AudioTrack track in tracks) {
           final Map<String, dynamic> data = track.toDb();
           data.remove('cached_at');
           allTracks.add(data);
@@ -673,8 +673,8 @@ class ExportService {
       if (vns.isNotEmpty) 'visual_novels': vns.values.toList(),
       if (mangas.isNotEmpty) 'mangas': mangas.values.toList(),
       if (books.isNotEmpty) 'books': books.values.toList(),
-      if (albums.isNotEmpty) 'albums': albums.values.toList(),
-      if (allTracks.isNotEmpty) 'music_tracks': allTracks,
+      if (albums.isNotEmpty) 'audio_items': albums.values.toList(),
+      if (allTracks.isNotEmpty) 'audio_tracks': allTracks,
       if (animes.isNotEmpty) 'animes': animes.values.toList(),
       if (customItems.isNotEmpty)
         'custom_items': customItems.values.toList(),

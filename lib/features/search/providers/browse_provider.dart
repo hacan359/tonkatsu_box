@@ -266,9 +266,21 @@ class BrowseNotifier extends Notifier<BrowseState> {
     final String? tvdbKey = _prefs.getString(SettingsKeys.tvdbApiKey);
     final bool hasTvdbKey =
         (tvdbKey != null && tvdbKey.isNotEmpty) || ApiDefaults.hasTvdbKey;
+    final String? podcastKey =
+        _prefs.getString(SettingsKeys.podcastIndexApiKey);
+    final String? podcastSecret =
+        _prefs.getString(SettingsKeys.podcastIndexApiSecret);
+    final bool hasPodcastIndexKeys = (podcastKey != null &&
+            podcastKey.isNotEmpty &&
+            podcastSecret != null &&
+            podcastSecret.isNotEmpty) ||
+        ApiDefaults.hasPodcastIndexKey;
     return <String>{
       for (final SearchSource source in searchSourcesFor(type))
-        if (source.dataSource == DataSource.tvdb && !hasTvdbKey) source.id,
+        if ((source.dataSource == DataSource.tvdb && !hasTvdbKey) ||
+            (source.dataSource == DataSource.podcastIndex &&
+                !hasPodcastIndexKeys))
+          source.id,
     };
   }
 

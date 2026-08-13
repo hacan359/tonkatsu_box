@@ -414,29 +414,29 @@ void main() {
 
     test('restores listened tracks as one batch per collection and album',
         () async {
-      final MockAlbumDao albumDao = MockAlbumDao();
+      final MockAudioDao audioDao = MockAudioDao();
       final MockCollectionDao collDao = MockCollectionDao();
-      when(() => database.albumDao).thenReturn(albumDao);
+      when(() => database.audioDao).thenReturn(audioDao);
       when(() => database.collectionDao).thenReturn(collDao);
       when(() => collDao.findAllCollectionItems(
-            mediaType: MediaType.music,
+            mediaType: MediaType.audio,
             externalId: 1,
             source: DataSource.musicBrainz,
           )).thenAnswer((_) async => <CollectionItem>[
             createTestCollectionItem(
               id: 1,
               collectionId: 7,
-              mediaType: MediaType.music,
+              mediaType: MediaType.audio,
               externalId: 1,
             ),
           ]);
-      when(() => albumDao.markTracksListenedAt(any(), any(), any(), any()))
+      when(() => audioDao.markTracksListenedAt(any(), any(), any(), any()))
           .thenAnswer((_) async {});
 
       const String listenedJson =
-          '[{"album_id":1,"source":"musicBrainz","disc_number":1,'
+          '[{"audio_id":1,"source":"musicBrainz","disc_number":1,'
           '"track_number":1,"listened_at":1000},'
-          '{"album_id":1,"source":"musicBrainz","disc_number":1,'
+          '{"audio_id":1,"source":"musicBrainz","disc_number":1,'
           '"track_number":2}]';
       final Uint8List path = writeZip(
         <String, String>{'listened_tracks.json': listenedJson},
@@ -444,14 +444,14 @@ void main() {
 
       await makeService().restoreFromBackup(zipBytes: path);
 
-      verify(() => albumDao.markTracksListenedAt(
+      verify(() => audioDao.markTracksListenedAt(
             7,
             DataSource.musicBrainz,
             1,
             <(int, int, int?)>[(1, 1, 1000), (1, 2, null)],
           )).called(1);
       verify(() => collDao.findAllCollectionItems(
-            mediaType: MediaType.music,
+            mediaType: MediaType.audio,
             externalId: 1,
             source: DataSource.musicBrainz,
           )).called(1);

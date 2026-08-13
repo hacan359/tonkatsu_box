@@ -1,5 +1,6 @@
-import 'package:core/models/album.dart';
-import 'package:core/models/album_track.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_kind.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -90,7 +91,7 @@ CollectionItem createTestCollectionItem({
   Manga? manga,
   Anime? anime,
   Book? book,
-  Album? album,
+  AudioItem? audioItem,
   Platform? platform,
   CustomMedia? customMedia,
 }) {
@@ -124,7 +125,7 @@ CollectionItem createTestCollectionItem({
     manga: manga,
     anime: anime,
     book: book,
-    album: album,
+    audioItem: audioItem,
     platform: platform,
     customMedia: customMedia,
   );
@@ -344,11 +345,14 @@ Book createTestBook({
   );
 }
 
-Album createTestAlbum({
+AudioItem createTestAudioItem({
   int id = 12345,
   DataSource source = DataSource.musicBrainz,
-  String mbid = 'f5093c06-23e3-404f-aeaa-40f72885ee3a',
+  AudioKind kind = AudioKind.album,
+  String nativeId = 'f5093c06-23e3-404f-aeaa-40f72885ee3a',
   String title = 'Test Album',
+  String? description,
+  String? language,
   List<String> artists = const <String>['Test Artist'],
   List<String> artistMbids = const <String>[],
   String? primaryType = 'Album',
@@ -367,11 +371,14 @@ Album createTestAlbum({
   String? externalUrl,
   int? cachedAt,
 }) {
-  return Album(
+  return AudioItem(
     id: id,
     source: source,
-    mbid: mbid,
+    kind: kind,
+    nativeId: nativeId,
     title: title,
+    description: description,
+    language: language,
     artists: artists,
     artistMbids: artistMbids,
     primaryType: primaryType,
@@ -392,24 +399,26 @@ Album createTestAlbum({
   );
 }
 
-AlbumTrack createTestAlbumTrack({
-  int albumId = 12345,
+AudioTrack createTestAudioTrack({
+  int audioId = 12345,
   int discNumber = 1,
   int position = 1,
   String title = 'Test Track',
-  String? recordingMbid,
+  String? nativeId,
   int? lengthMs,
   List<String> artists = const <String>[],
+  int? datePublished,
   DataSource source = DataSource.musicBrainz,
 }) {
-  return AlbumTrack(
-    albumId: albumId,
+  return AudioTrack(
+    audioId: audioId,
     discNumber: discNumber,
     position: position,
     title: title,
-    recordingMbid: recordingMbid,
+    nativeId: nativeId,
     lengthMs: lengthMs,
     artists: artists,
+    datePublished: datePublished,
     source: source,
   );
 }

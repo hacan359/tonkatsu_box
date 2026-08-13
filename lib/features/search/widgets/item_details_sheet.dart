@@ -1,6 +1,6 @@
 import 'dart:ui' show ImageFilter;
 
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/game.dart';
@@ -314,7 +314,7 @@ class ItemDetailsSheet extends StatelessWidget {
   }
 
   factory ItemDetailsSheet.album(
-    Album album, {
+    AudioItem album, {
     required VoidCallback onAddToCollection,
     Widget? editionsSection,
   }) {
@@ -338,14 +338,46 @@ class ItemDetailsSheet extends StatelessWidget {
           (Icons.headphones, _formatListenCount(album.listenCount!)),
       ],
       posterUrl: album.coverUrl,
-      cacheImageType: ImageType.albumCover,
+      cacheImageType: ImageType.audioCover,
       cacheImageId: coverImageId(
-        mediaType: MediaType.music,
+        mediaType: MediaType.audio,
         externalId: album.id,
         source: album.source,
       ),
       externalUrl: album.externalUrl,
       dataSource: album.source,
+      coverHeight: 150,
+      onAddToCollection: onAddToCollection,
+    );
+  }
+
+  factory ItemDetailsSheet.podcast(
+    AudioItem podcast, {
+    required VoidCallback onAddToCollection,
+    Widget? episodesSection,
+  }) {
+    return ItemDetailsSheet(
+      editionsSection: episodesSection,
+      title: podcast.title,
+      icon: Icons.podcasts,
+      overview: podcast.description,
+      genres: podcast.genres,
+      maxGenres: _defaultMaxChips,
+      subtitle: podcast.artistsString,
+      infoChips: <(IconData, String)>[
+        if (podcast.trackCount != null)
+          (Icons.podcasts, '${podcast.trackCount}'),
+        if (podcast.language != null) (Icons.language, podcast.language!),
+      ],
+      posterUrl: podcast.coverUrl,
+      cacheImageType: ImageType.audioCover,
+      cacheImageId: coverImageId(
+        mediaType: MediaType.audio,
+        externalId: podcast.id,
+        source: podcast.source,
+      ),
+      externalUrl: podcast.externalUrl,
+      dataSource: podcast.source,
       coverHeight: 150,
       onAddToCollection: onAddToCollection,
     );

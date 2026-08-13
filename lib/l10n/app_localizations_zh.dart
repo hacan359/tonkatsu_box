@@ -161,7 +161,7 @@ class SZh extends S {
   String get mediaTypeBook => '书籍';
 
   @override
-  String get mediaTypeMusic => '音乐';
+  String get mediaTypeAudio => '音频';
 
   @override
   String get mediaTypeCustom => '自定义';
@@ -5376,4 +5376,59 @@ class SZh extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return '已达请求上限——$seconds 秒后重试（第 $attempt/$max 次）';
   }
+
+  @override
+  String get searchSourcePodcasts => '播客';
+
+  @override
+  String get searchHintPodcasts => '搜索播客...';
+
+  @override
+  String get podcastSheetEpisodes => '单集';
+
+  @override
+  String get podcastSheetNoEpisodes => '单集列表不可用';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count 集';
+  }
+
+  @override
+  String get podcastDiscoverTrending => '热门播客';
+
+  @override
+  String get credentialsPodcastIndexSection => 'Podcast Index API';
+
+  @override
+  String get credentialsEnterPodcastIndexKey => '输入你的 Podcast Index API 密钥';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret => '输入你的 Podcast Index API 密文';
+
+  @override
+  String get credentialsPodcastIndexKeyValid => 'Podcast Index 密钥有效';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'Podcast Index 拒绝了密钥。请检查密钥对和系统时间';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      '播客搜索与单集追踪。使用 api.podcastindex.org 的免费密钥对。';
+
+  @override
+  String get welcomeSourceDescMusicBrainz => '开放的音乐百科：专辑、艺术家与版本。无需密钥。';
+
+  @override
+  String get welcomeSourceDescPodcastIndex => '开放的播客目录，支持按单集追踪。免费密钥对。';
+
+  @override
+  String get creditsPodcastIndexAttribution => '播客数据来自 Podcast Index。';
+
+  @override
+  String get credentialsApiSecret => 'API 密文';
+
+  @override
+  String get markAllListened => '全部标记为已收听';
 }

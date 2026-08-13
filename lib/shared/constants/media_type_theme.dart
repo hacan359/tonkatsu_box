@@ -22,7 +22,7 @@ abstract final class MediaTypeTheme {
 
   static Color get bookColor => AppColors.bookAccent;
 
-  static Color get musicColor => AppColors.musicAccent;
+  static Color get audioColor => AppColors.audioAccent;
 
   static Color get customColor => AppColors.customAccent;
 
@@ -35,7 +35,7 @@ abstract final class MediaTypeTheme {
         MediaType.manga => Icons.auto_stories,
         MediaType.anime => Icons.play_circle_outline,
         MediaType.book => Icons.menu_book,
-        MediaType.music => Icons.album,
+        MediaType.audio => Icons.headphones,
         MediaType.custom => Icons.dashboard_customize,
       };
 
@@ -49,7 +49,7 @@ abstract final class MediaTypeTheme {
         MediaType.manga => Icons.auto_stories,
         MediaType.anime => Icons.play_circle_outline,
         MediaType.book => Icons.menu_book,
-        MediaType.music => Icons.album_outlined,
+        MediaType.audio => Icons.headphones_outlined,
         MediaType.custom => Icons.dashboard_customize,
       };
 
@@ -82,7 +82,7 @@ abstract final class MediaTypeTheme {
         MediaType.manga => mangaColor,
         MediaType.anime => animeColor,
         MediaType.book => bookColor,
-        MediaType.music => musicColor,
+        MediaType.audio => audioColor,
         MediaType.custom => customColor,
       };
 }

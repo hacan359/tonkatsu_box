@@ -1,10 +1,11 @@
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_kind.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/utils/stable_id.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('Album', () {
+  group('AudioItem', () {
     group('fromMusicBrainzReleaseGroup', () {
       final Map<String, dynamic> searchDoc = <String, dynamic>{
         'id': 'f5093c06-23e3-404f-aeaa-40f72885ee3a',
@@ -29,11 +30,11 @@ void main() {
       };
 
       test('parses a search doc', () {
-        final Album album = Album.fromMusicBrainzReleaseGroup(searchDoc);
+        final AudioItem album = AudioItem.fromMusicBrainzReleaseGroup(searchDoc);
 
         expect(album.id, fnv1a64('f5093c06-23e3-404f-aeaa-40f72885ee3a'));
         expect(album.source, DataSource.musicBrainz);
-        expect(album.mbid, 'f5093c06-23e3-404f-aeaa-40f72885ee3a');
+        expect(album.nativeId, 'f5093c06-23e3-404f-aeaa-40f72885ee3a');
         expect(album.title, 'The Dark Side of the Moon');
         expect(album.artists, <String>['Pink Floyd']);
         expect(
@@ -69,7 +70,7 @@ void main() {
           ],
         };
 
-        final Album album = Album.fromMusicBrainzReleaseGroup(lookup);
+        final AudioItem album = AudioItem.fromMusicBrainzReleaseGroup(lookup);
 
         expect(album.rating, closeTo(9.5, 0.001));
         expect(album.ratingCount, 106);
@@ -77,7 +78,7 @@ void main() {
       });
 
       test('tolerates a minimal payload', () {
-        final Album album = Album.fromMusicBrainzReleaseGroup(
+        final AudioItem album = AudioItem.fromMusicBrainzReleaseGroup(
           <String, dynamic>{'id': 'abc'},
         );
 
@@ -88,7 +89,7 @@ void main() {
       });
 
       test('extracts the year from a truncated date', () {
-        final Album album = Album.fromMusicBrainzReleaseGroup(
+        final AudioItem album = AudioItem.fromMusicBrainzReleaseGroup(
           <String, dynamic>{'id': 'abc', 'first-release-date': '1969'},
         );
 
@@ -98,10 +99,10 @@ void main() {
 
     group('toDb / fromDb', () {
       test('round-trips every field', () {
-        const Album album = Album(
+        const AudioItem album = AudioItem(
           id: 42,
           source: DataSource.musicBrainz,
-          mbid: 'mbid-42',
+          nativeId: 'mbid-42',
           title: 'Wish You Were Here',
           artists: <String>['Pink Floyd'],
           artistMbids: <String>['a-1'],
@@ -126,11 +127,11 @@ void main() {
           cachedAt: 1700000000,
         );
 
-        final Album restored = Album.fromDb(album.toDb());
+        final AudioItem restored = AudioItem.fromDb(album.toDb());
 
         expect(restored.id, album.id);
         expect(restored.source, album.source);
-        expect(restored.mbid, album.mbid);
+        expect(restored.nativeId, album.nativeId);
         expect(restored.title, album.title);
         expect(restored.artists, album.artists);
         expect(restored.artistMbids, album.artistMbids);
@@ -156,10 +157,10 @@ void main() {
       });
 
       test('empty lists store as NULL and read back empty', () {
-        const Album album = Album(
+        const AudioItem album = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
         );
 
@@ -167,7 +168,7 @@ void main() {
         expect(row['artists'], isNull);
         expect(row['genres'], isNull);
 
-        final Album restored = Album.fromDb(row);
+        final AudioItem restored = AudioItem.fromDb(row);
         expect(restored.artists, isEmpty);
         expect(restored.genres, isEmpty);
       });
@@ -175,40 +176,40 @@ void main() {
 
     group('toExport', () {
       test('omits cached_at', () {
-        const Album album = Album(
+        const AudioItem album = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
           cachedAt: 123,
         );
 
         expect(album.toExport().containsKey('cached_at'), isFalse);
-        expect(album.toExport()['mbid'], 'm');
+        expect(album.toExport()['native_id'], 'm');
       });
     });
 
     group('withLookupDetails', () {
       test('fills lookup extras without wiping the row', () {
-        const Album row = Album(
+        const AudioItem row = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
           tags: <String>['rock'],
           listenCount: 500,
         );
-        const Album full = Album(
+        const AudioItem full = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
           genres: <String>['progressive rock'],
           rating: 9.5,
           ratingCount: 106,
         );
 
-        final Album merged = row.withLookupDetails(full);
+        final AudioItem merged = row.withLookupDetails(full);
 
         expect(merged.genres, <String>['progressive rock']);
         expect(merged.rating, 9.5);
@@ -218,16 +219,16 @@ void main() {
       });
 
       test('fills a missing artist credit from the lookup', () {
-        const Album row = Album(
+        const AudioItem row = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
         );
-        const Album full = Album(
+        const AudioItem full = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
           artists: <String>['7раса'],
           artistMbids: <String>['a-1'],
@@ -235,7 +236,7 @@ void main() {
           releaseYear: 2004,
         );
 
-        final Album merged = row.withLookupDetails(full);
+        final AudioItem merged = row.withLookupDetails(full);
 
         expect(merged.artists, <String>['7раса']);
         expect(merged.artistMbids, <String>['a-1']);
@@ -244,17 +245,17 @@ void main() {
       });
 
       test('keeps the row artist credit over the lookup one', () {
-        const Album row = Album(
+        const AudioItem row = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
           artists: <String>['Row Artist'],
         );
-        const Album full = Album(
+        const AudioItem full = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
           artists: <String>['Lookup Artist'],
         );
@@ -269,20 +270,20 @@ void main() {
     group('helpers', () {
       test('coverUrlForReleaseGroup builds sized urls', () {
         expect(
-          Album.coverUrlForReleaseGroup('m', size: 250),
+          AudioItem.coverUrlForReleaseGroup('m', size: 250),
           'https://coverartarchive.org/release-group/m/front-250',
         );
         expect(
-          Album.coverUrlForRelease('r'),
+          AudioItem.coverUrlForRelease('r'),
           'https://coverartarchive.org/release/r/front-500',
         );
       });
 
       test('totalLengthMinutes floors milliseconds', () {
-        const Album album = Album(
+        const AudioItem album = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 't',
           totalLengthMs: 2661000,
         );
@@ -290,19 +291,91 @@ void main() {
       });
 
       test('equality is (id, source)', () {
-        const Album a = Album(
+        const AudioItem a = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 'a',
         );
-        const Album b = Album(
+        const AudioItem b = AudioItem(
           id: 1,
           source: DataSource.musicBrainz,
-          mbid: 'm',
+          nativeId: 'm',
           title: 'b',
         );
         expect(a, equals(b));
+      });
+    });
+
+    group('fromPodcastIndexFeed', () {
+      final Map<String, dynamic> feed = <String, dynamic>{
+        'id': 197123,
+        'podcastGuid': '17457c36-46b7-5d1a-825b-0860515bea7d',
+        'title': 'Radiolab',
+        'author': 'WNYC Studios',
+        'description': '<p>Curiosity bender &amp; sound design.</p>',
+        'language': 'en-us',
+        'categories': <String, dynamic>{'67': 'Science', '28': 'History'},
+        'episodeCount': 665,
+        'artwork': 'https://example.com/art.jpg',
+        'image': 'https://example.com/image.jpg',
+      };
+
+      test('uses the feed id as-is and marks the podcast kind', () {
+        final AudioItem podcast = AudioItem.fromPodcastIndexFeed(feed);
+
+        expect(podcast.id, 197123);
+        expect(podcast.kind, AudioKind.podcast);
+        expect(podcast.isPodcast, isTrue);
+        expect(podcast.source, DataSource.podcastIndex);
+        expect(podcast.nativeId, '17457c36-46b7-5d1a-825b-0860515bea7d');
+      });
+
+      test('maps author, categories, language and stripped description', () {
+        final AudioItem podcast = AudioItem.fromPodcastIndexFeed(feed);
+
+        expect(podcast.artists, <String>['WNYC Studios']);
+        expect(podcast.genres, containsAll(<String>['Science', 'History']));
+        expect(podcast.language, 'en-us');
+        expect(podcast.description, 'Curiosity bender & sound design.');
+        expect(podcast.trackCount, 665);
+        expect(podcast.coverUrl, 'https://example.com/art.jpg');
+        expect(
+          podcast.externalUrl,
+          'https://podcastindex.org/podcast/197123',
+        );
+      });
+
+      test('falls back to the feed id when podcastGuid is absent', () {
+        final Map<String, dynamic> bare = <String, dynamic>{
+          'id': 42,
+          'title': 'Bare',
+        };
+        final AudioItem podcast = AudioItem.fromPodcastIndexFeed(bare);
+        expect(podcast.nativeId, '42');
+        expect(podcast.artists, isEmpty);
+        expect(podcast.description, isNull);
+      });
+
+      test('round-trips through toDb / fromDb with the podcast columns', () {
+        final AudioItem podcast = AudioItem.fromPodcastIndexFeed(feed);
+        final AudioItem restored = AudioItem.fromDb(podcast.toDb());
+
+        expect(restored.kind, AudioKind.podcast);
+        expect(restored.description, podcast.description);
+        expect(restored.language, podcast.language);
+        expect(restored.nativeId, podcast.nativeId);
+        expect(restored.genres, podcast.genres);
+      });
+
+      test('unknown kind in a row falls back to album', () {
+        expect(AudioKind.fromName('weird'), AudioKind.album);
+        expect(AudioKind.fromName(null), AudioKind.album);
+      });
+
+      test('card labels split the kinds like anime formats', () {
+        expect(AudioKind.album.cardLabel, 'Music');
+        expect(AudioKind.podcast.cardLabel, 'Podcast');
       });
     });
   });

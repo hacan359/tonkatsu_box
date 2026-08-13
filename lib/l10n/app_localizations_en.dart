@@ -162,7 +162,7 @@ class SEn extends S {
   String get mediaTypeBook => 'Book';
 
   @override
-  String get mediaTypeMusic => 'Music';
+  String get mediaTypeAudio => 'Audio';
 
   @override
   String get mediaTypeCustom => 'Custom';
@@ -5660,4 +5660,64 @@ class SEn extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return 'Rate limit reached — retrying in ${seconds}s (attempt $attempt/$max)';
   }
+
+  @override
+  String get searchSourcePodcasts => 'Podcasts';
+
+  @override
+  String get searchHintPodcasts => 'Search podcasts...';
+
+  @override
+  String get podcastSheetEpisodes => 'Episodes';
+
+  @override
+  String get podcastSheetNoEpisodes => 'Episode list unavailable';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count episodes';
+  }
+
+  @override
+  String get podcastDiscoverTrending => 'Trending podcasts';
+
+  @override
+  String get credentialsPodcastIndexSection => 'Podcast Index API';
+
+  @override
+  String get credentialsEnterPodcastIndexKey =>
+      'Enter your Podcast Index API key';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret =>
+      'Enter your Podcast Index API secret';
+
+  @override
+  String get credentialsPodcastIndexKeyValid => 'Podcast Index keys are valid';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'Podcast Index rejected the keys. Check the pair and the system clock';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      'Podcast search and episode tracking. Uses a free key/secret pair from api.podcastindex.org.';
+
+  @override
+  String get welcomeSourceDescMusicBrainz =>
+      'Open music encyclopedia: albums, artists and editions. No key needed.';
+
+  @override
+  String get welcomeSourceDescPodcastIndex =>
+      'Open podcast catalog with episode-level tracking. Free key/secret pair.';
+
+  @override
+  String get creditsPodcastIndexAttribution =>
+      'Podcast data from Podcast Index.';
+
+  @override
+  String get credentialsApiSecret => 'API Secret';
+
+  @override
+  String get markAllListened => 'Mark all listened';
 }

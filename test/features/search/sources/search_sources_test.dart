@@ -44,6 +44,7 @@ void main() {
         'hardcover',
         'comicvine',
         'musicbrainz',
+        'podcastindex',
       ]);
     });
   });

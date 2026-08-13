@@ -9,16 +9,40 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
-- **Music as a new media type, backed by MusicBrainz**
+- **Audio as a new media type: music and podcasts**
 
-  Albums join the library as the tenth media type. Search, browse and
-  filters run against MusicBrainz (keyless, rate-limit friendly), covers
-  come from Cover Art Archive, popularity and the "New releases" discover
-  row from ListenBrainz. Locally we store the album cache (title, artist,
-  type, year, genres, rating, picked edition), the track list of that
-  edition, and per-collection listened-track marks with dates — so the
-  tracker, statistics, export/import and backup all work offline. Music
-  cards title as "Artist — Album".
+  One "Audio" tab covers two kinds of records, the way books cover prose
+  and comics. Music (albums) comes from MusicBrainz, with covers from
+  Cover Art Archive and new-release / popularity data from ListenBrainz;
+  podcasts come from Podcast Index. Search and browse with genre, type,
+  year, category and language filters, two discover rows ("New releases"
+  and "Trending podcasts"), and per-track / per-episode listened tracking:
+  albums get the edition picker and its track list, podcasts get a dated
+  episode checklist with year spans, progress bars, whole-span toggles and
+  incremental pickup of newly published episodes. Cards title as
+  "Artist — Album" / "Author — Podcast" and caption as "Music" / "Podcast".
+  Statistics, export/import, backup and the selfhost web build all cover
+  the new type.
+
+  Podcast Index needs a key/secret pair: release builds ship with a
+  built-in one, and Settings → Credentials or the welcome wizard accept a
+  personal pair with a Test button; the keys travel with the settings dump
+  and backups. On the selfhost web build the server signs proxied requests
+  itself, so the secret never reaches the browser.
+
+### Fixed
+
+- **Import no longer stamps today's date into empty started/completed fields**
+
+  Restoring an item's status marks the transition with "now" (the normal
+  in-app behaviour), and the import then only overwrote non-empty dates from
+  the file — so an item exported as completed with no dates came back
+  completed "today". The file's dates now win verbatim, including explicit
+  nulls.
+
+  * lib/core/services/import_service.dart (ImportService._restoreUserData):
+    Passes clearStartedAt / clearCompletedAt when the exported item carries a
+    status but no dates, undoing the stamp the status write just made.
 
 ## [0.42.0] - 2026-08-11
 

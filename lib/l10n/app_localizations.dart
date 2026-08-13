@@ -405,11 +405,11 @@ abstract class S {
   /// **'Book'**
   String get mediaTypeBook;
 
-  /// No description provided for @mediaTypeMusic.
+  /// No description provided for @mediaTypeAudio.
   ///
   /// In en, this message translates to:
-  /// **'Music'**
-  String get mediaTypeMusic;
+  /// **'Audio'**
+  String get mediaTypeAudio;
 
   /// No description provided for @mediaTypeCustom.
   ///
@@ -10033,6 +10033,108 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Rate limit reached — retrying in {seconds}s (attempt {attempt}/{max})'**
   String simklImportRateLimitWait(int seconds, int attempt, int max);
+
+  /// No description provided for @searchSourcePodcasts.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcasts'**
+  String get searchSourcePodcasts;
+
+  /// No description provided for @searchHintPodcasts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search podcasts...'**
+  String get searchHintPodcasts;
+
+  /// No description provided for @podcastSheetEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes'**
+  String get podcastSheetEpisodes;
+
+  /// No description provided for @podcastSheetNoEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Episode list unavailable'**
+  String get podcastSheetNoEpisodes;
+
+  /// No description provided for @podcastEpisodesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} episodes'**
+  String podcastEpisodesCount(int count);
+
+  /// No description provided for @podcastDiscoverTrending.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending podcasts'**
+  String get podcastDiscoverTrending;
+
+  /// No description provided for @credentialsPodcastIndexSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast Index API'**
+  String get credentialsPodcastIndexSection;
+
+  /// No description provided for @credentialsEnterPodcastIndexKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your Podcast Index API key'**
+  String get credentialsEnterPodcastIndexKey;
+
+  /// No description provided for @credentialsEnterPodcastIndexSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your Podcast Index API secret'**
+  String get credentialsEnterPodcastIndexSecret;
+
+  /// No description provided for @credentialsPodcastIndexKeyValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast Index keys are valid'**
+  String get credentialsPodcastIndexKeyValid;
+
+  /// No description provided for @credentialsPodcastIndexKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast Index rejected the keys. Check the pair and the system clock'**
+  String get credentialsPodcastIndexKeyInvalid;
+
+  /// No description provided for @welcomeApiPodcastIndexDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast search and episode tracking. Uses a free key/secret pair from api.podcastindex.org.'**
+  String get welcomeApiPodcastIndexDesc;
+
+  /// No description provided for @welcomeSourceDescMusicBrainz.
+  ///
+  /// In en, this message translates to:
+  /// **'Open music encyclopedia: albums, artists and editions. No key needed.'**
+  String get welcomeSourceDescMusicBrainz;
+
+  /// No description provided for @welcomeSourceDescPodcastIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Open podcast catalog with episode-level tracking. Free key/secret pair.'**
+  String get welcomeSourceDescPodcastIndex;
+
+  /// No description provided for @creditsPodcastIndexAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast data from Podcast Index.'**
+  String get creditsPodcastIndexAttribution;
+
+  /// No description provided for @credentialsApiSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'API Secret'**
+  String get credentialsApiSecret;
+
+  /// No description provided for @markAllListened.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all listened'**
+  String get markAllListened;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

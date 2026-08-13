@@ -1,5 +1,5 @@
-import 'package:core/models/album.dart';
-import 'package:core/models/album_track.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:dio/dio.dart';
 
 import 'musicbrainz_http_client.dart';
@@ -13,7 +13,7 @@ class MusicBrainzReleaseGroupApi {
 
   /// Lucene search over release-groups; an empty [query] is valid (Browse).
   /// [queryField] restricts the text to one field (`artist`, `releasegroup`).
-  Future<(List<Album>, bool hasMore, int total)> search({
+  Future<(List<AudioItem>, bool hasMore, int total)> search({
     String query = '',
     String? queryField,
     String? primaryType,
@@ -33,7 +33,7 @@ class MusicBrainzReleaseGroupApi {
       yearFrom: yearFrom,
       yearTo: yearTo,
     );
-    if (lucene.isEmpty) return (const <Album>[], false, 0);
+    if (lucene.isEmpty) return (const <AudioItem>[], false, 0);
 
     try {
       final Response<dynamic> response = await _client.get(
@@ -50,10 +50,10 @@ class MusicBrainzReleaseGroupApi {
           data['release-groups'] as List<dynamic>? ?? <dynamic>[];
       final int total = (data['count'] as num?)?.toInt() ?? 0;
 
-      final List<Album> albums = groups
+      final List<AudioItem> albums = groups
           .whereType<Map<String, dynamic>>()
-          .map(Album.fromMusicBrainzReleaseGroup)
-          .where((Album a) => a.mbid.isNotEmpty)
+          .map(AudioItem.fromMusicBrainzReleaseGroup)
+          .where((AudioItem a) => a.nativeId.isNotEmpty)
           .toList();
       return (albums, page * perPage < total, total);
     } on DioException catch (e) {
@@ -62,7 +62,7 @@ class MusicBrainzReleaseGroupApi {
   }
 
   /// Full release-group with the extras search rows lack (genres, rating).
-  Future<Album?> getReleaseGroup(String mbid) async {
+  Future<AudioItem?> getReleaseGroup(String mbid) async {
     try {
       final Response<dynamic> response = await _client.get(
         'release-group/$mbid',
@@ -73,7 +73,7 @@ class MusicBrainzReleaseGroupApi {
       final Map<String, dynamic>? data =
           response.data as Map<String, dynamic>?;
       if (data == null) return null;
-      return Album.fromMusicBrainzReleaseGroup(data);
+      return AudioItem.fromMusicBrainzReleaseGroup(data);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return null;
       throw _client.handleDioException(e, 'Failed to load album');
@@ -130,10 +130,10 @@ class MusicBrainzReleaseGroupApi {
     return releases.isEmpty ? null : releases.first;
   }
 
-  /// Track list of one release. [albumId] keys the rows to the cached album.
-  Future<List<AlbumTrack>> getReleaseTracks(
+  /// Track list of one release. [audioId] keys the rows to the cached album.
+  Future<List<AudioTrack>> getReleaseTracks(
     String releaseMbid, {
-    required int albumId,
+    required int audioId,
   }) async {
     try {
       final Response<dynamic> response = await _client.get(
@@ -147,7 +147,7 @@ class MusicBrainzReleaseGroupApi {
       final List<dynamic> media =
           data['media'] as List<dynamic>? ?? <dynamic>[];
 
-      final List<AlbumTrack> tracks = <AlbumTrack>[];
+      final List<AudioTrack> tracks = <AudioTrack>[];
       for (final Object? medium in media) {
         if (medium is! Map<String, dynamic>) continue;
         final int disc = (medium['position'] as num?)?.toInt() ?? 1;
@@ -155,16 +155,16 @@ class MusicBrainzReleaseGroupApi {
             medium['tracks'] as List<dynamic>? ?? <dynamic>[];
         for (final Object? track in rawTracks) {
           if (track is! Map<String, dynamic>) continue;
-          tracks.add(AlbumTrack.fromMusicBrainzTrack(
+          tracks.add(AudioTrack.fromMusicBrainzTrack(
             track,
-            albumId: albumId,
+            audioId: audioId,
             discNumber: disc,
           ));
         }
       }
       return tracks;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) return const <AlbumTrack>[];
+      if (e.response?.statusCode == 404) return const <AudioTrack>[];
       throw _client.handleDioException(e, 'Failed to load track list');
     }
   }

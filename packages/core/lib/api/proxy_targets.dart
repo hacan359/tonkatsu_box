@@ -13,6 +13,7 @@ enum ProxyTarget {
   mangadex('api.mangadex.org'),
   musicbrainz('musicbrainz.org'),
   openlibrary('openlibrary.org'),
+  podcastindex('api.podcastindex.org'),
   ra('retroachievements.org'),
   screenscraper('api.screenscraper.fr'),
   simkl('api.simkl.com'),

@@ -1,4 +1,4 @@
-import 'package:core/models/album.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/collected_item_info.dart';
@@ -30,7 +30,7 @@ typedef CollectedIds = ({
   Set<(DataSource, int)> mangaKeys,
   Set<(DataSource, int)> animeKeys,
   Set<(DataSource, int)> bookKeys,
-  Set<(DataSource, int)> albumKeys,
+  Set<(DataSource, int)> audioKeys,
 });
 
 const CollectedIds kNoCollected = (
@@ -41,7 +41,7 @@ const CollectedIds kNoCollected = (
   mangaKeys: <(DataSource, int)>{},
   animeKeys: <(DataSource, int)>{},
   bookKeys: <(DataSource, int)>{},
-  albumKeys: <(DataSource, int)>{},
+  audioKeys: <(DataSource, int)>{},
 );
 
 final FutureProvider<CollectedIds> collectedIdsProvider =
@@ -63,7 +63,7 @@ final FutureProvider<CollectedIds> collectedIdsProvider =
   final Map<int, List<CollectedItemInfo>> books =
       await ref.watch(collectedBookIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> albums =
-      await ref.watch(collectedMusicIdsProvider.future);
+      await ref.watch(collectedAudioIdsProvider.future);
 
   return (
     movieKeys: <(DataSource, int)>{
@@ -79,7 +79,7 @@ final FutureProvider<CollectedIds> collectedIdsProvider =
     mangaKeys: mangas.sourceKeys,
     animeKeys: animes.sourceKeys,
     bookKeys: books.sourceKeys,
-    albumKeys: albums.sourceKeys,
+    audioKeys: albums.sourceKeys,
   );
 });
 
@@ -310,24 +310,27 @@ class BrowseCard extends StatelessWidget {
       );
     }
 
-    if (entry is Album) {
+    if (entry is AudioItem) {
       final bool inColl =
-          collected.albumKeys.contains((entry.source, entry.id));
+          collected.audioKeys.contains((entry.source, entry.id));
       return MediaPosterCard(
         variant: variant,
         title: entry.title,
         subtitle: entry.artistsString,
         imageUrl: entry.coverUrl ?? '',
-        cacheImageType: ImageType.albumCover,
+        cacheImageType: ImageType.audioCover,
         cacheImageId: coverImageId(
-          mediaType: MediaType.music,
+          mediaType: MediaType.audio,
           externalId: entry.id,
           source: entry.source,
         ),
         apiRating: entry.rating,
         year: entry.releaseYear,
         mediaType: mediaType,
-        placeholderIcon: Icons.album_outlined,
+        typeLabelOverride: entry.kind.cardLabel,
+        placeholderIcon: entry.isPodcast
+            ? Icons.podcasts_outlined
+            : Icons.album_outlined,
         isInCollection: inColl,
         source: entry.source,
         onSourceTap: openUrlCallback(entry.externalUrl),
