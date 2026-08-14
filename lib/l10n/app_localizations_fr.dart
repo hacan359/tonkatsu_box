@@ -3659,6 +3659,28 @@ class SFr extends S {
       'Personnalisez les collections avec des jacquettes et des descriptions';
 
   @override
+  String get settingsRichHeroStyle => 'Style de la bannière de collection';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'Apparence de l\'en-tête de collection enrichie';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Classique';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Bande dessinée';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Album d\'autocollants';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Brutaliste';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Bandes';
+
+  @override
   String get settingsCardScale => 'Taille jacquettes';
 
   @override

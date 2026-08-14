@@ -5,6 +5,7 @@
 
 import 'dart:io';
 
+import 'package:core/api/image_proxy.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../../shared/constants/platform_features.dart';
+import '../selfhost/server_origin.dart';
+import 'image_cache_service.dart';
 import 'storage_root.dart';
 
 /// Overridden in `main.dart` with the value resolved at app startup.
@@ -26,15 +29,22 @@ final Provider<CollectionHeroService> collectionHeroServiceProvider =
     Provider<CollectionHeroService>(
   (Ref ref) => CollectionHeroService(
     rootDir: ref.watch(collectionsHeroDirProvider),
+    imageCache: ref.watch(imageCacheServiceProvider),
   ),
 );
 
 class CollectionHeroService {
-  const CollectionHeroService({required String rootDir}) : _rootDir = rootDir;
+  const CollectionHeroService({required String rootDir, ImageCacheService? imageCache})
+      : _rootDir = rootDir,
+        _imageCache = imageCache;
 
   static final Logger _log = Logger('CollectionHeroService');
 
   final String _rootDir;
+
+  /// Carries hero bytes to the server's image cache on web; unused on
+  /// desktop, where heroes are plain files next to the database.
+  final ImageCacheService? _imageCache;
 
   /// Resolves `<dataRoot>/collections/`, creating it if needed, and migrates
   /// any hero images left behind in the legacy `<appSupport>/collections/`
@@ -94,9 +104,15 @@ class CollectionHeroService {
 
   String? resolve(String? fileName) {
     if (fileName == null || fileName.isEmpty) return null;
-    // Hero images are files on the desktop's disk; a browser has neither the
-    // file nor File() — null makes every hero site fall back cleanly.
-    if (kIsWebBuild) return null;
+    // On web the hero lives in the server's image cache, so the resolved
+    // location is a URL; render sites branch on the scheme.
+    if (kIsWebBuild) {
+      return imageProxyUrl(
+        baseUrl: serverBaseUrl(),
+        type: ImageType.collectionHero,
+        imageId: fileName,
+      );
+    }
     return p.join(_rootDir, fileName);
   }
 
@@ -111,12 +127,12 @@ class CollectionHeroService {
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       dialogTitle: 'Cover image',
+      // A browser pick has no path — the bytes are all there is.
+      withData: kIsWebBuild,
     );
     if (result == null || result.files.isEmpty) return null;
 
     final PlatformFile picked = result.files.first;
-    final String? sourcePath = picked.path;
-    if (sourcePath == null) return null;
 
     final String ext = (picked.extension ?? p.extension(picked.name))
         .replaceFirst('.', '')
@@ -124,6 +140,21 @@ class CollectionHeroService {
     final String safeExt = _sanitizeExtension(ext);
     final int ts = DateTime.now().millisecondsSinceEpoch;
     final String fileName = 'hero_${collectionId}_$ts.$safeExt';
+
+    if (kIsWebBuild) {
+      final Uint8List? bytes = picked.bytes;
+      if (bytes == null || bytes.isEmpty) return null;
+      final bool ok = await _imageCache?.saveImageBytes(
+            ImageType.collectionHero,
+            fileName,
+            bytes,
+          ) ??
+          false;
+      return ok ? fileName : null;
+    }
+
+    final String? sourcePath = picked.path;
+    if (sourcePath == null) return null;
     final String target = absolutePathFor(fileName);
 
     try {
@@ -149,6 +180,14 @@ class CollectionHeroService {
     final String safeExt = _sanitizeExtension(extension);
     final int ts = DateTime.now().millisecondsSinceEpoch;
     final String fileName = 'hero_${collectionId}_$ts.$safeExt';
+    if (kIsWebBuild) {
+      await _imageCache?.saveImageBytes(
+        ImageType.collectionHero,
+        fileName,
+        Uint8List.fromList(bytes),
+      );
+      return fileName;
+    }
     await File(absolutePathFor(fileName)).writeAsBytes(bytes);
     return fileName;
   }

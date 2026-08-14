@@ -103,6 +103,7 @@ class ConfigService {
     SettingsKeys.discordRpcEnabled,
     SettingsKeys.discordRaSyncEnabled,
     SettingsKeys.richCollectionsEnabled,
+    SettingsKeys.richHeroStyle,
     SettingsKeys.hideEmptyMediaTypeChevrons,
   ];
 

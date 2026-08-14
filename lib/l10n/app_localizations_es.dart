@@ -3653,6 +3653,28 @@ class SEs extends S {
       'Personaliza las colecciones con una imagen de portada y una descripción';
 
   @override
+  String get settingsRichHeroStyle => 'Estilo del banner de colección';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'Aspecto de la cabecera de colección enriquecida';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Clásico';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Cómic';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Álbum de pegatinas';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Brutalista';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Tiras';
+
+  @override
   String get settingsCardScale => 'Tamaño de portada';
 
   @override

@@ -3664,6 +3664,28 @@ class SRu extends S {
       'Обложка и описание вместо мозаики';
 
   @override
+  String get settingsRichHeroStyle => 'Стиль баннера коллекции';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'Как выглядит шапка персонализированной коллекции';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Классический';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Комикс';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Альбом с наклейками';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Брутализм';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Полосы';
+
+  @override
   String get settingsCardScale => 'Размер обложек';
 
   @override

@@ -3639,6 +3639,28 @@ class SPt extends S {
       'Personalize coleções com imagem de capa e descrição';
 
   @override
+  String get settingsRichHeroStyle => 'Estilo do banner da coleção';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'Aparência do cabeçalho da coleção enriquecida';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Clássico';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Quadrinhos';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Álbum de figurinhas';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Brutalista';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Tiras';
+
+  @override
   String get settingsCardScale => 'Tamanho da capa';
 
   @override

@@ -22,6 +22,18 @@ String imageProxyPath({
   ).toString();
 }
 
+/// [imageProxyPath] prefixed with the server origin — the form every
+/// client-side fetch and upload uses.
+String imageProxyUrl({
+  required String baseUrl,
+  required ImageType type,
+  required String imageId,
+  String? sourceUrl,
+}) {
+  return '$baseUrl'
+      '${imageProxyPath(type: type, imageId: imageId, sourceUrl: sourceUrl)}';
+}
+
 ImageType? imageTypeForFolder(String folder) => _byFolder[folder];
 
 final Map<String, ImageType> _byFolder = <String, ImageType>{
