@@ -62,6 +62,8 @@ import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
 import 'profiles_screen.dart';
 import '../providers/profile_provider.dart';
+import '../../../shared/constants/rich_hero_style.dart';
+import '../../../shared/constants/rich_hero_style_ui.dart';
 
 /// Breakpoint for switching content width.
 const double _desktopBreakpoint = 800;
@@ -513,6 +515,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
           ),
+          if (settings.richCollectionsEnabled)
+            SettingsTile(
+              leadingIcon: Icons.style_outlined,
+              leadingColor: _kAppearanceColor,
+              title: l.settingsRichHeroStyle,
+              subtitle: l.settingsRichHeroStyleSubtitle,
+              value: settings.richHeroStyle.localizedLabel(l),
+              onTap: () => _showRichHeroStylePicker(settings),
+            ),
           SettingsTile(
             leadingIcon: Icons.photo_size_select_large_outlined,
             leadingColor: _kAppearanceColor,
@@ -868,6 +879,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onSelected: (DateFormatPreset preset) => ref
           .read(settingsNotifierProvider.notifier)
           .setDateFormat(preset.id),
+    );
+  }
+
+  void _showRichHeroStylePicker(SettingsState settings) {
+    final S l = S.of(context);
+    _showChoicePicker<RichHeroStyle>(
+      title: l.settingsRichHeroStyle,
+      values: RichHeroStyle.values,
+      isSelected: (RichHeroStyle style) => settings.richHeroStyle == style,
+      label: (RichHeroStyle style) => style.localizedLabel(l),
+      onSelected: (RichHeroStyle style) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setRichHeroStyle(style),
     );
   }
 

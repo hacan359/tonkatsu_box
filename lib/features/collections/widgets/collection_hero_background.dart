@@ -4,11 +4,10 @@
 // Both gradients end in [AppColors.background] so the image edge does not
 // cut against the background. On mobile the gradients are wider.
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
+import 'hero_image.dart';
 
 /// The image fills the parent's size; the parent is responsible for sizing
 /// and corner rounding.
@@ -57,12 +56,14 @@ class CollectionHeroBackground extends StatelessWidget {
         fit: StackFit.expand,
         children: <Widget>[
           // Image: top-right is the focal point.
-          Image.file(
-            File(imagePath),
+          Image(
+            image: ResizeImage(
+              heroImageProviderFor(imagePath),
+              width: effectiveCacheWidth,
+            ),
             fit: BoxFit.cover,
             alignment: Alignment.topRight,
             filterQuality: FilterQuality.medium,
-            cacheWidth: effectiveCacheWidth,
             errorBuilder: (_, _, _) =>
                 ColoredBox(color: AppColors.surface),
           ),

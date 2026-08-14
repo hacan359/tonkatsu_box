@@ -9,6 +9,40 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Selectable banner style for rich collection view**
+
+  Settings → Appearance gains a "Collection banner style" choice (shown
+  while rich collection view is on): Classic, Comic, Sticker album,
+  Brutalist and Strips. Every non-classic style shows a per-status summary
+  of the collection — a proportional color bar with a legend, round
+  status badges or boxy counters, depending on the style. The comic and
+  sticker styles draw on a fixed paper-and-ink palette; the others follow
+  the app theme.
+
+  * lib/shared/constants/rich_hero_style.dart (RichHeroStyle): New enum,
+    id-keyed with a classic fallback in RichHeroStyle.fromId.
+  * lib/shared/constants/rich_hero_style_ui.dart (RichHeroStyleUi.localizedLabel): New.
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart
+    (RichCollectionHero, _ComicHero, _StickerHero, _BrutalistHero,
+    _SlatsHero, _HeroStats, _StatusBar, _StatusLegend, _StatusBadges,
+    _ImageSlice, _HalftonePainter, _DotGridPainter): New — the style
+    dispatcher and the four non-classic banners.
+  * lib/features/collections/widgets/hero_image.dart (heroImageProviderFor,
+    HeroCoverImage): New — shared hero ImageProvider resolution and the
+    single cache-width policy for hero renders.
+  * lib/features/collections/widgets/rich/rich_collection_body.dart
+    (RichHeroBanner): Reuse HeroCoverImage instead of a local copy.
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.richHeroStyle,
+    SettingsState.richHeroStyle, SettingsNotifier.setRichHeroStyle,
+    SettingsNotifier.clearSettings): New typed setting persisted in prefs.
+  * lib/features/collections/providers/rich_collections_provider.dart
+    (richHeroStyleProvider): New test-safe provider.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._showRichHeroStylePicker): New picker tile.
+  * lib/core/services/config_service.dart: Include the style key in the
+    settings dump.
+  * lib/l10n/app_*.arb: settingsRichHeroStyle* keys in all locales.
+
 - **Audio as a new media type: music and podcasts**
 
   One "Audio" tab covers two kinds of records, the way books cover prose
@@ -30,7 +64,42 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   and backups. On the selfhost web build the server signs proxied requests
   itself, so the secret never reaches the browser.
 
+### Fixed
+
+- **Collection background image can be picked on the web build**
+
+  Picking a hero image in the collection editor silently did nothing in a
+  browser: the picked file has no filesystem path there. The web build now
+  uploads the picked bytes to the selfhost server's image cache and renders
+  the hero from its URL, so collection backgrounds work the same as on
+  desktop.
+
+  * packages/core/lib/models/image_type.dart (ImageType.collectionHero): New folder.
+  * packages/core/lib/api/image_proxy.dart (imageProxyUrl): New — the
+    origin-prefixed form of imageProxyPath every fetch and upload now uses.
+  * lib/core/services/collection_hero_service.dart (CollectionHeroService.pickAndSave,
+    CollectionHeroService.saveBytes, CollectionHeroService.resolve): Web
+    branches — upload via ImageCacheService.saveImageBytes, resolve to the
+    server URL.
+  * lib/core/services/image_cache_service.dart (ImageCacheService.saveImageBytes),
+    lib/shared/widgets/cached_image.dart, lib/features/collections/widgets/create_custom_item_dialog.dart:
+    Switch to imageProxyUrl.
+  * lib/features/collections/widgets/collection_hero_background.dart
+    (CollectionHeroBackground): Render through heroImageProviderFor so a
+    URL hero works.
+  * lib/features/collections/widgets/edit_collection_dialog.dart: Show the
+    Choose/Replace/Remove image controls on web — the picker no longer
+    needs a local filesystem.
+
 ### Changed
+
+- **Subfilter bar sits flush with the content below**
+
+  The media-type subfilter row lost its bottom padding, removing the
+  double gap between the chips and the collection header.
+
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar): Drop the
+    outer and inner bottom insets.
 
 - **Tag dialogs unified: search, in-place editing and persisted sorting everywhere**
 

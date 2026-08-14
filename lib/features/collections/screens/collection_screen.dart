@@ -45,7 +45,7 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
 import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
-import '../widgets/rich/rich_collection_body.dart';
+import '../widgets/rich/rich_hero_styles.dart';
 import '../providers/rich_collections_provider.dart';
 import '../widgets/tag_top_bar.dart';
 import '../widgets/tag_management_dialog.dart';
@@ -463,9 +463,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     // toggle is on, giving a stable template regardless of whether a hero exists.
     final bool isRich = richEnabled && !_isUncategorized;
 
-    final Widget? heroHeader = isRich
-        ? RichHeroBanner(
+    Widget? heroHeader(List<CollectionItem> items) => isRich
+        ? RichCollectionHero(
             collection: _collection!,
+            items: items,
             heroAbsolutePath: heroAbsPath,
           )
         : null;
@@ -498,7 +499,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         groupByTags: _groupByTags,
         isTableMode: _isTableMode,
         canEdit: _canEdit,
-        header: heroHeader,
+        header: heroHeader(items),
         onItemTap: _showItemDetails,
         onItemMove: _canEdit
             ? (CollectionItem item) => _handleMoveItem(item)

@@ -125,11 +125,11 @@ class _CreateCustomItemDialogState
       // The web build's cover cache is the server's, but only an uploaded
       // cover is guaranteed there — a URL cover previews via the url branch.
       if (!CustomMedia.isLocalCover(widget.existing?.coverUrl ?? '')) return;
-      final String url = serverBaseUrl() +
-          imageProxyPath(
-            type: ImageType.customCover,
-            imageId: '${widget.existing!.id}',
-          );
+      final String url = imageProxyUrl(
+        baseUrl: serverBaseUrl(),
+        type: ImageType.customCover,
+        imageId: '${widget.existing!.id}',
+      );
       setState(() => _cachedCoverUri = Uri.parse(url));
       return;
     }

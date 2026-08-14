@@ -7,6 +7,7 @@ import '../../../shared/constants/api_defaults.dart';
 import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_theme_id.dart';
+import '../../../shared/constants/rich_hero_style.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
@@ -112,6 +113,9 @@ abstract class SettingsKeys {
 
   static const String richCollectionsEnabled = 'rich_collections_enabled';
 
+  /// Rich hero banner style id (see [RichHeroStyle]).
+  static const String richHeroStyle = 'rich_hero_style';
+
   static const String hideEmptyMediaTypeChevrons =
       'hide_empty_media_type_chevrons';
 
@@ -172,6 +176,7 @@ class SettingsState {
     this.discordRpcEnabled = false,
     this.discordRaSyncEnabled = false,
     this.richCollectionsEnabled = false,
+    this.richHeroStyle = RichHeroStyle.classic,
     this.hideEmptyMediaTypeChevrons = false,
     this.alwaysShowSubcategories = false,
     this.dateFormat = SettingsKeys.dateFormatDefault,
@@ -242,6 +247,8 @@ class SettingsState {
 
   /// Hero image + description instead of mosaic.
   final bool richCollectionsEnabled;
+
+  final RichHeroStyle richHeroStyle;
 
   /// Hide media-type chevrons with zero items in the current filter bar.
   final bool hideEmptyMediaTypeChevrons;
@@ -372,6 +379,7 @@ class SettingsState {
     bool? discordRpcEnabled,
     bool? discordRaSyncEnabled,
     bool? richCollectionsEnabled,
+    RichHeroStyle? richHeroStyle,
     bool? hideEmptyMediaTypeChevrons,
     bool? alwaysShowSubcategories,
     String? dateFormat,
@@ -410,6 +418,7 @@ class SettingsState {
       discordRaSyncEnabled: discordRaSyncEnabled ?? this.discordRaSyncEnabled,
       richCollectionsEnabled:
           richCollectionsEnabled ?? this.richCollectionsEnabled,
+      richHeroStyle: richHeroStyle ?? this.richHeroStyle,
       hideEmptyMediaTypeChevrons:
           hideEmptyMediaTypeChevrons ?? this.hideEmptyMediaTypeChevrons,
       alwaysShowSubcategories:
@@ -584,6 +593,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.discordRaSyncEnabled) ?? false;
     final bool richCollectionsEnabled =
         _prefs.getBool(SettingsKeys.richCollectionsEnabled) ?? false;
+    final RichHeroStyle richHeroStyle =
+        RichHeroStyle.fromId(_prefs.getString(SettingsKeys.richHeroStyle));
     final bool hideEmptyMediaTypeChevrons =
         _prefs.getBool(SettingsKeys.hideEmptyMediaTypeChevrons) ?? false;
     final bool alwaysShowSubcategories =
@@ -634,6 +645,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       discordRpcEnabled: discordRpcEnabled,
       discordRaSyncEnabled: discordRaSyncEnabled,
       richCollectionsEnabled: richCollectionsEnabled,
+      richHeroStyle: richHeroStyle,
       hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
       alwaysShowSubcategories: alwaysShowSubcategories,
       dateFormat: dateFormat,
@@ -972,6 +984,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(richCollectionsEnabled: enabled);
   }
 
+  Future<void> setRichHeroStyle(RichHeroStyle style) async {
+    await _prefs.setString(SettingsKeys.richHeroStyle, style.id);
+    state = state.copyWith(richHeroStyle: style);
+  }
+
   Future<void> setHideEmptyMediaTypeChevrons({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.hideEmptyMediaTypeChevrons, enabled);
     state = state.copyWith(hideEmptyMediaTypeChevrons: enabled);
@@ -1171,6 +1188,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.discordRpcEnabled);
     await _prefs.remove(SettingsKeys.discordRaSyncEnabled);
     await _prefs.remove(SettingsKeys.richCollectionsEnabled);
+    await _prefs.remove(SettingsKeys.richHeroStyle);
     await _prefs.remove(SettingsKeys.hideEmptyMediaTypeChevrons);
     await _prefs.remove(SettingsKeys.alwaysShowSubcategories);
     await _prefs.remove(SettingsKeys.dateFormat);

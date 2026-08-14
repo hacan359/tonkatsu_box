@@ -128,7 +128,11 @@ class ImageCacheService {
     if (kIsWebBuild) {
       try {
         await _dio.post<Object?>(
-          '${serverBaseUrl()}${imageProxyPath(type: type, imageId: imageId)}',
+          imageProxyUrl(
+            baseUrl: serverBaseUrl(),
+            type: type,
+            imageId: imageId,
+          ),
           data: Stream<List<int>>.value(bytes),
           options: Options(
             headers: <String, Object?>{

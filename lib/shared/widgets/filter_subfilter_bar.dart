@@ -86,7 +86,6 @@ class _SubfilterBarState extends State<SubfilterBar> {
       // the horizontal inset lives inside it (below) instead.
       padding: const EdgeInsets.only(
         top: AppSpacing.xs,
-        bottom: AppSpacing.xs,
       ),
       // Full-bleed band with no border or radius so the highlight reads as one
       // even row with no seams; the inner padding keeps the chips inset. Geometry
@@ -94,9 +93,10 @@ class _SubfilterBarState extends State<SubfilterBar> {
       // the color animates in.
       child: AnimatedContainer(
         duration: AppDurations.fast,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
+        padding: const EdgeInsets.only(
+          left: AppSpacing.sm,
+          right: AppSpacing.sm,
+          top: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: highlight?.withAlpha(38) ?? Colors.transparent,

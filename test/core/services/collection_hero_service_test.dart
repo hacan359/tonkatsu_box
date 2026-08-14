@@ -26,6 +26,26 @@ void main() {
     await File(path).writeAsString(content);
   }
 
+  group('CollectionHeroService.resolve', () {
+    test('should return null for null or empty file names', () {
+      final CollectionHeroService service =
+          CollectionHeroService(rootDir: newDir);
+
+      expect(service.resolve(null), isNull);
+      expect(service.resolve(''), isNull);
+    });
+
+    test('should join the file name onto the root dir', () {
+      final CollectionHeroService service =
+          CollectionHeroService(rootDir: newDir);
+
+      expect(
+        service.resolve('hero_1_2.jpg'),
+        p.join(newDir, 'hero_1_2.jpg'),
+      );
+    });
+  });
+
   group('CollectionHeroService.migrateLegacyHeroImages', () {
     test('moves hero files from legacy into the new dir', () async {
       await writeFile(p.join(legacyDir, 'hero_1_0.png'), 'a');

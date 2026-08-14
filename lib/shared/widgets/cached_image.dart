@@ -174,11 +174,12 @@ class _CachedImageState extends ConsumerState<CachedImage> {
     // without a CORS header — going through our own origin removes the
     // question and fills the server's cache on the way.
     final String url = kIsWebBuild
-        ? '${serverBaseUrl()}${imageProxyPath(
+        ? imageProxyUrl(
+            baseUrl: serverBaseUrl(),
             type: widget.imageType,
             imageId: widget.imageId,
             sourceUrl: imageUrl,
-          )}'
+          )
         : imageUrl;
     return Image.network(
       url,

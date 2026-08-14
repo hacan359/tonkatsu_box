@@ -3598,6 +3598,28 @@ class SEn extends S {
       'Personalize collections with a cover image and description';
 
   @override
+  String get settingsRichHeroStyle => 'Collection banner style';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'How the rich collection header looks';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Classic';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Comic';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Sticker album';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Brutalist';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Strips';
+
+  @override
   String get settingsCardScale => 'Cover size';
 
   @override

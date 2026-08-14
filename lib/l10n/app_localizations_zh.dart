@@ -3388,6 +3388,27 @@ class SZh extends S {
   String get settingsRichCollectionsSubtitle => '使用封面图片和描述个性化收藏';
 
   @override
+  String get settingsRichHeroStyle => '收藏横幅样式';
+
+  @override
+  String get settingsRichHeroStyleSubtitle => '个性化收藏页眉的外观';
+
+  @override
+  String get settingsRichHeroStyleClassic => '经典';
+
+  @override
+  String get settingsRichHeroStyleComic => '漫画';
+
+  @override
+  String get settingsRichHeroStyleStickers => '贴纸相册';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => '粗野主义';
+
+  @override
+  String get settingsRichHeroStyleSlats => '条带';
+
+  @override
   String get settingsCardScale => '封面大小';
 
   @override

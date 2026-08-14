@@ -6374,6 +6374,48 @@ abstract class S {
   /// **'Personalize collections with a cover image and description'**
   String get settingsRichCollectionsSubtitle;
 
+  /// No description provided for @settingsRichHeroStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection banner style'**
+  String get settingsRichHeroStyle;
+
+  /// No description provided for @settingsRichHeroStyleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the rich collection header looks'**
+  String get settingsRichHeroStyleSubtitle;
+
+  /// No description provided for @settingsRichHeroStyleClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get settingsRichHeroStyleClassic;
+
+  /// No description provided for @settingsRichHeroStyleComic.
+  ///
+  /// In en, this message translates to:
+  /// **'Comic'**
+  String get settingsRichHeroStyleComic;
+
+  /// No description provided for @settingsRichHeroStyleStickers.
+  ///
+  /// In en, this message translates to:
+  /// **'Sticker album'**
+  String get settingsRichHeroStyleStickers;
+
+  /// No description provided for @settingsRichHeroStyleBrutalist.
+  ///
+  /// In en, this message translates to:
+  /// **'Brutalist'**
+  String get settingsRichHeroStyleBrutalist;
+
+  /// No description provided for @settingsRichHeroStyleSlats.
+  ///
+  /// In en, this message translates to:
+  /// **'Strips'**
+  String get settingsRichHeroStyleSlats;
+
   /// No description provided for @settingsCardScale.
   ///
   /// In en, this message translates to:
