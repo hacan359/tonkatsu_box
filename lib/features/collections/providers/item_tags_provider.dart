@@ -16,6 +16,20 @@ final AsyncNotifierProvider<ItemTagsNotifier, Map<int, List<int>>>
   ItemTagsNotifier.new,
 );
 
+/// Tag id → how many items carry it, derived from [itemTagsProvider].
+final Provider<Map<int, int>> tagUsageCountsProvider =
+    Provider<Map<int, int>>((Ref ref) {
+  final Map<int, List<int>> itemTags =
+      ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
+  final Map<int, int> usage = <int, int>{};
+  for (final List<int> ids in itemTags.values) {
+    for (final int id in ids) {
+      usage[id] = (usage[id] ?? 0) + 1;
+    }
+  }
+  return usage;
+});
+
 class ItemTagsNotifier extends AsyncNotifier<Map<int, List<int>>> {
   @override
   Future<Map<int, List<int>>> build() async {

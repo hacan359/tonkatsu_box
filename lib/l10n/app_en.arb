@@ -837,6 +837,10 @@
     }
   },
   "tagManage": "Manage tags",
+  "tagSortTooltip": "Sort order",
+  "tagSortManual": "Manual",
+  "tagSortAlphaAsc": "Alphabetical (A–Z)",
+  "tagSortAlphaDesc": "Alphabetical (Z–A)",
   "tagAssign": "Assign tags",
   "tagNone": "No tags",
   "tagPickerTitle": "Tags",

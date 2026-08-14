@@ -1906,6 +1906,18 @@ class SEn extends S {
   String get tagManage => 'Manage tags';
 
   @override
+  String get tagSortTooltip => 'Sort order';
+
+  @override
+  String get tagSortManual => 'Manual';
+
+  @override
+  String get tagSortAlphaAsc => 'Alphabetical (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => 'Alphabetical (Z–A)';
+
+  @override
   String get tagAssign => 'Assign tags';
 
   @override

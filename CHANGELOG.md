@@ -32,6 +32,53 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Tag dialogs unified: search, in-place editing and persisted sorting everywhere**
+
+  "Manage tags" and the "Select tags" picker now share one body: a search
+  field that filters as you type and quick-creates via a "Create «…»" row,
+  and a sort menu — manual (drag order), A–Z or Z–A — whose choice is
+  remembered per profile and also orders the tag chip bar above a
+  collection and the narrow-screen filter sheet. Picker rows carry the full
+  editing set (background/text color dots, rename, delete, usage counts) —
+  those edits apply to the tag itself immediately, independent of the
+  checkbox selection. Creating a duplicate tag is no longer possible: the
+  create row hides when a name matches case-insensitively, and the database
+  layer resolves a racing insert to the existing tag instead of failing on
+  the UNIQUE constraint.
+
+  * lib/features/collections/widgets/tag_search_list.dart (TagSearchList): New —
+    shared search/create/sort body of both dialogs.
+  * lib/features/collections/widgets/tag_row.dart (TagRow, TagEditActions,
+    TagColorDot): New — shared editable row and the rename/recolor/delete flows.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    Rebuilt on TagSearchList + TagRow; prunes deleted ids before returning.
+  * lib/features/collections/widgets/tag_management_dialog.dart
+    (TagManagementDialog): Rebuilt on TagSearchList + TagRow.
+  * packages/core/lib/models/tag_sort_mode.dart (TagSortMode): New — sort
+    modes with the list-ordering logic.
+  * lib/shared/constants/tag_sort_mode_ui.dart (TagSortModeUi.localizedLabel):
+    New.
+  * lib/features/collections/providers/tag_sort_provider.dart
+    (TagSortModeNotifier): New — per-profile persistence of the sort mode.
+  * lib/features/collections/providers/item_tags_provider.dart
+    (tagUsageCountsProvider): New — tag id → item count derivation.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._visibleTags): Applies the shared sort mode to
+    the chip bar and the filter sheet.
+  * packages/core/lib/database/dao/global_tag_dao.dart (GlobalTagDao.create):
+    Adopts the existing row on a UNIQUE name conflict.
+  * lib/shared/widgets/color_picker_dialog.dart (ColorPickerDialog.storedValue):
+    New helper mapping a pick to its stored ARGB value.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb: tagSortTooltip, tagSortManual, tagSortAlphaAsc,
+    tagSortAlphaDesc.
+  * test/features/collections/widgets/tag_search_list_test.dart,
+    tag_picker_dialog_test.dart, tag_management_dialog_test.dart,
+    test/features/collections/providers/tag_sort_provider_test.dart,
+    packages/core/test/models/tag_sort_mode_test.dart: New.
+  * test/features/collections/widgets/dialogs/tag_picker_dialog_test.dart:
+    Deleted — folded into the mirrored-path picker test above.
+
 - **Tags on wide screens move from the vertical side rail to a horizontal chip bar**
 
   The old right-edge rail drew every tag name rotated 90°, so a tag's height

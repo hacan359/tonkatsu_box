@@ -5,6 +5,7 @@ import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/steamgriddb_image.dart';
 import 'package:core/models/tag.dart';
+import 'package:core/models/tag_sort_mode.dart';
 import 'package:core/models/tier_list.dart';
 import 'package:core/models/xcoll_file.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,7 @@ import '../helpers/collection_filters.dart';
 import '../providers/collection_covers_provider.dart';
 import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
+import '../providers/tag_sort_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/collection_screen/collection_bulk_action_bar.dart';
 import '../widgets/collection_screen/collection_error_state.dart';
@@ -306,9 +308,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     }
   }
 
-  /// Global tags actually used by this collection's items, in display order.
+  /// Global tags actually used by this collection's items, in the display
+  /// order the tag dialogs share (manual or alphabetical).
   List<Tag> _visibleTags(AsyncValue<List<CollectionItem>> itemsAsync) {
     final List<Tag> all = ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
+    final TagSortMode sortMode = ref.watch(tagSortModeProvider);
     final Map<int, List<int>> itemTags =
         ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
     final List<CollectionItem> items =
@@ -316,7 +320,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final Set<int> used = <int>{
       for (final CollectionItem item in items) ...?itemTags[item.id],
     };
-    return all.where((Tag t) => used.contains(t.id)).toList();
+    return sortMode.apply(all.where((Tag t) => used.contains(t.id)).toList());
   }
 
   Widget _buildFilterBar(

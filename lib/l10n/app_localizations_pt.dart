@@ -1936,6 +1936,18 @@ class SPt extends S {
   String get tagManage => 'Gerenciar tags';
 
   @override
+  String get tagSortTooltip => 'Ordenação';
+
+  @override
+  String get tagSortManual => 'Manual';
+
+  @override
+  String get tagSortAlphaAsc => 'Alfabética (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => 'Alfabética (Z–A)';
+
+  @override
   String get tagAssign => 'Atribuir tags';
 
   @override

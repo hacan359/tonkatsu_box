@@ -35,28 +35,41 @@ class GlobalTagDao {
     return Tag.fromDb(rows.first);
   }
 
-  /// Appends the new tag to the end of the manual order.
+  /// Appends the new tag to the end of the manual order. If the name already
+  /// exists (a caller raced another writer), adopts the existing row instead.
   Future<Tag> create(String name, {int? color, int? textColor}) async {
     final Database db = await _getDatabase();
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final List<Map<String, Object?>> maxRow =
         await db.rawQuery('SELECT MAX(sort_order) AS m FROM tags');
     final int sortOrder = (maxRow.first['m'] as int? ?? -1) + 1;
-    final int id = await db.insert('tags', <String, dynamic>{
-      'name': name,
-      'color': color,
-      'text_color': textColor,
-      'sort_order': sortOrder,
-      'created_at': now,
-    });
-    return Tag(
-      id: id,
-      name: name,
-      color: color,
-      textColor: textColor,
-      sortOrder: sortOrder,
-      createdAt: now,
-    );
+    try {
+      final int id = await db.insert('tags', <String, dynamic>{
+        'name': name,
+        'color': color,
+        'text_color': textColor,
+        'sort_order': sortOrder,
+        'created_at': now,
+      });
+      return Tag(
+        id: id,
+        name: name,
+        color: color,
+        textColor: textColor,
+        sortOrder: sortOrder,
+        createdAt: now,
+      );
+    } on DatabaseException catch (e) {
+      if (!e.isUniqueConstraintError()) rethrow;
+      final List<Map<String, dynamic>> rows = await db.query(
+        'tags',
+        where: 'name = ?',
+        whereArgs: <Object?>[name],
+        limit: 1,
+      );
+      if (rows.isEmpty) rethrow;
+      return Tag.fromDb(rows.first);
+    }
   }
 
   Future<void> rename(int id, String name) async {

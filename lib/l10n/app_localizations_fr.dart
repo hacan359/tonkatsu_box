@@ -1942,6 +1942,18 @@ class SFr extends S {
   String get tagManage => 'Gérer les tags';
 
   @override
+  String get tagSortTooltip => 'Tri';
+
+  @override
+  String get tagSortManual => 'Manuel';
+
+  @override
+  String get tagSortAlphaAsc => 'Alphabétique (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => 'Alphabétique (Z–A)';
+
+  @override
   String get tagAssign => 'Assigner les tags';
 
   @override

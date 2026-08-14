@@ -1789,6 +1789,18 @@ class SZh extends S {
   String get tagManage => '管理标签';
 
   @override
+  String get tagSortTooltip => '排序';
+
+  @override
+  String get tagSortManual => '手动';
+
+  @override
+  String get tagSortAlphaAsc => '按字母 (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => '按字母 (Z–A)';
+
+  @override
   String get tagAssign => '分配标签';
 
   @override

@@ -1949,6 +1949,18 @@ class SRu extends S {
   String get tagManage => 'Управление тегами';
 
   @override
+  String get tagSortTooltip => 'Сортировка';
+
+  @override
+  String get tagSortManual => 'Вручную';
+
+  @override
+  String get tagSortAlphaAsc => 'По алфавиту (А–Я)';
+
+  @override
+  String get tagSortAlphaDesc => 'По алфавиту (Я–А)';
+
+  @override
   String get tagAssign => 'Назначить теги';
 
   @override
