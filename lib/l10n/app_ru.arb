@@ -722,6 +722,10 @@
     }
   },
   "tagManage": "Управление тегами",
+  "tagSortTooltip": "Сортировка",
+  "tagSortManual": "Вручную",
+  "tagSortAlphaAsc": "По алфавиту (А–Я)",
+  "tagSortAlphaDesc": "По алфавиту (Я–А)",
   "tagAssign": "Назначить теги",
   "tagNone": "Нет тегов",
   "tagPickerTitle": "Теги",

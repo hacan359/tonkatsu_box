@@ -951,6 +951,10 @@
     }
   },
   "tagManage": "Gerenciar tags",
+  "tagSortTooltip": "Ordenação",
+  "tagSortManual": "Manual",
+  "tagSortAlphaAsc": "Alfabética (A–Z)",
+  "tagSortAlphaDesc": "Alfabética (Z–A)",
   "tagAssign": "Atribuir tags",
   "tagNone": "Sem tags",
   "tagPickerTitle": "Selecionar tags",

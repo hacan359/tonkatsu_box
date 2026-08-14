@@ -1,7 +1,3 @@
-// Общий диалог выбора цвета: палитра пресетов + HSL-слайдеры + hex-превью.
-//
-// Используется в тегах коллекции и в тир-листах.
-
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -9,8 +5,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Стандартная палитра для всех диалогов выбора цвета (теги, тир-листы,
-/// профили). Покрывает цветовой круг + нейтральные тона.
+/// Default palette for every color-picker dialog (tags, tier lists,
+/// profiles): the color wheel plus neutral tones.
 const List<Color> kDefaultColorPalette = <Color>[
   // Saturated wheel
   Color(0xFFEF5350), // Red
@@ -39,11 +35,8 @@ const List<Color> kDefaultColorPalette = <Color>[
   Color(0xFF212121), // Near-black
 ];
 
-/// Диалог выбора цвета с палитрой пресетов и HSL-слайдерами.
-///
-/// Возвращает выбранный [Color] через `Navigator.pop`; `null` при отмене;
-/// [noColorSentinel], если пользователь нажал «Без цвета» (только когда
-/// [allowNoColor] = `true`).
+/// Color picker with a preset palette and HSL sliders. Pops the chosen
+/// [Color]; null on cancel; [noColorSentinel] when "no color" was pressed.
 class ColorPickerDialog extends StatefulWidget {
   const ColorPickerDialog({
     this.palette = kDefaultColorPalette,
@@ -52,17 +45,19 @@ class ColorPickerDialog extends StatefulWidget {
     super.key,
   });
 
-  /// Текущий выбранный цвет (для инициализации HSL).
   final Color? currentColor;
 
   final List<Color> palette;
 
   final bool allowNoColor;
 
-  /// Значение, возвращаемое при нажатии «Без цвета».
-  ///
-  /// Позволяет вызывающему коду отличить «без цвета» от «отменено» (`null`).
+  /// Returned when "no color" is pressed, so callers can tell an explicit
+  /// "no color" from a dismissed dialog (`null`).
   static const Color noColorSentinel = Color(0x00000000);
+
+  /// Maps a non-null pick to its stored ARGB value; the sentinel becomes null.
+  static int? storedValue(Color picked) =>
+      picked == noColorSentinel ? null : picked.toARGB32();
 
   static Future<Color?> show({
     required BuildContext context,

@@ -1,6 +1,10 @@
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/widgets/bulk_action_bar.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -92,11 +96,20 @@ void main() {
 
     testWidgets('should open the tag picker from the add-tags action',
         (WidgetTester tester) async {
+      // The picker shows a loading spinner until the tag DAO answers, so an
+      // unstubbed DAO would hang pumpAndSettle.
+      final MockGlobalTagDao mockDao = MockGlobalTagDao();
+      when(() => mockDao.getAll()).thenAnswer((_) async => <Tag>[]);
+      when(() => mockDao.getAllItemTags())
+          .thenAnswer((_) async => <int, List<int>>{});
       await tester.pumpApp(
         BulkActionBar(
           items: twoSelected,
           onClearSelection: () {},
         ),
+        overrides: <Override>[
+          globalTagDaoProvider.overrideWithValue(mockDao),
+        ],
         wrapInScaffold: true,
       );
 

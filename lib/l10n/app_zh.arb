@@ -817,6 +817,10 @@
     }
   },
   "tagManage": "管理标签",
+  "tagSortTooltip": "排序",
+  "tagSortManual": "手动",
+  "tagSortAlphaAsc": "按字母 (A–Z)",
+  "tagSortAlphaDesc": "按字母 (Z–A)",
   "tagAssign": "分配标签",
   "tagNone": "无标签",
   "tagPickerTitle": "标签",

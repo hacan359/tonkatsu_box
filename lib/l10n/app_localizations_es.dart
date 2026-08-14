@@ -1947,6 +1947,18 @@ class SEs extends S {
   String get tagManage => 'Gestionar etiquetas';
 
   @override
+  String get tagSortTooltip => 'Orden';
+
+  @override
+  String get tagSortManual => 'Manual';
+
+  @override
+  String get tagSortAlphaAsc => 'Alfabético (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => 'Alfabético (Z–A)';
+
+  @override
   String get tagAssign => 'Asignar etiquetas';
 
   @override

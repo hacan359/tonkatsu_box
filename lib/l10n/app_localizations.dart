@@ -3404,6 +3404,30 @@ abstract class S {
   /// **'Manage tags'**
   String get tagManage;
 
+  /// No description provided for @tagSortTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort order'**
+  String get tagSortTooltip;
+
+  /// No description provided for @tagSortManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get tagSortManual;
+
+  /// No description provided for @tagSortAlphaAsc.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical (A–Z)'**
+  String get tagSortAlphaAsc;
+
+  /// No description provided for @tagSortAlphaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical (Z–A)'**
+  String get tagSortAlphaDesc;
+
   /// No description provided for @tagAssign.
   ///
   /// In en, this message translates to:

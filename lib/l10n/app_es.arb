@@ -817,6 +817,10 @@
     }
   },
   "tagManage": "Gestionar etiquetas",
+  "tagSortTooltip": "Orden",
+  "tagSortManual": "Manual",
+  "tagSortAlphaAsc": "Alfabético (A–Z)",
+  "tagSortAlphaDesc": "Alfabético (Z–A)",
   "tagAssign": "Asignar etiquetas",
   "tagNone": "Sin etiquetas",
   "tagPickerTitle": "Etiquetas",
