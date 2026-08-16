@@ -185,7 +185,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, `"planned"`, or `"replaying"` |
+| status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, `"planned"`, `"replaying"` or `"ignored"` |
 | user_comment | string | User's personal notes |
 | is_favorite | number | `1` if the user marked the item a favorite; absent or `0` otherwise |
 | current_season | number | Current season (TV shows) |

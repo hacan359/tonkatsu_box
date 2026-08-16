@@ -116,6 +116,14 @@ class SZh extends S {
   String get statusReplay => '重玩';
 
   @override
+  String get statusIgnored => '已忽略';
+
+  @override
+  String statusFilterSelected(int count) {
+    return '状态：$count';
+  }
+
+  @override
   String get rewatchCountEdit => '重玩次数';
 
   @override

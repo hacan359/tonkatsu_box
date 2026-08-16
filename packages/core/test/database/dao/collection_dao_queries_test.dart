@@ -722,10 +722,10 @@ void main() {
       });
     });
 
-    group('getCollectionIdsWithStatus', () {
+    group('getCollectionIdsWithStatuses', () {
       test('is empty when no item carries the status', () async {
         expect(
-          await dao.getCollectionIdsWithStatus(ItemStatus.completed),
+          await dao.getCollectionIdsWithStatuses(<ItemStatus>{ItemStatus.completed}),
           isEmpty,
         );
       });
@@ -739,7 +739,7 @@ void main() {
         );
 
         expect(
-          await dao.getCollectionIdsWithStatus(ItemStatus.completed),
+          await dao.getCollectionIdsWithStatuses(<ItemStatus>{ItemStatus.completed}),
           <int?>{null},
         );
       });
@@ -766,8 +766,46 @@ void main() {
         );
 
         expect(
-          await dao.getCollectionIdsWithStatus(ItemStatus.completed),
+          await dao.getCollectionIdsWithStatuses(<ItemStatus>{ItemStatus.completed}),
           <int?>{id},
+        );
+      });
+
+      test('unions the collections of every requested status', () async {
+        final int a = await newCollection('A');
+        final int b = await newCollection('B');
+        await dao.addItemToCollection(
+          collectionId: a,
+          mediaType: MediaType.game,
+          externalId: 1,
+          status: ItemStatus.completed,
+        );
+        await dao.addItemToCollection(
+          collectionId: b,
+          mediaType: MediaType.game,
+          externalId: 2,
+          status: ItemStatus.ignored,
+        );
+
+        expect(
+          await dao.getCollectionIdsWithStatuses(
+            <ItemStatus>{ItemStatus.completed, ItemStatus.ignored},
+          ),
+          <int?>{a, b},
+        );
+      });
+
+      test('an empty request matches nothing', () async {
+        await dao.addItemToCollection(
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1,
+          status: ItemStatus.completed,
+        );
+
+        expect(
+          await dao.getCollectionIdsWithStatuses(const <ItemStatus>{}),
+          isEmpty,
         );
       });
     });

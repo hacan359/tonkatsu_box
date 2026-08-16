@@ -41,6 +41,13 @@
   "statusDropped": "Abandonné",
   "statusPlanned": "Planifié",
   "statusReplay": "Recommencé",
+  "statusIgnored": "Ignoré",
+  "statusFilterSelected": "Statuts : {count}",
+  "@statusFilterSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "rewatchCountEdit": "Nombre de re-vues",
   "rewatchCountHint": "Vide = non suivi",
   "statusReplaying": "Rejouer",

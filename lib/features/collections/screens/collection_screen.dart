@@ -94,13 +94,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Set<String> _filterAnimeFormats = <String>{};
   Set<int> _filterTagIds = <int>{};
   bool _groupByTags = false;
-  ItemStatus? _filterStatus;
+  Set<ItemStatus> _filterStatuses = <ItemStatus>{};
   bool _filterFavoriteOnly = false;
   ItemStatus? _tableFilterStatus;
   CollectionItem? _focusedItem;
 
-  ItemStatus? get _effectiveStatusForChevrons =>
-      _filterStatus ?? (_isTableMode ? _tableFilterStatus : null);
+  Set<ItemStatus>? get _effectiveStatusesForChevrons {
+    if (_filterStatuses.isNotEmpty) return _filterStatuses;
+    final ItemStatus? tableStatus = _isTableMode ? _tableFilterStatus : null;
+    return tableStatus == null ? null : <ItemStatus>{tableStatus};
+  }
 
   // Effective editability considering view mode.
   bool get _effectiveIsEditable =>
@@ -186,7 +189,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       mangaFormats: _filterMangaFormats,
       animeFormats: _filterAnimeFormats,
       tagIds: _filterTagIds,
-      status: _filterStatus,
+      statuses: _filterStatuses,
       favoriteOnly: _filterFavoriteOnly,
       searchQuery: searchQuery,
     );
@@ -342,9 +345,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       filterMangaFormats: _filterMangaFormats,
       filterAnimeFormats: _filterAnimeFormats,
       filterTagIds: _filterTagIds,
-      filterStatus: _filterStatus,
+      filterStatuses: _filterStatuses,
       filterFavoriteOnly: _filterFavoriteOnly,
-      effectiveStatusForCounts: _effectiveStatusForChevrons,
+      effectiveStatusesForCounts: _effectiveStatusesForChevrons,
       tags: tags,
       searchQuery: searchQuery,
       groupByTags: _groupByTags,
@@ -409,8 +412,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         });
       },
       onTagToggled: _handleTagToggled,
-      onStatusChanged: (ItemStatus? status) {
-        setState(() => _filterStatus = status);
+      onStatusChanged: (Set<ItemStatus> statuses) {
+        setState(() => _filterStatuses = statuses);
       },
     );
   }
@@ -477,7 +480,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       mangaFormats: _filterMangaFormats,
       animeFormats: _filterAnimeFormats,
       tagIds: _filterTagIds,
-      status: _filterStatus,
+      statuses: _filterStatuses,
       favoriteOnly: _filterFavoriteOnly,
       searchQuery: searchQuery,
     );

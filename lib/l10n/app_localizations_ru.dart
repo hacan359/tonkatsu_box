@@ -117,6 +117,14 @@ class SRu extends S {
   String get statusReplay => 'Повтор';
 
   @override
+  String get statusIgnored => 'Игнор';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Статусы: $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Счётчик повторов';
 
   @override

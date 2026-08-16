@@ -237,11 +237,11 @@ class ChevronClipper extends CustomClipper<Path> {
   }
 }
 
-/// Looks like [ChevronSegment] but opens a [PopupMenuButton]; [subtitle] is
-/// ignored in compact mode.
+/// Multi-select status filter shaped like [ChevronSegment]; an empty
+/// [statuses] means "All", and [subtitle] is ignored in compact mode.
 class StatusDropdownSegment extends StatelessWidget {
   const StatusDropdownSegment({
-    required this.status,
+    required this.statuses,
     required this.compact,
     required this.onChanged,
     this.subtitle,
@@ -249,13 +249,13 @@ class StatusDropdownSegment extends StatelessWidget {
     super.key,
   });
 
-  /// Currently selected status (null = all).
-  final ItemStatus? status;
+  /// Selected statuses; empty = no filter.
+  final Set<ItemStatus> statuses;
 
   /// Show the icon instead of the text.
   final bool compact;
 
-  final ValueChanged<ItemStatus?> onChanged;
+  final ValueChanged<Set<ItemStatus>> onChanged;
 
   /// Optional two-line mode: caption above, selected status below.
   final String? subtitle;
@@ -265,41 +265,44 @@ class StatusDropdownSegment extends StatelessWidget {
 
   static const double _chevronWidth = 6;
 
-  static const List<ItemStatus> _order = <ItemStatus>[
-    ItemStatus.inProgress,
-    ItemStatus.replaying,
-    ItemStatus.planned,
-    ItemStatus.notStarted,
-    ItemStatus.completed,
-    ItemStatus.dropped,
-  ];
+  /// Derived so a new status shows up here without a second hand-kept list.
+  static final List<ItemStatus> _order = ItemStatus.values.toList()
+    ..sort(
+      (ItemStatus a, ItemStatus b) =>
+          a.statusSortPriority.compareTo(b.statusSortPriority),
+    );
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final bool active = status != null;
-    final Color accentColor = active ? status!.color : AppColors.surface;
-    final Color contentColor =
-        active ? AppColors.background : AppColors.textSecondary;
-    final String label = active ? status!.genericLabel(l) : l.all;
-    final IconData icon = active ? status!.materialIcon : Icons.filter_list;
+    final bool active = statuses.isNotEmpty;
+    final ItemStatus? single = statuses.length == 1 ? statuses.first : null;
+    final Color accentColor = single?.color ??
+        (active ? AppColors.brand : AppColors.surface);
+    final Color contentColor = single != null
+        ? AppColors.background
+        : (active ? AppColors.onBrand : AppColors.textSecondary);
+    final String label = single?.genericLabel(l) ??
+        (active ? l.statusFilterSelected(statuses.length) : l.all);
+    final IconData icon = single?.materialIcon ?? Icons.filter_list;
 
-    return PopupMenuButton<String>(
-      onSelected: (String v) {
-        onChanged(v == 'all' ? null : ItemStatus.fromString(v));
-      },
+    return PopupMenuButton<void>(
       offset: const Offset(0, 40),
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
-      itemBuilder: (BuildContext ctx) => <PopupMenuEntry<String>>[
-        _menuItem('all', Icons.filter_list_off, l.all,
-            status == null, null),
-        const PopupMenuDivider(height: 8),
-        for (final ItemStatus s in _order)
-          _menuItem(s.value, s.materialIcon, s.genericLabel(l),
-              status == s, s.color),
+      itemBuilder: (BuildContext ctx) => <PopupMenuEntry<void>>[
+        PopupMenuItem<void>(
+          enabled: false,
+          height: 0,
+          padding: EdgeInsets.zero,
+          child: _StatusMenuList(
+            initial: statuses,
+            order: _order,
+            onChanged: onChanged,
+          ),
+        ),
       ],
       child: ClipPath(
         clipper: ChevronClipper(
@@ -348,37 +351,129 @@ class StatusDropdownSegment extends StatelessWidget {
       ),
     );
   }
+}
 
-  static PopupMenuItem<String> _menuItem(
-    String value,
-    IconData icon,
-    String label,
-    bool selected,
-    Color? statusColor,
-  ) {
-    final Color itemColor = selected
-        ? (statusColor ?? AppColors.brand)
-        : AppColors.textPrimary;
-    final Color iconColor = selected
-        ? (statusColor ?? AppColors.brand)
-        : AppColors.textTertiary;
+/// The menu body: rows toggle without closing the popup, so several statuses
+/// can be picked in one open. Selection is reported on every toggle.
+class _StatusMenuList extends StatefulWidget {
+  const _StatusMenuList({
+    required this.initial,
+    required this.order,
+    required this.onChanged,
+  });
 
-    return PopupMenuItem<String>(
-      value: value,
-      height: 36,
-      child: Row(
+  final Set<ItemStatus> initial;
+  final List<ItemStatus> order;
+  final ValueChanged<Set<ItemStatus>> onChanged;
+
+  @override
+  State<_StatusMenuList> createState() => _StatusMenuListState();
+}
+
+class _StatusMenuListState extends State<_StatusMenuList> {
+  late Set<ItemStatus> _selected = <ItemStatus>{...widget.initial};
+
+  void _toggle(ItemStatus status) {
+    setState(() {
+      if (!_selected.remove(status)) _selected.add(status);
+    });
+    widget.onChanged(<ItemStatus>{..._selected});
+  }
+
+  void _clear() {
+    if (_selected.isEmpty) return;
+    setState(() => _selected = <ItemStatus>{});
+    widget.onChanged(const <ItemStatus>{});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    // The enclosing PopupMenuItem is disabled so its InkWell lets taps through;
+    // that also dims icons, hence the explicit full opacity.
+    return IconTheme.merge(
+      data: const IconThemeData(opacity: 1),
+      child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Icon(icon, size: 16, color: iconColor),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: AppTypography.body.copyWith(
-              color: itemColor,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            ),
+          _StatusMenuRow(
+            icon: Icons.filter_list_off,
+            label: l.all,
+            selected: _selected.isEmpty,
+            accent: null,
+            showCheckbox: false,
+            onTap: _clear,
           ),
+          const PopupMenuDivider(height: 8),
+          for (final ItemStatus s in widget.order)
+            _StatusMenuRow(
+              icon: s.materialIcon,
+              label: s.genericLabel(l),
+              selected: _selected.contains(s),
+              accent: s.color,
+              showCheckbox: true,
+              onTap: () => _toggle(s),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusMenuRow extends StatelessWidget {
+  const _StatusMenuRow({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.accent,
+    required this.showCheckbox,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final Color? accent;
+  final bool showCheckbox;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color itemColor =
+        selected ? (accent ?? AppColors.brand) : AppColors.textPrimary;
+    final Color iconColor =
+        selected ? (accent ?? AppColors.brand) : AppColors.textTertiary;
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            if (showCheckbox) ...<Widget>[
+              Icon(
+                selected ? Icons.check_box : Icons.check_box_outline_blank,
+                size: 16,
+                color: iconColor,
+              ),
+              const SizedBox(width: 6),
+            ],
+            Icon(icon, size: 16, color: iconColor),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTypography.body.copyWith(
+                color: itemColor,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

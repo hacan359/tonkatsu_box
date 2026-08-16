@@ -55,6 +55,7 @@ StatusDatesUpdate computeDatesForStatus({
     // `replaying` is a bare indicator: the item was already completed once,
     // so a replay must not erase or rewrite the existing dates.
     case ItemStatus.replaying:
+    case ItemStatus.ignored:
       return StatusDatesUpdate(
         status: newStatus,
         startedAt: currentStartedAt,
@@ -178,5 +179,9 @@ int _externalStatusPriority(ItemStatus status) {
       return 4;
     case ItemStatus.dropped:
       return 5;
+    // Top priority so a tracker never pulls an item back out of the pile the
+    // user deliberately put it in; only RA's `allowDowngrade` may.
+    case ItemStatus.ignored:
+      return 6;
   }
 }

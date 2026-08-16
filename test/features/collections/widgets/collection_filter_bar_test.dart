@@ -205,9 +205,9 @@ Widget _buildFilterBar({
   ValueChanged<String?>? onMangaFormatToggled,
   ValueChanged<String?>? onAnimeFormatToggled,
   ValueChanged<int?>? onTagToggled,
-  ValueChanged<ItemStatus?>? onStatusChanged,
+  ValueChanged<Set<ItemStatus>>? onStatusChanged,
   VoidCallback? onFavoriteToggled,
-  ItemStatus? filterStatus,
+  Set<ItemStatus> filterStatuses = const <ItemStatus>{},
   bool filterFavoriteOnly = false,
 }) {
   return CollectionFilterBar(
@@ -219,7 +219,7 @@ Widget _buildFilterBar({
     filterMangaFormats: filterMangaFormats,
     filterAnimeFormats: filterAnimeFormats,
     filterTagIds: filterTagIds,
-    filterStatus: filterStatus,
+    filterStatuses: filterStatuses,
     filterFavoriteOnly: filterFavoriteOnly,
     tags: tags,
     searchQuery: searchQuery,
@@ -591,7 +591,7 @@ void main() {
               overrides: _defaultOverrides(),
               child: _buildFilterBar(
                 filterTypes: <MediaType>{MediaType.manga},
-                filterStatus: ItemStatus.completed,
+                filterStatuses: <ItemStatus>{ItemStatus.completed},
                 itemsAsync:
                     AsyncData<List<CollectionItem>>(_mangaItemsWithFormats),
               ),

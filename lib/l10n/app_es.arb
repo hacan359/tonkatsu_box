@@ -41,6 +41,13 @@
   "statusDropped": "Abandonado",
   "statusPlanned": "Planeado",
   "statusReplay": "Repitiendo",
+  "statusIgnored": "Ignorado",
+  "statusFilterSelected": "Estados: {count}",
+  "@statusFilterSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "rewatchCountEdit": "Número de repeticiones",
   "rewatchCountHint": "Vacío = sin seguimiento",
   "statusReplaying": "Rejugando",

@@ -41,6 +41,13 @@
   "statusDropped": "已弃置",
   "statusPlanned": "计划中",
   "statusReplay": "重玩",
+  "statusIgnored": "已忽略",
+  "statusFilterSelected": "状态：{count}",
+  "@statusFilterSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "rewatchCountEdit": "重玩次数",
   "rewatchCountHint": "留空 = 不追踪",
   "statusReplaying": "重玩中",

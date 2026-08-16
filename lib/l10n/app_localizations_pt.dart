@@ -117,6 +117,14 @@ class SPt extends S {
   String get statusReplay => 'Repetindo';
 
   @override
+  String get statusIgnored => 'Ignorado';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Estados: $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Contagem de reassistências';
 
   @override

@@ -33,9 +33,9 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.filterMangaFormats,
     required this.filterAnimeFormats,
     required this.filterTagIds,
-    required this.filterStatus,
+    required this.filterStatuses,
     this.filterFavoriteOnly = false,
-    this.effectiveStatusForCounts,
+    this.effectiveStatusesForCounts,
     required this.tags,
     this.searchQuery = '',
     required this.onTypeToggled,
@@ -69,14 +69,14 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   final Set<int> filterTagIds;
 
-  final ItemStatus? filterStatus;
+  final Set<ItemStatus> filterStatuses;
 
   /// Show only favourites.
   final bool filterFavoriteOnly;
 
-  /// Drives chevron counts when it diverges from [filterStatus] (e.g. the
+  /// Drives chevron counts when it diverges from [filterStatuses] (e.g. the
   /// table header cycled a local filter); falls back to it when null.
-  final ItemStatus? effectiveStatusForCounts;
+  final Set<ItemStatus>? effectiveStatusesForCounts;
 
   final List<Tag> tags;
 
@@ -93,7 +93,7 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   final ValueChanged<int?> onTagToggled;
 
-  final ValueChanged<ItemStatus?> onStatusChanged;
+  final ValueChanged<Set<ItemStatus>> onStatusChanged;
 
   final VoidCallback onFavoriteToggled;
 
@@ -246,7 +246,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
               ),
             Expanded(
               child: StatusDropdownSegment(
-                status: widget.filterStatus,
+                statuses: widget.filterStatuses,
                 compact: compact,
                 subtitle: l.status,
                 onChanged: widget.onStatusChanged,
@@ -459,8 +459,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   }
 
   Map<MediaType, int?> _typeCounts(CollectionStats? stats) {
-    final ItemStatus? statusFilter =
-        widget.effectiveStatusForCounts ?? widget.filterStatus;
+    final Set<ItemStatus> statusFilter =
+        widget.effectiveStatusesForCounts ?? widget.filterStatuses;
     final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
     // Before the items list resolves, fall back to the raw stats buckets so the
     // chevrons are not blank on first paint.
@@ -485,7 +485,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       mangaFormats: widget.filterMangaFormats,
       animeFormats: widget.filterAnimeFormats,
       tagIds: widget.filterTagIds,
-      status: statusFilter,
+      statuses: statusFilter,
       favoriteOnly: widget.filterFavoriteOnly,
       searchQuery: widget.searchQuery,
     ).apply(

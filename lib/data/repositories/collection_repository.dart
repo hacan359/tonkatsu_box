@@ -21,6 +21,7 @@ class CollectionStats {
     required this.dropped,
     required this.planned,
     this.replaying = 0,
+    this.ignored = 0,
     this.gameCount = 0,
     this.movieCount = 0,
     this.tvShowCount = 0,
@@ -40,6 +41,7 @@ class CollectionStats {
   final int dropped;
   final int planned;
   final int replaying;
+  final int ignored;
   final int gameCount;
   final int movieCount;
   final int tvShowCount;
@@ -342,6 +344,7 @@ class CollectionRepository {
       dropped: raw['dropped'] ?? 0,
       planned: raw['planned'] ?? 0,
       replaying: raw['replaying'] ?? 0,
+      ignored: raw['ignored'] ?? 0,
       gameCount: raw['gameCount'] ?? 0,
       movieCount: raw['movieCount'] ?? 0,
       tvShowCount: raw['tvShowCount'] ?? 0,

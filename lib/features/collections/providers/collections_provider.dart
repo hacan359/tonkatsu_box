@@ -329,35 +329,49 @@ class CollectionListViewModeNotifier extends Notifier<bool> {
 }
 
 const String _homeStatusFilterKey = 'home_status_filter';
+const String _homeStatusFiltersKey = 'home_status_filters';
 
-/// `null` means "All" (no filter); default `null`.
-final NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>
+/// An empty set means "All" (no filter); default empty.
+final NotifierProvider<HomeStatusFilterNotifier, Set<ItemStatus>>
     homeStatusFilterProvider =
-    NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>(
+    NotifierProvider<HomeStatusFilterNotifier, Set<ItemStatus>>(
   HomeStatusFilterNotifier.new,
 );
 
-/// Per-profile persistence: key `home_status_filter_{profileId}`.
-class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
+/// Per-profile persistence: key `home_status_filters_{profileId}`.
+class HomeStatusFilterNotifier extends Notifier<Set<ItemStatus>> {
   String get _prefsKey {
+    final String profileId = ref.read(currentProfileProvider).id;
+    return '${_homeStatusFiltersKey}_$profileId';
+  }
+
+  /// Single-status key written before the filter became multi-select.
+  String get _legacyPrefsKey {
     final String profileId = ref.read(currentProfileProvider).id;
     return '${_homeStatusFilterKey}_$profileId';
   }
 
   @override
-  ItemStatus? build() {
+  Set<ItemStatus> build() {
     final SharedPreferences prefs = ref.watch(sharedPreferencesProvider);
-    final String? value = prefs.getString(_prefsKey);
-    if (value == null) return null;
-    if (value == 'all') return null;
-    return ItemStatus.fromString(value);
+    final List<String>? values = prefs.getStringList(_prefsKey);
+    if (values != null) {
+      return values
+          .map(ItemStatus.tryFromString)
+          .whereType<ItemStatus>()
+          .toSet();
+    }
+    final String? legacy = prefs.getString(_legacyPrefsKey);
+    if (legacy == null || legacy == 'all') return <ItemStatus>{};
+    final ItemStatus? status = ItemStatus.tryFromString(legacy);
+    return status == null ? <ItemStatus>{} : <ItemStatus>{status};
   }
 
-  void setFilter(ItemStatus? status) {
-    state = status;
-    ref.read(sharedPreferencesProvider).setString(
+  void setFilter(Set<ItemStatus> statuses) {
+    state = statuses;
+    ref.read(sharedPreferencesProvider).setStringList(
       _prefsKey,
-      status?.value ?? 'all',
+      statuses.map((ItemStatus s) => s.value).toList(),
     );
   }
 }
@@ -390,17 +404,17 @@ class HomeFavoriteFilterNotifier extends Notifier<bool> {
   }
 }
 
-/// Collection IDs containing items with the selected status.
+/// Collection IDs containing items with any of the selected statuses.
 final FutureProvider<Set<int?>> filteredCollectionIdsProvider =
     FutureProvider<Set<int?>>((Ref ref) async {
-  final ItemStatus? status = ref.watch(homeStatusFilterProvider);
-  if (status == null) return const <int?>{};
+  final Set<ItemStatus> statuses = ref.watch(homeStatusFilterProvider);
+  if (statuses.isEmpty) return const <int?>{};
 
   // Watch collectionsProvider to recompute when underlying data changes.
   ref.watch(collectionsProvider);
 
   final CollectionDao dao = ref.read(collectionDaoProvider);
-  return dao.getCollectionIdsWithStatus(status);
+  return dao.getCollectionIdsWithStatuses(statuses);
 });
 
 /// `collectionId == null` manages uncategorized items.

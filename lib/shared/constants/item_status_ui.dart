@@ -21,6 +21,8 @@ extension ItemStatusUi on ItemStatus {
         return AppColors.statusPlanned;
       case ItemStatus.replaying:
         return AppColors.statusReplaying;
+      case ItemStatus.ignored:
+        return AppColors.statusIgnored;
     }
   }
 
@@ -38,6 +40,8 @@ extension ItemStatusUi on ItemStatus {
         return Icons.bookmark;
       case ItemStatus.replaying:
         return Icons.replay_circle_filled;
+      case ItemStatus.ignored:
+        return Icons.block;
     }
   }
 
@@ -73,6 +77,8 @@ extension ItemStatusUi on ItemStatus {
           case MediaType.custom:
             return l.statusRewatching;
         }
+      case ItemStatus.ignored:
+        return l.statusIgnored;
     }
   }
 
@@ -92,6 +98,8 @@ extension ItemStatusUi on ItemStatus {
         return l.statusPlanned;
       case ItemStatus.replaying:
         return l.statusReplay;
+      case ItemStatus.ignored:
+        return l.statusIgnored;
     }
   }
 }

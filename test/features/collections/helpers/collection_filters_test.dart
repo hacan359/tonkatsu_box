@@ -119,9 +119,31 @@ void main() {
         make(id: 2, status: ItemStatus.inProgress),
       ];
       final List<CollectionItem> r = const CollectionFilters(
-        status: ItemStatus.completed,
+        statuses: <ItemStatus>{ItemStatus.completed},
       ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
+    });
+
+    test('keeps an item matching ANY of several statuses', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1, status: ItemStatus.completed),
+        make(id: 2, status: ItemStatus.inProgress),
+        make(id: 3, status: ItemStatus.ignored),
+      ];
+      final List<CollectionItem> r = const CollectionFilters(
+        statuses: <ItemStatus>{ItemStatus.completed, ItemStatus.ignored},
+      ).apply(items, tags, noLinks);
+      expect(r.map((CollectionItem i) => i.id), <int>[1, 3]);
+    });
+
+    test('an empty status set filters nothing out', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        make(id: 1, status: ItemStatus.completed),
+        make(id: 2, status: ItemStatus.inProgress),
+      ];
+      final List<CollectionItem> r =
+          const CollectionFilters().apply(items, tags, noLinks);
+      expect(r.map((CollectionItem i) => i.id), <int>[1, 2]);
     });
 
     test('filters by favourite', () {
@@ -142,7 +164,7 @@ void main() {
       ];
       final List<CollectionItem> r = const CollectionFilters(
         favoriteOnly: true,
-        status: ItemStatus.completed,
+        statuses: <ItemStatus>{ItemStatus.completed},
       ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });
@@ -269,7 +291,7 @@ void main() {
       ];
       final List<CollectionItem> r = const CollectionFilters(
         mediaTypes: <MediaType>{MediaType.game},
-        status: ItemStatus.completed,
+        statuses: <ItemStatus>{ItemStatus.completed},
       ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
     });

@@ -117,6 +117,14 @@ class SFr extends S {
   String get statusReplay => 'Recommencé';
 
   @override
+  String get statusIgnored => 'Ignoré';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Statuts : $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Nombre de re-vues';
 
   @override

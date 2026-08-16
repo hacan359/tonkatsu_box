@@ -52,7 +52,12 @@ class HttpUpstreamClient implements UpstreamClient {
   }) async {
     final HttpClientRequest request = await _client.openUrl(method, url);
     headers.forEach(request.headers.set);
-    if (body != null && body.isNotEmpty) request.add(body);
+    if (body != null && body.isNotEmpty) {
+      // Without an explicit length the request goes out chunked, which some
+      // upstreams (ListenBrainz) answer with a bare 400.
+      request.contentLength = body.length;
+      request.add(body);
+    }
 
     final HttpClientResponse response = await request.close();
     final List<int> bytes = <int>[

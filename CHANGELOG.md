@@ -9,6 +9,32 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **"Ignored" item status**
+
+  A seventh status for titles kept in the library but deliberately parked —
+  neither in progress nor dropped, so the "dropped" count stops collecting
+  them. It behaves like any other status: pick it on the item card, in the
+  table cell or from the bulk menu, filter by it, and see it in the
+  collection statistics. Nothing transitions in or out of it automatically,
+  and an external tracker can no longer pull an item back out of it.
+
+  * packages/core/lib/models/item_status.dart (ItemStatus.ignored): New value,
+    stored as `ignored`, sorted last.
+  * packages/core/lib/models/item_status_logic.dart (computeDatesForStatus,
+    _externalStatusPriority): Keep both dates untouched; rank above `dropped`
+    so only an authoritative downgrade (RetroAchievements) may override it.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionItemStats): Count the new status.
+  * lib/data/repositories/collection_repository.dart (CollectionStats.ignored): New field.
+  * lib/shared/constants/item_status_ui.dart (ItemStatusUi.color,
+    ItemStatusUi.materialIcon, ItemStatusUi.localizedLabel, ItemStatusUi.genericLabel):
+    Muted color and a block icon.
+  * lib/shared/theme/app_palette.dart (AppPalette.statusIgnored),
+    lib/shared/theme/app_colors.dart (AppColors.statusIgnored): New derived token.
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart
+    (_statusDisplayOrder): Show it last in the rich-banner breakdown.
+  * lib/l10n/app_*.arb: statusIgnored in all locales.
+
 - **Selectable banner style for rich collection view**
 
   Settings → Appearance gains a "Collection banner style" choice (shown
@@ -66,6 +92,15 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Selfhost server: POST requests to external APIs are no longer rejected**
+
+  The proxy sent every request body chunked, which ListenBrainz answers with
+  a bare 400 — album popularity in the web build's audio search silently came
+  back empty.
+
+  * server/lib/src/upstream_client.dart (HttpUpstreamClient._send): Set an
+    explicit Content-Length on the forwarded body.
+
 - **Collection background image can be picked on the web build**
 
   Picking a hero image in the collection editor silently did nothing in a
@@ -92,6 +127,39 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     needs a local filesystem.
 
 ### Changed
+
+- **Status filter takes several statuses at once**
+
+  The status dropdown above a collection and above All Items is now
+  multi-select: the menu stays open while ticking statuses, an item passes
+  when it matches any of them, and the segment reads "Statuses: N" once more
+  than one is picked. "All" clears the selection. The choice on All Items is
+  remembered per profile as before, now as the whole set, and a single status
+  saved by an older build is carried over on first launch.
+
+  * lib/shared/widgets/chevron_filter_bar.dart (StatusDropdownSegment,
+    _StatusMenuList, _StatusMenuRow): Take and report a `Set<ItemStatus>`;
+    the menu body toggles rows without closing the popup and derives its
+    order from ItemStatus.statusSortPriority.
+  * lib/features/collections/providers/collections_provider.dart
+    (HomeStatusFilterNotifier, filteredCollectionIdsProvider): Persist a
+    string list under `home_status_filters_{profileId}`, falling back once to
+    the older single-value key.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.statuses): Replace the single `status` with an OR set.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._filterStatuses,
+    _CollectionScreenState._effectiveStatusesForChevrons),
+    lib/features/collections/widgets/collection_filter_bar.dart
+    (CollectionFilterBar.filterStatuses, CollectionFilterBar.effectiveStatusesForCounts),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._matchesNonTypeFilters): Thread the set through
+    filtering and the chevron counts.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionIdsWithStatuses): Replaces
+    getCollectionIdsWithStatus — one `IN (…)` query instead of one call per
+    status; RPC layer regenerated.
+  * lib/l10n/app_*.arb: statusFilterSelected in all locales.
 
 - **Subfilter bar sits flush with the content below**
 
