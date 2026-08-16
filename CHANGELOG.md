@@ -66,6 +66,15 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Selfhost server: POST requests to external APIs are no longer rejected**
+
+  The proxy sent every request body chunked, which ListenBrainz answers with
+  a bare 400 — album popularity in the web build's audio search silently came
+  back empty.
+
+  * server/lib/src/upstream_client.dart (HttpUpstreamClient._send): Set an
+    explicit Content-Length on the forwarded body.
+
 - **Collection background image can be picked on the web build**
 
   Picking a hero image in the collection editor silently did nothing in a
