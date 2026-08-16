@@ -2249,11 +2249,15 @@ class RemoteCollectionDao implements CollectionDao {
   }
 
   @override
-  Future<Set<int?>> getCollectionIdsWithStatus(ItemStatus status) async {
+  Future<Set<int?>> getCollectionIdsWithStatuses(
+    Set<ItemStatus> statuses,
+  ) async {
     final Object? result = await _transport.call(
       'CollectionDao',
-      'getCollectionIdsWithStatus',
-      <String, Object?>{'status': encodeEnum(status)},
+      'getCollectionIdsWithStatuses',
+      <String, Object?>{
+        'statuses': statuses.map((ItemStatus e) => encodeEnum(e)).toList(),
+      },
     );
     return asList(result).map((Object? e) => decodeIntOrNull(e)).toSet();
   }

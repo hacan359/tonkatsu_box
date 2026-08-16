@@ -117,6 +117,14 @@ class SEn extends S {
   String get statusReplay => 'Replay';
 
   @override
+  String get statusIgnored => 'Ignored';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Statuses: $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Replay count';
 
   @override

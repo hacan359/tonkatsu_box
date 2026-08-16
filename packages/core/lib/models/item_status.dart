@@ -12,7 +12,11 @@ enum ItemStatus {
 
   /// A bare indicator: switching to it never touches `startedAt` /
   /// `completedAt`, since the item was already completed once.
-  replaying('replaying');
+  replaying('replaying'),
+
+  /// A parking slot with no behaviour of its own: nothing auto-transitions
+  /// into or out of it, it only marks an item the user wants out of the way.
+  ignored('ignored');
 
   const ItemStatus(this.value);
 
@@ -54,6 +58,8 @@ enum ItemStatus {
         return 'Planned';
       case ItemStatus.replaying:
         return 'Replay';
+      case ItemStatus.ignored:
+        return 'Ignored';
     }
   }
 
@@ -73,6 +79,8 @@ enum ItemStatus {
         return 4;
       case ItemStatus.dropped:
         return 5;
+      case ItemStatus.ignored:
+        return 6;
     }
   }
 }

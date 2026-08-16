@@ -198,6 +198,36 @@ void main() {
         expect(result.lastActivityAt, now);
       });
     });
+
+    group('ignored', () {
+      test('should leave both dates untouched', () {
+        final StatusDatesUpdate result = computeDatesForStatus(
+          newStatus: ItemStatus.ignored,
+          currentStartedAt: pastStart,
+          currentCompletedAt: pastComplete,
+          now: now,
+        );
+
+        expect(result.status, ItemStatus.ignored);
+        expect(result.startedAt, pastStart);
+        expect(result.completedAt, pastComplete);
+        expect(result.clearStartedAt, isFalse);
+        expect(result.clearCompletedAt, isFalse);
+        expect(result.lastActivityAt, now);
+      });
+
+      test('should not invent a startedAt for an untouched item', () {
+        final StatusDatesUpdate result = computeDatesForStatus(
+          newStatus: ItemStatus.ignored,
+          currentStartedAt: null,
+          currentCompletedAt: null,
+          now: now,
+        );
+
+        expect(result.startedAt, isNull);
+        expect(result.completedAt, isNull);
+      });
+    });
   });
 
   group('computeRewatchCountForStatus', () {
@@ -518,6 +548,32 @@ void main() {
   });
 
   group('mergeExternalStatus', () {
+    group('защита ignored', () {
+      test('should never be overwritten by a tracker status', () {
+        for (final ItemStatus external in ItemStatus.values) {
+          expect(
+            mergeExternalStatus(
+              currentStatus: ItemStatus.ignored,
+              externalStatus: external,
+            ),
+            isNull,
+            reason: 'ignored overwritten by $external',
+          );
+        }
+      });
+
+      test('should still yield to an authoritative downgrade (RA)', () {
+        expect(
+          mergeExternalStatus(
+            currentStatus: ItemStatus.ignored,
+            externalStatus: ItemStatus.completed,
+            allowDowngrade: true,
+          ),
+          ItemStatus.completed,
+        );
+      });
+    });
+
     group('защита dropped', () {
       test('локальный dropped не перезаписывается', () {
         for (final ItemStatus external in ItemStatus.values) {

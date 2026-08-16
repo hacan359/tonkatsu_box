@@ -117,6 +117,14 @@ class SEs extends S {
   String get statusReplay => 'Repitiendo';
 
   @override
+  String get statusIgnored => 'Ignorado';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Estados: $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Número de repeticiones';
 
   @override

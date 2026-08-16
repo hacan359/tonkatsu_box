@@ -4,14 +4,15 @@ import 'package:test/test.dart';
 void main() {
   group('ItemStatus', () {
     group('значения enum', () {
-      test('содержит 6 статусов', () {
-        expect(ItemStatus.values.length, 6);
+      test('содержит 7 статусов', () {
+        expect(ItemStatus.values.length, 7);
         expect(ItemStatus.values, contains(ItemStatus.notStarted));
         expect(ItemStatus.values, contains(ItemStatus.inProgress));
         expect(ItemStatus.values, contains(ItemStatus.completed));
         expect(ItemStatus.values, contains(ItemStatus.dropped));
         expect(ItemStatus.values, contains(ItemStatus.planned));
         expect(ItemStatus.values, contains(ItemStatus.replaying));
+        expect(ItemStatus.values, contains(ItemStatus.ignored));
       });
     });
 
@@ -23,6 +24,7 @@ void main() {
         expect(ItemStatus.dropped.value, 'dropped');
         expect(ItemStatus.planned.value, 'planned');
         expect(ItemStatus.replaying.value, 'replaying');
+        expect(ItemStatus.ignored.value, 'ignored');
       });
     });
 
@@ -34,6 +36,7 @@ void main() {
         expect(ItemStatus.fromString('dropped'), ItemStatus.dropped);
         expect(ItemStatus.fromString('planned'), ItemStatus.planned);
         expect(ItemStatus.fromString('replaying'), ItemStatus.replaying);
+        expect(ItemStatus.fromString('ignored'), ItemStatus.ignored);
       });
 
       test('fallback в notStarted для удалённого статуса on_hold', () {
@@ -78,7 +81,7 @@ void main() {
     group('statusSortPriority', () {
       test(
           'порядок: inProgress → replaying → planned → notStarted → '
-          'completed → dropped', () {
+          'completed → dropped → ignored', () {
         final List<ItemStatus> sorted = List<ItemStatus>.from(ItemStatus.values)
           ..sort(
             (ItemStatus a, ItemStatus b) =>
@@ -92,6 +95,7 @@ void main() {
           ItemStatus.notStarted,
           ItemStatus.completed,
           ItemStatus.dropped,
+          ItemStatus.ignored,
         ]);
       });
 

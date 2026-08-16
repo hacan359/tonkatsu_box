@@ -41,6 +41,13 @@
   "statusDropped": "Брошено",
   "statusPlanned": "Запланировано",
   "statusReplay": "Повтор",
+  "statusIgnored": "Игнор",
+  "statusFilterSelected": "Статусы: {count}",
+  "@statusFilterSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "rewatchCountEdit": "Счётчик повторов",
   "rewatchCountHint": "Пусто = не отслеживается",
   "statusReplaying": "Перепрохожу",

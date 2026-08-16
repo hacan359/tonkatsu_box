@@ -1595,6 +1595,23 @@ void main() {
         expect(stats['movieCount'], 2);
       });
 
+      test('counts the ignored status in its own bucket', () async {
+        when(() => mockDb.rawQuery(any(), any())).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'movie',
+              'status': 'ignored',
+              'count': 4,
+            },
+          ],
+        );
+
+        final Map<String, int> stats = await dao.getCollectionItemStats(1);
+
+        expect(stats['ignored'], 4);
+        expect(stats['total'], 4);
+      });
+
       test('returns zero stats for empty collection', () async {
         when(() => mockDb.rawQuery(any(), any())).thenAnswer(
           (_) async => <Map<String, dynamic>>[],

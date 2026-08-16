@@ -93,6 +93,9 @@ abstract final class AppColors {
   /// "Replay" status (replaying / rewatching / rereading).
   static Color get statusReplaying => palette.statusReplaying;
 
+  /// "Ignored" status — muted on purpose, the item is parked.
+  static Color get statusIgnored => palette.statusIgnored;
+
   /// Rating star icon.
   static Color get ratingStar => palette.ratingStar;
 

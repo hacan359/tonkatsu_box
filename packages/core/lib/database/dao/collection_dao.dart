@@ -1130,6 +1130,7 @@ class CollectionDao {
         ItemStatus.dropped => 'dropped',
         ItemStatus.planned => 'planned',
         ItemStatus.replaying => 'replaying',
+        ItemStatus.ignored => 'ignored',
         null => null,
       };
       if (statusKey != null) {
@@ -1541,12 +1542,18 @@ class CollectionDao {
     }).toList();
   }
 
-  /// Result includes `null` if uncategorized items match the status.
-  Future<Set<int?>> getCollectionIdsWithStatus(ItemStatus status) async {
+  /// Result includes `null` if uncategorized items match any status.
+  Future<Set<int?>> getCollectionIdsWithStatuses(
+    Set<ItemStatus> statuses,
+  ) async {
+    if (statuses.isEmpty) return <int?>{};
     final Database db = await _getDatabase();
+    final String placeholders =
+        List<String>.filled(statuses.length, '?').join(', ');
     final List<Map<String, dynamic>> rows = await db.rawQuery(
-      'SELECT DISTINCT collection_id FROM collection_items WHERE status = ?',
-      <Object?>[status.value],
+      'SELECT DISTINCT collection_id FROM collection_items '
+      'WHERE status IN ($placeholders)',
+      statuses.map((ItemStatus s) => s.value).toList(),
     );
     return rows
         .map((Map<String, dynamic> row) => row['collection_id'] as int?)

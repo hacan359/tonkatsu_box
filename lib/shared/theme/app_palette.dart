@@ -95,6 +95,7 @@ class AppPalette {
   Color get statusDropped => error;
   final Color statusPlanned;
   final Color statusReplaying;
+  Color get statusIgnored => textTertiary;
 
   final Color ratingStar;
   final Color ratingHigh;

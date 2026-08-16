@@ -315,6 +315,18 @@ abstract class S {
   /// **'Replay'**
   String get statusReplay;
 
+  /// No description provided for @statusIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored'**
+  String get statusIgnored;
+
+  /// No description provided for @statusFilterSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Statuses: {count}'**
+  String statusFilterSelected(int count);
+
   /// No description provided for @rewatchCountEdit.
   ///
   /// In en, this message translates to:

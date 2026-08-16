@@ -1,70 +1,118 @@
 import 'package:core/models/item_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/item_status_ui.dart';
 import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
 
 import '../../helpers/test_helpers.dart';
 
 void main() {
   group('StatusDropdownSegment', () {
-    Future<ItemStatus?> pickValue(
+    late List<Set<ItemStatus>> reported;
+
+    Future<void> openMenu(
       WidgetTester tester, {
-      required ItemStatus? initial,
-      required String menuValue,
+      Set<ItemStatus> initial = const <ItemStatus>{},
     }) async {
-      ItemStatus? captured;
-      bool fired = false;
+      reported = <Set<ItemStatus>>[];
       await tester.pumpApp(
         StatusDropdownSegment(
-          status: initial,
+          statuses: initial,
           compact: false,
-          onChanged: (ItemStatus? s) {
-            captured = s;
-            fired = true;
-          },
+          onChanged: reported.add,
         ),
         wrapInScaffold: true,
       );
 
-      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.tap(find.byType(PopupMenuButton<void>));
       await tester.pumpAndSettle();
-
-      final Finder item = find.byWidgetPredicate(
-        (Widget w) => w is PopupMenuItem<String> && w.value == menuValue,
-      );
-      expect(item, findsOneWidget, reason: 'menu item "$menuValue" missing');
-      await tester.tap(item);
-      await tester.pumpAndSettle();
-
-      expect(fired, isTrue);
-      return captured;
     }
 
-    testWidgets('selecting a status reports that status', (WidgetTester t) async {
-      final ItemStatus? r = await pickValue(
-        t,
-        initial: null,
-        menuValue: ItemStatus.completed.value,
+    Finder rowFor(WidgetTester tester, ItemStatus status) {
+      final S l = S.of(
+        tester.element(find.byType(StatusDropdownSegment)),
       );
-      expect(r, ItemStatus.completed);
+      return find.descendant(
+        of: find.byType(PopupMenuItem<void>),
+        matching: find.text(status.genericLabel(l)),
+      );
+    }
+
+    testWidgets('picking a status reports a single-element set',
+        (WidgetTester tester) async {
+      await openMenu(tester);
+
+      await tester.tap(rowFor(tester, ItemStatus.completed));
+      await tester.pumpAndSettle();
+
+      expect(reported, <Set<ItemStatus>>[
+        <ItemStatus>{ItemStatus.completed},
+      ]);
     });
 
-    testWidgets('selecting "All" reports null', (WidgetTester t) async {
-      final ItemStatus? r = await pickValue(
-        t,
-        initial: ItemStatus.completed,
-        menuValue: 'all',
-      );
-      expect(r, isNull);
+    testWidgets('the menu stays open so several statuses accumulate',
+        (WidgetTester tester) async {
+      await openMenu(tester);
+
+      await tester.tap(rowFor(tester, ItemStatus.completed));
+      await tester.pumpAndSettle();
+      await tester.tap(rowFor(tester, ItemStatus.inProgress));
+      await tester.pumpAndSettle();
+
+      expect(reported.last, <ItemStatus>{
+        ItemStatus.completed,
+        ItemStatus.inProgress,
+      });
     });
 
-    testWidgets('selecting in-progress reports inProgress', (WidgetTester t) async {
-      final ItemStatus? r = await pickValue(
-        t,
-        initial: null,
-        menuValue: ItemStatus.inProgress.value,
+    testWidgets('tapping a selected status removes it',
+        (WidgetTester tester) async {
+      await openMenu(
+        tester,
+        initial: <ItemStatus>{ItemStatus.completed, ItemStatus.dropped},
       );
-      expect(r, ItemStatus.inProgress);
+
+      await tester.tap(rowFor(tester, ItemStatus.completed));
+      await tester.pumpAndSettle();
+
+      expect(reported.last, <ItemStatus>{ItemStatus.dropped});
+    });
+
+    testWidgets('"All" clears the selection', (WidgetTester tester) async {
+      await openMenu(tester, initial: <ItemStatus>{ItemStatus.completed});
+
+      final S l = S.of(
+        tester.element(find.byType(StatusDropdownSegment)),
+      );
+      await tester.tap(find.descendant(
+        of: find.byType(PopupMenuItem<void>),
+        matching: find.text(l.all),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(reported.last, isEmpty);
+    });
+
+    testWidgets('offers a row for every status', (WidgetTester tester) async {
+      await openMenu(tester);
+
+      for (final ItemStatus status in ItemStatus.values) {
+        expect(
+          rowFor(tester, status),
+          findsOneWidget,
+          reason: '${status.name} row missing',
+        );
+      }
+    });
+
+    testWidgets('the ignored status is offered', (WidgetTester tester) async {
+      await openMenu(tester);
+
+      await tester.tap(rowFor(tester, ItemStatus.ignored));
+      await tester.pumpAndSettle();
+
+      expect(reported.last, <ItemStatus>{ItemStatus.ignored});
     });
   });
 

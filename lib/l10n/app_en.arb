@@ -41,6 +41,13 @@
   "statusDropped": "Dropped",
   "statusPlanned": "Planned",
   "statusReplay": "Replay",
+  "statusIgnored": "Ignored",
+  "statusFilterSelected": "Statuses: {count}",
+  "@statusFilterSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "rewatchCountEdit": "Replay count",
   "rewatchCountHint": "Empty = not tracked",
   "statusReplaying": "Replaying",

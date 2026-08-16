@@ -272,11 +272,27 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsNothing);
 
-      await tester.tap(find.text('Completed').first);
-      await tester.pumpAndSettle();
-
+      // The menu stays open for multi-select, so "All" is still on screen.
       await tester.tap(find.text('All').last);
       await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsOneWidget);
+    });
+
+    testWidgets('dropdown статуса набирает несколько статусов за одно открытие',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('All'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Completed'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsNothing);
+
+      await tester.tap(find.text('Not Started'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('My Games'), findsOneWidget);
       expect(find.textContaining('Watch List'), findsOneWidget);
     });
 

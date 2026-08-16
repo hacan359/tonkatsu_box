@@ -1592,9 +1592,11 @@ Future<Object?> dispatchCollectionDao(
           )
           .toList();
 
-    case 'getCollectionIdsWithStatus':
-      final Set<int?> value = await dao.getCollectionIdsWithStatus(
-        decodeEnum<ItemStatus>(args['status'], ItemStatus.values),
+    case 'getCollectionIdsWithStatuses':
+      final Set<int?> value = await dao.getCollectionIdsWithStatuses(
+        asList(args['statuses'])
+            .map((Object? e) => decodeEnum<ItemStatus>(e, ItemStatus.values))
+            .toSet(),
       );
       return value.map((int? e) => encodeIntOrNull(e)).toList();
 

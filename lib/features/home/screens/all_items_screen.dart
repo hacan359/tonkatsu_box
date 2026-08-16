@@ -73,7 +73,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<int, Tag> tagsMap = ref.watch(allTagsMapProvider);
     final Map<int, List<int>> itemTags =
         ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
-    final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
+    final Set<ItemStatus> filterStatuses =
+        ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
 
@@ -81,7 +82,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
     final List<CollectionItem> visibleItems =
-        _applyFilter(allItems, filterStatus, favoriteOnly, tagsMap, searchQuery);
+        _applyFilter(
+            allItems, filterStatuses, favoriteOnly, tagsMap, searchQuery);
     final List<CollectionItem> selectedItems = selection.isEmpty
         ? const <CollectionItem>[]
         : <CollectionItem>[
@@ -92,7 +94,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return Column(
       children: <Widget>[
         _buildMediaTypeBar(
-            itemsAsync, filterStatus, favoriteOnly, tagsMap, searchQuery),
+            itemsAsync, filterStatuses, favoriteOnly, tagsMap, searchQuery),
         SubfilterBar(groups: _subfilterGroups(itemsAsync)),
         if (selectedItems.isNotEmpty)
           BulkActionBar(
@@ -125,7 +127,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   List<CollectionItem> _applyFilter(
     List<CollectionItem> items,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String searchQuery,
@@ -138,20 +140,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             (_selectedTypes.isEmpty ||
                 item.matchesTypeFilter(_selectedTypes)) &&
             _matchesNonTypeFilters(
-                item, filterStatus, favoriteOnly, tagsMap, query, lang))
+                item, filterStatuses, favoriteOnly, tagsMap, query, lang))
         .toList();
   }
 
   bool _matchesNonTypeFilters(
     CollectionItem item,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String lowerQuery,
     String animeMangaTitleLanguage,
   ) {
     if (favoriteOnly && !item.isFavorite) return false;
-    if (filterStatus != null && item.status != filterStatus) return false;
+    if (filterStatuses.isNotEmpty && !filterStatuses.contains(item.status)) {
+      return false;
+    }
     if (!MediaFormat.matchesSubfilters(
       item,
       platformIds: _selectedPlatformIds,
@@ -190,14 +194,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   /// the last segment.
   Widget _buildMediaTypeBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String searchQuery,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
-    final Map<MediaType, int> counts =
-        _countByMediaType(items, filterStatus, favoriteOnly, tagsMap, searchQuery);
+    final Map<MediaType, int> counts = _countByMediaType(
+        items, filterStatuses, favoriteOnly, tagsMap, searchQuery);
     final Map<MediaType, int> totals = _rawTotalsByMediaType(items);
     final S l = S.of(context);
 
@@ -293,11 +297,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               ),
             Expanded(
               child: StatusDropdownSegment(
-                status: filterStatus,
+                statuses: filterStatuses,
                 compact: compact,
                 subtitle: l.status,
                 isLast: false,
-                onChanged: (ItemStatus? s) =>
+                onChanged: (Set<ItemStatus> s) =>
                     ref.read(homeStatusFilterProvider.notifier).setFilter(s),
               ),
             ),
@@ -435,7 +439,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   /// shows how many items would be visible if the user picked it.
   Map<MediaType, int> _countByMediaType(
     List<CollectionItem>? items,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String searchQuery,
@@ -447,7 +451,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<MediaType, int> counts = <MediaType, int>{};
     for (final CollectionItem item in items) {
       if (!_matchesNonTypeFilters(
-          item, filterStatus, favoriteOnly, tagsMap, lower, lang)) {
+          item, filterStatuses, favoriteOnly, tagsMap, lower, lang)) {
         continue;
       }
       for (final MediaType bucket in item.filterTypeBuckets) {

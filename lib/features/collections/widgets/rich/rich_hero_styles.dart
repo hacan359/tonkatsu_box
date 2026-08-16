@@ -115,6 +115,7 @@ const List<ItemStatus> _statusDisplayOrder = <ItemStatus>[
   ItemStatus.planned,
   ItemStatus.notStarted,
   ItemStatus.dropped,
+  ItemStatus.ignored,
 ];
 
 class _HeroStats {

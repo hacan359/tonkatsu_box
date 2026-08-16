@@ -13,7 +13,7 @@ class CollectionFilters {
     this.mangaFormats = const <String>{},
     this.animeFormats = const <String>{},
     this.tagIds = const <int>{},
-    this.status,
+    this.statuses = const <ItemStatus>{},
     this.favoriteOnly = false,
     this.searchQuery = '',
   });
@@ -29,7 +29,9 @@ class CollectionFilters {
 
   /// Selected global tag ids; an item passes when it carries ANY of them (OR).
   final Set<int> tagIds;
-  final ItemStatus? status;
+
+  /// Selected statuses; an item passes when it holds ANY of them (OR).
+  final Set<ItemStatus> statuses;
 
   /// Keeps only favourites when true.
   final bool favoriteOnly;
@@ -73,9 +75,9 @@ class CollectionFilters {
           .toList();
     }
 
-    if (status != null) {
+    if (statuses.isNotEmpty) {
       result = result
-          .where((CollectionItem item) => item.status == status)
+          .where((CollectionItem item) => statuses.contains(item.status))
           .toList();
     }
 
