@@ -8,12 +8,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Opens the MangaBaka tag picker as a modal bottom sheet. Mirrors the AniList
-/// tag picker: searchable, grouped by top-level category, with a manual
-/// Refresh that re-fetches the catalog from the API.
-///
-/// [currentValue] / the return value are tag names (`List<String>`), matching
-/// the multi-select filter contract.
+/// Searchable, grouped by top-level category, with a manual catalog refresh.
+/// Values are tag names, matching the multi-select filter contract.
 Future<Object?> showMangaBakaTagPicker(
   BuildContext context,
   WidgetRef _,

@@ -1,5 +1,3 @@
-// Tests for ScreenAppBar — unified compact AppBar widget.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/widgets/screen_app_bar.dart';

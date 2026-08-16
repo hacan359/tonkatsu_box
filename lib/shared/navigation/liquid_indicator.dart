@@ -6,7 +6,6 @@ import '../theme/app_colors.dart';
 /// Round blob that slides between nav items, squashing along the way and
 /// settling back with an elastic bounce. Hidden while [selectedIndex] is -1.
 class LiquidIndicator extends StatefulWidget {
-  /// Creates a [LiquidIndicator].
   const LiquidIndicator({
     required this.selectedIndex,
     required this.itemExtent,

@@ -1,13 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_colors.dart';
 
-/// Текст, который копируется в буфер обмена при нажатии.
-///
-/// При hover показывает иконку копирования, при нажатии — галочку.
-/// Переиспользуется в [ScreenAppBar] и [ItemDetailsSheet].
+/// Copies its text on tap; the icon flips to a checkmark as feedback.
 class CopyableText extends StatefulWidget {
   const CopyableText({
     required this.text,
@@ -18,7 +14,6 @@ class CopyableText extends StatefulWidget {
 
   final String text;
 
-  /// Виджет-содержимое (обычно Text или Text.rich).
   final Widget child;
 
   final double iconSize;

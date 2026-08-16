@@ -1,13 +1,10 @@
-// VNDB tags (genres) provider, backed by static data in the DB.
-
 import 'package:core/models/visual_novel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 
-/// VNDB tags provider (the "content" category, i.e. genres).
-///
-/// Loads tags from the DB (seeded by migration v24).
+/// VNDB "content"-category tags (genres), loaded from the DB (seeded by
+/// migration v24).
 final FutureProvider<List<VndbTag>> vndbTagsProvider =
     FutureProvider<List<VndbTag>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);

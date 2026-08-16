@@ -4,11 +4,8 @@ import '../utils/json_list.dart';
 import 'audio_item.dart';
 import 'data_source.dart';
 
-/// One track of a cached album release, or one podcast episode. Identity is
-/// `(source, audioId, discNumber, position)`; the DB id never leaves it.
-///
-/// Podcast episodes store `discNumber = 0` and the Podcast Index episode id
-/// as [position] — RSS season/episode numbers are unreliable, the id is not.
+/// Identity is `(source, audioId, discNumber, position)`; the DB id never
+/// leaves. Podcast episodes use `discNumber = 0` and the episode id as position.
 class AudioTrack {
   const AudioTrack({
     required this.audioId,

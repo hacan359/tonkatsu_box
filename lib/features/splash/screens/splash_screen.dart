@@ -15,11 +15,8 @@ import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_durations.dart';
 
-/// Controller runs 2s total: [0..0.75] animation, [0.75..1.0] hold.
-///
-/// DB init is pre-warmed in parallel. Navigation waits until BOTH the
-/// animation finished AND the DB opened, so the heavy DB init never overlaps
-/// the route transition (avoids ANR on weak devices).
+/// Navigation waits for both the animation and the pre-warmed DB open, so the
+/// heavy init never overlaps the route transition and ANRs a weak device.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 

@@ -14,7 +14,6 @@ import '../widgets/recommendation_row.dart';
 
 /// Shows recommendation rows, or an empty/no-candidates placeholder.
 class RecommendationsScreen extends ConsumerStatefulWidget {
-  /// Creates a [RecommendationsScreen].
   const RecommendationsScreen({super.key});
 
   @override

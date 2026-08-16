@@ -10,9 +10,8 @@ import '../../home/providers/all_items_provider.dart';
 import 'profile_provider.dart';
 import 'settings_provider.dart';
 
-/// SharedPreferences keys for Kodi, suffixed with `_$profileId`: the
-/// per-profile shape leaves room for multiple Kodi hosts later
-/// (the MVP only uses the `default` profile).
+/// Suffixed with `_$profileId` — the per-profile shape leaves room for several
+/// Kodi hosts later, though only `default` is used today.
 abstract class KodiSettingsKeys {
   static String enabled(String profileId) =>
       'kodi_enabled_$profileId';

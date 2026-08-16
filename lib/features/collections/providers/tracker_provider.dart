@@ -14,9 +14,8 @@ import '../../../core/services/ra_sync_helpers.dart';
 import 'collections_provider.dart';
 import '../../../core/services/tracker_sync_service.dart';
 
-/// Composite key for the tracker provider family — IGDB game id plus the
-/// optional platform that scopes the row. A `null` platformId points at the
-/// legacy platform-agnostic record so old data keeps rendering.
+/// IGDB game id plus the platform scoping the row; a `null` platformId
+/// points at the legacy platform-agnostic record so old data keeps rendering.
 typedef TrackerKey = ({int gameId, int? platformId});
 
 class TrackerDetailState {
@@ -237,9 +236,8 @@ class TrackerDetailNotifier
     }
   }
 
-  /// Propagates RA dates/status into every CollectionItem that points at
-  /// this `(IGDB game, platform)` pair. Other platform installs of the same
-  /// IGDB game are intentionally left alone.
+  /// Propagates RA dates/status only into items of this `(game, platform)`
+  /// pair; other platform installs are intentionally left alone.
   Future<void> _syncToCollectionItems({
     String? awardKind,
     int? awardDate,

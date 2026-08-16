@@ -11,12 +11,8 @@ import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
 import 'media_action_handler.dart';
 
-/// Movie source handler (TMDB, TheTVDB).
-///
-/// Handles both [MediaType.movie] and [MediaType.animation]
-/// (with `platformId = AnimationSource.movie`). The "already in" check
-/// unions movie + animation collections because the same TMDB id may
-/// have been added under either media type.
+/// Handles [MediaType.movie] and [MediaType.animation]. The "already in"
+/// check unions both: the same TMDB id may live under either media type.
 class MovieHandler implements MediaActionHandler {
   MovieHandler({
     required WidgetRef ref,

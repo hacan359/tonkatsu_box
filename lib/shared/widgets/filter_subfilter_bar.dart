@@ -27,13 +27,8 @@ class SubfilterChipData {
   final VoidCallback onTap;
 }
 
-/// Single horizontal row of media-type subfilter chips — game platforms, manga
-/// formats, anime formats.
-///
-/// Each [groups] entry is one media type's chips, tinted with that type's
-/// accent and split from the next group by a divider, so when several types
-/// are active their subfilters share one scrolling row instead of stacking.
-/// Empty groups are dropped; renders nothing when all are empty.
+/// One [groups] entry per media type, tinted with that type's accent, so
+/// several active types share one scrolling row instead of stacking.
 class SubfilterBar extends StatefulWidget {
   const SubfilterBar({required this.groups, super.key});
 
@@ -87,10 +82,8 @@ class _SubfilterBarState extends State<SubfilterBar> {
       padding: const EdgeInsets.only(
         top: AppSpacing.xs,
       ),
-      // Full-bleed band with no border or radius so the highlight reads as one
-      // even row with no seams; the inner padding keeps the chips inset. Geometry
-      // is constant, so the strip never jumps when the highlight toggles — only
-      // the color animates in.
+      // Geometry is constant so the strip never jumps when the highlight
+      // toggles — only the color animates in.
       child: AnimatedContainer(
         duration: AppDurations.fast,
         padding: const EdgeInsets.only(
@@ -106,9 +99,8 @@ class _SubfilterBarState extends State<SubfilterBar> {
         child: ScrollableRowWithArrows(
           controller: _scrollController,
           height: _kSubfilterRowHeight,
-          // Centre the chips when they fit, still scroll when they overflow:
-          // the ConstrainedBox forces the row to at least the strip width so
-          // MainAxisAlignment.center has room to work.
+          // The ConstrainedBox forces the row to at least the strip width, so
+          // centering works when the chips fit and scrolling still works.
           child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               return SingleChildScrollView(

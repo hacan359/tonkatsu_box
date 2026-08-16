@@ -9,9 +9,8 @@ import 'podcast_index/podcast_index_http_client.dart';
 export 'podcast_index/podcast_index_http_client.dart'
     show PodcastIndexApiException;
 
-/// Wires [PodcastIndexApi] with the key/secret pair: user keys first, the
-/// build-time pair (CI secrets) as fallback. Without either, requests throw
-/// [PodcastIndexApiException] until keys are entered in Credentials.
+/// User keys first, the build-time pair as fallback; without either, requests
+/// throw until keys are entered in Credentials.
 final Provider<PodcastIndexApi> podcastIndexApiProvider =
     Provider<PodcastIndexApi>((Ref ref) {
   final PodcastIndexApi api = PodcastIndexApi();
@@ -25,13 +24,8 @@ final Provider<PodcastIndexApi> podcastIndexApiProvider =
   return api;
 });
 
-/// Podcast Index (podcastindex.org) client backing the podcast audio source.
-///
-/// API traits handled here (verified against the live API):
-/// - search has no pagination and clamps `max` to 60 — always one page;
-/// - `/episodes/byfeedid` returns at most the newest 1000 episodes;
-/// - `since=<unix s>` on episodes is a cheap incremental update;
-/// - `fulltext` lifts the 100-word truncation of descriptions.
+/// Search has no pagination and clamps `max` to 60; `/episodes/byfeedid` caps
+/// at the newest 1000, and `fulltext` lifts the 100-word description cut.
 class PodcastIndexApi {
   PodcastIndexApi({Dio? dio, DateTime Function()? now})
       : _client = PodcastIndexHttpClient(dio: dio, now: now);

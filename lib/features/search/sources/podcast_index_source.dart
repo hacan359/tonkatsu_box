@@ -10,9 +10,8 @@ import '../filters/podcast_index_category_filter.dart';
 import '../filters/podcast_index_language_filter.dart';
 import '../models/search_source.dart';
 
-/// Podcast Index feeds. Text search is one relevance page (the API clamps at
-/// 60 with no pagination); an empty query browses trending, where the
-/// category and language filters actually apply.
+/// Text search is one relevance page — the API clamps at 60 with no paging.
+/// An empty query browses trending, where category and language apply.
 class PodcastIndexSource extends SearchSource {
   @override
   String get id => 'podcastindex';

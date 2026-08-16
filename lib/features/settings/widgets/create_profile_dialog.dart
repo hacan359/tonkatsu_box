@@ -1,4 +1,3 @@
-
 import 'package:core/models/profile.dart';
 import 'package:flutter/material.dart';
 
@@ -9,9 +8,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../../shared/utils/color_hex.dart';
 
-/// Диалог создания нового профиля.
-///
-/// Возвращает `(String name, String color)` при создании или null при отмене.
+/// Returns the entered name and color, or null when cancelled.
 class CreateProfileDialog extends StatefulWidget {
   const CreateProfileDialog({super.key});
 

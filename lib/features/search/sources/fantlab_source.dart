@@ -13,14 +13,8 @@ import '../models/search_source.dart';
 // size is server-fixed at 25 and handled inside FantlabApi.
 const int _fantlabMinQuery = 2;
 
-/// SearchSource backed by Fantlab, a community book catalog with detailed
-/// metadata (ratings, awards, series, editions). Items are stamped
-/// [MediaType.book] and carry `DataSource.fantlab` (set inside the
-/// `Book.fromFantlab*` factories).
-///
-/// `/search-works` accepts only `q` / `page`, so ordering is relevance-only and
-/// the one filter (work type) is applied client-side by matching `name_eng` —
-/// see `core/api/fantlab/README.md`.
+/// Fantlab community book catalog. `/search-works` accepts only `q`/`page`,
+/// so ordering is relevance-only and the work-type filter is client-side.
 class FantlabSource extends SearchSource {
   @override
   String get id => 'fantlab';

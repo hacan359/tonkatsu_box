@@ -1,7 +1,3 @@
-// Rich collection card: full-bleed hero image with a text overlay on top.
-// Built on [CollectionCardShell] for focus/hover/border, so it stays
-// structurally identical to the classic card.
-
 import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +9,8 @@ import '../collection_card_overlay.dart';
 import '../collection_card_shell.dart';
 import '../collection_hero_background.dart';
 
+/// Built on [CollectionCardShell] for focus/hover/border, so it stays
+/// structurally identical to the classic card.
 class RichCollectionCard extends ConsumerWidget {
   const RichCollectionCard({
     required this.collection,

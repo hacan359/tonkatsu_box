@@ -26,7 +26,8 @@ class TagPickerDialog extends ConsumerStatefulWidget {
   /// Defaults to the neutral "select tags" wording.
   final String? title;
 
-  /// Defaults to "Apply".
+  /// Defaults to "Apply". Bulk callers pass their own label — there an
+  /// unchecked box means "leave alone", not "remove this tag".
   final String? confirmLabel;
 
   static Future<Set<int>?> show(

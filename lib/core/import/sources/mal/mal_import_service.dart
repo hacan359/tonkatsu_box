@@ -1,5 +1,3 @@
-// Imports anime/manga from MyAnimeList XML export.
-
 import 'package:core/models/anime.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -22,37 +20,26 @@ import '../../import_progress.dart';
 import '../../import_source.dart';
 import '../../import_writer.dart';
 
-/// Type of parsed XML file.
 enum MalFileKind {
-  /// Anime list.
   anime,
-
-  /// Manga list.
   manga,
 }
 
-/// Result of parsing a single XML file.
 class MalParsedFile {
-  /// Creates a [MalParsedFile].
   const MalParsedFile({
     required this.kind,
     required this.entries,
     required this.userName,
   });
 
-  /// Content type.
   final MalFileKind kind;
 
-  /// Parsed entries.
   final List<MalEntry> entries;
 
-  /// MAL user name.
   final String userName;
 }
 
-/// Entry from MAL export.
 class MalEntry {
-  /// Creates a [MalEntry].
   const MalEntry({
     required this.malId,
     required this.title,
@@ -75,13 +62,10 @@ class MalEntry {
   /// MAL ID (`series_animedb_id` / `manga_mangadb_id`).
   final int malId;
 
-  /// Title name.
   final String title;
 
-  /// Entry kind.
   final MalFileKind kind;
 
-  /// Mapped status.
   final ItemStatus status;
 
   /// User score (1.0-10.0) or null.
@@ -99,16 +83,12 @@ class MalEntry {
   /// Total episodes from XML (used to top up on Completed when AniList lacks the count).
   final int? totalEpisodesXml;
 
-  /// Total chapters from XML.
   final int? totalChaptersXml;
 
-  /// Total volumes from XML.
   final int? totalVolumesXml;
 
-  /// Start date of watching/reading.
   final DateTime? startDate;
 
-  /// Finish date of watching/reading.
   final DateTime? finishDate;
 
   /// User tags (raw comma-separated string).
@@ -117,11 +97,9 @@ class MalEntry {
   /// Number of rewatches/rereads.
   final int timesWatched;
 
-  /// User comment.
   final String? comments;
 }
 
-/// Provider for [MalImportService].
 final Provider<MalImportService> malImportServiceProvider =
     Provider<MalImportService>((Ref ref) {
   return MalImportService(
@@ -150,20 +128,13 @@ class MalImportOptions extends ImportOptions {
   final String author;
   final String newCollectionName;
 
-  /// When `false` (default), entries already present in the target collection
-  /// are left untouched (counted as skipped). When `true`, existing items are
-  /// merged with MAL data (status priority, max progress, earliest/latest
-  /// dates, MAL rating wins, MAL comment overwrites).
+  /// `false` (default) leaves existing items untouched (counted as skipped);
+  /// `true` merges MAL data in (status priority, max progress, MAL rating wins).
   final bool overwriteExistingItems;
 }
 
-/// MyAnimeList import on the shared import layer.
-///
-/// Parses MAL XML exports, resolves MAL ids to AniList media via a tolerant
-/// batch lookup (the AniList API owns the rate-limit retry; this just relays its
-/// progress), then writes everything through [ImportWriter] in one batch.
-/// Unmatched titles fall back to the wishlist; entries whose lookup failed are
-/// skipped so a later re-import can retry them.
+/// MAL XML import: resolves MAL ids to AniList media in tolerant batches;
+/// unmatched titles go to the wishlist, failed lookups are skipped for retry.
 class MalImportService implements ImportSource {
   MalImportService({
     required AniListApi aniListApi,
@@ -186,7 +157,6 @@ class MalImportService implements ImportSource {
   @override
   String get displayName => 'MyAnimeList';
 
-  /// Parses a MAL export XML string.
   MalParsedFile parseString(String content) {
     final XmlDocument doc;
     try {
@@ -594,9 +564,8 @@ class MalImportService implements ImportSource {
     };
   }
 
-  /// Overwrite-mode re-sync: bump status without downgrading, keep max
-  /// progress, keep earliest start / latest completion, MAL rating wins, MAL
-  /// comment overwrites.
+  /// Overwrite-mode re-sync: status never downgrades, max progress and the
+  /// widest date range win, MAL rating and comment overwrite.
   Map<String, dynamic> _changedFields(
     MalEntry entry,
     CollectionItem existing, {

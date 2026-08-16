@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -11,17 +10,8 @@ const double kScreenAppBarHeight = 44;
 /// Material default (24) to sit right in the compact 44px bar.
 const double kScreenAppBarIconSize = 20;
 
-/// Единый AppBar для всех экранов приложения.
-///
-/// Компактный (44px), с тонкой подсветкой-градиентом снизу.
-/// На вложенных экранах автоматически показывает кнопку «назад».
-///
-/// ```dart
-/// Scaffold(
-///   appBar: const ScreenAppBar(),
-///   body: ...,
-/// )
-/// ```
+/// The app-wide [AppBar]: 44px tall, with an automatic back button on pushed
+/// routes.
 class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ScreenAppBar({
     super.key,
@@ -34,7 +24,6 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final List<Widget>? actions;
 
-  /// Нижний виджет (например, TabBar).
   final PreferredSizeWidget? bottom;
 
   @override

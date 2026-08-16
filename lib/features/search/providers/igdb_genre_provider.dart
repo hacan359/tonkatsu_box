@@ -1,12 +1,8 @@
-// IGDB genres provider, backed by static data in the DB.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 import '../filters/igdb_genre_filter.dart';
 
-/// IGDB genres provider.
-///
 /// Loads genres from the DB (seeded by migration v24).
 final FutureProvider<List<IgdbGenre>> igdbGenresProvider =
     FutureProvider<List<IgdbGenre>>((Ref ref) async {

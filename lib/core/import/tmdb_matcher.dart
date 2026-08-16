@@ -23,10 +23,8 @@ class TmdbMatch {
   final TvShow? show;
 }
 
-/// Matches a title against TMDB by name. Shared by importers whose rows carry
-/// no TMDB id (e.g. Kinorium). Tries the primary query then the fallback, each
-/// first constrained by year then unconstrained, picks the best by year, and
-/// throttles + retries (429) every request.
+/// Name-based TMDB matcher for importers whose rows carry no id: primary then
+/// fallback query, year-constrained then not, throttled with 429 retry.
 class TmdbMatcher {
   TmdbMatcher(
     this._api, {
@@ -39,9 +37,8 @@ class TmdbMatcher {
   final RateLimitedRetry _retry;
   final Duration _throttle;
 
-  /// Matches [primaryQuery] (with [fallbackQuery] as a second try) on the movie
-  /// endpoint. [animationHint] forces the animation media type even when TMDB
-  /// genres don't say so.
+  /// Movie-endpoint match; [animationHint] forces the animation media type
+  /// even when TMDB genres don't say so.
   Future<TmdbMatch?> matchMovie({
     required String primaryQuery,
     String? fallbackQuery,
@@ -130,9 +127,8 @@ class TmdbMatcher {
     return null;
   }
 
-  /// Prefers a result whose year matches (year filters are dropped on later
-  /// attempts, so the first hit may be the wrong edition); otherwise the most
-  /// relevant (first) result.
+  /// Prefers a year-matching result (year filters are dropped on retries, so
+  /// the first hit may be the wrong edition); otherwise the first result.
   T _pickBest<T>(List<T> results, int? year, int? Function(T result) yearOf) {
     if (year != null) {
       for (final T result in results) {

@@ -15,19 +15,16 @@ sealed class WishlistTagFilter {
 
 /// "Show everything" variant of [WishlistTagFilter].
 final class WishlistTagFilterAll extends WishlistTagFilter {
-  /// Creates a [WishlistTagFilterAll].
   const WishlistTagFilterAll();
 }
 
 /// "Only untagged" variant of [WishlistTagFilter].
 final class WishlistTagFilterUntagged extends WishlistTagFilter {
-  /// Creates a [WishlistTagFilterUntagged].
   const WishlistTagFilterUntagged();
 }
 
 /// "Specific tag" variant of [WishlistTagFilter].
 final class WishlistTagFilterNamed extends WishlistTagFilter {
-  /// Creates a [WishlistTagFilterNamed].
   const WishlistTagFilterNamed(this.tag);
 
   /// Tag value to match exactly.
@@ -36,7 +33,6 @@ final class WishlistTagFilterNamed extends WishlistTagFilter {
 
 /// Parsed view of an auto-generated import tag (`%source%-<unix-ms>`).
 class WishlistTagInfo {
-  /// Creates a [WishlistTagInfo].
   const WishlistTagInfo({required this.source, this.timestamp});
 
   /// Human-readable source identifier ("MyAnimeList", "AniList") or, if the

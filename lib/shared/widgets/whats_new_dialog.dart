@@ -1,7 +1,3 @@
-// Release-notes dialog shown once after an app update.
-// Strings are intentionally EN-only for now: the changelog itself is
-// English and is not translated (owner's call, see whats_new_service.dart).
-
 import 'package:flutter/material.dart';
 
 import '../../core/services/whats_new_service.dart';

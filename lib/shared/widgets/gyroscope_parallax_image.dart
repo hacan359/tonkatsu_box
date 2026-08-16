@@ -1,5 +1,3 @@
-// Image with a gyroscope-driven parallax effect (Android only).
-
 import 'dart:async';
 import 'dart:io' show Platform;
 
@@ -15,12 +13,9 @@ const double _kMaxOffset = 20.0;
 /// Lerp smoothing factor — lower is smoother.
 const double _kSmoothing = 0.08;
 
-/// Image that shifts slightly with device tilt to fake depth.
-///
-/// Subscribes to the gyroscope where available; otherwise (no sensor, or a
-/// non-Android platform) it renders a plain [CachedNetworkImage].
+/// Shifts with device tilt to fake depth; falls back to a plain
+/// [CachedNetworkImage] with no sensor or off Android.
 class GyroscopeParallaxImage extends StatefulWidget {
-  /// Creates a [GyroscopeParallaxImage].
   const GyroscopeParallaxImage({
     required this.imageUrl,
     this.fit = BoxFit.cover,
@@ -30,7 +25,6 @@ class GyroscopeParallaxImage extends StatefulWidget {
     super.key,
   });
 
-  /// Image URL.
   final String imageUrl;
 
   /// How the image fits the available space.

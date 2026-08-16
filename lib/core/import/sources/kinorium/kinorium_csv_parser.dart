@@ -13,12 +13,8 @@ class KinoriumParseException implements Exception {
   String toString() => 'KinoriumParseException: $message';
 }
 
-/// Parses Kinorium's emailed CSV export into [KinoriumEntry] rows.
-///
-/// The file is UTF-16 LE with a BOM, tab-separated, every field wrapped in
-/// double quotes (`""` escapes a literal quote). Columns are addressed by
-/// their header name, not position, so the watched-list and "буду смотреть"
-/// layouts both parse with the same code.
+/// UTF-16 LE with a BOM, tab-separated, every field quoted. Columns are
+/// addressed by header name, so both Kinorium list layouts parse the same.
 class KinoriumCsvParser {
   const KinoriumCsvParser();
 

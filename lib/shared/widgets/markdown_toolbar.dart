@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 
-/// Тулбар с кнопками Bold / Italic / Link для markdown-разметки.
-///
-/// Используется совместно с [TextEditingController] для вставки
-/// маркеров в текстовое поле.
 class MarkdownToolbar extends StatelessWidget {
   const MarkdownToolbar({
     required this.controller,
@@ -48,7 +44,8 @@ class MarkdownToolbar extends StatelessWidget {
     );
   }
 
-  /// Оборачивает выделенный текст (или вставляет пустые маркеры) в [marker].
+  /// With an empty selection this inserts the bare markers and puts the
+  /// caret between them.
   static void wrapSelection(
     TextEditingController controller,
     String marker,
@@ -76,7 +73,6 @@ class MarkdownToolbar extends StatelessWidget {
     }
   }
 
-  /// Открывает диалог вставки ссылки `[text](url)`.
   static Future<void> insertLink(
     BuildContext context,
     TextEditingController controller,

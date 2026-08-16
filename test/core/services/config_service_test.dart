@@ -299,8 +299,8 @@ void main() {
       });
 
       test('bool ключ со значением false должен round-trip-нуться', () async {
-        // Регресс: Steam-ключи не «возвращались», потому что флаг
-        // steamRememberCredentials (bool) не входил в конфиг.
+        // Regression: a false bool used to be dropped from the config, so
+        // steamRememberCredentials never came back on restore.
         await prefs.setBool(SettingsKeys.steamRememberCredentials, true);
         await prefs.setBool(SettingsKeys.showPlatformOverlay, false);
 

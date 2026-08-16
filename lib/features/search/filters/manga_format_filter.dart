@@ -4,8 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
 /// AniList MediaFormat for TYPE=MANGA: only MANGA, NOVEL, ONE_SHOT.
-/// Manhwa/Manhua are distinguished by countryOfOrigin, not format, so they're
-/// excluded here.
+/// Manhwa/Manhua are countryOfOrigin, not format, so they are excluded.
 class MangaFormatFilter extends SearchFilter {
   @override
   String get key => 'format';

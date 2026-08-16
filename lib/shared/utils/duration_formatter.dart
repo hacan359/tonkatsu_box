@@ -1,4 +1,3 @@
-
 import '../../l10n/app_localizations.dart';
 
 class _DurationConstants {
@@ -7,15 +6,7 @@ class _DurationConstants {
   static const int daysInYear = 365;
 }
 
-/// Форматирует [Duration] в человекочитаемую локализованную строку.
-///
-/// Примеры:
-/// - 0 дней -> "менее дня"
-/// - 1 день -> "1 день"
-/// - 5 дней -> "5 дней"
-/// - 14 дней -> "2 недели"
-/// - 60 дней -> "2 месяца"
-/// - 400 дней -> "1.1 года"
+/// Rounds up to the coarsest unit that fits: days, weeks, months, then years.
 String formatDuration(Duration duration, S localizations) {
   final int days = duration.inDays;
 
@@ -37,9 +28,7 @@ String formatDuration(Duration duration, S localizations) {
   return localizations.durationYears(years.toStringAsFixed(1));
 }
 
-/// Форматирует completion time с префиксом.
-///
-/// Возвращает строку вида "Completed in 2 weeks".
+/// Wraps [formatDuration] as `Completed in <duration>`.
 String formatCompletionTime(Duration duration, S localizations) {
   final String formattedDuration = formatDuration(duration, localizations);
   return localizations.activityDatesCompletionTime(formattedDuration);

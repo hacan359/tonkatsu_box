@@ -74,9 +74,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   /// Show only favourites.
   final bool filterFavoriteOnly;
 
-  /// Status that drives chevron counts when it diverges from [filterStatus]
-  /// (e.g. the table column header cycled a local filter). Falls back to
-  /// [filterStatus] when null.
+  /// Drives chevron counts when it diverges from [filterStatus] (e.g. the
+  /// table header cycled a local filter); falls back to it when null.
   final ItemStatus? effectiveStatusForCounts;
 
   final List<Tag> tags;
@@ -143,9 +142,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     );
   }
 
-  /// One subfilter group per active type — game platforms, manga formats,
-  /// anime formats — each tinted with its media-type accent.
-  ///
   /// A group normally appears only once its media-type chevron is selected;
   /// with [alwaysShow] every group whose type has items is shown upfront.
   List<List<SubfilterChipData>> _subfilterGroups({required bool alwaysShow}) {
@@ -219,9 +215,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
             : entries;
     final bool compact =
         MediaQuery.sizeOf(context).width < _compactBreakpoint;
-    // On narrow screens the TagTopBar is hidden, so show a button that
-    // opens a sheet with tags and sorting. Wide screens keep the compact
-    // sort segment (tags are reachable via the TagTopBar above the grid).
+    // Narrow screens hide the TagTopBar, so a button opens a sheet with tags
+    // and sorting; wide screens keep the compact sort segment.
     final bool useTagSheetButton = isCompactScreen(context);
 
     return ColoredBox(
@@ -411,9 +406,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
     if (items == null) return <Platform>[];
 
-    // The cache is valid while the list identity is unchanged: the provider
-    // emits a new List on any collection change, so an identity comparison
-    // is a correct invalidation check.
+    // The provider emits a new List on any collection change, so identity
+    // comparison is a correct cache-invalidation check.
     if (identical(_cachedPlatformsSource, items) && _cachedPlatforms != null) {
       return _cachedPlatforms!;
     }
@@ -451,9 +445,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     ];
   }
 
-  /// Effective item count per type ignoring every filter — drives chevron
-  /// visibility. Empty when items have not loaded, so callers fall back to the
-  /// raw stats buckets.
+  /// Per-type totals ignoring every filter — drives chevron visibility.
+  /// Empty before items load, so callers fall back to raw stats buckets.
   static Map<MediaType, int> _effectiveTotals(List<CollectionItem>? items) {
     if (items == null) return const <MediaType, int>{};
     final Map<MediaType, int> totals = <MediaType, int>{};
@@ -485,9 +478,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.custom: stats?.customCount,
       };
     }
-    // Count what the grid actually shows: every active filter except the type
-    // one, so picking a subfilter (platform, manga / anime format) narrows the
-    // chevron numbers instead of leaving them at the unfiltered total.
+    // Apply every active filter except the type one, so picking a subfilter
+    // narrows the chevron numbers instead of showing the unfiltered total.
     final List<CollectionItem> visible = CollectionFilters(
       platformIds: widget.filterPlatformIds,
       mangaFormats: widget.filterMangaFormats,

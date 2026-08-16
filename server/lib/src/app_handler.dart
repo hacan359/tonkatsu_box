@@ -119,9 +119,8 @@ Handler? _webHandler(String? webRoot) {
     defaultDocument: 'index.html',
   );
 
-  // no-cache = revalidate every time (a 304 when unchanged). Without it the
-  // browser caches main.dart.js heuristically and an updated image keeps
-  // serving the old app until the cache expires on its own.
+  // Revalidate every time. Without it the browser heuristically caches
+  // main.dart.js and keeps serving the old app after an update.
   const String cacheControl = 'no-cache';
 
   return (Request request) async {

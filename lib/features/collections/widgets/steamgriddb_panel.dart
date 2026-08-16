@@ -11,7 +11,6 @@ import '../providers/steamgriddb_panel_provider.dart';
 
 /// Side panel for searching and adding SteamGridDB images to the canvas.
 class SteamGridDbPanel extends ConsumerStatefulWidget {
-  /// Creates a [SteamGridDbPanel].
   const SteamGridDbPanel({
     required this.collectionId,
     required this.collectionName,
@@ -25,7 +24,6 @@ class SteamGridDbPanel extends ConsumerStatefulWidget {
   /// Collection name (used to pre-fill the search).
   final String collectionName;
 
-  /// Callback fired when an image is added to the canvas.
   final void Function(SteamGridDbImage image) onAddImage;
 
   @override
@@ -88,9 +86,8 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
 
     _preFillSearchIfNeeded(panelState);
 
-    // Material wraps the fill so descendant ListTile widgets paint ink on
-    // a Material ancestor — Flutter 3.44 asserts when a coloured ColoredBox
-    // sits between them.
+    // Material hosts the fill so ListTile ink has a Material ancestor —
+    // Flutter 3.44 asserts when a coloured ColoredBox sits between them.
     return SizedBox(
       width: 320,
       child: Material(
@@ -403,7 +400,6 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
   }
 }
 
-/// Preview card for a SteamGridDB image.
 class _ImageThumbnailCard extends StatelessWidget {
   const _ImageThumbnailCard({
     required this.image,

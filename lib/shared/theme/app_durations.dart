@@ -1,10 +1,5 @@
-// Animation duration scale.
-
-/// Standard animation durations.
-///
-/// One scale for all UI motion so transitions feel uniform across screens.
-/// Deliberate outliers (splash reveal, badge pulses, shimmer sweep) keep
-/// their own inline values.
+/// One scale for all UI motion. Deliberate outliers — splash reveal, badge
+/// pulses, shimmer sweep — keep their own inline values.
 abstract final class AppDurations {
   /// 150ms — micro-interactions: hover, focus, small fades.
   static const Duration fast = Duration(milliseconds: 150);

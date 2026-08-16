@@ -1,16 +1,3 @@
-// Adapter between the app's TMDB models and the media-agnostic recommendation
-// engine. Movies and TV share one genre vocabulary, so they form a single
-// taste domain.
-//
-// Genres reach us in two shapes and two languages: numeric id strings (search /
-// discover `genre_ids`) and localized names (cached detail payloads, resolved
-// discover results — English or Russian depending on the request language at
-// fetch time, in whatever case TMDB returned). To make a candidate's genres
-// line up with the completed titles' genres regardless of shape, language or
-// case, every genre is collapsed to its TMDB id (via GenreKeyResolver) — the
-// one key that is identical in every language. Matching on names instead made
-// an English-cached library silently miss Russian-localized candidates.
-
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
@@ -25,15 +12,8 @@ String movieTasteId(int tmdbId) => 'movie:$tmdbId';
 /// Engine id for a TV title/candidate.
 String tvTasteId(int tmdbId) => 'tv:$tmdbId';
 
-/// Collapses a raw genre token to its TMDB id string — the one genre key that
-/// is the same in every language. Accepts a numeric id string (as it arrives on
-/// search / discover summaries) or a localized name in any language and case
-/// (cached detail payloads, resolved discover results).
-///
-/// Built from the per-language id->name maps `getTmdbGenreMap` returns; feeding
-/// it both the EN and RU maps lets a name in either language resolve. Names are
-/// indexed case-insensitively because TMDB returns Russian names lowercased
-/// while the DAO capitalises them on read.
+/// Collapses a genre token — a numeric id or a localized name in any case — to
+/// its TMDB id, the one key that is identical in every language.
 class GenreKeyResolver {
   GenreKeyResolver._(this._ids, this._nameToId);
 

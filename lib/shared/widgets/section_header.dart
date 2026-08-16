@@ -1,16 +1,11 @@
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Заголовок секции с опциональной кнопкой действия.
-///
-/// Используется для разделения контента на экранах:
-/// Home screen ("My Collections"), Collection screen ("Games", "Movies").
-///
-/// Если [actionLabel] и [onAction] заданы — показывает текстовую кнопку справа.
+/// The trailing text button appears only when both [actionLabel] and
+/// [onAction] are given.
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
     required this.title,
@@ -21,7 +16,6 @@ class SectionHeader extends StatelessWidget {
 
   final String title;
 
-  /// Текст кнопки действия (например, "See all", "Sort").
   final String? actionLabel;
 
   final VoidCallback? onAction;

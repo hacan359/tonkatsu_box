@@ -5,10 +5,8 @@ import 'package:logging/logging.dart';
 
 import 'startup_error.dart';
 
-/// App logging setup. Call once in `main()` before `runApp()`.
-///
-/// Logs go through `dart:developer`, so they show up in the `flutter run`
-/// console and the Logging tab of Flutter DevTools.
+/// Call once in `main()` before `runApp()`. Logs go through `dart:developer`
+/// so they reach the `flutter run` console and the DevTools Logging tab.
 abstract final class AppLogger {
   static final Logger _log = Logger('AppLogger');
 
@@ -17,9 +15,7 @@ abstract final class AppLogger {
     Logger.root.onRecord.listen(_onLogRecord);
   }
 
-  /// Catches unhandled Flutter and Dart errors.
-  ///
-  /// Call once in main() after [init()].
+  /// Catches unhandled Flutter and Dart errors; call once after [init].
   static void setupErrorHandlers() {
     // Widget tree errors (red screen).
     FlutterError.onError = (FlutterErrorDetails details) {

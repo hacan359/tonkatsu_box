@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import '../utils/tvdb_json.dart';
@@ -70,9 +69,8 @@ class Movie {
     );
   }
 
-  /// Accepts both TheTVDB shapes: a `/search` hit and a
-  /// `/movies/{id}/extended?meta=translations` record. [locale] picks the
-  /// title and overview; TheTVDB exposes no user rating, so [rating] stays null.
+  /// Accepts both TheTVDB shapes; [locale] picks title and overview. TheTVDB
+  /// exposes no user rating, so [rating] stays null.
   factory Movie.fromTvdb(
     Map<String, dynamic> json, {
     String locale = 'en',

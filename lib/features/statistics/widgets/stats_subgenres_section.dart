@@ -10,9 +10,8 @@ import '../models/library_stats.dart';
 import 'stats_cards.dart';
 import 'stats_section_header.dart';
 
-/// Source subgenre tags as chips — the anime and manga cards sit side by
-/// side (50/50) on wide layouts and stack on narrow ones. The per-source
-/// vocabularies differ, so the cards are never merged.
+/// The anime and manga cards are never merged — the per-source subgenre
+/// vocabularies differ.
 class StatsSubgenresSection extends StatelessWidget {
   /// Creates the subgenres section.
   const StatsSubgenresSection({required this.stats, super.key});
@@ -55,8 +54,7 @@ class StatsSubgenresSection extends StatelessWidget {
                 ],
               );
             }
-            // Wide: anime and manga split the row 50/50. Top-aligned, no
-            // IntrinsicHeight — the tag grids inside use LayoutBuilder,
+            // No IntrinsicHeight: the tag grids inside use LayoutBuilder,
             // which cannot answer intrinsic height queries.
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,

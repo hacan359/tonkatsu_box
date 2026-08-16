@@ -1,5 +1,3 @@
-// Providers for the All Items screen (Home tab).
-
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/collection_sort_mode.dart';
@@ -18,20 +16,16 @@ import '../../collections/providers/sort_utils.dart';
 import '../../settings/providers/settings_provider.dart';
 
 
-/// SharedPreferences key for the All Items sort mode.
 const String _allItemsSortModeKey = 'all_items_sort_mode';
 
-/// SharedPreferences key for the All Items sort direction.
 const String _allItemsSortDescKey = 'all_items_sort_desc';
 
-/// All Items sort mode provider.
 final NotifierProvider<AllItemsSortNotifier, CollectionSortMode>
     allItemsSortProvider =
     NotifierProvider<AllItemsSortNotifier, CollectionSortMode>(
   AllItemsSortNotifier.new,
 );
 
-/// Notifier for the All Items sort mode.
 class AllItemsSortNotifier extends Notifier<CollectionSortMode> {
   @override
   CollectionSortMode build() {
@@ -59,14 +53,12 @@ class AllItemsSortNotifier extends Notifier<CollectionSortMode> {
   }
 }
 
-/// All Items sort direction provider.
 final NotifierProvider<AllItemsSortDescNotifier, bool>
     allItemsSortDescProvider =
     NotifierProvider<AllItemsSortDescNotifier, bool>(
   AllItemsSortDescNotifier.new,
 );
 
-/// Notifier for the sort direction (ascending/descending).
 class AllItemsSortDescNotifier extends Notifier<bool> {
   @override
   bool build() {
@@ -85,7 +77,6 @@ class AllItemsSortDescNotifier extends Notifier<bool> {
     }
   }
 
-  /// Toggles the sort direction.
   Future<void> toggle() async {
     state = !state;
     final SharedPreferences prefs =
@@ -95,14 +86,12 @@ class AllItemsSortDescNotifier extends Notifier<bool> {
 }
 
 
-/// Provider for all items across every collection.
 final NotifierProvider<AllItemsNotifier, AsyncValue<List<CollectionItem>>>
     allItemsNotifierProvider =
     NotifierProvider<AllItemsNotifier, AsyncValue<List<CollectionItem>>>(
   AllItemsNotifier.new,
 );
 
-/// Notifier that loads and sorts all items.
 class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
   late CollectionRepository _repository;
 
@@ -141,17 +130,14 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     });
   }
 
-  /// Reloads all items.
   Future<void> refresh() async {
     final CollectionSortMode sortMode = ref.read(allItemsSortProvider);
     final bool isDescending = ref.read(allItemsSortDescProvider);
     await _loadItems(sortMode, isDescending: isDescending);
   }
 
-  /// Patches an item's status locally without re-querying the DB.
-  ///
-  /// Called from `CollectionItemsNotifier.updateStatus` to avoid invalidating
-  /// the whole provider (which would flash the list through AsyncLoading).
+  /// Patches status locally (from `CollectionItemsNotifier.updateStatus`) —
+  /// invalidating the whole provider would flash the list through AsyncLoading.
   void updateStatusLocally(int id, ItemStatus status) {
     final List<CollectionItem>? items = state.valueOrNull;
     if (items == null) return;
@@ -164,12 +150,8 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     );
   }
 
-  /// Flips the favorite flag from the All Items screen: writes the DB, patches
-  /// this (visible) list, and invalidates the item's per-collection notifier so
-  /// it reloads from the DB when next shown. Invalidating (rather than patching
-  /// that notifier) avoids a race where a freshly-built, still-loading
-  /// collection notifier would overwrite the new flag with its pre-write
-  /// snapshot — which left the item detail screen showing a stale state.
+  /// Writes the DB, patches this list, and *invalidates* the per-collection
+  /// notifier: patching it raced with a still-loading pre-write snapshot.
   Future<void> toggleFavorite(int id) async {
     final CollectionItem? target =
         state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
@@ -180,10 +162,8 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     ref.invalidate(collectionItemsNotifierProvider(target.collectionId));
   }
 
-  /// Patches an item's progress locally without re-querying the DB.
-  ///
-  /// Called from `CollectionItemsNotifier.updateProgress` so the progress
-  /// pill on All Items cards stays in sync without a full reload.
+  /// Patches progress locally (from `CollectionItemsNotifier.updateProgress`)
+  /// so the pill on All Items cards stays in sync without a full reload.
   void updateProgressLocally(
     int id, {
     int? currentSeason,
@@ -256,10 +236,8 @@ final Provider<AsyncValue<List<CollectionItem>>> visibleAllItemsProvider =
 });
 
 
-/// Unique platforms from games in collections, for filtering.
-///
-/// Pulls platformId from every game item and loads the [Platform] models
-/// from the DB. Sorted by name.
+/// Unique platforms from game items, loaded from the DB and sorted by name,
+/// for the All Items filter.
 final FutureProvider<List<Platform>> allItemsPlatformsProvider =
     FutureProvider<List<Platform>>((Ref ref) async {
   final AsyncValue<List<CollectionItem>> itemsAsync =

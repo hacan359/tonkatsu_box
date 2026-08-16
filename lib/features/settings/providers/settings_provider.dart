@@ -65,7 +65,6 @@ abstract class SettingsKeys {
 
   static const String tmdbLanguageDefault = 'en-US';
 
-  /// App UI language (en / ru).
   static const String appLanguage = 'app_language';
 
   static const String appLanguageDefault = 'en';
@@ -453,9 +452,8 @@ final NotifierProvider<SettingsNotifier, SettingsState> settingsNotifierProvider
     NotifierProvider<SettingsNotifier, SettingsState>(SettingsNotifier.new);
 
 extension AnimeMangaTitleLanguagePrefs on SharedPreferences {
-  /// Current AniList title language with default fallback. Use this from
-  /// non-UI callers that already hold a [SharedPreferences] instance to
-  /// avoid taking a dependency on the heavy [SettingsNotifier].
+  /// For non-UI callers that already hold a [SharedPreferences] and should not
+  /// depend on the heavy [SettingsNotifier].
   String get animeMangaTitleLanguage =>
       getString(SettingsKeys.animeMangaTitleLanguage) ??
       SettingsKeys.animeMangaTitleLanguageDefault;

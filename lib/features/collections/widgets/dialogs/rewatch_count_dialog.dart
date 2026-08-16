@@ -5,9 +5,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_typography.dart';
 
-/// Manual editor for the rewatch counter. Pops `(count: N)` on save,
-/// `(count: null)` when the field was left empty (clear back to "not
-/// tracked"), or `null` when cancelled.
+/// Pops `(count: N)` on save, `(count: null)` when cleared back to
+/// "not tracked", or `null` when cancelled.
 class RewatchCountDialog extends StatefulWidget {
   const RewatchCountDialog({this.initialCount, super.key});
 

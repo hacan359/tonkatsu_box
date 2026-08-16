@@ -63,9 +63,8 @@ void main() {
       expect(CanvasItemType.visualNovel.isMediaItem, isTrue);
     });
 
-    // Guards the single-source-of-truth contract: the media subset of
-    // CanvasItemType must mirror MediaType exactly (same string values), so
-    // adding a MediaType without a matching CanvasItemType is caught here.
+    // The media subset of CanvasItemType must mirror MediaType exactly, so a
+    // new MediaType without a matching CanvasItemType is caught here.
     test('media subset mirrors MediaType values', () {
       final Set<String> mediaTypeValues =
           MediaType.values.map((MediaType t) => t.value).toSet();

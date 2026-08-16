@@ -8,11 +8,8 @@ import 'mangadex/mangadex_manga_api.dart';
 import 'mangadex/mangadex_tags_api.dart';
 export 'mangadex/mangadex_types.dart';
 
-/// MangaDex REST facade (`https://api.mangadex.org`, no auth).
-///
-/// A manga provider alongside AniList / MangaBaka; items carry
-/// `DataSource.mangadex` (set inside `Manga.fromMangaDex`) so they stay
-/// distinct in the cache and collection.
+/// MangaDex REST facade (no auth). Items carry `DataSource.mangadex` (set in
+/// `Manga.fromMangaDex`) so they stay distinct in the cache and collection.
 class MangaDexApi {
   MangaDexApi({Dio? dio}) : _client = MangaDexHttpClient(dio: dio) {
     _manga = MangaDexMangaApi(_client);

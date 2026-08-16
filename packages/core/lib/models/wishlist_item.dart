@@ -1,4 +1,3 @@
-
 import 'media_type.dart';
 
 /// A free-text note about content to track down later.

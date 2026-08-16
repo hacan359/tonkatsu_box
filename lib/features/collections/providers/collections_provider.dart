@@ -1,4 +1,3 @@
-
 import 'package:core/database/dao/collection_dao.dart';
 import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/database/dao/tier_list_dao.dart';
@@ -38,9 +37,8 @@ final AsyncNotifierProvider<CollectionsNotifier, List<Collection>>
   CollectionsNotifier.new,
 );
 
-/// Drops calendar entries and release subscriptions whose item left every
-/// collection, then refreshes the calendar. Runs after item / collection
-/// deletion — the entries are keyed by identity, not linked by FK.
+/// Runs after item / collection deletion: calendar entries and release
+/// subscriptions are keyed by identity, not linked by FK, so prune manually.
 Future<void> _pruneCalendarOrphans(Ref ref) async {
   await ref.read(calendarEntryDaoProvider).deleteOrphaned();
   await ref.read(trackedReleaseDaoProvider).deleteOrphaned();
@@ -486,10 +484,8 @@ class CollectionItemsNotifier
     );
   }
 
-  /// Replaces item [id] in the loaded list via [update], then re-applies the
-  /// active sort when a field that just changed feeds it ([affects]). Manual
-  /// order is never re-sorted. Local only — no DB reload, so the list doesn't
-  /// flash; the in-memory item must already carry the edited values.
+  /// Re-sorts only when a changed field feeds the active sort ([affects]);
+  /// manual order never re-sorts. Local only — no DB reload, so no flash.
   void _patchItem(
     int id,
     CollectionItem Function(CollectionItem) update, {
@@ -509,9 +505,8 @@ class CollectionItemsNotifier
     );
   }
 
-  /// Stamps last_activity_at = [now] for [id] so activity sorting reflects a
-  /// card edit. Status and explicit date edits stamp it through their own
-  /// writes, so they don't call this.
+  /// Stamps last_activity_at so activity sorting reflects a card edit. Status
+  /// and explicit date edits stamp it through their own writes.
   Future<void> _stampActivity(int id, DateTime now) =>
       _repository.updateItemActivityDates(id, lastActivityAt: now);
 
@@ -615,10 +610,8 @@ class CollectionItemsNotifier
     return true;
   }
 
-  /// When [coverBytes] != null, writes them into the cover cache (local on
-  /// desktop, the server's on web). [userComment] and [tags] are personal
-  /// fields written onto the created collection item; missing tags are
-  /// created automatically.
+  /// [coverBytes] go to the cover cache (local on desktop, the server's on
+  /// web); missing [tags] are created automatically.
   Future<bool> addCustomItem(
     CustomMedia customMedia, {
     Uint8List? coverBytes,
@@ -672,7 +665,7 @@ class CollectionItemsNotifier
       ref.invalidate(tierListDetailProvider);
       return true;
     } catch (e, stack) {
-      debugPrint('addCustomItem error: $e\n$stack'); // TODO: remove after stabilization
+      debugPrint('addCustomItem error: $e\n$stack');
       return false;
     }
   }
@@ -760,9 +753,8 @@ class CollectionItemsNotifier
     _invalidateEpisodeTrackers(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
-    // Family-wide: covers the target collection's tier lists (where the item
-    // appears in the unranked pool) and global ones, not just lists the item
-    // was placed in.
+    // Family-wide: covers the target collection's tier lists (unranked pool)
+    // and global ones, not just lists the item was placed in.
     ref.invalidate(tierListDetailProvider);
 
     return (success: true, sourceEmpty: sourceEmpty);
@@ -783,9 +775,8 @@ class CollectionItemsNotifier
     ref.invalidate(tierListDetailProvider);
   }
 
-  /// In-memory tracker state survives the DAO-side mark transfer on move,
-  /// so the show would keep showing zero progress in the target collection
-  /// until restart. Invalidating the family reloads every live tracker.
+  /// In-memory tracker state survives the DAO-side mark transfer on move;
+  /// without invalidation the target collection shows zero progress.
   void _invalidateEpisodeTrackers(MediaType mediaType) {
     if (mediaType.mayUseEpisodeTracker) {
       ref.invalidate(episodeTrackerNotifierProvider);
@@ -845,9 +836,8 @@ class CollectionItemsNotifier
     await setFavorite(id, isFavorite: !(target?.isFavorite ?? false));
   }
 
-  /// Persists [isFavorite] and patches local state without a reload. Also syncs
-  /// the All Items view so both stay consistent regardless of which screen
-  /// triggered the change.
+  /// Patches local state without a reload and syncs the All Items view so
+  /// both stay consistent regardless of which screen triggered the change.
   Future<void> setFavorite(int id, {required bool isFavorite}) async {
     final DateTime now = DateTime.now();
     await _repository.setItemFavorite(id, isFavorite: isFavorite);
@@ -868,9 +858,8 @@ class CollectionItemsNotifier
         .updateFavoriteLocally(id, isFavorite: isFavorite);
   }
 
-  // Bulk ops needing single-collection context (sort_order). Collection-agnostic
-  // bulk ops (remove/move/clone/status) live in `BulkOperations`
-  // (`helpers/bulk_operations.dart`) and are reused on All Items.
+  // Bulk ops needing single-collection context (sort_order); collection-
+  // agnostic ones (remove/move/clone/status) live in `BulkOperations`.
 
   /// Preserves relative order. Only meaningful with `sortMode == manual`.
   Future<void> moveItemsToTop(Iterable<int> ids) async {
@@ -997,8 +986,7 @@ class CollectionItemsNotifier
     }
   }
 
-  /// For manga, auto-syncs status: notStarted/planned -> inProgress on first
-  /// chapter; -> completed at final chapter; -> notStarted when reset to 0;
+  /// For manga, auto-syncs status with chapter progress (in/completed/reset);
   /// `dropped` is never overwritten.
   Future<void> updateProgress(
     int id, {
@@ -1115,8 +1103,7 @@ class CollectionItemsNotifier
   }
 
   /// For books, auto-syncs status from the page read (stored in
-  /// `currentEpisode`): planned/notStarted -> inProgress past page 0,
-  /// -> completed at the last page; `dropped` is never overwritten.
+  /// `currentEpisode`); `dropped` is never overwritten.
   Future<void> _autoUpdateBookStatus(int id, int? newPageValue) async {
     final CollectionItem? item =
         state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
@@ -1245,9 +1232,8 @@ class CollectionItemsNotifier
     ref.invalidate(allItemsNotifierProvider);
   }
 
-  /// Manual rewatch-count edit; [count] is >= 0, or null to clear back to
-  /// "not tracked". Transitions into `completed` bump the count automatically
-  /// (see [updateStatus]); this is the override for everything else.
+  /// Manual override; null clears back to "not tracked". Transitions into
+  /// `completed` bump the count automatically (see [updateStatus]).
   Future<void> setRewatchCount(int id, int? count) async {
     assert(count == null || count >= 0, 'Count must be >= 0 or null');
     await _repository.updateItemRewatchCount(id, count);

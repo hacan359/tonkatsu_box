@@ -3,10 +3,8 @@ import 'package:dio/dio.dart';
 
 import 'fantlab_http_client.dart';
 
-/// `/search-works` — full-text work search. The endpoint takes only `q`, `page`
-/// and `onlymatches`; there is no server-side type / year / language filter or
-/// sort, so the page is returned by relevance ("weight") and non-book matches
-/// (reviews, interviews, articles) are dropped here.
+/// `/search-works` full-text search. The endpoint has no server-side filter or
+/// sort — pages come by relevance and non-book matches are dropped here.
 class FantlabSearchApi {
   FantlabSearchApi(this._client);
 
@@ -24,9 +22,8 @@ class FantlabSearchApi {
     'article',
   };
 
-  /// Searches works. Returns the page of books plus pagination flags. When
-  /// [workType] is set (a Fantlab `name_eng` such as `novel`), only matches of
-  /// that type are kept — the API has no server-side type filter.
+  /// Returns the page of books plus pagination flags. With [workType] set,
+  /// only that `name_eng` is kept — the API has no server-side type filter.
   Future<(List<Book>, bool hasMore, int totalPages)> searchWorks({
     required String query,
     int page = 1,
@@ -77,9 +74,8 @@ class FantlabSearchApi {
     return fallback;
   }
 
-  /// Parses `matches[]`. With [workType] set, keeps only that `name_eng`;
-  /// otherwise drops the non-book types. Skips any malformed entry so one bad
-  /// record can't take down the whole page.
+  /// With [workType] set keeps only that `name_eng`, else drops non-book types.
+  /// Skips malformed entries so one bad record can't take down the whole page.
   static List<Book> _parseMatches(List<dynamic> matches, String? workType) {
     final bool filterByType = workType != null && workType.isNotEmpty;
     final List<Book> out = <Book>[];

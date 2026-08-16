@@ -5,12 +5,8 @@ import 'package:core/models/tv_show.dart';
 import '../tvdb_api.dart';
 import 'tv_episode_source.dart';
 
-/// [TvEpisodeSource] backed by TheTVDB.
-///
-/// Episodes arrive 500 per page for the whole show, so the full list is fetched
-/// once and filtered in memory — the cache warmer asks season by season, and
-/// without this each season would re-download every page. A failed fetch is not
-/// retained so the next call retries.
+/// [TvEpisodeSource] backed by TheTVDB. The full episode list is fetched once
+/// and filtered in memory; a failed fetch is dropped so the next call retries.
 class TvdbEpisodeSource implements TvEpisodeSource {
   TvdbEpisodeSource(this._api);
 

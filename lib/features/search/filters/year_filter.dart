@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Release year: individual years from now back to 1980 plus 1970s/1960s
-/// decade buckets for retro (Atari era). The list is long, so [searchable]
-/// is enabled.
+/// Years back to 1980 plus 1970s/1960s decade buckets for the Atari era;
+/// [searchable] because the list is long.
 class YearFilter extends SearchFilter {
   @override
   String get key => 'year';

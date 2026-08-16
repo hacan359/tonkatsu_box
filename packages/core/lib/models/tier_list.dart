@@ -1,4 +1,3 @@
-
 class TierList {
   const TierList({
     required this.id,

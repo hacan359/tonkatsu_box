@@ -20,9 +20,8 @@ class GoogleBooksApiException implements Exception {
   String toString() => 'GoogleBooksApiException: $message';
 }
 
-/// Wires [GoogleBooksApi] with the user's optional API key. Unlike ComicVine,
-/// anonymous search works (under a strict shared quota), so without a key the
-/// client still functions; a user key only raises the quota.
+/// Wires [GoogleBooksApi] with the user's optional API key. Anonymous search
+/// works under a strict shared quota, so a user key only raises the quota.
 final Provider<GoogleBooksApi> googleBooksApiProvider =
     Provider<GoogleBooksApi>((Ref ref) {
   final GoogleBooksApi api = GoogleBooksApi();
@@ -34,15 +33,8 @@ final Provider<GoogleBooksApi> googleBooksApiProvider =
   return api;
 });
 
-/// Google Books (`www.googleapis.com/books/v1`) client backing the Google Books
-/// source.
-///
-/// API quirks handled here:
-/// - the key is optional — requests omit `key` when none is set and still work;
-/// - `volumes.list` caps a page at 40 ([maxPageSize]); pagination is `startIndex`;
-/// - `totalItems` is an estimate, so `hasMore` also requires a full page;
-/// - the list rows already carry the full `volumeInfo`, so [getVolume] is only
-///   needed for refetch / external links, not to enrich search results.
+/// Google Books client. List rows already carry the full `volumeInfo`, so
+/// [getVolume] is only needed for refetch, not to enrich search results.
 class GoogleBooksApi {
   GoogleBooksApi({Dio? dio})
       : _dio = dio ??
@@ -67,12 +59,8 @@ class GoogleBooksApi {
 
   bool get hasApiKey => _apiKey != null && _apiKey!.isNotEmpty;
 
-  /// Paginated volume search. Returns the page plus whether more results exist.
-  ///
-  /// [maxResults] is clamped to [maxPageSize]. [orderBy] is `relevance`
-  /// (default) or `newest`; [printType] is `all` / `books` / `magazines`;
-  /// [langRestrict] an ISO-639-1 code. `hasMore` is gated on both the estimated
-  /// `totalItems` and a full page, since the estimate can shrink between pages.
+  /// Paginated volume search. `hasMore` is gated on both the estimated
+  /// `totalItems` and a full page — the estimate can shrink between pages.
   Future<(List<Book> books, bool hasMore)> searchVolumes(
     String query, {
     int startIndex = 0,
@@ -112,9 +100,8 @@ class GoogleBooksApi {
     return Book.fromGoogleBooksVolume(data);
   }
 
-  /// Lightweight key check for the Credentials "test" button. Anonymous search
-  /// succeeds too, so this sends the key explicitly and treats a 200 as proof
-  /// the key was accepted (an invalid key returns 400).
+  /// Anonymous search succeeds too, so the key is sent explicitly and a 200
+  /// proves it was accepted (an invalid key returns 400).
   Future<bool> validateApiKey(String apiKey) async {
     try {
       final Response<dynamic> res = await _dio.get<dynamic>(

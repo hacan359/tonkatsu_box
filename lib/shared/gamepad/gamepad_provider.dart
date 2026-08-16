@@ -1,16 +1,11 @@
-// Riverpod providers for the gamepad.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/gamepad_service.dart';
 import '../constants/platform_features.dart';
 import 'gamepad_action.dart';
 
-/// Gamepad service provider (singleton).
-///
-/// On unsupported platforms (iOS, Windows) the service is created but not
-/// started. On Windows the polling subscription also crashes the native
-/// gamepads_windows plugin (see [kGamepadSupported]).
+/// On iOS and Windows the service is created but never started — Windows
+/// polling crashes the native plugin.
 final Provider<GamepadService> gamepadServiceProvider =
     Provider<GamepadService>((Ref ref) {
   final GamepadService service = GamepadService();

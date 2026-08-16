@@ -429,9 +429,8 @@ void main() {
     });
 
     group('import', () {
-      // Sets up the ImportWriter-backed mocks: collection resolution, batch
-      // item reads/writes, and wishlist batch writes. Per-test overrides layer
-      // on top (e.g. getItems returning an existing item).
+      // The ImportWriter-backed mocks; per-test overrides layer on top, e.g.
+      // getItems returning an existing item.
       void setupDefaultMocks({
         int collectionId = 1,
         String collectionName = 'Trakt: testuser',
@@ -1597,14 +1596,8 @@ void main() {
 
       test('promote planned -> completed перезаписывает completed_at (флаг)',
           () async {
-        // INTENT (old test "не перезаписывать completedAt когда локальный
-        // != null"): a pre-existing completedAt should not be clobbered.
-        // The new merge path always re-stamps completed_at when a status
-        // transition lands on `completed` (statusDateColumns uses
-        // computeDatesForStatus, which sets completedAt = now for the
-        // `completed` case). So promoting planned -> completed DOES overwrite
-        // a non-null local completedAt. This test pins the actual behavior;
-        // see the migration notes for the discrepancy.
+        // Pins the actual behavior: computeDatesForStatus re-stamps
+        // completedAt on every transition into `completed`, local value or not.
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'DatesExist');
         when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);
@@ -1670,10 +1663,8 @@ void main() {
       });
 
       test('in-batch дубликат не вставляется дважды (skipped)', () async {
-        // INTENT (old "addItem возвращает null — не создан"): the per-item
-        // null-insert path is gone. The closest surviving behavior: a title
-        // present twice in one batch is inserted once and the duplicate
-        // counted as skipped (ConflictAlgorithm.ignore at the batch level).
+        // ConflictAlgorithm.ignore is applied per batch, so the second copy
+        // is counted as skipped rather than inserted.
         setupDefaultMocks();
         const Movie testMovie = Movie(tmdbId: 100, title: 'Dup');
         when(() => mockTmdb.getMovie(100)).thenAnswer((_) async => testMovie);

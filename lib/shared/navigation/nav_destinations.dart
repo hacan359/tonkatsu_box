@@ -1,17 +1,11 @@
-// Builds the navigation destinations for the side and bottom menus.
-//
-// Settings is not included here — it lives behind the gear in [AppTopBar].
-
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 
-/// Builds the ordered list of [NavDestination]s for the menu.
-///
-/// The order is identical for [AppSidebar] and [AppBottomBar]. Settings is
-/// absent — it opens via the gear in [AppTopBar].
+/// One order for both [AppSidebar] and [AppBottomBar]. Settings is absent —
+/// it opens from the gear in [AppTopBar].
 List<NavDestination> buildNavDestinations({
   required BuildContext context,
   required int wishlistCount,
@@ -36,15 +30,12 @@ NavDestination _dest(S loc, NavTab tab, {int badgeCount = 0}) => NavDestination(
       badgeCount: badgeCount,
     );
 
-/// Slot the centre button occupies in the nav row/rail. [AppShell] draws the
-/// button (a docked logo); the bars reserve an empty slot here so the tabs
-/// split evenly around it.
+/// [AppShell] draws the centre button; the bars only reserve this slot so the
+/// tabs split evenly around it.
 const int kNavCenterSlot = 3;
 
-/// Maps the selected destination index to its visual slot once the empty
-/// centre slot is accounted for. Returns [kNavCenterSlot] while the centre
-/// button is active, -1 when nothing is selected, and otherwise shifts any
-/// destination at or past the centre by one to skip the reserved slot.
+/// Destination index to visual slot: [kNavCenterSlot] while the centre button
+/// is active, -1 for nothing selected, else shifted past the reserved slot.
 int navSelectedSlot({required int selectedIndex, required bool centerActive}) {
   if (centerActive) return kNavCenterSlot;
   if (selectedIndex < 0) return -1;

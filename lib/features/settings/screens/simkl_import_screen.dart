@@ -5,12 +5,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/simkl_import_content.dart';
 
-/// Simkl import screen (movies, TV shows and anime in one import).
-///
-/// Thin wrapper around [SimklImportContent] with a title bar, pushed from
-/// settings.
 class SimklImportScreen extends StatelessWidget {
-  /// Creates a [SimklImportScreen].
   const SimklImportScreen({super.key});
 
   @override

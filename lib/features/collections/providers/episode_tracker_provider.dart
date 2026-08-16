@@ -1,5 +1,3 @@
-// Provider for tracking watched episodes of a show.
-
 import 'dart:async';
 
 import 'package:core/models/collection_item.dart';
@@ -16,9 +14,7 @@ import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
 import 'collections_provider.dart';
 
-/// Episode tracker state.
 class EpisodeTrackerState {
-  /// Creates an [EpisodeTrackerState].
   const EpisodeTrackerState({
     this.episodesBySeason = const <int, List<TvEpisode>>{},
     this.watchedEpisodes = const <(int, int), DateTime?>{},
@@ -27,23 +23,19 @@ class EpisodeTrackerState {
     this.error,
   });
 
-  /// Episodes by season (key is the season number).
   final Map<int, List<TvEpisode>> episodesBySeason;
 
   /// Watched episodes: (seasonNumber, episodeNumber) -> watch date.
   final Map<(int, int), DateTime?> watchedEpisodes;
 
-  /// Per-season loading flags.
   final Map<int, bool> loadingSeasons;
 
   /// Show's official episode count resolved by the tracker (specials
   /// excluded). Fallback for cards whose cached [TvShow] has no totals.
   final int? totalEpisodes;
 
-  /// Load error, if any.
   final String? error;
 
-  /// Returns a copy with the given fields replaced.
   EpisodeTrackerState copyWith({
     Map<int, List<TvEpisode>>? episodesBySeason,
     Map<(int, int), DateTime?>? watchedEpisodes,
@@ -60,17 +52,14 @@ class EpisodeTrackerState {
     );
   }
 
-  /// Whether the episode has been watched.
   bool isEpisodeWatched(int season, int episode) {
     return watchedEpisodes.containsKey((season, episode));
   }
 
-  /// Returns the episode's watch date (or null).
   DateTime? getWatchedAt(int season, int episode) {
     return watchedEpisodes[(season, episode)];
   }
 
-  /// Returns the number of watched episodes in a season.
   int watchedCountForSeason(int season) {
     int count = 0;
     for (final (int s, int _) in watchedEpisodes.keys) {
@@ -79,8 +68,6 @@ class EpisodeTrackerState {
     return count;
   }
 
-  /// Returns the total number of watched episodes.
-  ///
   /// Specials (season 0) are excluded: TMDB's `number_of_episodes` does not
   /// count them, so they must not count toward overall progress either.
   int get totalWatchedCount {
@@ -111,8 +98,6 @@ typedef EpisodeTrackerArg = ({
   DataSource source,
 });
 
-/// Episode tracking provider.
-///
 /// When collectionId == null (uncategorized), tracking is disabled.
 final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
         EpisodeTrackerArg>
@@ -123,7 +108,6 @@ final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
   EpisodeTrackerNotifier.new,
 );
 
-/// Notifier that manages watched episodes.
 class EpisodeTrackerNotifier
     extends FamilyNotifier<EpisodeTrackerState, EpisodeTrackerArg> {
   static final Logger _log = Logger('EpisodeTrackerNotifier');
@@ -151,9 +135,8 @@ class EpisodeTrackerNotifier
     // Episode tracking is not supported for uncategorized items
     if (_collectionId == null) return const EpisodeTrackerState();
 
-    // Only the cheap queries run eagerly: grid cards watch this provider
-    // per TV item and need just watched counts and totals. The full episode
-    // cache loads lazily via [ensureCachedEpisodesLoaded].
+    // Only cheap queries run eagerly (grid cards need just counts/totals);
+    // the full episode cache loads lazily via ensureCachedEpisodesLoaded.
     Future<void>.microtask(_loadWatchedEpisodes);
     Future<void>.microtask(_resolveCachedTotals);
 
@@ -170,10 +153,8 @@ class EpisodeTrackerNotifier
     await _loadCachedEpisodes();
   }
 
-  /// Resolves the show's episode total from the local cache so progress
-  /// badges render "x/y" even when the cached show row has no totals
-  /// (rows written from list endpoints before the cache warmer existed).
-  /// Specials (season 0) are excluded, matching [totalWatchedCount].
+  /// Resolves totals from the local cache so badges render "x/y" even when
+  /// the cached show row has none; specials excluded ([totalWatchedCount]).
   Future<void> _resolveCachedTotals() async {
     try {
       final TvShow? show =
@@ -208,8 +189,7 @@ class EpisodeTrackerNotifier
     }
   }
 
-  /// Loads every already-cached episode (all seasons) in one query, without
-  /// touching the network. Lets the marks summary/filter resolve episode names
+  /// One network-free query so the marks summary/filter resolve episode names
   /// up front; uncached seasons still lazy-load from TMDB on expand.
   Future<void> _loadCachedEpisodes() async {
     try {
@@ -231,11 +211,8 @@ class EpisodeTrackerNotifier
     }
   }
 
-  /// Loads a season's episodes (from cache or API).
   Future<void> loadSeason(int seasonNumber) async {
-    // Already loaded
     if (state.episodesBySeason.containsKey(seasonNumber)) return;
-    // Already loading
     if (state.loadingSeasons[seasonNumber] == true) return;
 
     state = state.copyWith(
@@ -321,7 +298,6 @@ class EpisodeTrackerNotifier
     }
   }
 
-  /// Toggles an episode's watched mark.
   Future<void> toggleEpisode(int season, int episode) async {
     final int? collId = _collectionId;
     if (collId == null) return;
@@ -346,7 +322,6 @@ class EpisodeTrackerNotifier
     unawaited(_updateAutoStatus());
   }
 
-  /// Toggles the watched mark for every episode in a season.
   Future<void> toggleSeason(int season) async {
     final int? collId = _collectionId;
     if (collId == null) return;
@@ -432,9 +407,8 @@ class EpisodeTrackerNotifier
       }
     }
 
-    // Fallback: if the TMDB API also returned no totalEpisodes but every
-    // regular season is loaded, use the sum of loaded episodes. Season 0
-    // (specials) is excluded — TMDB's totalSeasons doesn't count it.
+    // If TMDB returned no totalEpisodes but every regular season is loaded,
+    // sum loaded episodes; specials excluded (totalSeasons doesn't count 0).
     final int loadedRegularSeasons =
         state.episodesBySeason.keys.where((int s) => s > 0).length;
     if (totalInShow == 0 &&

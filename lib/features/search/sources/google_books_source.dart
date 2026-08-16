@@ -15,10 +15,7 @@ const int _googleBooksPageSize = 20;
 // Google Books tolerates short queries, but a 1-char `q` is mostly noise.
 const int _googleBooksMinQuery = 2;
 
-/// SearchSource backed by Google Books, Google's global book catalog. Items are
-/// stamped [MediaType.book] and carry `DataSource.googleBooks` (set inside
-/// [Book.fromGoogleBooksVolume]). `volumes.list` has no filter-only browse, so a
-/// text query is always required. The optional user API key (raised quota) is
+/// Google Books global catalog. The optional user API key (raised quota) is
 /// wired by [googleBooksApiProvider]; anonymous search works without one.
 class GoogleBooksSource extends SearchSource {
   @override

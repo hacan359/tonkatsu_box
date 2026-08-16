@@ -1,5 +1,3 @@
-// Helpers for reading SearchFilter values out of the filterValues map.
-
 /// Coerces a multi-select filter value (a `List`, a single value, or null) to
 /// `List<String>`. Returns null when nothing is selected.
 List<String>? readFilterStringList(Object? value) {

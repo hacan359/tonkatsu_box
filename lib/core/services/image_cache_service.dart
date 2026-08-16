@@ -179,9 +179,8 @@ class ImageCacheService {
     }
   }
 
-  /// Returns the local path when a valid cached file exists; otherwise the
-  /// remote URL, with isMissing = true (when caching is on) so callers can
-  /// download in the background.
+  /// Local path when a valid cached file exists; otherwise the remote URL
+  /// with isMissing = true so callers can download in the background.
   Future<ImageResult> getImageUri({
     required ImageType type,
     required String imageId,
@@ -359,13 +358,8 @@ class ImageCacheService {
     }
   }
 
-  /// Deletes cached image files that no longer have a backing entry.
-  ///
-  /// [keep] maps each [ImageType] to the set of cache ids (file names without
-  /// the `.png` extension) that must be preserved. Only `.png` files inside the
-  /// listed type folders are scanned; type folders absent from [keep] and any
-  /// non-image files are left untouched. Windows file locks are tolerated.
-  /// Returns the number of files deleted and the bytes freed.
+  /// Deletes `.png` files whose id is not in [keep]; only the listed type
+  /// folders are scanned. Windows file locks are tolerated.
   Future<CacheCleanupResult> removeOrphans(
     Map<ImageType, Set<String>> keep,
   ) async {

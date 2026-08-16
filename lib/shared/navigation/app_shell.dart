@@ -1,5 +1,3 @@
-// Main app shell: side rail + nested per-tab navigation.
-
 import 'dart:async';
 
 import 'package:flutter/gestures.dart';
@@ -38,11 +36,8 @@ import 'search_providers.dart';
 /// Number of primary tabs.
 const int _tabCount = 7;
 
-/// Clears the Search tab's transient state when it is freshly entered, so it
-/// always opens empty instead of showing whatever a previous search (including
-/// one opened prefilled from Wishlist or a collection) left in the shared
-/// providers. Browse filters and the chosen source are kept — those are a
-/// deliberate browse setup, not transient search input.
+/// Clears the Search tab's transient state on entry so it always opens empty.
+/// Browse filters and the source stay — those are a deliberate setup.
 @visibleForTesting
 void resetSearchTabState(WidgetRef ref) {
   ref.read(searchTabQueryProvider.notifier).state = '';
@@ -50,22 +45,11 @@ void resetSearchTabState(WidgetRef ref) {
   ref.read(browseProvider.notifier).clearSearch();
 }
 
-/// Main app shell.
-///
-/// Shared across platforms (Windows, Android): [AppSidebar] of width
-/// [kAppSidebarWidth] on the left, each tab's nested navigation on the right
-/// via [IndexedStack] + cached [Navigator]s.
-///
-/// Gamepad support:
-/// - D-pad — move focus (DirectionalFocusIntent)
-/// - A — activate the focused widget (ActivateIntent)
-/// - LB/RB — switch between tabs
-/// - B — back (pop within the tab, or switch to Home)
+/// [AppSidebar] plus an [IndexedStack] of cached per-tab [Navigator]s. Gamepad
+/// intents (D-pad focus, A, LB/RB, B) are bound here, not per screen.
 class AppShell extends ConsumerStatefulWidget {
-  /// Creates an [AppShell].
-  ///
-  /// [initialTab] opens the app on a specific tab (e.g. Settings after the
-  /// Welcome Wizard).
+  /// [initialTab] opens the app on a specific tab (e.g. Settings right after
+  /// the welcome wizard).
   const AppShell({this.initialTab, super.key});
 
   /// Starting tab; [NavTab.home] when null.
@@ -97,10 +81,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     (_) => GlobalKey<NavigatorState>(),
   );
 
-  /// Cached Navigator widgets.
-  ///
-  /// [MaterialApp] rebuilds the whole tree on locale change. Without the cache
-  /// each rebuild would create a new Navigator and lose its route history.
+  /// [MaterialApp] rebuilds the tree on locale change; without this cache each
+  /// rebuild would drop a new Navigator in and lose its route history.
   final List<Widget?> _navigatorWidgets =
       List<Widget?>.filled(_tabCount, null);
 
@@ -252,9 +234,8 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// area and highlighting the centre nav button like a selected tab).
   bool _personalizationOpen = false;
 
-  /// Shows the preference cloud as a shell-level destination — a sibling of the
-  /// tab navigators, not a route pushed onto one — so switching tabs simply
-  /// hides it instead of leaving it on a tab's navigator stack.
+  /// A sibling of the tab navigators rather than a route on one, so switching
+  /// tabs hides the cloud instead of leaving it on that tab's stack.
   void _openPreferenceCloud() {
     if (_personalizationOpen) return;
     // Drop any focus the top-bar search field holds so the mobile keyboard
@@ -263,11 +244,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     setState(() => _personalizationOpen = true);
   }
 
-  /// Captures printable characters from the global Focus and redirects them to
-  /// the [AppTopBar] search field (type-to-search).
-  ///
-  /// Desktop only, and only when the current tab supports search and focus is
-  /// not already inside another [EditableText].
+  /// Type-to-search: desktop only, and only when the tab supports search and
+  /// focus is not already inside a text field.
   KeyEventResult _handleTypeToSearch(FocusNode node, KeyEvent event) {
     if (kIsMobile) return KeyEventResult.ignored;
     // Personalization has no search field; don't hijack typing for it.
@@ -318,23 +296,16 @@ class _AppShellState extends ConsumerState<AppShell> {
       index: _personalizationOpen ? _tabCount : _selectedIndex,
       children: <Widget>[
         for (int index = 0; index < _tabCount; index++)
-          // Hidden tabs keep their state but must not keep animating:
-          // IndexedStack alone leaves tickers running in invisible children
-          // (repeating glow/shimmer controllers), so the app never goes
-          // frame-idle and every visible animation competes with them.
+          // IndexedStack alone leaves tickers running in hidden children, so
+          // the app never goes frame-idle and visible animations compete.
           TickerMode(
             enabled: !_personalizationOpen && index == _selectedIndex,
             child: _initializedTabs.contains(index)
                 ? _buildTabNavigator(index)
                 : const SizedBox.shrink(),
           ),
-        // Personalization is a shell-level destination, not a tab: it lives as
-        // an extra IndexedStack child rather than a route pushed onto a tab's
-        // navigator, so switching tabs hides it instead of leaving it glued to
-        // a tab's stack with the highlight pointing elsewhere. Unlike the tabs
-        // it is NOT kept alive: the genre cloud + recommendations subtree is
-        // heavy (large canvas, many posters), so it unmounts on leave and its
-        // data layers (providers) carry the state between visits.
+        // An extra IndexedStack child, not a tab route — switching tabs hides
+        // it. Not kept alive: the subtree is heavy, providers carry the state.
         if (_personalizationOpen)
           const PersonalizationScreen()
         else
@@ -370,9 +341,8 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _onDestinationSelected(int index) {
     if (index == _selectedIndex && !_personalizationOpen) {
-      // Pressing again returns to the tab root. While Personalization is open
-      // this must fall through instead, so tapping the underlying tab closes
-      // the cloud rather than silently popping a hidden tab to its root.
+      // Pressing again returns to the tab root, but not while Personalization
+      // is open — that tap must close the cloud, not pop a hidden tab.
       _navigatorKeys[index]
           .currentState
           ?.popUntil((Route<dynamic> route) => route.isFirst);
@@ -399,18 +369,15 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _resetSearchTab() => resetSearchTabState(ref);
 
-  /// Opens the Search tab in response to a [SearchTabRequest] from another tab,
-  /// optionally prefilled. Used instead of pushing a separate search screen, so
-  /// the shell and its single top-bar search field stay consistent (no second
-  /// AppBar / second search field).
+  /// Reuses the Search tab instead of pushing a separate screen, so the shell
+  /// keeps a single top-bar search field.
   void _openSearchTab(SearchTabRequest request) {
     // Start from a clean Search tab (also clears any stale target collection).
     resetSearchTabState(ref);
 
     final int index = NavTab.search.index;
-    // Switch when the Search tab isn't already active, or when Personalization
-    // is open over it — a search request must close the overlay and surface the
-    // tab rather than be swallowed.
+    // Personalization open over the Search tab still needs a switch, or the
+    // request is swallowed by the overlay.
     if (_selectedIndex != index || _personalizationOpen) {
       _initializedTabs.add(index);
       setState(() {

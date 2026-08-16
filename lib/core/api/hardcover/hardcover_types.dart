@@ -11,9 +11,8 @@ class HardcoverApiException implements Exception {
   String toString() => 'HardcoverApiException: $message (status: $statusCode)';
 }
 
-/// 401 — the personal token is missing, invalid or expired. Hardcover tokens
-/// live at most a year and are reset every January 1st, so this is a routine
-/// condition: the user needs a fresh token from hardcover.app/account/api.
+/// 401 — token missing, invalid or expired. Tokens reset every January 1st,
+/// so this is routine: the user grabs a new one at hardcover.app/account/api.
 class HardcoverAuthException extends HardcoverApiException {
   const HardcoverAuthException({super.detail})
       : super(

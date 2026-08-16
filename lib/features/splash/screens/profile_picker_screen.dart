@@ -16,10 +16,8 @@ import '../../../shared/constants/profile_ui.dart';
 
 const String kSkipProfilePickerKey = 'skip_profile_picker';
 
-/// Экран выбора профиля при запуске.
-///
-/// Показывается после splash, если профилей > 1 и пользователь
-/// не отключил этот экран через "Don't ask again".
+/// Shown after the splash only when there is more than one profile and the
+/// user has not opted out via "Don't ask again".
 class ProfilePickerScreen extends ConsumerStatefulWidget {
   const ProfilePickerScreen({super.key});
 

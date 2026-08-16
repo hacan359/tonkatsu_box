@@ -28,12 +28,8 @@ enum CardVariant {
   canvas,
 }
 
-/// Vertical poster card for a media item.
-///
-/// Behavior is driven by [variant]:
-/// - [CardVariant.grid] — hover animation, rating, status, title+subtitle
-/// - [CardVariant.compact] — smaller grid (landscape)
-/// - [CardVariant.canvas] — card with colored border, no animation
+/// [variant] drives it: grid animates on hover, compact is the landscape grid,
+/// canvas is a bordered card with no animation.
 class MediaPosterCard extends StatefulWidget {
   const MediaPosterCard({
     required this.variant,
@@ -88,10 +84,8 @@ class MediaPosterCard extends StatefulWidget {
   /// API rating (0.0–10.0). Grid/compact only.
   final double? apiRating;
 
-  /// When true (collection), only the API rating goes to the subtitle line
-  /// under the poster — the personal rating stays in the top-left badge. When
-  /// false (search), both ratings render in the subtitle line. Grid/compact
-  /// only.
+  /// Collection mode keeps the personal rating in the badge and only the API
+  /// one in the subtitle; search mode puts both in the subtitle.
   final bool splitRatings;
 
   /// Grid/compact only.
@@ -128,9 +122,8 @@ class MediaPosterCard extends StatefulWidget {
   /// heart toggle's filled/broken state.
   final bool isFavorite;
 
-  /// Forces the heart to render as a static (non-tappable) indicator even when
-  /// [onToggleFavorite] is null — e.g. during multi-select, so the heart stays
-  /// visible while taps select the card. Grid/compact only.
+  /// Keeps the heart visible as a static indicator when [onToggleFavorite] is
+  /// null — e.g. during multi-select, where a tap selects the card.
   final bool showFavorite;
 
   /// Fired when the favorite heart is tapped. When null the heart isn't
@@ -144,9 +137,8 @@ class MediaPosterCard extends StatefulWidget {
   /// Drives the border color and placeholder icon (canvas).
   final MediaType? mediaType;
 
-  /// Replaces the [mediaType] caption in the subtitle row (e.g. a manga/anime
-  /// format like "Manhwa" or "OVA"). When null, the media-type label is shown.
-  /// The caption keeps the [mediaType] accent color either way.
+  /// Replaces the [mediaType] caption (e.g. "Manhwa", "OVA"); the accent color
+  /// stays either way.
   final String? typeLabelOverride;
 
   /// Fallback: [Icons.image_outlined].
@@ -412,9 +404,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               },
             ),
 
-            // Top-left row: personal rating badge (split mode only — in
-            // non-split mode both ratings render in the subtitle line under
-            // the poster) and the time-to-beat clock.
+            // The personal badge is split-mode only — otherwise both ratings
+            // render in the subtitle line under the poster.
             if ((widget.splitRatings && widget.userRating != null) ||
                 widget.timeToBeatHours != null)
               Positioned(
@@ -465,9 +456,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 ),
               ),
 
-            // Top-right row: the favorite heart (collection only) sits before
-            // the in-collection button (search) or the platform text badge
-            // (games), which are mutually exclusive.
+            // The in-collection button (search) and the platform badge (games)
+            // are mutually exclusive; the heart sits before either.
             Positioned(
               top: _isCompact ? 2 : AppSpacing.xs,
               right: _isCompact ? 2 : AppSpacing.xs,
@@ -542,9 +532,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Translucent strip pinned to the poster's bottom edge, carrying the status
-  /// dot, the progress label, the tag badge and the progress bar. Collapses to
-  /// nothing when the item has none of them, leaving the poster bare.
+  /// Collapses to nothing when the item has no status, progress or tag,
+  /// leaving the poster bare.
   Widget _buildStatsStrip() {
     final double hPad = _isCompact ? 4 : 6;
     final double vPad = _isCompact ? 2 : 4;
@@ -588,10 +577,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   ),
                   SizedBox(width: _isCompact ? 2 : 4),
                 ],
-                // The tag takes the free space so the progress label lands on
-                // the right edge; a Spacer would split it with the tag's flex.
-                // Without a tag the label owns the flex, so a long one
-                // ellipsizes instead of overflowing the strip.
+                // The tag takes the free space so the label lands on the right
+                // edge; a Spacer would split that flex with the tag.
                 if (hasTag)
                   Expanded(
                     child: Align(
@@ -663,9 +650,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Meta line, with the source logo ahead of it when the card has a source.
-  /// The logo sits in a [Row] rather than inline: a [WidgetSpan] grows the
-  /// text line past the height the title block budgeted for it.
+  /// The source logo sits in a [Row], not a [WidgetSpan] — a span grows the
+  /// text line past the height the title block budgeted.
   Widget _buildSubtitleRow(BuildContext context) {
     final TextStyle baseStyle =
         AppTypography.posterSubtitleFor(compact: _isCompact);

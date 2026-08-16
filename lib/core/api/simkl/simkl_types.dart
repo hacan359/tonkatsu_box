@@ -1,8 +1,5 @@
-/// Typed error for Simkl requests.
-///
 /// Simkl reports a missing/over-quota `client_id` as `412 client_id_failed`
-/// rather than the usual 429 — [isClientIdFailure] flags that case so callers
-/// can show a meaningful message instead of a generic failure.
+/// rather than 429 — [isClientIdFailure] flags it so callers can explain.
 class SimklApiException implements Exception {
   const SimklApiException(this.message, {this.statusCode, this.detail});
 

@@ -3,12 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../settings/providers/settings_provider.dart';
 
-/// Resolves the user-facing name for a [CollectionItem], honouring the
-/// AniList title-language setting and the manual rename override.
-///
-/// Use [displayNameOf] inside `build` to subscribe to language changes,
-/// and [currentDisplayNameOf] in event handlers / async callbacks for a
-/// one-shot snapshot.
+/// [displayNameOf] subscribes to title-language changes inside `build`;
+/// [currentDisplayNameOf] is a one-shot read for event handlers.
 extension CollectionItemDisplay on WidgetRef {
   String displayNameOf(CollectionItem item) {
     final String lang = watch(

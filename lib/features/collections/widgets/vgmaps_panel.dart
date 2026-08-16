@@ -187,10 +187,8 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
     _controller.loadUrl('https://vgmaps.de/maps/?search=$encoded');
   }
 
-  /// Captures the map image using three strategies, in priority order:
-  /// JS `executeScript` with a direct return (no postMessage), then HTTP
-  /// fetch of the current page with HTML parsing in Dart, then a
-  /// postMessage fallback via JS injection.
+  /// Three strategies in priority order: JS `executeScript` with a direct
+  /// return, HTTP fetch + HTML parsing in Dart, then a postMessage fallback.
   Future<void> _captureMapImage() async {
     if (!_isWebViewReady) return;
 

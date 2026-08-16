@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 
-/// Builds a dense context-menu entry: an icon and a label in a single row.
-///
-/// Replaces the bulky `ListTile` inside a `PopupMenuItem`. [color] tints both
-/// the icon and the text (e.g. [AppColors.error] for destructive actions).
+/// Dense context-menu entry replacing the bulky `ListTile` in a
+/// `PopupMenuItem`; [color] tints both icon and text (destructive actions).
 PopupMenuItem<T> contextMenuItem<T>({
   required T value,
   required IconData icon,

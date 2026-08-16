@@ -14,11 +14,8 @@ import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
 import 'media_action_handler.dart';
 
-/// Game source handler (IGDB).
-///
-/// Picker does not block any collection: the same game on a different
-/// platform is intentionally allowed. Platform is chosen via a dedicated
-/// dialog before the add.
+/// The picker never blocks a collection: the same game on another platform
+/// is intentionally allowed; a dialog asks for the platform before the add.
 class GameHandler implements MediaActionHandler {
   GameHandler({
     required WidgetRef ref,

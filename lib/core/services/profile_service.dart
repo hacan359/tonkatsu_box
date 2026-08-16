@@ -260,9 +260,8 @@ class ProfileService {
     }
   }
 
-  /// Restarts the app after a profile switch. Desktop: spawns a new process
-  /// and exits. Android: closes the DB and recreates [ProviderScope] via
-  /// [AppRestartScope], which resets all providers and shows the SplashScreen.
+  /// Restart after a profile switch. Desktop respawns the process; mobile/web
+  /// close the DB and recreate [ProviderScope] via [AppRestartScope].
   static Future<void> restartApp(BuildContext context, WidgetRef ref) async {
     if (kIsMobile || kIsWebBuild) {
       // The DB must be closed before ProviderScope is recreated

@@ -2,9 +2,8 @@ import 'package:sqflite_common/sqlite_api.dart';
 
 import 'migration.dart';
 
-/// Music becomes the audio media type: podcasts join albums under one
-/// `kind`-discriminated cache. v63 never shipped in a release, so the music
-/// tables are dropped, not migrated — there is no data to carry over.
+/// Podcasts join albums under one `kind`-discriminated cache. v63 never
+/// shipped, so the music tables are dropped rather than migrated.
 class MigrationV64 extends Migration {
   @override
   int get version => 64;
@@ -62,9 +61,8 @@ class MigrationV64 extends Migration {
       ON audio_cache(title)
     ''');
 
-    // Track list of the picked release, keyed naturally like tv_episodes_cache
-    // — the surrogate id is local-only and never exported. Podcast episodes
-    // store disc_number 0 and the Podcast Index episode id as position.
+    // Keyed naturally like tv_episodes_cache; the surrogate id is local-only.
+    // Podcast episodes store disc_number 0 and the episode id as position.
     await db.execute('''
       CREATE TABLE audio_tracks_cache (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

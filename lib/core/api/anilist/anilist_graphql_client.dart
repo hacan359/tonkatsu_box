@@ -19,12 +19,8 @@ class AniListGraphQLClient {
   static const Duration _timeout = Duration(seconds: 5);
   static const String _endpoint = 'https://graphql.anilist.co';
 
-  // AniList manually blocks anonymous default UAs when scrapers hide
-  // behind them — "Dart/3.12 (dart:io)" is banned at the time of writing,
-  // which 403s every Flutter app that does not identify itself.
-  // AppHttpOverrides covers this app-wide; the explicit header here keeps
-  // the API client safe even when constructed without the overrides
-  // (tests, isolates).
+  // AniList 403s anonymous default UAs (the Dart one is banned); the explicit
+  // header keeps this client safe without AppHttpOverrides (tests, isolates).
   static const String _userAgent = AppHttpOverrides.userAgent;
   static final Logger _log = Logger('AniListApi');
 

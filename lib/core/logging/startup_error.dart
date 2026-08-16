@@ -1,25 +1,16 @@
-// On-screen reporter for fatal startup errors.
-//
-// A failed DB migration or a throw in main() before runApp() would otherwise
-// leave the user on a frozen splash logo with no clue what broke — and no
-// logcat access on a release device. This module keeps the first fatal error
-// in a global notifier; main(), the platform error handler and the splash
-// screen feed it, and an overlay in app.dart paints the details over the UI so
-// they can be read and copied off the device.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../shared/theme/app_colors.dart';
 import '../../shared/theme/app_spacing.dart';
 
-/// The first captured fatal startup error, or null while startup is healthy.
-/// Watched by the overlay in `app.dart`.
+/// The first fatal startup error, painted over the UI: before runApp there is
+/// no logcat on a release device, only a frozen splash.
 final ValueNotifier<StartupErrorInfo?> startupError =
     ValueNotifier<StartupErrorInfo?>(null);
 
-/// Records [error]/[stack] as the startup error and returns the effective
-/// value. The first error wins, so a cascade of follow-up failures can't bury
-/// the original cause.
+/// Records the error and returns the effective value; the first error wins,
+/// so a cascade of follow-up failures can't bury the original cause.
 StartupErrorInfo recordStartupError(
   String source,
   Object error,
@@ -143,8 +134,6 @@ class StartupErrorView extends StatelessWidget {
   }
 }
 
-/// Copies [text] to the clipboard and flips its label to a confirmation for a
-/// couple of seconds.
 class _CopyButton extends StatefulWidget {
   const _CopyButton({required this.text});
 

@@ -1,12 +1,3 @@
-// "What's new" on version change: shows hand-written release notes from
-// assets/whats_new.md once per version (mirrors UpdateService's shape).
-//
-// Notes format — one `# X.Y.Z` heading per release, newest on top:
-//   # 0.40.0
-//   **Highlight.** Prose and `- bullets` in mini-markdown.
-// Only the section matching the running app version is ever shown; if the
-// file has no section for it, the dialog is skipped for that version.
-
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -42,12 +33,8 @@ class WhatsNewService {
 
   static const String _seenVersionKey = 'changelog_seen_version';
 
-  /// Returns the notes for the current version when they have not been
-  /// shown yet, `null` otherwise.
-  ///
-  /// The first launch ever (no stored version) is treated as already seen:
-  /// a fresh install starts with the welcome wizard, not release notes.
-  /// A version without a notes section is marked seen silently.
+  /// First launch (no stored version) counts as seen — a fresh install gets
+  /// the welcome wizard, not release notes. No notes section = seen silently.
   Future<WhatsNewContent?> pendingWhatsNew() async {
     final String currentVersion = await _resolveVersion();
     final String? seenVersion = _prefs.getString(_seenVersionKey);

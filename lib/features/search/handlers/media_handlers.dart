@@ -40,14 +40,8 @@ import 'movie_handler.dart';
 import 'simple_media_handler.dart';
 import 'tv_show_handler.dart';
 
-/// Registry that maps search results to their per-source handlers.
-///
-/// Resolution is two-level:
-/// 1. by `sourceId` — for the case when the same model type comes from
-///    multiple sources (e.g. `Game` from IGDB *and* a future RAWG) and
-///    needs source-specific logic;
-/// 2. fallback by `runtimeType` — the default when no source override is
-///    registered.
+/// Resolution is two-level: `sourceId` first (same model type can come from
+/// several sources), then a fallback by `runtimeType`.
 class MediaHandlers {
   MediaHandlers({
     required WidgetRef ref,
@@ -141,9 +135,8 @@ class MediaHandlers {
             ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
     );
-    // Edition the user picked in the Fantlab / Hardcover editions strip,
-    // tagged with its work id so it only applies to that book; consumed by
-    // `enrich`. Reset each time a book sheet opens.
+    // Edition picked in the editions strip, tagged with its work id so it
+    // only applies to that book; consumed by `enrich`, reset on sheet open.
     ({String workId, FantlabEdition edition})? pendingBookEdition;
     ({String bookId, HardcoverEdition edition})? pendingHardcoverEdition;
     _byType[Book] = SimpleMediaHandler<Book>(
@@ -206,9 +199,8 @@ class MediaHandlers {
               : null,
         );
       },
-      // On add, cache the full work so the collected item's detail page also
-      // carries the rich fields, then overlay the picked Fantlab edition (if
-      // any). Runs on the deliberate add, not on open.
+      // Cache the full work so the detail page keeps the rich fields, then
+      // overlay any picked edition. Runs on the deliberate add, not on open.
       enrich: (Book b) async {
         Book enriched = await _enrichBook(ref, b);
         final ({String workId, FantlabEdition edition})? pending =
@@ -223,9 +215,8 @@ class MediaHandlers {
         }
         return enriched;
       },
-      // Fantlab search rows are sparse (no cover / genres / description), so
-      // fetch the full work before opening the sheet. OpenLibrary rows are
-      // already rich, so they stay instant and lazy-load only the description.
+      // Fantlab rows are sparse — fetch the full work before the sheet opens;
+      // OpenLibrary rows are rich and only lazy-load the description.
       enrichBeforeDetails: (Book b) => b.source == DataSource.fantlab,
     );
     // Consumed by `enrich` so an add straight from the sheet re-fetches
@@ -415,10 +406,8 @@ Future<String?> _loadBookDescription(WidgetRef ref, Book book) async {
   }
 }
 
-/// Returns the full-work version of [book] for caching on add. OpenLibrary
-/// search rows are overlaid (`withWorkDetails`) so their year / pages survive;
-/// Fantlab returns a complete record, so it replaces the search row outright.
-/// On any failure the original [book] is kept.
+/// OpenLibrary rows are overlaid (`withWorkDetails`) so year/pages survive;
+/// Fantlab records are complete and replace the row. Failure keeps [book].
 Future<Book> _enrichBook(WidgetRef ref, Book book) async {
   try {
     final Book? full = await _fetchFullBook(ref, book);

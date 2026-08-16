@@ -1,5 +1,3 @@
-// Widget tests for BookSimilarsSection — render / empty / error / owned badge.
-
 import 'package:core/models/book.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';

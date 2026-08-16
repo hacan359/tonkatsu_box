@@ -1,5 +1,3 @@
-// Shimmer loading effect without external dependencies.
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -75,10 +73,8 @@ class _ShimmerBoxState extends State<ShimmerBox>
   }
 }
 
-/// Poster card placeholder (shimmer).
-///
-/// A poster rectangle plus the card's title block, so the skeleton and the
-/// real [MediaPosterCard] give the poster the same height.
+/// Includes the title block so the skeleton gives the poster the same height
+/// as a real [MediaPosterCard].
 class ShimmerPosterCard extends StatelessWidget {
   /// Creates a poster card shimmer placeholder.
   const ShimmerPosterCard({this.compact = false, super.key});
@@ -122,10 +118,6 @@ class ShimmerPosterCard extends StatelessWidget {
   }
 }
 
-/// Tier list card placeholder (shimmer).
-///
-/// Icon on the left, two text lines, chevron on the right.
-/// Mirrors the _TierListCard structure.
 class ShimmerTierListCard extends StatelessWidget {
   /// Creates a tier list card shimmer placeholder.
   const ShimmerTierListCard({super.key});
@@ -255,11 +247,8 @@ class ShimmerList extends StatelessWidget {
   }
 }
 
-/// Poster grid placeholder: a grid of [ShimmerPosterCard]s.
-///
-/// The max-extent delegate adapts the column count to the available
-/// width on its own, so the skeleton stays close to the real grid
-/// without mirroring its breakpoint logic.
+/// The max-extent delegate picks the column count itself, so the skeleton
+/// tracks the real grid without mirroring its breakpoints.
 class ShimmerPosterGrid extends StatelessWidget {
   /// Creates a poster grid shimmer placeholder.
   const ShimmerPosterGrid({this.itemCount = 12, super.key});

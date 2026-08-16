@@ -26,7 +26,6 @@ final Provider<LanSyncService> lanSyncServiceProvider =
 
 /// A device discovered on the local network.
 class LanPeer {
-  /// Creates a [LanPeer].
   const LanPeer({
     required this.id,
     required this.name,
@@ -37,31 +36,20 @@ class LanPeer {
   /// Random per-session instance id; filters out our own announcements.
   final String id;
 
-  /// Human-readable device name.
   final String name;
 
-  /// Peer address.
   final InternetAddress address;
 
-  /// Peer HTTP port.
   final int port;
 }
 
-/// Direct device-to-device transfer over the local network.
-///
-/// Pull model on top of the snapshot engine: while the sync screen is
-/// open, the service announces itself over UDP broadcast and serves the
-/// manifest and a fresh snapshot over a loopback-grade HTTP server; the
-/// receiving side picks a peer, downloads the snapshot and swaps it in
-/// via [DbSyncService]. Every snapshot download must be approved on the
-/// serving device.
+/// Pull model over UDP discovery + HTTP: peers download snapshots via
+/// [DbSyncService]; every snapshot download is approved on the serving device.
 class LanSyncService {
-  /// Creates a [LanSyncService].
   LanSyncService({required DbSyncService sync, required ConfigService config})
       : _sync = sync,
         _config = config;
 
-  /// UDP port used for discovery announcements.
   static const int discoveryPort = 47813;
 
   static const String _announceApp = 'tonkatsubox-sync';
@@ -95,18 +83,14 @@ class LanSyncService {
   final Map<String, DateTime> _lastPongById = <String, DateTime>{};
   List<int> _announcement = <int>[];
 
-  /// Live list of currently visible peers.
   final ValueNotifier<List<LanPeer>> peers =
       ValueNotifier<List<LanPeer>>(<LanPeer>[]);
 
-  /// Whether the service is announcing and serving.
   bool get isRunning => _httpServer != null;
 
   /// Port the HTTP server is bound to, or `null` when stopped.
   int? get port => _httpServer?.port;
 
-  /// Starts the HTTP server and discovery.
-  ///
   /// [onSnapshotRequest] is asked before any snapshot leaves this device;
   /// it should show a confirmation to the user.
   Future<void> start({
@@ -133,7 +117,6 @@ class LanSyncService {
     await _startDiscovery(server.port);
   }
 
-  /// Stops the server and discovery; the peer list empties.
   Future<void> stop() async {
     _generation++;
     _announceTimer?.cancel();
@@ -204,11 +187,8 @@ class LanSyncService {
     _pongTo(peer);
   }
 
-  /// Replies with a unicast announcement so the sender learns about us
-  /// even when broadcasts do not reach it: Windows may broadcast through
-  /// the wrong interface (virtual adapters) and many Android firmwares
-  /// filter incoming broadcasts. Rate-limited per peer to stop the two
-  /// sides from ping-ponging on every packet.
+  /// Unicast reply so the sender sees us when broadcasts fail (Windows wrong
+  /// interface, Android filtering); rate-limited per peer to stop ping-pong.
   void _pongTo(LanPeer peer) {
     final RawDatagramSocket? udp = _udp;
     if (udp == null || _announcement.isEmpty) return;
@@ -320,10 +300,8 @@ class LanSyncService {
   }
 
   Future<void> _serveSnapshot(HttpRequest request) async {
-    // Trust model: the requester name is a plain string with no
-    // authentication behind it — the security boundary is the human
-    // pressing Allow on this device plus the private-subnet guard. Any
-    // automated flow built on top must add real peer authentication.
+    // No authentication behind the requester name: the boundary is the human
+    // pressing Allow plus the private-subnet guard in _handleRequest.
     final String requester =
         request.uri.queryParameters['name'] ?? '?';
 
@@ -369,10 +347,8 @@ class LanSyncService {
   }
 
   Future<void> _serveImages(HttpRequest request) async {
-    // No second approval dialog: the requester already cleared the snapshot
-    // approval that precedes this step, and these are the same user images
-    // the just-served database references. The private-subnet guard in
-    // _handleRequest still applies.
+    // No second approval: the requester already cleared the snapshot approval
+    // preceding this step; the private-subnet guard still applies.
     final List<int> bytes = await _sync.buildUserImagesArchive();
     request.response.headers.contentType = ContentType.binary;
     request.response.contentLength = bytes.length;
@@ -382,10 +358,8 @@ class LanSyncService {
   }
 
   Future<void> _serveConfig(HttpRequest request) async {
-    // No second approval, mirroring /images: the requester already cleared
-    // the snapshot approval, and this is a same-user device migration where
-    // settings and keys move as one bundle. The private-subnet guard in
-    // _handleRequest still applies.
+    // No second approval, mirroring /images: settings and keys move as one
+    // bundle in a same-user migration; the private-subnet guard still applies.
     final Map<String, Object> config = _config.collectSettings();
     request.response.headers.contentType = ContentType.json;
     request.response.write(jsonEncode(config));
@@ -428,10 +402,8 @@ class LanSyncService {
   /// Thrown when the serving device refuses the snapshot request.
   static const String deniedMessage = 'denied';
 
-  /// Downloads the peer's snapshot into [targetDir]; the timeout is long
-  /// because the serving side waits for a human to approve the request.
-  ///
-  /// Throws [StateError] with [deniedMessage] on refusal.
+  /// Long timeout: the serving side waits for a human to approve. Throws
+  /// [StateError] with [deniedMessage] on refusal.
   Future<void> downloadSnapshot(
     LanPeer peer,
     String targetDir, {
@@ -475,9 +447,8 @@ class LanSyncService {
     }
   }
 
-  /// Downloads and applies the peer's user images (hero banners, custom and
-  /// canvas covers). Run after [downloadSnapshot] + receive; a failure here
-  /// leaves the already-received database intact.
+  /// Run after [downloadSnapshot] + receive; a failure here leaves the
+  /// already-received database intact.
   Future<void> downloadUserImages(LanPeer peer) async {
     final HttpClient client = HttpClient()
       ..connectionTimeout = const Duration(seconds: 5);
@@ -500,10 +471,8 @@ class LanSyncService {
     }
   }
 
-  /// Downloads the peer's settings + API keys and applies them into prefs.
-  /// Best-effort, all-or-nothing: returns the number of applied values, or
-  /// 0 when the peer is too old to serve config or sent nothing usable. The
-  /// caller refreshes the settings notifier so the new values go live.
+  /// Returns the number of applied values; 0 when the peer is too old to
+  /// serve config. The caller refreshes the settings notifier.
   Future<int> downloadConfig(LanPeer peer) async {
     final HttpClient client = HttpClient()
       ..connectionTimeout = const Duration(seconds: 5);

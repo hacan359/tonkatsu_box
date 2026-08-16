@@ -1,5 +1,3 @@
-// Google Books language filter (single-select, ISO-639-1 codes).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';

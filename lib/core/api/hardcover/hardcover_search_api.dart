@@ -15,9 +15,8 @@ class HardcoverSearchApi {
 
   final HardcoverGraphQLClient _client;
 
-  /// Paginated book search. [sort] is a Typesense `field:direction` pair
-  /// (`users_count:desc`, …); null sorts by relevance. Returns the page plus
-  /// whether more results exist.
+  /// [sort] is a Typesense `field:direction` pair (`users_count:desc`, …);
+  /// null sorts by relevance.
   Future<(List<Book> books, bool hasMore)> searchBooks(
     String query, {
     int page = 1,

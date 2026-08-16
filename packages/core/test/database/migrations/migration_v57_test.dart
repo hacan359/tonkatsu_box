@@ -144,9 +144,8 @@ void main() {
         'media_type': 'movie',
         'external_id': 42,
       });
-      // Legal since v48: same numeric book id from two sources in one
-      // collection. The rebuilt generic index must keep excluding 'book',
-      // or this data aborts the whole upgrade.
+      // Legal since v48: one numeric book id from two sources. The rebuilt
+      // generic index must keep excluding 'book' or the upgrade aborts.
       await db.insert('collection_items', <String, Object?>{
         'collection_id': 1,
         'media_type': 'book',
@@ -381,10 +380,8 @@ void main() {
     });
   });
 
-  // The app opens its database with `PRAGMA foreign_keys = ON`, so the
-  // watched_episodes rebuild re-inserts every row under the foreign key. A row
-  // without its collection would abort the migration and roll the whole
-  // upgrade back on every launch.
+  // The app opens with `PRAGMA foreign_keys = ON`, so the watched_episodes
+  // rebuild re-inserts under the FK — an orphan row aborts every launch.
   group('MigrationV57 with foreign keys enforced', () {
     test('drops watched rows whose collection is gone instead of failing',
         () async {

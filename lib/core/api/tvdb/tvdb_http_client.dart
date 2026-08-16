@@ -5,9 +5,8 @@ import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'tvdb_types.dart';
 
-// TheTVDB v4 transport. Unlike every other client here the key is not sent per
-// request: it is exchanged for a bearer token that lives a month.
-// Docs: https://thetvdb.github.io/v4-api/
+// TheTVDB v4 transport: the key is exchanged for a month-long bearer token
+// rather than sent per request. Docs: https://thetvdb.github.io/v4-api/
 class TvdbHttpClient {
   TvdbHttpClient({Dio? dio})
       : _dio = dio ??

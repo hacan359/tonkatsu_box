@@ -392,9 +392,8 @@ void main() {
     });
 
     group('corrupt local file fallback', () {
-      // Image.file errorBuilder does not fire in widget tests (painting
-      // pipeline doesn't really decode); only the Image.file branch is
-      // verified structurally — full corrupt-file flow is checked manually.
+      // Image.file errorBuilder never fires in widget tests — nothing really
+      // decodes — so only the branch itself is verified here.
 
       testWidgets('должен fallback на network при несуществующем файле',
           (WidgetTester tester) async {

@@ -1,8 +1,3 @@
-// "Similar books" for a Google Books volume. Google's native `associated`
-// endpoint is effectively empty, so similarity is approximated by searching the
-// book's primary category (`subject:`) and dropping the book itself. Renders
-// the shared [BookSimilarsCarousel], mirroring [BookSimilarsSection].
-
 import 'package:core/models/book.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
@@ -18,6 +13,8 @@ import 'book_similars_carousel.dart';
 final Map<String, FutureProvider<List<Book>>> _similarProviders =
     <String, FutureProvider<List<Book>>>{};
 
+/// Google's `associated` endpoint is effectively empty, so similars are
+/// approximated by a `subject:` search, dropping the book itself.
 FutureProvider<List<Book>> _getSimilarProvider(Book book) {
   return _similarProviders.putIfAbsent(
     book.nativeId,

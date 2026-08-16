@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,11 +8,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Баннер, показывающий уведомление о доступном обновлении.
-///
-/// Читает [updateCheckProvider] и показывает баннер если есть
-/// более новая версия. Можно закрыть крестиком — баннер исчезает
-/// до следующего запуска приложения.
+/// Dismissal is in-memory only — the banner returns on the next launch while
+/// the update is still pending.
 class UpdateBanner extends ConsumerWidget {
   const UpdateBanner({super.key});
 

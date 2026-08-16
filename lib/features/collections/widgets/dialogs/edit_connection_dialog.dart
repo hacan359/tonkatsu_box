@@ -8,12 +8,8 @@ import '../../../../shared/widgets/color_picker_dialog.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
 import '../../../../shared/utils/color_hex.dart';
 
-/// Dialog for editing a connection's label, color and style.
-///
-/// Returns a `Map<String, dynamic>` with keys `label`, `color`, `style`,
-/// or `null` if the user cancelled.
+/// Pops a map with keys `label`, `color`, `style`; `null` on cancel.
 class EditConnectionDialog extends StatefulWidget {
-  /// Creates an [EditConnectionDialog].
   const EditConnectionDialog({
     this.initialLabel,
     this.initialColor,
@@ -21,16 +17,13 @@ class EditConnectionDialog extends StatefulWidget {
     super.key,
   });
 
-  /// Initial label.
   final String? initialLabel;
 
   /// Initial color (hex).
   final String? initialColor;
 
-  /// Initial style.
   final ConnectionStyle? initialStyle;
 
-  /// Shows the dialog and returns the result.
   static Future<Map<String, dynamic>?> show(
     BuildContext context, {
     String? initialLabel,

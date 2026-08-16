@@ -21,9 +21,8 @@ class ComicVineApiException implements Exception {
   String toString() => 'ComicVineApiException: $message';
 }
 
-/// Wires [ComicVineApi] with the user's API key. ComicVine has no built-in
-/// key, so without a user key the client stays unauthenticated and requests
-/// throw [ComicVineApiException] until one is entered in Credentials.
+/// Wires [ComicVineApi] with the user's API key. There is no built-in key, so
+/// requests throw [ComicVineApiException] until one is entered in Credentials.
 final Provider<ComicVineApi> comicVineApiProvider =
     Provider<ComicVineApi>((Ref ref) {
   final ComicVineApi api = ComicVineApi();
@@ -35,14 +34,8 @@ final Provider<ComicVineApi> comicVineApiProvider =
   return api;
 });
 
-/// ComicVine (comicvine.gamespot.com) client backing the comics book source.
-///
-/// API quirks handled here:
-/// - a non-default `User-Agent` is mandatory — the API rejects Dio's default;
-/// - `/search` ignores `offset`, so a search returns one relevance-ranked page
-///   (no pagination); browse uses `/volumes`, which paginates via `offset`;
-/// - volume detail paths take the `4050-{id}` form (stored as [Book.nativeId]);
-/// - rate limit is 200 requests/hour/resource.
+/// ComicVine client. Quirks: the API rejects Dio's default `User-Agent`,
+/// detail paths take the `4050-{id}` form, rate limit is 200 req/hour.
 class ComicVineApi {
   ComicVineApi({Dio? dio})
       : _dio = dio ??
@@ -61,9 +54,8 @@ class ComicVineApi {
   static const String _volumeFields = 'id,name,start_year,count_of_issues,'
       'publisher,image,site_detail_url,description,deck';
 
-  /// Detail-only fields. `people` (creators), `characters` and `first_issue`
-  /// are absent from the `/search` and `/volumes` list rows, so they are
-  /// requested only on `/volume`.
+  /// `people`, `characters` and `first_issue` are absent from `/search` and
+  /// `/volumes` list rows, so they are requested only on `/volume`.
   static const String _volumeDetailFields =
       '$_volumeFields,people,characters,first_issue';
 
@@ -88,14 +80,8 @@ class ComicVineApi {
     return _parseList(res, 'ComicVine search failed');
   }
 
-  /// Paginated `/volumes` listing backing sortable search. Unlike `/search`,
-  /// `/volumes` honours `offset` and `sort`, so results paginate and reorder.
-  ///
-  /// [nameFilter] maps to `filter=name:<value>` — a case-insensitive substring
-  /// match on the volume name. [sort] is a `field:direction` pair; ComicVine
-  /// only honours `name`, `date_added` and `date_last_updated` here
-  /// (`start_year` / `count_of_issues` sorts are silently ignored), so callers
-  /// restrict themselves to those. Returns the page plus whether more exist.
+  /// Unlike `/search`, `/volumes` honours `offset` and `sort` — but only
+  /// `name`, `date_added`, `date_last_updated`; other sorts silently ignored.
   Future<(List<Book> books, bool hasMore)> browseVolumes({
     String? nameFilter,
     String sort = 'date_last_updated:desc',
@@ -117,11 +103,7 @@ class ComicVineApi {
     return (books, offset + books.length < total);
   }
 
-  /// Full volume by its detail id (`4050-{id}`, stored as [Book.nativeId]).
-  /// Returns null when the volume is missing.
-  ///
-  /// Volume-level descriptions are frequently empty (the series record is a
-  /// stub even when its issues are richly documented), so an empty one falls
+  /// Volume-level descriptions are frequently empty, so an empty one falls
   /// back to the first issue's synopsis — one extra request, only when needed.
   Future<Book?> getVolume(String nativeId) async {
     final Response<dynamic> res =
@@ -137,9 +119,8 @@ class ComicVineApi {
     return fallback == null ? book : book.copyWith(description: fallback);
   }
 
-  /// Best-effort synopsis from a volume's `first_issue` (id under the `4000-`
-  /// issue prefix). Returns null on any failure — enrichment must never sink
-  /// the volume fetch.
+  /// Best-effort synopsis from a volume's `first_issue`. Null on any failure —
+  /// enrichment must never sink the volume fetch.
   Future<String?> _firstIssueDescription(Object? firstIssue) async {
     if (firstIssue is! Map<String, dynamic>) return null;
     final int? issueId = (firstIssue['id'] as num?)?.toInt();

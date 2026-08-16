@@ -11,11 +11,8 @@ import '../../../../shared/theme/app_typography.dart';
 import '../../../../shared/widgets/cached_image.dart';
 import '../../../../shared/constants/collection_item_ui.dart';
 
-/// Off-screen widget rendered into a PNG via [RepaintBoundary].
-///
-/// Lays out covers in a dense grid (no labels, no headers); the watermark
-/// row at the bottom matches `TierListExportView` so all PNG exports share
-/// one signature.
+/// Off-screen widget rendered into a PNG via [RepaintBoundary]; the watermark
+/// row matches `TierListExportView` so all PNG exports share one signature.
 class BulkPosterMosaicView extends StatelessWidget {
   const BulkPosterMosaicView({
     required this.items,
@@ -29,10 +26,8 @@ class BulkPosterMosaicView extends StatelessWidget {
   final List<CollectionItem> items;
   final int columns;
 
-  /// When provided, each item id maps to its already-decoded local cover
-  /// file. The tile renders that file synchronously via `Image.file` instead
-  /// of going through `CachedImage` — which still spins up its own
-  /// `FutureBuilder` and would race against `toImage`.
+  /// Item id → already-decoded local cover, rendered synchronously:
+  /// `CachedImage`'s own `FutureBuilder` would race against `toImage`.
   final Map<int, File>? precachedFiles;
 
   static const double _posterWidth = 150;
@@ -40,9 +35,8 @@ class BulkPosterMosaicView extends StatelessWidget {
   static const double _posterHeight = _posterWidth / _aspectRatio;
   static const double _gap = 4;
 
-  /// Picks a column count that keeps the canvas roughly square for a portrait
-  /// 2:3 aspect: `cols ≈ sqrt(n * 1.5)`. Clamped so tiny sets don't look like a
-  /// strip and huge sets don't blow up GPU memory at pixelRatio 2.
+  /// `cols ≈ sqrt(n * 1.5)` keeps a 2:3 grid roughly square; clamped so tiny
+  /// sets don't look like a strip and huge ones don't blow up GPU memory.
   static int autoColumns(int itemCount) {
     if (itemCount <= 0) return 4;
     final int cols = math.sqrt(itemCount * 1.5).round();
@@ -116,9 +110,8 @@ class _PosterTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: precachedFile != null
           ? Image(
-              // Cap decoded resolution at the on-canvas size so the
-              // ImageCache doesn't evict already-loaded covers when the
-              // selection runs into hundreds of items.
+              // Cap decoded resolution so the ImageCache doesn't evict
+              // loaded covers when the selection runs into hundreds.
               image: ResizeImage(
                 FileImage(precachedFile!),
                 width: 300,

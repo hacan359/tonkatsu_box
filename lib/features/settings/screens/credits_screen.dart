@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -6,10 +5,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/credits_content.dart';
 
-/// Экран Credits с атрибуцией API-провайдеров и лицензиями.
-///
-/// Тонкая обёртка вокруг [CreditsContent] с Scaffold/AppBar.
-/// Используется при push-навигации на мобильных устройствах.
 class CreditsScreen extends StatelessWidget {
   const CreditsScreen({super.key});
 

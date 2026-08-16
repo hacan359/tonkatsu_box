@@ -1,5 +1,3 @@
-// Centralized application theme.
-
 import 'package:flutter/material.dart';
 
 import 'app_palette.dart';
@@ -32,9 +30,8 @@ abstract final class AppTheme {
           onError: p.onOverlay,
         ),
         scaffoldBackgroundColor: Colors.transparent,
-        // Every platform, not the two we ship: the scaffold is transparent, so
-        // a target without a builder here shows white through every route. A
-        // browser reports whatever OS it runs on.
+        // Every platform, not just the two we ship: scaffolds are transparent,
+        // so a target without a builder here shows white through every route.
         pageTransitionsTheme: PageTransitionsTheme(
           builders: <TargetPlatform, PageTransitionsBuilder>{
             for (final TargetPlatform target in TargetPlatform.values)
@@ -82,9 +79,8 @@ abstract final class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           ),
-          // Without these M3 falls back to headlineSmall (24px) titles and
-          // 24px action insets — dialogs read bloated next to the app's type
-          // scale.
+          // Without these M3 falls back to 24px titles and action insets, and
+          // dialogs read bloated next to the app's type scale.
           titleTextStyle: AppTypography.h2,
           contentTextStyle: AppTypography.body.copyWith(
             color: p.textSecondary,
@@ -171,11 +167,8 @@ abstract final class AppTheme {
       );
 }
 
-/// Wrapper around [ZoomPageTransitionsBuilder] that makes every page opaque.
-///
-/// Each route is wrapped in a [DecoratedBox] with the tiled background —
-/// this keeps the two pages' content from showing through each other during
-/// a transition (scaffolds are transparent to expose the builder background).
+/// Scaffolds are transparent to expose the tiled background, so each route
+/// gets its own [DecoratedBox] or the two pages bleed through mid-transition.
 class _OpaquePageTransitionsBuilder extends PageTransitionsBuilder {
   // Decoration is prebuilt: buildTransitions runs every transition frame.
   _OpaquePageTransitionsBuilder(AppPalette palette)
@@ -204,9 +197,8 @@ class _OpaquePageTransitionsBuilder extends PageTransitionsBuilder {
       secondaryAnimation,
       DecoratedBox(
         decoration: _tiledDecoration,
-        // Transparent Material provides an ink ancestor for descendant
-        // ListTiles — Flutter 3.44 asserts when a coloured DecoratedBox
-        // sits between them and the nearest Material.
+        // Descendant ListTiles need an ink ancestor — Flutter 3.44 asserts
+        // when a coloured DecoratedBox sits between them and the Material.
         child: Material(
           type: MaterialType.transparency,
           child: child,

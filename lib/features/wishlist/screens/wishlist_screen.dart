@@ -70,9 +70,8 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                 items,
                 searchQuery: searchQuery,
               );
-              // Keep the header visible whenever the wishlist isn't empty —
-              // the text-style picker stays consistent as tags appear and
-              // disappear during edits.
+              // Kept visible whenever the list isn't empty, so the picker
+              // doesn't flicker as tags appear and disappear during edits.
               final bool showHeader = items.isNotEmpty;
 
               return Column(

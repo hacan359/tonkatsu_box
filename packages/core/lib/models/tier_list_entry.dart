@@ -1,4 +1,3 @@
-
 /// Places a collection item in a tier and fixes its order there.
 class TierListEntry {
   const TierListEntry({

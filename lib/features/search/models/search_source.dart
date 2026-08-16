@@ -122,9 +122,8 @@ abstract class SearchFilter {
   /// different option sets (e.g. genres for Movie vs TV vs IGDB).
   String get cacheKey => key;
 
-  /// Non-null when this filter's options carry [FilterSemantic] and can be
-  /// folded into one cross-source control. Declared here so grouping stays
-  /// synchronous — [options] is async and needs localizations.
+  /// Non-null when options carry [FilterSemantic] and can fold into one
+  /// cross-source control. Declared here so grouping stays synchronous.
   FilterSemanticFamily? get semanticFamily => null;
 
   /// True for filters with many options — turns on the in-dropdown search.
@@ -136,10 +135,8 @@ abstract class SearchFilter {
   /// "All" (reset) option.
   FilterOption get allOption;
 
-  /// Optional bespoke picker that replaces the default dropdown / searchable
-  /// dialog. Return the new value (or `null` to clear), or leave [Future]
-  /// resolved to a sentinel that the caller ignores. Override only when the
-  /// default UI is insufficient (e.g. needs grouped categories).
+  /// Bespoke picker replacing the default dropdown; returns the new value or
+  /// null to clear. Override only when the default UI is insufficient.
   Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?
       get openCustomPicker => null;
 }
@@ -170,7 +167,6 @@ abstract class SearchSource {
   /// for [iconAsset].
   DataSource get dataSource;
 
-  /// Localised label.
   String label(S l);
 
   IconData get icon;
@@ -214,8 +210,7 @@ abstract class SearchSource {
 
   String searchHint(S l);
 
-  /// MediaType stamped onto items added from this source. May differ from
-  /// the runtime type of the fetched model — TMDB's anime tab fetches
-  /// `Movie` / `TvShow` but classifies them as [MediaType.animation].
+  /// May differ from the fetched model's runtime type — TMDB's anime tab
+  /// fetches `Movie` / `TvShow` but stamps them [MediaType.animation].
   MediaType get outputMediaType;
 }

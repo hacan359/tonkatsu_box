@@ -43,7 +43,6 @@ const List<String> kUnitPresets = <String>[
 /// A like and/or note on one unit of a collection item. Anchored on
 /// `collection_items.id` so it works for every media type without duplication.
 class ItemMark {
-  /// Creates an [ItemMark].
   const ItemMark({
     required this.id,
     required this.itemId,

@@ -1,5 +1,3 @@
-// Update checker: polls the GitHub Releases API for a newer version.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';

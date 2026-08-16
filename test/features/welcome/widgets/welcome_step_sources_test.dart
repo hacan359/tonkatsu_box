@@ -56,9 +56,8 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      // IGDB (Client ID + Secret) + TMDB (key) + TheTVDB (key) +
-      // ComicVine (key) + Google Books (key) + Hardcover (token) +
-      // Podcast Index (key + secret) = 9 fields.
+      // IGDB (id + secret), TMDB, TheTVDB, ComicVine, Google Books,
+      // Hardcover, Podcast Index (key + secret) = 9 fields.
       expect(find.byType(InlineTextField), findsNWidgets(9));
     });
   });

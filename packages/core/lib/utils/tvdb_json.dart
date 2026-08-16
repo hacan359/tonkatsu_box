@@ -28,9 +28,7 @@ int? tvdbNumericId(Map<String, dynamic> json) {
 }
 
 /// Value of [field] for the first matching language in [locale]'s code list.
-///
-/// Handles the `?meta=translations` shape (a list of
-/// `{field, language}` objects) and the search shape (a `language → value` map).
+/// Handles both the `?meta=translations` list and the search map shape.
 String? tvdbTranslation(Object? translations, String field, String locale) {
   final List<String> codes = tvdbCodesFor(locale);
   if (translations is Map<String, dynamic>) {
@@ -77,9 +75,8 @@ List<String>? tvdbNames(Object? entries) {
   return names.isEmpty ? null : names;
 }
 
-/// Id of [sourceName] in a `remote_ids` / `remoteIds` list. Matching is by name
-/// because the numeric `type` differs per record kind (TMDB is 10 for movies,
-/// 12 for series).
+/// Matched by name because the numeric `type` differs per record kind — TMDB
+/// is 10 for movies, 12 for series.
 String? tvdbRemoteId(Object? remoteIds, String sourceName) {
   if (remoteIds is! List<dynamic>) return null;
   for (final dynamic entry in remoteIds) {

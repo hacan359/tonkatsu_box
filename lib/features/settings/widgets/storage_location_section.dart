@@ -15,13 +15,9 @@ import '../../../shared/widgets/confirm_dialog.dart';
 import 'settings_group.dart';
 import 'settings_tile.dart';
 
-/// Settings group for choosing where the database and profiles live.
-///
-/// The default location stays untouched unless the user explicitly picks
-/// a custom folder; switching always requires an app restart because the
-/// open database connection cannot be re-pointed in place.
+/// Switching always requires a restart — the open database connection cannot
+/// be re-pointed in place.
 class StorageLocationSection extends ConsumerStatefulWidget {
-  /// Creates a [StorageLocationSection].
   const StorageLocationSection({super.key});
 
   @override
@@ -226,10 +222,8 @@ class _StorageLocationSectionState
     await _offerRestart(context);
   }
 
-  /// Copy confirmation with an opt-in "bring the images too" checkbox
-  /// (off by default — the re-downloadable cover cache re-fetches, so most
-  /// moves skip it; on copies hero banners and the whole image cache for an
-  /// offline mirror). Returns null on cancel.
+  /// The "bring the images too" checkbox is off by default: the cover cache
+  /// re-fetches, so only an offline mirror needs it. Null on cancel.
   Future<({bool includeImages})?> _askCopyOptions(
     BuildContext context,
     S l10n,

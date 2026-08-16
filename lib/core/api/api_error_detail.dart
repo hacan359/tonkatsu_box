@@ -1,11 +1,7 @@
-// Helper for building detailed API error info from DioException.
-
 import 'package:dio/dio.dart';
 
-/// Query-parameter names that must be redacted from error details.
-///
-/// Covers credentials used across all API clients (RA, TMDB, SteamGridDB,
-/// IGDB, AniList). Comparison is case-insensitive.
+/// Credential query-parameter names across all API clients, redacted from
+/// error details. Comparison is case-insensitive.
 const Set<String> _redactKeys = <String>{
   'y', // RetroAchievements
   'api_key',
@@ -47,12 +43,8 @@ String _redactString(String input) {
   );
 }
 
-/// Builds a detailed debug string from a [DioException].
-///
-/// Includes the API name, request URL and method, status code,
-/// DioException type, and underlying error if present. Sensitive query
-/// parameters (api keys, tokens) are redacted so the result is safe to
-/// copy to the clipboard.
+/// Builds a debug string from a [DioException]. Keys and tokens are redacted
+/// so the result is safe to copy to the clipboard.
 String buildApiErrorDetail({
   required String apiName,
   required DioException exception,

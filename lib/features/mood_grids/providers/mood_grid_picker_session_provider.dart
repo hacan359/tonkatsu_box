@@ -69,10 +69,8 @@ class MoodGridPickerSessionNotifier
     state = state.copyWith(query: query);
   }
 
-  /// Items for the current collection filter. A cached list returns
-  /// instantly; with [refresh] a background reload picks up items added
-  /// elsewhere in the app and bumps [MoodGridPickerSession.revision].
-  /// Revision-triggered re-reads pass `refresh: false` to avoid looping.
+  /// Cached list returns instantly; [refresh] reloads in the background and
+  /// bumps the session revision (revision re-reads pass false to not loop).
   Future<List<CollectionItem>> itemsForCurrentFilter({
     bool refresh = true,
   }) async {
@@ -103,15 +101,13 @@ class MoodGridPickerSessionNotifier
     state = state.copyWith(revision: state.revision + 1);
   }
 
-  /// Duplicates of the same media (an item present in several collections)
-  /// collapse to the first occurrence — the picker cares about identity,
-  /// not membership.
+  /// Items present in several collections collapse to the first occurrence —
+  /// the picker cares about identity, not membership.
   List<CollectionItem> _dedupeByIdentity(List<CollectionItem> items) {
     final Set<String> seen = <String>{};
     final List<CollectionItem> out = <CollectionItem>[];
     for (final CollectionItem item in items) {
-      // platformId disambiguates only animation (movie- vs tv-based); for
-      // games it is just the owned platform — same game, same cover. NULL
+      // platformId disambiguates only animation (movie- vs tv-based). NULL
       // source means the type's default, so legacy rows match explicit ones.
       final String animationKey = item.mediaType == MediaType.animation
           ? ':${item.platformId}'

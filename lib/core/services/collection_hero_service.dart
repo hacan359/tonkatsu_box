@@ -1,8 +1,3 @@
-// Images live in `<dataRoot>/collections/hero_<id>_<ts>.<ext>`, inside the
-// active data folder so they travel with it on a folder switch or copy.
-// The DB stores only the filename; the absolute path is resolved via
-// `resolve(fileName)`.
-
 import 'dart:io';
 
 import 'package:core/api/image_proxy.dart';
@@ -47,9 +42,7 @@ class CollectionHeroService {
   final ImageCacheService? _imageCache;
 
   /// Resolves `<dataRoot>/collections/`, creating it if needed, and migrates
-  /// any hero images left behind in the legacy `<appSupport>/collections/`
-  /// location (where they lived before the folder was tied to the data
-  /// root). Called once at app startup.
+  /// hero images left in the legacy `<appSupport>` location. Startup-only.
   static Future<String> resolveRoot() async {
     final StorageRootResolution root = await StorageRoot.resolve();
     final String newDir =
@@ -66,9 +59,8 @@ class CollectionHeroService {
     return newDir;
   }
 
-  /// Moves `hero_*` files from [legacyDir] into [newDir] without clobbering
-  /// existing targets, then removes [legacyDir] once drained. Idempotent: a
-  /// no-op when the legacy folder is the same as [newDir], absent or empty.
+  /// Moves `hero_*` files into [newDir] without clobbering, then removes a
+  /// drained [legacyDir]. Idempotent: no-op when legacy == new, absent, empty.
   @visibleForTesting
   static Future<void> migrateLegacyHeroImages({
     required String legacyDir,

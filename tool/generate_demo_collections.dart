@@ -1,24 +1,8 @@
-// Standalone CLI script to generate demo .xcollx / .xcoll collection files.
-//
-// Usage:
-//   dart tool/generate_demo_collections.dart \
-//     --igdb-client-id=<id> \
-//     --igdb-client-secret=<secret> \
-//     --tmdb-key=<key> \
-//     --output=<dir> \
-//     [--format=both|full|light] \
-//     [--only-games] \
-//     [--only=<filename>] \
-//     [--limit=<n>]
-//
-// No Flutter dependencies — uses only dart:io and dart:convert.
+// dart tool/generate_demo_collections.dart --igdb-client-id= --igdb-client-secret=
+// --tmdb-key= --output= [--format=] [--only-games] [--only=] [--limit=]
 
 import 'dart:convert';
 import 'dart:io';
-
-// ---------------------------------------------------------------------------
-// Config — IGDB platform IDs
-// ---------------------------------------------------------------------------
 
 const int _kPlatformSnes = 19;
 const int _kPlatformPs1 = 7;
@@ -40,10 +24,6 @@ const int _kPlatformSwitch = 130;
 const int _kPlatformPs5 = 167;
 
 const int _kTmdbAnimationGenreId = 16;
-
-// ---------------------------------------------------------------------------
-// Collection types & specs
-// ---------------------------------------------------------------------------
 
 enum CollectionType {
   igdbPlatform,
@@ -74,7 +54,7 @@ class CollectionSpec {
 }
 
 const List<CollectionSpec> collections = <CollectionSpec>[
-  // --- Retro ---
+  // Retro
   CollectionSpec(
     name: 'Top SNES Games',
     description: 'Top 50 highest rated Super Nintendo games of all time',
@@ -128,7 +108,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     platformId: _kPlatformGba,
     minRatings: 15,
   ),
-  // --- 6th gen ---
+  // 6th gen
   CollectionSpec(
     name: 'Top PS2 Games',
     description: 'Top 50 highest rated PlayStation 2 games of all time',
@@ -152,7 +132,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     platformId: _kPlatformGameCube,
     minRatings: 15,
   ),
-  // --- 7th gen ---
+  // 7th gen
   CollectionSpec(
     name: 'Top Xbox 360 Games',
     description: 'Top 50 highest rated Xbox 360 games of all time',
@@ -175,7 +155,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     type: CollectionType.igdbPlatform,
     platformId: _kPlatformPs3,
   ),
-  // --- PC ---
+  // PC
   CollectionSpec(
     name: 'Top PC Games',
     description: 'Top 50 highest rated PC (Windows) games of all time',
@@ -183,7 +163,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     type: CollectionType.igdbPlatform,
     platformId: _kPlatformPc,
   ),
-  // --- 8th gen ---
+  // 8th gen
   CollectionSpec(
     name: 'Top PS4 Games',
     description: 'Top 50 highest rated PlayStation 4 games of all time',
@@ -205,7 +185,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     type: CollectionType.igdbPlatform,
     platformId: _kPlatformSwitch,
   ),
-  // --- 9th gen ---
+  // 9th gen
   CollectionSpec(
     name: 'Top PS5 Games',
     description: 'Top 50 highest rated PlayStation 5 games of all time',
@@ -214,7 +194,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     platformId: _kPlatformPs5,
     minRatings: 10,
   ),
-  // --- TMDB ---
+  // TMDB
   CollectionSpec(
     name: 'Top Rated Movies',
     description: 'Top 50 highest rated movies of all time (TMDB)',
@@ -243,15 +223,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
   ),
 ];
 
-// ---------------------------------------------------------------------------
-// Output format enum
-// ---------------------------------------------------------------------------
-
 enum OutputFormat { both, full, light }
-
-// ---------------------------------------------------------------------------
-// HTTP helpers
-// ---------------------------------------------------------------------------
 
 final HttpClient _http = HttpClient()
   ..connectionTimeout = const Duration(seconds: 15)
@@ -331,10 +303,6 @@ Future<String?> _downloadImageBase64(String url) async {
     return null;
   }
 }
-
-// ---------------------------------------------------------------------------
-// IGDB
-// ---------------------------------------------------------------------------
 
 Future<String> _getIgdbToken(String clientId, String clientSecret) async {
   final Uri uri = Uri.parse(
@@ -431,10 +399,6 @@ String? _gameCoverUrl(Map<String, dynamic> json) {
   }
   return null;
 }
-
-// ---------------------------------------------------------------------------
-// TMDB
-// ---------------------------------------------------------------------------
 
 Future<List<Map<String, dynamic>>> _fetchTmdbMoviesTopRated(
   String apiKey, {
@@ -603,10 +567,6 @@ String? _tmdbPosterUrl(Map<String, dynamic> json) {
   return null;
 }
 
-// ---------------------------------------------------------------------------
-// Image download (chunked, 5 parallel)
-// ---------------------------------------------------------------------------
-
 Future<Map<String, String>> _downloadImages({
   required Map<String, String> urlMap, // key → url
 }) async {
@@ -634,10 +594,6 @@ Future<Map<String, String>> _downloadImages({
 
   return result;
 }
-
-// ---------------------------------------------------------------------------
-// XcollFile builders
-// ---------------------------------------------------------------------------
 
 Map<String, dynamic> _buildXcollx({
   required String name,
@@ -676,10 +632,6 @@ Map<String, dynamic> _buildXcoll({
     'media': media,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Collection generators
-// ---------------------------------------------------------------------------
 
 class _CollectionData {
   _CollectionData({
@@ -838,10 +790,6 @@ Future<_CollectionData> _fetchTvShowData({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Write helpers
-// ---------------------------------------------------------------------------
-
 void _writeCollection({
   required String outputDir,
   required CollectionSpec spec,
@@ -881,10 +829,6 @@ void _writeCollection({
   }
 }
 
-// ---------------------------------------------------------------------------
-// CLI args parser
-// ---------------------------------------------------------------------------
-
 String? _getArg(List<String> args, String name) {
   for (final String arg in args) {
     if (arg.startsWith('--$name=')) {
@@ -897,10 +841,6 @@ String? _getArg(List<String> args, String name) {
 bool _hasFlag(List<String> args, String name) {
   return args.contains('--$name');
 }
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 
 Future<void> main(List<String> args) async {
   final String? igdbClientId =

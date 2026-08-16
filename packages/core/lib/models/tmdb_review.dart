@@ -1,4 +1,3 @@
-
 class TmdbReview {
   const TmdbReview({
     required this.author,

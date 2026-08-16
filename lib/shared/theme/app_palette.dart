@@ -6,11 +6,8 @@ import 'palettes/sakura_palette.dart';
 export 'palettes/dark_palette.dart';
 export 'palettes/sakura_palette.dart';
 
-/// A complete color set for one app theme. Widgets never read this directly —
-/// they go through [AppColors] getters, which delegate to the active palette.
-///
-/// Themes live one-per-file under `palettes/`; adding a theme is a new file
-/// there, an alias here, and an [AppThemeId] entry.
+/// Widgets never read a palette directly — they go through [AppColors].
+/// A new theme is a file under `palettes/`, an alias here, an [AppThemeId].
 @immutable
 class AppPalette {
   const AppPalette({

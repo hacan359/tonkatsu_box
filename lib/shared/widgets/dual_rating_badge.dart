@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Personal + API rating badge.
-///
-/// Display format: `★ 8.0 / 7.5` (both), `★ 8.0` (user only), `★ 7.5` (API
-/// only); renders nothing when neither is set — the caller hides it.
-/// [compact] shrinks sizes for landscape; [inline] drops the background and
-/// uses a plain text style for list mode.
+/// Renders nothing when neither rating is set — the caller does not hide it.
+/// [compact] shrinks for landscape; [inline] drops the background for lists.
 class DualRatingBadge extends StatelessWidget {
   const DualRatingBadge({
     this.userRating,

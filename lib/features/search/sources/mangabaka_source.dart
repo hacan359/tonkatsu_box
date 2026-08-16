@@ -16,12 +16,8 @@ import '../utils/filter_value_utils.dart';
 
 const int _mangaBakaPageSize = 20;
 
-/// SearchSource backed by MangaBaka (manga / manhwa / manhua / light novels).
-///
-/// A second manga provider alongside AniList; items are stamped
-/// [MediaType.manga] but carry `DataSource.mangabaka` (set inside
-/// `Manga.fromMangaBaka`) so they stay distinct from AniList in the cache and
-/// collection.
+/// MangaBaka (manga / manhwa / manhua / light novels). Items carry
+/// `DataSource.mangabaka` so they stay distinct from AniList in the cache.
 class MangaBakaSource extends SearchSource {
   @override
   String get id => 'mangabaka';

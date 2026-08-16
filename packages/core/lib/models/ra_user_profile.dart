@@ -1,4 +1,3 @@
-
 class RaUserProfile {
   const RaUserProfile({
     required this.user,

@@ -188,10 +188,8 @@ class _CoverPile extends StatelessWidget {
         final Random rng = Random(seed);
         final double h = c.maxHeight * 0.88;
         final double w = h * 2 / 3;
-        // Cards spread evenly across the width, then each one gets a random
-        // nudge and twist — a pile someone dropped, not a fanned hand.
-        // The outer cards may hang ~8px past the edge; the shell clips them,
-        // which reads as the pile overflowing its box.
+        // Random nudge/twist read as a dropped pile, not a fanned hand;
+        // outer cards may overhang ~8px — the shell clips them on purpose.
         final double wanted = w * 0.60;
         final double maxStep =
             n > 1 ? (c.maxWidth - w * 0.85) / (n - 1) : 0;

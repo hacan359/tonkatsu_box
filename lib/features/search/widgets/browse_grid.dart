@@ -31,9 +31,8 @@ class BrowseGrid extends ConsumerStatefulWidget {
 
   final void Function(Object item, MediaType mediaType) onItemTap;
 
-  /// [source] is the provider of a multi-source item, `null` otherwise; the
-  /// receiver needs it to pick the right placement when two providers share a
-  /// numeric id.
+  /// [source] is the provider of a multi-source item, `null` otherwise — the
+  /// receiver needs it when two providers share a numeric id.
   final void Function(
     int externalId,
     MediaType mediaType,
@@ -54,9 +53,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    // The grid may appear with a page already loaded (narrowing to one
-    // provider) — ref.listen below only fires on later changes, and without
-    // overflow there is no scroll to ask for more.
+    // The grid can appear with a page already loaded and `ref.listen` below
+    // only fires on later changes — without overflow nothing asks for more.
     _scheduleViewportFillCheck();
   }
 

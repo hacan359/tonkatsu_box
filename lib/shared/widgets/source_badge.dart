@@ -4,12 +4,7 @@ import 'package:core/models/data_source.dart';
 
 import '../constants/data_source_ui.dart';
 
-/// Компактный бейдж с названием и цветом источника данных.
-///
-/// Используется в карточках, экранах деталей и настройках
-/// для обозначения откуда получены данные.
-/// Если задан [onTap], бейдж становится кликабельным и показывает
-/// иконку внешней ссылки.
+/// An [onTap] makes the badge clickable and adds an external-link icon.
 class SourceBadge extends StatelessWidget {
   const SourceBadge({
     required this.source,
@@ -22,7 +17,6 @@ class SourceBadge extends StatelessWidget {
 
   final SourceBadgeSize size;
 
-  /// Колбэк при нажатии (открытие внешней ссылки).
   final VoidCallback? onTap;
 
   @override

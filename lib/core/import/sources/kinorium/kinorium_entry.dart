@@ -1,8 +1,5 @@
-// One parsed row from a Kinorium CSV export.
-
-/// Kinorium media kind, taken verbatim from the `Type` column. The CSV writes
-/// these in Russian; [fromRaw] maps the known values and falls back to
-/// [unknown] for anything unexpected.
+/// Media kind from the CSV `Type` column (Kinorium writes it in Russian);
+/// [fromRaw] falls back to [unknown] for anything unexpected.
 enum KinoriumType {
   film,
   animatedFilm,

@@ -20,14 +20,8 @@ import '../providers/browse_provider.dart';
 import 'browse_card.dart';
 import 'source_error_strip.dart';
 
-/// Desktop results layout for several sources at once: one block per provider,
-/// cards wrapped into rows like the normal grid.
-///
-/// Each block is capped to [_kPreviewRows] so every source stays visible on the
-/// first screen — with four manga providers an uncapped page would push the last
-/// one far below the fold. "Show all" narrows to one source, where the flat grid
-/// and its paging take over; that also keeps the overview to one request per
-/// provider.
+/// One block per provider, each capped to [_kPreviewRows] so every source stays
+/// on the first screen. "Show all" narrows to the flat, paging grid.
 class BrowseSections extends ConsumerWidget {
   const BrowseSections({
     required this.onItemTap,

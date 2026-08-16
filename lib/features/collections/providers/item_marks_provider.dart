@@ -1,5 +1,3 @@
-// Provider for per-unit marks (likes and notes) of a single collection item.
-
 import 'dart:async';
 
 import 'package:core/models/item_mark.dart';
@@ -12,7 +10,6 @@ typedef UnitKey = ({String unitType, int parent, int unit});
 
 /// State holding every mark of one collection item, indexed by unit.
 class ItemMarksState {
-  /// Creates an [ItemMarksState].
   const ItemMarksState({this.marks = const <UnitKey, ItemMark>{}});
 
   /// Marks keyed by their unit coordinates.

@@ -321,12 +321,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  /// One subfilter group per active type — game platforms, manga formats,
-  /// anime formats — each tinted with its media-type accent, on one row.
-  ///
-  /// A group normally appears only once its media-type chevron is selected;
-  /// with the "always show subcategories" setting every group whose type has
-  /// items is shown upfront.
+  /// A group appears only once its media-type chevron is selected; the
+  /// "always show subcategories" setting shows every group upfront.
   List<List<SubfilterChipData>> _subfilterGroups(
     AsyncValue<List<CollectionItem>> itemsAsync,
   ) {
@@ -408,9 +404,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     });
   }
 
-  /// Raw item count per media type, ignoring every filter. Drives chevron
-  /// visibility — search hits should change the chevron label, not make
-  /// non-matching media types disappear when "Hide empty" is on.
+  /// Ignores every filter: search hits change the chevron label but must not
+  /// hide non-matching media types when "Hide empty" is on.
   static Map<MediaType, int> _rawTotalsByMediaType(
     List<CollectionItem>? items,
   ) {
@@ -424,9 +419,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return totals;
   }
 
-  /// Counts items per media type after applying every active filter except
-  /// the media-type one — so each chevron shows how many would be visible if
-  /// the user picked it.
   /// True when any of the item's tags matches the search query.
   bool _matchesTagName(
     CollectionItem item,
@@ -439,6 +431,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         tagsMap[id]?.name.toLowerCase().contains(lowerQuery) ?? false);
   }
 
+  /// Applies every active filter except the media-type one, so each chevron
+  /// shows how many items would be visible if the user picked it.
   Map<MediaType, int> _countByMediaType(
     List<CollectionItem>? items,
     ItemStatus? filterStatus,
@@ -656,9 +650,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     ];
   }
 
-  /// Section header for a collection group: the collection name with a thick
-  /// accent underline, its total count, then per-type tallies and a
-  /// favourites count.
   Widget _buildCollectionDivider(
     _CollectionGroup group, {
     required bool isFirst,
@@ -679,9 +670,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final int favorites =
         group.items.where((CollectionItem i) => i.isFavorite).length;
 
-    // Wrap instead of Row: a long collection name plus up to 7 tallies
-    // overflows a phone-width header, so the name ellipsizes and the tally
-    // chips flow to the next line.
+    // Wrap, not Row: a long name plus up to 7 tallies overflows a phone-width
+    // header — the name ellipsizes and the tally chips flow to the next line.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -729,9 +719,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  /// Shared info cluster: per-type icon with its item count, then a
-  /// favourites tally. Each tally is one self-contained chip so it never
-  /// splits when the header wraps.
+  /// Each tally is one self-contained chip so it never splits when the
+  /// header wraps.
   List<Widget> _headerInfo(Map<MediaType, int> typeCounts, int favorites) {
     const double iconSize = 20;
 

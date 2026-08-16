@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Star control for a personal rating (1.0–10.0, step 0.1). Inline, no popup.
-///
-/// Row of a leading clear cell (sets the rating to `null`) plus 10 stars;
-/// tapping a star sets a whole integer 1–10. The −/+ buttons nudge the current
-/// value by 0.1 and are disabled while the rating is unset (nothing to nudge —
-/// tap a star first).
+/// Tapping a star sets a whole 1–10; the −/+ buttons nudge by 0.1 and stay
+/// disabled while the rating is unset — there is nothing to nudge yet.
 class FractionalStarRating extends StatefulWidget {
   const FractionalStarRating({
     required this.onChanged,
@@ -30,10 +26,8 @@ class FractionalStarRating extends StatefulWidget {
 
   static double _buttonWidth(double starSize) => starSize + _gap;
 
-  /// Natural (unconstrained) width for a given [starSize]: clear cell, ten
-  /// stars, and the two nudge buttons. Useful when the widget sits inside an
-  /// `IntrinsicWidth` (e.g. a popup menu), which cannot measure the internal
-  /// `LayoutBuilder`.
+  /// Needed inside an `IntrinsicWidth` (e.g. a popup menu), which cannot
+  /// measure the internal `LayoutBuilder`.
   static double naturalWidth(double starSize) =>
       (starSize + _gap) * (starCount + 1) + 2 * _buttonWidth(starSize);
 

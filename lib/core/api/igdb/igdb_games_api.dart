@@ -309,10 +309,8 @@ class IgdbGamesApi {
     }
   }
 
-  /// Fetches average time-to-beat for the given IGDB game ids.
-  ///
-  /// Returns a map keyed by game id; games without time-to-beat data are
-  /// simply absent. Times are kept in seconds (IGDB's unit).
+  /// Map is keyed by game id; games without time-to-beat data are simply
+  /// absent. Times are kept in seconds (IGDB's unit).
   Future<Map<int, GameTimeToBeat>> getTimeToBeat(List<int> gameIds) async {
     _client.ensureCredentials();
 

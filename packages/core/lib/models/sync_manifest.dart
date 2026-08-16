@@ -2,7 +2,6 @@ import 'dart:convert';
 
 /// Metadata written next to a database snapshot in the sync folder.
 class SyncManifest {
-  /// Creates a [SyncManifest].
   const SyncManifest({
     required this.deviceName,
     required this.createdAt,

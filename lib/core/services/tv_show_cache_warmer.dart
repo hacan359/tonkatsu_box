@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/episode_source/tv_episode_source.dart';
 import '../database/database_service.dart';
 
-/// Provider of [TvShowCacheWarmer].
 final Provider<TvShowCacheWarmer> tvShowCacheWarmerProvider =
     Provider<TvShowCacheWarmer>((Ref ref) {
   return TvShowCacheWarmer(

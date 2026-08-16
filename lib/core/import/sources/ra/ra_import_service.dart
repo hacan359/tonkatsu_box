@@ -66,13 +66,8 @@ typedef _MatchedGame = ({
   DateTime? completedAt,
 });
 
-/// Imports a RetroAchievements profile on the shared import layer.
-///
-/// Already-linked games skip the IGDB search; the rest are searched by name in
-/// throttled batches. Matched games are written through [ImportWriter] (RA is
-/// the authoritative progress source, so status downgrades are allowed), then
-/// each one gets its `tracker_game_data` row written in a post-write pass
-/// (keyed by IGDB id + platform, which [ImportWriter] does not cover).
+/// RA profile import: linked games skip the IGDB search, status downgrades
+/// are allowed (RA owns progress), tracker_game_data lands in a second pass.
 class RaImportService implements ImportSource {
   RaImportService({
     required RaApi raApi,
@@ -453,9 +448,8 @@ class RaImportService implements ImportSource {
       '${raGame.numAwarded}/${raGame.maxPossible} achievements'
       '${raGame.highestAwardKind != null ? ' • ${raGame.highestAwardKind}' : ''}';
 
-  /// Builds the per-platform tracker_game_data row for an RA game. The IGDB
-  /// platform id is derived from RA's console id so PS2 and GameCube installs
-  /// of the same IGDB title don't overwrite each other.
+  /// The platform id derives from RA's console id so PS2 and GameCube
+  /// installs of the same IGDB title don't overwrite each other.
   TrackerGameData _trackerGameData(int igdbId, RaGameProgress raGame) {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final int? awardTimestamp = raGame.highestAwardDate != null

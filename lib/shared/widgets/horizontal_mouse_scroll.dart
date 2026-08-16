@@ -1,11 +1,8 @@
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-/// Перехватывает вертикальный скролл мышью и перенаправляет
-/// его в горизонтальный [ScrollController].
-///
-/// На мобильных устройствах свайп работает как обычно.
+/// Redirects a mouse wheel into a horizontal [ScrollController]; touch swipes
+/// are left alone.
 class HorizontalMouseScroll extends StatelessWidget {
   const HorizontalMouseScroll({
     required this.controller,
@@ -15,7 +12,6 @@ class HorizontalMouseScroll extends StatelessWidget {
 
   final ScrollController controller;
 
-  /// Дочерний виджет (горизонтальный ListView).
   final Widget child;
 
   @override

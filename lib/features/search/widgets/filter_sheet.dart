@@ -1,7 +1,3 @@
-// Narrow-screen filter sheet: same instant-apply semantics as the chevron
-// variant — opening it does not commit a "draft", changes hit the provider
-// straight away.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -293,9 +289,8 @@ class _SortTile extends StatelessWidget {
   }
 }
 
-/// One filter row in the sheet: `Label : current value ›`. Tap opens the
-/// picker. Options are loaded eagerly so the row can render the human label
-/// for the currently-selected value.
+/// One filter row: `Label : current value ›`. Options load eagerly so the row
+/// can render the human label for the selected value.
 class _FilterRow extends ConsumerStatefulWidget {
   const _FilterRow({
     required this.filter,

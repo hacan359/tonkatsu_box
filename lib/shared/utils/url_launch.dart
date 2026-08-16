@@ -11,9 +11,8 @@ VoidCallback? openUrlCallback(String? url) =>
 Future<void> launchExternalUrl(String url) async {
   try {
     final Uri uri = Uri.parse(url);
-    // Only web links: URLs here come from user notes, imports and APIs, so a
-    // scheme allowlist keeps a malicious link from launching file:// or a
-    // custom-scheme handler.
+    // URLs come from notes, imports and APIs, so an allowlist keeps a hostile
+    // link from launching file:// or a custom-scheme handler.
     if (uri.scheme != 'http' && uri.scheme != 'https') return;
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

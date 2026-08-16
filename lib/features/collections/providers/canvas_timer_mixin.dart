@@ -6,11 +6,8 @@ import 'package:core/models/canvas_viewport.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import 'canvas_state.dart';
 
-/// Mixin с debounce-логикой для сохранения позиций и viewport канваса.
-///
-/// Используется в [CanvasNotifier] и [GameCanvasNotifier] для устранения
-/// дублирования кода. Классы-потребители обязаны реализовать [persistViewport]
-/// и [viewportId].
+/// Debounced persistence of canvas item positions and viewport, shared by
+/// [CanvasNotifier] and [GameCanvasNotifier].
 mixin CanvasTimerMixin {
   Timer? _viewportSaveTimer;
   Timer? _positionSaveTimer;
@@ -21,7 +18,7 @@ mixin CanvasTimerMixin {
 
   set state(CanvasState value);
 
-  /// ID для создания [CanvasViewport] (collectionId или collectionItemId).
+  /// Id used to build [CanvasViewport]: collectionId or collectionItemId.
   int get viewportId;
 
   void persistViewport(CanvasViewport viewport);
@@ -31,9 +28,7 @@ mixin CanvasTimerMixin {
     _positionSaveTimer?.cancel();
   }
 
-  /// Перемещает элемент на канвасе.
-  ///
-  /// Обновляет state мгновенно, сохраняет в БД с debounce 300ms.
+  /// Updates state immediately; the DB write is debounced (300ms).
   void moveItem(int itemId, double x, double y) {
     state = state.copyWith(
       items: state.items.map((CanvasItem item) {
@@ -50,9 +45,7 @@ mixin CanvasTimerMixin {
     });
   }
 
-  /// Обновляет viewport (зум и позицию камеры).
-  ///
-  /// Сохраняет в БД с debounce 500ms.
+  /// Updates state immediately; the DB write is debounced (500ms).
   void updateViewport(double scale, double offsetX, double offsetY) {
     final CanvasViewport newViewport = CanvasViewport(
       collectionId: viewportId,
@@ -69,7 +62,6 @@ mixin CanvasTimerMixin {
     });
   }
 
-  /// Сбрасывает viewport в значение по умолчанию (scale=1, offset=0,0).
   void resetViewport() {
     final CanvasViewport defaultViewport = CanvasViewport(
       collectionId: viewportId,

@@ -4,14 +4,8 @@ import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../shared/theme/app_spacing.dart';
 
-/// Drag handle for manual row reorder in the collection table.
-///
-/// trina_grid's built-in handle starts the drag on the first pointer move,
-/// which on touch loses the gesture arena to the grid's vertical scroll —
-/// the grid scrolls and the row never moves. On touch platforms the drag
-/// therefore starts from a hold (same convention as ReorderableListView);
-/// desktop keeps the immediate mouse drag. Drop is handled by trina_grid's
-/// own per-row DragTarget, so the move still lands in `onRowsMoved`.
+/// trina_grid's built-in handle loses the gesture arena to grid scroll on
+/// touch, so touch drags start from a hold; desktop keeps immediate drag.
 class RowDragHandle extends StatelessWidget {
   const RowDragHandle({
     required this.row,
