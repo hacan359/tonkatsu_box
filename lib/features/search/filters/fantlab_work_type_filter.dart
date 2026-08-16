@@ -1,14 +1,10 @@
-// Fantlab work-type filter (single-select). `/search-works` has no server-side
-// filter, so the chosen type is applied by matching each match's `name_eng`
-// inside FantlabApi — see core/api/fantlab/README.md.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Narrows Fantlab results to a literary work type. Values are Fantlab's stable
-/// English type names (`name_eng`): `novel` / `story` / `shortstory` / `cycle`.
+/// `/search-works` has no server-side type filter, so FantlabApi matches each
+/// result's stable `name_eng` (`novel` / `story` / `shortstory` / `cycle`).
 class FantlabWorkTypeFilter extends SearchFilter {
   @override
   String get key => 'work_type';

@@ -48,10 +48,8 @@ class CanvasRepository {
     return _enrichItemsWithMediaData(items);
   }
 
-  /// Hydrate the `game/movie/tvShow/...` slots on already-loaded items.
-  /// Lets callers paint a skeleton canvas first (positions + types) and
-  /// fill in the heavy joined data in a second pass — see
-  /// [CanvasNotifier._loadCanvas].
+  /// Hydrate media slots on already-loaded items so callers can paint a
+  /// skeleton canvas first and fill in the heavy joined data in a second pass.
   Future<List<CanvasItem>> enrichItems(List<CanvasItem> items) =>
       _enrichItemsWithMediaData(items);
 
@@ -161,10 +159,8 @@ class CanvasRepository {
     );
   }
 
-  /// Hydrates `CanvasItem.game/movie/tvShow/...` from cache tables in one
-  /// parallel batch. Animation items resolve to whichever of `movies_cache`
-  /// or `tv_shows_cache` actually holds the referenced TMDB id — TMDB stores
-  /// animated films and TV anime in different tables.
+  /// Hydrates media slots from cache tables in one parallel batch; animation
+  /// resolves to whichever of movies/tv-shows cache holds the TMDB id.
   Future<List<CanvasItem>> _enrichItemsWithMediaData(
     List<CanvasItem> items,
   ) async {
@@ -288,9 +284,8 @@ class CanvasRepository {
         moviesMap[m.tmdbId] = m;
       }
     }
-    // Like manga, canvas items carry no show source, so a numeric id can
-    // match rows from several providers. TMDB wins to keep behaviour
-    // deterministic.
+    // Canvas items carry no show source, so a numeric id can match several
+    // providers; TMDB wins to keep behaviour deterministic.
     final Map<int, TvShow> tvShowsMap = <int, TvShow>{};
     for (final TvShow t in results[2] as List<TvShow>) {
       final TvShow? existing = tvShowsMap[t.tmdbId];
@@ -302,10 +297,8 @@ class CanvasRepository {
       for (final VisualNovel vn in results[3] as List<VisualNovel>)
         vn.numericId: vn,
     };
-    // Canvas items don't carry a manga source, so a numeric id can match both
-    // an AniList and a MangaBaka row. AniList wins to preserve legacy
-    // behaviour (known limitation: a MangaBaka-only canvas manga sharing an
-    // id with an AniList title resolves to the AniList one).
+    // No manga source on canvas items: on an AniList/MangaBaka id collision
+    // AniList wins to preserve legacy behaviour.
     final Map<int, Manga> mangaMap = <int, Manga>{};
     for (final Manga m in results[4] as List<Manga>) {
       final Manga? existing = mangaMap[m.id];
@@ -325,9 +318,8 @@ class CanvasRepository {
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
       for (final CustomMedia c in results[6] as List<CustomMedia>) c.id: c,
     };
-    // Like manga, canvas books carry no source, so a numeric id can match both
-    // an OpenLibrary and a Fantlab row. OpenLibrary wins to keep behaviour
-    // deterministic.
+    // No book source on canvas items: on an OpenLibrary/Fantlab id collision
+    // OpenLibrary wins to keep behaviour deterministic.
     final Map<int, Book> bookMap = <int, Book>{};
     for (final Book b in results[7] as List<Book>) {
       final Book? existing = bookMap[b.externalIdInt];
@@ -335,9 +327,8 @@ class CanvasRepository {
         bookMap[b.externalIdInt] = b;
       }
     }
-    // Like manga, canvas audio carries no source, so a numeric id can match
-    // both a MusicBrainz and a Podcast Index row. MusicBrainz wins to keep
-    // resolution deterministic.
+    // Canvas audio carries no source, so a numeric id can match both a
+    // MusicBrainz and a Podcast Index row; MusicBrainz wins for determinism.
     final Map<int, AudioItem> albumMap = <int, AudioItem>{};
     for (final AudioItem a in results[8] as List<AudioItem>) {
       final AudioItem? existing = albumMap[a.id];
@@ -425,10 +416,8 @@ class CanvasRepository {
     return count > 0;
   }
 
-  /// Returns a [CanvasViewport] whose `collectionId` is the
-  /// `collectionItemId` — `CanvasState` was designed for collection-scoped
-  /// viewports, so per-item viewports reuse the same shape with the item id
-  /// substituted in.
+  /// The returned viewport's `collectionId` actually holds [collectionItemId]
+  /// — per-item viewports reuse the collection-scoped `CanvasState` shape.
   Future<CanvasViewport?> getGameCanvasViewport(
     int collectionItemId,
   ) async {
@@ -463,10 +452,8 @@ class CanvasRepository {
     return rows.map(CanvasConnection.fromDb).toList();
   }
 
-  /// Lays the canvas out as a centred grid on first open. The grid is sized
-  /// to fit [gridColumns] across, centred around
-  /// ([initialCenterX], [initialCenterY]) so the user lands on something
-  /// instead of an empty void.
+  /// First-open layout: a grid centred on ([initialCenterX],
+  /// [initialCenterY]) so the user lands on content, not an empty void.
   Future<List<CanvasItem>> initializeCanvas(
     int collectionId,
     List<CollectionItem> items,

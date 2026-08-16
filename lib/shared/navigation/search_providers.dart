@@ -1,10 +1,3 @@
-// Contextual search providers for the global [AppTopBar].
-//
-// Each search-capable tab has its own query [StateProvider], which keeps the
-// input per tab. [searchContextFor] returns the current tab's search context
-// (which provider to listen to, which hint to show), or null when the tab does
-// not support search.
-
 import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,10 +29,8 @@ final StateProvider<String> searchTabQueryProvider =
 final StateProvider<String> settingsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
-/// Shared [FocusNode] for the [AppTopBar] text field.
-///
-/// Lives at app level: used by [AppTopBar] for the input and by [AppShell]
-/// to focus programmatically on type-to-search (start typing — focus the bar).
+/// App level so [AppShell] can focus the [AppTopBar] field programmatically
+/// for type-to-search.
 final Provider<FocusNode> appTopBarFocusProvider = Provider<FocusNode>((
   Ref ref,
 ) {
@@ -48,20 +39,14 @@ final Provider<FocusNode> appTopBarFocusProvider = Provider<FocusNode>((
   return node;
 });
 
-/// Collections that items added from the Search tab go into, shown as a
-/// multi-select chip row under the filter bar. Empty means the normal "open
-/// details, pick a collection in the sheet" flow; a non-empty set switches the
-/// tab into "tap a result to add it straight into all of these" mode. Prefilled
-/// when search is opened from a collection's "add items"; cleared whenever the
-/// Search tab is entered plainly.
+/// Empty means the normal "open details, pick a collection" flow; a non-empty
+/// set makes a tap add the result straight into every collection listed.
 final StateProvider<Set<int>> searchTargetCollectionsProvider =
     StateProvider<Set<int>>((Ref ref) => <int>{});
 
-/// One-shot request to open the Search tab, optionally prefilled. Set from
-/// another tab (Wishlist, a collection) instead of pushing a separate search
-/// screen; consumed and reset to `null` by [AppShell].
+/// One-shot: set from another tab, then consumed and reset to `null` by
+/// [AppShell].
 class SearchTabRequest {
-  /// Creates a [SearchTabRequest].
   const SearchTabRequest({
     this.query,
     this.mediaType,
@@ -89,7 +74,6 @@ final StateProvider<SearchTabRequest?> searchTabRequestProvider =
 
 /// Describes the search context for one tab.
 class SearchContext {
-  /// Creates a [SearchContext].
   const SearchContext({
     required this.queryProvider,
     required this.hint,

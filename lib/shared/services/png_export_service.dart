@@ -39,12 +39,8 @@ class BulkExportResult {
   final Object? error;
 }
 
-/// Renders the widget behind [repaintKey] into a PNG and lets the user pick
-/// where to save it via [FilePicker.saveFile].
-///
-/// On Android/iOS the picker opens the Storage Access Framework: [FileType.any]
-/// plus [bytes] makes file_picker write the file itself at the chosen location.
-/// On desktop file_picker only returns the path, so we write the bytes here.
+/// On mobile file_picker writes the bytes itself through SAF; on desktop it
+/// only returns a path, so the write happens here.
 Future<BulkExportResult> saveBoundaryAsPng({
   required GlobalKey repaintKey,
   required String suggestedFileName,

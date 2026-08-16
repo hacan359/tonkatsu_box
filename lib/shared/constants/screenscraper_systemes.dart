@@ -1,8 +1,5 @@
-/// IGDB platform id → ScreenScraper `systemeid`.
-///
-/// Only retro/classic platforms that ScreenScraper actually covers. Modern
-/// platforms (Switch, PS5, current PC) are intentionally absent — fall through
-/// means no SS section is shown.
+/// IGDB platform id → ScreenScraper `systemeid`. Modern platforms are absent
+/// on purpose — falling through means no ScreenScraper section is shown.
 abstract final class ScreenScraperSystemes {
   static const Map<int, int> _igdbToSs = <int, int>{
     // Nintendo home

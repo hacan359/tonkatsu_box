@@ -190,9 +190,8 @@ class TierRow extends StatelessWidget {
         ),
       ),
     );
-    // Mobile long-press is taken by the options sheet. Plain Draggable, not
-    // ReorderableListView: its GlobalKey reparenting during layout crashes
-    // the card Tooltips (OverlayPortal) under the screen's LayoutBuilder.
+    // Plain Draggable, not ReorderableListView: its GlobalKey reparenting
+    // during layout crashes the card Tooltips under the LayoutBuilder.
     if (!tierDraggable || kIsMobile) return label;
     return Draggable<String>(
       data: definition.tierKey,

@@ -1,7 +1,5 @@
-/// A DAO call that reached the server and came back as a failure.
-///
-/// [kind] is the stable tag from the wire (`database`, `notFound`, …); the
-/// message is for logs and never parsed.
+/// A DAO call that reached the server and came back a failure. [kind] is the
+/// stable wire tag; the message is for logs and never parsed.
 class RpcException implements Exception {
   const RpcException(this.kind, this.message);
 
@@ -12,10 +10,8 @@ class RpcException implements Exception {
   String toString() => 'RpcException($kind): $message';
 }
 
-/// The one seam the generated stubs talk to.
-///
-/// Kept abstract so `core` stays free of an HTTP client: the app plugs in a Dio
-/// implementation, tests plug in the dispatcher directly.
+/// The one seam the generated stubs talk to; abstract so `core` needs no HTTP
+/// client — the app plugs in Dio, tests plug in the dispatcher.
 abstract class RpcTransport {
   Future<Object?> call(
     String dao,

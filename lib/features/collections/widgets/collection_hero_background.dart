@@ -1,9 +1,3 @@
-// The image is drawn with `BoxFit.cover, alignment: Alignment.topRight`,
-// with two gradients on top: left-to-right (dark left, for text readability)
-// and bottom-to-top (dark bottom, blends into the app background).
-// Both gradients end in [AppColors.background] so the image edge does not
-// cut against the background. On mobile the gradients are wider.
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
@@ -29,11 +23,8 @@ class CollectionHeroBackground extends StatelessWidget {
 
   final HeroGradientStrength strength;
 
-  /// ImageCache hint: decode the image at this width instead of its original
-  /// resolution. Defaults to [HeroGradientStrength.defaultCacheWidth].
-  ///
-  /// Matters for collection grids: without it a 4K hero on a 150x150 card
-  /// is decoded in full and floods the ImageCache.
+  /// Decode-width hint: without it a 4K hero on a 150x150 grid card is
+  /// decoded in full and floods the ImageCache.
   final int? cacheWidth;
 
   /// Content laid over the image. Must not be `Positioned` — the parent
@@ -55,7 +46,6 @@ class CollectionHeroBackground extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          // Image: top-right is the focal point.
           Image(
             image: ResizeImage(
               heroImageProviderFor(imagePath),
@@ -68,7 +58,6 @@ class CollectionHeroBackground extends StatelessWidget {
                 ColoredBox(color: AppColors.surface),
           ),
 
-          // Dark on the left fading to transparent on the right.
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -84,7 +73,6 @@ class CollectionHeroBackground extends StatelessWidget {
             ),
           ),
 
-          // Dark at the bottom fading upwards (app background at the bottom).
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(

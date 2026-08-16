@@ -7,12 +7,8 @@ import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'hardcover_types.dart';
 
-/// Transport for the Hardcover GraphQL API (Hasura, single POST endpoint).
-///
-/// Auth is a personal Bearer token the user copies from
-/// `hardcover.app/account/api` — without it the API rejects every request,
-/// so [post] throws [HardcoverAuthException] when no token is set. Limits:
-/// 60 requests/min (429 → [HardcoverRateLimitException]), 30 s per query.
+/// Transport for the Hardcover GraphQL API. The API rejects every request
+/// without a personal Bearer token, so [post] throws when none is set.
 class HardcoverGraphQLClient {
   HardcoverGraphQLClient({Dio? dio})
       : _dio = dio ??

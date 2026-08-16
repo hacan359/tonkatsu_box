@@ -82,8 +82,7 @@ class ImageCache {
         );
       };
 
-  /// `POST /img/<folder>/<id>` with the raw bytes as the body — the web
-  /// build's stand-in for the desktop's local cache write: a user-picked
+  /// The web build's stand-in for the desktop local-cache write: a user-picked
   /// cover has no upstream URL the GET route could fetch.
   Handler get uploadHandler => (Request request) async {
         final (ImageType, String)? target = _target(request);

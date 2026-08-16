@@ -16,16 +16,8 @@ class RenameSuggestion {
   final String value;
 }
 
-/// Dialog for setting / clearing the per-collection display-name override.
-///
-/// `currentOverride` — the override that is currently saved (null when none).
-/// `originalName` — the cached API title shown as a subtitle for reference.
-/// `suggestions` — optional pre-filled options (used for AniList anime/manga
-/// to expose romaji / english / native variants).
-/// Returns one of:
-///   * a non-empty trimmed [String] — user wants to set a new override
-///   * an empty string — user picked "Reset to original" (clear override)
-///   * `null` — user cancelled
+/// Pops the trimmed new override, an empty string for "reset to original"
+/// (clear the override), or `null` on cancel.
 class RenameItemDialog extends StatefulWidget {
   const RenameItemDialog({
     required this.currentOverride,

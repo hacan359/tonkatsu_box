@@ -35,10 +35,8 @@ class AniListMalLookupApi {
     return result;
   }
 
-  /// Retries each batch up to [maxRateLimitRetries] on 429; non-rate-limit
-  /// failures record the batch as failed and move on. Non-empty [failedIds]
-  /// is how the caller distinguishes "AniList errored" from "AniList has no
-  /// record" — the latter is just absence from [resolved].
+  /// Retries each batch on 429, records other failures and moves on. Non-empty
+  /// [failedIds] means AniList errored — mere absence means it has no record.
   Future<AniListMalLookupResult<Anime>> getAnimeByMalIdsTolerant(
     List<int> malIds, {
     AniListRateLimitCallback? onRateLimit,

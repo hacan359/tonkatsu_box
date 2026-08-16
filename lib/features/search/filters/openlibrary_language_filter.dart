@@ -1,5 +1,3 @@
-// OpenLibrary language filter (single-select, MARC 3-letter codes).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';

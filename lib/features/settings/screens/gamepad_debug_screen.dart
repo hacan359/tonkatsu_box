@@ -92,9 +92,8 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
     super.dispose();
   }
 
-  /// Captures Flutter hardware key events. On Android, gamepad buttons arrive
-  /// here (as `gameButton*` keys) even when the `gamepads` plugin stays silent.
-  /// Never consumed, so global shortcuts keep working.
+  /// On Android gamepad buttons arrive here as `gameButton*` keys even when the
+  /// plugin stays silent. Never consumed, so global shortcuts keep working.
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
     if (!Platform.isAndroid) return KeyEventResult.ignored;
     final String kind = switch (event) {

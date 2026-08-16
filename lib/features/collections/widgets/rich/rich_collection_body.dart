@@ -1,6 +1,3 @@
-// Hero banner of a rich collection. Used as the `header` sliver in
-// `CollectionItemsView`: it scrolls away with the grid, not pinned on top.
-
 import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 

@@ -27,9 +27,8 @@ class HttpUpstreamClient implements UpstreamClient {
       : _deadline = deadline,
         _client = HttpClient()..connectionTimeout = deadline;
 
-  /// Whole-request budget. connectionTimeout alone lets an accepted-but-
-  /// silent upstream hold the line for minutes — and every hanging /img
-  /// pins one of the browser's six connections, freezing the whole app.
+  /// connectionTimeout alone lets an accepted-but-silent upstream hold the line
+  /// for minutes, pinning one of the browser's six connections.
   final Duration _deadline;
 
   final HttpClient _client;

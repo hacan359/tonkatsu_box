@@ -43,10 +43,8 @@ Future<void> showCollectionFilterSheet(
   );
 }
 
-/// The sheet keeps its own local snapshot of `selectedTagIds`/`groupByTags`:
-/// otherwise it would not react to its own actions (Navigator routes are not
-/// rebuilt by the parent's setState). After each change the parent callback
-/// is invoked so the parent updates too.
+/// Keeps a local snapshot of `selectedTagIds`/`groupByTags`: Navigator routes
+/// are not rebuilt by the parent's setState. Parent callbacks fire on change.
 class CollectionFilterSheet extends ConsumerStatefulWidget {
   const CollectionFilterSheet({
     required this.scrollController,
@@ -132,7 +130,6 @@ class _CollectionFilterSheetState
         ),
         child: Stack(
           children: <Widget>[
-            // Brand-colored glow at the top.
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -151,7 +148,6 @@ class _CollectionFilterSheetState
                 ),
               ),
             ),
-            // Darkening towards the bottom.
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -187,7 +183,6 @@ class _CollectionFilterSheetState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                    // Header: drag handle + clear-tags button (when any selected).
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,

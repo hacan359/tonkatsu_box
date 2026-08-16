@@ -40,12 +40,8 @@ Future<void> offerAppRestart(
   }
 }
 
-/// Lets the user pick a directory usable as a raw filesystem path.
-///
-/// Desktop uses the native dialog (it returns real paths); on Android the
-/// SAF picker's URI-to-path conversion is firmware-dependent guesswork, so
-/// an in-app browser over the real filesystem is shown instead, listing
-/// all mounted volumes.
+/// Desktop uses the native dialog; on Android SAF's URI-to-path conversion is
+/// firmware-dependent guesswork, so an in-app filesystem browser is shown.
 Future<String?> pickRawFolder(
   BuildContext context, {
   required String dialogTitle,
@@ -78,13 +74,8 @@ Future<String?> pickRawFolder(
   return FolderPickerDialog.show(context, roots: roots, title: dialogTitle);
 }
 
-/// Ensures the storage permission required for raw-path file access.
-///
-/// Desktop needs none. Android 11+ uses "All files access"
-/// (MANAGE_EXTERNAL_STORAGE); Android 10 and below use the classic storage
-/// permission plus requestLegacyExternalStorage. On denial the user is
-/// offered the relevant system settings screen; returns false either way —
-/// the caller simply retries after the permission is granted.
+/// Android 11+ needs "All files access", older releases the classic storage
+/// permission. Returns false on denial — the caller retries after the grant.
 Future<bool> ensureStorageAccess(BuildContext context) async {
   if (!kIsMobile) return true;
 
@@ -103,9 +94,8 @@ Future<bool> _ensureAllFilesAccess(BuildContext context) async {
       await Permission.manageExternalStorage.request();
   if (status.isGranted) return true;
 
-  // Some OEM builds cannot resolve the per-app "All files access" screen,
-  // so the request fails instantly — route the user through the
-  // system-wide list instead.
+  // Some OEM builds cannot resolve the per-app "All files access" screen and
+  // fail instantly, so the user is routed through the system-wide list.
   if (!context.mounted) return false;
   final S l10n = S.of(context);
   final bool open = await ConfirmDialog.show(

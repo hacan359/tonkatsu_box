@@ -319,8 +319,7 @@ class _BulkPosterExportDialogState
             _precachedFiles[item.id] = file;
           } on Exception {
             // Corrupt cached file — drop it so the next export pulls a fresh
-            // copy. Leave _precachedFiles untouched; the tile falls back to
-            // a placeholder for this run.
+            // copy; the tile falls back to a placeholder for this run.
             try {
               await file.delete();
             } on FileSystemException {

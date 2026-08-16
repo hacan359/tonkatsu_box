@@ -1,7 +1,3 @@
-// Final wizard step: a short intro to the interactive menu tour. Both actions
-// close the wizard; [onStart] also kicks off the coachmark that plays over the
-// real navigation in [AppShell], while [onSkip] just finishes.
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -11,7 +7,6 @@ import 'welcome_hero.dart';
 
 /// Intro page for the menu tour shown as the last wizard step.
 class WelcomeStepMenuTour extends StatelessWidget {
-  /// Creates a [WelcomeStepMenuTour].
   const WelcomeStepMenuTour({
     required this.onStart,
     required this.onSkip,

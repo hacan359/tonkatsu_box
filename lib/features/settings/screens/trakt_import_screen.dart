@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -6,10 +5,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/trakt_import_content.dart';
 
-/// Экран импорта из Trakt.tv ZIP-выгрузки.
-///
-/// Тонкая обёртка вокруг [TraktImportContent] с Scaffold/AppBar.
-/// Используется при push-навигации на мобильных устройствах.
 class TraktImportScreen extends StatelessWidget {
   const TraktImportScreen({super.key});
 

@@ -1,12 +1,8 @@
-
 import 'package:flutter/material.dart';
 
 import '../constants/platform_features.dart';
 
-/// Оборачивает [child] в [CallbackShortcuts] + [Focus] для экранных хоткеев.
-///
-/// На мобильных платформах возвращает [child] без обёрток.
-/// [autofocus] управляет автоматическим фокусом (по умолчанию true).
+/// Returns [child] untouched on mobile, where there is no keyboard.
 Widget wrapWithScreenShortcuts({
   required Map<ShortcutActivator, VoidCallback> bindings,
   required Widget child,
@@ -23,7 +19,7 @@ Widget wrapWithScreenShortcuts({
   );
 }
 
-/// Форматирует хоткей для tooltip: 'Текст (Ctrl+N)'.
+/// Appends the shortcut to a tooltip label; a no-op on mobile.
 String tooltipWithShortcut(String label, String shortcut) {
   if (kIsMobile) return label;
   return '$label ($shortcut)';

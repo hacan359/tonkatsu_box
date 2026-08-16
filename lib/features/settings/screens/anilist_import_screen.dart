@@ -7,7 +7,6 @@ import '../content/anilist_import_content.dart';
 
 /// Screen wrapper around [AniListImportContent] with a title bar.
 class AniListImportScreen extends StatelessWidget {
-  /// Creates an [AniListImportScreen].
   const AniListImportScreen({super.key});
 
   @override

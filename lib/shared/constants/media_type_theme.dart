@@ -1,4 +1,3 @@
-
 import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 

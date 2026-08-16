@@ -110,10 +110,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   DiscordRpcService? _discordRpc;
   String? _currentItemName;
 
-  // Comment autosave is triggered from MediaDetailView.dispose() during route
-  // teardown, when ref.read's ProviderScope ancestor lookup is already unsafe
-  // ("Looking up a deactivated widget's ancestor"), so the container is
-  // resolved once upfront and the save callbacks read through it.
+  // Comment autosave fires from MediaDetailView.dispose() when ref.read's
+  // ancestor lookup is unsafe, so the container is resolved once upfront.
   late final ProviderContainer _container;
 
   bool get _hasCanvas => kCanvasEnabled && widget.collectionId != null;
@@ -524,9 +522,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           collectionItemsNotifierProvider(widget.collectionId).notifier,
         )
         .refresh();
-    // The custom edit can change display type / platform / format / counts,
-    // which drive type and subfilters on the All Items screen too — reload it
-    // so it re-buckets instead of showing the stale pre-edit type.
+    // The edit can change display type / platform / format, which drive the
+    // All Items filters — reload so it re-buckets instead of staying stale.
     ref.invalidate(allItemsNotifierProvider);
 
     if (mounted) {
@@ -1059,8 +1056,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
-  /// Adds a book tapped in the "Similar books" row to a chosen collection,
-  /// caching the full record first. Carries `book.source` so the Fantlab
+  /// Caches the full record first and carries `book.source` so the Fantlab
   /// origin survives.
   Future<void> _addBookFromSimilars(Book book) async {
     final Map<int, List<CollectedItemInfo>> ownMap =
@@ -1111,9 +1107,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
-  /// Adds a manga tapped in the "Similar" row to a chosen collection, caching
-  /// the full record first. Carries `manga.source` so the provider origin
-  /// (MangaBaka / MangaDex) survives.
+  /// Caches the full record first and carries `manga.source` so the provider
+  /// origin (MangaBaka / MangaDex) survives.
   Future<void> _addMangaFromSimilars(Manga manga) async {
     final Map<int, List<CollectedItemInfo>> ownMap =
         await ref.read(collectedMangaIdsProvider.future);

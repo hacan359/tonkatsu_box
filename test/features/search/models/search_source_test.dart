@@ -225,8 +225,6 @@ void main() {
   });
 }
 
-// -- Test doubles --
-
 class _TestFilter extends SearchFilter {
   @override
   String get key => 'test';

@@ -31,8 +31,7 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
     super.initState();
     _lifecycleListener = AppLifecycleListener(
       // Veto OS-level close requests while a restore is mid-flight so SQLite
-      // can't be cut off mid-write. User-initiated kills (kill -9, taskmgr)
-      // still go through — there's no defence against those.
+      // can't be cut off mid-write; forced kills still bypass this.
       onExitRequested: () async {
         if (ref.read(restoreInProgressProvider)) {
           return ui.AppExitResponse.cancel;
@@ -81,9 +80,8 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
         // The tiled background is applied via PageTransitionsTheme
         // (each route gets its own opaque DecoratedBox).
         home: const SplashScreen(),
-        // A captured fatal startup error (failed migration, throw before the
-        // first frame) paints over the whole UI so it's visible on-device
-        // instead of a frozen splash logo.
+        // A fatal startup error (failed migration, pre-first-frame throw)
+        // paints over the whole UI instead of leaving a frozen splash logo.
         builder: (BuildContext context, Widget? child) {
           return ValueListenableBuilder<StartupErrorInfo?>(
             valueListenable: startupError,

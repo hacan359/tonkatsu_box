@@ -1,5 +1,3 @@
-// Tests for AddTimeDialog widget.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/dialogs/add_time_dialog.dart';

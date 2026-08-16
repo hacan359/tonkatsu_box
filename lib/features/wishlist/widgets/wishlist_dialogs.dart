@@ -4,9 +4,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 
-/// Prompts and confirmations used by the wishlist screen. Pure dialogs —
-/// they return the user's choice and never call the wishlist notifier so
-/// the screen keeps the side-effect plumbing in one place.
+/// Pure dialogs: they return the user's choice and never touch the notifier,
+/// so the screen keeps all side effects in one place.
 class WishlistDialogs {
   const WishlistDialogs._();
 

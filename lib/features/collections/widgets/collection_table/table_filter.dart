@@ -154,9 +154,8 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    // AlertDialog measures its content with IntrinsicWidth, so the content
-    // must not be a LayoutBuilder (no intrinsic size → render crash); the
-    // width budget comes from MediaQuery instead.
+    // AlertDialog measures content with IntrinsicWidth, so a LayoutBuilder
+    // here would crash (no intrinsic size); use MediaQuery for the budget.
     final double available =
         MediaQuery.sizeOf(context).width - 2 * AppSpacing.xl;
     final double width = available.clamp(0.0, 560.0);
@@ -175,9 +174,8 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
         AppSpacing.sm,
       ),
       title: Text(l.collectionFilterFilters),
-      // On a phone the dialog is only as wide as the screen minus insets, so a
-      // fixed 560 would clamp each control to a sliver. Cap at 560 but shrink
-      // to the available width, and stack each rule vertically when narrow.
+      // A fixed 560 would clamp each control to a sliver on phones: cap at
+      // 560 but shrink to available width, stacking rules when narrow.
       content: SizedBox(
         width: width,
         child: SingleChildScrollView(
@@ -300,9 +298,8 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
           );
 
     if (stacked) {
-      // Narrow screens: field on its own row, condition + value below, with
-      // the delete button pinned to the field row so each control gets full
-      // width instead of a cramped three-way split.
+      // Field gets its own row so each control has full width instead of
+      // a cramped three-way split on narrow screens.
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

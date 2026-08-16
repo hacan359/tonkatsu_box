@@ -488,9 +488,8 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
       if (!mounted) return;
 
-      // Push the result over the import screen (no await / no follow-up pop):
-      // the import screen stays underneath so a later tab-root reset can't
-      // resolve a pending push and pop the tab root out. Mirrors the RA flow.
+      // Pushed without an await or follow-up pop: the import screen stays
+      // underneath so a later tab-root reset can't pop the tab root out.
       Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (BuildContext context) => ImportResultScreen(

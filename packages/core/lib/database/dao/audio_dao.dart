@@ -84,9 +84,8 @@ class AudioDao {
     await db.delete('audio_tracks_cache');
   }
 
-  /// Replaces the cached track list — the picked release changed, so leftovers
-  /// from the previous edition must not survive. Albums only; podcast episode
-  /// lists grow incrementally via [upsertTracks].
+  /// Replaces the list so leftovers from the previous edition cannot survive.
+  /// Albums only — podcast episode lists grow via [upsertTracks].
   Future<void> replaceAudioTracks(
     int audioId,
     DataSource source,

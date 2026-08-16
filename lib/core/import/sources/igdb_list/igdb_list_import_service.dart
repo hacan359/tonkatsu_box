@@ -51,17 +51,15 @@ class IgdbListImportOptions extends ImportOptions {
   /// status, only which list it came from.
   final ItemStatus status;
 
-  /// The CSV lists all of a game's release platforms, not the one the user
-  /// owns, so the platform is picked by hand and required — without it every
-  /// item would render as "unknown platform".
+  /// The CSV lists all release platforms, not the one the user owns, so the
+  /// platform is picked by hand — else items render as "unknown platform".
   final int platformId;
 
   final String? wishlistReason;
 }
 
-/// Imports a game list exported from IGDB (CSV) into a collection. Every row
-/// carries the IGDB game id, so matching is one batched id lookup with no
-/// title search; ids IGDB no longer returns fall back to the text wishlist.
+/// Every row carries the IGDB game id, so matching is one batched id lookup;
+/// ids IGDB no longer returns fall back to the text wishlist.
 class IgdbListImportService implements ImportSource {
   IgdbListImportService({
     required IgdbApi igdbApi,
@@ -264,9 +262,8 @@ class IgdbListImportService implements ImportSource {
     return row;
   }
 
-  /// Re-sync policy: an "unset" import never disturbs an existing item; a
-  /// chosen status is merged upward (local `completed` / `dropped` win) without
-  /// downgrading the user's own decision.
+  /// An "unset" import never disturbs an existing item; a chosen status is
+  /// merged upward without downgrading the user's own decision.
   Map<String, dynamic> _changedFields(
     IgdbListImportOptions options,
     CollectionItem existing,

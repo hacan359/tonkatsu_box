@@ -1,13 +1,5 @@
-// Fetch ALL games for a given IGDB platform into one .xcollx file.
-//
-// Usage:
-//   dart tool/generate_all_snes.dart \
-//     --igdb-client-id=<id> \
-//     --igdb-client-secret=<secret> \
-//     --output=<dir> \
-//     [--platform=19]
-//
-// Platform IDs: SNES=19, PS1=7, NES=18, Genesis=29, N64=4, GameBoy=33
+// dart tool/generate_all_snes.dart --igdb-client-id= --igdb-client-secret=
+// --output= [--platform=19]  (19=SNES, 7=PS1, 18=NES, 29=Genesis, 4=N64)
 import 'dart:convert';
 import 'dart:io';
 

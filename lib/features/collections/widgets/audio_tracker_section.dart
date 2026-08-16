@@ -99,9 +99,8 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
     }
   }
 
-  /// New episodes published after the cached watermark, fetched with `since=`
-  /// (cheap) and upserted — the cache only ever grows, the API's 1000-newest
-  /// window must not evict what was seen before.
+  /// Fetched with `since=` and upserted, so the cache only grows — the API's
+  /// 1000-newest window must not evict what was seen before.
   Future<List<AudioTrack>> _fetchNewEpisodes(
     AudioItem podcast,
     List<AudioTrack> cached,
@@ -362,9 +361,8 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
   /// Small feeds fit on one screen; anything bigger gets collapsible spans.
   static const int _flatEpisodeLimit = 24;
 
-  /// A 600-episode feed as one flat list is unusable — episodes collapse into
-  /// per-year spans (per-month when the whole feed fits one calendar year),
-  /// newest span open. Undated episodes group under "—" last.
+  /// A 600-episode feed as one flat list is unusable, so episodes collapse
+  /// into per-year spans (per-month within one year), newest open.
   List<Widget> _buildEpisodeYearGroups(S l, List<AudioTrack> tracks) {
     final DateFormatPreset preset = DateFormatPreset.fromId(
       ref.watch(

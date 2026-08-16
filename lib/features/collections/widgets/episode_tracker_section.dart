@@ -1,5 +1,3 @@
-// Episode Tracker section: season/episode watch progress.
-
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_mark.dart';
 import 'package:core/models/tv_episode.dart';
@@ -23,12 +21,9 @@ import '../providers/episode_tracker_provider.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
 
-/// Filter for the episode marks bar.
 enum _EpisodeMarkFilter { all, liked, commented }
 
-/// Episode Tracker section with a progress bar and a season list.
 class EpisodeTrackerSection extends ConsumerWidget {
-  /// Creates an [EpisodeTrackerSection].
   const EpisodeTrackerSection({
     required this.collectionId,
     required this.itemId,
@@ -50,7 +45,6 @@ class EpisodeTrackerSection extends ConsumerWidget {
 
   final DataSource source;
 
-  /// Show data.
   final TvShow? tvShow;
 
   /// Accent color (AppColors.brand for tvShow, AppColors.animationAccent
@@ -124,9 +118,7 @@ class EpisodeTrackerSection extends ConsumerWidget {
   }
 }
 
-/// Season list widget built from ExpansionTiles.
 class SeasonsListWidget extends ConsumerStatefulWidget {
-  /// Creates a [SeasonsListWidget].
   const SeasonsListWidget({
     required this.showId,
     required this.source,
@@ -198,9 +190,8 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     }
   }
 
-  /// Force-refreshes the season list and loaded episodes from the API.
-  /// Adds new seasons/episodes and refreshes metadata, but leaves
-  /// watched statuses untouched.
+  /// Adds new seasons/episodes and refreshes metadata from the API,
+  /// but leaves watched statuses untouched.
   Future<void> _refreshSeasons() async {
     if (_refreshing) return;
     setState(() => _refreshing = true);
@@ -409,9 +400,8 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     );
   }
 
-  /// Flat list of episode marks matching the active filter, across all
-  /// seasons. Draws from the marks provider directly, so it works even when a
-  /// season's episode metadata hasn't been loaded (falls back to `S1·E3`).
+  /// Draws from the marks provider directly, so it works even when a
+  /// season's episode metadata isn't loaded (falls back to `S1·E3`).
   Widget _buildFilteredList(
     ItemMarksState marks,
     EpisodeTrackerState trackerState,
@@ -556,9 +546,7 @@ class _FilteredEpisodeRowState extends State<_FilteredEpisodeRow> {
   }
 }
 
-/// ExpansionTile for a single season and its episodes.
 class SeasonExpansionTile extends ConsumerStatefulWidget {
-  /// Creates a [SeasonExpansionTile].
   const SeasonExpansionTile({
     required this.season,
     required this.trackerState,
@@ -568,13 +556,10 @@ class SeasonExpansionTile extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Season data.
   final TvSeason season;
 
-  /// Current tracker state.
   final EpisodeTrackerState trackerState;
 
-  /// Argument for the tracker provider.
   final EpisodeTrackerArg trackerArg;
 
   /// Owning `collection_items.id` — anchor for per-episode/season marks.
@@ -741,7 +726,6 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
             ),
             tooltip: allWatched ? l.unmarkAll : l.markAllWatched,
             onPressed: () {
-              // Load the season first if its episodes aren't loaded yet
               if (episodes == null || episodes.isEmpty) {
                 ref
                     .read(episodeTrackerNotifierProvider(trackerArg).notifier)
@@ -809,9 +793,7 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
   }
 }
 
-/// Tile for a single episode with a checkbox.
 class EpisodeTile extends ConsumerStatefulWidget {
-  /// Creates an [EpisodeTile].
   const EpisodeTile({
     required this.episode,
     required this.isWatched,
@@ -823,19 +805,15 @@ class EpisodeTile extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Episode data.
   final TvEpisode episode;
 
   /// Stands in when the episode has no still of its own.
   final String? seasonPosterUrl;
 
-  /// Whether the episode has been watched.
   final bool isWatched;
 
-  /// Watch date (null if not watched).
   final DateTime? watchedAt;
 
-  /// Argument for the tracker provider.
   final EpisodeTrackerArg trackerArg;
 
   /// Owning `collection_items.id` — anchor for per-episode marks.
@@ -925,10 +903,8 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                       child: CachedImage(
                         imageType: ImageType.tvEpisodeStill,
-                        // Keyed by what is actually shown: a season poster
-                        // standing in for a still must not be cached under the
-                        // episode's own id, or it would stick once the real
-                        // still appears.
+                        // Key by what is shown: a stand-in season poster must
+                        // not cache under the episode id, or it would stick.
                         imageId: hasOwnStill
                             ? '${widget.trackerArg.source.name}_'
                                 '${episode.tmdbShowId}_'
@@ -1117,7 +1093,6 @@ class _WatchedBadge extends StatelessWidget {
   }
 }
 
-/// Episode overview clamped to two lines; tap toggles the full text.
 /// `canRequestFocus: false` keeps it out of D-pad traversal — the row's
 /// own InkWell stays the single gamepad stop per episode.
 class _ExpandableOverview extends StatefulWidget {

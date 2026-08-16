@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,9 +14,6 @@ import 'gamepad_debug_screen.dart';
 import 'image_debug_screen.dart';
 import 'steamgriddb_debug_screen.dart';
 
-/// Хаб для debug инструментов разработчика.
-///
-/// Содержит ссылки на SteamGridDB Debug, Image Debug и Gamepad Debug.
 class DebugHubScreen extends ConsumerWidget {
   const DebugHubScreen({super.key});
 

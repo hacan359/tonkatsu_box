@@ -14,9 +14,8 @@ final Provider<GameRepository> gameRepositoryProvider =
   );
 });
 
-/// Coordinates IGDB API calls with the local cache so callers don't have to
-/// branch on cache state. Cache entries older than [cacheMaxAge] seconds are
-/// treated as stale and refetched.
+/// Coordinates IGDB calls with the local cache; entries older than
+/// [cacheMaxAge] seconds are stale and refetched.
 class GameRepository {
   GameRepository({
     required IgdbApi api,
@@ -115,9 +114,8 @@ class GameRepository {
     return _gameDao.getGameCount();
   }
 
-  /// Backfills the `platforms` table for every platform id mentioned by
-  /// [games]. Missing rows are fetched from IGDB; failures are swallowed
-  /// because the next request will pick them up.
+  /// Backfills `platforms` for every id mentioned by [games]; fetch failures
+  /// are swallowed because the next request retries.
   Future<void> ensurePlatformsCached(List<Game> games) async {
     final Set<int> allPlatformIds = <int>{};
     for (final Game game in games) {

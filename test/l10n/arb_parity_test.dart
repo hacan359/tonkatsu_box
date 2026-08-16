@@ -3,9 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-// Guards the invariant established by the l10n dedup: every locale file
-// carries exactly the template's key set with matching placeholders, so a
-// translation MR can't silently drop or misspell a key.
+// Every locale file must carry exactly the template's key set with matching
+// placeholders, so a translation MR cannot silently drop or misspell a key.
 void main() {
   final Directory l10nDir = Directory('lib/l10n');
   final List<File> arbFiles = l10nDir
@@ -23,8 +22,7 @@ void main() {
   Set<String> keysOf(Map<String, dynamic> arb) =>
       arb.keys.where((String k) => !k.startsWith('@')).toSet();
 
-  // Declared placeholders from the template's @key metadata. Extracting
-  // placeholders from values is unreliable: ICU plural branch text like
+  // Read from the template's @key metadata: ICU plural branch text like
   // `=1{day}` is indistinguishable from a placeholder by syntax alone.
   Set<String> declaredPlaceholders(Map<String, dynamic> arb, String key) {
     final Object? meta = arb['@$key'];

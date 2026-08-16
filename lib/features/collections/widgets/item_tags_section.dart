@@ -11,12 +11,8 @@ import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
 import 'tag_picker_dialog.dart';
 
-/// The item's tag chips; tapping any of them (or the empty placeholder)
-/// opens the multi-select picker over the global tag set.
-///
-/// When editable, chips can be dragged into a manual per-item order
-/// (immediate drag on desktop, long-press drag on mobile). Dropping on a
-/// chip moves the dragged one past it in the direction of travel.
+/// Tag chips; a tap opens the multi-select picker. When editable, chips
+/// drag into a manual per-item order (long-press drag on mobile).
 class ItemTagsSection extends ConsumerWidget {
   const ItemTagsSection({
     required this.itemId,

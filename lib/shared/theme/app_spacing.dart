@@ -1,12 +1,7 @@
-// Spacing and sizing constants.
-
 import 'package:flutter/painting.dart';
 
 import 'app_typography.dart';
 
-/// Spacing and sizing constants.
-///
-/// One spacing system for a consistent UI.
 /// Base step is 4px; the main values are multiples of it.
 abstract final class AppSpacing {
   /// 4px — minimal padding.
@@ -62,7 +57,6 @@ abstract final class AppSpacing {
   /// 20px — content inset from screen edges.
   static const double screenPadding = 20;
 
-  /// Poster aspect ratio (2:3).
   static const double posterAspectRatio = 2.0 / 3.0;
 
   /// Grid column count on desktop (>= 800px).

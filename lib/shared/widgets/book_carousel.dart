@@ -1,7 +1,3 @@
-// Horizontal carousel of book poster cards. Shared by the "similar books"
-// sections (Fantlab / Google Books) and the search sheet's "more by this
-// author" strip.
-
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
@@ -17,9 +13,8 @@ import 'media_poster_card.dart';
 import 'scrollable_row_with_arrows.dart';
 import 'shimmer_loading.dart';
 
-/// One horizontal strip of book cards (cover + title + year, with optional
-/// rating and in-collection badge). Supports lazy paging through
-/// [onEndReached] and per-book hover tooltips through [tooltipOf].
+/// Lazy paging runs through [onEndReached]; per-book hover tooltips come from
+/// [tooltipOf].
 class BookCarousel extends StatefulWidget {
   const BookCarousel({
     required this.books,
@@ -35,9 +30,8 @@ class BookCarousel extends StatefulWidget {
   final List<Book> books;
   final void Function(Book book) onTap;
 
-  /// `(source, externalIdInt)` of books already in a collection — those cards
-  /// show the owned badge. Keyed by source because book providers hand out
-  /// colliding numeric ids. Empty disables the badge.
+  /// Keyed by source because book providers hand out colliding numeric ids.
+  /// Empty disables the owned badge.
   final Set<(DataSource, int)> ownedKeys;
 
   final bool showRating;

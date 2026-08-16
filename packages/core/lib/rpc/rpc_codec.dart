@@ -11,11 +11,8 @@ class RpcCodecException implements Exception {
   String toString() => 'RpcCodecException: $message';
 }
 
-/// Every `int` crosses the wire as a string.
-///
-/// dart2js compiles `int` to a double, so anything above 2^53 loses precision —
-/// and `fnv1a64` ids already in real databases are 63-bit. Encoding all of them
-/// spares the generator a "looks like an id" guess it cannot make safely.
+/// Every `int` crosses the wire as a string: dart2js compiles `int` to a
+/// double, and the `fnv1a64` ids in real databases are already 63-bit.
 String encodeInt(int value) => value.toString();
 
 int decodeInt(Object? value) {
@@ -81,10 +78,8 @@ T? decodeNullable<T extends Object>(
 const String _intTag = r'$i';
 const String _bytesTag = r'$b';
 
-/// Encodes a value whose static type is `dynamic` — a raw database row.
-///
-/// Ints get tagged instead of merely stringified: without a static type the
-/// far side could not tell a genuine `String` from a stringified `int`.
+/// For a value whose static type is `dynamic`. Ints are tagged, not just
+/// stringified — the far side could not tell one from a genuine `String`.
 Object? encodeDynamic(Object? value) {
   if (value == null || value is String || value is double || value is bool) {
     return value;

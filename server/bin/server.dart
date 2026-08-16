@@ -63,8 +63,7 @@ Future<void> main(List<String> args) async {
       schemaVersion: bootstrap.schemaVersion,
       daos: DaoRegistry(bootstrap.db),
       proxy: ApiProxy(credentials: credentials, dataDir: config.dataDir),
-      // Covers come from CDNs that answer in milliseconds when healthy — a
-      // short deadline frees the browser's six connection slots fast, so a
+      // A short deadline frees the browser's six connection slots fast, so a
       // sick CDN costs broken thumbnails instead of a frozen app.
       images: ImageCache(
         dataDir: config.dataDir,

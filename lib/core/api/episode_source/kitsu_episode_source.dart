@@ -91,9 +91,8 @@ class KitsuEpisodeSource implements TvEpisodeSource {
         .where((TvEpisode e) => e.seasonNumber == seasonNumber)
         .toList();
 
-    // Records whose episodes carry a different season number would otherwise
-    // render an empty tracker, since the season list only holds the
-    // synthesized one.
+    // Episodes carrying a different season number would otherwise render an
+    // empty tracker — the season list only holds the synthesized one.
     if (ofSeason.isEmpty && seasonNumber == _synthesizedSeason) return all;
     return ofSeason;
   }

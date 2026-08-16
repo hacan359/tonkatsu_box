@@ -3,12 +3,8 @@ import 'package:core/utils/anime_manga_title_language.dart';
 
 import '../../l10n/app_localizations.dart';
 
-/// Template-based text exporter for a collection.
-///
-/// Supports `{name}`, `{year}`, `{rating}`, `{myRating}`, `{platform}`,
-/// `{status}`, `{genres}`, `{tags}`, `{notes}`, `{type}`, `{link}`, `{#}`.
-/// Empty tokens and the surrounding separators are stripped automatically —
-/// see [_removeTokenWithContext].
+/// Template-based text exporter; empty tokens and their surrounding
+/// separators are stripped automatically — see [_removeTokenWithContext].
 class TextExportService {
   static const String defaultTemplate = '{name} ({year})';
 
@@ -86,9 +82,8 @@ class TextExportService {
     return line.trim();
   }
 
-  /// Strip an empty token together with the surrounding separator / bracket
-  /// so a template like `"{name} ({year})"` collapses to `"{name}"` when
-  /// year is missing instead of leaving an orphaned `"()"`.
+  /// Strip an empty token with its separator/bracket so `"{name} ({year})"`
+  /// leaves no orphaned `"()"` when year is missing.
   String _removeTokenWithContext(String line, String token) {
     final List<String> delimiters = <String>[
       ' — ',
@@ -137,7 +132,6 @@ class TextExportService {
   }
 }
 
-/// Sort mode for the text exporter.
 enum TextExportSortMode {
   /// Source order from the collection.
   current,
@@ -146,7 +140,6 @@ enum TextExportSortMode {
   year,
   addedDate;
 
-  /// Localised label for the sort picker.
   String localizedLabel(S l) => switch (this) {
         TextExportSortMode.current => l.textExportSortCurrent,
         TextExportSortMode.name => l.textExportSortName,

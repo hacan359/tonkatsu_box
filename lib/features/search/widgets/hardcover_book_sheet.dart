@@ -5,10 +5,8 @@ import '../../../core/api/hardcover_api.dart';
 import '../../collections/widgets/hardcover_edition_picker.dart';
 import 'item_details_sheet.dart';
 
-/// Stateful host for a Hardcover book's detail sheet. Shows an inline editions
-/// strip; picking one swaps the cover / localized title / metadata live and is
-/// reported via [onEditionChanged] so the handler's enrich step saves it on
-/// add — the Fantlab sheet pattern.
+/// Picking an edition swaps cover, title and metadata live and reports it via
+/// [onEditionChanged] so the enrich step saves it on add.
 class HardcoverBookSheet extends StatefulWidget {
   const HardcoverBookSheet({
     required this.book,

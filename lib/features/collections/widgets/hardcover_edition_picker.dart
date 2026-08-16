@@ -1,7 +1,3 @@
-// Hardcover edition picker. A Hardcover book has many editions (localized
-// titles, own covers, languages); this strip lets the user pick which one a
-// book carries — the Fantlab editions strip pattern, plus language chips.
-
 import 'package:core/models/book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,9 +22,8 @@ FutureProvider<List<HardcoverEdition>> _getEditionsProvider(String bookId) {
   );
 }
 
-/// Opens the edition picker for a Hardcover book, grouped by language.
-/// Resolves to the chosen edition, or null if the sheet is dismissed without
-/// a pick.
+/// Opens the edition picker grouped by language; resolves to the chosen
+/// edition, or null if the sheet is dismissed without a pick.
 Future<HardcoverEdition?> showHardcoverEditionPicker(
   BuildContext context, {
   required String bookId,
@@ -44,11 +39,8 @@ Future<HardcoverEdition?> showHardcoverEditionPicker(
   );
 }
 
-/// Overlays [edition]'s cover, localized title and bibliographic fields onto
-/// [book], keeping its work identity (`id` / `nativeId` / `source`) untouched.
-/// The edition id is recorded as a fragment on the external URL — fragments
-/// never reach the server, so the link resolves exactly as before while the
-/// pick survives a "refresh from source".
+/// Overlays [edition] onto [book], keeping its work identity. The edition id
+/// rides as a URL fragment — never sent, yet survives "refresh from source".
 Book applyHardcoverEdition(Book book, HardcoverEdition edition) {
   final bool hasTitle = edition.title.isNotEmpty;
   final bool titleChanges = hasTitle && edition.title != book.title;
@@ -87,9 +79,8 @@ int? hardcoverEditionIdFromExternalUrl(String? externalUrl) {
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
-/// Edition id embedded in an edition-hosted cover URL
-/// (`assets.hardcover.app/edition[s]/{id}/…`). Book-level covers may instead
-/// live under `external_data/` and carry no id — then this returns null.
+/// Edition id embedded in an edition-hosted cover URL; book-level covers
+/// under `external_data/` carry no id — then this returns null.
 int? hardcoverEditionIdFromCoverUrl(String? coverUrl) {
   if (coverUrl == null) return null;
   final RegExpMatch? m = RegExp(r'assets\.hardcover\.app/editions?/(\d+)/')
@@ -97,11 +88,8 @@ int? hardcoverEditionIdFromCoverUrl(String? coverUrl) {
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
-/// Refresh helper: re-applies the edition the user picked (recovered from the
-/// cached row) onto the freshly fetched [fresh] book. Returns [fresh] as-is
-/// when nothing was picked, when the cover simply came with the book rather
-/// than from a pick, or when the edition no longer belongs to this book — so
-/// a failed recovery can never lose more than the pick itself.
+/// Re-applies the picked edition onto [fresh]; returns [fresh] as-is when
+/// nothing was picked or the edition no longer belongs to this book.
 Future<Book> reapplyHardcoverEdition(
   HardcoverApi api, {
   required Book cached,
@@ -125,9 +113,8 @@ Future<Book> reapplyHardcoverEdition(
   return applyHardcoverEdition(fresh, edition);
 }
 
-/// Inline editions strip for a Hardcover book's detail sheet — the Fantlab
-/// strip pattern plus language filter chips (shown when editions span more
-/// than one language). Hidden while loading / on error / with no editions.
+/// Inline editions strip — the Fantlab strip pattern plus language chips.
+/// Hidden while loading, on error, or when there are no editions.
 class HardcoverEditionsSection extends ConsumerStatefulWidget {
   const HardcoverEditionsSection({
     required this.bookId,

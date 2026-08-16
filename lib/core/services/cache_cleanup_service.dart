@@ -12,15 +12,8 @@ final Provider<CacheCleanupService> cacheCleanupServiceProvider =
   );
 });
 
-/// Removes downloaded cover images for media that is no longer in any
-/// collection. The metadata cache tables (games, *_cache, custom_items) only
-/// ever grow — they aren't pruned when an item or whole collection is removed
-/// — so the presence of a cache row means nothing; only membership in
-/// `collection_items` (a named collection or the uncategorized library) counts.
-///
-/// Only the re-downloadable cover folders are scanned. Custom covers (often
-/// user-uploaded local images that can't be fetched again) and canvas board
-/// images are never touched.
+/// Deletes covers for media absent from `collection_items` — cache tables only
+/// grow, so a cache row proves nothing. Custom/canvas images are never touched.
 class CacheCleanupService {
   CacheCleanupService(this._collections, this._cache);
 
@@ -43,9 +36,8 @@ class CacheCleanupService {
       for (final ImageType type in _cleanableTypes) type: <String>{},
     };
 
-    // `imageType` / `coverImageId` are the same getters the display and
-    // download sides use, so the kept ids line up exactly with the files on
-    // disk. Items outside the cleanable set (custom) are ignored here.
+    // Same getters the display/download sides use, so kept ids line up with
+    // the files on disk; items outside the cleanable set (custom) are ignored.
     final List<CollectionItem> items = await _collections.getAllItemsWithData();
     for (final CollectionItem item in items) {
       final Set<String>? bucket = keep[item.imageType];

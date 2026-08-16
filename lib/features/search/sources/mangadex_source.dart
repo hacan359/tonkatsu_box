@@ -16,11 +16,8 @@ import '../utils/filter_value_utils.dart';
 
 const int _mangaDexPageSize = 20;
 
-/// SearchSource backed by MangaDex (manga).
-///
-/// A manga provider alongside AniList / MangaBaka; items are stamped
-/// [MediaType.manga] but carry `DataSource.mangadex` (set inside
-/// `Manga.fromMangaDex`) so they stay distinct in the cache and collection.
+/// MangaDex manga search. Items carry `DataSource.mangadex` so they stay
+/// distinct from AniList / MangaBaka in the cache and collection.
 class MangaDexSource extends SearchSource {
   @override
   String get id => 'mangadex';

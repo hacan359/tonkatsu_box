@@ -66,9 +66,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _loadPlatforms();
   }
 
-  /// Builds the per-source handlers. Both the platform map and the add-target
-  /// collections are read live (closures), so the handlers never need rebuilding
-  /// when either changes — a tap resolves the current selection at tap time.
+  /// The platform map and the add-target collections are read live in closures,
+  /// so handlers never rebuild — a tap resolves the current selection.
   MediaHandlers _buildHandlers() => MediaHandlers(
         ref: ref,
         platformMap: () => _platformMap,

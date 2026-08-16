@@ -1,5 +1,3 @@
-// Guard test: auto-detects fields missing from export contract.
-
 import 'package:core/models/canvas_connection.dart';
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/canvas_viewport.dart';

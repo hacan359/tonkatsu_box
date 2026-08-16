@@ -1,5 +1,3 @@
-// MangaDex publication-demographic filter (multi-select).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';

@@ -192,12 +192,8 @@ final Provider<TraktImportService> traktImportServiceProvider =
   );
 });
 
-/// Imports a Trakt.tv ZIP export onto the shared import layer.
-///
-/// Parses the archive, fetches each title's TMDB data once, then writes every
-/// section (watched, ratings, watchlist) through [ImportWriter] in batches.
-/// Watched episodes are marked directly (no collection-item analogue), and
-/// titles without TMDB data fall back to the text wishlist.
+/// Trakt ZIP import: each title's TMDB data is fetched once; episodes are
+/// marked directly and titles without TMDB data fall to the text wishlist.
 class TraktImportService implements ImportSource {
   TraktImportService({
     required TmdbApi tmdbApi,
@@ -222,9 +218,8 @@ class TraktImportService implements ImportSource {
   String get displayName => 'Trakt';
 
   Future<TraktZipInfo> validateZip(Uint8List zipBytes) async {
-    // Unzip + JSON decode of a large export blocks for seconds — run it on a
-    // background isolate so the UI (and its loader animation) keeps running.
-    // The web has no isolates, so it validates inline.
+    // Unzip + JSON decode blocks for seconds — run on a background isolate
+    // to keep the UI alive (web has no isolates, so inline there).
     if (kIsWebBuild) return _validateZipSync(zipBytes);
     return Isolate.run(() => _validateZipSync(zipBytes));
   }
@@ -323,9 +318,8 @@ class TraktImportService implements ImportSource {
         message: 'Reading ZIP archive...',
       ));
 
-      // Unzip + JSON parse of the whole export runs on a background isolate:
-      // done synchronously it freezes the progress dialog for seconds. The
-      // web has no isolates, so it parses inline.
+      // Parsed on a background isolate — done inline it freezes the progress
+      // dialog for seconds (web has no isolates, so inline there).
       _TraktParsedArchive parse() => _readAndParseArchive(
             zipBytes: options.bytes,
             importWatched: options.importWatched,
@@ -645,9 +639,8 @@ class TraktImportService implements ImportSource {
     }
   }
 
-  /// Watched item: completed/in-progress status with the watch date. Re-sync
-  /// merges the external status without downgrading the local one and stamps
-  /// the completion date only when the local one is empty.
+  /// Watched item; re-sync merges the status without downgrading the local
+  /// one and stamps the completion date only when the local one is empty.
   ImportCandidate _watchedCandidate({
     required MediaType mediaType,
     required int externalId,
@@ -738,9 +731,8 @@ class TraktImportService implements ImportSource {
     );
   }
 
-  /// Reads and parses the export archive in one go. Static and pure so it can
-  /// run on a background isolate via [Isolate.run] without capturing `this`
-  /// (the service holds non-sendable handles: API client, database).
+  /// Static and pure so it can run via [Isolate.run] without capturing
+  /// `this` (the service holds non-sendable handles: API client, database).
   static _TraktParsedArchive _readAndParseArchive({
     required Uint8List zipBytes,
     required bool importWatched,

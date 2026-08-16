@@ -67,9 +67,8 @@ class BrowseState {
 
   final Map<String, List<Object>> itemsBySource;
 
-  /// Sources with a request in flight. Tracked per source, not as one flag:
-  /// AniList answers at once while Kitsu takes seconds, and the slow one has to
-  /// show it is working instead of reading as "returned nothing".
+  /// In-flight requests, per source rather than one flag: a slow provider
+  /// must show it is working instead of reading as "returned nothing".
   final Set<String> loadingSourceIds;
 
   final bool isLoadingMore;
@@ -81,9 +80,8 @@ class BrowseState {
   /// Failures per source — one dead provider must not blank the screen.
   final Map<String, ApiError> errors;
 
-  /// Request signature each source's results came from. A source whose current
-  /// signature still matches is never asked again, so hiding and showing a
-  /// provider costs nothing.
+  /// Signature each source's results came from; a still-matching source is
+  /// never re-asked, so hiding and showing a provider costs nothing.
   final Map<String, String> loadedSignatures;
 
   final String searchQuery;
@@ -112,9 +110,8 @@ class BrowseState {
     }).toList();
   }
 
-  /// Sources hidden by a shared value they cannot answer — MangaBaka has no
-  /// "cancelled", Kitsu no "hiatus". Shown as dimmed chips so a shortened
-  /// result set does not read as "nothing found".
+  /// Sources hidden by a shared value they cannot answer; shown as dimmed
+  /// chips so a shortened result set does not read as "nothing found".
   Set<String> get unsupportedSourceIds => <String>{
         for (final SearchSource source in sources)
           for (final CommonSelection selection in commonSelections.values)
@@ -243,9 +240,8 @@ final NotifierProvider<BrowseNotifier, BrowseState> browseProvider =
 class BrowseNotifier extends Notifier<BrowseState> {
   late SharedPreferences _prefs;
 
-  /// Monotonic counter guarding against race conditions: every new operation
-  /// increments it, and a per-source result whose generation no longer matches
-  /// is discarded, so a slow provider cannot write into a newer query.
+  /// Race guard: results whose generation no longer matches are discarded,
+  /// so a slow provider cannot write into a newer query.
   int _generation = 0;
 
   @override
@@ -258,10 +254,8 @@ class BrowseNotifier extends Notifier<BrowseState> {
     );
   }
 
-  /// A source missing its mandatory key can only answer with an error, so it
-  /// starts switched off; the chip stays visible and toggleable. Read straight
-  /// from prefs rather than through SettingsNotifier — this screen has no other
-  /// reason to depend on the whole settings graph.
+  /// A source missing its mandatory key starts switched off (its chip stays
+  /// toggleable). Reads prefs directly to avoid the whole settings graph.
   Set<String> _keylessSourceIds(MediaType type) {
     final String? tvdbKey = _prefs.getString(SettingsKeys.tvdbApiKey);
     final bool hasTvdbKey =
@@ -333,9 +327,8 @@ class BrowseNotifier extends Notifier<BrowseState> {
     if (state.hasSearchQuery) _fetch();
   }
 
-  /// Leaves only [sourceId] active — the "show all from this provider" action
-  /// on a section header, which also brings back sorting. Its results are
-  /// already loaded, so this costs no requests.
+  /// Leaves only [sourceId] active ("show all from this provider"), which
+  /// also brings back sorting. Results are already loaded — no requests.
   Future<void> narrowTo(String sourceId) async {
     state = state.copyWith(
       disabledSourceIds: <String>{
@@ -346,9 +339,8 @@ class BrowseNotifier extends Notifier<BrowseState> {
     await _fetch();
   }
 
-  /// Switching a provider off only hides it: its results are kept, so switching
-  /// it back on costs nothing. Switching on a provider with no results yet
-  /// fetches that one alone.
+  /// Off only hides: results are kept, so switching back on costs nothing;
+  /// switching on a provider with no results yet fetches that one alone.
   Future<void> toggleSource(String sourceId) async {
     final Set<String> disabled = <String>{...state.disabledSourceIds};
     if (!disabled.remove(sourceId)) disabled.add(sourceId);
@@ -458,9 +450,8 @@ class BrowseNotifier extends Notifier<BrowseState> {
     if (state.hasActiveQuery) await _fetch();
   }
 
-  /// Everything that decides one source's result: the query, the filter values
-  /// it actually receives, and its sort. Deliberately independent of how many
-  /// sources are active, so hiding a provider does not invalidate the others.
+  /// Everything deciding one source's result (query, its filters, its sort).
+  /// Independent of active-source count, so hiding one invalidates no others.
   @visibleForTesting
   String signatureOf(String sourceId) =>
       _signature(getSearchSourceById(sourceId));
@@ -475,10 +466,8 @@ class BrowseNotifier extends Notifier<BrowseState> {
     ].join('|');
   }
 
-  /// Asks only the sources whose signature no longer matches their results.
-  /// Turning a provider off and on, or narrowing to one and back, therefore
-  /// costs nothing; only a real change to the query refetches, and only the
-  /// sources that change.
+  /// Asks only sources whose signature no longer matches their results —
+  /// only a real change to the query refetches, and only the changed sources.
   Future<void> _fetch() async {
     if (!state.hasActiveQuery) return;
 

@@ -116,9 +116,8 @@ class IdentityHeader extends StatelessWidget {
   }
 }
 
-/// Info chip whose long joined text (genres, studios, tags) truncates to one
-/// line; when truncated, tapping expands it to the full multi-line text and
-/// back. Chips with an external [onTap] keep their original tap action.
+/// Tapping a truncated chip expands it to the full text and back; chips with
+/// an external [onTap] keep their own action.
 class _InfoChip extends StatefulWidget {
   const _InfoChip({
     required this.icon,

@@ -1,7 +1,3 @@
-// Fantlab edition picker. A Fantlab work has many editions, each with its own
-// cover; this sheet lets the user pick which one a book carries.
-// Grouped by Fantlab's blocks (domestic / foreign / ...), covers first.
-
 import 'package:core/models/book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,11 +67,8 @@ int? editionIdFromCoverUrl(String? coverUrl) {
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
-/// Refresh helper: re-applies the edition the user picked (recovered from the
-/// cached cover URL) onto the freshly fetched [fresh] work. The fresh work's
-/// own cover is the first edition's, so an equal id means nothing was
-/// explicitly picked. Returns [fresh] as-is when there is no pick or the
-/// picked edition no longer exists on the work.
+/// Re-applies the picked edition (recovered from the cached cover URL) onto
+/// [fresh]; an equal or missing edition id means no pick — [fresh] as-is.
 Future<Book> reapplyFantlabEdition(
   FantlabApi api, {
   required Book cached,
@@ -98,9 +91,8 @@ Future<Book> reapplyFantlabEdition(
   return fresh;
 }
 
-/// Inline editions strip for a book's detail sheet — mirrors the games'
-/// ScreenScraper gallery. Horizontal covers (covers first); tapping one calls
-/// [onSelected]. Hidden while loading / on error / when the work has none.
+/// Inline editions strip — mirrors the games' ScreenScraper gallery.
+/// Hidden while loading, on error, or when the work has no editions.
 class FantlabEditionsSection extends ConsumerStatefulWidget {
   const FantlabEditionsSection({
     required this.workId,

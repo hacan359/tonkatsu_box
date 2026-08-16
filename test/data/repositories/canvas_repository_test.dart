@@ -721,9 +721,8 @@ void main() {
             await repository.initializeCanvas(10, items);
 
         expect(result.length, 6);
-        // 6 games → cols=5, gridWidth=896, startX=2500-448=2052
-        // gridHeight=464, startY=2500-232=2268
-        // Item at index 5: col = 5 % 5 = 0, row = 5 ~/ 5 = 1
+        // 6 games → cols=5, so startX = 2500-448 = 2052, startY = 2500-232.
+        // Index 5 lands on col 0, row 1.
         expect(result[5].x, 2052.0); // startX + 0 * 184
         expect(result[5].y, 2512.0); // 2268 + 1 * (220 + 24)
       });
@@ -764,13 +763,8 @@ void main() {
         expect(result[0].visualNovel!.title, 'Ever17');
       });
 
-      // Regression: `initializeCanvas` must propagate every media-type-specific
-      // field (game/movie/tvShow/visualNovel/manga/anime/customMedia) from the
-      // CollectionItem to the freshly-created CanvasItem. Forgetting one means
-      // the canvas opens with empty cards (no cover image, no title) for that
-      // type — exactly what happened to anime and custom items historically.
-      // When a new media type is added, add a case here so the same regression
-      // can't slip in.
+      // Regression: a media-type field `initializeCanvas` forgets to propagate
+      // leaves that type's cards empty. Add a case for every new media type.
       test(
           'should propagate every media-type field from CollectionItem',
           () async {

@@ -1,4 +1,3 @@
-
 import 'item_status.dart';
 
 class RaGameProgress {

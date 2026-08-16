@@ -12,9 +12,8 @@ import 'upstream_client.dart';
 const String kProxyUserAgent =
     'TonkatsuBox/selfhost (+https://github.com/hacan359/tonkatsu_box)';
 
-/// MusicBrainz allows <1 req/s per client IP and silently throttles, then
-/// bans. The browser-side queue can't help here — requests from every tab
-/// leave with this server's IP, so the proxy is where the gap must hold.
+/// MusicBrainz allows <1 req/s per IP, then silently throttles and bans. Every
+/// tab leaves with this server's IP, so the gap has to hold here.
 const Map<ProxyTarget, Duration> _minRequestGap = <ProxyTarget, Duration>{
   ProxyTarget.musicbrainz: Duration(milliseconds: 1100),
 };
@@ -219,9 +218,8 @@ class ApiProxy {
             'apikey': _require(CredentialNames.tvdb, target),
           }));
         }
-        // The proxy strips the caller's Authorization, so the JWT the client
-        // obtained through its own login never arrives — without this every
-        // request after login answers 401 in an endless login loop.
+        // The proxy strips the caller's Authorization, so the client's own JWT
+        // never arrives and every post-login request would 401.
         headers[HttpHeaders.authorizationHeader] = 'Bearer ${await _tvdb()}';
       case ProxyTarget.screenscraper:
         // The dev pair never ships to a browser; the user pair is overridden

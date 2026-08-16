@@ -4,15 +4,9 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Pinned, non-scrolling pill showing how many chips in a row are selected,
-/// clearing the whole selection when tapped.
-///
-/// Meant to sit at the leading edge of a scrollable chip row so an active
-/// selection stays visible even when the selected chips have scrolled out of
-/// view — the case that is easy to miss on a phone, where there are no hover
-/// arrows. Show it only when [count] is greater than zero.
+/// Pinned at the leading edge of a scrollable chip row so an active selection
+/// stays visible once the selected chips scroll away. Hide it at zero.
 class SelectedCountChip extends StatelessWidget {
-  /// Creates a [SelectedCountChip].
   const SelectedCountChip({
     required this.count,
     required this.onClear,

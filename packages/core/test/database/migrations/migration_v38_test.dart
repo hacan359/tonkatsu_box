@@ -163,9 +163,8 @@ void main() {
 
     test('keeps achievements when another tracker row still references the '
         'same tracker_game_id', () async {
-      // Two rows share the same RA tracker_game_id (e.g. legacy NULL row +
-      // a freshly inserted per-platform row). Dropping the NULL row must
-      // not cascade and delete the still-referenced achievements.
+      // Dropping the legacy NULL row must not cascade into achievements the
+      // freshly inserted per-platform row still references.
       await _insertTrackerRow(db, gameId: 100, trackerGameId: 'shared');
       await _insertTrackerRow(
         db,

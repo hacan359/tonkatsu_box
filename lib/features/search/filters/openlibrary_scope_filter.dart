@@ -1,13 +1,10 @@
-// OpenLibrary search-scope filter — picks which field the text query matches.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Chooses the field the typed query is matched against on `search.json`:
-/// the reset ("All") is the catch-all `q`, the rest restrict to `title`,
-/// `author` or `subject`. Values are the literal OpenLibrary query params.
+/// Picks the `search.json` field the query matches: "All" is the catch-all
+/// `q`; values are the literal OpenLibrary query params.
 class OpenLibraryScopeFilter extends SearchFilter {
   @override
   String get key => 'scope';

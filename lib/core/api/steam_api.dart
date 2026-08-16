@@ -77,9 +77,8 @@ class SteamApi {
 
   final Dio _dio;
 
-  /// Fetches the user's library. Requires a public Steam profile — a private
-  /// profile surfaces as HTTP 500 from Steam, which we translate into a more
-  /// specific error message.
+  /// Requires a public Steam profile — a private one surfaces as HTTP 500
+  /// from Steam, which is translated into a more specific error message.
   Future<List<SteamOwnedGame>> getOwnedGames({
     required String apiKey,
     required String steamId,

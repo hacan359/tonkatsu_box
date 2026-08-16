@@ -10,9 +10,8 @@ class FantlabWorksApi {
 
   final FantlabHttpClient _client;
 
-  /// Full work by id, from `/work/{id}/extended` — that response carries the
-  /// base work fields plus `classificatory`, `awards`, `parents` and
-  /// `editions_blocks`, so one call is enough. Returns null on 404.
+  /// Full work from `/work/{id}/extended` — it carries the base fields plus
+  /// classificatory/awards/editions, so one call is enough. Null on 404.
   Future<Book?> getWork(String id) async {
     try {
       final Response<dynamic> resp = await _client.get('/work/$id/extended');
@@ -27,8 +26,7 @@ class FantlabWorksApi {
     }
   }
 
-  /// Editions of work [id], grouped by block, from `/work/{id}/extended`
-  /// `editions_blocks`. Each carries an `edition_id` whose cover lives at
+  /// Editions of work [id], grouped by block; covers live at
   /// `/images/editions/big|small/{edition_id}`. Empty on 404 / no editions.
   Future<List<FantlabEditionBlock>> getEditions(String id) async {
     try {

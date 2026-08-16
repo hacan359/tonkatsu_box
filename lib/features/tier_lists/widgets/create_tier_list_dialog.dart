@@ -1,4 +1,3 @@
-
 import 'package:core/models/collection.dart';
 import 'package:core/models/tier_list.dart';
 import 'package:flutter/material.dart';
@@ -11,20 +10,14 @@ import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/tier_lists_provider.dart';
 
-/// Диалог создания нового тир-листа.
-///
-/// Позволяет выбрать scope: все элементы или конкретная коллекция.
 class CreateTierListDialog extends ConsumerStatefulWidget {
-  /// Создаёт [CreateTierListDialog].
-  ///
-  /// [preselectedCollectionId] — если задан, радио-кнопка "From collection"
-  /// выбрана автоматически и dropdown скрыт.
+  /// A non-null [preselectedCollectionId] locks the scope to that collection
+  /// and hides the picker.
   const CreateTierListDialog({
     this.preselectedCollectionId,
     super.key,
   });
 
-  /// Предвыбранная коллекция (при создании из экрана коллекции).
   final int? preselectedCollectionId;
 
   @override

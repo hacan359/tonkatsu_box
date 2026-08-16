@@ -20,9 +20,8 @@ void main() {
       expect(isAnimationGenre('Мультфильм', ru), isTrue);
     });
 
-    // The local DAO capitalises stored names on read, while TMDB API
-    // returns them as-stored (lowercase for `ru-RU`). The filter must
-    // match across that case mismatch or every animation row gets dropped.
+    // The DAO capitalises names on read while TMDB returns them as stored, so
+    // a case-sensitive filter would drop every animation row.
     test('matches case-insensitively against the localized name', () {
       expect(isAnimationGenre('мультфильм', ru), isTrue);
       expect(isAnimationGenre('МУЛЬТФИЛЬМ', ru), isTrue);

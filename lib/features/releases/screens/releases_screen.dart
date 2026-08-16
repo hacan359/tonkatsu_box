@@ -23,12 +23,8 @@ enum _CalendarView { month, week, day }
 
 enum _ReleasesTab { calendar, all }
 
-/// Google-Calendar-style view of tracked shows' episodes.
-///
-/// Month uses `calendar_view`'s grid with custom cells; week and day are
-/// agenda lists (no hour grid, since episodes have no air time). The same
-/// poster-and-text event styling is shared across all three and the preview
-/// sheet.
+/// Month uses `calendar_view`'s grid; week and day are agenda lists, because
+/// episodes carry no air time to place on an hour grid.
 class ReleasesScreen extends ConsumerStatefulWidget {
   const ReleasesScreen({super.key});
 

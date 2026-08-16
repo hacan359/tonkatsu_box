@@ -4,11 +4,8 @@ import 'package:logging/logging.dart';
 import 'tmdb_http_client.dart';
 import 'tmdb_types.dart';
 
-/// Genre catalogs (`/genre/{movie,tv}/list`) plus the per-language cache that
-/// search / discover / multi-search use to expand `genre_ids` into the
-/// `genres` shape the models expect. The two maps are language-dependent, so
-/// the facade calls [clearCache] whenever the language changes or the key is
-/// cleared.
+/// Genre catalogs plus the cache that expands `genre_ids` into the `genres`
+/// shape models expect. Language-dependent — the facade clears it on change.
 class TmdbGenresApi {
   TmdbGenresApi(this._client);
 

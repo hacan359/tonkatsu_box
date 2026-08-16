@@ -21,12 +21,8 @@ class IgdbListParseException implements Exception {
   String toString() => 'IgdbListParseException: $message';
 }
 
-/// Parses IGDB's list export CSV into [IgdbListEntry] rows.
-///
-/// The file is UTF-8, comma-separated, RFC 4180 quoting (fields with commas or
-/// newlines wrapped in double quotes, `""` escaping a literal quote). Some
-/// fields hold JSON arrays (`"[""PC"", ""Switch""]"`), so quote-awareness is
-/// mandatory. Columns are addressed by header name, not position.
+/// RFC 4180: some fields hold JSON arrays (`"[""PC"", ""Switch""]"`), so
+/// quote-awareness is mandatory; columns are addressed by header name.
 class IgdbListCsvParser {
   const IgdbListCsvParser();
 

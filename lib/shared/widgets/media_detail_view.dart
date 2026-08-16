@@ -318,15 +318,13 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    // The backing stretches edge to edge: the only outer inset is the
-    // backing's own padding, so narrow screens don't lose width to a
-    // doubled-up margin.
+    // The backing's own padding is the only outer inset, so narrow screens
+    // don't lose width to a doubled-up margin.
     final Widget content = ListView(
       padding: EdgeInsets.zero,
       children: <Widget>[
-        // Material wraps the fill so descendant ListTile/ExpansionTile widgets
-        // paint their ink on a Material ancestor — Flutter 3.44 asserts when
-        // a coloured DecoratedBox sits between them.
+        // Descendant ListTile/ExpansionTile need a Material ancestor for ink —
+        // Flutter 3.44 asserts when a coloured DecoratedBox sits between.
         Material(
           color: AppColors.surface.withAlpha(80),
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -359,11 +357,6 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     );
   }
 
-  /// Regrouped card: the header keeps only short identity facts beside the
-  /// cover; description and tags go full width below; user-set progress
-  /// (dates, time, rewatches) is a symmetric tile row; system metadata
-  /// (added / last activity / auto completion time) sits behind the info
-  /// button next to the tiles.
   Widget _buildBody(BuildContext context) {
     final bool hasDescription =
         widget.description != null && widget.description!.isNotEmpty;

@@ -24,19 +24,15 @@ final Provider<DbSyncService> dbSyncServiceProvider =
 
 /// Device identity stamped into a snapshot manifest.
 class SyncDeviceMeta {
-  /// Creates a [SyncDeviceMeta].
   const SyncDeviceMeta({required this.deviceName, required this.appVersion});
 
-  /// Human-readable device name.
   final String deviceName;
 
-  /// App version string.
   final String appVersion;
 }
 
 /// Pre-flight verdict on a snapshot found in the sync folder.
 class SyncSnapshotInfo {
-  /// Creates a [SyncSnapshotInfo].
   const SyncSnapshotInfo({
     required this.exists,
     this.manifest,
@@ -45,7 +41,6 @@ class SyncSnapshotInfo {
     this.tooNew = false,
   });
 
-  /// Whether a snapshot file is present in the folder.
   final bool exists;
 
   /// Manifest contents; `null` when missing or malformed.
@@ -61,32 +56,22 @@ class SyncSnapshotInfo {
   /// Snapshot schema is newer than this build can open.
   final bool tooNew;
 
-  /// Snapshot can be safely received.
   bool get receivable => exists && integrityOk && !tooNew;
 }
 
-/// Transport-agnostic snapshot engine for whole-database transfer.
-///
-/// No merge by design: a consistent snapshot of the current profile's
-/// database is written into a directory ("send"), validated
-/// ("inspect") and swapped in place of the live database ("receive").
-/// A transport (LAN sync) moves the snapshot directory contents
-/// between devices.
+/// Transport-agnostic whole-database snapshot engine. No merge by design:
+/// "send" writes a snapshot, "inspect" validates, "receive" swaps it in.
 class DbSyncService {
-  /// Creates a [DbSyncService].
   DbSyncService({
     required DatabaseService database,
     Future<SyncDeviceMeta> Function()? metaProvider,
   })  : _database = database,
         _metaProvider = metaProvider;
 
-  /// Snapshot file name inside the sync folder.
   static const String snapshotFileName = 'xerabora-sync.db';
 
-  /// Manifest file name inside the sync folder.
   static const String manifestFileName = 'xerabora-sync.json';
 
-  /// SharedPreferences keys for the last exchange timestamps.
   static const String prefsLastSentKey = 'sync_last_sent_at';
   static const String prefsLastReceivedKey = 'sync_last_received_at';
 
@@ -95,9 +80,8 @@ class DbSyncService {
   final DatabaseService _database;
   final Future<SyncDeviceMeta> Function()? _metaProvider;
 
-  /// Modification time of the backup next to the active database, or
-  /// `null` when there is none. Resolves the path without opening the
-  /// database so it is safe on any screen.
+  /// Backup mtime next to the active database, or `null` when none. Resolves
+  /// the path without opening the database, so it is safe on any screen.
   Future<DateTime?> backupTimestamp() async {
     final StorageRootResolution root = await StorageRoot.resolve();
     final File bak = File('${StorageRoot.activeDbPath(root.path)}.bak');
@@ -105,12 +89,8 @@ class DbSyncService {
     return bak.lastModifiedSync();
   }
 
-  /// Swaps the live database with its `.bak` neighbour.
-  ///
-  /// The replaced database becomes the new backup, so restoring twice
-  /// undoes itself. The caller must restart the app afterwards.
-  ///
-  /// Throws [StateError] when no backup exists or it fails validation.
+  /// Swaps the live database with its `.bak`: the replaced one becomes the
+  /// new backup, so restoring twice undoes itself. Restart afterwards.
   Future<void> restoreBackup() async {
     final Database db = await _database.database;
     final String dbPath = db.path;
@@ -152,9 +132,8 @@ class DbSyncService {
 
   bool? _vacuumIntoSupported;
 
-  /// `VACUUM INTO` needs SQLite 3.27+; probing the version up front
-  /// avoids tripping a native `near "INTO": syntax error` log line on
-  /// older firmwares.
+  /// `VACUUM INTO` needs SQLite 3.27+; probing up front avoids tripping a
+  /// native `near "INTO": syntax error` log line on older firmwares.
   Future<bool> _supportsVacuumInto(Database db) async {
     final bool? cached = _vacuumIntoSupported;
     if (cached != null) return cached;
@@ -184,13 +163,8 @@ class DbSyncService {
   /// Timestamp of the last successful receive, or `null`.
   Future<DateTime?> lastReceivedAt() => _readTimestamp(prefsLastReceivedKey);
 
-  /// Writes a consistent snapshot of the live database plus a manifest
-  /// into [folder] and returns the manifest.
-  ///
-  /// `VACUUM INTO` snapshots an open database atomically, so no WAL
-  /// handling is needed; the temp-then-rename dance keeps a concurrently
-  /// syncing cloud client from ever seeing a half-written snapshot under
-  /// the final name.
+  /// `VACUUM INTO` snapshots an open database atomically (no WAL handling);
+  /// temp-then-rename keeps cloud clients from seeing a half-written file.
   Future<SyncManifest> sendSnapshot(String folder, {String? profileName}) async {
     final Database db = await _database.database;
 
@@ -205,11 +179,8 @@ class DbSyncService {
       final String escaped = tmpPath.replaceAll("'", "''");
       await db.execute("VACUUM INTO '$escaped'");
     } else {
-      // Old firmwares ship SQLite < 3.27 without VACUUM INTO (seen on
-      // EMUI 10). Checkpoint empties the WAL into the main file, after
-      // which a plain copy is consistent as long as nothing writes
-      // concurrently — and the user is sitting on the sync screen. The
-      // receiving side's quick_check guards the remaining risk.
+      // SQLite < 3.27 (seen on EMUI 10): checkpoint then plain copy is
+      // consistent while nothing writes; the receiver's quick_check guards it.
       await _database.checkpointWal();
       await File(db.path).copy(tmpPath);
     }
@@ -289,13 +260,8 @@ class DbSyncService {
     );
   }
 
-  /// Replaces the live database with the snapshot from [folder].
-  ///
-  /// The previous database stays next to the new one as a `.bak` file for
-  /// a manual rollback. The caller must restart the app afterwards — an
-  /// older snapshot schema is migrated by the normal chain on reopen.
-  ///
-  /// Throws [StateError] when the snapshot fails [inspectSnapshot] checks.
+  /// Replaces the live database with the snapshot; the old one stays as
+  /// `.bak` for rollback. Restart afterwards — an older schema migrates then.
   Future<void> receiveSnapshot(String folder) async {
     final SyncSnapshotInfo info = await inspectSnapshot(folder);
     if (!info.receivable) {
@@ -332,10 +298,8 @@ class DbSyncService {
     ImageType.canvasImage.folder,
   ];
 
-  /// Builds a ZIP of the user-supplied images that cannot be re-downloaded:
-  /// collection hero banners plus the custom-cover and canvas-image caches of
-  /// the current profile. The re-downloadable cover cache is left out — the
-  /// receiving device re-fetches it from the source URLs.
+  /// ZIP of user-supplied images that cannot be re-downloaded: hero banners
+  /// plus custom-cover and canvas caches. Re-downloadable covers are left out.
   Future<List<int>> buildUserImagesArchive() async {
     final StorageRootResolution root = await StorageRoot.resolve();
     final String profileBase = p.dirname(StorageRoot.activeDbPath(root.path));
@@ -356,10 +320,8 @@ class DbSyncService {
     return ZipEncoder().encode(archive);
   }
 
-  /// Extracts an archive from [buildUserImagesArchive] over the current data
-  /// root: `collections/` at the root, `image_cache/<sub>` under the current
-  /// profile. Existing files are overwritten; unrelated local files are left
-  /// in place (merge, not mirror).
+  /// Extracts a [buildUserImagesArchive] ZIP over the current data root,
+  /// overwriting matches but leaving unrelated files (merge, not mirror).
   Future<void> applyUserImagesArchive(List<int> bytes) async {
     final StorageRootResolution root = await StorageRoot.resolve();
     final String profileBase = p.dirname(StorageRoot.activeDbPath(root.path));

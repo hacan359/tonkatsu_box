@@ -1,5 +1,3 @@
-// Welcome Wizard — first-run onboarding.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,11 +20,8 @@ import '../widgets/welcome_step_sources.dart';
 /// SharedPreferences flag marking the wizard as completed.
 const String kWelcomeCompletedKey = 'welcome_completed';
 
-/// Welcome Wizard — a 5-step onboarding flow.
-///
-/// Shown automatically on first launch instead of [AppShell]. Can be reopened
-/// from Settings (with [fromSettings] = true). Steps: Welcome → Language →
-/// Name → Sources (with inline API keys) → interactive menu Tour.
+/// Shown on first launch in place of [AppShell]; [fromSettings] marks a replay
+/// so the wizard returns to Settings instead of the shell.
 class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({this.fromSettings = false, super.key});
 

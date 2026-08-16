@@ -6,9 +6,8 @@ import '../utils/stable_id.dart';
 import 'audio_kind.dart';
 import 'data_source.dart';
 
-/// An audio work: a MusicBrainz release-group ("the album as a work") or a
-/// Podcast Index feed, discriminated by [kind]. Albums hash their MBID into
-/// [id] (`fnv1a64`); podcast feed ids are small ints and are stored as-is.
+/// A MusicBrainz release-group or a Podcast Index feed, told apart by [kind].
+/// Albums hash their MBID into [id]; feed ids are small ints, stored as-is.
 class AudioItem {
   const AudioItem({
     required this.id,

@@ -544,9 +544,8 @@ class _StatusStripeBanner extends StatelessWidget {
       fontSize: 10,
     );
 
-    // A left border (not a stretched sibling) gives the full-height stripe
-    // without an IntrinsicHeight — IntrinsicHeight fights the AnimatedSize
-    // title and overflows while it animates.
+    // A left border, not a stretched sibling: IntrinsicHeight would fight the
+    // AnimatedSize title and overflow while it animates.
     return AnimatedContainer(
       duration: AppDurations.fast,
       decoration: BoxDecoration(

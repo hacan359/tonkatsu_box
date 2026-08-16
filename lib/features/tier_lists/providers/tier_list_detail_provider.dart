@@ -11,17 +11,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 
-/// Identity of a tier-list item for de-duplication. A global tier list
-/// aggregates every collection, so the same title arrives as several rows (one
-/// per collection it lives in). Mirrors the `collection_items` unique key
-/// (media type + external id + platform).
+/// Mirrors the `collection_items` unique key, so a title that a global list
+/// pulls from several collections collapses to one identity.
 String _tierItemContentKey(CollectionItem item) =>
     '${item.mediaType.value}:${item.externalId}:${item.platformId ?? -1}';
 
-/// Items not placed in any tier. When [dedupe] (global tier lists, which pull
-/// the same title from every collection it lives in) the pool collapses those
-/// duplicates to one card per title and hides a title entirely once any of its
-/// rows is placed. Scoped lists can't hold such duplicates, so they skip it.
+/// [dedupe] collapses a title's per-collection rows to one card and hides it
+/// once any row is placed; scoped lists cannot hold duplicates, so they skip it.
 List<CollectionItem> _computeUnrankedItems(
   List<CollectionItem> items,
   Set<int> placedItemIds, {
@@ -49,9 +45,8 @@ List<CollectionItem> _computeUnrankedItems(
   return result;
 }
 
-/// Derived collections (entriesByTier, itemsById, unrankedItems,
-/// placedItemIds) are precomputed once to avoid O(N) recomputation per
-/// widget build on large tier lists.
+/// The derived collections are precomputed once — recomputing them per widget
+/// build is O(N) on a large tier list.
 class TierListDetailState {
   factory TierListDetailState({
     required TierList tierList,

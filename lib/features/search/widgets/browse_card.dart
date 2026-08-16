@@ -19,9 +19,8 @@ import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/providers/collections_provider.dart';
 
-/// Sets of external IDs already in the user's collections. Multi-source types
-/// are keyed by `(source, id)` — providers hand out colliding numeric ids, so
-/// an id alone would badge the wrong card.
+/// Multi-source types are keyed by `(source, id)` — providers hand out
+/// colliding numeric ids, so an id alone would badge the wrong card.
 typedef CollectedIds = ({
   Set<(DataSource, int)> movieKeys,
   Set<(DataSource, int)> tvKeys,

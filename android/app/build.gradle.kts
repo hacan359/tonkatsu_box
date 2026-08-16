@@ -7,8 +7,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Загрузка ключей подписи из key.properties (локально)
-// или из переменных окружения (CI).
+// Signing keys come from key.properties locally, from env vars on CI.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -39,8 +38,7 @@ android {
 
     signingConfigs {
         create("release") {
-            // CI: переменные окружения
-            // Local: key.properties
+            // Env vars on CI, key.properties locally.
             storeFile = file(
                 System.getenv("KEYSTORE_PATH")
                     ?: keystoreProperties.getProperty("storeFile", "")

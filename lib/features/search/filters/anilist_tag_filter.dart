@@ -7,11 +7,8 @@ import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 import '../widgets/anilist_tag_picker.dart';
 
-/// Multi-select AniList tag filter (~600 entries, served from a SQLite-backed
-/// catalog cache; refreshed weekly).
-///
-/// [forAnime] is used purely for cache-key separation in the filter bar so
-/// anime / manga can keep independent selections.
+/// ~600 entries from the SQLite catalog cache, refreshed weekly. [forAnime]
+/// only splits the cache key so anime and manga keep separate selections.
 class AniListTagFilter extends SearchFilter {
   AniListTagFilter({this.forAnime = false});
 

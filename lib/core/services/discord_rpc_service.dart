@@ -22,10 +22,8 @@ final Provider<DiscordRpcService> discordRpcServiceProvider =
   return service;
 });
 
-/// Shows the current collection item in the Discord status.
-///
-/// Talks to the local Discord client over an IPC pipe, so it works on
-/// desktop only (Windows/Linux/macOS).
+/// Shows the current collection item in the Discord status via the local
+/// client's IPC pipe — desktop only.
 class DiscordRpcService {
   static final Logger _log = Logger('DiscordRpcService');
 
@@ -34,7 +32,6 @@ class DiscordRpcService {
   bool _enabled = false;
   String? _lastPresenceKey;
 
-  // RA sync polling
   bool _raSyncActive = false;
   Timer? _raPollTimer;
   RaApi? _raApi;
@@ -334,16 +331,14 @@ class DiscordRpcService {
     return progress;
   }
 
-  /// The item's cover URL when Discord can fetch it directly — i.e. a remote
-  /// http(s) link. Custom items may store a `local://` file marker instead;
-  /// those return null so the caller falls back to the logo.
+  /// Cover URL only when Discord can fetch it (http/https); a `local://`
+  /// marker on custom items returns null so the caller falls back to the logo.
   static String? _remoteCoverUrl(CollectionItem item) {
     final String? url = item.coverUrl;
     if (url == null) return null;
     return url.startsWith('http') ? url : null;
   }
 
-  /// Tooltip for the RA icon.
   static String _buildRaTooltip(TrackerGameData raData) {
     if (raData.isMastered) return 'Mastered';
     if (raData.isBeaten) return 'Beaten';
@@ -367,7 +362,6 @@ class DiscordRpcService {
       };
 }
 
-/// Cached game info for RA polling.
 class _RaGameCache {
   const _RaGameCache({
     required this.gameId,

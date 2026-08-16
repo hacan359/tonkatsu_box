@@ -62,9 +62,8 @@ final AutoDisposeFutureProviderFamily<List<AudioItem>, String>
   }
 });
 
-/// Discover state of the audio tab (empty query): a "fresh releases" row from
-/// ListenBrainz plus a "trending podcasts" row from Podcast Index — neither
-/// costs a MusicBrainz request, and each hides itself when unavailable.
+/// Rows come from ListenBrainz and Podcast Index, so neither costs a
+/// MusicBrainz request; each hides itself when unavailable.
 class AudioDiscoverFeed extends ConsumerWidget {
   const AudioDiscoverFeed({required this.onItemTap, super.key});
 

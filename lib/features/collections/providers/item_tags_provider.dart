@@ -3,13 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 
-/// Item → global tag ids for the whole database, each list in the item's
-/// display order (manual positions first, global-order fallback for the
-/// rest — the DAO bakes that in).
-///
-/// The junction is small (one row per link), so keeping the full map in
-/// memory lets filters, cards and the table resolve an item's tags
-/// synchronously without per-item queries.
+/// Item → tag ids in display order (the DAO bakes it in). The junction is
+/// small, so the full in-memory map spares per-item queries.
 final AsyncNotifierProvider<ItemTagsNotifier, Map<int, List<int>>>
     itemTagsProvider =
     AsyncNotifierProvider<ItemTagsNotifier, Map<int, List<int>>>(
@@ -37,10 +32,8 @@ class ItemTagsNotifier extends AsyncNotifier<Map<int, List<int>>> {
     return dao.getAllItemTags();
   }
 
-  /// Replaces the item's tag set; surviving links keep their manual order.
-  ///
-  /// The item's list is re-read from the DAO: only it knows whether the item
-  /// has manual positions (new tags go last) or follows the global fallback.
+  /// Replaces the item's tag set; the list is re-read from the DAO — only it
+  /// knows whether the item has manual positions or the global fallback.
   Future<void> setItemTags(int itemId, Set<int> tagIds) async {
     final GlobalTagDao dao = ref.read(globalTagDaoProvider);
     await dao.setItemTags(itemId, tagIds);
@@ -53,9 +46,8 @@ class ItemTagsNotifier extends AsyncNotifier<Map<int, List<int>>> {
     state = AsyncData<Map<int, List<int>>>(next);
   }
 
-  /// Adds [tagIds] to every item in [itemIds], leaving their other tags
-  /// alone. Returns how many links were actually created — items that
-  /// already carried a tag are not counted.
+  /// Returns how many links were actually created — items already carrying
+  /// a tag are not counted.
   Future<int> addTagsToItems(Iterable<int> itemIds, Set<int> tagIds) async {
     final List<int> targets = itemIds.toList(growable: false);
     if (targets.isEmpty || tagIds.isEmpty) return 0;
@@ -77,10 +69,8 @@ class ItemTagsNotifier extends AsyncNotifier<Map<int, List<int>>> {
     return _syncItems(dao, targets);
   }
 
-  /// Re-reads the tag lists of [itemIds] in one query and patches the map in
-  /// a single state update. Reading back rather than guessing keeps the
-  /// in-memory order identical to the DAO's, which mixes manual positions
-  /// with the global-order fallback.
+  /// Reads back rather than guessing so the in-memory order stays identical
+  /// to the DAO's, which mixes manual positions with the global fallback.
   Future<int> _syncItems(GlobalTagDao dao, List<int> itemIds) async {
     final Map<int, List<int>> fresh = await dao.getTagIdsForItems(itemIds);
     final Map<int, List<int>> next = _copy();

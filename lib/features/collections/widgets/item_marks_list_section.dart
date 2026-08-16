@@ -1,6 +1,3 @@
-// Branch B marks UI: an "add mark" form plus a list of existing marks, for
-// media that has no ready-made unit list (anime, manga, custom, books…).
-
 import 'package:core/models/item_mark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,10 +9,9 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
 
-/// Lists existing marks for an item and offers an "add mark" form. Does not
-/// synthesise empty unit rows — only marks the user actually created are shown.
+/// For media with no ready-made unit list (anime, manga, custom, books). Empty
+/// unit rows are never synthesised — only marks the user created are shown.
 class ItemMarksListSection extends ConsumerWidget {
-  /// Creates an [ItemMarksListSection].
   const ItemMarksListSection({
     required this.itemId,
     required this.accentColor,

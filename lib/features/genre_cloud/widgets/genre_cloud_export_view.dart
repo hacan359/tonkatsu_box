@@ -1,5 +1,3 @@
-// Offscreen fixed-size preference cloud rendered into a PNG.
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_assets.dart';
@@ -19,7 +17,6 @@ const double kGenreCloudExportHeight = 800;
 /// The widget captured by the PNG exporter: a titled, solid-background poster
 /// of the cloud with the app credit footer.
 class GenreCloudExportView extends StatelessWidget {
-  /// Creates a [GenreCloudExportView].
   const GenreCloudExportView({
     required this.repaintKey,
     required this.title,

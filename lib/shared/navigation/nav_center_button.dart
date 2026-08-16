@@ -1,5 +1,3 @@
-// Centre navigation button: the app logo. Sits inline in the nav row/rail.
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -9,7 +7,6 @@ import '../theme/app_assets.dart';
 /// The app logo as a nav item. Fills the `width × height` cell it is given
 /// (matching [NavIconButton]) and is focusable for gamepad via [InkResponse].
 class NavCenterButton extends StatelessWidget {
-  /// Creates a [NavCenterButton].
   const NavCenterButton({
     required this.onTap,
     required this.tooltip,
@@ -18,7 +15,6 @@ class NavCenterButton extends StatelessWidget {
     super.key,
   });
 
-  /// Tap callback.
   final VoidCallback onTap;
 
   /// Tooltip / accessibility label.

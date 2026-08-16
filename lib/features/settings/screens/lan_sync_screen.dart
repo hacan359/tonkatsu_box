@@ -17,13 +17,9 @@ import '../../../shared/utils/storage_access.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 
-/// Direct device-to-device transfer screen.
-///
-/// While open, this device is discoverable on the local network and can
-/// serve its data; tapping a discovered peer pulls that peer's data after
-/// confirmations on both sides. The server stops when the screen closes.
+/// While open, this device is discoverable and serves its data; the server
+/// stops when the screen closes.
 class LanSyncScreen extends ConsumerStatefulWidget {
-  /// Creates a [LanSyncScreen].
   const LanSyncScreen({super.key});
 
   @override
@@ -88,9 +84,8 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
     );
   }
 
-  /// Receive confirmation with an optional "also transfer settings" toggle.
-  /// The toggle only appears when the peer is new enough to serve its config;
-  /// it is all-or-nothing (settings + API keys together) and on by default.
+  /// The "also transfer settings" toggle appears only when the peer is new
+  /// enough to serve its config; it is all-or-nothing and on by default.
   Future<_ReceiveChoice?> _askReceiveOptions(SyncManifest manifest) async {
     final S l10n = S.of(context);
     final bool canTransferSettings = manifest.supportsSettingsTransfer;
@@ -272,10 +267,8 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
 
         await dbSync.receiveSnapshot(tmpDir.path);
 
-        // Settings + API keys ride along when opted in. All-or-nothing and
-        // best-effort: written straight to prefs and picked up on the
-        // restart that the received database requires anyway, so a failure
-        // here is logged, not surfaced as a hard error.
+        // Best-effort: prefs are picked up on the restart the received
+        // database needs anyway, so a failure here is logged, not surfaced.
         if (choice.includeSettings) {
           _updateProgress(l10n.lanSyncReceivingSettings);
           try {

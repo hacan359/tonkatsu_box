@@ -9,13 +9,8 @@ class RaToIgdbMapper {
 
   final IgdbApi _igdbApi;
 
-  /// RA ConsoleID -> list of IGDB Platform IDs.
-  ///
-  /// First element is the primary IGDB ID (used when importing from RA);
-  /// the rest are aliases (regional variants in IGDB).
-  ///
-  /// RA ConsoleID source: rcheevos rc_consoles.h.
-  /// IGDB Platform ID source: the platforms table in the DB.
+  /// RA ConsoleID (rcheevos rc_consoles.h) -> IGDB Platform IDs; the first
+  /// is the primary import target, the rest are regional aliases.
   static const Map<int, List<int>> consolePlatformMap = <int, List<int>>{
     1: <int>[29], // Genesis/Mega Drive
     2: <int>[4], // Nintendo 64
@@ -80,9 +75,7 @@ class RaToIgdbMapper {
     return ids?.first;
   }
 
-  /// Reverse map: IGDB Platform ID -> list of RA Console IDs.
-  ///
-  /// Checks every IGDB ID (primary + aliases) of each RA console.
+  /// IGDB Platform ID -> RA Console IDs, matching aliases as well as primary.
   static List<int> igdbToRaConsoleIds(int igdbPlatformId) {
     return consolePlatformMap.entries
         .where(
@@ -116,8 +109,6 @@ class RaToIgdbMapper {
 
   static final RegExp _nonAlphaNum = RegExp('[^a-z0-9]');
 
-  /// Finds the best title match among [candidates].
-  ///
   /// Public static: used by both single-item search and batch multiquery.
   static Game? bestMatch(String title, List<Game> candidates) {
     if (candidates.isEmpty) return null;
@@ -128,7 +119,6 @@ class RaToIgdbMapper {
       if (normalize(game.name) == normalized) return game;
     }
 
-    // Starts with.
     for (final Game game in candidates) {
       final String gameName = normalize(game.name);
       if (gameName.startsWith(normalized) ||
@@ -137,7 +127,6 @@ class RaToIgdbMapper {
       }
     }
 
-    // Fallback: first result.
     return candidates.first;
   }
 

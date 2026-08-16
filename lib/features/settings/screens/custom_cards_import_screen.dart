@@ -1,5 +1,3 @@
-// Screen for importing custom cards from a user-supplied JSON/CSV file.
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';

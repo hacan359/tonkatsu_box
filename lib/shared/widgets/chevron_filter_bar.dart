@@ -9,10 +9,8 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../constants/item_status_ui.dart';
 
-/// Filter-bar segment: a V-notch on the left (except the first) and a
-/// V-point on the right (except the last). [compact] shows a tooltip'd icon
-/// instead of text; [subtitle] renders two lines (subtitle above the label)
-/// and is ignored when `compact: true`.
+/// V-notch on the left (except the first), V-point on the right (except the
+/// last). [subtitle] renders two lines and is ignored when `compact: true`.
 class ChevronSegment extends StatelessWidget {
   const ChevronSegment({
     required this.label,
@@ -118,10 +116,8 @@ class ChevronSegment extends StatelessWidget {
   }
 }
 
-/// Segment content shared by [ChevronSegment] and [DropdownChevronSegment]:
-/// icon with a tooltip when compact, two-line text when [subtitle] is set,
-/// a single-line label otherwise. On narrow screens ([isCompactScreen])
-/// fonts shrink to ~83%, matching MediaPosterCard / RatingBadge.
+/// Shared by [ChevronSegment] and [DropdownChevronSegment]. On narrow screens
+/// fonts shrink to ~83% to match MediaPosterCard / RatingBadge.
 Widget buildChevronContent({
   required BuildContext context,
   required String label,
@@ -241,9 +237,8 @@ class ChevronClipper extends CustomClipper<Path> {
   }
 }
 
-/// Status-picker chevron segment: looks like [ChevronSegment] but opens a
-/// [PopupMenuButton] with the status list. Optional [subtitle] renders two
-/// lines and is ignored in `compact` mode.
+/// Looks like [ChevronSegment] but opens a [PopupMenuButton]; [subtitle] is
+/// ignored in compact mode.
 class StatusDropdownSegment extends StatelessWidget {
   const StatusDropdownSegment({
     required this.status,
@@ -389,9 +384,8 @@ class StatusDropdownSegment extends StatelessWidget {
   }
 }
 
-/// Chevron segment that opens a dropdown menu built by [menuBuilder];
-/// long menus get scroll-arrow hints (see [showArrowedMenu]). Supports the
-/// optional two-line [subtitle] and a drop-down indicator next to the label.
+/// Opens a dropdown built by [menuBuilder]; long menus get the scroll-arrow
+/// hints of [showArrowedMenu].
 class DropdownChevronSegment<T extends Object> extends StatelessWidget {
   const DropdownChevronSegment({
     required this.label,
@@ -495,10 +489,8 @@ class DropdownChevronSegment<T extends Object> extends StatelessWidget {
   }
 }
 
-/// Shows [entries] in a popup anchored below [context]'s widget, like
-/// [PopupMenuButton], but with carousel-style up/down arrow hints that are
-/// visible from the moment the menu opens when part of the list is cut off
-/// (the stock popup scrolls silently until the pointer hovers it).
+/// Like [PopupMenuButton], but the arrow hints appear the moment a cut-off
+/// menu opens — the stock popup scrolls silently until hovered.
 Future<T?> showArrowedMenu<T extends Object>({
   required BuildContext context,
   required List<PopupMenuEntry<T>> entries,
@@ -573,9 +565,8 @@ class _ArrowedMenuRoute<T extends Object> extends PopupRoute<T> {
   }
 }
 
-/// Positions the menu under the button and keeps it inside the screen with
-/// an 8px margin; height is capped at 75% of the available space so long
-/// menus scroll instead of overflowing.
+/// Keeps the menu on screen with an 8px margin and caps its height at 75% of
+/// the available space, so long menus scroll instead of overflowing.
 class _ArrowedMenuLayout extends SingleChildLayoutDelegate {
   const _ArrowedMenuLayout({required this.buttonRect});
 

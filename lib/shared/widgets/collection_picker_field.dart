@@ -8,13 +8,8 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'collection_picker_dialog.dart';
 
-/// Form-field wrapper around [showCollectionPickerDialog].
-///
-/// Renders a tap-target styled like the project's text fields (filled,
-/// rounded, brand-bordered) showing the picked collection's name. Opening
-/// the field shows the shared collection picker — the same dialog used by
-/// "Move to collection" / "Add to collection" actions, so the visual
-/// language stays in one place.
+/// Opens the shared collection picker — the same dialog as "Move to" and
+/// "Add to collection", so the visual language stays in one place.
 class CollectionPickerField extends ConsumerWidget {
   const CollectionPickerField({
     required this.value,
@@ -31,9 +26,8 @@ class CollectionPickerField extends ConsumerWidget {
     super.key,
   });
 
-  /// Selected collection id. `null` either means nothing is picked or — when
-  /// [nullLabel] is set — that the "any/all" option is currently chosen; the
-  /// field disambiguates with [_summaryForNull].
+  /// `null` is either nothing picked or, with [nullLabel] set, the "any/all"
+  /// option; [_summaryForNull] tells them apart.
   final int? value;
 
   /// Receives the new collection id. Fires with `null` only when [nullLabel]

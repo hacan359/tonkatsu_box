@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -6,10 +5,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/database_content.dart';
 
-/// Экран управления базой данных.
-///
-/// Тонкая обёртка вокруг [DatabaseContent] с Scaffold/AppBar.
-/// Используется при push-навигации на мобильных устройствах.
 class DatabaseScreen extends StatelessWidget {
   const DatabaseScreen({super.key});
 

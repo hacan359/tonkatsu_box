@@ -801,9 +801,8 @@ void main() {
 
         int loadMoreCalls = 0;
 
-        // Narrowing to one provider swaps the sections view for this grid with
-        // the page already in state — no state change follows, so the initial
-        // build must run the fill check itself.
+        // Narrowing to one provider brings the page in already loaded, so no
+        // state change follows and the initial build must run the fill check.
         await tester.pumpWidget(
           ProviderScope(
             overrides: <Override>[

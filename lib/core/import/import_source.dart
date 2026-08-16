@@ -11,12 +11,8 @@ abstract class ImportOptions {
   final int? collectionId;
 }
 
-/// A pluggable import source (Kinorium, Trakt, MAL, …).
-///
-/// One port, many adapters: each source parses or fetches its own data,
-/// resolves items, and returns a [UniversalImportResult]. The shared write-side
-/// ([ImportWriter]) and matchers ([TmdbMatcher]) are injected into each adapter,
-/// not inherited — the port only fixes the input/output shape.
+/// One port, many adapters: the shared write-side and matchers are injected
+/// into each adapter, not inherited — the port only fixes the I/O shape.
 abstract interface class ImportSource {
   /// Human-readable source name, also used as the wishlist import tag.
   String get displayName;

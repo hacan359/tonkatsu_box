@@ -26,10 +26,8 @@ final Provider<TmdbApi> tmdbApiProvider = Provider<TmdbApi>((Ref ref) {
   return api;
 });
 
-/// TMDB v3 facade. See `tmdb/README.md` for the layer breakdown:
-/// `tmdb_http_client` (transport + key/language state), `tmdb_genres_api`
-/// (catalog + per-language cache), `tmdb_movies_api`, `tmdb_tv_api`,
-/// `tmdb_reviews_api`, `tmdb_find_api`, `tmdb_types` (DTOs).
+/// TMDB v3 facade over the sub-APIs in `tmdb/`; see `tmdb/README.md`
+/// for the layer breakdown.
 class TmdbApi {
   TmdbApi({Dio? dio, String language = 'ru-RU'})
       : _client = TmdbHttpClient(dio: dio, language: language) {

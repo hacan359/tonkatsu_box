@@ -65,9 +65,8 @@ class RaUserApi {
     return allGames;
   }
 
-  /// Returns `gameId → most-recent awarded-at`. Skips site awards (only
-  /// beaten/mastered counted). On failure returns an empty map — awards are
-  /// nice-to-have, not a blocker.
+  /// `gameId → most-recent awarded-at`, beaten/mastered only. On failure
+  /// returns an empty map — awards are nice-to-have, not a blocker.
   Future<Map<int, DateTime>> getUserAwardDates(String targetUser) async {
     _client.ensureCredentials();
     try {

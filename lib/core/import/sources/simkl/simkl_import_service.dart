@@ -32,7 +32,6 @@ import '../anilist/anilist_import_service.dart' show ImportMode;
 /// "on hold", so they land as [ItemStatus.planned] and stay findable by tag.
 const String kSimklOnHoldTag = 'on-hold';
 
-/// Provider for [SimklImportService].
 final Provider<SimklImportService> simklImportServiceProvider =
     Provider<SimklImportService>((Ref ref) {
   return SimklImportService(

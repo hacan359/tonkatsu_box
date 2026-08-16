@@ -1,5 +1,3 @@
-// Imports books from a Hardcover user library via GraphQL.
-
 import 'package:core/models/book.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -22,7 +20,6 @@ import '../../import_source.dart';
 import '../../import_writer.dart';
 import '../anilist/anilist_import_service.dart' show ImportMode;
 
-/// Provider for [HardcoverImportService].
 final Provider<HardcoverImportService> hardcoverImportServiceProvider =
     Provider<HardcoverImportService>((Ref ref) {
   return HardcoverImportService(
@@ -50,14 +47,8 @@ class HardcoverImportOptions extends ImportOptions {
   final String newCollectionName;
 }
 
-/// Hardcover import on the shared import layer.
-///
-/// Fetches a user's library by username (public part for other users, the
-/// complete library for the token owner) and writes it through [ImportWriter]
-/// in one batch. Rows carry Hardcover book ids, so there is no title search
-/// and no wishlist fallback. Books flagged `owned` get the global "Owned" tag.
-/// Hard errors (missing token, unknown user, API failure) are thrown so the
-/// UI can localize them.
+/// Rows carry Hardcover book ids, so there is no title search and no
+/// wishlist fallback; hard errors are thrown so the UI can localize them.
 class HardcoverImportService implements ImportSource {
   HardcoverImportService({
     required HardcoverApi hardcoverApi,
@@ -91,9 +82,8 @@ class HardcoverImportService implements ImportSource {
   @override
   String get displayName => DataSource.hardcover.label;
 
-  /// Throws [HardcoverAuthException] / [HardcoverUserNotFoundException] /
-  /// [HardcoverApiException] when the Hardcover API call fails and
-  /// [FormatException] when the library is empty.
+  /// Throws Hardcover API exceptions on fetch failure and [FormatException]
+  /// when the library is empty.
   @override
   Future<UniversalImportResult> import(
     covariant HardcoverImportOptions options, {
@@ -237,8 +227,7 @@ class HardcoverImportService implements ImportSource {
   }
 
   /// Overwrite-mode re-sync: bump status without downgrading, keep earliest
-  /// start / latest completion, refresh rating, comment, rereads and the
-  /// Hardcover add date.
+  /// start / latest completion; refresh rating, comment, rereads, add date.
   Map<String, dynamic> _changedFields(
     HardcoverUserBookEntry entry,
     CollectionItem existing,
@@ -300,10 +289,8 @@ class HardcoverImportService implements ImportSource {
     return fields;
   }
 
-  /// Links the global "Owned" tag (created on demand) to the collection's
-  /// books whose external id is in [ownedExternalIds]. Existing tags are
-  /// preserved; a flag removed on Hardcover never removes the tag here (it
-  /// may have been set by hand).
+  /// Links the on-demand "Owned" tag to matched books. A flag removed on
+  /// Hardcover never removes the tag here — it may have been set by hand.
   Future<void> _applyOwnedTag(
     ImportWriteResult write,
     Set<int> ownedExternalIds,
@@ -352,8 +339,7 @@ class HardcoverImportService implements ImportSource {
     );
   }
 
-  /// Comment = source link + re-read count + review + private notes. The
-  /// review arrives as HTML with mention spans and is stripped to plain text;
+  /// The review arrives as HTML with mention spans and is stripped to text;
   /// private notes only exist for the token owner's own library.
   String _buildUserComment(HardcoverUserBookEntry entry) {
     final List<String> lines = <String>[];

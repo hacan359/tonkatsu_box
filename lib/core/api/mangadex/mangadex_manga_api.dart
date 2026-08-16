@@ -4,11 +4,8 @@ import 'package:dio/dio.dart';
 import 'mangadex_http_client.dart';
 import 'mangadex_types.dart';
 
-/// Manga search / detail on MangaDex (`/manga`).
-///
-/// MangaDex ids are UUIDs; [Manga.fromMangaDex] folds them into the numeric
-/// id contract (FNV-1a hash) and keeps the UUID in `externalUrl`, so
-/// [getByUuid] is the id-recovering entry point used by refresh.
+/// MangaDex ids are UUIDs; [Manga.fromMangaDex] hashes them into the numeric
+/// id contract and keeps the UUID in `externalUrl` for [getByUuid] refresh.
 class MangaDexMangaApi {
   MangaDexMangaApi(this._client);
 
@@ -19,10 +16,8 @@ class MangaDexMangaApi {
     'suggestive',
   ];
 
-  /// Repeated bracketed keys (`includes[]=cover_art&includes[]=author`) — the
-  /// PHP-array style MangaDex expects. The keys already carry `[]`, so
-  /// [ListFormat.multi] repeats them verbatim (multiCompatible would append a
-  /// second `[]`).
+  /// Keys already carry `[]` (the PHP-array style MangaDex expects), so
+  /// [ListFormat.multi] repeats them verbatim; multiCompatible adds a 2nd `[]`.
   static final Options _arrayOptions =
       Options(listFormat: ListFormat.multi);
 
@@ -32,13 +27,8 @@ class MangaDexMangaApi {
     'artist',
   ];
 
-  /// Search / browse manga. Chapter / volume counts need a separate
-  /// `/aggregate` call per title, so they stay null here and are filled by
-  /// [getByUuid] on demand.
-  ///
-  /// [order] is a `{field: 'asc'|'desc'}` map (e.g. `{'followedCount': 'desc'}`)
-  /// passed straight through as `order[field]=dir`. [includedTags] are tag
-  /// UUIDs combined with AND.
+  /// Chapter/volume counts need a separate `/aggregate` call per title, so
+  /// they stay null here; [getByUuid] fills them on demand.
   Future<(List<Manga>, bool hasMore, int totalPages)> browseManga({
     String? query,
     List<String>? statuses,
@@ -93,11 +83,8 @@ class MangaDexMangaApi {
     }
   }
 
-  /// Full manga by UUID. Chapter / volume counts come from the manga object's
-  /// `lastChapter` / `lastVolume` (the series totals, parsed in
-  /// [Manga.fromMangaDex]) — NOT from `/aggregate`, which only reflects the
-  /// English-translated chapters uploaded to MangaDex and badly undercounts
-  /// long series (Naruto → a handful instead of 700).
+  /// Counts come from `lastChapter`/`lastVolume`, NOT `/aggregate` — that
+  /// reflects only English uploads and badly undercounts long series.
   Future<Manga?> getByUuid(String uuid) async {
     try {
       final Response<dynamic> resp = await _client.get(
@@ -116,10 +103,8 @@ class MangaDexMangaApi {
     }
   }
 
-  /// Manga similar to [seedUuid] via `/manga/{id}/recommendation` (results
-  /// ordered by score, seed excluded). That endpoint returns only ids and
-  /// scores, so the top matches are hydrated in one batched `/manga?ids[]`
-  /// call (which carries covers) and returned back in score order.
+  /// The recommendation endpoint returns only ids and scores, so top matches
+  /// are hydrated in one batched `/manga?ids[]` call, kept in score order.
   Future<List<Manga>> getRecommendations(
     String seedUuid, {
     int limit = 20,
@@ -161,9 +146,8 @@ class MangaDexMangaApi {
     }
   }
 
-  /// Full manga records for [uuids] in one call, with covers. Content ratings
-  /// mirror the recommendation endpoint's default so nothing it surfaced is
-  /// dropped on hydration.
+  /// Content ratings mirror the recommendation endpoint's default so nothing
+  /// it surfaced is dropped on hydration.
   Future<List<Manga>> _hydrateByIds(List<String> uuids) async {
     final Response<dynamic> resp = await _client.get(
       'manga',

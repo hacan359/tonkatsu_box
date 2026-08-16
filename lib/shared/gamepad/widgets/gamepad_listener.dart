@@ -1,5 +1,3 @@
-// Wrapper widget that listens to gamepad events.
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -9,29 +7,9 @@ import '../../../core/services/gamepad_service.dart';
 import '../gamepad_action.dart';
 import '../gamepad_provider.dart';
 
-/// Wrapper widget that listens to gamepad events and fires callbacks.
-///
-/// Wraps a child and subscribes to [gamepadServiceProvider]. On each event it
-/// resolves the action type and invokes the matching callback.
-///
-/// While a TextField is focused:
-/// - D-pad Up/Down — leave the TextField and navigate to the neighbour widget
-/// - D-pad Left/Right — blocked (text cursor)
-/// - A — blocked (text input)
-/// - B — unfocus the TextField
-///
-/// Button mapping (cross-platform, normalized keys):
-/// - `button-0` (A) → confirm
-/// - `button-1` (B) → back (like Esc)
-/// - `button-4` (LB) → previousTab (main tabs)
-/// - `button-5` (RB) → nextTab (main tabs)
-/// - `button-7` (Start) → openMenu
-/// - `dpad-*` → navigate (content)
-/// - `stick-left-x`/`stick-left-y` (Left Stick) → scroll
-/// - `stick-right-x`/`stick-right-y` (Right Stick) → pan
-/// - `trigger` LT/RT → switch the top panel's filters/sub-tabs
+/// Resolves each [gamepadServiceProvider] event to a [GamepadAction] and fires
+/// the matching callback; a focused TextField swallows all but D-pad up/down.
 class GamepadListener extends ConsumerStatefulWidget {
-  /// Creates a [GamepadListener].
   const GamepadListener({
     required this.child,
     this.onConfirm,
@@ -47,7 +25,6 @@ class GamepadListener extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Child widget.
   final Widget child;
 
   /// A button — confirm.
@@ -149,11 +126,8 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
     }
   }
 
-  /// Maps digital buttons and the D-pad.
-  ///
-  /// Keys match Windows JOYINFOEX / gamepads_windows:
-  /// - `button-0` .. `button-7` — controller buttons
-  /// - `dpad-*` — synthetic keys from [GamepadService] for the POV hat
+  /// Keys match Windows JOYINFOEX; `dpad-*` are synthetic keys the service
+  /// derives from the POV hat.
   GamepadAction? _mapButton(String key) {
     switch (key) {
       // Xbox buttons
@@ -205,10 +179,8 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
     }
   }
 
-  /// Maps triggers to the top panel's filter/sub-tab switching.
-  ///
-  /// Value: negative = LT, positive = RT. Edge detection already happened in
-  /// the service, so exactly one event arrives per press.
+  /// Negative value is LT, positive RT. The service already did edge detection,
+  /// so exactly one event arrives per press.
   GamepadAction? _mapTrigger(double value) {
     if (value < 0) {
       return GamepadAction.previousSubTab; // LT

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -19,18 +18,13 @@ class NavDestination {
 
   final IconData selectedIcon;
 
-  /// Локализованное имя (для Tooltip).
   final String label;
 
-  /// Счётчик для Badge (0 — без бейджа).
+  /// 0 hides the badge.
   final int badgeCount;
 }
 
-/// Кнопка-иконка фиксированного размера.
-///
-/// Используется в [AppSidebar] (вертикальное меню) и [AppBottomBar]
-/// (горизонтальное меню). Размер `width × height` задаёт ячейку —
-/// иконка центрируется внутри.
+/// `width × height` is the cell, not the icon — the icon centers inside it.
 class NavIconButton extends StatelessWidget {
   const NavIconButton({
     required this.destination,
@@ -43,7 +37,6 @@ class NavIconButton extends StatelessWidget {
 
   final NavDestination destination;
 
-  /// Активен ли пункт (выбран).
   final bool active;
 
   final double width;

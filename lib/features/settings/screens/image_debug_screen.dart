@@ -1,4 +1,3 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -15,10 +14,6 @@ import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
 import '../../../shared/constants/media_type_ui.dart';
 
-/// Debug-экран для проверки URL изображений.
-///
-/// Показывает все элементы коллекций с URL постеров,
-/// статусом загрузки и превью изображений.
 class ImageDebugScreen extends ConsumerStatefulWidget {
   const ImageDebugScreen({super.key});
 
@@ -104,7 +99,6 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
           return const Center(child: Text('No items in collection'));
         }
 
-        // Фильтруем только фильмы и сериалы (TMDB)
         final List<CollectionItem> tmdbItems = items
             .where((CollectionItem item) =>
                 item.mediaType == MediaType.movie ||
@@ -151,7 +145,6 @@ class _ImageDebugTile extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Заголовок: имя + тип
             Row(
               children: <Widget>[
                 Icon(

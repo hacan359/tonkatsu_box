@@ -19,9 +19,8 @@ class PodcastIndexApiException implements Exception {
   String toString() => 'PodcastIndexApiException: $message';
 }
 
-/// Signs every request with the three Podcast Index auth headers. The
-/// signature embeds the current unix time and is only valid for ±3 minutes,
-/// so it must be computed per request, not per client.
+/// The signature embeds the current unix time and is valid for ±3 minutes, so
+/// it has to be computed per request, not per client.
 class PodcastIndexAuthInterceptor extends Interceptor {
   PodcastIndexAuthInterceptor({DateTime Function()? now})
       : _now = now ?? DateTime.now;
@@ -58,8 +57,7 @@ class PodcastIndexAuthInterceptor extends Interceptor {
   }
 }
 
-/// Podcast Index transport (https://api.podcastindex.org/api/1.0). Keyed:
-/// every request carries a sha1 signature; a wrong pair or a skewed system
+/// Every request carries a sha1 signature; a wrong pair and a skewed system
 /// clock both answer 401 with a plain-text body.
 class PodcastIndexHttpClient {
   PodcastIndexHttpClient({Dio? dio, DateTime Function()? now})

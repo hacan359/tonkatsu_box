@@ -5,11 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/mangabaka_api.dart';
 import '../../core/database/database_service.dart';
 
-/// Loads the MangaBaka tag catalog with a SQLite-backed cache.
-///
-/// Cache is sticky: a non-empty cache is always returned without hitting the
-/// API. A manual Refresh in the picker calls this with `forceRefresh: true`
-/// — the only path that bypasses the cache. Mirrors `AniListTagsRepository`.
+/// Sticky SQLite-backed tag cache (mirrors `AniListTagsRepository`): a
+/// non-empty cache always wins; only `forceRefresh: true` bypasses it.
 class MangaBakaTagsRepository {
   MangaBakaTagsRepository({
     required MangaBakaApi api,

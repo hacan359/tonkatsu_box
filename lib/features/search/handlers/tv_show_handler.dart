@@ -12,12 +12,8 @@ import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
 import 'media_action_handler.dart';
 
-/// TV show source handler (TMDB).
-///
-/// Handles both [MediaType.tvShow] and [MediaType.animation]
-/// (with `platformId = AnimationSource.tvShow`). On successful add the
-/// seasons/episodes cache is warmed so the detail screen opens without
-/// a network round-trip.
+/// Handles [MediaType.tvShow] and [MediaType.animation]. A successful add
+/// warms the seasons cache so the detail screen opens without a network trip.
 class TvShowHandler implements MediaActionHandler {
   TvShowHandler({
     required WidgetRef ref,

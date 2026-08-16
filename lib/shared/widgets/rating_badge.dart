@@ -1,14 +1,7 @@
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Цветной бейдж рейтинга.
-///
-/// Отображает числовой рейтинг с цветом фона:
-/// - >= 8.0 — зелёный ([AppColors.ratingHigh])
-/// - >= 6.0 — жёлтый ([AppColors.ratingMedium])
-/// - < 6.0 — красный ([AppColors.ratingLow])
 class RatingBadge extends StatelessWidget {
   const RatingBadge({
     required this.rating,
@@ -16,10 +9,9 @@ class RatingBadge extends StatelessWidget {
     super.key,
   });
 
-  /// Числовой рейтинг (0.0–10.0).
+  /// Expected on a 0..10 scale.
   final double rating;
 
-  /// Компактный режим (уменьшенные размеры для ландшафта).
   final bool compact;
 
   static Color colorForRating(double rating) {

@@ -1,17 +1,11 @@
-// Компактная строка навигации для pushed sub-screens.
-//
-// Заменяет AppBar на pushed экранах: стрелка назад + название.
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Компактная строка «← Название» для pushed sub-screens.
-///
-/// Высота 44px, нижний бордер. Используется вместо [AppBar]
-/// на экранах внутри tab Navigator.
+/// Stands in for [AppBar] inside a tab Navigator, where a real app bar would
+/// sit above the wrong route.
 class SubScreenTitleBar extends StatelessWidget {
   const SubScreenTitleBar({
     required this.title,
@@ -21,7 +15,7 @@ class SubScreenTitleBar extends StatelessWidget {
 
   final String title;
 
-  /// Callback кнопки назад. Если null — `Navigator.of(context).pop()`.
+  /// Defaults to `Navigator.of(context).pop()`.
   final VoidCallback? onBack;
 
   @override

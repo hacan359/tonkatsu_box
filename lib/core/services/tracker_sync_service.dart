@@ -71,9 +71,8 @@ class TrackerSyncResult {
   final String? error;
 }
 
-/// Three sync modes: quick sync updates `tracker_game_data` from RA
-/// completion progress, achievements load lazily per game into
-/// `tracker_achievements`, and the profile sync updates `tracker_profiles`.
+/// Quick sync updates `tracker_game_data` from RA progress, achievements
+/// load lazily per game, and the profile sync updates `tracker_profiles`.
 class TrackerSyncService {
   TrackerSyncService({
     required TrackerDao trackerDao,
@@ -133,9 +132,8 @@ class TrackerSyncService {
     return _trackerDao.upsertProfile(profile);
   }
 
-  /// Skips games whose data did not change and never touches
-  /// `tracker_achievements` (those load lazily per game). [igdbIdForRaGameId]
-  /// maps RA GameID → IGDB ID for games not yet in `tracker_game_data`.
+  /// Skips unchanged games; never touches `tracker_achievements` (lazy).
+  /// [igdbIdForRaGameId] maps RA GameID to IGDB ID for not-yet-seen games.
   Future<TrackerSyncResult> quickSyncRa({
     required Map<int, int> igdbIdForRaGameId,
     void Function(TrackerSyncProgress)? onProgress,
@@ -149,7 +147,6 @@ class TrackerSyncService {
         total: 0,
       ));
 
-      // Fetch the library, existing data, and awards in parallel
       final (
         List<RaGameProgress> raGames,
         List<TrackerGameData> existingData,
@@ -217,9 +214,8 @@ class TrackerSyncService {
           continue;
         }
 
-        // Scope the row by the IGDB platform that matches RA's console so
-        // PS2 progress and GameCube progress can coexist for the same IGDB
-        // game.
+        // Scope the row by the IGDB platform matching RA's console so PS2
+        // and GameCube progress coexist for the same IGDB game.
         final int? platformId =
             RaToIgdbMapper.primaryIgdbPlatformId(raGame.consoleId);
 
@@ -250,7 +246,6 @@ class TrackerSyncService {
 
       await _trackerDao.upsertGameDataBatch(toUpsert);
 
-      // Refresh the profile with aggregate stats
       final TrackerProfile? profile =
           await _trackerDao.getProfile(TrackerType.ra);
       if (profile != null) {
@@ -415,7 +410,6 @@ class RaGameFullProgress {
 
   final List<TrackerAchievement> achievements;
 
-  /// Hardcore earned count.
   final int? hardcoreEarned;
 
   /// Award kind ('mastered-hardcore', 'beaten-softcore', etc).

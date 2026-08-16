@@ -56,9 +56,8 @@ List<CollectionItem> applySortMode(
       );
     case CollectionSortMode.rating:
       sorted.sort((CollectionItem a, CollectionItem b) {
-        // "My Rating" ranks by the user's own rating only — the external API
-        // rating is a separate mode. Items the user hasn't rated sort last,
-        // ordered by name so the unrated bucket stays stable across re-sorts.
+        // User rating only (API rating is a separate mode); unrated items
+        // sort last by name so the bucket stays stable across re-sorts.
         final double? rA = a.userRating?.toDouble();
         final double? rB = b.userRating?.toDouble();
         if (rA == null && rB == null) {

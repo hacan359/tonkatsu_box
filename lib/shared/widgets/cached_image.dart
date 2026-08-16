@@ -8,9 +8,8 @@ import '../../core/selfhost/server_origin.dart';
 import '../../core/services/image_cache_service.dart';
 import '../constants/platform_features.dart';
 
-/// Image widget that picks the source (network or local cache) based on
-/// [ImageCacheService] state. The fetch [Future] is captured in [State] so
-/// parent rebuilds don't restart the load and flicker the placeholder.
+/// The fetch [Future] is held in [State] so a parent rebuild does not restart
+/// the load and flicker the placeholder.
 class CachedImage extends ConsumerStatefulWidget {
   const CachedImage({
     required this.imageType,
@@ -170,9 +169,8 @@ class _CachedImageState extends ConsumerState<CachedImage> {
     if (imageUrl.isEmpty) {
       return _buildError(context);
     }
-    // CanvasKit fetches image bytes over XHR, which the provider CDNs answer
-    // without a CORS header — going through our own origin removes the
-    // question and fills the server's cache on the way.
+    // CanvasKit fetches bytes over XHR and the provider CDNs answer without a
+    // CORS header; our own origin sidesteps that and fills the server cache.
     final String url = kIsWebBuild
         ? imageProxyUrl(
             baseUrl: serverBaseUrl(),

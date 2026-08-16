@@ -17,9 +17,8 @@ import 'vndb_api.dart';
 
 typedef ApiError = ({String message, String? detail});
 
-/// Pulls a user-facing message and an optional debug `detail` out of any of
-/// the project's typed API exceptions. Unknown exception types fall back to
-/// `toString()`.
+/// Pulls a user-facing message and optional debug `detail` out of the typed
+/// API exceptions. Unknown exception types fall back to `toString()`.
 ApiError extractApiError(Exception e) {
   return switch (e) {
     TmdbApiException(:final String message, :final String? detail) =>

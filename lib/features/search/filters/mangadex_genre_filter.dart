@@ -1,5 +1,3 @@
-// MangaDex genre filter (multi-select, from the SQLite-cached tag catalog).
-
 import 'package:core/models/mangadex_tag.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,9 +13,8 @@ final FutureProvider<List<MangaDexTag>> mangaDexGenresProvider =
     ..sort((MangaDexTag a, MangaDexTag b) => a.name.compareTo(b.name));
 });
 
-/// MangaDex genre-group tags. Multi-select; the source merges this with the
-/// theme-group [MangaDexTagFilter] into `includedTags[]` (AND). A distinct
-/// [key] from the tag filter keeps their selections in separate slots.
+/// Merged with the theme-group [MangaDexTagFilter] into `includedTags[]`
+/// (AND); the distinct [key] keeps the two selections in separate slots.
 class MangaDexGenreFilter extends SearchFilter {
   @override
   String get key => 'genreTags';

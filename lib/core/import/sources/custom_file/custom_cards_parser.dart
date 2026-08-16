@@ -8,14 +8,8 @@ import 'package:core/models/tag.dart';
 import '../../../../shared/utils/media_format.dart';
 import 'custom_card_entry.dart';
 
-/// Parses a user-supplied JSON or CSV file into custom-card rows.
-///
-/// JSON: an array of objects (or one object = one card). Keys starting with
-/// `_` and unknown keys are ignored, so the downloadable template with its
-/// `_..._values` hint keys imports cleanly. CSV: UTF-8, comma-separated,
-/// RFC 4180 quoting; columns addressed by header name, unknown columns
-/// ignored. Rows are validated individually — a bad row becomes a
-/// [CustomCardRow] with issues, never a whole-file failure.
+/// Unknown and `_`-prefixed keys are ignored so the template's hint keys
+/// import cleanly; a bad row becomes issues, never a whole-file failure.
 class CustomCardsParser {
   const CustomCardsParser();
 

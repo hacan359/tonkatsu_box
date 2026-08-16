@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 
-/// Shared confirm/cancel dialog used for every "are you sure?" prompt.
-///
-/// Styled after the tier-list delete dialog: a plain [AlertDialog] with two
-/// text buttons, the confirm one tinted [AppColors.error] when [destructive].
-/// [show] returns true only when the user confirms; dismissing returns false.
+/// [show] returns true only on confirm — dismissing returns false.
+/// [destructive] tints the confirm button [AppColors.error].
 class ConfirmDialog extends StatelessWidget {
   const ConfirmDialog({
     required this.title,

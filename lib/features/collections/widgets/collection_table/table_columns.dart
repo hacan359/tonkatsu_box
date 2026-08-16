@@ -31,10 +31,8 @@ List<TrinaColumn> buildCollectionTableColumns({
 }) {
   final bool sortable = !isReorderable;
   final List<TrinaColumn> columns = <TrinaColumn>[
-    // Drag-handle column, manual sort only. Frozen so it stays put and can't
-    // be dragged itself; wide enough for a comfortable touch target.
     // enableRowDrag is off: trina's built-in handle can't start a drag on
-    // touch (loses to the grid scroll), so [RowDragHandle] replaces it.
+    // touch (loses to grid scroll), so [RowDragHandle] replaces it.
     if (isReorderable)
       TrinaColumn(
         title: '',

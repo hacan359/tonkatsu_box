@@ -47,9 +47,8 @@ class DraggableFab extends StatefulWidget {
   final List<DraggableFabItem> items;
   final IconData icon;
 
-  /// Initial right offset (defaults to [AppSpacing.md]). Set on the canvas
-  /// view so the FAB clears the right-side toolbar column instead of
-  /// overlapping it.
+  /// Defaults to [AppSpacing.md]; the canvas view sets it so the FAB clears
+  /// the right-side toolbar column.
   final double? initialRight;
 
   /// Initial bottom offset (defaults to [AppSpacing.md]).
@@ -125,10 +124,8 @@ class _DraggableFabState extends State<DraggableFab> {
     );
   }
 
-  /// Single round button that both handles tap (when not dragging) and
-  /// drags the whole block. Each button has its own gesture detector so
-  /// the tap surface is local; pan state is shared via `_dragStart*` so
-  /// from either button the block moves as one.
+  /// Each button owns its gesture detector so the tap surface stays local;
+  /// `_dragStart*` is shared so the block drags as one from either.
   Widget _buildButton({
     required IconData icon,
     Color? iconColor,
@@ -257,9 +254,8 @@ class _FanMenuRoute extends PopupRoute<void> {
   }
 }
 
-/// Vertical stack of labeled pills anchored to the FAB's right edge.
-/// When the stack is taller than the available vertical room it scrolls
-/// in place so the menu always fits on screen regardless of item count.
+/// Scrolls in place when taller than the room available, so the menu fits on
+/// screen regardless of item count.
 class _FanMenuPage extends StatelessWidget {
   const _FanMenuPage({
     required this.primaryItems,
@@ -332,9 +328,8 @@ class _FanMenuPage extends StatelessWidget {
       lastWasItem = true;
     }
 
-    // When opening upward the closest-to-FAB pill is the LAST in original
-    // order, so flip the column so item N-1 sits at the bottom (next to
-    // the FAB) and item 0 at the top (scrolled-away if overflowing).
+    // Opening upward puts the closest-to-FAB pill last in the original order,
+    // so the column is flipped to keep item N-1 next to the FAB.
     final List<Widget> ordered = goUp
         ? columnChildren.reversed.toList(growable: false)
         : columnChildren;

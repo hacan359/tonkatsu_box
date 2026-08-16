@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// IGDB game_modes. The ids are fixed by IGDB and never change:
-///   1 Single player, 2 Multiplayer, 3 Co-operative,
-///   4 Split screen, 5 MMO, 6 Battle Royale.
+/// IGDB game_modes. Ids are fixed by IGDB: 1 Single player, 2 Multiplayer,
+/// 3 Co-operative, 4 Split screen, 5 MMO, 6 Battle Royale.
 class IgdbGameModeFilter extends SearchFilter {
   @override
   String get key => 'gameMode';

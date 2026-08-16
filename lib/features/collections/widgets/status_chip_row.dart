@@ -11,18 +11,15 @@ import '../../../shared/constants/item_status_ui.dart';
 
 const String _kStatusMenuPrefix = 'status:';
 
-/// Decodes a `showMenu` value produced by [statusChipPopupMenuEntries].
-///
-/// Returns `null` for ordinary (non-status) menu entries.
+/// Decodes a `showMenu` value produced by [statusChipPopupMenuEntries];
+/// returns `null` for ordinary (non-status) menu entries.
 ItemStatus? tryDecodeStatusMenuValue(String value) {
   if (!value.startsWith(_kStatusMenuPrefix)) return null;
   return ItemStatus.fromString(value.substring(_kStatusMenuPrefix.length));
 }
 
-/// Builds a "Status" header and a [StatusChipRow] for use inside `showMenu`.
-///
-/// Tapping a segment closes the menu via `Navigator.pop` with an encoded value;
-/// the caller decodes it through [tryDecodeStatusMenuValue].
+/// Tapping a segment pops the menu with an encoded value; the caller
+/// decodes it through [tryDecodeStatusMenuValue].
 List<PopupMenuEntry<String>> statusChipPopupMenuEntries({
   required BuildContext context,
   required CollectionItem item,
@@ -58,12 +55,7 @@ List<PopupMenuEntry<String>> statusChipPopupMenuEntries({
 }
 
 /// Segmented status switcher rendered as a single rounded "pill".
-///
-/// Every status sits in an equal-width segment; the selected one is highlighted
-/// with a soft tint of its status color while the rest stay muted. Tapping a
-/// segment invokes [onChanged].
 class StatusChipRow extends StatelessWidget {
-  /// Creates a [StatusChipRow].
   const StatusChipRow({
     required this.status,
     required this.mediaType,
@@ -71,13 +63,11 @@ class StatusChipRow extends StatelessWidget {
     super.key,
   });
 
-  /// Currently selected status.
   final ItemStatus status;
 
   /// Media type, which drives the per-status labels.
   final MediaType mediaType;
 
-  /// Called when a different status segment is tapped.
   final void Function(ItemStatus) onChanged;
 
   @override
@@ -95,11 +85,8 @@ class StatusChipRow extends StatelessWidget {
         height: _StatusSegment.height,
         child: Stack(
           children: <Widget>[
-            // Sliding highlight: position and tint are both implicit
-            // animations, so while the pill glides to the new segment its
-            // color morphs from the old status color to the new one.
-            // Alignment-based (not LayoutBuilder) so the row still reports
-            // intrinsic sizes — popup menus measure it via IntrinsicWidth.
+            // Implicitly animated highlight; Alignment-based (not
+            // LayoutBuilder) so popup menus can measure via IntrinsicWidth.
             Positioned.fill(
               child: AnimatedAlign(
                 duration: AppDurations.slow,

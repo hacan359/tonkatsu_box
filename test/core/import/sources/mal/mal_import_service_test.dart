@@ -1,4 +1,3 @@
-
 import 'package:core/models/anime.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';

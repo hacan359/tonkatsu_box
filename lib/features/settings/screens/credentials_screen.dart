@@ -1,5 +1,3 @@
-// Экран настройки API ключей (IGDB, SteamGridDB, TMDB).
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -7,17 +5,13 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/credentials_content.dart';
 
-/// Экран настройки API ключей.
-///
-/// Тонкая обёртка вокруг [CredentialsContent] с Scaffold/AppBar.
-/// Используется при push-навигации на мобильных устройствах.
 class CredentialsScreen extends StatelessWidget {
   const CredentialsScreen({
     super.key,
     this.isInitialSetup = false,
   });
 
-  /// Флаг начальной настройки (показывает Welcome секцию).
+  /// Adds the first-run welcome section above the key form.
   final bool isInitialSetup;
 
   @override

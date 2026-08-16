@@ -4,9 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/settings/providers/settings_provider.dart';
 import '../../shared/constants/api_defaults.dart';
 
-/// API key data loaded from SharedPreferences + ApiDefaults.
-///
-/// Built in main() before runApp() and passed via ProviderScope override.
+/// API keys from SharedPreferences + ApiDefaults, built in main() before
+/// runApp() and passed via a ProviderScope override.
 class ApiKeys {
   const ApiKeys({
     this.tmdbApiKey,
@@ -26,20 +25,17 @@ class ApiKeys {
 
   /// Key precedence: user key → built-in (ApiDefaults) → null.
   factory ApiKeys.fromPrefs(SharedPreferences prefs) {
-    // TMDB: user key → built-in → null
     final String? userTmdbKey = prefs.getString(SettingsKeys.tmdbApiKey);
     final String? tmdbApiKey =
         (userTmdbKey != null && userTmdbKey.isNotEmpty)
             ? userTmdbKey
             : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
 
-    // TheTVDB: user key → built-in → null
     final String? userTvdbKey = prefs.getString(SettingsKeys.tvdbApiKey);
     final String? tvdbApiKey = (userTvdbKey != null && userTvdbKey.isNotEmpty)
         ? userTvdbKey
         : (ApiDefaults.hasTvdbKey ? ApiDefaults.tvdbApiKey : null);
 
-    // SteamGridDB: user key → built-in → null
     final String? userSteamGridDbKey =
         prefs.getString(SettingsKeys.steamGridDbApiKey);
     final String? steamGridDbApiKey =
@@ -49,7 +45,6 @@ class ApiKeys {
                 ? ApiDefaults.steamGridDbApiKey
                 : null);
 
-    // IGDB: user key → built-in → null
     final String? userClientId = prefs.getString(SettingsKeys.clientId);
     final String? igdbClientId =
         (userClientId != null && userClientId.isNotEmpty)

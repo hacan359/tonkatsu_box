@@ -130,9 +130,8 @@ class TvShow {
     );
   }
 
-  /// Accepts both TheTVDB shapes: a `/search` hit and a
-  /// `/series/{id}/extended?meta=translations` record. TheTVDB has no user
-  /// rating, only a popularity score, so [rating] stays null.
+  /// Accepts both TheTVDB shapes. TheTVDB has only a popularity score and no
+  /// user rating, so [rating] stays null.
   factory TvShow.fromTvdb(
     Map<String, dynamic> json, {
     String locale = 'en',

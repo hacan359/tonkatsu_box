@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
@@ -15,7 +14,6 @@ enum StatusType {
   inactive,
 }
 
-/// Компактный индикатор статуса: иконка + текст.
 class StatusDot extends StatelessWidget {
   const StatusDot({
     required this.label,
@@ -26,7 +24,6 @@ class StatusDot extends StatelessWidget {
 
   final String label;
 
-  /// Тип статуса (определяет иконку и цвет).
   final StatusType type;
 
   final bool compact;

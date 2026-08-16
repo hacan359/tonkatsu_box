@@ -3,11 +3,8 @@ import 'package:dio/dio.dart';
 
 import 'tvdb_http_client.dart';
 
-/// `/movies` — detail and genre-filtered browse.
-///
-/// `short=true` drops artworks and characters (157 KB → 26 KB on a big record)
-/// while keeping the poster in `image`; `meta=translations` is the only way to
-/// get a movie overview at all.
+/// `short=true` drops artworks/characters (157 KB → 26 KB) yet keeps the
+/// poster; `meta=translations` is the only way to get a movie overview.
 class TvdbMoviesApi {
   TvdbMoviesApi(this._client);
 

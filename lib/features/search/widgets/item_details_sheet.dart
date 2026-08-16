@@ -394,9 +394,8 @@ class ItemDetailsSheet extends StatelessWidget {
   final VoidCallback? onAddToCollection;
   final String? overview;
 
-  /// Lazily loads the description after the sheet is open, when [overview] is
-  /// null (e.g. an OpenLibrary book whose search row carries no description).
-  /// Shown with a spinner; a null/empty result hides the section.
+  /// Lazily loads the description once the sheet is open when [overview] is
+  /// null; a null or empty result hides the section.
   final Future<String?> Function()? overviewLoader;
   final int? year;
   final String? rating;

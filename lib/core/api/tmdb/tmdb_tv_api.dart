@@ -7,9 +7,6 @@ import 'tmdb_genres_api.dart';
 import 'tmdb_http_client.dart';
 import 'tmdb_types.dart';
 
-/// TV endpoints: search, detail, seasons / episodes, lists (popular /
-/// trending / top-rated / on-the-air / recommendations / similar) and
-/// discover.
 class TmdbTvApi {
   TmdbTvApi(this._client, this._genres);
 

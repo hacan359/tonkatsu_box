@@ -25,11 +25,8 @@ class WithoutCollection extends CollectionChoice {
   const WithoutCollection();
 }
 
-/// Returns the chosen [CollectionChoice], or null if cancelled.
-///
-/// [excludeCollectionId] hides that collection from the list.
-/// [alreadyInCollectionIds] are disabled; a `null` entry disables the
-/// Uncategorized option too.
+/// [excludeCollectionId] hides that collection; [alreadyInCollectionIds] are
+/// disabled, and a `null` entry there disables Uncategorized too.
 Future<CollectionChoice?> showCollectionPickerDialog({
   required BuildContext context,
   required WidgetRef ref,

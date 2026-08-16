@@ -31,9 +31,8 @@ import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 import '../../../shared/constants/platform_ui.dart';
 
-/// Grid or table view for collection items, picked from [isTableMode];
-/// otherwise the grid is shown. In table mode a manual sort enables
-/// drag-to-reorder rows.
+/// Grid or table view picked by [isTableMode]; in table mode a manual sort
+/// enables drag-to-reorder rows.
 class CollectionItemsView extends ConsumerWidget {
   const CollectionItemsView({
     required this.collectionId,
@@ -213,7 +212,6 @@ class CollectionItemsView extends ConsumerWidget {
   bool get _hasTagGroups =>
       tags.isNotEmpty && (groupByTags || filterTagIds.isNotEmpty);
 
-  /// Pins [header] above [body].
   Widget _withHeader(Widget body) {
     if (header == null) return body;
     return Column(
@@ -444,7 +442,6 @@ class CollectionItemsView extends ConsumerWidget {
     );
   }
 
-  /// Opens the multi-select tag picker for the item and persists the result.
   void _editItemTags(BuildContext context, WidgetRef ref, int itemId) {
     final Set<int> current = Set<int>.of(
         ref.read(itemTagsProvider).valueOrNull?[itemId] ?? const <int>[]);

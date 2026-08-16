@@ -38,7 +38,7 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
       tag: tag,
     );
 
-    // Оптимистичное обновление: добавляем в начало
+    // Optimistic prepend — the repository already assigned the id.
     final List<WishlistItem> current = state.valueOrNull ?? <WishlistItem>[];
     state = AsyncData<List<WishlistItem>>(
       <WishlistItem>[item, ...current],
@@ -145,7 +145,7 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     return count;
   }
 
-  /// Удаляет все записи с указанным тегом (`null` = «без тега»).
+  /// A `null` [tag] targets the untagged entries.
   Future<int> deleteByTag(String? tag) async {
     final int count = await _repository.deleteByTag(tag);
 
@@ -157,7 +157,7 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     return count;
   }
 
-  /// Применяет [tag] (или `null` чтобы снять тег) ко всем записям из [ids].
+  /// A `null` [tag] clears the tag on every id.
   Future<void> applyTagToIds(Set<int> ids, String? tag) async {
     if (ids.isEmpty) return;
     for (final int id in ids) {
@@ -204,8 +204,7 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
     return count;
   }
 
-  /// Сортирует: активные первыми (по createdAt DESC),
-  /// затем resolved (по createdAt DESC).
+  /// Active entries first, resolved last, newest first within each group.
   List<WishlistItem> _sortItems(List<WishlistItem> items) {
     final List<WishlistItem> sorted = List<WishlistItem>.of(items);
     sorted.sort((WishlistItem a, WishlistItem b) {
@@ -218,7 +217,6 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistItem>> {
   }
 }
 
-/// Количество активных (не resolved) элементов вишлиста.
 final Provider<int> activeWishlistCountProvider = Provider<int>((Ref ref) {
   final AsyncValue<List<WishlistItem>> itemsAsync = ref.watch(wishlistProvider);
   final List<WishlistItem>? items = itemsAsync.valueOrNull;

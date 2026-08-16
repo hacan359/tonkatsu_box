@@ -1,5 +1,3 @@
-// Диалог справки по клавиатурным сочетаниям (F1).
-
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -8,16 +6,14 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'keyboard_shortcuts.dart';
 
-/// Диалог с контекстной справкой по клавиатурным сочетаниям.
-///
-/// Показывает глобальные хоткеи (навигация) и хоткеи текущего экрана.
+/// The F1 legend: global navigation shortcuts plus the current screen's own.
 class KeyboardShortcutsDialog extends StatelessWidget {
   const KeyboardShortcutsDialog({
     required this.screenGroups,
     super.key,
   });
 
-  /// Группы хоткеев текущего экрана (без глобальных).
+  /// Screen-specific groups; the global ones are prepended here.
   final List<ShortcutGroup> screenGroups;
 
   static void show(
@@ -104,7 +100,6 @@ class KeyboardShortcutsDialog extends StatelessWidget {
   }
 }
 
-/// Бейдж с отображением клавиш (Ctrl+N, F5 и т.д.).
 class _KeyBadge extends StatelessWidget {
   const _KeyBadge({required this.keys});
 

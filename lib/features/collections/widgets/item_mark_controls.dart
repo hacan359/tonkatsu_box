@@ -1,5 +1,3 @@
-// Reusable like + note controls for a single unit of a collection item.
-
 import 'dart:async';
 
 import 'package:core/models/item_mark.dart';
@@ -35,9 +33,8 @@ String unitTypeLabel(S l, String unitType) {
   }
 }
 
-/// Rounded accent-tinted container shared by the note text and the note
-/// editor — same look as the notes block on the item card, so a note is
-/// recognisable at a glance. [emphasized] draws the stronger editing border.
+/// Shared by note text and editor — matches the item card's notes block so
+/// a note reads at a glance. [emphasized] draws the stronger editing border.
 BoxDecoration markNoteDecoration(Color accentColor, {bool emphasized = false}) {
   return BoxDecoration(
     color: accentColor.withAlpha(20),
@@ -49,14 +46,12 @@ BoxDecoration markNoteDecoration(Color accentColor, {bool emphasized = false}) {
 /// Inline text of a mark's note: always visible in full, no tap needed —
 /// the editor is only for changing it.
 class MarkNoteText extends StatelessWidget {
-  /// Creates a [MarkNoteText].
   const MarkNoteText({
     required this.note,
     required this.accentColor,
     super.key,
   });
 
-  /// The note text to show.
   final String note;
 
   /// Accent color of the hosting section, tints the container.
@@ -83,12 +78,9 @@ class MarkNoteText extends StatelessWidget {
   }
 }
 
-/// A compact like-heart plus note-button pair bound to one unit of an item.
-/// The like writes through [itemMarksProvider]; the note button only toggles
-/// the host's inline [ItemMarkNoteEditor] — no dialogs (they stutter on
-/// phones).
+/// Like-heart plus note-button pair for one unit. The note button only
+/// toggles the host's inline editor — no dialogs (they stutter on phones).
 class ItemMarkControls extends ConsumerWidget {
-  /// Creates [ItemMarkControls].
   const ItemMarkControls({
     required this.itemId,
     required this.unitType,
@@ -118,7 +110,6 @@ class ItemMarkControls extends ConsumerWidget {
   /// Whether to show the like heart (season headers show note only).
   final bool showLike;
 
-  /// Icon size for both buttons.
   final double iconSize;
 
   @override
@@ -172,11 +163,9 @@ class ItemMarkControls extends ConsumerWidget {
   }
 }
 
-/// Inline autosaving note editor for a unit, shown in place of the note text
-/// while editing (same pattern as the notes block in the item card). Saves
-/// after a 1s pause and flushes the pending text on dispose.
+/// Inline autosaving note editor, shown in place of the note text while
+/// editing. Saves after a 1s pause and flushes pending text on dispose.
 class ItemMarkNoteEditor extends ConsumerStatefulWidget {
-  /// Creates an [ItemMarkNoteEditor].
   const ItemMarkNoteEditor({
     required this.itemId,
     required this.unitType,

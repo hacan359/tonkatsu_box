@@ -4,15 +4,8 @@ import 'recommendation_config.dart';
 import 'recommendation_models.dart';
 import 'sparse_vector.dart';
 
-/// Content-based recommender.
-///
-/// Construct it from the completed (taste-forming) titles; it computes IDF,
-/// per-title weights and a clustered taste profile up front. Then score
-/// candidates with [recommend], or use [similarTo] / [predictRating].
-///
-/// Deterministic: cluster initialization is greedy farthest-point (no RNG), so
-/// identical input always yields identical output. Pure Dart — no Flutter, no
-/// IO — so the whole thing is unit-testable in isolation.
+/// Content-based recommender: IDF, weights and a clustered taste profile are
+/// built up front. Deterministic (no RNG) and pure Dart, so unit-testable.
 class Recommender {
   /// Builds the profile from [completed]. Titles with no features contribute
   /// nothing and are dropped.
@@ -31,7 +24,6 @@ class Recommender {
   final Map<String, double> _weightById = <String, double>{};
   late final TasteProfile _profile;
 
-  /// The learned taste profile.
   TasteProfile get profile => _profile;
 
   void _build() {
@@ -44,13 +36,8 @@ class Recommender {
     _profile = _buildProfile();
   }
 
-  /// Scores [candidates] against the taste profile and groups them into rows,
-  /// one per cluster. Each candidate lands only in its best-matching cluster.
-  ///
-  /// Candidates that share an id with a completed title, vectorize to nothing
-  /// (only unknown genres), or score below [RecommendationConfig.scoreThreshold]
-  /// are dropped. Rows and the candidates inside them come back sorted best
-  /// first.
+  /// One row per cluster; a candidate lands only in its best-matching cluster.
+  /// Known ids, empty vectors and sub-threshold scores drop; sorted best first.
   List<RecommendationRow> recommend(List<TasteTitle> candidates) {
     if (_profile.clusters.isEmpty) return const <RecommendationRow>[];
 
@@ -106,9 +93,8 @@ class Recommender {
     return rows;
   }
 
-  /// Top [limit] titles from [pool] most similar to [target] by cosine,
-  /// excluding the target itself. Profile-free — for a "more like this" row on
-  /// a title's page.
+  /// Top [limit] titles from [pool] by cosine to [target], excluding itself.
+  /// Profile-free — for a "more like this" row on a title's page.
   List<ScoredTitle> similarTo(
     TasteTitle target,
     List<TasteTitle> pool, {
@@ -127,10 +113,8 @@ class Recommender {
     return scored.take(limit).toList();
   }
 
-  /// Predicts the rating [candidate] would receive, as a cosine-weighted
-  /// average over the nearest [RecommendationConfig.knnForPrediction] rated
-  /// completed titles. `null` when there is no rated neighbour with positive
-  /// similarity.
+  /// Cosine-weighted average over the nearest rated completed titles; `null`
+  /// when no rated neighbour has positive similarity.
   double? predictRating(TasteTitle candidate) {
     final SparseVector v = _vectorize(candidate.features);
     if (v.isEmpty) return null;
@@ -201,9 +185,8 @@ class Recommender {
     return SparseVector(v);
   }
 
-  /// Per-title weight in `[-1, 1]`-ish: positive pulls the profile toward the
-  /// title, negative pushes away. Favorites floor at
-  /// [RecommendationConfig.favoriteFloor].
+  /// Positive weight pulls the profile toward the title, negative pushes
+  /// away. Favorites floor at [RecommendationConfig.favoriteFloor].
   double _weightFor(TasteTitle t) {
     final double base;
     final double? r = t.rating;
@@ -316,9 +299,8 @@ class Recommender {
     return clusters;
   }
 
-  /// Greedy farthest-point initialization (deterministic, no RNG): the first
-  /// centre is the highest-norm vector (the most defined taste); each next
-  /// centre is the vector farthest (lowest max cosine) from the chosen set.
+  /// Deterministic (no RNG): the first centre is the highest-norm vector;
+  /// each next is the vector farthest (lowest max cosine) from the chosen set.
   List<SparseVector> _initCenters(List<SparseVector> vectors, int k) {
     final int n = vectors.length;
     final List<SparseVector> centers = <SparseVector>[];

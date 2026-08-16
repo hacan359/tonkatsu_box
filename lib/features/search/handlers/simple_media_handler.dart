@@ -9,13 +9,8 @@ import '../../../shared/widgets/loading_overlay.dart';
 import '../services/search_collection_adder.dart';
 import 'media_action_handler.dart';
 
-/// Single-source media handler — no platform picker, no animation branch,
-/// no post-add side effects. Anime, Manga, and VisualNovel all fit this
-/// shape and previously lived as three near-identical copies.
-///
-/// The handler dispatches on item type at the registry level; the [T]
-/// generic carries the concrete model so accessors don't have to repeat
-/// `as` casts.
+/// Handler shape shared by Anime/Manga/VisualNovel (no platform picker or
+/// animation branch); [T] spares the accessors repeated `as` casts.
 class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   SimpleMediaHandler({
     required WidgetRef ref,
@@ -52,23 +47,16 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   final Future<void> Function(T item) upsert;
   final Widget Function(T item, VoidCallback onAddToCollection) sheetBuilder;
 
-  /// Optional provider discriminator stamped onto the collection row and used
-  /// to narrow "already collected" lookups. Set for multi-source types, whose
+  /// Narrows "already collected" lookups for multi-source types, whose
   /// providers share a numeric id space; null for single-source ones.
   final DataSource? Function(T item)? sourceOf;
 
-  /// Optional one-shot fetch that fills in detail a search result lacks (e.g.
-  /// an OpenLibrary book description). Applied when writing to the cache
-  /// (add-to-collection) and, for sources flagged by [enrichBeforeDetails],
-  /// before opening the details sheet. Failures fall back to the original item.
+  /// Fills in detail a search row lacks; applied on add-to-collection and,
+  /// when [enrichBeforeDetails] flags it, before the sheet. Failure = no-op.
   final Future<T> Function(T item)? enrich;
 
-  /// When this returns true for an item, the details sheet opens with the
-  /// [enrich]ed item (behind a spinner) instead of the lightweight search
-  /// result — for sources whose search rows are too sparse to render a useful
-  /// sheet (Fantlab: no cover / genres / description until the work is
-  /// fetched). Sources with rich search rows (OpenLibrary) leave this null so
-  /// the sheet opens instantly and lazy-loads only the description.
+  /// True opens the sheet with the [enrich]ed item behind a spinner — for
+  /// sources (Fantlab) whose search rows are too sparse for a useful sheet.
   final bool Function(T item)? enrichBeforeDetails;
 
   /// Enriches [item] behind a blocking spinner. No-op (and no spinner) for

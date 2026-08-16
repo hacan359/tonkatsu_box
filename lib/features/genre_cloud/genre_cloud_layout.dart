@@ -1,6 +1,3 @@
-// Pure word-cloud layout, free of Flutter widget code so it unit-tests with an
-// injected text measurer; layoutGenreCloudAsync yields between words.
-
 import 'dart:math' as math;
 import 'dart:ui' show Offset, Rect, Size;
 
@@ -12,7 +9,6 @@ typedef MeasureWord = Size Function(FacetValue word, double fontSize);
 
 /// A facet word positioned on the cloud canvas.
 class PlacedWord {
-  /// Creates a [PlacedWord].
   const PlacedWord({
     required this.word,
     required this.fontSize,
@@ -20,10 +16,8 @@ class PlacedWord {
     required this.rotated,
   });
 
-  /// The facet value this word represents.
   final FacetValue word;
 
-  /// Font size the word is drawn at.
   final double fontSize;
 
   /// Centre of the word's bounding box, in canvas coordinates.
@@ -35,7 +29,6 @@ class PlacedWord {
 
 /// Result of laying out a cloud.
 class GenreCloudLayout {
-  /// Creates a [GenreCloudLayout].
   const GenreCloudLayout({
     required this.placed,
     required this.hidden,
@@ -51,7 +44,6 @@ class GenreCloudLayout {
   /// Canvas size the layout was computed for.
   final Size size;
 
-  /// Whether nothing was placed.
   bool get isEmpty => placed.isEmpty;
 }
 
@@ -59,26 +51,16 @@ class GenreCloudLayout {
 const double _defaultMaxFontSize = 64;
 const double _defaultMinFontSize = 13;
 
-/// Maximum number of distinct size tiers.
-///
-/// Sizing is rank-based: words are sized by where their *count* ranks among the
-/// distinct counts, not by the raw count. Equal counts share a size; any
-/// difference in count moves a word to a different tier. When there are more
-/// distinct counts than this cap, adjacent ranks are grouped so the geometric
-/// step between tiers stays clearly visible instead of collapsing.
+/// Max size tiers. Sizing is rank-based on distinct counts (equal counts share
+/// a size); past the cap, ranks group so the geometric step stays visible.
 const int _defaultMaxTiers = 10;
 
-/// Time budget a chunked (async) pass may spend before yielding to the event
-/// loop. Word costs vary wildly (spiral search), so the yield is elapsed-time
-/// gated rather than per-N-words — this also keeps the pass fast on web,
-/// where a zero-delay timer still costs ~4ms.
+/// Chunked-pass yield budget: elapsed-time gated, not per-N-words, because
+/// word costs vary wildly and a zero-delay timer still costs ~4ms on web.
 const int _yieldBudgetMs = 8;
 
-/// Decides whether the word at [index] (descending frequency) is rotated.
-///
-/// The most frequent word (index 0) always stays horizontal for readability;
-/// roughly every third word after it is rotated, giving the classic tag-cloud
-/// look without randomness (keeps exports reproducible).
+/// The top word stays horizontal for readability; roughly every third word
+/// after it rotates — deterministic, so exports stay reproducible.
 bool rotatedAtIndex(int index) => index > 0 && index % 3 == 1;
 
 /// Lays out [words] inside [canvasSize], measuring text via [measure].
@@ -113,9 +95,8 @@ GenreCloudLayout layoutGenreCloud({
   );
 }
 
-/// Same layout as [layoutGenreCloud], but yields to the event loop every few
-/// words so long computations don't freeze the UI thread. The result is
-/// identical to the synchronous version (placement is deterministic).
+/// Like [layoutGenreCloud] but yields to the event loop so the UI stays
+/// responsive; the result is identical (placement is deterministic).
 Future<GenreCloudLayout> layoutGenreCloudAsync({
   required List<FacetValue> words,
   required Size canvasSize,

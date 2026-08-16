@@ -121,9 +121,8 @@ class ExportService {
     );
   }
 
-  /// Creates a v2 full export (.xcollx): items, collection canvas, per-item
-  /// canvas, images and full media data (Game/Movie/TvShow) for offline
-  /// import. Requires [canvasRepository] for the canvas data.
+  /// Full export (.xcollx): items, canvases, images and full media data for
+  /// offline import. Requires [canvasRepository] for the canvas data.
   Future<XcollFile> createFullExport(
     Collection collection,
     List<CollectionItem> items,
@@ -135,50 +134,41 @@ class ExportService {
             i.toExport(includeUserData: includeUserData))
         .toList();
 
-    // Collection-level canvas
     ExportCanvas? canvas;
     if (_canvasRepository != null) {
       canvas = await _buildCollectionCanvas(collectionId);
     }
 
-    // Per-item canvas
     if (_canvasRepository != null) {
       await _attachPerItemCanvas(items, exportItems);
     }
 
-    // Collect cached cover images
     Map<String, String> images = <String, String>{};
     if (_imageCacheService != null) {
       images = await _collectCachedImages(items);
     }
 
-    // Collect canvas images (from collection and per-item canvases)
     if (_imageCacheService != null && _canvasRepository != null) {
       final Map<String, String> canvasImages =
           await _collectCanvasImages(collectionId, items);
       images.addAll(canvasImages);
     }
 
-    // Collect hero image (if set)
     await _collectHeroImage(collection, images);
 
-    // Per-item marks (likes/notes) and watch progress — user data only
     if (includeUserData) {
       await _attachItemMarks(items, exportItems);
       await _attachWatchedEpisodes(collectionId, items, exportItems);
       await _attachListenedTracks(collectionId, items, exportItems);
     }
 
-    // Collect full media data for offline import (includes tv_seasons)
     final Map<String, dynamic> media = await _collectMediaData(items);
 
-    // Collect tier list data
     List<Map<String, dynamic>>? tierLists;
     if (_database != null) {
       tierLists = await _collectTierListData(collectionId);
     }
 
-    // Collect tag data and enrich items with tag names for import resolution
     List<Map<String, dynamic>>? tags;
     if (_database != null) {
       final _TagExportResult tagResult =
@@ -194,7 +184,6 @@ class ExportService {
       }
     }
 
-    // Collect tracker data (RA progress) for games — only with user data
     List<Map<String, dynamic>>? trackerData;
     if (includeUserData && _trackerDao != null) {
       trackerData = await _collectTrackerData(items);
@@ -300,10 +289,8 @@ class ExportService {
     }
   }
 
-  /// Attaches per-item marks (likes/notes) under the `_marks` key. Requires a
-  /// database; no-op when unavailable. Only invoked for user-data exports.
-  /// Fetches the exported items' marks in one query and groups by item to
-  /// avoid an N+1.
+  /// Attaches `_marks` (likes/notes) for user-data exports: one query for all
+  /// items, grouped in memory to avoid an N+1. No-op without a database.
   Future<void> _attachItemMarks(
     List<CollectionItem> items,
     List<Map<String, dynamic>> exportItems,
@@ -424,11 +411,9 @@ class ExportService {
     final CanvasRepository repo = _canvasRepository!;
     final Map<String, String> images = <String, String>{};
 
-    // Collection-level canvas items
     final List<CanvasItem> allCanvasItems =
         await repo.getItems(collectionId);
 
-    // Per-item canvas items
     for (final CollectionItem item in items) {
       if (item.id == 0) continue;
       final List<CanvasItem> perItemItems =
@@ -436,7 +421,6 @@ class ExportService {
       allCanvasItems.addAll(perItemItems);
     }
 
-    // Collect images from image-type canvas items
     for (final CanvasItem canvasItem in allCanvasItems) {
       if (canvasItem.itemType != CanvasItemType.image) continue;
 
@@ -469,9 +453,8 @@ class ExportService {
     return hash.toRadixString(16).padLeft(8, '0');
   }
 
-  /// Collects full Game/Movie/TvShow/TvSeason/TvEpisode data so that import
-  /// can run offline without hitting the IGDB/TMDB APIs. Seasons and episodes
-  /// come from the DB cache for every tvShow and animation-tvShow.
+  /// Full media data so import can run offline without IGDB/TMDB; seasons
+  /// and episodes come from the DB cache for every tvShow-like item.
   Future<Map<String, dynamic>> _collectMediaData(
     List<CollectionItem> items,
   ) async {
@@ -701,9 +684,8 @@ class ExportService {
     return xcoll.toJsonString();
   }
 
-  /// [format] selects the export mode:
-  /// [ExportFormat.light] → `.xcoll` (metadata + item IDs),
-  /// [ExportFormat.full] → `.xcollx` (+ canvas + images).
+  /// [format] selects `.xcoll` ([ExportFormat.light]: metadata + item IDs)
+  /// or `.xcollx` ([ExportFormat.full]: + canvas + images).
   Future<ExportResult> exportToFile(
     Collection collection,
     List<CollectionItem> items, {
@@ -787,9 +769,8 @@ class ExportService {
     }
   }
 
-  /// Collects tier lists bound to the collection. Entries are enriched with
-  /// `external_id` and `media_type` so import can resolve them, since
-  /// `collection_item_id` changes on import.
+  /// Entries are enriched with `external_id`/`media_type` so import can
+  /// resolve them — `collection_item_id` changes on import.
   Future<List<Map<String, dynamic>>?> _collectTierListData(
     int collectionId,
   ) async {

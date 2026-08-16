@@ -19,7 +19,6 @@ class WishlistDialogResult {
     this.tag,
   });
 
-  /// Текст заметки (название контента).
   final String text;
 
   final MediaType? mediaTypeHint;
@@ -29,17 +28,14 @@ class WishlistDialogResult {
   final String? tag;
 }
 
-/// Экран-форма для добавления или редактирования элемента вишлиста.
-///
-/// Открывается как полноценная страница через [Navigator.push].
-/// Возвращает [WishlistDialogResult] или `null` при отмене (back).
+/// A full page, not a dialog — returns null when dismissed with back.
 class AddWishlistForm extends StatefulWidget {
   const AddWishlistForm({
     this.existing,
     super.key,
   });
 
-  /// Существующий элемент (для режима редактирования).
+  /// Non-null switches the form to edit mode.
   final WishlistItem? existing;
 
   static Future<WishlistDialogResult?> show(

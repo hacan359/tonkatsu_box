@@ -1,4 +1,3 @@
-
 /// A row from SteamGridDB's `/search/autocomplete`.
 class SteamGridDbGame {
   const SteamGridDbGame({

@@ -9,11 +9,8 @@ import '../providers/browse_provider.dart';
 import 'filter_sheet.dart';
 import 'media_type_chevron.dart';
 
-/// Narrow-screen filter bar: `[Type ▾][Filters (N) ▾][Customize?]`.
-///
-/// Deliberately only two segments. A phone has ~82px of chrome above the grid
-/// already, so sources are picked inside the sheet instead of getting a row of
-/// their own; how many are on is shown as this segment's subtitle.
+/// Deliberately two segments: a phone already spends ~82px of chrome above the
+/// grid, so sources are picked in the sheet instead of a row of their own.
 class CompactFilterBar extends ConsumerWidget {
   const CompactFilterBar({
     required this.state,

@@ -4,9 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/utils/item_card_progress.dart';
 import '../providers/episode_tracker_provider.dart';
 
-/// Card progress for shows whose marks live in the episode tracker rather
-/// than on the item ([itemCardProgress] returns null for them). Null for
-/// uncategorized items — episode tracking is collection-only.
+/// Progress for shows tracked in the episode tracker ([itemCardProgress] is
+/// null for them). Null for uncategorized — tracking is collection-only.
 ItemCardProgress? trackerCardProgress(WidgetRef ref, CollectionItem item) {
   final int? collectionId = item.collectionId;
   if (collectionId == null) return null;

@@ -285,9 +285,8 @@ class _CreateCustomItemDialogState
     }
   }
 
-  /// Only fields present in the file overwrite current values. Of the
-  /// personal fields the form carries note and tags; the rest (status,
-  /// rating, dates…) are ignored — they belong to the item detail screen.
+  /// Only fields present in the file overwrite current values; personal
+  /// fields beyond note/tags belong to the item detail screen and are ignored.
   void _applyEntry(CustomCardEntry entry) {
     setState(() {
       _selectedType = entry.type;
@@ -767,9 +766,8 @@ class _CreateCustomItemDialogState
     return value != null && value > 0 ? value : null;
   }
 
-  /// Totals for the universal progress tracker. The fine field always shows
-  /// (label follows the display type); the coarse field only for types with a
-  /// sub-division (series → seasons, manga → volumes).
+  /// The fine progress field always shows; the coarse one only for types
+  /// with a sub-division (series → seasons, manga → volumes).
   Widget _buildCountsSection(S l) {
     final bool showGroup = CustomProgressUnits.hasGroupAxis(_selectedType);
     final String? groupLabel =
