@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/screenscraper_api.dart';
 import '../../../core/services/screenscraper_cache_service.dart';
-import '../../../shared/constants/api_defaults.dart';
 import '../../../shared/constants/screenscraper_systemes.dart';
 import '../../settings/providers/settings_provider.dart';
 
@@ -23,10 +22,8 @@ class ScreenScraperGameNotifier extends FamilyAsyncNotifier<SsGame?, SsLookup> {
         ScreenScraperSystemes.forIgdbPlatform(arg.igdbPlatformId);
     if (systemeId == null) return null;
 
-    if (!ApiDefaults.hasScreenScraperDevCreds) return null;
-
     final SettingsState settings = ref.watch(settingsNotifierProvider);
-    if (!settings.hasScreenScraperCreds) return null;
+    if (!settings.canUseScreenScraper) return null;
 
     final ScreenScraperCacheService cache =
         ref.read(screenScraperCacheServiceProvider);

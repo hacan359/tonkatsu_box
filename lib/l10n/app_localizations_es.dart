@@ -5178,6 +5178,24 @@ class SEs extends S {
       'Metadatos de juegos + medios (portadas, capturas, arte)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Credenciales de desarrollador (devid / devpassword). El servidor firma cada solicitud con ellas; sin ellas ScreenScraper rechaza.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder =>
+      'ID de desarrollador de ScreenScraper';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'Contraseña de desarrollador de ScreenScraper';
+
+  @override
   String get screenScraperUserCredsHint =>
       'Credenciales de usuario (ssid / sspassword). La cuota es por usuario.';
 

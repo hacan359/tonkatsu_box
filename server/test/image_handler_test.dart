@@ -10,10 +10,15 @@ import 'package:tonkatsu_server/src/image_handler.dart';
 import 'package:tonkatsu_server/src/upstream_client.dart';
 
 class _FakeUpstream implements UpstreamClient {
-  _FakeUpstream({this.payload = const <int>[1, 2, 3], this.status = 200});
+  _FakeUpstream({
+    this.payload = const <int>[1, 2, 3],
+    this.status = 200,
+    this.contentType = 'image/jpeg',
+  });
 
   final List<int> payload;
   final int status;
+  final String? contentType;
   final List<Uri> sent = <Uri>[];
 
   @override
@@ -26,7 +31,7 @@ class _FakeUpstream implements UpstreamClient {
     sent.add(url);
     return UpstreamResponse(
       status: status,
-      contentType: 'image/jpeg',
+      contentType: contentType,
       body: payload,
     );
   }
@@ -125,6 +130,24 @@ void main() {
 
       expect(response.statusCode, HttpStatus.badGateway);
       expect(cached('anilist_1').existsSync(), isFalse);
+    });
+
+    test('should not cache an outage page the source served as 200', () async {
+      upstream = _FakeUpstream(contentType: 'text/html; charset=utf-8');
+
+      final Response response = await get('/img/anime_covers/anilist_1$src');
+
+      expect(response.statusCode, HttpStatus.badGateway);
+      expect(cached('anilist_1').existsSync(), isFalse);
+    });
+
+    test('should still accept a source that names no content type', () async {
+      upstream = _FakeUpstream(contentType: null);
+
+      final Response response = await get('/img/anime_covers/anilist_1$src');
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(cached('anilist_1').existsSync(), isTrue);
     });
 
     test('should report the failure as JSON, not as the web client', () async {

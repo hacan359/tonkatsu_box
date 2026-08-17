@@ -81,9 +81,10 @@ Names: `tmdb`, `tvdb`, `steamgriddb`, `igdb_client_id`, `igdb_client_secret`,
 configuration problem, not a client one. IGDB's Twitch token is exchanged and
 cached here, so the client secret never reaches a browser.
 
-ScreenScraper needs its dev pair (`ss_dev_id`/`ss_dev_password`) set by the
-operator — it is never baked into the image. The user pair comes from the
-app's settings screen like every other key.
+ScreenScraper needs its dev pair (`ss_dev_id`/`ss_dev_password`): it is never
+baked into the image, so either the operator sets it here or the web settings
+screen does, which shows those two fields on web only. Both pairs then live
+on the server like every other key.
 
 Not wired: Kodi (a host on the user's own LAN, which an allowlist cannot
 cover).

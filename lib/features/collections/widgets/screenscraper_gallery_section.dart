@@ -1,11 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:core/api/image_proxy.dart';
+import 'package:core/models/image_type.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/screenscraper_api.dart';
+import '../../../core/selfhost/server_origin.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/screenscraper_systemes.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -14,6 +18,32 @@ import '../providers/screenscraper_provider.dart';
 
 /// Display preference for the SS gallery: full set vs only in-game screenshots.
 enum ScreenScraperGalleryMode { full, screenshotsOnly }
+
+final RegExp _unsafeInCacheId = RegExp('[^a-z0-9]+');
+
+/// Cache id for one media of one game — unique per type and region, and safe
+/// as a file name on the server side of the image proxy.
+String ssMediaCacheId({required int gameId, required SsMedia media}) {
+  String clean(String value) =>
+      value.toLowerCase().replaceAll(_unsafeInCacheId, '_');
+  final String format = media.format == null || media.format!.isEmpty
+      ? 'png'
+      : clean(media.format!);
+  return '${gameId}_${clean(media.type)}_${clean(media.region ?? 'none')}'
+      '.$format';
+}
+
+/// A browser cannot load SS media itself: the host drops its CORS header on an
+/// error page, so the whole gallery goes blank whenever SS hiccups.
+String ssMediaUrl({required int gameId, required SsMedia media}) {
+  if (!kIsWebBuild) return media.url;
+  return imageProxyUrl(
+    baseUrl: serverBaseUrl(),
+    type: ImageType.screenScraperMedia,
+    imageId: ssMediaCacheId(gameId: gameId, media: media),
+    sourceUrl: media.url,
+  );
+}
 
 class ScreenScraperGallerySection extends ConsumerWidget {
   const ScreenScraperGallerySection({
@@ -95,6 +125,13 @@ class ScreenScraperGallerySection extends ConsumerWidget {
   }
 
   List<_GalleryEntry> _entriesFromGame(S l, SsGame game) {
+    _GalleryEntry entry(String label, SsMedia m, double aspect) =>
+        _GalleryEntry(
+          label: label,
+          imageUrl: ssMediaUrl(gameId: game.id, media: m),
+          aspect: aspect,
+        );
+
     // De-duplicate by type, prefer first occurrence (SS lists best first).
     final Map<String, SsMedia> byType = <String, SsMedia>{};
     for (final SsMedia m in game.medias) {
@@ -105,11 +142,9 @@ class ScreenScraperGallerySection extends ConsumerWidget {
       final List<_GalleryEntry> out = <_GalleryEntry>[];
       for (final SsMedia m in game.medias) {
         if (m.type == 'sstitle') {
-          out.add(_GalleryEntry(
-              label: l.screenScraperMediaTitle, media: m, aspect: 1.33));
+          out.add(entry(l.screenScraperMediaTitle, m, 1.33));
         } else if (m.type == 'ss') {
-          out.add(_GalleryEntry(
-              label: l.screenScraperMediaScreenshot, media: m, aspect: 1.33));
+          out.add(entry(l.screenScraperMediaScreenshot, m, 1.33));
         }
       }
       return out;
@@ -130,7 +165,7 @@ class ScreenScraperGallerySection extends ConsumerWidget {
     for (final (String type, String label, double aspect) in picks) {
       final SsMedia? m = byType[type];
       if (m != null && m.url.isNotEmpty) {
-        out.add(_GalleryEntry(label: label, media: m, aspect: aspect));
+        out.add(entry(label, m, aspect));
       }
     }
     return out;
@@ -213,11 +248,11 @@ class ScreenScraperGallerySection extends ConsumerWidget {
 class _GalleryEntry {
   const _GalleryEntry({
     required this.label,
-    required this.media,
+    required this.imageUrl,
     required this.aspect,
   });
   final String label;
-  final SsMedia media;
+  final String imageUrl;
   final double aspect;
 }
 
@@ -241,7 +276,7 @@ class _Thumbnail extends StatelessWidget {
               width: width,
               height: 110,
               child: CachedNetworkImage(
-                imageUrl: entry.media.url,
+                imageUrl: entry.imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (_, _) => Container(
                   color: AppColors.surface,
@@ -421,7 +456,7 @@ class _FullscreenViewerState extends State<_FullscreenViewer> {
                           behavior: HitTestBehavior.opaque,
                           onTap: () {},
                           child: CachedNetworkImage(
-                            imageUrl: widget.entries[i].media.url,
+                            imageUrl: widget.entries[i].imageUrl,
                             fit: BoxFit.contain,
                           ),
                         ),

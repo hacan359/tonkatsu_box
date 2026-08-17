@@ -28,6 +28,9 @@ class ScreenScraperCacheService {
 
   /// Returns cached game if file is present and not older than TTL.
   Future<SsGame?> read(String key) async {
+    // Web has no cache directory: the browser would throw on every lookup and
+    // the writes below already bail out there.
+    if (kIsWebBuild) return null;
     try {
       final File f = await _fileFor(key);
       if (!await f.exists()) return null;
@@ -50,6 +53,7 @@ class ScreenScraperCacheService {
 
   /// Returns `true` if a "not found" marker exists and is still valid.
   Future<bool> isNegativelyCached(String key) async {
+    if (kIsWebBuild) return false;
     try {
       final File f = await _fileFor(key);
       if (!await f.exists()) return false;

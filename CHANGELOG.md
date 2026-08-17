@@ -92,6 +92,56 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **ScreenScraper works on the selfhost web build**
+
+  Nothing at all came back in a browser. The dev pair a desktop build carries
+  as a `--dart-define` deliberately never ships to a tab, and no screen could
+  put one on the server either, so the proxy answered every ScreenScraper
+  request with 503 "No ss_dev_id configured" while the app still believed the
+  pair existed and offered the gallery. Settings → API Keys now takes the
+  devid / devpassword on web, keeps them where the proxy reads them, and the
+  gallery and the quota button follow what the server actually holds. Media
+  moved to the server's image cache too: the media host drops its CORS header
+  on an error page, which blanked the whole gallery whenever ScreenScraper
+  hiccupped, and the cache spares the account's daily quota.
+
+  * lib/shared/constants/api_defaults.dart (ApiDefaults.hasScreenScraperDevCreds):
+    Build-time only again — the web build no longer claims a pair it cannot see.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.screenScraperDevId, SettingsKeys.screenScraperDevPassword,
+    SettingsState.hasScreenScraperDevCreds, SettingsState.canUseScreenScraper,
+    SettingsNotifier.setScreenScraperDevCredentials): The pair as an ordinary
+    credential — prefs on web, uploaded to the server, cleared with the rest,
+    and an entered pair outranks the built-in one like every other key.
+  * lib/core/selfhost/server_credentials.dart (kConfigKeyToCredential),
+    lib/core/services/config_service.dart (_settingsKeys): Carry the two new
+    keys, so a boot mirrors them back and a config dump round-trips them.
+  * lib/core/api/screenscraper_api.dart (ScreenScraperApi.setDevCredentials,
+    ScreenScraperApi.hasDevCredentials): Accept the pair at runtime instead of
+    reading only the dart-define.
+  * lib/features/collections/providers/screenscraper_provider.dart
+    (ScreenScraperGameNotifier.build): Gate on SettingsState.canUseScreenScraper.
+  * lib/features/settings/content/credentials_content.dart
+    (_buildScreenScraperSection): Web-only devid / devpassword fields.
+  * lib/features/collections/widgets/screenscraper_gallery_section.dart
+    (ssMediaUrl, ssMediaCacheId): Route media through the server's image cache
+    on web, keyed per game, media type and region.
+  * packages/core/lib/models/image_type.dart (ImageType.screenScraperMedia): New folder.
+  * lib/core/services/screenscraper_cache_service.dart
+    (ScreenScraperCacheService.read, ScreenScraperCacheService.isNegativelyCached):
+    Skip the disk cache on web instead of throwing per lookup.
+  * lib/l10n/app_*.arb: screenScraperDevCredsHint, screenScraperDevIdLabel,
+    screenScraperDevPasswordLabel and their placeholders in all locales.
+
+- **Selfhost server: an outage page is no longer cached as an image**
+
+  The image cache stored any 200 body, so ScreenScraper's HTML "we have MySQL
+  problems" page became a broken cover served for the year the entry is
+  declared immutable.
+
+  * server/lib/src/image_handler.dart (ImageCache.handler): Refuse a body the
+    source did not label `image/*`.
+
 - **Selfhost server: POST requests to external APIs are no longer rejected**
 
   The proxy sent every request body chunked, which ListenBrainz answers with

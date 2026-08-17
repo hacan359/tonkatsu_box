@@ -4847,6 +4847,22 @@ class SZh extends S {
   String get screenScraperSourceDesc => '游戏元数据 + 媒体（封面、截图、美术）';
 
   @override
+  String get screenScraperDevCredsHint =>
+      '开发者凭证（devid / devpassword）。服务器用它们签署每个请求；缺少时 ScreenScraper 会拒绝。';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder => 'ScreenScraper 开发者 ID';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder => 'ScreenScraper 开发者密码';
+
+  @override
   String get screenScraperUserCredsHint => '用户凭证（ssid / sspassword）。配额按用户分配。';
 
   @override

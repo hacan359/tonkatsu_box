@@ -43,11 +43,10 @@ abstract final class ApiDefaults {
   static bool get hasIgdbKey =>
       igdbClientId.isNotEmpty && igdbClientSecret.isNotEmpty;
 
-  // On web the dev pair lives on the server and the proxy injects it; the
-  // dart-defines never reach main.dart.js on purpose.
+  // Build-time only. On web the pair lives on the server, so whether one is
+  // configured is a question for SettingsState, not for a dart-define.
   static bool get hasScreenScraperDevCreds =>
-      kIsWebBuild ||
-      (screenScraperDevId.isNotEmpty && screenScraperDevPassword.isNotEmpty);
+      screenScraperDevId.isNotEmpty && screenScraperDevPassword.isNotEmpty;
 
   static bool get hasSimklClientId => simklClientId.isNotEmpty;
 

@@ -5109,6 +5109,23 @@ class SEn extends S {
       'Game metadata + media (covers, screenshots, art)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Developer credentials (devid / devpassword). The server signs every request with them; without them ScreenScraper refuses.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder => 'ScreenScraper developer id';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'ScreenScraper developer password';
+
+  @override
   String get screenScraperUserCredsHint =>
       'User credentials (ssid / sspassword). Quota is per user.';
 

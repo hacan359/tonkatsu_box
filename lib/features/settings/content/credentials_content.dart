@@ -52,6 +52,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   String _hardcoverApiKey = '';
   String _ssSsid = '';
   String _ssSspassword = '';
+  String _ssDevId = '';
+  String _ssDevPassword = '';
   bool _ssQuotaLoading = false;
   String? _ssQuotaError;
   SsUserQuota? _ssQuota;
@@ -93,6 +95,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     _hardcoverApiKey = settings.hardcoverApiKey ?? '';
     _ssSsid = settings.screenScraperSsid ?? '';
     _ssSspassword = settings.screenScraperSspassword ?? '';
+    _ssDevId = settings.screenScraperDevId ?? '';
+    _ssDevPassword = settings.screenScraperDevPassword ?? '';
   }
 
   @override
@@ -1161,6 +1165,39 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              // Desktop carries the dev pair as a --dart-define; the browser
+              // must not, so on web the server holds one the user enters here.
+              if (kIsWebBuild) ...<Widget>[
+                Text(
+                  l.screenScraperDevCredsHint,
+                  style: AppTypography.bodySmall
+                      .copyWith(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                InlineTextField(
+                  label: l.screenScraperDevIdLabel,
+                  value: _ssDevId,
+                  placeholder: l.screenScraperDevIdPlaceholder,
+                  compact: compact,
+                  onChanged: (String value) {
+                    setState(() => _ssDevId = value);
+                    _saveScreenScraperDevCreds();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                InlineTextField(
+                  label: l.screenScraperDevPasswordLabel,
+                  value: _ssDevPassword,
+                  placeholder: l.screenScraperDevPasswordPlaceholder,
+                  obscureText: true,
+                  compact: compact,
+                  onChanged: (String value) {
+                    setState(() => _ssDevPassword = value);
+                    _saveScreenScraperDevCreds();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               Text(
                 l.screenScraperUserCredsHint,
                 style: AppTypography.bodySmall
@@ -1193,9 +1230,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.tonalIcon(
-                  onPressed: (settings.hasScreenScraperCreds &&
-                          ApiDefaults.hasScreenScraperDevCreds &&
-                          !_ssQuotaLoading)
+                  onPressed: (settings.canUseScreenScraper && !_ssQuotaLoading)
                       ? _fetchScreenScraperQuota
                       : null,
                   icon: _ssQuotaLoading
@@ -1275,6 +1310,15 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     await ref.read(settingsNotifierProvider.notifier).setScreenScraperCredentials(
           ssid: _ssSsid.trim(),
           sspassword: _ssSspassword.trim(),
+        );
+  }
+
+  Future<void> _saveScreenScraperDevCreds() async {
+    await ref
+        .read(settingsNotifierProvider.notifier)
+        .setScreenScraperDevCredentials(
+          devId: _ssDevId.trim(),
+          devPassword: _ssDevPassword.trim(),
         );
   }
 
