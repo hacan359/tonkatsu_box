@@ -53,7 +53,7 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | <img src="assets/images/icon_myanimelist_color.png" width="34" alt="MyAnimeList"><br>MyAnimeList | <img src="assets/images/icon_anilist_color.png" width="34" alt="AniList"><br>AniList | <img src="assets/images/icon_hardcover_color.png" width="34" alt="Hardcover"><br>Hardcover | 📁<br>JSON&nbsp;/&nbsp;CSV | 📦<br>.xcollx | |
 
 <p align="center">
-  <img src="docs/screenshots/mockup_main_all.jpg" width="800" alt="Main screen">
+  <img src="docs/screenshots/mockup_main_themes.jpg" width="800" alt="Main screen in the dark and Sakura themes">
 </p>
 
 ## Contents
@@ -75,25 +75,25 @@ The whole interface is localized with runtime switching. Pick your language in *
 
 ## Screenshots
 
-| Collections | Collection Grid |
+| Home | Collections |
 |---|---|
-| <img src="docs/screenshots/mockup_collections.jpg" alt="Collections"> | <img src="docs/screenshots/mockup_collection_view.jpg" alt="Collection Grid"> |
+| <img src="docs/screenshots/mockup_main.jpg" alt="Home"> | <img src="docs/screenshots/mockup_collection.jpg" alt="Collections"> |
 
-| Bulk Selection | Item Details |
+| Search | Title Preview |
 |---|---|
-| <img src="docs/screenshots/mockup_bulk_selection.jpg" alt="Bulk selection"> | <img src="docs/screenshots/mockup_item_details.jpg" alt="Item Details"> |
+| <img src="docs/screenshots/mockup_search.jpg" alt="Search"> | <img src="docs/screenshots/mockup_title.jpg" alt="Title preview"> |
 
-| Game Search | Add to Collection |
+| Item Details | Filters |
 |---|---|
-| <img src="docs/screenshots/mockup_game_search.jpg" alt="Game Search"> | <img src="docs/screenshots/mockup_add_game.jpg" alt="Add to collection"> |
+| <img src="docs/screenshots/mockup_card.jpg" alt="Item details"> | <img src="docs/screenshots/mockup_filters.jpg" alt="Filters"> |
 
-| Settings | Search Sources |
+| Episode Tracker | Tier List |
 |---|---|
-| <img src="docs/screenshots/mockup_settings.jpg" alt="Settings"> | <img src="docs/screenshots/mockup_search_sources.jpg" alt="Search Sources"> |
+| <img src="docs/screenshots/mockup_episode_tracker.jpg" alt="Episode tracker"> | <img src="docs/screenshots/mockup_tierlist.jpg" alt="Tier list"> |
 
-| Tier List | Mood Grid |
+| Genre Cloud | Import |
 |---|---|
-| <img src="docs/screenshots/mockup_tier_list.jpg" alt="Tier List"> | <img src="docs/screenshots/mockup_mood_grid.jpg" alt="Mood grid"> |
+| <img src="docs/screenshots/mockup_genre_cloud.jpg" alt="Genre cloud"> | <img src="docs/screenshots/mockup_import.jpg" alt="Import"> |
 
 ## Features
 
