@@ -52,6 +52,12 @@ abstract class SettingsKeys {
 
   static const String screenScraperSspassword = 'screenscraper_sspassword';
 
+  /// Only the web UI offers the dev pair; a desktop build has it as a
+  /// `--dart-define` and reads these keys just to honour an imported config.
+  static const String screenScraperDevId = 'screenscraper_dev_id';
+
+  static const String screenScraperDevPassword = 'screenscraper_dev_password';
+
   /// Prefix; suffixed per-collection id at call site.
   static const String collectionViewModePrefix = 'collection_view_mode_';
 
@@ -166,6 +172,8 @@ class SettingsState {
     this.podcastIndexApiSecret,
     this.screenScraperSsid,
     this.screenScraperSspassword,
+    this.screenScraperDevId,
+    this.screenScraperDevPassword,
     this.defaultAuthor,
     this.tmdbLanguage = SettingsKeys.tmdbLanguageDefault,
     this.appLanguage = SettingsKeys.appLanguageDefault,
@@ -222,11 +230,27 @@ class SettingsState {
 
   final String? screenScraperSspassword;
 
+  /// On web this mirrors what the server holds, because the browser must not
+  /// carry a `--dart-define` of it.
+  final String? screenScraperDevId;
+
+  final String? screenScraperDevPassword;
+
   bool get hasScreenScraperCreds =>
       screenScraperSsid != null &&
       screenScraperSsid!.isNotEmpty &&
       screenScraperSspassword != null &&
       screenScraperSspassword!.isNotEmpty;
+
+  /// Entered pair wins over the built-in one, like every other key: the browser
+  /// carries no dart-define, and an imported config may bring a pair anywhere.
+  bool get hasScreenScraperDevCreds =>
+      ((screenScraperDevId?.isNotEmpty ?? false) &&
+          (screenScraperDevPassword?.isNotEmpty ?? false)) ||
+      ApiDefaults.hasScreenScraperDevCreds;
+
+  bool get canUseScreenScraper =>
+      hasScreenScraperDevCreds && hasScreenScraperCreds;
 
   final String? defaultAuthor;
 
@@ -369,6 +393,8 @@ class SettingsState {
     String? podcastIndexApiSecret,
     String? screenScraperSsid,
     String? screenScraperSspassword,
+    String? screenScraperDevId,
+    String? screenScraperDevPassword,
     String? defaultAuthor,
     String? tmdbLanguage,
     String? appLanguage,
@@ -407,6 +433,9 @@ class SettingsState {
       screenScraperSsid: screenScraperSsid ?? this.screenScraperSsid,
       screenScraperSspassword:
           screenScraperSspassword ?? this.screenScraperSspassword,
+      screenScraperDevId: screenScraperDevId ?? this.screenScraperDevId,
+      screenScraperDevPassword:
+          screenScraperDevPassword ?? this.screenScraperDevPassword,
       defaultAuthor: defaultAuthor ?? this.defaultAuthor,
       tmdbLanguage: tmdbLanguage ?? this.tmdbLanguage,
       appLanguage: appLanguage ?? this.appLanguage,
@@ -571,6 +600,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getString(SettingsKeys.screenScraperSsid);
     final String? screenScraperSspassword =
         _prefs.getString(SettingsKeys.screenScraperSspassword);
+    final String? screenScraperDevId =
+        _prefs.getString(SettingsKeys.screenScraperDevId);
+    final String? screenScraperDevPassword =
+        _prefs.getString(SettingsKeys.screenScraperDevPassword);
     final String? defaultAuthor =
         _prefs.getString(SettingsKeys.defaultAuthor);
     final String tmdbLanguage =
@@ -634,6 +667,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
       hardcoverApiKey: hardcoverApiKey,
       screenScraperSsid: screenScraperSsid,
       screenScraperSspassword: screenScraperSspassword,
+      screenScraperDevId: screenScraperDevId,
+      screenScraperDevPassword: screenScraperDevPassword,
       defaultAuthor: defaultAuthor,
       tmdbLanguage: tmdbLanguage,
       appLanguage: appLanguage,
@@ -660,6 +695,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _screenScraperApi.setUserCredentials(
       ssid: screenScraperSsid ?? '',
       sspassword: screenScraperSspassword ?? '',
+    );
+    _screenScraperApi.setDevCredentials(
+      devId: screenScraperDevId ?? '',
+      devPassword: screenScraperDevPassword ?? '',
     );
 
     Future<void>.microtask(_loadPlatformCount);
@@ -848,6 +887,24 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(
       screenScraperSsid: ssid,
       screenScraperSspassword: sspassword,
+    );
+  }
+
+  /// Only the web settings screen calls this; on web the write also travels to
+  /// the server, which is what signs the proxied requests.
+  Future<void> setScreenScraperDevCredentials({
+    required String devId,
+    required String devPassword,
+  }) async {
+    await _writeCredential(SettingsKeys.screenScraperDevId, devId);
+    await _writeCredential(SettingsKeys.screenScraperDevPassword, devPassword);
+    _screenScraperApi.setDevCredentials(
+      devId: devId,
+      devPassword: devPassword,
+    );
+    state = state.copyWith(
+      screenScraperDevId: devId,
+      screenScraperDevPassword: devPassword,
     );
   }
 
@@ -1179,6 +1236,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _writeCredential(SettingsKeys.podcastIndexApiSecret, '');
     await _writeCredential(SettingsKeys.screenScraperSsid, '');
     await _writeCredential(SettingsKeys.screenScraperSspassword, '');
+    await _writeCredential(SettingsKeys.screenScraperDevId, '');
+    await _writeCredential(SettingsKeys.screenScraperDevPassword, '');
     await _prefs.remove(SettingsKeys.defaultAuthor);
     await _prefs.remove(SettingsKeys.showRecommendations);
     await _prefs.remove(SettingsKeys.showBlurayOverlay);

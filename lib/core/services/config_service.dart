@@ -81,6 +81,8 @@ class ConfigService {
     SettingsKeys.hardcoverUsername,
     SettingsKeys.screenScraperSsid,
     SettingsKeys.screenScraperSspassword,
+    SettingsKeys.screenScraperDevId,
+    SettingsKeys.screenScraperDevPassword,
     SettingsKeys.raApiKey,
     SettingsKeys.raUsername,
     SettingsKeys.steamApiKey,

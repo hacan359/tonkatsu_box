@@ -112,18 +112,40 @@ class ScreenScraperApi {
 
   String _ssid = '';
   String _sspassword = '';
+  String _devId = '';
+  String _devPassword = '';
 
   void setUserCredentials({required String ssid, required String sspassword}) {
     _ssid = ssid;
     _sspassword = sspassword;
   }
 
+  /// Web has no dev pair compiled in — the server holds it and the settings
+  /// screen is where it is entered, so it arrives at runtime instead.
+  void setDevCredentials({
+    required String devId,
+    required String devPassword,
+  }) {
+    _devId = devId;
+    _devPassword = devPassword;
+  }
+
   bool get hasUserCredentials => _ssid.isNotEmpty && _sspassword.isNotEmpty;
+
+  String get _effectiveDevId =>
+      _devId.isNotEmpty ? _devId : ApiDefaults.screenScraperDevId;
+
+  String get _effectiveDevPassword => _devPassword.isNotEmpty
+      ? _devPassword
+      : ApiDefaults.screenScraperDevPassword;
+
+  bool get hasDevCredentials =>
+      _effectiveDevId.isNotEmpty && _effectiveDevPassword.isNotEmpty;
 
   Map<String, String> _baseParams() {
     return <String, String>{
-      'devid': ApiDefaults.screenScraperDevId,
-      'devpassword': ApiDefaults.screenScraperDevPassword,
+      'devid': _effectiveDevId,
+      'devpassword': _effectiveDevPassword,
       'softname': ApiDefaults.screenScraperSoftname,
       'output': 'json',
       'ssid': _ssid,
@@ -131,8 +153,7 @@ class ScreenScraperApi {
     };
   }
 
-  bool get _hasAllCredentials =>
-      ApiDefaults.hasScreenScraperDevCreds && hasUserCredentials;
+  bool get _hasAllCredentials => hasDevCredentials && hasUserCredentials;
 
   Future<SsGame?> searchGame({
     required String name,

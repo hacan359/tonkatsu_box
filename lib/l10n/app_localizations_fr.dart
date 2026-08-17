@@ -5195,6 +5195,24 @@ class SFr extends S {
       'Métadonnées de jeux + médias (jacquettes, captures d\'écran, illustrations)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Identifiants développeur (devid / devpassword). Le serveur signe chaque requête avec eux ; sans eux ScreenScraper refuse.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder =>
+      'Identifiant développeur ScreenScraper';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'Mot de passe développeur ScreenScraper';
+
+  @override
   String get screenScraperUserCredsHint =>
       'Identifiants utilisateur (ssid / sspassword). Un quota est attribué à chaque utilisateur.';
 

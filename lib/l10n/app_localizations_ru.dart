@@ -5200,6 +5200,23 @@ class SRu extends S {
       'Метаданные игр + медиа (обложки, скриншоты, арт)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Креды разработчика (devid / devpassword). Сервер подписывает ими каждый запрос; без них ScreenScraper отказывает.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder => 'ID разработчика ScreenScraper';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'Пароль разработчика ScreenScraper';
+
+  @override
   String get screenScraperUserCredsHint =>
       'Пользовательские креды (ssid / sspassword). Квота персональная.';
 

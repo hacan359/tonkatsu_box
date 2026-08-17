@@ -5161,6 +5161,24 @@ class SPt extends S {
       'Metadados de jogos + mídia (capas, capturas, arte)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Credenciais de desenvolvedor (devid / devpassword). O servidor assina cada requisição com elas; sem elas o ScreenScraper recusa.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder =>
+      'ID de desenvolvedor do ScreenScraper';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'Senha de desenvolvedor do ScreenScraper';
+
+  @override
   String get screenScraperUserCredsHint =>
       'Credenciais de usuário (ssid / sspassword). Cota é por usuário.';
 

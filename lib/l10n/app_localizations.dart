@@ -9044,6 +9044,36 @@ abstract class S {
   /// **'Game metadata + media (covers, screenshots, art)'**
   String get screenScraperSourceDesc;
 
+  /// No description provided for @screenScraperDevCredsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer credentials (devid / devpassword). The server signs every request with them; without them ScreenScraper refuses.'**
+  String get screenScraperDevCredsHint;
+
+  /// No description provided for @screenScraperDevIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'devid'**
+  String get screenScraperDevIdLabel;
+
+  /// No description provided for @screenScraperDevIdPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'ScreenScraper developer id'**
+  String get screenScraperDevIdPlaceholder;
+
+  /// No description provided for @screenScraperDevPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'devpassword'**
+  String get screenScraperDevPasswordLabel;
+
+  /// No description provided for @screenScraperDevPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'ScreenScraper developer password'**
+  String get screenScraperDevPasswordPlaceholder;
+
   /// No description provided for @screenScraperUserCredsHint.
   ///
   /// In en, this message translates to:

@@ -27,6 +27,8 @@ const Map<String, String> kConfigKeyToCredential = <String, String>{
   'podcastindex_api_secret': CredentialNames.podcastIndexSecret,
   'screenscraper_ssid': CredentialNames.ssSsid,
   'screenscraper_sspassword': CredentialNames.ssSspassword,
+  'screenscraper_dev_id': CredentialNames.ssDevId,
+  'screenscraper_dev_password': CredentialNames.ssDevPassword,
 };
 
 final Map<String, String> kCredentialToConfigKey = <String, String>{

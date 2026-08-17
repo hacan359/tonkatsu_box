@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+import 'package:tonkatsu_box/shared/constants/api_defaults.dart';
 
 void main() {
   group('SettingsKeys', () {
@@ -194,6 +195,57 @@ void main() {
         );
 
         expect(state.hasSteamGridDbKey, isFalse);
+      });
+    });
+
+    group('canUseScreenScraper', () {
+      test('should return false когда пользовательской пары нет', () {
+        const SettingsState state = SettingsState(
+          screenScraperDevId: 'dev',
+          screenScraperDevPassword: 'secret',
+        );
+
+        expect(state.canUseScreenScraper, isFalse);
+      });
+
+      test('should return true когда обе пары заданы', () {
+        const SettingsState state = SettingsState(
+          screenScraperSsid: 'user',
+          screenScraperSspassword: 'pass',
+          screenScraperDevId: 'dev',
+          screenScraperDevPassword: 'secret',
+        );
+
+        expect(state.hasScreenScraperDevCreds, isTrue);
+        expect(state.canUseScreenScraper, isTrue);
+      });
+
+      test('should reject half a dev pair', () {
+        const SettingsState state = SettingsState(
+          screenScraperSsid: 'user',
+          screenScraperSspassword: 'pass',
+          screenScraperDevId: 'dev',
+        );
+
+        // Falls back to the build-time pair, which a test build never carries.
+        expect(
+          state.hasScreenScraperDevCreds,
+          ApiDefaults.hasScreenScraperDevCreds,
+        );
+      });
+
+      test('should reject an empty dev pair', () {
+        const SettingsState state = SettingsState(
+          screenScraperSsid: 'user',
+          screenScraperSspassword: 'pass',
+          screenScraperDevId: '',
+          screenScraperDevPassword: '',
+        );
+
+        expect(
+          state.hasScreenScraperDevCreds,
+          ApiDefaults.hasScreenScraperDevCreds,
+        );
       });
     });
 

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:core/api/credential_names.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/selfhost/server_credentials.dart';
+import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 
 List<int> config(Map<String, Object?> body) => utf8.encode(jsonEncode(body));
 
@@ -61,6 +62,27 @@ void main() {
       expect(
         kConfigKeyToCredential.values.every(CredentialNames.all.contains),
         isTrue,
+      );
+    });
+
+    test('should spell the ScreenScraper keys the way the prefs do', () {
+      // The map repeats the pref names as literals so core stays off the
+      // settings layer; these four are the pair the proxy refuses without.
+      expect(
+        kConfigKeyToCredential[SettingsKeys.screenScraperDevId],
+        CredentialNames.ssDevId,
+      );
+      expect(
+        kConfigKeyToCredential[SettingsKeys.screenScraperDevPassword],
+        CredentialNames.ssDevPassword,
+      );
+      expect(
+        kConfigKeyToCredential[SettingsKeys.screenScraperSsid],
+        CredentialNames.ssSsid,
+      );
+      expect(
+        kConfigKeyToCredential[SettingsKeys.screenScraperSspassword],
+        CredentialNames.ssSspassword,
       );
     });
   });

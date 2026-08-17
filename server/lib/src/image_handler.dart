@@ -74,6 +74,16 @@ class ImageCache {
           );
         }
 
+        // ScreenScraper answers an outage with a 200 HTML page; caching that
+        // would serve a broken "image" for the year the entry is immutable.
+        final String? contentType = response.contentType;
+        if (contentType != null && !contentType.startsWith('image/')) {
+          return _error(
+            HttpStatus.badGateway,
+            'Source answered $contentType, not an image',
+          );
+        }
+
         await _writeAtomically(file, response.body);
 
         return _image(
