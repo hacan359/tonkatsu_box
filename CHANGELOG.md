@@ -11,12 +11,10 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **"Ignored" item status**
 
-  A seventh status for titles kept in the library but deliberately parked —
-  neither in progress nor dropped, so the "dropped" count stops collecting
-  them. It behaves like any other status: pick it on the item card, in the
-  table cell or from the bulk menu, filter by it, and see it in the
-  collection statistics. Nothing transitions in or out of it automatically,
-  and an external tracker can no longer pull an item back out of it.
+  A seventh status for titles kept in the library but deliberately parked.
+  It behaves like any other status: pick it on the item card, in the table
+  cell or from the bulk menu, filter by it, and see it in the collection
+  statistics. An external tracker never moves an item out of it.
 
   * packages/core/lib/models/item_status.dart (ItemStatus.ignored): New value,
     stored as `ignored`, sorted last.
@@ -40,19 +38,21 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   Settings → Appearance gains a "Collection banner style" choice (shown
   while rich collection view is on): Classic, Comic, Sticker album,
   Brutalist and Strips. Every non-classic style shows a per-status summary
-  of the collection — a proportional color bar with a legend, round
-  status badges or boxy counters, depending on the style. The comic and
-  sticker styles draw on a fixed paper-and-ink palette; the others follow
-  the app theme.
+  of the collection — a proportional color bar with a dot-and-count legend,
+  round status badges or boxy counters, depending on the style. Strips
+  frames the photo as one full-bleed picture split by two slanted cuts.
+  The comic and sticker styles draw on a fixed paper-and-ink palette; the
+  others follow the app theme.
 
   * lib/shared/constants/rich_hero_style.dart (RichHeroStyle): New enum,
     id-keyed with a classic fallback in RichHeroStyle.fromId.
   * lib/shared/constants/rich_hero_style_ui.dart (RichHeroStyleUi.localizedLabel): New.
   * lib/features/collections/widgets/rich/rich_hero_styles.dart
-    (RichCollectionHero, _ComicHero, _StickerHero, _BrutalistHero,
-    _SlatsHero, _HeroStats, _StatusBar, _StatusLegend, _StatusBadges,
-    _ImageSlice, _HalftonePainter, _DotGridPainter): New — the style
-    dispatcher and the four non-classic banners.
+    (RichCollectionHero, _ComicHero, _StickerHero, _StickerHeroSide,
+    _BrutalistHero, _SlatsHero, _HeroStats, _StatusBar, _StatusLegend,
+    _StatusBadges, _ImageSlice, _HalftonePainter, _DotGridPainter,
+    _PanelCutsPainter): New — the style dispatcher and the four
+    non-classic banners.
   * lib/features/collections/widgets/hero_image.dart (heroImageProviderFor,
     HeroCoverImage): New — shared hero ImageProvider resolution and the
     single cache-width policy for hero renders.
@@ -71,15 +71,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Audio as a new media type: music and podcasts**
 
-  One "Audio" tab covers two kinds of records, the way books cover prose
-  and comics. Music (albums) comes from MusicBrainz, with covers from
-  Cover Art Archive and new-release / popularity data from ListenBrainz;
-  podcasts come from Podcast Index. Search and browse with genre, type,
+  One "Audio" tab covers two kinds of records: music albums from
+  MusicBrainz, with covers from Cover Art Archive and new-release /
+  popularity data from ListenBrainz, and podcasts from Podcast Index.
+  Search and browse with genre, type,
   year, category and language filters, two discover rows ("New releases"
   and "Trending podcasts"), and per-track / per-episode listened tracking:
   albums get the edition picker and its track list, podcasts get a dated
   episode checklist with year spans, progress bars, whole-span toggles and
-  incremental pickup of newly published episodes. Cards title as
+  incremental pickup of newly published episodes. In a track or episode row
+  the circle toggles the listened mark, and a tap on the row unfolds an
+  ellipsized title. Cards title as
   "Artist — Album" / "Author — Podcast" and caption as "Music" / "Podcast".
   Statistics, export/import, backup and the selfhost web build all cover
   the new type.
@@ -88,18 +90,15 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   built-in one, and Settings → Credentials or the welcome wizard accept a
   personal pair with a Test button; the keys travel with the settings dump
   and backups. On the selfhost web build the server signs proxied requests
-  itself, so the secret never reaches the browser.
+  itself.
 
 ### Fixed
 
 - **Statistics no longer count episodes and tracks of deleted titles**
 
-  Deleting a series left its watch marks in the database on purpose, so
-  re-adding it restores the progress — but the statistics page counted them
-  forever, and editing the marks of a live card was the only thing that made
-  the numbers agree again. Every episode and track counter now ignores marks
-  whose title is no longer in the collection. Nothing is deleted, so a
-  re-added series still comes back with its progress.
+  Every episode and track counter on the statistics page now ignores watch
+  marks whose title is no longer in the collection. The marks themselves
+  are kept, and a re-added series still comes back with its progress.
 
   * packages/core/lib/database/dao/stats_dao.dart (StatsDao.getEpisodeSplit,
     StatsDao.getListenedTrackTotal, StatsDao.getEstimatedMinutes,
@@ -109,11 +108,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **A replaced cover on a custom card actually changes**
 
-  Picking a new picture for a custom card — by URL or from disk — kept showing
-  the old one. The cache file was named after the card, so the replacement
-  landed on the name the previous cover already held, and Flutter's decoded-image
-  cache is keyed by that same path. A picked cover now carries a token in its
-  name, and the decoded copies are dropped when one is replaced.
+  Picking a new picture for a custom card — by URL or from disk — now
+  replaces the shown cover immediately. "Refresh item" also shows the
+  refetched cover right away instead of after a restart.
 
   * packages/core/lib/models/custom_media.dart (CustomMedia.localCoverMarkerFor,
     CustomMedia.localCoverToken): New — a marker that carries the pick's token.
@@ -133,15 +130,19 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/features/collections/providers/collections_provider.dart,
     lib/core/import/sources/custom_file/custom_cards_import_service.dart:
     Write the tokenized marker when a cover is picked or imported.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions._refreshItemWork): Evict the decoded copies before the
+    refetch, so the new cover shows without a restart.
   * server/lib/src/image_handler.dart (ImageCache.deleteHandler,
     ImageCache._isSafeImageId), server/lib/src/app_handler.dart: A DELETE route
-    for the image cache, sharing the traversal guard with the other two.
+    for the image cache; the shared guard also rejects absolute and
+    drive-qualified ids, which p.join would otherwise resolve outside the
+    cache directory.
 
 - **TheTVDB series show how many episodes they have**
 
-  A TheTVDB series record states no episode count anywhere, so the progress
-  badge had no denominator and seasons showed no episode totals. Both are now
-  counted from the episode list, skipping specials.
+  The progress badge and the season list of a TheTVDB series now show
+  episode totals, counted from the episode list and skipping specials.
 
   * lib/core/api/episode_source/tvdb_episode_source.dart
     (TvdbEpisodeSource.getShow, TvdbEpisodeSource.getSeasons,
@@ -150,34 +151,19 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Collection banner keeps its width in table view**
 
-  Switching a rich collection to the table view shrank the banner and left an
-  uneven gap on both sides: the side padding the table needs was wrapped
-  around the banner too.
+  Switching a rich collection to the table view keeps the banner full-bleed:
+  the side padding now applies to the table alone.
 
   * lib/features/collections/widgets/collection_items_view.dart
     (CollectionItemsView.build): Stop padding the whole table view.
 
-- **Sticker album banner no longer overflows on a narrow window**
-
-  The right column wrapped past the banner's fixed height and drew an overflow
-  stripe once several statuses were present in a narrow window.
-
-  * lib/features/collections/widgets/rich/rich_hero_styles.dart (_StickerHero,
-    _StickerHeroSide): Drop the cover stickers below two columns and clip the
-    column instead of overflowing.
-
 - **ScreenScraper works on the selfhost web build**
 
-  Nothing at all came back in a browser. The dev pair a desktop build carries
-  as a `--dart-define` deliberately never ships to a tab, and no screen could
-  put one on the server either, so the proxy answered every ScreenScraper
-  request with 503 "No ss_dev_id configured" while the app still believed the
-  pair existed and offered the gallery. Settings → API Keys now takes the
-  devid / devpassword on web, keeps them where the proxy reads them, and the
-  gallery and the quota button follow what the server actually holds. Media
-  moved to the server's image cache too: the media host drops its CORS header
-  on an error page, which blanked the whole gallery whenever ScreenScraper
-  hiccupped, and the cache spares the account's daily quota.
+  Settings → API Keys on the web build now takes the ScreenScraper
+  devid / devpassword pair, stores it on the server where the proxy reads
+  it, and the gallery and the quota button follow what the server actually
+  holds. Gallery media is served through the server's image cache, keyed
+  per game, media type and region.
 
   * lib/shared/constants/api_defaults.dart (ApiDefaults.hasScreenScraperDevCreds):
     Build-time only again — the web build no longer claims a pair it cannot see.
@@ -209,37 +195,74 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Selfhost server: an outage page is no longer cached as an image**
 
-  The image cache stored any 200 body, so ScreenScraper's HTML "we have MySQL
-  problems" page became a broken cover served for the year the entry is
-  declared immutable.
+  The server's image cache refuses a body the source did not label
+  `image/*`, so an HTML error page is never stored and served as a cover.
 
   * server/lib/src/image_handler.dart (ImageCache.handler): Refuse a body the
     source did not label `image/*`.
 
+- **Item-card images load instantly from the cover cache**
+
+  The cover and the blurred background of an item card render from the
+  local cover cache on the first frame — no spinner on the collection →
+  card transition and no second network fetch of an already-downloaded
+  file. The grid, the card and the search sheet decode the poster at one
+  width and share a single in-memory copy. On the web build the backdrop
+  and the blurred poster load through the selfhost server's image cache,
+  and the server paces its Cover Art Archive fetches.
+
+  * lib/core/services/image_cache_service.dart
+    (ImageCacheService.localPathIfCached, ImageCacheService.getBaseCachePath,
+    ImageCacheService.isCacheEnabled): Memoize the base path and the enabled
+    flag; new synchronous cache-hit lookup.
+  * lib/shared/widgets/cached_image.dart (kPosterDecodeWidth,
+    _CachedImageState._fetchImage, CachedImage.alignment): Resolve a cached
+    file synchronously before the first frame; the shared poster decode
+    width; alignment pass-through.
+  * lib/shared/widgets/media_detail/media_cover_image.dart,
+    lib/shared/widgets/media_poster_card.dart: Decode at kPosterDecodeWidth.
+  * lib/shared/widgets/gyroscope_parallax_image.dart
+    (GyroscopeParallaxImage.imageType, GyroscopeParallaxImage.imageId,
+    GyroscopeParallaxImage._proxiedUrl): Render via CachedImage when the
+    cache keys are given; route the URL fallback through imageProxyUrl on web.
+  * lib/features/search/widgets/item_details_sheet.dart: Pass the poster's
+    cache keys into the blurred-poster background; decode the poster at the
+    shared width.
+  * packages/core/lib/models/image_type.dart (ImageType.backdrop): New folder,
+    keyed by a hash of the source URL.
+  * server/lib/src/upstream_throttle.dart (UpstreamThrottle): Extracted from
+    the proxy so both upstream paths share the FIFO gap.
+  * server/lib/src/image_handler.dart (ImageCache.handler, _throttleHost):
+    Pace coverartarchive.org fetches at the desktop client's gap.
+  * server/lib/src/proxy_handler.dart: Use the extracted UpstreamThrottle.
+
 - **Selfhost server: POST requests to external APIs are no longer rejected**
 
-  The proxy sent every request body chunked, which ListenBrainz answers with
-  a bare 400 — album popularity in the web build's audio search silently came
-  back empty.
+  The server proxy sends every forwarded body — including an empty one —
+  with an explicit Content-Length instead of chunked transfer encoding.
 
   * server/lib/src/upstream_client.dart (HttpUpstreamClient._send): Set an
-    explicit Content-Length on the forwarded body.
+    explicit Content-Length on the forwarded body, including an empty one —
+    an empty POST would otherwise still go out chunked.
 
 - **Collection background image can be picked on the web build**
 
-  Picking a hero image in the collection editor silently did nothing in a
-  browser: the picked file has no filesystem path there. The web build now
-  uploads the picked bytes to the selfhost server's image cache and renders
-  the hero from its URL, so collection backgrounds work the same as on
-  desktop.
+  Picking a hero image in the collection editor now works in a browser: the
+  picked bytes upload to the selfhost server's image cache and the hero
+  renders from its URL. A replaced or removed hero is deleted from the
+  server cache, and an export on web skips the hero file.
 
   * packages/core/lib/models/image_type.dart (ImageType.collectionHero): New folder.
   * packages/core/lib/api/image_proxy.dart (imageProxyUrl): New — the
     origin-prefixed form of imageProxyPath every fetch and upload now uses.
   * lib/core/services/collection_hero_service.dart (CollectionHeroService.pickAndSave,
-    CollectionHeroService.saveBytes, CollectionHeroService.resolve): Web
-    branches — upload via ImageCacheService.saveImageBytes, resolve to the
-    server URL.
+    CollectionHeroService.saveBytes, CollectionHeroService.resolve,
+    CollectionHeroService.delete): Web branches — upload via
+    ImageCacheService.saveImageBytes, resolve to the server URL, and delete
+    a replaced or removed hero from the server cache instead of leaking it.
+  * lib/core/services/export_service.dart (ExportService._collectHeroImage):
+    Skip the hero on web — the resolved location is a URL, and reading it as
+    a file broke every export of a collection with a background.
   * lib/core/services/image_cache_service.dart (ImageCacheService.saveImageBytes),
     lib/shared/widgets/cached_image.dart, lib/features/collections/widgets/create_custom_item_dialog.dart:
     Switch to imageProxyUrl.
@@ -250,6 +273,15 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     Choose/Replace/Remove image controls on web — the picker no longer
     needs a local filesystem.
 
+- **Import no longer stamps today's date into empty started/completed fields**
+
+  An item exported with a status but no dates now imports with its dates
+  empty: the file's dates win verbatim, including explicit nulls.
+
+  * lib/core/services/import_service.dart (ImportService._restoreUserData):
+    Passes clearStartedAt / clearCompletedAt when the exported item carries a
+    status but no dates, undoing the stamp the status write just made.
+
 ### Changed
 
 - **The collection banner carries the title and the back arrow**
@@ -258,10 +290,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   gone: the banner itself shows the name and a back control drawn in its own
   style — an inked plate in Comic, a taped-on circle in Sticker album, a
   hard-shadowed square in Brutalist, a quiet rounded one in Strips and a
-  scrim circle over the photo in Classic. One row of vertical space back, and
-  the collection name is no longer printed twice. The banner also stays up
-  while the items are still loading or failed to load, so the way back never
-  disappears.
+  scrim circle over the photo in Classic. The banner also stays up while
+  the items are still loading or failed to load.
 
   * lib/features/collections/widgets/rich/hero_back_button.dart
     (HeroBackButton): New — one back control the styles decorate themselves.
@@ -276,38 +306,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     banner carries the title; keep the banner above the loading skeleton and
     the error state.
 
-- **Strips banner reads as torn comic panels**
-
-  The style used to slice the photo into three equal full-width bands, which
-  looked like a cut picture rather than a layout. One full-bleed frame is now
-  divided by two slanted wedge-shaped gaps that widen toward opposite edges.
-  The photo also runs edge to edge like every other style — the side gaps it
-  used to carry are gone.
-
-  * lib/features/collections/widgets/rich/rich_hero_styles.dart
-    (_SlatsHero, _PanelCutsPainter): New painter for the cuts; the banner drops
-    the per-strip slicing and its outer padding, keeping it on the text block.
-
-- **Status breakdown in the banner is dots and counts**
-
-  The legend spelled out every status name and wrapped into three lines on a
-  phone. It now shows a colored dot with its count — the names are already
-  carried by the proportional bar above it.
-
-  * lib/features/collections/widgets/rich/rich_hero_styles.dart (_StatusLegend):
-    Drop the localized label from the row.
-
 - **One poster-grid geometry for every card grid and its skeleton**
 
-  A collection, All Items, search, browse and the audio discover rows each
-  computed their own column count, spacing and padding — three near-copies
-  plus a fourth variant in the loading skeleton, which is why placeholders
-  ignored the card-size setting and jumped to another size once the items
-  arrived. All of them now read the same geometry, so the skeleton matches
-  the cards that replace it, and search gains the landscape-phone density and
-  the tablet breakpoint the collection grid already had — including the
-  compact card form, which a landscape phone used to get in a collection but
-  not in search.
+  A collection, All Items, search, browse and the audio discover rows share
+  one poster-grid geometry — column count, spacing and padding — and the
+  loading skeleton reads the same numbers, so placeholders match the cards
+  that replace them. Search gains the landscape-phone density, the tablet
+  breakpoint and the compact card form.
 
   * lib/shared/utils/poster_grid_delegate.dart (posterGridGeometry): New —
     delegate plus outer padding for one card scale, replacing posterGridDelegate.
@@ -329,13 +334,10 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Less animation work on mobile**
 
-  Three effects burned frames for nothing. A blurred-poster backdrop no
-  longer follows the gyroscope — the motion is invisible under a 40px blur but
-  re-ran the blur every frame. A tagged card's running border highlight is
-  drawn statically on phones, where a grid of them meant one endless ticker
-  per card. And every shimmer placeholder now shares a single clock instead of
-  owning an AnimationController, so a loading grid runs one ticker rather than
-  dozens — and none at all once the content arrives.
+  A blurred-poster backdrop no longer follows the gyroscope. A tagged
+  card's running border highlight is drawn statically on phones. Shimmer
+  placeholders share a single animation clock instead of one controller
+  each, and stop ticking once the content arrives.
 
   * lib/shared/widgets/gyroscope_parallax_image.dart
     (GyroscopeParallaxImage.enabled): New flag that skips the sensor entirely.
@@ -399,8 +401,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   those edits apply to the tag itself immediately, independent of the
   checkbox selection. Creating a duplicate tag is no longer possible: the
   create row hides when a name matches case-insensitively, and the database
-  layer resolves a racing insert to the existing tag instead of failing on
-  the UNIQUE constraint.
+  layer resolves a racing insert to the existing tag.
 
   * lib/features/collections/widgets/tag_search_list.dart (TagSearchList): New —
     shared search/create/sort body of both dialogs.
@@ -437,15 +438,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Tags on wide screens move from the vertical side rail to a horizontal chip bar**
 
-  The old right-edge rail drew every tag name rotated 90°, so a tag's height
-  grew with its name and a few dozen tags meant screens of vertical
-  scrolling. Tags are now a single chip row above the items grid: readable
-  horizontal labels with per-collection item counts, the same multi-select
-  toggling, a reset chip showing how many tags are active, and the "Group"
-  toggle first in the row. When the chips overflow, the row scrolls sideways
-  via edge-fade arrows (desktop), the mouse wheel, or touch/mouse drag —
-  the same pattern as the preference-cloud legend. Narrow screens keep the
-  tags-and-sorting sheet behind the filter-bar button.
+  The vertical tag rail on the right edge is gone. Tags are now a single
+  chip row above the items grid: horizontal labels with per-collection item
+  counts, the same multi-select toggling, a reset chip showing how many
+  tags are active, and the "Group" toggle first in the row. When the chips
+  overflow, the row scrolls sideways via edge-fade arrows (desktop), the
+  mouse wheel, or touch/mouse drag. Narrow screens keep the tags-and-sorting
+  sheet behind the filter-bar button.
 
   * lib/features/collections/widgets/tag_top_bar.dart (TagTopBar): New —
     chip row on ScrollableRowWithArrows.
@@ -459,20 +458,6 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/collections/widgets/collection_filter_bar.dart: Comment
     update only.
   * test/features/collections/widgets/tag_top_bar_test.dart: New.
-
-### Fixed
-
-- **Import no longer stamps today's date into empty started/completed fields**
-
-  Restoring an item's status marks the transition with "now" (the normal
-  in-app behaviour), and the import then only overwrote non-empty dates from
-  the file — so an item exported as completed with no dates came back
-  completed "today". The file's dates now win verbatim, including explicit
-  nulls.
-
-  * lib/core/services/import_service.dart (ImportService._restoreUserData):
-    Passes clearStartedAt / clearCompletedAt when the exported item carries a
-    status but no dates, undoing the stamp the status write just made.
 
 ## [0.42.0] - 2026-08-11
 

@@ -208,13 +208,14 @@ Every test must pull its weight in one of three buckets:
 Entry structure — three parts separated by blank lines:
 
 1. **Topic line** — one bolded sentence summarising the change (past-tense or imperative, like a commit subject).
-2. **Body** (optional, 1–3 sentences) — what the user sees and why. Plain prose, no file paths. Skip if the topic line is self-explanatory.
+2. **Body** (optional, 1–3 sentences) — what the feature or fix does now, plain prose, no file paths. Skip if the topic line is self-explanatory. **Never explain WHY or the history**: no rationale ("so the counter stops...", "which is why..."), no diagnosis of the old bug ("the cache file was named after..."), no before/after narration. **Never compare with or reference another source or app** ("like TMDB has", "the way books do", "same pattern as X"). State the end behaviour, full stop.
 3. **File list** — bulleted index of affected files in the form `* path/to/file.dart (ClassName.methodName, OtherSymbol): what changed`. Use full paths from the repo root and full symbol names (never abbreviate, never group with `{foo,bar}` syntax — every symbol must be greppable on its own). Several files with identical descriptions can be combined on one line separated by commas. A file with no specific symbol worth naming can be listed as `* path/to/file.dart: what changed`.
 
 Rules:
 - English entries. No Russian abbreviations or Cyrillic shorthand in English prose (write "right-click", not "ПКМ"; "left-click", not "ЛКМ"). Russian strings quoted as UI labels ("«Желаемое»") are fine — that's data, not prose.
 - Separate unrelated topics with a blank line (already enforced by Markdown list spacing).
 - **Unreleased consolidation**: when enhancing or fixing something already in `[Unreleased]` that was never released, update the existing entry in place — don't add a separate Fixed / Changed bullet. Users should see the final state, not the development history. This applies to the topic line, body, and the file list alike.
+- **Fixed entries are for released features only.** A Fixed / Changed entry may exist only when the thing it fixes shipped in a past release. A fix or tweak to a feature introduced in the same `[Unreleased]` cycle ("added music, then two tasks later fixed something in it") must never appear as its own entry — fold the final behaviour into the feature's entry, or drop it entirely if the feature text already covers it.
 - If a single topic spans many unrelated files (≈30+), it probably bundles several changes — split into multiple topic entries rather than letting one file list balloon.
 
 Example:
