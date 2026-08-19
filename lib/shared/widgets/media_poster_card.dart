@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/media_type_theme.dart';
+import '../constants/platform_features.dart';
 import '../utils/item_card_progress.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
@@ -885,6 +886,9 @@ class _TagGlowWrapperState extends State<_TagGlowWrapper>
   }
 
   void _syncController() {
+    // Mobile draws the border statically: a grid of tagged cards would
+    // otherwise run one endless ticker per card, a real battery cost.
+    if (kIsMobile) return;
     if (widget.color != null && _controller == null) {
       _controller = AnimationController(
         vsync: this,
@@ -906,14 +910,26 @@ class _TagGlowWrapperState extends State<_TagGlowWrapper>
   Widget build(BuildContext context) {
     if (widget.color == null) return widget.child;
 
+    final AnimationController? controller = _controller;
+    if (controller == null) {
+      return CustomPaint(
+        foregroundPainter: _GlowBorderPainter(
+          color: widget.color!,
+          borderRadius: widget.borderRadius,
+          progress: null,
+        ),
+        child: widget.child,
+      );
+    }
+
     return AnimatedBuilder(
-      animation: _controller!,
+      animation: controller,
       builder: (BuildContext context, Widget? child) {
         return CustomPaint(
           foregroundPainter: _GlowBorderPainter(
             color: widget.color!,
             borderRadius: widget.borderRadius,
-            progress: _controller!.value,
+            progress: controller.value,
           ),
           child: child,
         );
@@ -925,7 +941,7 @@ class _TagGlowWrapperState extends State<_TagGlowWrapper>
   }
 }
 
-/// Paints a colored border with a running bright highlight.
+/// Paints a colored border; a non-null [progress] adds the running highlight.
 class _GlowBorderPainter extends CustomPainter {
   _GlowBorderPainter({
     required this.color,
@@ -935,7 +951,7 @@ class _GlowBorderPainter extends CustomPainter {
 
   final Color color;
   final double borderRadius;
-  final double progress;
+  final double? progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -944,14 +960,18 @@ class _GlowBorderPainter extends CustomPainter {
       Radius.circular(borderRadius),
     );
 
+    // Slightly brighter when static — there is no highlight to carry the tag.
     final Paint borderPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
-      ..color = color.withAlpha(100);
+      ..color = color.withAlpha(progress == null ? 160 : 100);
     canvas.drawRRect(rrect, borderPaint);
 
+    final double? p = progress;
+    if (p == null) return;
+
     // Running highlight: a SweepGradient rotated by progress.
-    final double angle = progress * 2 * 3.14159265;
+    final double angle = p * 2 * 3.14159265;
     final Paint highlightPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0

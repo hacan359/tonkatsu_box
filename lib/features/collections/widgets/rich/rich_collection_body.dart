@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 import '../hero_image.dart';
 import 'default_hero_assets.dart';
+import 'hero_back_button.dart';
 
 /// When [heroAbsolutePath] is not set, falls back to a bundled default
 /// image, and to a transparent backdrop when none are bundled.
@@ -13,12 +14,16 @@ class RichHeroBanner extends StatelessWidget {
   const RichHeroBanner({
     required this.collection,
     this.heroAbsolutePath,
+    this.onBack,
     super.key,
   });
 
   final Collection collection;
 
   final String? heroAbsolutePath;
+
+  /// When set, the banner carries the screen's back control.
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +59,19 @@ class RichHeroBanner extends StatelessWidget {
               isCompact: isCompact,
             ),
           ),
+          if (onBack != null)
+            Positioned(
+              top: AppSpacing.sm,
+              left: AppSpacing.sm,
+              child: HeroBackButton(
+                onTap: onBack!,
+                decoration: BoxDecoration(
+                  color: AppColors.scrim.withAlpha(0x99),
+                  shape: BoxShape.circle,
+                ),
+                iconColor: AppColors.onOverlay,
+              ),
+            ),
         ],
       ),
     );

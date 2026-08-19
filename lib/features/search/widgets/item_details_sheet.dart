@@ -475,6 +475,9 @@ class ItemDetailsSheet extends StatelessWidget {
                             imageUrl: posterUrl!,
                             fit: BoxFit.cover,
                             alignment: Alignment.center,
+                            // Parallax under a 40px blur is invisible, but each
+                            // shift would re-run the blur every frame.
+                            enabled: false,
                           ),
                         ),
                 ),

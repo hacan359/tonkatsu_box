@@ -206,20 +206,30 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
       ),
     );
 
+    // The side padding sits on the toolbar and grid only — the hero banner
+    // stays full-bleed, matching how the grid view renders it.
     return Column(
       children: <Widget>[
         if (widget.heroHeader != null) ...<Widget>[
           widget.heroHeader!,
           const SizedBox(height: AppSpacing.sm),
         ],
-        TableToolbar(
-          columnLabels: tableColumnLabels(l),
-          isColumnHidden: _isColumnHidden,
-          onToggleColumn: _toggleColumnHidden,
-          activeFilterCount: _filterRules.length,
-          onOpenFilters: _openFilterDialog,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: TableToolbar(
+            columnLabels: tableColumnLabels(l),
+            isColumnHidden: _isColumnHidden,
+            onToggleColumn: _toggleColumnHidden,
+            activeFilterCount: _filterRules.length,
+            onOpenFilters: _openFilterDialog,
+          ),
         ),
-        Expanded(child: grid),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: grid,
+          ),
+        ),
       ],
     );
   }

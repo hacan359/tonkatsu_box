@@ -21,11 +21,16 @@ class GyroscopeParallaxImage extends StatefulWidget {
     this.fit = BoxFit.cover,
     this.alignment = Alignment.center,
     this.errorWidget,
+    this.enabled = true,
     this.gyroscopeStream,
     super.key,
   });
 
   final String imageUrl;
+
+  /// When false, skips the sensor and renders the plain static image — for
+  /// hosts where the motion is invisible (e.g. under a heavy blur).
+  final bool enabled;
 
   /// How the image fits the available space.
   final BoxFit fit;
@@ -62,6 +67,7 @@ class _GyroscopeParallaxImageState extends State<GyroscopeParallaxImage>
   @override
   void initState() {
     super.initState();
+    if (!widget.enabled) return;
     final Stream<GyroscopeEvent>? stream = widget.gyroscopeStream ??
         (!kIsWebBuild && Platform.isAndroid
             ? gyroscopeEventStream(

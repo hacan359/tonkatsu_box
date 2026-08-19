@@ -19,6 +19,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/utils/media_format.dart';
+import '../../../shared/utils/poster_grid_delegate.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
@@ -469,42 +470,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) {
     // getAll() returns display order, and the map preserves insertion order.
     final List<Tag> orderedTags = tagsMap.values.toList();
-    final double screenWidth = MediaQuery.sizeOf(context).width;
     final bool isLandscape = isLandscapeMobile(context);
-    final bool isDesktop = screenWidth >= kDesktopContentBreakpoint && !kIsMobile;
-
-    final double gridPadding = isLandscape ? AppSpacing.sm : AppSpacing.screenPadding;
-    final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
-    final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
-
     final double cardScale = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.cardScale),
     );
-
-    final SliverGridDelegate gridDelegate;
-    if (isDesktop) {
-      gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
-        crossAxisSpacing: crossSpacing,
-        mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-      );
-    } else {
-      final int baseCount;
-      if (isLandscape) {
-        baseCount = AppSpacing.gridColumnsDesktop;
-      } else if (screenWidth >= 500) {
-        baseCount = AppSpacing.gridColumnsTablet;
-      } else {
-        baseCount = AppSpacing.gridColumnsMobile;
-      }
-      gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
-        crossAxisSpacing: crossSpacing,
-        mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-      );
-    }
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        posterGridGeometry(context, cardScale: cardScale);
+    final SliverGridDelegate gridDelegate = geometry.delegate;
+    final double gridPadding = geometry.padding;
 
     final List<_CollectionGroup> groups =
         _groupByCollection(items, collectionNames, S.of(context).collectionsUncategorized);
@@ -661,21 +634,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Color accent =
         group.isUncategorized ? AppColors.textTertiary : AppColors.brand;
 
-    // Item count per media type, in enum order, for the per-type tallies.
-    final Map<MediaType, int> typeCounts = <MediaType, int>{};
-    for (final CollectionItem item in group.items) {
-      final MediaType t = item.displayMediaType;
-      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
-    }
-    final Map<MediaType, int> orderedCounts = <MediaType, int>{
-      for (final MediaType t in MediaType.values)
-        if (typeCounts.containsKey(t)) t: typeCounts[t]!,
-    };
-    final int favorites =
-        group.items.where((CollectionItem i) => i.isFavorite).length;
+    // A phone has room for the name or the tallies, not both: the chips crowd
+    // the title into an ellipsis and stop being readable anyway.
+    final List<Widget> tallies =
+        kIsMobile ? const <Widget>[] : _headerTallies(group.items);
 
-    // Wrap, not Row: a long name plus up to 7 tallies overflows a phone-width
-    // header — the name ellipsizes and the tally chips flow to the next line.
+    // Wrap, not Row: a long name plus a tally per media type overflows a
+    // narrow window — the name ellipsizes and the chips flow to the next line.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -717,10 +682,26 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               const SizedBox(width: AppSpacing.xs),
             ],
           ),
-          ..._headerInfo(orderedCounts, favorites),
+          ...tallies,
         ],
       ),
     );
+  }
+
+  List<Widget> _headerTallies(List<CollectionItem> items) {
+    final Map<MediaType, int> typeCounts = <MediaType, int>{};
+    int favorites = 0;
+    for (final CollectionItem item in items) {
+      final MediaType t = item.displayMediaType;
+      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+      if (item.isFavorite) favorites++;
+    }
+    // Enum order, so the tallies keep the order the type chevrons have.
+    final Map<MediaType, int> ordered = <MediaType, int>{
+      for (final MediaType t in MediaType.values)
+        if (typeCounts.containsKey(t)) t: typeCounts[t]!,
+    };
+    return _headerInfo(ordered, favorites);
   }
 
   /// Each tally is one self-contained chip so it never splits when the
@@ -749,7 +730,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     }
 
     return <Widget>[
-      for (final MapEntry<MediaType, int> e in typeCounts.entries.take(6))
+      for (final MapEntry<MediaType, int> e in typeCounts.entries)
         tally(
           MediaTypeTheme.iconFor(e.key),
           MediaTypeTheme.colorFor(e.key).withAlpha(220),

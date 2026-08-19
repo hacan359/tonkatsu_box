@@ -16,6 +16,7 @@ import '../../../../shared/widgets/cached_image.dart';
 import '../../providers/rich_collections_provider.dart';
 import '../hero_image.dart';
 import 'default_hero_assets.dart';
+import 'hero_back_button.dart';
 import 'rich_collection_body.dart';
 
 // Paper-and-ink palette for the comic / sticker styles: those looks need
@@ -23,8 +24,14 @@ import 'rich_collection_body.dart';
 const Color _paper = Color(0xFFF2ECDF);
 const Color _ink = Color(0xFF1B1712);
 const Color _tape = Color(0xC8E8D48B);
+// The white border a printed sticker carries, brighter than the comic paper.
+const Color _sticker = Color(0xFFFFFFFF);
 
 const double _kCompactWidth = 720;
+
+/// Under this the sticker column fits one cover per row, and the wrap grows
+/// taller than the fixed banner.
+const double _kMinStickerColumnsWidth = 180;
 
 bool _isCompact(BuildContext context) =>
     MediaQuery.sizeOf(context).width < _kCompactWidth;
@@ -35,12 +42,17 @@ class RichCollectionHero extends ConsumerStatefulWidget {
     required this.collection,
     required this.items,
     this.heroAbsolutePath,
+    this.onBack,
     super.key,
   });
 
   final Collection collection;
   final List<CollectionItem> items;
   final String? heroAbsolutePath;
+
+  /// When set, the banner carries the screen's back control (the plain title
+  /// bar is hidden), drawn in each style's own look.
+  final VoidCallback? onBack;
 
   @override
   ConsumerState<RichCollectionHero> createState() =>
@@ -68,6 +80,7 @@ class _RichCollectionHeroState extends ConsumerState<RichCollectionHero> {
       return RichHeroBanner(
         collection: widget.collection,
         heroAbsolutePath: widget.heroAbsolutePath,
+        onBack: widget.onBack,
       );
     }
 
@@ -86,22 +99,26 @@ class _RichCollectionHeroState extends ConsumerState<RichCollectionHero> {
           collection: widget.collection,
           stats: stats,
           hero: hero,
+          onBack: widget.onBack,
         ),
       RichHeroStyle.stickers => _StickerHero(
           collection: widget.collection,
           stats: stats,
           items: widget.items,
           hero: hero,
+          onBack: widget.onBack,
         ),
       RichHeroStyle.brutalist => _BrutalistHero(
           collection: widget.collection,
           stats: stats,
           hero: hero,
+          onBack: widget.onBack,
         ),
       RichHeroStyle.slats => _SlatsHero(
           collection: widget.collection,
           stats: stats,
           hero: hero,
+          onBack: widget.onBack,
         ),
     };
   }
@@ -187,7 +204,8 @@ class _StatusLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final S l = S.of(context);
+    // Dot + count only: labels used to wrap into three lines on phones, and
+    // the colors already name the statuses via the proportional bar above.
     return Wrap(
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.xs,
@@ -206,7 +224,7 @@ class _StatusLegend extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.xs),
               Text(
-                '${e.key.genericLabel(l)} ${e.value}',
+                e.value.toString(),
                 style: AppTypography.caption.copyWith(
                   color: AppColors.textSecondary,
                   fontFeatures: const <FontFeature>[
@@ -260,12 +278,12 @@ class _StatusBadges extends StatelessWidget {
                   Icon(
                     stats.byStatus[i].key.materialIcon,
                     size: 15,
-                    color: Colors.white,
+                    color: _sticker,
                   ),
                   Text(
                     '${stats.byStatus[i].value}',
                     style: AppTypography.caption.copyWith(
-                      color: Colors.white,
+                      color: _sticker,
                       fontSize: 10,
                       height: 1.0,
                       fontWeight: FontWeight.w900,
@@ -328,11 +346,13 @@ class _ComicHero extends StatelessWidget {
     required this.collection,
     required this.stats,
     this.hero,
+    this.onBack,
   });
 
   final Collection collection;
   final _HeroStats stats;
   final ImageProvider? hero;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -364,36 +384,61 @@ class _ComicHero extends StatelessWidget {
           Positioned(
             left: AppSpacing.md,
             top: AppSpacing.md,
-            child: Transform.rotate(
-              angle: -0.01,
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.sizeOf(context).width * 0.7,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.ratingStar,
-                  border: Border.all(color: _ink, width: 3),
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(color: _ink, offset: Offset(4, 4)),
-                  ],
-                ),
-                child: Text(
-                  collection.name.toUpperCase(),
-                  style: AppTypography.h2.copyWith(
-                    color: _ink,
-                    fontSize: isCompact ? 18 : 26,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
-                    height: 1.1,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                if (onBack != null) ...<Widget>[
+                  HeroBackButton(
+                    onTap: onBack!,
+                    decoration: BoxDecoration(
+                      color: _paper,
+                      border: Border.all(color: _ink, width: 3),
+                      boxShadow: const <BoxShadow>[
+                        BoxShadow(color: _ink, offset: Offset(3, 3)),
+                      ],
+                    ),
+                    iconColor: _ink,
+                    angle: 0.03,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  const SizedBox(width: AppSpacing.sm),
+                ],
+                Transform.rotate(
+                  angle: -0.01,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      // Leave room for the back plate so the row never clips.
+                      maxWidth: MediaQuery.sizeOf(context).width * 0.7 -
+                          (onBack != null
+                              ? HeroBackButton.defaultSize + AppSpacing.sm
+                              : 0),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.ratingStar,
+                      border: Border.all(color: _ink, width: 3),
+                      boxShadow: const <BoxShadow>[
+                        BoxShadow(color: _ink, offset: Offset(4, 4)),
+                      ],
+                    ),
+                    child: Text(
+                      collection.name.toUpperCase(),
+                      style: AppTypography.h2.copyWith(
+                        color: _ink,
+                        fontSize: isCompact ? 18 : 26,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                        height: 1.1,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
           Positioned(
@@ -491,12 +536,14 @@ class _StickerHero extends StatelessWidget {
     required this.stats,
     required this.items,
     this.hero,
+    this.onBack,
   });
 
   final Collection collection;
   final _HeroStats stats;
   final List<CollectionItem> items;
   final ImageProvider? hero;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -518,7 +565,7 @@ class _StickerHero extends StatelessWidget {
         width: isCompact ? 190 : 260,
         padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _sticker,
           boxShadow: <BoxShadow>[
             BoxShadow(
               color: _ink.withValues(alpha: 0.4),
@@ -591,67 +638,125 @@ class _StickerHero extends StatelessWidget {
                 ),
                 SizedBox(width: isCompact ? AppSpacing.md : AppSpacing.xl),
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      if (withCovers.isNotEmpty) ...<Widget>[
-                        Wrap(
-                          spacing: AppSpacing.sm,
-                          runSpacing: AppSpacing.sm,
-                          children: <Widget>[
-                            for (int i = 0; i < withCovers.length; i++)
-                              Transform.rotate(
-                                angle: ((i * 7) % 5 - 2) * 0.03,
-                                child: Container(
-                                  padding: const EdgeInsets.all(3),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                    boxShadow: <BoxShadow>[
-                                      BoxShadow(
-                                        color: _ink.withValues(alpha: 0.35),
-                                        offset: const Offset(2, 3),
-                                        blurRadius: 6,
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(2),
-                                    child: SizedBox(
-                                      width: stickerW,
-                                      height: stickerW * 1.45,
-                                      child: CachedImage(
-                                        imageType: withCovers[i].imageType,
-                                        imageId: withCovers[i].coverImageId,
-                                        remoteUrl:
-                                            withCovers[i].thumbnailUrl ?? '',
-                                        fit: BoxFit.cover,
-                                        memCacheWidth: (stickerW * 2).toInt(),
-                                        placeholder: ColoredBox(
-                                          color: AppColors.surfaceLight,
-                                        ),
-                                        errorWidget: ColoredBox(
-                                          color: AppColors.surfaceLight,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
+                  child: LayoutBuilder(
+                    builder: (BuildContext context, BoxConstraints c) {
+                      // Below two sticker columns the wrap stacks vertically
+                      // past the fixed hero height — drop the covers.
+                      final List<CollectionItem> covers =
+                          c.maxWidth < _kMinStickerColumnsWidth
+                              ? const <CollectionItem>[]
+                              : withCovers;
+                      // The badges wrap too on very narrow heroes; the
+                      // unbounded box plus clip beats an overflow stripe.
+                      return ClipRect(
+                        child: OverflowBox(
+                          maxHeight: double.infinity,
+                          child: _StickerHeroSide(
+                            covers: covers,
+                            stats: stats,
+                            stickerW: stickerW,
+                          ),
                         ),
-                        const SizedBox(height: AppSpacing.md),
-                      ],
-                      _StatusBadges(stats: stats, rimColor: Colors.white),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ],
             ),
           ),
+          if (onBack != null)
+            Positioned(
+              top: AppSpacing.sm,
+              left: AppSpacing.sm,
+              child: HeroBackButton(
+                onTap: onBack!,
+                decoration: BoxDecoration(
+                  color: _sticker,
+                  shape: BoxShape.circle,
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: _ink.withValues(alpha: 0.35),
+                      offset: const Offset(2, 3),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                iconColor: _ink,
+                angle: -0.08,
+              ),
+            ),
         ],
       ),
+    );
+  }
+}
+
+class _StickerHeroSide extends StatelessWidget {
+  const _StickerHeroSide({
+    required this.covers,
+    required this.stats,
+    required this.stickerW,
+  });
+
+  final List<CollectionItem> covers;
+  final _HeroStats stats;
+  final double stickerW;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        if (covers.isNotEmpty) ...<Widget>[
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: <Widget>[
+              for (int i = 0; i < covers.length; i++)
+                Transform.rotate(
+                  angle: ((i * 7) % 5 - 2) * 0.03,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: _sticker,
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: _ink.withValues(alpha: 0.35),
+                          offset: const Offset(2, 3),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: SizedBox(
+                        width: stickerW,
+                        height: stickerW * 1.45,
+                        child: CachedImage(
+                          imageType: covers[i].imageType,
+                          imageId: covers[i].coverImageId,
+                          remoteUrl: covers[i].thumbnailUrl ?? '',
+                          fit: BoxFit.cover,
+                          memCacheWidth: (stickerW * 2).toInt(),
+                          placeholder: ColoredBox(
+                            color: AppColors.surfaceLight,
+                          ),
+                          errorWidget: ColoredBox(
+                            color: AppColors.surfaceLight,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        _StatusBadges(stats: stats, rimColor: _sticker),
+      ],
     );
   }
 }
@@ -684,11 +789,13 @@ class _BrutalistHero extends StatelessWidget {
     required this.collection,
     required this.stats,
     this.hero,
+    this.onBack,
   });
 
   final Collection collection;
   final _HeroStats stats;
   final ImageProvider? hero;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -701,30 +808,52 @@ class _BrutalistHero extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            border: Border.all(color: edge, width: 3),
-            boxShadow: <BoxShadow>[
-              BoxShadow(color: edge, offset: const Offset(6, 6)),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            if (onBack != null) ...<Widget>[
+              HeroBackButton(
+                onTap: onBack!,
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  border: Border.all(color: edge, width: 3),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(color: edge, offset: const Offset(4, 4)),
+                  ],
+                ),
+                iconColor: AppColors.textPrimary,
+                size: 42,
+              ),
+              const SizedBox(width: AppSpacing.md),
             ],
-          ),
-          child: Text(
-            collection.name.toUpperCase(),
-            style: AppTypography.h1.copyWith(
-              color: AppColors.textPrimary,
-              fontSize: isCompact ? 24 : 40,
-              fontWeight: FontWeight.w900,
-              height: 1.0,
-              letterSpacing: -0.5,
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  border: Border.all(color: edge, width: 3),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(color: edge, offset: const Offset(6, 6)),
+                  ],
+                ),
+                child: Text(
+                  collection.name.toUpperCase(),
+                  style: AppTypography.h1.copyWith(
+                    color: AppColors.textPrimary,
+                    fontSize: isCompact ? 24 : 40,
+                    fontWeight: FontWeight.w900,
+                    height: 1.0,
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
         Wrap(
@@ -797,87 +926,145 @@ class _BrutalistHero extends StatelessWidget {
   }
 }
 
-// Strips: full-width horizontal strips of one photo with plain gaps between.
+// Strips: one full-bleed photo cut into panels by slanted gaps, like a
+// comic page torn at an angle.
 
 class _SlatsHero extends StatelessWidget {
   const _SlatsHero({
     required this.collection,
     required this.stats,
     this.hero,
+    this.onBack,
   });
 
   final Collection collection;
   final _HeroStats stats;
   final ImageProvider? hero;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
     final bool isCompact = _isCompact(context);
     const int strips = 3;
     final double stripH = isCompact ? 56 : 76;
-    const double gap = 6;
     final double fullHeight = stripH * strips;
     final ImageProvider? image = hero;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        isCompact ? AppSpacing.md : AppSpacing.xl,
-        AppSpacing.md,
-        isCompact ? AppSpacing.md : AppSpacing.xl,
-        AppSpacing.md,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          if (image != null) ...<Widget>[
-            LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints c) {
-                return Column(
-                  children: <Widget>[
-                    for (int i = 0; i < strips; i++) ...<Widget>[
-                      if (i > 0) const SizedBox(height: gap),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusXs,
-                        ),
-                        child: SizedBox(
-                          width: c.maxWidth,
-                          height: stripH,
-                          child: _ImageSlice(
-                            provider: image,
-                            index: i,
-                            sliceCount: strips,
-                            sliceAxis: Axis.vertical,
-                            fullSize: Size(c.maxWidth, fullHeight),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              },
+    final double sidePadding = isCompact ? AppSpacing.md : AppSpacing.xl;
+
+    // The panels run edge to edge like the other styles; only the text block
+    // below keeps the side padding.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        if (image != null)
+          SizedBox(
+            width: double.infinity,
+            height: fullHeight,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                HeroCoverImage(
+                  provider: image,
+                  alignment: Alignment.center,
+                ),
+                CustomPaint(
+                  painter: _PanelCutsPainter(
+                    color: AppColors.background,
+                    cuts: strips - 1,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.md),
-          ],
-          Text(
-            collection.name,
-            style: AppTypography.h1.copyWith(
-              color: AppColors.textPrimary,
-              fontSize: isCompact ? 24 : 34,
-              fontWeight: FontWeight.w800,
-              height: 1.05,
-              letterSpacing: -0.6,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: AppSpacing.sm),
-          _StatusBar(stats: stats),
-          const SizedBox(height: AppSpacing.sm),
-          _StatusLegend(stats: stats),
-        ],
-      ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            sidePadding,
+            AppSpacing.md,
+            sidePadding,
+            AppSpacing.md,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  if (onBack != null) ...<Widget>[
+                    HeroBackButton(
+                      onTap: onBack!,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusXs),
+                      ),
+                      iconColor: AppColors.textPrimary,
+                      size: 32,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                  ],
+                  Expanded(
+                    child: Text(
+                      collection.name,
+                      style: AppTypography.h1.copyWith(
+                        color: AppColors.textPrimary,
+                        fontSize: isCompact ? 24 : 34,
+                        fontWeight: FontWeight.w800,
+                        height: 1.05,
+                        letterSpacing: -0.6,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _StatusBar(stats: stats),
+              const SizedBox(height: AppSpacing.sm),
+              _StatusLegend(stats: stats),
+            ],
+          ),
+        ),
+      ],
     );
   }
+}
+
+/// Paints background-colored slanted gaps that cut the hero into panels;
+/// straight gaps read as a sliced photo, the diagonals as comic panels.
+class _PanelCutsPainter extends CustomPainter {
+  const _PanelCutsPainter({required this.color, required this.cuts});
+
+  final Color color;
+  final int cuts;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()..color = color;
+    const double slant = 26;
+    // Wedge cut: the gap widens toward the edge the cut rises to, so each
+    // panel looks torn off rather than machine-sliced.
+    const double gapNarrow = 3;
+    const double gapWide = 18;
+    for (int i = 1; i <= cuts; i++) {
+      final double y = size.height * i / (cuts + 1);
+      final bool odd = i.isOdd;
+      final double rise = (odd ? 1 : -1) * slant / 2;
+      final double leftHalf = (odd ? gapNarrow : gapWide) / 2;
+      final double rightHalf = (odd ? gapWide : gapNarrow) / 2;
+      final Path path = Path()
+        ..moveTo(0, y - rise - leftHalf)
+        ..lineTo(size.width, y + rise - rightHalf)
+        ..lineTo(size.width, y + rise + rightHalf)
+        ..lineTo(0, y - rise + leftHalf)
+        ..close();
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PanelCutsPainter oldDelegate) =>
+      color != oldDelegate.color || cuts != oldDelegate.cuts;
 }

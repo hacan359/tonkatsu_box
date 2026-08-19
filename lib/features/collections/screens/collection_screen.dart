@@ -194,6 +194,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       searchQuery: searchQuery,
     );
     final S l = S.of(context);
+    // The rich banner carries the back arrow and title itself; the plain
+    // title bar would duplicate both and waste a row.
+    final bool heroCarriesTitle = _isRich(ref) && !_isCanvasMode;
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(l),
       child: Stack(
@@ -202,11 +205,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             children: <Widget>[
               if (!_isCanvasMode)
                 _buildFilterBar(itemsAsync, statsAsync, searchQuery, tags),
-              SubScreenTitleBar(
-                title: _isUncategorized
-                    ? l.collectionsUncategorized
-                    : _collection!.name,
-              ),
+              if (!heroCarriesTitle)
+                SubScreenTitleBar(
+                  title: _isUncategorized
+                      ? l.collectionsUncategorized
+                      : _collection!.name,
+                ),
               if (_canEdit && !_isCanvasMode)
                 CollectionBulkActionBar(
                   collectionId: widget.collectionId,
@@ -438,6 +442,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     });
   }
 
+  /// Rich banner applies to any collection except uncategorized when the
+  /// toggle is on, giving a stable template regardless of whether a hero exists.
+  bool _isRich(WidgetRef ref) =>
+      ref.watch(richCollectionsEnabledProvider) && !_isUncategorized;
+
   Widget _buildListLayout(
     AsyncValue<List<CollectionItem>> itemsAsync,
     AsyncValue<CollectionStats> statsAsync,
@@ -457,22 +466,30 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       });
     }
 
-    final bool richEnabled = ref.watch(richCollectionsEnabledProvider);
+    final bool isRich = _isRich(ref);
     final String? heroFile = _collection?.heroImagePath;
-    final String? heroAbsPath = (richEnabled && heroFile != null)
+    final String? heroAbsPath = (isRich && heroFile != null)
         ? ref.watch(collectionHeroServiceProvider).resolve(heroFile)
         : null;
-    // Rich banner applies to any collection except uncategorized when the
-    // toggle is on, giving a stable template regardless of whether a hero exists.
-    final bool isRich = richEnabled && !_isUncategorized;
 
     Widget? heroHeader(List<CollectionItem> items) => isRich
         ? RichCollectionHero(
             collection: _collection!,
             items: items,
             heroAbsolutePath: heroAbsPath,
+            onBack: () => Navigator.of(context).pop(),
           )
         : null;
+
+    // The banner replaces the title bar, so it must stay up (with its back
+    // arrow) while the items are still loading or failed to load.
+    Widget underHero(Widget body) {
+      final Widget? banner = heroHeader(const <CollectionItem>[]);
+      if (banner == null) return body;
+      return Column(
+        children: <Widget>[banner, Expanded(child: body)],
+      );
+    }
 
     final CollectionFilters filters = CollectionFilters(
       mediaTypes: _filterTypes,
@@ -520,12 +537,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           setState(() => _tableFilterStatus = status);
         },
       ),
-      loading: () => const ShimmerPosterGrid(),
-      error: (Object error, StackTrace stack) => CollectionErrorState(
-        error: error,
-        onRetry: () => ref
-            .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-            .refresh(),
+      loading: () => underHero(const ShimmerPosterGrid()),
+      error: (Object error, StackTrace stack) => underHero(
+        CollectionErrorState(
+          error: error,
+          onRetry: () => ref
+              .read(
+                  collectionItemsNotifierProvider(widget.collectionId).notifier)
+              .refresh(),
+        ),
       ),
     );
 
