@@ -24,6 +24,9 @@
   <a href="https://discord.gg/JZVNPF7cS2"><img src="https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/mockup_main_themes.jpg" width="800" alt="Main screen in the dark and Sakura themes">
+</p>
 ---
 
 > [!WARNING]
@@ -51,10 +54,6 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | <img src="assets/images/icon_steam_color.png" width="34" alt="Steam"><br>Steam | <img src="assets/images/icon_igdb_color.png" width="34" alt="IGDB"><br>IGDB&nbsp;list | <img src="assets/images/icon_trakt_color.png" width="34" alt="Trakt.tv"><br>Trakt.tv | <img src="assets/images/icon_simkl_color.png" width="34" alt="Simkl"><br>Simkl | <img src="assets/images/icon_kinorium_color.png" width="34" alt="Kinorium"><br>Kinorium | <img src="assets/images/ra_logo.png" width="34" alt="RetroAchievements"><br>RetroAch. |
 | <img src="assets/images/icon_myanimelist_color.png" width="34" alt="MyAnimeList"><br>MyAnimeList | <img src="assets/images/icon_anilist_color.png" width="34" alt="AniList"><br>AniList | <img src="assets/images/icon_hardcover_color.png" width="34" alt="Hardcover"><br>Hardcover | 📁<br>JSON&nbsp;/&nbsp;CSV | 📦<br>.xcollx | |
-
-<p align="center">
-  <img src="docs/screenshots/mockup_main_themes.jpg" width="800" alt="Main screen in the dark and Sakura themes">
-</p>
 
 ## Contents
 
