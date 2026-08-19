@@ -45,8 +45,9 @@ List<Widget> buildAudioTrackList({
 }
 
 /// One track line — plain in the search sheet, checkable in the collection
-/// tracker when [listened] and [onTap] are set.
-class AudioTrackRow extends StatelessWidget {
+/// tracker when [listened] and [onTap] are set. The circle toggles the mark;
+/// a tap anywhere else unfolds an ellipsized title.
+class AudioTrackRow extends StatefulWidget {
   const AudioTrackRow({
     required this.track,
     this.listened,
@@ -72,8 +73,15 @@ class AudioTrackRow extends StatelessWidget {
   final double leadingWidth;
 
   @override
+  State<AudioTrackRow> createState() => _AudioTrackRowState();
+}
+
+class _AudioTrackRowState extends State<AudioTrackRow> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    final bool? isListened = listened;
+    final bool? isListened = widget.listened;
     final Widget row = Padding(
       padding: EdgeInsets.symmetric(
         vertical: isListened != null ? AppSpacing.xs : 3,
@@ -81,47 +89,50 @@ class AudioTrackRow extends StatelessWidget {
       child: Row(
         children: <Widget>[
           if (isListened != null) ...<Widget>[
-            Icon(
-              isListened ? Icons.check_circle : Icons.radio_button_unchecked,
-              size: 20,
-              color: isListened
-                  ? (accentColor ?? AppColors.textSecondary)
-                  : AppColors.textTertiary,
+            InkResponse(
+              onTap: widget.onTap,
+              radius: 18,
+              child: Icon(
+                isListened ? Icons.check_circle : Icons.radio_button_unchecked,
+                size: 20,
+                color: isListened
+                    ? (widget.accentColor ?? AppColors.textSecondary)
+                    : AppColors.textTertiary,
+              ),
             ),
             const SizedBox(width: AppSpacing.sm),
           ],
           SizedBox(
-            width: leadingWidth,
+            width: widget.leadingWidth,
             child: Text(
-              positionLabel ?? '${track.position}',
+              widget.positionLabel ?? '${widget.track.position}',
               style: AppTypography.caption
                   .copyWith(color: AppColors.textTertiary),
             ),
           ),
           Expanded(
             child: Text(
-              track.title,
+              widget.track.title,
               style: AppTypography.bodySmall.copyWith(
                 color: (isListened ?? false)
                     ? AppColors.textSecondary
                     : AppColors.textPrimary,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: _expanded ? null : 1,
+              overflow: _expanded ? null : TextOverflow.ellipsis,
             ),
           ),
-          if (track.lengthMs != null)
+          if (widget.track.lengthMs != null)
             Text(
-              formatTrackLength(track.lengthMs!),
+              formatTrackLength(widget.track.lengthMs!),
               style: AppTypography.caption
                   .copyWith(color: AppColors.textTertiary),
             ),
         ],
       ),
     );
-    if (onTap == null) return row;
     return InkWell(
-      onTap: onTap,
+      onTap: () => setState(() => _expanded = !_expanded),
       borderRadius: BorderRadius.circular(6),
       child: row,
     );

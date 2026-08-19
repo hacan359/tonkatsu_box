@@ -266,7 +266,7 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
     final ItemStatus? target = computeStatusFromProgress(
       currentStatus: item.status,
       hasAnyProgress: _listened.isNotEmpty,
-      isFullyCompleted: _listened.length >= tracks.length,
+      isFullyCompleted: _listenedWithin(tracks) >= tracks.length,
     );
     if (target != null) {
       await ref
@@ -277,10 +277,21 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
 
   bool get _isPodcast => widget.audioItem?.isPodcast ?? false;
 
+  /// Imported marks may reference episodes outside the fetched window, so
+  /// every count shown or compared intersects with the loaded list.
+  int _listenedWithin(List<AudioTrack> tracks) {
+    final Set<(int, int)> keys = <(int, int)>{
+      for (final AudioTrack t in tracks) (t.discNumber, t.position),
+    };
+    return _listened.where(keys.contains).length;
+  }
+
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final List<AudioTrack>? tracks = _tracks;
+    final int listenedCount =
+        (tracks == null || tracks.isEmpty) ? 0 : _listenedWithin(tracks);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,18 +311,18 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
             const Spacer(),
             if (tracks != null && tracks.isNotEmpty) ...<Widget>[
               Text(
-                '${_listened.length}/${tracks.length}',
+                '$listenedCount/${tracks.length}',
                 style: AppTypography.bodySmall
                     .copyWith(color: AppColors.textSecondary),
               ),
               IconButton(
                 icon: Icon(
-                  _listened.length >= tracks.length
+                  listenedCount >= tracks.length
                       ? Icons.remove_done
                       : Icons.done_all,
                   size: 20,
                 ),
-                tooltip: _listened.length >= tracks.length
+                tooltip: listenedCount >= tracks.length
                     ? l.unmarkAll
                     : l.markAllListened,
                 onPressed: () => _toggleSpan(tracks),
@@ -323,7 +334,7 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
           ClipRRect(
             borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(
-              value: (_listened.length / tracks.length).clamp(0.0, 1.0),
+              value: (listenedCount / tracks.length).clamp(0.0, 1.0),
               minHeight: 4,
               backgroundColor: AppColors.surfaceLight,
               valueColor: AlwaysStoppedAnimation<Color>(widget.accentColor),
@@ -361,6 +372,11 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
   /// Small feeds fit on one screen; anything bigger gets collapsible spans.
   static const int _flatEpisodeLimit = 24;
 
+  /// Spans the user opened; rows of collapsed spans are never built, so a
+  /// single-episode toggle stops reconstructing the whole thousand-row list.
+  final Set<int> _expandedSpans = <int>{};
+  bool _spansInitialized = false;
+
   /// A 600-episode feed as one flat list is unusable, so episodes collapse
   /// into per-year spans (per-month within one year), newest open.
   List<Widget> _buildEpisodeYearGroups(S l, List<AudioTrack> tracks) {
@@ -395,7 +411,13 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
           .format(DateTime(key ~/ 100, key % 100));
     }
 
-    bool first = true;
+    if (!_spansInitialized) {
+      // Insertion order follows the newest-first sort, so the first key is
+      // the newest span. Set during build: the value is read right below.
+      _spansInitialized = true;
+      _expandedSpans.add(groups.keys.first);
+    }
+
     final List<Widget> tiles = <Widget>[];
     for (final MapEntry<int, List<AudioTrack>> entry in groups.entries) {
       final int listened = entry.value
@@ -403,11 +425,21 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
               _listened.contains((t.discNumber, t.position)))
           .length;
       final bool allListened = listened >= entry.value.length;
+      final bool expanded = _expandedSpans.contains(entry.key);
+      // The tiles live in a plain Column and never dispose, so state-driven
+      // expansion replaces PageStorage and lets collapsed rows stay unbuilt.
       tiles.add(ExpansionTile(
-        key: PageStorageKey<String>('audio_span_${entry.key}'),
+        key: ValueKey<int>(entry.key),
         tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         childrenPadding: const EdgeInsets.only(bottom: AppSpacing.sm),
-        initiallyExpanded: first,
+        initiallyExpanded: expanded,
+        onExpansionChanged: (bool open) => setState(() {
+          if (open) {
+            _expandedSpans.add(entry.key);
+          } else {
+            _expandedSpans.remove(entry.key);
+          }
+        }),
         title: Text(
           label(entry.key),
           style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
@@ -450,11 +482,11 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
           ],
         ),
         children: <Widget>[
-          for (final AudioTrack track in entry.value)
-            _episodeRow(l, track, preset),
+          if (expanded)
+            for (final AudioTrack track in entry.value)
+              _episodeRow(l, track, preset),
         ],
       ));
-      first = false;
     }
     return tiles;
   }

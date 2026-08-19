@@ -98,6 +98,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _filterFavoriteOnly = false;
   ItemStatus? _tableFilterStatus;
   CollectionItem? _focusedItem;
+  List<CollectionItem>? _tagCountsItemsSource;
+  Map<int, List<int>>? _tagCountsTagsSource;
+  Map<int, int> _tagCounts = const <int, int>{};
 
   Set<ItemStatus>? get _effectiveStatusesForChevrons {
     if (_filterStatuses.isNotEmpty) return _filterStatuses;
@@ -247,7 +250,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                         },
                       )
                     : _buildListLayout(
-                        itemsAsync, statsAsync, searchQuery, tags, itemTags),
+                        itemsAsync, activeFilters, tags, itemTags),
               ),
             ],
           ),
@@ -449,8 +452,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Widget _buildListLayout(
     AsyncValue<List<CollectionItem>> itemsAsync,
-    AsyncValue<CollectionStats> statsAsync,
-    String searchQuery,
+    CollectionFilters filters,
     List<Tag> tags,
     Map<int, List<int>> itemTags,
   ) {
@@ -490,17 +492,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         children: <Widget>[banner, Expanded(child: body)],
       );
     }
-
-    final CollectionFilters filters = CollectionFilters(
-      mediaTypes: _filterTypes,
-      platformIds: _filterPlatformIds,
-      mangaFormats: _filterMangaFormats,
-      animeFormats: _filterAnimeFormats,
-      tagIds: _filterTagIds,
-      statuses: _filterStatuses,
-      favoriteOnly: _filterFavoriteOnly,
-      searchQuery: searchQuery,
-    );
 
     final String anilistLang =
         ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
@@ -572,17 +563,26 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   /// Per-tag item counts within this collection, shown on the bar's chips.
+  /// Memoized by source identity: rebuilds fire on every search keystroke.
   Map<int, int> _countItemTags(
     AsyncValue<List<CollectionItem>> itemsAsync,
     Map<int, List<int>> itemTags,
   ) {
+    final List<CollectionItem> items =
+        itemsAsync.valueOrNull ?? const <CollectionItem>[];
+    if (identical(items, _tagCountsItemsSource) &&
+        identical(itemTags, _tagCountsTagsSource)) {
+      return _tagCounts;
+    }
     final Map<int, int> counts = <int, int>{};
-    for (final CollectionItem item
-        in itemsAsync.valueOrNull ?? const <CollectionItem>[]) {
+    for (final CollectionItem item in items) {
       for (final int tagId in itemTags[item.id] ?? const <int>[]) {
         counts[tagId] = (counts[tagId] ?? 0) + 1;
       }
     }
+    _tagCountsItemsSource = items;
+    _tagCountsTagsSource = itemTags;
+    _tagCounts = counts;
     return counts;
   }
 
