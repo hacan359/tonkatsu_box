@@ -257,5 +257,18 @@ void main() {
       expect(response.statusCode, HttpStatus.badRequest);
       expect(custom('42').existsSync(), isTrue);
     });
+
+    test('should refuse an absolute id from an empty path segment', () async {
+      // `//` makes the joined id absolute; p.join would then drop dataDir.
+      final Response response = await delete('/img/custom_covers//etc/x');
+
+      expect(response.statusCode, HttpStatus.badRequest);
+    });
+
+    test('should refuse a drive-qualified id', () async {
+      final Response response = await delete('/img/custom_covers/C:evil');
+
+      expect(response.statusCode, HttpStatus.badRequest);
+    });
   });
 }

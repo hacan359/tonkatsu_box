@@ -9,10 +9,28 @@ import 'package:shelf/shelf.dart';
 
 import 'proxy_handler.dart' show kProxyUserAgent;
 import 'upstream_client.dart';
+import 'upstream_throttle.dart';
 
 /// A cover is immutable for a given id, so the browser can hold it as long as
 /// it likes and the server stops being asked at all.
 const String _kImmutable = 'public, max-age=31536000, immutable';
+
+/// Cover Art Archive rate-limits per IP; the gap mirrors the desktop client's
+/// host_rate_limiter so a burst of cold covers does not collect 429s.
+const Map<String, Duration> _hostMinGap = <String, Duration>{
+  'coverartarchive.org': Duration(milliseconds: 300),
+};
+
+final Map<String, UpstreamThrottle> _hostThrottles =
+    <String, UpstreamThrottle>{};
+
+Future<void> _throttleHost(String host) {
+  final Duration? gap = _hostMinGap[host];
+  if (gap == null) return Future<void>.value();
+  return _hostThrottles
+      .putIfAbsent(host, () => UpstreamThrottle(gap))
+      .acquire();
+}
 
 /// `/img/<folder>/<id>` — one cache in the volume for every client, instead of
 /// each browser re-downloading the same poster from the provider.
@@ -53,6 +71,7 @@ class ImageCache {
 
         final UpstreamResponse response;
         try {
+          await _throttleHost(sourceUri.host);
           response = await _upstream.send(
             method: 'GET',
             url: sourceUri,
@@ -159,10 +178,13 @@ class ImageCache {
     return (type, segments.skip(2).join('/'));
   }
 
-  /// A traversal would land the read, write or delete outside the cache
-  /// directory.
+  /// A traversal, absolute or drive-qualified id would land the read, write
+  /// or delete outside the cache directory (p.join drops dataDir on absolute).
   static bool _isSafeImageId(String imageId) =>
-      imageId.isNotEmpty && !imageId.contains('..');
+      imageId.isNotEmpty &&
+      !imageId.contains('..') &&
+      !imageId.contains(':') &&
+      !p.isAbsolute(imageId);
 
   File _fileFor(ImageType type, String imageId) =>
       File(p.join(dataDir, 'images', type.folder, imageId));

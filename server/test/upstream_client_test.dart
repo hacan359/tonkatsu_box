@@ -50,6 +50,24 @@ void main() {
       expect(bodies.single, '{"mbids":["a"]}');
     });
 
+    test('an empty POST body still gets an explicit zero length', () async {
+      final HttpUpstreamClient client = HttpUpstreamClient();
+
+      final UpstreamResponse response = await client.send(
+        method: 'POST',
+        url: url('/popularity'),
+        headers: <String, String>{},
+        body: const <int>[],
+      );
+
+      expect(response.status, 200);
+      expect(received.single.headers.contentLength, 0);
+      expect(
+        received.single.headers.value(HttpHeaders.transferEncodingHeader),
+        isNot('chunked'),
+      );
+    });
+
     test('a bodyless GET sends no payload', () async {
       final HttpUpstreamClient client = HttpUpstreamClient();
 

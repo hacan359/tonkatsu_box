@@ -7,6 +7,7 @@ import 'package:shelf/shelf.dart';
 
 import 'api_credentials.dart';
 import 'upstream_client.dart';
+import 'upstream_throttle.dart';
 
 /// Browsers strip `User-Agent`, and AniList answers 403 without one.
 const String kProxyUserAgent =
@@ -18,36 +19,14 @@ const Map<ProxyTarget, Duration> _minRequestGap = <ProxyTarget, Duration>{
   ProxyTarget.musicbrainz: Duration(milliseconds: 1100),
 };
 
-class _UpstreamThrottle {
-  _UpstreamThrottle(this.minGap);
-
-  final Duration minGap;
-
-  Future<void> _tail = Future<void>.value();
-  DateTime _nextAllowed = DateTime.fromMillisecondsSinceEpoch(0);
-
-  /// FIFO slot at least [minGap] after the previous one; responses overlap.
-  Future<void> acquire() {
-    final Future<void> slot = _tail.then((_) async {
-      final Duration wait = _nextAllowed.difference(DateTime.now());
-      if (wait > Duration.zero) {
-        await Future<void>.delayed(wait);
-      }
-      _nextAllowed = DateTime.now().add(minGap);
-    });
-    _tail = slot;
-    return slot;
-  }
-}
-
-final Map<ProxyTarget, _UpstreamThrottle> _throttles =
-    <ProxyTarget, _UpstreamThrottle>{};
+final Map<ProxyTarget, UpstreamThrottle> _throttles =
+    <ProxyTarget, UpstreamThrottle>{};
 
 Future<void> _throttleFor(ProxyTarget target) {
   final Duration? gap = _minRequestGap[target];
   if (gap == null) return Future<void>.value();
   return _throttles
-      .putIfAbsent(target, () => _UpstreamThrottle(gap))
+      .putIfAbsent(target, () => UpstreamThrottle(gap))
       .acquire();
 }
 
