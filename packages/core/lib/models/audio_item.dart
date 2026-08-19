@@ -101,7 +101,7 @@ class AudioItem {
     }
 
     return AudioItem(
-      id: fnv1a64(mbid),
+      id: fnv1a53(mbid),
       source: DataSource.musicBrainz,
       nativeId: mbid,
       title: json['title'] as String? ?? 'Unknown',

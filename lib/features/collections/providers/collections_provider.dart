@@ -1326,7 +1326,7 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.book);
 });
 
-/// fnv1a64(mbid) -> collection entries.
+/// fnv1a53(mbid) -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedAudioIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {

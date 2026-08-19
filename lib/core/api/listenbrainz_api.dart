@@ -31,7 +31,7 @@ class FreshRelease {
 
   /// Minimal [AudioItem] for the card grid; a tap enriches via MusicBrainz.
   AudioItem toAlbum() => AudioItem(
-        id: fnv1a64(releaseGroupMbid),
+        id: fnv1a53(releaseGroupMbid),
         source: DataSource.musicBrainz,
         nativeId: releaseGroupMbid,
         title: name,

@@ -255,7 +255,7 @@ Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each
 | mangas | array | Manga objects from AniList (id, title, title_english, title_native, cover_url, cover_medium_url, description, genres, average_score, mean_score, popularity, status, start_year, chapters, volumes, format, country_of_origin, staff) |
 | tv_seasons | array | TvSeason objects from TMDB (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
 | tv_episodes | array | TvEpisode objects from TMDB (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
-| audio_items | array | AudioItem objects (id, source, kind, native_id, title, artists, description, language, primary_type, release_year, genres, rating, release_mbid, track_count, disc_count, cover_url, external_url, ...); albums hash the release-group MBID into `id` (fnv1a64), podcasts store the Podcast Index feed id as-is — both stable across devices |
+| audio_items | array | AudioItem objects (id, source, kind, native_id, title, artists, description, language, primary_type, release_year, genres, rating, release_mbid, track_count, disc_count, cover_url, external_url, ...); albums hash the release-group MBID into `id` (fnv1a53 — 53 bits, so a JS double holds it exactly), podcasts store the Podcast Index feed id as-is — both stable across devices |
 | audio_tracks | array | AudioTrack objects (source, audio_id, disc_number, position, title, native_id, length_ms, artists, date_published); album tracks of the picked release or podcast episodes — lets an offline import restore the list without a provider round-trip |
 
 All arrays are optional — only non-empty categories are included.

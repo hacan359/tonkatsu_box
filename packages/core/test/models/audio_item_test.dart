@@ -32,7 +32,7 @@ void main() {
       test('parses a search doc', () {
         final AudioItem album = AudioItem.fromMusicBrainzReleaseGroup(searchDoc);
 
-        expect(album.id, fnv1a64('f5093c06-23e3-404f-aeaa-40f72885ee3a'));
+        expect(album.id, fnv1a53('f5093c06-23e3-404f-aeaa-40f72885ee3a'));
         expect(album.source, DataSource.musicBrainz);
         expect(album.nativeId, 'f5093c06-23e3-404f-aeaa-40f72885ee3a');
         expect(album.title, 'The Dark Side of the Moon');
