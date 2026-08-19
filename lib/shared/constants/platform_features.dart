@@ -42,6 +42,11 @@ bool isCompactScreen(BuildContext context) {
   return MediaQuery.sizeOf(context).width < 600;
 }
 
+/// Compact form of a poster card in the library grids. Skeletons read it too,
+/// so a loading placeholder has the same shape as the card replacing it.
+bool useCompactCard(BuildContext context) =>
+    isLandscapeMobile(context) || isCompactScreen(context);
+
 /// Switches the content layout to its desktop form. Unrelated to the side
 /// menu, which is unified across all widths.
 const double kDesktopContentBreakpoint = 800;

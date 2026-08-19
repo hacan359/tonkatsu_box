@@ -31,8 +31,7 @@ class ImageCache {
           return _error(HttpStatus.notFound, 'No image in the path');
         }
         final (ImageType type, String imageId) = target;
-        // A traversal would land the write outside the cache directory.
-        if (imageId.isEmpty || imageId.contains('..')) {
+        if (!_isSafeImageId(imageId)) {
           return _error(HttpStatus.badRequest, 'Bad image id');
         }
 
@@ -100,8 +99,7 @@ class ImageCache {
           return _error(HttpStatus.notFound, 'No image in the path');
         }
         final (ImageType type, String imageId) = target;
-        // A traversal would land the write outside the cache directory.
-        if (imageId.isEmpty || imageId.contains('..')) {
+        if (!_isSafeImageId(imageId)) {
           return _error(HttpStatus.badRequest, 'Bad image id');
         }
 
@@ -125,6 +123,32 @@ class ImageCache {
         );
       };
 
+  /// The web build's stand-in for deleting a local cache file: a cover the
+  /// user replaced would otherwise be served from the copy taken before.
+  Handler get deleteHandler => (Request request) async {
+        final (ImageType, String)? target = _target(request);
+        if (target == null) {
+          return _error(HttpStatus.notFound, 'No image in the path');
+        }
+        final (ImageType type, String imageId) = target;
+        if (!_isSafeImageId(imageId)) {
+          return _error(HttpStatus.badRequest, 'Bad image id');
+        }
+
+        final File file = _fileFor(type, imageId);
+        try {
+          if (file.existsSync()) await file.delete();
+        } on FileSystemException catch (e) {
+          return _error(HttpStatus.internalServerError, '$e');
+        }
+        return Response.ok(
+          jsonEncode(<String, Object?>{'ok': true}),
+          headers: <String, String>{
+            HttpHeaders.contentTypeHeader: 'application/json',
+          },
+        );
+      };
+
   /// Folder + id from `/img/<folder>/<id>`, or null when the path is not an
   /// image.
   (ImageType, String)? _target(Request request) {
@@ -134,6 +158,11 @@ class ImageCache {
     if (type == null) return null;
     return (type, segments.skip(2).join('/'));
   }
+
+  /// A traversal would land the read, write or delete outside the cache
+  /// directory.
+  static bool _isSafeImageId(String imageId) =>
+      imageId.isNotEmpty && !imageId.contains('..');
 
   File _fileFor(ImageType type, String imageId) =>
       File(p.join(dataDir, 'images', type.folder, imageId));

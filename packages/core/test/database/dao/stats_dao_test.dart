@@ -210,6 +210,9 @@ void main() {
 
       test('should split rows into tv and anime including undated ones',
           () async {
+        await insertItem(id: 1, mediaType: 'tv_show', externalId: 500);
+        await insertItem(
+            id: 2, mediaType: 'anime', externalId: 500, source: 'kitsu');
         await insertWatched(episode: 1, watchedAt: in2024);
         await insertWatched(episode: 2);
         await insertWatched(episode: 3, source: 'kitsu', watchedAt: in2024);
@@ -221,6 +224,7 @@ void main() {
       });
 
       test('should count only dated rows inside the year window', () async {
+        await insertItem(id: 1, mediaType: 'tv_show', externalId: 500);
         await insertWatched(episode: 1, watchedAt: in2024);
         await insertWatched(episode: 2, watchedAt: in2023);
         await insertWatched(episode: 3);
@@ -230,6 +234,101 @@ void main() {
 
         expect(split.tv, 1);
         expect(split.anime, 0);
+      });
+
+      test('should skip marks orphaned by removing the show', () async {
+        await insertWatched(episode: 1, watchedAt: in2024);
+        await insertWatched(episode: 2, source: 'kitsu', watchedAt: in2024);
+
+        final ({int tv, int anime}) split = await dao.getEpisodeSplit();
+
+        expect(split.tv, 0);
+        expect(split.anime, 0);
+      });
+
+      test('should not treat an item that cannot carry marks as live',
+          () async {
+        // Same external id, but a movie / animated movie / AniList anime never
+        // own tracker rows — the marks stay orphaned.
+        await insertItem(id: 1, mediaType: 'movie', externalId: 500);
+        await insertItem(
+          id: 2,
+          mediaType: 'animation',
+          externalId: 500,
+          platformId: AnimationSource.movie,
+        );
+        await insertItem(
+            id: 3, mediaType: 'anime', externalId: 500, source: 'anilist');
+        await insertWatched(episode: 1, watchedAt: in2024);
+
+        final ({int tv, int anime}) split = await dao.getEpisodeSplit();
+
+        expect(split.tv, 0);
+      });
+
+      test('should count marks of an animated series', () async {
+        await insertItem(
+          id: 1,
+          mediaType: 'animation',
+          externalId: 500,
+          platformId: AnimationSource.tvShow,
+        );
+        await insertWatched(episode: 1, watchedAt: in2024);
+
+        final ({int tv, int anime}) split = await dao.getEpisodeSplit();
+
+        expect(split.tv, 1);
+      });
+    });
+
+    group('getListenedTrackTotal', () {
+      Future<void> insertListened({
+        required int track,
+        int audioId = 900,
+        DateTime? listenedAt,
+      }) async {
+        await db.insert('listened_tracks', <String, Object?>{
+          'collection_id': 1,
+          'source': 'musicBrainz',
+          'audio_id': audioId,
+          'disc_number': 1,
+          'track_number': track,
+          'listened_at': listenedAt == null ? null : ms(listenedAt),
+        });
+      }
+
+      test('should count marks of a live audio item including undated ones',
+          () async {
+        await insertItem(
+          id: 1,
+          mediaType: 'audio',
+          externalId: 900,
+          source: 'musicBrainz',
+        );
+        await insertListened(track: 1, listenedAt: in2024);
+        await insertListened(track: 2);
+
+        expect(await dao.getListenedTrackTotal(), 2);
+      });
+
+      test('should count only dated marks inside the year window', () async {
+        await insertItem(
+          id: 1,
+          mediaType: 'audio',
+          externalId: 900,
+          source: 'musicBrainz',
+        );
+        await insertListened(track: 1, listenedAt: in2024);
+        await insertListened(track: 2, listenedAt: in2023);
+        await insertListened(track: 3);
+
+        expect(await dao.getListenedTrackTotal(year: 2024), 1);
+      });
+
+      test('should skip marks orphaned by removing the album', () async {
+        await insertListened(track: 1, listenedAt: in2024);
+
+        expect(await dao.getListenedTrackTotal(), 0);
       });
     });
 
@@ -339,6 +438,7 @@ void main() {
     group('getEstimatedMinutes', () {
       test('should count only episodes with a known runtime, no averages',
           () async {
+        await insertItem(id: 1, mediaType: 'tv_show', externalId: 500);
         // Two watched episodes: one with a 20-minute runtime, one uncached —
         // the uncached one contributes nothing (fixed data only).
         for (final int episode in <int>[1, 2]) {
@@ -363,6 +463,7 @@ void main() {
       });
 
       test('should treat zero runtimes as unknown', () async {
+        await insertItem(id: 1, mediaType: 'tv_show', externalId: 500);
         await db.insert('watched_episodes', <String, Object?>{
           'collection_id': 1,
           'source': 'tmdb',
@@ -398,6 +499,26 @@ void main() {
         });
 
         expect(await dao.getEstimatedMinutes(), 200);
+      });
+
+      test('should skip runtimes of episodes orphaned by removal', () async {
+        await db.insert('watched_episodes', <String, Object?>{
+          'collection_id': 1,
+          'source': 'tmdb',
+          'show_id': 500,
+          'season_number': 1,
+          'episode_number': 1,
+          'watched_at': ms(in2024),
+        });
+        await db.insert('tv_episodes_cache', <String, Object?>{
+          'tmdb_show_id': 500,
+          'season_number': 1,
+          'episode_number': 1,
+          'source': 'tmdb',
+          'runtime': 20,
+        });
+
+        expect(await dao.getEstimatedMinutes(), 0);
       });
     });
 
@@ -766,6 +887,7 @@ void main() {
       });
 
       test('should bucket episodes by year-month', () async {
+        await insertItem(id: 1, mediaType: 'tv_show', externalId: 1);
         await watch(1, DateTime(2024, 5, 1));
         await watch(2, DateTime(2024, 5, 20));
         await watch(3, DateTime(2024, 6, 2));
@@ -777,6 +899,7 @@ void main() {
       });
 
       test('should only count episodes inside the year window', () async {
+        await insertItem(id: 1, mediaType: 'tv_show', externalId: 1);
         await watch(1, DateTime(2024, 5, 1));
         await watch(2, DateTime(2023, 5, 1));
 
@@ -784,6 +907,12 @@ void main() {
           await dao.getEpisodesByMonth(year: 2024),
           <String, int>{'2024-05': 1},
         );
+      });
+
+      test('should skip episodes orphaned by removing the show', () async {
+        await watch(1, DateTime(2024, 5, 1));
+
+        expect(await dao.getEpisodesByMonth(), isEmpty);
       });
     });
 

@@ -5,6 +5,7 @@ import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as model;
 import 'package:core/models/tag.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -120,6 +121,11 @@ class _CreateCustomItemDialogState
     if (_isEditing) _loadCachedCover();
   }
 
+  String get _cachedCoverId => customCoverImageId(
+        id: widget.existing!.id,
+        coverUrl: widget.existing!.coverUrl,
+      );
+
   Future<void> _loadCachedCover() async {
     if (kIsWebBuild) {
       // The web build's cover cache is the server's, but only an uploaded
@@ -128,7 +134,7 @@ class _CreateCustomItemDialogState
       final String url = imageProxyUrl(
         baseUrl: serverBaseUrl(),
         type: ImageType.customCover,
-        imageId: '${widget.existing!.id}',
+        imageId: _cachedCoverId,
       );
       setState(() => _cachedCoverUri = Uri.parse(url));
       return;
@@ -136,7 +142,7 @@ class _CreateCustomItemDialogState
     final ImageCacheService cache = ref.read(imageCacheServiceProvider);
     final String path = await cache.getLocalImagePath(
       ImageType.customCover,
-      widget.existing!.id.toString(),
+      _cachedCoverId,
     );
     final File file = File(path);
     if (await file.exists() && mounted) {
@@ -524,6 +530,9 @@ class _CreateCustomItemDialogState
     );
     if (result == null || !mounted) return;
     setState(() {
+      // The cached preview is the cover being replaced, so it must stop
+      // outranking the picked source.
+      _cachedCoverUri = null;
       if (result.bytes != null) {
         _coverBytes = result.bytes;
         _coverUrlController.clear();

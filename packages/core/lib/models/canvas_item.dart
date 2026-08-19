@@ -317,7 +317,10 @@ class CanvasItem with Exportable {
           externalId: audioItem?.id ?? itemRefId ?? 0,
           source: audioItem?.source,
         ),
-      CanvasItemType.custom => (customMedia?.id ?? 0).toString(),
+      CanvasItemType.custom => cover_id.customCoverImageId(
+          id: customMedia?.id ?? 0,
+          coverUrl: customMedia?.coverUrl,
+        ),
       _ => '0',
     };
   }

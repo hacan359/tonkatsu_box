@@ -15,6 +15,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/item_card_progress.dart';
+import '../../../shared/utils/poster_grid_delegate.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -94,72 +95,69 @@ class CollectionItemsView extends ConsumerWidget {
       final Set<int>? selectedIds = canEdit
           ? ref.watch(collectionSelectionProvider(collectionId))
           : null;
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        child: CollectionTableView(
-          collectionId: collectionId,
-          heroHeader: header,
-          items: items,
-          tags: tags,
-          itemTags: itemTags,
-          onItemTap: onItemTap,
-          onItemSecondaryTap: canEdit
-              ? (CollectionItem item, Offset pos) =>
-                  _showItemContextMenu(context, ref, pos, item)
-              : null,
-          selectedIds: selectedIds,
-          onToggleSelect: canEdit
-              ? (int itemId) => ref
-                  .read(collectionSelectionProvider(collectionId).notifier)
-                  .toggle(itemId)
-              : null,
-          onToggleSelectAll: canEdit
-              ? (bool selectAll) {
-                  final CollectionSelectionNotifier notifier = ref.read(
-                    collectionSelectionProvider(collectionId).notifier,
-                  );
-                  if (selectAll) {
-                    notifier.selectAll(
-                        items.map((CollectionItem i) => i.id));
-                  } else {
-                    notifier.clear();
-                  }
+      return CollectionTableView(
+        collectionId: collectionId,
+        heroHeader: header,
+        items: items,
+        tags: tags,
+        itemTags: itemTags,
+        onItemTap: onItemTap,
+        onItemSecondaryTap: canEdit
+            ? (CollectionItem item, Offset pos) =>
+                _showItemContextMenu(context, ref, pos, item)
+            : null,
+        selectedIds: selectedIds,
+        onToggleSelect: canEdit
+            ? (int itemId) => ref
+                .read(collectionSelectionProvider(collectionId).notifier)
+                .toggle(itemId)
+            : null,
+        onToggleSelectAll: canEdit
+            ? (bool selectAll) {
+                final CollectionSelectionNotifier notifier = ref.read(
+                  collectionSelectionProvider(collectionId).notifier,
+                );
+                if (selectAll) {
+                  notifier.selectAll(
+                      items.map((CollectionItem i) => i.id));
+                } else {
+                  notifier.clear();
                 }
-              : null,
-          onRatingChanged: canEdit
-              ? (int itemId, double? rating) {
-                  ref
-                      .read(collectionItemsNotifierProvider(collectionId)
-                          .notifier)
-                      .updateUserRating(itemId, rating);
-                }
-              : null,
-          onStatusChanged: canEdit
-              ? (int itemId, ItemStatus status, MediaType mediaType) {
-                  ref
-                      .read(collectionItemsNotifierProvider(collectionId)
-                          .notifier)
-                      .updateStatus(itemId, status, mediaType);
-                }
-              : null,
-          onTagsEdit: canEdit
-              ? (int itemId) => _editItemTags(context, ref, itemId)
-              : null,
-          onFavoriteToggled: canEdit
-              ? (int itemId) => ref
-                  .read(collectionItemsNotifierProvider(collectionId).notifier)
-                  .toggleFavorite(itemId)
-              : null,
-          onReorder: isManualSort
-              ? (int oldIndex, int newIndex) {
-                  ref
-                      .read(collectionItemsNotifierProvider(collectionId)
-                          .notifier)
-                      .reorderItem(oldIndex, newIndex);
-                }
-              : null,
-          onFilterStatusChanged: onTableFilterStatusChanged,
-        ),
+              }
+            : null,
+        onRatingChanged: canEdit
+            ? (int itemId, double? rating) {
+                ref
+                    .read(collectionItemsNotifierProvider(collectionId)
+                        .notifier)
+                    .updateUserRating(itemId, rating);
+              }
+            : null,
+        onStatusChanged: canEdit
+            ? (int itemId, ItemStatus status, MediaType mediaType) {
+                ref
+                    .read(collectionItemsNotifierProvider(collectionId)
+                        .notifier)
+                    .updateStatus(itemId, status, mediaType);
+              }
+            : null,
+        onTagsEdit: canEdit
+            ? (int itemId) => _editItemTags(context, ref, itemId)
+            : null,
+        onFavoriteToggled: canEdit
+            ? (int itemId) => ref
+                .read(collectionItemsNotifierProvider(collectionId).notifier)
+                .toggleFavorite(itemId)
+            : null,
+        onReorder: isManualSort
+            ? (int oldIndex, int newIndex) {
+                ref
+                    .read(collectionItemsNotifierProvider(collectionId)
+                        .notifier)
+                    .reorderItem(oldIndex, newIndex);
+              }
+            : null,
+        onFilterStatusChanged: onTableFilterStatusChanged,
       );
     }
 
@@ -223,40 +221,14 @@ class CollectionItemsView extends ConsumerWidget {
   }
 
   Widget _buildGridView(BuildContext context, WidgetRef ref) {
-    final double screenWidth = MediaQuery.sizeOf(context).width;
-    final bool isLandscape = isLandscapeMobile(context);
-    final bool isDesktop = screenWidth >= kDesktopContentBreakpoint && !kIsMobile;
-
-    final double gridPadding = isLandscape ? AppSpacing.sm : AppSpacing.screenPadding;
-    final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
-    final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
+    final bool compact = useCompactCard(context);
 
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
-    final SliverGridDelegate gridDelegate;
-    if (isDesktop) {
-      gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * settings.cardScale,
-        crossAxisSpacing: crossSpacing,
-        mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-      );
-    } else {
-      final int baseCount;
-      if (isLandscape) {
-        baseCount = AppSpacing.gridColumnsDesktop;
-      } else if (screenWidth >= 500) {
-        baseCount = AppSpacing.gridColumnsTablet;
-      } else {
-        baseCount = AppSpacing.gridColumnsMobile;
-      }
-      gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: AppSpacing.scaledColumns(baseCount, settings.cardScale),
-        crossAxisSpacing: crossSpacing,
-        mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-      );
-    }
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        posterGridGeometry(context, cardScale: settings.cardScale);
+    final SliverGridDelegate gridDelegate = geometry.delegate;
+    final double gridPadding = geometry.padding;
 
     if (!_hasTagGroups) {
       return _buildFlatGridView(
@@ -286,7 +258,7 @@ class CollectionItemsView extends ConsumerWidget {
                   context,
                   ref,
                   sorted[index],
-                  isLandscape,
+                  compact,
                   settings,
                   tagGlow: true,
                 );
@@ -305,7 +277,7 @@ class CollectionItemsView extends ConsumerWidget {
                         context,
                         ref,
                         sorted[index],
-                        isLandscape,
+                        compact,
                         settings,
                         tagGlow: true,
                       );
@@ -324,7 +296,7 @@ class CollectionItemsView extends ConsumerWidget {
     double gridPadding,
     SettingsState settings,
   ) {
-    final bool isLandscape = isLandscapeMobile(context);
+    final bool compact = useCompactCard(context);
     return RefreshIndicator(
       onRefresh: () => ref
           .read(collectionItemsNotifierProvider(collectionId).notifier)
@@ -336,7 +308,7 @@ class CollectionItemsView extends ConsumerWidget {
               itemCount: items.length,
               itemBuilder: (BuildContext context, int index) {
                 return _buildGridCard(
-                    context, ref, items[index], isLandscape, settings);
+                    context, ref, items[index], compact, settings);
               },
             )
           : CustomScrollView(
@@ -349,7 +321,7 @@ class CollectionItemsView extends ConsumerWidget {
                     itemCount: items.length,
                     itemBuilder: (BuildContext context, int index) {
                       return _buildGridCard(
-                          context, ref, items[index], isLandscape, settings);
+                          context, ref, items[index], compact, settings);
                     },
                   ),
                 ),
@@ -362,7 +334,7 @@ class CollectionItemsView extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     CollectionItem item,
-    bool isLandscape,
+    bool compact,
     SettingsState settings, {
     bool tagGlow = false,
   }) {
@@ -378,9 +350,7 @@ class CollectionItemsView extends ConsumerWidget {
 
     final Widget card = MediaPosterCard(
       key: ValueKey<int>(item.id),
-      variant: isLandscape || isCompactScreen(context)
-          ? CardVariant.compact
-          : CardVariant.grid,
+      variant: compact ? CardVariant.compact : CardVariant.grid,
       title: item.cardTitle(ref.displayNameOf(item)),
       imageUrl: item.thumbnailUrl ?? '',
       cacheImageType: item.imageType,

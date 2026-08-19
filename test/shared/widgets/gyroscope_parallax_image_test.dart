@@ -49,6 +49,34 @@ void main() {
       },
     );
 
+    testWidgets(
+      'should not touch the sensor when the parallax is disabled',
+      (WidgetTester tester) async {
+        // Broadcast: close() on a single-subscription controller nobody
+        // listened to never completes, and the teardown would hang on it.
+        final StreamController<GyroscopeEvent> controller =
+            StreamController<GyroscopeEvent>.broadcast();
+        addTearDown(controller.close);
+
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: GyroscopeParallaxImage(
+              imageUrl: 'https://example.com/poster.jpg',
+              enabled: false,
+              gyroscopeStream: controller.stream,
+              errorWidget: (BuildContext context, String url, Object error) =>
+                  const SizedBox.shrink(),
+            ),
+          ),
+        );
+
+        expect(controller.hasListener, isFalse);
+        expect(tester.takeException(), isNull);
+        expect(find.byType(GyroscopeParallaxImage), findsOneWidget);
+      },
+    );
+
     testWidgets('cancels the gyroscope subscription on dispose',
         (WidgetTester tester) async {
       final StreamController<GyroscopeEvent> controller =

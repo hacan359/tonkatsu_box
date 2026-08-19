@@ -134,38 +134,38 @@ class AudioDiscoverFeed extends ConsumerWidget {
     List<AudioItem> items,
     double cardScale,
     IconData placeholderIcon,
-  ) =>
-      SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        sliver: SliverGrid.builder(
-          gridDelegate: posterGridDelegate(
-            width: MediaQuery.sizeOf(context).width,
-            cardScale: cardScale,
-          ),
-          itemCount: items.length,
-          itemBuilder: (BuildContext context, int index) {
-            final AudioItem item = items[index];
-            return MediaPosterCard(
-              key: ValueKey<String>('${item.source.name}_${item.nativeId}'),
-              variant: CardVariant.grid,
-              title: item.title,
-              subtitle: item.artistsString,
-              year: item.releaseYear,
-              imageUrl: item.coverUrl ?? '',
-              cacheImageType: ImageType.audioCover,
-              cacheImageId: coverImageId(
-                mediaType: MediaType.audio,
-                externalId: item.id,
-                source: item.source,
-              ),
+  ) {
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        posterGridGeometry(context, cardScale: cardScale);
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: geometry.padding),
+      sliver: SliverGrid.builder(
+        gridDelegate: geometry.delegate,
+        itemCount: items.length,
+        itemBuilder: (BuildContext context, int index) {
+          final AudioItem item = items[index];
+          return MediaPosterCard(
+            key: ValueKey<String>('${item.source.name}_${item.nativeId}'),
+            variant: CardVariant.grid,
+            title: item.title,
+            subtitle: item.artistsString,
+            year: item.releaseYear,
+            imageUrl: item.coverUrl ?? '',
+            cacheImageType: ImageType.audioCover,
+            cacheImageId: coverImageId(
               mediaType: MediaType.audio,
-              typeLabelOverride: item.kind.cardLabel,
-              placeholderIcon: placeholderIcon,
-              onTap: () => onItemTap(item),
-            );
-          },
-        ),
-      );
+              externalId: item.id,
+              source: item.source,
+            ),
+            mediaType: MediaType.audio,
+            typeLabelOverride: item.kind.cardLabel,
+            placeholderIcon: placeholderIcon,
+            onTap: () => onItemTap(item),
+          );
+        },
+      ),
+    );
+  }
 
   Widget _empty(S l) => Center(
         child: Text(

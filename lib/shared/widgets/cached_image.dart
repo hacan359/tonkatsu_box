@@ -123,6 +123,9 @@ class _CachedImageState extends ConsumerState<CachedImage> {
           }
           return Image.file(
             localFile,
+            // A replaced cover can land back on the same path; keying by the
+            // source makes the widget resolve it again instead of reusing it.
+            key: ValueKey<String>(widget.remoteUrl),
             width: widget.width,
             height: widget.height,
             fit: widget.fit,

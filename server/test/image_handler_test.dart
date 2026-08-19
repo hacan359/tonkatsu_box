@@ -205,4 +205,57 @@ void main() {
           isFalse);
     });
   });
+
+  group('ImageCache.deleteHandler', () {
+    Future<Response> post(String path, List<int> body) async =>
+        build()(Request('POST', Uri.parse('http://localhost$path'),
+            body: body));
+
+    Future<Response> delete(String path) async =>
+        build()(Request('DELETE', Uri.parse('http://localhost$path')));
+
+    File custom(String name) => File(
+        p.join(dataDir.path, 'images', ImageType.customCover.folder, name));
+
+    test('should drop the stored file', () async {
+      await post('/img/custom_covers/42', <int>[1]);
+
+      final Response response = await delete('/img/custom_covers/42');
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(custom('42').existsSync(), isFalse);
+    });
+
+    test('should let the next GET refetch from the source', () async {
+      await post('/img/custom_covers/42', <int>[9]);
+      await delete('/img/custom_covers/42');
+
+      final Response response = await get('/img/custom_covers/42$src');
+
+      expect(await response.read().expand((List<int> c) => c).toList(),
+          <int>[1, 2, 3]);
+      expect(upstream.sent, hasLength(1));
+    });
+
+    test('should succeed on an image that is not cached', () async {
+      final Response response = await delete('/img/custom_covers/404');
+
+      expect(response.statusCode, HttpStatus.ok);
+    });
+
+    test('should refuse an unknown folder', () async {
+      final Response response = await delete('/img/not_a_folder/42');
+
+      expect(response.statusCode, HttpStatus.notFound);
+    });
+
+    test('should refuse a traversal id', () async {
+      await post('/img/custom_covers/42', <int>[1]);
+
+      final Response response = await delete('/img/custom_covers/..%2F42');
+
+      expect(response.statusCode, HttpStatus.badRequest);
+      expect(custom('42').existsSync(), isTrue);
+    });
+  });
 }

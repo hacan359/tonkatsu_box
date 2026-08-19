@@ -92,6 +92,80 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Statistics no longer count episodes and tracks of deleted titles**
+
+  Deleting a series left its watch marks in the database on purpose, so
+  re-adding it restores the progress — but the statistics page counted them
+  forever, and editing the marks of a live card was the only thing that made
+  the numbers agree again. Every episode and track counter now ignores marks
+  whose title is no longer in the collection. Nothing is deleted, so a
+  re-added series still comes back with its progress.
+
+  * packages/core/lib/database/dao/stats_dao.dart (StatsDao.getEpisodeSplit,
+    StatsDao.getListenedTrackTotal, StatsDao.getEstimatedMinutes,
+    StatsDao.getEpisodesByMonth): Count only marks with a live tracker-backed
+    item in the same collection — the rule CollectionItem.usesEpisodeTrackerFor
+    applies, expressed as an EXISTS predicate.
+
+- **A replaced cover on a custom card actually changes**
+
+  Picking a new picture for a custom card — by URL or from disk — kept showing
+  the old one. The cache file was named after the card, so the replacement
+  landed on the name the previous cover already held, and Flutter's decoded-image
+  cache is keyed by that same path. A picked cover now carries a token in its
+  name, and the decoded copies are dropped when one is replaced.
+
+  * packages/core/lib/models/custom_media.dart (CustomMedia.localCoverMarkerFor,
+    CustomMedia.localCoverToken): New — a marker that carries the pick's token.
+  * packages/core/lib/utils/cover_image_id.dart (coverImageId,
+    customCoverImageId): Suffix a custom cover's id with that token; the new
+    accessor is what the call sites holding a card id use.
+  * packages/core/lib/models/canvas_item.dart (CanvasItem.coverImageId): Use the
+    shared builder so a canvas card resolves the same file.
+  * lib/core/services/image_cache_service.dart
+    (ImageCacheService.evictDecodedImage, ImageCacheService.deleteImage,
+    ImageCacheService._serverImageUrl): Drop the replaced cover's decoded
+    copies; delete through the server's cache on web.
+  * lib/shared/widgets/cached_image.dart: Key Image.file by the source, so a
+    file reused under one path is resolved again.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart,
+    lib/features/collections/screens/item_detail_screen.dart,
+    lib/features/collections/providers/collections_provider.dart,
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart:
+    Write the tokenized marker when a cover is picked or imported.
+  * server/lib/src/image_handler.dart (ImageCache.deleteHandler,
+    ImageCache._isSafeImageId), server/lib/src/app_handler.dart: A DELETE route
+    for the image cache, sharing the traversal guard with the other two.
+
+- **TheTVDB series show how many episodes they have**
+
+  A TheTVDB series record states no episode count anywhere, so the progress
+  badge had no denominator and seasons showed no episode totals. Both are now
+  counted from the episode list, skipping specials.
+
+  * lib/core/api/episode_source/tvdb_episode_source.dart
+    (TvdbEpisodeSource.getShow, TvdbEpisodeSource.getSeasons,
+    TvdbEpisodeSource._episodeCountsBySeason): Fill in a missing total and the
+    per-season counts; the list is fetched only when a season lacks its own.
+
+- **Collection banner keeps its width in table view**
+
+  Switching a rich collection to the table view shrank the banner and left an
+  uneven gap on both sides: the side padding the table needs was wrapped
+  around the banner too.
+
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView.build): Stop padding the whole table view.
+
+- **Sticker album banner no longer overflows on a narrow window**
+
+  The right column wrapped past the banner's fixed height and drew an overflow
+  stripe once several statuses were present in a narrow window.
+
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart (_StickerHero,
+    _StickerHeroSide): Drop the cover stickers below two columns and clip the
+    column instead of overflowing.
+
 - **ScreenScraper works on the selfhost web build**
 
   Nothing at all came back in a browser. The dev pair a desktop build carries
@@ -177,6 +251,101 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     needs a local filesystem.
 
 ### Changed
+
+- **The collection banner carries the title and the back arrow**
+
+  With rich collection view on, the plain title row above a collection is
+  gone: the banner itself shows the name and a back control drawn in its own
+  style — an inked plate in Comic, a taped-on circle in Sticker album, a
+  hard-shadowed square in Brutalist, a quiet rounded one in Strips and a
+  scrim circle over the photo in Classic. One row of vertical space back, and
+  the collection name is no longer printed twice. The banner also stays up
+  while the items are still loading or failed to load, so the way back never
+  disappears.
+
+  * lib/features/collections/widgets/rich/hero_back_button.dart
+    (HeroBackButton): New — one back control the styles decorate themselves.
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart
+    (RichCollectionHero, _ComicHero, _StickerHero, _BrutalistHero, _SlatsHero):
+    Take an optional onBack and place it in each style's own frame.
+  * lib/features/collections/widgets/rich/rich_collection_body.dart
+    (RichHeroBanner): Same for the classic banner.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._isRich, _CollectionScreenState.build,
+    _CollectionScreenState._buildListLayout): Hide SubScreenTitleBar when the
+    banner carries the title; keep the banner above the loading skeleton and
+    the error state.
+
+- **Strips banner reads as torn comic panels**
+
+  The style used to slice the photo into three equal full-width bands, which
+  looked like a cut picture rather than a layout. One full-bleed frame is now
+  divided by two slanted wedge-shaped gaps that widen toward opposite edges.
+  The photo also runs edge to edge like every other style — the side gaps it
+  used to carry are gone.
+
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart
+    (_SlatsHero, _PanelCutsPainter): New painter for the cuts; the banner drops
+    the per-strip slicing and its outer padding, keeping it on the text block.
+
+- **Status breakdown in the banner is dots and counts**
+
+  The legend spelled out every status name and wrapped into three lines on a
+  phone. It now shows a colored dot with its count — the names are already
+  carried by the proportional bar above it.
+
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart (_StatusLegend):
+    Drop the localized label from the row.
+
+- **One poster-grid geometry for every card grid and its skeleton**
+
+  A collection, All Items, search, browse and the audio discover rows each
+  computed their own column count, spacing and padding — three near-copies
+  plus a fourth variant in the loading skeleton, which is why placeholders
+  ignored the card-size setting and jumped to another size once the items
+  arrived. All of them now read the same geometry, so the skeleton matches
+  the cards that replace it, and search gains the landscape-phone density and
+  the tablet breakpoint the collection grid already had — including the
+  compact card form, which a landscape phone used to get in a collection but
+  not in search.
+
+  * lib/shared/utils/poster_grid_delegate.dart (posterGridGeometry): New —
+    delegate plus outer padding for one card scale, replacing posterGridDelegate.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._buildGridView),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildGroupedGrid),
+    lib/features/search/widgets/browse_grid.dart (BrowseGrid._gridGeometry,
+    BrowseGrid._buildShimmerGrid),
+    lib/features/search/widgets/audio_discover_feed.dart (AudioDiscoverFeed._grid):
+    Delete the local geometry and read the shared one.
+  * lib/shared/widgets/shimmer_loading.dart (ShimmerPosterGrid): Becomes a
+    ConsumerWidget reading the same geometry and card scale.
+  * lib/shared/constants/platform_features.dart (useCompactCard): New — the one
+    predicate cards and skeletons share.
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (CollectionTableView.build): Side padding moves onto the toolbar and grid so
+    the banner above them stays full-bleed.
+
+- **Less animation work on mobile**
+
+  Three effects burned frames for nothing. A blurred-poster backdrop no
+  longer follows the gyroscope — the motion is invisible under a 40px blur but
+  re-ran the blur every frame. A tagged card's running border highlight is
+  drawn statically on phones, where a grid of them meant one endless ticker
+  per card. And every shimmer placeholder now shares a single clock instead of
+  owning an AnimationController, so a loading grid runs one ticker rather than
+  dozens — and none at all once the content arrives.
+
+  * lib/shared/widgets/gyroscope_parallax_image.dart
+    (GyroscopeParallaxImage.enabled): New flag that skips the sensor entirely.
+  * lib/features/search/widgets/item_details_sheet.dart: Pass enabled: false in
+    the blurred-poster fallback.
+  * lib/shared/widgets/media_poster_card.dart (_TagGlowWrapperState._syncController,
+    _GlowBorderPainter): No controller on mobile; a null progress paints the
+    border without the sweep.
+  * lib/shared/widgets/shimmer_loading.dart (_ShimmerTimeline, _ShimmerBoxState):
+    One refcounted Ticker driving a shared phase, gated by TickerMode.
 
 - **Status filter takes several statuses at once**
 

@@ -9,6 +9,7 @@ import 'package:core/models/item_status_logic.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/universal_import_result.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -306,7 +307,7 @@ class CustomCardsImportService {
       ));
       final bool ok = await _imageCache.downloadImage(
         type: ImageType.customCover,
-        imageId: customId.toString(),
+        imageId: customCoverImageId(id: customId, coverUrl: entry.coverUrl),
         remoteUrl: entry.coverUrl!,
       );
       if (!ok) {

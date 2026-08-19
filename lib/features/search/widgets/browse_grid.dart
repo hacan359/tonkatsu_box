@@ -130,10 +130,11 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
     final List<Object> displayItems = state.items;
 
-    final CardVariant variant = isCompactScreen(context)
-        ? CardVariant.compact
-        : CardVariant.grid;
+    final CardVariant variant =
+        useCompactCard(context) ? CardVariant.compact : CardVariant.grid;
     final DataSource fallbackSource = state.sources.first.dataSource;
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        _gridGeometry(context);
 
     return CustomScrollView(
       controller: _scrollController,
@@ -149,12 +150,12 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
             sliver: SliverToBoxAdapter(child: _buildErrors(state)),
           ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
+          padding: EdgeInsets.symmetric(
+            horizontal: geometry.padding,
             vertical: AppSpacing.sm,
           ),
           sliver: SliverGrid(
-            gridDelegate: _buildGridDelegate(context),
+            gridDelegate: geometry.delegate,
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 if (index >= displayItems.length) {
@@ -217,14 +218,13 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     );
   }
 
-  SliverGridDelegate _buildGridDelegate(BuildContext context) {
+  ({SliverGridDelegate delegate, double padding}) _gridGeometry(
+    BuildContext context,
+  ) {
     final double cardScale = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.cardScale),
     );
-    return posterGridDelegate(
-      width: MediaQuery.sizeOf(context).width,
-      cardScale: cardScale,
-    );
+    return posterGridGeometry(context, cardScale: cardScale);
   }
 
   Widget _buildShimmerGrid(BuildContext context) {
@@ -235,15 +235,18 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
             ? AppSpacing.gridColumnsTablet * 3
             : AppSpacing.gridColumnsMobile * 3);
 
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        _gridGeometry(context);
+    final bool compact = useCompactCard(context);
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
+      padding: EdgeInsets.symmetric(
+        horizontal: geometry.padding,
         vertical: AppSpacing.sm,
       ),
-      gridDelegate: _buildGridDelegate(context),
+      gridDelegate: geometry.delegate,
       itemCount: shimmerCount,
       itemBuilder: (BuildContext context, int index) =>
-          const ShimmerPosterCard(),
+          ShimmerPosterCard(compact: compact),
     );
   }
 }

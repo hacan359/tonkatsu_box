@@ -12,6 +12,7 @@ import 'package:core/models/game.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/item_status_logic.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -637,23 +638,29 @@ class CollectionItemsNotifier
       final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
       if (coverBytes != null) {
+        final String marker = CustomMedia.localCoverMarkerFor(
+          DateTime.now().millisecondsSinceEpoch,
+        );
         final bool saved = await cache.saveImageBytes(
           ImageType.customCover,
-          customId.toString(),
+          customCoverImageId(id: customId, coverUrl: marker),
           coverBytes,
         );
         // Marker in cover_url: CachedImage sees non-empty imageUrl and
         // resolves from cache without hitting the network.
         if (saved) {
           await _db.customMediaDao.update(
-            customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
+            customMedia.copyWith(id: customId, coverUrl: marker),
           );
         }
       } else if (customMedia.coverUrl != null &&
           customMedia.coverUrl!.isNotEmpty) {
         await cache.downloadImage(
           type: ImageType.customCover,
-          imageId: customId.toString(),
+          imageId: customCoverImageId(
+            id: customId,
+            coverUrl: customMedia.coverUrl,
+          ),
           remoteUrl: customMedia.coverUrl!,
         );
       }

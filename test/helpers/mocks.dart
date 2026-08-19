@@ -48,6 +48,7 @@ import 'package:tonkatsu_box/core/api/simkl_api.dart';
 import 'package:tonkatsu_box/core/api/steam_api.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/api/tvdb_api.dart';
 import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
 import 'package:tonkatsu_box/core/api/vndb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
@@ -151,6 +152,8 @@ class MockGlobalTagDao extends Mock implements GlobalTagDao {}
 class MockIgdbApi extends Mock implements IgdbApi {}
 
 class MockTmdbApi extends Mock implements TmdbApi {}
+
+class MockTvdbApi extends Mock implements TvdbApi {}
 
 class MockTvMazeApi extends Mock implements TvMazeApi {}
 
