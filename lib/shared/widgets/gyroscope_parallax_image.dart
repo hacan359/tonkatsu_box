@@ -1,11 +1,15 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:core/api/image_proxy.dart';
+import 'package:core/models/image_type.dart';
+import 'package:core/utils/stable_id.dart';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+import '../../core/selfhost/server_origin.dart';
 import '../constants/platform_features.dart';
+import 'cached_image.dart';
 
 /// Max parallax offset in pixels.
 const double _kMaxOffset = 20.0;
@@ -23,10 +27,17 @@ class GyroscopeParallaxImage extends StatefulWidget {
     this.errorWidget,
     this.enabled = true,
     this.gyroscopeStream,
+    this.imageType,
+    this.imageId,
     super.key,
   });
 
   final String imageUrl;
+
+  /// When both are set, the picture renders through the app's cover cache
+  /// (CachedImage) instead of a second network fetch of an already-cached file.
+  final ImageType? imageType;
+  final String? imageId;
 
   /// When false, skips the sensor and renders the plain static image — for
   /// hosts where the motion is invisible (e.g. under a heavy blur).
@@ -69,7 +80,7 @@ class _GyroscopeParallaxImageState extends State<GyroscopeParallaxImage>
     super.initState();
     if (!widget.enabled) return;
     final Stream<GyroscopeEvent>? stream = widget.gyroscopeStream ??
-        (!kIsWebBuild && Platform.isAndroid
+        (kIsMobile
             ? gyroscopeEventStream(
                 samplingPeriod: const Duration(milliseconds: 16),
               )
@@ -139,16 +150,43 @@ class _GyroscopeParallaxImageState extends State<GyroscopeParallaxImage>
     super.dispose();
   }
 
+  /// Provider CDNs answer CanvasKit's XHR without a CORS header, so on web
+  /// the bytes come through the server's image cache, keyed by the URL hash.
+  static String _proxiedUrl(String sourceUrl) {
+    final String path = Uri.tryParse(sourceUrl)?.path ?? '';
+    final int dot = path.lastIndexOf('.');
+    final String ext = dot == -1 ? '' : path.substring(dot).toLowerCase();
+    const Set<String> known = <String>{'.jpg', '.jpeg', '.png', '.webp', '.gif'};
+    return imageProxyUrl(
+      baseUrl: serverBaseUrl(),
+      type: ImageType.backdrop,
+      imageId: '${fnv1a53(sourceUrl)}${known.contains(ext) ? ext : ''}',
+      sourceUrl: sourceUrl,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Widget image = CachedNetworkImage(
-      imageUrl: widget.imageUrl,
-      fit: widget.fit,
-      alignment: widget.alignment,
-      errorWidget: widget.errorWidget ??
-          (BuildContext context, String url, Object error) =>
-              const SizedBox.shrink(),
-    );
+    final ImageType? cacheType = widget.imageType;
+    final String? cacheId = widget.imageId;
+    final Widget image = (cacheType != null && cacheId != null)
+        ? CachedImage(
+            imageType: cacheType,
+            imageId: cacheId,
+            remoteUrl: widget.imageUrl,
+            fit: widget.fit,
+            alignment: widget.alignment,
+            errorWidget: const SizedBox.shrink(),
+          )
+        : CachedNetworkImage(
+            imageUrl:
+                kIsWebBuild ? _proxiedUrl(widget.imageUrl) : widget.imageUrl,
+            fit: widget.fit,
+            alignment: widget.alignment,
+            errorWidget: widget.errorWidget ??
+                (BuildContext context, String url, Object error) =>
+                    const SizedBox.shrink(),
+          );
 
     // No active gyroscope (no sensor / not Android) — render the static image.
     if (_ticker == null) return image;

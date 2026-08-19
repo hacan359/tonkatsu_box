@@ -142,6 +142,9 @@ class CollectionHeroService {
             bytes,
           ) ??
           false;
+      if (ok && oldFileName != null && oldFileName != fileName) {
+        await delete(oldFileName);
+      }
       return ok ? fileName : null;
     }
 
@@ -185,7 +188,13 @@ class CollectionHeroService {
   }
 
   Future<void> delete(String? fileName) async {
-    if (fileName == null || fileName.isEmpty || kIsWebBuild) return;
+    if (fileName == null || fileName.isEmpty) return;
+    // On web the file lives in the server's image cache; a skipped delete
+    // would leak every replaced hero there for good.
+    if (kIsWebBuild) {
+      await _imageCache?.deleteImage(ImageType.collectionHero, fileName);
+      return;
+    }
     final File f = File(absolutePathFor(fileName));
     if (f.existsSync()) {
       try {

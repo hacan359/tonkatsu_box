@@ -473,6 +473,10 @@ class ItemDetailsSheet extends StatelessWidget {
                           ),
                           child: GyroscopeParallaxImage(
                             imageUrl: posterUrl!,
+                            // The poster is already in the cover cache; a raw
+                            // URL here would refetch it from the provider.
+                            imageType: cacheImageType,
+                            imageId: cacheImageId,
                             fit: BoxFit.cover,
                             alignment: Alignment.center,
                             // Parallax under a 40px blur is invisible, but each
@@ -655,6 +659,7 @@ class ItemDetailsSheet extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.cover,
+        memCacheWidth: kPosterDecodeWidth,
         placeholder: Container(
           width: width,
           height: height,

@@ -30,7 +30,11 @@ enum ImageType {
 
   /// ScreenScraper media. On web the server fetches them: the media host
   /// answers an error page without a CORS header and the tab sees nothing.
-  screenScraperMedia('screenscraper_media');
+  screenScraperMedia('screenscraper_media'),
+
+  /// Detail-screen backdrops, keyed by a hash of the source URL — the only
+  /// identity a raw provider URL has.
+  backdrop('backdrops');
 
   const ImageType(this.folder);
 

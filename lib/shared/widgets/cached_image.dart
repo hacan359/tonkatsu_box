@@ -1,12 +1,17 @@
 import 'dart:io';
 
 import 'package:core/api/image_proxy.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/selfhost/server_origin.dart';
 import '../../core/services/image_cache_service.dart';
 import '../constants/platform_features.dart';
+
+/// One decode width for the whole poster path — grid card, detail cover and
+/// the sheet's poster — so they share a single decoded ImageCache entry.
+const int kPosterDecodeWidth = 300;
 
 /// The fetch [Future] is held in [State] so a parent rebuild does not restart
 /// the load and flicker the placeholder.
@@ -18,6 +23,7 @@ class CachedImage extends ConsumerStatefulWidget {
     this.width,
     this.height,
     this.fit = BoxFit.contain,
+    this.alignment = Alignment.center,
     this.memCacheWidth,
     this.memCacheHeight,
     this.placeholder,
@@ -36,6 +42,7 @@ class CachedImage extends ConsumerStatefulWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
+  final AlignmentGeometry alignment;
 
   final int? memCacheWidth;
   final int? memCacheHeight;
@@ -72,6 +79,15 @@ class _CachedImageState extends ConsumerState<CachedImage> {
 
   Future<ImageResult> _fetchImage() {
     final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
+    // Warm path: with the base dir memoized, a cached file resolves before
+    // the first frame — no placeholder flash on every screen transition.
+    final String? local =
+        cacheService.localPathIfCached(widget.imageType, widget.imageId);
+    if (local != null) {
+      return SynchronousFuture<ImageResult>(
+        ImageResult(uri: local, isLocal: true, isMissing: false),
+      );
+    }
     return cacheService.getImageUri(
       type: widget.imageType,
       imageId: widget.imageId,
@@ -129,6 +145,7 @@ class _CachedImageState extends ConsumerState<CachedImage> {
             width: widget.width,
             height: widget.height,
             fit: widget.fit,
+            alignment: widget.alignment,
             cacheWidth: widget.memCacheWidth,
             cacheHeight: widget.memCacheHeight,
             errorBuilder:
@@ -187,6 +204,7 @@ class _CachedImageState extends ConsumerState<CachedImage> {
       width: widget.width,
       height: widget.height,
       fit: widget.fit,
+      alignment: widget.alignment,
       cacheWidth: widget.memCacheWidth,
       cacheHeight: widget.memCacheHeight,
       frameBuilder: (

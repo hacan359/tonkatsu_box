@@ -45,7 +45,20 @@ class ImageCacheService {
 
   final Dio _dio;
 
+  // Memoized so a cached file can be resolved synchronously on later mounts;
+  // a profile switch restarts the app, so only a path change must reset it.
+  String? _basePathMemo;
+  bool? _cacheEnabledMemo;
+
   Future<String> getBaseCachePath() async {
+    final String? memo = _basePathMemo;
+    if (memo != null) return memo;
+    final String resolved = await _resolveBaseCachePath();
+    _basePathMemo = resolved;
+    return resolved;
+  }
+
+  Future<String> _resolveBaseCachePath() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? customPath = prefs.getString(_CacheKeys.customCachePath);
 
@@ -78,11 +91,13 @@ class ImageCacheService {
   }
 
   Future<void> setCachePath(String path) async {
+    _basePathMemo = null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(_CacheKeys.customCachePath, path);
   }
 
   Future<void> resetCachePath() async {
+    _basePathMemo = null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(_CacheKeys.customCachePath);
   }
@@ -92,12 +107,28 @@ class ImageCacheService {
     // will route them through the server proxy/cache).
     if (kIsWebBuild) return false;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
+    final bool enabled = prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
+    _cacheEnabledMemo = enabled;
+    return enabled;
   }
 
   Future<void> setCacheEnabled(bool enabled) async {
+    _cacheEnabledMemo = enabled;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_CacheKeys.cacheEnabled, enabled);
+  }
+
+  /// Synchronous cache hit, or null before the first async lookup memoizes
+  /// the base path, on web, with the cache disabled, or on a missing file.
+  String? localPathIfCached(ImageType type, String imageId) {
+    if (kIsWebBuild) return null;
+    if (_cacheEnabledMemo != true) return null;
+    final String? base = _basePathMemo;
+    if (base == null) return null;
+    final String path = p.join(base, type.folder, '$imageId.png');
+    final File file = File(path);
+    if (!file.existsSync() || !_isValidImageFile(file)) return null;
+    return path;
   }
 
   Future<String> getLocalImagePath(ImageType type, String imageId) async {

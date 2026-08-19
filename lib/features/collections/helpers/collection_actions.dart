@@ -615,6 +615,9 @@ class CollectionActions {
 
     try {
       await cache.deleteImage(item.imageType, item.coverImageId);
+      // The refetched cover lands on the same path, which also keys Flutter's
+      // decoded-image cache — without this the old art renders until restart.
+      await cache.evictDecodedImage(item.imageType, item.coverImageId);
 
       switch (item.mediaType) {
         case MediaType.game:

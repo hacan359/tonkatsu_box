@@ -215,6 +215,9 @@ class ExportService {
   ) async {
     final String? fileName = collection.heroImagePath;
     if (fileName == null || _heroService == null) return;
+    // On web `resolve` yields a server URL and File() throws in the browser;
+    // the hero stays on the server, so the export just omits it there.
+    if (kIsWebBuild) return;
     final String? absPath = _heroService.resolve(fileName);
     if (absPath == null) return;
     final File file = File(absPath);

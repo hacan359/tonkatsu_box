@@ -831,11 +831,6 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  // Common
-
-  /// Poster decode width in px (2x for HiDPI).
-  static const int _posterDecodeWidth = 300;
-
   Widget _buildCachedImage({required Widget placeholder}) {
     if (widget.imageUrl.isEmpty) return placeholder;
 
@@ -844,7 +839,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       imageId: widget.cacheImageId,
       remoteUrl: widget.imageUrl,
       fit: BoxFit.cover,
-      memCacheWidth: _posterDecodeWidth,
+      memCacheWidth: kPosterDecodeWidth,
       placeholder: placeholder,
       errorWidget: placeholder,
     );
