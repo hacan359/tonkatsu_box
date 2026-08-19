@@ -11,6 +11,40 @@ void main() {
       expect(CustomMedia.isLocalCover(null), isFalse);
       expect(CustomMedia.isLocalCover(''), isFalse);
     });
+
+    test('a tokenized marker still reads as a local cover', () {
+      expect(
+        CustomMedia.isLocalCover(CustomMedia.localCoverMarkerFor(17)),
+        isTrue,
+      );
+    });
+  });
+
+  group('CustomMedia.localCoverToken', () {
+    test('round-trips the token a marker was built with', () {
+      expect(
+        CustomMedia.localCoverToken(CustomMedia.localCoverMarkerFor(1755)),
+        '1755',
+      );
+    });
+
+    test('null for covers that carry no token', () {
+      expect(CustomMedia.localCoverToken(null), isNull);
+      expect(CustomMedia.localCoverToken(''), isNull);
+      expect(CustomMedia.localCoverToken('https://x/cover.jpg'), isNull);
+      // Written before tokens existed — its file is named after the card id.
+      expect(CustomMedia.localCoverToken(CustomMedia.localCoverMarker), isNull);
+    });
+
+    test('null when the token could not be a file name', () {
+      for (final String bad in <String>['..', 'a/b', 'a b', 'A', '', 'a.b']) {
+        expect(
+          CustomMedia.localCoverToken('${CustomMedia.localCoverMarker}/$bad'),
+          isNull,
+          reason: 'token "$bad" must be rejected',
+        );
+      }
+    });
   });
 
   group('genreList', () {

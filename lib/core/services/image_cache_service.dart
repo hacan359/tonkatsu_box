@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:core/api/image_proxy.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -128,11 +129,7 @@ class ImageCacheService {
     if (kIsWebBuild) {
       try {
         await _dio.post<Object?>(
-          imageProxyUrl(
-            baseUrl: serverBaseUrl(),
-            type: type,
-            imageId: imageId,
-          ),
+          _serverImageUrl(type, imageId),
           data: Stream<List<int>>.value(bytes),
           options: Options(
             headers: <String, Object?>{
@@ -169,9 +166,38 @@ class ImageCacheService {
     return file.existsSync() && _isValidImageFile(file);
   }
 
+  String _serverImageUrl(ImageType type, String imageId) => imageProxyUrl(
+        baseUrl: serverBaseUrl(),
+        type: type,
+        imageId: imageId,
+      );
+
+  /// Drops the decoded copies of one cached image. Flutter keys them by path
+  /// (by url on web), so a picture replaced under the name it already had
+  /// would keep rendering from the copy decoded before.
+  Future<void> evictDecodedImage(ImageType type, String imageId) async {
+    if (kIsWebBuild) {
+      await NetworkImage(_serverImageUrl(type, imageId)).evict();
+      return;
+    }
+    final String path = await getLocalImagePath(type, imageId);
+    await FileImage(File(path)).evict();
+  }
+
   /// Tolerates files locked by another process on Windows.
   Future<void> deleteImage(ImageType type, String imageId) async {
-    if (kIsWebBuild) return;
+    // On web the file lives in the server's cache, where a stale copy would
+    // outrank the URL for every client, not just this tab.
+    if (kIsWebBuild) {
+      try {
+        await _dio.delete<Object?>(
+          _serverImageUrl(type, imageId),
+        );
+      } on DioException catch (e) {
+        _log.warning('Failed to delete image: $imageId', e);
+      }
+      return;
+    }
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     if (file.existsSync()) {

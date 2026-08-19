@@ -77,6 +77,7 @@ Handler buildAppHandler({
   if (images != null) {
     api.get('$kImagePathPrefix/<folder>/<id|.*>', images.handler);
     api.post('$kImagePathPrefix/<folder>/<id|.*>', images.uploadHandler);
+    api.delete('$kImagePathPrefix/<folder>/<id|.*>', images.deleteHandler);
   }
 
   final Handler? web = _webHandler(webRoot);

@@ -17,6 +17,7 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tracker_game_data.dart';
 import 'package:core/models/tv_show.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -478,17 +479,43 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (data == null || !mounted) return;
 
     // Cache picked bytes and mark coverUrl so the renderer reads the cache.
+    final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+    final String previousCoverId = item.coverImageId;
     String? newCoverUrl = data.coverUrl;
     if (data.coverBytes != null) {
-      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+      final String marker = CustomMedia.localCoverMarkerFor(
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      final String coverId =
+          customCoverImageId(id: item.externalId, coverUrl: marker);
       final bool saved = await cache.saveImageBytes(
         ImageType.customCover,
-        item.externalId.toString(),
+        coverId,
         data.coverBytes!,
       );
       if (saved) {
-        newCoverUrl = CustomMedia.localCoverMarker;
+        newCoverUrl = marker;
+        if (coverId != previousCoverId) {
+          await cache.deleteImage(ImageType.customCover, previousCoverId);
+        }
       }
+    } else if (newCoverUrl != item.customMedia!.coverUrl) {
+      // A cached file outranks the URL, so a new address only takes effect
+      // once the picture cached under the old one is gone.
+      await cache.deleteImage(ImageType.customCover, previousCoverId);
+      if (newCoverUrl != null && !CustomMedia.isLocalCover(newCoverUrl)) {
+        await cache.downloadImage(
+          type: ImageType.customCover,
+          imageId: customCoverImageId(
+            id: item.externalId,
+            coverUrl: newCoverUrl,
+          ),
+          remoteUrl: newCoverUrl,
+        );
+      }
+      // A URL cover keeps its file name, so the picture decoded from the old
+      // file would outlive it — Flutter keys decoded images by path.
+      await cache.evictDecodedImage(ImageType.customCover, previousCoverId);
     }
 
     final bool clearDisplayType = data.mediaType == MediaType.custom;

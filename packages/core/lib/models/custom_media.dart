@@ -48,6 +48,21 @@ class CustomMedia {
   /// file already cached, and never reaches for a remote URL.
   static const String localCoverMarker = 'local://cover';
 
+  /// Marker for a freshly picked file. [token] reaches the cache file name, so
+  /// a replaced cover lands beside the old one instead of over it.
+  static String localCoverMarkerFor(int token) => '$localCoverMarker/$token';
+
+  /// Token of [localCoverMarkerFor]; null for a URL cover and for the markers
+  /// written before tokens existed, whose file is named after the card id.
+  static String? localCoverToken(String? url) {
+    if (url == null || !url.startsWith('$localCoverMarker/')) return null;
+    final String token = url.substring(localCoverMarker.length + 1);
+    // The token becomes a file name — anything else would escape the folder.
+    return _coverToken.hasMatch(token) ? token : null;
+  }
+
+  static final RegExp _coverToken = RegExp(r'^[0-9a-z]+$');
+
   static bool isLocalCover(String? url) =>
       url != null && url.startsWith('local://');
 
