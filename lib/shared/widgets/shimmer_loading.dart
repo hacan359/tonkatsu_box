@@ -1,9 +1,50 @@
-// Shimmer loading effect without external dependencies.
-
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/settings/providers/settings_provider.dart';
+import '../constants/platform_features.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../utils/poster_grid_delegate.dart';
+
+/// One app-wide shimmer clock: a loading grid would otherwise run one
+/// AnimationController per box. Ticks only while at least one box listens.
+class _ShimmerTimeline {
+  _ShimmerTimeline._();
+
+  static final _ShimmerTimeline instance = _ShimmerTimeline._();
+
+  static const int _periodMs = 1500;
+
+  /// Shared sweep phase, 0..1; every box reads the same value, so all
+  /// placeholders on screen shimmer as one synchronized wave.
+  final ValueNotifier<double> phase = ValueNotifier<double>(0);
+
+  Ticker? _ticker;
+  int _clients = 0;
+
+  void acquire() {
+    _clients++;
+    if (_ticker != null) return;
+    _ticker = Ticker(_onTick)..start();
+  }
+
+  void release() {
+    if (_clients == 0) return;
+    _clients--;
+    if (_clients > 0) return;
+    _ticker?.dispose();
+    _ticker = null;
+    // The next batch starts a fresh Ticker from zero elapsed, so leaving the
+    // old phase behind would make its first frame jump mid-sweep.
+    phase.value = 0;
+  }
+
+  void _onTick(Duration elapsed) {
+    phase.value = (elapsed.inMilliseconds % _periodMs) / _periodMs;
+  }
+}
 
 /// Base shimmer block with an animated gradient.
 ///
@@ -30,55 +71,66 @@ class ShimmerBox extends StatefulWidget {
   State<ShimmerBox> createState() => _ShimmerBoxState();
 }
 
-class _ShimmerBoxState extends State<ShimmerBox>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+class _ShimmerBoxState extends State<ShimmerBox> {
+  bool _listening = false;
 
+  // TickerMode gates the shared clock the way it would gate an own
+  // controller: boxes on a covered route stop demanding frames.
   @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final bool enabled = TickerMode.valuesOf(context).enabled;
+    if (enabled == _listening) return;
+    _listening = enabled;
+    if (enabled) {
+      _ShimmerTimeline.instance.acquire();
+    } else {
+      _ShimmerTimeline.instance.release();
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_listening) {
+      _ShimmerTimeline.instance.release();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (BuildContext context, Widget? child) {
-        return Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            gradient: LinearGradient(
-              begin: Alignment(-1.0 + 2.0 * _controller.value, 0),
-              end: Alignment(-1.0 + 2.0 * _controller.value + 1.0, 0),
-              colors: <Color>[
-                AppColors.surface,
-                AppColors.surfaceLight,
-                AppColors.surface,
-              ],
+    // Hoisted out of the per-frame builder: only the gradient stops move, and
+    // a loading grid rebuilds dozens of these every frame.
+    final BorderRadius radius = BorderRadius.circular(widget.borderRadius);
+    final List<Color> colors = <Color>[
+      AppColors.surface,
+      AppColors.surfaceLight,
+      AppColors.surface,
+    ];
+    return SizedBox(
+      width: widget.width,
+      height: widget.height,
+      child: ValueListenableBuilder<double>(
+        valueListenable: _ShimmerTimeline.instance.phase,
+        builder: (BuildContext context, double phase, Widget? child) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              gradient: LinearGradient(
+                begin: Alignment(-1.0 + 2.0 * phase, 0),
+                end: Alignment(-1.0 + 2.0 * phase + 1.0, 0),
+                colors: colors,
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
 
-/// Poster card placeholder (shimmer).
-///
-/// A poster rectangle plus the card's title block, so the skeleton and the
-/// real [MediaPosterCard] give the poster the same height.
+/// Includes the title block so the skeleton gives the poster the same height
+/// as a real [MediaPosterCard].
 class ShimmerPosterCard extends StatelessWidget {
   /// Creates a poster card shimmer placeholder.
   const ShimmerPosterCard({this.compact = false, super.key});
@@ -122,10 +174,6 @@ class ShimmerPosterCard extends StatelessWidget {
   }
 }
 
-/// Tier list card placeholder (shimmer).
-///
-/// Icon on the left, two text lines, chevron on the right.
-/// Mirrors the _TierListCard structure.
 class ShimmerTierListCard extends StatelessWidget {
   /// Creates a tier list card shimmer placeholder.
   const ShimmerTierListCard({super.key});
@@ -255,12 +303,9 @@ class ShimmerList extends StatelessWidget {
   }
 }
 
-/// Poster grid placeholder: a grid of [ShimmerPosterCard]s.
-///
-/// The max-extent delegate adapts the column count to the available
-/// width on its own, so the skeleton stays close to the real grid
-/// without mirroring its breakpoint logic.
-class ShimmerPosterGrid extends StatelessWidget {
+/// Reads the same geometry helper as the real collection grid, so the
+/// skeleton honors the user card scale and every breakpoint.
+class ShimmerPosterGrid extends ConsumerWidget {
   /// Creates a poster grid shimmer placeholder.
   const ShimmerPosterGrid({this.itemCount = 12, super.key});
 
@@ -268,19 +313,22 @@ class ShimmerPosterGrid extends StatelessWidget {
   final int itemCount;
 
   @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth,
-        crossAxisSpacing: AppSpacing.gridGap,
-        mainAxisSpacing: AppSpacing.lg,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        posterGridGeometry(
+      context,
+      cardScale: ref.watch(
+        settingsNotifierProvider.select((SettingsState s) => s.cardScale),
       ),
+    );
+    final bool compact = useCompactCard(context);
+    return GridView.builder(
+      padding: EdgeInsets.all(geometry.padding),
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: geometry.delegate,
       itemCount: itemCount,
       itemBuilder: (BuildContext context, int index) =>
-          const ShimmerPosterCard(),
+          ShimmerPosterCard(compact: compact),
     );
   }
 }

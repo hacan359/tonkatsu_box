@@ -99,6 +99,9 @@ class SEs extends S {
   String get statusWatching => 'Viendo';
 
   @override
+  String get statusListening => 'Escuchando';
+
+  @override
   String get statusInProgress => 'En curso';
 
   @override
@@ -114,6 +117,14 @@ class SEs extends S {
   String get statusReplay => 'Repitiendo';
 
   @override
+  String get statusIgnored => 'Ignorado';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Estados: $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Número de repeticiones';
 
   @override
@@ -127,6 +138,9 @@ class SEs extends S {
 
   @override
   String get statusRereading => 'Releyendo';
+
+  @override
+  String get statusRelistening => 'Reescuchando';
 
   @override
   String get all => 'Todo';
@@ -154,6 +168,9 @@ class SEs extends S {
 
   @override
   String get mediaTypeBook => 'Libro';
+
+  @override
+  String get mediaTypeAudio => 'Audio';
 
   @override
   String get mediaTypeCustom => 'Personalizado';
@@ -1536,6 +1553,10 @@ class SEs extends S {
       'Datos de cómics de ComicVine (uso no comercial).';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      'Datos musicales de MusicBrainz, portadas de Cover Art Archive, escuchas de ListenBrainz.';
+
+  @override
   String get creditsGoogleBooksAttribution =>
       'Datos de libros de Google Books.';
 
@@ -1934,13 +1955,22 @@ class SEs extends S {
   String get tagManage => 'Gestionar etiquetas';
 
   @override
+  String get tagSortTooltip => 'Orden';
+
+  @override
+  String get tagSortManual => 'Manual';
+
+  @override
+  String get tagSortAlphaAsc => 'Alfabético (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => 'Alfabético (Z–A)';
+
+  @override
   String get tagAssign => 'Asignar etiquetas';
 
   @override
   String get tagNone => 'Sin etiquetas';
-
-  @override
-  String get tagPickerTitle => 'Seleccionar etiquetas';
 
   @override
   String get tagTextColor => 'Color del texto';
@@ -2426,6 +2456,67 @@ class SEs extends S {
 
   @override
   String get searchHintComics => 'Buscar cómics...';
+
+  @override
+  String get searchSourceMusic => 'Música';
+
+  @override
+  String get searchHintMusic => 'Buscar álbumes...';
+
+  @override
+  String get musicFilterAlbumsDefault => 'Álbumes';
+
+  @override
+  String get musicFilterAllTypes => 'Todos los tipos';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => 'Sencillo';
+
+  @override
+  String get musicFilterTypeBroadcast => 'Emisión';
+
+  @override
+  String get musicFilterTypeOther => 'Otro';
+
+  @override
+  String get musicFilterEdition => 'Ediciones';
+
+  @override
+  String get musicFilterStudioOnly => 'Solo de estudio';
+
+  @override
+  String get musicSheetEditions => 'Ediciones';
+
+  @override
+  String get musicSheetTracks => 'Pistas';
+
+  @override
+  String musicSheetDisc(int number) {
+    return 'Disco $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => 'Ediciones no disponibles';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count pistas';
+  }
+
+  @override
+  String get musicTrackerNoTracks => 'Sin lista de pistas';
+
+  @override
+  String get musicDiscoverFreshReleases => 'Nuevos lanzamientos';
+
+  @override
+  String get musicDiscoverUnavailable => 'Discover no disponible';
+
+  @override
+  String get musicSearchArtist => 'Artista';
 
   @override
   String get language => 'Idioma';
@@ -3567,6 +3658,28 @@ class SEs extends S {
       'Personaliza las colecciones con una imagen de portada y una descripción';
 
   @override
+  String get settingsRichHeroStyle => 'Estilo del banner de colección';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'Aspecto de la cabecera de colección enriquecida';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Clásico';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Cómic';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Álbum de pegatinas';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Brutalista';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Tiras';
+
+  @override
   String get settingsCardScale => 'Tamaño de portada';
 
   @override
@@ -3647,6 +3760,9 @@ class SEs extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'Con adaptación';
+
+  @override
+  String get tagPickerTitle => 'Seleccionar etiquetas';
 
   @override
   String get tagPickerSearchHint => 'Buscar etiquetas';
@@ -5062,6 +5178,24 @@ class SEs extends S {
       'Metadatos de juegos + medios (portadas, capturas, arte)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Credenciales de desarrollador (devid / devpassword). El servidor firma cada solicitud con ellas; sin ellas ScreenScraper rechaza.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder =>
+      'ID de desarrollador de ScreenScraper';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'Contraseña de desarrollador de ScreenScraper';
+
+  @override
   String get screenScraperUserCredsHint =>
       'Credenciales de usuario (ssid / sspassword). La cuota es por usuario.';
 
@@ -5273,6 +5407,9 @@ class SEs extends S {
   String get unitPart => 'Parte';
 
   @override
+  String get unitTrack => 'Pista';
+
+  @override
   String get cardLinkCopy => 'Copiar enlace de la tarjeta';
 
   @override
@@ -5412,6 +5549,9 @@ class SEs extends S {
 
   @override
   String get statsMetricBookPages => 'páginas de libros';
+
+  @override
+  String get statsMetricTracks => 'pistas escuchadas';
 
   @override
   String get statsMetricEpisodes => 'episodios';
@@ -5654,4 +5794,65 @@ class SEs extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return 'Límite de peticiones alcanzado: reintento en $seconds s (intento $attempt/$max)';
   }
+
+  @override
+  String get searchSourcePodcasts => 'Pódcasts';
+
+  @override
+  String get searchHintPodcasts => 'Buscar pódcasts...';
+
+  @override
+  String get podcastSheetEpisodes => 'Episodios';
+
+  @override
+  String get podcastSheetNoEpisodes => 'Lista de episodios no disponible';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count episodios';
+  }
+
+  @override
+  String get podcastDiscoverTrending => 'Pódcasts en tendencia';
+
+  @override
+  String get credentialsPodcastIndexSection => 'API de Podcast Index';
+
+  @override
+  String get credentialsEnterPodcastIndexKey =>
+      'Introduce tu clave de API de Podcast Index';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret =>
+      'Introduce tu secreto de API de Podcast Index';
+
+  @override
+  String get credentialsPodcastIndexKeyValid =>
+      'Las claves de Podcast Index son válidas';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'Podcast Index rechazó las claves. Comprueba el par y el reloj del sistema';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      'Búsqueda de pódcasts y seguimiento de episodios. Par clave/secreto gratuito de api.podcastindex.org.';
+
+  @override
+  String get welcomeSourceDescMusicBrainz =>
+      'Enciclopedia musical abierta: álbumes, artistas y ediciones. No requiere clave.';
+
+  @override
+  String get welcomeSourceDescPodcastIndex =>
+      'Catálogo abierto de pódcasts con seguimiento por episodios. Par clave/secreto gratuito.';
+
+  @override
+  String get creditsPodcastIndexAttribution =>
+      'Datos de pódcasts de Podcast Index.';
+
+  @override
+  String get credentialsApiSecret => 'Secreto de API';
+
+  @override
+  String get markAllListened => 'Marcar todo como escuchado';
 }

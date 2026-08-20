@@ -10,9 +10,8 @@ import 'hardcover/hardcover_types.dart';
 import 'hardcover/hardcover_user_library_api.dart';
 export 'hardcover/hardcover_types.dart';
 
-/// Wires [HardcoverApi] with the user's personal token. Hardcover has no
-/// built-in key — without a token the API rejects every request, so the
-/// client throws [HardcoverAuthException] until one is entered in Credentials.
+/// Hardcover ships no built-in key — without the user's personal token the
+/// client throws [HardcoverAuthException] until one is set in Credentials.
 final Provider<HardcoverApi> hardcoverApiProvider =
     Provider<HardcoverApi>((Ref ref) {
   final HardcoverApi api = HardcoverApi();

@@ -173,10 +173,8 @@ void main() {
         container.dispose();
       });
 
-      // Mirrors the SteamGridDB regression: provider is keyed by
-      // `collectionId`, so without resetting the URL and any captured
-      // image the previous browsing session leaked into the next canvas
-      // that opened the panel.
+      // The provider is keyed by `collectionId`, so without a reset the last
+      // browsing session leaks into the next canvas that opens the panel.
       test('should reset navigation and captured-image state', () {
         final ProviderContainer container = createContainer();
         final VgMapsPanelNotifier notifier =

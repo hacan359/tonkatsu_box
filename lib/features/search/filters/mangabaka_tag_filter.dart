@@ -1,5 +1,3 @@
-// MangaBaka tag filter (multi-select + custom picker with manual refresh).
-
 import 'package:core/models/mangabaka_tag.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
@@ -9,9 +7,8 @@ import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 import '../widgets/mangabaka_tag_picker.dart';
 
-/// Multi-select MangaBaka tag filter (~2700 entries, SQLite-backed catalog
-/// cache; refreshed on demand from the picker). Values are tag names — the
-/// MangaBaka `tag=` filter accepts names.
+/// ~2700 tags come from a SQLite catalog cache, refreshed from the picker.
+/// Values are tag names — the MangaBaka `tag=` filter accepts names.
 class MangaBakaTagFilter extends SearchFilter {
   @override
   String get key => 'tag';

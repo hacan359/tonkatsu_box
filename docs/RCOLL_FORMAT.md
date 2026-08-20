@@ -169,7 +169,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 |-------|------|----------|-------------|
 | media_type | string | yes | `"game"`, `"movie"`, `"tv_show"`, `"animation"`, `"visual_novel"`, `"manga"`, `"anime"`, `"book"`, or `"custom"` |
 | external_id | number | yes | IGDB ID (games), TMDB ID (movies/TV), VNDB numeric ID (visual novels), or provider ID (manga / anime: AniList, MangaBaka, MangaDex, Kitsu) |
-| source | string | no | Provider discriminator for multi-source media (manga, anime, book, tv_show): identity is `(external_id, source)`. Absent/`null` for single-source media and legacy files; defaults per type: manga/anime `"anilist"`, books `"openLibrary"`, TV shows `"tmdb"` |
+| source | string | no | Provider discriminator for multi-source media (manga, anime, book, tv_show): identity is `(external_id, source)`. Absent/`null` for single-source media and legacy files; defaults per type: manga/anime `"anilist"`, books `"openLibrary"`, TV shows `"tmdb"`, audio `"musicBrainz"` |
 | native_id | string | no | The provider's own id, when `external_id` can't reproduce it: books (`"OL8193465W"`, `"4050-86463"`) and MangaDex manga (its UUID), whose `external_id` is a hash. A light import needs it to refetch the item; files written before it exist leave those items unresolved |
 | platform_id | number | no | IGDB platform ID (games) or AnimationSource (animation: 0=movie, 1=tvShow) |
 | comment | string | no | Author's comment |
@@ -179,12 +179,13 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
 | _watched_episodes | array | no | Watched-episode marks of a TV/animation item (full + `user_data` only). Each entry: `{season, episode, watched_at}` with `watched_at` in Unix seconds or `null`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
+| _listened_tracks | array | no | Listened-track marks of an audio item (full + `user_data` only). Each entry: `{disc, track, listened_at}` with `listened_at` in Unix seconds or `null`; podcast episodes store `disc = 0` and the Podcast Index episode id as `track`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 
 **User data fields** (present only when top-level `user_data` is `true`):
 
 | Field | Type | Description |
 |-------|------|-------------|
-| status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, `"planned"`, or `"replaying"` |
+| status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, `"planned"`, `"replaying"` or `"ignored"` |
 | user_comment | string | User's personal notes |
 | is_favorite | number | `1` if the user marked the item a favorite; absent or `0` otherwise |
 | current_season | number | Current season (TV shows) |
@@ -254,8 +255,10 @@ Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each
 | mangas | array | Manga objects from AniList (id, title, title_english, title_native, cover_url, cover_medium_url, description, genres, average_score, mean_score, popularity, status, start_year, chapters, volumes, format, country_of_origin, staff) |
 | tv_seasons | array | TvSeason objects from TMDB (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
 | tv_episodes | array | TvEpisode objects from TMDB (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
+| audio_items | array | AudioItem objects (id, source, kind, native_id, title, artists, description, language, primary_type, release_year, genres, rating, release_mbid, track_count, disc_count, cover_url, external_url, ...); albums hash the release-group MBID into `id` (fnv1a53 — 53 bits, so a JS double holds it exactly), podcasts store the Podcast Index feed id as-is — both stable across devices |
+| audio_tracks | array | AudioTrack objects (source, audio_id, disc_number, position, title, native_id, length_ms, artists, date_published); album tracks of the picked release or podcast episodes — lets an offline import restore the list without a provider round-trip |
 
-All seven arrays are optional — only non-empty categories are included.
+All arrays are optional — only non-empty categories are included.
 
 ### Tier Lists Object
 

@@ -16,6 +16,8 @@ class DaoRegistry {
 
   Future<Database> _get() async => db;
 
+  late final AudioDao audioDao = AudioDao(_get);
+
   late final AniListTagDao aniListTagDao = AniListTagDao(_get);
 
   late final AnimeDao animeDao = AnimeDao(_get);
@@ -63,6 +65,7 @@ class DaoRegistry {
   late final WishlistDao wishlistDao = WishlistDao(_get);
 
   late final Map<String, DaoDispatch> table = buildDaoDispatchTable(
+    audioDao: audioDao,
     aniListTagDao: aniListTagDao,
     animeDao: animeDao,
     bookDao: bookDao,

@@ -780,5 +780,90 @@ void main() {
         expect(result.last.itemName, 'Zelda');
       });
     });
+
+    group('детерминизм при дубликатах имён', () {
+      test('name: одинаковые имена упорядочены по id', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 3, name: 'Same'),
+          _makeItem(id: 1, name: 'Same'),
+          _makeItem(id: 2, name: 'Same'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.name,
+        );
+
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[1, 2, 3],
+        );
+      });
+
+      test('status: одинаковый статус и имя упорядочены по id', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 2, name: 'Same', status: ItemStatus.planned),
+          _makeItem(id: 1, name: 'Same', status: ItemStatus.planned),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.status,
+        );
+
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[1, 2],
+        );
+      });
+    });
+
+    group('эффективность', () {
+      test('name: displayName вызывается не более одного раза на элемент',
+          () {
+        _CountingItem.displayNameCalls = 0;
+        final List<CollectionItem> items = <CollectionItem>[
+          for (int i = 0; i < 100; i++)
+            _CountingItem(id: i, name: 'Item ${(i * 37) % 100}'),
+        ];
+
+        applySortMode(items, CollectionSortMode.name);
+
+        expect(_CountingItem.displayNameCalls, lessThanOrEqualTo(100));
+      });
+
+      test('status: displayName вызывается не более одного раза на элемент',
+          () {
+        _CountingItem.displayNameCalls = 0;
+        final List<CollectionItem> items = <CollectionItem>[
+          for (int i = 0; i < 100; i++)
+            _CountingItem(id: i, name: 'Item ${(i * 37) % 100}'),
+        ];
+
+        applySortMode(items, CollectionSortMode.status);
+
+        expect(_CountingItem.displayNameCalls, lessThanOrEqualTo(100));
+      });
+    });
   });
+}
+
+class _CountingItem extends CollectionItem {
+  _CountingItem({required super.id, required String name})
+      : super(
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 0,
+          status: ItemStatus.notStarted,
+          addedAt: DateTime(2024),
+          game: Game(id: 0, name: name),
+        );
+
+  static int displayNameCalls = 0;
+
+  @override
+  String displayName(String animeMangaTitleLanguage) {
+    displayNameCalls++;
+    return super.displayName(animeMangaTitleLanguage);
+  }
 }

@@ -5,10 +5,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Warns that the Uncategorized system collection is deprecated: new items can
-/// no longer be added to it, and it will be removed in a future version. Shown
-/// on the All Items screen above the Uncategorized group; the collections list
-/// flags the bucket inline on its card/tile instead.
+/// Shown above the Uncategorized group on All Items; the collections list
+/// flags the deprecated bucket inline on its own card instead.
 class UncategorizedDeprecationBanner extends StatelessWidget {
   const UncategorizedDeprecationBanner({super.key});
 

@@ -10,10 +10,15 @@ import 'package:tonkatsu_server/src/image_handler.dart';
 import 'package:tonkatsu_server/src/upstream_client.dart';
 
 class _FakeUpstream implements UpstreamClient {
-  _FakeUpstream({this.payload = const <int>[1, 2, 3], this.status = 200});
+  _FakeUpstream({
+    this.payload = const <int>[1, 2, 3],
+    this.status = 200,
+    this.contentType = 'image/jpeg',
+  });
 
   final List<int> payload;
   final int status;
+  final String? contentType;
   final List<Uri> sent = <Uri>[];
 
   @override
@@ -26,7 +31,7 @@ class _FakeUpstream implements UpstreamClient {
     sent.add(url);
     return UpstreamResponse(
       status: status,
-      contentType: 'image/jpeg',
+      contentType: contentType,
       body: payload,
     );
   }
@@ -127,6 +132,24 @@ void main() {
       expect(cached('anilist_1').existsSync(), isFalse);
     });
 
+    test('should not cache an outage page the source served as 200', () async {
+      upstream = _FakeUpstream(contentType: 'text/html; charset=utf-8');
+
+      final Response response = await get('/img/anime_covers/anilist_1$src');
+
+      expect(response.statusCode, HttpStatus.badGateway);
+      expect(cached('anilist_1').existsSync(), isFalse);
+    });
+
+    test('should still accept a source that names no content type', () async {
+      upstream = _FakeUpstream(contentType: null);
+
+      final Response response = await get('/img/anime_covers/anilist_1$src');
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(cached('anilist_1').existsSync(), isTrue);
+    });
+
     test('should report the failure as JSON, not as the web client', () async {
       final Response response = await get('/img/not_a_folder/x$src');
 
@@ -180,6 +203,72 @@ void main() {
       expect(response.statusCode, HttpStatus.badRequest);
       expect(File(p.join(dataDir.path, 'images', 'escape')).existsSync(),
           isFalse);
+    });
+  });
+
+  group('ImageCache.deleteHandler', () {
+    Future<Response> post(String path, List<int> body) async =>
+        build()(Request('POST', Uri.parse('http://localhost$path'),
+            body: body));
+
+    Future<Response> delete(String path) async =>
+        build()(Request('DELETE', Uri.parse('http://localhost$path')));
+
+    File custom(String name) => File(
+        p.join(dataDir.path, 'images', ImageType.customCover.folder, name));
+
+    test('should drop the stored file', () async {
+      await post('/img/custom_covers/42', <int>[1]);
+
+      final Response response = await delete('/img/custom_covers/42');
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(custom('42').existsSync(), isFalse);
+    });
+
+    test('should let the next GET refetch from the source', () async {
+      await post('/img/custom_covers/42', <int>[9]);
+      await delete('/img/custom_covers/42');
+
+      final Response response = await get('/img/custom_covers/42$src');
+
+      expect(await response.read().expand((List<int> c) => c).toList(),
+          <int>[1, 2, 3]);
+      expect(upstream.sent, hasLength(1));
+    });
+
+    test('should succeed on an image that is not cached', () async {
+      final Response response = await delete('/img/custom_covers/404');
+
+      expect(response.statusCode, HttpStatus.ok);
+    });
+
+    test('should refuse an unknown folder', () async {
+      final Response response = await delete('/img/not_a_folder/42');
+
+      expect(response.statusCode, HttpStatus.notFound);
+    });
+
+    test('should refuse a traversal id', () async {
+      await post('/img/custom_covers/42', <int>[1]);
+
+      final Response response = await delete('/img/custom_covers/..%2F42');
+
+      expect(response.statusCode, HttpStatus.badRequest);
+      expect(custom('42').existsSync(), isTrue);
+    });
+
+    test('should refuse an absolute id from an empty path segment', () async {
+      // `//` makes the joined id absolute; p.join would then drop dataDir.
+      final Response response = await delete('/img/custom_covers//etc/x');
+
+      expect(response.statusCode, HttpStatus.badRequest);
+    });
+
+    test('should refuse a drive-qualified id', () async {
+      final Response response = await delete('/img/custom_covers/C:evil');
+
+      expect(response.statusCode, HttpStatus.badRequest);
     });
   });
 }

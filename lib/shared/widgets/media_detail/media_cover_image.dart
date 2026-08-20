@@ -35,7 +35,7 @@ class MediaCoverImage extends StatelessWidget {
         imageId: cacheImageId!,
         remoteUrl: coverUrl!,
         fit: BoxFit.cover,
-        memCacheWidth: 200,
+        memCacheWidth: kPosterDecodeWidth,
         placeholder: _buildLoadingPlaceholder(),
         errorWidget: _buildPlaceholder(),
       );
@@ -44,7 +44,7 @@ class MediaCoverImage extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: coverUrl!,
       fit: BoxFit.cover,
-      memCacheWidth: 200,
+      memCacheWidth: kPosterDecodeWidth,
       placeholder: (BuildContext ctx, String url) => _buildLoadingPlaceholder(),
       errorWidget: (BuildContext ctx, String url, Object error) =>
           _buildPlaceholder(),

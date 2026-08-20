@@ -14,9 +14,8 @@ class AniListUserListApi {
   final AniListGraphQLClient _client;
   static final Logger _log = Logger('AniListApi');
 
-  /// Throws [AniListUserNotFoundException] / [AniListPrivateProfileException]
-  /// for the common error cases. Only [MediaType.anime] and [MediaType.manga]
-  /// are accepted.
+  /// Throws [AniListUserNotFoundException] / [AniListPrivateProfileException].
+  /// Only [MediaType.anime] and [MediaType.manga] are accepted.
   Future<List<AniListListEntry>> fetchUserMediaList({
     required String userName,
     required MediaType type,

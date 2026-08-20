@@ -1,16 +1,12 @@
-// UI-thread animation: it only animates while heavy work stays off the main
-// isolate (layoutGenreCloudAsync, Isolate.run in imports).
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
 import '../theme/app_assets.dart';
 
-/// Animated app-logo loader: each pulse the logo breathes (grows and shrinks
-/// back) while rotating a quarter turn, looping until removed.
+/// Runs on the UI thread, so it only animates while the heavy work stays off
+/// the main isolate.
 class LogoLoader extends StatefulWidget {
-  /// Creates a [LogoLoader].
   const LogoLoader({this.size = 64, super.key});
 
   /// Width and height of the loader.
@@ -22,9 +18,8 @@ class LogoLoader extends StatefulWidget {
 
 class _LogoLoaderState extends State<LogoLoader>
     with SingleTickerProviderStateMixin {
-  /// One pulse: grow to [_scaleMax], shrink back, and complete a quarter
-  /// turn. The controller spans four pulses (a full revolution) so a plain
-  /// `repeat()` wraps at an identical pose — no restart bookkeeping.
+  /// The controller spans four pulses — a full revolution — so a plain
+  /// `repeat()` wraps at an identical pose with no restart bookkeeping.
   static const Duration _pulse = Duration(milliseconds: 1200);
 
   /// Scale bounds of the pulse.

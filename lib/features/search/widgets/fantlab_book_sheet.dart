@@ -5,10 +5,8 @@ import '../../../core/api/fantlab_api.dart';
 import '../../collections/widgets/fantlab_edition_picker.dart';
 import 'item_details_sheet.dart';
 
-/// Stateful host for a Fantlab book's detail sheet. Shows an inline editions
-/// strip; picking one swaps the cover / metadata live (the cover cache is keyed
-/// by edition, so this is not a stale overwrite) and is reported via
-/// [onEditionChanged] so the handler's enrich step saves it on add.
+/// Picking an edition swaps cover and metadata live — the cover cache is keyed
+/// by edition — and reports it via [onEditionChanged] so enrich saves it.
 class FantlabBookSheet extends StatefulWidget {
   const FantlabBookSheet({
     required this.work,

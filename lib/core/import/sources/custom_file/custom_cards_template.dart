@@ -1,8 +1,7 @@
 import 'custom_card_entry.dart';
 
-/// Downloadable templates for the custom-cards import: a header-only CSV and
-/// a JSON example documenting every field. Both import cleanly as-is — the
-/// parser ignores the `_`-prefixed hint keys of the JSON template.
+/// Both templates import cleanly as-is — the parser ignores the
+/// `_`-prefixed hint keys of the JSON template.
 abstract final class CustomCardsTemplate {
   static const String csvFileName = 'custom_cards_template.csv';
   static const String jsonFileName = 'custom_cards_template.json';
@@ -10,9 +9,8 @@ abstract final class CustomCardsTemplate {
   /// CSV template: the full header row, no data rows.
   static String csv() => '${CustomCardFields.ordered.join(',')}\n';
 
-  /// JSON template: two example cards (a game and an anime) with every field
-  /// filled, plus `_...` hint keys describing each field and its allowed
-  /// values.
+  /// Two example cards with every field filled, plus `_...` hint keys
+  /// documenting each field and its allowed values.
   static String json() => '''
 [
   {

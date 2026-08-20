@@ -17,6 +17,7 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tracker_game_data.dart';
 import 'package:core/models/tv_show.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,6 +48,7 @@ import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/book_progress_section.dart';
+import '../widgets/audio_tracker_section.dart';
 import '../widgets/anime_similars_section.dart';
 import '../widgets/book_similars_section.dart';
 import '../widgets/manga_similars_section.dart';
@@ -109,10 +111,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   DiscordRpcService? _discordRpc;
   String? _currentItemName;
 
-  // Comment autosave is triggered from MediaDetailView.dispose() during route
-  // teardown, when ref.read's ProviderScope ancestor lookup is already unsafe
-  // ("Looking up a deactivated widget's ancestor"), so the container is
-  // resolved once upfront and the save callbacks read through it.
+  // Comment autosave fires from MediaDetailView.dispose() when ref.read's
+  // ancestor lookup is unsafe, so the container is resolved once upfront.
   late final ProviderContainer _container;
 
   bool get _hasCanvas => kCanvasEnabled && widget.collectionId != null;
@@ -287,6 +287,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       case MediaType.tvShow:
       case MediaType.animation:
       case MediaType.book:
+      case MediaType.audio:
       case MediaType.custom:
         return item.releaseYear != null ? DateTime(item.releaseYear!) : null;
     }
@@ -478,17 +479,43 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (data == null || !mounted) return;
 
     // Cache picked bytes and mark coverUrl so the renderer reads the cache.
+    final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+    final String previousCoverId = item.coverImageId;
     String? newCoverUrl = data.coverUrl;
     if (data.coverBytes != null) {
-      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+      final String marker = CustomMedia.localCoverMarkerFor(
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      final String coverId =
+          customCoverImageId(id: item.externalId, coverUrl: marker);
       final bool saved = await cache.saveImageBytes(
         ImageType.customCover,
-        item.externalId.toString(),
+        coverId,
         data.coverBytes!,
       );
       if (saved) {
-        newCoverUrl = CustomMedia.localCoverMarker;
+        newCoverUrl = marker;
+        if (coverId != previousCoverId) {
+          await cache.deleteImage(ImageType.customCover, previousCoverId);
+        }
       }
+    } else if (newCoverUrl != item.customMedia!.coverUrl) {
+      // A cached file outranks the URL, so a new address only takes effect
+      // once the picture cached under the old one is gone.
+      await cache.deleteImage(ImageType.customCover, previousCoverId);
+      if (newCoverUrl != null && !CustomMedia.isLocalCover(newCoverUrl)) {
+        await cache.downloadImage(
+          type: ImageType.customCover,
+          imageId: customCoverImageId(
+            id: item.externalId,
+            coverUrl: newCoverUrl,
+          ),
+          remoteUrl: newCoverUrl,
+        );
+      }
+      // A URL cover keeps its file name, so the picture decoded from the old
+      // file would outlive it — Flutter keys decoded images by path.
+      await cache.evictDecodedImage(ImageType.customCover, previousCoverId);
     }
 
     final bool clearDisplayType = data.mediaType == MediaType.custom;
@@ -522,9 +549,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           collectionItemsNotifierProvider(widget.collectionId).notifier,
         )
         .refresh();
-    // The custom edit can change display type / platform / format / counts,
-    // which drive type and subfilters on the All Items screen too — reload it
-    // so it re-buckets instead of showing the stale pre-edit type.
+    // The edit can change display type / platform / format, which drive the
+    // All Items filters — reload so it re-buckets instead of staying stale.
     ref.invalidate(allItemsNotifierProvider);
 
     if (mounted) {
@@ -744,6 +770,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             currentPage: item.currentEpisode,
             accentColor: config.accentColor,
           ),
+        if (config.hasAudioTracker && widget.collectionId != null)
+          AudioTrackerSection(
+            itemId: item.id,
+            collectionId: widget.collectionId,
+            audioItem: config.audioItem,
+            accentColor: config.accentColor,
+          ),
         if (config.hasCustomProgress && widget.collectionId != null)
           CustomProgressSection(
             itemId: item.id,
@@ -913,6 +946,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.manga => l.mangaNotFound,
       MediaType.anime => l.mediaTypeAnime,
       MediaType.book => l.mediaTypeBook,
+      MediaType.audio => l.mediaTypeAudio,
       MediaType.custom => l.unknownCustom,
       null => l.gameNotFound,
     };
@@ -1049,8 +1083,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
-  /// Adds a book tapped in the "Similar books" row to a chosen collection,
-  /// caching the full record first. Carries `book.source` so the Fantlab
+  /// Caches the full record first and carries `book.source` so the Fantlab
   /// origin survives.
   Future<void> _addBookFromSimilars(Book book) async {
     final Map<int, List<CollectedItemInfo>> ownMap =
@@ -1101,9 +1134,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
-  /// Adds a manga tapped in the "Similar" row to a chosen collection, caching
-  /// the full record first. Carries `manga.source` so the provider origin
-  /// (MangaBaka / MangaDex) survives.
+  /// Caches the full record first and carries `manga.source` so the provider
+  /// origin (MangaBaka / MangaDex) survives.
   Future<void> _addMangaFromSimilars(Manga manga) async {
     final Map<int, List<CollectedItemInfo>> ownMap =
         await ref.read(collectedMangaIdsProvider.future);

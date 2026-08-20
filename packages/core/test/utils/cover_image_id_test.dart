@@ -1,3 +1,4 @@
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/utils/cover_image_id.dart';
@@ -141,6 +142,59 @@ void main() {
         ),
         '1399',
       );
+    });
+
+    test('a picked custom cover is keyed by its token', () {
+      expect(
+        coverImageId(
+          mediaType: MediaType.custom,
+          externalId: 42,
+          coverUrl: CustomMedia.localCoverMarkerFor(1755),
+        ),
+        '42_1755',
+      );
+      // A replacement must not inherit the id the previous file already holds.
+      expect(
+        coverImageId(
+          mediaType: MediaType.custom,
+          externalId: 42,
+          coverUrl: CustomMedia.localCoverMarkerFor(1756),
+        ),
+        '42_1756',
+      );
+    });
+
+    test('a custom cover without a token keeps the bare id', () {
+      // A URL cover, and a marker written before tokens existed.
+      expect(
+        coverImageId(
+          mediaType: MediaType.custom,
+          externalId: 42,
+          coverUrl: 'https://x/cover.jpg',
+        ),
+        '42',
+      );
+      expect(
+        coverImageId(
+          mediaType: MediaType.custom,
+          externalId: 42,
+          coverUrl: CustomMedia.localCoverMarker,
+        ),
+        '42',
+      );
+    });
+
+    test('customCoverImageId matches the full call', () {
+      final String marker = CustomMedia.localCoverMarkerFor(9);
+      expect(
+        customCoverImageId(id: 42, coverUrl: marker),
+        coverImageId(
+          mediaType: MediaType.custom,
+          externalId: 42,
+          coverUrl: marker,
+        ),
+      );
+      expect(customCoverImageId(id: 42), '42');
     });
 
     test('single-source types keep the bare external id', () {

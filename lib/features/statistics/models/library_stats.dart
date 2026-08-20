@@ -69,6 +69,7 @@ class UnitsWatched {
     required this.moviesWatched,
     required this.mangaChapters,
     required this.bookPages,
+    this.audioTracks = 0,
   });
 
   /// Nothing watched or read.
@@ -77,7 +78,8 @@ class UnitsWatched {
         animeEpisodes = 0,
         moviesWatched = 0,
         mangaChapters = 0,
-        bookPages = 0;
+        bookPages = 0,
+        audioTracks = 0;
 
   /// TV episodes marked watched (TMDB / TVmaze trackers).
   final int tvEpisodes;
@@ -93,6 +95,9 @@ class UnitsWatched {
 
   /// Book pages read (progress counters).
   final int bookPages;
+
+  /// AudioItem tracks marked listened (the music tracker).
+  final int audioTracks;
 
   /// TV and anime episodes combined.
   int get episodes => tvEpisodes + animeEpisodes;

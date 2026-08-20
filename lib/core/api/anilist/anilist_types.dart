@@ -15,11 +15,10 @@ class AniListApiException implements Exception {
 }
 
 class AniListRateLimitException extends AniListApiException {
-  const AniListRateLimitException(this.retryAfter, {String? detail})
+  const AniListRateLimitException(this.retryAfter, {super.detail})
       : super(
           'Rate limit exceeded. Please try again later',
           statusCode: 429,
-          detail: detail,
         );
 
   final Duration retryAfter;
@@ -46,9 +45,8 @@ class AniListMalLookupResult<T> {
 
   final Map<int, T> resolved;
 
-  /// MAL ids that could not be resolved due to AniList API errors (after
-  /// retries). Distinct from ids absent from [resolved] because AniList simply
-  /// has no record.
+  /// MAL ids unresolved due to AniList API errors (after retries), distinct
+  /// from ids absent from [resolved] because AniList has no record.
   final List<int> failedIds;
 }
 

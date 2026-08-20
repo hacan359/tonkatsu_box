@@ -9,6 +9,8 @@ environment:
   sdk: ^3.10.8
 
 dependencies:
+  # Podcast Index request signature, shared by the app and the server proxy.
+  crypto: ^3.0.3
   # The pure API only — sqflite_common_ffi pulls dart:ffi and dart:io, which
   # would make every DAO and migration uncompilable for the web target.
   sqflite_common: ^2.5.0

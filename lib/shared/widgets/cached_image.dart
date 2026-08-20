@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:core/api/image_proxy.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,9 +9,12 @@ import '../../core/selfhost/server_origin.dart';
 import '../../core/services/image_cache_service.dart';
 import '../constants/platform_features.dart';
 
-/// Image widget that picks the source (network or local cache) based on
-/// [ImageCacheService] state. The fetch [Future] is captured in [State] so
-/// parent rebuilds don't restart the load and flicker the placeholder.
+/// One decode width for the whole poster path — grid card, detail cover and
+/// the sheet's poster — so they share a single decoded ImageCache entry.
+const int kPosterDecodeWidth = 300;
+
+/// The fetch [Future] is held in [State] so a parent rebuild does not restart
+/// the load and flicker the placeholder.
 class CachedImage extends ConsumerStatefulWidget {
   const CachedImage({
     required this.imageType,
@@ -19,6 +23,7 @@ class CachedImage extends ConsumerStatefulWidget {
     this.width,
     this.height,
     this.fit = BoxFit.contain,
+    this.alignment = Alignment.center,
     this.memCacheWidth,
     this.memCacheHeight,
     this.placeholder,
@@ -37,6 +42,7 @@ class CachedImage extends ConsumerStatefulWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
+  final AlignmentGeometry alignment;
 
   final int? memCacheWidth;
   final int? memCacheHeight;
@@ -73,6 +79,15 @@ class _CachedImageState extends ConsumerState<CachedImage> {
 
   Future<ImageResult> _fetchImage() {
     final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
+    // Warm path: with the base dir memoized, a cached file resolves before
+    // the first frame — no placeholder flash on every screen transition.
+    final String? local =
+        cacheService.localPathIfCached(widget.imageType, widget.imageId);
+    if (local != null) {
+      return SynchronousFuture<ImageResult>(
+        ImageResult(uri: local, isLocal: true, isMissing: false),
+      );
+    }
     return cacheService.getImageUri(
       type: widget.imageType,
       imageId: widget.imageId,
@@ -124,9 +139,13 @@ class _CachedImageState extends ConsumerState<CachedImage> {
           }
           return Image.file(
             localFile,
+            // A replaced cover can land back on the same path; keying by the
+            // source makes the widget resolve it again instead of reusing it.
+            key: ValueKey<String>(widget.remoteUrl),
             width: widget.width,
             height: widget.height,
             fit: widget.fit,
+            alignment: widget.alignment,
             cacheWidth: widget.memCacheWidth,
             cacheHeight: widget.memCacheHeight,
             errorBuilder:
@@ -170,21 +189,22 @@ class _CachedImageState extends ConsumerState<CachedImage> {
     if (imageUrl.isEmpty) {
       return _buildError(context);
     }
-    // CanvasKit fetches image bytes over XHR, which the provider CDNs answer
-    // without a CORS header — going through our own origin removes the
-    // question and fills the server's cache on the way.
+    // CanvasKit fetches bytes over XHR and the provider CDNs answer without a
+    // CORS header; our own origin sidesteps that and fills the server cache.
     final String url = kIsWebBuild
-        ? '${serverBaseUrl()}${imageProxyPath(
+        ? imageProxyUrl(
+            baseUrl: serverBaseUrl(),
             type: widget.imageType,
             imageId: widget.imageId,
             sourceUrl: imageUrl,
-          )}'
+          )
         : imageUrl;
     return Image.network(
       url,
       width: widget.width,
       height: widget.height,
       fit: widget.fit,
+      alignment: widget.alignment,
       cacheWidth: widget.memCacheWidth,
       cacheHeight: widget.memCacheHeight,
       frameBuilder: (

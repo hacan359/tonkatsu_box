@@ -1,13 +1,10 @@
-// Google Books print-type filter (single-select: all / books / magazines).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';
 import '../models/search_source.dart';
 
-/// Restricts Google Books search to a print type via `volumes.list?printType=`.
-/// The reset is the explicit `all`; the source defaults an *untouched* filter to
-/// `books` so magazines don't flood a plain book search.
+/// The reset is the explicit `all`; an untouched filter defaults to `books` so
+/// magazines don't flood a plain book search.
 class GoogleBooksPrintTypeFilter extends SearchFilter {
   @override
   String get key => 'printType';

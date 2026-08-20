@@ -20,9 +20,8 @@ class FantlabApi {
   late final FantlabSearchApi _search;
   late final FantlabWorksApi _works;
 
-  /// Search works (`/search-works`). Server-fixed 25 results per page,
-  /// relevance order, non-book types filtered out. [workType] (a Fantlab
-  /// `name_eng`) narrows to one literary type.
+  /// Server-fixed 25 results per page, relevance order, non-book types
+  /// filtered out. [workType] (a Fantlab `name_eng`) narrows to one type.
   Future<(List<Book>, bool hasMore, int totalPages)> searchWorks({
     required String query,
     int page = 1,

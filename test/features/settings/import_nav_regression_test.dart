@@ -1,24 +1,3 @@
-// Regression guard for the import-result navigation bug (per-tab Navigator).
-//
-// The app shell keeps one cached Navigator per tab. Re-tapping the active tab
-// (or the top-bar gear for Settings) resets that tab's Navigator to its root
-// via `popUntil((r) => r.isFirst)`.
-//
-// The old Kinorium/Trakt import flows did, after a successful import:
-//   await Navigator.push(... ImportResultScreen ...);
-//   if (mounted) widget.onImportComplete?.call(); // -> Navigator.pop()
-// On the result screen the user could open a collection; a later gear tap then
-// ran `popUntil(isFirst)`, which removed the awaited ImportResultScreen and
-// resolved the pending push. Its continuation called the follow-up pop, which
-// popped the freshly-restored tab ROOT -> the Settings Navigator went empty and
-// Settings stayed permanently blank.
-//
-// The fix mirrors the RA importer: push the result screen fire-and-forget (no
-// await, no follow-up pop), so a tab-root reset can never resolve a pending
-// push into an extra root-pop. These tests drive the real fixed content through
-// file-pick -> preview -> import -> result, then simulate the gear's
-// `popUntil(isFirst)` and assert the sentinel ROOT route is never popped away.
-
 import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
@@ -43,9 +22,8 @@ import '../../helpers/test_helpers.dart';
 /// Sentinel root route of the host (per-tab) Navigator.
 const String _rootMarker = 'ROOT';
 
-/// A [FilePicker] that always returns [path] from [pickFiles]. Extending
-/// [FilePicker] (rather than mocking it) keeps the real platform-interface
-/// token, so the static `FilePicker.platform =` setter accepts it.
+/// Extends [FilePicker] rather than mocking it, so it keeps the real
+/// platform-interface token the static `FilePicker.platform =` setter demands.
 class _StubFilePicker extends FilePicker {
   _StubFilePicker(this.path);
 
@@ -133,21 +111,16 @@ void main() {
     }
   });
 
-  /// Sizes the test view tall enough that the whole scrollable import form
-  /// (warning + preview + options + button) lays out without clipping the
-  /// button off-screen.
+  /// Tall enough for the whole scrollable import form to lay out without
+  /// clipping the button off-screen.
   void useTallView(WidgetTester tester) {
     tester.view.physicalSize = const Size(1024, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
   }
 
-  /// Advances a fixed number of frames. Used instead of
-  /// [WidgetTester.pumpAndSettle] because this widget tree never reports an
-  /// idle frame (the import progress dialog and the seeded route transitions
-  /// keep scheduling), so `pumpAndSettle` would time out. A bounded pump is
-  /// enough: the import service is mocked and resolves synchronously, and the
-  /// route transitions complete within these frames.
+  /// This tree never reports an idle frame, so `pumpAndSettle` would time out;
+  /// the mocked import resolves within a bounded pump anyway.
   Future<void> settle(WidgetTester tester, {int frames = 6}) async {
     for (int i = 0; i < frames; i++) {
       await tester.pump(const Duration(milliseconds: 50));
@@ -161,11 +134,8 @@ void main() {
     await tester.tap(finder);
   }
 
-  /// Hosts [child] on a Navigator seeded with two routes: the [_rootMarker]
-  /// sentinel as the FIRST (tab-root) route and the import screen pushed on top
-  /// of it — mirroring a per-tab Navigator with an import screen opened from
-  /// Settings. Both routes are seeded up front (no post-frame push) so the
-  /// stack is deterministic.
+  /// Seeds [_rootMarker] as the first (tab-root) route with [child] on top,
+  /// both up front, so the stack is deterministic.
   Widget hostWithRoot({
     required Widget child,
     required List<Override> overrides,
@@ -290,10 +260,8 @@ void main() {
         (WidgetTester tester) async {
           await driveToResultScreen(tester);
 
-          // After import the result screen is pushed; popping it returns to the
-          // import screen (still alive), not past the tab root. A reintroduced
-          // `await push + onImportComplete pop` would have already popped the
-          // import screen out from under the result by now.
+          // Popping the result screen must land on the still-alive import
+          // screen, not past the tab root.
           hostNavigator(tester).pop();
           await settle(tester);
 

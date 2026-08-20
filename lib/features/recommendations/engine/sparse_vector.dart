@@ -1,24 +1,17 @@
 import 'dart:math' as math;
 
-/// Sparse feature vector: feature name -> weight. Absent keys are treated as
-/// `0.0`.
-///
-/// Used by the recommendation engine for taste titles, candidates and cluster
-/// centroids alike. Operations are read-only and never mutate [values].
+/// Sparse feature vector: feature name -> weight, absent keys are `0.0`.
+/// Operations are read-only and never mutate [values].
 class SparseVector {
-  /// Creates a vector from a feature -> weight map.
-  ///
   /// The map is referenced as-is (not copied) for speed; callers must not
   /// mutate it after handing it over.
   const SparseVector(this.values);
 
-  /// An empty (all-zero) vector.
   const SparseVector.empty() : values = const <String, double>{};
 
   /// Feature -> weight. Absent features are zero.
   final Map<String, double> values;
 
-  /// Whether the vector has no components.
   bool get isEmpty => values.isEmpty;
 
   /// Euclidean norm ‖v‖.

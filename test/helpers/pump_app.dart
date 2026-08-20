@@ -50,9 +50,8 @@ extension PumpApp on WidgetTester {
           ...overrides,
         ],
         child: MaterialApp(
-          // The real app theme, not a bare ThemeData: theme-driven layout
-          // crashes (e.g. the full-width button minimumSize inside a Row)
-          // are invisible to tests otherwise.
+          // The real app theme, not a bare ThemeData — theme-driven layout
+          // crashes are invisible to tests otherwise.
           theme: AppTheme.darkTheme,
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,

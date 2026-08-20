@@ -16,6 +16,10 @@ const String kUnitPage = 'page';
 /// Preset unit type: a part / arc.
 const String kUnitPart = 'part';
 
+/// Preset unit type: an album track. `parent_number` holds the disc, so a
+/// multi-disc album never collides track 1 of disc 1 with track 1 of disc 2.
+const String kUnitTrack = 'track';
+
 /// Presets offered by the "add mark" form. Not exhaustive —
 /// [ItemMark.unitType] is free-form text, not an enum.
 const List<String> kUnitPresets = <String>[
@@ -39,7 +43,6 @@ const List<String> kUnitPresets = <String>[
 /// A like and/or note on one unit of a collection item. Anchored on
 /// `collection_items.id` so it works for every media type without duplication.
 class ItemMark {
-  /// Creates an [ItemMark].
   const ItemMark({
     required this.id,
     required this.itemId,

@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../models/item_status.dart';
 import '../../models/media_type.dart';
+import '../../utils/json_list.dart';
 
 /// SQL aggregates for the statistics page. Schema date units: `added_at` is
 /// unix seconds, `watched_at`/`liked_at` milliseconds; bucketing is local time.
@@ -12,6 +11,26 @@ class StatsDao {
   const StatsDao(this._getDatabase);
 
   final Future<Database> Function() _getDatabase;
+
+  // Watch marks survive item removal on purpose (re-adding restores
+  // progress), so counters must skip marks with no live item.
+  // Mirrors CollectionItem.usesEpisodeTrackerFor, like CollectionDao does.
+  static const String _liveEpisodeMark =
+      'EXISTS (SELECT 1 FROM collection_items ci '
+      'WHERE ci.collection_id = we.collection_id '
+      'AND ci.external_id = we.show_id '
+      "AND COALESCE(ci.source, 'tmdb') = we.source "
+      "AND (ci.media_type = 'tv_show' "
+      "OR (ci.media_type = 'animation' "
+      'AND ci.platform_id = ${AnimationSource.tvShow}) '
+      "OR (ci.media_type = 'anime' AND ci.source = 'kitsu')))";
+
+  static const String _liveTrackMark =
+      'EXISTS (SELECT 1 FROM collection_items ci '
+      'WHERE ci.collection_id = lt.collection_id '
+      'AND ci.external_id = lt.audio_id '
+      "AND COALESCE(ci.source, 'musicBrainz') = lt.source "
+      "AND ci.media_type = 'audio')";
 
   /// Per-media-type status counts of items added in [year] (or ever).
   Future<Map<MediaType, Map<ItemStatus, int>>> getTypeStatusCounts({
@@ -96,14 +115,27 @@ class StatsDao {
     final Database db = await _getDatabase();
     final _Window w = _Window.year(year);
     final List<Map<String, dynamic>> rows = await db.rawQuery(
-      "SELECT SUM(CASE WHEN source = 'kitsu' THEN 1 ELSE 0 END) AS anime, "
-      'COUNT(*) AS total FROM watched_episodes '
-      '${w.where('watched_at', seconds: false)}',
+      "SELECT SUM(CASE WHEN we.source = 'kitsu' THEN 1 ELSE 0 END) AS anime, "
+      'COUNT(*) AS total FROM watched_episodes we '
+      '${w.where('we.watched_at', seconds: false, extra: _liveEpisodeMark)}',
       w.args,
     );
     final int anime = (rows.first['anime'] as int?) ?? 0;
     final int total = (rows.first['total'] as int?) ?? 0;
     return (tv: total - anime, anime: anime);
+  }
+
+  /// Listened track marks (the music tracker). All time includes undated
+  /// rows; a year window can only count dated ones.
+  Future<int> getListenedTrackTotal({int? year}) async {
+    final Database db = await _getDatabase();
+    final _Window w = _Window.year(year);
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM listened_tracks lt '
+      '${w.where('lt.listened_at', seconds: false, extra: _liveTrackMark)}',
+      w.args,
+    );
+    return (rows.first['c'] as int?) ?? 0;
   }
 
   /// Flat `current_episode` counter sums: AniList anime episodes, manga
@@ -198,7 +230,7 @@ class StatsDao {
       'AND tec.season_number = we.season_number '
       'AND tec.episode_number = we.episode_number '
       'AND tec.source = we.source AND tec.runtime > 0 '
-      '${w.where('we.watched_at', seconds: false)}',
+      '${w.where('we.watched_at', seconds: false, extra: _liveEpisodeMark)}',
       w.args,
     );
     final int episodeMinutes = (ep.first['s'] as int?) ?? 0;
@@ -239,9 +271,9 @@ class StatsDao {
     final Database db = await _getDatabase();
     final _Window w = _Window.year(year);
     final List<Map<String, dynamic>> rows = await db.rawQuery(
-      "SELECT strftime('%Y-%m', watched_at / 1000, 'unixepoch', 'localtime') AS ym, "
-      'COUNT(*) AS c FROM watched_episodes '
-      '${w.where('watched_at', seconds: false)} '
+      "SELECT strftime('%Y-%m', we.watched_at / 1000, 'unixepoch', 'localtime') AS ym, "
+      'COUNT(*) AS c FROM watched_episodes we '
+      '${w.where('we.watched_at', seconds: false, extra: _liveEpisodeMark)} '
       'GROUP BY ym',
       w.args,
     );
@@ -362,17 +394,7 @@ class StatsDao {
     final Map<String, int> counts = <String, int>{};
     int titles = 0;
     for (final Map<String, dynamic> row in rows) {
-      final String? raw = row['tags'] as String?;
-      if (raw == null || raw.isEmpty) continue;
-      List<String> tags;
-      try {
-        tags =
-            (jsonDecode(raw) as List<dynamic>).whereType<String>().toList();
-      } on FormatException {
-        continue;
-      } on TypeError {
-        continue;
-      }
+      final List<String> tags = decodeJsonStringList(row['tags']);
       if (tags.isEmpty) continue;
       titles++;
       for (final String tag in tags) {

@@ -1,5 +1,3 @@
-// Pure aggregation: collection items -> facet values across genre/platform/decade.
-
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/collection_item.dart';
@@ -17,12 +15,8 @@ import 'facet_value.dart';
 /// A single (facet, value) pair extracted from one item.
 typedef FacetEntry = ({Facet facet, String value});
 
-/// Extracts every (facet, value) pair an item contributes, reading the typed
-/// sub-models directly. Only genre, platform and decade are produced.
-///
-/// Reads whichever sub-models are attached rather than switching on
-/// `mediaType`, so the `animation` type (stored as a Movie or TvShow) is
-/// handled for free.
+/// Extracts (facet, value) pairs by reading whichever sub-models are attached
+/// rather than switching on `mediaType`, so `animation` (Movie/TvShow) is free.
 List<FacetEntry> extractItemFacets(CollectionItem item) {
   final List<FacetEntry> out = <FacetEntry>[];
 
@@ -90,13 +84,8 @@ List<FacetEntry> extractItemFacets(CollectionItem item) {
   return out;
 }
 
-/// Counts how many items carry each facet value and resolves a dominant media
-/// type per value, sorted by frequency (descending). Counting is
-/// case-insensitive and de-duped per item.
-///
-/// [includeFacets] limits which dimensions contribute; [includeTypes] limits
-/// which media types contribute (a hidden type's items are ignored, so counts,
-/// dominant type and colour recompute as if it were absent).
+/// Per-value item counts + dominant media type, sorted by count descending.
+/// Case-insensitive, de-duped per item; [includeFacets]/[includeTypes] filter.
 List<FacetValue> aggregateFacets(
   List<CollectionItem> items, {
   Set<Facet>? includeFacets,

@@ -1,8 +1,3 @@
-// "More by this author" strip at the bottom of a Google Books volume's search
-// detail sheet. Display-only: covers + title + year, hover reveals the
-// description, tap copies the title. Adding a book goes through the normal
-// search flow, so this strip never adds anything itself.
-
 import 'package:core/models/book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

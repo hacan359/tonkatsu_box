@@ -105,7 +105,6 @@ class IgdbGamesSource extends SearchSource {
       );
     }
 
-    // Browse mode: filters without a text query.
     const int pageSize = 20;
     final int offset = (page - 1) * pageSize;
 
@@ -131,10 +130,8 @@ class IgdbGamesSource extends SearchSource {
     );
   }
 
-  /// Attaches IGDB average time-to-beat to each game (one batched request).
-  ///
-  /// Best-effort: a failure here must not break search, so the games are
-  /// returned unchanged if the extra request fails.
+  /// Attaches IGDB time-to-beat (one batched request). Best-effort: a failure
+  /// must not break search, so the games return unchanged on error.
   Future<List<Game>> _attachTimeToBeat(IgdbApi igdb, List<Game> games) async {
     if (games.isEmpty) return games;
     try {

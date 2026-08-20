@@ -8,9 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/widgets/cached_image.dart';
 
-// Two supported data shapes:
-// - {url: String} — network image via CachedImage (disk-cached)
-// - {base64: String, mimeType: String} — local image
+// Data shapes: {url} — network image via CachedImage;
+// {base64, mimeType} — local image.
 
 /// Stable string hash used as imageId: FNV-1a 32-bit, deterministic
 /// across Dart versions and platforms.
@@ -69,7 +68,6 @@ class _CanvasImageItemState extends ConsumerState<CanvasImageItem> {
         ),
       );
     } else if (base64Data != null && base64Data.isNotEmpty) {
-      // Re-decode only when the base64 payload actually changes.
       if (_cachedBytes == null || _cachedBase64Source != base64Data) {
         _cachedBytes = base64Decode(base64Data);
         _cachedBase64Source = base64Data;

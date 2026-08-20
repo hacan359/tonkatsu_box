@@ -1,5 +1,6 @@
 import 'dart:ui' show ImageFilter;
 
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/game.dart';
@@ -10,6 +11,7 @@ import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
 import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../shared/widgets/copyable_text.dart';
 import '../../../shared/widgets/gyroscope_parallax_image.dart';
@@ -311,6 +313,80 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
+  factory ItemDetailsSheet.album(
+    AudioItem album, {
+    required VoidCallback onAddToCollection,
+    Widget? editionsSection,
+  }) {
+    return ItemDetailsSheet(
+      editionsSection: editionsSection,
+      title: album.title,
+      icon: Icons.album,
+      year: album.releaseYear,
+      rating: album.formattedRating,
+      genres: album.genres.isNotEmpty ? album.genres : album.tags,
+      maxGenres: _defaultMaxChips,
+      subtitle: album.artistsString,
+      infoChips: <(IconData, String)>[
+        if (album.primaryType != null)
+          (
+            Icons.album_outlined,
+            <String>[album.primaryType!, ...album.secondaryTypes].join(' · '),
+          ),
+        if (album.label != null) (Icons.business, album.label!),
+        if (album.listenCount != null)
+          (Icons.headphones, _formatListenCount(album.listenCount!)),
+      ],
+      posterUrl: album.coverUrl,
+      cacheImageType: ImageType.audioCover,
+      cacheImageId: coverImageId(
+        mediaType: MediaType.audio,
+        externalId: album.id,
+        source: album.source,
+      ),
+      externalUrl: album.externalUrl,
+      dataSource: album.source,
+      coverHeight: 150,
+      onAddToCollection: onAddToCollection,
+    );
+  }
+
+  factory ItemDetailsSheet.podcast(
+    AudioItem podcast, {
+    required VoidCallback onAddToCollection,
+    Widget? episodesSection,
+  }) {
+    return ItemDetailsSheet(
+      editionsSection: episodesSection,
+      title: podcast.title,
+      icon: Icons.podcasts,
+      overview: podcast.description,
+      genres: podcast.genres,
+      maxGenres: _defaultMaxChips,
+      subtitle: podcast.artistsString,
+      infoChips: <(IconData, String)>[
+        if (podcast.trackCount != null)
+          (Icons.podcasts, '${podcast.trackCount}'),
+        if (podcast.language != null) (Icons.language, podcast.language!),
+      ],
+      posterUrl: podcast.coverUrl,
+      cacheImageType: ImageType.audioCover,
+      cacheImageId: coverImageId(
+        mediaType: MediaType.audio,
+        externalId: podcast.id,
+        source: podcast.source,
+      ),
+      externalUrl: podcast.externalUrl,
+      dataSource: podcast.source,
+      coverHeight: 150,
+      onAddToCollection: onAddToCollection,
+    );
+  }
+
+  /// `1032946` → `1M` — the raw count reads as noise on a chip.
+  static String _formatListenCount(int count) =>
+      NumberFormat.compact().format(count);
+
   static const int _defaultMaxChips = 8;
 
   final String title;
@@ -318,9 +394,8 @@ class ItemDetailsSheet extends StatelessWidget {
   final VoidCallback? onAddToCollection;
   final String? overview;
 
-  /// Lazily loads the description after the sheet is open, when [overview] is
-  /// null (e.g. an OpenLibrary book whose search row carries no description).
-  /// Shown with a spinner; a null/empty result hides the section.
+  /// Lazily loads the description once the sheet is open when [overview] is
+  /// null; a null or empty result hides the section.
   final Future<String?> Function()? overviewLoader;
   final int? year;
   final String? rating;
@@ -398,8 +473,15 @@ class ItemDetailsSheet extends StatelessWidget {
                           ),
                           child: GyroscopeParallaxImage(
                             imageUrl: posterUrl!,
+                            // The poster is already in the cover cache; a raw
+                            // URL here would refetch it from the provider.
+                            imageType: cacheImageType,
+                            imageId: cacheImageId,
                             fit: BoxFit.cover,
                             alignment: Alignment.center,
+                            // Parallax under a 40px blur is invisible, but each
+                            // shift would re-run the blur every frame.
+                            enabled: false,
                           ),
                         ),
                 ),
@@ -577,6 +659,7 @@ class ItemDetailsSheet extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.cover,
+        memCacheWidth: kPosterDecodeWidth,
         placeholder: Container(
           width: width,
           height: height,

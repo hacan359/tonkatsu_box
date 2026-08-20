@@ -25,9 +25,8 @@ class OpenLibrarySearchApi {
     'subject',
   };
 
-  /// Search works. [scope] picks which field the text matches (`q` = anything,
-  /// or `title` / `author` / `subject`). [language] is a MARC 3-letter code
-  /// (`eng`, `rus`, …); [sort] is an OpenLibrary sort key (empty = relevance).
+  /// [scope] picks which field the text matches (`q` = anything). [language]
+  /// is a MARC 3-letter code; [sort] an OpenLibrary key (empty = relevance).
   Future<(List<Book>, bool hasMore, int totalPages)> search({
     required String query,
     String scope = 'q',

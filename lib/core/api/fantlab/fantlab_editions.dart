@@ -1,8 +1,7 @@
 import 'package:core/utils/bbcode.dart';
 
-/// One Fantlab edition (`издание`) of a work, built from `/work/{id}/extended`
-/// `editions_blocks`. Transient — used only to pick a cover / metadata for a
-/// [Book]; never persisted.
+/// One Fantlab edition of a work, from `/work/{id}/extended` `editions_blocks`.
+/// Transient — only picks a cover / metadata for a Book; never persisted.
 class FantlabEdition {
   const FantlabEdition({
     required this.editionId,
@@ -49,9 +48,8 @@ class FantlabEditionBlock {
   final List<FantlabEdition> editions;
 }
 
-/// Parses a `/work/{id}/extended` `editions_blocks` map into ordered blocks.
-/// Within each block, editions with a real cover come first. Tolerant to
-/// Fantlab's loose typing; malformed or coverless-id entries are skipped.
+/// Parses an `editions_blocks` map into ordered blocks, real covers first
+/// within each. Tolerant to Fantlab's loose typing; malformed rows skipped.
 List<FantlabEditionBlock> parseFantlabEditionBlocks(Object? blocks) {
   if (blocks is! Map<String, dynamic>) return const <FantlabEditionBlock>[];
   final List<FantlabEditionBlock> out = <FantlabEditionBlock>[];

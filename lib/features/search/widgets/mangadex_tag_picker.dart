@@ -9,11 +9,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../filters/mangadex_tag_filter.dart';
 
-/// Opens the MangaDex tag picker as a modal bottom sheet, mirroring the
-/// MangaBaka tag picker: searchable, with a manual Refresh that re-fetches the
-/// catalog from the API.
-///
-/// [currentValue] / the return value are tag UUIDs (`List<String>`), matching
+/// Searchable, with a manual catalog refresh. Values are tag UUIDs, matching
 /// the multi-select filter contract (MangaDex `includedTags[]`).
 Future<Object?> showMangaDexTagPicker(
   BuildContext context,

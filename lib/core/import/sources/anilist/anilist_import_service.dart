@@ -1,5 +1,3 @@
-// Imports anime/manga from a public AniList user list via GraphQL.
-
 import 'package:core/models/anime.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
@@ -30,7 +28,6 @@ enum ImportMode {
   overwrite,
 }
 
-/// Provider for [AniListImportService].
 final Provider<AniListImportService> aniListImportServiceProvider =
     Provider<AniListImportService>((Ref ref) {
   return AniListImportService(
@@ -63,13 +60,8 @@ class AniListImportOptions extends ImportOptions {
   final bool includeManga;
 }
 
-/// AniList import on the shared import layer.
-///
-/// Fetches public user lists for anime and manga via GraphQL (no OAuth) and
-/// writes them through [ImportWriter] in one batch. AniList rows already carry
-/// AniList ids, so there is no title search and no wishlist fallback. Hard
-/// errors (unknown user, private profile, API failure) are thrown so the UI can
-/// localize them.
+/// AniList rows already carry AniList ids, so there is no title search and
+/// no wishlist fallback; hard errors are thrown so the UI can localize them.
 class AniListImportService implements ImportSource {
   AniListImportService({
     required AniListApi aniListApi,
@@ -92,9 +84,8 @@ class AniListImportService implements ImportSource {
   @override
   String get displayName => DataSource.anilist.label;
 
-  /// Throws [AniListUserNotFoundException] / [AniListPrivateProfileException] /
-  /// [AniListApiException] when the AniList API call fails, [FormatException]
-  /// when the lists are empty, and [ArgumentError] when nothing is selected.
+  /// Throws AniList API exceptions on fetch failure, [FormatException] when
+  /// the lists are empty and [ArgumentError] when nothing is selected.
   @override
   Future<UniversalImportResult> import(
     covariant AniListImportOptions options, {

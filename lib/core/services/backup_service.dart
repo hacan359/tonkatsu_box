@@ -49,9 +49,8 @@ final Provider<BackupService> backupServiceProvider =
   );
 });
 
-/// `true` while a restore is mid-flight. Read by the app shell to block
-/// `AppLifecycleListener.onExitRequested` so a desktop user can't close the
-/// window while SQLite is still writing.
+/// `true` while a restore is mid-flight; the app shell blocks the desktop
+/// window close so SQLite isn't interrupted mid-write.
 final StateProvider<bool> restoreInProgressProvider =
     StateProvider<bool>((Ref ref) => false);
 
@@ -228,10 +227,8 @@ class BackupManifest {
   final List<String> hiddenCollections;
 }
 
-/// Full backup and restore of app data.
-///
-/// Builds a ZIP archive with all collections (full export + user data),
-/// the wishlist and settings, restorable in a single operation.
+/// Full backup/restore: a ZIP with every collection (full export + user
+/// data), the wishlist and settings, restorable in a single operation.
 class BackupService {
   BackupService({
     required DatabaseService database,
@@ -262,15 +259,12 @@ class BackupService {
   final MoodGridDao? _moodGridDao;
   final WishlistRepository _wishlistRepo;
 
-  /// Creates a full backup of all data and saves it as a ZIP.
   Future<BackupResult> createBackup({
     BackupProgressCallback? onProgress,
   }) async {
     try {
-      // 1. All collections.
       final List<Collection> collections = await _collectionRepo.getAll();
 
-      // 2. Full export of each collection.
       final Archive archive = Archive();
       int totalItems = 0;
       final List<String> hiddenCollectionFiles = <String>[];
@@ -308,7 +302,6 @@ class BackupService {
         }
       }
 
-      // 3. Wishlist.
       onProgress?.call(const BackupProgress(
         stage: 'wishlist',
         current: 0,
@@ -343,7 +336,6 @@ class BackupService {
         ));
       }
 
-      // 4. Tracker data (RA, Steam profiles + game data)
       if (_trackerDao != null) {
         final List<TrackerProfile> profiles =
             await _trackerDao.getAllProfiles();
@@ -373,7 +365,7 @@ class BackupService {
         }
       }
 
-      // 5. Mood grids — visual award grids, not bound to any collection.
+      // Mood grids are visual award grids, not bound to any collection.
       if (_moodGridDao != null) {
         final List<MoodGrid> grids = await _moodGridDao.getAllMoodGrids();
         if (grids.isNotEmpty) {
@@ -399,8 +391,8 @@ class BackupService {
         }
       }
 
-      // 6. Calendar — release subscriptions and manual calendar entries.
-      // Both are keyed by item identity, independent of collections.
+      // Calendar: release subscriptions and manual entries, both keyed by
+      // item identity and independent of collections.
       final List<TrackedRelease> trackedReleases =
           await _database.trackedReleaseDao.getAll();
       final List<CalendarEntry> calendarEntries =
@@ -423,7 +415,7 @@ class BackupService {
         ));
       }
 
-      // 6b. Watch progress — aggregated by show (collection-agnostic), so it
+      // Watch progress is aggregated by show (collection-agnostic), so it
       // restores onto whichever collections later hold the show.
       final List<Map<String, Object?>> watched =
           await _database.tvShowDao.getAllWatchedEpisodes();
@@ -438,7 +430,19 @@ class BackupService {
         ));
       }
 
-      // 7. Settings.
+      final List<Map<String, Object?>> listened =
+          await _database.audioDao.getAllListenedTracks();
+      if (listened.isNotEmpty) {
+        final List<int> listenedBytes = utf8.encode(
+          const JsonEncoder.withIndent('  ').convert(listened),
+        );
+        archive.addFile(ArchiveFile(
+          'listened_tracks.json',
+          listenedBytes.length,
+          listenedBytes,
+        ));
+      }
+
       final Map<String, Object> config = _configService.collectSettings();
       final String configStr =
           const JsonEncoder.withIndent('  ').convert(config);
@@ -449,7 +453,6 @@ class BackupService {
         configBytes,
       ));
 
-      // 8. Manifest.
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       final String appVersion = packageInfo.version;
       final Map<String, dynamic> manifest = <String, dynamic>{
@@ -473,7 +476,6 @@ class BackupService {
         manifestBytes,
       ));
 
-      // 9. Encode the ZIP.
       onProgress?.call(BackupProgress(
         stage: 'saving',
         current: collections.length,
@@ -482,7 +484,6 @@ class BackupService {
 
       final List<int> zipBytes = ZipEncoder().encode(archive);
 
-      // 10. Save the file.
       final String dateSuffix = _dateSuffix();
       final String downloadName =
           'tonkatsu-backup-v$appVersion-$dateSuffix.zip';
@@ -583,6 +584,7 @@ class BackupService {
       String? moodGridsContent;
       String? calendarContent;
       String? watchedContent;
+      String? listenedContent;
 
       for (final ArchiveFile file in archive) {
         if (!file.isFile) continue;
@@ -607,6 +609,8 @@ class BackupService {
           calendarContent = content;
         } else if (file.name == 'watched_episodes.json') {
           watchedContent = content;
+        } else if (file.name == 'listened_tracks.json') {
+          listenedContent = content;
         }
       }
 
@@ -725,19 +729,24 @@ class BackupService {
         }
       }
 
-      // Anchor: callers can show a "still finishing up" banner. Reported
-      // before returning so the UI never claims completion while the future
-      // is still resolving (DB closes its journal between this point and
-      // the actual return).
+      if (listenedContent != null) {
+        try {
+          await _restoreListenedTracks(listenedContent);
+        } catch (e) {
+          _log.warning('Failed to restore listened tracks', e);
+        }
+      }
+
+      // Reported before returning so the UI never claims completion early —
+      // the DB still closes its journal between here and the actual return.
       onProgress?.call(const BackupProgress(
         stage: 'finalizing',
         current: 1,
         total: 1,
       ));
 
-      // Force-flush WAL into the main DB file so a user deleting the
-      // `-wal` sidecar afterwards can't lose tail-of-restore writes
-      // (wishlist + mood grids land last and are the most exposed).
+      // Force-flush WAL into the main DB so deleting the `-wal` sidecar later
+      // can't lose tail-of-restore writes (wishlist and mood grids land last).
       try {
         final Database db = await _database.database;
         await db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
@@ -930,9 +939,8 @@ class BackupService {
     }
   }
 
-  /// Restores watch progress. Backed up by show id (collection-agnostic), so
-  /// each watched episode is re-applied to every restored collection holding
-  /// that TV show or anime. Rows without a `source` restore as TMDB.
+  /// Backed up by show id (collection-agnostic): each episode re-applies to
+  /// every collection holding the show; rows without `source` restore as TMDB.
   Future<void> _restoreWatchedEpisodes(String jsonContent) async {
     final List<dynamic> list = jsonDecode(jsonContent) as List<dynamic>;
     // Episodes of the same show repeat; memoize the lookup per show key.
@@ -970,6 +978,47 @@ class BackupService {
           season,
           episode,
           watchedAt,
+        );
+      }
+    }
+  }
+
+  /// Mirrors [_restoreWatchedEpisodes] for the music tracker: marks land on
+  /// every collection that holds the album.
+  Future<void> _restoreListenedTracks(String jsonContent) async {
+    final List<dynamic> list = jsonDecode(jsonContent) as List<dynamic>;
+    // Group per album so each (collection, album) lands as one batch write
+    // instead of an insert per track.
+    final Map<(DataSource, int), List<(int, int, int?)>> tracksByAlbum =
+        <(DataSource, int), List<(int, int, int?)>>{};
+    for (final dynamic raw in list) {
+      final Map<String, dynamic> m = raw as Map<String, dynamic>;
+      final int audioId = m['audio_id'] as int;
+      final DataSource source =
+          DataSource.fromNameOr(m['source'] as String?, DataSource.musicBrainz);
+      (tracksByAlbum[(source, audioId)] ??= <(int, int, int?)>[]).add((
+        m['disc_number'] as int,
+        m['track_number'] as int,
+        m['listened_at'] as int?,
+      ));
+    }
+    for (final MapEntry<(DataSource, int), List<(int, int, int?)>> entry
+        in tracksByAlbum.entries) {
+      final (DataSource source, int audioId) = entry.key;
+      final List<CollectionItem> items =
+          await _database.collectionDao.findAllCollectionItems(
+        mediaType: MediaType.audio,
+        externalId: audioId,
+        source: source,
+      );
+      for (final CollectionItem item in items) {
+        final int? collectionId = item.collectionId;
+        if (collectionId == null) continue;
+        await _database.audioDao.markTracksListenedAt(
+          collectionId,
+          source,
+          audioId,
+          entry.value,
         );
       }
     }

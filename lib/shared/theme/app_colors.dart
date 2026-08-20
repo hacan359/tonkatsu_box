@@ -4,10 +4,8 @@ import 'app_palette.dart';
 
 export 'app_palette.dart';
 
-/// Application color tokens, backed by the active [AppPalette].
-///
-/// Getters (not consts) so the whole app re-skins when [palette] is swapped;
-/// the MaterialApp subtree is remounted on switch to flush stale consts.
+/// Getters, not consts, so the app re-skins when [palette] is swapped; the
+/// MaterialApp subtree is remounted on switch to flush stale consts.
 abstract final class AppColors {
   /// The active palette; swapped by the app root on theme change.
   static AppPalette palette = AppPalette.dark;
@@ -63,6 +61,8 @@ abstract final class AppColors {
   /// Accent for books.
   static Color get bookAccent => palette.bookAccent;
 
+  static Color get audioAccent => palette.audioAccent;
+
   /// Accent for custom items.
   static Color get customAccent => palette.customAccent;
 
@@ -92,6 +92,9 @@ abstract final class AppColors {
 
   /// "Replay" status (replaying / rewatching / rereading).
   static Color get statusReplaying => palette.statusReplaying;
+
+  /// "Ignored" status — muted on purpose, the item is parked.
+  static Color get statusIgnored => palette.statusIgnored;
 
   /// Rating star icon.
   static Color get ratingStar => palette.ratingStar;

@@ -1,7 +1,6 @@
 /// Shared by all collections; items link through the `item_tags` junction, so
 /// an item carries any number of tags.
 class Tag {
-  /// Creates a [Tag] instance.
   const Tag({
     required this.id,
     required this.name,
@@ -11,7 +10,6 @@ class Tag {
     this.sortOrder = 0,
   });
 
-  /// Creates a [Tag] from a database row.
   factory Tag.fromDb(Map<String, dynamic> row) {
     return Tag(
       id: row['id'] as int,
@@ -23,7 +21,6 @@ class Tag {
     );
   }
 
-  /// Creates a [Tag] from exported data.
   factory Tag.fromExport(Map<String, dynamic> json) {
     return Tag(
       id: json['id'] as int? ?? 0,

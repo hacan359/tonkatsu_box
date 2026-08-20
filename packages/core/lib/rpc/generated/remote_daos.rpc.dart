@@ -3,6 +3,7 @@
 
 import 'anilist_tag_dao.remote.rpc.dart';
 import 'anime_dao.remote.rpc.dart';
+import 'audio_dao.remote.rpc.dart';
 import 'book_dao.remote.rpc.dart';
 import 'calendar_entry_dao.remote.rpc.dart';
 import 'canvas_dao.remote.rpc.dart';
@@ -19,6 +20,7 @@ import 'mood_grid_dao.remote.rpc.dart';
 import 'movie_dao.remote.rpc.dart';
 import 'package:core/database/dao/anilist_tag_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
+import 'package:core/database/dao/audio_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/calendar_entry_dao.dart';
 import 'package:core/database/dao/canvas_dao.dart';
@@ -59,6 +61,8 @@ class RemoteDaoSet {
   late final AniListTagDao aniListTagDao = RemoteAniListTagDao(_transport);
 
   late final AnimeDao animeDao = RemoteAnimeDao(_transport);
+
+  late final AudioDao audioDao = RemoteAudioDao(_transport);
 
   late final BookDao bookDao = RemoteBookDao(_transport);
 

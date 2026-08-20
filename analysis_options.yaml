@@ -1,19 +1,14 @@
-# Строгие настройки анализатора для Tonkatsu Box
-# Максимальная типизация и лучшие практики
-
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
   language:
-    strict-casts: true        # Запрет неявных приведений типов
-    strict-inference: true    # Требовать явные типы
-    strict-raw-types: true    # Запрет raw generic типов
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
 
   errors:
-    # Превратить warnings и infos в errors для консистентности с CI.
-    # CI использует --fatal-infos --fatal-warnings — все правила ниже
-    # должны быть error, чтобы локальный `flutter analyze` без флагов
-    # ловил те же проблемы.
+    # Every rule below must be `error`, so a bare local `flutter analyze`
+    # catches what CI's --fatal-infos --fatal-warnings would.
     missing_return: error
     missing_required_param: error
     must_be_immutable: error
@@ -38,7 +33,7 @@ analyzer:
 
 linter:
   rules:
-    # Обязательная типизация
+    # Typing
     always_declare_return_types: true
     always_specify_types: true
     avoid_dynamic_calls: true
@@ -58,7 +53,7 @@ linter:
     null_check_on_nullable_type_parameter: true
     null_closures: true
 
-    # Стиль кода
+    # Style
     avoid_print: true
     avoid_empty_else: true
     avoid_returning_null_for_void: true
@@ -110,10 +105,10 @@ linter:
     use_super_parameters: true
     valid_regexps: true
 
-    # Документация
-    public_member_api_docs: false  # Включить для библиотек: true
+    # Docs
+    public_member_api_docs: false
 
-    # Именование
+    # Naming
     camel_case_extensions: true
     camel_case_types: true
     constant_identifier_names: true

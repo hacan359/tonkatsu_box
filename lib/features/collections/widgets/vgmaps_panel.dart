@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -8,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_windows/webview_windows.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../providers/vgmaps_panel_provider.dart';
 
@@ -73,7 +73,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
   void initState() {
     super.initState();
     // webview_windows is Windows-only; skip WebView init elsewhere.
-    if (Platform.isWindows) {
+    if (kVgMapsEnabled) {
       _initWebView();
     }
   }
@@ -187,10 +187,8 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
     _controller.loadUrl('https://vgmaps.de/maps/?search=$encoded');
   }
 
-  /// Captures the map image using three strategies, in priority order:
-  /// JS `executeScript` with a direct return (no postMessage), then HTTP
-  /// fetch of the current page with HTML parsing in Dart, then a
-  /// postMessage fallback via JS injection.
+  /// Three strategies in priority order: JS `executeScript` with a direct
+  /// return, HTTP fetch + HTML parsing in Dart, then a postMessage fallback.
   Future<void> _captureMapImage() async {
     if (!_isWebViewReady) return;
 
@@ -327,8 +325,9 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
 
   @override
   Widget build(BuildContext context) {
-    // Safety guard: never render on non-Windows platforms.
-    if (!Platform.isWindows) {
+    // Safety guard: never render where webview_windows is unavailable. A bare
+    // Platform check here would itself throw on web before the guard helps.
+    if (!kVgMapsEnabled) {
       return const SizedBox.shrink();
     }
 

@@ -22,10 +22,8 @@ import '../../../shared/constants/item_status_ui.dart';
 /// Below this width the counter and the actions stop fitting on one line.
 const double _kTwoRowBreakpoint = 620;
 
-/// Selection toolbar that works both inside a single collection and on All
-/// Items. When [collectionId] is set the bar excludes that collection from
-/// move/copy targets and exposes move-to-top / move-to-bottom under manual
-/// sort; when null it acts globally over All Items.
+/// With [collectionId] set the bar excludes it from move/copy targets and
+/// exposes move-to-top/bottom under manual sort; null = global All Items.
 class BulkActionBar extends ConsumerWidget {
   const BulkActionBar({
     required this.items,
@@ -79,9 +77,8 @@ class BulkActionBar extends ConsumerWidget {
         ),
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            // One row cannot hold the counter and every action on a phone:
-            // the counter wins the width and the actions scroll away almost
-            // entirely. Below the threshold they get a row of their own.
+            // On a phone the counter wins the width and the actions scroll
+            // away; below the threshold they get a row of their own.
             if (constraints.maxWidth < _kTwoRowBreakpoint) {
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -275,9 +272,8 @@ class BulkActionBar extends ConsumerWidget {
     );
   }
 
-  /// Adds or drops the picked tags across the selection, leaving each item's
-  /// other tags untouched — the bar never replaces a whole tag set, because
-  /// that would wipe tags the user assigned per item.
+  /// Never replaces a whole tag set — that would wipe tags the user
+  /// assigned per item; only the picked tags are added or dropped.
   Future<void> _handleTags(
     BuildContext context,
     WidgetRef ref, {
@@ -287,9 +283,8 @@ class BulkActionBar extends ConsumerWidget {
     final int count = items.length;
     final Set<int>? picked = await TagPickerDialog.show(
       context,
-      // Selected items carry different tags, so there is no shared state to
-      // pre-check. Here a checked box means "apply to all", not the
-      // single-item "this item has the tag".
+      // Selected items carry different tags, so nothing is pre-checked; a
+      // checked box means "apply to all", not "this item has the tag".
       initialSelection: const <int>{},
       title: add ? l.bulkAddTagsTitle(count) : l.bulkRemoveTagsTitle(count),
       confirmLabel: add ? l.add : l.remove,

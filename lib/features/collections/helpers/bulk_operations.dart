@@ -1,7 +1,3 @@
-// Shared bulk-operation helpers for CollectionItem, used anywhere with a
-// selection (a collection, All Items). Each method runs the low-level ops in
-// a loop and invalidates every affected provider exactly once at the end.
-
 import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/database/dao/tier_list_dao.dart';
 import 'package:core/models/collection_item.dart';
@@ -18,11 +14,8 @@ import '../providers/episode_tracker_provider.dart';
 import '../providers/item_tags_provider.dart';
 import '../providers/collections_provider.dart';
 
-/// Bulk operations over collection items.
-///
-/// Each method derives the affected collections / media types / tier lists
-/// from the item fields, so it works both inside one collection and on All
-/// Items where items come from different collections.
+/// Each method derives affected collections/types/tier lists from item fields
+/// (works in one collection and on All Items) and invalidates once at the end.
 class BulkOperations {
   BulkOperations._();
 
@@ -208,9 +201,8 @@ class BulkOperations {
     }
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
-    // Family-wide: items may sit unranked in tier lists (no entry rows), so
-    // per-entry lookups can't find every affected list; this also covers the
-    // target collection's lists on move/clone and global lists.
+    // Family-wide: unranked items have no entry rows, so per-entry lookups
+    // can't find every affected list; also covers target/global lists.
     ref.invalidate(tierListDetailProvider);
   }
 
@@ -232,6 +224,8 @@ class BulkOperations {
         ref.invalidate(collectedAnimeIdsProvider);
       case MediaType.book:
         ref.invalidate(collectedBookIdsProvider);
+      case MediaType.audio:
+        ref.invalidate(collectedAudioIdsProvider);
       case MediaType.custom:
         break;
     }

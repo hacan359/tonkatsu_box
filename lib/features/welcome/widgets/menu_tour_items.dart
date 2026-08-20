@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/navigation/nav_tab.dart';
 
-/// One entry of the interactive menu tour. [tab] carries the highlighted nav
-/// tab so the item set can be proven to match the real menu (see
-/// `menu_tour_items_test`); it is null for the Personalization centre button,
-/// which is a shell-level destination rather than a [NavTab].
+/// [tab] is null for the Personalization centre button, which is a shell-level
+/// destination rather than a [NavTab].
 class MenuTourItem {
   const MenuTourItem({
     required this.tab,
@@ -27,10 +25,8 @@ class MenuTourItem {
   bool get isPersonalization => tab == null;
 }
 
-/// Builds the tour items in the order they sit in the live menu: the six
-/// destinations from `buildNavDestinations` with the Personalization centre
-/// button slotted into the middle (matching `kNavCenterSlot`), then the
-/// Settings gear from the top bar. Every [NavTab] is covered exactly once.
+/// Ordered as the live menu is: `buildNavDestinations` with the centre button
+/// at `kNavCenterSlot`, then the Settings gear. Every [NavTab] appears once.
 List<MenuTourItem> buildMenuTourItems(BuildContext context) {
   final S l = S.of(context);
   return <MenuTourItem>[

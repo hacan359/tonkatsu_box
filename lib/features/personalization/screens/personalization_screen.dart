@@ -12,7 +12,6 @@ enum _PersonalizationView { stats, cloud, recommendations }
 
 /// Container that switches between the genre cloud and recommendations.
 class PersonalizationScreen extends StatefulWidget {
-  /// Creates a [PersonalizationScreen].
   const PersonalizationScreen({super.key});
 
   @override

@@ -75,10 +75,8 @@ void main() {
       });
 
       test('addresses columns by header name across export layouts', () {
-        // The watched export (backup_..._votes.csv) starts with "My rating"
-        // and has no "ListTitle"; the watchlist export (back.csv) starts with
-        // "ListTitle". By-name addressing must parse both regardless of order.
-        // This row uses the real watched-file column order.
+        // The two Kinorium exports order their columns differently, so by-name
+        // addressing must parse both; this row uses the watched-file order.
         const String csv = '"My rating"\t"backup_id"\t"Date"\t"Title"\t'
             '"Original Title"\t"Type"\t"Year"\n'
             '"6"\t"171649219797559413"\t"2026-05-17 01:49:42"\t'

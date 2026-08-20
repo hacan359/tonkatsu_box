@@ -1,6 +1,5 @@
-// Web stand-ins for the dart_discord_presence surface the app uses. Guards on
-// kDiscordRpcAvailable keep them unreachable; initialize() fails safe anyway.
-
+/// Web stand-in: [kDiscordRpcAvailable] guards keep it unreachable, and
+/// initialize() fails safe if one is ever missed.
 class DiscordRPC {
   DiscordRPC();
 

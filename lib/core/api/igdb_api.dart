@@ -26,9 +26,7 @@ final Provider<IgdbApi> igdbApiProvider = Provider<IgdbApi>((Ref ref) {
   return api;
 });
 
-/// IGDB v4 facade. See `igdb/` for layer breakdown:
-/// `igdb_http_client` (transport+auth), `igdb_games_api`, `igdb_platforms_api`,
-/// `igdb_genres_api`, `igdb_types` (DTOs).
+/// IGDB v4 facade; transport, auth and the endpoint groups live in `igdb/`.
 class IgdbApi {
   IgdbApi({Dio? dio}) : _client = IgdbHttpClient(dio: dio) {
     _games = IgdbGamesApi(_client);

@@ -46,11 +46,8 @@ class SteamImportOptions extends ImportOptions {
   final String author;
 }
 
-/// Imports a Steam library into a collection on the shared import layer.
-///
-/// Owned games are resolved to IGDB by Steam App ID in one batch lookup (no
-/// per-row search); unmatched titles fall back to the text wishlist. All writes
-/// go through [ImportWriter] in batches.
+/// Steam library import: one IGDB batch lookup by Steam App ID resolves the
+/// whole library; unmatched titles fall back to the text wishlist.
 class SteamImportService implements ImportSource {
   SteamImportService({
     required SteamApi steamApi,
@@ -258,9 +255,8 @@ class SteamImportService implements ImportSource {
     };
   }
 
-  /// Re-sync policy: bump the status toward "in progress" without downgrading
-  /// (local `completed` / `dropped` win), refresh play time when it changed,
-  /// and stamp the Steam last-played date as the activity date.
+  /// Re-sync: bump toward in-progress without downgrading (local completed /
+  /// dropped win), refresh playtime, stamp Steam last-played as activity.
   Map<String, dynamic> _changedFields(
     SteamOwnedGame game,
     CollectionItem existing,

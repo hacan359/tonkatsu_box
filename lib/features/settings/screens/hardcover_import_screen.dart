@@ -7,7 +7,6 @@ import '../content/hardcover_import_content.dart';
 
 /// Screen wrapper around [HardcoverImportContent] with a title bar.
 class HardcoverImportScreen extends StatelessWidget {
-  /// Creates a [HardcoverImportScreen].
   const HardcoverImportScreen({super.key});
 
   @override

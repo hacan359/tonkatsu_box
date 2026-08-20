@@ -1,15 +1,10 @@
-
 import 'package:core/models/cover_info.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 
-/// Провайдер для первых N обложек коллекции.
-///
-/// Легковесная альтернатива `collectionItemsNotifierProvider`:
-/// загружает только URL обложек через JOIN-запрос, без полных моделей.
-///
-/// Ключ == null возвращает обложки uncategorized элементов.
+/// Lightweight alternative to `collectionItemsNotifierProvider`: loads only
+/// cover URLs via a JOIN, no full models. Key == null = uncategorized items.
 final FutureProviderFamily<List<CoverInfo>, int?> collectionCoversProvider =
     FutureProvider.family<List<CoverInfo>, int?>(
   (Ref ref, int? collectionId) async {

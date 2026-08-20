@@ -9,6 +9,7 @@ import 'package:core/models/item_status_logic.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/universal_import_result.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -29,12 +30,8 @@ final Provider<CustomCardsImportService> customCardsImportServiceProvider =
   );
 });
 
-/// Imports user-authored custom cards from a JSON/CSV file.
-///
-/// Unlike the one-shot [ImportSource] adapters this runs in two phases driven
-/// by the preview UI: [parseFile] validates the whole file without touching
-/// the database, then [importSelected] writes only the rows the user kept.
-/// Covers are downloaded after the rows are written, only for imported cards.
+/// Two phases driven by the preview UI: [parseFile] validates without
+/// touching the database, [importSelected] writes only the rows the user kept.
 class CustomCardsImportService {
   CustomCardsImportService({
     required DatabaseService database,
@@ -58,10 +55,8 @@ class CustomCardsImportService {
     return const CustomCardsParser().parseBytes(bytes, fileName: fileName);
   }
 
-  /// Indexes of rows that duplicate an item already in the target collection
-  /// (matched by title, case-insensitively) or an earlier row of the same
-  /// file. For a new collection ([collectionId] == null) only in-file
-  /// duplicates are reported.
+  /// Rows duplicating a collection item or an earlier row, matched by title
+  /// case-insensitively; a new collection reports only in-file duplicates.
   Future<Set<int>> duplicateRowIndexes({
     required int? collectionId,
     required List<CustomCardRow> rows,
@@ -86,9 +81,8 @@ class CustomCardsImportService {
     return duplicates;
   }
 
-  /// Writes [entries] as custom cards into the target collection (created as
-  /// "Custom Import" when [collectionId] is null), then downloads the covers
-  /// of the written cards.
+  /// Writes [entries] into the target collection ("Custom Import" is created
+  /// when [collectionId] is null), then downloads the written cards' covers.
   Future<UniversalImportResult> importSelected({
     required int? collectionId,
     required String author,
@@ -262,9 +256,8 @@ class CustomCardsImportService {
     return row;
   }
 
-  /// Assigns global tags to the written items, creating tags that don't exist
-  /// yet (matched by name, case-insensitively). [itemIds] is aligned with
-  /// [entries]; `null` marks rows the insert skipped as duplicates.
+  /// Missing tags are created, matched by name case-insensitively. [itemIds]
+  /// is aligned with [entries]; `null` marks rows skipped as duplicates.
   Future<void> _applyTags(
     List<CustomCardEntry> entries,
     List<int?> itemIds,
@@ -288,9 +281,8 @@ class CustomCardsImportService {
     }
   }
 
-  /// Downloads the covers of the written cards; returns per-card error notes
-  /// for covers that could not be fetched (the card keeps its remote URL, so
-  /// the UI can still resolve it later).
+  /// Returns per-card notes for covers that failed to download; the card
+  /// keeps its remote URL, so the UI can still resolve it later.
   Future<List<String>> _downloadCovers(
     List<CustomCardEntry> entries,
     List<int> customIds,
@@ -315,7 +307,7 @@ class CustomCardsImportService {
       ));
       final bool ok = await _imageCache.downloadImage(
         type: ImageType.customCover,
-        imageId: customId.toString(),
+        imageId: customCoverImageId(id: customId, coverUrl: entry.coverUrl),
         remoteUrl: entry.coverUrl!,
       );
       if (!ok) {

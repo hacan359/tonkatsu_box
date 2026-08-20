@@ -1,6 +1,3 @@
-// Dispatches to [DeckCollectionCard], or [RichCollectionCard] when rich mode
-// is on and a hero image exists. Public API stays [CollectionCard].
-
 import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +11,8 @@ import 'collection_card_shell.dart';
 import 'deck/deck_collection_card.dart';
 import 'rich/rich_collection_card.dart';
 
+/// Dispatches to [DeckCollectionCard], or [RichCollectionCard] when rich mode
+/// is on and a hero image exists.
 class CollectionCard extends ConsumerWidget {
   const CollectionCard({
     required this.collection,

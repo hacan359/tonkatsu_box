@@ -10,11 +10,8 @@ import 'canvas_state.dart';
 import 'canvas_timer_mixin.dart';
 import 'collections_provider.dart';
 
-/// Per-item canvas. Key is `({collectionId, collectionItemId})`.
-/// Unlike [canvasNotifierProvider], the per-item canvas does not
-/// reactively sync with the collection: it auto-initialises with a
-/// single media element (game / movie / TV show) and supports
-/// game / movie / tvShow / text / image / link items.
+/// Per-item canvas. Unlike [canvasNotifierProvider] it does not reactively
+/// sync with the collection: it auto-initialises with one media element.
 final NotifierProviderFamily<GameCanvasNotifier, CanvasState,
         ({int? collectionId, int collectionItemId})>
     gameCanvasNotifierProvider = NotifierProvider.family<GameCanvasNotifier,

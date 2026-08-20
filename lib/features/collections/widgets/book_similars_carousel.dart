@@ -1,7 +1,3 @@
-// Shared presentation for the book "similar" carousels (Fantlab native
-// similars and Google Books category matches): a titled [BookCarousel] that
-// opens a tapped book's sheet and routes adds through [onAddBook].
-
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';

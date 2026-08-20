@@ -5,13 +5,8 @@ import 'package:core/models/tv_show.dart';
 import '../tvmaze_api.dart';
 import 'tv_episode_source.dart';
 
-/// [TvEpisodeSource] backed by the TVmaze API.
-///
-/// TVmaze returns every episode of a show in one `/shows/{id}/episodes` call,
-/// so [getSeasonEpisodes] fetches the full list once per show and filters in
-/// memory — the cache warmer asks season by season, and without this each
-/// season would re-download the whole list. A failed fetch is not retained so
-/// the next call retries.
+/// [TvEpisodeSource] backed by TVmaze. The full episode list is fetched once
+/// and filtered in memory; a failed fetch is dropped so the next call retries.
 class TvMazeEpisodeSource implements TvEpisodeSource {
   TvMazeEpisodeSource(this._api);
 

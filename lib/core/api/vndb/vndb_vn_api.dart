@@ -4,8 +4,6 @@ import 'package:dio/dio.dart';
 import 'vndb_http_client.dart';
 import 'vndb_types.dart';
 
-/// Visual-novel queries against `/vn`: free-text search, structured browse,
-/// and id lookups.
 class VndbVnApi {
   VndbVnApi(this._client);
 
@@ -43,15 +41,8 @@ class VndbVnApi {
     }
   }
 
-  /// Browse with structured filters and no free-text query (or a mixed
-  /// query+filter call). When no query is supplied, we add `votecount >= 10`
-  /// to keep junk entries out of the default browse view.
-  ///
-  /// [tagIds] are AND-ed (a VN must carry every selected tag); [langs] are
-  /// OR-ed (available in any of them). [length] is 1–5 (Very short → Very
-  /// long), [minRating] is the 10–100 Bayesian scale, [startYear]/[endYear]
-  /// bound the release date, and [hasAnime] keeps only VNs with an anime
-  /// adaptation.
+  /// [tagIds] AND-ed, [langs] OR-ed; [minRating] is VNDB's 10-100 scale. With
+  /// no query a `votecount >= 10` filter keeps junk out of the default browse.
   Future<(List<VisualNovel>, bool hasMore, int totalPages)> browseVn({
     String? query,
     List<String>? tagIds,

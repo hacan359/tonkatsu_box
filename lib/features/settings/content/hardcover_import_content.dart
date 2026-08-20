@@ -29,7 +29,6 @@ import '../widgets/settings_group.dart';
 
 /// Form + progress UI for importing a Hardcover user's book library.
 class HardcoverImportContent extends ConsumerStatefulWidget {
-  /// Creates a [HardcoverImportContent].
   const HardcoverImportContent({super.key});
 
   @override

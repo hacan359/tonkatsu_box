@@ -43,6 +43,8 @@ void main() {
         'googlebooks',
         'hardcover',
         'comicvine',
+        'musicbrainz',
+        'podcastindex',
       ]);
     });
   });

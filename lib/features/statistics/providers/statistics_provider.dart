@@ -46,6 +46,7 @@ final AutoDisposeFutureProvider<LibraryStats> libraryStatsProvider =
     ({int tv, int anime}) episodeSplit,
     ({int animeEpisodes, int mangaChapters, int bookPages}) counters,
     Map<MediaType, int> likedByType,
+    int audioTracks,
   ) = await (
     stats.getAvailableYears(),
     stats.getTypeStatusCounts(year: year),
@@ -54,6 +55,7 @@ final AutoDisposeFutureProvider<LibraryStats> libraryStatsProvider =
     stats.getEpisodeSplit(year: year),
     stats.getProgressCounterSums(year: year),
     stats.getLikedUnitsByType(year: year),
+    stats.getListenedTrackTotal(year: year),
   ).wait;
 
   // Library-wide status totals, folded across media types.
@@ -73,6 +75,7 @@ final AutoDisposeFutureProvider<LibraryStats> libraryStatsProvider =
     moviesWatched: typeStatus[MediaType.movie]?[ItemStatus.completed] ?? 0,
     mangaChapters: counters.mangaChapters,
     bookPages: counters.bookPages,
+    audioTracks: audioTracks,
   );
 
   final LibraryTotals totals = LibraryTotals(

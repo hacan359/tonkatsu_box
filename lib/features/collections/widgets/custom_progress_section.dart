@@ -9,12 +9,8 @@ import '../../../shared/utils/custom_progress_units.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
 
-/// Universal progress tracker for custom items, mirroring manga / anime.
-///
-/// The fine axis ([unitTotal], backed by `current_episode`) is always shown;
-/// the coarse axis ([unitGroupTotal], backed by `current_season`) appears only
-/// for display types that have one (series → seasons, manga → volumes). Unit
-/// labels follow [displayType] via [CustomProgressUnits].
+/// The fine axis ([unitTotal]) is always shown; the coarse axis appears only
+/// for display types that have one (series → seasons, manga → volumes).
 class CustomProgressSection extends ConsumerWidget {
   const CustomProgressSection({
     required this.itemId,

@@ -27,7 +27,6 @@ const int _kPlatformGenesis = 29;
 const int _kPlatformN64 = 4;
 const int _kPlatformGameBoy = 33;
 
-/// TMDB animation genre ID.
 const int _kTmdbAnimationGenreId = 16;
 
 /// Spec of one collection to generate.

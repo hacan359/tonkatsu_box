@@ -1,4 +1,3 @@
-
 /// Covers grids, heroes, logos and icons alike — SteamGridDB returns the same
 /// shape from `/grids`, `/heroes`, `/logos` and `/icons`.
 class SteamGridDbImage {

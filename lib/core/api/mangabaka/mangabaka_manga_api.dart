@@ -9,10 +9,8 @@ class MangaBakaMangaApi {
 
   final MangaBakaHttpClient _client;
 
-  /// Search / browse manga. Filters combine as AND.
-  ///
-  /// MangaBaka has no server-side sort, so results come back in the API's
-  /// relevance order.
+  /// Filters combine as AND. MangaBaka has no server-side sort, so results
+  /// come back in the API's relevance order.
   Future<(List<Manga>, bool hasMore, int totalPages)> browseManga({
     String? query,
     String? type,
@@ -64,9 +62,8 @@ class MangaBakaMangaApi {
     }
   }
 
-  /// Series similar to [seedId] via MangaBaka's `/series/mix`, which blends
-  /// shared tags, authors and relations. The seed itself is excluded
-  /// server-side; each result carries a full series object we reuse as-is.
+  /// Similar series via `/series/mix` (shared tags, authors, relations). The
+  /// seed is excluded server-side; results carry full series objects.
   Future<List<Manga>> getRecommendations(int seedId, {int limit = 20}) async {
     try {
       final Response<dynamic> resp = await _client.get(
@@ -95,7 +92,6 @@ class MangaBakaMangaApi {
     }
   }
 
-  /// Full series record by id.
   Future<Manga?> getById(int id) async {
     try {
       final Response<dynamic> resp = await _client.get('series/$id');
@@ -110,9 +106,8 @@ class MangaBakaMangaApi {
     }
   }
 
-  /// Parses the `data[]` series list, skipping any malformed entry so one bad
-  /// record can't take down the whole page (a parse error is an `Error`, not
-  /// an `Exception`, so it would otherwise escape the provider's catch).
+  /// Skips malformed entries — a parse error is an `Error`, not an
+  /// `Exception`, so it would otherwise escape the provider's catch.
   static List<Manga> _parseSeries(List<dynamic> rows) {
     final List<Manga> out = <Manga>[];
     for (final Map<String, dynamic> row

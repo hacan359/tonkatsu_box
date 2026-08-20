@@ -1,5 +1,3 @@
-// On-screen preference cloud: lays out and paints facet words.
-
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -20,9 +18,8 @@ TextStyle genreWordStyle(double fontSize, Color color) => TextStyle(
       color: color,
     );
 
-/// Builds the rich span for a cloud word: the label plus an optional smaller,
-/// dimmed count suffix. Used by both measurement and painting so the laid-out
-/// footprint matches what is drawn. [labelShadows] is paint-only.
+/// Shared by measurement and painting so the laid-out footprint matches what
+/// is drawn; [labelShadows] is paint-only.
 TextSpan genreWordSpan(
   FacetValue word,
   double fontSize,
@@ -69,17 +66,9 @@ Size measureGenreWord(
   return size;
 }
 
-/// Paints a preference cloud. Word size scales with frequency rank; colour
-/// follows the dominant media type. Which facets and media types appear is
-/// controlled by the legend (callers filter [words] upstream).
-///
-/// When [interactive] (the default) the cloud is laid out on a canvas grown to
-/// fit every word and wrapped in an [InteractiveViewer], so on small screens the
-/// user pans and pinch-zooms to reach words instead of losing them to the hidden
-/// counter. The offscreen export view sets it false to render a fixed,
-/// fully-visible poster.
+/// When [interactive], the canvas grows to fit every word inside an
+/// [InteractiveViewer]; the offscreen export view sets it false.
 class GenreCloudView extends StatefulWidget {
-  /// Creates a [GenreCloudView].
   const GenreCloudView({
     required this.words,
     this.minFontSize = 14,
@@ -91,7 +80,6 @@ class GenreCloudView extends StatefulWidget {
     super.key,
   });
 
-  /// Facet values to render.
   final List<FacetValue> words;
 
   /// Smallest font size used for the rarest tier.
@@ -214,9 +202,8 @@ class _GenreCloudViewState extends State<GenreCloudView> {
     return layout;
   }
 
-  /// Defers the expensive placement past the current frame, then runs it
-  /// cooperatively (the async layout yields between words), so the loading
-  /// indicator keeps animating instead of freezing on its first frame.
+  /// Defers the expensive placement past the current frame and runs it
+  /// cooperatively, so the loading indicator keeps animating.
   void _scheduleLayout(Size viewport) {
     if (_layoutPending) return;
     _layoutPending = true;
@@ -228,9 +215,8 @@ class _GenreCloudViewState extends State<GenreCloudView> {
   Future<void> _runLayout(Size viewport) async {
     try {
       if (!mounted) return;
-      // Snapshot the inputs: if words change mid-computation the result is
-      // stored against this snapshot, the next build's cache check misses and
-      // a fresh pass is scheduled.
+      // Snapshot the inputs: if words change mid-computation the next build's
+      // cache check misses and a fresh pass is scheduled.
       final List<FacetValue> words = List<FacetValue>.of(widget.words);
       final GenreCloudLayout layout = await _computeWithGrowth(viewport, words);
       if (!mounted) return;
@@ -265,9 +251,8 @@ class _GenreCloudViewState extends State<GenreCloudView> {
 
         final GenreCloudLayout layout;
         if (widget.interactive) {
-          // Export views compute synchronously (they are captured right after
-          // the frame); the interactive cloud defers so the screen opens
-          // instantly with a spinner instead of a frozen frame.
+          // Deferred so the screen opens with a spinner, not a frozen frame;
+          // export views compute synchronously (captured right after the frame).
           final GenreCloudLayout? cached = _cachedLayout(viewport);
           if (cached == null) {
             _scheduleLayout(viewport);

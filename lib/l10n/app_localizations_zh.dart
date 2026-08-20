@@ -98,6 +98,9 @@ class SZh extends S {
   String get statusWatching => '观看中';
 
   @override
+  String get statusListening => '收听中';
+
+  @override
   String get statusInProgress => '进行中';
 
   @override
@@ -113,6 +116,14 @@ class SZh extends S {
   String get statusReplay => '重玩';
 
   @override
+  String get statusIgnored => '已忽略';
+
+  @override
+  String statusFilterSelected(int count) {
+    return '状态：$count';
+  }
+
+  @override
   String get rewatchCountEdit => '重玩次数';
 
   @override
@@ -126,6 +137,9 @@ class SZh extends S {
 
   @override
   String get statusRereading => '重读中';
+
+  @override
+  String get statusRelistening => '重听中';
 
   @override
   String get all => '全部';
@@ -153,6 +167,9 @@ class SZh extends S {
 
   @override
   String get mediaTypeBook => '书籍';
+
+  @override
+  String get mediaTypeAudio => '音频';
 
   @override
   String get mediaTypeCustom => '自定义';
@@ -1396,6 +1413,10 @@ class SZh extends S {
   String get creditsComicVineAttribution => '漫画数据来自 ComicVine（非商业用途）。';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      '音乐数据来自 MusicBrainz，封面来自 Cover Art Archive，收听数据来自 ListenBrainz。';
+
+  @override
   String get creditsGoogleBooksAttribution => '书籍数据来自 Google Books。';
 
   @override
@@ -1776,13 +1797,22 @@ class SZh extends S {
   String get tagManage => '管理标签';
 
   @override
+  String get tagSortTooltip => '排序';
+
+  @override
+  String get tagSortManual => '手动';
+
+  @override
+  String get tagSortAlphaAsc => '按字母 (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => '按字母 (Z–A)';
+
+  @override
   String get tagAssign => '分配标签';
 
   @override
   String get tagNone => '无标签';
-
-  @override
-  String get tagPickerTitle => '选择标签';
 
   @override
   String get tagTextColor => '文字颜色';
@@ -2256,6 +2286,67 @@ class SZh extends S {
 
   @override
   String get searchHintComics => '搜索漫画...';
+
+  @override
+  String get searchSourceMusic => '音乐';
+
+  @override
+  String get searchHintMusic => '搜索专辑...';
+
+  @override
+  String get musicFilterAlbumsDefault => '专辑';
+
+  @override
+  String get musicFilterAllTypes => '所有类型';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => '单曲';
+
+  @override
+  String get musicFilterTypeBroadcast => '广播';
+
+  @override
+  String get musicFilterTypeOther => '其他';
+
+  @override
+  String get musicFilterEdition => '版本';
+
+  @override
+  String get musicFilterStudioOnly => '仅录音室专辑';
+
+  @override
+  String get musicSheetEditions => '版本';
+
+  @override
+  String get musicSheetTracks => '曲目';
+
+  @override
+  String musicSheetDisc(int number) {
+    return '碟 $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => '无法加载版本';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count 首曲目';
+  }
+
+  @override
+  String get musicTrackerNoTracks => '没有曲目列表';
+
+  @override
+  String get musicDiscoverFreshReleases => '新专辑';
+
+  @override
+  String get musicDiscoverUnavailable => '无法加载推荐';
+
+  @override
+  String get musicSearchArtist => '艺术家';
 
   @override
   String get language => '语言';
@@ -3302,6 +3393,27 @@ class SZh extends S {
   String get settingsRichCollectionsSubtitle => '使用封面图片和描述个性化收藏';
 
   @override
+  String get settingsRichHeroStyle => '收藏横幅样式';
+
+  @override
+  String get settingsRichHeroStyleSubtitle => '个性化收藏页眉的外观';
+
+  @override
+  String get settingsRichHeroStyleClassic => '经典';
+
+  @override
+  String get settingsRichHeroStyleComic => '漫画';
+
+  @override
+  String get settingsRichHeroStyleStickers => '贴纸相册';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => '粗野主义';
+
+  @override
+  String get settingsRichHeroStyleSlats => '条带';
+
+  @override
   String get settingsCardScale => '封面大小';
 
   @override
@@ -3377,6 +3489,9 @@ class SZh extends S {
 
   @override
   String get vndbHasAnimeAdaptation => '有改编';
+
+  @override
+  String get tagPickerTitle => '选择标签';
 
   @override
   String get tagPickerSearchHint => '搜索标签';
@@ -4732,6 +4847,22 @@ class SZh extends S {
   String get screenScraperSourceDesc => '游戏元数据 + 媒体（封面、截图、美术）';
 
   @override
+  String get screenScraperDevCredsHint =>
+      '开发者凭证（devid / devpassword）。服务器用它们签署每个请求；缺少时 ScreenScraper 会拒绝。';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder => 'ScreenScraper 开发者 ID';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder => 'ScreenScraper 开发者密码';
+
+  @override
   String get screenScraperUserCredsHint => '用户凭证（ssid / sspassword）。配额按用户分配。';
 
   @override
@@ -4925,6 +5056,9 @@ class SZh extends S {
   String get unitPart => '部分';
 
   @override
+  String get unitTrack => '曲目';
+
+  @override
   String get cardLinkCopy => '复制卡片链接';
 
   @override
@@ -5063,6 +5197,9 @@ class SZh extends S {
 
   @override
   String get statsMetricBookPages => '书籍页数';
+
+  @override
+  String get statsMetricTracks => '已听曲目';
 
   @override
   String get statsMetricEpisodes => '集';
@@ -5296,4 +5433,59 @@ class SZh extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return '已达请求上限——$seconds 秒后重试（第 $attempt/$max 次）';
   }
+
+  @override
+  String get searchSourcePodcasts => '播客';
+
+  @override
+  String get searchHintPodcasts => '搜索播客...';
+
+  @override
+  String get podcastSheetEpisodes => '单集';
+
+  @override
+  String get podcastSheetNoEpisodes => '单集列表不可用';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count 集';
+  }
+
+  @override
+  String get podcastDiscoverTrending => '热门播客';
+
+  @override
+  String get credentialsPodcastIndexSection => 'Podcast Index API';
+
+  @override
+  String get credentialsEnterPodcastIndexKey => '输入你的 Podcast Index API 密钥';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret => '输入你的 Podcast Index API 密文';
+
+  @override
+  String get credentialsPodcastIndexKeyValid => 'Podcast Index 密钥有效';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'Podcast Index 拒绝了密钥。请检查密钥对和系统时间';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      '播客搜索与单集追踪。使用 api.podcastindex.org 的免费密钥对。';
+
+  @override
+  String get welcomeSourceDescMusicBrainz => '开放的音乐百科：专辑、艺术家与版本。无需密钥。';
+
+  @override
+  String get welcomeSourceDescPodcastIndex => '开放的播客目录，支持按单集追踪。免费密钥对。';
+
+  @override
+  String get creditsPodcastIndexAttribution => '播客数据来自 Podcast Index。';
+
+  @override
+  String get credentialsApiSecret => 'API 密文';
+
+  @override
+  String get markAllListened => '全部标记为已收听';
 }

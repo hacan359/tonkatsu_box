@@ -7,6 +7,463 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **"Ignored" item status**
+
+  A seventh status for titles kept in the library but deliberately parked.
+  It behaves like any other status: pick it on the item card, in the table
+  cell or from the bulk menu, filter by it, and see it in the collection
+  statistics. An external tracker never moves an item out of it.
+
+  * packages/core/lib/models/item_status.dart (ItemStatus.ignored): New value,
+    stored as `ignored`, sorted last.
+  * packages/core/lib/models/item_status_logic.dart (computeDatesForStatus,
+    _externalStatusPriority): Keep both dates untouched; rank above `dropped`
+    so only an authoritative downgrade (RetroAchievements) may override it.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionItemStats): Count the new status.
+  * lib/data/repositories/collection_repository.dart (CollectionStats.ignored): New field.
+  * lib/shared/constants/item_status_ui.dart (ItemStatusUi.color,
+    ItemStatusUi.materialIcon, ItemStatusUi.localizedLabel, ItemStatusUi.genericLabel):
+    Muted color and a block icon.
+  * lib/shared/theme/app_palette.dart (AppPalette.statusIgnored),
+    lib/shared/theme/app_colors.dart (AppColors.statusIgnored): New derived token.
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart
+    (_statusDisplayOrder): Show it last in the rich-banner breakdown.
+  * lib/l10n/app_*.arb: statusIgnored in all locales.
+
+- **Selectable banner style for rich collection view**
+
+  Settings → Appearance gains a "Collection banner style" choice (shown
+  while rich collection view is on): Classic, Comic, Sticker album,
+  Brutalist and Strips. Every non-classic style shows a per-status summary
+  of the collection — a proportional color bar with a dot-and-count legend,
+  round status badges or boxy counters, depending on the style. Strips
+  frames the photo as one full-bleed picture split by two slanted cuts.
+  The comic and sticker styles draw on a fixed paper-and-ink palette; the
+  others follow the app theme.
+
+  * lib/shared/constants/rich_hero_style.dart (RichHeroStyle): New enum,
+    id-keyed with a classic fallback in RichHeroStyle.fromId.
+  * lib/shared/constants/rich_hero_style_ui.dart (RichHeroStyleUi.localizedLabel): New.
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart
+    (RichCollectionHero, _ComicHero, _StickerHero, _StickerHeroSide,
+    _BrutalistHero, _SlatsHero, _HeroStats, _StatusBar, _StatusLegend,
+    _StatusBadges, _ImageSlice, _HalftonePainter, _DotGridPainter,
+    _PanelCutsPainter): New — the style dispatcher and the four
+    non-classic banners.
+  * lib/features/collections/widgets/hero_image.dart (heroImageProviderFor,
+    HeroCoverImage): New — shared hero ImageProvider resolution and the
+    single cache-width policy for hero renders.
+  * lib/features/collections/widgets/rich/rich_collection_body.dart
+    (RichHeroBanner): Reuse HeroCoverImage instead of a local copy.
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.richHeroStyle,
+    SettingsState.richHeroStyle, SettingsNotifier.setRichHeroStyle,
+    SettingsNotifier.clearSettings): New typed setting persisted in prefs.
+  * lib/features/collections/providers/rich_collections_provider.dart
+    (richHeroStyleProvider): New test-safe provider.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._showRichHeroStylePicker): New picker tile.
+  * lib/core/services/config_service.dart: Include the style key in the
+    settings dump.
+  * lib/l10n/app_*.arb: settingsRichHeroStyle* keys in all locales.
+
+- **Audio as a new media type: music and podcasts**
+
+  One "Audio" tab covers two kinds of records: music albums from
+  MusicBrainz, with covers from Cover Art Archive and new-release /
+  popularity data from ListenBrainz, and podcasts from Podcast Index.
+  Search and browse with genre, type,
+  year, category and language filters, two discover rows ("New releases"
+  and "Trending podcasts"), and per-track / per-episode listened tracking:
+  albums get the edition picker and its track list, podcasts get a dated
+  episode checklist with year spans, progress bars, whole-span toggles and
+  incremental pickup of newly published episodes. In a track or episode row
+  the circle toggles the listened mark, and a tap on the row unfolds an
+  ellipsized title. Cards title as
+  "Artist — Album" / "Author — Podcast" and caption as "Music" / "Podcast".
+  Statistics, export/import, backup and the selfhost web build all cover
+  the new type.
+
+  Podcast Index needs a key/secret pair: release builds ship with a
+  built-in one, and Settings → Credentials or the welcome wizard accept a
+  personal pair with a Test button; the keys travel with the settings dump
+  and backups. On the selfhost web build the server signs proxied requests
+  itself.
+
+### Fixed
+
+- **Statistics no longer count episodes and tracks of deleted titles**
+
+  Every episode and track counter on the statistics page now ignores watch
+  marks whose title is no longer in the collection. The marks themselves
+  are kept, and a re-added series still comes back with its progress.
+
+  * packages/core/lib/database/dao/stats_dao.dart (StatsDao.getEpisodeSplit,
+    StatsDao.getListenedTrackTotal, StatsDao.getEstimatedMinutes,
+    StatsDao.getEpisodesByMonth): Count only marks with a live tracker-backed
+    item in the same collection — the rule CollectionItem.usesEpisodeTrackerFor
+    applies, expressed as an EXISTS predicate.
+
+- **A replaced cover on a custom card actually changes**
+
+  Picking a new picture for a custom card — by URL or from disk — now
+  replaces the shown cover immediately. "Refresh item" also shows the
+  refetched cover right away instead of after a restart.
+
+  * packages/core/lib/models/custom_media.dart (CustomMedia.localCoverMarkerFor,
+    CustomMedia.localCoverToken): New — a marker that carries the pick's token.
+  * packages/core/lib/utils/cover_image_id.dart (coverImageId,
+    customCoverImageId): Suffix a custom cover's id with that token; the new
+    accessor is what the call sites holding a card id use.
+  * packages/core/lib/models/canvas_item.dart (CanvasItem.coverImageId): Use the
+    shared builder so a canvas card resolves the same file.
+  * lib/core/services/image_cache_service.dart
+    (ImageCacheService.evictDecodedImage, ImageCacheService.deleteImage,
+    ImageCacheService._serverImageUrl): Drop the replaced cover's decoded
+    copies; delete through the server's cache on web.
+  * lib/shared/widgets/cached_image.dart: Key Image.file by the source, so a
+    file reused under one path is resolved again.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart,
+    lib/features/collections/screens/item_detail_screen.dart,
+    lib/features/collections/providers/collections_provider.dart,
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart:
+    Write the tokenized marker when a cover is picked or imported.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions._refreshItemWork): Evict the decoded copies before the
+    refetch, so the new cover shows without a restart.
+  * server/lib/src/image_handler.dart (ImageCache.deleteHandler,
+    ImageCache._isSafeImageId), server/lib/src/app_handler.dart: A DELETE route
+    for the image cache; the shared guard also rejects absolute and
+    drive-qualified ids, which p.join would otherwise resolve outside the
+    cache directory.
+
+- **TheTVDB series show how many episodes they have**
+
+  The progress badge and the season list of a TheTVDB series now show
+  episode totals, counted from the episode list and skipping specials.
+
+  * lib/core/api/episode_source/tvdb_episode_source.dart
+    (TvdbEpisodeSource.getShow, TvdbEpisodeSource.getSeasons,
+    TvdbEpisodeSource._episodeCountsBySeason): Fill in a missing total and the
+    per-season counts; the list is fetched only when a season lacks its own.
+
+- **Collection banner keeps its width in table view**
+
+  Switching a rich collection to the table view keeps the banner full-bleed:
+  the side padding now applies to the table alone.
+
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView.build): Stop padding the whole table view.
+
+- **ScreenScraper works on the selfhost web build**
+
+  Settings → API Keys on the web build now takes the ScreenScraper
+  devid / devpassword pair, stores it on the server where the proxy reads
+  it, and the gallery and the quota button follow what the server actually
+  holds. Gallery media is served through the server's image cache, keyed
+  per game, media type and region.
+
+  * lib/shared/constants/api_defaults.dart (ApiDefaults.hasScreenScraperDevCreds):
+    Build-time only again — the web build no longer claims a pair it cannot see.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.screenScraperDevId, SettingsKeys.screenScraperDevPassword,
+    SettingsState.hasScreenScraperDevCreds, SettingsState.canUseScreenScraper,
+    SettingsNotifier.setScreenScraperDevCredentials): The pair as an ordinary
+    credential — prefs on web, uploaded to the server, cleared with the rest,
+    and an entered pair outranks the built-in one like every other key.
+  * lib/core/selfhost/server_credentials.dart (kConfigKeyToCredential),
+    lib/core/services/config_service.dart (_settingsKeys): Carry the two new
+    keys, so a boot mirrors them back and a config dump round-trips them.
+  * lib/core/api/screenscraper_api.dart (ScreenScraperApi.setDevCredentials,
+    ScreenScraperApi.hasDevCredentials): Accept the pair at runtime instead of
+    reading only the dart-define.
+  * lib/features/collections/providers/screenscraper_provider.dart
+    (ScreenScraperGameNotifier.build): Gate on SettingsState.canUseScreenScraper.
+  * lib/features/settings/content/credentials_content.dart
+    (_buildScreenScraperSection): Web-only devid / devpassword fields.
+  * lib/features/collections/widgets/screenscraper_gallery_section.dart
+    (ssMediaUrl, ssMediaCacheId): Route media through the server's image cache
+    on web, keyed per game, media type and region.
+  * packages/core/lib/models/image_type.dart (ImageType.screenScraperMedia): New folder.
+  * lib/core/services/screenscraper_cache_service.dart
+    (ScreenScraperCacheService.read, ScreenScraperCacheService.isNegativelyCached):
+    Skip the disk cache on web instead of throwing per lookup.
+  * lib/l10n/app_*.arb: screenScraperDevCredsHint, screenScraperDevIdLabel,
+    screenScraperDevPasswordLabel and their placeholders in all locales.
+
+- **Selfhost server: an outage page is no longer cached as an image**
+
+  The server's image cache refuses a body the source did not label
+  `image/*`, so an HTML error page is never stored and served as a cover.
+
+  * server/lib/src/image_handler.dart (ImageCache.handler): Refuse a body the
+    source did not label `image/*`.
+
+- **Item-card images load instantly from the cover cache**
+
+  The cover and the blurred background of an item card render from the
+  local cover cache on the first frame — no spinner on the collection →
+  card transition and no second network fetch of an already-downloaded
+  file. The grid, the card and the search sheet decode the poster at one
+  width and share a single in-memory copy. On the web build the backdrop
+  and the blurred poster load through the selfhost server's image cache,
+  and the server paces its Cover Art Archive fetches.
+
+  * lib/core/services/image_cache_service.dart
+    (ImageCacheService.localPathIfCached, ImageCacheService.getBaseCachePath,
+    ImageCacheService.isCacheEnabled): Memoize the base path and the enabled
+    flag; new synchronous cache-hit lookup.
+  * lib/shared/widgets/cached_image.dart (kPosterDecodeWidth,
+    _CachedImageState._fetchImage, CachedImage.alignment): Resolve a cached
+    file synchronously before the first frame; the shared poster decode
+    width; alignment pass-through.
+  * lib/shared/widgets/media_detail/media_cover_image.dart,
+    lib/shared/widgets/media_poster_card.dart: Decode at kPosterDecodeWidth.
+  * lib/shared/widgets/gyroscope_parallax_image.dart
+    (GyroscopeParallaxImage.imageType, GyroscopeParallaxImage.imageId,
+    GyroscopeParallaxImage._proxiedUrl): Render via CachedImage when the
+    cache keys are given; route the URL fallback through imageProxyUrl on web.
+  * lib/features/search/widgets/item_details_sheet.dart: Pass the poster's
+    cache keys into the blurred-poster background; decode the poster at the
+    shared width.
+  * packages/core/lib/models/image_type.dart (ImageType.backdrop): New folder,
+    keyed by a hash of the source URL.
+  * server/lib/src/upstream_throttle.dart (UpstreamThrottle): Extracted from
+    the proxy so both upstream paths share the FIFO gap.
+  * server/lib/src/image_handler.dart (ImageCache.handler, _throttleHost):
+    Pace coverartarchive.org fetches at the desktop client's gap.
+  * server/lib/src/proxy_handler.dart: Use the extracted UpstreamThrottle.
+
+- **Selfhost server: POST requests to external APIs are no longer rejected**
+
+  The server proxy sends every forwarded body — including an empty one —
+  with an explicit Content-Length instead of chunked transfer encoding.
+
+  * server/lib/src/upstream_client.dart (HttpUpstreamClient._send): Set an
+    explicit Content-Length on the forwarded body, including an empty one —
+    an empty POST would otherwise still go out chunked.
+
+- **Collection background image can be picked on the web build**
+
+  Picking a hero image in the collection editor now works in a browser: the
+  picked bytes upload to the selfhost server's image cache and the hero
+  renders from its URL. A replaced or removed hero is deleted from the
+  server cache, and an export on web skips the hero file.
+
+  * packages/core/lib/models/image_type.dart (ImageType.collectionHero): New folder.
+  * packages/core/lib/api/image_proxy.dart (imageProxyUrl): New — the
+    origin-prefixed form of imageProxyPath every fetch and upload now uses.
+  * lib/core/services/collection_hero_service.dart (CollectionHeroService.pickAndSave,
+    CollectionHeroService.saveBytes, CollectionHeroService.resolve,
+    CollectionHeroService.delete): Web branches — upload via
+    ImageCacheService.saveImageBytes, resolve to the server URL, and delete
+    a replaced or removed hero from the server cache instead of leaking it.
+  * lib/core/services/export_service.dart (ExportService._collectHeroImage):
+    Skip the hero on web — the resolved location is a URL, and reading it as
+    a file broke every export of a collection with a background.
+  * lib/core/services/image_cache_service.dart (ImageCacheService.saveImageBytes),
+    lib/shared/widgets/cached_image.dart, lib/features/collections/widgets/create_custom_item_dialog.dart:
+    Switch to imageProxyUrl.
+  * lib/features/collections/widgets/collection_hero_background.dart
+    (CollectionHeroBackground): Render through heroImageProviderFor so a
+    URL hero works.
+  * lib/features/collections/widgets/edit_collection_dialog.dart: Show the
+    Choose/Replace/Remove image controls on web — the picker no longer
+    needs a local filesystem.
+
+- **Import no longer stamps today's date into empty started/completed fields**
+
+  An item exported with a status but no dates now imports with its dates
+  empty: the file's dates win verbatim, including explicit nulls.
+
+  * lib/core/services/import_service.dart (ImportService._restoreUserData):
+    Passes clearStartedAt / clearCompletedAt when the exported item carries a
+    status but no dates, undoing the stamp the status write just made.
+
+### Changed
+
+- **Performance improvements**
+
+  Faster sorting on large collections and smoother "All items" grid,
+  selection mode and scrolling.
+
+- **The collection banner carries the title and the back arrow**
+
+  With rich collection view on, the plain title row above a collection is
+  gone: the banner itself shows the name and a back control drawn in its own
+  style — an inked plate in Comic, a taped-on circle in Sticker album, a
+  hard-shadowed square in Brutalist, a quiet rounded one in Strips and a
+  scrim circle over the photo in Classic. The banner also stays up while
+  the items are still loading or failed to load.
+
+  * lib/features/collections/widgets/rich/hero_back_button.dart
+    (HeroBackButton): New — one back control the styles decorate themselves.
+  * lib/features/collections/widgets/rich/rich_hero_styles.dart
+    (RichCollectionHero, _ComicHero, _StickerHero, _BrutalistHero, _SlatsHero):
+    Take an optional onBack and place it in each style's own frame.
+  * lib/features/collections/widgets/rich/rich_collection_body.dart
+    (RichHeroBanner): Same for the classic banner.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._isRich, _CollectionScreenState.build,
+    _CollectionScreenState._buildListLayout): Hide SubScreenTitleBar when the
+    banner carries the title; keep the banner above the loading skeleton and
+    the error state.
+
+- **One poster-grid geometry for every card grid and its skeleton**
+
+  A collection, All Items, search, browse and the audio discover rows share
+  one poster-grid geometry — column count, spacing and padding — and the
+  loading skeleton reads the same numbers, so placeholders match the cards
+  that replace them. Search gains the landscape-phone density, the tablet
+  breakpoint and the compact card form.
+
+  * lib/shared/utils/poster_grid_delegate.dart (posterGridGeometry): New —
+    delegate plus outer padding for one card scale, replacing posterGridDelegate.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._buildGridView),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._buildGroupedGrid),
+    lib/features/search/widgets/browse_grid.dart (BrowseGrid._gridGeometry,
+    BrowseGrid._buildShimmerGrid),
+    lib/features/search/widgets/audio_discover_feed.dart (AudioDiscoverFeed._grid):
+    Delete the local geometry and read the shared one.
+  * lib/shared/widgets/shimmer_loading.dart (ShimmerPosterGrid): Becomes a
+    ConsumerWidget reading the same geometry and card scale.
+  * lib/shared/constants/platform_features.dart (useCompactCard): New — the one
+    predicate cards and skeletons share.
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (CollectionTableView.build): Side padding moves onto the toolbar and grid so
+    the banner above them stays full-bleed.
+
+- **Less animation work on mobile**
+
+  A blurred-poster backdrop no longer follows the gyroscope. A tagged
+  card's running border highlight is drawn statically on phones. Shimmer
+  placeholders share a single animation clock instead of one controller
+  each, and stop ticking once the content arrives.
+
+  * lib/shared/widgets/gyroscope_parallax_image.dart
+    (GyroscopeParallaxImage.enabled): New flag that skips the sensor entirely.
+  * lib/features/search/widgets/item_details_sheet.dart: Pass enabled: false in
+    the blurred-poster fallback.
+  * lib/shared/widgets/media_poster_card.dart (_TagGlowWrapperState._syncController,
+    _GlowBorderPainter): No controller on mobile; a null progress paints the
+    border without the sweep.
+  * lib/shared/widgets/shimmer_loading.dart (_ShimmerTimeline, _ShimmerBoxState):
+    One refcounted Ticker driving a shared phase, gated by TickerMode.
+
+- **Status filter takes several statuses at once**
+
+  The status dropdown above a collection and above All Items is now
+  multi-select: the menu stays open while ticking statuses, an item passes
+  when it matches any of them, and the segment reads "Statuses: N" once more
+  than one is picked. "All" clears the selection. The choice on All Items is
+  remembered per profile as before, now as the whole set, and a single status
+  saved by an older build is carried over on first launch.
+
+  * lib/shared/widgets/chevron_filter_bar.dart (StatusDropdownSegment,
+    _StatusMenuList, _StatusMenuRow): Take and report a `Set<ItemStatus>`;
+    the menu body toggles rows without closing the popup and derives its
+    order from ItemStatus.statusSortPriority.
+  * lib/features/collections/providers/collections_provider.dart
+    (HomeStatusFilterNotifier, filteredCollectionIdsProvider): Persist a
+    string list under `home_status_filters_{profileId}`, falling back once to
+    the older single-value key.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.statuses): Replace the single `status` with an OR set.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._filterStatuses,
+    _CollectionScreenState._effectiveStatusesForChevrons),
+    lib/features/collections/widgets/collection_filter_bar.dart
+    (CollectionFilterBar.filterStatuses, CollectionFilterBar.effectiveStatusesForCounts),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._matchesNonTypeFilters): Thread the set through
+    filtering and the chevron counts.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.getCollectionIdsWithStatuses): Replaces
+    getCollectionIdsWithStatus — one `IN (…)` query instead of one call per
+    status; RPC layer regenerated.
+  * lib/l10n/app_*.arb: statusFilterSelected in all locales.
+
+- **Subfilter bar sits flush with the content below**
+
+  The media-type subfilter row lost its bottom padding, removing the
+  double gap between the chips and the collection header.
+
+  * lib/shared/widgets/filter_subfilter_bar.dart (SubfilterBar): Drop the
+    outer and inner bottom insets.
+
+- **Tag dialogs unified: search, in-place editing and persisted sorting everywhere**
+
+  "Manage tags" and the "Select tags" picker now share one body: a search
+  field that filters as you type and quick-creates via a "Create «…»" row,
+  and a sort menu — manual (drag order), A–Z or Z–A — whose choice is
+  remembered per profile and also orders the tag chip bar above a
+  collection and the narrow-screen filter sheet. Picker rows carry the full
+  editing set (background/text color dots, rename, delete, usage counts) —
+  those edits apply to the tag itself immediately, independent of the
+  checkbox selection. Creating a duplicate tag is no longer possible: the
+  create row hides when a name matches case-insensitively, and the database
+  layer resolves a racing insert to the existing tag.
+
+  * lib/features/collections/widgets/tag_search_list.dart (TagSearchList): New —
+    shared search/create/sort body of both dialogs.
+  * lib/features/collections/widgets/tag_row.dart (TagRow, TagEditActions,
+    TagColorDot): New — shared editable row and the rename/recolor/delete flows.
+  * lib/features/collections/widgets/tag_picker_dialog.dart (TagPickerDialog):
+    Rebuilt on TagSearchList + TagRow; prunes deleted ids before returning.
+  * lib/features/collections/widgets/tag_management_dialog.dart
+    (TagManagementDialog): Rebuilt on TagSearchList + TagRow.
+  * packages/core/lib/models/tag_sort_mode.dart (TagSortMode): New — sort
+    modes with the list-ordering logic.
+  * lib/shared/constants/tag_sort_mode_ui.dart (TagSortModeUi.localizedLabel):
+    New.
+  * lib/features/collections/providers/tag_sort_provider.dart
+    (TagSortModeNotifier): New — per-profile persistence of the sort mode.
+  * lib/features/collections/providers/item_tags_provider.dart
+    (tagUsageCountsProvider): New — tag id → item count derivation.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._visibleTags): Applies the shared sort mode to
+    the chip bar and the filter sheet.
+  * packages/core/lib/database/dao/global_tag_dao.dart (GlobalTagDao.create):
+    Adopts the existing row on a UNIQUE name conflict.
+  * lib/shared/widgets/color_picker_dialog.dart (ColorPickerDialog.storedValue):
+    New helper mapping a pick to its stored ARGB value.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb: tagSortTooltip, tagSortManual, tagSortAlphaAsc,
+    tagSortAlphaDesc.
+  * test/features/collections/widgets/tag_search_list_test.dart,
+    tag_picker_dialog_test.dart, tag_management_dialog_test.dart,
+    test/features/collections/providers/tag_sort_provider_test.dart,
+    packages/core/test/models/tag_sort_mode_test.dart: New.
+  * test/features/collections/widgets/dialogs/tag_picker_dialog_test.dart:
+    Deleted — folded into the mirrored-path picker test above.
+
+- **Tags on wide screens move from the vertical side rail to a horizontal chip bar**
+
+  The vertical tag rail on the right edge is gone. Tags are now a single
+  chip row above the items grid: horizontal labels with per-collection item
+  counts, the same multi-select toggling, a reset chip showing how many
+  tags are active, and the "Group" toggle first in the row. When the chips
+  overflow, the row scrolls sideways via edge-fade arrows (desktop), the
+  mouse wheel, or touch/mouse drag. Narrow screens keep the tags-and-sorting
+  sheet behind the filter-bar button.
+
+  * lib/features/collections/widgets/tag_top_bar.dart (TagTopBar): New —
+    chip row on ScrollableRowWithArrows.
+  * lib/features/collections/widgets/tag_sidebar.dart (TagSidebar): Deleted.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._buildListLayout, _CollectionScreenState._countItemTags,
+    _CollectionScreenState._handleTagToggled, _CollectionScreenState._handleGroupToggled):
+    Layout goes from a side-rail Row to a top-bar Column; per-tag counts are
+    computed here; the tag/group toggle handlers are shared between the
+    filter bar and the new top bar.
+  * lib/features/collections/widgets/collection_filter_bar.dart: Comment
+    update only.
+  * test/features/collections/widgets/tag_top_bar_test.dart: New.
+
 ## [0.42.0] - 2026-08-11
 
 ### Added

@@ -19,17 +19,15 @@ class PickedCollection {
   final String name;
 }
 
-/// Shared add-to-collection pipeline: upsert model, call `addItem`, cache
-/// image, fire snackbar. Folded out of the per-source duplication that used
-/// to live in `_SearchScreenState`.
+/// Shared add-to-collection pipeline (upsert, addItem, cache image, snack),
+/// folded out of the per-source duplication in `_SearchScreenState`.
 class SearchCollectionAdder {
   const SearchCollectionAdder(this._ref);
 
   final WidgetRef _ref;
 
-  /// Adds [externalId] to [collectionId]. When [collectionName] is provided
-  /// the named snack variant is used; [afterAdd] runs only on success
-  /// (e.g. TV season preload).
+  /// When [collectionName] is provided the named snack variant is used;
+  /// [afterAdd] runs only on success (e.g. TV season preload).
   Future<bool> addToCollection({
     required BuildContext context,
     required int? collectionId,
@@ -82,11 +80,8 @@ class SearchCollectionAdder {
     return success;
   }
 
-  /// Adds [externalId] to every collection in [collectionIds] at once — the
-  /// Search tab's multi-select "add straight to these collections" flow. The
-  /// model is upserted and the image cached once; collections that already hold
-  /// the item are skipped. A single summary snackbar reports the outcome instead
-  /// of one per collection. [afterAdd] runs once if at least one add succeeded.
+  /// Multi-select add: upsert and image cache happen once, collections already
+  /// holding the item are skipped, one summary snackbar reports the outcome.
   Future<void> addToCollections({
     required BuildContext context,
     required Set<int> collectionIds,
@@ -104,8 +99,7 @@ class SearchCollectionAdder {
     if (collectionIds.isEmpty) return;
 
     // Adding to a deleted collection_id violates the FK and throws mid-batch;
-    // drop ids whose collection no longer exists (defensive — the Search tab
-    // already clears the selection on re-entry).
+    // drop ids whose collection no longer exists.
     final Set<int> existingIds =
         (_ref.read(collectionsProvider).valueOrNull ?? <Collection>[])
             .map((Collection c) => c.id)
@@ -165,9 +159,8 @@ class SearchCollectionAdder {
     };
   }
 
-  /// Union of collection IDs that already contain [externalId] across two
-  /// collected-items providers — used by Movie/TvShow handlers where the
-  /// same TMDB id may live under regular or animation media type.
+  /// Union across two collected-items providers — the same TMDB id may live
+  /// under regular or animation media type.
   Future<Set<int?>> collectedCollectionIdsAcross(
     int externalId,
     FutureProvider<Map<int, List<CollectedItemInfo>>> a,

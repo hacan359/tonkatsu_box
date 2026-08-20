@@ -8,14 +8,8 @@ import 'migrations/migration_runner.dart';
 /// exactly one writer, and the default of 0 fails the loser instantly.
 const int kBusyTimeoutMs = 5000;
 
-/// Opens the app database at [path] and brings its schema up to date.
-///
-/// Deciding *where* the file lives is the caller's job — the app resolves a
-/// per-profile directory, the selfhost server a container volume — so this takes
-/// a ready [path] and stays free of `dart:io`.
-///
-/// The target version comes from [MigrationRegistry.latestVersion], so adding a
-/// migration cannot drift from a hand-maintained number.
+/// Takes a ready [path] — where the file lives is the caller's job — so this
+/// stays free of `dart:io`. Target version is [MigrationRegistry.latestVersion].
 Future<Database> openAppDatabase({
   required DatabaseFactory factory,
   required String path,

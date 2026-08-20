@@ -26,7 +26,6 @@ const double _kItemHeightMin = 36;
 /// Vertical nav rail for wide screens: icons only, active item marked by a
 /// [LiquidIndicator]. Settings lives in [AppTopBar].
 class AppSidebar extends ConsumerWidget {
-  /// Creates an [AppSidebar].
   const AppSidebar({
     required this.selectedTab,
     required this.onDestinationSelected,

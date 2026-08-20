@@ -5,9 +5,8 @@ import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'tmdb_types.dart';
 
-// TMDB v3 transport. Owns the Dio client, the API key and the request
-// language, and injects both into every request. Docs:
-// https://developer.themoviedb.org/reference
+// TMDB v3 transport; injects the API key and language into every request.
+// Docs: https://developer.themoviedb.org/reference
 class TmdbHttpClient {
   TmdbHttpClient({Dio? dio, String language = 'ru-RU'})
       : _dio = dio ??
@@ -53,9 +52,8 @@ class TmdbHttpClient {
     }
   }
 
-  /// GET against [path] (relative to the base URL). The API key and request
-  /// language are injected automatically; [language] overrides the stored one
-  /// (reviews are pinned to en-US).
+  /// GET against [path]; the API key and language are injected automatically.
+  /// [language] overrides the stored one (reviews are pinned to en-US).
   Future<Response<dynamic>> get(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -71,7 +69,6 @@ class TmdbHttpClient {
     );
   }
 
-  /// Unwraps the `results` array from a list endpoint as raw maps.
   List<Map<String, dynamic>> extractResults(
     Response<dynamic> response,
     String errorMessage,
@@ -91,7 +88,6 @@ class TmdbHttpClient {
         .toList();
   }
 
-  // Maps Dio errors to user-facing messages; 401 = bad key, 429 = rate limit.
   TmdbApiException handleDioException(
     DioException e,
     String defaultMessage,

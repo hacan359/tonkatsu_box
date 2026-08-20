@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const String vgMapsHomeUrl = 'https://vgmaps.de/';
 
-/// State for the VGMaps browser side panel.
 class VgMapsPanelState {
   const VgMapsPanelState({
     this.isOpen = false,
@@ -82,10 +81,8 @@ class VgMapsPanelNotifier extends FamilyNotifier<VgMapsPanelState, int?> {
     state = state.copyWith(isOpen: true);
   }
 
-  /// Resets browser navigation and any captured-image state. Mirrors
-  /// [SteamGridDbPanelNotifier.closePanel]: the provider is keyed by
-  /// `collectionId`, so without this the previous URL / captured image
-  /// would leak into the next canvas opening the same panel.
+  /// The provider is keyed by `collectionId`, so without a full reset the
+  /// previous URL / captured image would leak into the next canvas.
   void closePanel() {
     state = const VgMapsPanelState();
   }

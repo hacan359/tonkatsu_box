@@ -207,10 +207,8 @@ void main() {
     testWidgets(
         'label fits the compact metrics box under system font scaling',
         (WidgetTester tester) async {
-      // Compact metrics reserve exactly 2 lines of 10pt × 1.2 + 4px padding
-      // for the label; with system font scaling the caption must not grow
-      // past that (it opts out of scaling) — previously this overflowed on
-      // Android and threw a RenderFlex overflow.
+      // Compact metrics reserve exactly two label lines, so the caption opts
+      // out of system font scaling — it used to overflow on Android.
       const String longName = 'Very Long Game Name That Wraps Twice';
       await tester.pumpApp(
         Builder(

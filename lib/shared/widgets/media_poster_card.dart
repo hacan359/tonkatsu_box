@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/media_type_theme.dart';
+import '../constants/platform_features.dart';
 import '../utils/item_card_progress.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
@@ -28,12 +29,8 @@ enum CardVariant {
   canvas,
 }
 
-/// Vertical poster card for a media item.
-///
-/// Behavior is driven by [variant]:
-/// - [CardVariant.grid] — hover animation, rating, status, title+subtitle
-/// - [CardVariant.compact] — smaller grid (landscape)
-/// - [CardVariant.canvas] — card with colored border, no animation
+/// [variant] drives it: grid animates on hover, compact is the landscape grid,
+/// canvas is a bordered card with no animation.
 class MediaPosterCard extends StatefulWidget {
   const MediaPosterCard({
     required this.variant,
@@ -88,10 +85,8 @@ class MediaPosterCard extends StatefulWidget {
   /// API rating (0.0–10.0). Grid/compact only.
   final double? apiRating;
 
-  /// When true (collection), only the API rating goes to the subtitle line
-  /// under the poster — the personal rating stays in the top-left badge. When
-  /// false (search), both ratings render in the subtitle line. Grid/compact
-  /// only.
+  /// Collection mode keeps the personal rating in the badge and only the API
+  /// one in the subtitle; search mode puts both in the subtitle.
   final bool splitRatings;
 
   /// Grid/compact only.
@@ -128,9 +123,8 @@ class MediaPosterCard extends StatefulWidget {
   /// heart toggle's filled/broken state.
   final bool isFavorite;
 
-  /// Forces the heart to render as a static (non-tappable) indicator even when
-  /// [onToggleFavorite] is null — e.g. during multi-select, so the heart stays
-  /// visible while taps select the card. Grid/compact only.
+  /// Keeps the heart visible as a static indicator when [onToggleFavorite] is
+  /// null — e.g. during multi-select, where a tap selects the card.
   final bool showFavorite;
 
   /// Fired when the favorite heart is tapped. When null the heart isn't
@@ -144,9 +138,8 @@ class MediaPosterCard extends StatefulWidget {
   /// Drives the border color and placeholder icon (canvas).
   final MediaType? mediaType;
 
-  /// Replaces the [mediaType] caption in the subtitle row (e.g. a manga/anime
-  /// format like "Manhwa" or "OVA"). When null, the media-type label is shown.
-  /// The caption keeps the [mediaType] accent color either way.
+  /// Replaces the [mediaType] caption (e.g. "Manhwa", "OVA"); the accent color
+  /// stays either way.
   final String? typeLabelOverride;
 
   /// Fallback: [Icons.image_outlined].
@@ -412,9 +405,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               },
             ),
 
-            // Top-left row: personal rating badge (split mode only — in
-            // non-split mode both ratings render in the subtitle line under
-            // the poster) and the time-to-beat clock.
+            // The personal badge is split-mode only — otherwise both ratings
+            // render in the subtitle line under the poster.
             if ((widget.splitRatings && widget.userRating != null) ||
                 widget.timeToBeatHours != null)
               Positioned(
@@ -465,9 +457,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 ),
               ),
 
-            // Top-right row: the favorite heart (collection only) sits before
-            // the in-collection button (search) or the platform text badge
-            // (games), which are mutually exclusive.
+            // The in-collection button (search) and the platform badge (games)
+            // are mutually exclusive; the heart sits before either.
             Positioned(
               top: _isCompact ? 2 : AppSpacing.xs,
               right: _isCompact ? 2 : AppSpacing.xs,
@@ -542,9 +533,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Translucent strip pinned to the poster's bottom edge, carrying the status
-  /// dot, the progress label, the tag badge and the progress bar. Collapses to
-  /// nothing when the item has none of them, leaving the poster bare.
+  /// Collapses to nothing when the item has no status, progress or tag,
+  /// leaving the poster bare.
   Widget _buildStatsStrip() {
     final double hPad = _isCompact ? 4 : 6;
     final double vPad = _isCompact ? 2 : 4;
@@ -588,10 +578,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   ),
                   SizedBox(width: _isCompact ? 2 : 4),
                 ],
-                // The tag takes the free space so the progress label lands on
-                // the right edge; a Spacer would split it with the tag's flex.
-                // Without a tag the label owns the flex, so a long one
-                // ellipsizes instead of overflowing the strip.
+                // The tag takes the free space so the label lands on the right
+                // edge; a Spacer would split that flex with the tag.
                 if (hasTag)
                   Expanded(
                     child: Align(
@@ -663,9 +651,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Meta line, with the source logo ahead of it when the card has a source.
-  /// The logo sits in a [Row] rather than inline: a [WidgetSpan] grows the
-  /// text line past the height the title block budgeted for it.
+  /// The source logo sits in a [Row], not a [WidgetSpan] — a span grows the
+  /// text line past the height the title block budgeted.
   Widget _buildSubtitleRow(BuildContext context) {
     final TextStyle baseStyle =
         AppTypography.posterSubtitleFor(compact: _isCompact);
@@ -844,11 +831,6 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  // Common
-
-  /// Poster decode width in px (2x for HiDPI).
-  static const int _posterDecodeWidth = 300;
-
   Widget _buildCachedImage({required Widget placeholder}) {
     if (widget.imageUrl.isEmpty) return placeholder;
 
@@ -857,7 +839,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       imageId: widget.cacheImageId,
       remoteUrl: widget.imageUrl,
       fit: BoxFit.cover,
-      memCacheWidth: _posterDecodeWidth,
+      memCacheWidth: kPosterDecodeWidth,
       placeholder: placeholder,
       errorWidget: placeholder,
     );
@@ -899,6 +881,9 @@ class _TagGlowWrapperState extends State<_TagGlowWrapper>
   }
 
   void _syncController() {
+    // Mobile draws the border statically: a grid of tagged cards would
+    // otherwise run one endless ticker per card, a real battery cost.
+    if (kIsMobile) return;
     if (widget.color != null && _controller == null) {
       _controller = AnimationController(
         vsync: this,
@@ -920,14 +905,26 @@ class _TagGlowWrapperState extends State<_TagGlowWrapper>
   Widget build(BuildContext context) {
     if (widget.color == null) return widget.child;
 
+    final AnimationController? controller = _controller;
+    if (controller == null) {
+      return CustomPaint(
+        foregroundPainter: _GlowBorderPainter(
+          color: widget.color!,
+          borderRadius: widget.borderRadius,
+          progress: null,
+        ),
+        child: widget.child,
+      );
+    }
+
     return AnimatedBuilder(
-      animation: _controller!,
+      animation: controller,
       builder: (BuildContext context, Widget? child) {
         return CustomPaint(
           foregroundPainter: _GlowBorderPainter(
             color: widget.color!,
             borderRadius: widget.borderRadius,
-            progress: _controller!.value,
+            progress: controller.value,
           ),
           child: child,
         );
@@ -939,7 +936,7 @@ class _TagGlowWrapperState extends State<_TagGlowWrapper>
   }
 }
 
-/// Paints a colored border with a running bright highlight.
+/// Paints a colored border; a non-null [progress] adds the running highlight.
 class _GlowBorderPainter extends CustomPainter {
   _GlowBorderPainter({
     required this.color,
@@ -949,7 +946,7 @@ class _GlowBorderPainter extends CustomPainter {
 
   final Color color;
   final double borderRadius;
-  final double progress;
+  final double? progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -958,14 +955,18 @@ class _GlowBorderPainter extends CustomPainter {
       Radius.circular(borderRadius),
     );
 
+    // Slightly brighter when static — there is no highlight to carry the tag.
     final Paint borderPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
-      ..color = color.withAlpha(100);
+      ..color = color.withAlpha(progress == null ? 160 : 100);
     canvas.drawRRect(rrect, borderPaint);
 
+    final double? p = progress;
+    if (p == null) return;
+
     // Running highlight: a SweepGradient rotated by progress.
-    final double angle = progress * 2 * 3.14159265;
+    final double angle = p * 2 * 3.14159265;
     final Paint highlightPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0

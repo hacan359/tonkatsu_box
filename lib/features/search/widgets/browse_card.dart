@@ -1,3 +1,4 @@
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/collected_item_info.dart';
@@ -18,9 +19,8 @@ import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/providers/collections_provider.dart';
 
-/// Sets of external IDs already in the user's collections. Multi-source types
-/// are keyed by `(source, id)` — providers hand out colliding numeric ids, so
-/// an id alone would badge the wrong card.
+/// Multi-source types are keyed by `(source, id)` — providers hand out
+/// colliding numeric ids, so an id alone would badge the wrong card.
 typedef CollectedIds = ({
   Set<(DataSource, int)> movieKeys,
   Set<(DataSource, int)> tvKeys,
@@ -29,6 +29,7 @@ typedef CollectedIds = ({
   Set<(DataSource, int)> mangaKeys,
   Set<(DataSource, int)> animeKeys,
   Set<(DataSource, int)> bookKeys,
+  Set<(DataSource, int)> audioKeys,
 });
 
 const CollectedIds kNoCollected = (
@@ -39,6 +40,7 @@ const CollectedIds kNoCollected = (
   mangaKeys: <(DataSource, int)>{},
   animeKeys: <(DataSource, int)>{},
   bookKeys: <(DataSource, int)>{},
+  audioKeys: <(DataSource, int)>{},
 );
 
 final FutureProvider<CollectedIds> collectedIdsProvider =
@@ -59,6 +61,8 @@ final FutureProvider<CollectedIds> collectedIdsProvider =
       await ref.watch(collectedAnimeIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> books =
       await ref.watch(collectedBookIdsProvider.future);
+  final Map<int, List<CollectedItemInfo>> albums =
+      await ref.watch(collectedAudioIdsProvider.future);
 
   return (
     movieKeys: <(DataSource, int)>{
@@ -74,6 +78,7 @@ final FutureProvider<CollectedIds> collectedIdsProvider =
     mangaKeys: mangas.sourceKeys,
     animeKeys: animes.sourceKeys,
     bookKeys: books.sourceKeys,
+    audioKeys: albums.sourceKeys,
   );
 });
 
@@ -301,6 +306,36 @@ class BrowseCard extends StatelessWidget {
         onTap: () => onTap(entry, mediaType),
         onOpenInCollection:
             _openCallback(externalId, inColl, source: entry.source),
+      );
+    }
+
+    if (entry is AudioItem) {
+      final bool inColl =
+          collected.audioKeys.contains((entry.source, entry.id));
+      return MediaPosterCard(
+        variant: variant,
+        title: entry.title,
+        subtitle: entry.artistsString,
+        imageUrl: entry.coverUrl ?? '',
+        cacheImageType: ImageType.audioCover,
+        cacheImageId: coverImageId(
+          mediaType: MediaType.audio,
+          externalId: entry.id,
+          source: entry.source,
+        ),
+        apiRating: entry.rating,
+        year: entry.releaseYear,
+        mediaType: mediaType,
+        typeLabelOverride: entry.kind.cardLabel,
+        placeholderIcon: entry.isPodcast
+            ? Icons.podcasts_outlined
+            : Icons.album_outlined,
+        isInCollection: inColl,
+        source: entry.source,
+        onSourceTap: openUrlCallback(entry.externalUrl),
+        onTap: () => onTap(entry, mediaType),
+        onOpenInCollection:
+            _openCallback(entry.id, inColl, source: entry.source),
       );
     }
 

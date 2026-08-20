@@ -1,13 +1,8 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 
-/// Индикатор одного шага wizard'а.
-///
-/// Показывает номер шага в кружке и опциональный лейбл.
-/// Три состояния: done (галочка, зелёный), active (brand), pending (серый).
 class StepIndicator extends StatelessWidget {
   const StepIndicator({
     required this.number,
@@ -19,7 +14,7 @@ class StepIndicator extends StatelessWidget {
     super.key,
   });
 
-  /// Порядковый номер шага (1-based).
+  /// 1-based position in the wizard.
   final int number;
 
   final String label;
@@ -30,7 +25,6 @@ class StepIndicator extends StatelessWidget {
 
   final VoidCallback? onTap;
 
-  /// Показывать ли лейбл (на узких экранах скрываем неактивные).
   final bool showLabel;
 
   @override

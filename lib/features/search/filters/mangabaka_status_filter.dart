@@ -1,5 +1,3 @@
-// MangaBaka release-status filter (single-select).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
 import '../../../l10n/app_localizations.dart';

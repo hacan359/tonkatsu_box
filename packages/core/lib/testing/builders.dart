@@ -1,3 +1,6 @@
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_kind.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -88,6 +91,7 @@ CollectionItem createTestCollectionItem({
   Manga? manga,
   Anime? anime,
   Book? book,
+  AudioItem? audioItem,
   Platform? platform,
   CustomMedia? customMedia,
 }) {
@@ -121,6 +125,7 @@ CollectionItem createTestCollectionItem({
     manga: manga,
     anime: anime,
     book: book,
+    audioItem: audioItem,
     platform: platform,
     customMedia: customMedia,
   );
@@ -337,6 +342,84 @@ Book createTestBook({
     ratingCount: ratingCount,
     externalUrl: externalUrl,
     cachedAt: cachedAt,
+  );
+}
+
+AudioItem createTestAudioItem({
+  int id = 12345,
+  DataSource source = DataSource.musicBrainz,
+  AudioKind kind = AudioKind.album,
+  String nativeId = 'f5093c06-23e3-404f-aeaa-40f72885ee3a',
+  String title = 'Test Album',
+  String? description,
+  String? language,
+  List<String> artists = const <String>['Test Artist'],
+  List<String> artistMbids = const <String>[],
+  String? primaryType = 'Album',
+  List<String> secondaryTypes = const <String>[],
+  int? releaseYear = 1973,
+  String? firstReleaseDate,
+  List<String> genres = const <String>[],
+  List<String> tags = const <String>[],
+  double? rating,
+  int? ratingCount,
+  int? listenCount,
+  String? releaseMbid,
+  int? trackCount,
+  int? discCount,
+  String? coverUrl,
+  String? externalUrl,
+  int? cachedAt,
+}) {
+  return AudioItem(
+    id: id,
+    source: source,
+    kind: kind,
+    nativeId: nativeId,
+    title: title,
+    description: description,
+    language: language,
+    artists: artists,
+    artistMbids: artistMbids,
+    primaryType: primaryType,
+    secondaryTypes: secondaryTypes,
+    releaseYear: releaseYear,
+    firstReleaseDate: firstReleaseDate,
+    genres: genres,
+    tags: tags,
+    rating: rating,
+    ratingCount: ratingCount,
+    listenCount: listenCount,
+    releaseMbid: releaseMbid,
+    trackCount: trackCount,
+    discCount: discCount,
+    coverUrl: coverUrl,
+    externalUrl: externalUrl,
+    cachedAt: cachedAt,
+  );
+}
+
+AudioTrack createTestAudioTrack({
+  int audioId = 12345,
+  int discNumber = 1,
+  int position = 1,
+  String title = 'Test Track',
+  String? nativeId,
+  int? lengthMs,
+  List<String> artists = const <String>[],
+  int? datePublished,
+  DataSource source = DataSource.musicBrainz,
+}) {
+  return AudioTrack(
+    audioId: audioId,
+    discNumber: discNumber,
+    position: position,
+    title: title,
+    nativeId: nativeId,
+    lengthMs: lengthMs,
+    artists: artists,
+    datePublished: datePublished,
+    source: source,
   );
 }
 

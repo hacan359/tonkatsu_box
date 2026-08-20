@@ -1,5 +1,3 @@
-// Screen for importing a game list exported from IGDB (CSV).
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';

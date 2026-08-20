@@ -8,14 +8,8 @@ import 'dialogs/add_link_dialog.dart';
 import 'dialogs/add_text_dialog.dart';
 import 'dialogs/edit_connection_dialog.dart';
 
-/// Shows the canvas add/edit dialogs and forwards the result to the
-/// controller. Lifted out of `_CanvasViewState` so the screen widget stays
-/// focused on layout and gesture wiring.
-///
-/// Every entry point follows the same shape: show dialog → bail on null
-/// or unmounted context → dispatch to [controller]. `context.mounted` is
-/// rechecked after each `await` because dialogs may outlive the host
-/// widget.
+/// `context.mounted` is rechecked after each `await` — these dialogs can
+/// outlive the host widget.
 class CanvasItemActions {
   CanvasItemActions({
     required BuildContext context,
@@ -98,6 +92,7 @@ class CanvasItemActions {
       case CanvasItemType.manga:
       case CanvasItemType.anime:
       case CanvasItemType.book:
+      case CanvasItemType.audio:
       case CanvasItemType.custom:
         break;
     }

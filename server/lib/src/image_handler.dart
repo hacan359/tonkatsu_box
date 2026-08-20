@@ -7,11 +7,30 @@ import 'package:core/models/image_type.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
+import 'proxy_handler.dart' show kProxyUserAgent;
 import 'upstream_client.dart';
+import 'upstream_throttle.dart';
 
 /// A cover is immutable for a given id, so the browser can hold it as long as
 /// it likes and the server stops being asked at all.
 const String _kImmutable = 'public, max-age=31536000, immutable';
+
+/// Cover Art Archive rate-limits per IP; the gap mirrors the desktop client's
+/// host_rate_limiter so a burst of cold covers does not collect 429s.
+const Map<String, Duration> _hostMinGap = <String, Duration>{
+  'coverartarchive.org': Duration(milliseconds: 300),
+};
+
+final Map<String, UpstreamThrottle> _hostThrottles =
+    <String, UpstreamThrottle>{};
+
+Future<void> _throttleHost(String host) {
+  final Duration? gap = _hostMinGap[host];
+  if (gap == null) return Future<void>.value();
+  return _hostThrottles
+      .putIfAbsent(host, () => UpstreamThrottle(gap))
+      .acquire();
+}
 
 /// `/img/<folder>/<id>` — one cache in the volume for every client, instead of
 /// each browser re-downloading the same poster from the provider.
@@ -30,8 +49,7 @@ class ImageCache {
           return _error(HttpStatus.notFound, 'No image in the path');
         }
         final (ImageType type, String imageId) = target;
-        // A traversal would land the write outside the cache directory.
-        if (imageId.isEmpty || imageId.contains('..')) {
+        if (!_isSafeImageId(imageId)) {
           return _error(HttpStatus.badRequest, 'Bad image id');
         }
 
@@ -53,10 +71,15 @@ class ImageCache {
 
         final UpstreamResponse response;
         try {
+          await _throttleHost(sourceUri.host);
           response = await _upstream.send(
             method: 'GET',
             url: sourceUri,
-            headers: <String, String>{},
+            // Cover hosts (Cover Art Archive among them) rate-limit or refuse
+            // agent-less clients; identify like the API proxy does.
+            headers: <String, String>{
+              HttpHeaders.userAgentHeader: kProxyUserAgent,
+            },
           );
         } on Object catch (e) {
           return _error(HttpStatus.badGateway, '$e');
@@ -69,6 +92,16 @@ class ImageCache {
           );
         }
 
+        // ScreenScraper answers an outage with a 200 HTML page; caching that
+        // would serve a broken "image" for the year the entry is immutable.
+        final String? contentType = response.contentType;
+        if (contentType != null && !contentType.startsWith('image/')) {
+          return _error(
+            HttpStatus.badGateway,
+            'Source answered $contentType, not an image',
+          );
+        }
+
         await _writeAtomically(file, response.body);
 
         return _image(
@@ -77,8 +110,7 @@ class ImageCache {
         );
       };
 
-  /// `POST /img/<folder>/<id>` with the raw bytes as the body — the web
-  /// build's stand-in for the desktop's local cache write: a user-picked
+  /// The web build's stand-in for the desktop local-cache write: a user-picked
   /// cover has no upstream URL the GET route could fetch.
   Handler get uploadHandler => (Request request) async {
         final (ImageType, String)? target = _target(request);
@@ -86,8 +118,7 @@ class ImageCache {
           return _error(HttpStatus.notFound, 'No image in the path');
         }
         final (ImageType type, String imageId) = target;
-        // A traversal would land the write outside the cache directory.
-        if (imageId.isEmpty || imageId.contains('..')) {
+        if (!_isSafeImageId(imageId)) {
           return _error(HttpStatus.badRequest, 'Bad image id');
         }
 
@@ -111,6 +142,32 @@ class ImageCache {
         );
       };
 
+  /// The web build's stand-in for deleting a local cache file: a cover the
+  /// user replaced would otherwise be served from the copy taken before.
+  Handler get deleteHandler => (Request request) async {
+        final (ImageType, String)? target = _target(request);
+        if (target == null) {
+          return _error(HttpStatus.notFound, 'No image in the path');
+        }
+        final (ImageType type, String imageId) = target;
+        if (!_isSafeImageId(imageId)) {
+          return _error(HttpStatus.badRequest, 'Bad image id');
+        }
+
+        final File file = _fileFor(type, imageId);
+        try {
+          if (file.existsSync()) await file.delete();
+        } on FileSystemException catch (e) {
+          return _error(HttpStatus.internalServerError, '$e');
+        }
+        return Response.ok(
+          jsonEncode(<String, Object?>{'ok': true}),
+          headers: <String, String>{
+            HttpHeaders.contentTypeHeader: 'application/json',
+          },
+        );
+      };
+
   /// Folder + id from `/img/<folder>/<id>`, or null when the path is not an
   /// image.
   (ImageType, String)? _target(Request request) {
@@ -120,6 +177,14 @@ class ImageCache {
     if (type == null) return null;
     return (type, segments.skip(2).join('/'));
   }
+
+  /// A traversal, absolute or drive-qualified id would land the read, write
+  /// or delete outside the cache directory (p.join drops dataDir on absolute).
+  static bool _isSafeImageId(String imageId) =>
+      imageId.isNotEmpty &&
+      !imageId.contains('..') &&
+      !imageId.contains(':') &&
+      !p.isAbsolute(imageId);
 
   File _fileFor(ImageType type, String imageId) =>
       File(p.join(dataDir, 'images', type.folder, imageId));

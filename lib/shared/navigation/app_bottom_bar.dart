@@ -13,13 +13,11 @@ import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 import 'nav_tour_keys.dart';
 
-/// Height of the bottom bar.
 const double kAppBottomBarHeight = 64;
 
 /// Horizontal nav bar for narrow screens. Settings lives in [AppTopBar]; the
 /// middle slot is left empty for the centre button.
 class AppBottomBar extends ConsumerWidget {
-  /// Creates an [AppBottomBar].
   const AppBottomBar({
     required this.selectedTab,
     required this.onDestinationSelected,

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:core/api/image_proxy.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -12,6 +13,7 @@ import 'package:core/models/image_type.dart';
 import 'package:core/models/profile.dart';
 
 import '../../shared/constants/platform_features.dart';
+import '../api/api_dio.dart';
 import '../selfhost/server_origin.dart';
 import 'profile_service.dart';
 import 'storage_root.dart';
@@ -29,10 +31,34 @@ final Provider<ImageCacheService> imageCacheServiceProvider =
 /// Caches images locally; when caching is enabled, cached files are served
 /// instead of the network so images keep working offline.
 class ImageCacheService {
+  // createApiDio: cover hosts (Cover Art Archive) refuse agent-less clients
+  // and need the per-host pacing; a bare Dio() hit both limits.
+  ImageCacheService({Dio? dio})
+      : _dio = dio ??
+            createApiDio(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 60),
+              headers: const <String, String>{'User-Agent': kAppUserAgent},
+            );
+
   static final Logger _log = Logger('ImageCacheService');
-  final Dio _dio = Dio();
+
+  final Dio _dio;
+
+  // Memoized so a cached file can be resolved synchronously on later mounts;
+  // a profile switch restarts the app, so only a path change must reset it.
+  String? _basePathMemo;
+  bool? _cacheEnabledMemo;
 
   Future<String> getBaseCachePath() async {
+    final String? memo = _basePathMemo;
+    if (memo != null) return memo;
+    final String resolved = await _resolveBaseCachePath();
+    _basePathMemo = resolved;
+    return resolved;
+  }
+
+  Future<String> _resolveBaseCachePath() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? customPath = prefs.getString(_CacheKeys.customCachePath);
 
@@ -65,11 +91,13 @@ class ImageCacheService {
   }
 
   Future<void> setCachePath(String path) async {
+    _basePathMemo = null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(_CacheKeys.customCachePath, path);
   }
 
   Future<void> resetCachePath() async {
+    _basePathMemo = null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(_CacheKeys.customCachePath);
   }
@@ -79,12 +107,28 @@ class ImageCacheService {
     // will route them through the server proxy/cache).
     if (kIsWebBuild) return false;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
+    final bool enabled = prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
+    _cacheEnabledMemo = enabled;
+    return enabled;
   }
 
   Future<void> setCacheEnabled(bool enabled) async {
+    _cacheEnabledMemo = enabled;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_CacheKeys.cacheEnabled, enabled);
+  }
+
+  /// Synchronous cache hit, or null before the first async lookup memoizes
+  /// the base path, on web, with the cache disabled, or on a missing file.
+  String? localPathIfCached(ImageType type, String imageId) {
+    if (kIsWebBuild) return null;
+    if (_cacheEnabledMemo != true) return null;
+    final String? base = _basePathMemo;
+    if (base == null) return null;
+    final String path = p.join(base, type.folder, '$imageId.png');
+    final File file = File(path);
+    if (!file.existsSync() || !_isValidImageFile(file)) return null;
+    return path;
   }
 
   Future<String> getLocalImagePath(ImageType type, String imageId) async {
@@ -116,7 +160,7 @@ class ImageCacheService {
     if (kIsWebBuild) {
       try {
         await _dio.post<Object?>(
-          '${serverBaseUrl()}${imageProxyPath(type: type, imageId: imageId)}',
+          _serverImageUrl(type, imageId),
           data: Stream<List<int>>.value(bytes),
           options: Options(
             headers: <String, Object?>{
@@ -153,9 +197,38 @@ class ImageCacheService {
     return file.existsSync() && _isValidImageFile(file);
   }
 
+  String _serverImageUrl(ImageType type, String imageId) => imageProxyUrl(
+        baseUrl: serverBaseUrl(),
+        type: type,
+        imageId: imageId,
+      );
+
+  /// Drops the decoded copies of one cached image. Flutter keys them by path
+  /// (by url on web), so a picture replaced under the name it already had
+  /// would keep rendering from the copy decoded before.
+  Future<void> evictDecodedImage(ImageType type, String imageId) async {
+    if (kIsWebBuild) {
+      await NetworkImage(_serverImageUrl(type, imageId)).evict();
+      return;
+    }
+    final String path = await getLocalImagePath(type, imageId);
+    await FileImage(File(path)).evict();
+  }
+
   /// Tolerates files locked by another process on Windows.
   Future<void> deleteImage(ImageType type, String imageId) async {
-    if (kIsWebBuild) return;
+    // On web the file lives in the server's cache, where a stale copy would
+    // outrank the URL for every client, not just this tab.
+    if (kIsWebBuild) {
+      try {
+        await _dio.delete<Object?>(
+          _serverImageUrl(type, imageId),
+        );
+      } on DioException catch (e) {
+        _log.warning('Failed to delete image: $imageId', e);
+      }
+      return;
+    }
     final String path = await getLocalImagePath(type, imageId);
     final File file = File(path);
     if (file.existsSync()) {
@@ -163,9 +236,8 @@ class ImageCacheService {
     }
   }
 
-  /// Returns the local path when a valid cached file exists; otherwise the
-  /// remote URL, with isMissing = true (when caching is on) so callers can
-  /// download in the background.
+  /// Local path when a valid cached file exists; otherwise the remote URL
+  /// with isMissing = true so callers can download in the background.
   Future<ImageResult> getImageUri({
     required ImageType type,
     required String imageId,
@@ -255,6 +327,21 @@ class ImageCacheService {
     }
   }
 
+  // Covers that 404 (Cover Art Archive answers 404 for albums without art)
+  // would otherwise re-download on every rebuild of every card this session.
+  final Set<String> _failedDownloads = <String>{};
+
+  static const int _maxFailedDownloadEntries = 500;
+
+  // Only permanent failures go in: a timeout or a 429/5xx must stay
+  // retryable, or one throttled burst blanks a cover until restart.
+  void _markPermanentlyFailed(String failKey) {
+    if (_failedDownloads.length >= _maxFailedDownloadEntries) {
+      _failedDownloads.clear();
+    }
+    _failedDownloads.add(failKey);
+  }
+
   Future<bool> downloadImage({
     required ImageType type,
     required String imageId,
@@ -262,6 +349,8 @@ class ImageCacheService {
   }) async {
     // The browser has no disk cache: the server holds one for every client.
     if (kIsWebBuild) return false;
+    final String failKey = '${type.folder}/$imageId';
+    if (_failedDownloads.contains(failKey)) return false;
     try {
       final String localPath = await getLocalImagePath(type, imageId);
       final File file = File(localPath);
@@ -275,12 +364,16 @@ class ImageCacheService {
 
       if (!_isValidImageFile(file)) {
         await _tryDelete(file);
+        _markPermanentlyFailed(failKey);
         return false;
       }
 
       return true;
     } catch (e) {
       _log.warning('Failed to download image: $imageId', e);
+      if (e is DioException && e.response?.statusCode == 404) {
+        _markPermanentlyFailed(failKey);
+      }
       // Remove the invalid/partial file left by the failed download
       final String localPath = await getLocalImagePath(type, imageId);
       final File partial = File(localPath);
@@ -322,13 +415,8 @@ class ImageCacheService {
     }
   }
 
-  /// Deletes cached image files that no longer have a backing entry.
-  ///
-  /// [keep] maps each [ImageType] to the set of cache ids (file names without
-  /// the `.png` extension) that must be preserved. Only `.png` files inside the
-  /// listed type folders are scanned; type folders absent from [keep] and any
-  /// non-image files are left untouched. Windows file locks are tolerated.
-  /// Returns the number of files deleted and the bytes freed.
+  /// Deletes `.png` files whose id is not in [keep]; only the listed type
+  /// folders are scanned. Windows file locks are tolerated.
   Future<CacheCleanupResult> removeOrphans(
     Map<ImageType, Set<String>> keep,
   ) async {

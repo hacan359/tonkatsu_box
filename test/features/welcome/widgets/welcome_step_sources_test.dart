@@ -51,14 +51,14 @@ void main() {
     });
 
     testWidgets(
-        'exposes key fields for IGDB, TMDB, TheTVDB, ComicVine, Google Books '
-        'and Hardcover', (WidgetTester tester) async {
+        'exposes key fields for IGDB, TMDB, TheTVDB, ComicVine, Google Books, '
+        'Hardcover and Podcast Index', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      // IGDB (Client ID + Secret) + TMDB (key) + TheTVDB (key) +
-      // ComicVine (key) + Google Books (key) + Hardcover (token) = 7 fields.
-      expect(find.byType(InlineTextField), findsNWidgets(7));
+      // IGDB (id + secret), TMDB, TheTVDB, ComicVine, Google Books,
+      // Hardcover, Podcast Index (key + secret) = 9 fields.
+      expect(find.byType(InlineTextField), findsNWidgets(9));
     });
   });
 }

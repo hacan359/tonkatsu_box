@@ -11,7 +11,6 @@ import '../theme/app_typography.dart';
 
 /// A browsable picker root: a storage volume or any fixed directory.
 class FolderPickerRoot {
-  /// Creates a [FolderPickerRoot].
   const FolderPickerRoot({
     required this.path,
     required this.label,
@@ -28,19 +27,9 @@ class FolderPickerRoot {
   final bool removable;
 }
 
-/// In-app folder browser over the real filesystem.
-///
-/// The system SAF picker returns content URIs whose conversion to a raw
-/// path is firmware-dependent guesswork — some firmwares produce paths
-/// that do not exist on disk. Browsing real directories sidesteps the
-/// conversion entirely; use this wherever a raw writable path is
-/// required on Android.
-///
-/// With a single root the dialog opens straight inside it; with several
-/// (internal storage + SD/USB) it opens on a volume list, and `..` from
-/// a volume root leads back to that list.
+/// SAF content URIs convert to raw paths by firmware-dependent guesswork, so
+/// browsing real directories is the only reliable way to a writable path.
 class FolderPickerDialog extends StatefulWidget {
-  /// Creates a [FolderPickerDialog].
   const FolderPickerDialog({
     required this.roots,
     required this.title,

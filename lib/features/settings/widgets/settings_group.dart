@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/constants/platform_features.dart';
@@ -6,10 +5,6 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Плоская группа настроек в стиле iOS Settings.
-///
-/// Отображает необязательный uppercase-заголовок мелким шрифтом,
-/// необязательный подзаголовок и контейнер с детьми, разделёнными тонкими dividers.
 class SettingsGroup extends StatelessWidget {
   const SettingsGroup({
     required this.children,
@@ -20,17 +15,14 @@ class SettingsGroup extends StatelessWidget {
     super.key,
   });
 
-  /// Необязательный заголовок группы (uppercase, мелкий шрифт).
   final String? title;
 
-  /// Необязательный подзаголовок группы (обычный размер, приглушённый цвет).
   final String? subtitle;
 
   final IconData? titleIcon;
 
   final Color? titleIconColor;
 
-  /// Дочерние виджеты (обычно [SettingsTile]).
   final List<Widget> children;
 
   @override

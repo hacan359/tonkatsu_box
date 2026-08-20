@@ -11,11 +11,6 @@ import 'package:logging/logging.dart';
 import 'api_dio.dart';
 import 'api_error_detail.dart';
 
-/// Kodi JSON-RPC client. Talks HTTP to `http://{host}:{port}/jsonrpc` with
-/// optional Basic Auth. Used for passive watch-sync: the local library is
-/// polled and our collections updated to match.
-/// Docs: https://kodi.wiki/view/JSON-RPC_API
-
 /// Long-lived singleton. `KodiSettingsNotifier` calls [KodiApi.setConnection]
 /// when settings load or change.
 final Provider<KodiApi> kodiApiProvider = Provider<KodiApi>((Ref ref) {
@@ -57,10 +52,8 @@ class KodiLogEntry {
   }
 }
 
-/// Minimal Kodi JSON-RPC client: ping, app properties, movie/show/episode
-/// fetch + a [rawCall] escape hatch used by the Debug panel. Reconfigured at
-/// runtime via [setConnection] / [clearConnection] — one instance lives for
-/// the lifetime of the app.
+/// Kodi JSON-RPC client used for passive watch-sync: the local library is
+/// polled to update our collections. Reconfigured at runtime; app-lifetime.
 class KodiApi {
   /// [timeout] applies to both connect and receive — tuned for LAN.
   KodiApi({Dio? dio, Duration? timeout})
@@ -201,9 +194,8 @@ class KodiApi {
     return _parseList(response, 'episodes', KodiEpisode.fromJson);
   }
 
-  /// Returns the whole `{jsonrpc, id, result | error}` envelope. JSON-RPC
-  /// `error` is translated into a [KodiApiException] so the Debug panel can
-  /// show it; otherwise callers extract `result` themselves.
+  /// Returns the whole JSON-RPC envelope; an `error` member is translated
+  /// into a [KodiApiException] so the Debug panel can show it.
   Future<Map<String, dynamic>> rawCall(
     String method,
     Map<String, dynamic>? params,

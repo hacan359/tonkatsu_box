@@ -15,9 +15,6 @@ const int _openLibraryPageSize = 20;
 // OpenLibrary rejects `q` shorter than 3 chars with a 422.
 const int _openLibraryMinQuery = 3;
 
-/// SearchSource backed by OpenLibrary, the global book catalog. Items are
-/// stamped [MediaType.book] and carry `DataSource.openLibrary` (set inside the
-/// `Book.fromOpenLibrary*` factories).
 class OpenLibrarySource extends SearchSource {
   @override
   String get id => 'openlibrary';

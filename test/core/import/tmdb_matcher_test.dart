@@ -28,9 +28,8 @@ void main() {
     group('matchMovie', () {
       test('drops the server year filter and still prefers the matching year',
           () async {
-        // TMDB's `year=` filter is unreliable and can miss a correctly-dated
-        // film. The matcher widens to a no-year search and prefers the result
-        // whose actual release year matches the requested one.
+        // TMDB's `year=` filter can miss a correctly-dated film, so the matcher
+        // widens the search and prefers a result whose real year matches.
         when(() => mockTmdb.searchMovies(any(), year: 1992))
             .thenAnswer((_) async => <Movie>[]);
         when(() => mockTmdb.searchMovies(any(), year: null)).thenAnswer(
@@ -46,9 +45,8 @@ void main() {
 
       test('falls back to the title match when no result has the wanted year',
           () async {
-        // When the requested year has no hit, the matcher keeps the best title
-        // match (first result) rather than dropping the row — fewer real films
-        // are missed, at the cost of an occasional wrong-edition guess.
+        // With no hit for the year the matcher keeps the best title match
+        // rather than dropping the row, at the cost of a wrong-edition guess.
         when(() => mockTmdb.searchMovies(any(), year: 1997))
             .thenAnswer((_) async => <Movie>[]);
         when(() => mockTmdb.searchMovies(any(), year: null)).thenAnswer(

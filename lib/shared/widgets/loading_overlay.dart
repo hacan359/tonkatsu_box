@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'logo_loader.dart';
 
-/// Runs [action] behind a modal, non-dismissible loader so the user sees that
-/// something is happening during a slow step (a network fetch, a heavy save).
-///
-/// The overlay is always torn down, even if [action] throws. Reusable for any
-/// awaited gap that would otherwise look frozen.
+/// Runs [action] behind a modal, non-dismissible loader; the overlay is always
+/// torn down, even if [action] throws.
 Future<T> withBlockingSpinner<T>(
   BuildContext context,
   Future<T> Function() action,

@@ -14,9 +14,6 @@ import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/screens/collection_screen.dart';
 import '../../../shared/constants/media_type_ui.dart';
 
-/// Экран результатов импорта.
-///
-/// Показывает breakdown по типам медиа, вишлист, обновления, кнопки навигации.
 class ImportResultScreen extends StatelessWidget {
   const ImportResultScreen({
     required this.result,

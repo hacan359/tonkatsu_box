@@ -3,9 +3,8 @@ import 'package:core/models/collection_item.dart';
 import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
 
-/// Helpers for the manga / anime `format` subfilter: canonical chip ordering,
-/// display labels, and extracting the distinct formats present in a list of
-/// collection items.
+/// Helpers for the manga / anime `format` subfilter: chip order, labels, and
+/// the distinct formats present in a list of items.
 abstract final class MediaFormat {
   /// Manga format codes in the order their chips should appear.
   static const List<String> mangaOrder = <String>[

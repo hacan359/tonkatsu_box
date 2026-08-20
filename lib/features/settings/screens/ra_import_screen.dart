@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -6,9 +5,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/ra_import_content.dart';
 
-/// Экран импорта RetroAchievements.
-///
-/// Тонкая обёртка вокруг [RaImportContent] с Scaffold/AppBar.
 class RaImportScreen extends StatelessWidget {
   const RaImportScreen({super.key});
 

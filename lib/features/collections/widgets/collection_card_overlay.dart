@@ -1,6 +1,3 @@
-// The scrim background is NOT drawn here — that is the parent's job:
-// rich cards get it from `CollectionHeroBackground`.
-
 import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +8,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import 'media_type_dots.dart';
 
+/// The scrim background is NOT drawn here — that is the parent's job; rich
+/// cards get it from `CollectionHeroBackground`.
 class CollectionCardOverlay extends StatelessWidget {
   const CollectionCardOverlay({
     required this.name,

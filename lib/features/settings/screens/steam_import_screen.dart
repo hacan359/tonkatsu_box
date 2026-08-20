@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -6,9 +5,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/steam_import_content.dart';
 
-/// Экран импорта библиотеки Steam.
-///
-/// Тонкая обёртка вокруг [SteamImportContent] с Scaffold/AppBar.
 class SteamImportScreen extends StatelessWidget {
   const SteamImportScreen({super.key});
 

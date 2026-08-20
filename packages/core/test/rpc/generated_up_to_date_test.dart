@@ -5,9 +5,8 @@ import 'package:test/test.dart';
 
 import '../../tool/generate_rpc.dart';
 
-/// The generator reads the DAOs *and every model they return*, so a field added
-/// to a model changes the wire format without changing a single signature.
-/// Nothing in the type system can see that — this test is what does.
+/// A field added to a model changes the wire format without changing a single
+/// signature — nothing in the type system sees that, so this test does.
 void main() {
   late RpcGeneration generated;
   late String outDir;

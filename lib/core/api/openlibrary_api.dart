@@ -19,9 +19,8 @@ class OpenLibraryApi {
   late final OpenLibrarySearchApi _search;
   late final OpenLibraryWorksApi _works;
 
-  /// Search works. [scope] picks the search field (`q` / `title` / `author` /
-  /// `subject`), [language] is a MARC 3-letter code, [sort] an OpenLibrary sort
-  /// key.
+  /// [scope] picks the search field (`q`/`title`/`author`/`subject`),
+  /// [language] is a MARC 3-letter code, [sort] an OpenLibrary sort key.
   Future<(List<Book>, bool hasMore, int totalPages)> search({
     required String query,
     String scope = 'q',

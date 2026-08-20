@@ -58,6 +58,15 @@ void main() {
         expect(second.sortOrder, 1);
       });
 
+      test('adopts the existing row when the name collides', () async {
+        final Tag original = await dao.create('RPG', color: 1);
+        final Tag adopted = await dao.create('RPG', color: 2);
+        expect(adopted.id, original.id);
+        expect(adopted.color, original.color);
+        final List<Tag> all = await dao.getAll();
+        expect(all, hasLength(1));
+      });
+
       test('stores colors', () async {
         final Tag tag = await dao.create(
           'RPG',

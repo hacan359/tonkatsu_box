@@ -1,5 +1,3 @@
-// MangaBaka genre filter (multi-select, from the DB catalog).
-
 import 'package:core/models/mangabaka_genre.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 

@@ -5,9 +5,8 @@ import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'openlibrary_types.dart';
 
-/// Dio transport for OpenLibrary. No auth, but a descriptive User-Agent is
-/// required — anonymous bots can be blocked. Hosts both `openlibrary.org`
-/// (search / works / authors) on one base URL.
+/// No auth, but a descriptive User-Agent is required — OpenLibrary can block
+/// anonymous bots.
 class OpenLibraryHttpClient {
   OpenLibraryHttpClient({Dio? dio})
       : _dio = dio ??

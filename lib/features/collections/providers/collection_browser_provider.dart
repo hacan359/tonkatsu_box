@@ -1,10 +1,8 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/collection_browser_service.dart';
 import '../models/collections_index.dart';
 
-/// Провайдер индекса коллекций (загружается при первом обращении).
 final AsyncNotifierProvider<CollectionsIndexNotifier, CollectionsIndex>
     collectionsIndexProvider =
     AsyncNotifierProvider<CollectionsIndexNotifier, CollectionsIndex>(
@@ -29,11 +27,11 @@ class CollectionsIndexNotifier extends AsyncNotifier<CollectionsIndex> {
   }
 }
 
-/// Фильтр по платформе (null = все платформы).
+/// null = all platforms.
 final StateProvider<String?> browserPlatformFilterProvider =
     StateProvider<String?>((Ref ref) => null);
 
-/// Фильтр по категории (null = все категории).
+/// null = all categories.
 final StateProvider<String?> browserCategoryFilterProvider =
     StateProvider<String?>((Ref ref) => null);
 

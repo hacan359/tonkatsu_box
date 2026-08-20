@@ -5,11 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/anilist_api.dart';
 import '../../core/database/database_service.dart';
 
-/// Loads the AniList tag catalog with a SQLite-backed cache.
-///
-/// Cache is sticky: a non-empty cache is always returned without hitting the
-/// API. A manual Refresh in the picker calls this with `forceRefresh: true`
-/// — that's the only path that bypasses the cache.
+/// Sticky SQLite-backed tag cache: a non-empty cache always wins; only the
+/// picker's manual Refresh (`forceRefresh: true`) bypasses it.
 class AniListTagsRepository {
   AniListTagsRepository({
     required AniListApi api,

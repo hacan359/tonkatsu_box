@@ -35,9 +35,8 @@ void main() {
   });
 
   group('StartupErrorView', () {
-    // The real app theme is essential here: it forces an infinite
-    // minimumSize on FilledButton, which used to blow up the copy button
-    // inside the header Row ("BoxConstraints forces an infinite width").
+    // The real theme is essential: its infinite FilledButton minimumSize used
+    // to blow up the copy button inside the header Row.
     Widget app() => MaterialApp(
           theme: AppTheme.darkTheme,
           home: const StartupErrorView(info: info),

@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/canvas_connection.dart';
@@ -45,6 +47,8 @@ import '../api/igdb_api.dart';
 import '../api/kitsu_api.dart';
 import '../api/mangabaka_api.dart';
 import '../api/mangadex_api.dart';
+import '../api/musicbrainz_api.dart';
+import '../api/podcast_index_api.dart';
 import '../api/openlibrary_api.dart';
 import '../api/tmdb_api.dart';
 import '../api/tvdb_api.dart';
@@ -77,6 +81,8 @@ final Provider<ImportService> importServiceProvider =
     comicVineApi: ref.watch(comicVineApiProvider),
     hardcoverApi: ref.watch(hardcoverApiProvider),
     fantlabApi: ref.watch(fantlabApiProvider),
+    musicBrainzApi: ref.watch(musicBrainzApiProvider),
+    podcastIndexApi: ref.watch(podcastIndexApiProvider),
     database: ref.watch(databaseServiceProvider),
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
@@ -145,6 +151,8 @@ class ImportService {
     ComicVineApi? comicVineApi,
     HardcoverApi? hardcoverApi,
     FantlabApi? fantlabApi,
+    MusicBrainzApi? musicBrainzApi,
+    PodcastIndexApi? podcastIndexApi,
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
     TrackerDao? trackerDao,
@@ -165,6 +173,8 @@ class ImportService {
         _comicVineApi = comicVineApi,
         _hardcoverApi = hardcoverApi,
         _fantlabApi = fantlabApi,
+        _musicBrainzApi = musicBrainzApi,
+        _podcastIndexApi = podcastIndexApi,
         _database = database,
         _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService,
@@ -186,6 +196,8 @@ class ImportService {
   final ComicVineApi? _comicVineApi;
   final HardcoverApi? _hardcoverApi;
   final FantlabApi? _fantlabApi;
+  final MusicBrainzApi? _musicBrainzApi;
+  final PodcastIndexApi? _podcastIndexApi;
   final DatabaseService _database;
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
@@ -269,7 +281,7 @@ class ImportService {
         return const ImportResult.cancelled();
       }
 
-      return importFromXcoll(
+      return await importFromXcoll(
         xcoll,
         collectionId: collectionId,
         onProgress: onProgress,
@@ -385,6 +397,7 @@ class ImportService {
           if (xcoll.includesUserData) {
             await _importItemMarks(itemData, itemId);
             await _importWatchedEpisodes(itemData, collection.id, parsed);
+            await _importListenedTracks(itemData, collection.id, parsed);
           }
         } else if (collectionId != null) {
           // Item already exists — update from file.
@@ -412,6 +425,7 @@ class ImportService {
             if (xcoll.includesUserData) {
               await _importItemMarks(itemData, existing.id);
               await _importWatchedEpisodes(itemData, collection.id, parsed);
+              await _importListenedTracks(itemData, collection.id, parsed);
             }
           }
         }
@@ -575,7 +589,11 @@ class ImportService {
     if (parsed.isFavorite) {
       await _database.setItemFavorite(itemId, isFavorite: true);
     }
-    if (parsed.startedAt != null ||
+    // The status write above stamps started/completed with "now"; the file's
+    // values must win over that bump — including explicit nulls.
+    final bool statusStamped = parsed.status != ItemStatus.notStarted;
+    if (statusStamped ||
+        parsed.startedAt != null ||
         parsed.completedAt != null ||
         parsed.lastActivityAt != null) {
       await _database.updateItemActivityDates(
@@ -583,6 +601,8 @@ class ImportService {
         startedAt: parsed.startedAt,
         completedAt: parsed.completedAt,
         lastActivityAt: parsed.lastActivityAt,
+        clearStartedAt: statusStamped && parsed.startedAt == null,
+        clearCompletedAt: statusStamped && parsed.completedAt == null,
       );
     }
     if (parsed.currentSeason > 0 || parsed.currentEpisode > 0) {
@@ -617,6 +637,10 @@ class ImportService {
         media['mangas'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawBooks =
         media['books'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawAlbums =
+        media['audio_items'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawTracks =
+        media['audio_tracks'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawAnimes =
         media['animes'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawCustom =
@@ -631,6 +655,8 @@ class ImportService {
         rawVisualNovels.length +
         rawMangas.length +
         rawBooks.length +
+        rawAlbums.length +
+        rawTracks.length +
         rawAnimes.length +
         rawCustom.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -796,6 +822,39 @@ class ImportService {
       await _database.bookDao.upsertBooks(books);
     }
 
+    if (rawAlbums.isNotEmpty) {
+      final List<AudioItem> albums = <AudioItem>[];
+      for (final dynamic raw in rawAlbums) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        row['cached_at'] = cachedAt;
+        albums.add(AudioItem.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.audioDao.upsertAudioItems(albums);
+    }
+
+    if (rawTracks.isNotEmpty) {
+      final List<AudioTrack> tracks = <AudioTrack>[];
+      for (final dynamic raw in rawTracks) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        tracks.add(AudioTrack.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.audioDao.upsertTracks(tracks);
+    }
+
     if (rawAnimes.isNotEmpty) {
       final List<Anime> animes = <Anime>[];
       for (final dynamic raw in rawAnimes) {
@@ -844,6 +903,7 @@ class ImportService {
     final List<_MediaRef> mangaRefs = <_MediaRef>[];
     final List<_MediaRef> animeRefs = <_MediaRef>[];
     final List<_MediaRef> bookRefs = <_MediaRef>[];
+    final List<_MediaRef> albumRefs = <_MediaRef>[];
 
     for (final Map<String, dynamic> item in items) {
       final MediaType? mediaType =
@@ -882,6 +942,8 @@ class ImportService {
           animeRefs.add(ref);
         case MediaType.book:
           bookRefs.add(ref);
+        case MediaType.audio:
+          albumRefs.add(ref);
         case MediaType.custom:
           break;
       }
@@ -986,6 +1048,7 @@ class ImportService {
     );
     final List<Book> books =
         await _fetchBookRefs(bookRefs, onProgress: onProgress);
+    final List<AudioItem> albums = await _fetchAlbumRefs(albumRefs);
 
     final int totalMedia = games.length +
         movies.length +
@@ -993,7 +1056,8 @@ class ImportService {
         visualNovels.length +
         mangas.length +
         animes.length +
-        books.length;
+        books.length +
+        albums.length;
     onProgress?.call(ImportProgress(
       stage: ImportStage.cachingMedia,
       current: 0,
@@ -1044,6 +1108,32 @@ class ImportService {
       await _database.bookDao.upsertBooks(books);
       reportCached(books.length);
     }
+
+    if (albums.isNotEmpty) {
+      await _database.audioDao.upsertAudioItems(albums);
+      reportCached(albums.length);
+    }
+  }
+
+  /// Albums resolve by their release-group MBID (`native_id`); the fnv hash in
+  /// `external_id` can't be turned back, so files without one stay unresolved.
+  Future<List<AudioItem>> _fetchAlbumRefs(List<_MediaRef> refs) async {
+    if (refs.isEmpty) return const <AudioItem>[];
+    final List<AudioItem> result = <AudioItem>[];
+    for (final _MediaRef ref in refs) {
+      try {
+        // Podcast feed ids are the external id itself; albums resolve by MBID.
+        final AudioItem? item = ref.source == DataSource.podcastIndex
+            ? await _podcastIndexApi?.getPodcast(ref.externalId)
+            : ref.nativeId != null
+                ? await _musicBrainzApi?.getReleaseGroup(ref.nativeId!)
+                : null;
+        if (item != null) result.add(item);
+      } on Exception catch (e) {
+        _log.warning('Failed to fetch audio item ${ref.externalId}: $e');
+      }
+    }
+    return result;
   }
 
   Future<Movie?> _fetchMovie(_MediaRef ref) async {
@@ -1443,6 +1533,37 @@ class ImportService {
         watchedAtSec is int ? watchedAtSec * 1000 : null,
       );
     }
+  }
+
+  /// Restores `_listened_tracks` marks onto the target collection; the batch
+  /// insert is conflict-ignoring, so re-imports merge, not duplicate.
+  Future<void> _importListenedTracks(
+    Map<String, dynamic> itemData,
+    int collectionId,
+    CollectionItem parsed,
+  ) async {
+    if (parsed.mediaType != MediaType.audio) return;
+    final List<dynamic>? raw = itemData['_listened_tracks'] as List<dynamic>?;
+    if (raw == null || raw.isEmpty) return;
+    final List<(int, int, int?)> tracks = <(int, int, int?)>[
+      for (final dynamic entry in raw)
+        if (entry is Map<String, dynamic> &&
+            entry['disc'] is int &&
+            entry['track'] is int)
+          (
+            entry['disc'] as int,
+            entry['track'] as int,
+            entry['listened_at'] is int
+                ? (entry['listened_at'] as int) * 1000
+                : null,
+          ),
+    ];
+    await _database.audioDao.markTracksListenedAt(
+      collectionId,
+      parsed.source ?? DataSource.musicBrainz,
+      parsed.externalId,
+      tracks,
+    );
   }
 
   /// [itemIdMapping]: item keys (see [_itemMappingKeys]) -> collection_item_id.

@@ -1,13 +1,9 @@
-
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Строка прогресса для трекинга (эпизоды, главы, тома).
-///
-/// Переиспользуется в [MangaProgressSection] и [AnimeProgressSection].
 class MediaProgressRow extends StatelessWidget {
   const MediaProgressRow({
     required this.label,
@@ -19,20 +15,18 @@ class MediaProgressRow extends StatelessWidget {
     super.key,
   });
 
-  /// Метка (например "Chapters", "Episodes").
   final String label;
 
   final int current;
 
-  /// Общее количество (null если неизвестно).
+  /// null when the total is unknown.
   final int? total;
 
   final Color accentColor;
 
-  /// Callback при нажатии "+1".
   final VoidCallback onIncrement;
 
-  /// Callback при нажатии на значение (редактирование).
+  /// Tapping the value opens the manual editor.
   final VoidCallback onEdit;
 
   @override

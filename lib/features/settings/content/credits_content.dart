@@ -22,11 +22,8 @@ typedef _Provider = ({
   String url,
 });
 
-/// Credits content: API-provider attribution (with logos) and licenses.
-///
-/// Each data provider is shown with its brand logo, accent and the media
-/// types it powers. Used standalone in the desktop sidebar and inside
-/// [CreditsScreen].
+/// API-provider attribution and licenses; used standalone in the desktop
+/// sidebar and inside [CreditsScreen].
 class CreditsContent extends StatelessWidget {
   const CreditsContent({super.key});
 
@@ -128,6 +125,18 @@ class CreditsContent extends StatelessWidget {
         description: l10n.creditsHardcoverAttribution,
         linkLabel: 'hardcover.app',
         url: 'https://hardcover.app/',
+      ),
+      (
+        source: DataSource.musicBrainz,
+        description: l10n.creditsMusicBrainzAttribution,
+        linkLabel: 'musicbrainz.org',
+        url: 'https://musicbrainz.org/',
+      ),
+      (
+        source: DataSource.podcastIndex,
+        description: l10n.creditsPodcastIndexAttribution,
+        linkLabel: 'podcastindex.org',
+        url: 'https://podcastindex.org/',
       ),
     ];
 

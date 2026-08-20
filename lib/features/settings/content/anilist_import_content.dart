@@ -26,7 +26,6 @@ import '../widgets/settings_group.dart';
 
 /// Form + progress UI for importing an AniList user's public anime/manga lists.
 class AniListImportContent extends ConsumerStatefulWidget {
-  /// Creates an [AniListImportContent].
   const AniListImportContent({super.key});
 
   @override

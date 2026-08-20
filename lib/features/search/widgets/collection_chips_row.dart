@@ -14,27 +14,11 @@ import '../../collections/providers/collections_provider.dart';
 /// Row height passed to [ScrollableRowWithArrows] for arrow positioning.
 const double _kRowHeight = 32;
 
-/// Horizontal, multi-select row of collection chips under the Search tab's
-/// filter bar.
-///
-/// Nothing selected → the normal flow (tap a result to open its details and add
-/// via the in-sheet picker). One or more selected → tapping a result adds it
-/// straight into every selected collection, no extra dialog. A pinned counter
-/// at the leading edge shows how many are selected (visible even when the
-/// chips have scrolled off-screen) and clears the selection on tap. Reads and
-/// writes [searchTargetCollectionsProvider].
-///
-/// Only real collections are offered (Uncategorized is never a target here).
-/// When there are no collections the row collapses to nothing.
-///
-/// Visually reuses [FilterTabChip] — the same flat underline-tab chip as the
-/// media-type subfilters — tinted with the brand accent.
+/// Nothing selected keeps the normal add-through-details flow; one or more
+/// makes a tap add the result straight into every selected collection.
 class CollectionChipsRow extends ConsumerStatefulWidget {
-  /// Creates a [CollectionChipsRow].
-  ///
-  /// [targetProvider] is the selection it reads/writes; defaults to the Search
-  /// tab's [searchTargetCollectionsProvider]. Other surfaces (e.g. the
-  /// Recommendations tab) pass their own so the selections stay independent.
+  /// [targetProvider] defaults to the Search tab's selection; other surfaces
+  /// pass their own so the two stay independent.
   const CollectionChipsRow({this.targetProvider, super.key});
 
   /// Selection provider; `null` falls back to [searchTargetCollectionsProvider].

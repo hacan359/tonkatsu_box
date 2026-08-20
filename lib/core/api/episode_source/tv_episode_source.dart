@@ -13,10 +13,8 @@ import 'tmdb_episode_source.dart';
 import 'tvdb_episode_source.dart';
 import 'tvmaze_episode_source.dart';
 
-/// Season/episode data source for the episode tracker and release calendar.
-///
-/// Implementations wrap one provider's API and return the shared
-/// [TvShow]/[TvSeason]/[TvEpisode] models with [source] stamped.
+/// Season/episode data source for the episode tracker and release calendar;
+/// each implementation wraps one provider's API, stamping its [DataSource].
 abstract class TvEpisodeSource {
   Future<TvShow?> getShow(int showId);
 

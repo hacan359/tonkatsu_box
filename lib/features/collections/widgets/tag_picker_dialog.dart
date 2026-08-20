@@ -3,24 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/constants/platform_features.dart';
-import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/theme/app_typography.dart';
 import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
+import 'tag_row.dart';
+import 'tag_search_list.dart';
 
-/// Multi-select picker over the global tag set.
-///
-/// One text field drives both search (filters the list as you type) and
-/// quick-create: when the query matches no existing tag exactly, an explicit
-/// "Create «query»" row appears at the top of the list.
-///
-/// Returns the chosen tag id set, or `null` when dismissed.
-///
-/// A bulk caller opens it with an empty [initialSelection] — a selection's
-/// items carry different tags, so there is no common state to show — and
-/// passes its own [title] and [confirmLabel], because there an unchecked box
-/// means "leave alone" rather than the single-item "remove this tag".
+/// Multi-select picker over the global tag set; pops the chosen id set, or
+/// null when dismissed. Row edits ([TagRow]) are global and instant.
 class TagPickerDialog extends ConsumerStatefulWidget {
   const TagPickerDialog({
     required this.initialSelection,
@@ -29,12 +19,15 @@ class TagPickerDialog extends ConsumerStatefulWidget {
     super.key,
   });
 
+  /// Bulk callers pass an empty set — their items carry different tags, so
+  /// an unchecked box there means "leave alone", not "remove this tag".
   final Set<int> initialSelection;
 
   /// Defaults to the neutral "select tags" wording.
   final String? title;
 
-  /// Defaults to "Apply".
+  /// Defaults to "Apply". Bulk callers pass their own label — there an
+  /// unchecked box means "leave alone", not "remove this tag".
   final String? confirmLabel;
 
   static Future<Set<int>?> show(
@@ -59,58 +52,42 @@ class TagPickerDialog extends ConsumerStatefulWidget {
 
 class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
   late final Set<int> _selected = Set<int>.of(widget.initialSelection);
-  final TextEditingController _searchController = TextEditingController();
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  String get _query => _searchController.text.trim();
-
-  Future<void> _createTag() async {
-    final String name = _query;
-    if (name.isEmpty) return;
+  Future<void> _createTag(String name) async {
     final int id = await ref
         .read(globalTagsProvider.notifier)
         .resolveOrCreate(name);
     if (!mounted) return;
+    setState(() => _selected.add(id));
+  }
+
+  void _toggle(int tagId) {
     setState(() {
-      _selected.add(id);
-      _searchController.clear();
+      if (!_selected.remove(tagId)) {
+        _selected.add(tagId);
+      }
     });
   }
 
-  /// Enter selects the exact match when there is one, otherwise creates.
-  Future<void> _submitQuery(List<Tag> tags) async {
-    if (_query.isEmpty) return;
-    final Tag? exact = Tag.findByNameCaseInsensitive(tags, _query);
-    if (exact != null) {
-      setState(() {
-        _selected.add(exact.id);
-        _searchController.clear();
-      });
-      return;
-    }
-    await _createTag();
+  Future<void> _deleteTag(Tag tag) async {
+    final bool deleted = await TagEditActions.delete(context, ref, tag);
+    if (!deleted || !mounted) return;
+    setState(() => _selected.remove(tag.id));
+  }
+
+  void _apply() {
+    // A row's delete is global and instant — never hand a dead id back.
+    final List<Tag>? tags = ref.read(globalTagsProvider).valueOrNull;
+    final Set<int> result = tags == null
+        ? _selected
+        : _selected.intersection(<int>{for (final Tag t in tags) t.id});
+    Navigator.of(context).pop(result);
   }
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final List<Tag> tags =
-        ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
-
-    final String query = _query;
-    final String lowerQuery = query.toLowerCase();
-    final List<Tag> visibleTags = query.isEmpty
-        ? tags
-        : tags
-            .where((Tag t) => t.name.toLowerCase().contains(lowerQuery))
-            .toList();
-    final bool offerCreate = query.isNotEmpty &&
-        Tag.findByNameCaseInsensitive(tags, query) == null;
+    final Map<int, int> usage = ref.watch(tagUsageCountsProvider);
 
     return AlertDialog(
       titlePadding: const EdgeInsets.fromLTRB(
@@ -127,84 +104,30 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
       ),
       title: Text(widget.title ?? l.tagPickerTitle),
       content: SizedBox(
-        width: 360,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: _searchController,
-                // Desktop opens straight into typing; on mobile that pops the
-                // keyboard the moment the dialog appears, so wait for a tap.
-                autofocus: !kIsMobile,
-                decoration: InputDecoration(
-                  hintText: l.tagPickerSearchHint,
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  suffixIcon: query.isEmpty
-                      ? null
-                      : IconButton(
-                          icon: const Icon(Icons.clear, size: 18),
-                          visualDensity: VisualDensity.compact,
-                          onPressed: () =>
-                              setState(_searchController.clear),
-                        ),
-                  isDense: true,
-                ),
-                onChanged: (_) => setState(() {}),
-                onSubmitted: (_) => _submitQuery(tags),
+        width: 400,
+        child: TagSearchList(
+          onCreate: _createTag,
+          onSubmitExisting: (Tag tag) =>
+              setState(() => _selected.add(tag.id)),
+          rowBuilder: (Tag tag, int index, bool reorderable) => TagRow(
+            key: ValueKey<int>(tag.id),
+            tag: tag,
+            usageCount: usage[tag.id] ?? 0,
+            leading: SizedBox(
+              width: 24,
+              height: 24,
+              child: Checkbox(
+                value: _selected.contains(tag.id),
+                visualDensity: VisualDensity.compact,
+                onChanged: (_) => _toggle(tag.id),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              if (offerCreate) _buildCreateTile(l, query),
-              if (visibleTags.isEmpty && !offerCreate)
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Text(
-                    l.tagNone,
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.textTertiary),
-                  ),
-                )
-              else
-                for (final Tag tag in visibleTags)
-                  CheckboxListTile(
-                    dense: true,
-                    visualDensity: VisualDensity.compact,
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    value: _selected.contains(tag.id),
-                    onChanged: (bool? checked) {
-                      setState(() {
-                        if (checked ?? false) {
-                          _selected.add(tag.id);
-                        } else {
-                          _selected.remove(tag.id);
-                        }
-                      });
-                    },
-                    title: Row(
-                      children: <Widget>[
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: tag.color != null
-                                ? Color(tag.color!)
-                                : AppColors.brand,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            tag.name,
-                            style: AppTypography.bodySmall,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-            ],
+            ),
+            onTap: () => _toggle(tag.id),
+            onColorTap: () => TagEditActions.changeColor(context, ref, tag),
+            onTextColorTap: () =>
+                TagEditActions.changeTextColor(context, ref, tag),
+            onRename: () => TagEditActions.rename(context, ref, tag),
+            onDelete: () => _deleteTag(tag),
           ),
         ),
       ),
@@ -214,37 +137,10 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
           child: Text(l.cancel),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(_selected),
+          onPressed: _apply,
           child: Text(widget.confirmLabel ?? l.apply),
         ),
       ],
-    );
-  }
-
-  Widget _buildCreateTile(S l, String query) {
-    return ListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      contentPadding: EdgeInsets.zero,
-      onTap: _createTag,
-      leading: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: AppColors.brand.withAlpha(30),
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.brand.withAlpha(120)),
-        ),
-        child: Icon(Icons.add, size: 16, color: AppColors.brand),
-      ),
-      title: Text(
-        l.tagCreateNamed(query),
-        style: AppTypography.bodySmall.copyWith(
-          color: AppColors.brand,
-          fontWeight: FontWeight.w500,
-        ),
-        overflow: TextOverflow.ellipsis,
-      ),
     );
   }
 }

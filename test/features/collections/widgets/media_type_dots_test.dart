@@ -63,9 +63,9 @@ void main() {
         MediaTypeDots(types: MediaType.values.toList()),
       );
 
-      // 9 types: 4 dots + one "+5" badge, so a single type is never
+      // 10 types: 4 dots + one "+6" badge, so a single type is never
       // replaced by the counter alone.
-      expect(find.text('+5'), findsOneWidget);
+      expect(find.text('+6'), findsOneWidget);
     });
 
     testWidgets('should render without exceptions', (WidgetTester tester) async {

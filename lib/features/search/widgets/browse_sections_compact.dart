@@ -18,9 +18,8 @@ import '../providers/browse_provider.dart';
 import 'browse_card.dart';
 import 'source_error_strip.dart';
 
-/// Narrow-screen results layout for several sources: swipeable rails, one per
-/// provider. Kept apart from the desktop version so neither carries the other's
-/// metrics or the desktop-only scroll affordances.
+/// Swipeable rails, one per provider. Kept apart from the desktop layout so
+/// neither carries the other's metrics or scroll affordances.
 class BrowseSectionsCompact extends ConsumerWidget {
   const BrowseSectionsCompact({
     required this.onItemTap,

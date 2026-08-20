@@ -1,4 +1,3 @@
-
 import 'package:core/database/dao/collection_dao.dart';
 import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/database/dao/tier_list_dao.dart';
@@ -13,6 +12,7 @@ import 'package:core/models/game.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/item_status_logic.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,9 +38,8 @@ final AsyncNotifierProvider<CollectionsNotifier, List<Collection>>
   CollectionsNotifier.new,
 );
 
-/// Drops calendar entries and release subscriptions whose item left every
-/// collection, then refreshes the calendar. Runs after item / collection
-/// deletion — the entries are keyed by identity, not linked by FK.
+/// Runs after item / collection deletion: calendar entries and release
+/// subscriptions are keyed by identity, not linked by FK, so prune manually.
 Future<void> _pruneCalendarOrphans(Ref ref) async {
   await ref.read(calendarEntryDaoProvider).deleteOrphaned();
   await ref.read(trackedReleaseDaoProvider).deleteOrphaned();
@@ -331,35 +330,49 @@ class CollectionListViewModeNotifier extends Notifier<bool> {
 }
 
 const String _homeStatusFilterKey = 'home_status_filter';
+const String _homeStatusFiltersKey = 'home_status_filters';
 
-/// `null` means "All" (no filter); default `null`.
-final NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>
+/// An empty set means "All" (no filter); default empty.
+final NotifierProvider<HomeStatusFilterNotifier, Set<ItemStatus>>
     homeStatusFilterProvider =
-    NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>(
+    NotifierProvider<HomeStatusFilterNotifier, Set<ItemStatus>>(
   HomeStatusFilterNotifier.new,
 );
 
-/// Per-profile persistence: key `home_status_filter_{profileId}`.
-class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
+/// Per-profile persistence: key `home_status_filters_{profileId}`.
+class HomeStatusFilterNotifier extends Notifier<Set<ItemStatus>> {
   String get _prefsKey {
+    final String profileId = ref.read(currentProfileProvider).id;
+    return '${_homeStatusFiltersKey}_$profileId';
+  }
+
+  /// Single-status key written before the filter became multi-select.
+  String get _legacyPrefsKey {
     final String profileId = ref.read(currentProfileProvider).id;
     return '${_homeStatusFilterKey}_$profileId';
   }
 
   @override
-  ItemStatus? build() {
+  Set<ItemStatus> build() {
     final SharedPreferences prefs = ref.watch(sharedPreferencesProvider);
-    final String? value = prefs.getString(_prefsKey);
-    if (value == null) return null;
-    if (value == 'all') return null;
-    return ItemStatus.fromString(value);
+    final List<String>? values = prefs.getStringList(_prefsKey);
+    if (values != null) {
+      return values
+          .map(ItemStatus.tryFromString)
+          .whereType<ItemStatus>()
+          .toSet();
+    }
+    final String? legacy = prefs.getString(_legacyPrefsKey);
+    if (legacy == null || legacy == 'all') return <ItemStatus>{};
+    final ItemStatus? status = ItemStatus.tryFromString(legacy);
+    return status == null ? <ItemStatus>{} : <ItemStatus>{status};
   }
 
-  void setFilter(ItemStatus? status) {
-    state = status;
-    ref.read(sharedPreferencesProvider).setString(
+  void setFilter(Set<ItemStatus> statuses) {
+    state = statuses;
+    ref.read(sharedPreferencesProvider).setStringList(
       _prefsKey,
-      status?.value ?? 'all',
+      statuses.map((ItemStatus s) => s.value).toList(),
     );
   }
 }
@@ -392,17 +405,17 @@ class HomeFavoriteFilterNotifier extends Notifier<bool> {
   }
 }
 
-/// Collection IDs containing items with the selected status.
+/// Collection IDs containing items with any of the selected statuses.
 final FutureProvider<Set<int?>> filteredCollectionIdsProvider =
     FutureProvider<Set<int?>>((Ref ref) async {
-  final ItemStatus? status = ref.watch(homeStatusFilterProvider);
-  if (status == null) return const <int?>{};
+  final Set<ItemStatus> statuses = ref.watch(homeStatusFilterProvider);
+  if (statuses.isEmpty) return const <int?>{};
 
   // Watch collectionsProvider to recompute when underlying data changes.
   ref.watch(collectionsProvider);
 
   final CollectionDao dao = ref.read(collectionDaoProvider);
-  return dao.getCollectionIdsWithStatus(status);
+  return dao.getCollectionIdsWithStatuses(statuses);
 });
 
 /// `collectionId == null` manages uncategorized items.
@@ -486,10 +499,8 @@ class CollectionItemsNotifier
     );
   }
 
-  /// Replaces item [id] in the loaded list via [update], then re-applies the
-  /// active sort when a field that just changed feeds it ([affects]). Manual
-  /// order is never re-sorted. Local only — no DB reload, so the list doesn't
-  /// flash; the in-memory item must already carry the edited values.
+  /// Re-sorts only when a changed field feeds the active sort ([affects]);
+  /// manual order never re-sorts. Local only — no DB reload, so no flash.
   void _patchItem(
     int id,
     CollectionItem Function(CollectionItem) update, {
@@ -509,9 +520,8 @@ class CollectionItemsNotifier
     );
   }
 
-  /// Stamps last_activity_at = [now] for [id] so activity sorting reflects a
-  /// card edit. Status and explicit date edits stamp it through their own
-  /// writes, so they don't call this.
+  /// Stamps last_activity_at so activity sorting reflects a card edit. Status
+  /// and explicit date edits stamp it through their own writes.
   Future<void> _stampActivity(int id, DateTime now) =>
       _repository.updateItemActivityDates(id, lastActivityAt: now);
 
@@ -615,10 +625,8 @@ class CollectionItemsNotifier
     return true;
   }
 
-  /// When [coverBytes] != null, writes them into the cover cache (local on
-  /// desktop, the server's on web). [userComment] and [tags] are personal
-  /// fields written onto the created collection item; missing tags are
-  /// created automatically.
+  /// [coverBytes] go to the cover cache (local on desktop, the server's on
+  /// web); missing [tags] are created automatically.
   Future<bool> addCustomItem(
     CustomMedia customMedia, {
     Uint8List? coverBytes,
@@ -630,23 +638,29 @@ class CollectionItemsNotifier
       final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
       if (coverBytes != null) {
+        final String marker = CustomMedia.localCoverMarkerFor(
+          DateTime.now().millisecondsSinceEpoch,
+        );
         final bool saved = await cache.saveImageBytes(
           ImageType.customCover,
-          customId.toString(),
+          customCoverImageId(id: customId, coverUrl: marker),
           coverBytes,
         );
         // Marker in cover_url: CachedImage sees non-empty imageUrl and
         // resolves from cache without hitting the network.
         if (saved) {
           await _db.customMediaDao.update(
-            customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
+            customMedia.copyWith(id: customId, coverUrl: marker),
           );
         }
       } else if (customMedia.coverUrl != null &&
           customMedia.coverUrl!.isNotEmpty) {
         await cache.downloadImage(
           type: ImageType.customCover,
-          imageId: customId.toString(),
+          imageId: customCoverImageId(
+            id: customId,
+            coverUrl: customMedia.coverUrl,
+          ),
           remoteUrl: customMedia.coverUrl!,
         );
       }
@@ -672,7 +686,7 @@ class CollectionItemsNotifier
       ref.invalidate(tierListDetailProvider);
       return true;
     } catch (e, stack) {
-      debugPrint('addCustomItem error: $e\n$stack'); // TODO: remove after stabilization
+      debugPrint('addCustomItem error: $e\n$stack');
       return false;
     }
   }
@@ -760,9 +774,8 @@ class CollectionItemsNotifier
     _invalidateEpisodeTrackers(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
-    // Family-wide: covers the target collection's tier lists (where the item
-    // appears in the unranked pool) and global ones, not just lists the item
-    // was placed in.
+    // Family-wide: covers the target collection's tier lists (unranked pool)
+    // and global ones, not just lists the item was placed in.
     ref.invalidate(tierListDetailProvider);
 
     return (success: true, sourceEmpty: sourceEmpty);
@@ -783,9 +796,8 @@ class CollectionItemsNotifier
     ref.invalidate(tierListDetailProvider);
   }
 
-  /// In-memory tracker state survives the DAO-side mark transfer on move,
-  /// so the show would keep showing zero progress in the target collection
-  /// until restart. Invalidating the family reloads every live tracker.
+  /// In-memory tracker state survives the DAO-side mark transfer on move;
+  /// without invalidation the target collection shows zero progress.
   void _invalidateEpisodeTrackers(MediaType mediaType) {
     if (mediaType.mayUseEpisodeTracker) {
       ref.invalidate(episodeTrackerNotifierProvider);
@@ -810,6 +822,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedAnimeIdsProvider);
       case MediaType.book:
         ref.invalidate(collectedBookIdsProvider);
+      case MediaType.audio:
+        ref.invalidate(collectedAudioIdsProvider);
       case MediaType.custom:
         break; // Custom items have no collected-IDs provider.
     }
@@ -843,9 +857,8 @@ class CollectionItemsNotifier
     await setFavorite(id, isFavorite: !(target?.isFavorite ?? false));
   }
 
-  /// Persists [isFavorite] and patches local state without a reload. Also syncs
-  /// the All Items view so both stay consistent regardless of which screen
-  /// triggered the change.
+  /// Patches local state without a reload and syncs the All Items view so
+  /// both stay consistent regardless of which screen triggered the change.
   Future<void> setFavorite(int id, {required bool isFavorite}) async {
     final DateTime now = DateTime.now();
     await _repository.setItemFavorite(id, isFavorite: isFavorite);
@@ -866,9 +879,8 @@ class CollectionItemsNotifier
         .updateFavoriteLocally(id, isFavorite: isFavorite);
   }
 
-  // Bulk ops needing single-collection context (sort_order). Collection-agnostic
-  // bulk ops (remove/move/clone/status) live in `BulkOperations`
-  // (`helpers/bulk_operations.dart`) and are reused on All Items.
+  // Bulk ops needing single-collection context (sort_order); collection-
+  // agnostic ones (remove/move/clone/status) live in `BulkOperations`.
 
   /// Preserves relative order. Only meaningful with `sortMode == manual`.
   Future<void> moveItemsToTop(Iterable<int> ids) async {
@@ -995,8 +1007,7 @@ class CollectionItemsNotifier
     }
   }
 
-  /// For manga, auto-syncs status: notStarted/planned -> inProgress on first
-  /// chapter; -> completed at final chapter; -> notStarted when reset to 0;
+  /// For manga, auto-syncs status with chapter progress (in/completed/reset);
   /// `dropped` is never overwritten.
   Future<void> updateProgress(
     int id, {
@@ -1113,8 +1124,7 @@ class CollectionItemsNotifier
   }
 
   /// For books, auto-syncs status from the page read (stored in
-  /// `currentEpisode`): planned/notStarted -> inProgress past page 0,
-  /// -> completed at the last page; `dropped` is never overwritten.
+  /// `currentEpisode`); `dropped` is never overwritten.
   Future<void> _autoUpdateBookStatus(int id, int? newPageValue) async {
     final CollectionItem? item =
         state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
@@ -1243,9 +1253,8 @@ class CollectionItemsNotifier
     ref.invalidate(allItemsNotifierProvider);
   }
 
-  /// Manual rewatch-count edit; [count] is >= 0, or null to clear back to
-  /// "not tracked". Transitions into `completed` bump the count automatically
-  /// (see [updateStatus]); this is the override for everything else.
+  /// Manual override; null clears back to "not tracked". Transitions into
+  /// `completed` bump the count automatically (see [updateStatus]).
   Future<void> setRewatchCount(int id, int? count) async {
     assert(count == null || count >= 0, 'Count must be >= 0 or null');
     await _repository.updateItemRewatchCount(id, count);
@@ -1315,6 +1324,14 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
   return db.getCollectedItemInfos(MediaType.book);
+});
+
+/// fnv1a53(mbid) -> collection entries.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedAudioIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.audio);
 });
 
 /// anilist_id -> collection entries.

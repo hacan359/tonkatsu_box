@@ -20,7 +20,21 @@ enum ImageType {
 
   bookCover('book_covers'),
 
-  customCover('custom_covers');
+  audioCover('audio_covers'),
+
+  customCover('custom_covers'),
+
+  /// Collection hero backgrounds; on web they live in the server cache
+  /// because the browser has no filesystem for the desktop's hero folder.
+  collectionHero('collection_heroes'),
+
+  /// ScreenScraper media. On web the server fetches them: the media host
+  /// answers an error page without a CORS header and the tab sees nothing.
+  screenScraperMedia('screenscraper_media'),
+
+  /// Detail-screen backdrops, keyed by a hash of the source URL — the only
+  /// identity a raw provider URL has.
+  backdrop('backdrops');
 
   const ImageType(this.folder);
 

@@ -1,5 +1,3 @@
-// App typography.
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -103,17 +101,12 @@ abstract final class AppTypography {
   static double _lineHeight(TextStyle style, TextScaler textScaler) =>
       textScaler.scale(style.fontSize ?? 14) * (style.height ?? 1.0);
 
-  /// Source logo on a poster card, as a multiple of the subtitle font size.
   /// Lives here because it sets the subtitle row's height, which
   /// [posterTextBlockHeight] must budget for.
   static const double posterSourceLogoScale = 1.1;
 
-  /// Height of a poster card's text block — two title lines plus one subtitle
-  /// line — derived from the styles so it tracks the +1px bump and font scale.
-  ///
-  /// The subtitle row is as tall as the taller of its text and the source logo:
-  /// the logo is [posterSourceLogoScale] of the font size, so budgeting the
-  /// line height alone overflows a card that carries one.
+  /// The subtitle row is as tall as the taller of its text and the source logo,
+  /// so budgeting the line height alone overflows a card that carries a logo.
   static double posterTextBlockHeight({
     required bool compact,
     required TextScaler textScaler,

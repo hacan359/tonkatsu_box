@@ -1,15 +1,12 @@
-// Hero banner of a rich collection. Used as the `header` sliver in
-// `CollectionItemsView`: it scrolls away with the grid, not pinned on top.
-
-import 'dart:io';
-
 import 'package:core/models/collection.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../hero_image.dart';
 import 'default_hero_assets.dart';
+import 'hero_back_button.dart';
 
 /// When [heroAbsolutePath] is not set, falls back to a bundled default
 /// image, and to a transparent backdrop when none are bundled.
@@ -17,12 +14,16 @@ class RichHeroBanner extends StatelessWidget {
   const RichHeroBanner({
     required this.collection,
     this.heroAbsolutePath,
+    this.onBack,
     super.key,
   });
 
   final Collection collection;
 
   final String? heroAbsolutePath;
+
+  /// When set, the banner carries the screen's back control.
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +44,10 @@ class RichHeroBanner extends StatelessWidget {
         fit: StackFit.expand,
         children: <Widget>[
           if (hero != null) ...<Widget>[
-            _HeroImage.file(hero),
+            HeroCoverImage(provider: heroImageProviderFor(hero)),
             const _LeftScrim(),
           ] else if (defaultHeroAsset != null) ...<Widget>[
-            _HeroImage.asset(defaultHeroAsset),
+            HeroCoverImage(provider: AssetImage(defaultHeroAsset)),
             const _LeftScrim(),
           ] else
             const _EmptyHeroBackground(),
@@ -58,6 +59,19 @@ class RichHeroBanner extends StatelessWidget {
               isCompact: isCompact,
             ),
           ),
+          if (onBack != null)
+            Positioned(
+              top: AppSpacing.sm,
+              left: AppSpacing.sm,
+              child: HeroBackButton(
+                onTap: onBack!,
+                decoration: BoxDecoration(
+                  color: AppColors.scrim.withAlpha(0x99),
+                  shape: BoxShape.circle,
+                ),
+                iconColor: AppColors.onOverlay,
+              ),
+            ),
         ],
       ),
     );
@@ -71,35 +85,6 @@ class _EmptyHeroBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const SizedBox.expand();
-}
-
-class _HeroImage extends StatelessWidget {
-  const _HeroImage({required this.provider});
-
-  _HeroImage.file(String path) : provider = FileImage(File(path));
-  _HeroImage.asset(String path) : provider = AssetImage(path);
-
-  final ImageProvider provider;
-
-  @override
-  Widget build(BuildContext context) {
-    final double w = MediaQuery.sizeOf(context).width;
-    final double dpr = MediaQuery.devicePixelRatioOf(context);
-    // Quantize to 256px steps so small resizes don't bust the ImageCache.
-    final int rawCache = (w * dpr).round().clamp(480, 2560);
-    final int cacheW = ((rawCache + 128) ~/ 256) * 256;
-
-    return Image(
-      image: ResizeImage(provider, width: cacheW),
-      // `cover` so the SizedBox is always fully painted, `topCenter` so the
-      // visible part of an overflowing image is the top half — banners
-      // typically have the focal subject above the horizon line.
-      fit: BoxFit.cover,
-      alignment: Alignment.topCenter,
-      filterQuality: FilterQuality.medium,
-      errorBuilder: (_, _, _) => ColoredBox(color: AppColors.surface),
-    );
-  }
 }
 
 /// Left-side gradient that keeps the text readable over the image.

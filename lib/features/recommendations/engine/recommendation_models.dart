@@ -1,12 +1,8 @@
 import 'sparse_vector.dart';
 
-/// A media title reduced to the signal the engine needs: weighted features plus
-/// the user's sentiment (rating / favorite).
-///
-/// Media-type agnostic — movies and TV (and later anime via a different
-/// adapter) all map onto this. The engine never sees a [Movie] or [TvShow].
+/// A title reduced to weighted features plus user sentiment. Media-type
+/// agnostic — the engine never sees a `Movie` or `TvShow`.
 class TasteTitle {
-  /// Creates a taste title.
   const TasteTitle({
     required this.id,
     required this.label,
@@ -34,7 +30,6 @@ class TasteTitle {
 
 /// A candidate scored against the taste profile.
 class ScoredTitle {
-  /// Creates a scored title.
   const ScoredTitle({
     required this.id,
     required this.label,
@@ -44,7 +39,6 @@ class ScoredTitle {
   /// Identity matching the candidate's [TasteTitle.id].
   final String id;
 
-  /// Display name.
   final String label;
 
   /// Final score (higher is a better match).
@@ -53,7 +47,6 @@ class ScoredTitle {
 
 /// One direction of taste — a centroid plus the titles that formed it.
 class TasteCluster {
-  /// Creates a taste cluster.
   const TasteCluster({
     required this.centroid,
     required this.members,
@@ -73,7 +66,6 @@ class TasteCluster {
 /// The learned taste profile: clusters of liked titles, an optional anti-signal
 /// centroid, and the IDF table used to vectorize everything.
 class TasteProfile {
-  /// Creates a taste profile.
   const TasteProfile({
     required this.clusters,
     required this.dislikedCenter,
@@ -99,7 +91,6 @@ class TasteProfile {
 
 /// A row of recommendations grouped under one taste cluster.
 class RecommendationRow {
-  /// Creates a recommendation row.
   const RecommendationRow({
     required this.becauseTitles,
     required this.topGenres,

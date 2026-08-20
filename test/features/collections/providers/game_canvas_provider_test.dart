@@ -74,11 +74,8 @@ void main() {
       fail('Canvas did not initialise within 50 microtasks');
     }
 
-    // Regression: the per-item canvas (opened from a single collection item)
-    // must copy every media-type-specific field through to its CanvasItem.
-    // Anime was historically forgotten in the copyWith call and the canvas
-    // opened with an empty card (no cover image, no title). When a new media
-    // type is added, mirror it here so the same regression can't slip in.
+    // Regression: a media-type field missing from the copyWith leaves the
+    // per-item canvas card empty. Mirror every new media type here.
 
     test('should propagate game data', () async {
       const Game testGame = Game(id: 100, name: 'Hades');

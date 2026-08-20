@@ -10,12 +10,8 @@ import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
 import '../utils/filter_ui.dart';
 
-/// Desktop-only row of providers under the filter bar. On narrow screens the
-/// vertical budget does not allow it, so sources live in the filter sheet.
-///
-/// Dimmed means out of this query: either switched off, or unable to answer the
-/// picked shared value — showing that is what keeps a shortened result set from
-/// reading as "nothing found".
+/// Desktop only — narrow screens keep sources in the filter sheet. Dimmed means
+/// out of this query, which stops a short result set reading as "nothing found".
 class SourceChipsRow extends ConsumerWidget {
   const SourceChipsRow({super.key});
 

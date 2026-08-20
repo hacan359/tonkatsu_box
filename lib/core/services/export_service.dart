@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/database/dao/tracker_dao.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:core/models/canvas_connection.dart';
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/canvas_viewport.dart';
@@ -120,9 +121,8 @@ class ExportService {
     );
   }
 
-  /// Creates a v2 full export (.xcollx): items, collection canvas, per-item
-  /// canvas, images and full media data (Game/Movie/TvShow) for offline
-  /// import. Requires [canvasRepository] for the canvas data.
+  /// Full export (.xcollx): items, canvases, images and full media data for
+  /// offline import. Requires [canvasRepository] for the canvas data.
   Future<XcollFile> createFullExport(
     Collection collection,
     List<CollectionItem> items,
@@ -134,49 +134,41 @@ class ExportService {
             i.toExport(includeUserData: includeUserData))
         .toList();
 
-    // Collection-level canvas
     ExportCanvas? canvas;
     if (_canvasRepository != null) {
       canvas = await _buildCollectionCanvas(collectionId);
     }
 
-    // Per-item canvas
     if (_canvasRepository != null) {
       await _attachPerItemCanvas(items, exportItems);
     }
 
-    // Collect cached cover images
     Map<String, String> images = <String, String>{};
     if (_imageCacheService != null) {
       images = await _collectCachedImages(items);
     }
 
-    // Collect canvas images (from collection and per-item canvases)
     if (_imageCacheService != null && _canvasRepository != null) {
       final Map<String, String> canvasImages =
           await _collectCanvasImages(collectionId, items);
       images.addAll(canvasImages);
     }
 
-    // Collect hero image (if set)
     await _collectHeroImage(collection, images);
 
-    // Per-item marks (likes/notes) and watch progress — user data only
     if (includeUserData) {
       await _attachItemMarks(items, exportItems);
       await _attachWatchedEpisodes(collectionId, items, exportItems);
+      await _attachListenedTracks(collectionId, items, exportItems);
     }
 
-    // Collect full media data for offline import (includes tv_seasons)
     final Map<String, dynamic> media = await _collectMediaData(items);
 
-    // Collect tier list data
     List<Map<String, dynamic>>? tierLists;
     if (_database != null) {
       tierLists = await _collectTierListData(collectionId);
     }
 
-    // Collect tag data and enrich items with tag names for import resolution
     List<Map<String, dynamic>>? tags;
     if (_database != null) {
       final _TagExportResult tagResult =
@@ -192,7 +184,6 @@ class ExportService {
       }
     }
 
-    // Collect tracker data (RA progress) for games — only with user data
     List<Map<String, dynamic>>? trackerData;
     if (includeUserData && _trackerDao != null) {
       trackerData = await _collectTrackerData(items);
@@ -224,6 +215,9 @@ class ExportService {
   ) async {
     final String? fileName = collection.heroImagePath;
     if (fileName == null || _heroService == null) return;
+    // On web `resolve` yields a server URL and File() throws in the browser;
+    // the hero stays on the server, so the export just omits it there.
+    if (kIsWebBuild) return;
     final String? absPath = _heroService.resolve(fileName);
     if (absPath == null) return;
     final File file = File(absPath);
@@ -298,10 +292,8 @@ class ExportService {
     }
   }
 
-  /// Attaches per-item marks (likes/notes) under the `_marks` key. Requires a
-  /// database; no-op when unavailable. Only invoked for user-data exports.
-  /// Fetches the exported items' marks in one query and groups by item to
-  /// avoid an N+1.
+  /// Attaches `_marks` (likes/notes) for user-data exports: one query for all
+  /// items, grouped in memory to avoid an N+1. No-op without a database.
   Future<void> _attachItemMarks(
     List<CollectionItem> items,
     List<Map<String, dynamic>> exportItems,
@@ -357,6 +349,35 @@ class ExportService {
     }
   }
 
+  /// Listened marks live in `listened_tracks`, not on the item — nest them
+  /// under `_listened_tracks` so music progress survives export/import.
+  Future<void> _attachListenedTracks(
+    int collectionId,
+    List<CollectionItem> items,
+    List<Map<String, dynamic>> exportItems,
+  ) async {
+    final DatabaseService? db = _database;
+    if (db == null) return;
+    for (int i = 0; i < items.length; i++) {
+      final CollectionItem item = items[i];
+      if (item.mediaType != MediaType.audio) continue;
+      final DataSource source = item.source ?? DataSource.musicBrainz;
+      final Map<(int, int), DateTime?> listened = await db.audioDao
+          .getListenedTracks(collectionId, source, item.externalId);
+      if (listened.isEmpty) continue;
+      exportItems[i]['_listened_tracks'] = <Map<String, dynamic>>[
+        for (final MapEntry<(int, int), DateTime?> e in listened.entries)
+          <String, dynamic>{
+            'disc': e.key.$1,
+            'track': e.key.$2,
+            'listened_at': e.value != null
+                ? e.value!.millisecondsSinceEpoch ~/ 1000
+                : null,
+          },
+      ];
+    }
+  }
+
   /// Collects covers already present in the local cache (nothing is
   /// downloaded). Key is '{ImageType.folder}/{externalId}', value is base64.
   Future<Map<String, String>> _collectCachedImages(
@@ -393,11 +414,9 @@ class ExportService {
     final CanvasRepository repo = _canvasRepository!;
     final Map<String, String> images = <String, String>{};
 
-    // Collection-level canvas items
     final List<CanvasItem> allCanvasItems =
         await repo.getItems(collectionId);
 
-    // Per-item canvas items
     for (final CollectionItem item in items) {
       if (item.id == 0) continue;
       final List<CanvasItem> perItemItems =
@@ -405,7 +424,6 @@ class ExportService {
       allCanvasItems.addAll(perItemItems);
     }
 
-    // Collect images from image-type canvas items
     for (final CanvasItem canvasItem in allCanvasItems) {
       if (canvasItem.itemType != CanvasItemType.image) continue;
 
@@ -438,9 +456,8 @@ class ExportService {
     return hash.toRadixString(16).padLeft(8, '0');
   }
 
-  /// Collects full Game/Movie/TvShow/TvSeason/TvEpisode data so that import
-  /// can run offline without hitting the IGDB/TMDB APIs. Seasons and episodes
-  /// come from the DB cache for every tvShow and animation-tvShow.
+  /// Full media data so import can run offline without IGDB/TMDB; seasons
+  /// and episodes come from the DB cache for every tvShow-like item.
   Future<Map<String, dynamic>> _collectMediaData(
     List<CollectionItem> items,
   ) async {
@@ -465,9 +482,12 @@ class ExportService {
     // Keyed by `source:externalId` — ids from different providers can collide.
     final Map<String, Map<String, dynamic>> animes =
         <String, Map<String, dynamic>>{};
+    final Map<String, Map<String, dynamic>> albums =
+        <String, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> customItems =
         <int, Map<String, dynamic>>{};
     final Set<(DataSource, int)> tvShowKeys = <(DataSource, int)>{};
+    final Set<(DataSource, int)> audioKeys = <(DataSource, int)>{};
     final Set<int> platformIds = <int>{};
 
     for (final CollectionItem item in items) {
@@ -536,6 +556,17 @@ class ExportService {
           if (item.book != null && !books.containsKey(bookKey)) {
             books[bookKey] = item.book!.toExport();
           }
+        case MediaType.audio:
+          final String albumKey =
+              '${(item.audioItem?.source ?? DataSource.musicBrainz).name}:'
+              '${item.externalId}';
+          if (item.audioItem != null && !albums.containsKey(albumKey)) {
+            albums[albumKey] = item.audioItem!.toExport();
+          }
+          audioKeys.add((
+            item.audioItem?.source ?? DataSource.musicBrainz,
+            item.externalId,
+          ));
         case MediaType.anime:
           final String animeKey =
               '${(item.anime?.source ?? DataSource.anilist).name}:'
@@ -579,6 +610,21 @@ class ExportService {
       }
     }
 
+    // AudioItem track lists from the cache, so an offline import restores the
+    // song list (titles, lengths) without a MusicBrainz round-trip.
+    final List<Map<String, dynamic>> allTracks = <Map<String, dynamic>>[];
+    if (_database != null && audioKeys.isNotEmpty) {
+      for (final (DataSource source, int audioId) in audioKeys) {
+        final List<AudioTrack> tracks =
+            await _database.audioDao.getAudioTracks(audioId, source: source);
+        for (final AudioTrack track in tracks) {
+          final Map<String, dynamic> data = track.toDb();
+          data.remove('cached_at');
+          allTracks.add(data);
+        }
+      }
+    }
+
     final List<Map<String, dynamic>> allPlatforms = <Map<String, dynamic>>[];
     if (_database != null && platformIds.isNotEmpty) {
       final List<model.Platform> platforms =
@@ -594,6 +640,8 @@ class ExportService {
         vns.isEmpty &&
         mangas.isEmpty &&
         books.isEmpty &&
+        albums.isEmpty &&
+        allTracks.isEmpty &&
         animes.isEmpty &&
         allSeasons.isEmpty &&
         allEpisodes.isEmpty &&
@@ -611,6 +659,8 @@ class ExportService {
       if (vns.isNotEmpty) 'visual_novels': vns.values.toList(),
       if (mangas.isNotEmpty) 'mangas': mangas.values.toList(),
       if (books.isNotEmpty) 'books': books.values.toList(),
+      if (albums.isNotEmpty) 'audio_items': albums.values.toList(),
+      if (allTracks.isNotEmpty) 'audio_tracks': allTracks,
       if (animes.isNotEmpty) 'animes': animes.values.toList(),
       if (customItems.isNotEmpty)
         'custom_items': customItems.values.toList(),
@@ -637,9 +687,8 @@ class ExportService {
     return xcoll.toJsonString();
   }
 
-  /// [format] selects the export mode:
-  /// [ExportFormat.light] → `.xcoll` (metadata + item IDs),
-  /// [ExportFormat.full] → `.xcollx` (+ canvas + images).
+  /// [format] selects `.xcoll` ([ExportFormat.light]: metadata + item IDs)
+  /// or `.xcollx` ([ExportFormat.full]: + canvas + images).
   Future<ExportResult> exportToFile(
     Collection collection,
     List<CollectionItem> items, {
@@ -723,9 +772,8 @@ class ExportService {
     }
   }
 
-  /// Collects tier lists bound to the collection. Entries are enriched with
-  /// `external_id` and `media_type` so import can resolve them, since
-  /// `collection_item_id` changes on import.
+  /// Entries are enriched with `external_id`/`media_type` so import can
+  /// resolve them — `collection_item_id` changes on import.
   Future<List<Map<String, dynamic>>?> _collectTierListData(
     int collectionId,
   ) async {

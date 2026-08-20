@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('should contain 9 значений', () {
-        expect(MediaType.values.length, 9);
+      test('should contain 10 values', () {
+        expect(MediaType.values.length, 10);
       });
 
       test('should contain game', () {
@@ -35,6 +35,10 @@ void main() {
       test('should contain anime', () {
         expect(MediaType.values.contains(MediaType.anime), isTrue);
       });
+
+      test('should contain audio', () {
+        expect(MediaType.values.contains(MediaType.audio), isTrue);
+      });
     });
 
     group('isTvBacked', () {
@@ -49,7 +53,7 @@ void main() {
     });
 
     group('isMultiSource', () {
-      test('true only for manga, anime, tvShow, movie and book', () {
+      test('true only for manga, anime, tvShow, movie, book and audio', () {
         for (final MediaType type in MediaType.values) {
           expect(
             type.isMultiSource,
@@ -57,7 +61,8 @@ void main() {
                 type == MediaType.anime ||
                 type == MediaType.tvShow ||
                 type == MediaType.movie ||
-                type == MediaType.book,
+                type == MediaType.book ||
+                type == MediaType.audio,
             reason: type.name,
           );
         }
@@ -166,6 +171,12 @@ void main() {
 
         expect(result, MediaType.anime);
       });
+
+      test('should return audio when parsing "audio"', () {
+        final MediaType result = MediaType.fromString('audio');
+
+        expect(result, MediaType.audio);
+      });
     });
 
     group('tryFromString', () {
@@ -209,6 +220,10 @@ void main() {
 
       test('anime должен отображаться как "Anime"', () {
         expect(MediaType.anime.displayLabel, 'Anime');
+      });
+
+      test('should display audio as "Audio"', () {
+        expect(MediaType.audio.displayLabel, 'Audio');
       });
     });
   });

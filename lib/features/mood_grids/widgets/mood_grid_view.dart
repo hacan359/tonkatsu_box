@@ -63,9 +63,8 @@ class _MoodGridViewState extends State<MoodGridView> {
     };
     final bool desktop = !kIsMobile;
 
-    // Two interactive scrollbars over the nested scroll views; the
-    // horizontal one listens to the inner (depth 1) view. Mouse drag pans
-    // the grid on desktop, where the wheel only serves the vertical axis.
+    // The horizontal scrollbar listens to the inner (depth 1) view. Mouse
+    // drag pans on desktop, where the wheel only serves the vertical axis.
     return ScrollConfiguration(
       behavior: ScrollConfiguration.of(context).copyWith(
         dragDevices: <PointerDeviceKind>{

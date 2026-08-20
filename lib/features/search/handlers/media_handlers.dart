@@ -1,3 +1,5 @@
+import 'package:core/models/audio_item.dart';
+import 'package:core/models/audio_track.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
@@ -14,6 +16,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
+import '../../../core/api/musicbrainz_api.dart';
+import '../../../core/api/podcast_index_api.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/fantlab_api.dart';
 import '../../../core/api/openlibrary_api.dart';
@@ -26,6 +30,8 @@ import '../../collections/widgets/hardcover_edition_picker.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/fantlab_book_sheet.dart';
 import '../widgets/hardcover_book_sheet.dart';
+import '../widgets/podcast_index_sheet.dart';
+import '../widgets/musicbrainz_album_sheet.dart';
 import '../widgets/google_books_more_by_author_section.dart';
 import '../widgets/item_details_sheet.dart';
 import 'game_handler.dart';
@@ -34,14 +40,8 @@ import 'movie_handler.dart';
 import 'simple_media_handler.dart';
 import 'tv_show_handler.dart';
 
-/// Registry that maps search results to their per-source handlers.
-///
-/// Resolution is two-level:
-/// 1. by `sourceId` — for the case when the same model type comes from
-///    multiple sources (e.g. `Game` from IGDB *and* a future RAWG) and
-///    needs source-specific logic;
-/// 2. fallback by `runtimeType` — the default when no source override is
-///    registered.
+/// Resolution is two-level: `sourceId` first (same model type can come from
+/// several sources), then a fallback by `runtimeType`.
 class MediaHandlers {
   MediaHandlers({
     required WidgetRef ref,
@@ -135,9 +135,8 @@ class MediaHandlers {
             ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
       ),
     );
-    // Edition the user picked in the Fantlab / Hardcover editions strip,
-    // tagged with its work id so it only applies to that book; consumed by
-    // `enrich`. Reset each time a book sheet opens.
+    // Edition picked in the editions strip, tagged with its work id so it
+    // only applies to that book; consumed by `enrich`, reset on sheet open.
     ({String workId, FantlabEdition edition})? pendingBookEdition;
     ({String bookId, HardcoverEdition edition})? pendingHardcoverEdition;
     _byType[Book] = SimpleMediaHandler<Book>(
@@ -200,9 +199,8 @@ class MediaHandlers {
               : null,
         );
       },
-      // On add, cache the full work so the collected item's detail page also
-      // carries the rich fields, then overlay the picked Fantlab edition (if
-      // any). Runs on the deliberate add, not on open.
+      // Cache the full work so the detail page keeps the rich fields, then
+      // overlay any picked edition. Runs on the deliberate add, not on open.
       enrich: (Book b) async {
         Book enriched = await _enrichBook(ref, b);
         final ({String workId, FantlabEdition edition})? pending =
@@ -217,10 +215,55 @@ class MediaHandlers {
         }
         return enriched;
       },
-      // Fantlab search rows are sparse (no cover / genres / description), so
-      // fetch the full work before opening the sheet. OpenLibrary rows are
-      // already rich, so they stay instant and lazy-load only the description.
+      // Fantlab rows are sparse — fetch the full work before the sheet opens;
+      // OpenLibrary rows are rich and only lazy-load the description.
       enrichBeforeDetails: (Book b) => b.source == DataSource.fantlab,
+    );
+    // Consumed by `enrich` so an add straight from the sheet re-fetches
+    // nothing; reset on each sheet open.
+    _PendingAlbumRelease? pendingAlbumRelease;
+    _byType[AudioItem] = SimpleMediaHandler<AudioItem>(
+      ref: ref,
+      adder: adder,
+      targetCollections: targetCollections,
+      mediaType: MediaType.audio,
+      imageType: ImageType.audioCover,
+      collectedProvider: collectedAudioIdsProvider,
+      externalIdOf: (AudioItem a) => a.id,
+      imageIdOf: (AudioItem a) => coverImageId(
+        mediaType: MediaType.audio,
+        externalId: a.id,
+        source: a.source,
+      ),
+      titleOf: (AudioItem a) => a.title,
+      imageUrlOf: (AudioItem a) => a.coverUrl,
+      upsert: (AudioItem a) => ref.read(audioDaoProvider).upsertAudioItem(a),
+      sourceOf: (AudioItem a) => a.source,
+      sheetBuilder: (AudioItem a, VoidCallback onAdd) => a.isPodcast
+          ? PodcastIndexSheet(podcast: a, onAddToCollection: onAdd)
+          : MusicBrainzAlbumSheet(
+              album: a,
+              onAddToCollection: onAdd,
+              onReleaseChanged: (
+                String mbid,
+                MusicBrainzRelease? release,
+                List<AudioTrack>? tracks,
+              ) =>
+                  pendingAlbumRelease = release == null
+                      ? null
+                      : (albumMbid: mbid, release: release, tracks: tracks),
+            ),
+      // On add: lookup extras plus the track/episode list, cached so the
+      // collection tracker works offline.
+      enrich: (AudioItem a) {
+        if (a.isPodcast) return _enrichPodcast(ref, a);
+        final _PendingAlbumRelease? pending = pendingAlbumRelease;
+        return _enrichAlbum(
+          ref,
+          a,
+          pending != null && pending.albumMbid == a.nativeId ? pending : null,
+        );
+      },
     );
   }
 
@@ -268,6 +311,90 @@ class MediaHandlers {
   }
 }
 
+/// Release picked in the sheet (auto or by hand) with its loaded tracks,
+/// tagged by the group MBID it belongs to.
+typedef _PendingAlbumRelease = ({
+  String albumMbid,
+  MusicBrainzRelease release,
+  List<AudioTrack>? tracks,
+});
+
+/// Full lookup + picked/default release + cached track list for an album on
+/// its way into a collection. Any failure keeps what the search row had.
+Future<AudioItem> _enrichAlbum(
+  WidgetRef ref,
+  AudioItem album,
+  _PendingAlbumRelease? pending,
+) async {
+  final MusicBrainzApi api = ref.read(musicBrainzApiProvider);
+  AudioItem enriched = album;
+  try {
+    final AudioItem? full = await api.getReleaseGroup(album.nativeId);
+    if (full != null) enriched = enriched.withLookupDetails(full);
+  } on Exception {
+    // Lookup extras are optional; the search row is already a valid album.
+  }
+  try {
+    final MusicBrainzRelease? release =
+        pending?.release ?? await api.getDefaultRelease(album.nativeId);
+    if (release == null) return enriched;
+
+    // The sheet already fetched this release's tracks — don't pay the
+    // rate-limited round-trip twice on the same add.
+    final List<AudioTrack> tracks = pending?.tracks ??
+        await api.getReleaseTracks(release.mbid, audioId: album.id);
+    await ref
+        .read(audioDaoProvider)
+        .replaceAudioTracks(album.id, album.source, tracks);
+
+    int? totalLengthMs;
+    for (final AudioTrack track in tracks) {
+      if (track.lengthMs != null) {
+        totalLengthMs = (totalLengthMs ?? 0) + track.lengthMs!;
+      }
+    }
+    return enriched.copyWith(
+      releaseMbid: release.mbid,
+      releaseTitle: release.title,
+      label: release.label,
+      format: release.format,
+      trackCount: tracks.isNotEmpty ? tracks.length : release.trackCount,
+      discCount: release.discCount,
+      totalLengthMs: totalLengthMs,
+    );
+  } on Exception {
+    return enriched;
+  }
+}
+
+/// Full feed record plus the newest episodes (≤1000), cached so the episode
+/// tracker works offline. Any failure keeps what the search row had.
+Future<AudioItem> _enrichPodcast(WidgetRef ref, AudioItem podcast) async {
+  final PodcastIndexApi api = ref.read(podcastIndexApiProvider);
+  // Independent calls — fail-soft individually, no reason to pay two RTTs.
+  final (AudioItem? full, List<AudioTrack> episodes) = await (
+    api.getPodcast(podcast.id).onError((_, _) => null),
+    api
+        .getEpisodes(podcast.id)
+        .onError((_, _) => const <AudioTrack>[]),
+  ).wait;
+
+  AudioItem enriched =
+      full != null ? podcast.withLookupDetails(full) : podcast;
+  if (episodes.isEmpty) return enriched;
+  try {
+    // Upsert, never replace: episodes older than the API's 1000-newest
+    // window must survive in the cache once seen.
+    await ref.read(audioDaoProvider).upsertTracks(episodes);
+    enriched = enriched.copyWith(
+      trackCount: enriched.trackCount ?? episodes.length,
+    );
+  } on Exception {
+    // Cache write is best-effort; the tracker refetches on first open.
+  }
+  return enriched;
+}
+
 /// Loads the full-work description for [book] from its provider. Used by the
 /// details sheet's lazy overview loader.
 Future<String?> _loadBookDescription(WidgetRef ref, Book book) async {
@@ -279,10 +406,8 @@ Future<String?> _loadBookDescription(WidgetRef ref, Book book) async {
   }
 }
 
-/// Returns the full-work version of [book] for caching on add. OpenLibrary
-/// search rows are overlaid (`withWorkDetails`) so their year / pages survive;
-/// Fantlab returns a complete record, so it replaces the search row outright.
-/// On any failure the original [book] is kept.
+/// OpenLibrary rows are overlaid (`withWorkDetails`) so year/pages survive;
+/// Fantlab records are complete and replace the row. Failure keeps [book].
 Future<Book> _enrichBook(WidgetRef ref, Book book) async {
   try {
     final Book? full = await _fetchFullBook(ref, book);

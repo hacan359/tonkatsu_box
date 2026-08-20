@@ -1,4 +1,4 @@
-// AniList caps perPage at 50.
+/// AniList caps perPage at 50.
 const int aniListMaxPerPage = 50;
 
 Iterable<List<int>> aniListBatches(List<int> ids) sync* {

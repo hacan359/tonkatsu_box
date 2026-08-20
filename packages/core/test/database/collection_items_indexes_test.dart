@@ -5,9 +5,8 @@ import 'package:core/models/media_type.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
 
-/// The partial unique indexes on `collection_items` are the only thing stopping
-/// a duplicate row, and each media type is covered by a hand-written `WHERE`.
-/// A type falling through every one, or into two, is silent corruption.
+/// Each media type is covered by a hand-written `WHERE` in the partial unique
+/// indexes; falling through every one, or into two, is silent corruption.
 void main() {
   setUpAll(() {
     sqfliteFfiInit();

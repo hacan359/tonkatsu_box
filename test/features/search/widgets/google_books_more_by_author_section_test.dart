@@ -1,6 +1,3 @@
-// Widget tests for GoogleBooksMoreByAuthorSection — render / exclude self /
-// empty / copy-on-tap. Display-only strip; it never adds books.
-
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';

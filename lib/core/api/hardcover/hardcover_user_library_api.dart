@@ -44,8 +44,7 @@ class HardcoverUserLibraryApi {
     return (aggregate['count'] as num?)?.toInt() ?? 0;
   }
 
-  /// Fetches the whole library of [username], one page per request. Only the
-  /// public part of another user's library arrives; the token owner's own
+  /// Another user's library arrives public-part only; the token owner's own
   /// library comes back complete (including `private_notes`).
   Future<List<HardcoverUserBookEntry>> fetchUserBooks({
     required String username,

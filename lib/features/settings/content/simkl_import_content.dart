@@ -31,13 +31,9 @@ import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
-/// Form + progress UI for importing a Simkl account (movies, shows, anime).
-///
-/// Auth is the Simkl PIN flow: the app shows a short code, the user confirms
-/// it at simkl.com/pin, and the screen polls until the token arrives. The
-/// token is kept in memory only, unless the user opts into persisting it.
+/// Auth is the Simkl PIN flow — the screen polls until the token arrives, and
+/// keeps it in memory only unless the user opts into persisting it.
 class SimklImportContent extends ConsumerStatefulWidget {
-  /// Creates a [SimklImportContent].
   const SimklImportContent({super.key});
 
   @override
@@ -185,9 +181,8 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
     );
   }
 
-  /// The app key (`client_id`) — shown only in builds without a baked-in
-  /// key (F-Droid, self-built): the import needs the user's own key there.
-  /// Official builds never render this block.
+  /// Only rendered in builds without a baked-in key (F-Droid, self-built),
+  /// where the import needs the user's own `client_id`.
   Widget _buildClientIdField(S l) {
     return Padding(
       padding: const EdgeInsets.symmetric(

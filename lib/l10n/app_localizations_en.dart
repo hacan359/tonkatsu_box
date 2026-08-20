@@ -99,6 +99,9 @@ class SEn extends S {
   String get statusWatching => 'Watching';
 
   @override
+  String get statusListening => 'Listening';
+
+  @override
   String get statusInProgress => 'In Progress';
 
   @override
@@ -114,6 +117,14 @@ class SEn extends S {
   String get statusReplay => 'Replay';
 
   @override
+  String get statusIgnored => 'Ignored';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Statuses: $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Replay count';
 
   @override
@@ -127,6 +138,9 @@ class SEn extends S {
 
   @override
   String get statusRereading => 'Rereading';
+
+  @override
+  String get statusRelistening => 'Relistening';
 
   @override
   String get all => 'All';
@@ -154,6 +168,9 @@ class SEn extends S {
 
   @override
   String get mediaTypeBook => 'Book';
+
+  @override
+  String get mediaTypeAudio => 'Audio';
 
   @override
   String get mediaTypeCustom => 'Custom';
@@ -1499,6 +1516,10 @@ class SEn extends S {
       'Comic data from ComicVine (non-commercial use).';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      'Music data from MusicBrainz, covers from the Cover Art Archive, listen counts from ListenBrainz.';
+
+  @override
   String get creditsGoogleBooksAttribution => 'Book data from Google Books.';
 
   @override
@@ -1893,13 +1914,22 @@ class SEn extends S {
   String get tagManage => 'Manage tags';
 
   @override
+  String get tagSortTooltip => 'Sort order';
+
+  @override
+  String get tagSortManual => 'Manual';
+
+  @override
+  String get tagSortAlphaAsc => 'Alphabetical (A–Z)';
+
+  @override
+  String get tagSortAlphaDesc => 'Alphabetical (Z–A)';
+
+  @override
   String get tagAssign => 'Assign tags';
 
   @override
   String get tagNone => 'No tags';
-
-  @override
-  String get tagPickerTitle => 'Select tags';
 
   @override
   String get tagTextColor => 'Text color';
@@ -2384,6 +2414,67 @@ class SEn extends S {
 
   @override
   String get searchHintComics => 'Search comics...';
+
+  @override
+  String get searchSourceMusic => 'Music';
+
+  @override
+  String get searchHintMusic => 'Search albums...';
+
+  @override
+  String get musicFilterAlbumsDefault => 'Albums';
+
+  @override
+  String get musicFilterAllTypes => 'All types';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => 'Single';
+
+  @override
+  String get musicFilterTypeBroadcast => 'Broadcast';
+
+  @override
+  String get musicFilterTypeOther => 'Other';
+
+  @override
+  String get musicFilterEdition => 'Releases';
+
+  @override
+  String get musicFilterStudioOnly => 'Studio only';
+
+  @override
+  String get musicSheetEditions => 'Editions';
+
+  @override
+  String get musicSheetTracks => 'Tracks';
+
+  @override
+  String musicSheetDisc(int number) {
+    return 'Disc $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => 'Editions unavailable';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count tracks';
+  }
+
+  @override
+  String get musicTrackerNoTracks => 'No track list';
+
+  @override
+  String get musicDiscoverFreshReleases => 'New releases';
+
+  @override
+  String get musicDiscoverUnavailable => 'Discover is unavailable';
+
+  @override
+  String get musicSearchArtist => 'Artist';
 
   @override
   String get language => 'Language';
@@ -3512,6 +3603,28 @@ class SEn extends S {
       'Personalize collections with a cover image and description';
 
   @override
+  String get settingsRichHeroStyle => 'Collection banner style';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'How the rich collection header looks';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Classic';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Comic';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Sticker album';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Brutalist';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Strips';
+
+  @override
   String get settingsCardScale => 'Cover size';
 
   @override
@@ -3591,6 +3704,9 @@ class SEn extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'Has adaptation';
+
+  @override
+  String get tagPickerTitle => 'Select tags';
 
   @override
   String get tagPickerSearchHint => 'Search tags';
@@ -4993,6 +5109,23 @@ class SEn extends S {
       'Game metadata + media (covers, screenshots, art)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Developer credentials (devid / devpassword). The server signs every request with them; without them ScreenScraper refuses.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder => 'ScreenScraper developer id';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'ScreenScraper developer password';
+
+  @override
   String get screenScraperUserCredsHint =>
       'User credentials (ssid / sspassword). Quota is per user.';
 
@@ -5203,6 +5336,9 @@ class SEn extends S {
   String get unitPart => 'Part';
 
   @override
+  String get unitTrack => 'Track';
+
+  @override
   String get cardLinkCopy => 'Copy card link';
 
   @override
@@ -5341,6 +5477,9 @@ class SEn extends S {
 
   @override
   String get statsMetricBookPages => 'book pages';
+
+  @override
+  String get statsMetricTracks => 'tracks listened';
 
   @override
   String get statsMetricEpisodes => 'episodes';
@@ -5580,4 +5719,64 @@ class SEn extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return 'Rate limit reached — retrying in ${seconds}s (attempt $attempt/$max)';
   }
+
+  @override
+  String get searchSourcePodcasts => 'Podcasts';
+
+  @override
+  String get searchHintPodcasts => 'Search podcasts...';
+
+  @override
+  String get podcastSheetEpisodes => 'Episodes';
+
+  @override
+  String get podcastSheetNoEpisodes => 'Episode list unavailable';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count episodes';
+  }
+
+  @override
+  String get podcastDiscoverTrending => 'Trending podcasts';
+
+  @override
+  String get credentialsPodcastIndexSection => 'Podcast Index API';
+
+  @override
+  String get credentialsEnterPodcastIndexKey =>
+      'Enter your Podcast Index API key';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret =>
+      'Enter your Podcast Index API secret';
+
+  @override
+  String get credentialsPodcastIndexKeyValid => 'Podcast Index keys are valid';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'Podcast Index rejected the keys. Check the pair and the system clock';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      'Podcast search and episode tracking. Uses a free key/secret pair from api.podcastindex.org.';
+
+  @override
+  String get welcomeSourceDescMusicBrainz =>
+      'Open music encyclopedia: albums, artists and editions. No key needed.';
+
+  @override
+  String get welcomeSourceDescPodcastIndex =>
+      'Open podcast catalog with episode-level tracking. Free key/secret pair.';
+
+  @override
+  String get creditsPodcastIndexAttribution =>
+      'Podcast data from Podcast Index.';
+
+  @override
+  String get credentialsApiSecret => 'API Secret';
+
+  @override
+  String get markAllListened => 'Mark all listened';
 }

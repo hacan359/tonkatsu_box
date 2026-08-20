@@ -1,16 +1,12 @@
-// One facet value with its frequency and dominant media type.
-
 import 'package:core/models/media_type.dart';
 import 'package:flutter/foundation.dart';
 
 import 'facet.dart';
 
-/// A single value of some [Facet] (e.g. genre "RPG", platform "PlayStation 2",
-/// decade "1990s"), how many items carry it, and the media type that
-/// predominantly carries it (drives the word colour).
+/// A single value of some [Facet], how many items carry it, and the media
+/// type that predominantly carries it (drives the word colour).
 @immutable
 class FacetValue {
-  /// Creates a [FacetValue].
   const FacetValue({
     required this.facet,
     required this.label,
@@ -18,7 +14,6 @@ class FacetValue {
     required this.type,
   });
 
-  /// Which dimension this value belongs to.
   final Facet facet;
 
   /// Display label (original casing of the first occurrence).

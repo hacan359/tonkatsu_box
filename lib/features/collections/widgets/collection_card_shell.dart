@@ -1,7 +1,3 @@
-// Shared by both the classic (mosaic) and rich (hero) card variants; they
-// differ only in the content they build via the builder, which receives the
-// current dim animation.
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';

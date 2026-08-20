@@ -99,6 +99,9 @@ class SRu extends S {
   String get statusWatching => 'Смотрю';
 
   @override
+  String get statusListening => 'Слушаю';
+
+  @override
   String get statusInProgress => 'В процессе';
 
   @override
@@ -114,6 +117,14 @@ class SRu extends S {
   String get statusReplay => 'Повтор';
 
   @override
+  String get statusIgnored => 'Игнор';
+
+  @override
+  String statusFilterSelected(int count) {
+    return 'Статусы: $count';
+  }
+
+  @override
   String get rewatchCountEdit => 'Счётчик повторов';
 
   @override
@@ -127,6 +138,9 @@ class SRu extends S {
 
   @override
   String get statusRereading => 'Перечитываю';
+
+  @override
+  String get statusRelistening => 'Переслушиваю';
 
   @override
   String get all => 'Все';
@@ -154,6 +168,9 @@ class SRu extends S {
 
   @override
   String get mediaTypeBook => 'Книга';
+
+  @override
+  String get mediaTypeAudio => 'Аудио';
 
   @override
   String get mediaTypeCustom => 'Своё';
@@ -1525,6 +1542,10 @@ class SRu extends S {
       'Данные о комиксах из ComicVine (некоммерческое использование).';
 
   @override
+  String get creditsMusicBrainzAttribution =>
+      'Данные о музыке из MusicBrainz, обложки из Cover Art Archive, прослушивания из ListenBrainz.';
+
+  @override
   String get creditsGoogleBooksAttribution =>
       'Данные о книгах из Google Books.';
 
@@ -1936,13 +1957,22 @@ class SRu extends S {
   String get tagManage => 'Управление тегами';
 
   @override
+  String get tagSortTooltip => 'Сортировка';
+
+  @override
+  String get tagSortManual => 'Вручную';
+
+  @override
+  String get tagSortAlphaAsc => 'По алфавиту (А–Я)';
+
+  @override
+  String get tagSortAlphaDesc => 'По алфавиту (Я–А)';
+
+  @override
   String get tagAssign => 'Назначить теги';
 
   @override
   String get tagNone => 'Нет тегов';
-
-  @override
-  String get tagPickerTitle => 'Выбор тэгов';
 
   @override
   String get tagTextColor => 'Цвет текста';
@@ -2429,6 +2459,67 @@ class SRu extends S {
 
   @override
   String get searchHintComics => 'Поиск комиксов...';
+
+  @override
+  String get searchSourceMusic => 'Музыка';
+
+  @override
+  String get searchHintMusic => 'Поиск альбомов...';
+
+  @override
+  String get musicFilterAlbumsDefault => 'Альбомы';
+
+  @override
+  String get musicFilterAllTypes => 'Все типы';
+
+  @override
+  String get musicFilterTypeEp => 'EP';
+
+  @override
+  String get musicFilterTypeSingle => 'Сингл';
+
+  @override
+  String get musicFilterTypeBroadcast => 'Трансляция';
+
+  @override
+  String get musicFilterTypeOther => 'Другое';
+
+  @override
+  String get musicFilterEdition => 'Издания';
+
+  @override
+  String get musicFilterStudioOnly => 'Только студийные';
+
+  @override
+  String get musicSheetEditions => 'Издания';
+
+  @override
+  String get musicSheetTracks => 'Треки';
+
+  @override
+  String musicSheetDisc(int number) {
+    return 'Диск $number';
+  }
+
+  @override
+  String get musicSheetEditionsUnavailable => 'Издания недоступны';
+
+  @override
+  String musicTracksCount(int count) {
+    return '$count трек(ов)';
+  }
+
+  @override
+  String get musicTrackerNoTracks => 'Нет списка треков';
+
+  @override
+  String get musicDiscoverFreshReleases => 'Новые релизы';
+
+  @override
+  String get musicDiscoverUnavailable => 'Discover недоступен';
+
+  @override
+  String get musicSearchArtist => 'Исполнитель';
 
   @override
   String get language => 'Язык';
@@ -3578,6 +3669,28 @@ class SRu extends S {
       'Обложка и описание вместо мозаики';
 
   @override
+  String get settingsRichHeroStyle => 'Стиль баннера коллекции';
+
+  @override
+  String get settingsRichHeroStyleSubtitle =>
+      'Как выглядит шапка персонализированной коллекции';
+
+  @override
+  String get settingsRichHeroStyleClassic => 'Классический';
+
+  @override
+  String get settingsRichHeroStyleComic => 'Комикс';
+
+  @override
+  String get settingsRichHeroStyleStickers => 'Альбом с наклейками';
+
+  @override
+  String get settingsRichHeroStyleBrutalist => 'Брутализм';
+
+  @override
+  String get settingsRichHeroStyleSlats => 'Полосы';
+
+  @override
   String get settingsCardScale => 'Размер обложек';
 
   @override
@@ -3656,6 +3769,9 @@ class SRu extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'Есть адаптация';
+
+  @override
+  String get tagPickerTitle => 'Выбор тэгов';
 
   @override
   String get tagPickerSearchHint => 'Поиск по тэгам';
@@ -5084,6 +5200,23 @@ class SRu extends S {
       'Метаданные игр + медиа (обложки, скриншоты, арт)';
 
   @override
+  String get screenScraperDevCredsHint =>
+      'Креды разработчика (devid / devpassword). Сервер подписывает ими каждый запрос; без них ScreenScraper отказывает.';
+
+  @override
+  String get screenScraperDevIdLabel => 'devid';
+
+  @override
+  String get screenScraperDevIdPlaceholder => 'ID разработчика ScreenScraper';
+
+  @override
+  String get screenScraperDevPasswordLabel => 'devpassword';
+
+  @override
+  String get screenScraperDevPasswordPlaceholder =>
+      'Пароль разработчика ScreenScraper';
+
+  @override
   String get screenScraperUserCredsHint =>
       'Пользовательские креды (ssid / sspassword). Квота персональная.';
 
@@ -5298,6 +5431,9 @@ class SRu extends S {
   String get unitPart => 'Часть';
 
   @override
+  String get unitTrack => 'Трек';
+
+  @override
   String get cardLinkCopy => 'Скопировать ссылку на карточку';
 
   @override
@@ -5436,6 +5572,9 @@ class SRu extends S {
 
   @override
   String get statsMetricBookPages => 'страниц книг';
+
+  @override
+  String get statsMetricTracks => 'треков прослушано';
 
   @override
   String get statsMetricEpisodes => 'эпизодов';
@@ -5676,4 +5815,65 @@ class SRu extends S {
   String simklImportRateLimitWait(int seconds, int attempt, int max) {
     return 'Достигнут лимит запросов — ждём $seconds сек (попытка $attempt/$max)';
   }
+
+  @override
+  String get searchSourcePodcasts => 'Подкасты';
+
+  @override
+  String get searchHintPodcasts => 'Поиск подкастов...';
+
+  @override
+  String get podcastSheetEpisodes => 'Эпизоды';
+
+  @override
+  String get podcastSheetNoEpisodes => 'Список эпизодов недоступен';
+
+  @override
+  String podcastEpisodesCount(int count) {
+    return '$count эпизодов';
+  }
+
+  @override
+  String get podcastDiscoverTrending => 'Популярные подкасты';
+
+  @override
+  String get credentialsPodcastIndexSection => 'Podcast Index API';
+
+  @override
+  String get credentialsEnterPodcastIndexKey =>
+      'Введите API-ключ Podcast Index';
+
+  @override
+  String get credentialsEnterPodcastIndexSecret =>
+      'Введите API-секрет Podcast Index';
+
+  @override
+  String get credentialsPodcastIndexKeyValid =>
+      'Ключи Podcast Index действительны';
+
+  @override
+  String get credentialsPodcastIndexKeyInvalid =>
+      'Podcast Index отклонил ключи. Проверьте пару и системные часы';
+
+  @override
+  String get welcomeApiPodcastIndexDesc =>
+      'Поиск подкастов и трекинг эпизодов. Бесплатная пара ключей с api.podcastindex.org.';
+
+  @override
+  String get welcomeSourceDescMusicBrainz =>
+      'Открытая музыкальная энциклопедия: альбомы, исполнители, издания. Ключ не нужен.';
+
+  @override
+  String get welcomeSourceDescPodcastIndex =>
+      'Открытый каталог подкастов с трекингом по эпизодам. Бесплатная пара ключей.';
+
+  @override
+  String get creditsPodcastIndexAttribution =>
+      'Данные о подкастах — Podcast Index.';
+
+  @override
+  String get credentialsApiSecret => 'API-секрет';
+
+  @override
+  String get markAllListened => 'Отметить всё прослушанным';
 }

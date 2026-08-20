@@ -21,10 +21,8 @@ class SegmentedPillOption<T> {
   final Color? color;
 }
 
-/// Rounded "pill" segmented switcher matching the item-detail status row:
-/// a soft tint of [selectedColor] on the active segment, the rest muted.
-/// Segments size to their content (unlike the equal-width status row), so it
-/// fits inside toolbars next to other widgets.
+/// Segments size to their content, unlike the equal-width status row, so the
+/// pill fits in a toolbar beside other widgets.
 class SegmentedPill<T> extends StatelessWidget {
   const SegmentedPill({
     required this.options,

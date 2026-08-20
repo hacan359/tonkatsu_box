@@ -1,13 +1,9 @@
-// Main navigation tabs of the app.
-
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 
-/// Tab indices for the primary navigation.
-///
-/// Used by [AppShell] to switch tabs and by external screens (e.g.
-/// [WelcomeScreen]) to set the starting tab.
+/// Index order matters — [AppShell] switches on it and screens pass one in as
+/// the starting tab.
 enum NavTab {
   /// Home screen (all items).
   home,

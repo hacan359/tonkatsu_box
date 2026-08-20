@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -89,9 +88,9 @@ bool isTextFieldFocused() {
   ctx.visitAncestorElements((Element element) {
     if (element.widget is EditableText) {
       found = true;
-      return false; // прекратить обход
+      return false; // stop walking
     }
-    return true; // продолжить
+    return true;
   });
   return found;
 }

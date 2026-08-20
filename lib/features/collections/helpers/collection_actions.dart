@@ -1,5 +1,4 @@
-// Helper action methods for CollectionScreen.
-
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/card_link.dart';
@@ -28,6 +27,8 @@ import '../../../core/api/igdb_api.dart';
 import '../../../core/api/kitsu_api.dart';
 import '../../../core/api/mangabaka_api.dart';
 import '../../../core/api/mangadex_api.dart';
+import '../../../core/api/musicbrainz_api.dart';
+import '../../../core/api/podcast_index_api.dart';
 import '../../../core/api/openlibrary_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/api/tvdb_api.dart';
@@ -49,19 +50,13 @@ import '../widgets/hardcover_edition_picker.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../settings/providers/settings_provider.dart';
 
-/// Static action methods for the collection screen.
-///
-/// Extracted from [CollectionScreen] to keep that file smaller.
-/// Each method takes its dependencies explicitly.
+/// Actions extracted from [CollectionScreen] to keep that file smaller;
+/// each method takes its dependencies explicitly.
 class CollectionActions {
   CollectionActions._();
 
-  /// Opens the Search tab to add items into [collectionId].
-  ///
-  /// Switches to the shared Search tab (handled by [AppShell]) with this
-  /// collection set as the add target, rather than pushing a separate search
-  /// screen — so the shell and its single search field stay consistent. Adds go
-  /// straight into the collection, which refreshes itself via its items notifier.
+  /// Switches to the shared Search tab with this collection as add target —
+  /// no separate search screen, so the shell's single field stays consistent.
   static void addItems({
     required WidgetRef ref,
     required int? collectionId,
@@ -76,8 +71,6 @@ class CollectionActions {
     context.showSnack(S.of(context).cardLinkCopied, type: SnackType.success);
   }
 
-  /// Moves an item to another collection.
-  ///
   /// Returns `true` if the source collection became empty after the move.
   static Future<bool> moveItem({
     required BuildContext context,
@@ -194,9 +187,7 @@ class CollectionActions {
     }
   }
 
-  /// Offers to delete a collection that became empty.
-  ///
-  /// Returns `true` if the collection was deleted.
+  /// Offers to delete a collection that became empty; `true` when deleted.
   static Future<bool> promptDeleteEmptyCollection({
     required BuildContext context,
     required WidgetRef ref,
@@ -260,8 +251,6 @@ class CollectionActions {
     }
   }
 
-  /// Edits a collection (name, description, cover).
-  ///
   /// Returns `true` if the user saved the changes.
   static Future<bool> renameCollection({
     required BuildContext context,
@@ -277,8 +266,6 @@ class CollectionActions {
     return true;
   }
 
-  /// Deletes a collection.
-  ///
   /// Returns `true` if the collection was deleted.
   static Future<bool> deleteCollection({
     required BuildContext context,
@@ -410,7 +397,6 @@ class CollectionActions {
     }
   }
 
-  /// Export format picker dialog.
   static Future<({ExportFormat format, bool includeUserData})?> _showExportFormatDialog(
     BuildContext context,
   ) {
@@ -473,7 +459,6 @@ class CollectionActions {
     );
   }
 
-  /// Adds a SteamGridDB image to the canvas.
   static void addSteamGridDbImage({
     required BuildContext context,
     required WidgetRef ref,
@@ -516,7 +501,6 @@ class CollectionActions {
     }
   }
 
-  /// Adds a VGMaps image to the canvas.
   static void addVgMapsImage({
     required BuildContext context,
     required WidgetRef ref,
@@ -560,11 +544,8 @@ class CollectionActions {
     }
   }
 
-  /// Re-fetches the item from its source API and upserts the fresh row
-  /// into the matching cache table. The cached cover image is deleted
-  /// first so it gets re-downloaded with the new URL (or the same URL
-  /// re-fetches the bytes if the local file was corrupted). `Custom`
-  /// items have no API origin and are rejected by the caller.
+  /// Re-fetches from the source API and upserts into the cache table; the
+  /// cached cover is deleted first so it re-downloads with the new URL.
   static Future<bool> refreshItemFromApi({
     required BuildContext context,
     required WidgetRef ref,
@@ -572,9 +553,8 @@ class CollectionActions {
   }) async {
     final S l = S.of(context);
 
-    // Books with an edition catalog first offer to switch the edition (e.g.
-    // added the RU printing, want the EN one). Picking refreshes with that
-    // edition; dismissing refreshes keeping the current one.
+    // Books with an edition catalog first offer to switch the edition;
+    // picking refreshes with it, dismissing keeps the current one.
     FantlabEdition? pickedFantlab;
     HardcoverEdition? pickedHardcover;
     final Book? cachedBook =
@@ -622,9 +602,8 @@ class CollectionActions {
     return outcome.success;
   }
 
-  /// Async DB / network work for [refreshItemFromApi]. Kept context-free so
-  /// the lint can see that UI feedback happens behind a single mounted check
-  /// in the caller.
+  /// Context-free so the lint can see that UI feedback happens behind a
+  /// single mounted check in the caller.
   static Future<_RefreshOutcome> _refreshItemWork(
     WidgetRef ref,
     CollectionItem item, {
@@ -636,6 +615,9 @@ class CollectionActions {
 
     try {
       await cache.deleteImage(item.imageType, item.coverImageId);
+      // The refetched cover lands on the same path, which also keys Flutter's
+      // decoded-image cache — without this the old art renders until restart.
+      await cache.evictDecodedImage(item.imageType, item.coverImageId);
 
       switch (item.mediaType) {
         case MediaType.game:
@@ -699,6 +681,18 @@ class CollectionActions {
               .getVnById(item.externalId.toString());
           if (vn == null) return _RefreshOutcome.notFound();
           await db.visualNovelDao.upsertVisualNovel(vn);
+        case MediaType.audio:
+          final AudioItem? cached = item.audioItem;
+          if (cached == null) return _RefreshOutcome.unsupported();
+          final AudioItem? full = cached.isPodcast
+              ? await ref.read(podcastIndexApiProvider).getPodcast(cached.id)
+              : await ref
+                  .read(musicBrainzApiProvider)
+                  .getReleaseGroup(cached.nativeId);
+          if (full == null) return _RefreshOutcome.notFound();
+          // Overlay so the picked release (label, format, track list totals)
+          // survives; the DAO's preserving upsert backs this up.
+          await db.audioDao.upsertAudioItem(cached.withLookupDetails(full));
         case MediaType.book:
           final Book? cached = item.book;
           if (cached == null) return _RefreshOutcome.unsupported();
@@ -715,8 +709,7 @@ class CollectionActions {
             final Book? full = await api.getWork(cached.nativeId);
             if (full == null) return _RefreshOutcome.notFound();
             // A freshly picked edition wins; otherwise keep the previously
-            // picked one (cover, year, ISBN, …) instead of resetting the book
-            // to the work's default first edition.
+            // picked one instead of resetting to the default first edition.
             final Book updated = pickedFantlabEdition != null
                 ? applyFantlabEdition(full, pickedFantlabEdition)
                 : await reapplyFantlabEdition(api, cached: cached, fresh: full);
@@ -738,8 +731,7 @@ class CollectionActions {
             final Book? full = await api.getBook(cached.nativeId);
             if (full == null) return _RefreshOutcome.notFound();
             // A freshly picked edition wins; otherwise keep the previously
-            // picked one (localized title, cover, ISBN, …) instead of
-            // resetting to the book's canonical fields.
+            // picked one instead of resetting to the canonical fields.
             final Book updated = pickedHardcoverEdition != null
                 ? applyHardcoverEdition(full, pickedHardcoverEdition)
                 : await reapplyHardcoverEdition(

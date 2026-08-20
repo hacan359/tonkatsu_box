@@ -53,6 +53,9 @@ void main() {
       collectedBookIdsProvider.overrideWith(
         (Ref ref) async => const <int, List<CollectedItemInfo>>{},
       ),
+      collectedAudioIdsProvider.overrideWith(
+        (Ref ref) async => const <int, List<CollectedItemInfo>>{},
+      ),
     ];
   }
 
@@ -73,6 +76,8 @@ void main() {
         const <int, List<CollectedItemInfo>>{},
     Map<int, List<CollectedItemInfo>> books =
         const <int, List<CollectedItemInfo>>{},
+    Map<int, List<CollectedItemInfo>> albums =
+        const <int, List<CollectedItemInfo>>{},
   }) {
     return <Override>[
       collectedMovieIdsProvider.overrideWith((Ref ref) async => movies),
@@ -87,6 +92,7 @@ void main() {
       collectedMangaIdsProvider.overrideWith((Ref ref) async => mangas),
       collectedAnimeIdsProvider.overrideWith((Ref ref) async => animes),
       collectedBookIdsProvider.overrideWith((Ref ref) async => books),
+      collectedAudioIdsProvider.overrideWith((Ref ref) async => albums),
     ];
   }
 
@@ -795,9 +801,8 @@ void main() {
 
         int loadMoreCalls = 0;
 
-        // Narrowing to one provider swaps the sections view for this grid with
-        // the page already in state — no state change follows, so the initial
-        // build must run the fill check itself.
+        // Narrowing to one provider brings the page in already loaded, so no
+        // state change follows and the initial build must run the fill check.
         await tester.pumpWidget(
           ProviderScope(
             overrides: <Override>[

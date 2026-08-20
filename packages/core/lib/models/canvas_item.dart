@@ -5,6 +5,7 @@ import 'image_type.dart';
 import 'media_type.dart';
 import '../utils/cover_image_id.dart' as cover_id;
 
+import 'audio_item.dart';
 import 'anime.dart';
 import 'book.dart';
 import 'custom_media.dart';
@@ -30,6 +31,8 @@ enum CanvasItemType {
   anime('anime'),
 
   book('book'),
+
+  audio('audio'),
 
   custom('custom'),
 
@@ -68,6 +71,8 @@ enum CanvasItemType {
         return CanvasItemType.anime;
       case MediaType.book:
         return CanvasItemType.book;
+      case MediaType.audio:
+        return CanvasItemType.audio;
       case MediaType.custom:
         return CanvasItemType.custom;
     }
@@ -82,6 +87,7 @@ enum CanvasItemType {
       this == manga ||
       this == anime ||
       this == book ||
+      this == audio ||
       this == custom;
 }
 
@@ -106,6 +112,7 @@ class CanvasItem with Exportable {
     this.anime,
     this.manga,
     this.book,
+    this.audioItem,
     this.customMedia,
     this.overrideName,
   });
@@ -209,6 +216,9 @@ class CanvasItem with Exportable {
   final Book? book;
 
   /// Joined, not persisted in `canvas_items`.
+  final AudioItem? audioItem;
+
+  /// Joined, not persisted in `canvas_items`.
   final CustomMedia? customMedia;
 
   /// Joined `collection_items.override_name` for the matching media entry in
@@ -226,6 +236,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => manga?.title,
       CanvasItemType.anime => anime?.title,
       CanvasItemType.book => book?.title,
+      CanvasItemType.audio => audioItem?.title,
       CanvasItemType.custom => customMedia?.title,
       _ => null,
     };
@@ -243,6 +254,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => manga?.coverUrl,
       CanvasItemType.anime => anime?.coverUrl,
       CanvasItemType.book => book?.coverUrl,
+      CanvasItemType.audio => audioItem?.coverUrl,
       CanvasItemType.custom => customMedia?.coverUrl,
       _ => null,
     };
@@ -260,6 +272,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => ImageType.mangaCover,
       CanvasItemType.anime => ImageType.animeCover,
       CanvasItemType.book => ImageType.bookCover,
+      CanvasItemType.audio => ImageType.audioCover,
       CanvasItemType.custom => ImageType.customCover,
       _ => ImageType.gameCover,
     };
@@ -299,7 +312,15 @@ class CanvasItem with Exportable {
           source: book?.source,
           coverUrl: book?.coverUrl,
         ),
-      CanvasItemType.custom => (customMedia?.id ?? 0).toString(),
+      CanvasItemType.audio => cover_id.coverImageId(
+          mediaType: MediaType.audio,
+          externalId: audioItem?.id ?? itemRefId ?? 0,
+          source: audioItem?.source,
+        ),
+      CanvasItemType.custom => cover_id.customCoverImageId(
+          id: customMedia?.id ?? 0,
+          coverUrl: customMedia?.coverUrl,
+        ),
       _ => '0',
     };
   }
@@ -315,6 +336,7 @@ class CanvasItem with Exportable {
       CanvasItemType.manga => MediaType.manga,
       CanvasItemType.anime => MediaType.anime,
       CanvasItemType.book => MediaType.book,
+      CanvasItemType.audio => MediaType.audio,
       CanvasItemType.custom => customMedia?.displayType ?? MediaType.custom,
       _ => null,
     };
@@ -382,6 +404,7 @@ class CanvasItem with Exportable {
     Anime? anime,
     Manga? manga,
     Book? book,
+    AudioItem? audioItem,
     CustomMedia? customMedia,
     String? overrideName,
     bool clearOverrideName = false,
@@ -406,6 +429,7 @@ class CanvasItem with Exportable {
       anime: anime ?? this.anime,
       manga: manga ?? this.manga,
       book: book ?? this.book,
+      audioItem: audioItem ?? this.audioItem,
       customMedia: customMedia ?? this.customMedia,
       overrideName:
           clearOverrideName ? null : (overrideName ?? this.overrideName),

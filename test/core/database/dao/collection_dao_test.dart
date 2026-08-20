@@ -54,6 +54,7 @@ void main() {
   late MockVisualNovelDao mockVisualNovelDao;
   late MockMangaDao mockMangaDao;
   late MockBookDao mockBookDao;
+  late MockAudioDao mockAudioDao;
   late MockAnimeDao mockAnimeDao;
   late MockCustomMediaDao mockCustomMediaDao;
   late CollectionDao dao;
@@ -67,6 +68,7 @@ void main() {
     mockVisualNovelDao = MockVisualNovelDao();
     mockMangaDao = MockMangaDao();
     mockBookDao = MockBookDao();
+    mockAudioDao = MockAudioDao();
     mockAnimeDao = MockAnimeDao();
     mockCustomMediaDao = MockCustomMediaDao();
     dao = CollectionDao(
@@ -78,6 +80,7 @@ void main() {
       animeDao: mockAnimeDao,
       mangaDao: mockMangaDao,
       bookDao: mockBookDao,
+      audioDao: mockAudioDao,
       customMediaDao: mockCustomMediaDao,
     );
   });
@@ -1590,6 +1593,23 @@ void main() {
         expect(stats['inProgress'], 2);
         expect(stats['gameCount'], 3);
         expect(stats['movieCount'], 2);
+      });
+
+      test('counts the ignored status in its own bucket', () async {
+        when(() => mockDb.rawQuery(any(), any())).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'movie',
+              'status': 'ignored',
+              'count': 4,
+            },
+          ],
+        );
+
+        final Map<String, int> stats = await dao.getCollectionItemStats(1);
+
+        expect(stats['ignored'], 4);
+        expect(stats['total'], 4);
       });
 
       test('returns zero stats for empty collection', () async {

@@ -37,6 +37,8 @@ void main() {
             (_) async => (animeEpisodes: 0, mangaChapters: 0, bookPages: 0));
     when(() => mockStatsDao.getLikedUnitsByType(year: any(named: 'year')))
         .thenAnswer((_) async => <MediaType, int>{});
+    when(() => mockStatsDao.getListenedTrackTotal(year: any(named: 'year')))
+        .thenAnswer((_) async => 0);
     when(() => mockStatsDao.getManualMinutes(year: any(named: 'year')))
         .thenAnswer((_) async => 0);
     when(() => mockStatsDao.getTrackerMinutes(year: any(named: 'year')))

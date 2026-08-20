@@ -132,9 +132,8 @@ class WishlistTile extends StatelessWidget {
     }
   }
 
-  /// Inline quick actions, mirroring the context menu so the item can be
-  /// managed without the right-click / long-press menu. Tapping the row still
-  /// runs the search, so it is not duplicated here.
+  /// Mirrors the context menu so the item is manageable without it; the row
+  /// tap already runs the search, so that is not repeated here.
   Widget _buildActions(BuildContext context) {
     final S l = S.of(context);
     return Row(

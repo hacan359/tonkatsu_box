@@ -23,9 +23,8 @@ final NotifierProviderFamily<CanvasNotifier, CanvasState, int?>
   CanvasNotifier.new,
 );
 
-/// Reactively syncs canvas items with the collection: when items are
-/// added or removed in the collection, matching canvas items are
-/// created or deleted automatically.
+/// Reactively syncs canvas items with the collection: adds/removes in the
+/// collection create or delete matching canvas items automatically.
 class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     with CanvasTimerMixin, CanvasOperationsMixin
     implements BaseCanvasController {
@@ -35,9 +34,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
   late int? _collectionId;
   bool _isSyncing = false;
 
-  /// Bumped on every `_loadCanvas` so async hydration tasks started by an
-  /// earlier load know to drop their result instead of overwriting fresh
-  /// state — see the phase-2 enrichment in [_loadCanvas].
+  /// Bumped on every `_loadCanvas` so hydration tasks from an earlier load
+  /// drop their result instead of overwriting fresh state.
   int _loadGeneration = 0;
 
   // CanvasTimerMixin
@@ -80,9 +78,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
           AsyncValue<List<CollectionItem>> next) {
         final List<CollectionItem>? items = next.valueOrNull;
         if (items != null) {
-          // Patch override_name into existing canvas items eagerly: this
-          // covers the rename-while-loading window where the structural
-          // _syncAndReload below skips because state.isLoading is true.
+          // Eager override_name patch covers the rename-while-loading window
+          // where _syncAndReload below skips because state.isLoading is true.
           _syncOverrideNames(items);
         }
         if (state.isInitialized && !state.isLoading && next.hasValue) {
@@ -110,9 +107,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
 
       await _syncCanvasWithItems();
 
-      // Phase 1: paint a skeleton canvas with positions and types as soon
-      // as the bare item rows are loaded — the media-table joins for
-      // covers/titles run in phase 2 below.
+      // Phase 1: paint a skeleton canvas from bare rows; the media-table
+      // joins for covers/titles run in phase 2 below.
       final (
         List<CanvasItem> rawItems,
         CanvasViewport? viewport,
@@ -197,11 +193,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     }
   }
 
-  /// Two-way sync: removes canvas items that no longer exist in the
-  /// collection, and creates canvas items for new collection entries.
-  /// Matching uses `(itemType, itemRefId)` because collection-canvas
-  /// rows carry `collection_item_id = NULL` — unlike game-canvas rows,
-  /// which point at a specific `collection_item_id`.
+  /// Two-way sync matched by `(itemType, itemRefId)` because collection-canvas
+  /// rows carry `collection_item_id = NULL`, unlike game-canvas rows.
   Future<void> _syncCanvasWithItems() async {
     if (_collectionId == null) return;
     final int cId = _collectionId!;
@@ -242,9 +235,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
       await _repository.deleteItemsBatch(orphanIds);
     }
 
-    // After the orphan pass, seenCounts holds the surviving canvas
-    // count per key; here we find collection items still missing a
-    // matching canvas item.
+    // After the orphan pass, seenCounts holds the surviving canvas count per
+    // key; find collection items still missing a matching canvas item.
     final List<CollectionItem> missingItems = <CollectionItem>[];
     final Map<(String, int), int> addedCounts = <(String, int), int>{};
     for (final CollectionItem i in allItems) {
@@ -289,9 +281,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
                 .reduce((int a, int b) => a > b ? a : b) +
             1;
 
-    // collectionItemId is intentionally null: collection-canvas rows
-    // are stored with collection_item_id = NULL (getCanvasItems
-    // filters by that).
+    // collectionItemId is intentionally null: collection-canvas rows are
+    // stored with collection_item_id = NULL (getCanvasItems filters by that).
     final List<CanvasItem> newItems = <CanvasItem>[
       for (int i = 0; i < missingItems.length; i++)
         CanvasItem(
@@ -316,11 +307,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     await _repository.createItemsBatch(newItems);
   }
 
-  /// Collection-canvas items carry `collection_item_id = NULL`, so we match
-  /// them to `collection_items` by `(itemType, itemRefId)` — same join key
-  /// as `canvas_dao.getCanvasItems`. Multi-platform games produce several
-  /// rows for one `(type, externalId)`; we take the first override, again
-  /// mirroring the SQL `LIMIT 1`.
+  /// Matches by `(itemType, itemRefId)` — collection-canvas rows have NULL
+  /// collection_item_id; first override wins, mirroring the SQL `LIMIT 1`.
   void _syncOverrideNames(List<CollectionItem> collectionItems) {
     if (state.items.isEmpty) return;
     final Map<(String, int), String?> overridesByRef =

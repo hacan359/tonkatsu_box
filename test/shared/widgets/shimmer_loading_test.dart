@@ -71,4 +71,43 @@ void main() {
       expect(find.byType(ShimmerListTile), findsOneWidget);
     });
   });
+
+  // Every box shares one app-wide ticker, started by the first box on screen
+  // and stopped by the last — the lifecycle these tests pin down.
+  group('shared shimmer timeline', () {
+    testWidgets('should keep animating the boxes that outlive a removed one',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(wrap(const Column(
+        children: <Widget>[
+          ShimmerBox(width: 100, height: 20),
+          ShimmerBox(width: 100, height: 20),
+        ],
+      )));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.pumpWidget(wrap(const Column(
+        children: <Widget>[ShimmerBox(width: 100, height: 20)],
+      )));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ShimmerBox), findsOneWidget);
+    });
+
+    testWidgets('should restart after every box left the tree',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(wrap(const ShimmerBox(width: 100, height: 20)));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.pumpWidget(wrap(const SizedBox.shrink()));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(ShimmerBox), findsNothing);
+
+      await tester.pumpWidget(wrap(const ShimmerBox(width: 100, height: 20)));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ShimmerBox), findsOneWidget);
+    });
+  });
 }

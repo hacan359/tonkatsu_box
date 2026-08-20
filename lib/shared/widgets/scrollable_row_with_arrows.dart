@@ -1,4 +1,3 @@
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -6,11 +5,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import 'horizontal_mouse_scroll.dart';
 
-/// Горизонтальный список с кнопками-стрелками для навигации на десктопе.
-///
-/// На экранах >= 600px показывает полупрозрачные кнопки-стрелки
-/// поверх списка для удобной навигации колёсиком или кликом.
-/// На мобильных устройствах стрелки не отображаются.
+/// Overlays scroll arrows on screens wider than 600px; narrower ones get the
+/// bare list.
 class ScrollableRowWithArrows extends StatefulWidget {
   const ScrollableRowWithArrows({
     required this.controller,
@@ -21,10 +17,9 @@ class ScrollableRowWithArrows extends StatefulWidget {
 
   final ScrollController controller;
 
-  /// Дочерний виджет (горизонтальный ListView).
   final Widget child;
 
-  /// Высота области (нужна для позиционирования стрелок).
+  /// Needed up front — the arrows are positioned against it.
   final double height;
 
   @override

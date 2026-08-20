@@ -17,15 +17,13 @@ class CanvasState {
 
   final List<CanvasConnection> connections;
 
-  /// Состояние viewport (зум, позиция камеры).
   final CanvasViewport viewport;
 
   final bool isLoading;
 
-  /// Инициализирован ли канвас (данные загружены).
   final bool isInitialized;
 
-  /// ID элемента, от которого создаётся связь (null = не в режиме создания).
+  /// Item the pending connection starts from; null = not in connect mode.
   final int? connectingFromId;
 
   final String? error;
@@ -54,10 +52,8 @@ class CanvasState {
   }
 }
 
-/// Общий интерфейс для управления канвасом.
-///
-/// Реализуется [CanvasNotifier] (коллекционный canvas)
-/// и [GameCanvasNotifier] (per-game canvas).
+/// Shared canvas control surface, implemented by [CanvasNotifier]
+/// (collection canvas) and [GameCanvasNotifier] (per-game canvas).
 abstract class BaseCanvasController {
   void moveItem(int itemId, double x, double y);
 

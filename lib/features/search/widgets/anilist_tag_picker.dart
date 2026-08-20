@@ -8,11 +8,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Opens the AniList tag picker as a modal bottom sheet.
-///
-/// [initialSelection] are tag names (the picker's value type matches the
-/// existing multi-select filter contract: `List<String>`). Returns the new
-/// selection, an empty list to clear, or `null` when the user cancels.
+/// [initialSelection] and the result are tag names, matching the multi-select
+/// filter contract; an empty list clears, `null` means cancelled.
 Future<Object?> showAniListTagPicker(
   BuildContext context,
   WidgetRef _,

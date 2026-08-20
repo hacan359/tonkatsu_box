@@ -8,28 +8,19 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
 
-// Add-image-to-canvas dialog.
-//
-// Supports two modes: a URL and a local file (base64).
-
-/// How an image is added.
 enum _ImageSource {
   url,
   file,
 }
 
-/// Dialog for adding an image to the canvas.
-///
-/// Returns a `Map<String, dynamic>` with a `url` key (for URL) or
-/// `base64` + `mimeType` (for a file), or `null` on cancel.
+/// Pops a map with a `url` key (URL mode) or `base64` + `mimeType`
+/// (file mode); `null` on cancel.
 class AddImageDialog extends StatefulWidget {
-  /// Creates an [AddImageDialog].
   const AddImageDialog({this.initialUrl, super.key});
 
   /// Initial URL (for editing).
   final String? initialUrl;
 
-  /// Shows the dialog and returns the result.
   static Future<Map<String, dynamic>?> show(
     BuildContext context, {
     String? initialUrl,
@@ -94,7 +85,6 @@ class _AddImageDialogState extends State<AddImageDialog> {
 
     final String base64String = base64Encode(bytes);
 
-    // Infer the MIME type from the file extension
     final String ext = file.extension?.toLowerCase() ?? '';
     final String mimeType = switch (ext) {
       'png' => 'image/png',

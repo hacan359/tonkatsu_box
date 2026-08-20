@@ -10,10 +10,8 @@ query Me {
 }
 ''';
 
-  /// Typesense-backed book search. A search document already carries the whole
-  /// card (authors, genres, image, rating, ISBNs), so no detail follow-up is
-  /// needed. [sort] is a `field:direction` pair over the document's numeric
-  /// fields (`users_count:desc`, `release_year:desc`, …); null means relevance.
+  /// A search document carries the whole card, so no detail follow-up needed.
+  /// [sort] is a `field:direction` pair over numeric fields; null = relevance.
   static const String search = '''
 query SearchBooks(\$query: String!, \$perPage: Int!, \$page: Int!, \$sort: String) {
   search(query: \$query, query_type: "Book", per_page: \$perPage, page: \$page, sort: \$sort) {
@@ -142,9 +140,8 @@ query UserBooksCount(\$username: citext!) {
 }
 ''';
 
-  /// One page of a user's library. A book can have several `user_books` rows,
-  /// so `distinct_on: book_id` (which requires the matching `order_by`) keeps
-  /// one per book — same approach as Hardcover's own import guide.
+  /// A book can have several `user_books` rows; `distinct_on: book_id` (with
+  /// the matching `order_by`) keeps one per book, as Hardcover's guide does.
   static const String userBooks = '''
 query UserBooks(\$username: citext!, \$limit: Int!, \$offset: Int!) {
   user_books(

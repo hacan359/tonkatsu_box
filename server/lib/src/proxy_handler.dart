@@ -1,15 +1,34 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:core/api/podcast_index_signature.dart';
 import 'package:core/api/proxy_targets.dart';
 import 'package:shelf/shelf.dart';
 
 import 'api_credentials.dart';
 import 'upstream_client.dart';
+import 'upstream_throttle.dart';
 
 /// Browsers strip `User-Agent`, and AniList answers 403 without one.
 const String kProxyUserAgent =
     'TonkatsuBox/selfhost (+https://github.com/hacan359/tonkatsu_box)';
+
+/// MusicBrainz allows <1 req/s per IP, then silently throttles and bans. Every
+/// tab leaves with this server's IP, so the gap has to hold here.
+const Map<ProxyTarget, Duration> _minRequestGap = <ProxyTarget, Duration>{
+  ProxyTarget.musicbrainz: Duration(milliseconds: 1100),
+};
+
+final Map<ProxyTarget, UpstreamThrottle> _throttles =
+    <ProxyTarget, UpstreamThrottle>{};
+
+Future<void> _throttleFor(ProxyTarget target) {
+  final Duration? gap = _minRequestGap[target];
+  if (gap == null) return Future<void>.value();
+  return _throttles
+      .putIfAbsent(target, () => UpstreamThrottle(gap))
+      .acquire();
+}
 
 /// Everything else — auth, host, agent — is the server's, so a crafted request
 /// cannot borrow our keys for a target of its own.
@@ -106,6 +125,7 @@ class ApiProxy {
         );
 
         try {
+          await _throttleFor(target);
           final UpstreamResponse response = await _upstream.send(
             method: request.method,
             url: url,
@@ -160,15 +180,25 @@ class ApiProxy {
       case ProxyTarget.simkl:
         headers['simkl-api-key'] =
             _require(CredentialNames.simklClientId, target);
+      case ProxyTarget.podcastindex:
+        // Signature embeds the timestamp and expires in minutes — computed
+        // per request, never cached.
+        final String key = _require(CredentialNames.podcastIndexKey, target);
+        final String secret =
+            _require(CredentialNames.podcastIndexSecret, target);
+        final int unixTime = _now().millisecondsSinceEpoch ~/ 1000;
+        headers['X-Auth-Date'] = '$unixTime';
+        headers['X-Auth-Key'] = key;
+        headers[HttpHeaders.authorizationHeader] =
+            podcastIndexSignature(key, secret, unixTime);
       case ProxyTarget.tvdb:
         if (path.endsWith('login')) {
           return utf8.encode(jsonEncode(<String, Object?>{
             'apikey': _require(CredentialNames.tvdb, target),
           }));
         }
-        // The proxy strips the caller's Authorization, so the JWT the client
-        // obtained through its own login never arrives — without this every
-        // request after login answers 401 in an endless login loop.
+        // The proxy strips the caller's Authorization, so the client's own JWT
+        // never arrives and every post-login request would 401.
         headers[HttpHeaders.authorizationHeader] = 'Bearer ${await _tvdb()}';
       case ProxyTarget.screenscraper:
         // The dev pair never ships to a browser; the user pair is overridden
@@ -188,8 +218,10 @@ class ApiProxy {
       case ProxyTarget.anilist:
       case ProxyTarget.fantlab:
       case ProxyTarget.kitsu:
+      case ProxyTarget.listenbrainz:
       case ProxyTarget.mangabaka:
       case ProxyTarget.mangadex:
+      case ProxyTarget.musicbrainz:
       case ProxyTarget.openlibrary:
       case ProxyTarget.steam:
       case ProxyTarget.tvmaze:

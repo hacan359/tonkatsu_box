@@ -46,10 +46,14 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   String _tvdbApiKey = '';
   String _comicVineApiKey = '';
+  String _podcastIndexApiKey = '';
+  String _podcastIndexApiSecret = '';
   String _googleBooksApiKey = '';
   String _hardcoverApiKey = '';
   String _ssSsid = '';
   String _ssSspassword = '';
+  String _ssDevId = '';
+  String _ssDevPassword = '';
   bool _ssQuotaLoading = false;
   String? _ssQuotaError;
   SsUserQuota? _ssQuota;
@@ -59,6 +63,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   StatusType? _tvdbValidated;
   StatusType? _comicVineValidated;
+  StatusType? _podcastIndexValidated;
   StatusType? _googleBooksValidated;
   StatusType? _hardcoverValidated;
   bool _sgdbValidating = false;
@@ -66,6 +71,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   bool _tvdbValidating = false;
   bool _comicVineValidating = false;
+  bool _podcastIndexValidating = false;
   bool _googleBooksValidating = false;
   bool _hardcoverValidating = false;
 
@@ -83,10 +89,14 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     _tvdbApiKey =
         settings.isTvdbKeyBuiltIn ? '' : (settings.tvdbApiKey ?? '');
     _comicVineApiKey = settings.comicVineApiKey ?? '';
+    _podcastIndexApiKey = settings.podcastIndexApiKey ?? '';
+    _podcastIndexApiSecret = settings.podcastIndexApiSecret ?? '';
     _googleBooksApiKey = settings.googleBooksApiKey ?? '';
     _hardcoverApiKey = settings.hardcoverApiKey ?? '';
     _ssSsid = settings.screenScraperSsid ?? '';
     _ssSspassword = settings.screenScraperSspassword ?? '';
+    _ssDevId = settings.screenScraperDevId ?? '';
+    _ssDevPassword = settings.screenScraperDevPassword ?? '';
   }
 
   @override
@@ -120,6 +130,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildGoogleBooksSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildHardcoverSection(settings, compact),
+        const SizedBox(height: AppSpacing.md),
+        _buildPodcastIndexSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildScreenScraperSection(settings, compact),
         if (settings.errorMessage != null) ...<Widget>[
@@ -507,6 +519,110 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
+
+  Widget _buildPodcastIndexSection(SettingsState settings, bool compact) {
+    final S l = S.of(context);
+    final bool builtIn = settings.isPodcastIndexKeyBuiltIn;
+    final bool hasKeys =
+        settings.hasPodcastIndexKeys || ApiDefaults.hasPodcastIndexKey;
+    return SettingsGroup(
+      title: l.credentialsPodcastIndexSection,
+      children: <Widget>[
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconPodcastIndexColor,
+          description: l.welcomeApiPodcastIndexDesc,
+          sourceName: DataSource.podcastIndex.label,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            children: <Widget>[
+              InlineTextField(
+                label: l.credentialsApiKey,
+                value: _podcastIndexApiKey,
+                placeholder: l.credentialsEnterPodcastIndexKey,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() {
+                    _podcastIndexApiKey = value;
+                    _podcastIndexValidated = null;
+                  });
+                  _savePodcastIndexKeys();
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              InlineTextField(
+                label: l.credentialsApiSecret,
+                value: _podcastIndexApiSecret,
+                placeholder: l.credentialsEnterPodcastIndexSecret,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() {
+                    _podcastIndexApiSecret = value;
+                    _podcastIndexValidated = null;
+                  });
+                  _savePodcastIndexKeys();
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCredentialStatus(
+                compact: compact,
+                statusType: _keyStatusType(
+                  hasKey: hasKeys,
+                  isBuiltIn: builtIn,
+                  validated: _podcastIndexValidated,
+                ),
+                statusLabel: _keyStatusLabel(
+                  hasKey: hasKeys,
+                  isBuiltIn: builtIn,
+                  validated: _podcastIndexValidated,
+                ),
+                actionTooltip: l.test,
+                isLoading: _podcastIndexValidating,
+                onAction: hasKeys ? _validatePodcastIndexKeys : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // A half-typed pair must not clobber the stored one (or, on web, spam the
+  // server with partial secrets); save on a complete pair or a full wipe.
+  void _savePodcastIndexKeys() {
+    final String key = _podcastIndexApiKey.trim();
+    final String secret = _podcastIndexApiSecret.trim();
+    final bool complete = key.isNotEmpty && secret.isNotEmpty;
+    final bool cleared = key.isEmpty && secret.isEmpty;
+    if (!complete && !cleared) return;
+    ref
+        .read(settingsNotifierProvider.notifier)
+        .setPodcastIndexKeys(key, secret);
+  }
+
+  Future<void> _validatePodcastIndexKeys() async {
+    setState(() => _podcastIndexValidating = true);
+    final bool valid = await ref
+        .read(settingsNotifierProvider.notifier)
+        .validatePodcastIndexKeys();
+    if (!mounted) return;
+    setState(() {
+      _podcastIndexValidating = false;
+      _podcastIndexValidated = valid ? StatusType.success : StatusType.error;
+    });
+    context.showSnack(
+      valid
+          ? S.of(context).credentialsPodcastIndexKeyValid
+          : S.of(context).credentialsPodcastIndexKeyInvalid,
+      type: valid ? SnackType.success : SnackType.error,
+    );
+  }
 
   Widget _buildGoogleBooksSection(SettingsState settings, bool compact) {
     return SettingsGroup(
@@ -1049,6 +1165,39 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              // Desktop carries the dev pair as a --dart-define; the browser
+              // must not, so on web the server holds one the user enters here.
+              if (kIsWebBuild) ...<Widget>[
+                Text(
+                  l.screenScraperDevCredsHint,
+                  style: AppTypography.bodySmall
+                      .copyWith(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                InlineTextField(
+                  label: l.screenScraperDevIdLabel,
+                  value: _ssDevId,
+                  placeholder: l.screenScraperDevIdPlaceholder,
+                  compact: compact,
+                  onChanged: (String value) {
+                    setState(() => _ssDevId = value);
+                    _saveScreenScraperDevCreds();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                InlineTextField(
+                  label: l.screenScraperDevPasswordLabel,
+                  value: _ssDevPassword,
+                  placeholder: l.screenScraperDevPasswordPlaceholder,
+                  obscureText: true,
+                  compact: compact,
+                  onChanged: (String value) {
+                    setState(() => _ssDevPassword = value);
+                    _saveScreenScraperDevCreds();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               Text(
                 l.screenScraperUserCredsHint,
                 style: AppTypography.bodySmall
@@ -1081,9 +1230,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.tonalIcon(
-                  onPressed: (settings.hasScreenScraperCreds &&
-                          ApiDefaults.hasScreenScraperDevCreds &&
-                          !_ssQuotaLoading)
+                  onPressed: (settings.canUseScreenScraper && !_ssQuotaLoading)
                       ? _fetchScreenScraperQuota
                       : null,
                   icon: _ssQuotaLoading
@@ -1163,6 +1310,15 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     await ref.read(settingsNotifierProvider.notifier).setScreenScraperCredentials(
           ssid: _ssSsid.trim(),
           sspassword: _ssSspassword.trim(),
+        );
+  }
+
+  Future<void> _saveScreenScraperDevCreds() async {
+    await ref
+        .read(settingsNotifierProvider.notifier)
+        .setScreenScraperDevCredentials(
+          devId: _ssDevId.trim(),
+          devPassword: _ssDevPassword.trim(),
         );
   }
 

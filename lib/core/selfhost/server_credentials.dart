@@ -23,8 +23,12 @@ const Map<String, String> kConfigKeyToCredential = <String, String>{
   'google_books_api_key': CredentialNames.googleBooks,
   'hardcover_api_key': CredentialNames.hardcover,
   'simkl_client_id': CredentialNames.simklClientId,
+  'podcastindex_api_key': CredentialNames.podcastIndexKey,
+  'podcastindex_api_secret': CredentialNames.podcastIndexSecret,
   'screenscraper_ssid': CredentialNames.ssSsid,
   'screenscraper_sspassword': CredentialNames.ssSspassword,
+  'screenscraper_dev_id': CredentialNames.ssDevId,
+  'screenscraper_dev_password': CredentialNames.ssDevPassword,
 };
 
 final Map<String, String> kCredentialToConfigKey = <String, String>{

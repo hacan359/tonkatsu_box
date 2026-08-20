@@ -34,4 +34,36 @@ void main() {
       }
     });
   });
+
+  group('fnv1a53', () {
+    // Golden vectors pin the on-disk id contract, same as fnv1a64 above.
+    const Map<String, int> golden = <String, int>{
+      '': 5239054864097658,
+      'OL123': 6020920346270183,
+      'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 4413062887020633,
+      'Тонкацу': 3709886798302770,
+      'hardcover:42': 1537439661777293,
+      'b1a9c0e4-1f0e-4c6b-8e2a-77e5b3b9f2f1': 381424520416013,
+    };
+
+    test('should match golden vectors', () {
+      golden.forEach((String input, int expected) {
+        expect(fnv1a53(input), expected, reason: 'input: "$input"');
+      });
+    });
+
+    test('should produce identical values in the io and web variants', () {
+      for (final String input in golden.keys) {
+        expect(io.fnv1a53(input), web.fnv1a53(input),
+            reason: 'input: "$input"');
+      }
+    });
+
+    test('should fit a JS double exactly (below 2^53)', () {
+      for (final String input in golden.keys) {
+        expect(fnv1a53(input), lessThan(1 << 53), reason: 'input: "$input"');
+        expect(fnv1a53(input), isNonNegative);
+      }
+    });
+  });
 }

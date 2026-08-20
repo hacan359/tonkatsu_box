@@ -48,9 +48,8 @@ class KinoriumImportOptions extends ImportOptions {
   /// The CSV is read at pick time — the browser never has a path to defer to.
   final Uint8List bytes;
 
-  /// The "Watchlist" (Kinorium's «Буду смотреть» list) toggle. `true` imports
-  /// every row as [ItemStatus.planned]; `false` imports as
-  /// [ItemStatus.completed] and carries over the rating and watch date.
+  /// Kinorium's «Буду смотреть» list: `true` imports every row as
+  /// [ItemStatus.planned], `false` as completed with its rating and date.
   final bool isWishlist;
 
   /// Append actors/directors/notes to the item comment.
@@ -60,9 +59,8 @@ class KinoriumImportOptions extends ImportOptions {
   final KinoriumWishlistReasons reasons;
 }
 
-/// Localized reasons a Kinorium row landed in the wishlist. Built in the UI
-/// (the import service has no [BuildContext]) and passed via the options; the
-/// service falls back to [KinoriumWishlistReasons.english] when none is given.
+/// Localized reasons a row landed in the wishlist; built in the UI (the
+/// service has no BuildContext), with [english] as the default fallback.
 class KinoriumWishlistReasons {
   const KinoriumWishlistReasons({
     required this.notFound,
@@ -89,13 +87,8 @@ class KinoriumWishlistReasons {
       'Duplicate of "$otherTitle"';
 }
 
-/// Imports a Kinorium CSV export by matching each title against TMDB.
-///
-/// First adapter on the shared import layer: it parses the file, resolves rows
-/// with [TmdbMatcher] (Kinorium rows carry no TMDB id, so every row costs a
-/// throttled, 429-retried search), then hands the whole scope to [ImportWriter]
-/// — collecting first and writing once is far faster than per-row inserts and
-/// avoids a half-filled collection appearing mid-import.
+/// Rows carry no id, so each costs a throttled TMDB lookup; collecting first
+/// and writing once keeps a half-filled collection from showing mid-import.
 class KinoriumImportService implements ImportSource {
   KinoriumImportService({
     required CollectionRepository repository,
@@ -133,9 +126,8 @@ class KinoriumImportService implements ImportSource {
         total: 1,
       ));
 
-      // Parse off the UI isolate (a big CSV would freeze the dialog); local
-      // copies keep the closure from capturing non-sendable `this`. The web
-      // has no isolates, so it parses inline.
+      // Parse off the UI isolate (web has none, so inline there); locals keep
+      // the closure from capturing non-sendable `this`.
       final KinoriumCsvParser parser = _parser;
       final Uint8List bytes = options.bytes;
       final List<KinoriumEntry> entries = kIsWebBuild
@@ -170,9 +162,8 @@ class KinoriumImportService implements ImportSource {
           message: 'Matching "${entry.title}"...',
         ));
 
-        // Not representable as a collection item (episodes, unrecognized
-        // types). Route to the wishlist instead of dropping, so nothing the
-        // file lists disappears silently.
+        // Episodes and unrecognized types cannot be collection items; route
+        // to the wishlist so nothing the file lists disappears silently.
         if (!_isSupported(entry)) {
           unmatched.add((entry, reasons.unsupportedType(entry.typeLabel)));
           continue;
@@ -204,10 +195,8 @@ class KinoriumImportService implements ImportSource {
         }
       }
 
-      // Two rows can resolve to the same TMDB id (a real re-listing, or a
-      // mismatch where different titles collapse onto one film). Keep the first
-      // and send the rest to the wishlist rather than dropping them as silent
-      // duplicates, so a wrong collapse is recoverable by hand.
+      // Rows can collapse onto one TMDB id: keep the first, wishlist the rest
+      // so a wrong collapse stays recoverable by hand.
       final Set<String> seenKeys = <String>{};
       final Map<String, String> firstTitleByKey = <String, String>{};
       final List<(KinoriumEntry, TmdbMatch)> uniqueMatched =
@@ -340,9 +329,8 @@ class KinoriumImportService implements ImportSource {
     );
   }
 
-  /// Columns to refresh on a re-sync: rating and note, but only when Kinorium
-  /// supplies a value that differs from the stored one (never wipes existing
-  /// data when the export has nothing).
+  /// Re-sync refreshes only rating and note, and only when Kinorium supplies
+  /// a differing value — never wipes existing data on an empty export.
   Map<String, dynamic> _changedFields(
     KinoriumEntry entry,
     CollectionItem current,
@@ -427,10 +415,8 @@ class KinoriumImportService implements ImportSource {
     return match;
   }
 
-  /// Builds the item comment. An optional [reason] (why the row was wishlisted)
-  /// leads, then cast & crew when [includeCastCrew] is set (the wishlist always
-  /// passes it), any original Note text, and always a Kinorium search link
-  /// (markdown, so the note renders a clickable "Link" instead of a raw URL).
+  /// A wishlist [reason] leads, then cast & crew, the source note, and a
+  /// markdown Kinorium search link so the note renders "Link", not a raw URL.
   String _composeNote(
     KinoriumEntry entry, {
     required bool includeCastCrew,

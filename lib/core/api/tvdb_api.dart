@@ -12,10 +12,8 @@ import 'tvdb/tvdb_search_api.dart';
 import 'tvdb/tvdb_series_api.dart';
 export 'tvdb/tvdb_types.dart';
 
-/// TheTVDB v4 facade (`https://api4.thetvdb.com/v4`). Movies and TV series.
-///
-/// [locale] is the app language; TheTVDB never localizes a response, so every
-/// mapper picks the title and overview out of the translation payload.
+/// TheTVDB v4 facade. TheTVDB never localizes a response, so every mapper
+/// picks the title and overview out of the translation payload.
 class TvdbApi {
   TvdbApi({Dio? dio}) : _client = TvdbHttpClient(dio: dio) {
     _search = TvdbSearchApi(_client);

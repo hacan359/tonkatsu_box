@@ -7,11 +7,13 @@ import '../../../shared/constants/api_defaults.dart';
 import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_theme_id.dart';
+import '../../../shared/constants/rich_hero_style.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/comicvine_api.dart';
 import '../../../core/api/google_books_api.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/igdb_api.dart';
+import '../../../core/api/podcast_index_api.dart';
 import '../../../core/api/ra_api.dart';
 import '../../../core/api/screenscraper_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
@@ -37,6 +39,10 @@ abstract class SettingsKeys {
 
   static const String comicVineApiKey = 'comicvine_api_key';
 
+  static const String podcastIndexApiKey = 'podcastindex_api_key';
+
+  static const String podcastIndexApiSecret = 'podcastindex_api_secret';
+
   static const String googleBooksApiKey = 'google_books_api_key';
 
   /// Personal Bearer token from hardcover.app/account/api.
@@ -45,6 +51,12 @@ abstract class SettingsKeys {
   static const String screenScraperSsid = 'screenscraper_ssid';
 
   static const String screenScraperSspassword = 'screenscraper_sspassword';
+
+  /// Only the web UI offers the dev pair; a desktop build has it as a
+  /// `--dart-define` and reads these keys just to honour an imported config.
+  static const String screenScraperDevId = 'screenscraper_dev_id';
+
+  static const String screenScraperDevPassword = 'screenscraper_dev_password';
 
   /// Prefix; suffixed per-collection id at call site.
   static const String collectionViewModePrefix = 'collection_view_mode_';
@@ -59,7 +71,6 @@ abstract class SettingsKeys {
 
   static const String tmdbLanguageDefault = 'en-US';
 
-  /// App UI language (en / ru).
   static const String appLanguage = 'app_language';
 
   static const String appLanguageDefault = 'en';
@@ -106,6 +117,9 @@ abstract class SettingsKeys {
   static const String hardcoverUsername = 'hardcover_username';
 
   static const String richCollectionsEnabled = 'rich_collections_enabled';
+
+  /// Rich hero banner style id (see [RichHeroStyle]).
+  static const String richHeroStyle = 'rich_hero_style';
 
   static const String hideEmptyMediaTypeChevrons =
       'hide_empty_media_type_chevrons';
@@ -154,8 +168,12 @@ class SettingsState {
     this.comicVineApiKey,
     this.googleBooksApiKey,
     this.hardcoverApiKey,
+    this.podcastIndexApiKey,
+    this.podcastIndexApiSecret,
     this.screenScraperSsid,
     this.screenScraperSspassword,
+    this.screenScraperDevId,
+    this.screenScraperDevPassword,
     this.defaultAuthor,
     this.tmdbLanguage = SettingsKeys.tmdbLanguageDefault,
     this.appLanguage = SettingsKeys.appLanguageDefault,
@@ -165,6 +183,7 @@ class SettingsState {
     this.discordRpcEnabled = false,
     this.discordRaSyncEnabled = false,
     this.richCollectionsEnabled = false,
+    this.richHeroStyle = RichHeroStyle.classic,
     this.hideEmptyMediaTypeChevrons = false,
     this.alwaysShowSubcategories = false,
     this.dateFormat = SettingsKeys.dateFormatDefault,
@@ -203,15 +222,35 @@ class SettingsState {
 
   final String? hardcoverApiKey;
 
+  final String? podcastIndexApiKey;
+
+  final String? podcastIndexApiSecret;
+
   final String? screenScraperSsid;
 
   final String? screenScraperSspassword;
+
+  /// On web this mirrors what the server holds, because the browser must not
+  /// carry a `--dart-define` of it.
+  final String? screenScraperDevId;
+
+  final String? screenScraperDevPassword;
 
   bool get hasScreenScraperCreds =>
       screenScraperSsid != null &&
       screenScraperSsid!.isNotEmpty &&
       screenScraperSspassword != null &&
       screenScraperSspassword!.isNotEmpty;
+
+  /// Entered pair wins over the built-in one, like every other key: the browser
+  /// carries no dart-define, and an imported config may bring a pair anywhere.
+  bool get hasScreenScraperDevCreds =>
+      ((screenScraperDevId?.isNotEmpty ?? false) &&
+          (screenScraperDevPassword?.isNotEmpty ?? false)) ||
+      ApiDefaults.hasScreenScraperDevCreds;
+
+  bool get canUseScreenScraper =>
+      hasScreenScraperDevCreds && hasScreenScraperCreds;
 
   final String? defaultAuthor;
 
@@ -231,6 +270,8 @@ class SettingsState {
 
   /// Hero image + description instead of mosaic.
   final bool richCollectionsEnabled;
+
+  final RichHeroStyle richHeroStyle;
 
   /// Hide media-type chevrons with zero items in the current filter bar.
   final bool hideEmptyMediaTypeChevrons;
@@ -277,6 +318,16 @@ class SettingsState {
 
   bool get hasComicVineKey =>
       comicVineApiKey != null && comicVineApiKey!.isNotEmpty;
+
+  bool get hasPodcastIndexKeys =>
+      podcastIndexApiKey != null &&
+      podcastIndexApiKey!.isNotEmpty &&
+      podcastIndexApiSecret != null &&
+      podcastIndexApiSecret!.isNotEmpty;
+
+  /// True when the built-in pair signs requests — the user entered nothing.
+  bool get isPodcastIndexKeyBuiltIn =>
+      !hasPodcastIndexKeys && ApiDefaults.hasPodcastIndexKey;
 
   bool get hasGoogleBooksKey =>
       googleBooksApiKey != null && googleBooksApiKey!.isNotEmpty;
@@ -338,8 +389,12 @@ class SettingsState {
     String? comicVineApiKey,
     String? googleBooksApiKey,
     String? hardcoverApiKey,
+    String? podcastIndexApiKey,
+    String? podcastIndexApiSecret,
     String? screenScraperSsid,
     String? screenScraperSspassword,
+    String? screenScraperDevId,
+    String? screenScraperDevPassword,
     String? defaultAuthor,
     String? tmdbLanguage,
     String? appLanguage,
@@ -349,6 +404,7 @@ class SettingsState {
     bool? discordRpcEnabled,
     bool? discordRaSyncEnabled,
     bool? richCollectionsEnabled,
+    RichHeroStyle? richHeroStyle,
     bool? hideEmptyMediaTypeChevrons,
     bool? alwaysShowSubcategories,
     String? dateFormat,
@@ -369,11 +425,17 @@ class SettingsState {
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
       tvdbApiKey: tvdbApiKey ?? this.tvdbApiKey,
       comicVineApiKey: comicVineApiKey ?? this.comicVineApiKey,
+      podcastIndexApiKey: podcastIndexApiKey ?? this.podcastIndexApiKey,
+      podcastIndexApiSecret:
+          podcastIndexApiSecret ?? this.podcastIndexApiSecret,
       googleBooksApiKey: googleBooksApiKey ?? this.googleBooksApiKey,
       hardcoverApiKey: hardcoverApiKey ?? this.hardcoverApiKey,
       screenScraperSsid: screenScraperSsid ?? this.screenScraperSsid,
       screenScraperSspassword:
           screenScraperSspassword ?? this.screenScraperSspassword,
+      screenScraperDevId: screenScraperDevId ?? this.screenScraperDevId,
+      screenScraperDevPassword:
+          screenScraperDevPassword ?? this.screenScraperDevPassword,
       defaultAuthor: defaultAuthor ?? this.defaultAuthor,
       tmdbLanguage: tmdbLanguage ?? this.tmdbLanguage,
       appLanguage: appLanguage ?? this.appLanguage,
@@ -384,6 +446,7 @@ class SettingsState {
       discordRaSyncEnabled: discordRaSyncEnabled ?? this.discordRaSyncEnabled,
       richCollectionsEnabled:
           richCollectionsEnabled ?? this.richCollectionsEnabled,
+      richHeroStyle: richHeroStyle ?? this.richHeroStyle,
       hideEmptyMediaTypeChevrons:
           hideEmptyMediaTypeChevrons ?? this.hideEmptyMediaTypeChevrons,
       alwaysShowSubcategories:
@@ -418,9 +481,8 @@ final NotifierProvider<SettingsNotifier, SettingsState> settingsNotifierProvider
     NotifierProvider<SettingsNotifier, SettingsState>(SettingsNotifier.new);
 
 extension AnimeMangaTitleLanguagePrefs on SharedPreferences {
-  /// Current AniList title language with default fallback. Use this from
-  /// non-UI callers that already hold a [SharedPreferences] instance to
-  /// avoid taking a dependency on the heavy [SettingsNotifier].
+  /// For non-UI callers that already hold a [SharedPreferences] and should not
+  /// depend on the heavy [SettingsNotifier].
   String get animeMangaTitleLanguage =>
       getString(SettingsKeys.animeMangaTitleLanguage) ??
       SettingsKeys.animeMangaTitleLanguageDefault;
@@ -433,6 +495,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   late TmdbApi _tmdbApi;
   late TvdbApi _tvdbApi;
   late ComicVineApi _comicVineApi;
+  late PodcastIndexApi _podcastIndexApi;
   late GoogleBooksApi _googleBooksApi;
   late HardcoverApi _hardcoverApi;
   late ScreenScraperApi _screenScraperApi;
@@ -461,6 +524,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi = ref.watch(tmdbApiProvider);
     _tvdbApi = ref.watch(tvdbApiProvider);
     _comicVineApi = ref.watch(comicVineApiProvider);
+    _podcastIndexApi = ref.watch(podcastIndexApiProvider);
     _googleBooksApi = ref.watch(googleBooksApiProvider);
     _hardcoverApi = ref.watch(hardcoverApiProvider);
     _screenScraperApi = ref.watch(screenScraperApiProvider);
@@ -519,6 +583,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // ComicVine: user key from prefs only, no built-in.
     final String? comicVineApiKey =
         _prefs.getString(SettingsKeys.comicVineApiKey);
+
+    // Podcast Index: user pair from prefs; the built-in pair stays invisible
+    // here so the credentials screen shows only what the user entered.
+    final String? podcastIndexApiKey =
+        _prefs.getString(SettingsKeys.podcastIndexApiKey);
+    final String? podcastIndexApiSecret =
+        _prefs.getString(SettingsKeys.podcastIndexApiSecret);
     // Google Books: optional user key from prefs only, no built-in.
     final String? googleBooksApiKey =
         _prefs.getString(SettingsKeys.googleBooksApiKey);
@@ -529,6 +600,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getString(SettingsKeys.screenScraperSsid);
     final String? screenScraperSspassword =
         _prefs.getString(SettingsKeys.screenScraperSspassword);
+    final String? screenScraperDevId =
+        _prefs.getString(SettingsKeys.screenScraperDevId);
+    final String? screenScraperDevPassword =
+        _prefs.getString(SettingsKeys.screenScraperDevPassword);
     final String? defaultAuthor =
         _prefs.getString(SettingsKeys.defaultAuthor);
     final String tmdbLanguage =
@@ -549,6 +624,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.discordRaSyncEnabled) ?? false;
     final bool richCollectionsEnabled =
         _prefs.getBool(SettingsKeys.richCollectionsEnabled) ?? false;
+    final RichHeroStyle richHeroStyle =
+        RichHeroStyle.fromId(_prefs.getString(SettingsKeys.richHeroStyle));
     final bool hideEmptyMediaTypeChevrons =
         _prefs.getBool(SettingsKeys.hideEmptyMediaTypeChevrons) ?? false;
     final bool alwaysShowSubcategories =
@@ -584,10 +661,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
       tmdbApiKey: tmdbApiKey,
       tvdbApiKey: tvdbApiKey,
       comicVineApiKey: comicVineApiKey,
+      podcastIndexApiKey: podcastIndexApiKey,
+      podcastIndexApiSecret: podcastIndexApiSecret,
       googleBooksApiKey: googleBooksApiKey,
       hardcoverApiKey: hardcoverApiKey,
       screenScraperSsid: screenScraperSsid,
       screenScraperSspassword: screenScraperSspassword,
+      screenScraperDevId: screenScraperDevId,
+      screenScraperDevPassword: screenScraperDevPassword,
       defaultAuthor: defaultAuthor,
       tmdbLanguage: tmdbLanguage,
       appLanguage: appLanguage,
@@ -597,6 +678,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       discordRpcEnabled: discordRpcEnabled,
       discordRaSyncEnabled: discordRaSyncEnabled,
       richCollectionsEnabled: richCollectionsEnabled,
+      richHeroStyle: richHeroStyle,
       hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
       alwaysShowSubcategories: alwaysShowSubcategories,
       dateFormat: dateFormat,
@@ -613,6 +695,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _screenScraperApi.setUserCredentials(
       ssid: screenScraperSsid ?? '',
       sspassword: screenScraperSspassword ?? '',
+    );
+    _screenScraperApi.setDevCredentials(
+      devId: screenScraperDevId ?? '',
+      devPassword: screenScraperDevPassword ?? '',
     );
 
     Future<void>.microtask(_loadPlatformCount);
@@ -662,6 +748,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
     if (state.comicVineApiKey != null && state.comicVineApiKey!.isNotEmpty) {
       _comicVineApi.setApiKey(state.comicVineApiKey!);
+    }
+    if (state.hasPodcastIndexKeys) {
+      _podcastIndexApi.setCredentials(
+        state.podcastIndexApiKey!,
+        state.podcastIndexApiSecret!,
+      );
     }
     if (state.googleBooksApiKey != null &&
         state.googleBooksApiKey!.isNotEmpty) {
@@ -798,6 +890,24 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
+  /// Only the web settings screen calls this; on web the write also travels to
+  /// the server, which is what signs the proxied requests.
+  Future<void> setScreenScraperDevCredentials({
+    required String devId,
+    required String devPassword,
+  }) async {
+    await _writeCredential(SettingsKeys.screenScraperDevId, devId);
+    await _writeCredential(SettingsKeys.screenScraperDevPassword, devPassword);
+    _screenScraperApi.setDevCredentials(
+      devId: devId,
+      devPassword: devPassword,
+    );
+    state = state.copyWith(
+      screenScraperDevId: devId,
+      screenScraperDevPassword: devPassword,
+    );
+  }
+
   Future<void> setTmdbApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
       await _writeCredential(SettingsKeys.tmdbApiKey, apiKey);
@@ -832,6 +942,29 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     state = state.copyWith(comicVineApiKey: apiKey);
+  }
+
+  /// Key and secret land together — a signature needs both, so a lone half
+  /// falls back to the built-in pair.
+  Future<void> setPodcastIndexKeys(String apiKey, String apiSecret) async {
+    await _writeCredential(SettingsKeys.podcastIndexApiKey, apiKey);
+    await _writeCredential(SettingsKeys.podcastIndexApiSecret, apiSecret);
+    if (apiKey.isNotEmpty && apiSecret.isNotEmpty) {
+      _podcastIndexApi.setCredentials(apiKey, apiSecret);
+    } else {
+      _podcastIndexApi.clearCredentials();
+      if (ApiDefaults.hasPodcastIndexKey) {
+        _podcastIndexApi.setCredentials(
+          ApiDefaults.podcastIndexApiKey,
+          ApiDefaults.podcastIndexApiSecret,
+        );
+      }
+    }
+
+    state = state.copyWith(
+      podcastIndexApiKey: apiKey,
+      podcastIndexApiSecret: apiSecret,
+    );
   }
 
   Future<void> setGoogleBooksApiKey(String apiKey) async {
@@ -904,6 +1037,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> setRichCollectionsEnabled({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.richCollectionsEnabled, enabled);
     state = state.copyWith(richCollectionsEnabled: enabled);
+  }
+
+  Future<void> setRichHeroStyle(RichHeroStyle style) async {
+    await _prefs.setString(SettingsKeys.richHeroStyle, style.id);
+    state = state.copyWith(richHeroStyle: style);
   }
 
   Future<void> setHideEmptyMediaTypeChevrons({required bool enabled}) async {
@@ -1037,6 +1175,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     return _comicVineApi.validateApiKey(state.comicVineApiKey!);
   }
 
+  /// Validates whatever pair the client currently signs with — the user's
+  /// or the built-in one.
+  Future<bool> validatePodcastIndexKeys() async {
+    if (!_podcastIndexApi.hasCredentials) return false;
+    return _podcastIndexApi.validateCredentials();
+  }
+
   Future<bool> validateGoogleBooksKey() async {
     if (!state.hasGoogleBooksKey) return false;
     return _googleBooksApi.validateApiKey(state.googleBooksApiKey!);
@@ -1087,8 +1232,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _writeCredential(SettingsKeys.comicVineApiKey, '');
     await _writeCredential(SettingsKeys.googleBooksApiKey, '');
     await _writeCredential(SettingsKeys.hardcoverApiKey, '');
+    await _writeCredential(SettingsKeys.podcastIndexApiKey, '');
+    await _writeCredential(SettingsKeys.podcastIndexApiSecret, '');
     await _writeCredential(SettingsKeys.screenScraperSsid, '');
     await _writeCredential(SettingsKeys.screenScraperSspassword, '');
+    await _writeCredential(SettingsKeys.screenScraperDevId, '');
+    await _writeCredential(SettingsKeys.screenScraperDevPassword, '');
     await _prefs.remove(SettingsKeys.defaultAuthor);
     await _prefs.remove(SettingsKeys.showRecommendations);
     await _prefs.remove(SettingsKeys.showBlurayOverlay);
@@ -1096,6 +1245,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.discordRpcEnabled);
     await _prefs.remove(SettingsKeys.discordRaSyncEnabled);
     await _prefs.remove(SettingsKeys.richCollectionsEnabled);
+    await _prefs.remove(SettingsKeys.richHeroStyle);
     await _prefs.remove(SettingsKeys.hideEmptyMediaTypeChevrons);
     await _prefs.remove(SettingsKeys.alwaysShowSubcategories);
     await _prefs.remove(SettingsKeys.dateFormat);
@@ -1112,6 +1262,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _comicVineApi.clearApiKey();
     _googleBooksApi.clearApiKey();
     _hardcoverApi.clearApiKey();
+    _podcastIndexApi.clearCredentials();
 
     state = const SettingsState();
   }

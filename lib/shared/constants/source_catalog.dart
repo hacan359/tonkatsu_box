@@ -1,7 +1,3 @@
-// Single source of truth for the data providers exposed on the Search screen.
-// The Welcome "Sources" step and Settings → Credits both render from this, so
-// `source_catalog_test` asserts it mirrors the registered `searchSources`.
-
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 
@@ -24,10 +20,8 @@ class SourceInfo {
   final SourceKeyRequirement keyRequirement;
 }
 
-/// Data providers backing the Search screen — one entry per provider, in
-/// search-tab order (the wizard "Sources" step and Settings → Credits render
-/// from this). SteamGridDB and VGMaps are absent (not searchable). OpenLibrary
-/// and Fantlab are separate book providers, each its own entry.
+/// One entry per search provider, in search-tab order; the wizard and Credits
+/// render from it too. SteamGridDB and VGMaps are absent — not searchable.
 const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
   SourceInfo(
     source: DataSource.tmdb,
@@ -109,6 +103,18 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
     source: DataSource.comicVine,
     mediaTypes: <MediaType>[MediaType.book],
     url: 'https://comicvine.gamespot.com/api/',
+    keyRequirement: SourceKeyRequirement.recommended,
+  ),
+  SourceInfo(
+    source: DataSource.musicBrainz,
+    mediaTypes: <MediaType>[MediaType.audio],
+    url: 'https://musicbrainz.org/',
+  ),
+  SourceInfo(
+    source: DataSource.podcastIndex,
+    mediaTypes: <MediaType>[MediaType.audio],
+    // "Get a key" link target: free registration hands out the key/secret pair.
+    url: 'https://api.podcastindex.org/',
     keyRequirement: SourceKeyRequirement.recommended,
   ),
 ];

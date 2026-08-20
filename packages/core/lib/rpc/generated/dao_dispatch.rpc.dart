@@ -3,6 +3,7 @@
 
 import 'anilist_tag_dao.dispatch.rpc.dart';
 import 'anime_dao.dispatch.rpc.dart';
+import 'audio_dao.dispatch.rpc.dart';
 import 'book_dao.dispatch.rpc.dart';
 import 'calendar_entry_dao.dispatch.rpc.dart';
 import 'canvas_dao.dispatch.rpc.dart';
@@ -19,6 +20,7 @@ import 'mood_grid_dao.dispatch.rpc.dart';
 import 'movie_dao.dispatch.rpc.dart';
 import 'package:core/database/dao/anilist_tag_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
+import 'package:core/database/dao/audio_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/calendar_entry_dao.dart';
 import 'package:core/database/dao/canvas_dao.dart';
@@ -50,6 +52,7 @@ import 'wishlist_dao.dispatch.rpc.dart';
 
 export 'package:core/database/dao/anilist_tag_dao.dart';
 export 'package:core/database/dao/anime_dao.dart';
+export 'package:core/database/dao/audio_dao.dart';
 export 'package:core/database/dao/book_dao.dart';
 export 'package:core/database/dao/calendar_entry_dao.dart';
 export 'package:core/database/dao/canvas_dao.dart';
@@ -78,6 +81,7 @@ typedef DaoDispatch =
 Map<String, DaoDispatch> buildDaoDispatchTable({
   required AniListTagDao aniListTagDao,
   required AnimeDao animeDao,
+  required AudioDao audioDao,
   required BookDao bookDao,
   required CalendarEntryDao calendarEntryDao,
   required CanvasDao canvasDao,
@@ -105,6 +109,8 @@ Map<String, DaoDispatch> buildDaoDispatchTable({
         dispatchAniListTagDao(aniListTagDao, m, a),
     'AnimeDao': (String m, Map<String, Object?> a) =>
         dispatchAnimeDao(animeDao, m, a),
+    'AudioDao': (String m, Map<String, Object?> a) =>
+        dispatchAudioDao(audioDao, m, a),
     'BookDao': (String m, Map<String, Object?> a) =>
         dispatchBookDao(bookDao, m, a),
     'CalendarEntryDao': (String m, Map<String, Object?> a) =>

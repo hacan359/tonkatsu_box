@@ -1,3 +1,4 @@
-/// Wire-format revision of `/rpc`. Client and server ship in one image, so a
-/// mismatch only happens in a stale browser tab — it is told to reload.
-const int kProtocolVersion = 1;
+/// Wire-format revision of `/rpc`. Bump on any DAO surface change so a stale
+/// tab or a not-yet-updated server errors clearly instead of failing per call.
+// v2: renamed getCollectionIdsWithStatuses, added AudioDao + listen-count stats.
+const int kProtocolVersion = 2;

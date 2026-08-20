@@ -1,4 +1,3 @@
-
 enum GamepadAction {
   navigateUp,
   navigateDown,
@@ -13,10 +12,10 @@ enum GamepadAction {
 
   nextTab,
 
-  /// LT (digital) — предыдущий суб-таб / фильтр.
+  /// LT (digital).
   previousSubTab,
 
-  /// RT (digital) — следующий суб-таб / фильтр.
+  /// RT (digital).
   nextSubTab,
 
   scrollUp,
@@ -32,14 +31,13 @@ enum GamepadAction {
   zoomIn,
   zoomOut,
 
-  /// Y — контекстное меню элемента (аналог ПКМ).
+  /// Y — the gamepad stand-in for a right click.
   contextMenu,
 
   openMenu,
 }
 
 enum InputMode {
-  /// Мышь + клавиатура (по умолчанию).
   mouse,
 
   gamepad,

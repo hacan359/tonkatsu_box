@@ -1,6 +1,5 @@
-/// Runs an action and retries it on a rate-limit error with exponential
-/// backoff. Source-agnostic: the caller decides what counts as a rate limit
-/// via [isRateLimit], so it works with any API client's exception type.
+/// Retries an action on rate-limit errors with exponential backoff.
+/// Source-agnostic: the caller defines a rate limit via [isRateLimit].
 class RateLimitedRetry {
   const RateLimitedRetry({
     this.maxAttempts = 4,
@@ -13,9 +12,8 @@ class RateLimitedRetry {
   /// Backoff base: the wait before attempt N is `baseDelay * 2^(N-1)`.
   final Duration baseDelay;
 
-  /// Runs [action], retrying when [isRateLimit] returns true for the thrown
-  /// error. [onRetry] reports the upcoming wait and the (1-based) attempt that
-  /// just failed. Non-rate-limit errors and the final attempt rethrow.
+  /// [onRetry] reports the upcoming wait and the 1-based attempt that just
+  /// failed. Non-rate-limit errors and the final attempt rethrow.
   Future<T> run<T>(
     Future<T> Function() action, {
     required bool Function(Object error) isRateLimit,

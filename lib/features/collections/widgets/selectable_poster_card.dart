@@ -1,11 +1,10 @@
-// Checkbox overlay for bulk selection, Google Photos style: tapping the
-// circle toggles selection, tapping the rest of the card is a normal open.
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 
+/// Google Photos style: the circle toggles selection, the rest of the card
+/// stays a normal open.
 class SelectablePosterCard extends StatefulWidget {
   const SelectablePosterCard({
     required this.child,

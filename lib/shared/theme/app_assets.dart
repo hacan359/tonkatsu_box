@@ -46,4 +46,8 @@ abstract final class AppAssets {
       'assets/images/icon_google_book_color.png';
   static const String iconHardcoverColor =
       'assets/images/icon_hardcover_color.png';
+  static const String iconMusicBrainzColor =
+      'assets/images/music_brainz_color.png';
+  static const String iconPodcastIndexColor =
+      'assets/images/podcastindex_color.png';
 }

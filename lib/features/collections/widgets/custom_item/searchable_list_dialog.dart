@@ -4,9 +4,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 
-/// Searchable single-select dialog returning the picked string (or the
-/// typed custom value when [allowCustom] is true and the user taps
-/// "use custom").
+/// Searchable single-select dialog returning the picked string, or the
+/// typed custom value when [allowCustom] is true.
 class SearchableListDialog extends StatefulWidget {
   const SearchableListDialog({
     required this.title,

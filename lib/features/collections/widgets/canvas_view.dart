@@ -470,9 +470,8 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                           children: <Widget>[
                             for (final CanvasItem item in sortedItems)
                               _buildCanvasItem(item, isConnecting),
-                            // IgnorePointer: clicks pass through connections.
-                            // ValueListenableBuilder isolates connection
-                            // repaints from canvas item rebuilds.
+                            // IgnorePointer lets clicks pass through;
+                            // the builder isolates connection repaints.
                             if (canvasState.connections.isNotEmpty ||
                                 isConnecting)
                               Positioned.fill(
@@ -663,6 +662,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.manga:
       case CanvasItemType.anime:
       case CanvasItemType.book:
+      case CanvasItemType.audio:
       case CanvasItemType.custom:
         child = _buildMediaCard(item);
       case CanvasItemType.text:
@@ -713,10 +713,8 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   }
 }
 
-/// Tracks drag by absolute globalPosition (not incremental deltas) and uses
-/// [Positioned] + setState — `Transform.translate` inside InteractiveViewer
-/// would double-scale. InteractiveViewer pan is disabled during drag via
-/// callback to avoid double movement.
+/// Drags via [Positioned] + setState — `Transform.translate` inside
+/// InteractiveViewer would double-scale; viewer pan is disabled during drag.
 class _DraggableCanvasItem extends ConsumerStatefulWidget {
   const _DraggableCanvasItem({
     required this.item,
@@ -800,6 +798,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.manga => CanvasRepository.defaultCardWidth,
       CanvasItemType.anime => CanvasRepository.defaultCardWidth,
       CanvasItemType.book => CanvasRepository.defaultCardWidth,
+      CanvasItemType.audio => CanvasRepository.defaultCardWidth,
       CanvasItemType.custom => CanvasRepository.defaultCardWidth,
       CanvasItemType.text => 200,
       CanvasItemType.image => 200,
@@ -818,6 +817,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.manga => CanvasRepository.defaultCardHeight,
       CanvasItemType.anime => CanvasRepository.defaultCardHeight,
       CanvasItemType.book => CanvasRepository.defaultCardHeight,
+      CanvasItemType.audio => CanvasRepository.defaultCardHeight,
       CanvasItemType.custom => CanvasRepository.defaultCardHeight,
       CanvasItemType.text => 100,
       CanvasItemType.image => 200,
@@ -838,9 +838,8 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   void _onPanUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
 
-    // entry(0,0) is real X scale. getMaxScaleOnAxis() returns
-    // max(scaleX,scaleY,scaleZ), and scaleZ is always 1.0, so at zoom<1 it
-    // wrongly returns 1.0.
+    // entry(0,0) is the real X scale; getMaxScaleOnAxis() includes
+    // scaleZ (always 1.0), so at zoom<1 it wrongly returns 1.0.
     final double scale =
         widget.transformationController.value.entry(0, 0);
     final Offset totalGlobalDelta =

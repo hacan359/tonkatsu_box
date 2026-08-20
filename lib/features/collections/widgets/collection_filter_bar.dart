@@ -33,9 +33,9 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.filterMangaFormats,
     required this.filterAnimeFormats,
     required this.filterTagIds,
-    required this.filterStatus,
+    required this.filterStatuses,
     this.filterFavoriteOnly = false,
-    this.effectiveStatusForCounts,
+    this.effectiveStatusesForCounts,
     required this.tags,
     this.searchQuery = '',
     required this.onTypeToggled,
@@ -69,15 +69,14 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   final Set<int> filterTagIds;
 
-  final ItemStatus? filterStatus;
+  final Set<ItemStatus> filterStatuses;
 
   /// Show only favourites.
   final bool filterFavoriteOnly;
 
-  /// Status that drives chevron counts when it diverges from [filterStatus]
-  /// (e.g. the table column header cycled a local filter). Falls back to
-  /// [filterStatus] when null.
-  final ItemStatus? effectiveStatusForCounts;
+  /// Drives chevron counts when it diverges from [filterStatuses] (e.g. the
+  /// table header cycled a local filter); falls back to it when null.
+  final Set<ItemStatus>? effectiveStatusesForCounts;
 
   final List<Tag> tags;
 
@@ -94,7 +93,7 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   final ValueChanged<int?> onTagToggled;
 
-  final ValueChanged<ItemStatus?> onStatusChanged;
+  final ValueChanged<Set<ItemStatus>> onStatusChanged;
 
   final VoidCallback onFavoriteToggled;
 
@@ -143,9 +142,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     );
   }
 
-  /// One subfilter group per active type — game platforms, manga formats,
-  /// anime formats — each tinted with its media-type accent.
-  ///
   /// A group normally appears only once its media-type chevron is selected;
   /// with [alwaysShow] every group whose type has items is shown upfront.
   List<List<SubfilterChipData>> _subfilterGroups({required bool alwaysShow}) {
@@ -219,9 +215,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
             : entries;
     final bool compact =
         MediaQuery.sizeOf(context).width < _compactBreakpoint;
-    // On narrow screens the TagSidebar is hidden, so show a button that
-    // opens a sheet with tags and sorting. Wide screens keep the compact
-    // sort segment (tags are reachable via the TagSidebar on the right).
+    // Narrow screens hide the TagTopBar, so a button opens a sheet with tags
+    // and sorting; wide screens keep the compact sort segment.
     final bool useTagSheetButton = isCompactScreen(context);
 
     return ColoredBox(
@@ -251,7 +246,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
               ),
             Expanded(
               child: StatusDropdownSegment(
-                status: widget.filterStatus,
+                statuses: widget.filterStatuses,
                 compact: compact,
                 subtitle: l.status,
                 onChanged: widget.onStatusChanged,
@@ -411,9 +406,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
     if (items == null) return <Platform>[];
 
-    // The cache is valid while the list identity is unchanged: the provider
-    // emits a new List on any collection change, so an identity comparison
-    // is a correct invalidation check.
+    // The provider emits a new List on any collection change, so identity
+    // comparison is a correct cache-invalidation check.
     if (identical(_cachedPlatformsSource, items) && _cachedPlatforms != null) {
       return _cachedPlatforms!;
     }
@@ -446,13 +440,13 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       _TypeEntry(MediaType.manga, l.mediaTypeManga, counts[MediaType.manga]),
       _TypeEntry(MediaType.anime, l.mediaTypeAnime, counts[MediaType.anime]),
       _TypeEntry(MediaType.book, l.collectionFilterBooks, counts[MediaType.book]),
+      _TypeEntry(MediaType.audio, l.mediaTypeAudio, counts[MediaType.audio]),
       _TypeEntry(MediaType.custom, l.mediaTypeCustom, counts[MediaType.custom]),
     ];
   }
 
-  /// Effective item count per type ignoring every filter — drives chevron
-  /// visibility. Empty when items have not loaded, so callers fall back to the
-  /// raw stats buckets.
+  /// Per-type totals ignoring every filter — drives chevron visibility.
+  /// Empty before items load, so callers fall back to raw stats buckets.
   static Map<MediaType, int> _effectiveTotals(List<CollectionItem>? items) {
     if (items == null) return const <MediaType, int>{};
     final Map<MediaType, int> totals = <MediaType, int>{};
@@ -465,8 +459,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   }
 
   Map<MediaType, int?> _typeCounts(CollectionStats? stats) {
-    final ItemStatus? statusFilter =
-        widget.effectiveStatusForCounts ?? widget.filterStatus;
+    final Set<ItemStatus> statusFilter =
+        widget.effectiveStatusesForCounts ?? widget.filterStatuses;
     final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
     // Before the items list resolves, fall back to the raw stats buckets so the
     // chevrons are not blank on first paint.
@@ -480,18 +474,18 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         MediaType.manga: stats?.mangaCount,
         MediaType.anime: stats?.animeCount,
         MediaType.book: stats?.bookCount,
+        MediaType.audio: stats?.audioCount,
         MediaType.custom: stats?.customCount,
       };
     }
-    // Count what the grid actually shows: every active filter except the type
-    // one, so picking a subfilter (platform, manga / anime format) narrows the
-    // chevron numbers instead of leaving them at the unfiltered total.
+    // Apply every active filter except the type one, so picking a subfilter
+    // narrows the chevron numbers instead of showing the unfiltered total.
     final List<CollectionItem> visible = CollectionFilters(
       platformIds: widget.filterPlatformIds,
       mangaFormats: widget.filterMangaFormats,
       animeFormats: widget.filterAnimeFormats,
       tagIds: widget.filterTagIds,
-      status: statusFilter,
+      statuses: statusFilter,
       favoriteOnly: widget.filterFavoriteOnly,
       searchQuery: widget.searchQuery,
     ).apply(
@@ -536,6 +530,7 @@ int? _totalCountFor(MediaType type, CollectionStats? stats) {
     MediaType.manga => stats.mangaCount,
     MediaType.anime => stats.animeCount,
     MediaType.book => stats.bookCount,
+    MediaType.audio => stats.audioCount,
     MediaType.custom => stats.customCount,
   };
 }

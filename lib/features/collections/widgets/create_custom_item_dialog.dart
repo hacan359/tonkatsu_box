@@ -5,6 +5,7 @@ import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as model;
 import 'package:core/models/tag.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -120,23 +121,28 @@ class _CreateCustomItemDialogState
     if (_isEditing) _loadCachedCover();
   }
 
+  String get _cachedCoverId => customCoverImageId(
+        id: widget.existing!.id,
+        coverUrl: widget.existing!.coverUrl,
+      );
+
   Future<void> _loadCachedCover() async {
     if (kIsWebBuild) {
       // The web build's cover cache is the server's, but only an uploaded
       // cover is guaranteed there — a URL cover previews via the url branch.
       if (!CustomMedia.isLocalCover(widget.existing?.coverUrl ?? '')) return;
-      final String url = serverBaseUrl() +
-          imageProxyPath(
-            type: ImageType.customCover,
-            imageId: '${widget.existing!.id}',
-          );
+      final String url = imageProxyUrl(
+        baseUrl: serverBaseUrl(),
+        type: ImageType.customCover,
+        imageId: _cachedCoverId,
+      );
       setState(() => _cachedCoverUri = Uri.parse(url));
       return;
     }
     final ImageCacheService cache = ref.read(imageCacheServiceProvider);
     final String path = await cache.getLocalImagePath(
       ImageType.customCover,
-      widget.existing!.id.toString(),
+      _cachedCoverId,
     );
     final File file = File(path);
     if (await file.exists() && mounted) {
@@ -285,9 +291,8 @@ class _CreateCustomItemDialogState
     }
   }
 
-  /// Only fields present in the file overwrite current values. Of the
-  /// personal fields the form carries note and tags; the rest (status,
-  /// rating, dates…) are ignored — they belong to the item detail screen.
+  /// Only fields present in the file overwrite current values; personal
+  /// fields beyond note/tags belong to the item detail screen and are ignored.
   void _applyEntry(CustomCardEntry entry) {
     setState(() {
       _selectedType = entry.type;
@@ -525,6 +530,9 @@ class _CreateCustomItemDialogState
     );
     if (result == null || !mounted) return;
     setState(() {
+      // The cached preview is the cover being replaced, so it must stop
+      // outranking the picked source.
+      _cachedCoverUri = null;
       if (result.bytes != null) {
         _coverBytes = result.bytes;
         _coverUrlController.clear();
@@ -767,9 +775,8 @@ class _CreateCustomItemDialogState
     return value != null && value > 0 ? value : null;
   }
 
-  /// Totals for the universal progress tracker. The fine field always shows
-  /// (label follows the display type); the coarse field only for types with a
-  /// sub-division (series → seasons, manga → volumes).
+  /// The fine progress field always shows; the coarse one only for types
+  /// with a sub-division (series → seasons, manga → volumes).
   Widget _buildCountsSection(S l) {
     final bool showGroup = CustomProgressUnits.hasGroupAxis(_selectedType);
     final String? groupLabel =

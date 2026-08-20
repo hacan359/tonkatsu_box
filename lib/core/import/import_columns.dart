@@ -7,7 +7,6 @@ import 'package:core/models/media_type.dart';
 int? epochSeconds(DateTime? date) =>
     date == null ? null : date.millisecondsSinceEpoch ~/ 1000;
 
-/// Total across a per-media-type tally (the shape `ImportWriteResult` uses).
 int sumByType(Map<MediaType, int> byType) {
   int total = 0;
   for (final int value in byType.values) {
@@ -16,19 +15,15 @@ int sumByType(Map<MediaType, int> byType) {
   return total;
 }
 
-/// Whether a MAL/AniList repeat counter is worth storing. The counter is
-/// meaningful for items that reached completion at least once (0 there means
-/// "completed once, no repeats"); for other statuses a zero is just "not
-/// tracked" and must stay `null`.
+/// A repeat counter is meaningful once completion happened at least once
+/// (0 there = "no repeats"); for other statuses 0 is untracked → stay null.
 bool repeatIsTracked(ItemStatus status, int repeat) =>
     status == ItemStatus.completed ||
     status == ItemStatus.replaying ||
     repeat > 0;
 
-/// Column map for a status change on an existing item: the new status plus the
-/// activity dates the transition implies, mirroring [computeDatesForStatus]
-/// (the same rules the per-row `updateItemStatus` applied). Shared by the
-/// source adapters whose re-sync merges an external status into a local item.
+/// Status-change columns for an existing item, mirroring
+/// [computeDatesForStatus] so re-sync matches per-row `updateItemStatus`.
 Map<String, dynamic> statusDateColumns(
   ItemStatus newStatus,
   CollectionItem existing, {

@@ -23,13 +23,8 @@ import 'table_style.dart';
 import 'table_toolbar.dart';
 import '../../../../shared/constants/item_status_ui.dart';
 
-/// Grid-backed table view of a collection (trina_grid): drag-to-reorder and
-/// resize columns, per-column sort and filters, inline editing through the
-/// same cell widgets as before. Column layout persists per collection when
-/// [collectionId] is set.
-///
-/// When [onReorder] is supplied the view flips into manual-order mode:
-/// sorting is disabled and rows get a drag handle.
+/// Column layout persists per collection when [collectionId] is set. A
+/// non-null [onReorder] flips manual-order mode: no sorting, drag handles.
 class CollectionTableView extends ConsumerStatefulWidget {
   const CollectionTableView({
     required this.items,
@@ -73,9 +68,8 @@ class CollectionTableView extends ConsumerStatefulWidget {
   final void Function(int itemId)? onToggleSelect;
   final void Function(bool selectAll)? onToggleSelectAll;
 
-  /// Kept for API compatibility with the outer filter chrome. The grid's
-  /// own per-column filters replaced the old cyclic status filter, so this
-  /// only fires once with `null` to reset the outer state.
+  /// The grid's per-column filters replaced the old cyclic status filter,
+  /// so this only fires once with `null` to reset the outer state.
   final ValueChanged<ItemStatus?>? onFilterStatusChanged;
 
   @override
@@ -161,10 +155,8 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
         widget.selectedIds != null && widget.onToggleSelect != null;
     final bool isRu = Localizations.localeOf(context).languageCode == 'ru';
 
-    // TrinaGrid consumes columns/rows only at creation, so structural
-    // changes (reorder mode, selection, locale) must recreate the grid.
-    // ShadTheme: trina_grid's filter popups are built on shadcn_ui and
-    // require it in context — the app itself doesn't use ShadApp.
+    // TrinaGrid consumes columns/rows only at creation, so structural changes
+    // recreate the grid; ShadTheme is required by trina's shadcn filter popups.
     final Widget grid = ShadTheme(
       data: ShadThemeData(brightness: Brightness.dark),
       // Grid-scoped checkbox theme: rounds the otherwise-square Material
@@ -214,20 +206,30 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
       ),
     );
 
+    // The side padding sits on the toolbar and grid only — the hero banner
+    // stays full-bleed, matching how the grid view renders it.
     return Column(
       children: <Widget>[
         if (widget.heroHeader != null) ...<Widget>[
           widget.heroHeader!,
           const SizedBox(height: AppSpacing.sm),
         ],
-        TableToolbar(
-          columnLabels: tableColumnLabels(l),
-          isColumnHidden: _isColumnHidden,
-          onToggleColumn: _toggleColumnHidden,
-          activeFilterCount: _filterRules.length,
-          onOpenFilters: _openFilterDialog,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: TableToolbar(
+            columnLabels: tableColumnLabels(l),
+            isColumnHidden: _isColumnHidden,
+            onToggleColumn: _toggleColumnHidden,
+            activeFilterCount: _filterRules.length,
+            onOpenFilters: _openFilterDialog,
+          ),
         ),
-        Expanded(child: grid),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: grid,
+          ),
+        ),
       ],
     );
   }

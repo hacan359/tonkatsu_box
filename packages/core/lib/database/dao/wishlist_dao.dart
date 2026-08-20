@@ -6,7 +6,6 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Aggregate of a single wishlist-tag bucket. `null` [tag] is the
 /// "Untagged" pseudo-bucket for items with no tag.
 class WishlistTagCount {
-  /// Creates a [WishlistTagCount].
   const WishlistTagCount({
     required this.tag,
     required this.activeCount,

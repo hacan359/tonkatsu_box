@@ -11,16 +11,8 @@ import '../models/search_source.dart';
 // Short comic titles are common, so keep the floor at 2 chars.
 const int _comicVineMinQuery = 2;
 
-/// SearchSource backed by ComicVine, a comics / graphic-novel catalog. Items
-/// are stamped [MediaType.book] and carry `DataSource.comicVine` +
-/// `BookKind.comic` (set inside [Book.fromComicVineVolume]), so comics share
-/// the books tab while staying separable.
-///
-/// Two query paths: the default "Relevance" sort hits `/search` (a single
-/// relevance-ranked page — `offset` is ignored there), while any other sort
-/// hits `/volumes` with a `name` filter, which paginates and reorders. The
-/// API ignores `start_year` / `publisher` volume filters, so there is no
-/// filter-only browse.
+/// ComicVine comics search. Items are stamped [MediaType.book] with
+/// `BookKind.comic`, so comics share the books tab while staying separable.
 class ComicVineSource extends SearchSource {
   @override
   String get id => 'comicvine';
@@ -37,18 +29,16 @@ class ComicVineSource extends SearchSource {
   @override
   IconData get icon => Icons.auto_stories;
 
-  // ComicVine has no filter-only browse: the `/volumes` filters that would
-  // drive it (start_year, publisher) are silently ignored by the API, so a
-  // text query is always required.
+  // No filter-only browse: the `/volumes` filters that would drive it
+  // (start_year, publisher) are silently ignored by the API.
   @override
   bool get supportsBrowse => false;
 
   @override
   List<SearchFilter> get filters => const <SearchFilter>[];
 
-  // ComicVine ignores `start_year` / `count_of_issues` sorts on `/volumes`, so
-  // only the verified-working orders are exposed. "Relevance" routes to
-  // `/search` (no sort param); every other order routes to `/volumes`.
+  // Only verified-working orders: `/volumes` ignores start_year and
+  // count_of_issues sorts. "Relevance" hits `/search`, the rest `/volumes`.
   @override
   List<BrowseSortOption> get sortOptions => const <BrowseSortOption>[
         BrowseSortOption(id: 'relevance', apiValue: ''),

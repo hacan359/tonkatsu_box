@@ -27,9 +27,8 @@ class HttpUpstreamClient implements UpstreamClient {
       : _deadline = deadline,
         _client = HttpClient()..connectionTimeout = deadline;
 
-  /// Whole-request budget. connectionTimeout alone lets an accepted-but-
-  /// silent upstream hold the line for minutes — and every hanging /img
-  /// pins one of the browser's six connections, freezing the whole app.
+  /// connectionTimeout alone lets an accepted-but-silent upstream hold the line
+  /// for minutes, pinning one of the browser's six connections.
   final Duration _deadline;
 
   final HttpClient _client;
@@ -53,7 +52,13 @@ class HttpUpstreamClient implements UpstreamClient {
   }) async {
     final HttpClientRequest request = await _client.openUrl(method, url);
     headers.forEach(request.headers.set);
-    if (body != null && body.isNotEmpty) request.add(body);
+    // Without an explicit length the request goes out chunked — even when the
+    // body is empty — which some upstreams (ListenBrainz) answer with a 400.
+    final bool methodTakesBody = method != 'GET' && method != 'HEAD';
+    if (body != null && (body.isNotEmpty || methodTakesBody)) {
+      request.contentLength = body.length;
+      if (body.isNotEmpty) request.add(body);
+    }
 
     final HttpClientResponse response = await request.close();
     final List<int> bytes = <int>[

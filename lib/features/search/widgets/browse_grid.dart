@@ -10,6 +10,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/poster_grid_delegate.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart' show ShimmerPosterCard;
 import '../../settings/providers/settings_provider.dart';
@@ -30,9 +31,8 @@ class BrowseGrid extends ConsumerStatefulWidget {
 
   final void Function(Object item, MediaType mediaType) onItemTap;
 
-  /// [source] is the provider of a multi-source item, `null` otherwise; the
-  /// receiver needs it to pick the right placement when two providers share a
-  /// numeric id.
+  /// [source] is the provider of a multi-source item, `null` otherwise — the
+  /// receiver needs it when two providers share a numeric id.
   final void Function(
     int externalId,
     MediaType mediaType,
@@ -53,9 +53,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    // The grid may appear with a page already loaded (narrowing to one
-    // provider) — ref.listen below only fires on later changes, and without
-    // overflow there is no scroll to ask for more.
+    // The grid can appear with a page already loaded and `ref.listen` below
+    // only fires on later changes — without overflow nothing asks for more.
     _scheduleViewportFillCheck();
   }
 
@@ -131,10 +130,11 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
     final List<Object> displayItems = state.items;
 
-    final CardVariant variant = isCompactScreen(context)
-        ? CardVariant.compact
-        : CardVariant.grid;
+    final CardVariant variant =
+        useCompactCard(context) ? CardVariant.compact : CardVariant.grid;
     final DataSource fallbackSource = state.sources.first.dataSource;
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        _gridGeometry(context);
 
     return CustomScrollView(
       controller: _scrollController,
@@ -150,12 +150,12 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
             sliver: SliverToBoxAdapter(child: _buildErrors(state)),
           ),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
+          padding: EdgeInsets.symmetric(
+            horizontal: geometry.padding,
             vertical: AppSpacing.sm,
           ),
           sliver: SliverGrid(
-            gridDelegate: _buildGridDelegate(context),
+            gridDelegate: geometry.delegate,
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 if (index >= displayItems.length) {
@@ -218,28 +218,13 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     );
   }
 
-  SliverGridDelegate _buildGridDelegate(BuildContext context) {
-    final double width = MediaQuery.sizeOf(context).width;
+  ({SliverGridDelegate delegate, double padding}) _gridGeometry(
+    BuildContext context,
+  ) {
     final double cardScale = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.cardScale),
     );
-    if (width >= 800) {
-      return SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-        crossAxisSpacing: AppSpacing.sm,
-        mainAxisSpacing: AppSpacing.sm,
-      );
-    }
-    final int baseCount = width >= 500
-        ? AppSpacing.gridColumnsTablet
-        : AppSpacing.gridColumnsMobile;
-    return SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
-      childAspectRatio: AppSpacing.posterCardAspectRatio,
-      crossAxisSpacing: AppSpacing.sm,
-      mainAxisSpacing: AppSpacing.sm,
-    );
+    return posterGridGeometry(context, cardScale: cardScale);
   }
 
   Widget _buildShimmerGrid(BuildContext context) {
@@ -250,15 +235,18 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
             ? AppSpacing.gridColumnsTablet * 3
             : AppSpacing.gridColumnsMobile * 3);
 
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        _gridGeometry(context);
+    final bool compact = useCompactCard(context);
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
+      padding: EdgeInsets.symmetric(
+        horizontal: geometry.padding,
         vertical: AppSpacing.sm,
       ),
-      gridDelegate: _buildGridDelegate(context),
+      gridDelegate: geometry.delegate,
       itemCount: shimmerCount,
       itemBuilder: (BuildContext context, int index) =>
-          const ShimmerPosterCard(),
+          ShimmerPosterCard(compact: compact),
     );
   }
 }

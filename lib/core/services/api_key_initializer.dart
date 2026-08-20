@@ -4,9 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/settings/providers/settings_provider.dart';
 import '../../shared/constants/api_defaults.dart';
 
-/// API key data loaded from SharedPreferences + ApiDefaults.
-///
-/// Built in main() before runApp() and passed via ProviderScope override.
+/// API keys from SharedPreferences + ApiDefaults, built in main() before
+/// runApp() and passed via a ProviderScope override.
 class ApiKeys {
   const ApiKeys({
     this.tmdbApiKey,
@@ -20,24 +19,23 @@ class ApiKeys {
     this.comicVineApiKey,
     this.googleBooksApiKey,
     this.hardcoverApiKey,
+    this.podcastIndexApiKey,
+    this.podcastIndexApiSecret,
   });
 
   /// Key precedence: user key → built-in (ApiDefaults) → null.
   factory ApiKeys.fromPrefs(SharedPreferences prefs) {
-    // TMDB: user key → built-in → null
     final String? userTmdbKey = prefs.getString(SettingsKeys.tmdbApiKey);
     final String? tmdbApiKey =
         (userTmdbKey != null && userTmdbKey.isNotEmpty)
             ? userTmdbKey
             : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
 
-    // TheTVDB: user key → built-in → null
     final String? userTvdbKey = prefs.getString(SettingsKeys.tvdbApiKey);
     final String? tvdbApiKey = (userTvdbKey != null && userTvdbKey.isNotEmpty)
         ? userTvdbKey
         : (ApiDefaults.hasTvdbKey ? ApiDefaults.tvdbApiKey : null);
 
-    // SteamGridDB: user key → built-in → null
     final String? userSteamGridDbKey =
         prefs.getString(SettingsKeys.steamGridDbApiKey);
     final String? steamGridDbApiKey =
@@ -47,7 +45,6 @@ class ApiKeys {
                 ? ApiDefaults.steamGridDbApiKey
                 : null);
 
-    // IGDB: user key → built-in → null
     final String? userClientId = prefs.getString(SettingsKeys.clientId);
     final String? igdbClientId =
         (userClientId != null && userClientId.isNotEmpty)
@@ -78,6 +75,27 @@ class ApiKeys {
     final String? hardcoverApiKey =
         prefs.getString(SettingsKeys.hardcoverApiKey);
 
+    // Podcast Index: user pair → built-in (CI secrets) → null. Key and secret
+    // resolve together — mixing a user key with the built-in secret can't work.
+    final String? userPodcastIndexKey =
+        prefs.getString(SettingsKeys.podcastIndexApiKey);
+    final String? userPodcastIndexSecret =
+        prefs.getString(SettingsKeys.podcastIndexApiSecret);
+    final bool hasUserPodcastIndexPair = userPodcastIndexKey != null &&
+        userPodcastIndexKey.isNotEmpty &&
+        userPodcastIndexSecret != null &&
+        userPodcastIndexSecret.isNotEmpty;
+    final String? podcastIndexApiKey = hasUserPodcastIndexPair
+        ? userPodcastIndexKey
+        : (ApiDefaults.hasPodcastIndexKey
+            ? ApiDefaults.podcastIndexApiKey
+            : null);
+    final String? podcastIndexApiSecret = hasUserPodcastIndexPair
+        ? userPodcastIndexSecret
+        : (ApiDefaults.hasPodcastIndexKey
+            ? ApiDefaults.podcastIndexApiSecret
+            : null);
+
     return ApiKeys(
       tmdbApiKey: tmdbApiKey,
       tvdbApiKey: tvdbApiKey,
@@ -103,6 +121,14 @@ class ApiKeys {
           (hardcoverApiKey != null && hardcoverApiKey.isNotEmpty)
               ? hardcoverApiKey
               : null,
+      podcastIndexApiKey:
+          (podcastIndexApiKey != null && podcastIndexApiKey.isNotEmpty)
+              ? podcastIndexApiKey
+              : null,
+      podcastIndexApiSecret:
+          (podcastIndexApiSecret != null && podcastIndexApiSecret.isNotEmpty)
+              ? podcastIndexApiSecret
+              : null,
     );
   }
 
@@ -127,6 +153,10 @@ class ApiKeys {
   final String? googleBooksApiKey;
 
   final String? hardcoverApiKey;
+
+  final String? podcastIndexApiKey;
+
+  final String? podcastIndexApiSecret;
 }
 
 /// Overridden in main() via `apiKeysProvider.overrideWithValue(...)`.

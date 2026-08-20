@@ -14,11 +14,9 @@ enum SteamGridDbImageType {
 
   const SteamGridDbImageType(this.label);
 
-  /// Display label.
   final String label;
 }
 
-/// State for the SteamGridDB side panel.
 class SteamGridDbPanelState {
   const SteamGridDbPanelState({
     this.isOpen = false,
@@ -112,9 +110,8 @@ class SteamGridDbPanelNotifier
     state = state.copyWith(isOpen: true);
   }
 
-  /// Resets the search input, results, and selection while keeping
-  /// [imageCache]. Without this reset the previous query leaked across
-  /// canvases that share the provider key (`collectionId`).
+  /// Resets everything but [imageCache]; without this the previous query
+  /// leaked across canvases that share the provider key (`collectionId`).
   void closePanel() {
     state = SteamGridDbPanelState(imageCache: state.imageCache);
   }

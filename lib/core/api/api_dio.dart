@@ -1,11 +1,17 @@
 import 'package:dio/dio.dart';
 
 import '../../shared/constants/platform_features.dart';
+import 'host_rate_limiter.dart';
 import 'proxy_rewrite_interceptor.dart';
 
 /// The browser adapter collapses connect and receive into one flat budget, and
 /// a proxied call is two hops — 5s aborts an import the server did finish.
 const Duration _kWebTimeoutFloor = Duration(seconds: 60);
+
+/// Keyless services (MusicBrainz, Cover Art Archive) throttle or refuse
+/// clients without a meaningful User-Agent.
+const String kAppUserAgent =
+    'TonkatsuBox/1.0 (+https://github.com/hacan359/tonkatsu_box)';
 
 /// The single place every API client gets its [Dio] from — the one seam where
 /// the web build routes calls through the selfhost server's proxy.
@@ -27,6 +33,8 @@ Dio createApiDio({
       responseType: responseType,
     ),
   );
+  // Before the proxy rewrite, so the queue keys on the real upstream host.
+  dio.interceptors.add(HostRateLimitInterceptor());
   // Rewriting the resolved URI covers both shapes in the codebase: a client
   // with a baseUrl and one that builds a full URL per request.
   if (kIsWebBuild) dio.interceptors.add(ProxyRewriteInterceptor());

@@ -10,11 +10,8 @@ import '../models/search_source.dart';
 
 const int _hardcoverMinQuery = 2;
 
-/// SearchSource backed by Hardcover, a community book catalog. Items are
-/// stamped [MediaType.book] and carry `DataSource.hardcover` (set inside
-/// [Book.fromHardcoverDocument]). The Typesense search has no parameter
-/// filters and no query-less browse, but any numeric document field works as
-/// a sort. Requires the personal token wired by [hardcoverApiProvider].
+/// Hardcover community book catalog. Typesense has no parameter filters, but
+/// any numeric document field sorts. Requires the user's personal token.
 class HardcoverSource extends SearchSource {
   @override
   String get id => 'hardcover';

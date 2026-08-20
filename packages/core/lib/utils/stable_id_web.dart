@@ -10,7 +10,19 @@ int fnv1a64(String input) {
   for (final int unit in input.codeUnits) {
     hash = ((hash ^ BigInt.from(unit)) * _fnvPrime).toUnsigned(64);
   }
-  // toInt() is exact on the VM; in a browser ids above 2^53 lose precision —
-  // acceptable for the phase-2 stub DB, revisited with DAO-RPC serialization.
+  // In a browser ids above 2^53 lose precision — kept only for sources that
+  // shipped with 63-bit ids (MangaDex, Google Books); new sources use fnv1a53.
   return hash.toUnsigned(63).toInt();
+}
+
+/// [fnv1a64] xor-folded to 53 bits, so the id survives a JS double exactly —
+/// dart2js and JSON keep it bit-identical. Use for every new int-id source.
+int fnv1a53(String input) {
+  BigInt hash = _fnvOffsetBasis;
+  for (final int unit in input.codeUnits) {
+    hash = ((hash ^ BigInt.from(unit)) * _fnvPrime).toUnsigned(64);
+  }
+  // Fold the same 63-bit value the io variant folds, before any toInt().
+  final BigInt masked = hash.toUnsigned(63);
+  return (masked ^ (masked >> 53)).toUnsigned(53).toInt();
 }

@@ -11,6 +11,7 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -18,6 +19,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/utils/media_format.dart';
+import '../../../shared/utils/poster_grid_delegate.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
@@ -72,38 +74,23 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<int, Tag> tagsMap = ref.watch(allTagsMapProvider);
     final Map<int, List<int>> itemTags =
         ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
-    final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
+    final Set<ItemStatus> filterStatuses =
+        ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
 
-    final Set<int> selection = ref.watch(allItemsSelectionProvider);
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
     final List<CollectionItem> visibleItems =
-        _applyFilter(allItems, filterStatus, favoriteOnly, tagsMap, searchQuery);
-    final List<CollectionItem> selectedItems = selection.isEmpty
-        ? const <CollectionItem>[]
-        : <CollectionItem>[
-            for (final CollectionItem i in allItems)
-              if (selection.contains(i.id)) i,
-          ];
+        _applyFilter(
+            allItems, filterStatuses, favoriteOnly, tagsMap, searchQuery);
 
     return Column(
       children: <Widget>[
         _buildMediaTypeBar(
-            itemsAsync, filterStatus, favoriteOnly, tagsMap, searchQuery),
+            itemsAsync, filterStatuses, favoriteOnly, tagsMap, searchQuery),
         SubfilterBar(groups: _subfilterGroups(itemsAsync)),
-        if (selectedItems.isNotEmpty)
-          BulkActionBar(
-            items: selectedItems,
-            visibleCount: visibleItems.length,
-            onSelectAllVisible: () => ref
-                .read(allItemsSelectionProvider.notifier)
-                .selectAll(visibleItems.map((CollectionItem i) => i.id)),
-            onClearSelection: () => ref
-                .read(allItemsSelectionProvider.notifier)
-                .clear(),
-          ),
+        _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
         Expanded(
           child: itemsAsync.when(
             data: (List<CollectionItem> items) {
@@ -124,7 +111,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   List<CollectionItem> _applyFilter(
     List<CollectionItem> items,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String searchQuery,
@@ -137,20 +124,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             (_selectedTypes.isEmpty ||
                 item.matchesTypeFilter(_selectedTypes)) &&
             _matchesNonTypeFilters(
-                item, filterStatus, favoriteOnly, tagsMap, query, lang))
+                item, filterStatuses, favoriteOnly, tagsMap, query, lang))
         .toList();
   }
 
   bool _matchesNonTypeFilters(
     CollectionItem item,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String lowerQuery,
     String animeMangaTitleLanguage,
   ) {
     if (favoriteOnly && !item.isFavorite) return false;
-    if (filterStatus != null && item.status != filterStatus) return false;
+    if (filterStatuses.isNotEmpty && !filterStatuses.contains(item.status)) {
+      return false;
+    }
     if (!MediaFormat.matchesSubfilters(
       item,
       platformIds: _selectedPlatformIds,
@@ -166,24 +155,37 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               .contains(lowerQuery) ||
           _matchesTagName(item, tagsMap, lowerQuery) ||
           (item.userComment?.toLowerCase().contains(lowerQuery) ?? false) ||
-          (item.authorComment?.toLowerCase().contains(lowerQuery) ?? false);
+          (item.authorComment?.toLowerCase().contains(lowerQuery) ?? false) ||
+          _matchesCreator(item, lowerQuery);
       if (!match) return false;
     }
     return true;
+  }
+
+  /// Albums also match by artist, books by author — "pink floyd" should find
+  /// the album even though the query is not in its title.
+  static bool _matchesCreator(CollectionItem item, String lowerQuery) {
+    final List<String> creators = switch (item.mediaType) {
+      MediaType.audio => item.audioItem?.artists ?? const <String>[],
+      MediaType.book => item.book?.authors ?? const <String>[],
+      _ => const <String>[],
+    };
+    return creators
+        .any((String name) => name.toLowerCase().contains(lowerQuery));
   }
 
   /// Chevron bar: media types (multi-select) plus the status dropdown as
   /// the last segment.
   Widget _buildMediaTypeBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String searchQuery,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
-    final Map<MediaType, int> counts =
-        _countByMediaType(items, filterStatus, favoriteOnly, tagsMap, searchQuery);
+    final Map<MediaType, int> counts = _countByMediaType(
+        items, filterStatuses, favoriteOnly, tagsMap, searchQuery);
     final Map<MediaType, int> totals = _rawTotalsByMediaType(items);
     final S l = S.of(context);
 
@@ -227,6 +229,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         type: MediaType.book,
         label: l.collectionFilterBooks,
         count: counts[MediaType.book] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.audio,
+        label: l.mediaTypeAudio,
+        count: counts[MediaType.audio] ?? 0,
       ),
       _MediaTypeEntry(
         type: MediaType.custom,
@@ -274,11 +281,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               ),
             Expanded(
               child: StatusDropdownSegment(
-                status: filterStatus,
+                statuses: filterStatuses,
                 compact: compact,
                 subtitle: l.status,
                 isLast: false,
-                onChanged: (ItemStatus? s) =>
+                onChanged: (Set<ItemStatus> s) =>
                     ref.read(homeStatusFilterProvider.notifier).setFilter(s),
               ),
             ),
@@ -302,12 +309,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  /// One subfilter group per active type — game platforms, manga formats,
-  /// anime formats — each tinted with its media-type accent, on one row.
-  ///
-  /// A group normally appears only once its media-type chevron is selected;
-  /// with the "always show subcategories" setting every group whose type has
-  /// items is shown upfront.
+  /// A group appears only once its media-type chevron is selected; the
+  /// "always show subcategories" setting shows every group upfront.
   List<List<SubfilterChipData>> _subfilterGroups(
     AsyncValue<List<CollectionItem>> itemsAsync,
   ) {
@@ -389,9 +392,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     });
   }
 
-  /// Raw item count per media type, ignoring every filter. Drives chevron
-  /// visibility — search hits should change the chevron label, not make
-  /// non-matching media types disappear when "Hide empty" is on.
+  /// Ignores every filter: search hits change the chevron label but must not
+  /// hide non-matching media types when "Hide empty" is on.
   static Map<MediaType, int> _rawTotalsByMediaType(
     List<CollectionItem>? items,
   ) {
@@ -405,9 +407,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return totals;
   }
 
-  /// Counts items per media type after applying every active filter except
-  /// the media-type one — so each chevron shows how many would be visible if
-  /// the user picked it.
   /// True when any of the item's tags matches the search query.
   bool _matchesTagName(
     CollectionItem item,
@@ -420,9 +419,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         tagsMap[id]?.name.toLowerCase().contains(lowerQuery) ?? false);
   }
 
+  /// Applies every active filter except the media-type one, so each chevron
+  /// shows how many items would be visible if the user picked it.
   Map<MediaType, int> _countByMediaType(
     List<CollectionItem>? items,
-    ItemStatus? filterStatus,
+    Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
     Map<int, Tag> tagsMap,
     String searchQuery,
@@ -434,7 +435,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<MediaType, int> counts = <MediaType, int>{};
     for (final CollectionItem item in items) {
       if (!_matchesNonTypeFilters(
-          item, filterStatus, favoriteOnly, tagsMap, lower, lang)) {
+          item, filterStatuses, favoriteOnly, tagsMap, lower, lang)) {
         continue;
       }
       for (final MediaType bucket in item.filterTypeBuckets) {
@@ -452,42 +453,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) {
     // getAll() returns display order, and the map preserves insertion order.
     final List<Tag> orderedTags = tagsMap.values.toList();
-    final double screenWidth = MediaQuery.sizeOf(context).width;
     final bool isLandscape = isLandscapeMobile(context);
-    final bool isDesktop = screenWidth >= kDesktopContentBreakpoint && !kIsMobile;
-
-    final double gridPadding = isLandscape ? AppSpacing.sm : AppSpacing.screenPadding;
-    final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
-    final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
-
     final double cardScale = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.cardScale),
     );
-
-    final SliverGridDelegate gridDelegate;
-    if (isDesktop) {
-      gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: AppSpacing.desktopMaxCardWidth * cardScale,
-        crossAxisSpacing: crossSpacing,
-        mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-      );
-    } else {
-      final int baseCount;
-      if (isLandscape) {
-        baseCount = AppSpacing.gridColumnsDesktop;
-      } else if (screenWidth >= 500) {
-        baseCount = AppSpacing.gridColumnsTablet;
-      } else {
-        baseCount = AppSpacing.gridColumnsMobile;
-      }
-      gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: AppSpacing.scaledColumns(baseCount, cardScale),
-        crossAxisSpacing: crossSpacing,
-        mainAxisSpacing: mainSpacing,
-        childAspectRatio: AppSpacing.posterCardAspectRatio,
-      );
-    }
+    final ({SliverGridDelegate delegate, double padding}) geometry =
+        posterGridGeometry(context, cardScale: cardScale);
+    final SliverGridDelegate gridDelegate = geometry.delegate;
+    final double gridPadding = geometry.padding;
 
     final List<_CollectionGroup> groups =
         _groupByCollection(items, collectionNames, S.of(context).collectionsUncategorized);
@@ -521,72 +494,19 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                   (BuildContext context, int index) {
                     final CollectionItem item = groups[i].items[index];
                     final List<int>? tagIds = itemTags[item.id];
-                    final Tag? tag = orderedTags.primaryFor(tagIds);
-                    final int tagCount = tagIds?.length ?? 0;
-                    final Set<int> selection =
-                        ref.watch(allItemsSelectionProvider);
-                    final bool isSelected = selection.contains(item.id);
-                    final ItemCardProgress? progress =
-                        itemCardProgress(item) ?? trackerCardProgress(ref, item);
-                    final MediaPosterCard card = MediaPosterCard(
+                    return _AllItemsCard(
                       key: ValueKey<int>(item.id),
+                      item: item,
                       variant: isLandscape ||
                               isCompactScreen(context)
                           ? CardVariant.compact
                           : CardVariant.grid,
-                      title: ref.displayNameOf(item),
-                      imageUrl: item.thumbnailUrl ?? '',
-                      cacheImageType:
-                          _imageTypeFor(item.mediaType, item.platformId),
-                      cacheImageId: item.coverImageId,
-                      userRating: item.userRating,
-                      apiRating: item.apiRating,
-                      splitRatings: true,
-                      year: _yearFor(item),
-                      platformLabel: item.platform?.displayName,
-                      platformColor: item.platform?.familyColor,
-                      platformOverlayAsset:
-                          ref.watch(settingsNotifierProvider).resolveOverlay(
-                            platformOverlay: item.platform?.overlayAsset,
-                            mediaTypeOverlay: item.mediaType.overlayAsset,
-                          ),
-                      mediaType: item.displayMediaType,
-                      typeLabelOverride: item.formatLabel,
-                      status: item.status,
-                      progress: progress,
-                      isFavorite: item.isFavorite,
-                      showFavorite: true,
-                      enableHoverScale: !isSelected,
-                      onToggleFavorite: selection.isEmpty
-                          ? () => ref
-                              .read(allItemsNotifierProvider.notifier)
-                              .toggleFavorite(item.id)
-                          : null,
-                      tagName: tag?.name,
-                      tagColor: tag?.color,
-                      tagTextColor: tag?.textColor,
-                      tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
-                      source: item.dataSource,
-                      onSourceTap: openUrlCallback(item.externalUrl),
-                      onTap: selection.isEmpty
-                          ? () => _showItemDetails(item, collectionNames)
-                          : () => ref
-                              .read(allItemsSelectionProvider.notifier)
-                              .toggle(item.id),
-                      onSecondaryTap: (Offset pos) =>
+                      tag: orderedTags.primaryFor(tagIds),
+                      tagCount: tagIds?.length ?? 0,
+                      onShowDetails: () =>
+                          _showItemDetails(item, collectionNames),
+                      onShowContextMenu: (Offset pos) =>
                           _showItemContextMenu(pos, item),
-                      onLongPress: () => ref
-                          .read(allItemsSelectionProvider.notifier)
-                          .toggle(item.id),
-                    );
-                    return SelectablePosterCard(
-                      key: ValueKey<int>(item.id),
-                      isSelected: isSelected,
-                      selectionActive: selection.isNotEmpty,
-                      onToggleSelect: () => ref
-                          .read(allItemsSelectionProvider.notifier)
-                          .toggle(item.id),
-                      child: card,
                     );
                   },
                   childCount: groups[i].items.length,
@@ -637,9 +557,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     ];
   }
 
-  /// Section header for a collection group: the collection name with a thick
-  /// accent underline, its total count, then per-type tallies and a
-  /// favourites count.
   Widget _buildCollectionDivider(
     _CollectionGroup group, {
     required bool isFirst,
@@ -647,22 +564,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Color accent =
         group.isUncategorized ? AppColors.textTertiary : AppColors.brand;
 
-    // Item count per media type, in enum order, for the per-type tallies.
-    final Map<MediaType, int> typeCounts = <MediaType, int>{};
-    for (final CollectionItem item in group.items) {
-      final MediaType t = item.displayMediaType;
-      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
-    }
-    final Map<MediaType, int> orderedCounts = <MediaType, int>{
-      for (final MediaType t in MediaType.values)
-        if (typeCounts.containsKey(t)) t: typeCounts[t]!,
-    };
-    final int favorites =
-        group.items.where((CollectionItem i) => i.isFavorite).length;
+    // A phone has room for the name or the tallies, not both: the chips crowd
+    // the title into an ellipsis and stop being readable anyway.
+    final List<Widget> tallies =
+        kIsMobile ? const <Widget>[] : _headerTallies(group.items);
 
-    // Wrap instead of Row: a long collection name plus up to 7 tallies
-    // overflows a phone-width header, so the name ellipsizes and the tally
-    // chips flow to the next line.
+    // Wrap, not Row: a long name plus a tally per media type overflows a
+    // narrow window — the name ellipsizes and the chips flow to the next line.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -704,15 +612,30 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               const SizedBox(width: AppSpacing.xs),
             ],
           ),
-          ..._headerInfo(orderedCounts, favorites),
+          ...tallies,
         ],
       ),
     );
   }
 
-  /// Shared info cluster: per-type icon with its item count, then a
-  /// favourites tally. Each tally is one self-contained chip so it never
-  /// splits when the header wraps.
+  List<Widget> _headerTallies(List<CollectionItem> items) {
+    final Map<MediaType, int> typeCounts = <MediaType, int>{};
+    int favorites = 0;
+    for (final CollectionItem item in items) {
+      final MediaType t = item.displayMediaType;
+      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+      if (item.isFavorite) favorites++;
+    }
+    // Enum order, so the tallies keep the order the type chevrons have.
+    final Map<MediaType, int> ordered = <MediaType, int>{
+      for (final MediaType t in MediaType.values)
+        if (typeCounts.containsKey(t)) t: typeCounts[t]!,
+    };
+    return _headerInfo(ordered, favorites);
+  }
+
+  /// Each tally is one self-contained chip so it never splits when the
+  /// header wraps.
   List<Widget> _headerInfo(Map<MediaType, int> typeCounts, int favorites) {
     const double iconSize = 20;
 
@@ -737,7 +660,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     }
 
     return <Widget>[
-      for (final MapEntry<MediaType, int> e in typeCounts.entries.take(6))
+      for (final MapEntry<MediaType, int> e in typeCounts.entries)
         tally(
           MediaTypeTheme.iconFor(e.key),
           MediaTypeTheme.colorFor(e.key).withAlpha(220),
@@ -942,6 +865,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.anime?.releaseYear;
       case MediaType.book:
         return item.book?.releaseYear;
+      case MediaType.audio:
+        return item.audioItem?.releaseYear;
       case MediaType.custom:
         return item.customMedia?.year;
     }
@@ -968,6 +893,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return ImageType.animeCover;
       case MediaType.book:
         return ImageType.bookCover;
+      case MediaType.audio:
+        return ImageType.audioCover;
       case MediaType.custom:
         return ImageType.customCover;
     }
@@ -997,4 +924,123 @@ class _CollectionGroup {
   final String name;
   final List<CollectionItem> items;
   final bool isUncategorized;
+}
+
+/// Watches the selection itself so a toggle never rebuilds the screen
+/// (and its O(n) grouping) — only the bar.
+class _AllItemsBulkBar extends ConsumerWidget {
+  const _AllItemsBulkBar({
+    required this.allItems,
+    required this.visibleItems,
+  });
+
+  final List<CollectionItem> allItems;
+  final List<CollectionItem> visibleItems;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final Set<int> selection = ref.watch(allItemsSelectionProvider);
+    if (selection.isEmpty) return const SizedBox.shrink();
+    final List<CollectionItem> selectedItems = <CollectionItem>[
+      for (final CollectionItem i in allItems)
+        if (selection.contains(i.id)) i,
+    ];
+    return BulkActionBar(
+      items: selectedItems,
+      visibleCount: visibleItems.length,
+      onSelectAllVisible: () => ref
+          .read(allItemsSelectionProvider.notifier)
+          .selectAll(visibleItems.map((CollectionItem i) => i.id)),
+      onClearSelection: () =>
+          ref.read(allItemsSelectionProvider.notifier).clear(),
+    );
+  }
+}
+
+/// Scopes selection/settings/tracker watches to one card: bool-valued
+/// `select`s rebuild only the card whose value actually changed.
+class _AllItemsCard extends ConsumerWidget {
+  const _AllItemsCard({
+    required this.item,
+    required this.variant,
+    required this.tag,
+    required this.tagCount,
+    required this.onShowDetails,
+    required this.onShowContextMenu,
+    super.key,
+  });
+
+  final CollectionItem item;
+  final CardVariant variant;
+  final Tag? tag;
+  final int tagCount;
+  final VoidCallback onShowDetails;
+  final void Function(Offset position) onShowContextMenu;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool isSelected = ref.watch(
+      allItemsSelectionProvider.select((Set<int> s) => s.contains(item.id)),
+    );
+    final bool selectionActive = ref.watch(
+      allItemsSelectionProvider.select((Set<int> s) => s.isNotEmpty),
+    );
+    final String? overlayAsset = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.resolveOverlay(
+          platformOverlay: item.platform?.overlayAsset,
+          mediaTypeOverlay: item.mediaType.overlayAsset,
+        ),
+      ),
+    );
+    final ItemCardProgress? progress =
+        itemCardProgress(item) ?? trackerCardProgress(ref, item);
+    void toggle() =>
+        ref.read(allItemsSelectionProvider.notifier).toggle(item.id);
+    return RepaintBoundary(
+      child: SelectablePosterCard(
+        isSelected: isSelected,
+        selectionActive: selectionActive,
+        onToggleSelect: toggle,
+        child: MediaPosterCard(
+          variant: variant,
+          title: item.cardTitle(ref.displayNameOf(item)),
+          imageUrl: item.thumbnailUrl ?? '',
+          cacheImageType: _AllItemsScreenState._imageTypeFor(
+            item.mediaType,
+            item.platformId,
+          ),
+          cacheImageId: item.coverImageId,
+          userRating: item.userRating,
+          apiRating: item.apiRating,
+          splitRatings: true,
+          year: _AllItemsScreenState._yearFor(item),
+          platformLabel: item.platform?.displayName,
+          platformColor: item.platform?.familyColor,
+          platformOverlayAsset: overlayAsset,
+          mediaType: item.displayMediaType,
+          typeLabelOverride: item.formatLabel,
+          status: item.status,
+          progress: progress,
+          isFavorite: item.isFavorite,
+          showFavorite: true,
+          enableHoverScale: !isSelected,
+          onToggleFavorite: selectionActive
+              ? null
+              : () => ref
+                  .read(allItemsNotifierProvider.notifier)
+                  .toggleFavorite(item.id),
+          tagName: tag?.name,
+          tagColor: tag?.color,
+          tagTextColor: tag?.textColor,
+          tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
+          source: item.dataSource,
+          onSourceTap: openUrlCallback(item.externalUrl),
+          onTap: selectionActive ? toggle : onShowDetails,
+          onSecondaryTap: onShowContextMenu,
+          onLongPress: toggle,
+        ),
+      ),
+    );
+  }
 }

@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/collections/models/collections_index.dart';
 
-/// Raw GitHub content base URL for the collections repo.
 const String _kRepoBaseUrl =
     'https://raw.githubusercontent.com/hacan359/tonkatsu-collections/main';
 
@@ -17,10 +16,8 @@ final Provider<CollectionBrowserService> collectionBrowserServiceProvider =
   (Ref ref) => CollectionBrowserService(),
 );
 
-/// Downloads the collections catalog and files from the GitHub repo.
-///
-/// Fetches `index.json` metadata, then downloads and parses collection files
-/// in `.xcoll`, `.xcollx` and `.zip` formats.
+/// Downloads the collections catalog (`index.json`) and collection files in
+/// `.xcoll`, `.xcollx` and `.zip` formats from the GitHub repo.
 class CollectionBrowserService {
   CollectionBrowserService({Dio? dio}) : _dio = dio ?? Dio();
 
@@ -51,9 +48,8 @@ class CollectionBrowserService {
     }
   }
 
-  /// Downloads a collection file and parses it as an [XcollFile].
-  ///
-  /// Supports `.xcoll`, `.xcollx` (JSON) and `.zip` (archived collection).
+  /// Downloads and parses a collection file; supports `.xcoll`, `.xcollx`
+  /// (JSON) and `.zip` (archived collection).
   Future<XcollFile> downloadCollection(
     RemoteCollection collection, {
     void Function(int received, int total)? onProgress,
@@ -62,9 +58,9 @@ class CollectionBrowserService {
 
     try {
       if (collection.file.endsWith('.zip')) {
-        return _downloadAndExtractZip(url, onProgress: onProgress);
+        return await _downloadAndExtractZip(url, onProgress: onProgress);
       }
-      return _downloadJson(url, onProgress: onProgress);
+      return await _downloadJson(url, onProgress: onProgress);
     } on DioException catch (e) {
       throw CollectionBrowserException(
         'Failed to download collection: ${collection.name}',

@@ -1,5 +1,3 @@
-// Единый экран Kodi: настройки подключения + sync + debug + логи.
-
 import 'dart:convert';
 
 import 'package:core/models/collection.dart';
@@ -29,7 +27,6 @@ import '../widgets/status_dot.dart';
 
 const double _desktopBreakpoint = 800;
 
-/// Единый экран Kodi: подключение, sync-настройки, debug-инструменты.
 class KodiScreen extends ConsumerStatefulWidget {
   const KodiScreen({super.key});
 
@@ -38,12 +35,10 @@ class KodiScreen extends ConsumerStatefulWidget {
 }
 
 class _KodiScreenState extends ConsumerState<KodiScreen> {
-  // — Connection test —
   bool _isTesting = false;
   String? _connectionResult;
   bool _connectionOk = false;
 
-  // — Raw JSON-RPC —
   final TextEditingController _methodController = TextEditingController(
     text: 'JSONRPC.Ping',
   );
@@ -51,9 +46,8 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   String? _rawResponse;
   bool _isSendingRaw = false;
 
-  // — Target cleanup guard —
-  // Не даёт очередному rebuild'у планировать второй post-frame callback,
-  // пока первый не отработал.
+  // Target cleanup guard: keeps a rebuild from scheduling a second
+  // post-frame callback while the first is still pending.
   bool _targetCleanupScheduled = false;
 
   @override

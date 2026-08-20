@@ -1,4 +1,3 @@
-
 import 'package:core/database/dao/tier_list_dao.dart';
 import 'package:core/models/tier_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,7 +37,7 @@ class TierListsNotifier extends AsyncNotifier<List<TierList>> {
       collectionId: collectionId,
     );
 
-    // Оптимистичное обновление: добавляем в начало
+    // Optimistic prepend — the DAO already assigned the id.
     final List<TierList> current = state.valueOrNull ?? <TierList>[];
     state = AsyncData<List<TierList>>(
       <TierList>[tierList, ...current],

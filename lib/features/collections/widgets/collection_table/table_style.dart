@@ -5,9 +5,8 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 
-/// Dark grid configuration tuned to the app theme: our surfaces, brand
-/// accents, no harsh vertical rules and row heights that fit the 48×64
-/// thumbnails.
+/// Dark grid configuration tuned to the app theme; row heights fit the
+/// 48×64 thumbnails.
 TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
   return TrinaGridConfiguration(
     selectingMode: TrinaGridSelectingMode.none,
@@ -25,9 +24,8 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
       activatedColor: AppColors.surfaceLight.withAlpha(40),
       activatedBorderColor: AppColors.brand.withAlpha(120),
       rowCheckedColor: AppColors.brand.withAlpha(40),
-      // Checkbox colours: without these the checkmark defaults to
-      // activatedColor (a dark translucent surface) and is invisible against
-      // the fill. Brand fill + white tick reads in both header and rows.
+      // Without these the checkmark defaults to activatedColor (a dark
+      // translucent surface) and is invisible against the fill.
       cellActiveColor: AppColors.brand,
       columnActiveColor: AppColors.brand,
       cellCheckedColor: AppColors.onOverlay,

@@ -1,8 +1,3 @@
-// Coachmark over the live navigation: dims the screen, cuts a spotlight around
-// the real button for the current step, and shows a description card beside it.
-// Steps run over the real [AppShell], so the buttons are located by reading the
-// shared [navTourKeysProvider] keys' render boxes.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,7 +13,6 @@ import 'welcome_card.dart';
 /// Spotlight tour over the real menu. Drawn full-screen above [AppShell]; ends
 /// by flipping [menuTourControllerProvider] off.
 class MenuTourOverlay extends ConsumerStatefulWidget {
-  /// Creates a [MenuTourOverlay].
   const MenuTourOverlay({super.key});
 
   @override
@@ -79,9 +73,8 @@ class _MenuTourOverlayState extends ConsumerState<MenuTourOverlay>
     WidgetsBinding.instance.addPostFrameCallback((Duration _) => _syncSpot());
   }
 
-  /// Reads the current button's rect after the frame — when its element is
-  /// active and laid out, unlike during build — and stores it, retrying a few
-  /// frames while it isn't available yet.
+  /// Read after the frame, when the element is laid out; retries for a few
+  /// frames while the rect is still unavailable.
   void _syncSpot() {
     if (!mounted) return;
     final List<MenuTourItem> items = buildMenuTourItems(context);

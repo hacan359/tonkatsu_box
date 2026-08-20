@@ -64,9 +64,8 @@ class ReleasesNotifier extends AsyncNotifier<ReleasesCalendarData> {
     MediaType.animation,
   };
 
-  /// Re-fetches seasons and episodes for every tracked show from its source
-  /// API and updates the cache, then rebuilds. Used by pull-to-refresh / the
-  /// refresh button — the only way to pick up newly announced episodes.
+  /// Re-fetches seasons and episodes from each source API — the only way to
+  /// pick up newly announced episodes.
   Future<void> refreshFromApi() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
     final TvEpisodeSource Function(DataSource) resolve =

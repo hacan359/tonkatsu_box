@@ -96,9 +96,8 @@ class ImportWriteResult {
       ];
 }
 
-/// Shared write-side for importers: target collection, batched item writes and
-/// wishlist fallbacks. Goes through repositories; media-cache upsert stays
-/// with the adapter (media-type specific).
+/// Shared write-side for importers. Goes through repositories; media-cache
+/// upsert stays with the adapter (media-type specific).
 class ImportWriter {
   const ImportWriter({
     required CollectionRepository collections,
@@ -109,8 +108,7 @@ class ImportWriter {
   final CollectionRepository _collections;
   final WishlistRepository _wishlist;
 
-  /// Identity of a collection item across sources: a re-import of the same
-  /// logical title resolves to the same key. The provider is part of it —
+  /// Cross-source identity of an item. The provider is part of the key —
   /// TMDB and TheTVDB (like AniList and MangaBaka) reuse numeric ids.
   static String itemKey(
     MediaType type,

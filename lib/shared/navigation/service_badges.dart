@@ -1,8 +1,3 @@
-// Шилдики фоновых сервисов (Kodi sync, Discord RPC) для шапки.
-//
-// Отображаются только на десктопе. Логотип цветной — сервис активен,
-// серый — неактивен. Клик включает/выключает сервис.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -22,21 +17,16 @@ import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
 import 'service_status_provider.dart';
 
-/// Брендовый цвет Discord (Blurple).
 const Color _kDiscordColor = Color(0xFF5865F2);
 
 const Color _kKodiColor = Color(0xFF17B2E7);
 
-/// Icon size for the top bar's right-hand chrome — the service badges and the
-/// settings gear share it so they read as one set. Tied to the smaller of the
-/// two prior sizes (service badges) so nothing grows.
+/// Shared by the service badges and the settings gear so the top bar's
+/// right-hand chrome reads as one set.
 const double kTopBarIconSize = 18;
 
-/// Строка шилдиков активных фоновых сервисов.
-///
-/// На мобильных платформах возвращает [SizedBox.shrink].
-/// Логотип цветной = сервис работает, серый = остановлен.
-/// Клик toggle'ит сервис.
+/// Desktop only — a colored logo means the service is running, grey means
+/// stopped; tapping one toggles it.
 class ServiceBadges extends ConsumerWidget {
   const ServiceBadges({super.key});
 
@@ -158,7 +148,6 @@ class ServiceBadges extends ConsumerWidget {
   }
 }
 
-/// Иконка одного сервиса: SVG логотип с цветным/серым состоянием.
 class _ServiceIcon extends StatefulWidget {
   const _ServiceIcon({
     required this.asset,
@@ -226,7 +215,7 @@ class _ServiceIconState extends State<_ServiceIcon> {
   }
 }
 
-/// Пульсирующая обёртка (opacity fade) для иконки во время sync.
+/// Opacity fade that marks a sync in progress.
 class _PulsingWrap extends StatefulWidget {
   const _PulsingWrap({required this.child});
 

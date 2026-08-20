@@ -75,10 +75,14 @@ class ConfigService {
     SettingsKeys.tvdbApiKey,
     SettingsKeys.comicVineApiKey,
     SettingsKeys.googleBooksApiKey,
+    SettingsKeys.podcastIndexApiKey,
+    SettingsKeys.podcastIndexApiSecret,
     SettingsKeys.hardcoverApiKey,
     SettingsKeys.hardcoverUsername,
     SettingsKeys.screenScraperSsid,
     SettingsKeys.screenScraperSspassword,
+    SettingsKeys.screenScraperDevId,
+    SettingsKeys.screenScraperDevPassword,
     SettingsKeys.raApiKey,
     SettingsKeys.raUsername,
     SettingsKeys.steamApiKey,
@@ -101,6 +105,7 @@ class ConfigService {
     SettingsKeys.discordRpcEnabled,
     SettingsKeys.discordRaSyncEnabled,
     SettingsKeys.richCollectionsEnabled,
+    SettingsKeys.richHeroStyle,
     SettingsKeys.hideEmptyMediaTypeChevrons,
   ];
 

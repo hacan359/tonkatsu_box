@@ -279,6 +279,12 @@ abstract class S {
   /// **'Watching'**
   String get statusWatching;
 
+  /// No description provided for @statusListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get statusListening;
+
   /// No description provided for @statusInProgress.
   ///
   /// In en, this message translates to:
@@ -309,6 +315,18 @@ abstract class S {
   /// **'Replay'**
   String get statusReplay;
 
+  /// No description provided for @statusIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored'**
+  String get statusIgnored;
+
+  /// No description provided for @statusFilterSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Statuses: {count}'**
+  String statusFilterSelected(int count);
+
   /// No description provided for @rewatchCountEdit.
   ///
   /// In en, this message translates to:
@@ -338,6 +356,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Rereading'**
   String get statusRereading;
+
+  /// No description provided for @statusRelistening.
+  ///
+  /// In en, this message translates to:
+  /// **'Relistening'**
+  String get statusRelistening;
 
   /// No description provided for @all.
   ///
@@ -392,6 +416,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Book'**
   String get mediaTypeBook;
+
+  /// No description provided for @mediaTypeAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get mediaTypeAudio;
 
   /// No description provided for @mediaTypeCustom.
   ///
@@ -2684,6 +2714,12 @@ abstract class S {
   /// **'Comic data from ComicVine (non-commercial use).'**
   String get creditsComicVineAttribution;
 
+  /// No description provided for @creditsMusicBrainzAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Music data from MusicBrainz, covers from the Cover Art Archive, listen counts from ListenBrainz.'**
+  String get creditsMusicBrainzAttribution;
+
   /// No description provided for @creditsGoogleBooksAttribution.
   ///
   /// In en, this message translates to:
@@ -3380,6 +3416,30 @@ abstract class S {
   /// **'Manage tags'**
   String get tagManage;
 
+  /// No description provided for @tagSortTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort order'**
+  String get tagSortTooltip;
+
+  /// No description provided for @tagSortManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get tagSortManual;
+
+  /// No description provided for @tagSortAlphaAsc.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical (A–Z)'**
+  String get tagSortAlphaAsc;
+
+  /// No description provided for @tagSortAlphaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical (Z–A)'**
+  String get tagSortAlphaDesc;
+
   /// No description provided for @tagAssign.
   ///
   /// In en, this message translates to:
@@ -3391,12 +3451,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No tags'**
   String get tagNone;
-
-  /// No description provided for @tagPickerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Select tags'**
-  String get tagPickerTitle;
 
   /// No description provided for @tagTextColor.
   ///
@@ -4267,6 +4321,120 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Search comics...'**
   String get searchHintComics;
+
+  /// No description provided for @searchSourceMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get searchSourceMusic;
+
+  /// No description provided for @searchHintMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Search albums...'**
+  String get searchHintMusic;
+
+  /// No description provided for @musicFilterAlbumsDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get musicFilterAlbumsDefault;
+
+  /// No description provided for @musicFilterAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All types'**
+  String get musicFilterAllTypes;
+
+  /// No description provided for @musicFilterTypeEp.
+  ///
+  /// In en, this message translates to:
+  /// **'EP'**
+  String get musicFilterTypeEp;
+
+  /// No description provided for @musicFilterTypeSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Single'**
+  String get musicFilterTypeSingle;
+
+  /// No description provided for @musicFilterTypeBroadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast'**
+  String get musicFilterTypeBroadcast;
+
+  /// No description provided for @musicFilterTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get musicFilterTypeOther;
+
+  /// No description provided for @musicFilterEdition.
+  ///
+  /// In en, this message translates to:
+  /// **'Releases'**
+  String get musicFilterEdition;
+
+  /// No description provided for @musicFilterStudioOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio only'**
+  String get musicFilterStudioOnly;
+
+  /// No description provided for @musicSheetEditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Editions'**
+  String get musicSheetEditions;
+
+  /// No description provided for @musicSheetTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks'**
+  String get musicSheetTracks;
+
+  /// No description provided for @musicSheetDisc.
+  ///
+  /// In en, this message translates to:
+  /// **'Disc {number}'**
+  String musicSheetDisc(int number);
+
+  /// No description provided for @musicSheetEditionsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Editions unavailable'**
+  String get musicSheetEditionsUnavailable;
+
+  /// No description provided for @musicTracksCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tracks'**
+  String musicTracksCount(int count);
+
+  /// No description provided for @musicTrackerNoTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'No track list'**
+  String get musicTrackerNoTracks;
+
+  /// No description provided for @musicDiscoverFreshReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'New releases'**
+  String get musicDiscoverFreshReleases;
+
+  /// No description provided for @musicDiscoverUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover is unavailable'**
+  String get musicDiscoverUnavailable;
+
+  /// No description provided for @musicSearchArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get musicSearchArtist;
 
   /// No description provided for @language.
   ///
@@ -6212,6 +6380,48 @@ abstract class S {
   /// **'Personalize collections with a cover image and description'**
   String get settingsRichCollectionsSubtitle;
 
+  /// No description provided for @settingsRichHeroStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection banner style'**
+  String get settingsRichHeroStyle;
+
+  /// No description provided for @settingsRichHeroStyleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the rich collection header looks'**
+  String get settingsRichHeroStyleSubtitle;
+
+  /// No description provided for @settingsRichHeroStyleClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get settingsRichHeroStyleClassic;
+
+  /// No description provided for @settingsRichHeroStyleComic.
+  ///
+  /// In en, this message translates to:
+  /// **'Comic'**
+  String get settingsRichHeroStyleComic;
+
+  /// No description provided for @settingsRichHeroStyleStickers.
+  ///
+  /// In en, this message translates to:
+  /// **'Sticker album'**
+  String get settingsRichHeroStyleStickers;
+
+  /// No description provided for @settingsRichHeroStyleBrutalist.
+  ///
+  /// In en, this message translates to:
+  /// **'Brutalist'**
+  String get settingsRichHeroStyleBrutalist;
+
+  /// No description provided for @settingsRichHeroStyleSlats.
+  ///
+  /// In en, this message translates to:
+  /// **'Strips'**
+  String get settingsRichHeroStyleSlats;
+
   /// No description provided for @settingsCardScale.
   ///
   /// In en, this message translates to:
@@ -6361,6 +6571,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Has adaptation'**
   String get vndbHasAnimeAdaptation;
+
+  /// No description provided for @tagPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select tags'**
+  String get tagPickerTitle;
 
   /// No description provided for @tagPickerSearchHint.
   ///
@@ -8828,6 +9044,36 @@ abstract class S {
   /// **'Game metadata + media (covers, screenshots, art)'**
   String get screenScraperSourceDesc;
 
+  /// No description provided for @screenScraperDevCredsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer credentials (devid / devpassword). The server signs every request with them; without them ScreenScraper refuses.'**
+  String get screenScraperDevCredsHint;
+
+  /// No description provided for @screenScraperDevIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'devid'**
+  String get screenScraperDevIdLabel;
+
+  /// No description provided for @screenScraperDevIdPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'ScreenScraper developer id'**
+  String get screenScraperDevIdPlaceholder;
+
+  /// No description provided for @screenScraperDevPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'devpassword'**
+  String get screenScraperDevPasswordLabel;
+
+  /// No description provided for @screenScraperDevPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'ScreenScraper developer password'**
+  String get screenScraperDevPasswordPlaceholder;
+
   /// No description provided for @screenScraperUserCredsHint.
   ///
   /// In en, this message translates to:
@@ -9194,6 +9440,12 @@ abstract class S {
   /// **'Part'**
   String get unitPart;
 
+  /// No description provided for @unitTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get unitTrack;
+
   /// No description provided for @cardLinkCopy.
   ///
   /// In en, this message translates to:
@@ -9469,6 +9721,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'book pages'**
   String get statsMetricBookPages;
+
+  /// No description provided for @statsMetricTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'tracks listened'**
+  String get statsMetricTracks;
 
   /// No description provided for @statsMetricEpisodes.
   ///
@@ -9883,6 +10141,108 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Rate limit reached — retrying in {seconds}s (attempt {attempt}/{max})'**
   String simklImportRateLimitWait(int seconds, int attempt, int max);
+
+  /// No description provided for @searchSourcePodcasts.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcasts'**
+  String get searchSourcePodcasts;
+
+  /// No description provided for @searchHintPodcasts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search podcasts...'**
+  String get searchHintPodcasts;
+
+  /// No description provided for @podcastSheetEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes'**
+  String get podcastSheetEpisodes;
+
+  /// No description provided for @podcastSheetNoEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Episode list unavailable'**
+  String get podcastSheetNoEpisodes;
+
+  /// No description provided for @podcastEpisodesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} episodes'**
+  String podcastEpisodesCount(int count);
+
+  /// No description provided for @podcastDiscoverTrending.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending podcasts'**
+  String get podcastDiscoverTrending;
+
+  /// No description provided for @credentialsPodcastIndexSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast Index API'**
+  String get credentialsPodcastIndexSection;
+
+  /// No description provided for @credentialsEnterPodcastIndexKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your Podcast Index API key'**
+  String get credentialsEnterPodcastIndexKey;
+
+  /// No description provided for @credentialsEnterPodcastIndexSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your Podcast Index API secret'**
+  String get credentialsEnterPodcastIndexSecret;
+
+  /// No description provided for @credentialsPodcastIndexKeyValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast Index keys are valid'**
+  String get credentialsPodcastIndexKeyValid;
+
+  /// No description provided for @credentialsPodcastIndexKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast Index rejected the keys. Check the pair and the system clock'**
+  String get credentialsPodcastIndexKeyInvalid;
+
+  /// No description provided for @welcomeApiPodcastIndexDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast search and episode tracking. Uses a free key/secret pair from api.podcastindex.org.'**
+  String get welcomeApiPodcastIndexDesc;
+
+  /// No description provided for @welcomeSourceDescMusicBrainz.
+  ///
+  /// In en, this message translates to:
+  /// **'Open music encyclopedia: albums, artists and editions. No key needed.'**
+  String get welcomeSourceDescMusicBrainz;
+
+  /// No description provided for @welcomeSourceDescPodcastIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Open podcast catalog with episode-level tracking. Free key/secret pair.'**
+  String get welcomeSourceDescPodcastIndex;
+
+  /// No description provided for @creditsPodcastIndexAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Podcast data from Podcast Index.'**
+  String get creditsPodcastIndexAttribution;
+
+  /// No description provided for @credentialsApiSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'API Secret'**
+  String get credentialsApiSecret;
+
+  /// No description provided for @markAllListened.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all listened'**
+  String get markAllListened;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -11,26 +11,23 @@ class HardcoverApiException implements Exception {
   String toString() => 'HardcoverApiException: $message (status: $statusCode)';
 }
 
-/// 401 — the personal token is missing, invalid or expired. Hardcover tokens
-/// live at most a year and are reset every January 1st, so this is a routine
-/// condition: the user needs a fresh token from hardcover.app/account/api.
+/// 401 — token missing, invalid or expired. Tokens reset every January 1st,
+/// so this is routine: the user grabs a new one at hardcover.app/account/api.
 class HardcoverAuthException extends HardcoverApiException {
-  const HardcoverAuthException({String? detail})
+  const HardcoverAuthException({super.detail})
       : super(
           'Hardcover token is invalid or expired. '
           'Get a new one at hardcover.app/account/api',
           statusCode: 401,
-          detail: detail,
         );
 }
 
 /// 429 — the 60 requests/minute limit was hit.
 class HardcoverRateLimitException extends HardcoverApiException {
-  const HardcoverRateLimitException({String? detail})
+  const HardcoverRateLimitException({super.detail})
       : super(
           'Hardcover rate limit exceeded (60/min). Please try again later',
           statusCode: 429,
-          detail: detail,
         );
 }
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:core/database/dao/audio_dao.dart';
 import 'package:core/database/dao/anilist_tag_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
@@ -47,6 +48,7 @@ import 'package:tonkatsu_box/core/api/simkl_api.dart';
 import 'package:tonkatsu_box/core/api/steam_api.dart';
 import 'package:tonkatsu_box/core/api/steamgriddb_api.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
+import 'package:tonkatsu_box/core/api/tvdb_api.dart';
 import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
 import 'package:tonkatsu_box/core/api/vndb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
@@ -123,6 +125,8 @@ class MockMangaDao extends Mock implements MangaDao {}
 
 class MockBookDao extends Mock implements BookDao {}
 
+class MockAudioDao extends Mock implements AudioDao {}
+
 class MockAnimeDao extends Mock implements AnimeDao {}
 
 class MockDiscordRpcService extends Mock implements DiscordRpcService {}
@@ -148,6 +152,8 @@ class MockGlobalTagDao extends Mock implements GlobalTagDao {}
 class MockIgdbApi extends Mock implements IgdbApi {}
 
 class MockTmdbApi extends Mock implements TmdbApi {}
+
+class MockTvdbApi extends Mock implements TvdbApi {}
 
 class MockTvMazeApi extends Mock implements TvMazeApi {}
 

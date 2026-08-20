@@ -75,6 +75,8 @@ class CoverInfo {
         return ImageType.animeCover;
       case MediaType.book:
         return ImageType.bookCover;
+      case MediaType.audio:
+        return ImageType.audioCover;
       case MediaType.custom:
         return ImageType.customCover;
     }
@@ -95,6 +97,7 @@ class CoverInfo {
       case MediaType.manga:
       case MediaType.anime:
       case MediaType.book:
+      case MediaType.audio:
       case MediaType.custom:
         return url;
     }

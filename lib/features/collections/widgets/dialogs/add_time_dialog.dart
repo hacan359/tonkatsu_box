@@ -14,7 +14,6 @@ class AddTimeDialog extends StatefulWidget {
     super.key,
   });
 
-  /// Initial value in minutes.
   final int initialMinutes;
 
   /// `true` — "edit total" mode, `false` — "add time" mode.

@@ -1,4 +1,3 @@
-
 /// Feeds the human-readable line in "Test connection" and the Kodi debug
 /// panel: «Connected (Kodi 21.0 "Omega" on Living Room HTPC)».
 class KodiApplicationInfo {

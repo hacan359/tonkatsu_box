@@ -1,5 +1,3 @@
-// Settings hub screen with a single grouped-list layout.
-
 import 'dart:async';
 import 'dart:io';
 
@@ -62,6 +60,8 @@ import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
 import 'profiles_screen.dart';
 import '../providers/profile_provider.dart';
+import '../../../shared/constants/rich_hero_style.dart';
+import '../../../shared/constants/rich_hero_style_ui.dart';
 
 /// Breakpoint for switching content width.
 const double _desktopBreakpoint = 800;
@@ -86,12 +86,9 @@ const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple (used for RA-
 const Color _kAboutColor = Color(0xFF8E8E93);
 const Color _kDebugColor = Color(0xFFAB47BC);
 
-/// Settings hub screen.
-///
-/// One grouped-list layout for all platforms; on desktop (>= 800px) the
-/// content is centred at maxWidth 600.
+/// One grouped-list layout for every platform; from 800px up the content is
+/// centred at maxWidth 600.
 class SettingsScreen extends ConsumerStatefulWidget {
-  /// Creates a [SettingsScreen].
   const SettingsScreen({super.key});
 
   @override
@@ -147,10 +144,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  /// Filters the settings sections by the search query.
-  ///
   /// Keeps only [SettingsGroup]s whose title or any child [SettingsTile]
-  /// contains the query.
+  /// matches the query.
   static List<Widget> _filterSections(List<Widget> sections, String query) {
     final List<Widget> result = <Widget>[];
     for (final Widget section in sections) {
@@ -513,6 +508,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
           ),
+          if (settings.richCollectionsEnabled)
+            SettingsTile(
+              leadingIcon: Icons.style_outlined,
+              leadingColor: _kAppearanceColor,
+              title: l.settingsRichHeroStyle,
+              subtitle: l.settingsRichHeroStyleSubtitle,
+              value: settings.richHeroStyle.localizedLabel(l),
+              onTap: () => _showRichHeroStylePicker(settings),
+            ),
           SettingsTile(
             leadingIcon: Icons.photo_size_select_large_outlined,
             leadingColor: _kAppearanceColor,
@@ -733,12 +737,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await showWhatsNewDialog(context, content);
   }
 
-  /// Key-source states in the same order as the credentials screen sections.
-  ///
-  /// Built-in default keys (IGDB / SteamGridDB / TMDB, baked in at build time)
-  /// don't count: the credentials screen shows them as empty "using built-in
-  /// key" fields, so a fresh production install with no keys entered must read
-  /// 0/6 here rather than tallying the bundled defaults the user never set.
+  /// Baked-in default keys don't count — a fresh install with nothing entered
+  /// must read 0/6, matching the empty fields the credentials screen shows.
   List<bool> _apiKeyStates(SettingsState settings) => <bool>[
         settings.hasCredentials && !settings.isIgdbKeyBuiltIn,
         settings.hasSteamGridDbKey && !settings.isSteamGridDbKeyBuiltIn,
@@ -747,6 +747,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         settings.hasComicVineKey,
         settings.hasGoogleBooksKey,
         settings.hasHardcoverKey,
+        settings.hasPodcastIndexKeys,
         settings.hasScreenScraperCreds,
       ];
 
@@ -867,6 +868,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onSelected: (DateFormatPreset preset) => ref
           .read(settingsNotifierProvider.notifier)
           .setDateFormat(preset.id),
+    );
+  }
+
+  void _showRichHeroStylePicker(SettingsState settings) {
+    final S l = S.of(context);
+    _showChoicePicker<RichHeroStyle>(
+      title: l.settingsRichHeroStyle,
+      values: RichHeroStyle.values,
+      isSelected: (RichHeroStyle style) => settings.richHeroStyle == style,
+      label: (RichHeroStyle style) => style.localizedLabel(l),
+      onSelected: (RichHeroStyle style) => ref
+          .read(settingsNotifierProvider.notifier)
+          .setRichHeroStyle(style),
     );
   }
 
@@ -1152,9 +1166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-/// Modal, dismiss-locked progress dialog shown while a backup is being
-/// restored. Blocks back/system-back via PopScope so the user can't kill
-/// the app mid-write.
+/// Dismiss-locked via PopScope so the user cannot kill the app mid-write.
 class _RestoreProgressDialog extends StatelessWidget {
   const _RestoreProgressDialog({required this.progress});
 

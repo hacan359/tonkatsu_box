@@ -29,7 +29,6 @@ enum DataDirVerdict {
 
 /// Result of resolving the data root.
 class StorageRootResolution {
-  /// Creates a [StorageRootResolution].
   const StorageRootResolution({
     required this.path,
     this.isCustom = false,
@@ -47,12 +46,8 @@ class StorageRootResolution {
   final bool fellBack;
 }
 
-/// Single source of truth for the app data root.
-///
-/// [DatabaseService], `ProfileService` and `ImageCacheService` all resolve
-/// their base directory through here, so a user-selected custom directory
-/// moves the whole data tree (profiles.json, per-profile databases and
-/// image caches) consistently.
+/// Single source of truth for the data root: [DatabaseService],
+/// `ProfileService` and `ImageCacheService` all resolve through here.
 class StorageRoot {
   StorageRoot._();
 
@@ -112,10 +107,8 @@ class StorageRoot {
     return value;
   }
 
-  // Validation verdict is memoized per session: resolve() sits on hot
-  // paths (every image load), while opening the DB read-only for
-  // validation is only affordable once. setCustomDir/clearCustomDir
-  // reset the memo; a process restart revalidates naturally.
+  // Verdict memoized per session: resolve() is on hot paths, but the
+  // read-only validation open is only affordable once. set/clear reset it.
   static String? _validatedCustomDir;
   static String? _rejectedCustomDir;
 
@@ -126,15 +119,8 @@ class StorageRoot {
     _rejectedCustomDir = null;
   }
 
-  /// Resolves the effective data root.
-  ///
-  /// A configured-but-unusable custom directory falls back to the default
-  /// location so the app still boots; [StorageRootResolution.fellBack]
-  /// lets the UI surface that. Unusable covers a missing directory
-  /// (unplugged drive, dead network share), an existing-but-emptied one
-  /// (opening it would silently spawn a fresh database, which reads as
-  /// data loss), and a database that fails [validateDataDir] — e.g. a
-  /// sync client delivered a newer-schema or half-written file.
+  /// An unusable custom dir (missing, emptied, or failing [validateDataDir])
+  /// falls back to the default so the app boots; `fellBack` surfaces it.
   static Future<StorageRootResolution> resolve() async {
     // Custom data folders are a desktop concept; web always uses the
     // virtual default root.
@@ -184,10 +170,8 @@ class StorageRoot {
     return p.join(root, dbFileName);
   }
 
-  /// Checks that the database [dir] would be opened with is usable:
-  /// schema not newer than this build and `PRAGMA quick_check` clean.
-  /// An absent database is [DataDirVerdict.ok] — a fresh one gets
-  /// created on open.
+  /// Usable = schema not newer than this build and `quick_check` clean.
+  /// An absent database is ok — a fresh one gets created on open.
   static Future<DataDirVerdict> validateDataDir(String dir) async {
     final Future<DataDirVerdict> Function(String dir)? override =
         validateDataDirOverride;
@@ -233,14 +217,12 @@ class StorageRoot {
         File(p.join(dir, dbFileName)).existsSync();
   }
 
-  /// Saves [path] as the custom data root.
   static Future<void> setCustomDir(String path) async {
     resetSessionCache();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(prefsKey, path);
   }
 
-  /// Removes the custom data root, returning to the default location.
   static Future<void> clearCustomDir() async {
     resetSessionCache();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -261,19 +243,8 @@ class StorageRoot {
     }
   }
 
-  /// Copies database data from [sourceDir] into [targetDir]:
-  /// `profiles.json` plus each profile's database (with `-wal`/`-shm`
-  /// sidecars), or the single root database when the profile system is
-  /// not initialised.
-  ///
-  /// When [includeImages] is set, the `collections` hero images and each
-  /// profile's `image_cache` are copied too — a full offline mirror. By
-  /// default images are skipped: the re-downloadable cover cache re-fetches
-  /// on demand, so most folder moves need not haul it along.
-  ///
-  /// [flushDatabase] runs before any file is copied; pass
-  /// `DatabaseService.checkpointWal` when the live database is open so
-  /// the copied main file is complete.
+  /// [flushDatabase] (e.g. checkpointWal) runs first so the copied main DB is
+  /// complete. Images copy only with [includeImages] — covers re-fetch anyway.
   static Future<void> copyDataTo(
     String sourceDir,
     String targetDir, {
@@ -347,9 +318,8 @@ class StorageRoot {
   }
 
   static Future<void> _copyDbFiles(String fromDir, String toDir) async {
-    // `.bak` travels along: it may be the only good copy after a sync
-    // the user regrets, and the restore flow looks for it next to the
-    // active database.
+    // `.bak` travels along: it may be the only good copy after a regretted
+    // sync, and the restore flow looks for it next to the active database.
     for (final String suffix in <String>['', '-wal', '-shm', '.bak']) {
       final File file = File(p.join(fromDir, '$dbFileName$suffix'));
       if (file.existsSync()) {

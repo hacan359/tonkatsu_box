@@ -21,6 +21,7 @@ class CollectionStats {
     required this.dropped,
     required this.planned,
     this.replaying = 0,
+    this.ignored = 0,
     this.gameCount = 0,
     this.movieCount = 0,
     this.tvShowCount = 0,
@@ -29,6 +30,7 @@ class CollectionStats {
     this.mangaCount = 0,
     this.animeCount = 0,
     this.bookCount = 0,
+    this.audioCount = 0,
     this.customCount = 0,
   });
 
@@ -39,6 +41,7 @@ class CollectionStats {
   final int dropped;
   final int planned;
   final int replaying;
+  final int ignored;
   final int gameCount;
   final int movieCount;
   final int tvShowCount;
@@ -47,6 +50,7 @@ class CollectionStats {
   final int mangaCount;
   final int animeCount;
   final int bookCount;
+  final int audioCount;
   final int customCount;
 
   Map<MediaType, int> get mediaTypeCounts => <MediaType, int>{
@@ -58,6 +62,7 @@ class CollectionStats {
     MediaType.manga: mangaCount,
     MediaType.anime: animeCount,
     MediaType.book: bookCount,
+    MediaType.audio: audioCount,
     MediaType.custom: customCount,
   };
 
@@ -339,6 +344,7 @@ class CollectionRepository {
       dropped: raw['dropped'] ?? 0,
       planned: raw['planned'] ?? 0,
       replaying: raw['replaying'] ?? 0,
+      ignored: raw['ignored'] ?? 0,
       gameCount: raw['gameCount'] ?? 0,
       movieCount: raw['movieCount'] ?? 0,
       tvShowCount: raw['tvShowCount'] ?? 0,
@@ -347,6 +353,7 @@ class CollectionRepository {
       mangaCount: raw['mangaCount'] ?? 0,
       animeCount: raw['animeCount'] ?? 0,
       bookCount: raw['bookCount'] ?? 0,
+      audioCount: raw['audioCount'] ?? 0,
       customCount: raw['customCount'] ?? 0,
     );
   }

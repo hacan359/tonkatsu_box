@@ -78,9 +78,8 @@ class TvEpisode {
     );
   }
 
-  /// From a TheTVDB `/series/{id}/episodes/...` entry; null when the episode
-  /// number is missing. Localized episode names are sparse upstream, so the
-  /// English `name` is used as-is.
+  /// Null when the episode number is missing. Localized names are sparse
+  /// upstream, so the English `name` is used as-is.
   static TvEpisode? tryFromTvdb(
     Map<String, dynamic> json, {
     required int showId,

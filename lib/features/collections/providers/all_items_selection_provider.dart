@@ -1,10 +1,7 @@
-// Глобальный селекшн для экрана All Items (все коллекции вместе).
-//
-// Отдельный провайдер, не часть family `collectionSelectionProvider`,
-// потому что он логически не привязан к одной коллекции.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+// Deliberately not part of the collectionSelectionProvider family: the All
+// Items selection is not tied to any single collection.
 final NotifierProvider<AllItemsSelectionNotifier, Set<int>>
     allItemsSelectionProvider =
     NotifierProvider<AllItemsSelectionNotifier, Set<int>>(
@@ -21,7 +18,7 @@ class AllItemsSelectionNotifier extends Notifier<Set<int>> {
     state = next;
   }
 
-  /// Заменяет селекшн на [ids] (select-all).
+  /// Replaces the selection with [ids] (select-all semantics).
   void selectAll(Iterable<int> ids) {
     state = Set<int>.of(ids);
   }

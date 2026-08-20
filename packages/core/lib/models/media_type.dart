@@ -28,6 +28,10 @@ enum MediaType {
   /// Book (OpenLibrary / Fantlab).
   book('book'),
 
+  /// Audio work — a MusicBrainz album or a Podcast Index feed, discriminated
+  /// by `AudioKind`.
+  audio('audio'),
+
   /// Custom user-created item.
   custom('custom');
 
@@ -48,7 +52,8 @@ enum MediaType {
       this == MediaType.anime ||
       this == MediaType.tvShow ||
       this == MediaType.movie ||
-      this == MediaType.book;
+      this == MediaType.book ||
+      this == MediaType.audio;
 
   /// Fallback source for rows whose `source` column is NULL.
   DataSource get defaultSource => switch (this) {
@@ -60,6 +65,7 @@ enum MediaType {
         MediaType.manga => DataSource.anilist,
         MediaType.anime => DataSource.anilist,
         MediaType.book => DataSource.openLibrary,
+        MediaType.audio => DataSource.musicBrainz,
         MediaType.custom => DataSource.local,
       };
 
@@ -100,6 +106,8 @@ enum MediaType {
         return 'Anime';
       case MediaType.book:
         return 'Book';
+      case MediaType.audio:
+        return 'Audio';
       case MediaType.custom:
         return 'Custom';
     }

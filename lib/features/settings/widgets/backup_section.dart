@@ -10,14 +10,9 @@ import '../../../shared/widgets/confirm_dialog.dart';
 import 'settings_group.dart';
 import 'settings_tile.dart';
 
-/// Settings group for rolling back to the `.bak` database left by the
-/// last data replacement (network sync receive).
-///
-/// The swap is symmetric — the replaced database becomes the new backup,
-/// so restoring twice undoes itself. This is the only recovery path on
-/// Android's default data folder, which file managers cannot reach.
+/// The swap is symmetric — the replaced database becomes the new backup, so
+/// restoring twice undoes itself.
 class BackupSection extends ConsumerStatefulWidget {
-  /// Creates a [BackupSection].
   const BackupSection({super.key});
 
   @override

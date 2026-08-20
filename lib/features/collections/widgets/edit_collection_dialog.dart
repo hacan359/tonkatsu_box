@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/collection_hero_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -19,10 +18,7 @@ class EditCollectionDialog extends ConsumerStatefulWidget {
 
   final Collection collection;
 
-  static Future<bool> show(
-    BuildContext context,
-    Collection collection,
-  ) async {
+  static Future<bool> show(BuildContext context, Collection collection) async {
     final bool? result = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) =>
@@ -74,8 +70,9 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
   }
 
   Future<void> _pickImage() async {
-    final CollectionHeroService service =
-        ref.read(collectionHeroServiceProvider);
+    final CollectionHeroService service = ref.read(
+      collectionHeroServiceProvider,
+    );
     final String? picked = await service.pickAndSave(
       collectionId: widget.collection.id,
       // The old file is deleted only on Save — the user may still cancel.
@@ -115,14 +112,17 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
     final bool heroChanged = _pendingHeroFile != null || _clearHero;
 
     // Delete the old hero file when the user picked a new one or removed it.
-    final CollectionHeroService service =
-        ref.read(collectionHeroServiceProvider);
+    final CollectionHeroService service = ref.read(
+      collectionHeroServiceProvider,
+    );
     final String? oldHero = widget.collection.heroImagePath;
     if (heroChanged && oldHero != null && oldHero != _pendingHeroFile) {
       await service.delete(oldHero);
     }
 
-    await ref.read(collectionsProvider.notifier).updatePersonalization(
+    await ref
+        .read(collectionsProvider.notifier)
+        .updatePersonalization(
           widget.collection.id,
           name: nameChanged ? newName : null,
           heroImagePath: _pendingHeroFile,
@@ -148,15 +148,20 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final CollectionHeroService service =
-        ref.watch(collectionHeroServiceProvider);
+    final CollectionHeroService service = ref.watch(
+      collectionHeroServiceProvider,
+    );
     final String? heroFile = _currentHeroFile;
     final String? heroAbsPath = service.resolve(heroFile);
 
     return AlertDialog(
       scrollable: true,
-      titlePadding:
-          const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.sm, 0),
+      titlePadding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.sm,
+        0,
+      ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
@@ -187,41 +192,37 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
                     ? null
                     : _descriptionController.text.trim(),
               ),
-              // The hero picker reads a local image file — no filesystem on
-              // web until the server proxy phase.
-              if (!kIsWebBuild) ...<Widget>[
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  l.collectionEditHeroImageHint,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                l.collectionEditHeroImageHint,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textTertiary,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _saving ? null : _pickImage,
-                        icon: const Icon(Icons.image_outlined, size: 18),
-                        label: Text(
-                          heroAbsPath != null
-                              ? l.collectionEditHeroReplace
-                              : l.collectionEditHeroPick,
-                        ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _saving ? null : _pickImage,
+                      icon: const Icon(Icons.image_outlined, size: 18),
+                      label: Text(
+                        heroAbsPath != null
+                            ? l.collectionEditHeroReplace
+                            : l.collectionEditHeroPick,
                       ),
                     ),
-                    if (heroAbsPath != null) ...<Widget>[
-                      const SizedBox(width: AppSpacing.sm),
-                      IconButton.outlined(
-                        onPressed: _saving ? null : _removeImage,
-                        icon: const Icon(Icons.delete_outline, size: 18),
-                        tooltip: l.collectionEditHeroRemove,
-                      ),
-                    ],
+                  ),
+                  if (heroAbsPath != null) ...<Widget>[
+                    const SizedBox(width: AppSpacing.sm),
+                    IconButton.outlined(
+                      onPressed: _saving ? null : _removeImage,
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      tooltip: l.collectionEditHeroRemove,
+                    ),
                   ],
-                ),
-              ],
+                ],
+              ),
               const SizedBox(height: AppSpacing.lg),
 
               TextFormField(
@@ -266,14 +267,8 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
         ),
       ),
       actions: <Widget>[
-        TextButton(
-          onPressed: _saving ? null : _cancel,
-          child: Text(l.cancel),
-        ),
-        FilledButton(
-          onPressed: _saving ? null : _save,
-          child: Text(l.save),
-        ),
+        TextButton(onPressed: _saving ? null : _cancel, child: Text(l.cancel)),
+        FilledButton(onPressed: _saving ? null : _save, child: Text(l.save)),
       ],
     );
   }
@@ -378,11 +373,7 @@ class _EmptyPreview extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              Icons.image_outlined,
-              color: AppColors.textTertiary,
-              size: 40,
-            ),
+            Icon(Icons.image_outlined, color: AppColors.textTertiary, size: 40),
             const SizedBox(height: AppSpacing.xs),
             Text(
               label,
@@ -396,4 +387,3 @@ class _EmptyPreview extends StatelessWidget {
     );
   }
 }
-
