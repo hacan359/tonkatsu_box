@@ -1,18 +1,19 @@
-# 0.42.0
+# 0.43.0
 
-Hi everyone — the release we have been building towards for months is finally here: Tonkatsu Box can now run
-self-hosted and open right in the browser. One Docker container serves the app to every device on your network, and
-everything is built from the repository sources — you can inspect every file yourself, or tweak it to make the setup
-truly yours.
+**Audio joins the library.** Music albums from MusicBrainz and podcasts from Podcast Index live in one new tab, with
+cover art, new releases and trending rows, and listened marks per track and per episode — albums get the edition
+picker and its track list, podcasts a dated episode checklist.
 
 The rest of the release, in short:
 
-- TheTVDB joins as a source for movies and TV series.
-- Sakura — a soft light theme, switchable in Settings → Appearance.
-- Hidden collections: keep a collection out of sight without deleting it.
-- Anime and manga recommendations — in the item card and on the Personalization tab.
-- Collection cards redesigned: a pile of covers with media-type badges.
-- Started / completed dates can be set explicitly — or cleared with the new "no date" option.
+- A new "Ignored" status for titles you keep but deliberately park.
+- Five collection banner styles — Classic, Comic, Sticker album, Brutalist and Strips — each showing the collection's
+  status breakdown and carrying its title.
+- The status filter takes several statuses at once.
+- Tag dialogs unified: search, quick-create, in-place editing and a remembered sort order.
+- On wide screens tags moved to a chip bar above the grid, with per-collection counts.
+- Faster sorting on large collections, instant covers from the cache, less animation work on phones.
+- Self-hosted web build: ScreenScraper works, and collection background images can be picked in the browser.
 
 A friendly reminder: our cozy [Discord](https://discord.gg/JZVNPF7cS2) server is where you can directly influence
 which features get built. And if you use the app but have not starred it on

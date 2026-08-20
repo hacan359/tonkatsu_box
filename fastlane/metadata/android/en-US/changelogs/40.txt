@@ -1,0 +1,8 @@
+v0.43.0
+
+* New Audio media type: music albums from MusicBrainz and podcasts from Podcast Index, with per-track and per-episode listened tracking.
+* New "Ignored" item status you can filter by.
+* Five collection banner styles, each with a per-status breakdown.
+* The status filter now takes several statuses at once.
+* Unified tag dialogs with search, in-place editing and saved sorting.
+* Faster large collections; covers load instantly from the cache.

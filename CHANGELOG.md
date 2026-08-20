@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-08-20
+
 ### Added
 
 - **"Ignored" item status**
