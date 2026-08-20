@@ -1962,9 +1962,6 @@ class SPt extends S {
   String get tagNone => 'Sem tags';
 
   @override
-  String get tagPickerTitle => 'Selecionar tags';
-
-  @override
   String get tagTextColor => 'Cor do texto';
 
   @override
@@ -3749,6 +3746,9 @@ class SPt extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'Tem adaptação';
+
+  @override
+  String get tagPickerTitle => 'Selecionar tags';
 
   @override
   String get tagPickerSearchHint => 'Buscar tags';

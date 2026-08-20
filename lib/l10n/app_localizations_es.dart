@@ -1973,9 +1973,6 @@ class SEs extends S {
   String get tagNone => 'Sin etiquetas';
 
   @override
-  String get tagPickerTitle => 'Seleccionar etiquetas';
-
-  @override
   String get tagTextColor => 'Color del texto';
 
   @override
@@ -3763,6 +3760,9 @@ class SEs extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'Con adaptación';
+
+  @override
+  String get tagPickerTitle => 'Seleccionar etiquetas';
 
   @override
   String get tagPickerSearchHint => 'Buscar etiquetas';

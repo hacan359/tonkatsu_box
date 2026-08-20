@@ -1975,9 +1975,6 @@ class SRu extends S {
   String get tagNone => 'Нет тегов';
 
   @override
-  String get tagPickerTitle => 'Выбор тэгов';
-
-  @override
   String get tagTextColor => 'Цвет текста';
 
   @override
@@ -3772,6 +3769,9 @@ class SRu extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'Есть адаптация';
+
+  @override
+  String get tagPickerTitle => 'Выбор тэгов';
 
   @override
   String get tagPickerSearchHint => 'Поиск по тэгам';

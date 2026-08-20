@@ -1815,9 +1815,6 @@ class SZh extends S {
   String get tagNone => '无标签';
 
   @override
-  String get tagPickerTitle => '选择标签';
-
-  @override
   String get tagTextColor => '文字颜色';
 
   @override
@@ -3492,6 +3489,9 @@ class SZh extends S {
 
   @override
   String get vndbHasAnimeAdaptation => '有改编';
+
+  @override
+  String get tagPickerTitle => '选择标签';
 
   @override
   String get tagPickerSearchHint => '搜索标签';

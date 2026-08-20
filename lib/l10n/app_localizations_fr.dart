@@ -1968,9 +1968,6 @@ class SFr extends S {
   String get tagNone => 'Pas de tags';
 
   @override
-  String get tagPickerTitle => 'Sélectionner tags';
-
-  @override
   String get tagTextColor => 'Couleur du texte';
 
   @override
@@ -3769,6 +3766,9 @@ class SFr extends S {
 
   @override
   String get vndbHasAnimeAdaptation => 'A une adaptation';
+
+  @override
+  String get tagPickerTitle => 'Sélectionner tags';
 
   @override
   String get tagPickerSearchHint => 'Rechercher tags';
