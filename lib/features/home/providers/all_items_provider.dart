@@ -256,11 +256,8 @@ final FutureProvider<List<Platform>> allItemsPlatformsProvider =
   if (uniqueIds.isEmpty) return <Platform>[];
 
   final DatabaseService db = ref.read(databaseServiceProvider);
-  final List<Platform> platforms = <Platform>[];
-  for (final int id in uniqueIds) {
-    final Platform? p = await db.gameDao.getPlatformById(id);
-    if (p != null) platforms.add(p);
-  }
+  final List<Platform> platforms =
+      await db.gameDao.getPlatformsByIds(uniqueIds.toList());
   platforms.sort(
     (Platform a, Platform b) => a.name.compareTo(b.name),
   );

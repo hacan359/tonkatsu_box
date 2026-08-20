@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
+import 'package:tonkatsu_box/features/collections/widgets/bulk_action_bar.dart';
 import 'package:tonkatsu_box/features/home/screens/all_items_screen.dart';
 import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
@@ -140,19 +141,24 @@ void main() {
         .thenAnswer((_) async => <TvSeason>[]);
     final MockGameDao mockGameDao = MockGameDao();
     when(() => mockDb.gameDao).thenReturn(mockGameDao);
-    when(() => mockGameDao.getPlatformById(19)).thenAnswer(
-      (_) async => const model.Platform(
-        id: 19,
-        name: 'Super Nintendo',
-        abbreviation: 'SNES',
-      ),
-    );
-    when(() => mockGameDao.getPlatformById(24)).thenAnswer(
-      (_) async => const model.Platform(
-        id: 24,
-        name: 'Game Boy Advance',
-        abbreviation: 'GBA',
-      ),
+    when(() => mockGameDao.getPlatformsByIds(any())).thenAnswer(
+      (Invocation inv) async {
+        final List<int> ids = inv.positionalArguments.first as List<int>;
+        return <model.Platform>[
+          if (ids.contains(19))
+            const model.Platform(
+              id: 19,
+              name: 'Super Nintendo',
+              abbreviation: 'SNES',
+            ),
+          if (ids.contains(24))
+            const model.Platform(
+              id: 24,
+              name: 'Game Boy Advance',
+              abbreviation: 'GBA',
+            ),
+        ];
+      },
     );
   });
 
@@ -196,6 +202,30 @@ void main() {
       expect(find.text('TV Shows'), findsOneWidget);
       expect(find.text('Animation'), findsOneWidget);
       expect(find.text('Visual Novels'), findsOneWidget);
+    });
+
+    testWidgets('long-press выделяет элемент и передаёт его в BulkActionBar',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BulkActionBar), findsNothing);
+
+      await tester.ensureVisible(find.text('Steins;Gate'));
+      await tester.longPress(find.text('Steins;Gate'));
+      await tester.pumpAndSettle();
+
+      // Bulk actions must receive exactly the selected item, from the
+      // unfiltered list — this is what move/clone will operate on.
+      final BulkActionBar bar =
+          tester.widget<BulkActionBar>(find.byType(BulkActionBar));
+      expect(bar.items.map((CollectionItem i) => i.id).toList(), <int>[5]);
+
+      // A second tap toggles the item off; the bar leaves with the selection.
+      await tester.tap(find.text('Steins;Gate'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BulkActionBar), findsNothing);
     });
 
     testWidgets('показывает счётчики на сегментах после загрузки',
