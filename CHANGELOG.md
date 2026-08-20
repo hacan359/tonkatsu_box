@@ -284,6 +284,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Performance improvements**
+
+  Faster sorting on large collections and smoother "All items" grid,
+  selection mode and scrolling.
+
 - **The collection banner carries the title and the back arrow**
 
   With rich collection view on, the plain title row above a collection is

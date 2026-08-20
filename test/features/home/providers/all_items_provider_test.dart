@@ -751,11 +751,16 @@ void main() {
       ];
       when(() => mockRepo.getAllItemsWithData())
           .thenAnswer((_) async => items);
-      when(() => mockGameDao.getPlatformById(19)).thenAnswer(
-        (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
-      );
-      when(() => mockGameDao.getPlatformById(24)).thenAnswer(
-        (_) async => const model.Platform(id: 24, name: 'Game Boy Advance'),
+      when(() => mockGameDao.getPlatformsByIds(any())).thenAnswer(
+        (Invocation inv) async {
+          final List<int> ids = inv.positionalArguments.first as List<int>;
+          return <model.Platform>[
+            if (ids.contains(19))
+              const model.Platform(id: 19, name: 'Super Nintendo'),
+            if (ids.contains(24))
+              const model.Platform(id: 24, name: 'Game Boy Advance'),
+          ];
+        },
       );
 
       final ProviderContainer container = createContainer();
@@ -787,8 +792,14 @@ void main() {
       ];
       when(() => mockRepo.getAllItemsWithData())
           .thenAnswer((_) async => items);
-      when(() => mockGameDao.getPlatformById(19)).thenAnswer(
-        (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
+      when(() => mockGameDao.getPlatformsByIds(any())).thenAnswer(
+        (Invocation inv) async {
+          final List<int> ids = inv.positionalArguments.first as List<int>;
+          return <model.Platform>[
+            if (ids.contains(19))
+              const model.Platform(id: 19, name: 'Super Nintendo'),
+          ];
+        },
       );
 
       final ProviderContainer container = createContainer();
@@ -810,8 +821,14 @@ void main() {
       ];
       when(() => mockRepo.getAllItemsWithData())
           .thenAnswer((_) async => items);
-      when(() => mockGameDao.getPlatformById(19)).thenAnswer(
-        (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
+      when(() => mockGameDao.getPlatformsByIds(any())).thenAnswer(
+        (Invocation inv) async {
+          final List<int> ids = inv.positionalArguments.first as List<int>;
+          return <model.Platform>[
+            if (ids.contains(19))
+              const model.Platform(id: 19, name: 'Super Nintendo'),
+          ];
+        },
       );
 
       final ProviderContainer container = createContainer();

@@ -401,14 +401,17 @@ class CollectionItemsView extends ConsumerWidget {
           ? (bool hasFocus) => onItemFocusChanged!(item, hasFocus)
           : null,
     );
-    if (!canEdit) return card;
-    return SelectablePosterCard(
-      isSelected: isSelected,
-      selectionActive: selectionActive,
-      onToggleSelect: () => ref
-          .read(collectionSelectionProvider(collectionId).notifier)
-          .toggle(item.id),
-      child: card,
+    // Hover/animation inside one card must not invalidate the grid's layer.
+    if (!canEdit) return RepaintBoundary(child: card);
+    return RepaintBoundary(
+      child: SelectablePosterCard(
+        isSelected: isSelected,
+        selectionActive: selectionActive,
+        onToggleSelect: () => ref
+            .read(collectionSelectionProvider(collectionId).notifier)
+            .toggle(item.id),
+        child: card,
+      ),
     );
   }
 

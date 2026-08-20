@@ -79,35 +79,18 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
 
-    final Set<int> selection = ref.watch(allItemsSelectionProvider);
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
     final List<CollectionItem> visibleItems =
         _applyFilter(
             allItems, filterStatuses, favoriteOnly, tagsMap, searchQuery);
-    final List<CollectionItem> selectedItems = selection.isEmpty
-        ? const <CollectionItem>[]
-        : <CollectionItem>[
-            for (final CollectionItem i in allItems)
-              if (selection.contains(i.id)) i,
-          ];
 
     return Column(
       children: <Widget>[
         _buildMediaTypeBar(
             itemsAsync, filterStatuses, favoriteOnly, tagsMap, searchQuery),
         SubfilterBar(groups: _subfilterGroups(itemsAsync)),
-        if (selectedItems.isNotEmpty)
-          BulkActionBar(
-            items: selectedItems,
-            visibleCount: visibleItems.length,
-            onSelectAllVisible: () => ref
-                .read(allItemsSelectionProvider.notifier)
-                .selectAll(visibleItems.map((CollectionItem i) => i.id)),
-            onClearSelection: () => ref
-                .read(allItemsSelectionProvider.notifier)
-                .clear(),
-          ),
+        _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
         Expanded(
           child: itemsAsync.when(
             data: (List<CollectionItem> items) {
@@ -511,72 +494,19 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                   (BuildContext context, int index) {
                     final CollectionItem item = groups[i].items[index];
                     final List<int>? tagIds = itemTags[item.id];
-                    final Tag? tag = orderedTags.primaryFor(tagIds);
-                    final int tagCount = tagIds?.length ?? 0;
-                    final Set<int> selection =
-                        ref.watch(allItemsSelectionProvider);
-                    final bool isSelected = selection.contains(item.id);
-                    final ItemCardProgress? progress =
-                        itemCardProgress(item) ?? trackerCardProgress(ref, item);
-                    final MediaPosterCard card = MediaPosterCard(
+                    return _AllItemsCard(
                       key: ValueKey<int>(item.id),
+                      item: item,
                       variant: isLandscape ||
                               isCompactScreen(context)
                           ? CardVariant.compact
                           : CardVariant.grid,
-                      title: item.cardTitle(ref.displayNameOf(item)),
-                      imageUrl: item.thumbnailUrl ?? '',
-                      cacheImageType:
-                          _imageTypeFor(item.mediaType, item.platformId),
-                      cacheImageId: item.coverImageId,
-                      userRating: item.userRating,
-                      apiRating: item.apiRating,
-                      splitRatings: true,
-                      year: _yearFor(item),
-                      platformLabel: item.platform?.displayName,
-                      platformColor: item.platform?.familyColor,
-                      platformOverlayAsset:
-                          ref.watch(settingsNotifierProvider).resolveOverlay(
-                            platformOverlay: item.platform?.overlayAsset,
-                            mediaTypeOverlay: item.mediaType.overlayAsset,
-                          ),
-                      mediaType: item.displayMediaType,
-                      typeLabelOverride: item.formatLabel,
-                      status: item.status,
-                      progress: progress,
-                      isFavorite: item.isFavorite,
-                      showFavorite: true,
-                      enableHoverScale: !isSelected,
-                      onToggleFavorite: selection.isEmpty
-                          ? () => ref
-                              .read(allItemsNotifierProvider.notifier)
-                              .toggleFavorite(item.id)
-                          : null,
-                      tagName: tag?.name,
-                      tagColor: tag?.color,
-                      tagTextColor: tag?.textColor,
-                      tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
-                      source: item.dataSource,
-                      onSourceTap: openUrlCallback(item.externalUrl),
-                      onTap: selection.isEmpty
-                          ? () => _showItemDetails(item, collectionNames)
-                          : () => ref
-                              .read(allItemsSelectionProvider.notifier)
-                              .toggle(item.id),
-                      onSecondaryTap: (Offset pos) =>
+                      tag: orderedTags.primaryFor(tagIds),
+                      tagCount: tagIds?.length ?? 0,
+                      onShowDetails: () =>
+                          _showItemDetails(item, collectionNames),
+                      onShowContextMenu: (Offset pos) =>
                           _showItemContextMenu(pos, item),
-                      onLongPress: () => ref
-                          .read(allItemsSelectionProvider.notifier)
-                          .toggle(item.id),
-                    );
-                    return SelectablePosterCard(
-                      key: ValueKey<int>(item.id),
-                      isSelected: isSelected,
-                      selectionActive: selection.isNotEmpty,
-                      onToggleSelect: () => ref
-                          .read(allItemsSelectionProvider.notifier)
-                          .toggle(item.id),
-                      child: card,
                     );
                   },
                   childCount: groups[i].items.length,
@@ -994,4 +924,123 @@ class _CollectionGroup {
   final String name;
   final List<CollectionItem> items;
   final bool isUncategorized;
+}
+
+/// Watches the selection itself so a toggle never rebuilds the screen
+/// (and its O(n) grouping) — only the bar.
+class _AllItemsBulkBar extends ConsumerWidget {
+  const _AllItemsBulkBar({
+    required this.allItems,
+    required this.visibleItems,
+  });
+
+  final List<CollectionItem> allItems;
+  final List<CollectionItem> visibleItems;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final Set<int> selection = ref.watch(allItemsSelectionProvider);
+    if (selection.isEmpty) return const SizedBox.shrink();
+    final List<CollectionItem> selectedItems = <CollectionItem>[
+      for (final CollectionItem i in allItems)
+        if (selection.contains(i.id)) i,
+    ];
+    return BulkActionBar(
+      items: selectedItems,
+      visibleCount: visibleItems.length,
+      onSelectAllVisible: () => ref
+          .read(allItemsSelectionProvider.notifier)
+          .selectAll(visibleItems.map((CollectionItem i) => i.id)),
+      onClearSelection: () =>
+          ref.read(allItemsSelectionProvider.notifier).clear(),
+    );
+  }
+}
+
+/// Scopes selection/settings/tracker watches to one card: bool-valued
+/// `select`s rebuild only the card whose value actually changed.
+class _AllItemsCard extends ConsumerWidget {
+  const _AllItemsCard({
+    required this.item,
+    required this.variant,
+    required this.tag,
+    required this.tagCount,
+    required this.onShowDetails,
+    required this.onShowContextMenu,
+    super.key,
+  });
+
+  final CollectionItem item;
+  final CardVariant variant;
+  final Tag? tag;
+  final int tagCount;
+  final VoidCallback onShowDetails;
+  final void Function(Offset position) onShowContextMenu;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool isSelected = ref.watch(
+      allItemsSelectionProvider.select((Set<int> s) => s.contains(item.id)),
+    );
+    final bool selectionActive = ref.watch(
+      allItemsSelectionProvider.select((Set<int> s) => s.isNotEmpty),
+    );
+    final String? overlayAsset = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.resolveOverlay(
+          platformOverlay: item.platform?.overlayAsset,
+          mediaTypeOverlay: item.mediaType.overlayAsset,
+        ),
+      ),
+    );
+    final ItemCardProgress? progress =
+        itemCardProgress(item) ?? trackerCardProgress(ref, item);
+    void toggle() =>
+        ref.read(allItemsSelectionProvider.notifier).toggle(item.id);
+    return RepaintBoundary(
+      child: SelectablePosterCard(
+        isSelected: isSelected,
+        selectionActive: selectionActive,
+        onToggleSelect: toggle,
+        child: MediaPosterCard(
+          variant: variant,
+          title: item.cardTitle(ref.displayNameOf(item)),
+          imageUrl: item.thumbnailUrl ?? '',
+          cacheImageType: _AllItemsScreenState._imageTypeFor(
+            item.mediaType,
+            item.platformId,
+          ),
+          cacheImageId: item.coverImageId,
+          userRating: item.userRating,
+          apiRating: item.apiRating,
+          splitRatings: true,
+          year: _AllItemsScreenState._yearFor(item),
+          platformLabel: item.platform?.displayName,
+          platformColor: item.platform?.familyColor,
+          platformOverlayAsset: overlayAsset,
+          mediaType: item.displayMediaType,
+          typeLabelOverride: item.formatLabel,
+          status: item.status,
+          progress: progress,
+          isFavorite: item.isFavorite,
+          showFavorite: true,
+          enableHoverScale: !isSelected,
+          onToggleFavorite: selectionActive
+              ? null
+              : () => ref
+                  .read(allItemsNotifierProvider.notifier)
+                  .toggleFavorite(item.id),
+          tagName: tag?.name,
+          tagColor: tag?.color,
+          tagTextColor: tag?.textColor,
+          tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
+          source: item.dataSource,
+          onSourceTap: openUrlCallback(item.externalUrl),
+          onTap: selectionActive ? toggle : onShowDetails,
+          onSecondaryTap: onShowContextMenu,
+          onLongPress: toggle,
+        ),
+      ),
+    );
+  }
 }
